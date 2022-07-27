@@ -1,0 +1,19 @@
+{
+  "name": "@css-panda/types",
+  "version": "0.0.1",
+  "description": "core functions for extract-it",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "scripts": {
+    "build": "tsup src/ --dts",
+    "dev": "pnpm build -- --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "csstype": "^3.1.0"
+  }
+}

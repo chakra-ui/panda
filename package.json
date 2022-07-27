@@ -1,0 +1,17 @@
+{
+  "name": "css-panda",
+  "version": "0.0.1",
+  "description": "The repository of css panda",
+  "scripts": {
+    "build": "pnpm -r build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "typescript": "^4.7.4",
+    "vitest": "^0.19.1",
+    "tsup": "^6.2.0"
+  }
+}

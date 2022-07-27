@@ -1,0 +1,12 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependency directory
+**/node_modules/**
+node_modules
+
+lib
+dist
+tsconfig.tsbuildinfo
