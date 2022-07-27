@@ -3,12 +3,14 @@
   "version": "0.0.1",
   "description": "The repository of css panda",
   "scripts": {
-    "build": "pnpm -r build"
+    "build": "pnpm -r build",
+    "test": "vitest"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@types/node": "^18.6.1",
     "lodash": "^4.17.21",
     "typescript": "^4.7.4",
     "vitest": "^0.19.1",

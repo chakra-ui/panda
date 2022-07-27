@@ -4,15 +4,56 @@ importers:
 
   .:
     specifiers:
+      '@types/node': ^18.6.1
       lodash: ^4.17.21
       tsup: ^6.2.0
       typescript: ^4.7.4
       vitest: ^0.19.1
     dependencies:
+      '@types/node': 18.6.1
       lodash: 4.17.21
       tsup: 6.2.0_typescript@4.7.4
       typescript: 4.7.4
       vitest: 0.19.1
+
+  packages/codegen:
+    specifiers:
+      '@css-panda/fixture': workspace:*
+      '@css-panda/types': workspace:*
+      '@types/lodash': ^4.14.182
+      lodash: ^4.17.21
+      object-traversal: ^1.0.1
+    dependencies:
+      '@css-panda/types': link:../types
+      lodash: 4.17.21
+      object-traversal: 1.0.1
+    devDependencies:
+      '@css-panda/fixture': link:../fixture
+      '@types/lodash': 4.14.182
+
+  packages/core:
+    specifiers:
+      '@css-panda/parser': workspace:*
+      '@css-panda/types': workspace:*
+      '@types/debug': ^4.1.7
+      debug: ^4.3.4
+      hookable: ^5.1.1
+    dependencies:
+      '@css-panda/parser': link:../parser
+      '@css-panda/types': link:../types
+      debug: 4.3.4
+      hookable: 5.1.1
+    devDependencies:
+      '@types/debug': 4.1.7
+
+  packages/error:
+    specifiers: {}
+
+  packages/fixture:
+    specifiers:
+      '@css-panda/types': workspace:*
+    dependencies:
+      '@css-panda/types': link:../types
 
   packages/parser:
     specifiers:
@@ -204,8 +245,18 @@ packages:
     resolution: {integrity: sha512-/zPMqDkzSZ8t3VtxOa4KPq7uzzW978M9Tvh+j7GHKuo6k6GTLxPJ4J5gE5cjfJ26pnXst0N5Hax8Sr0T2Mi9zQ==}
     dev: false
 
+  /@types/debug/4.1.7:
+    resolution: {integrity: sha512-9AonUzyTjXXhEOa0DnqpzZi6VHlqKMswga9EXjpXnnqxwLtdvPPtlO8evrI5D9S6asFRCQ6v+wpiUKbw+vKqyg==}
+    dependencies:
+      '@types/ms': 0.7.31
+    dev: true
+
   /@types/lodash/4.14.182:
     resolution: {integrity: sha512-/THyiqyQAP9AfARo4pF+aCGcyiQ94tX/Is2I7HofNRqoYLgN1PBoOWu2/zTA5zMxzP5EFutMtWtGAFRKUe961Q==}
+    dev: true
+
+  /@types/ms/0.7.31:
+    resolution: {integrity: sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==}
     dev: true
 
   /@types/node/18.6.1:
@@ -660,6 +711,10 @@ packages:
       function-bind: 1.1.1
     dev: false
 
+  /hookable/5.1.1:
+    resolution: {integrity: sha512-7qam9XBFb+DijNBthaL1k/7lHU2TEMZkWSyuqmU3sCQze1wFm5w9AlEx30PD7a+QVAjOy6Ec2goFwe1YVyk2uA==}
+    dev: false
+
   /human-signals/2.1.0:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
     engines: {node: '>=10.17.0'}
@@ -819,6 +874,11 @@ packages:
   /object-assign/4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
     engines: {node: '>=0.10.0'}
+    dev: false
+
+  /object-traversal/1.0.1:
+    resolution: {integrity: sha512-aLXtM9kbcG/ePyZfB45B0FrIdu1yy3udQjIVmp2IVl2np52dBK5ZZBhdyUKFT6neCutwDhCW/kQ+e/0K5n/Jhw==}
+    engines: {node: '>=10'}
     dev: false
 
   /once/1.4.0:
