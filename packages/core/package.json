@@ -14,10 +14,12 @@
     "dist"
   ],
   "dependencies": {
-    "debug": "^4.3.4",
-    "hookable": "^5.1.1",
     "@css-panda/types": "workspace:*",
-    "@css-panda/parser": "workspace:*"
+    "@css-panda/parser": "workspace:*",
+    "debug": "^4.3.4",
+    "filespy": "^1.2.4",
+    "hookable": "^5.1.1",
+    "unconfig": "^0.3.5"
   },
   "devDependencies": {
     "@types/debug": "^4.1.7"
