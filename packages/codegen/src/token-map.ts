@@ -12,14 +12,14 @@ export function getColorsMap(values: Tokens['colors']) {
     const nested = depth > 1;
 
     if ((single || nested) && nodePath) {
-      map.set(`colors.${nodePath}`, ctx.value);
+      map.set(nodePath, ctx.value);
     }
   });
 
   return map;
 }
 
-export function getFontSizeMap(values: Tokens['fontSizes']) {
+export function getTokenMap(values: Record<string, string | number>) {
   const map = new Map<string, string>();
 
   traverse(
@@ -27,40 +27,7 @@ export function getFontSizeMap(values: Tokens['fontSizes']) {
     (ctx) => {
       const { nodePath } = ctx.meta;
       if (!nodePath) return;
-      map.set(
-        `fontSizes.${nodePath}`,
-        isString(ctx.value) ? { fontSize: ctx.value } : ctx.value
-      );
-    },
-    { maxDepth: 1 }
-  );
-
-  return map;
-}
-
-export function getSpacingMap(values: Tokens['spacing']) {
-  return getTokenMap('spacing', values, true);
-}
-
-export function getTokenMap(
-  category: string,
-  values: Record<string, string | number>,
-  negate = false
-) {
-  const map = new Map<string, string>();
-
-  traverse(
-    values,
-    (ctx) => {
-      const { nodePath } = ctx.meta;
-      if (!nodePath) return;
-
-      const pre = category ? `${category}.` : '';
-      map.set(`${pre}${nodePath}`, ctx.value);
-
-      if (negate) {
-        map.set(`${pre}-${nodePath}`, `-${ctx.value}`);
-      }
+      map.set(`${nodePath}`, ctx.value);
     },
     { maxDepth: 1 }
   );

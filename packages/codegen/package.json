@@ -15,11 +15,17 @@
   ],
   "dependencies": {
     "@css-panda/types": "workspace:*",
+    "@css-panda/calc": "workspace:*",
+    "cssesc": "^3.0.0",
+    "lodash": "^4.17.21",
+    "postcss": "^8.4.14",
+    "postcss-js": "^4.0.0",
     "object-traversal": "^1.0.1",
-    "lodash": "^4.17.21"
+    "ts-pattern": "^4.0.5"
   },
   "devDependencies": {
+    "@css-panda/fixture": "workspace:*",
     "@types/lodash": "^4.14.182",
-    "@css-panda/fixture": "workspace:*"
+    "@types/cssesc": "^3.0.0"
   }
 }
