@@ -1,4 +1,4 @@
-export type FontSizePairing = {
+export type TextStyles = {
   fontSize?: string;
   lineHeight?: string;
   letterSpacing?: string;
@@ -7,10 +7,10 @@ export type FontSizePairing = {
 
 export type Tokens = {
   colors: Record<string, string | Record<string, string>>;
-  fontSizes: Record<string, string | FontSizePairing>;
+  fontSizes: Record<string, string>;
   fontWeights: Record<string, string | number>;
   fonts: Record<string, string>;
-  lineHeights: Record<string, string>;
+  lineHeights: Record<string, string | number>;
   letterSpacings: Record<string, string>;
   radii: Record<string, string>;
   shadows: Record<string, string>;
@@ -23,3 +23,5 @@ export type Tokens = {
   easings: Record<string, string>;
   durations: Record<string, string>;
 };
+
+export type TokenCategory = keyof Tokens;

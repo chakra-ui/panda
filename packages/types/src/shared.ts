@@ -19,3 +19,5 @@ type Join<Paths extends string[], Delimiter extends string> = Paths extends []
 export type TDotPath = Record<string, unknown> | string;
 
 export type DotPath<T extends TDotPath> = Join<PathsToStringProps<T>, '.'>;
+
+export type Primitive = string | number;

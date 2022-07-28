@@ -16,19 +16,34 @@ importers:
       typescript: 4.7.4
       vitest: 0.19.1
 
+  packages/calc:
+    specifiers: {}
+
   packages/codegen:
     specifiers:
+      '@css-panda/calc': workspace:*
       '@css-panda/fixture': workspace:*
       '@css-panda/types': workspace:*
+      '@types/cssesc': ^3.0.0
       '@types/lodash': ^4.14.182
+      cssesc: ^3.0.0
       lodash: ^4.17.21
       object-traversal: ^1.0.1
+      postcss: ^8.4.14
+      postcss-js: ^4.0.0
+      ts-pattern: ^4.0.5
     dependencies:
+      '@css-panda/calc': link:../calc
       '@css-panda/types': link:../types
+      cssesc: 3.0.0
       lodash: 4.17.21
       object-traversal: 1.0.1
+      postcss: 8.4.14
+      postcss-js: 4.0.0_postcss@8.4.14
+      ts-pattern: 4.0.5
     devDependencies:
       '@css-panda/fixture': link:../fixture
+      '@types/cssesc': 3.0.0
       '@types/lodash': 4.14.182
 
   packages/core:
@@ -262,6 +277,10 @@ packages:
     resolution: {integrity: sha512-/zPMqDkzSZ8t3VtxOa4KPq7uzzW978M9Tvh+j7GHKuo6k6GTLxPJ4J5gE5cjfJ26pnXst0N5Hax8Sr0T2Mi9zQ==}
     dev: false
 
+  /@types/cssesc/3.0.0:
+    resolution: {integrity: sha512-4mBnOrTpVKn+tYzlnMO7cwDkDa6wlQ2bBXW+79/6ahMd36GF216kxWYxgz+S4d5Ev1ByFbnQbPGxV4P5BSL8MA==}
+    dev: true
+
   /@types/debug/4.1.7:
     resolution: {integrity: sha512-9AonUzyTjXXhEOa0DnqpzZi6VHlqKMswga9EXjpXnnqxwLtdvPPtlO8evrI5D9S6asFRCQ6v+wpiUKbw+vKqyg==}
     dependencies:
@@ -343,6 +362,11 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /camelcase-css/2.0.1:
+    resolution: {integrity: sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==}
+    engines: {node: '>= 6'}
+    dev: false
+
   /chai/4.3.6:
     resolution: {integrity: sha512-bbcp3YfHCUzMOvKqsztczerVgBKSsEijCySNlHHbX3VG1nskvqjz5Rfso1gGwD6w6oOV3eI60pKuMOV5MV7p3Q==}
     engines: {node: '>=4'}
@@ -391,6 +415,12 @@ packages:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+    dev: false
+
+  /cssesc/3.0.0:
+    resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
+    engines: {node: '>=4'}
+    hasBin: true
     dev: false
 
   /csstype/3.1.0:
@@ -981,6 +1011,16 @@ packages:
   /pirates/4.0.5:
     resolution: {integrity: sha512-8V9+HQPupnaXMA23c5hvl69zXvTwTzyAYasnkb0Tts4XvO4CliqONMOnvlq26rkhLC3nWDFBJf73LU1e1VZLaQ==}
     engines: {node: '>= 6'}
+    dev: false
+
+  /postcss-js/4.0.0_postcss@8.4.14:
+    resolution: {integrity: sha512-77QESFBwgX4irogGVPgQ5s07vLvFqWr228qZY+w6lW599cRlK/HmnlivnnVUxkjHnCu4J16PDMHcH+e+2HbvTQ==}
+    engines: {node: ^12 || ^14 || >= 16}
+    peerDependencies:
+      postcss: ^8.3.3
+    dependencies:
+      camelcase-css: 2.0.1
+      postcss: 8.4.14
     dev: false
 
   /postcss-load-config/3.1.4:

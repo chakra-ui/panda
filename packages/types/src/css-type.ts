@@ -7,7 +7,7 @@ export type CSSVarFunction =
   | `var(--${string})`
   | `var(--${string}, ${string | number})`;
 
-type Properties = CSS.PropertiesFallback<number | Loose>;
+export type Properties = CSS.PropertiesFallback<number | Loose>;
 
 export type CSSProperty = keyof Properties;
 
