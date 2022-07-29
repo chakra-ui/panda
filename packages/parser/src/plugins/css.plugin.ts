@@ -1,6 +1,6 @@
 import type * as swc from '@swc/core';
 import Visitor from '@swc/core/Visitor';
-import { merge } from 'lodash';
+import merge from 'lodash/merge';
 import * as ast from '../ast-utils';
 
 class CSSVisitor extends Visitor {

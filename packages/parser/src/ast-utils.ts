@@ -1,11 +1,8 @@
 import * as swc from '@swc/core';
-import { merge } from 'lodash';
+import merge from 'lodash/merge';
 import { match, P } from 'ts-pattern';
 
-export function keyValue(
-  node: swc.KeyValueProperty,
-  result: Record<string, any> = {}
-) {
+export function keyValue(node: swc.KeyValueProperty, result: Record<string, any> = {}) {
   const key = match(node.key)
     .with({ type: 'Identifier', value: P.select() }, (value) => value)
     .otherwise(() => undefined);
@@ -23,9 +20,7 @@ export function keyValue(
       merge(result, { [key]: arrayExpression(node) });
     })
     .with({ type: 'ConditionalExpression' }, (node) => {
-      const values = expression(node.consequent)
-        .concat(expression(node.alternate))
-        .flat();
+      const values = expression(node.consequent).concat(expression(node.alternate)).flat();
 
       result.conditions ||= [];
       result.conditions.push({ [key]: values });
@@ -35,10 +30,7 @@ export function keyValue(
   return result;
 }
 
-export function arrayExpression(
-  node: swc.ArrayExpression,
-  result: Array<string | number> = []
-) {
+export function arrayExpression(node: swc.ArrayExpression, result: Array<string | number> = []) {
   const len = node.elements.length;
 
   for (let i = 0; i < len; i++) {
@@ -86,10 +78,7 @@ export function expression(node: swc.Expression) {
   return result;
 }
 
-export function jsxAttribute(
-  node: swc.JSXAttribute,
-  result: Record<string, any> = {}
-) {
+export function jsxAttribute(node: swc.JSXAttribute, result: Record<string, any> = {}) {
   const key = match(node.name)
     .with({ type: 'Identifier', value: P.select() }, (node) => node)
     .otherwise(() => undefined);

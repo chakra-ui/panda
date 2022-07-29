@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/codegen",
+  "name": "@css-panda/postcss",
   "version": "0.0.1",
   "description": "core functions for extract-it",
   "main": "dist/index.js",
@@ -16,11 +16,14 @@
   "dependencies": {
     "@css-panda/dictionary": "workspace:*",
     "@css-panda/error": "workspace:*",
+    "@css-panda/types": "workspace:*",
     "postcss": "^8.4.14",
     "postcss-js": "^4.0.0",
+    "postcss-nested": "^5.0.6",
     "ts-pattern": "^4.0.5"
   },
   "devDependencies": {
-    "@css-panda/fixture": "workspace:*"
+    "@css-panda/fixture": "workspace:*",
+    "@types/postcss-js": "^4.0.0"
   }
 }
