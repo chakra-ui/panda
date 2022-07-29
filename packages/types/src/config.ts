@@ -1,9 +1,5 @@
 import type { DotPath, Loose, TDotPath } from './shared';
-import type {
-  CSSKeyframes,
-  CSSPropertiesWithSelectors,
-  CSSProperty,
-} from './css-type';
+import type { CSSKeyframes, CSSPropertiesWithSelectors, CSSProperty } from './css-type';
 
 type TCondition = {
   [condition: string]: {
@@ -46,24 +42,23 @@ type Shorthands = {
   [shorthand: string]: Array<CSSProperty>;
 };
 
-type TokenGetter<T extends TDotPath> = (
-  token: DotPath<T>
-) => string | undefined;
+type TokenGetter<T extends TDotPath> = (token: DotPath<T>) => string | undefined;
 
 type Utilities<T extends TDotPath> = {
-  [utility: string]: (options: {
-    value: string;
-    $: TokenGetter<T>;
-  }) => CSSPropertiesWithSelectors;
+  [utility: string]: (options: { value: string; $: TokenGetter<T> }) => CSSPropertiesWithSelectors;
 };
 
-export type Format = 'css' | 'cjs' | 'esm' | 'dts' | 'all';
+/**
+ * css - css variables based on token definitions
+ * cjs - commonjs module for tokens
+ * esm - esm module for tokens
+ * dts - type definition file for tokens
+ * tw - tailwind preset
+ * sd - style dictionary config
+ */
+export type Format = 'css' | 'cjs' | 'esm' | 'dts' | 'tw' | 'sd';
 
-export type Config<
-  Conditions extends TCondition,
-  Breakpoints extends TBreakpoints,
-  Tokens extends TTokens
-> = {
+export type Config<Conditions extends TCondition, Breakpoints extends TBreakpoints, Tokens extends TTokens> = {
   format: Format[];
   outfile: string;
   prefix: string;
@@ -81,70 +76,8 @@ export type Config<
 
 export type TConfig = Config<TCondition, TBreakpoints, TTokens>;
 
-export function defineConfig<
-  Conditions extends TCondition,
-  Breakpoints extends TBreakpoints,
-  Tokens extends TTokens
->(
+export function defineConfig<Conditions extends TCondition, Breakpoints extends TBreakpoints, Tokens extends TTokens>(
   config: Partial<Config<Conditions, Breakpoints, Tokens>>
 ): Partial<Config<Conditions, Breakpoints, Tokens>> {
   return config;
 }
-
-export default defineConfig({
-  conditions: {
-    light: { selector: '.light' },
-    dark: { selector: '.dark' },
-    focus: { selector: '&:focus-visible' },
-    hover: { selector: ['&:hover', '&[data-hover]'] },
-    'motion-safe': { '@media': '(prefers-reduced-motion: reduce)' },
-  },
-  breakpoints: {
-    sm: '420px',
-    md: '768px',
-    lg: '960px',
-    xl: '1200px',
-  },
-  keyframes: {
-    spin: {
-      from: {
-        opacity: 1,
-      },
-      '80%': {
-        opacity: 0,
-      },
-    },
-  },
-  tokens: {
-    colors: {
-      red: '#ff0000',
-    },
-    opacity: {
-      '0': '0',
-      '25': '0.25',
-      '50': '0.5',
-    },
-  },
-  tokensMap: {
-    colors: ['backgroundColor', 'color'],
-    opacity: ['bgOpacity'],
-  },
-  semanticTokens: {
-    colors: {
-      error: { _: 'colors.red', dark: 'colors.red' },
-    },
-  },
-  shorthands: {
-    px: ['paddingLeft', 'paddingRight'],
-    py: ['paddingTop', 'paddingBottom'],
-  },
-  utilities: {
-    bgOpacity({ value }) {
-      return {
-        vars: {
-          '--bg-opacity': value,
-        },
-      };
-    },
-  },
-});
