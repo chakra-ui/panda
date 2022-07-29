@@ -1,5 +1,15 @@
 import { Tokens } from '@css-panda/types';
 
+export const semanticTokens = {
+  colors: {
+    primary: { _: '$red.500', dark: '$red.400' },
+    secondary: { _: '$red.800', dark: '$red.700' },
+  },
+  spacing: {
+    gutter: { _: '$4', lg: '$5', dark: '40px' },
+  },
+};
+
 export const tokens: Tokens = {
   fonts: {
     heading: '-apple-system, BlinkMacSystemFont',
@@ -31,6 +41,18 @@ export const tokens: Tokens = {
       700: '#276749',
       800: '#22543D',
       900: '#1C4532',
+    },
+    red: {
+      '50': '#FEF2F2',
+      '100': '#FEE2E2',
+      '200': '#FECACA',
+      '300': '#FCA5A5',
+      '400': '#F87171',
+      '500': '#EF4444',
+      '600': '#DC2626',
+      '700': '#B91C1C',
+      '800': '#991B1B',
+      '900': '#7F1D1D',
     },
   },
   fontSizes: {

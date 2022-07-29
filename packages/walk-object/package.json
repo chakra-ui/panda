@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/codegen",
+  "name": "@css-panda/walk-object",
   "version": "0.0.1",
   "description": "core functions for extract-it",
   "main": "dist/index.js",
@@ -12,15 +12,5 @@
   },
   "files": [
     "dist"
-  ],
-  "dependencies": {
-    "@css-panda/dictionary": "workspace:*",
-    "@css-panda/error": "workspace:*",
-    "postcss": "^8.4.14",
-    "postcss-js": "^4.0.0",
-    "ts-pattern": "^4.0.5"
-  },
-  "devDependencies": {
-    "@css-panda/fixture": "workspace:*"
-  }
+  ]
 }

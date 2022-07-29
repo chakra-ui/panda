@@ -28,11 +28,15 @@ type SemanticTokens<Tokens extends TDotPath, Conditions, Breakpoints> = {
   };
 };
 
-export type TSemanticTokens = SemanticTokens<
-  TDotPath,
-  Record<string, any>,
-  TBreakpoints
->;
+export type TSemanticToken = {
+  [token: string]: {
+    [condition: string]: string;
+  };
+};
+
+export type TSemanticTokens = {
+  [category: string]: TSemanticToken;
+};
 
 type TokensMap<Tokens> = {
   [K in keyof Tokens]?: Array<CSSProperty | Loose>;

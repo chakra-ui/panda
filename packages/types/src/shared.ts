@@ -16,7 +16,7 @@ type Join<Paths extends string[], Delimiter extends string> = Paths extends []
     : never
   : string;
 
-export type TDotPath = Record<string, unknown> | string;
+export type TDotPath = Record<string, any> | string;
 
 export type DotPath<T extends TDotPath> = Join<PathsToStringProps<T>, '.'>;
 

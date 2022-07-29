@@ -8,16 +8,16 @@ function dashCase(string: string) {
 
 type CssVar = {
   var: `--${string}`;
-  ref: `var(--${string})`;
+  ref: string;
 };
 
-type CssVarOptions = {
+export type CreateVarOptions = {
   fallback?: string;
   prefix?: string;
 };
 
-export function createVar(name: string, opts: CssVarOptions = {}): CssVar {
-  const { fallback = '', prefix = '' } = opts || {};
+export function createVar(name: string, options: CreateVarOptions = {}): CssVar {
+  const { fallback = '', prefix = '' } = options;
 
   const variable = dashCase(['-', prefix, esc(name)].filter(Boolean).join('-'));
 

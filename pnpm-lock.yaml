@@ -21,30 +21,20 @@ importers:
 
   packages/codegen:
     specifiers:
-      '@css-panda/calc': workspace:*
+      '@css-panda/dictionary': workspace:*
+      '@css-panda/error': workspace:*
       '@css-panda/fixture': workspace:*
-      '@css-panda/types': workspace:*
-      '@types/cssesc': ^3.0.0
-      '@types/lodash': ^4.14.182
-      cssesc: ^3.0.0
-      lodash: ^4.17.21
-      object-traversal: ^1.0.1
       postcss: ^8.4.14
       postcss-js: ^4.0.0
       ts-pattern: ^4.0.5
     dependencies:
-      '@css-panda/calc': link:../calc
-      '@css-panda/types': link:../types
-      cssesc: 3.0.0
-      lodash: 4.17.21
-      object-traversal: 1.0.1
+      '@css-panda/dictionary': link:../dictionary
+      '@css-panda/error': link:../error
       postcss: 8.4.14
       postcss-js: 4.0.0_postcss@8.4.14
       ts-pattern: 4.0.5
     devDependencies:
       '@css-panda/fixture': link:../fixture
-      '@types/cssesc': 3.0.0
-      '@types/lodash': 4.14.182
 
   packages/core:
     specifiers:
@@ -64,6 +54,28 @@ importers:
       unconfig: 0.3.5
     devDependencies:
       '@types/debug': 4.1.7
+
+  packages/css-var:
+    specifiers: {}
+
+  packages/dictionary:
+    specifiers:
+      '@css-panda/calc': workspace:*
+      '@css-panda/css-var': workspace:*
+      '@css-panda/error': workspace:*
+      '@css-panda/fixture': workspace:*
+      '@css-panda/types': workspace:*
+      '@css-panda/walk-object': workspace:*
+      ts-pattern: ^4.0.5
+    dependencies:
+      '@css-panda/calc': link:../calc
+      '@css-panda/css-var': link:../css-var
+      '@css-panda/error': link:../error
+      '@css-panda/types': link:../types
+      '@css-panda/walk-object': link:../walk-object
+      ts-pattern: 4.0.5
+    devDependencies:
+      '@css-panda/fixture': link:../fixture
 
   packages/error:
     specifiers: {}
@@ -92,6 +104,9 @@ importers:
       csstype: ^3.1.0
     dependencies:
       csstype: 3.1.0
+
+  packages/walk-object:
+    specifiers: {}
 
 packages:
 
@@ -277,10 +292,6 @@ packages:
     resolution: {integrity: sha512-/zPMqDkzSZ8t3VtxOa4KPq7uzzW978M9Tvh+j7GHKuo6k6GTLxPJ4J5gE5cjfJ26pnXst0N5Hax8Sr0T2Mi9zQ==}
     dev: false
 
-  /@types/cssesc/3.0.0:
-    resolution: {integrity: sha512-4mBnOrTpVKn+tYzlnMO7cwDkDa6wlQ2bBXW+79/6ahMd36GF216kxWYxgz+S4d5Ev1ByFbnQbPGxV4P5BSL8MA==}
-    dev: true
-
   /@types/debug/4.1.7:
     resolution: {integrity: sha512-9AonUzyTjXXhEOa0DnqpzZi6VHlqKMswga9EXjpXnnqxwLtdvPPtlO8evrI5D9S6asFRCQ6v+wpiUKbw+vKqyg==}
     dependencies:
@@ -415,12 +426,6 @@ packages:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
-    dev: false
-
-  /cssesc/3.0.0:
-    resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
-    engines: {node: '>=4'}
-    hasBin: true
     dev: false
 
   /csstype/3.1.0:
@@ -956,11 +961,6 @@ packages:
   /object-assign/4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
     engines: {node: '>=0.10.0'}
-    dev: false
-
-  /object-traversal/1.0.1:
-    resolution: {integrity: sha512-aLXtM9kbcG/ePyZfB45B0FrIdu1yy3udQjIVmp2IVl2np52dBK5ZZBhdyUKFT6neCutwDhCW/kQ+e/0K5n/Jhw==}
-    engines: {node: '>=10'}
     dev: false
 
   /once/1.4.0:
