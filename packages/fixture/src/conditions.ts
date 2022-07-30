@@ -1,19 +1,19 @@
 export const conditions = {
-  even: { selectors: ['&:even'] },
-  odd: { selectors: ['&:odd'] },
+  even: { selector: ':even' },
+  odd: { selector: ':odd' },
 
-  before: { selectors: ['&::before'] },
-  after: { selectors: ['&::after'] },
+  before: { selector: '::before' },
+  after: { selector: '::after' },
 
-  selection: { selectors: ['&::selection'] },
-  placeholder: { selectors: ['&::placeholder'] },
+  selection: { selector: '::selection' },
+  placeholder: { selector: '::placeholder' },
   'motion-reduce': { '@media': '(prefers-reduced-motion: reduce)' },
 
-  hover: { selectors: ['&:hover', `&[data-hover]`] },
-  focus: { selectors: ['&:focus', `&[data-focus]`] },
-  disabled: { selectors: ['&:disabled', `&[data-disabled]`] },
-  active: { selectors: ['&:active', `&[data-active]`] },
-  'focus-visible': { selectors: ['&:focus-visible', `&[data-focus-visible]`] },
+  hover: { selector: ':hover' },
+  focus: { selector: ':focus' },
+  disabled: { selector: ':disabled' },
+  active: { selector: ':active' },
+  'focus-visible': { selector: ':focus-visible' },
 
   light: { '@media': '(prefers-color-scheme: light)' },
   dark: { '@media': '(prefers-color-scheme: dark)' },
@@ -23,5 +23,5 @@ export const conditions = {
   ltr: { selector: '[dir=ltr] &' },
   rtl: { selector: '[dir=rtl] &' },
 
-  open: { selectors: ['&[open]'] },
+  open: { selector: '[open]' },
 };

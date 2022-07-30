@@ -3,9 +3,7 @@ import type { Loose } from './shared';
 
 export type CSSVar = `--${string}`;
 
-export type CSSVarFunction =
-  | `var(--${string})`
-  | `var(--${string}, ${string | number})`;
+export type CSSVarFunction = `var(--${string})` | `var(--${string}, ${string | number})`;
 
 export type Properties = CSS.PropertiesFallback<number | Loose>;
 
@@ -40,8 +38,7 @@ export interface MediaQueries<T> {
 }
 
 interface SelectorMap {
-  [selector: string]: CSSPropertiesWithVars &
-    MediaQueries<CSSPropertiesWithVars>;
+  [selector: string]: CSSPropertiesWithVars & MediaQueries<CSSPropertiesWithVars>;
 }
 
 export interface CSSPropertiesWithSelectors extends CSSPropertiesAndPseudos {

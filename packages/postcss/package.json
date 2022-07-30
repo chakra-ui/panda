@@ -17,6 +17,8 @@
     "@css-panda/dictionary": "workspace:*",
     "@css-panda/error": "workspace:*",
     "@css-panda/types": "workspace:*",
+    "@css-panda/walk-object": "workspace:*",
+    "css-what": "^6.1.0",
     "postcss": "^8.4.14",
     "postcss-js": "^4.0.0",
     "postcss-nested": "^5.0.6",
