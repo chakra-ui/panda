@@ -1,25 +1,6 @@
 import { parse, SelectorType as S, stringify } from 'css-what';
-import { isMatching, P } from 'ts-pattern';
-
-function esc(str: string) {
-  return str.replace(/[.*+?:^_${}()|[\]\\]/g, '\\$&');
-}
-
-export function assert(value: string) {
-  const thisCount = value.match(/&/g)?.length ?? 0;
-
-  if (thisCount === 0) {
-    throw new Error(`Invalid selector: ${value}. must have & or an at-rule. Ignoring...`);
-  }
-
-  if (thisCount > 1) {
-    throw new Error(`Invalid selector: ${value}. You can only have one self selector`);
-  }
-
-  if (value.includes(',')) {
-    throw new Error("Invalid selector: can't have multiple selectors in one rule. Ignoring...");
-  }
-}
+import { isMatching } from 'ts-pattern';
+import { esc, validateSelector } from './__utils';
 
 type SelectorsReturn = {
   selector: string[];
@@ -38,7 +19,7 @@ type Callback = (value: string, conditions: string[]) => string;
 
 export function selectors(paths: string[], value: string, cb: Callback = identity): SelectorsReturn {
   const [rawSelector, prop, ...conditions] = paths;
-  assert(rawSelector);
+  validateSelector(rawSelector);
 
   const result: SelectorsReturn = {
     raw: [],
@@ -68,4 +49,20 @@ export function selectors(paths: string[], value: string, cb: Callback = identit
   result.raw = [before, base + suffix];
 
   return result;
+}
+
+export function pseudoSelector(base: string, selector: string) {
+  const others = selector.slice(1);
+  return {
+    selector: [`.${esc(base) + others}`],
+    raw: [base + others],
+  };
+}
+
+export function parentSelector(base: string, selector: string) {
+  const [before, after] = selector.split('&').map((t) => t.trim());
+  return {
+    selector: [before, `.${esc(base) + after}`],
+    raw: [before, base + after],
+  };
 }

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { atomicRule } from '../src/atomic-rule';
+import { atomicRule } from '../src/atomic';
 import { wrap } from '../src/wrap';
 
 describe('wrap rule', () => {

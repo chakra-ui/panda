@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { atomicProps, atomicRule } from '../src/atomic-rule';
+import { classNames, createRule } from '../src/atomic';
 
 describe('atomic rules', () => {
   test('should write atomic', () => {
-    expect(atomicRule('.foo', { color: 'red' }).toString()).toMatchInlineSnapshot(`
+    expect(createRule('.foo', [['color', 'red']]).toString()).toMatchInlineSnapshot(`
       ".foo {
           color: red
       }"
@@ -12,7 +12,7 @@ describe('atomic rules', () => {
 
   test('should convert object to class', () => {
     expect(
-      atomicProps(
+      classNames(
         {
           bg: 'red.300',
           color: { light: 'red', dark: 'green' },
