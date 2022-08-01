@@ -95,22 +95,56 @@ describe('generate stylesheet', () => {
     `);
   });
 
-  test('should work with nested selector', () => {
+  test('[pseudo] should work with nested selector', () => {
     expect(
       run(
-        generate({
-          left: { _: '20px', md: '40px' },
-        })
+        generate(
+          {
+            left: { _: '20px', md: '40px' },
+            bg: { light: 'red400', dark: 'green500' },
+            font: { rtl: 'sans', ltr: { dark: { sm: { hover: 'serif' } } } },
+          },
+          { selector: '& > p' }
+        )
       )
     ).toMatchInlineSnapshot(`
-      ".left\\\\:20px {
+      " .\\\\[\\\\& \\\\> p\\\\]\\\\:left\\\\:20px > p {
           left: 20px
       }
       @screen md {
-          .md\\\\:left\\\\:40px {
+           .\\\\[\\\\& \\\\> p\\\\]\\\\:md\\\\:left\\\\:40px > p {
               left: 40px
+          }
+      }
+      [data-theme=light] .\\\\[\\\\& \\\\> p\\\\]\\\\:light\\\\:bg\\\\:red400 > p {
+          bg: red400
+      }
+      [data-theme=dark] .\\\\[\\\\& \\\\> p\\\\]\\\\:dark\\\\:bg\\\\:green500 > p {
+          bg: green500
+      }
+      [dir=rtl] .\\\\[\\\\& \\\\> p\\\\]\\\\:rtl\\\\:font\\\\:sans > p {
+          font: sans
+      }
+      @screen sm {
+          [dir=ltr] [data-theme=dark] .\\\\[\\\\& \\\\> p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font\\\\:serif:hover > p {
+              font: serif
           }
       }"
     `);
+  });
+
+  test.only('[selector] should work with nested selector', () => {
+    expect(
+      run(
+        generate(
+          {
+            left: { _: '20px', md: '40px' },
+            bg: { light: 'red400', dark: 'green500' },
+            font: { rtl: 'sans', ltr: { dark: { sm: { hover: 'serif' } } } },
+          },
+          { selector: '.parent:hover &' }
+        )
+      )
+    ).toMatchInlineSnapshot();
   });
 });

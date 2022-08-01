@@ -1,14 +1,17 @@
 import { walkObject } from '@css-panda/walk-object';
 import postcss, { Root } from 'postcss';
 import { match } from 'ts-pattern';
-import { parentSelector, pseudoSelector } from './selector';
+import { selectorUtils } from './selector';
 import { wrap } from './wrap';
-import { esc, toCss } from './__utils';
+import { expandSelector, SelectorOutput, toCss } from './__utils';
 
 type Condition = {
   type: 'at-rule' | 'pseudo' | 'selector';
   value: string;
+  name?: string;
 };
+
+type RawCondition = Condition & { raw: string };
 
 type Conditions = Record<string, Condition>;
 
@@ -40,8 +43,8 @@ export function run(fn: Function) {
       lg: { type: 'at-rule', value: 'lg' },
       ltr: { type: 'selector', value: '[dir=ltr] &' },
       rtl: { type: 'selector', value: '[dir=rtl] &' },
-      light: { type: 'selector', value: '.light &' },
-      dark: { type: 'selector', value: '.dark &' },
+      light: { type: 'selector', value: '[data-theme=light] &' },
+      dark: { type: 'selector', value: '[data-theme=dark] &' },
       hover: { type: 'pseudo', value: '&:hover' },
     },
     transform: (prop, value) => {
@@ -57,31 +60,34 @@ export function run(fn: Function) {
   return defaultContext.root.toString();
 }
 
-function sortByType(values: Condition[]) {
+function sortByType(values: RawCondition[]) {
   const order = ['pseudo', 'selector', 'at-rule'];
-  return values
-    .sort((a, b) => {
-      const aIndex = order.indexOf(a.type);
-      const bIndex = order.indexOf(b.type);
-      return aIndex - bIndex;
-    })
-    .map(({ value }) => value);
+  return values.sort((a, b) => {
+    const aIndex = order.indexOf(a.type);
+    const bIndex = order.indexOf(b.type);
+    return aIndex - bIndex;
+  });
 }
 
-function expandCondition(value: string, conditionsMap: Conditions): Condition {
-  for (const [key, { type }] of Object.entries(conditionsMap)) {
-    if (value === key) return { type, value };
+function expandCondition(value: string, conditionsMap: Conditions): RawCondition {
+  for (const [key, cond] of Object.entries(conditionsMap)) {
+    if (value === key) return { type: cond.type, value, raw: cond.value };
   }
-  return { type: 'selector', value };
+  return { ...expandSelector(value), raw: value };
 }
 
-function expandConditions(values: string[], conditionsMap: Conditions): Condition[] {
+function expandConditions(values: string[], conditionsMap: Conditions): RawCondition[] {
   return values.map((value) => expandCondition(value, conditionsMap));
 }
 
-export function generate(props: Record<string, any>) {
-  const { '@media': mq, selectors, ...styles } = props;
-
+export function generate(
+  styles: Record<string, any>,
+  scope?: {
+    selector?: string;
+    '@media'?: string;
+  }
+) {
+  const { selector } = scope ?? {};
   return (ctx: GeneratorContext) => {
     //
     walkObject(styles, (value, paths) => {
@@ -97,40 +103,48 @@ export function generate(props: Record<string, any>) {
       const rawNodes = toCss(transformed.styles);
 
       // get the base class name
-      const base = [...conditions, transformed.className].join(':');
+      const baseArray = [...conditions, transformed.className];
+      if (selector) {
+        baseArray.unshift(`[${selector}]`);
+        conditions.push(selector.replace(/^&/, ''));
+      }
+
+      const output: SelectorOutput = {
+        before: [],
+        between: baseArray.join(':'),
+        after: [],
+      };
 
       // create base rule
       let rule: any = postcss.rule({
-        selector: `.${esc(base)}`,
+        selector: selectorUtils.finalize(output),
         nodes: rawNodes,
       });
 
       // expand conditions and sort based on the insertion order
       const sortedConditions = sortByType(expandConditions(conditions, ctx.conditions));
 
-      for (const condition of sortedConditions) {
+      for (const cond of sortedConditions) {
         //
-        const cond = ctx.conditions[condition];
-
         match(cond)
           .with({ type: 'selector' }, (data) => {
-            const finalized = parentSelector(base, data.value);
+            const finalized = selectorUtils.parent(output, data.raw);
             rule = postcss.rule({
-              selector: finalized.selector.join(' '),
+              selector: selectorUtils.finalize(finalized),
               nodes: rawNodes,
             });
           })
           .with({ type: 'pseudo' }, (data) => {
-            const finalized = pseudoSelector(base, data.value);
+            const finalized = selectorUtils.pseudo(output, data.raw);
             rule = postcss.rule({
-              selector: finalized.selector.join(' '),
+              selector: selectorUtils.finalize(finalized),
               nodes: rawNodes,
             });
           })
           .with({ type: 'at-rule' }, (data) => {
             rule = wrap(rule, {
               type: data.type,
-              name: 'screen',
+              name: data.name ?? 'screen',
               params: data.value,
             });
           })

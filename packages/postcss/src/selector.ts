@@ -1,6 +1,6 @@
 import { parse, SelectorType as S, stringify } from 'css-what';
 import { isMatching } from 'ts-pattern';
-import { esc, validateSelector } from './__utils';
+import { esc, SelectorOutput, tap, validateSelector } from './__utils';
 
 type SelectorsReturn = {
   selector: string[];
@@ -51,18 +51,24 @@ export function selectors(paths: string[], value: string, cb: Callback = identit
   return result;
 }
 
-export function pseudoSelector(base: string, selector: string) {
-  const others = selector.slice(1);
-  return {
-    selector: [`.${esc(base) + others}`],
-    raw: [base + others],
-  };
-}
+export const selectorUtils = {
+  pseudo(output: SelectorOutput, selector: string): SelectorOutput {
+    const after = selector.replace(/^&/, '');
+    return tap(output, (v) => {
+      v.after = [...v.after, after].filter(Boolean);
+    });
+  },
 
-export function parentSelector(base: string, selector: string) {
-  const [before, after] = selector.split('&').map((t) => t.trim());
-  return {
-    selector: [before, `.${esc(base) + after}`],
-    raw: [before, base + after],
-  };
-}
+  parent(output: SelectorOutput, selector: string): SelectorOutput {
+    const [before = '', after = ''] = selector.split('&').map((t) => t.trim());
+    return tap(output, (v) => {
+      v.before = [...v.before, before].filter(Boolean);
+      v.after = [...v.after, after].filter(Boolean);
+    });
+  },
+
+  finalize(output: SelectorOutput) {
+    const { before, after, between } = output;
+    return `${before.join(' ')} .${esc(between)}${after.join('')}`;
+  },
+};

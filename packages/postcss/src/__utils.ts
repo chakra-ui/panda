@@ -1,9 +1,10 @@
 import postcssJs from 'postcss-js';
 import postcss from 'postcss';
-import { parse } from 'css-what';
+import { parse, SelectorType as S } from 'css-what';
+import { match, P } from 'ts-pattern';
 
 export function esc(str: string) {
-  return str.replace(/[.*+?:^_${}()|[\]\\]/g, '\\$&');
+  return str.replace(/[.*+?&:^>_${}()|[\]\\]/g, '\\$&');
 }
 
 export function toCss(styles: Record<string, string>) {
@@ -27,10 +28,41 @@ export function validateSelector(value: string) {
   }
 }
 
-export function expandSelector(value: string) {
+type Condition = {
+  type: 'at-rule' | 'pseudo' | 'selector';
+  value: string;
+  name?: string;
+};
+
+export function expandSelector(value: string): Condition {
   if (value.startsWith('@')) {
     return { type: 'at-rule', value };
   }
   const [[result]] = parse(value);
-  return { type: result.type, value };
+
+  const final = match(result)
+    .with({ type: P.union(S.Pseudo, S.PseudoElement, S.Descendant, S.Child) }, () => ({
+      type: 'pseudo',
+      value,
+    }))
+    .with({ type: S.Universal }, () => {
+      throw new Error('Universal selectors not allowed');
+    })
+    .otherwise(() => ({
+      type: 'selector',
+      value,
+    }));
+
+  return final as Condition;
+}
+
+export type SelectorOutput = {
+  before: string[];
+  between: string;
+  after: string[];
+};
+
+export function tap<T>(value: T, cb: (value: T) => void) {
+  cb(value);
+  return value;
 }
