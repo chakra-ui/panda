@@ -6,13 +6,6 @@ import { SelectorOutput } from './selector-output';
 import { toCss } from './to-css';
 import { Conditions, GeneratorContext, RawCondition } from './types';
 import { wrap } from './wrap';
-import { createContext } from './fixture';
-
-export function run(fn: Function) {
-  const ctx = createContext();
-  fn(ctx);
-  return ctx.root.toString();
-}
 
 function sortByType(values: RawCondition[]) {
   const order = ['pseudo', 'selector', 'at-rule'];

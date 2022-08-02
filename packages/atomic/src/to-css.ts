@@ -1,7 +1,9 @@
 import postcss from 'postcss';
-import postcssJs from 'postcss-js';
+import postcssJs, { CssInJs } from 'postcss-js';
+import postcssNested from 'postcss-nested';
 
 export function toCss(styles: Record<string, string>) {
-  //@ts-ignore
-  return postcss().process(styles, { parser: postcssJs }).root.nodes;
+  return postcss([postcssNested()]).process(styles, {
+    parser: postcssJs as CssInJs,
+  }).root.nodes;
 }
