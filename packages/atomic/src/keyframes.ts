@@ -2,7 +2,7 @@ import postcss from 'postcss';
 import { toCss } from './to-css';
 import { Dict } from './types';
 
-export function expandKeyframe(name: string, dfn: Dict) {
+function expandKeyframe(name: string, dfn: Dict) {
   return postcss
     .atRule({
       name: 'keyframes',

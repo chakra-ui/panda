@@ -14,11 +14,11 @@ export type Condition = {
 
 export type RawCondition = Condition & { raw: string };
 
-export type Conditions = Record<string, Condition>;
+export type Conditions = Dict<Condition>;
 
 export type TransformResult = {
   className: string;
-  styles: Record<string, any>;
+  styles: Dict;
 };
 
 export type GeneratorContext = {

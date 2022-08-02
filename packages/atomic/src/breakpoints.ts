@@ -1,7 +1,21 @@
 import { toPx } from './shared';
 
-export function buildMediaQuery({ min, max }: Record<'min' | 'max', string | null>) {
+type BuildOptions = {
+  min?: string | null;
+  max?: string | null;
+};
+
+function build({ min, max }: BuildOptions) {
   return [min && `(min-width: ${min})`, max && `(max-width: ${max})`].filter(Boolean).join(' and ');
+}
+
+function queries({ name, min, max }: BuildOptions & { name: string }) {
+  return {
+    name,
+    minQuery: build({ min }),
+    maxQuery: build({ max }),
+    minMaxQuery: build({ min, max }),
+  };
 }
 
 export class Breakpoints<T extends Record<string, string>> {
@@ -28,14 +42,14 @@ export class Breakpoints<T extends Record<string, string>> {
       let max: string | null = null;
 
       if (index <= entries.length - 1) {
-        max = entries[index + 1][1];
+        max = entries[index + 1]?.[1];
       }
 
       if (max != null) {
         max = Number.parseFloat(max) > 0 ? subtract(max) : null;
       }
 
-      return { name, min, max };
+      return queries({ name, min, max });
     });
   }
 }

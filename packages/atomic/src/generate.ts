@@ -4,7 +4,7 @@ import { match } from 'ts-pattern';
 import { expandAtRule, expandSelector } from './expand-selector';
 import { SelectorOutput } from './selector-output';
 import { toCss } from './to-css';
-import { Conditions, GeneratorContext, RawCondition } from './types';
+import { Conditions, Dict, GeneratorContext, RawCondition } from './types';
 import { wrap } from './wrap';
 
 function sortByType(values: RawCondition[]) {
@@ -33,7 +33,7 @@ function expandConditions(values: string[], conditionsMap: Conditions): RawCondi
 }
 
 export function generate(
-  styles: Record<string, any>,
+  styles: Dict,
   options?: {
     scope?: string;
   }
