@@ -5,9 +5,12 @@ export type SizesProps = { sizes: Config['sizes'] };
 
 export function Sizes(props: SizesProps) {
   const { sizes: sizesProp } = props;
-  const sizes = Object.entries(sizesProp);
 
-  console.log('sizes :>> ', sizes);
+  const sizes = Object.entries(sizesProp).sort(([a], [b]) => {
+    if (a === 'max') return 1;
+    if (Number.isNaN(parseFloat(a))) return -1;
+    return parseFloat(a) - parseFloat(b);
+  });
 
   const renderPixels = (size: string) => {
     if (size.endsWith('px')) return size;
@@ -27,7 +30,6 @@ export function Sizes(props: SizesProps) {
             <span>{size}</span>
             <span>{renderPixels(size)}</span>
             <span className="size-box" style={{ width: size }} />
-            <hr />
           </>
         ))}
       </div>

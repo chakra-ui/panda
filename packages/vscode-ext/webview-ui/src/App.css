@@ -133,13 +133,10 @@ hr {
 
 .sizes-tokens .token-content {
   display: grid;
-  gap: 5px 40px;
+  gap: 10px 40px;
   grid-template-columns: repeat(5, minmax(0px, 1fr));
 }
 
-.sizes-tokens .token-content .visual {
-  grid-column: span 2 / span 2;
-}
 .sizes-tokens .token-content hr {
   grid-column: span 5 / span 5;
 }
@@ -152,5 +149,6 @@ hr {
 
 .sizes-tokens .token-content .size-box {
   height: 20px;
-  background: pink;
+  background: rgba(255, 192, 203, 0.5);
+  grid-column: span 2 / span 2;
 }
