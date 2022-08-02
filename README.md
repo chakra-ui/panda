@@ -1,4 +1,6 @@
-# extraction
+# CSS panda
+
+The universal design system solution for enterprise team.
 
 User creates a `panda.config.ts` file at the root of their project
 
