@@ -1,7 +1,7 @@
 import { Root } from 'postcss';
 import { Breakpoints, buildMediaQuery } from './breakpoints';
 
-export function expandAtRule(breakpoints: Record<string, string>) {
+export function expandScreenAtRule(breakpoints: Record<string, string>) {
   const bp = new Breakpoints(breakpoints);
   return (root: Root) => {
     root.walkAtRules('screen', (rule) => {

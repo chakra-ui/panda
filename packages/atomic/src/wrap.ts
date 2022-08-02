@@ -1,4 +1,4 @@
-import postcss, { Rule } from 'postcss';
+import postcss, { AtRule, Rule } from 'postcss';
 import { match } from 'ts-pattern';
 
 type Options =
@@ -12,7 +12,7 @@ type Options =
       params: string;
     };
 
-export function wrap(rule: Rule, options: Options) {
+export function wrap(rule: Rule | AtRule, options: Options) {
   const parent = match(options)
     .with({ type: 'at-rule' }, ({ name, params }) => postcss.atRule({ name, params }))
     .with({ type: 'selector' }, ({ name }) => postcss.rule({ selector: name }))

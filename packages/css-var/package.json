@@ -1,7 +1,7 @@
 {
   "name": "@css-panda/css-var",
   "version": "0.0.1",
-  "description": "core functions for extract-it",
+  "description": "The css variable generator utility",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",

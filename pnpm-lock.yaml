@@ -1,4 +1,4 @@
-lockfileVersion: 5.4
+lockfileVersion: 5.3
 
 importers:
 
@@ -13,6 +13,35 @@ importers:
       tsup: 6.2.0_typescript@4.7.4
       typescript: 4.7.4
       vitest: 0.19.1
+
+  packages/atomic:
+    specifiers:
+      '@css-panda/error': workspace:*
+      '@css-panda/fixture': workspace:*
+      '@css-panda/types': workspace:*
+      '@css-panda/walk-object': workspace:*
+      '@types/debug': ^4.1.7
+      '@types/postcss-js': ^4.0.0
+      css-what: ^6.1.0
+      debug: ^4.3.4
+      postcss: ^8.4.14
+      postcss-js: ^4.0.0
+      postcss-nested: ^5.0.6
+      ts-pattern: ^4.0.5
+    dependencies:
+      '@css-panda/error': link:../error
+      '@css-panda/types': link:../types
+      '@css-panda/walk-object': link:../walk-object
+      css-what: 6.1.0
+      debug: 4.3.4
+      postcss: 8.4.14
+      postcss-js: 4.0.0_postcss@8.4.14
+      postcss-nested: 5.0.6_postcss@8.4.14
+      ts-pattern: 4.0.5
+    devDependencies:
+      '@css-panda/fixture': link:../fixture
+      '@types/debug': 4.1.7
+      '@types/postcss-js': 4.0.0
 
   packages/calc:
     specifiers: {}
@@ -79,33 +108,6 @@ importers:
       ts-pattern: 4.0.5
     devDependencies:
       '@types/lodash': 4.14.182
-
-  packages/postcss:
-    specifiers:
-      '@css-panda/dictionary': workspace:*
-      '@css-panda/error': workspace:*
-      '@css-panda/fixture': workspace:*
-      '@css-panda/types': workspace:*
-      '@css-panda/walk-object': workspace:*
-      '@types/postcss-js': ^4.0.0
-      css-what: ^6.1.0
-      postcss: ^8.4.14
-      postcss-js: ^4.0.0
-      postcss-nested: ^5.0.6
-      ts-pattern: ^4.0.5
-    dependencies:
-      '@css-panda/dictionary': link:../dictionary
-      '@css-panda/error': link:../error
-      '@css-panda/types': link:../types
-      '@css-panda/walk-object': link:../walk-object
-      css-what: 6.1.0
-      postcss: 8.4.14
-      postcss-js: 4.0.0_postcss@8.4.14
-      postcss-nested: 5.0.6_postcss@8.4.14
-      ts-pattern: 4.0.5
-    devDependencies:
-      '@css-panda/fixture': link:../fixture
-      '@types/postcss-js': 4.0.0
 
   packages/types:
     specifiers:

@@ -1,7 +1,7 @@
 {
   "name": "@css-panda/core",
   "version": "0.0.1",
-  "description": "core functions for extract-it",
+  "description": "The core css panda library",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",

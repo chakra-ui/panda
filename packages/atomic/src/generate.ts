@@ -1,63 +1,17 @@
 import { walkObject } from '@css-panda/walk-object';
-import postcss, { Root } from 'postcss';
+import postcss, { AtRule, Rule } from 'postcss';
 import { match } from 'ts-pattern';
-import { selectorUtils } from './selector';
+import { expandAtRule, expandSelector } from './expand-selector';
+import { SelectorOutput } from './selector-output';
+import { toCss } from './to-css';
+import { Conditions, GeneratorContext, RawCondition } from './types';
 import { wrap } from './wrap';
-import { expandAtRule, expandSelector, SelectorOutput, toCss } from './__utils';
-
-type Condition = {
-  type: 'at-rule' | 'pseudo' | 'selector';
-  value: string;
-  name?: string;
-};
-
-type RawCondition = Condition & { raw: string };
-
-type Conditions = Record<string, Condition>;
-
-type TransformResult = {
-  className: string;
-  styles: Record<string, any>;
-};
-
-type GeneratorContext = {
-  root: Root;
-  conditions: Conditions;
-  transform: (prop: string, value: string) => TransformResult;
-};
-
-const dict = {
-  display: 'd',
-  height: 'h',
-  width: 'w',
-  minHeight: 'min-h',
-  textAlign: 'ta',
-};
+import { createContext } from './fixture';
 
 export function run(fn: Function) {
-  const defaultContext: GeneratorContext = {
-    root: postcss.root(),
-    conditions: {
-      sm: { type: 'at-rule', value: 'sm', name: 'screen' },
-      md: { type: 'at-rule', value: 'md', name: 'screen' },
-      lg: { type: 'at-rule', value: 'lg', name: 'screen' },
-      ltr: { type: 'selector', value: '[dir=ltr] &' },
-      rtl: { type: 'selector', value: '[dir=rtl] &' },
-      light: { type: 'selector', value: '[data-theme=light] &' },
-      dark: { type: 'selector', value: '[data-theme=dark] &' },
-      hover: { type: 'pseudo', value: '&:hover' },
-    },
-    transform: (prop, value) => {
-      const key = dict[prop] ?? prop;
-      return {
-        className: `${key}-${value}`,
-        styles: { [prop]: value },
-      };
-    },
-  };
-
-  fn(defaultContext);
-  return defaultContext.root.toString();
+  const ctx = createContext();
+  fn(ctx);
+  return ctx.root.toString();
 }
 
 function sortByType(values: RawCondition[]) {
@@ -114,15 +68,11 @@ export function generate(
         conditions.push(scope.replace('&', 'this'));
       }
 
-      const output: SelectorOutput = {
-        before: [],
-        between: baseArray.join(':'),
-        after: [],
-      };
+      const output = new SelectorOutput(baseArray.join(':'));
 
       // create base rule
-      let rule: any = postcss.rule({
-        selector: selectorUtils.finalize(output),
+      let rule: AtRule | Rule = postcss.rule({
+        selector: output.selector,
         nodes: rawNodes,
       });
 
@@ -133,16 +83,16 @@ export function generate(
         //
         match(cond)
           .with({ type: 'selector' }, (data) => {
-            const finalized = selectorUtils.parent(output, data.raw);
+            const finalized = output.parentSelector(data.raw);
             rule = postcss.rule({
-              selector: selectorUtils.finalize(finalized),
+              selector: finalized.selector,
               nodes: rawNodes,
             });
           })
           .with({ type: 'pseudo' }, (data) => {
-            const finalized = selectorUtils.pseudo(output, data.raw);
+            const finalized = output.pseudoSelector(data.raw);
             rule = postcss.rule({
-              selector: selectorUtils.finalize(finalized),
+              selector: finalized.selector,
               nodes: rawNodes,
             });
           })

@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/postcss",
+  "name": "@css-panda/atomic",
   "version": "0.0.1",
   "description": "core functions for extract-it",
   "main": "dist/index.js",
@@ -14,11 +14,11 @@
     "dist"
   ],
   "dependencies": {
-    "@css-panda/dictionary": "workspace:*",
     "@css-panda/error": "workspace:*",
     "@css-panda/types": "workspace:*",
     "@css-panda/walk-object": "workspace:*",
     "css-what": "^6.1.0",
+    "debug": "^4.3.4",
     "postcss": "^8.4.14",
     "postcss-js": "^4.0.0",
     "postcss-nested": "^5.0.6",
@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@css-panda/fixture": "workspace:*",
+    "@types/debug": "^4.1.7",
     "@types/postcss-js": "^4.0.0"
   }
 }

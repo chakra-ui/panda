@@ -1,7 +1,7 @@
 {
   "name": "@css-panda/fixture",
   "version": "0.0.1",
-  "description": "core functions for extract-it",
+  "description": "Test fixtures for css panda",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
