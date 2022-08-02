@@ -3,7 +3,7 @@ import postcss, { Root } from 'postcss';
 import { match } from 'ts-pattern';
 import { selectorUtils } from './selector';
 import { wrap } from './wrap';
-import { expandSelector, SelectorOutput, toCss } from './__utils';
+import { expandAtRule, expandSelector, SelectorOutput, toCss } from './__utils';
 
 type Condition = {
   type: 'at-rule' | 'pseudo' | 'selector';
@@ -38,9 +38,9 @@ export function run(fn: Function) {
   const defaultContext: GeneratorContext = {
     root: postcss.root(),
     conditions: {
-      sm: { type: 'at-rule', value: 'sm' },
-      md: { type: 'at-rule', value: 'md' },
-      lg: { type: 'at-rule', value: 'lg' },
+      sm: { type: 'at-rule', value: 'sm', name: 'screen' },
+      md: { type: 'at-rule', value: 'md', name: 'screen' },
+      lg: { type: 'at-rule', value: 'lg', name: 'screen' },
       ltr: { type: 'selector', value: '[dir=ltr] &' },
       rtl: { type: 'selector', value: '[dir=rtl] &' },
       light: { type: 'selector', value: '[data-theme=light] &' },
@@ -50,7 +50,7 @@ export function run(fn: Function) {
     transform: (prop, value) => {
       const key = dict[prop] ?? prop;
       return {
-        className: `${key}:${value}`,
+        className: `${key}-${value}`,
         styles: { [prop]: value },
       };
     },
@@ -71,8 +71,13 @@ function sortByType(values: RawCondition[]) {
 
 function expandCondition(value: string, conditionsMap: Conditions): RawCondition {
   for (const [key, cond] of Object.entries(conditionsMap)) {
-    if (value === key) return { type: cond.type, value, raw: cond.value };
+    if (value === key) return { type: cond.type, value, raw: cond.value, name: cond.name };
   }
+
+  if (value.startsWith('@')) {
+    return { ...expandAtRule(value), raw: value };
+  }
+
   return { ...expandSelector(value), raw: value };
 }
 
@@ -82,12 +87,12 @@ function expandConditions(values: string[], conditionsMap: Conditions): RawCondi
 
 export function generate(
   styles: Record<string, any>,
-  scope?: {
-    selector?: string;
-    '@media'?: string;
+  options?: {
+    scope?: string;
   }
 ) {
-  const { selector } = scope ?? {};
+  const { scope } = options ?? {};
+
   return (ctx: GeneratorContext) => {
     //
     walkObject(styles, (value, paths) => {
@@ -104,9 +109,9 @@ export function generate(
 
       // get the base class name
       const baseArray = [...conditions, transformed.className];
-      if (selector) {
-        baseArray.unshift(`[${selector}]`);
-        conditions.push(selector.replace(/^&/, ''));
+      if (scope) {
+        baseArray.unshift(`[${scope}]`);
+        conditions.push(scope.replace('&', 'this'));
       }
 
       const output: SelectorOutput = {
@@ -144,7 +149,7 @@ export function generate(
           .with({ type: 'at-rule' }, (data) => {
             rule = wrap(rule, {
               type: data.type,
-              name: data.name ?? 'screen',
+              name: data.name!,
               params: data.value,
             });
           })

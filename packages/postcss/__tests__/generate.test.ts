@@ -4,7 +4,7 @@ import { generate, run } from '../src/generate';
 describe('generate stylesheet', () => {
   test('should work with basic', () => {
     expect(run(generate({ bg: 'red.300' }))).toMatchInlineSnapshot(`
-      ".bg\\\\:red\\\\.300 {
+      " .bg-red\\\\.300 {
           bg: red.300
       }"
     `);
@@ -19,11 +19,11 @@ describe('generate stylesheet', () => {
       )
     ).toMatchInlineSnapshot(`
       "@screen sm {
-          [dir=ltr] .ltr\\\\:sm\\\\:ml\\\\:4 {
+          [dir=ltr] .ltr\\\\:sm\\\\:ml-4 {
               ml: 4
           }
       }
-      [dir=rtl] .rtl\\\\:ml\\\\:-4 {
+      [dir=rtl] .rtl\\\\:ml--4 {
           ml: -4
       }"
     `);
@@ -38,13 +38,13 @@ describe('generate stylesheet', () => {
         })
       )
     ).toMatchInlineSnapshot(`
-      ".light .light\\\\:color\\\\:red {
+      "[data-theme=light] .light\\\\:color-red {
           color: red
       }
-      .dark .dark\\\\:color\\\\:green {
+      [data-theme=dark] .dark\\\\:color-green {
           color: green
       }
-      .dark .dark\\\\:opacity\\\\:slate400 {
+      [data-theme=dark] .dark\\\\:opacity-slate400 {
           opacity: slate400
       }"
     `);
@@ -59,17 +59,17 @@ describe('generate stylesheet', () => {
       )
     ).toMatchInlineSnapshot(`
       "@screen sm {
-          [dir=rtl] .sm\\\\:rtl\\\\:top\\\\:20px {
+          [dir=rtl] .sm\\\\:rtl\\\\:top-20px {
               top: 20px
           }
       }
       @screen sm {
-          .sm\\\\:hover\\\\:top\\\\:50px:hover {
+           .sm\\\\:hover\\\\:top-50px:hover {
               top: 50px
           }
       }
       @screen lg {
-          .lg\\\\:top\\\\:120px {
+           .lg\\\\:top-120px {
               top: 120px
           }
       }"
@@ -84,11 +84,11 @@ describe('generate stylesheet', () => {
         })
       )
     ).toMatchInlineSnapshot(`
-      ".left\\\\:20px {
+      " .left-20px {
           left: 20px
       }
       @screen md {
-          .md\\\\:left\\\\:40px {
+           .md\\\\:left-40px {
               left: 40px
           }
       }"
@@ -104,47 +104,114 @@ describe('generate stylesheet', () => {
             bg: { light: 'red400', dark: 'green500' },
             font: { rtl: 'sans', ltr: { dark: { sm: { hover: 'serif' } } } },
           },
-          { selector: '& > p' }
+          { scope: '& > p' }
         )
       )
     ).toMatchInlineSnapshot(`
-      " .\\\\[\\\\& \\\\> p\\\\]\\\\:left\\\\:20px > p {
+      ".\\\\[\\\\& \\\\> p\\\\]\\\\:left-20px > p {
           left: 20px
       }
       @screen md {
-           .\\\\[\\\\& \\\\> p\\\\]\\\\:md\\\\:left\\\\:40px > p {
+          .\\\\[\\\\& \\\\> p\\\\]\\\\:md\\\\:left-40px > p {
               left: 40px
           }
       }
-      [data-theme=light] .\\\\[\\\\& \\\\> p\\\\]\\\\:light\\\\:bg\\\\:red400 > p {
+      [data-theme=light] .\\\\[\\\\& \\\\> p\\\\]\\\\:light\\\\:bg-red400 > p {
           bg: red400
       }
-      [data-theme=dark] .\\\\[\\\\& \\\\> p\\\\]\\\\:dark\\\\:bg\\\\:green500 > p {
+      [data-theme=dark] .\\\\[\\\\& \\\\> p\\\\]\\\\:dark\\\\:bg-green500 > p {
           bg: green500
       }
-      [dir=rtl] .\\\\[\\\\& \\\\> p\\\\]\\\\:rtl\\\\:font\\\\:sans > p {
+      [dir=rtl] .\\\\[\\\\& \\\\> p\\\\]\\\\:rtl\\\\:font-sans > p {
           font: sans
       }
       @screen sm {
-          [dir=ltr] [data-theme=dark] .\\\\[\\\\& \\\\> p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font\\\\:serif:hover > p {
+          [dir=ltr] [data-theme=dark] .\\\\[\\\\& \\\\> p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font-serif:hover > p {
               font: serif
           }
       }"
     `);
   });
 
-  test.only('[selector] should work with nested selector', () => {
+  test('[parent selector] should work with nested selector', () => {
     expect(
       run(
         generate(
           {
-            left: { _: '20px', md: '40px' },
-            bg: { light: 'red400', dark: 'green500' },
-            font: { rtl: 'sans', ltr: { dark: { sm: { hover: 'serif' } } } },
+            bg: 'red400',
+            fontSize: { sm: '14px', lg: '18px' },
           },
-          { selector: '.parent:hover &' }
+          { scope: 'input:hover &' }
         )
       )
-    ).toMatchInlineSnapshot();
+    ).toMatchInlineSnapshot(`
+      "input:hover .\\\\[input\\\\:hover \\\\&\\\\]\\\\:bg-red400 {
+          bg: red400
+      }
+      @screen sm {
+          input:hover .\\\\[input\\\\:hover \\\\&\\\\]\\\\:sm\\\\:fontSize-14px {
+              font-size: 14px
+          }
+      }
+      @screen lg {
+          input:hover .\\\\[input\\\\:hover \\\\&\\\\]\\\\:lg\\\\:fontSize-18px {
+              font-size: 18px
+          }
+      }"
+    `);
+  });
+
+  test('[selector] should work with nested selector', () => {
+    expect(
+      run(
+        generate(
+          {
+            left: '40px',
+            bg: 'red400',
+            textAlign: { sm: 'left' },
+          },
+          { scope: '&::placeholder' }
+        )
+      )
+    ).toMatchInlineSnapshot(`
+      ".\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:left-40px::placeholder {
+          left: 40px
+      }
+      .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:bg-red400::placeholder {
+          bg: red400
+      }
+      @screen sm {
+          .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:sm\\\\:ta-left::placeholder {
+              text-align: left
+          }
+      }"
+    `);
+  });
+
+  test('[@media] should work with nested selector', () => {
+    expect(
+      run(
+        generate(
+          {
+            left: '40px',
+            textAlign: { sm: 'left' },
+          },
+          { scope: '@media base' }
+        )
+      )
+    ).toMatchInlineSnapshot(`
+      "@media base {
+           .\\\\[@media base\\\\]\\\\:left-40px {
+              left: 40px
+          }
+      }
+      @media base {
+          @screen sm {
+               .\\\\[@media base\\\\]\\\\:sm\\\\:ta-left {
+                  text-align: left
+              }
+          }
+      }"
+    `);
   });
 });

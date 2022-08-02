@@ -69,6 +69,13 @@ export const selectorUtils = {
 
   finalize(output: SelectorOutput) {
     const { before, after, between } = output;
-    return `${before.join(' ')} .${esc(between)}${after.join('')}`;
+
+    const _this = `.${esc(between)}${after.join('')}`;
+    const _before = before.join(' ');
+
+    if (_before.includes('this')) {
+      return _before.replace('this', _this);
+    }
+    return `${_before} ${_this}`;
   },
 };

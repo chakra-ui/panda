@@ -1,5 +1,5 @@
 import postcssJs from 'postcss-js';
-import postcss from 'postcss';
+import postcss, { AtRule } from 'postcss';
 import { parse, SelectorType as S } from 'css-what';
 import { match, P } from 'ts-pattern';
 
@@ -41,7 +41,7 @@ export function expandSelector(value: string): Condition {
   const [[result]] = parse(value);
 
   const final = match(result)
-    .with({ type: P.union(S.Pseudo, S.PseudoElement, S.Descendant, S.Child) }, () => ({
+    .with({ type: P.union(S.Pseudo, S.PseudoElement) }, () => ({
       type: 'pseudo',
       value,
     }))
@@ -65,4 +65,10 @@ export type SelectorOutput = {
 export function tap<T>(value: T, cb: (value: T) => void) {
   cb(value);
   return value;
+}
+
+export function expandAtRule(value: string) {
+  const result = postcss.parse(value);
+  const rule = result.nodes[0] as AtRule;
+  return { name: rule.name, value: rule.params, type: 'at-rule' as const };
 }
