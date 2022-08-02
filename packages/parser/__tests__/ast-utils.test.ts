@@ -1,9 +1,9 @@
-import * as v from 'vitest';
+import { describe, test, expect } from 'vitest';
 import { transformSync } from '../src/transform';
 import { cssPlugin } from '../src/plugins';
 
-v.describe('ast parser', () => {
-  v.test('should parse static property', () => {
+describe('ast parser', () => {
+  test('should parse static property', () => {
     const code = `
         const baseStyle = css({
             color: 'red',
@@ -24,7 +24,7 @@ v.describe('ast parser', () => {
       plugins: [cssPlugin(collect)],
     });
 
-    v.expect(collect).toMatchInlineSnapshot(`
+    expect(collect).toMatchInlineSnapshot(`
       {
         "bg": "red.300",
         "color": "red",

@@ -139,3 +139,48 @@ export function callExpression(node: swc.CallExpression, scope: string) {
     }
   }
 }
+
+export function importDeclaration(node: swc.ImportDeclaration, options: { module: string; name: string }) {
+  const { specifiers, source } = node;
+
+  const result = {
+    imported: false,
+    identifer: null as string | null,
+    alias: null as string | null,
+  };
+
+  if (source.value !== options.module) return;
+
+  for (let i = 0; i < specifiers.length; i++) {
+    match(specifiers[i])
+      .with(
+        {
+          type: 'ImportSpecifier',
+          local: { type: 'Identifier', value: P.select() },
+          imported: P.nullish,
+        },
+        (value) => {
+          result.imported = true;
+          result.identifer = value;
+          result.alias = value;
+        }
+      )
+      .with(
+        {
+          type: 'ImportSpecifier',
+          local: { type: 'Identifier', value: P.select('alias') },
+          imported: { type: 'Identifier', value: P.select('main') },
+        },
+        ({ main, alias }) => {
+          result.imported = true;
+          result.identifer = main;
+          result.alias = alias;
+        }
+      )
+      .otherwise(() => {});
+  }
+
+  if (result.imported && result.identifer === options.name) {
+    return result;
+  }
+}
