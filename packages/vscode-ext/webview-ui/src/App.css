@@ -105,7 +105,7 @@ hr {
 }
 
 .typography-playground div[contenteditable] {
-  outline: 0px solid transparent !important;
+  outline: 0px solid transparent;
   padding-top: 100px;
   padding-bottom: 100px;
   margin-inline-start: auto;

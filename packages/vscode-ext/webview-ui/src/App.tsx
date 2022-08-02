@@ -9,8 +9,7 @@ import { Sizes } from './components/Sizes';
 
 function App() {
   const [config, setConfig] = useState(window.config);
-  const [page, setPage] = useState(NavKeys.SIZES);
-  // const [page, setPage] = useState(NavKeys.COLORS);
+  const [page, setPage] = useState(NavKeys.COLORS);
 
   useEffect(() => {
     // Listen for messages from the extension
