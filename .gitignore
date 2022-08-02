@@ -10,3 +10,4 @@ node_modules
 lib
 dist
 tsconfig.tsbuildinfo
+.DS_Store
