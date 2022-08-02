@@ -20,10 +20,8 @@ importers:
       '@css-panda/fixture': workspace:*
       '@css-panda/types': workspace:*
       '@css-panda/walk-object': workspace:*
-      '@types/debug': ^4.1.7
       '@types/postcss-js': ^4.0.0
       css-what: ^6.1.0
-      debug: ^4.3.4
       postcss: ^8.4.14
       postcss-js: ^4.0.0
       postcss-nested: ^5.0.6
@@ -33,14 +31,12 @@ importers:
       '@css-panda/types': link:../types
       '@css-panda/walk-object': link:../walk-object
       css-what: 6.1.0
-      debug: 4.3.4
       postcss: 8.4.14
       postcss-js: 4.0.0_postcss@8.4.14
       postcss-nested: 5.0.6_postcss@8.4.14
       ts-pattern: 4.0.5
     devDependencies:
       '@css-panda/fixture': link:../fixture
-      '@types/debug': 4.1.7
       '@types/postcss-js': 4.0.0
 
   packages/calc:
@@ -95,6 +91,17 @@ importers:
       '@css-panda/types': workspace:*
     dependencies:
       '@css-panda/types': link:../types
+
+  packages/logger:
+    specifiers:
+      '@types/debug': ^4.1.7
+      debug: ^4.3.4
+      picocolors: ^1.0.0
+    dependencies:
+      debug: 4.3.4
+      picocolors: 1.0.0
+    devDependencies:
+      '@types/debug': 4.1.7
 
   packages/parser:
     specifiers:
