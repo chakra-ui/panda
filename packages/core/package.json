@@ -16,6 +16,8 @@
   "dependencies": {
     "@css-panda/types": "workspace:*",
     "@css-panda/parser": "workspace:*",
+    "@css-panda/logger": "workspace:*",
+    "@css-panda/atomic": "workspace:*",
     "debug": "^4.3.4",
     "filespy": "^1.2.4",
     "hookable": "^5.1.1",
