@@ -153,7 +153,6 @@ importers:
       color-contrast-checker: ^2.1.0
       react: ^17.0.2
       react-dom: ^17.0.2
-      simple-color-picker: ^1.0.5
       typescript: ^4.4.4
       vite: ^2.7.2
       webview-ui: link:webview-ui
@@ -162,7 +161,6 @@ importers:
       color-contrast-checker: 2.1.0
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
-      simple-color-picker: 1.0.5
       webview-ui: link:webview-ui
     devDependencies:
       '@types/react': 17.0.48
@@ -706,10 +704,6 @@ packages:
     dependencies:
       '@types/ms': 0.7.31
     dev: true
-
-  /@types/insert-css/2.0.1:
-    resolution: {integrity: sha512-slUriXg8Y0JvpQoZlQ96bzzi86AU0DvtstKmGtBWpzJilFnpMUDbREi28Gpa+ZaIrTTCQUfvpDS7z7F1uwlYjQ==}
-    dev: false
 
   /@types/lodash/4.14.182:
     resolution: {integrity: sha512-/THyiqyQAP9AfARo4pF+aCGcyiQ94tX/Is2I7HofNRqoYLgN1PBoOWu2/zTA5zMxzP5EFutMtWtGAFRKUe961Q==}
@@ -1354,10 +1348,6 @@ packages:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
     dev: false
 
-  /insert-css/2.0.0:
-    resolution: {integrity: sha512-xGq5ISgcUP5cvGkS2MMFLtPDBtrtQPSFfC6gA6U8wHKqfjTIMZLZNxOItQnoSjdOzlXOLU/yD32RKC4SvjNbtA==}
-    dev: false
-
   /is-binary-path/2.1.0:
     resolution: {integrity: sha512-ZMERYes6pDydyuGidse7OsHxtbI7WVeUEozgR/g7rd0xUimYNlvZRE/K2MgZTjWy725IfelLeVcEM97mmtRGXw==}
     engines: {node: '>=8'}
@@ -1735,13 +1725,6 @@ packages:
 
   /signal-exit/3.0.7:
     resolution: {integrity: sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==}
-    dev: false
-
-  /simple-color-picker/1.0.5:
-    resolution: {integrity: sha512-MUsSVfO/51zTrBA6nsmX5ABe/FXmhd6N+hie6EAWb6Ph4eydtQNRZ9hyb/HmLaG403YB/JAtpry70AaCd8AwBw==}
-    dependencies:
-      '@types/insert-css': 2.0.1
-      insert-css: 2.0.0
     dev: false
 
   /slash/3.0.0:

@@ -63,7 +63,7 @@ function App() {
       {page === NavKeys.TYPOGRAPHY_PLAYGROUND && <TypographyPlayground config={config} />}
       {page === NavKeys.SIZES && <Sizes sizes={config.sizes} />}
       {page === NavKeys.SPACING_PLAYGROUND && <SpacingPlayground sizes={config.sizes} />}
-      {page === NavKeys.CONTRAST_CHECKER && <ContrastChecker />}
+      {page === NavKeys.CONTRAST_CHECKER && <ContrastChecker colors={config.colors} />}
     </main>
   );
 }

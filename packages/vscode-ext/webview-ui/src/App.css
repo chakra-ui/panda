@@ -299,6 +299,8 @@ hr {
   background: rgb(139 92 246);
 }
 
+/*  */
+
 .contrast-checker .token-content .color-container {
   display: flex;
   align-items: center;
@@ -311,28 +313,10 @@ hr {
   flex-direction: column;
   border: solid 1px rgba(182, 180, 180, 0.1);
   flex: 1;
+  padding-top: 60px;
 }
 
-.contrast-checker .token-content .color-container .Scp {
-  display: flex;
-  width: 100% !important;
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
-  overflow: hidden;
-}
-
-.contrast-checker .token-content .color-container .Scp-saturation {
-  width: 100% !important;
-  margin-right: 0px;
-}
-
-.contrast-checker .token-content .color-container .controls {
-  display: flex;
-}
-
-.contrast-checker .token-content .color-container .controls vscode-dropdown {
-  min-width: unset;
-}
+/*  */
 
 .contrast-checker .token-content .preview {
   display: flex;
@@ -393,5 +377,12 @@ hr {
 .contrast-checker .token-content .result .test-scores > div > div {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-weight: 500;
+}
+
+.contrast-checker .token-content .result .test-scores > div > div > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }

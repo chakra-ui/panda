@@ -1,44 +1,49 @@
-import { VSCodeDropdown, VSCodeOption, VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
+import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react';
 import { useState } from 'react';
-import {
-  colorFormats,
-  ColorFormats,
-  getContrastPairs,
-  getContrastRatioArr,
-  setPickerColor,
-  useColorPickers,
-} from '../utilities/color';
+import { Config } from '../types';
+import { getContrastPairs, getContrastRatio } from '../utilities/color';
+import { ErrorIcon } from './ErrorIcon';
+import { SuccessIcon } from './SuccesIcon';
 
-export function ContrastChecker() {
-  const [colorFormat, setColorFormat] = useState(ColorFormats.HEX);
+type ContrastCheckerProps = {
+  colors: Config['colors'];
+};
 
-  const { foreground, background, foreGroundPicker, backGroundPicker, foregroundHex, backgroundHex } =
-    useColorPickers(colorFormat);
+export function ContrastChecker(props: ContrastCheckerProps) {
+  const { colors: colorsObj } = props;
+  const colors = Object.entries(colorsObj)
+    .map(([color, shadesOrValue]) =>
+      typeof shadesOrValue === 'string'
+        ? { label: color, value: shadesOrValue }
+        : Object.entries(shadesOrValue).map(([shade, value]) => ({ label: `${color}.${shade}`, value }))
+    )
+    .flat();
 
-  const colorFormatSwitch = (
-    <VSCodeDropdown value={colorFormat} onChange={(e: any) => setColorFormat(e.currentTarget.value)}>
-      {colorFormats.map((format) => (
-        <VSCodeOption key={format.id} value={format.id}>
-          {format.label}
-        </VSCodeOption>
-      ))}
-    </VSCodeDropdown>
-  );
+  const [foreground, setForeGround] = useState('#000000');
+  const [background, setBackground] = useState('#ffffff');
 
-  const WCAGTests = getContrastPairs(foregroundHex, backgroundHex);
+  const activeForeground = colors.find((col) => col.label === foreground)?.value || foreground;
+  const activeBackground = colors.find((col) => col.label === background)?.value || background;
 
-  const constrastRatio = getContrastRatioArr(foregroundHex, backgroundHex);
+  const WCAGTests = getContrastPairs(activeForeground, activeBackground);
+  const constrastRatio = getContrastRatio(activeForeground, activeBackground);
 
-  const renderTestScore = (score: { WCAG_AA: boolean; WCAG_AAA: boolean }) => {
+  const renderTestScore = (score: { WCAG_AA: boolean; WCAG_AAA: boolean }, size: 'regular' | 'large') => {
     return (
       <>
         <div>
-          <span>AA</span>
-          <span>{score.WCAG_AA ? '✓' : '❌'}</span>
+          <div>
+            <span>{score.WCAG_AA ? <SuccessIcon /> : <ErrorIcon />}</span>
+            <span>AA</span>
+          </div>
+          <span>{size === 'regular' ? '4.5:1' : '3:1'}</span>
         </div>
         <div>
-          <span>AAA</span>
-          <span>{score.WCAG_AAA ? '✓' : '❌'}</span>
+          <div>
+            <span>{score.WCAG_AAA ? <SuccessIcon /> : <ErrorIcon />}</span>
+            <span>AAA</span>
+          </div>
+          <span>{size === 'regular' ? '7:1' : '4.5:1'}</span>
         </div>
       </>
     );
@@ -48,29 +53,23 @@ export function ContrastChecker() {
     <div className="token-group contrast-checker">
       <div className="token-content ">
         <div className="color-container">
-          <div>
-            <div id="foreground" />
-            <div className="controls">
-              <VSCodeTextField
-                value={foreground}
-                onInput={(e: any) => {
-                  setPickerColor(e.currentTarget.value, foreGroundPicker);
-                }}
-              />
-              {colorFormatSwitch}
-            </div>
+          <div style={{ background: activeForeground }}>
+            <VSCodeDropdown value={foreground} onChange={(e: any) => setForeGround(e.currentTarget.value)}>
+              {colors.map((color) => (
+                <VSCodeOption key={color.label} value={color.label}>
+                  {color.label}
+                </VSCodeOption>
+              ))}
+            </VSCodeDropdown>
           </div>
-          <div>
-            <div id="background" />
-            <div className="controls">
-              <VSCodeTextField
-                value={background}
-                onInput={(e: any) => {
-                  setPickerColor(e.currentTarget.value, backGroundPicker);
-                }}
-              />
-              {colorFormatSwitch}
-            </div>
+          <div style={{ background: activeBackground }}>
+            <VSCodeDropdown value={background} onChange={(e: any) => setBackground(e.currentTarget.value)}>
+              {colors.map((color) => (
+                <VSCodeOption key={color.label} value={color.label}>
+                  {color.label}
+                </VSCodeOption>
+              ))}
+            </VSCodeDropdown>
           </div>
         </div>
 
@@ -78,26 +77,24 @@ export function ContrastChecker() {
           className="preview"
           suppressContentEditableWarning
           contentEditable
-          style={{ background, color: foreground }}
+          style={{ background: activeBackground, color: activeForeground }}
         >
           example text showing contrast
         </div>
 
         <div className="result">
           <div className="contrast-ratio">
-            <span>
-              {constrastRatio[0]}:{constrastRatio[1]}
-            </span>
+            <span>{constrastRatio ? `${constrastRatio?.toFixed(2).replace(/[.,]00$/, '')}:1` : ':'}</span>
             <span>Contrast ratio</span>
           </div>
           <div className="test-scores">
             <div>
               <span>Normal Text</span>
-              {renderTestScore(WCAGTests[0])}
+              {renderTestScore(WCAGTests[0], 'regular')}
             </div>
             <div>
               <span>Large Text</span>
-              {renderTestScore(WCAGTests[1])}
+              {renderTestScore(WCAGTests[1], 'large')}
             </div>
           </div>
         </div>
