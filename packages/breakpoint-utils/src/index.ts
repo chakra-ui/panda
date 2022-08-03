@@ -1,39 +1,13 @@
+import { queries } from './queries';
+
 function px(value: number | string | null): string | null {
   if (value == null) return null;
   const unitless = parseFloat(value.toString()) == value;
   return unitless || typeof value === 'number' ? `${value}px` : value;
 }
 
-type BuildOptions = {
-  min?: string | null;
-  max?: string | null;
-};
-
-function build({ min, max }: BuildOptions) {
-  return [min && `(min-width: ${min})`, max && `(max-width: ${max})`].filter(Boolean).join(' and ');
-}
-
-function queries({ name, min, max }: BuildOptions & { name: string }) {
-  return {
-    name,
-    minQuery: build({ min }),
-    maxQuery: build({ max }),
-    minMaxQuery: build({ min, max }),
-  };
-}
-
-export function getBreakpointDetails<T extends Record<string, string>>(breakpoints: T) {
-  const sorted = Object.fromEntries(
-    Object.entries(breakpoints).sort((a, b) => {
-      return parseInt(a[1], 10) > parseInt(b[1], 10) ? 1 : -1;
-    })
-  );
-
-  const keys = [...new Set(Object.keys(sorted))];
-
-  const entries = Object.entries(sorted);
-
-  const details = entries.map(([name, min], index, entries) => {
+function getDetails(entries: [string, string][]) {
+  return entries.map(([name, min], index, entries) => {
     let max: string | null = null;
 
     if (index <= entries.length - 1) {
@@ -46,6 +20,18 @@ export function getBreakpointDetails<T extends Record<string, string>>(breakpoin
 
     return queries({ name, min, max });
   });
+}
+
+export function getBreakpointDetails<T extends Record<string, string>>(breakpoints: T) {
+  const sorted = Object.fromEntries(
+    Object.entries(breakpoints).sort((a, b) => {
+      return parseInt(a[1], 10) > parseInt(b[1], 10) ? 1 : -1;
+    })
+  );
+
+  const keys = [...new Set(Object.keys(sorted))];
+  const entries = Object.entries(sorted);
+  const details = getDetails(entries);
 
   return {
     keys,
