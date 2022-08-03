@@ -1,21 +1,18 @@
 import { Config } from '../types';
 import { remToPixels } from '../utilities/rem-to-pixels';
+import { getSortedSizes } from '../utilities/sizes-sort';
 
 export type SizesProps = { sizes: Config['sizes'] };
+
+export const renderPixels = (size: string) => {
+  if (size.endsWith('px')) return size;
+  else return remToPixels(size);
+};
 
 export function Sizes(props: SizesProps) {
   const { sizes: sizesProp } = props;
 
-  const sizes = Object.entries(sizesProp).sort(([a], [b]) => {
-    if (a === 'max') return 1;
-    if (Number.isNaN(parseFloat(a))) return -1;
-    return parseFloat(a) - parseFloat(b);
-  });
-
-  const renderPixels = (size: string) => {
-    if (size.endsWith('px')) return size;
-    else return remToPixels(size);
-  };
+  const sizes = getSortedSizes(sizesProp);
 
   return (
     <div className="token-group sizes-tokens">

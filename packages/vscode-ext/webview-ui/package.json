@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "@vscode/webview-ui-toolkit": "^1.0.0",
+    "color-contrast-checker": "^2.1.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "simple-color-picker": "^1.0.5",
     "webview-ui": "link:webview-ui"
   },
   "devDependencies": {

@@ -6,10 +6,13 @@ import { FontTokens } from './components/FontTokens';
 import { navItems, NavKeys } from './utilities/constants';
 import { TypographyPlayground } from './components/TypographyPlayground';
 import { Sizes } from './components/Sizes';
+import { SpacingPlayground } from './components/SpacingPlayground';
+import { ContrastChecker } from './components/ContrastChecker';
 
 function App() {
   const [config, setConfig] = useState(window.config);
-  const [page, setPage] = useState(NavKeys.COLORS);
+  const [page, setPage] = useState(NavKeys.CONTRAST_CHECKER);
+  // const [page, setPage] = useState(NavKeys.COLORS);
 
   useEffect(() => {
     // Listen for messages from the extension
@@ -59,6 +62,8 @@ function App() {
       )}
       {page === NavKeys.TYPOGRAPHY_PLAYGROUND && <TypographyPlayground config={config} />}
       {page === NavKeys.SIZES && <Sizes sizes={config.sizes} />}
+      {page === NavKeys.SPACING_PLAYGROUND && <SpacingPlayground sizes={config.sizes} />}
+      {page === NavKeys.CONTRAST_CHECKER && <ContrastChecker />}
     </main>
   );
 }

@@ -6,6 +6,8 @@ export enum NavKeys {
   FONT_SIZES = 'fontSizes',
   TYPOGRAPHY_PLAYGROUND = 'typography-playground',
   SIZES = 'sizes',
+  SPACING_PLAYGROUND = 'spacing-playground',
+  CONTRAST_CHECKER = 'contrast-checker',
 }
 
 export const navItems = [
@@ -36,5 +38,13 @@ export const navItems = [
   {
     label: 'Sizes',
     id: NavKeys.SIZES,
+  },
+  {
+    label: 'Spacing Playground',
+    id: NavKeys.SPACING_PLAYGROUND,
+  },
+  {
+    label: 'Color Contrast Checker',
+    id: NavKeys.CONTRAST_CHECKER,
   },
 ];

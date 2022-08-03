@@ -7,23 +7,22 @@ type TypographyPlaygroundProps = { config: Config };
 export function TypographyPlayground(props: TypographyPlaygroundProps) {
   const { config: configProp } = props;
 
-  const getFirstValue = <T extends Record<any, any>>(obj: T) => Object.values(obj)[0];
+  const getFirstToken = <T extends Record<any, any>>(obj: T) => Object.keys(obj)[0].toString();
 
   const defaultConfig = {
-    fontSize: getFirstValue(configProp.fontSizes),
-    letterSpacing: getFirstValue(configProp.letterSpacings),
-    fontWeight: getFirstValue(configProp.fontWeights),
-    lineHeight: getFirstValue(configProp.lineHeights),
+    fontSize: getFirstToken(configProp.fontSizes),
+    letterSpacing: getFirstToken(configProp.letterSpacings),
+    fontWeight: getFirstToken(configProp.fontWeights),
+    lineHeight: getFirstToken(configProp.lineHeights),
   };
 
   const [config, setConfig] = useState(defaultConfig);
-
-  useEffect(() => {
-    setConfig(defaultConfig);
-  }, [configProp]);
+  const configValues = Object.entries(config).reduce(
+    (acc, [token, label]) => ({ ...acc, [token]: configProp[`${token}s` as keyof Config][label] }),
+    {}
+  );
 
   const updateConfig = (key: string, value: string) => {
-    console.log('key :>> ', key, value);
     setConfig((prev) => ({
       ...prev,
       [key]: value,
@@ -36,13 +35,9 @@ export function TypographyPlayground(props: TypographyPlaygroundProps) {
   };
 
   const renderTokenSwitch = (token: keyof typeof defaultConfig) => (
-    <VSCodeDropdown
-      value={config[token].toString()}
-      onChange={(e) => onChangeConfig(e, token)}
-      className="token-switch"
-    >
+    <VSCodeDropdown value={config[token]} onChange={(e) => onChangeConfig(e, token)} className="token-switch">
       {Object.entries(configProp[`${token}s`]).map(([label, value]) => (
-        <VSCodeOption key={value} value={value.toString()}>
+        <VSCodeOption key={value} value={label}>
           {label} ({value})
         </VSCodeOption>
       ))}
@@ -53,7 +48,7 @@ export function TypographyPlayground(props: TypographyPlaygroundProps) {
     <div className="token-group">
       <div className="token-content">
         <div className="typography-playground">
-          <div contentEditable="true" style={config}>
+          <div contentEditable="true" style={configValues}>
             Panda
           </div>
           <div className="controls">
