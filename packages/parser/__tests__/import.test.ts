@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import type * as swc from '@swc/core';
 import Visitor from '@swc/core/Visitor';
-import * as ast from '../src/ast-utils';
+import * as ast from '../src/ast';
 import { transformSync } from '../src/transform';
 
 class TestVisitor extends Visitor {

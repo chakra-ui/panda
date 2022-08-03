@@ -4,9 +4,7 @@ type FileType = 'jsx' | 'tsx' | 'js' | 'ts';
 
 function getParser(file: FileType): swc.ParserConfig {
   const isTsx = /ts(x)?/.test(file);
-  return isTsx
-    ? { tsx: true, syntax: 'typescript' }
-    : { jsx: true, syntax: 'ecmascript' };
+  return isTsx ? { tsx: true, syntax: 'typescript' } : { jsx: true, syntax: 'ecmascript' };
 }
 
 type TransformConfig = {
@@ -17,7 +15,7 @@ type TransformConfig = {
 export async function transform(code: string, options: TransformConfig) {
   const { file = 'ts', plugins } = options;
 
-  return await swc.transform(code, {
+  return swc.transform(code, {
     plugin: swc.plugins(plugins),
     jsc: { parser: getParser(file) },
   });

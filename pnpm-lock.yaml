@@ -65,6 +65,8 @@ importers:
 
   packages/core:
     specifiers:
+      '@css-panda/atomic': workspace:*
+      '@css-panda/logger': workspace:*
       '@css-panda/parser': workspace:*
       '@css-panda/types': workspace:*
       '@types/debug': ^4.1.7
@@ -73,6 +75,8 @@ importers:
       hookable: ^5.1.1
       unconfig: ^0.3.5
     dependencies:
+      '@css-panda/atomic': link:../atomic
+      '@css-panda/logger': link:../logger
       '@css-panda/parser': link:../parser
       '@css-panda/types': link:../types
       debug: 4.3.4
@@ -126,11 +130,13 @@ importers:
 
   packages/parser:
     specifiers:
+      '@css-panda/logger': workspace:*
       '@swc/core': ^1.2.219
       '@types/lodash': ^4.14.182
       lodash: ^4.17.21
       ts-pattern: ^4.0.5
     dependencies:
+      '@css-panda/logger': link:../logger
       '@swc/core': 1.2.219
       lodash: 4.17.21
       ts-pattern: 4.0.5

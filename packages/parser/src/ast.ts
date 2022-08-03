@@ -1,6 +1,7 @@
 import * as swc from '@swc/core';
 import merge from 'lodash/merge';
 import { match, P } from 'ts-pattern';
+import { ImportResult } from './types';
 
 export function keyValue(node: swc.KeyValueProperty, result: Record<string, any> = {}) {
   const key = match(node.key)
@@ -143,11 +144,7 @@ export function callExpression(node: swc.CallExpression, scope: string) {
 export function importDeclaration(node: swc.ImportDeclaration, options: { module: string; name: string }) {
   const { specifiers, source } = node;
 
-  const result = {
-    imported: false,
-    identifer: null as string | null,
-    alias: null as string | null,
-  };
+  const result: ImportResult[] = [];
 
   if (source.value !== options.module) return;
 
@@ -160,9 +157,7 @@ export function importDeclaration(node: swc.ImportDeclaration, options: { module
           imported: P.nullish,
         },
         (value) => {
-          result.imported = true;
-          result.identifer = value;
-          result.alias = value;
+          result.push({ identifer: value, alias: value });
         }
       )
       .with(
@@ -172,15 +167,11 @@ export function importDeclaration(node: swc.ImportDeclaration, options: { module
           imported: { type: 'Identifier', value: P.select('main') },
         },
         ({ main, alias }) => {
-          result.imported = true;
-          result.identifer = main;
-          result.alias = alias;
+          result.push({ identifer: main, alias: alias });
         }
       )
       .otherwise(() => {});
   }
 
-  if (result.imported && result.identifer === options.name) {
-    return result;
-  }
+  return result.find((item) => item.identifer === options.name);
 }

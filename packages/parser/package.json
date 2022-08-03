@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@swc/core": "^1.2.219",
+    "@css-panda/logger": "workspace:*",
     "ts-pattern": "^4.0.5",
     "lodash": "^4.17.21"
   },
