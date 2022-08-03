@@ -1,18 +1,17 @@
 import { Root } from 'postcss';
-import { Breakpoints, buildMediaQuery } from './breakpoints';
+import { getBreakpointDetails } from '@css-panda/breakpoint-utils';
+import { Dict } from './types';
 
-export function expandScreenAtRule(breakpoints: Record<string, string>) {
-  const bp = new Breakpoints(breakpoints);
+export function expandScreenAtRule(breakpoints: Dict) {
+  const bp = getBreakpointDetails(breakpoints);
   return (root: Root) => {
     root.walkAtRules('screen', (rule) => {
-      const definition = bp.details.find((dfn) => dfn.name === rule.params);
-
+      const definition = bp.get(rule.params);
       if (!definition) {
         throw rule.error(`No \`${screen}\` screen found.`);
       }
-
       rule.name = 'media';
-      rule.params = buildMediaQuery(definition);
+      rule.params = definition.minQuery;
     });
   };
 }

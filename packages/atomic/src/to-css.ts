@@ -1,7 +1,14 @@
 import postcss from 'postcss';
-import postcssJs from 'postcss-js';
+import postcssJs, { CssInJs } from 'postcss-js';
+import postcssNested from 'postcss-nested';
+import { Dict } from './types';
 
-export function toCss(styles: Record<string, string>) {
-  //@ts-ignore
-  return postcss().process(styles, { parser: postcssJs }).root.nodes;
+export function toCss(styles: Dict) {
+  return postcss([
+    postcssNested({
+      bubble: ['screen'],
+    }),
+  ]).process(styles, {
+    parser: postcssJs as CssInJs,
+  }).root.nodes;
 }

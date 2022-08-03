@@ -1,5 +1,12 @@
 import { describe, expect, test } from 'vitest';
-import { generate, run } from '../src/generate';
+import { createContext } from '../src/fixture';
+import { generate } from '../src/generate';
+
+function run(fn: Function) {
+  const ctx = createContext();
+  fn(ctx);
+  return ctx.root.toString();
+}
 
 describe('generate stylesheet', () => {
   test('should work with basic', () => {
