@@ -1,0 +1,86 @@
+{
+  "name": "pandacss",
+  "displayName": "Panda CSS",
+  "description": "Panda CSS",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.46.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:pandacss.sayhello",
+    "onView:pandacss-sidebar",
+    "onCommand:pandacss.askquestion"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "pandacss.sayhello",
+        "category": "Panda CSS",
+        "title": "Say hello"
+      },
+      {
+        "command": "pandacss.askquestion",
+        "category": "Panda CSS",
+        "title": "Ask question"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "pandacss-sidebar-view",
+          "title": "Panda CSS",
+          "icon": "assets/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "pandacss-sidebar-view": [
+        {
+          "type": "webview",
+          "id": "pandacss-sidebar",
+          "name": "Panda CSS",
+          "icon": "assets/icon.svg",
+          "contextualTitle": "Panda CSS"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "install:all": "pnpm install && pnpm --prefix ./webview-ui install ./webview-ui",
+    "start:ui": "pnpm --prefix ./webview-ui run start",
+    "build:ui": "pnpm --prefix ./webview-ui run build",
+    "watch:ui": "pnpm --prefix ./webview-ui run watch",
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./",
+    "watch:extension": "tsc -watch -p ./",
+    "watch:all": "concurrently \"pnpm watch:ui\" \"pnpm watch:extension\"",
+    "watch": "pnpm watch:extension",
+    "pretest": "pnpm run compile && pnpm run lint",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.3",
+    "@types/node": "^12.11.7",
+    "@types/vscode": "^1.46.0",
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "@typescript-eslint/parser": "^4.14.1",
+    "concurrently": "^7.3.0",
+    "eslint": "^7.19.0",
+    "glob": "^7.1.6",
+    "prettier": "^2.2.1",
+    "typescript": "^4.1.3",
+    "vscode-test": "^1.5.0"
+  },
+  "dependencies": {
+    "ts-import": "4.0.0-beta.6"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "ts-import@4.0.0-beta.6": "patches/ts-import@4.0.0-beta.6.patch"
+    }
+  }
+}
