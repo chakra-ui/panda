@@ -43,22 +43,9 @@ importers:
 
   packages/breakpoint-utils:
     specifiers:
-      '@css-panda/parser': workspace:*
-      '@css-panda/types': workspace:*
-      '@types/debug': ^4.1.7
-      debug: ^4.3.4
-      filespy: ^1.2.4
-      hookable: ^5.1.1
-      unconfig: ^0.3.5
+      '@css-panda/css-unit': workspace:*
     dependencies:
-      '@css-panda/parser': link:../parser
-      '@css-panda/types': link:../types
-      debug: 4.3.4
-      filespy: 1.2.4
-      hookable: 5.1.1
-      unconfig: 0.3.5
-    devDependencies:
-      '@types/debug': 4.1.7
+      '@css-panda/css-unit': link:../css-unit
 
   packages/calc:
     specifiers: {}
@@ -85,6 +72,9 @@ importers:
       unconfig: 0.3.5
     devDependencies:
       '@types/debug': 4.1.7
+
+  packages/css-unit:
+    specifiers: {}
 
   packages/css-var:
     specifiers: {}

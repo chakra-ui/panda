@@ -20,4 +20,6 @@ export type TDotPath = Record<string, any> | string;
 
 export type DotPath<T extends TDotPath> = Join<PathsToStringProps<T>, '.'>;
 
-export type Primitive = string | number;
+export type Primitive = string | number | boolean | null | undefined;
+
+export type Entry<T> = [keyof T, T[keyof T]];

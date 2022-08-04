@@ -1,7 +1,7 @@
 {
-  "name": "@css-panda/breakpoint-utils",
+  "name": "@css-panda/css-unit",
   "version": "0.0.1",
-  "description": "Common breakpoint utilities",
+  "description": "The css unit utility",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -12,8 +12,5 @@
   },
   "files": [
     "dist"
-  ],
-  "dependencies": {
-    "@css-panda/css-unit": "workspace:*"
-  }
+  ]
 }
