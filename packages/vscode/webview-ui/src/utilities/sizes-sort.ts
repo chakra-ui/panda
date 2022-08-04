@@ -1,4 +1,4 @@
-import { SizesProps } from '../components/Sizes';
+import { SizesProps } from '../components/size-docs';
 
 export function getSortedSizes(sizes: SizesProps['sizes']) {
   return Object.entries(sizes).sort(([a], [b]) => {

@@ -1,5 +1,5 @@
 import { commands, ExtensionContext, window } from 'vscode';
-import { SidebarProvider } from './SidebarProvider';
+import { SidebarProvider } from './sidebar-provider';
 
 export function activate(context: ExtensionContext) {
   // Register the Sidebar Panel

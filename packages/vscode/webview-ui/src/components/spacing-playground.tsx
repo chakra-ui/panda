@@ -7,9 +7,8 @@ import {
 } from '@vscode/webview-ui-toolkit/react';
 import { useState } from 'react';
 import { Config } from '../types';
-import { remToPixels } from '../utilities/rem-to-pixels';
 import { getSortedSizes } from '../utilities/sizes-sort';
-import { renderPixels } from './Sizes';
+import { renderPixels } from './size-docs';
 
 export type SpacingPlaygroundProps = { sizes: Config['sizes'] };
 

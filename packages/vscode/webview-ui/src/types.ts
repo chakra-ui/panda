@@ -1,4 +1,4 @@
-import { Colors } from './components/Colors';
+import { Colors } from './components/color-docs';
 
 export type Shades = Record<string | number, string>;
 export type Colors = Record<string, string | Shades>;

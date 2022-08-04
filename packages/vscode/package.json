@@ -1,5 +1,5 @@
 {
-  "name": "pandacss",
+  "name": "@css-panda/vscode",
   "displayName": "Panda CSS",
   "description": "Panda CSS",
   "version": "0.0.1",
@@ -71,8 +71,8 @@
     "concurrently": "^7.3.0",
     "eslint": "^7.19.0",
     "glob": "^7.1.6",
-    "prettier": "^2.2.1",
-    "typescript": "^4.1.3",
+    "prettier": "^2.7.1",
+    "typescript": "^4.7.4",
     "vscode-test": "^1.5.0"
   },
   "dependencies": {

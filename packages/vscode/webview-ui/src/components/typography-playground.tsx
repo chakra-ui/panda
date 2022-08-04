@@ -1,5 +1,5 @@
 import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Config } from '../types';
 
 type TypographyPlaygroundProps = { config: Config };

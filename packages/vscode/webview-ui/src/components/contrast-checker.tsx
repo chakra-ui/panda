@@ -2,8 +2,7 @@ import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react';
 import { useState } from 'react';
 import { Config } from '../types';
 import { getContrastPairs, getContrastRatio } from '../utilities/color';
-import { ErrorIcon } from './ErrorIcon';
-import { SuccessIcon } from './SuccesIcon';
+import { ErrorIcon, SuccessIcon } from './icons';
 
 type ContrastCheckerProps = {
   colors: Config['colors'];

@@ -1,13 +1,13 @@
 import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react';
 import './App.css';
 import { useEffect, useState } from 'react';
-import { Colors } from './components/Colors';
-import { FontTokens } from './components/FontTokens';
+import { Colors } from './components/color-docs';
+import { FontTokens } from './components/font-docs';
 import { navItems, NavKeys } from './utilities/constants';
-import { TypographyPlayground } from './components/TypographyPlayground';
-import { Sizes } from './components/Sizes';
-import { SpacingPlayground } from './components/SpacingPlayground';
-import { ContrastChecker } from './components/ContrastChecker';
+import { TypographyPlayground } from './components/typography-playground';
+import { Sizes } from './components/size-docs';
+import { SpacingPlayground } from './components/spacing-playground';
+import { ContrastChecker } from './components/contrast-checker';
 
 function App() {
   const [config, setConfig] = useState(window.config);

@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { getUri } from "./utilities/getUri";
+import { getUri } from "./utilities/get-uri";
 import { requireModule } from "./utilities/require-config";
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
