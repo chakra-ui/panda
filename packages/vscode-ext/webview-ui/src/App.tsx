@@ -11,8 +11,7 @@ import { ContrastChecker } from './components/ContrastChecker';
 
 function App() {
   const [config, setConfig] = useState(window.config);
-  const [page, setPage] = useState(NavKeys.CONTRAST_CHECKER);
-  // const [page, setPage] = useState(NavKeys.COLORS);
+  const [page, setPage] = useState(NavKeys.COLORS);
 
   useEffect(() => {
     // Listen for messages from the extension
