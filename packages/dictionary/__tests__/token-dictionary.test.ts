@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import { semanticTokens, tokens } from '@css-panda/fixture';
-import { createTokenDictionary } from '../src/token-dictionary';
+import { Dictionary } from '../src/token-dictionary';
 
 describe('Token types', () => {
   test('semantic tokens', () => {
-    expect(createTokenDictionary(tokens, semanticTokens)).toMatchInlineSnapshot(`
+    expect(new Dictionary({ tokens, semanticTokens })).toMatchInlineSnapshot(`
       _Dictionary {
         "conditionVars": Map {
           "dark" => Map {

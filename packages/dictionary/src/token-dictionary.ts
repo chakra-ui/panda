@@ -12,18 +12,53 @@ type VarData = Record<'type' | 'value', string>;
  * - serves as the interface to other systems
  * - supports semantic tokens
  */
-class Dictionary {
+export class Dictionary {
   /**
    * The original token definitions
    */
   #tokens: Partial<Tokens>;
+  #semanticTokens: TSemanticTokens;
 
-  setTokens(tokens: Partial<Tokens>) {
+  constructor({ tokens, semanticTokens = {} }: { tokens: Partial<Tokens>; semanticTokens?: TSemanticTokens }) {
     this.#tokens = tokens;
+    this.#semanticTokens = semanticTokens;
+    this.registerTokens();
+    this.registerSemanticTokens();
+    return this;
   }
 
-  getTokens() {
-    return this.#tokens;
+  registerTokens() {
+    assignTokens(this.#tokens, (data) => {
+      this.values.set(data.prop, data);
+      this.vars.set(data.var, {
+        type: data.type,
+        value: data.value,
+      });
+    });
+  }
+
+  registerSemanticTokens() {
+    assignSemanticTokens(this.#semanticTokens, (data, condition) => {
+      const value = this.getRef(data.type, data.value);
+
+      match([condition, data.negative])
+        .with(['raw', true], () => {
+          data.value = data.varRef;
+          this.values.set(data.prop, data);
+        })
+        .with(['raw', false], () => {
+          data.value = data.varRef;
+          this.values.set(data.prop, data);
+          this.vars.set(data.var, { type: data.type, value });
+        })
+        .with([P.string, false], () => {
+          if (!this.conditionVars.get(condition)) {
+            this.conditionVars.set(condition, new Map());
+          }
+          this.conditionVars.get(condition)!.set(data.var, { type: data.type, value });
+        })
+        .otherwise(() => {});
+    });
   }
 
   /**
@@ -88,41 +123,4 @@ class Dictionary {
     const item = this.assert(category, value);
     return item?.varRef ?? value;
   }
-}
-
-/**
- * Returns the token dictionary for the given tokens and semantic tokens
- */
-export function createTokenDictionary(tokens: Partial<Tokens>, semanticTokens: TSemanticTokens = {}): Dictionary {
-  const dict = new Dictionary();
-  dict.setTokens(tokens);
-
-  assignTokens(tokens, (data) => {
-    dict.values.set(data.prop, data);
-    dict.vars.set(data.var, { type: data.type, value: data.value });
-  });
-
-  assignSemanticTokens(semanticTokens, (data, condition) => {
-    const value = dict.getRef(data.type, data.value);
-
-    match([condition, data.negative])
-      .with(['raw', true], () => {
-        data.value = data.varRef;
-        dict.values.set(data.prop, data);
-      })
-      .with(['raw', false], () => {
-        data.value = data.varRef;
-        dict.values.set(data.prop, data);
-        dict.vars.set(data.var, { type: data.type, value });
-      })
-      .with([P.string, false], () => {
-        if (!dict.conditionVars.get(condition)) {
-          dict.conditionVars.set(condition, new Map());
-        }
-        dict.conditionVars.get(condition)!.set(data.var, { type: data.type, value });
-      })
-      .otherwise(() => {});
-  });
-
-  return dict;
 }
