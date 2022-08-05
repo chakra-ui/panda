@@ -6,7 +6,7 @@
     "build": "pnpm -r build",
     "test": "vitest",
     "test-watch": "vitest --watch -u",
-    "extension-watch": "pnpm --prefix ./packages/vscode-ext run watch:extension"
+    "extension-watch": "pnpm --prefix ./packages/vscode run watch:extension"
   },
   "keywords": [],
   "author": "",
