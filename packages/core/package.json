@@ -18,10 +18,11 @@
     "@css-panda/parser": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "@css-panda/atomic": "workspace:*",
-    "debug": "^4.3.4",
     "filespy": "^1.2.4",
+    "find-up": "^6.3.0",
     "hookable": "^5.1.1",
-    "unconfig": "^0.3.5"
+    "pkg-types": "^0.3.3"
+    
   },
   "devDependencies": {
     "@types/debug": "^4.1.7"
