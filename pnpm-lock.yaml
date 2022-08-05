@@ -192,13 +192,11 @@ importers:
       react-dom: ^17.0.2
       typescript: ^4.4.4
       vite: ^2.7.2
-      webview-ui: link:webview-ui
     dependencies:
       '@vscode/webview-ui-toolkit': 1.0.0_react@17.0.2
       color-contrast-checker: 2.1.0
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
-      webview-ui: link:webview-ui
     devDependencies:
       '@types/react': 17.0.48
       '@types/react-dom': 17.0.17
