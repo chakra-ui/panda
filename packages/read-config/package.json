@@ -1,0 +1,19 @@
+{
+  "name": "@css-panda/read-config",
+  "version": "0.0.1",
+  "description": "Find and load panda config",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "author": "Abraham Aremu <anubra266@gmail.com>",
+  "scripts": {
+    "build": "tsup src/ --dts",
+    "dev": "pnpm build --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "unconfig": "^0.3.5"
+  }
+}
