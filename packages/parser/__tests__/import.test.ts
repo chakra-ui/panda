@@ -44,7 +44,6 @@ describe('extract imports', () => {
         "result": {
           "alias": "nCss",
           "identifer": "css",
-          "imported": true,
         },
       }
     `);
