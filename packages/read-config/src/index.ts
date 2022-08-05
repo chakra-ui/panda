@@ -11,7 +11,7 @@ export class Config {
   private root: string | undefined;
   private config: ConfigType | undefined;
 
-  public resolveConfig() {
+  public load() {
     return loadConfig({
       sources: [
         {
@@ -22,10 +22,6 @@ export class Config {
       merge: false,
       cwd: this.root,
     });
-  }
-
-  public load() {
-    return Promise.resolve(this.resolveConfig());
   }
 
   public readConfig() {

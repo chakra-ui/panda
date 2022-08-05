@@ -14,7 +14,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const workspaceUri = workspaceFolder?.uri;
     const configInstance = new Config(workspaceUri?.fsPath);
 
-    configInstance.resolveConfig().then(({ config }) => {
+    configInstance.load().then(({ config }) => {
       view?.webview.postMessage({
         type: 'onConfigChange',
         value: config,
