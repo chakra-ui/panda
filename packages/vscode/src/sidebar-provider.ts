@@ -37,6 +37,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     // Listen for messages from the Sidebar component and execute action
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
+        case 'reload': {
+          webviewView.webview.html = 'reload';
+          webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+          break;
+        }
         case 'fetchConfig': {
           this.sendConfig();
           break;
@@ -70,11 +75,16 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const scriptUri = getUri(webview, this._extensionUri, ['webview-ui', 'build', 'assets', 'index.js']);
 
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    const workspaceUri = workspaceFolder?.uri;
+    const configInstance = new Config(workspaceUri?.fsPath);
+
     if (workspaceFolder) {
-      const watcher = vscode.workspace.createFileSystemWatcher(
-        new vscode.RelativePattern(workspaceFolder, 'panda.config.ts')
-      );
-      watcher.onDidChange(() => this.sendConfig(this._view));
+      configInstance.load().then(({ source }) => {
+        if (source) {
+          const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolder, source));
+          watcher.onDidChange(() => this.sendConfig(this._view));
+        }
+      });
     }
 
     // Tip: Install the es6-string-html VS Code extension to enable code highlighting below
@@ -85,7 +95,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
          <meta charset="UTF-8" />
          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
          <link rel="stylesheet" type="text/css" href="${stylesUri}">
-         <title>Hello World</title>
+         <title>Panda CSS</title>
        </head>
        <body>
         <div id="root"></div>

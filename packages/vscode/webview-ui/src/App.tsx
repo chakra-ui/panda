@@ -1,4 +1,4 @@
-import { VSCodeDropdown, VSCodeOption, VSCodeProgressRing } from '@vscode/webview-ui-toolkit/react';
+import { VSCodeButton, VSCodeDropdown, VSCodeOption, VSCodeProgressRing } from '@vscode/webview-ui-toolkit/react';
 import './App.css';
 import { useEffect, useState } from 'react';
 import { Colors } from './components/color-docs';
@@ -15,6 +15,10 @@ function App() {
   const [config, setConfig] = useState<Config | null>(null);
   const [page, setPage] = useState(NavKeys.COLORS);
   const [loadingConfig, setLoadingConfig] = useState(true);
+
+  const reload = () => {
+    vscode.postMessage({ type: 'reload' });
+  };
 
   useEffect(() => {
     vscode.postMessage({ type: 'fetchConfig' });
@@ -43,7 +47,13 @@ function App() {
       </div>
     );
   }
-  if (!config) return 'No config';
+  if (!config)
+    return (
+      <div>
+        <p>Panda config not found, create a config and reload</p>
+        <VSCodeButton onClick={reload}>Reload </VSCodeButton>
+      </div>
+    );
 
   return (
     <main>

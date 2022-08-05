@@ -1,4 +1,6 @@
 import { loadConfig } from 'unconfig';
+import { dset } from 'dset';
+import delve from 'dlv';
 
 type ConfigType = Record<string, any>;
 
@@ -10,9 +12,10 @@ export class Config {
 
   private root: string | undefined;
   private config: ConfigType | undefined;
+  public source: string | undefined;
 
-  public load() {
-    return loadConfig({
+  public async load() {
+    const { config, sources } = await loadConfig({
       sources: [
         {
           files: 'panda.config',
@@ -22,6 +25,10 @@ export class Config {
       merge: false,
       cwd: this.root,
     });
+    const source = sources.length ? /[^/]*$/.exec(sources[0])?.[0] : undefined;
+    this.config = config as ConfigType;
+    this.source = source;
+    return { config, source };
   }
 
   public readConfig() {
@@ -30,26 +37,13 @@ export class Config {
 
   public get(path: string) {
     if (!this.config) return undefined;
-    const keys = path.split('.');
-    const value = keys.reduce((acc, nxt) => acc?.[nxt], this.config);
-    return value;
+    return delve(this.config, path);
   }
 
   public set(path: string, value: any) {
     if (!this.config) return undefined;
-    const keys = path.split('.');
     let obj = this.config;
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-      const next = keys[i + 1];
-      if (next === undefined) {
-        obj[key] = value;
-        break;
-      }
-      obj = obj[key];
-    }
-
-    this.config = obj;
+    dset(obj, path, value);
     return obj;
   }
 }
