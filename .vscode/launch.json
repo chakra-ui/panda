@@ -8,9 +8,9 @@
       "name": "Run Extension",
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}/packages/vscode-ext"],
-      "outFiles": ["${workspaceFolder}/packages/vscode-ext/out/**/*.js"],
-      "preLaunchTask": "npm: watch-extension"
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/packages/vscode"],
+      "outFiles": ["${workspaceFolder}/packages/vscode/out/**/*.js"],
+      "preLaunchTask": "npm: extension-watch"
     }
   ]
 }

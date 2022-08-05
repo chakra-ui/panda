@@ -1,12 +1,26 @@
-import * as vscode from "vscode";
-import { getUri } from "./utilities/get-uri";
-import { requireModule } from "./utilities/require-config";
+import * as vscode from 'vscode';
+import { getUri } from './utilities/get-uri';
+import { Config } from '@css-panda/read-config';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
+
+  public sendConfig(_view?: vscode.WebviewView) {
+    const view = _view || this._view;
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    const workspaceUri = workspaceFolder?.uri;
+    const configInstance = new Config(workspaceUri?.fsPath);
+
+    configInstance.load().then(({ config }) => {
+      view?.webview.postMessage({
+        type: 'onConfigChange',
+        value: config,
+      });
+    });
+  }
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
     this._view = webviewView;
@@ -23,14 +37,23 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     // Listen for messages from the Sidebar component and execute action
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
-        case "onInfo": {
+        case 'reload': {
+          webviewView.webview.html = 'reload';
+          webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+          break;
+        }
+        case 'fetchConfig': {
+          this.sendConfig();
+          break;
+        }
+        case 'onInfo': {
           if (!data.value) {
             return;
           }
           vscode.window.showInformationMessage(data.value);
           break;
         }
-        case "onError": {
+        case 'onError': {
           if (!data.value) {
             return;
           }
@@ -47,44 +70,20 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     // The CSS file from the React build output
-    const stylesUri = getUri(webview, this._extensionUri, [
-      "webview-ui",
-      "build",
-      "assets",
-      "index.css",
-    ]);
+    const stylesUri = getUri(webview, this._extensionUri, ['webview-ui', 'build', 'assets', 'index.css']);
     // The JS file from the React build output
-    const scriptUri = getUri(webview, this._extensionUri, [
-      "webview-ui",
-      "build",
-      "assets",
-      "index.js",
-    ]);
+    const scriptUri = getUri(webview, this._extensionUri, ['webview-ui', 'build', 'assets', 'index.js']);
 
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     const workspaceUri = workspaceFolder?.uri;
-    const configPath = vscode.Uri.joinPath(
-      workspaceUri!,
-      "panda.config.ts"
-    ).fsPath;
-    let config;
-
-    try {
-      config = requireModule(configPath);
-    } catch (error) {}
-
-    if (!config) return "panda.config.ts not found";
+    const configInstance = new Config(workspaceUri?.fsPath);
 
     if (workspaceFolder) {
-      const watcher = vscode.workspace.createFileSystemWatcher(
-        new vscode.RelativePattern(workspaceFolder, "panda.config.ts")
-      );
-      watcher.onDidChange((uri) => {
-        const newConfig = requireModule(uri.path);
-        this._view?.webview.postMessage({
-          type: "onConfigChange",
-          value: newConfig,
-        });
+      configInstance.load().then(({ source }) => {
+        if (source) {
+          const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolder, source));
+          watcher.onDidChange(() => this.sendConfig(this._view));
+        }
       });
     }
 
@@ -96,13 +95,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
          <meta charset="UTF-8" />
          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
          <link rel="stylesheet" type="text/css" href="${stylesUri}">
-         <title>Hello World</title>
+         <title>Panda CSS</title>
        </head>
        <body>
         <div id="root"></div>
-        <script>
-          window.config = ${JSON.stringify(config)}
-        </script>
+      
         <script type="module" src="${scriptUri}"></script>
        </body>
      </html>
