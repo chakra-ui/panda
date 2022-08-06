@@ -48,15 +48,7 @@ type Utilities<T extends TDotPath> = {
   [utility: string]: (options: { value: string; $: TokenGetter<T> }) => CSSPropertiesWithSelectors
 }
 
-/**
- * css - css variables based on token definitions
- * cjs - commonjs module for tokens
- * esm - esm module for tokens
- * dts - type definition file for tokens
- * tw - tailwind preset
- * sd - style dictionary config
- */
-export type Format = 'css' | 'cjs' | 'esm' | 'dts' | 'tw' | 'sd'
+export type Format = 'css' | 'cjs' | 'esm' | 'dts'
 
 export type Config<Conditions extends TCondition, Breakpoints extends TBreakpoints, Tokens extends TTokens> = {
   format: Format[]
