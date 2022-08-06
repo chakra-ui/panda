@@ -89,6 +89,7 @@ type ConditionType =
   | 'resolution'
   | 'writing-mode'
   | 'pseudo'
+  | 'selector'
   | 'viewport'
   | 'interaction-media'
   | 'reduced-motion'

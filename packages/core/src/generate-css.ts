@@ -1,15 +1,15 @@
 import { Dictionary, VarData } from '@css-panda/dictionary'
-import { toCss } from '@css-panda/atomic'
+import { toCss, expandKeyframes } from '@css-panda/atomic'
 import { error } from '@css-panda/logger'
-import outdent from 'outdent'
 
-type CssOptions = {
+type GenerateCssOptions = {
   root: string
   conditions?: Record<string, string>
+  keyframes?: Record<string, any>
 }
 
-export function generateCss(dict: Dictionary, options?: CssOptions) {
-  const { root = ':where(:root, :host)', conditions = {} } = options ?? {}
+export function generateCss(dict: Dictionary, options?: GenerateCssOptions) {
+  const { root = ':where(:root, :host)', conditions = {}, keyframes } = options ?? {}
 
   function inner(vars: Map<string, VarData>) {
     const map = new Map<string, string>()
@@ -25,22 +25,23 @@ export function generateCss(dict: Dictionary, options?: CssOptions) {
     return css
   }
 
-  const base = inner(dict.vars)
-
-  const conditionMap: string[] = []
+  const output = [inner(dict.vars)]
 
   for (const [condition, value] of dict.conditionVars) {
+    //
     const rawCondition = conditions[condition]
+
     if (!rawCondition) {
       error(`Condition ${condition} is not defined`)
       continue
     }
-    const conditionCss = inner(value)
-    conditionMap.push(`${rawCondition} {\n ${conditionCss} \n}`)
+
+    output.push(`${rawCondition} {\n ${inner(value)} \n}`)
   }
 
-  return outdent`
-  ${base}
+  if (keyframes) {
+    output.push(expandKeyframes(keyframes))
+  }
 
-  ${conditionMap.join('\n\n')}`
+  return output.join('\n\n')
 }
