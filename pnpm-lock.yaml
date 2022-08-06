@@ -59,13 +59,14 @@ importers:
       '@css-panda/parser': workspace:*
       '@css-panda/types': workspace:*
       '@types/debug': ^4.1.7
+      '@types/pluralize': ^0.0.29
       filespy: ^1.2.4
       find-up: ^6.3.0
       hookable: ^5.1.1
       pkg-types: ^0.3.3
+      pluralize: ^8.0.0
     dependencies:
       '@css-panda/atomic': link:../atomic
-      '@css-panda/dictionary': link:../dictionary
       '@css-panda/fixture': link:../fixture
       '@css-panda/logger': link:../logger
       '@css-panda/parser': link:../parser
@@ -74,8 +75,11 @@ importers:
       find-up: 6.3.0
       hookable: 5.1.1
       pkg-types: 0.3.3
+      pluralize: 8.0.0
     devDependencies:
+      '@css-panda/dictionary': link:../dictionary
       '@types/debug': 4.1.7
+      '@types/pluralize': 0.0.29
 
   packages/css-unit:
     specifiers: {}
@@ -817,6 +821,10 @@ packages:
 
   /@types/node/18.6.1:
     resolution: {integrity: sha512-z+2vB6yDt1fNwKOeGbckpmirO+VBDuQqecXkgeIqDlaOtmKn6hPR/viQ8cxCfqLU4fTlvM3+YjM367TukWdxpg==}
+
+  /@types/pluralize/0.0.29:
+    resolution: {integrity: sha512-BYOID+l2Aco2nBik+iYS4SZX0Lf20KPILP5RGmM1IgzdwNdTs0eebiFriOPcej1sX9mLnSoiNte5zcFxssgpGA==}
+    dev: true
 
   /@types/postcss-js/4.0.0:
     resolution: {integrity: sha512-ieu0u7T7jnUCFmXcf8JzoJ3/1U5NI3ZYpfX5zW2td0x/BqVQrpCQ6uOY9Ef/0WJuIjc9OCtdfYF/JE7MGax2TA==}
@@ -2339,6 +2347,11 @@ packages:
       jsonc-parser: 3.1.0
       mlly: 0.5.7
       pathe: 0.3.3
+    dev: false
+
+  /pluralize/8.0.0:
+    resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
+    engines: {node: '>=4'}
     dev: false
 
   /postcss-js/4.0.0_postcss@8.4.14:

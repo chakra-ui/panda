@@ -10,7 +10,7 @@ export function getTokenData(category: string, entry: Entry, options: Options = 
     negative: !!negative,
     key: negative ? `-${key}` : key,
     keyRef: negative ? `-$${key}` : `$${key}`,
-    type: category,
+    category,
     value: negative ? calc.negate(value) : value,
     prop: negative ? `${category}.-${key}` : `${category}.${key}`,
     var: variable.var,
@@ -40,7 +40,7 @@ export type TokenData = {
   /**
    * The category or group of the token (e.g 'colors')
    */
-  type: string;
+  category: string;
   /**
    * The value of the token (e.g '#00ff00').
    * If the token is a semantic token, value will be the variable ref

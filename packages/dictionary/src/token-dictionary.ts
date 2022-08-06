@@ -1,10 +1,10 @@
 import { TokenError } from '@css-panda/error';
 import { Tokens, TSemanticTokens } from '@css-panda/types';
 import { match, P } from 'ts-pattern';
-import { assignSemanticTokens, assignTokens } from './assign-token';
+import { mapSemanticTokens, mapTokens } from './map-token';
 import { TokenData } from './get-token-data';
 
-type VarData = Record<'type' | 'value', string>;
+type VarData = Record<'category' | 'value', string>;
 
 /**
  * The token dictionary is a map of tokens to values
@@ -22,24 +22,23 @@ export class Dictionary {
   constructor({ tokens, semanticTokens = {} }: { tokens: Partial<Tokens>; semanticTokens?: TSemanticTokens }) {
     this.#tokens = tokens;
     this.#semanticTokens = semanticTokens;
-    this.registerTokens();
-    this.registerSemanticTokens();
-    return this;
+    this.assignTokens();
+    this.assignSemanticTokens();
   }
 
-  registerTokens() {
-    assignTokens(this.#tokens, (data) => {
+  assignTokens() {
+    mapTokens(this.#tokens, (data) => {
       this.values.set(data.prop, data);
       this.vars.set(data.var, {
-        type: data.type,
+        category: data.category,
         value: data.value,
       });
     });
   }
 
-  registerSemanticTokens() {
-    assignSemanticTokens(this.#semanticTokens, (data, condition) => {
-      const value = this.getRef(data.type, data.value);
+  assignSemanticTokens() {
+    mapSemanticTokens(this.#semanticTokens, (data, condition) => {
+      const value = this.getRef(data.category, data.value);
 
       match([condition, data.negative])
         .with(['raw', true], () => {
@@ -49,13 +48,19 @@ export class Dictionary {
         .with(['raw', false], () => {
           data.value = data.varRef;
           this.values.set(data.prop, data);
-          this.vars.set(data.var, { type: data.type, value });
+          this.vars.set(data.var, {
+            category: data.category,
+            value,
+          });
         })
         .with([P.string, false], () => {
           if (!this.conditionVars.get(condition)) {
             this.conditionVars.set(condition, new Map());
           }
-          this.conditionVars.get(condition)!.set(data.var, { type: data.type, value });
+          this.conditionVars.get(condition)!.set(data.var, {
+            category: data.category,
+            value,
+          });
         })
         .otherwise(() => {});
     });
@@ -122,5 +127,17 @@ export class Dictionary {
   getRef(category: string, value: string) {
     const item = this.assert(category, value);
     return item?.varRef ?? value;
+  }
+
+  /**
+   * A map of the category to the token values
+   */
+  get categoryMap() {
+    const map = new Map<string, Map<string, TokenData>>();
+    for (const value of this.values.values()) {
+      map.get(value.category) ?? map.set(value.category, new Map());
+      map.get(value.category)!.set(value.key, value);
+    }
+    return map;
   }
 }

@@ -4,7 +4,7 @@ import { objectEntries } from './entries';
 import { getTokenData, TokenData } from './get-token-data';
 import { getSemanticTokenMap, getTokenMap } from './token-map';
 
-export function assignTokens(tokens: Partial<Tokens>, callback: (data: TokenData) => void) {
+export function mapTokens(tokens: Partial<Tokens>, callback: (data: TokenData) => void) {
   for (const entry of objectEntries(tokens)) {
     match(entry)
       .with({ type: 'colors' }, ({ type, values }) => {
@@ -30,7 +30,7 @@ export function assignTokens(tokens: Partial<Tokens>, callback: (data: TokenData
   }
 }
 
-export function assignSemanticTokens(tokens: TSemanticTokens, callback: (data: TokenData, condition: string) => void) {
+export function mapSemanticTokens(tokens: TSemanticTokens, callback: (data: TokenData, condition: string) => void) {
   for (const entry of objectEntries(tokens)) {
     const map = getSemanticTokenMap(entry.values);
     match(entry)
