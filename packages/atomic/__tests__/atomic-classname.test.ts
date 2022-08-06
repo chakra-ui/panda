@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { getAtomicClassName } from '../src/atomic-classname'
-import { createContext } from '../src/fixture'
+import { createContext } from './fixture'
 
 describe('generate classnames', () => {
   test('should convert object to class', () => {

@@ -1,16 +1,24 @@
-export type ConditionType = 'at-rule' | 'parent-selector' | 'pseudo-selector' | 'breakpoint'
+export type BaseConditionType = 'at-rule' | 'parent-selector' | 'pseudo-selector'
 
-export type Condition =
-  | {
-      type: 'color-scheme'
-      value: string
-      colorScheme: 'light' | 'dark'
-    }
-  | {
-      type: ConditionType
-      value: string
-      [key: string]: string
-    }
+type ColorSchemeCondition = {
+  type: 'color-scheme'
+  value: string
+  colorScheme: 'light' | 'dark'
+}
+
+type ScreenCondition = {
+  type: 'screen'
+  value: string
+  name?: string
+}
+
+export type BaseCondition = {
+  type: BaseConditionType
+  value: string
+  [key: string]: string
+}
+
+export type Condition = ColorSchemeCondition | ScreenCondition | BaseCondition
 
 export type Conditions = {
   [key: string]: Condition

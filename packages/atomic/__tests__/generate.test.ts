@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { createContext } from '../src/fixture'
+import { createContext } from './fixture'
 import { generate } from '../src/generate'
 
 function run(fn: Function) {
