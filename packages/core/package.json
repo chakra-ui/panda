@@ -22,6 +22,7 @@
     "filespy": "^1.2.4",
     "find-up": "^6.3.0",
     "hookable": "^5.1.1",
+    "outdent": " ^0.8.0",
     "pkg-types": "^0.3.3",
     "pluralize": "^8.0.0"
   },

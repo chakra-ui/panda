@@ -65,6 +65,7 @@ importers:
       filespy: ^1.2.4
       find-up: ^6.3.0
       hookable: ^5.1.1
+      outdent: ' ^0.8.0'
       pkg-types: ^0.3.3
       pluralize: ^8.0.0
     dependencies:
@@ -76,6 +77,7 @@ importers:
       filespy: 1.2.4
       find-up: 6.3.0
       hookable: 5.1.1
+      outdent: 0.8.0
       pkg-types: 0.3.3
       pluralize: 8.0.0
     devDependencies:
@@ -2281,6 +2283,10 @@ packages:
       type-check: 0.4.0
       word-wrap: 1.2.3
     dev: true
+
+  /outdent/0.8.0:
+    resolution: {integrity: sha512-KiOAIsdpUTcAXuykya5fnVVT+/5uS0Q1mrkRHcF89tpieSmY33O/tmc54CqwA+bfhbtEfZUNLHaPUiB9X3jt1A==}
+    dev: false
 
   /p-limit/4.0.0:
     resolution: {integrity: sha512-5b0R4txpzjPWVw/cXXUResoD4hb6U/x9BH08L7nw+GN1sezDzPdxeRvpc9c433fZhBan/wusjbCsqwqm4EIBIQ==}
