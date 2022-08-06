@@ -10,9 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:pandacss.sayhello",
-    "onView:pandacss-sidebar",
-    "onCommand:pandacss.askquestion"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
