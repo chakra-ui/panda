@@ -10,5 +10,5 @@ export function toCss(styles: Dict) {
     }),
   ]).process(styles, {
     parser: postcssJs as CssInJs,
-  }).root.nodes
+  })
 }

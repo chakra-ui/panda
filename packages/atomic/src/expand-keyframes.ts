@@ -7,7 +7,7 @@ function expandKeyframe(name: string, dfn: Dict) {
     .atRule({
       name: 'keyframes',
       params: name,
-      nodes: toCss(dfn),
+      nodes: toCss(dfn).root.nodes,
     })
     .toString()
 }

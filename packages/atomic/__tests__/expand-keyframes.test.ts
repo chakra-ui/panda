@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { expandKeyframes } from '../src/keyframes'
+import { expandKeyframes } from '../src/expand-keyframes'
 import { keyframes } from '@css-panda/fixture'
 
 describe('Generates keyframes', () => {

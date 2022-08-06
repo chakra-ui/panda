@@ -52,7 +52,8 @@ export function generate(
       const transformed = ctx.transform(prop, value)
 
       // convert css-in-js to css rule
-      const rawNodes = toCss(transformed.styles)
+      const cssRoot = toCss(transformed.styles)
+      const rawNodes = cssRoot.root.nodes
 
       // get the base class name
       const baseArray = [...conditions, transformed.className]

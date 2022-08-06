@@ -1,7 +1,7 @@
 import { walkObject } from '@css-panda/walk-object'
 import { Dict, GeneratorContext } from './types'
 
-export function classNames(props: Dict) {
+export function getAtomicClassName(props: Dict) {
   const { selectors = {}, '@media': mediaQueries = {}, ...styles } = props
 
   return (ctx: GeneratorContext) => {

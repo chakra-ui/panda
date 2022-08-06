@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'vitest'
-import { classNames } from '../src/classnames'
+import { getAtomicClassName } from '../src/atomic-classname'
 import { createContext } from '../src/fixture'
 
 describe('generate classnames', () => {
   test('should convert object to class', () => {
     expect(
-      classNames({
+      getAtomicClassName({
         color: { light: 'red', dark: 'green' },
         opacity: { dark: 'slate400' },
       })(createContext()),
@@ -18,7 +18,7 @@ describe('generate classnames', () => {
     `)
 
     expect(
-      classNames({
+      getAtomicClassName({
         top: { sm: { rtl: '20px', hover: '50px' }, lg: '120px' },
       })(createContext()),
     ).toMatchInlineSnapshot(`
@@ -30,7 +30,7 @@ describe('generate classnames', () => {
     `)
 
     expect(
-      classNames({
+      getAtomicClassName({
         left: { _: '20px', md: '40px' },
       })(createContext()),
     ).toMatchInlineSnapshot(`
