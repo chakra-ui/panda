@@ -1,27 +1,32 @@
-export const conditions = {
-  even: { selector: ':even' },
-  odd: { selector: ':odd' },
+import { Conditions } from '@css-panda/types'
+import { breakpoints } from './breakpoints'
 
-  before: { selector: '::before' },
-  after: { selector: '::after' },
+export const conditions: Conditions = {
+  even: { type: 'pseudo-selector', value: '&:even' },
+  odd: { type: 'pseudo-selector', value: '&:odd' },
 
-  selection: { selector: '::selection' },
-  placeholder: { selector: '::placeholder' },
-  'motion-reduce': { '@media': '(prefers-reduced-motion: reduce)' },
+  hover: { type: 'pseudo-selector', value: '&:hover' },
+  focus: { type: 'pseudo-selector', value: '&:focus' },
+  disabled: { type: 'pseudo-selector', value: '&:disabled' },
+  active: { type: 'pseudo-selector', value: '&:active' },
 
-  hover: { selector: ':hover' },
-  focus: { selector: ':focus' },
-  disabled: { selector: ':disabled' },
-  active: { selector: ':active' },
-  'focus-visible': { selector: ':focus-visible' },
+  before: { type: 'pseudo-selector', value: '&::before' },
+  after: { type: 'pseudo-selector', value: '&::after' },
 
-  light: { '@media': '(prefers-color-scheme: light)' },
-  dark: { '@media': '(prefers-color-scheme: dark)' },
-  'constrast-more': { '@media': '(prefers-contrast: more)' },
-  'constrast-less': { '@media': '(prefers-contrast: less)' },
+  open: { type: 'pseudo-selector', value: '&[open]' },
 
-  ltr: { selector: '[dir=ltr] &' },
-  rtl: { selector: '[dir=rtl] &' },
+  'motion-reduce': { type: 'at-rule', value: '(prefers-reduced-motion: reduce)' },
 
-  open: { selector: '[open]' },
+  sm: { type: 'breakpoint', value: `@media (min-width: ${breakpoints.sm})` },
+  md: { type: 'breakpoint', value: `@media (min-width: ${breakpoints.md})` },
+  lg: { type: 'breakpoint', value: `@media (min-width: ${breakpoints.lg})` },
+  xl: { type: 'breakpoint', value: `@media (min-width: ${breakpoints.xl})` },
+  '2xl': { type: 'breakpoint', value: `@media (min-width: ${breakpoints['2xl']})` },
+
+  dark: { type: 'color-scheme', value: '[data-theme=dark]', colorScheme: 'dark' },
+  light: { type: 'color-scheme', value: '[data-theme=light]', colorScheme: 'light' },
+  hiConstrast: { type: 'at-rule', value: '@media (prefers-contrast: more)' },
+
+  ltr: { type: 'parent-selector', value: '[dir=ltr] &' },
+  rtl: { type: 'parent-selector', value: '[dir=rtl] &' },
 }
