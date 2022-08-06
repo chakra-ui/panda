@@ -4,7 +4,7 @@ import { match, P } from 'ts-pattern'
 import { mapSemanticTokens, mapTokens } from './map-token'
 import { TokenData } from './get-token-data'
 
-type VarData = Record<'category' | 'value', string>
+export type VarData = Record<'category' | 'value', string>
 
 /**
  * The token dictionary is a map of tokens to values
