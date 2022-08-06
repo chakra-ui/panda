@@ -82,3 +82,50 @@ updateTsConfig({
 
 updateGitIgnore({ comment: '# Panda', path: '.css-panda' })
 ```
+
+```ts
+type ConditionType =
+  | 'color-scheme'
+  | 'resolution'
+  | 'writing-mode'
+  | 'pseudo'
+  | 'viewport'
+  | 'interaction-media'
+  | 'reduced-motion'
+  | 'reduced-data'
+  | 'reduced-transparent'
+  | 'contrast'
+
+const conditions = {
+  dark: {
+    type: 'color-scheme',
+    value: '[data-theme=dark]',
+    colorScheme: 'dark',
+  },
+  darkDimmed: {
+    type: 'color-scheme',
+    value: '[data-theme=dark_dimmed]',
+    colorScheme: 'dark',
+  },
+  ltr: {
+    type: 'dir',
+    value: '[dir=rtl]',
+  },
+  rtl: {
+    type: 'dir',
+    value: '[dir=rtl]',
+  },
+  hover: {
+    type: 'pseudo',
+    value: '&:hover',
+  },
+  focus: {
+    type: 'pseudo',
+    value: '&:focus',
+  },
+  sm: {
+    type: 'viewport',
+    value: '@media (min-width: 480px)',
+  },
+}
+```
