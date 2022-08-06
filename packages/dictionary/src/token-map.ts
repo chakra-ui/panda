@@ -10,9 +10,9 @@ export function getTokenMap(values: Record<string, any>, options: { maxDepth?: n
   walkObject(
     values,
     (value, path) => {
-      if (value != null) {
+      
         map.set(path.join('.'), value);
-      }
+      
     },
     { maxDepth }
   );
