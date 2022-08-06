@@ -1,4 +1,5 @@
-import { commands, ExtensionContext, window } from 'vscode'
+import { commands, ConfigurationTarget, ExtensionContext, window, workspace } from 'vscode'
+import { Config } from '@css-panda/read-config'
 import { SidebarProvider } from './sidebar-provider'
 
 export function activate(context: ExtensionContext) {
@@ -20,4 +21,21 @@ export function activate(context: ExtensionContext) {
       }
     }),
   )
+
+  const configInstance = new Config(workspace.workspaceFolders?.[0]?.uri?.fsPath)
+
+  configInstance.load().then(({ config }) => {
+    if (!config) {
+      window.showErrorMessage('Panda config not found in workspace root.')
+    } else {
+      const pandaCSSVariablesPath = config.vscCssPath
+      const cssvars = workspace.getConfiguration('cssvar', workspace?.workspaceFolders?.[0]?.uri)
+      const cssvarsFiles = cssvars.get('files') as any[]
+      if (!cssvarsFiles) {
+        cssvars.update('files', [pandaCSSVariablesPath], ConfigurationTarget.Global)
+      } else if (!cssvarsFiles.includes(pandaCSSVariablesPath)) {
+        cssvars.update('files', [...cssvarsFiles, pandaCSSVariablesPath], ConfigurationTarget.Global)
+      }
+    }
+  })
 }

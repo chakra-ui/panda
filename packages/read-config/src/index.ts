@@ -2,7 +2,17 @@ import { loadConfig } from 'unconfig'
 import { dset } from 'dset'
 import delve from 'dlv'
 
-type ConfigType = Record<string, any>
+type ConfigType = ({ vscCssPath: string } & Record<string, any>) | undefined
+type Source = string | undefined
+
+type LoadReturn = {
+  config: ConfigType
+  source: Source
+}
+
+const DEFAULT_CONFIG = {
+  vscCssPath: './.panda/design-tokens/index.css',
+}
 
 export class Config {
   constructor(root?: string) {
@@ -11,11 +21,11 @@ export class Config {
   }
 
   private root: string | undefined
-  private config: ConfigType | undefined
-  public source: string | undefined
+  private config: ConfigType
+  public source: Source
 
   public async load() {
-    const { config, sources } = await loadConfig({
+    const { config: loadedConfig, sources } = await loadConfig({
       sources: [
         {
           files: 'panda.config',
@@ -25,10 +35,12 @@ export class Config {
       merge: false,
       cwd: this.root,
     })
+
     const source = sources.length ? /[^/]*$/.exec(sources[0])?.[0] : undefined
+    const config = { ...DEFAULT_CONFIG, ...(loadedConfig as ConfigType) }
     this.config = config as ConfigType
     this.source = source
-    return { config, source }
+    return { config, source } as LoadReturn
   }
 
   public readConfig() {
