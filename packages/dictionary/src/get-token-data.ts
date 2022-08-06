@@ -2,9 +2,13 @@ import { calc } from '@css-panda/calc'
 import { createVar } from '@css-panda/css-var'
 
 export function getTokenData(category: string, entry: Entry, options: Options = {}): TokenData {
-  const { negative } = options
+  const { negative, prefix } = options
+
   const [key, value] = entry
-  const variable = createVar(key, { prefix: category })
+
+  const variable = createVar(key, {
+    prefix: [prefix, category].filter(Boolean).join('-'),
+  })
 
   return {
     negative: !!negative,
@@ -20,6 +24,7 @@ export function getTokenData(category: string, entry: Entry, options: Options = 
 
 type Options = {
   negative?: boolean
+  prefix?: string
 }
 
 type Entry = [key: string, value: string]

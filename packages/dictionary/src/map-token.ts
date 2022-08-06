@@ -4,33 +4,43 @@ import { objectEntries } from './entries'
 import { getTokenData, TokenData } from './get-token-data'
 import { getSemanticTokenMap, getTokenMap } from './token-map'
 
-export function mapTokens(tokens: Partial<Tokens>, callback: (data: TokenData) => void) {
+export function mapTokens(
+  tokens: Partial<Tokens>,
+  callback: (data: TokenData) => void,
+  options: { prefix?: string } = {},
+) {
+  const { prefix } = options
   for (const entry of objectEntries(tokens)) {
     match(entry)
       .with({ type: 'colors' }, ({ type, values }) => {
         if (!values) return
         getTokenMap(values, { maxDepth: 3 }).forEach((value, key) => {
-          callback(getTokenData(type, [key, value]))
+          callback(getTokenData(type, [key, value], { prefix }))
         })
       })
       .with({ type: 'spacing' }, ({ type, values }) => {
         if (!values) return
         getTokenMap(values).forEach((value, key) => {
-          callback(getTokenData(type, [key, value]))
-          callback(getTokenData(type, [key, value], { negative: true }))
+          callback(getTokenData(type, [key, value], { prefix }))
+          callback(getTokenData(type, [key, value], { negative: true, prefix }))
         })
       })
       .otherwise((entry: any) => {
         const { type, values } = entry ?? {}
         if (!values) return
         getTokenMap(values).forEach((value, key) => {
-          callback(getTokenData(type, [key, value]))
+          callback(getTokenData(type, [key, value], { prefix }))
         })
       })
   }
 }
 
-export function mapSemanticTokens(tokens: TSemanticTokens, callback: (data: TokenData, condition: string) => void) {
+export function mapSemanticTokens(
+  tokens: TSemanticTokens,
+  callback: (data: TokenData, condition: string) => void,
+  options: { prefix?: string } = {},
+) {
+  const { prefix } = options
   for (const entry of objectEntries(tokens)) {
     const map = getSemanticTokenMap(entry.values)
     match(entry)
@@ -38,11 +48,11 @@ export function mapSemanticTokens(tokens: TSemanticTokens, callback: (data: Toke
         map.forEach((values, condition) => {
           values.forEach((value, key) => {
             // positive
-            const data = getTokenData(entry.type, [key, value])
+            const data = getTokenData(entry.type, [key, value], { prefix })
             callback(data, condition)
 
             // negative
-            const negativeData = getTokenData(entry.type, [key, value], { negative: true })
+            const negativeData = getTokenData(entry.type, [key, value], { negative: true, prefix })
             callback(negativeData, condition)
           })
         })
@@ -50,7 +60,7 @@ export function mapSemanticTokens(tokens: TSemanticTokens, callback: (data: Toke
       .otherwise(() => {
         map.forEach((values, condition) => {
           values.forEach((value, key) => {
-            const data = getTokenData(entry.type, [key, value])
+            const data = getTokenData(entry.type, [key, value], { prefix })
             callback(data, condition)
           })
         })

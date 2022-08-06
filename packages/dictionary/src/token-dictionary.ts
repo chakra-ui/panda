@@ -18,52 +18,70 @@ export class Dictionary {
    */
   #tokens: Partial<Tokens>
   #semanticTokens: TSemanticTokens
+  #prefix: string | undefined
 
-  constructor({ tokens, semanticTokens = {} }: { tokens: Partial<Tokens>; semanticTokens?: TSemanticTokens }) {
+  constructor({
+    tokens,
+    semanticTokens = {},
+    prefix,
+  }: {
+    tokens: Partial<Tokens>
+    semanticTokens?: TSemanticTokens
+    prefix?: string
+  }) {
     this.#tokens = tokens
     this.#semanticTokens = semanticTokens
+    this.#prefix = prefix
     this.assignTokens()
     this.assignSemanticTokens()
   }
 
   assignTokens() {
-    mapTokens(this.#tokens, (data) => {
-      this.values.set(data.prop, data)
-      this.vars.set(data.var, {
-        category: data.category,
-        value: data.value,
-      })
-    })
+    mapTokens(
+      this.#tokens,
+      (data) => {
+        this.values.set(data.prop, data)
+        this.vars.set(data.var, {
+          category: data.category,
+          value: data.value,
+        })
+      },
+      { prefix: this.#prefix },
+    )
   }
 
   assignSemanticTokens() {
-    mapSemanticTokens(this.#semanticTokens, (data, condition) => {
-      const value = this.getRef(data.category, data.value)
+    mapSemanticTokens(
+      this.#semanticTokens,
+      (data, condition) => {
+        const value = this.getRef(data.category, data.value)
 
-      match([condition, data.negative])
-        .with(['raw', true], () => {
-          data.value = data.varRef
-          this.values.set(data.prop, data)
-        })
-        .with(['raw', false], () => {
-          data.value = data.varRef
-          this.values.set(data.prop, data)
-          this.vars.set(data.var, {
-            category: data.category,
-            value,
+        match([condition, data.negative])
+          .with(['raw', true], () => {
+            data.value = data.varRef
+            this.values.set(data.prop, data)
           })
-        })
-        .with([P.string, false], () => {
-          if (!this.conditionVars.get(condition)) {
-            this.conditionVars.set(condition, new Map())
-          }
-          this.conditionVars.get(condition)!.set(data.var, {
-            category: data.category,
-            value,
+          .with(['raw', false], () => {
+            data.value = data.varRef
+            this.values.set(data.prop, data)
+            this.vars.set(data.var, {
+              category: data.category,
+              value,
+            })
           })
-        })
-        .otherwise(() => {})
-    })
+          .with([P.string, false], () => {
+            if (!this.conditionVars.get(condition)) {
+              this.conditionVars.set(condition, new Map())
+            }
+            this.conditionVars.get(condition)!.set(data.var, {
+              category: data.category,
+              value,
+            })
+          })
+          .otherwise(() => {})
+      },
+      { prefix: this.#prefix },
+    )
   }
 
   /**
