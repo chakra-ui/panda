@@ -1,38 +1,38 @@
-import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react';
-import { useState } from 'react';
-import { Config } from '../types';
+import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react'
+import { useState } from 'react'
+import { Config } from '../types'
 
-type TypographyPlaygroundProps = { config: Config };
+type TypographyPlaygroundProps = { config: Config }
 
 export function TypographyPlayground(props: TypographyPlaygroundProps) {
-  const { config: configProp } = props;
+  const { config: configProp } = props
 
-  const getFirstToken = <T extends Record<any, any>>(obj: T) => Object.keys(obj)[0].toString();
+  const getFirstToken = <T extends Record<any, any>>(obj: T) => Object.keys(obj)[0].toString()
 
   const defaultConfig = {
     fontSize: getFirstToken(configProp.fontSizes),
     letterSpacing: getFirstToken(configProp.letterSpacings),
     fontWeight: getFirstToken(configProp.fontWeights),
     lineHeight: getFirstToken(configProp.lineHeights),
-  };
+  }
 
-  const [config, setConfig] = useState(defaultConfig);
+  const [config, setConfig] = useState(defaultConfig)
   const configValues = Object.entries(config).reduce(
     (acc, [token, label]) => ({ ...acc, [token]: configProp[`${token}s` as keyof Config][label] }),
-    {}
-  );
+    {},
+  )
 
   const updateConfig = (key: string, value: string) => {
     setConfig((prev) => ({
       ...prev,
       [key]: value,
-    }));
-  };
+    }))
+  }
 
   const onChangeConfig = (e: Event | React.FormEvent<HTMLElement>, key: string) => {
-    const event = e as React.FormEvent<HTMLInputElement>;
-    updateConfig(key, event.currentTarget.value);
-  };
+    const event = e as React.FormEvent<HTMLInputElement>
+    updateConfig(key, event.currentTarget.value)
+  }
 
   const renderTokenSwitch = (token: keyof typeof defaultConfig) => (
     <VSCodeDropdown value={config[token]} onChange={(e) => onChangeConfig(e, token)} className="token-switch">
@@ -42,7 +42,7 @@ export function TypographyPlayground(props: TypographyPlaygroundProps) {
         </VSCodeOption>
       ))}
     </VSCodeDropdown>
-  );
+  )
 
   return (
     <div className="token-group">
@@ -62,5 +62,5 @@ export function TypographyPlayground(props: TypographyPlaygroundProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }

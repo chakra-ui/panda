@@ -1,7 +1,7 @@
-import { describe, test, expect } from 'vitest';
-import { cssPlugin } from '../src/fixtures';
-import { createCollector, createPlugins } from '../src/plugins';
-import { transformSync } from '../src/transform';
+import { describe, test, expect } from 'vitest'
+import { cssPlugin } from '../src/fixtures'
+import { createCollector, createPlugins } from '../src/plugins'
+import { transformSync } from '../src/transform'
 
 describe('ast parser', () => {
   test('[without import] should not parse', () => {
@@ -27,13 +27,13 @@ describe('ast parser', () => {
           bg: "red.300",
           margin: { xs: "0", lg:"40px" },
         })
-     `;
+     `
 
-    const data = createCollector();
+    const data = createCollector()
 
     transformSync(code, {
       plugins: createPlugins(data),
-    });
+    })
 
     expect(data).toMatchInlineSnapshot(`
       {
@@ -76,6 +76,6 @@ describe('ast parser', () => {
           },
         },
       }
-    `);
-  });
-});
+    `)
+  })
+})

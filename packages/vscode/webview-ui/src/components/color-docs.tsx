@@ -1,11 +1,11 @@
-import type { Colors as ColorsType } from '../types';
+import type { Colors as ColorsType } from '../types'
 
 type ColorsProps = {
-  colors: ColorsType;
-};
+  colors: ColorsType
+}
 
 export function Colors(props: ColorsProps) {
-  const { colors } = props;
+  const { colors } = props
 
   const renderShades = (shadesOrValue: ColorsType[keyof ColorsType]) => {
     if (typeof shadesOrValue === 'string') {
@@ -14,7 +14,7 @@ export function Colors(props: ColorsProps) {
           <div className="color-box" style={{ background: shadesOrValue }} />
           <div className="shade-value">{shadesOrValue}</div>
         </div>
-      );
+      )
     }
     return Object.entries(shadesOrValue).map(([shade, value]) => (
       <div className="shade">
@@ -22,8 +22,8 @@ export function Colors(props: ColorsProps) {
         <div className="shade-label">{shade}</div>
         <div className="shade-value">{value}</div>
       </div>
-    ));
-  };
+    ))
+  }
 
   return (
     <div className="token-group">
@@ -36,5 +36,5 @@ export function Colors(props: ColorsProps) {
         ))}
       </div>
     </div>
-  );
+  )
 }

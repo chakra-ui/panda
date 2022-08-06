@@ -16,12 +16,12 @@ const variantOrder = [
   'focus-visible',
   'active',
   'disabled',
-];
+]
 
 export function sortConditionByOrder(conditions: string[]) {
   return conditions.sort((a, b) => {
-    const aIndex = variantOrder.indexOf(a);
-    const bIndex = variantOrder.indexOf(b);
-    return aIndex - bIndex;
-  });
+    const aIndex = variantOrder.indexOf(a)
+    const bIndex = variantOrder.indexOf(b)
+    return aIndex - bIndex
+  })
 }

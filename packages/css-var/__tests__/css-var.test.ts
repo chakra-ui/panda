@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'vitest';
-import { createVar } from '../src';
+import { describe, expect, test } from 'vitest'
+import { createVar } from '../src'
 
 describe('css var', () => {
   test('basic', () => {
@@ -8,6 +8,6 @@ describe('css var', () => {
           "ref": "var(--vc-spacing--2\\\\.4)",
           "var": "--vc-spacing--2\\\\.4",
         }
-      `);
-  });
-});
+      `)
+  })
+})

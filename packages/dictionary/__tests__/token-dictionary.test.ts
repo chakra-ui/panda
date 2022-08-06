@@ -1,10 +1,10 @@
-import { describe, expect, test } from 'vitest';
-import { semanticTokens, tokens } from '@css-panda/fixture';
-import { Dictionary } from '../src/token-dictionary';
+import { describe, expect, test } from 'vitest'
+import { semanticTokens, tokens } from '@css-panda/fixture'
+import { Dictionary } from '../src/token-dictionary'
 
 describe('Token types', () => {
   test('semantic tokens', () => {
-    const dict = new Dictionary({ tokens, semanticTokens });
+    const dict = new Dictionary({ tokens, semanticTokens })
     expect(dict.values).toMatchInlineSnapshot(`
       Map {
         "fonts.heading" => {
@@ -1278,7 +1278,7 @@ describe('Token types', () => {
           "varRef": "calc(var(--spacing-gutter) * -1)",
         },
       }
-    `);
+    `)
 
     expect(dict.vars).toMatchInlineSnapshot(`
       Map {
@@ -1747,7 +1747,7 @@ describe('Token types', () => {
           "value": "var(--spacing-4)",
         },
       }
-    `);
+    `)
 
     expect(dict.conditionVars).toMatchInlineSnapshot(`
       Map {
@@ -1772,7 +1772,7 @@ describe('Token types', () => {
           },
         },
       }
-    `);
+    `)
 
     expect(dict.categoryMap).toMatchInlineSnapshot(`
       Map {
@@ -3079,6 +3079,6 @@ describe('Token types', () => {
           },
         },
       }
-    `);
-  });
-});
+    `)
+  })
+})

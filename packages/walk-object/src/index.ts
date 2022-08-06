@@ -1,7 +1,7 @@
-type Predicate<R = any> = (value: any, path: string[]) => R;
+type Predicate<R = any> = (value: any, path: string[]) => R
 
 function isObject(value: any): value is object {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 type Mapped<T, K> = {
@@ -9,31 +9,31 @@ type Mapped<T, K> = {
     ? Mapped<T[Prop][number], K>[]
     : T[Prop] extends object
     ? Mapped<T[Prop], K>
-    : K;
-};
+    : K
+}
 
 export function walkObject<T, K>(
   target: T,
   predicate: Predicate<K>,
-  options: { maxDepth?: number } = {}
+  options: { maxDepth?: number } = {},
 ): Mapped<T, ReturnType<Predicate<K>>> {
-  const { maxDepth = Infinity } = options;
+  const { maxDepth = Infinity } = options
 
   function inner(value: any, path: string[] = []): any {
     if (isObject(value) || Array.isArray(value)) {
-      const result: Record<string, string> = {};
+      const result: Record<string, string> = {}
       for (const [key, child] of Object.entries(value)) {
-        const childPath = [...path, key];
+        const childPath = [...path, key]
         if (childPath.length > maxDepth) {
-          return predicate(value, path);
+          return predicate(value, path)
         }
-        result[key] = inner(child, childPath);
+        result[key] = inner(child, childPath)
       }
-      return result;
+      return result
     }
 
-    return predicate(value, path);
+    return predicate(value, path)
   }
 
-  return inner(target);
+  return inner(target)
 }

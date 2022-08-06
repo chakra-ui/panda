@@ -1,1 +1,1 @@
-export * from './token-dictionary';
+export * from './token-dictionary'

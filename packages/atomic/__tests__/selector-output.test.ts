@@ -1,10 +1,10 @@
-import { describe, expect, test } from 'vitest';
-import { SelectorOutput } from '../src/selector-output';
+import { describe, expect, test } from 'vitest'
+import { SelectorOutput } from '../src/selector-output'
 
 describe('selector output', () => {
   test('[single value] generate correct based on entry', () => {
-    const output = new SelectorOutput(['bg', '400'].join(':')).pseudoSelector('&::after');
-    expect(output.selector).toMatchInlineSnapshot('" .bg\\\\:400::after"');
+    const output = new SelectorOutput(['bg', '400'].join(':')).pseudoSelector('&::after')
+    expect(output.selector).toMatchInlineSnapshot('" .bg\\\\:400::after"')
 
     //   expect(selectors(['&:hover:focus', 'bg'], 'red400')).toEqual(
     //     expect.objectContaining({
@@ -27,5 +27,5 @@ describe('selector output', () => {
     //     })
     //   );
     // });
-  });
-});
+  })
+})

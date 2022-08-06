@@ -13,8 +13,9 @@
   "license": "MIT",
   "dependencies": {
     "@types/node": "^18.6.1",
+    "prettier": "^2.7.1",
+    "tsup": "^6.2.0",
     "typescript": "^4.7.4",
-    "vitest": "^0.19.1",
-    "tsup": "^6.2.0"
+    "vitest": "^0.19.1"
   }
 }

@@ -1,11 +1,11 @@
-import { describe, expect, test } from 'vitest';
-import { createContext } from '../src/fixture';
-import { generate } from '../src/generate';
+import { describe, expect, test } from 'vitest'
+import { createContext } from '../src/fixture'
+import { generate } from '../src/generate'
 
 function run(fn: Function) {
-  const ctx = createContext();
-  fn(ctx);
-  return ctx.root.toString();
+  const ctx = createContext()
+  fn(ctx)
+  return ctx.root.toString()
 }
 
 describe('generate stylesheet', () => {
@@ -14,16 +14,16 @@ describe('generate stylesheet', () => {
       " .bg-red\\\\.300 {
           bg: red.300
       }"
-    `);
-  });
+    `)
+  })
 
   test('should work with inner responsive', () => {
     expect(
       run(
         generate({
           ml: { ltr: { sm: '4' }, rtl: '-4' },
-        })
-      )
+        }),
+      ),
     ).toMatchInlineSnapshot(`
       "@screen sm {
           [dir=ltr] .ltr\\\\:sm\\\\:ml-4 {
@@ -33,8 +33,8 @@ describe('generate stylesheet', () => {
       [dir=rtl] .rtl\\\\:ml--4 {
           ml: -4
       }"
-    `);
-  });
+    `)
+  })
 
   test('respect color mode', () => {
     expect(
@@ -42,8 +42,8 @@ describe('generate stylesheet', () => {
         generate({
           color: { light: 'red', dark: 'green' },
           opacity: { dark: 'slate400' },
-        })
-      )
+        }),
+      ),
     ).toMatchInlineSnapshot(`
       "[data-theme=light] .light\\\\:color-red {
           color: red
@@ -54,16 +54,16 @@ describe('generate stylesheet', () => {
       [data-theme=dark] .dark\\\\:opacity-slate400 {
           opacity: slate400
       }"
-    `);
-  });
+    `)
+  })
 
   test('should work with outer responsive', () => {
     expect(
       run(
         generate({
           top: { sm: { rtl: '20px', hover: '50px' }, lg: '120px' },
-        })
-      )
+        }),
+      ),
     ).toMatchInlineSnapshot(`
       "@screen sm {
           [dir=rtl] .sm\\\\:rtl\\\\:top-20px {
@@ -80,16 +80,16 @@ describe('generate stylesheet', () => {
               top: 120px
           }
       }"
-    `);
-  });
+    `)
+  })
 
   test('should skip `_` notation', () => {
     expect(
       run(
         generate({
           left: { _: '20px', md: '40px' },
-        })
-      )
+        }),
+      ),
     ).toMatchInlineSnapshot(`
       " .left-20px {
           left: 20px
@@ -99,8 +99,8 @@ describe('generate stylesheet', () => {
               left: 40px
           }
       }"
-    `);
-  });
+    `)
+  })
 
   test('[pseudo] should work with nested selector', () => {
     expect(
@@ -111,9 +111,9 @@ describe('generate stylesheet', () => {
             bg: { light: 'red400', dark: 'green500' },
             font: { rtl: 'sans', ltr: { dark: { sm: { hover: 'serif' } } } },
           },
-          { scope: '& > p' }
-        )
-      )
+          { scope: '& > p' },
+        ),
+      ),
     ).toMatchInlineSnapshot(`
       ".\\\\[\\\\& \\\\> p\\\\]\\\\:left-20px > p {
           left: 20px
@@ -137,8 +137,8 @@ describe('generate stylesheet', () => {
               font: serif
           }
       }"
-    `);
-  });
+    `)
+  })
 
   test('[parent selector] should work with nested selector', () => {
     expect(
@@ -148,9 +148,9 @@ describe('generate stylesheet', () => {
             bg: 'red400',
             fontSize: { sm: '14px', lg: '18px' },
           },
-          { scope: 'input:hover &' }
-        )
-      )
+          { scope: 'input:hover &' },
+        ),
+      ),
     ).toMatchInlineSnapshot(`
       "input:hover .\\\\[input\\\\:hover \\\\&\\\\]\\\\:bg-red400 {
           bg: red400
@@ -165,8 +165,8 @@ describe('generate stylesheet', () => {
               font-size: 18px
           }
       }"
-    `);
-  });
+    `)
+  })
 
   test('[selector] should work with nested selector', () => {
     expect(
@@ -177,9 +177,9 @@ describe('generate stylesheet', () => {
             bg: 'red400',
             textAlign: { sm: 'left' },
           },
-          { scope: '&::placeholder' }
-        )
-      )
+          { scope: '&::placeholder' },
+        ),
+      ),
     ).toMatchInlineSnapshot(`
       ".\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:left-40px::placeholder {
           left: 40px
@@ -192,8 +192,8 @@ describe('generate stylesheet', () => {
               text-align: left
           }
       }"
-    `);
-  });
+    `)
+  })
 
   test('[@media] should work with nested selector', () => {
     expect(
@@ -203,9 +203,9 @@ describe('generate stylesheet', () => {
             left: '40px',
             textAlign: { sm: 'left' },
           },
-          { scope: '@media base' }
-        )
-      )
+          { scope: '@media base' },
+        ),
+      ),
     ).toMatchInlineSnapshot(`
       "@media base {
            .\\\\[@media base\\\\]\\\\:left-40px {
@@ -219,6 +219,6 @@ describe('generate stylesheet', () => {
               }
           }
       }"
-    `);
-  });
-});
+    `)
+  })
+})

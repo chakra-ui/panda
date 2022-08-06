@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'vitest';
-import { expandKeyframes } from '../src/keyframes';
-import { keyframes } from '@css-panda/fixture';
+import { describe, expect, test } from 'vitest'
+import { expandKeyframes } from '../src/keyframes'
+import { keyframes } from '@css-panda/fixture'
 
 describe('Generates keyframes', () => {
   test('should generate keyframes', () => {
@@ -36,6 +36,6 @@ describe('Generates keyframes', () => {
       }
 
       "
-    `);
-  });
-});
+    `)
+  })
+})

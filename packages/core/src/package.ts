@@ -1,24 +1,24 @@
-import type { PackageJson } from 'pkg-types';
-import path from 'path';
-import { promises as fs } from 'fs';
+import type { PackageJson } from 'pkg-types'
+import path from 'path'
+import { promises as fs } from 'fs'
 
 type PackageOptions = {
-  name: string;
-  outDir: string;
-  exports: string[];
-};
+  name: string
+  outDir: string
+  exports: string[]
+}
 
 export function setupPackage(options: PackageOptions) {
-  const { name, exports, outDir } = options;
+  const { name, exports, outDir } = options
 
   const exportEntries = exports.map((key) => [
     `./${key}`,
     {
       import: './' + path.join(outDir, key, 'index.mjs'),
     },
-  ]);
+  ])
 
-  const typeVersionEntries = exports.map((key) => [key, ['./' + path.join(outDir, key)]]);
+  const typeVersionEntries = exports.map((key) => [key, ['./' + path.join(outDir, key)]])
 
   const pkg: PackageJson = {
     name,
@@ -27,12 +27,12 @@ export function setupPackage(options: PackageOptions) {
     typeVersions: {
       '*': Object.fromEntries(typeVersionEntries),
     },
-  };
+  }
 
-  return pkg;
+  return pkg
 }
 
 export async function writePackage(filePath: string, options: PackageOptions) {
-  const pkg = setupPackage(options);
-  return fs.writeFile(filePath, JSON.stringify(pkg, null, 2));
+  const pkg = setupPackage(options)
+  return fs.writeFile(filePath, JSON.stringify(pkg, null, 2))
 }

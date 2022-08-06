@@ -4,25 +4,25 @@ import {
   VSCodePanels,
   VSCodePanelTab,
   VSCodePanelView,
-} from '@vscode/webview-ui-toolkit/react';
-import { useState } from 'react';
-import { Config } from '../types';
-import { getSortedSizes } from '../utilities/sizes-sort';
-import { renderPixels } from './size-docs';
+} from '@vscode/webview-ui-toolkit/react'
+import { useState } from 'react'
+import { Config } from '../types'
+import { getSortedSizes } from '../utilities/sizes-sort'
+import { renderPixels } from './size-docs'
 
-export type SpacingPlaygroundProps = { sizes: Config['sizes'] };
+export type SpacingPlaygroundProps = { sizes: Config['sizes'] }
 
-const NUMBER_OF_ITEMS = 3;
+const NUMBER_OF_ITEMS = 3
 
 export function SpacingPlayground(props: SpacingPlaygroundProps) {
-  const { sizes: sizesProp } = props;
-  const sizes = getSortedSizes(sizesProp);
+  const { sizes: sizesProp } = props
+  const sizes = getSortedSizes(sizesProp)
 
-  const [gapSize, setGapSize] = useState(sizes[6]?.[0]);
-  const gap = sizesProp[gapSize];
+  const [gapSize, setGapSize] = useState(sizes[6]?.[0])
+  const gap = sizesProp[gapSize]
 
-  const [paddingSize, setPaddingSize] = useState(sizes[6]?.[0]);
-  const padding = sizesProp[paddingSize];
+  const [paddingSize, setPaddingSize] = useState(sizes[6]?.[0])
+  const padding = sizesProp[paddingSize]
 
   return (
     <div className="token-group spacing-playground">
@@ -36,8 +36,8 @@ export function SpacingPlayground(props: SpacingPlaygroundProps) {
               <VSCodeDropdown
                 value={gapSize}
                 onChange={(e) => {
-                  const event = e as React.FormEvent<HTMLInputElement>;
-                  setGapSize(event.currentTarget.value);
+                  const event = e as React.FormEvent<HTMLInputElement>
+                  setGapSize(event.currentTarget.value)
                 }}
                 className="token-switch"
               >
@@ -83,8 +83,8 @@ export function SpacingPlayground(props: SpacingPlaygroundProps) {
               <VSCodeDropdown
                 value={paddingSize}
                 onChange={(e) => {
-                  const event = e as React.FormEvent<HTMLInputElement>;
-                  setPaddingSize(event.currentTarget.value);
+                  const event = e as React.FormEvent<HTMLInputElement>
+                  setPaddingSize(event.currentTarget.value)
                 }}
                 className="token-switch"
               >
@@ -121,5 +121,5 @@ export function SpacingPlayground(props: SpacingPlaygroundProps) {
         </VSCodePanelView>
       </VSCodePanels>
     </div>
-  );
+  )
 }

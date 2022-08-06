@@ -1,10 +1,10 @@
-export type Loose = string & {};
+export type Loose = string & {}
 
 type PathsToStringProps<T> = T extends string
   ? []
   : {
-      [Key in Extract<keyof T, string>]: [Key, ...PathsToStringProps<T[Key]>];
-    }[Extract<keyof T, string>];
+      [Key in Extract<keyof T, string>]: [Key, ...PathsToStringProps<T[Key]>]
+    }[Extract<keyof T, string>]
 
 type Join<Paths extends string[], Delimiter extends string> = Paths extends []
   ? never
@@ -14,12 +14,12 @@ type Join<Paths extends string[], Delimiter extends string> = Paths extends []
   ? Property extends string
     ? `${Property}${Delimiter}${Join<Extract<Rest, string[]>, Delimiter>}`
     : never
-  : string;
+  : string
 
-export type TDotPath = Record<string, any> | string;
+export type TDotPath = Record<string, any> | string
 
-export type DotPath<T extends TDotPath> = Join<PathsToStringProps<T>, '.'>;
+export type DotPath<T extends TDotPath> = Join<PathsToStringProps<T>, '.'>
 
-export type Primitive = string | number | boolean | null | undefined;
+export type Primitive = string | number | boolean | null | undefined
 
-export type Entry<T> = [keyof T, T[keyof T]];
+export type Entry<T> = [keyof T, T[keyof T]]

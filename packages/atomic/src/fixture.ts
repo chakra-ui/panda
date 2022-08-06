@@ -1,5 +1,5 @@
-import postcss from 'postcss';
-import { GeneratorContext } from './types';
+import postcss from 'postcss'
+import { GeneratorContext } from './types'
 
 const propMap = {
   display: 'd',
@@ -7,7 +7,7 @@ const propMap = {
   width: 'w',
   minHeight: 'min-h',
   textAlign: 'ta',
-};
+}
 
 export const createContext = (): GeneratorContext => ({
   root: postcss.root(),
@@ -22,10 +22,10 @@ export const createContext = (): GeneratorContext => ({
     hover: { type: 'pseudo', value: '&:hover' },
   },
   transform: (prop, value) => {
-    const key = propMap[prop] ?? prop;
+    const key = propMap[prop] ?? prop
     return {
       className: `${key}-${value}`,
       styles: { [prop]: value },
-    };
+    }
   },
-});
+})

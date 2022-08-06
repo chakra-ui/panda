@@ -4,7 +4,7 @@ export function ErrorIcon() {
       <rect width="13.9361" height="2.9863" transform="matrix(0.704896 0.709311 -0.704896 0.709311 4.10498 2)"></rect>
       <rect width="2.9863" height="13.9361" transform="matrix(0.704896 0.709311 -0.704896 0.709311 11.8938 2)"></rect>
     </svg>
-  );
+  )
 }
 
 export function SuccessIcon() {
@@ -17,5 +17,5 @@ export function SuccessIcon() {
       ></rect>
       <rect width="3.26633" height="14.9318" transform="matrix(0.69978 0.714359 -0.69978 0.714359 13.7142 2)"></rect>
     </svg>
-  );
+  )
 }

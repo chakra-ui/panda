@@ -1,31 +1,31 @@
-import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react';
-import { useState } from 'react';
-import { Config } from '../types';
-import { getContrastPairs, getContrastRatio } from '../utilities/color';
-import { ErrorIcon, SuccessIcon } from './icons';
+import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react'
+import { useState } from 'react'
+import { Config } from '../types'
+import { getContrastPairs, getContrastRatio } from '../utilities/color'
+import { ErrorIcon, SuccessIcon } from './icons'
 
 type ContrastCheckerProps = {
-  colors: Config['colors'];
-};
+  colors: Config['colors']
+}
 
 export function ContrastChecker(props: ContrastCheckerProps) {
-  const { colors: colorsObj } = props;
+  const { colors: colorsObj } = props
   const colors = Object.entries(colorsObj)
     .map(([color, shadesOrValue]) =>
       typeof shadesOrValue === 'string'
         ? { label: color, value: shadesOrValue }
-        : Object.entries(shadesOrValue).map(([shade, value]) => ({ label: `${color}.${shade}`, value }))
+        : Object.entries(shadesOrValue).map(([shade, value]) => ({ label: `${color}.${shade}`, value })),
     )
-    .flat();
+    .flat()
 
-  const [foreground, setForeGround] = useState('#000000');
-  const [background, setBackground] = useState('#ffffff');
+  const [foreground, setForeGround] = useState('#000000')
+  const [background, setBackground] = useState('#ffffff')
 
-  const activeForeground = colors.find((col) => col.label === foreground)?.value || foreground;
-  const activeBackground = colors.find((col) => col.label === background)?.value || background;
+  const activeForeground = colors.find((col) => col.label === foreground)?.value || foreground
+  const activeBackground = colors.find((col) => col.label === background)?.value || background
 
-  const WCAGTests = getContrastPairs(activeForeground, activeBackground);
-  const constrastRatio = getContrastRatio(activeForeground, activeBackground);
+  const WCAGTests = getContrastPairs(activeForeground, activeBackground)
+  const constrastRatio = getContrastRatio(activeForeground, activeBackground)
 
   const renderTestScore = (score: { WCAG_AA: boolean; WCAG_AAA: boolean }, size: 'regular' | 'large') => {
     return (
@@ -45,8 +45,8 @@ export function ContrastChecker(props: ContrastCheckerProps) {
           <span>{size === 'regular' ? '7:1' : '4.5:1'}</span>
         </div>
       </>
-    );
-  };
+    )
+  }
 
   return (
     <div className="token-group contrast-checker">
@@ -99,5 +99,5 @@ export function ContrastChecker(props: ContrastCheckerProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }

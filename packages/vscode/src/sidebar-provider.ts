@@ -1,90 +1,90 @@
-import * as vscode from 'vscode';
-import { getUri } from './utilities/get-uri';
-import { Config } from '@css-panda/read-config';
+import * as vscode from 'vscode'
+import { getUri } from './utilities/get-uri'
+import { Config } from '@css-panda/read-config'
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
-  _view?: vscode.WebviewView;
-  _doc?: vscode.TextDocument;
+  _view?: vscode.WebviewView
+  _doc?: vscode.TextDocument
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
 
   public sendConfig(_view?: vscode.WebviewView) {
-    const view = _view || this._view;
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    const workspaceUri = workspaceFolder?.uri;
-    const configInstance = new Config(workspaceUri?.fsPath);
+    const view = _view || this._view
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
+    const workspaceUri = workspaceFolder?.uri
+    const configInstance = new Config(workspaceUri?.fsPath)
 
     configInstance.load().then(({ config }) => {
       view?.webview.postMessage({
         type: 'onConfigChange',
         value: config,
-      });
-    });
+      })
+    })
   }
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
-    this._view = webviewView;
+    this._view = webviewView
 
     webviewView.webview.options = {
       // Allow scripts in the webview
       enableScripts: true,
 
       localResourceRoots: [this._extensionUri],
-    };
+    }
 
-    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview)
 
     // Listen for messages from the Sidebar component and execute action
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
         case 'reload': {
-          webviewView.webview.html = 'reload';
-          webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-          break;
+          webviewView.webview.html = 'reload'
+          webviewView.webview.html = this._getHtmlForWebview(webviewView.webview)
+          break
         }
         case 'fetchConfig': {
-          this.sendConfig();
-          break;
+          this.sendConfig()
+          break
         }
         case 'onInfo': {
           if (!data.value) {
-            return;
+            return
           }
-          vscode.window.showInformationMessage(data.value);
-          break;
+          vscode.window.showInformationMessage(data.value)
+          break
         }
         case 'onError': {
           if (!data.value) {
-            return;
+            return
           }
-          vscode.window.showErrorMessage(data.value);
-          break;
+          vscode.window.showErrorMessage(data.value)
+          break
         }
       }
-    });
+    })
   }
 
   public revive(panel: vscode.WebviewView) {
-    this._view = panel;
+    this._view = panel
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     // The CSS file from the React build output
-    const stylesUri = getUri(webview, this._extensionUri, ['webview-ui', 'build', 'assets', 'index.css']);
+    const stylesUri = getUri(webview, this._extensionUri, ['webview-ui', 'build', 'assets', 'index.css'])
     // The JS file from the React build output
-    const scriptUri = getUri(webview, this._extensionUri, ['webview-ui', 'build', 'assets', 'index.js']);
+    const scriptUri = getUri(webview, this._extensionUri, ['webview-ui', 'build', 'assets', 'index.js'])
 
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    const workspaceUri = workspaceFolder?.uri;
-    const configInstance = new Config(workspaceUri?.fsPath);
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
+    const workspaceUri = workspaceFolder?.uri
+    const configInstance = new Config(workspaceUri?.fsPath)
 
     if (workspaceFolder) {
       configInstance.load().then(({ source }) => {
         if (source) {
-          const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolder, source));
-          watcher.onDidChange(() => this.sendConfig(this._view));
+          const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolder, source))
+          watcher.onDidChange(() => this.sendConfig(this._view))
         }
-      });
+      })
     }
 
     // Tip: Install the es6-string-html VS Code extension to enable code highlighting below
@@ -103,6 +103,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         <script type="module" src="${scriptUri}"></script>
        </body>
      </html>
-   `;
+   `
   }
 }

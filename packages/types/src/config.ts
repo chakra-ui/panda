@@ -1,52 +1,52 @@
-import type { DotPath, Loose, TDotPath } from './shared';
-import type { CSSKeyframes, CSSPropertiesWithSelectors, CSSProperty } from './css-type';
+import type { DotPath, Loose, TDotPath } from './shared'
+import type { CSSKeyframes, CSSPropertiesWithSelectors, CSSProperty } from './css-type'
 
 type TCondition = {
   [condition: string]: {
-    selector?: string | string[];
-    '@media'?: string;
-  };
-};
+    selector?: string | string[]
+    '@media'?: string
+  }
+}
 
 type TBreakpoints = {
-  [breakpoint: string]: string;
-};
+  [breakpoint: string]: string
+}
 
 type TTokens = {
-  [key: string]: string | TTokens;
-};
+  [key: string]: string | TTokens
+}
 
 type SemanticTokens<Tokens extends TDotPath, Conditions, Breakpoints> = {
   [K in keyof Tokens]?: {
     [token: string]: {
-      [P in keyof Conditions | keyof Breakpoints | '_']?: DotPath<Tokens>;
-    };
-  };
-};
+      [P in keyof Conditions | keyof Breakpoints | '_']?: DotPath<Tokens>
+    }
+  }
+}
 
 export type TSemanticToken = {
   [token: string]: {
-    [condition: string]: string;
-  };
-};
+    [condition: string]: string
+  }
+}
 
 export type TSemanticTokens = {
-  [category: string]: TSemanticToken;
-};
+  [category: string]: TSemanticToken
+}
 
 type TokensMap<Tokens> = {
-  [K in keyof Tokens]?: Array<CSSProperty | Loose>;
-};
+  [K in keyof Tokens]?: Array<CSSProperty | Loose>
+}
 
 type Shorthands = {
-  [shorthand: string]: Array<CSSProperty>;
-};
+  [shorthand: string]: Array<CSSProperty>
+}
 
-type TokenGetter<T extends TDotPath> = (token: DotPath<T>) => string | undefined;
+type TokenGetter<T extends TDotPath> = (token: DotPath<T>) => string | undefined
 
 type Utilities<T extends TDotPath> = {
-  [utility: string]: (options: { value: string; $: TokenGetter<T> }) => CSSPropertiesWithSelectors;
-};
+  [utility: string]: (options: { value: string; $: TokenGetter<T> }) => CSSPropertiesWithSelectors
+}
 
 /**
  * css - css variables based on token definitions
@@ -56,28 +56,28 @@ type Utilities<T extends TDotPath> = {
  * tw - tailwind preset
  * sd - style dictionary config
  */
-export type Format = 'css' | 'cjs' | 'esm' | 'dts' | 'tw' | 'sd';
+export type Format = 'css' | 'cjs' | 'esm' | 'dts' | 'tw' | 'sd'
 
 export type Config<Conditions extends TCondition, Breakpoints extends TBreakpoints, Tokens extends TTokens> = {
-  format: Format[];
-  outfile: string;
-  prefix: string;
-  incremental: boolean;
-  content: string[];
-  conditions: Conditions;
-  breakpoints: Breakpoints;
-  keyframes: CSSKeyframes;
-  tokens: Tokens;
-  tokensMap: TokensMap<Tokens>;
-  semanticTokens: SemanticTokens<Tokens, Conditions, Breakpoints>;
-  shorthands: Shorthands;
-  utilities: Utilities<Tokens>;
-};
+  format: Format[]
+  outfile: string
+  prefix: string
+  incremental: boolean
+  content: string[]
+  conditions: Conditions
+  breakpoints: Breakpoints
+  keyframes: CSSKeyframes
+  tokens: Tokens
+  tokensMap: TokensMap<Tokens>
+  semanticTokens: SemanticTokens<Tokens, Conditions, Breakpoints>
+  shorthands: Shorthands
+  utilities: Utilities<Tokens>
+}
 
-export type TConfig = Config<TCondition, TBreakpoints, TTokens>;
+export type TConfig = Config<TCondition, TBreakpoints, TTokens>
 
 export function defineConfig<Conditions extends TCondition, Breakpoints extends TBreakpoints, Tokens extends TTokens>(
-  config: Partial<Config<Conditions, Breakpoints, Tokens>>
+  config: Partial<Config<Conditions, Breakpoints, Tokens>>,
 ): Partial<Config<Conditions, Breakpoints, Tokens>> {
-  return config;
+  return config
 }

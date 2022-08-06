@@ -1,4 +1,4 @@
-import { Tokens } from '@css-panda/types';
+import { Tokens } from '@css-panda/types'
 
 export const semanticTokens = {
   colors: {
@@ -8,7 +8,7 @@ export const semanticTokens = {
   spacing: {
     gutter: { _: '$4', lg: '$5', dark: '40px' },
   },
-};
+}
 
 export const tokens: Tokens = {
   fonts: {
@@ -162,4 +162,4 @@ export const tokens: Tokens = {
     background: 'background, background-color',
     colors: 'color, background-color',
   },
-};
+}

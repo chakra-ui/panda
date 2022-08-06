@@ -1,6 +1,6 @@
-import { semanticTokens, tokens } from '@css-panda/fixture';
-import { describe, expect, test } from 'vitest';
-import { getSemanticTokenMap, getTokenMap } from '../src/token-map';
+import { semanticTokens, tokens } from '@css-panda/fixture'
+import { describe, expect, test } from 'vitest'
+import { getSemanticTokenMap, getTokenMap } from '../src/token-map'
 
 describe('Token types', () => {
   test('colors', () => {
@@ -38,8 +38,8 @@ describe('Token types', () => {
         "red.800" => "#991B1B",
         "red.900" => "#7F1D1D",
       }
-    `);
-  });
+    `)
+  })
 
   test('tokens', () => {
     expect(getTokenMap(tokens.fontWeights)).toMatchInlineSnapshot(
@@ -50,9 +50,9 @@ describe('Token types', () => {
         "semibold" => 600,
         "bold" => 700,
       }
-    `
-    );
-  });
+    `,
+    )
+  })
 
   test('spacing', () => {
     expect(getTokenMap(tokens.spacing)).toMatchInlineSnapshot(`
@@ -68,9 +68,9 @@ describe('Token types', () => {
           "2.5" => "0.625rem",
           "3.5" => "0.875rem",
         }
-      `);
-  });
-});
+      `)
+  })
+})
 
 describe('semantic tokens', () => {
   test('colors', () => {
@@ -85,8 +85,8 @@ describe('semantic tokens', () => {
           "secondary" => "$red.700",
         },
       }
-    `);
-  });
+    `)
+  })
 
   test('spacing', () => {
     expect(getSemanticTokenMap(semanticTokens.spacing)).toMatchInlineSnapshot(`
@@ -101,6 +101,6 @@ describe('semantic tokens', () => {
             "gutter" => "40px",
           },
         }
-      `);
-  });
-});
+      `)
+  })
+})

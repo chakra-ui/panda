@@ -24,4 +24,4 @@ export const conditions = {
   rtl: { selector: '[dir=rtl] &' },
 
   open: { selector: '[open]' },
-};
+}

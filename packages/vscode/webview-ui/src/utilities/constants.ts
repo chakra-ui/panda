@@ -47,4 +47,4 @@ export const navItems = [
     label: 'Color Contrast Checker',
     id: NavKeys.CONTRAST_CHECKER,
   },
-];
+]

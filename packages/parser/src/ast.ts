@@ -1,94 +1,94 @@
-import * as swc from '@swc/core';
-import merge from 'lodash/merge';
-import { match, P } from 'ts-pattern';
-import { ImportResult } from './types';
+import * as swc from '@swc/core'
+import merge from 'lodash/merge'
+import { match, P } from 'ts-pattern'
+import { ImportResult } from './types'
 
 export function keyValue(node: swc.KeyValueProperty, result: Record<string, any> = {}) {
   const key = match(node.key)
     .with({ type: 'Identifier', value: P.select() }, (value) => value)
-    .otherwise(() => undefined);
+    .otherwise(() => undefined)
 
-  if (!key) return result;
+  if (!key) return result
 
   match(node.value)
     .with({ type: P.union('StringLiteral', 'NumericLiteral') }, (node) => {
-      result[key] = node.value;
+      result[key] = node.value
     })
     .with({ type: 'ObjectExpression' }, (node) => {
-      merge(result, { [key]: objectExpression(node) });
+      merge(result, { [key]: objectExpression(node) })
     })
     .with({ type: 'ArrayExpression' }, (node) => {
-      merge(result, { [key]: arrayExpression(node) });
+      merge(result, { [key]: arrayExpression(node) })
     })
     .with({ type: 'ConditionalExpression' }, (node) => {
-      const values = expression(node.consequent).concat(expression(node.alternate)).flat();
+      const values = expression(node.consequent).concat(expression(node.alternate)).flat()
 
-      result.conditions ||= [];
-      result.conditions.push({ [key]: values });
+      result.conditions ||= []
+      result.conditions.push({ [key]: values })
     })
-    .run();
+    .run()
 
-  return result;
+  return result
 }
 
 export function arrayExpression(node: swc.ArrayExpression, result: Array<string | number> = []) {
-  const len = node.elements.length;
+  const len = node.elements.length
 
   for (let i = 0; i < len; i++) {
-    const element = node.elements[i];
-    if (!element) continue;
-    const expr = element.expression;
+    const element = node.elements[i]
+    if (!element) continue
+    const expr = element.expression
 
     match(expr)
       .with({ type: P.union('StringLiteral', 'NumericLiteral') }, (node) => {
-        result.push(node.value);
+        result.push(node.value)
       })
-      .run();
+      .run()
   }
 
-  return result;
+  return result
 }
 
 export function objectExpression(node: swc.ObjectExpression) {
-  const result: Record<string, any> = {};
-  const { properties } = node;
+  const result: Record<string, any> = {}
+  const { properties } = node
   for (let i = 0; i < properties.length; i++) {
-    const property = properties[i];
+    const property = properties[i]
     if (property.type == 'KeyValueProperty') {
-      merge(result, keyValue(property));
+      merge(result, keyValue(property))
     }
   }
-  return result;
+  return result
 }
 
 export function expression(node: swc.Expression) {
-  const result: any[] = [];
+  const result: any[] = []
 
   match(node)
     .with({ type: 'ArrayExpression' }, (node) => {
-      result.push(arrayExpression(node));
+      result.push(arrayExpression(node))
     })
     .with({ type: 'ObjectExpression' }, (node) => {
-      result.push(objectExpression(node));
+      result.push(objectExpression(node))
     })
     .with({ type: P.union('StringLiteral', 'NumericLiteral') }, (node) => {
-      result.push(node.value);
+      result.push(node.value)
     })
-    .run();
+    .run()
 
-  return result;
+  return result
 }
 
 export function jsxAttribute(node: swc.JSXAttribute, result: Record<string, any> = {}) {
   const key = match(node.name)
     .with({ type: 'Identifier', value: P.select() }, (node) => node)
-    .otherwise(() => undefined);
+    .otherwise(() => undefined)
 
-  if (!key) return result;
+  if (!key) return result
 
   match(node.value)
     .with({ type: P.union('StringLiteral', 'NumericLiteral') }, (node) => {
-      result[key] = node.value;
+      result[key] = node.value
     })
     .with(
       {
@@ -96,8 +96,8 @@ export function jsxAttribute(node: swc.JSXAttribute, result: Record<string, any>
         expression: { type: 'ObjectExpression' },
       },
       (node) => {
-        merge(result, { [key]: objectExpression(node.expression) });
-      }
+        merge(result, { [key]: objectExpression(node.expression) })
+      },
     )
     .with(
       {
@@ -105,8 +105,8 @@ export function jsxAttribute(node: swc.JSXAttribute, result: Record<string, any>
         expression: { type: 'ArrayExpression' },
       },
       (node) => {
-        merge(result, { [key]: arrayExpression(node.expression) });
-      }
+        merge(result, { [key]: arrayExpression(node.expression) })
+      },
     )
     .with(
       {
@@ -114,39 +114,39 @@ export function jsxAttribute(node: swc.JSXAttribute, result: Record<string, any>
         expression: { type: 'ConditionalExpression' },
       },
       (node) => {
-        result.conditions ||= [];
-        const consequent = expression(node.expression.consequent);
-        const alternate = expression(node.expression.alternate);
+        result.conditions ||= []
+        const consequent = expression(node.expression.consequent)
+        const alternate = expression(node.expression.alternate)
 
         if (consequent.length) {
-          result.conditions.push({ [key]: consequent[0] });
+          result.conditions.push({ [key]: consequent[0] })
         }
 
         if (alternate.length) {
-          result.conditions.push({ [key]: alternate[0] });
+          result.conditions.push({ [key]: alternate[0] })
         }
-      }
+      },
     )
-    .run();
+    .run()
 
-  return result;
+  return result
 }
 
 export function callExpression(node: swc.CallExpression, scope: string) {
   if (node.callee.type === 'Identifier') {
-    const name = node.callee.value;
+    const name = node.callee.value
     if (name === scope) {
-      return node;
+      return node
     }
   }
 }
 
 export function importDeclaration(node: swc.ImportDeclaration, options: { module: string; name: string }) {
-  const { specifiers, source } = node;
+  const { specifiers, source } = node
 
-  const result: ImportResult[] = [];
+  const result: ImportResult[] = []
 
-  if (source.value !== options.module) return;
+  if (source.value !== options.module) return
 
   for (let i = 0; i < specifiers.length; i++) {
     match(specifiers[i])
@@ -157,8 +157,8 @@ export function importDeclaration(node: swc.ImportDeclaration, options: { module
           imported: P.nullish,
         },
         (value) => {
-          result.push({ identifer: value, alias: value });
-        }
+          result.push({ identifer: value, alias: value })
+        },
       )
       .with(
         {
@@ -167,11 +167,11 @@ export function importDeclaration(node: swc.ImportDeclaration, options: { module
           imported: { type: 'Identifier', value: P.select('main') },
         },
         ({ main, alias }) => {
-          result.push({ identifer: main, alias: alias });
-        }
+          result.push({ identifer: main, alias: alias })
+        },
       )
-      .otherwise(() => {});
+      .otherwise(() => {})
   }
 
-  return result.find((item) => item.identifer === options.name);
+  return result.find((item) => item.identifer === options.name)
 }

@@ -1,6 +1,6 @@
-import { describe, test, expect } from 'vitest';
-import { cssPlugin } from '../src/fixtures';
-import { transformSync } from '../src/transform';
+import { describe, test, expect } from 'vitest'
+import { cssPlugin } from '../src/fixtures'
+import { transformSync } from '../src/transform'
 
 describe('ast parser', () => {
   test('[without import] should not parse', () => {
@@ -15,16 +15,16 @@ describe('ast parser', () => {
           margin: { xs: "0", lg:"40px" },
           padding: [12, 50]
         })
-     `;
+     `
 
-    const collect = new Set();
+    const collect = new Set()
 
     transformSync(code, {
       plugins: [cssPlugin(collect)],
-    });
+    })
 
-    expect(collect).toMatchInlineSnapshot('Set {}');
-  });
+    expect(collect).toMatchInlineSnapshot('Set {}')
+  })
 
   test('[with import] should parse static property', () => {
     const code = `
@@ -39,13 +39,13 @@ describe('ast parser', () => {
           margin: { xs: "0", lg:"40px" },
           padding: [12, 50]
         })
-     `;
+     `
 
-    const collect = new Set();
+    const collect = new Set()
 
     transformSync(code, {
       plugins: [cssPlugin(collect)],
-    });
+    })
 
     expect(collect).toMatchInlineSnapshot(`
       Set {
@@ -65,8 +65,8 @@ describe('ast parser', () => {
           ],
         },
       }
-    `);
-  });
+    `)
+  })
 
   test('[with import alias] should parse static property', () => {
     const code = `
@@ -81,13 +81,13 @@ describe('ast parser', () => {
           margin: { xs: "0", lg:"40px" },
           padding: [12, 50]
         })
-     `;
+     `
 
-    const collect = new Set();
+    const collect = new Set()
 
     transformSync(code, {
       plugins: [cssPlugin(collect)],
-    });
+    })
 
     expect(collect).toMatchInlineSnapshot(`
       Set {
@@ -107,6 +107,6 @@ describe('ast parser', () => {
           ],
         },
       }
-    `);
-  });
-});
+    `)
+  })
+})

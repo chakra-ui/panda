@@ -1,44 +1,44 @@
-import colors from 'picocolors';
-import debugJs from 'debug';
-import util from 'util';
+import colors from 'picocolors'
+import debugJs from 'debug'
+import util from 'util'
 
-export let prefix = '🐼 ';
+export let prefix = '🐼 '
 
 function format(args: Array<any>, customPrefix?: string) {
-  let fullPrefix = [prefix, customPrefix].filter(Boolean).join(' ');
+  let fullPrefix = [prefix, customPrefix].filter(Boolean).join(' ')
   return (
     fullPrefix +
     util
       .format('', ...args)
       .split('\n')
       .join('\n' + fullPrefix + ' ')
-  );
+  )
 }
 
 export function createDebugger(namespace: string) {
-  return debugJs(namespace);
+  return debugJs(namespace)
 }
 
 export function error(...args: Array<any>) {
-  console.error(format(args, colors.red('error')));
+  console.error(format(args, colors.red('error')))
 }
 
 export function info(...args: Array<any>) {
-  console.info(format(args, colors.cyan('info')));
+  console.info(format(args, colors.cyan('info')))
 }
 
 export function log(...args: Array<any>) {
-  console.log(format(args));
+  console.log(format(args))
 }
 
 export function success(...args: Array<any>) {
-  console.log(format(args, colors.green('success')));
+  console.log(format(args, colors.green('success')))
 }
 
 export function warn(...args: Array<any>) {
-  console.warn(format(args, colors.yellow('warn')));
+  console.warn(format(args, colors.yellow('warn')))
 }
 
 export function debug(...args: Array<any>) {
-  createDebugger('panda')(args);
+  createDebugger('panda')(args)
 }

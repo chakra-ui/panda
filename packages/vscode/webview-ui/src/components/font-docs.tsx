@@ -1,29 +1,29 @@
-import { VSCodeTextField, VSCodeTextArea } from '@vscode/webview-ui-toolkit/react';
-import { Fragment, useState } from 'react';
+import { VSCodeTextField, VSCodeTextArea } from '@vscode/webview-ui-toolkit/react'
+import { Fragment, useState } from 'react'
 type FontTokensProps = {
-  text?: string;
-  largeText?: boolean;
-  token: string;
-  fontTokens: any;
-};
+  text?: string
+  largeText?: boolean
+  token: string
+  fontTokens: any
+}
 
 type ExtractProps<TComponentOrTProps> = TComponentOrTProps extends React.ComponentType<infer TProps>
   ? TProps
-  : TComponentOrTProps;
+  : TComponentOrTProps
 
 export function FontTokens(props: FontTokensProps) {
-  const { text: textProp = 'Panda', largeText = false, token, fontTokens } = props;
-  const [text, setText] = useState(textProp);
+  const { text: textProp = 'Panda', largeText = false, token, fontTokens } = props
+  const [text, setText] = useState(textProp)
 
   const inputProps: ExtractProps<typeof VSCodeTextField> & ExtractProps<typeof VSCodeTextArea> = {
     value: text,
     onInput(e) {
-      const event = e as React.FormEvent<HTMLInputElement>;
-      setText(event.currentTarget.value);
+      const event = e as React.FormEvent<HTMLInputElement>
+      setText(event.currentTarget.value)
     },
     placeholder: 'Preview Text',
     className: 'font-token-input',
-  };
+  }
 
   return (
     <div className={`token-group font-tokens ${token}-token`}>
@@ -51,5 +51,5 @@ export function FontTokens(props: FontTokensProps) {
         ))}
       </div>
     </div>
-  );
+  )
 }

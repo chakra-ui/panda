@@ -1,6 +1,6 @@
-import postcss from 'postcss';
-import { toCss } from './to-css';
-import { Dict } from './types';
+import postcss from 'postcss'
+import { toCss } from './to-css'
+import { Dict } from './types'
 
 function expandKeyframe(name: string, dfn: Dict) {
   return postcss
@@ -9,13 +9,13 @@ function expandKeyframe(name: string, dfn: Dict) {
       params: name,
       nodes: toCss(dfn),
     })
-    .toString();
+    .toString()
 }
 
 export function expandKeyframes(values: Dict) {
-  const root: string[] = [];
+  const root: string[] = []
   for (const [name, definition] of Object.entries(values)) {
-    root.push(expandKeyframe(name, definition), '\r');
+    root.push(expandKeyframe(name, definition), '\r')
   }
-  return root.join('\n');
+  return root.join('\n')
 }

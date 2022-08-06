@@ -1,7 +1,7 @@
-import postcss from 'postcss';
-import postcssJs, { CssInJs } from 'postcss-js';
-import postcssNested from 'postcss-nested';
-import { Dict } from './types';
+import postcss from 'postcss'
+import postcssJs, { CssInJs } from 'postcss-js'
+import postcssNested from 'postcss-nested'
+import { Dict } from './types'
 
 export function toCss(styles: Dict) {
   return postcss([
@@ -10,5 +10,5 @@ export function toCss(styles: Dict) {
     }),
   ]).process(styles, {
     parser: postcssJs as CssInJs,
-  }).root.nodes;
+  }).root.nodes
 }
