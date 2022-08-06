@@ -6,6 +6,27 @@
   - `package.json`
 
 ```js
+const tokens = {
+  'colors.red.400': { value: '...', variable: '...' },
+}
+
+const tokenMap = {
+  colors: [{ group: 'red', key: 'red.400', value: '...' }],
+  fonts: [],
+}
+
+function getToken(path) {
+  const { value } = tokens[path] || {}
+  return value
+}
+
+function getTokenVar(path) {
+  const { variable } = tokens[path] || {}
+  return variable
+}
+```
+
+```js
 import { generateCssVar, generateDts, generateJs } from '@css-panda/generator'
 import { createDictionary } from '@css-panda/dictionary'
 

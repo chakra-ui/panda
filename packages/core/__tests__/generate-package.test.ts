@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { setupPackage } from '../src/package'
+import { setupPackage } from '../src/generate-package'
 
 describe('package gen', () => {
   test('should generate package', () => {

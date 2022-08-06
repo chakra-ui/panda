@@ -1,7 +1,7 @@
 import { Dictionary } from '@css-panda/dictionary'
 import { semanticTokens, tokens } from '@css-panda/fixture'
 import { expect, test } from 'vitest'
-import { generateDts } from '../src/dts'
+import { generateDts } from '../src/generate-dts'
 
 test('[dts] should generate package', () => {
   const dict = new Dictionary({ tokens, semanticTokens })
