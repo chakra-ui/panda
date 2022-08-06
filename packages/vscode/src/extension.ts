@@ -1,4 +1,4 @@
-import { commands, ExtensionContext, window } from 'vscode'
+import { commands, ConfigurationTarget, ExtensionContext, window, workspace } from 'vscode'
 import { SidebarProvider } from './sidebar-provider'
 
 export function activate(context: ExtensionContext) {
@@ -20,4 +20,13 @@ export function activate(context: ExtensionContext) {
       }
     }),
   )
+
+  const CSS_PANDA_PATH = './.panda/design-tokens/index.css'
+  const cssvars = workspace.getConfiguration('cssvar', workspace?.workspaceFolders?.[0]?.uri)
+  const cssvarsFiles = cssvars.get('files') as any[]
+  if (!cssvarsFiles) {
+    cssvars.update('files', [CSS_PANDA_PATH], ConfigurationTarget.Global)
+  } else if (!cssvarsFiles.includes(CSS_PANDA_PATH)) {
+    cssvars.update('files', [...cssvarsFiles, CSS_PANDA_PATH], ConfigurationTarget.Global)
+  }
 }
