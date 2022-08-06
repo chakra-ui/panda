@@ -22,10 +22,12 @@
     "filespy": "^1.2.4",
     "find-up": "^6.3.0",
     "hookable": "^5.1.1",
-    "pkg-types": "^0.3.3"
+    "pkg-types": "^0.3.3",
+    "pluralize": "^8.0.0"
   },
   "devDependencies": {
     "@css-panda/dictionary": "workspace:*",
-    "@types/debug": "^4.1.7"
+    "@types/debug": "^4.1.7",
+    "@types/pluralize": "^0.0.29"
   }
 }
