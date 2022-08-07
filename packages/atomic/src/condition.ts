@@ -62,3 +62,29 @@ export function getSortedConditions(condition: string[], conditionsMap: Conditio
   const normalized = normalize(conditionsMap)
   return sort(condition.map((value) => normalized[value] ?? matchCondition(value)))
 }
+
+export function getBreakpointConditions(values: Record<string, string>): Conditions {
+  return Object.fromEntries(
+    Object.entries(values).map(([key, value]) => [
+      key,
+      {
+        type: 'screen',
+        value: key,
+        rawValue: `@media screen and (min-width: ${value})`,
+      },
+    ]),
+  )
+}
+
+export function getMergedConditions({
+  breakpoints,
+  conditions,
+}: {
+  breakpoints: Record<string, string>
+  conditions: Conditions
+}): Conditions {
+  return {
+    ...conditions,
+    ...getBreakpointConditions(breakpoints),
+  }
+}
