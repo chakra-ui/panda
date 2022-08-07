@@ -10,6 +10,7 @@ type ScreenCondition = {
   type: 'screen'
   value: string
   name?: string
+  rawValue: string
 }
 
 export type BaseCondition = {
