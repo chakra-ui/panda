@@ -1,0 +1,26 @@
+{
+  "name": "@css-panda/cli",
+  "version": "0.0.1",
+  "description": "The types for css panda",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "bin": {
+    "panda": "./bin/index.js"
+  },
+  "scripts": {
+    "build": "tsup src/ --dts",
+    "dev": "pnpm build -- --watch"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "dependencies": {
+    "@css-panda/core": "workspace:*",
+    "@css-panda/error": "workspace:*",
+    "@css-panda/logger": "workspace:*",
+    "commander": "^9.4.0"
+  }
+}

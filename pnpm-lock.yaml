@@ -52,6 +52,18 @@ importers:
   packages/calc:
     specifiers: {}
 
+  packages/cli:
+    specifiers:
+      '@css-panda/core': workspace:*
+      '@css-panda/error': workspace:*
+      '@css-panda/logger': workspace:*
+      commander: ^9.4.0
+    dependencies:
+      '@css-panda/core': link:../core
+      '@css-panda/error': link:../error
+      '@css-panda/logger': link:../logger
+      commander: 9.4.0
+
   packages/core:
     specifiers:
       '@css-panda/atomic': workspace:*
@@ -1282,6 +1294,11 @@ packages:
   /commander/4.1.1:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
     engines: {node: '>= 6'}
+    dev: false
+
+  /commander/9.4.0:
+    resolution: {integrity: sha512-sRPT+umqkz90UA8M1yqYfnHlZA7fF6nSphDtxeywPZ49ysjxDQybzk13CL+mXekDRG92skbcqCLVovuCusNmFw==}
+    engines: {node: ^12.20.0 || >=14}
     dev: false
 
   /concat-map/0.0.1:
