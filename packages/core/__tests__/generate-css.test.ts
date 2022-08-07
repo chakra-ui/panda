@@ -1,24 +1,15 @@
 import { Dictionary } from '@css-panda/dictionary'
-import { keyframes, semanticTokens, tokens } from '@css-panda/fixture'
+import { conditions, keyframes, semanticTokens, tokens } from '@css-panda/fixture'
 import { expect, test } from 'vitest'
 import { generateCss } from '../src/generate-css'
-
-const defaultConditions = {
-  dark: '@media (prefers-color-scheme: dark)',
-  light: '@media (prefers-color-scheme: light)',
-  xl: '@media (min-width: 1024px)',
-  lg: '@media (min-width: 768px)',
-  md: '@media (min-width: 576px)',
-  sm: '@media (min-width: 480px)',
-}
 
 test('[css] should generate css', () => {
   const dict = new Dictionary({ tokens, semanticTokens })
 
   const css = generateCss(dict, {
     root: ':root',
-    conditions: defaultConditions,
-    keyframes: keyframes,
+    conditions,
+    keyframes,
   })
 
   expect(css).toMatchInlineSnapshot(`
@@ -141,7 +132,7 @@ test('[css] should generate css', () => {
         --spacing-gutter: var(--spacing-4)
     }
 
-    @media (prefers-color-scheme: dark) {
+    [data-theme=dark] & {
      :root {
         --colors-primary: var(--colors-red\\\\.400);
         --colors-secondary: var(--colors-red\\\\.700);
@@ -149,7 +140,7 @@ test('[css] should generate css', () => {
     } 
     }
 
-    @media (min-width: 768px) {
+    @media screen and (min-width: 62em) {
      :root {
         --spacing-gutter: var(--spacing-5)
     } 

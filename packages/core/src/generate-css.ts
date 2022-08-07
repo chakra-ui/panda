@@ -1,10 +1,11 @@
 import { Dictionary, VarData } from '@css-panda/dictionary'
 import { toCss, expandKeyframes } from '@css-panda/atomic'
+import { Conditions } from '@css-panda/types'
 import { error } from '@css-panda/logger'
 
 type GenerateCssOptions = {
   root: string
-  conditions?: Record<string, string>
+  conditions?: Conditions
   keyframes?: Record<string, any>
 }
 
@@ -27,16 +28,17 @@ export function generateCss(dict: Dictionary, options?: GenerateCssOptions) {
 
   const output = [inner(dict.vars)]
 
-  for (const [condition, value] of dict.conditionVars) {
+  for (const [condition, conditionMap] of dict.conditionVars) {
     //
     const rawCondition = conditions[condition]
+    const conditionStr = rawCondition.type === 'screen' ? rawCondition.rawValue : rawCondition.value
 
-    if (!rawCondition) {
-      error(`Condition ${condition} is not defined`)
+    if (!conditionStr) {
+      error(`Condition ${conditionStr} is not defined`)
       continue
     }
 
-    output.push(`${rawCondition} {\n ${inner(value)} \n}`)
+    output.push(`${conditionStr} {\n ${inner(conditionMap)} \n}`)
   }
 
   if (keyframes) {
