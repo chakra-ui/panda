@@ -130,3 +130,72 @@ const conditions = {
   },
 }
 ```
+
+```ts
+const defaults = {
+  className: ({ prop, value, esc }) => `${prop}-${esc(value)}`,
+}
+
+const tt = defineConfig({
+  utilities: [
+    {
+      properties: {
+        display: {
+          className: ({ value, esc, dashCase }) => `d-${value}`,
+        },
+        background: {
+          className: ({ prop, value }) => `bg-${value}`,
+          values: ({ tokens }) => ({
+            ...tokens.colors,
+            inherit: 'inherit',
+          }),
+        },
+        color: {
+          className: ({ prop, value }) => `text-${value}`,
+          values: (tokens) => ({ ...tokens.colors }),
+        },
+        fill: { scale: 'colors' },
+        lineClamp: {
+          className: ({ props, value }) => `clamp-${value}`,
+          values: {
+            '1': {
+              '--line-clamp': '1',
+            },
+          },
+        },
+      },
+      shorthands: {
+        bg: 'background',
+      },
+    },
+
+    {
+      properties: {
+        strokeWidth: {
+          values: { '1': '1px', 2: '2px' },
+        },
+      },
+    },
+
+    {
+      properties: {
+        paddingLeft: { scale: 'space', className: 'pl' },
+        paddingRight: { scale: 'space', className: 'pr' },
+        paddingX: {
+          className: 'px',
+          values({ theme, map }) {
+            return map(theme.space, (value) => ({
+              paddingLeft: value,
+              paddingRight: value,
+            }))
+          },
+        },
+      },
+      shorthands: {
+        pl: 'paddingLeft',
+        px: 'paddingX',
+      },
+    },
+  ],
+})
+```
