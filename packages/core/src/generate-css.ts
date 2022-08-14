@@ -1,5 +1,5 @@
 import { Dictionary, VarData } from '@css-panda/dictionary'
-import { toCss, expandKeyframes } from '@css-panda/atomic'
+import { toCss, toKeyframeCss } from '@css-panda/atomic'
 import { Conditions } from '@css-panda/types'
 import { error } from '@css-panda/logger'
 
@@ -42,7 +42,7 @@ export function generateCss(dict: Dictionary, options?: GenerateCssOptions) {
   }
 
   if (keyframes) {
-    output.push(expandKeyframes(keyframes))
+    output.push(toKeyframeCss(keyframes))
   }
 
   return output.join('\n\n')
