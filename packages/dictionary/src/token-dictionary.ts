@@ -3,6 +3,7 @@ import { Tokens, TSemanticTokens } from '@css-panda/types'
 import { match, P } from 'ts-pattern'
 import { mapSemanticTokens, mapTokens } from './map-token'
 import { TokenData } from './get-token-data'
+import dlv from 'lodash.get'
 
 export type VarData = Record<'category' | 'value', string>
 
@@ -16,9 +17,9 @@ export class Dictionary {
   /**
    * The original token definitions
    */
-  #tokens: Partial<Tokens>
-  #semanticTokens: TSemanticTokens
-  #prefix: string | undefined
+  private tokens: Partial<Tokens>
+  private semanticTokens: TSemanticTokens
+  private prefix: string | undefined
 
   constructor({
     tokens,
@@ -29,16 +30,16 @@ export class Dictionary {
     semanticTokens?: TSemanticTokens
     prefix?: string
   }) {
-    this.#tokens = tokens
-    this.#semanticTokens = semanticTokens
-    this.#prefix = prefix
+    this.tokens = tokens
+    this.semanticTokens = semanticTokens
+    this.prefix = prefix
     this.assignTokens()
     this.assignSemanticTokens()
   }
 
   assignTokens() {
     mapTokens(
-      this.#tokens,
+      this.tokens,
       (data) => {
         this.values.set(data.prop, data)
         this.vars.set(data.var, {
@@ -46,13 +47,13 @@ export class Dictionary {
           value: data.value,
         })
       },
-      { prefix: this.#prefix },
+      { prefix: this.prefix },
     )
   }
 
   assignSemanticTokens() {
     mapSemanticTokens(
-      this.#semanticTokens,
+      this.semanticTokens,
       (data, condition) => {
         const value = this.getRef(data.category, data.value)
 
@@ -80,7 +81,7 @@ export class Dictionary {
           })
           .otherwise(() => {})
       },
-      { prefix: this.#prefix },
+      { prefix: this.prefix },
     )
   }
 
@@ -157,5 +158,22 @@ export class Dictionary {
       map.get(value.category)!.set(value.key, value)
     }
     return map
+  }
+
+  get flattenedTokens() {
+    const map = new Map<string, Record<string, string>>()
+
+    for (const [category, data] of this.categoryMap.entries()) {
+      for (const [token, tokenData] of data.entries()) {
+        map.get(category) ?? map.set(category, {})
+        map.get(category)![token] = tokenData.varRef
+      }
+    }
+
+    return map
+  }
+
+  query(path: string) {
+    return dlv(Object.fromEntries(this.flattenedTokens.entries()), path)
   }
 }

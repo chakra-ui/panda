@@ -113,6 +113,8 @@ importers:
       '@css-panda/fixture': workspace:*
       '@css-panda/types': workspace:*
       '@css-panda/walk-object': workspace:*
+      '@types/lodash.get': ^4.4.7
+      lodash.get: ^4.4.2
       ts-pattern: ^4.0.5
     dependencies:
       '@css-panda/calc': link:../calc
@@ -120,9 +122,11 @@ importers:
       '@css-panda/error': link:../error
       '@css-panda/types': link:../types
       '@css-panda/walk-object': link:../walk-object
+      lodash.get: 4.4.2
       ts-pattern: 4.0.5
     devDependencies:
       '@css-panda/fixture': link:../fixture
+      '@types/lodash.get': 4.4.7
 
   packages/error:
     specifiers: {}
@@ -177,6 +181,17 @@ importers:
       csstype: ^3.1.0
     dependencies:
       csstype: 3.1.0
+
+  packages/utility-class:
+    specifiers:
+      '@css-panda/dictionary': workspace:*
+      '@css-panda/fixture': workspace:*
+      '@css-panda/types': workspace:*
+    dependencies:
+      '@css-panda/dictionary': link:../dictionary
+      '@css-panda/types': link:../types
+    devDependencies:
+      '@css-panda/fixture': link:../fixture
 
   packages/vscode:
     specifiers:
@@ -819,6 +834,12 @@ packages:
 
   /@types/json-schema/7.0.11:
     resolution: {integrity: sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==}
+    dev: true
+
+  /@types/lodash.get/4.4.7:
+    resolution: {integrity: sha512-af34Mj+KdDeuzsJBxc/XeTtOx0SZHZNLd+hdrn+PcKGQs0EG2TJTzQAOTCZTgDJCArahlCzLWSy8c2w59JRz7Q==}
+    dependencies:
+      '@types/lodash': 4.14.182
     dev: true
 
   /@types/lodash/4.14.182:
@@ -2148,6 +2169,10 @@ packages:
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dependencies:
       p-locate: 6.0.0
+    dev: false
+
+  /lodash.get/4.4.2:
+    resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
     dev: false
 
   /lodash.merge/4.6.2:

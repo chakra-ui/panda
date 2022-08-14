@@ -133,7 +133,7 @@ const conditions = {
 
 ```ts
 const defaults = {
-  className: ({ prop, value, esc }) => `${prop}-${esc(value)}`,
+  className: ({ prop, value }) => `${prop}-${esc(value)}`,
 }
 
 const tt = defineConfig({
@@ -141,7 +141,7 @@ const tt = defineConfig({
     {
       properties: {
         display: {
-          className: ({ value, esc, dashCase }) => `d-${value}`,
+          className: ({ value }) => `d-${value}`,
         },
         background: {
           className: ({ prop, value }) => `bg-${value}`,
@@ -154,9 +154,9 @@ const tt = defineConfig({
           className: ({ prop, value }) => `text-${value}`,
           values: (tokens) => ({ ...tokens.colors }),
         },
-        fill: { scale: 'colors' },
+        fill: { values: 'colors' },
         lineClamp: {
-          className: ({ props, value }) => `clamp-${value}`,
+          className: ({ prop, value }) => `clamp-${value}`,
           values: {
             '1': {
               '--line-clamp': '1',
@@ -179,8 +179,8 @@ const tt = defineConfig({
 
     {
       properties: {
-        paddingLeft: { scale: 'space', className: 'pl' },
-        paddingRight: { scale: 'space', className: 'pr' },
+        paddingLeft: { values: 'space', className: 'pl' },
+        paddingRight: { values: 'space', className: 'pr' },
         paddingX: {
           className: 'px',
           values({ theme, map }) {

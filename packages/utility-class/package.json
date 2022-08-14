@@ -1,7 +1,7 @@
 {
-  "name": "@css-panda/dictionary",
+  "name": "@css-panda/utility-class",
   "version": "0.0.1",
-  "description": "The token dictionary utility",
+  "description": "The core css panda library",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -15,15 +15,9 @@
   ],
   "dependencies": {
     "@css-panda/types": "workspace:*",
-    "@css-panda/calc": "workspace:*",
-    "lodash.get": "^4.4.2",
-    "@css-panda/css-var": "workspace:*",
-    "@css-panda/error": "workspace:*",
-    "@css-panda/walk-object": "workspace:*",
-    "ts-pattern": "^4.0.5"
+    "@css-panda/dictionary": "workspace:*"
   },
   "devDependencies": {
-    "@types/lodash.get": "^4.4.7",
     "@css-panda/fixture": "workspace:*"
   }
 }

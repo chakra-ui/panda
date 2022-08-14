@@ -1,9 +1,7 @@
 import type * as CSS from 'csstype'
 import type { Loose } from './shared'
 
-export type CSSVar = `--${string}`
-
-export type CSSVarFunction = `var(--${string})` | `var(--${string}, ${string | number})`
+type CSSVarFunction = `var(--${string})` | `var(--${string}, ${string | number})`
 
 export type Properties = CSS.PropertiesFallback<number | Loose>
 
@@ -19,28 +17,12 @@ export type CSSKeyframes = {
   }
 }
 
-export type CSSPropertiesWithVars = CSSProperties & {
-  vars?: {
-    [key: CSSVar]: string
-  }
-}
+export type PseudoProperty = `&${CSS.SimplePseudos}`
 
-export type PseudoProperties = {
-  [key in `&${CSS.SimplePseudos}`]?: CSSPropertiesWithVars
-}
-
-type CSSPropertiesAndPseudos = CSSPropertiesWithVars & PseudoProperties
+// type CSSPropertiesAndPseudos = CSSPropertiesWithVars & PseudoProperties
 
 export interface MediaQueries<T> {
   '@media'?: {
     [query: string]: T
   }
-}
-
-interface SelectorMap {
-  [selector: string]: CSSPropertiesWithVars & MediaQueries<CSSPropertiesWithVars>
-}
-
-export interface CSSPropertiesWithSelectors extends CSSPropertiesAndPseudos {
-  selectors?: SelectorMap
 }
