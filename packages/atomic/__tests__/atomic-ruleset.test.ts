@@ -1,16 +1,15 @@
 import { describe, expect, test } from 'vitest'
+import { AtomicRuleset, ProcessOptions } from '../src/atomic-ruleset'
 import { createContext } from './fixture'
-import { generate } from '../src/generate'
 
-function run(fn: Function) {
-  const ctx = createContext()
-  fn(ctx)
-  return ctx.root.toString()
+function css(obj: ProcessOptions) {
+  const ruleset = new AtomicRuleset(createContext())
+  return ruleset.process(obj).toCss()
 }
 
-describe('generate stylesheet', () => {
+describe('atomic ruleset', () => {
   test('should work with basic', () => {
-    expect(run(generate({ bg: 'red.300' }))).toMatchInlineSnapshot(`
+    expect(css({ styles: { bg: 'red.300' } })).toMatchInlineSnapshot(`
       " .bg-red\\\\.300 {
           bg: red.300
       }"
@@ -19,11 +18,11 @@ describe('generate stylesheet', () => {
 
   test('should work with inner responsive', () => {
     expect(
-      run(
-        generate({
+      css({
+        styles: {
           ml: { ltr: { sm: '4' }, rtl: '-4' },
-        }),
-      ),
+        },
+      }),
     ).toMatchInlineSnapshot(`
       "@screen sm {
           [dir=ltr] .ltr\\\\:sm\\\\:ml-4 {
@@ -38,12 +37,12 @@ describe('generate stylesheet', () => {
 
   test('respect color mode', () => {
     expect(
-      run(
-        generate({
+      css({
+        styles: {
           color: { light: 'red', dark: 'green' },
           opacity: { dark: 'slate400' },
-        }),
-      ),
+        },
+      }),
     ).toMatchInlineSnapshot(`
       "[data-theme=light] .light\\\\:color-red {
           color: red
@@ -59,11 +58,11 @@ describe('generate stylesheet', () => {
 
   test('should work with outer responsive', () => {
     expect(
-      run(
-        generate({
+      css({
+        styles: {
           top: { sm: { rtl: '20px', hover: '50px' }, lg: '120px' },
-        }),
-      ),
+        },
+      }),
     ).toMatchInlineSnapshot(`
       "@screen sm {
           [dir=rtl] .sm\\\\:rtl\\\\:top-20px {
@@ -85,11 +84,11 @@ describe('generate stylesheet', () => {
 
   test('should skip `_` notation', () => {
     expect(
-      run(
-        generate({
+      css({
+        styles: {
           left: { _: '20px', md: '40px' },
-        }),
-      ),
+        },
+      }),
     ).toMatchInlineSnapshot(`
       " .left-20px {
           left: 20px
@@ -104,16 +103,14 @@ describe('generate stylesheet', () => {
 
   test('[pseudo] should work with nested selector', () => {
     expect(
-      run(
-        generate(
-          {
-            left: { _: '20px', md: '40px' },
-            bg: { light: 'red400', dark: 'green500' },
-            font: { rtl: 'sans', ltr: { dark: { sm: { hover: 'serif' } } } },
-          },
-          { scope: '& > p' },
-        ),
-      ),
+      css({
+        scope: '& > p',
+        styles: {
+          left: { _: '20px', md: '40px' },
+          bg: { light: 'red400', dark: 'green500' },
+          font: { rtl: 'sans', ltr: { dark: { sm: { hover: 'serif' } } } },
+        },
+      }),
     ).toMatchInlineSnapshot(`
       ".\\\\[\\\\& \\\\> p\\\\]\\\\:left-20px > p {
           left: 20px
@@ -142,15 +139,13 @@ describe('generate stylesheet', () => {
 
   test('[parent selector] should work with nested selector', () => {
     expect(
-      run(
-        generate(
-          {
-            bg: 'red400',
-            fontSize: { sm: '14px', lg: '18px' },
-          },
-          { scope: 'input:hover &' },
-        ),
-      ),
+      css({
+        scope: 'input:hover &',
+        styles: {
+          bg: 'red400',
+          fontSize: { sm: '14px', lg: '18px' },
+        },
+      }),
     ).toMatchInlineSnapshot(`
       "input:hover .\\\\[input\\\\:hover \\\\&\\\\]\\\\:bg-red400 {
           bg: red400
@@ -170,16 +165,14 @@ describe('generate stylesheet', () => {
 
   test('[selector] should work with nested selector', () => {
     expect(
-      run(
-        generate(
-          {
-            left: '40px',
-            bg: 'red400',
-            textAlign: { sm: 'left' },
-          },
-          { scope: '&::placeholder' },
-        ),
-      ),
+      css({
+        scope: '&::placeholder',
+        styles: {
+          left: '40px',
+          bg: 'red400',
+          textAlign: { sm: 'left' },
+        },
+      }),
     ).toMatchInlineSnapshot(`
       ".\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:left-40px::placeholder {
           left: 40px
@@ -197,15 +190,13 @@ describe('generate stylesheet', () => {
 
   test('[@media] should work with nested selector', () => {
     expect(
-      run(
-        generate(
-          {
-            left: '40px',
-            textAlign: { sm: 'left' },
-          },
-          { scope: '@media base' },
-        ),
-      ),
+      css({
+        scope: '@media base',
+        styles: {
+          left: '40px',
+          textAlign: { sm: 'left' },
+        },
+      }),
     ).toMatchInlineSnapshot(`
       "@media base {
            .\\\\[@media base\\\\]\\\\:left-40px {

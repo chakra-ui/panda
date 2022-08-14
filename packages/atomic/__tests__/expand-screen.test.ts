@@ -1,6 +1,6 @@
 import postcss from 'postcss'
 import { describe, expect, test } from 'vitest'
-import { expandScreenAtRule } from '../src/expand-screen-at-rule'
+import { expandScreenAtRule } from '../src/expand-screen'
 import { breakpoints } from '@css-panda/fixture'
 
 describe.only('expand screen at rule', () => {

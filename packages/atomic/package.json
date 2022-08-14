@@ -21,6 +21,7 @@
     "css-what": "^6.1.0",
     "postcss": "^8.4.14",
     "postcss-js": "^4.0.0",
+    "postcss-selector-parser": "^6.0.10",
     "postcss-nested": "^5.0.6",
     "ts-pattern": "^4.0.5"
   },

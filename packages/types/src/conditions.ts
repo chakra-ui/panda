@@ -1,4 +1,4 @@
-export type BaseConditionType = 'at-rule' | 'parent-selector' | 'pseudo-selector'
+export type BaseConditionType = 'at-rule' | 'parent-nesting' | 'self-nesting'
 
 type ColorSchemeCondition = {
   type: 'color-scheme'

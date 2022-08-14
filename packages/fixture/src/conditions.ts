@@ -1,18 +1,18 @@
 import { Conditions } from '@css-panda/types'
 
 export const conditions: Conditions = {
-  even: { type: 'pseudo-selector', value: '&:even' },
-  odd: { type: 'pseudo-selector', value: '&:odd' },
+  even: { type: 'self-nesting', value: '&:even' },
+  odd: { type: 'self-nesting', value: '&:odd' },
 
-  hover: { type: 'pseudo-selector', value: '&:hover' },
-  focus: { type: 'pseudo-selector', value: '&:focus' },
-  disabled: { type: 'pseudo-selector', value: '&:disabled' },
-  active: { type: 'pseudo-selector', value: '&:active' },
+  hover: { type: 'self-nesting', value: '&:hover' },
+  focus: { type: 'self-nesting', value: '&:focus' },
+  disabled: { type: 'self-nesting', value: '&:disabled' },
+  active: { type: 'self-nesting', value: '&:active' },
 
-  before: { type: 'pseudo-selector', value: '&::before' },
-  after: { type: 'pseudo-selector', value: '&::after' },
+  before: { type: 'self-nesting', value: '&::before' },
+  after: { type: 'self-nesting', value: '&::after' },
 
-  open: { type: 'pseudo-selector', value: '&[open]' },
+  open: { type: 'self-nesting', value: '&[open]' },
 
   motionReduce: { type: 'at-rule', value: '(prefers-reduced-motion: reduce)' },
 
@@ -26,6 +26,6 @@ export const conditions: Conditions = {
   light: { type: 'color-scheme', value: '[data-theme=light] &', colorScheme: 'light' },
   hiConstrast: { type: 'at-rule', value: '@media (forced-colors: active)' },
 
-  ltr: { type: 'parent-selector', value: '[dir=ltr] &' },
-  rtl: { type: 'parent-selector', value: '[dir=rtl] &' },
+  ltr: { type: 'parent-nesting', value: '[dir=ltr] &' },
+  rtl: { type: 'parent-nesting', value: '[dir=rtl] &' },
 }

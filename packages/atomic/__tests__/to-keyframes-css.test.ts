@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { expandKeyframes } from '../src/expand-keyframes'
+import { toKeyframeCss } from '../src/to-keyframes-css'
 import { keyframes } from '@css-panda/fixture'
 
 describe('Generates keyframes', () => {
   test('should generate keyframes', () => {
-    expect(expandKeyframes(keyframes)).toMatchInlineSnapshot(`
+    expect(toKeyframeCss(keyframes)).toMatchInlineSnapshot(`
       "@keyframes spin {
           to {
               transform: rotate(360deg)
