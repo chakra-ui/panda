@@ -9,6 +9,8 @@ export type CSSProperty = keyof Properties
 
 export type CSSProperties = {
   [Property in keyof Properties]: Properties[Property] | CSSVarFunction
+} & {
+  [key in `--${string}`]: string | undefined
 }
 
 export type CSSKeyframes = {

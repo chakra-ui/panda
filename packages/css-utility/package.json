@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/utility-class",
+  "name": "@css-panda/css-utility",
   "version": "0.0.1",
   "description": "The core css panda library",
   "main": "dist/index.js",

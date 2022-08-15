@@ -1,5 +1,5 @@
 import type { DotPath, Loose, TDotPath } from './shared'
-import type { CSSKeyframes, CSSPropertiesWithSelectors, CSSProperty } from './css-type'
+import type { CSSKeyframes, CSSProperty } from './css-type'
 
 type TCondition = {
   [condition: string]: {
@@ -42,12 +42,6 @@ type Shorthands = {
   [shorthand: string]: Array<CSSProperty>
 }
 
-type TokenGetter<T extends TDotPath> = (token: DotPath<T>) => string | undefined
-
-type Utilities<T extends TDotPath> = {
-  [utility: string]: (options: { value: string; $: TokenGetter<T> }) => CSSPropertiesWithSelectors
-}
-
 export type Format = 'css' | 'cjs' | 'esm' | 'dts'
 
 export type Config<Conditions extends TCondition, Breakpoints extends TBreakpoints, Tokens extends TTokens> = {
@@ -63,7 +57,6 @@ export type Config<Conditions extends TCondition, Breakpoints extends TBreakpoin
   tokensMap: TokensMap<Tokens>
   semanticTokens: SemanticTokens<Tokens, Conditions, Breakpoints>
   shorthands: Shorthands
-  utilities: Utilities<Tokens>
 }
 
 export type TConfig = Config<TCondition, TBreakpoints, TTokens>

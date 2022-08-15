@@ -142,6 +142,13 @@ const tt = defineConfig({
       properties: {
         display: {
           className: ({ value }) => `d-${value}`,
+          transform(value) {
+            return { display: value }
+          },
+          values: {
+            fl: 'flex',
+            ib: 'inline-block',
+          },
         },
         background: {
           className: ({ prop, value }) => `bg-${value}`,

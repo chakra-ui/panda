@@ -102,6 +102,17 @@ importers:
   packages/css-unit:
     specifiers: {}
 
+  packages/css-utility:
+    specifiers:
+      '@css-panda/dictionary': workspace:*
+      '@css-panda/fixture': workspace:*
+      '@css-panda/types': workspace:*
+    dependencies:
+      '@css-panda/dictionary': link:../dictionary
+      '@css-panda/types': link:../types
+    devDependencies:
+      '@css-panda/fixture': link:../fixture
+
   packages/css-var:
     specifiers: {}
 
@@ -181,17 +192,6 @@ importers:
       csstype: ^3.1.0
     dependencies:
       csstype: 3.1.0
-
-  packages/utility-class:
-    specifiers:
-      '@css-panda/dictionary': workspace:*
-      '@css-panda/fixture': workspace:*
-      '@css-panda/types': workspace:*
-    dependencies:
-      '@css-panda/dictionary': link:../dictionary
-      '@css-panda/types': link:../types
-    devDependencies:
-      '@css-panda/fixture': link:../fixture
 
   packages/vscode:
     specifiers:
