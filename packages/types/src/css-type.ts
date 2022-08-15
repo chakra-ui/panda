@@ -21,8 +21,6 @@ export type CSSKeyframes = {
 
 export type PseudoProperty = `&${CSS.SimplePseudos}`
 
-// type CSSPropertiesAndPseudos = CSSPropertiesWithVars & PseudoProperties
-
 export interface MediaQueries<T> {
   '@media'?: {
     [query: string]: T
