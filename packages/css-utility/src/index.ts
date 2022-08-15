@@ -1,6 +1,5 @@
-import { Dictionary } from '@css-panda/dictionary'
-import { Dict } from '@css-panda/types'
-import { UtilityConfig, PropertyUtility } from './types'
+import type { Dictionary } from '@css-panda/dictionary'
+import type { Dict, UtilityConfig, PropertyUtility } from '@css-panda/types'
 
 const isString = (v: any): v is string => typeof v === 'string'
 const isFunction = (v: any): v is Function => typeof v === 'function'
@@ -10,6 +9,7 @@ export class CSSUtility {
 
   classNameMap: Map<string, string> = new Map()
   stylesMap: Map<string, Dict> = new Map()
+  valuesMap: Map<string, Set<string>> = new Map()
 
   config: UtilityConfig<Dict>
   report: Map<string, string> = new Map()
@@ -51,6 +51,7 @@ export class CSSUtility {
     if (config) {
       this.config = config
       this.assignProperties()
+      this.assignValueMap()
     }
   }
 
@@ -69,6 +70,21 @@ export class CSSUtility {
         this.setStyles(property, raw, propKey)
         this.setClassName(property, alias)
       }
+    }
+  }
+
+  private assignValueMap() {
+    for (const [property, propertyConfig] of Object.entries(this.config.properties)) {
+      if (!propertyConfig) continue
+
+      const values = this.getPropertyValues(propertyConfig)
+      if (!values) continue
+
+      this.valuesMap.set(property, new Set(Object.keys(values)))
+    }
+
+    for (const [shorthand, longhand] of Object.entries(this.config.shorthands || {})) {
+      this.valuesMap.set(shorthand, this.valuesMap.get(longhand)!)
     }
   }
 

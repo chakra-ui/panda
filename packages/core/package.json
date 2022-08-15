@@ -16,6 +16,7 @@
   "dependencies": {
     "@css-panda/types": "workspace:*",
     "@css-panda/parser": "workspace:*",
+    "@css-panda/css-utility": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "@css-panda/atomic": "workspace:*",
     "@css-panda/fixture": "workspace:*",

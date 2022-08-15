@@ -69,6 +69,7 @@ importers:
   packages/core:
     specifiers:
       '@css-panda/atomic': workspace:*
+      '@css-panda/css-utility': workspace:*
       '@css-panda/dictionary': workspace:*
       '@css-panda/fixture': workspace:*
       '@css-panda/logger': workspace:*
@@ -84,6 +85,7 @@ importers:
       pluralize: ^8.0.0
     dependencies:
       '@css-panda/atomic': link:../atomic
+      '@css-panda/css-utility': link:../css-utility
       '@css-panda/fixture': link:../fixture
       '@css-panda/logger': link:../logger
       '@css-panda/parser': link:../parser
