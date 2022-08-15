@@ -9,23 +9,23 @@ export class CSSUtility {
   dictionary: Dictionary
 
   classNameMap: Map<string, string> = new Map()
-  transformMap: Map<string, Function> = new Map()
   stylesMap: Map<string, Dict> = new Map()
 
-  propertyConfigMap: Map<string, PropertyUtility<any>> = new Map()
   config: UtilityConfig<Dict>
-
   report: Map<string, string> = new Map()
 
-  getPropKey(prop: string, value: string) {
+  private transformMap: Map<string, Function> = new Map()
+  private propertyConfigMap: Map<string, PropertyUtility<any>> = new Map()
+
+  private getPropKey(prop: string, value: string) {
     return `(${prop} = ${value})`
   }
 
-  hash(prop: string, value: string) {
+  private hash(prop: string, value: string) {
     return `${prop}_${value}`
   }
 
-  getPropertyValues({ values }: PropertyUtility<any>): Dict<string> {
+  private getPropertyValues({ values }: PropertyUtility<any>): Dict<string> {
     if (isString(values)) {
       return this.dictionary.flattenedTokens.get(values) ?? {}
     }
@@ -54,7 +54,7 @@ export class CSSUtility {
     }
   }
 
-  assignProperties() {
+  private assignProperties() {
     for (const [property, propertyConfig] of Object.entries(this.config.properties)) {
       this.setTransform(property, propertyConfig?.transform)
 
@@ -72,14 +72,14 @@ export class CSSUtility {
     }
   }
 
-  setTransform(property: string, transform?: Function) {
+  private setTransform(property: string, transform?: Function) {
     const defaultTransform = (value: string) => ({ [property]: value })
     const transformFn = transform ?? defaultTransform
     this.transformMap.set(property, transformFn)
     return this
   }
 
-  setStyles(property: string, raw: string, propKey?: string) {
+  private setStyles(property: string, raw: string, propKey?: string) {
     propKey = propKey ?? this.getPropKey(property, raw)
     const defaultTransform = (value: string) => ({ [property]: value })
     const getStyles = this.transformMap.get(property) ?? defaultTransform
@@ -87,7 +87,7 @@ export class CSSUtility {
     return this
   }
 
-  setClassName(property: string, raw: string) {
+  private setClassName(property: string, raw: string) {
     const propKey = this.getPropKey(property, raw)
     const config = this.propertyConfigMap.get(property)
 
@@ -105,15 +105,15 @@ export class CSSUtility {
     return this
   }
 
-  isShorthand(prop: string) {
+  private isShorthand(prop: string) {
     return !!this.config.shorthands?.[prop]
   }
 
-  isProperty(prop: string) {
+  private isProperty(prop: string) {
     return this.propertyConfigMap.has(prop)
   }
 
-  resolveShorthand(prop: string) {
+  private resolveShorthand(prop: string) {
     const longhand = this.config.shorthands![prop]
     if (!this.config.properties[longhand]) {
       throw new Error(`Property '${longhand}' not found in config`)
@@ -121,7 +121,7 @@ export class CSSUtility {
     return longhand
   }
 
-  getOrCreateClassName(prop: string, value: string) {
+  private getOrCreateClassName(prop: string, value: string) {
     const inner = (prop: string, value: string) => {
       const propKey = this.getPropKey(prop, value)
       if (!this.classNameMap.has(propKey)) {
@@ -136,7 +136,7 @@ export class CSSUtility {
     return this.isShorthand(prop) ? inner(this.resolveShorthand(prop), value) : inner(prop, value)
   }
 
-  getOrCreateStyle(prop: string, value: string) {
+  private getOrCreateStyle(prop: string, value: string) {
     const inner = (prop: string, value: string) => {
       const propKey = this.getPropKey(prop, value)
       this.stylesMap.get(propKey) ?? this.setStyles(prop, value, propKey)
