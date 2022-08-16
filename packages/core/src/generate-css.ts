@@ -12,16 +12,18 @@ type GenerateCssOptions = {
 export function generateCss(dict: Dictionary, options?: GenerateCssOptions) {
   const { root = ':where(:root, :host)', conditions = {}, keyframes } = options ?? {}
 
-  function inner(vars: Map<string, VarData>) {
+  function inner(vars: Map<string, VarData>, wrap = true) {
     const map = new Map<string, string>()
 
     for (const [key, { value }] of vars) {
       map.set(key, value)
     }
 
-    const { css } = toCss({
-      [root]: Object.fromEntries(map),
-    })
+    const { css } = wrap
+      ? toCss({
+          [root]: Object.fromEntries(map),
+        })
+      : toCss(Object.fromEntries(map))
 
     return css
   }
@@ -31,14 +33,14 @@ export function generateCss(dict: Dictionary, options?: GenerateCssOptions) {
   for (const [condition, conditionMap] of dict.conditionVars) {
     //
     const rawCondition = conditions[condition]
-    const conditionStr = rawCondition.type === 'screen' ? rawCondition.rawValue : rawCondition.value
+    const conditionStr = rawCondition.type === 'screen' ? rawCondition.rawValue : rawCondition.value.replace(/&/, root)
 
     if (!conditionStr) {
       error(`Condition ${conditionStr} is not defined`)
       continue
     }
 
-    output.push(`${conditionStr} {\n ${inner(conditionMap)} \n}`)
+    output.push(`${conditionStr} {\n ${inner(conditionMap, rawCondition.type === 'screen')} \n}`)
   }
 
   if (keyframes) {

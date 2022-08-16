@@ -1,7 +1,8 @@
 import { walkObject } from '@css-panda/walk-object'
 import type { Dict, GeneratorContext } from './types'
+import hash from '@emotion/hash'
 
-export function getAtomicClassName(props: Dict) {
+export function getAtomicClassName(props: Dict, { hash: shouldHash }: { hash?: boolean } = {}) {
   const { selectors = {}, '@media': mediaQueries = {}, ...styles } = props
 
   return (ctx: GeneratorContext) => {
@@ -22,7 +23,8 @@ export function getAtomicClassName(props: Dict) {
           baseArray.unshift(`[${scope}]`)
         }
 
-        result.add(baseArray.join(':'))
+        const className = shouldHash ? hash(baseArray.join(':')) : baseArray.join(':')
+        result.add(className)
       })
     }
 

@@ -5,12 +5,12 @@ import { GeneratorContext } from './types'
 export class AtomicStylesheet {
   constructor(private context: GeneratorContext) {}
 
-  process(properties: PandaCSSProperties) {
+  process(properties: PandaCSSProperties, { hash }: { hash?: boolean } = {}) {
     const { selectors = {}, '@media': mediaQueries = {}, ...styles } = properties
 
     const inner = (props: any, scope?: string) => {
       const ruleset = new AtomicRuleset(this.context)
-      ruleset.process({ scope, styles: props })
+      ruleset.process({ scope, styles: props, hash })
     }
 
     inner(styles)

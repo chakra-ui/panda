@@ -35,21 +35,27 @@ export async function generator(config: Config) {
 
   const stylesheet = new AtomicStylesheet(context)
 
-  stylesheet.process({
-    background: 'red.200',
-    margin: '40px',
-    selectors: {
-      '&:hover': {
-        background: { dark: 'current', light: '#fff' },
-        margin: '4',
+  stylesheet.process(
+    {
+      background: 'red.200',
+      margin: '40px',
+      color: 'red',
+
+      selectors: {
+        '&:hover': {
+          background: { dark: 'current', light: '#fff' },
+          margin: '4',
+        },
+      },
+      '@media': {
+        'screen and (min-width: 768px)': {
+          color: 'gray.200',
+          marginLeft: '40px',
+        },
       },
     },
-    '@media': {
-      'screen and (min-width: 768px)': {
-        color: 'gray.200',
-      },
-    },
-  })
+    // { hash: true },
+  )
 
   await Promise.all([
     fs.writeFile('__generated__/styles.css', stylesheet.toCss()),

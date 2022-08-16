@@ -4,10 +4,12 @@ import { toCss } from './to-css'
 import { Dict, GeneratorContext } from './types'
 import postcss, { AtRule, Rule } from 'postcss'
 import { match } from 'ts-pattern'
+import hash from '@emotion/hash'
 
 export type ProcessOptions = {
   scope?: string
   styles: Dict
+  hash?: boolean
 }
 
 export class AtomicRuleset {
@@ -20,7 +22,7 @@ export class AtomicRuleset {
   }
 
   process(options: ProcessOptions) {
-    const { scope, styles } = options
+    const { scope, styles, hash: shouldHash } = options
 
     walkObject(styles, (value, paths) => {
       let [prop, ...conditions] = paths
@@ -43,7 +45,8 @@ export class AtomicRuleset {
         conditions.push(scope)
       }
 
-      let currentSelector = `.${esc(baseArray.join(':'))}`
+      const selectorString = shouldHash ? esc(hash(baseArray.join(''))) : esc(baseArray.join(':'))
+      let currentSelector = `.${selectorString}`
 
       this.rule = postcss.rule({
         selector: currentSelector,
@@ -115,5 +118,5 @@ function wrap(rule: Rule | AtRule, options: WrapOptions) {
 }
 
 function esc(str: string) {
-  return str.replace(/[@.*+?&:^>_${}()|[\]\\\s]/g, '\\$&')
+  return ''.replace.call(str, /(^[^_a-zA-Z\u00a0-\uffff]|[^-_a-zA-Z0-9\u00a0-\uffff])/g, '\\$1')
 }
