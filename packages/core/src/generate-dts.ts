@@ -31,5 +31,5 @@ export function generateDts(dict: Dictionary) {
   set.add('export declare function getToken(path: Token): string')
   set.add('export declare function getTokenVar(path: Token): string')
 
-  return set
+  return Array.from(set).join('\n\n')
 }

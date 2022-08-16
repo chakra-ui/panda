@@ -8,7 +8,8 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "scripts": {
     "build": "tsup src/ --dts",
-    "dev": "pnpm build -- --watch"
+    "dev": "pnpm build -- --watch",
+    "watch": "tsx watch src/generator.ts"
   },
   "files": [
     "dist"
@@ -24,6 +25,7 @@
     "find-up": "^6.3.0",
     "hookable": "^5.1.1",
     "outdent": " ^0.8.0",
+    "postcss": "^8.4.14",
     "pkg-types": "^0.3.3",
     "pluralize": "^8.0.0"
   },

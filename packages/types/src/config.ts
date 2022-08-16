@@ -1,12 +1,7 @@
 import type { DotPath, Loose, TDotPath } from './shared'
 import type { CSSKeyframes, CSSProperty } from './css-type'
-
-type TCondition = {
-  [condition: string]: {
-    selector?: string | string[]
-    '@media'?: string
-  }
-}
+import { UtilityConfig } from './css-utility'
+import { Conditions as TConditions } from './conditions'
 
 type TBreakpoints = {
   [breakpoint: string]: string
@@ -44,24 +39,29 @@ type Shorthands = {
 
 export type Format = 'css' | 'cjs' | 'esm' | 'dts'
 
-export type Config<Conditions extends TCondition, Breakpoints extends TBreakpoints, Tokens extends TTokens> = {
-  format: Format[]
-  outfile: string
-  prefix: string
-  incremental: boolean
-  content: string[]
-  conditions: Conditions
-  breakpoints: Breakpoints
-  keyframes: CSSKeyframes
-  tokens: Tokens
-  tokensMap: TokensMap<Tokens>
-  semanticTokens: SemanticTokens<Tokens, Conditions, Breakpoints>
-  shorthands: Shorthands
+export type Config<
+  Conditions extends TConditions = TConditions,
+  Breakpoints extends TBreakpoints = TBreakpoints,
+  Tokens extends TTokens = TTokens,
+> = {
+  format?: Format[]
+  outDir?: string
+  prefix?: string
+  incremental?: boolean
+  content?: string[]
+  conditions?: TConditions
+  breakpoints?: Breakpoints
+  keyframes?: CSSKeyframes
+  tokens?: Tokens
+  tokensMap?: TokensMap<Tokens>
+  semanticTokens?: SemanticTokens<Tokens, Conditions, Breakpoints>
+  shorthands?: Shorthands
+  utilities?: UtilityConfig<Tokens>[]
 }
 
-export type TConfig = Config<TCondition, TBreakpoints, TTokens>
+export type TConfig = Config<TConditions, TBreakpoints, TTokens>
 
-export function defineConfig<Conditions extends TCondition, Breakpoints extends TBreakpoints, Tokens extends TTokens>(
+export function defineConfig<Conditions extends TConditions, Breakpoints extends TBreakpoints, Tokens extends TTokens>(
   config: Partial<Config<Conditions, Breakpoints, Tokens>>,
 ): Partial<Config<Conditions, Breakpoints, Tokens>> {
   return config

@@ -78,5 +78,9 @@ export const utilities: UtilityConfig = {
       className: 'mb',
       values: 'spacing',
     },
+    margin: {
+      className: 'm',
+      values: 'spacing',
+    },
   },
 }

@@ -115,5 +115,5 @@ function wrap(rule: Rule | AtRule, options: WrapOptions) {
 }
 
 function esc(str: string) {
-  return str.replace(/[.*+?&:^>_${}()|[\]\\]/g, '\\$&')
+  return str.replace(/[@.*+?&:^>_${}()|[\]\\\s]/g, '\\$&')
 }

@@ -11,3 +11,4 @@ lib
 dist
 tsconfig.tsbuildinfo
 .DS_Store
+__generated__

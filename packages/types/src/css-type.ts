@@ -21,8 +21,14 @@ export type CSSKeyframes = {
 
 export type PseudoProperty = `&${CSS.SimplePseudos}`
 
-export interface MediaQueries<T> {
+// TODO: Make this recursive condition
+export type PandaCSSProperties = CSSProperties & {
+  selectors?: {
+    [key in PseudoProperty]?: CSSProperties
+  } & {
+    [key: string]: CSSProperties
+  }
   '@media'?: {
-    [query: string]: T
+    [query: string]: CSSProperties
   }
 }

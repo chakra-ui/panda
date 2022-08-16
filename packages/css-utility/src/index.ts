@@ -170,12 +170,13 @@ export class CSSUtility {
   }
 }
 
-export function mergeUtilities(utilities: CSSUtility[]) {
-  const dictionary = utilities[0].dictionary
-
-  const config = utilities.reduce((acc, utility) => {
-    return { ...acc, ...utility.config }
-  }, {} as UtilityConfig<Dict>)
-
-  return new CSSUtility({ tokens: dictionary, config })
+export function mergeUtilityConfigs(utilities: UtilityConfig[] | undefined): UtilityConfig {
+  return (utilities ?? []).reduce<UtilityConfig>(
+    (acc, utility) => {
+      acc.properties = { ...acc.properties, ...utility.properties }
+      acc.shorthands = { ...acc.shorthands, ...utility.shorthands }
+      return acc
+    },
+    { properties: {}, shorthands: {} },
+  )
 }

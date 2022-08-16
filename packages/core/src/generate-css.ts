@@ -4,7 +4,7 @@ import { Conditions } from '@css-panda/types'
 import { error } from '@css-panda/logger'
 
 type GenerateCssOptions = {
-  root: string
+  root?: string
   conditions?: Conditions
   keyframes?: Record<string, any>
 }
