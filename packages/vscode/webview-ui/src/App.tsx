@@ -8,8 +8,8 @@ import { TypographyPlayground } from './components/typography-playground'
 import { Sizes } from './components/size-docs'
 import { SpacingPlayground } from './components/spacing-playground'
 import { ContrastChecker } from './components/contrast-checker'
-import { vscode } from './utilities/vscode'
-import { Config } from './types'
+import { vscode } from './utilities/vscode' 
+import type { Config } from '@css-panda/types'
 
 function App() {
   const [config, setConfig] = useState<Config | null>(null)
@@ -55,6 +55,16 @@ function App() {
       </div>
     )
 
+  if (!config.tokens)
+    return (
+      <div>
+        <p>Tokens not found, update config and reload</p>
+        <VSCodeButton onClick={reload}>Reload </VSCodeButton>
+      </div>
+    )
+
+  const { tokens } = config
+
   return (
     <main>
       <span>We're looking at:</span>
@@ -65,28 +75,28 @@ function App() {
           </VSCodeOption>
         ))}
       </VSCodeDropdown>
-      {page === NavKeys.COLORS && <Colors colors={config.colors} />}
-      {page === NavKeys.FONT_WEIGHTS && <FontTokens fontTokens={config.fontWeights} token="fontWeight" />}
-      {page === NavKeys.FONT_SIZES && <FontTokens fontTokens={config.fontSizes} token="fontSize" />}
+      {page === NavKeys.COLORS && <Colors colors={tokens.colors} />}
+      {page === NavKeys.FONT_WEIGHTS && <FontTokens fontTokens={tokens.fontWeights} token="fontWeight" />}
+      {page === NavKeys.FONT_SIZES && <FontTokens fontTokens={tokens.fontSizes} token="fontSize" />}
       {page === NavKeys.LETTER_SPACINGS && (
         <FontTokens
-          fontTokens={config.letterSpacings}
+          fontTokens={tokens.letterSpacings}
           token="letterSpacing"
           text="The quick brown fox jumps over the lazy dog."
         />
       )}
       {page === NavKeys.LINE_HEIGHTS && (
         <FontTokens
-          fontTokens={config.lineHeights}
+          fontTokens={tokens.lineHeights}
           token="lineHeight"
           largeText
           text="So I started to walk into the water. I won't lie to you boys, I was terrified. But I pressed on, and as I made my way past the breakers a strange calm came over me. I don't know if it was divine intervention or the kinship of all living things but I tell you Jerry at that moment, I was a marine biologist."
         />
       )}
       {page === NavKeys.TYPOGRAPHY_PLAYGROUND && <TypographyPlayground config={config} />}
-      {page === NavKeys.SIZES && <Sizes sizes={config.sizes} />}
-      {page === NavKeys.SPACING_PLAYGROUND && <SpacingPlayground sizes={config.sizes} />}
-      {page === NavKeys.CONTRAST_CHECKER && <ContrastChecker colors={config.colors} />}
+      {page === NavKeys.SIZES && <Sizes sizes={tokens.sizes} />}
+      {page === NavKeys.SPACING_PLAYGROUND && <SpacingPlayground sizes={tokens.sizes} />}
+      {page === NavKeys.CONTRAST_CHECKER && <ContrastChecker colors={tokens.colors} />}
     </main>
   )
 }

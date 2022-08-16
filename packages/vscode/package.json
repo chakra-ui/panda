@@ -67,6 +67,7 @@
     "@typescript-eslint/eslint-plugin": "^4.14.1",
     "@typescript-eslint/parser": "^4.14.1",
     "@css-panda/read-config": "workspace:*",
+    "@css-panda/types": "workspace:*",
     "concurrently": "^7.3.0",
     "eslint": "^7.19.0",
     "glob": "^7.1.6",

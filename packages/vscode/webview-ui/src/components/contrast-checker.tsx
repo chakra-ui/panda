@@ -1,11 +1,11 @@
 import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react'
 import { useState } from 'react'
-import { Config } from '../types'
 import { getContrastPairs, getContrastRatio } from '../utilities/color'
+import { Colors } from './color-docs'
 import { ErrorIcon, SuccessIcon } from './icons'
 
 type ContrastCheckerProps = {
-  colors: Config['colors']
+  colors: Colors
 }
 
 export function ContrastChecker(props: ContrastCheckerProps) {
@@ -21,8 +21,8 @@ export function ContrastChecker(props: ContrastCheckerProps) {
   const [foreground, setForeGround] = useState('#000000')
   const [background, setBackground] = useState('#ffffff')
 
-  const activeForeground = colors.find((col) => col.label === foreground)?.value || foreground
-  const activeBackground = colors.find((col) => col.label === background)?.value || background
+  const activeForeground = (colors.find((col) => col.label === foreground)?.value || foreground) as string
+  const activeBackground = (colors.find((col) => col.label === background)?.value || background) as string
 
   const WCAGTests = getContrastPairs(activeForeground, activeBackground)
   const constrastRatio = getContrastRatio(activeForeground, activeBackground)
