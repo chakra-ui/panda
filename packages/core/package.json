@@ -20,6 +20,7 @@
     "@css-panda/css-utility": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "@css-panda/atomic": "workspace:*",
+    "@css-panda/read-config": "workspace:*",
     "@css-panda/fixture": "workspace:*",
     "esbuild": "^0.15.5",
     "filespy": "^1.2.4",

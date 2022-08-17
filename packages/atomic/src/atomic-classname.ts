@@ -3,7 +3,7 @@ import { toHash } from './hash'
 import type { Dict, GeneratorContext } from './types'
 
 class AtomicClassNames {
-  constructor(private context: GeneratorContext) {}
+  constructor(private context: Pick<GeneratorContext, 'transform'>) {}
 
   css = (styleObject: Dict, { hash: shouldHash }: { hash?: boolean } = {}) => {
     const { selectors = {}, '@media': mediaQueries = {}, ...styles } = styleObject
@@ -46,5 +46,5 @@ class AtomicClassNames {
 export const css = (styleObject: Dict) => {
   //@ts-ignore - This is intentional. `context` will be auto-generated
   const generator = new AtomicClassNames(context)
-  return generator.css(styleObject)
+  return Array.from(generator.css(styleObject)).join(' ')
 }

@@ -12,3 +12,5 @@ export const config = defineConfig({
   conditions,
   utilities: [utilities],
 })
+
+export default config

@@ -74,6 +74,7 @@ importers:
       '@css-panda/fixture': workspace:*
       '@css-panda/logger': workspace:*
       '@css-panda/parser': workspace:*
+      '@css-panda/read-config': workspace:*
       '@css-panda/types': workspace:*
       '@types/debug': ^4.1.7
       '@types/pluralize': ^0.0.29
@@ -91,6 +92,7 @@ importers:
       '@css-panda/fixture': link:../fixture
       '@css-panda/logger': link:../logger
       '@css-panda/parser': link:../parser
+      '@css-panda/read-config': link:../read-config
       '@css-panda/types': link:../types
       esbuild: 0.15.5
       filespy: 1.2.4

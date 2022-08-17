@@ -1,11 +1,10 @@
-import { PandaCSSProperties } from '@css-panda/types'
 import { AtomicRuleset } from './atomic-ruleset'
 import { GeneratorContext } from './types'
 
 export class AtomicStylesheet {
   constructor(private context: GeneratorContext) {}
 
-  process(properties: PandaCSSProperties, { hash }: { hash?: boolean } = {}) {
+  process(properties: Record<string, any>, { hash }: { hash?: boolean } = {}) {
     const { selectors = {}, '@media': mediaQueries = {}, ...styles } = properties
 
     const inner = (props: any, scope?: string) => {

@@ -1,10 +1,9 @@
 import type { PackageJson } from 'pkg-types'
 import path from 'path'
-import { promises as fs } from 'fs'
 
 type PackageOptions = {
   name: string
-  outDir: string
+  outDir?: string
   exports: string[]
 }
 
@@ -14,11 +13,11 @@ export function setupPackage(options: PackageOptions) {
   const exportEntries = exports.map((key) => [
     `./${key}`,
     {
-      import: './' + path.join(outDir, key, 'index.mjs'),
+      import: './' + path.join(outDir ?? '', key, 'index.mjs'),
     },
   ])
 
-  const typeVersionEntries = exports.map((key) => [key, ['./' + path.join(outDir, key)]])
+  const typeVersionEntries = exports.map((key) => [key, ['./' + path.join(outDir ?? '', key)]])
 
   const pkg: PackageJson = {
     name,
@@ -32,7 +31,7 @@ export function setupPackage(options: PackageOptions) {
   return pkg
 }
 
-export async function writePackage(filePath: string, options: PackageOptions) {
+export function generatePackage(options: PackageOptions) {
   const pkg = setupPackage(options)
-  return fs.writeFile(filePath, JSON.stringify(pkg, null, 2))
+  return JSON.stringify(pkg, null, 2)
 }

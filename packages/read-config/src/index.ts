@@ -24,11 +24,11 @@ export class Config {
   private config: ConfigType
   public source: Source
 
-  public async load() {
+  public async load(filePath?: string) {
     const { config: loadedConfig, sources } = await loadConfig({
       sources: [
         {
-          files: 'panda.config',
+          files: filePath ?? 'panda.config',
           extensions: ['ts', 'mts', 'cts', 'js', 'mjs', 'cjs', 'json'],
         },
       ],
