@@ -25,6 +25,7 @@
     "esbuild": "^0.15.5",
     "filespy": "^1.2.4",
     "find-up": "^6.3.0",
+    "fs-extra": "^10.1.0",
     "hookable": "^5.1.1",
     "outdent": " ^0.8.0",
     "postcss": "^8.4.14",
@@ -34,6 +35,7 @@
   "devDependencies": {
     "@css-panda/dictionary": "workspace:*",
     "@types/debug": "^4.1.7",
+    "@types/fs-extra": "^9.0.13",
     "@types/pluralize": "^0.0.29"
   }
 }

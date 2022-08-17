@@ -10,6 +10,8 @@ export function keyValue(node: swc.KeyValueProperty, result: Record<string, any>
 
   if (!key) return result
 
+  console.log(node.value)
+
   match(node.value)
     .with({ type: P.union('StringLiteral', 'NumericLiteral') }, (node) => {
       result[key] = node.value
@@ -133,12 +135,22 @@ export function jsxAttribute(node: swc.JSXAttribute, result: Record<string, any>
 }
 
 export function callExpression(node: swc.CallExpression, scope: string) {
-  if (node.callee.type === 'Identifier') {
-    const name = node.callee.value
-    if (name === scope) {
-      return node
+  const result: swc.CallExpression[] = []
+
+  const inner = (node: swc.CallExpression) => {
+    if (node.callee.type === 'MemberExpression') {
+      node.arguments.forEach((arg) => {
+        if (arg.expression.type === 'CallExpression') {
+          inner(arg.expression)
+        }
+      })
+    } else if (node.callee.type === 'Identifier' && node.callee.value === scope) {
+      result.push(node)
     }
   }
+
+  inner(node)
+  return result[0]
 }
 
 export function importDeclaration(node: swc.ImportDeclaration, options: { module: string; name: string }) {

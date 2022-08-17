@@ -3,9 +3,7 @@ import { CallVisitor } from './visitor'
 import { createDebugger } from '@css-panda/logger'
 import { Collector } from './types'
 
-const moduleName = '.panda/css'
-
-export function cssPlugin(data: Set<any>) {
+export function cssPlugin(data: Set<any>, moduleName: string) {
   return function (program: swc.Program) {
     const visitor = new CallVisitor({
       import: { name: 'css', module: moduleName },
@@ -18,7 +16,7 @@ export function cssPlugin(data: Set<any>) {
   }
 }
 
-export function globalStylePlugin(data: Set<any>) {
+export function globalStylePlugin(data: Set<any>, moduleName: string) {
   return function (program: swc.Program) {
     const visitor = new CallVisitor({
       import: { name: 'globalStyle', module: moduleName },
@@ -31,7 +29,7 @@ export function globalStylePlugin(data: Set<any>) {
   }
 }
 
-export function fontFacePlugin(data: Set<any>) {
+export function fontFacePlugin(data: Set<any>, moduleName: string) {
   return function (program: swc.Program) {
     const visitor = new CallVisitor({
       import: { name: 'fontFace', module: moduleName },
@@ -52,6 +50,10 @@ export function createCollector() {
   }
 }
 
-export function createPlugins(data: Collector) {
-  return [cssPlugin(data.css), fontFacePlugin(data.fontFace), globalStylePlugin(data.globalStyle)]
+export function createPlugins(data: Collector, moduleName = '.panda/css') {
+  return [
+    cssPlugin(data.css, moduleName),
+    // fontFacePlugin(data.fontFace, moduleName),
+    // globalStylePlugin(data.globalStyle, moduleName),
+  ]
 }

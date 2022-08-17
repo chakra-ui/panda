@@ -1,5 +1,4 @@
 import { describe, test, expect } from 'vitest'
-import { cssPlugin } from '../src/fixtures'
 import { createCollector, createPlugins } from '../src/plugins'
 import { transformSync } from '../src/transform'
 
