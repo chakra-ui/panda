@@ -55,7 +55,7 @@ export class AtomicRuleset {
         nodes: rawNodes,
       })
 
-      const css = new CSSCondition(this.context.conditions)
+      const css = new CSSCondition(this.context.conditions).addBreakpoints(this.context.breakpoints)
 
       for (const cond of css.resolve(conditions)) {
         match(cond)

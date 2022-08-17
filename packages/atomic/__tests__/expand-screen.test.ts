@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest'
 import { expandScreenAtRule } from '../src/expand-screen'
 import { breakpoints } from '@css-panda/fixture'
 
-describe.only('expand screen at rule', () => {
+describe('expand screen at rule', () => {
   test('should expand screen', () => {
     const root = postcss.parse(`
     @screen md{
@@ -12,7 +12,7 @@ describe.only('expand screen at rule', () => {
         }
     }
     `)
-    expandScreenAtRule(breakpoints)(root)
+    expandScreenAtRule(root, breakpoints)
     expect(root.toString()).toMatchInlineSnapshot(`
       "
           @media (min-width: 48em){

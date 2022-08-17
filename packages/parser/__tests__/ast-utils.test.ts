@@ -109,4 +109,39 @@ describe('ast parser', () => {
       }
     `)
   })
+
+  test.only('should extract nested css', () => {
+    const code = `
+      import { css } from '.panda/css'
+
+console.log(
+  console.log(
+    css({
+      selectors: {
+        '&:hover': {
+          background: 'red.200',
+        },
+      },
+    }),
+  ),
+)
+`
+    const collect = new Set()
+
+    transformSync(code, {
+      plugins: [cssPlugin(collect)],
+    })
+
+    expect(collect).toMatchInlineSnapshot(`
+      Set {
+        {
+          "selectors": {
+            "&:hover": {
+              "background": "red.200",
+            },
+          },
+        },
+      }
+    `)
+  })
 })

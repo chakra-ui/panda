@@ -9,6 +9,7 @@ export type TransformResult = {
 export type GeneratorContext = {
   root: Root
   conditions: Conditions
+  breakpoints: Record<string, string>
   transform: (prop: string, value: string) => TransformResult
 }
 

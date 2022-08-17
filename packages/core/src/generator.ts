@@ -12,39 +12,14 @@ import { generateJs } from './generate-js'
 import { generatePackage } from './generate-package'
 import { transformSync, createCollector, createPlugins } from '@css-panda/parser'
 import { info, log } from '@css-panda/logger'
+import { createContext } from './create-context'
 
 export async function generator() {
   const fixtureDir = path.dirname(require.resolve('@css-panda/fixture'))
   const rootDir = path.join(fixtureDir, 'src', 'config.ts')
-  const conf = await new Conf().load(path.join(fixtureDir, 'src', 'config'))
-  console.log('------loaded---------')
 
-  const config = conf.config as any
-
-  /* -----------------------------------------------------------------------------
-   * Setup resources
-   * -----------------------------------------------------------------------------*/
-
-  const dict = new Dictionary({
-    tokens: config.tokens,
-    semanticTokens: config.semanticTokens,
-    prefix: config.prefix,
-  })
-
-  const utilites = new CSSUtility({
-    tokens: dict,
-    config: mergeUtilityConfigs(config.utilities),
-  })
-
-  const context: GeneratorContext = {
-    root: postcss.root(),
-    conditions: config.conditions ?? {},
-    transform(prop, value) {
-      return utilites.resolve(prop, value)
-    },
-  }
-
-  const stylesheet = new AtomicStylesheet(context)
+  const { config } = await new Conf().load(path.join(fixtureDir, 'src', 'config'))
+  const { stylesheet, context } = createContext(config)
 
   /* -----------------------------------------------------------------------------
    * [codegen] Generate design system artifacts
@@ -86,8 +61,6 @@ export async function generator() {
     console.log(style)
     stylesheet.process(style)
   })
-
-  expandScreenAtRule(config.breakpoints)(context.root)
 
   await fs.writeFile('__generated__/styles.css', stylesheet.toCss())
 }

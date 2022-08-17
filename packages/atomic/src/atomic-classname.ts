@@ -2,7 +2,7 @@ import { walkObject } from '@css-panda/walk-object'
 import { toHash } from './hash'
 import type { Dict, GeneratorContext } from './types'
 
-class AtomicClassNames {
+export class AtomicClassNames {
   constructor(private context: Pick<GeneratorContext, 'transform'>) {}
 
   css = (styleObject: Dict, { hash: shouldHash }: { hash?: boolean } = {}) => {

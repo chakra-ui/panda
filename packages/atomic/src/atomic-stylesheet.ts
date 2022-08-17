@@ -1,5 +1,7 @@
 import { AtomicRuleset } from './atomic-ruleset'
+import { expandScreenAtRule } from './expand-screen'
 import { GeneratorContext } from './types'
+import { optimizeCss, OptimizeOptions } from './optimize'
 
 export class AtomicStylesheet {
   constructor(private context: GeneratorContext) {}
@@ -25,7 +27,15 @@ export class AtomicStylesheet {
     return this
   }
 
-  toCss() {
-    return this.context.root.toString()
+  addImports(imports: string[]) {
+    const rules = imports.map((importName) => `@import '${importName}';`)
+    this.context.root.prepend(...rules)
+    return this
+  }
+
+  toCss(options: OptimizeOptions = {}) {
+    expandScreenAtRule(this.context.root, this.context.breakpoints)
+    const { code } = optimizeCss(this.context.root.toString(), options)
+    return code
   }
 }

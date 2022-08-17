@@ -18,6 +18,7 @@
     "@css-panda/types": "workspace:*",
     "@css-panda/walk-object": "workspace:*",
     "@css-panda/breakpoint-utils": "workspace:*",
+    "@parcel/css": "^1.12.2",
     "postcss": "^8.4.14",
     "postcss-js": "^4.0.0",
     "postcss-selector-parser": "^6.0.10",

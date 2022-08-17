@@ -5,12 +5,13 @@ import { ImportResult } from './types'
 
 export function keyValue(node: swc.KeyValueProperty, result: Record<string, any> = {}) {
   const key = match(node.key)
-    .with({ type: 'Identifier', value: P.select() }, (value) => value)
-    .otherwise(() => undefined)
+    .with({ type: P.union('Identifier', 'StringLiteral', 'NumericLiteral') }, (node) => node.value)
+    .otherwise(() => {
+      console.log(`unexpected key: ${node.key.type}`)
+      return
+    })
 
   if (!key) return result
-
-  console.log(node.value)
 
   match(node.value)
     .with({ type: P.union('StringLiteral', 'NumericLiteral') }, (node) => {

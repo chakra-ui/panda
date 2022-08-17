@@ -79,8 +79,8 @@ export class CSSCondition {
       })
   }
 
-  addScreenConditions(values: Record<string, string>) {
-    for (const [key, value] of Object.entries(values)) {
+  addBreakpoints(breakpoints: Record<string, string>) {
+    for (const [key, value] of Object.entries(breakpoints)) {
       const cond: Condition = {
         type: 'screen',
         value: key,
