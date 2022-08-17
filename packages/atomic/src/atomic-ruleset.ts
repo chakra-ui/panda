@@ -1,9 +1,9 @@
 import { walkObject } from '@css-panda/walk-object'
-import hash from '@emotion/hash'
 import postcss, { AtRule, Rule } from 'postcss'
 import { match } from 'ts-pattern'
 import { CSSCondition } from './css-condition'
 import { esc } from './esc'
+import { toHash } from './hash'
 import { toCss } from './to-css'
 import { Dict, GeneratorContext } from './types'
 
@@ -47,7 +47,7 @@ export class AtomicRuleset {
         conditions.push(scope)
       }
 
-      const selectorString = shouldHash ? esc(hash(baseArray.join(''))) : esc(baseArray.join(':'))
+      const selectorString = shouldHash ? esc(toHash(baseArray.join(''))) : esc(baseArray.join(':'))
       let currentSelector = `.${selectorString}`
 
       this.rule = postcss.rule({
