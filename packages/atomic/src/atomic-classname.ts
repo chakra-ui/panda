@@ -2,19 +2,20 @@ import { walkObject } from '@css-panda/walk-object'
 import type { Dict, GeneratorContext } from './types'
 import hash from '@emotion/hash'
 
-export function getAtomicClassName(props: Dict, { hash: shouldHash }: { hash?: boolean } = {}) {
-  const { selectors = {}, '@media': mediaQueries = {}, ...styles } = props
+export class AtomicClassNames {
+  constructor(private context: GeneratorContext) {}
 
-  return (ctx: GeneratorContext) => {
+  css = (styleObject: Dict, { hash: shouldHash }: { hash?: boolean } = {}) => {
+    const { selectors = {}, '@media': mediaQueries = {}, ...styles } = styleObject
     //
     const result = new Set<string>()
 
-    function inner(props: Dict, scope?: string) {
+    const inner = (props: Dict, scope?: string) => {
       walkObject(props, (value, paths) => {
         let [prop, ...conditions] = paths
 
         conditions = conditions.filter((condition) => condition !== '_')
-        const transformed = ctx.transform(prop, value)
+        const transformed = this.context.transform(prop, value)
 
         // get the base class name
         const baseArray = [...conditions, transformed.className]

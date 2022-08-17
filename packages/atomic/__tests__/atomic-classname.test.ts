@@ -1,14 +1,15 @@
 import { describe, expect, test } from 'vitest'
-import { getAtomicClassName } from '../src/atomic-classname'
+import { AtomicClassNames } from '../src/atomic-classname'
 import { createContext } from './fixture'
 
 describe('generate classnames', () => {
   test('should convert object to class', () => {
+    const { css } = new AtomicClassNames(createContext())
     expect(
-      getAtomicClassName({
+      css({
         color: { light: 'red', dark: 'green' },
         opacity: { dark: 'slate400' },
-      })(createContext()),
+      }),
     ).toMatchInlineSnapshot(`
       Set {
         "light:color-red",
@@ -18,9 +19,9 @@ describe('generate classnames', () => {
     `)
 
     expect(
-      getAtomicClassName({
+      css({
         top: { sm: { rtl: '20px', hover: '50px' }, lg: '120px' },
-      })(createContext()),
+      }),
     ).toMatchInlineSnapshot(`
       Set {
         "sm:rtl:top-20px",
@@ -30,9 +31,9 @@ describe('generate classnames', () => {
     `)
 
     expect(
-      getAtomicClassName({
+      css({
         left: { _: '20px', md: '40px' },
-      })(createContext()),
+      }),
     ).toMatchInlineSnapshot(`
       Set {
         "left-20px",

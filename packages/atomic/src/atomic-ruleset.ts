@@ -15,9 +15,10 @@ export type ProcessOptions = {
 export class AtomicRuleset {
   constructor(private context: GeneratorContext) {}
 
-  private rule: Rule | AtRule
+  private rule: Rule | AtRule | undefined
 
   wrapRule(options: WrapOptions) {
+    if (!this.rule) return
     this.rule = wrap(this.rule, options)
   }
 
@@ -118,5 +119,6 @@ function wrap(rule: Rule | AtRule, options: WrapOptions) {
 }
 
 function esc(str: string) {
+  //@ts-ignore
   return ''.replace.call(str, /(^[^_a-zA-Z\u00a0-\uffff]|[^-_a-zA-Z0-9\u00a0-\uffff])/g, '\\$1')
 }
