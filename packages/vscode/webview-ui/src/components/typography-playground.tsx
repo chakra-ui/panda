@@ -1,11 +1,13 @@
 import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react'
 import { useState } from 'react'
-import { Config } from '../types'
+import type { Config } from '@css-panda/types'
 
 type TypographyPlaygroundProps = { config: Config }
 
 export function TypographyPlayground(props: TypographyPlaygroundProps) {
-  const { config: configProp } = props
+  const { config: configP } = props
+
+  const configProp = configP.tokens as Record<string, any>
 
   const getFirstToken = <T extends Record<any, any>>(obj: T) => Object.keys(obj)[0].toString()
 
@@ -37,7 +39,7 @@ export function TypographyPlayground(props: TypographyPlaygroundProps) {
   const renderTokenSwitch = (token: keyof typeof defaultConfig) => (
     <VSCodeDropdown value={config[token]} onChange={(e) => onChangeConfig(e, token)} className="token-switch">
       {Object.entries(configProp[`${token}s`]).map(([label, value]) => (
-        <VSCodeOption key={value} value={label}>
+        <VSCodeOption key={value as string} value={label}>
           {label} ({value})
         </VSCodeOption>
       ))}

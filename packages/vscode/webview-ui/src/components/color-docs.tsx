@@ -1,13 +1,15 @@
-import type { Colors as ColorsType } from '../types'
+import type { Config } from '@css-panda/types'
+
+export type Colors = NonNullable<Config['tokens']>['colors']
 
 type ColorsProps = {
-  colors: ColorsType
+  colors: Colors
 }
 
 export function Colors(props: ColorsProps) {
   const { colors } = props
 
-  const renderShades = (shadesOrValue: ColorsType[keyof ColorsType]) => {
+  const renderShades = (shadesOrValue: Colors) => {
     if (typeof shadesOrValue === 'string') {
       return (
         <div className="shade">
@@ -18,7 +20,7 @@ export function Colors(props: ColorsProps) {
     }
     return Object.entries(shadesOrValue).map(([shade, value]) => (
       <div className="shade">
-        <div className="color-box" style={{ background: value }} />
+        <div className="color-box" style={{ background: value as string }} />
         <div className="shade-label">{shade}</div>
         <div className="shade-value">{value}</div>
       </div>

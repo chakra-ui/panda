@@ -6,23 +6,24 @@ import {
   VSCodePanelView,
 } from '@vscode/webview-ui-toolkit/react'
 import { useState } from 'react'
-import { Config } from '../types'
+import type { Config } from '@css-panda/types'
 import { getSortedSizes } from '../utilities/sizes-sort'
 import { renderPixels } from './size-docs'
 
-export type SpacingPlaygroundProps = { sizes: Config['sizes'] }
+export type SpacingPlaygroundProps = { sizes: NonNullable<Config['tokens']>['sizes'] }
 
 const NUMBER_OF_ITEMS = 3
 
 export function SpacingPlayground(props: SpacingPlaygroundProps) {
   const { sizes: sizesProp } = props
-  const sizes = getSortedSizes(sizesProp)
+  if (typeof sizesProp === 'string') return null
+  const sizes = getSortedSizes(sizesProp) as unknown as string[]
 
   const [gapSize, setGapSize] = useState(sizes[6]?.[0])
-  const gap = sizesProp[gapSize]
+  const gap = sizesProp[gapSize] as string
 
   const [paddingSize, setPaddingSize] = useState(sizes[6]?.[0])
-  const padding = sizesProp[paddingSize]
+  const padding = sizesProp[paddingSize] as string
 
   return (
     <div className="token-group spacing-playground">
