@@ -12,6 +12,7 @@
     "noEmit": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "target": "esnext",
+    "module": "esnext",
     "moduleResolution": "node",
     "noImplicitReturns": false,
     "resolveJsonModule": true,

@@ -21,6 +21,7 @@
     "@css-panda/logger": "workspace:*",
     "@css-panda/atomic": "workspace:*",
     "@css-panda/fixture": "workspace:*",
+    "esbuild": "^0.15.5",
     "filespy": "^1.2.4",
     "find-up": "^6.3.0",
     "hookable": "^5.1.1",

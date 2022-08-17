@@ -8,7 +8,7 @@ import { promises as fs } from 'fs'
 
 import { generateCss } from './generate-css'
 import { generateDts } from './generate-dts'
-import { generateJs } from './generate-js'
+import { generateJs, bundleCss } from './generate-js'
 
 export async function generator(config: Config) {
   const { tokens = {}, semanticTokens = {} } = config
@@ -62,6 +62,7 @@ export async function generator(config: Config) {
     fs.writeFile('__generated__/tokens.css', generateCss(dict, { conditions: context.conditions })),
     fs.writeFile('__generated__/tokens.d.ts', generateDts(dict)),
     fs.writeFile('__generated__/tokens.js', generateJs(dict)),
+    fs.writeFile('__generated__/css.js', bundleCss()),
   ])
 }
 

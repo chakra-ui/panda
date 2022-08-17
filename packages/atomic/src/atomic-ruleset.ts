@@ -1,10 +1,11 @@
 import { walkObject } from '@css-panda/walk-object'
-import { CSSCondition } from './css-condition'
-import { toCss } from './to-css'
-import { Dict, GeneratorContext } from './types'
+import hash from '@emotion/hash'
 import postcss, { AtRule, Rule } from 'postcss'
 import { match } from 'ts-pattern'
-import hash from '@emotion/hash'
+import { CSSCondition } from './css-condition'
+import { esc } from './esc'
+import { toCss } from './to-css'
+import { Dict, GeneratorContext } from './types'
 
 export type ProcessOptions = {
   scope?: string
@@ -116,9 +117,4 @@ function wrap(rule: Rule | AtRule, options: WrapOptions) {
   rule.remove()
 
   return parent
-}
-
-function esc(str: string) {
-  //@ts-ignore
-  return ''.replace.call(str, /(^[^_a-zA-Z\u00a0-\uffff]|[^-_a-zA-Z0-9\u00a0-\uffff])/g, '\\$1')
 }
