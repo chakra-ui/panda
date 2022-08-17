@@ -1,8 +1,14 @@
 type DataType = 'object' | 'named-object'
 
+export type PluginResult = {
+  type: DataType
+  name?: string
+  data: Record<string, any>
+}
+
 export type PluginContext = {
   import: { module: string; name: string }
-  onData: (result: { type: DataType; name?: string; data: Record<string, any> }) => void
+  onData: (result: PluginResult) => void
 }
 
 export type ImportResult = {

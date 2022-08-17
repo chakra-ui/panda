@@ -57,9 +57,8 @@ export async function generator() {
     plugins: createPlugins(collected, './__generated__/css'),
   })
 
-  collected.css.forEach(({ data: style }) => {
-    console.log(style)
-    stylesheet.process(style)
+  collected.css.forEach((result) => {
+    stylesheet.process(result.data)
   })
 
   await fs.writeFile('__generated__/styles.css', stylesheet.toCss())

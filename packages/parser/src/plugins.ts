@@ -1,9 +1,9 @@
 import * as swc from '@swc/core'
 import { CallVisitor } from './visitor'
 import { createDebugger } from '@css-panda/logger'
-import { Collector } from './types'
+import { Collector, PluginResult } from './types'
 
-export function cssPlugin(data: Set<any>, moduleName: string) {
+export function cssPlugin(data: Set<PluginResult>, moduleName: string) {
   return function (program: swc.Program) {
     const visitor = new CallVisitor({
       import: { name: 'css', module: moduleName },
@@ -16,7 +16,7 @@ export function cssPlugin(data: Set<any>, moduleName: string) {
   }
 }
 
-export function globalStylePlugin(data: Set<any>, moduleName: string) {
+export function globalStylePlugin(data: Set<PluginResult>, moduleName: string) {
   return function (program: swc.Program) {
     const visitor = new CallVisitor({
       import: { name: 'globalStyle', module: moduleName },
@@ -29,7 +29,7 @@ export function globalStylePlugin(data: Set<any>, moduleName: string) {
   }
 }
 
-export function fontFacePlugin(data: Set<any>, moduleName: string) {
+export function fontFacePlugin(data: Set<PluginResult>, moduleName: string) {
   return function (program: swc.Program) {
     const visitor = new CallVisitor({
       import: { name: 'fontFace', module: moduleName },
@@ -44,9 +44,9 @@ export function fontFacePlugin(data: Set<any>, moduleName: string) {
 
 export function createCollector() {
   return {
-    css: new Set<any>(),
-    globalStyle: new Set<any>(),
-    fontFace: new Set<any>(),
+    css: new Set<PluginResult>(),
+    globalStyle: new Set<PluginResult>(),
+    fontFace: new Set<PluginResult>(),
   }
 }
 
