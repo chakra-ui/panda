@@ -3,14 +3,25 @@ import outdent from 'outdent'
 export function generateCx() {
   return {
     js: outdent`
-      var cx = (...args) => {
-        return Array.isArray(args[0]) ? clsx(...args[0]) : clsx(...args);
+    function cx() {
+      let str = '',
+        i = 0,
+        arg
+    
+      while (i < arguments.length) {
+        if ((arg = arguments[i++]) && typeof arg === 'string') {
+          str && (str += ' ')
+          str += arg
+        }
       }
-  
-      export { cx }
+      return str
+    }
+   
+    export { cx }
   `,
     dts: outdent`
-       export declare function cx(...args: Values | Values[]): string;
+       type Argument = string | boolean | null | undefined
+       export declare function cx(...args: Argument[]): string
       `,
   }
 }

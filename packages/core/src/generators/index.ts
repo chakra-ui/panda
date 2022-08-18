@@ -2,6 +2,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import { InternalContext } from '../create-context'
 import { generateCss } from './css'
+import { generateCx } from './cx'
 import { generateDts } from './dts'
 import { generateJs } from './js'
 import { generateSerializer } from './serializer'
@@ -30,17 +31,17 @@ export async function generateSystem(ctx: InternalContext, options: Options) {
   const dsPath = path.join(outdir, 'design-tokens')
   await fs.ensureDir(dsPath)
 
+  const cx = generateCx()
+
   await Promise.all([
-    // serializer
+    // serializer (css)
     fs.writeFile(path.join(cssPath, 'transform.js'), generateTransform('../config')),
     fs.writeFile(path.join(cssPath, 'index.js'), generateSerializer('./transform')),
+    // cx
+    fs.writeFile(path.join(cssPath, 'cx.js'), cx.js),
+    fs.writeFile(path.join(cssPath, 'cx.d.ts'), cx.dts),
     // design tokens
-    fs.writeFile(
-      path.join(dsPath, 'index.css'),
-      generateCss(dictionary, {
-        conditions: context.conditions,
-      }),
-    ),
+    fs.writeFile(path.join(dsPath, 'index.css'), generateCss(dictionary, { conditions: context.conditions })),
     fs.writeFile(path.join(dsPath, 'index.d.ts'), generateDts(dictionary)),
     fs.writeFile(path.join(dsPath, 'index.js'), generateJs(dictionary)),
   ])
