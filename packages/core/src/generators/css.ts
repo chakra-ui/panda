@@ -19,11 +19,8 @@ export function generateCss(dict: Dictionary, options?: GenerateCssOptions) {
       map.set(key, value)
     }
 
-    const { css } = wrap
-      ? toCss({
-          [root]: Object.fromEntries(map),
-        })
-      : toCss(Object.fromEntries(map))
+    const styleObj = Object.fromEntries(map)
+    const { css } = wrap ? toCss({ [root]: styleObj }) : toCss(styleObj)
 
     return css
   }
@@ -32,15 +29,15 @@ export function generateCss(dict: Dictionary, options?: GenerateCssOptions) {
 
   for (const [condition, conditionMap] of dict.conditionVars) {
     //
-    const rawCondition = conditions[condition]
-    const conditionStr = rawCondition.type === 'screen' ? rawCondition.rawValue : rawCondition.value.replace(/&/, root)
+    const cond = conditions[condition]
+    const selector = cond.type === 'screen' ? cond.rawValue : cond.value.replace(/&/, root)
 
-    if (!conditionStr) {
-      error(`Condition ${conditionStr} is not defined`)
+    if (!selector) {
+      error(`Condition ${selector} is not defined`)
       continue
     }
 
-    output.push(`${conditionStr} {\n ${inner(conditionMap, rawCondition.type === 'screen')} \n}`)
+    output.push(`${selector} {\n ${inner(conditionMap, cond.type === 'screen')} \n}`)
   }
 
   if (keyframes) {

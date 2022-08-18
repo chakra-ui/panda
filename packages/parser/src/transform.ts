@@ -7,25 +7,31 @@ function getParser(file: FileType): swc.ParserConfig {
   return isTsx ? { tsx: true, syntax: 'typescript' } : { jsx: true, syntax: 'ecmascript' }
 }
 
-type TransformConfig = {
+type TransformOptions = {
   file?: FileType
   plugins: swc.Plugin[]
 }
 
-export async function transform(code: string, options: TransformConfig) {
+function getSwcOptions(options: TransformOptions): swc.Options {
   const { file = 'ts', plugins } = options
-
-  return swc.transform(code, {
+  return {
     plugin: swc.plugins(plugins),
     jsc: { parser: getParser(file) },
-  })
+  }
 }
 
-export function transformSync(code: string, options: TransformConfig) {
-  const { file = 'ts', plugins } = options
+export async function transform(code: string, options: TransformOptions) {
+  return swc.transform(code, getSwcOptions(options))
+}
 
-  return swc.transformSync(code, {
-    plugin: swc.plugins(plugins),
-    jsc: { parser: getParser(file) },
-  })
+export function transformSync(code: string, options: TransformOptions) {
+  return swc.transformSync(code, getSwcOptions(options))
+}
+
+export async function transformFile(code: string, options: TransformOptions) {
+  return swc.transformFile(code, getSwcOptions(options))
+}
+
+export function transformFileSync(code: string, options: TransformOptions) {
+  return swc.transformFileSync(code, getSwcOptions(options))
 }

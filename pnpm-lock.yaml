@@ -174,12 +174,14 @@ importers:
   packages/parser:
     specifiers:
       '@css-panda/logger': workspace:*
+      '@css-panda/types': workspace:*
       '@swc/core': ^1.2.237
       '@types/lodash': ^4.14.182
       lodash: ^4.17.21
       ts-pattern: ^4.0.5
     dependencies:
       '@css-panda/logger': link:../logger
+      '@css-panda/types': link:../types
       '@swc/core': 1.2.237
       lodash: 4.17.21
       ts-pattern: 4.0.5

@@ -10,11 +10,14 @@ import { Dict, GeneratorContext } from './types'
 export type ProcessOptions = {
   scope?: string
   styles: Dict
-  hash?: boolean
 }
 
 export class AtomicRuleset {
-  constructor(private context: GeneratorContext) {}
+  hash: boolean
+
+  constructor(private context: GeneratorContext, options: { hash?: boolean } = {}) {
+    this.hash = !!options.hash
+  }
 
   private rule: Rule | AtRule | undefined
 
@@ -24,7 +27,7 @@ export class AtomicRuleset {
   }
 
   process(options: ProcessOptions) {
-    const { scope, styles, hash: shouldHash } = options
+    const { scope, styles } = options
 
     walkObject(styles, (value, paths) => {
       let [prop, ...conditions] = paths
@@ -47,7 +50,7 @@ export class AtomicRuleset {
         conditions.push(scope)
       }
 
-      const selectorString = shouldHash ? esc(toHash(baseArray.join(''))) : esc(baseArray.join(':'))
+      const selectorString = this.hash ? esc(toHash(baseArray.join(''))) : esc(baseArray.join(':'))
       let currentSelector = `.${selectorString}`
 
       this.rule = postcss.rule({

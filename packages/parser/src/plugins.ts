@@ -1,7 +1,8 @@
-import * as swc from '@swc/core'
-import { CallVisitor } from './visitor'
 import { createDebugger } from '@css-panda/logger'
-import { Collector, PluginResult } from './types'
+import { PluginResult } from '@css-panda/types'
+import * as swc from '@swc/core'
+import { Collector } from './types'
+import { CallVisitor } from './visitor'
 
 export function cssPlugin(data: Set<PluginResult>, moduleName: string) {
   return function (program: swc.Program) {

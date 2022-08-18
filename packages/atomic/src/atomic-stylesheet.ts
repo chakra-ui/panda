@@ -2,16 +2,35 @@ import { AtomicRuleset } from './atomic-ruleset'
 import { expandScreenAtRule } from './expand-screen'
 import { GeneratorContext } from './types'
 import { optimizeCss, OptimizeOptions } from './optimize'
+import { PluginResult } from '@css-panda/types'
+import { toCss } from './to-css'
+import postcss from 'postcss'
 
 export class AtomicStylesheet {
-  constructor(private context: GeneratorContext) {}
+  hash: boolean
 
-  process(properties: Record<string, any>, { hash }: { hash?: boolean } = {}) {
-    const { selectors = {}, '@media': mediaQueries = {}, ...styles } = properties
+  constructor(private context: GeneratorContext, options: { hash?: boolean } = {}) {
+    this.hash = !!options.hash
+  }
+
+  process(result: PluginResult) {
+    const { type, data, name } = result
+    return type === 'object' ? this.processAtomic(data) : this.processObject(name!, data)
+  }
+
+  processObject(selector: string, styleObject: Record<string, any>) {
+    const cssString = toCss(styleObject)
+    const rule = postcss.rule({ selector, nodes: cssString.root.nodes })
+    this.context.root.append(rule)
+    return this
+  }
+
+  processAtomic(styleObject: Record<string, any>) {
+    const { selectors = {}, '@media': mediaQueries = {}, ...styles } = styleObject
 
     const inner = (props: any, scope?: string) => {
-      const ruleset = new AtomicRuleset(this.context)
-      ruleset.process({ scope, styles: props, hash })
+      const ruleset = new AtomicRuleset(this.context, { hash: this.hash })
+      ruleset.process({ scope, styles: props })
     }
 
     inner(styles)

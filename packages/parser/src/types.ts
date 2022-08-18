@@ -1,10 +1,4 @@
-type DataType = 'object' | 'named-object'
-
-export type PluginResult = {
-  type: DataType
-  name?: string
-  data: Record<string, any>
-}
+import { PluginResult } from '@css-panda/types'
 
 export type PluginContext = {
   import: { module: string; name: string }
@@ -17,7 +11,7 @@ export type ImportResult = {
 }
 
 export type Collector = {
-  css: Set<any>
-  globalStyle: Set<any>
-  fontFace: Set<any>
+  css: Set<PluginResult>
+  globalStyle: Set<PluginResult>
+  fontFace: Set<PluginResult>
 }

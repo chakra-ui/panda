@@ -1,5 +1,5 @@
 import type * as swc from '@swc/core'
-import { CallVisitor } from './visitor'
+import { CallVisitor } from '../src/visitor'
 
 export function cssPlugin(collector: Set<any>) {
   return function (program: swc.Program) {

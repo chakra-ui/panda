@@ -1,10 +1,10 @@
 import { debug } from '@css-panda/logger'
-import { createCollector, createPlugins, transformSync } from '@css-panda/parser'
+import { createCollector, createPlugins, transformFileSync } from '@css-panda/parser'
 import { loadConfigFile } from '@css-panda/read-config'
 import fs from 'fs-extra'
 import path from 'path'
 import { createContext } from './create-context'
-import { generateSystemFiles } from './generators'
+import { generateSystem } from './generators'
 import { createWatcher } from './watcher'
 
 export async function generator() {
@@ -20,7 +20,7 @@ export async function generator() {
 
   const outdir = '__generated__'
 
-  generateSystemFiles({ ...ctx, outdir, config: code })
+  generateSystem(ctx, { outdir, config: code })
 
   /* -----------------------------------------------------------------------------
    * [codegen] Parse files and extract css
@@ -34,15 +34,14 @@ export async function generator() {
   function extract(file: string) {
     ctx.stylesheet.reset()
     const collected = createCollector()
-    const __file = fs.readFileSync(file, { encoding: 'utf-8' })
 
-    transformSync(__file, {
+    transformFileSync(file, {
       file: 'js',
       plugins: createPlugins(collected, './__generated__/css'),
     })
 
     collected.css.forEach((result) => {
-      ctx.stylesheet.process(result.data)
+      ctx.stylesheet.process(result)
     })
 
     fs.writeFileSync('__generated__/styles.css', ctx.stylesheet.toCss())

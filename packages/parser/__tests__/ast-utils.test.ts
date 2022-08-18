@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { cssPlugin } from '../src/fixtures'
+import { cssPlugin } from './fixture'
 import { transformSync } from '../src/transform'
 
 describe('ast parser', () => {

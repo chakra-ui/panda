@@ -21,3 +21,9 @@ export type UtilityConfig<Tokens = any> = {
     [shorthand: string]: string
   }
 }
+
+export type PluginResult = {
+  type: 'object' | 'named-object'
+  name?: string
+  data: Record<string, any>
+}

@@ -7,14 +7,15 @@ import { generateJs } from './js'
 import { generateSerializer } from './serializer'
 import { generateTransform } from './transform'
 
-type Options = InternalContext & {
+type Options = {
   outdir: string
   clean?: boolean
   config?: string
 }
 
-export async function generateSystemFiles(options: Options) {
-  const { outdir, clean, dictionary, context, config } = options
+export async function generateSystem(ctx: InternalContext, options: Options) {
+  const { outdir, clean, config } = options
+  const { dictionary, context } = ctx
 
   const configPath = path.join(outdir, 'config.js')
   await fs.writeFile(configPath, config)
@@ -29,7 +30,7 @@ export async function generateSystemFiles(options: Options) {
   const dsPath = path.join(outdir, 'design-tokens')
   await fs.ensureDir(dsPath)
 
-  return Promise.all([
+  await Promise.all([
     // serializer
     fs.writeFile(path.join(cssPath, 'transform.js'), generateTransform('../config')),
     fs.writeFile(path.join(cssPath, 'index.js'), generateSerializer('./transform')),
