@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsup src/ --dts",
     "dev": "pnpm build -- --watch",
-    "watch": "DEBUG=* tsx watch src/generator.ts"
+    "watch": "DEBUG=* tsx src/generator.ts"
   },
   "files": [
     "dist"
@@ -34,7 +34,6 @@
   },
   "devDependencies": {
     "@css-panda/dictionary": "workspace:*",
-    "@types/debug": "^4.1.7",
     "@types/fs-extra": "^9.0.13",
     "@types/pluralize": "^0.0.29"
   }

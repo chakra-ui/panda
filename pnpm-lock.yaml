@@ -78,7 +78,6 @@ importers:
       '@css-panda/parser': workspace:*
       '@css-panda/read-config': workspace:*
       '@css-panda/types': workspace:*
-      '@types/debug': ^4.1.7
       '@types/fs-extra': ^9.0.13
       '@types/pluralize': ^0.0.29
       esbuild: ^0.15.5
@@ -109,7 +108,6 @@ importers:
       postcss: 8.4.14
     devDependencies:
       '@css-panda/dictionary': link:../dictionary
-      '@types/debug': 4.1.7
       '@types/fs-extra': 9.0.13
       '@types/pluralize': 0.0.29
 

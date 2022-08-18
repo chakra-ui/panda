@@ -38,4 +38,8 @@ export class AtomicStylesheet {
     const { code } = optimizeCss(this.context.root.toString(), options)
     return code
   }
+
+  reset() {
+    this.context.root.removeAll()
+  }
 }

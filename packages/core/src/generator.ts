@@ -5,6 +5,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import { createContext } from './create-context'
 import { generateSystemFiles } from './generators'
+import { createWatcher } from './watcher'
 
 export async function generator() {
   const fixtureDir = path.dirname(require.resolve('@css-panda/fixture'))
@@ -18,7 +19,6 @@ export async function generator() {
   const ctx = createContext(config)
 
   const outdir = '__generated__'
-  // const input = ['test.js']
 
   generateSystemFiles({ ...ctx, outdir, config: code })
 
@@ -26,20 +26,37 @@ export async function generator() {
    * [codegen] Parse files and extract css
    * -----------------------------------------------------------------------------*/
 
-  const __file = await fs.readFile('test.js', { encoding: 'utf-8' })
-
-  const collected = createCollector()
-
-  transformSync(__file, {
-    file: 'js',
-    plugins: createPlugins(collected, './__generated__/css'),
+  const watcher = createWatcher(['*.js'], {
+    cwd: process.cwd(),
+    ignore: ['node_modules', '.git', '__tests__', '__generated__'],
   })
 
-  collected.css.forEach((result) => {
-    ctx.stylesheet.process(result.data)
+  function extract(file: string) {
+    ctx.stylesheet.reset()
+    const collected = createCollector()
+    const __file = fs.readFileSync(file, { encoding: 'utf-8' })
+
+    transformSync(__file, {
+      file: 'js',
+      plugins: createPlugins(collected, './__generated__/css'),
+    })
+
+    collected.css.forEach((result) => {
+      ctx.stylesheet.process(result.data)
+    })
+
+    fs.writeFileSync('__generated__/styles.css', ctx.stylesheet.toCss())
+  }
+
+  watcher.on('update', (file) => {
+    debug(`📝 File changed ====> ${file}`)
+    extract(file)
   })
 
-  await fs.writeFile('__generated__/styles.css', ctx.stylesheet.toCss())
+  watcher.on('create', (file) => {
+    debug(`📝 File detected ====> ${file}`)
+    extract(file)
+  })
 }
 
 generator()
