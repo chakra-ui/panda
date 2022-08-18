@@ -44,6 +44,7 @@ export type Config<
   Breakpoints extends TBreakpoints = TBreakpoints,
   Tokens extends TTokens = TTokens,
 > = {
+  clean?: boolean
   format?: Format[]
   outDir?: string
   prefix?: string
