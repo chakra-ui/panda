@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { getUri } from './utilities/get-uri'
-import { Config } from '@css-panda/read-config'
+import { loadConfigFile } from '@css-panda/read-config'
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView
@@ -12,9 +12,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const view = _view || this._view
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
     const workspaceUri = workspaceFolder?.uri
-    const configInstance = new Config(workspaceUri?.fsPath)
+    const conf = loadConfigFile({ root: workspaceUri?.fsPath })
 
-    configInstance.load().then(({ config }) => {
+    conf.then(({ config }) => {
       view?.webview.postMessage({
         type: 'onConfigChange',
         value: config,
@@ -76,12 +76,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
     const workspaceUri = workspaceFolder?.uri
-    const configInstance = new Config(workspaceUri?.fsPath)
+    const conf = loadConfigFile({ root: workspaceUri?.fsPath })
 
     if (workspaceFolder) {
-      configInstance.load().then(({ source }) => {
-        if (source) {
-          const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolder, source))
+      conf.then(({ path }) => {
+        if (path) {
+          const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolder, path))
           watcher.onDidChange(() => this.sendConfig(this._view))
         }
       })

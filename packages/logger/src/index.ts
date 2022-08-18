@@ -1,5 +1,5 @@
 import colors from 'picocolors'
-import debugJs from 'debug'
+import __debug from 'debug'
 import util from 'util'
 
 export let prefix = '🐼 '
@@ -16,7 +16,7 @@ function format(args: Array<any>, customPrefix?: string) {
 }
 
 export function createDebugger(namespace: string) {
-  return debugJs(namespace)
+  return __debug(prefix + namespace)
 }
 
 export function error(...args: Array<any>) {
