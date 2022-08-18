@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsup src/ --dts",
     "dev": "pnpm build -- --watch",
-    "watch": "tsx watch src/generator.ts"
+    "watch": "DEBUG=* tsx watch src/generator.ts"
   },
   "files": [
     "dist"

@@ -4,14 +4,14 @@ import { Dictionary } from '@css-panda/dictionary'
 import postcss from 'postcss'
 
 export function createContext(config: any) {
-  const dict = new Dictionary({
+  const dictionary = new Dictionary({
     tokens: config.tokens,
     semanticTokens: config.semanticTokens,
     prefix: config.prefix,
   })
 
   const utilities = new CSSUtility({
-    tokens: dict,
+    tokens: dictionary,
     config: mergeUtilityConfigs(config.utilities),
   })
 
@@ -27,7 +27,10 @@ export function createContext(config: any) {
   const stylesheet = new AtomicStylesheet(context)
 
   return {
+    dictionary,
     context,
     stylesheet,
   }
 }
+
+export type InternalContext = ReturnType<typeof createContext>
