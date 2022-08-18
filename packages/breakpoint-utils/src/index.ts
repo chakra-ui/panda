@@ -6,7 +6,9 @@ type BuildOptions = {
 }
 
 function buildQuery({ min, max }: BuildOptions) {
-  return [min && `(min-width: ${toEm(min)})`, max && `(max-width: ${toEm(max)})`].filter(Boolean).join(' and ')
+  return ['screen', min && `(min-width: ${toEm(min)})`, max && `(max-width: ${toEm(max)})`]
+    .filter(Boolean)
+    .join(' and ')
 }
 
 function queries({ name, min, max }: BuildOptions & { name: string }) {
