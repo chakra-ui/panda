@@ -18,11 +18,11 @@
     "@css-panda/types": "workspace:*",
     "@css-panda/walk-object": "workspace:*",
     "@css-panda/breakpoint-utils": "workspace:*",
-    "@parcel/css": "^1.12.2",
     "postcss": "^8.4.14",
     "postcss-js": "^4.0.0",
     "postcss-selector-parser": "^6.0.10",
     "postcss-nested": "^5.0.6",
+    "cssnano": "^5.1.13",
     "ts-pattern": "^4.0.5"
   },
   "devDependencies": {

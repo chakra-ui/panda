@@ -1,13 +1,10 @@
-import css from '@parcel/css'
+import cssnano, { Options } from 'cssnano'
+import postcss from 'postcss'
 
-export type OptimizeOptions = {
-  minify?: boolean
+const defaultOptions: Options = {
+  preset: ['default', { cssDeclarationSorter: false }],
 }
 
-export function optimizeCss(code: string, options: OptimizeOptions) {
-  return css.transform({
-    filename: 'out.css',
-    code: Buffer.from(code),
-    minify: options.minify,
-  })
+export function optimizeCss(code: string) {
+  return postcss([cssnano(defaultOptions)]).process(code)
 }

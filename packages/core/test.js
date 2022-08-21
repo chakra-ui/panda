@@ -29,4 +29,4 @@ css({
   maxWidth: 'sm',
 })
 
-const test = true ? css({ color: 'red' }) : css({ color: 'pink' })
+const test = true ? css({ color: 'red' }) : css({ color: 'green.200', width: '1/2' })

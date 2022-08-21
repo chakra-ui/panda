@@ -1,7 +1,7 @@
 import { AtomicRuleset } from './atomic-ruleset'
 import { expandScreenAtRule } from './expand-screen'
 import { GeneratorContext } from './types'
-import { optimizeCss, OptimizeOptions } from './optimize'
+import { optimizeCss } from './optimize'
 import { PluginResult } from '@css-panda/types'
 import { toCss } from './to-css'
 import postcss from 'postcss'
@@ -52,10 +52,10 @@ export class AtomicStylesheet {
     return this
   }
 
-  toCss(options: OptimizeOptions = {}) {
+  toCss() {
     expandScreenAtRule(this.context.root, this.context.breakpoints)
-    const { code } = optimizeCss(this.context.root.toString(), options)
-    return code
+    const result = optimizeCss(this.context.root.toString())
+    return result.css
   }
 
   reset() {
