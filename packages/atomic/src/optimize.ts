@@ -1,10 +1,20 @@
-import cssnano, { Options } from 'cssnano'
+import cssnano from 'cssnano'
 import postcss from 'postcss'
+//@ts-ignore
+import sortMq from 'postcss-sort-media-queries'
 
-const defaultOptions: Options = {
-  preset: ['default', { cssDeclarationSorter: false }],
-}
-
-export function optimizeCss(code: string) {
-  return postcss([cssnano(defaultOptions)]).process(code)
+export function optimizeCss(code: string, { minify = false }: { minify?: boolean } = {}) {
+  const { css } = postcss([
+    cssnano({
+      preset: [
+        'default',
+        {
+          cssDeclarationSorter: false,
+          normalizeWhitespace: minify,
+        },
+      ],
+    }),
+    sortMq({ sort: 'mobile-first' }),
+  ]).process(code)
+  return css
 }

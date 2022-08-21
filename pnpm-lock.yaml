@@ -31,6 +31,7 @@ importers:
       postcss-js: ^4.0.0
       postcss-nested: ^5.0.6
       postcss-selector-parser: ^6.0.10
+      postcss-sort-media-queries: ^4.2.1
       ts-pattern: ^4.0.5
     dependencies:
       '@css-panda/breakpoint-utils': link:../breakpoint-utils
@@ -42,6 +43,7 @@ importers:
       postcss-js: 4.0.0_postcss@8.4.14
       postcss-nested: 5.0.6_postcss@8.4.14
       postcss-selector-parser: 6.0.10
+      postcss-sort-media-queries: 4.2.1_postcss@8.4.14
       ts-pattern: 4.0.5
     devDependencies:
       '@css-panda/fixture': link:../fixture
@@ -3212,6 +3214,16 @@ packages:
       util-deprecate: 1.0.2
     dev: false
 
+  /postcss-sort-media-queries/4.2.1_postcss@8.4.14:
+    resolution: {integrity: sha512-9VYekQalFZ3sdgcTjXMa0dDjsfBVHXlraYJEMiOJ/2iMmI2JGCMavP16z3kWOaRu8NSaJCTgVpB/IVpH5yT9YQ==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      postcss: ^8.4.4
+    dependencies:
+      postcss: 8.4.14
+      sort-css-media-queries: 2.0.4
+    dev: false
+
   /postcss-svgo/5.1.0_postcss@8.4.14:
     resolution: {integrity: sha512-D75KsH1zm5ZrHyxPakAxJWtkyXew5qwS70v56exwvw542d9CRtTo78K0WeFxZB4G7JXKKMbEZtZayTGdIky/eA==}
     engines: {node: ^10 || ^12 || >=14.0}
@@ -3441,6 +3453,11 @@ packages:
       astral-regex: 2.0.0
       is-fullwidth-code-point: 3.0.0
     dev: true
+
+  /sort-css-media-queries/2.0.4:
+    resolution: {integrity: sha512-PAIsEK/XupCQwitjv7XxoMvYhT7EAfyzI3hsy/MyDgTvc+Ft55ctdkctJLOy6cQejaIC+zjpUL4djFVm2ivOOw==}
+    engines: {node: '>= 6.3.0'}
+    dev: false
 
   /source-map-js/1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}

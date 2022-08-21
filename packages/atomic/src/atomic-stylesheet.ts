@@ -52,10 +52,10 @@ export class AtomicStylesheet {
     return this
   }
 
-  toCss() {
+  toCss({ minify = true }: { minify?: boolean } = {}) {
     expandScreenAtRule(this.context.root, this.context.breakpoints)
-    const result = optimizeCss(this.context.root.toString())
-    return result.css
+    const css = this.context.root.toString()
+    return minify ? optimizeCss(css) : css
   }
 
   reset() {
