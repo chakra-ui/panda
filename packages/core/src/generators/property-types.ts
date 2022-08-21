@@ -1,7 +1,7 @@
 import { CSSUtility } from '@css-panda/css-utility'
 
 export function generatePropertyTypes(utility: CSSUtility) {
-  const result: string[] = ['interface PropertyTypes {']
+  const result: string[] = ['export type PropertyTypes  = {']
   for (const [prop, values] of utility.valuesMap.entries()) {
     result.push(
       `\t${prop}: ${Array.from(values)

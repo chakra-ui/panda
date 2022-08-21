@@ -20,7 +20,7 @@ console.log(
 css({
   background: 'red.400',
   fontSize: 'lg',
-  color: { _: 'gray.200', dark: '#fff' },
+  color: 'green.200',
   margin: '40px',
   padding: '50px',
   display: 'flex',

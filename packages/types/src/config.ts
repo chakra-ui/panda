@@ -1,5 +1,5 @@
 import type { DotPath, Loose, TDotPath } from './shared'
-import type { CSSKeyframes, CSSProperty } from './css-type'
+import type { CssKeyframes, CssProperty } from './panda-csstype'
 import { UtilityConfig } from './css-utility'
 import { Conditions as TConditions } from './conditions'
 
@@ -30,11 +30,11 @@ export type TSemanticTokens = {
 }
 
 type TokensMap<Tokens> = {
-  [K in keyof Tokens]?: Array<CSSProperty | Loose>
+  [K in keyof Tokens]?: Array<CssProperty | Loose>
 }
 
 type Shorthands = {
-  [shorthand: string]: Array<CSSProperty>
+  [shorthand: string]: Array<CssProperty>
 }
 
 export type Format = 'css' | 'cjs' | 'esm' | 'dts'
@@ -52,7 +52,7 @@ export type Config<
   content?: string[]
   conditions?: TConditions
   breakpoints?: Breakpoints
-  keyframes?: CSSKeyframes
+  keyframes?: CssKeyframes
   tokens?: Tokens
   tokensMap?: TokensMap<Tokens>
   semanticTokens?: SemanticTokens<Tokens, Conditions, Breakpoints>

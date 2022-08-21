@@ -30,6 +30,7 @@ export function createContext(config: any) {
     dictionary,
     context,
     stylesheet,
+    utilities,
   }
 }
 
