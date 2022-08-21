@@ -11,7 +11,7 @@ export class CSSUtility {
   stylesMap: Map<string, Dict> = new Map()
   valuesMap: Map<string, Set<string>> = new Map()
 
-  config: UtilityConfig<Dict>
+  config: UtilityConfig<Dict> = { properties: {} }
   report: Map<string, string> = new Map()
 
   private transformMap: Map<string, Function> = new Map()
