@@ -22,6 +22,8 @@ export async function generateSystem(ctx: InternalContext, options: Options) {
   const { outdir, clean = true, config } = options
   const { dictionary, context } = ctx
 
+  const __context = context()
+
   if (clean) {
     await emptyDir(outdir)
   }
@@ -45,7 +47,7 @@ export async function generateSystem(ctx: InternalContext, options: Options) {
 
   await Promise.all([
     // design tokens
-    fs.writeFile(path.join(dsPath, 'index.css'), generateCss(dictionary, { conditions: context.conditions })),
+    fs.writeFile(path.join(dsPath, 'index.css'), generateCss(dictionary, { conditions: __context.conditions })),
     fs.writeFile(path.join(dsPath, 'index.d.ts'), generateDts(dictionary)),
     fs.writeFile(path.join(dsPath, 'index.js'), generateJs(dictionary)),
 

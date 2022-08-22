@@ -15,16 +15,16 @@ export function createContext(config: any) {
     config: mergeUtilities(config.utilities),
   })
 
-  const context: GeneratorContext = {
+  const context = (): GeneratorContext => ({
     root: postcss.root(),
     breakpoints: config.breakpoints ?? {},
     conditions: config.conditions ?? {},
     transform(prop, value) {
       return utilities.resolve(prop, value)
     },
-  }
+  })
 
-  const stylesheet = new Stylesheet(context)
+  const stylesheet = new Stylesheet(context())
 
   return {
     dictionary,
