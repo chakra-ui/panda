@@ -16,7 +16,7 @@ function format(args: Array<any>, customPrefix?: string) {
 }
 
 export function createDebugger(namespace: string) {
-  return __debug(prefix + namespace)
+  return __debug(namespace)
 }
 
 export function error(...args: Array<any>) {

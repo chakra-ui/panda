@@ -27,6 +27,7 @@ export function createContext(config: any) {
   const stylesheet = new Stylesheet(context())
 
   return {
+    config,
     dictionary,
     context,
     stylesheet,
