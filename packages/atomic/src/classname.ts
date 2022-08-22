@@ -2,7 +2,7 @@ import { walkObject } from '@css-panda/walk-object'
 import { toHash } from './hash'
 import type { Dict, GeneratorContext } from './types'
 
-export class AtomicClassNames {
+export class ClassNames {
   constructor(private context: Pick<GeneratorContext, 'transform'>) {}
 
   css = (styleObject: Dict, { hash: shouldHash }: { hash?: boolean } = {}) => {
@@ -45,6 +45,6 @@ export class AtomicClassNames {
 
 export const css = (styleObject: Dict) => {
   //@ts-ignore - This is intentional. `context` will be auto-generated
-  const generator = new AtomicClassNames(context)
+  const generator = new ClassNames(context)
   return Array.from(generator.css(styleObject)).join(' ')
 }

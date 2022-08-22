@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { AtomicRuleset, ProcessOptions } from '../src/atomic-ruleset'
+import { Ruleset, ProcessOptions } from '../src/ruleset'
 import { createContext } from './fixture'
 
 function css(obj: ProcessOptions) {
-  const ruleset = new AtomicRuleset(createContext())
+  const ruleset = new Ruleset(createContext())
   return ruleset.process(obj).toCss()
 }
 

@@ -170,7 +170,7 @@ export class CSSUtility {
   }
 }
 
-export function mergeUtilityConfigs(utilities: UtilityConfig[] | undefined): UtilityConfig {
+export function mergeUtilities(utilities: UtilityConfig[] | undefined): UtilityConfig {
   return (utilities ?? []).reduce<UtilityConfig>(
     (acc, utility) => {
       acc.properties = { ...acc.properties, ...utility.properties }

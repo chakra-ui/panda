@@ -1,5 +1,5 @@
-import { AtomicStylesheet, GeneratorContext } from '@css-panda/atomic'
-import { CSSUtility, mergeUtilityConfigs } from '@css-panda/css-utility'
+import { Stylesheet, GeneratorContext } from '@css-panda/atomic'
+import { CSSUtility, mergeUtilities } from '@css-panda/css-utility'
 import { Dictionary } from '@css-panda/dictionary'
 import postcss from 'postcss'
 
@@ -12,7 +12,7 @@ export function createContext(config: any) {
 
   const utilities = new CSSUtility({
     tokens: dictionary,
-    config: mergeUtilityConfigs(config.utilities),
+    config: mergeUtilities(config.utilities),
   })
 
   const context: GeneratorContext = {
@@ -24,7 +24,7 @@ export function createContext(config: any) {
     },
   }
 
-  const stylesheet = new AtomicStylesheet(context)
+  const stylesheet = new Stylesheet(context)
 
   return {
     dictionary,

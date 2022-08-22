@@ -1,4 +1,4 @@
-import { AtomicRuleset } from './atomic-ruleset'
+import { Ruleset } from './ruleset'
 import { expandScreenAtRule } from './expand-screen'
 import { GeneratorContext } from './types'
 import { optimizeCss } from './optimize'
@@ -6,7 +6,7 @@ import { PluginResult } from '@css-panda/types'
 import { toCss } from './to-css'
 import postcss from 'postcss'
 
-export class AtomicStylesheet {
+export class Stylesheet {
   hash: boolean
 
   constructor(private context: GeneratorContext, options: { hash?: boolean } = {}) {
@@ -29,7 +29,7 @@ export class AtomicStylesheet {
     const { selectors = {}, '@media': mediaQueries = {}, ...styles } = styleObject
 
     const inner = (props: any, scope?: string) => {
-      const ruleset = new AtomicRuleset(this.context, { hash: this.hash })
+      const ruleset = new Ruleset(this.context, { hash: this.hash })
       ruleset.process({ scope, styles: props })
     }
 
@@ -47,15 +47,15 @@ export class AtomicStylesheet {
   }
 
   addImports(imports: string[]) {
-    const rules = imports.map((importName) => `@import '${importName}';`)
+    const rules = imports.map((n) => `@import '${n}';`)
     this.context.root.prepend(...rules)
     return this
   }
 
-  toCss({ minify = true }: { minify?: boolean } = {}) {
+  toCss({ optimize = true, minify }: { optimize?: boolean; minify?: boolean } = {}) {
     expandScreenAtRule(this.context.root, this.context.breakpoints)
     const css = this.context.root.toString()
-    return minify ? optimizeCss(css) : css
+    return optimize ? optimizeCss(css, { minify }) : css
   }
 
   reset() {

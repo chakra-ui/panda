@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { AtomicClassNames } from '../src/atomic-classname'
+import { ClassNames } from '../src/classname'
 import { createContext } from './fixture'
 
 describe('generate classnames', () => {
   test('should convert object to class', () => {
-    const { css } = new AtomicClassNames(createContext())
+    const { css } = new ClassNames(createContext())
     expect(
       css({
         color: { light: 'red', dark: 'green' },

@@ -4,7 +4,7 @@ import esbuild from 'esbuild'
 
 export function generateSerializer(transform: string) {
   const filePath = require.resolve('@css-panda/atomic')
-  const cssPath = path.join(path.dirname(filePath), 'src', 'atomic-classname.ts')
+  const cssPath = path.join(path.dirname(filePath), 'src', 'classname.ts')
   const { outputFiles } = esbuild.buildSync({
     write: false,
     metafile: true,

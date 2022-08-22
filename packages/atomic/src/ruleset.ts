@@ -12,7 +12,7 @@ export type ProcessOptions = {
   styles: Dict
 }
 
-export class AtomicRuleset {
+export class Ruleset {
   hash: boolean
 
   constructor(private context: GeneratorContext, options: { hash?: boolean } = {}) {

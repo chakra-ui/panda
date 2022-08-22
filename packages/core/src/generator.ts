@@ -1,4 +1,4 @@
-import { debug } from '@css-panda/logger'
+import { debug, info } from '@css-panda/logger'
 import { createCollector, createPlugins, transformFileSync } from '@css-panda/parser'
 import { loadConfigFile } from '@css-panda/read-config'
 import fs from 'fs-extra'
@@ -44,6 +44,7 @@ export async function generator() {
       ctx.stylesheet.process(result)
     })
 
+    ctx.stylesheet.addImports(['./design-tokens/index.css'])
     fs.writeFileSync('__generated__/styles.css', ctx.stylesheet.toCss())
   }
 
