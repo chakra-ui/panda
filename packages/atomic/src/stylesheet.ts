@@ -48,7 +48,7 @@ export class Stylesheet {
 
   addImports(imports: string[]) {
     const rules = imports.map((n) => `@import '${n}';`)
-    this.context.root.prepend(...rules)
+    this.context.root.prepend(...rules, '\n')
     return this
   }
 
@@ -60,5 +60,10 @@ export class Stylesheet {
 
   reset() {
     this.context.root.removeAll()
+  }
+
+  append(css: string) {
+    this.context.root.append('\n', css)
+    return this
   }
 }
