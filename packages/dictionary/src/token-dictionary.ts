@@ -42,10 +42,12 @@ export class Dictionary {
       this.tokens,
       (data) => {
         this.values.set(data.prop, data)
-        this.vars.set(data.var, {
-          category: data.category,
-          value: data.value,
-        })
+        if (!data.negative) {
+          this.vars.set(data.var, {
+            category: data.category,
+            value: data.value,
+          })
+        }
       },
       { prefix: this.prefix },
     )
