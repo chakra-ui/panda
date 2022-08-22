@@ -37,6 +37,10 @@ export const utilities: UtilityConfig = {
         none: 'none',
       },
     },
+    fontSize: {
+      className: 'fs',
+      values: 'fontSizes',
+    },
     fontWeight: {
       className: 'fw',
       values: 'fontWeights',
