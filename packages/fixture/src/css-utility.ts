@@ -86,5 +86,9 @@ export const utilities: UtilityConfig = {
       className: 'm',
       values: 'spacing',
     },
+    outlineColor: {
+      className: 'oc',
+      values: 'colors',
+    },
   },
 }
