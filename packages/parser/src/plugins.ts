@@ -57,7 +57,7 @@ export function createCollector() {
 export function createPlugins(data: Collector, moduleName = '.panda/css') {
   return [
     cssPlugin(data.css, moduleName),
-    // fontFacePlugin(data.fontFace, moduleName),
-    // globalStylePlugin(data.globalStyle, moduleName),
+    fontFacePlugin(data.fontFace, moduleName),
+    globalStylePlugin(data.globalStyle, moduleName),
   ]
 }
