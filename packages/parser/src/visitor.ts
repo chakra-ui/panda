@@ -11,7 +11,10 @@ export class CallVisitor extends BaseVisitor {
   import: ImportResult | undefined
 
   visitImportDeclaration(node: swc.ImportDeclaration): swc.ImportDeclaration {
-    this.import = ast.importDeclaration(node, this.ctx.import)
+    const result = ast.importDeclaration(node, this.ctx.import)
+    if (result) {
+      this.import = result
+    }
     return node
   }
 
