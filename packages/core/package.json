@@ -9,7 +9,8 @@
   "scripts": {
     "build": "tsup src/ --dts",
     "dev": "pnpm build -- --watch",
-    "watch": "DEBUG=generator* tsx src/sandbox.ts"
+    "watch": "DEBUG=generator* tsx src/sandbox.ts",
+    "app": "cd __sandbox__ && pnpm dev"
   },
   "files": [
     "dist"
