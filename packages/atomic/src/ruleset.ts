@@ -3,6 +3,7 @@ import postcss, { AtRule, Rule } from 'postcss'
 import { match } from 'ts-pattern'
 import { CSSCondition } from './css-condition'
 import { esc } from './esc'
+import { filterDefaults } from './filter-defaults'
 import { toHash } from './hash'
 import { toCss } from './to-css'
 import { Dict, GeneratorContext } from './types'
@@ -50,7 +51,7 @@ export class Ruleset {
         conditions.push(scope)
       }
 
-      const selectorString = this.hash ? esc(toHash(baseArray.join(''))) : esc(baseArray.join(':'))
+      const selectorString = this.hash ? esc(toHash(baseArray.join(':'))) : esc(baseArray.join(':'))
       let currentSelector = `.${selectorString}`
 
       this.rule = postcss.rule({
@@ -90,10 +91,6 @@ export class Ruleset {
   toCss() {
     return this.context.root.toString()
   }
-}
-
-function filterDefaults(conditions: string[]) {
-  return conditions.slice().filter((v) => !/^(DEFAULT|_)$/.test(v))
 }
 
 function expandNesting(scope: string, selector: string) {

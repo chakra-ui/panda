@@ -1,4 +1,5 @@
 import { walkObject } from '@css-panda/walk-object'
+import { filterDefaults } from './filter-defaults'
 import { toHash } from './hash'
 import type { Dict, GeneratorContext } from './types'
 
@@ -17,7 +18,7 @@ export class ClassNames {
       walkObject(props, (value, paths) => {
         let [prop, ...conditions] = paths
 
-        conditions = conditions.filter((condition) => condition !== '_')
+        conditions = filterDefaults(conditions)
         const transformed = this.context.transform(prop, value)
 
         // get the base class name
