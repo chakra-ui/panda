@@ -3,9 +3,12 @@ import { toHash } from './hash'
 import type { Dict, GeneratorContext } from './types'
 
 export class ClassNames {
-  constructor(private context: Pick<GeneratorContext, 'transform'>) {}
+  hash: boolean
+  constructor(private context: Pick<GeneratorContext, 'transform'> & { hash?: boolean }) {
+    this.hash = !!context.hash
+  }
 
-  css = (styleObject: Dict, { hash: shouldHash }: { hash?: boolean } = {}) => {
+  css = (styleObject: Dict) => {
     const { selectors = {}, '@media': mediaQueries = {}, ...styles } = styleObject
     //
     const result = new Set<string>()
@@ -24,7 +27,7 @@ export class ClassNames {
           baseArray.unshift(`[${scope}]`)
         }
 
-        const className = shouldHash ? toHash(baseArray.join(':')) : baseArray.join(':')
+        const className = this.hash ? toHash(baseArray.join(':')) : baseArray.join(':')
         result.add(className)
       })
     }
