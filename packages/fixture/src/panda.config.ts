@@ -6,7 +6,7 @@ import { semanticTokens, tokens } from './tokens'
 
 export const config = defineConfig({
   breakpoints,
-  prefix: 'pd',
+  prefix: 'ab',
   tokens: tokens as any,
   semanticTokens: semanticTokens as any,
   conditions,

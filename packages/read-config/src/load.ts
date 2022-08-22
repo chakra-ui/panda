@@ -1,5 +1,6 @@
 import { error, createDebugger } from '@css-panda/logger'
 import fs from 'fs'
+import { createRequire } from 'module'
 import path from 'path'
 import { pathToFileURL } from 'url'
 import { bundleConfigFile } from './bundle'
@@ -11,6 +12,10 @@ type ConfigType = any
 
 const debug = createDebugger('panda:config')
 
+const dynamicImport = new Function('file', 'return import(file)')
+interface NodeModuleWithCompile extends NodeModule {
+  _compile(code: string, filename: string): any
+}
 export async function loadConfigFile({ root = process.cwd(), file }: { root?: string; file?: string } = {}) {
   let dependencies: string[] = []
 
@@ -20,48 +25,40 @@ export async function loadConfigFile({ root = process.cwd(), file }: { root?: st
 
   const start = performance.now()
   const getTime = () => `${(performance.now() - start).toFixed(2)}ms`
+  const bundled = await bundleConfigFile(resolvedPath, true)
+  const fileUrl = pathToFileURL(resolvedPath)
+  const fileName = resolvedPath
+  let config
+  let { code } = bundled
 
   try {
-    let config: ConfigType | undefined
-    let code: string | undefined
-
     if (isESM) {
-      const fileUrl = pathToFileURL(resolvedPath)
-      const bundled = await bundleConfigFile(resolvedPath, true)
-      dependencies = bundled.dependencies
-      code = bundled.code
-      if (isTS) {
-        // before we can register loaders without requiring users to run node
-        // with --experimental-loader themselves, we have to do a hack here:
-        // bundle the config file w/ ts transforms first, write it to disk,
-        // load it with native Node ESM, then delete the file.
-        fs.writeFileSync(resolvedPath + '.js', bundled.code)
-        config = (await import(`${fileUrl}.js?t=${Date.now()}`)).default
-        fs.unlinkSync(resolvedPath + '.js')
-        debug(`✅ TS + native esm config loaded in ${getTime()}`, fileUrl)
-      } else {
-        // using Function to avoid this from being compiled away by TS/Rollup
-        // append a query so that we force reload fresh config in case of
-        // server restart
-        config = (await import(`${fileUrl}?t=${Date.now()}`)).default
-        debug(`✅ native esm config loaded in ${getTime()}`, fileUrl)
+      const fileBase = `${fileName}.timestamp-${Date.now()}`
+      const fileNameTmp = `${fileBase}.mjs`
+      const fileUrl = `${pathToFileURL(fileBase)}.mjs`
+      fs.writeFileSync(fileNameTmp, bundled.code)
+      try {
+        config = (await dynamicImport(fileUrl)).default
+      } finally {
+        try {
+          fs.unlinkSync(fileNameTmp)
+        } catch {
+          // already removed if this function is called twice simultaneously
+        }
       }
     }
-
-    if (!config) {
-      // Bundle config file and transpile it to cjs using esbuild.
-      const bundled = await bundleConfigFile(resolvedPath)
-      dependencies = bundled.dependencies
-      config = await loadBundledFile(resolvedPath, bundled.code)
-      debug(`✅ bundled config file loaded in ${getTime()}`)
+    // for cjs, we can register a custom loader via `_require.extensions`
+    else {
+      config = loadBundledFile(fileName, bundled.code)
     }
 
+    console.log('config.prefix', config.prefix)
     if (typeof config !== 'object') {
       throw new Error(`💥 config must export or return an object.`)
     }
 
     dependencies = dependencies.map((dep) => normalizePath(path.resolve(dep)))
-
+    console.log('dependencies', dependencies)
     return {
       path: resolvedPath,
       config,
