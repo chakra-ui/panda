@@ -16,7 +16,7 @@ process.setMaxListeners(Infinity)
 type UserConfig = RequiredBy<Config, 'outdir' | 'cwd' | 'content'>
 
 export async function generator(userConfig: UserConfig) {
-  const { outdir, content, cwd, clean } = userConfig
+  const { outdir, content, cwd, clean, hash } = userConfig
 
   const fixtureDir = path.dirname(require.resolve('@css-panda/fixture'))
 
@@ -32,7 +32,7 @@ export async function generator(userConfig: UserConfig) {
 
   const ctx = createContext(conf.config)
 
-  await generateSystem(ctx, { outdir, configCode: conf.code, clean })
+  await generateSystem(ctx, { outdir, configCode: conf.code, clean, hash })
 
   info('⚙️ generated system')
 
@@ -44,6 +44,7 @@ export async function generator(userConfig: UserConfig) {
     cwd,
     outdir,
     tmpdir: tmp.dir,
+    hash,
   })
 
   if (!conf.dependencies) return

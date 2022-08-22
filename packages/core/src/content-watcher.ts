@@ -12,10 +12,11 @@ type Options = {
   cwd: string
   outdir: string
   tmpdir: string
+  hash?: boolean
 }
 
 export async function contentWatcher(ctx: InternalContext, options: Options) {
-  const { content, cwd, outdir, tmpdir } = options
+  const { content, cwd, outdir, tmpdir, hash } = options
 
   const watcher = createWatcher(content, {
     cwd,
@@ -23,7 +24,7 @@ export async function contentWatcher(ctx: InternalContext, options: Options) {
   })
 
   function extract(file: string) {
-    const sheet = new Stylesheet(ctx.context())
+    const sheet = new Stylesheet(ctx.context(), { hash })
     const collector = createCollector()
 
     transformFileSync(file, {

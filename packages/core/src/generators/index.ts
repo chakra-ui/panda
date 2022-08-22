@@ -16,10 +16,12 @@ type Options = {
   outdir: string
   clean?: boolean
   configCode?: string
+  hash?: boolean
 }
 
 export async function generateSystem(ctx: InternalContext, options: Options) {
-  const { outdir, clean = true, configCode } = options
+  const { outdir, clean = true, configCode, hash } = options
+
   const { dictionary } = ctx
 
   if (clean) {
@@ -57,7 +59,7 @@ export async function generateSystem(ctx: InternalContext, options: Options) {
 
     // serializer (css)
     fs.writeFile(path.join(cssPath, 'transform.js'), generateTransform('../config')),
-    fs.writeFile(path.join(cssPath, 'index.js'), generateSerializer('./transform')),
+    fs.writeFile(path.join(cssPath, 'index.js'), generateSerializer('./transform', hash)),
     fs.writeFile(path.join(cssPath, 'index.d.ts'), types.css),
 
     // cx
