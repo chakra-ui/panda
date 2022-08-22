@@ -58,7 +58,10 @@ export class Ruleset {
         nodes: rawNodes,
       })
 
-      const css = new CSSCondition(this.context.conditions).addBreakpoints(this.context.breakpoints)
+      const css = new CSSCondition({
+        conditions: this.context.conditions,
+        breakpoints: this.context.breakpoints,
+      })
 
       for (const cond of css.resolve(conditions)) {
         match(cond)

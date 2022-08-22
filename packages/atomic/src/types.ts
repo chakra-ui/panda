@@ -1,4 +1,5 @@
 import { Conditions } from '@css-panda/types'
+import { CSSCondition } from './css-condition'
 import { Root } from 'postcss'
 
 export type TransformResult = {
@@ -9,6 +10,7 @@ export type TransformResult = {
 export type GeneratorContext = {
   root: Root
   conditions: Conditions
+  _conditions: CSSCondition
   breakpoints: Record<string, string>
   transform: (prop: string, value: string) => TransformResult
 }

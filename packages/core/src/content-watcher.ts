@@ -7,10 +7,16 @@ import { InternalContext } from './create-context'
 import { createWatcher } from './watcher'
 import { getTempFile } from './temp-watcher'
 
-export async function contentWatcher(
-  ctx: InternalContext,
-  { content, cwd, outdir, tmpdir }: { content: string[]; cwd: string; outdir: string; tmpdir: string },
-) {
+type Options = {
+  content: string[]
+  cwd: string
+  outdir: string
+  tmpdir: string
+}
+
+export async function contentWatcher(ctx: InternalContext, options: Options) {
+  const { content, cwd, outdir, tmpdir } = options
+
   const watcher = createWatcher(content, {
     cwd,
     ignore: ['node_modules', '.git', '__tests__', outdir],
@@ -55,5 +61,5 @@ export async function contentWatcher(
     fs.unlinkSync(path.join(tmpdir, getTempFile(file)))
   })
 
-  return { watcher: watcher }
+  return { watcher }
 }

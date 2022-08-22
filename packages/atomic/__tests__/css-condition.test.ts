@@ -3,7 +3,7 @@ import { conditions } from '@css-panda/fixture'
 import { CSSCondition } from '../src/css-condition'
 
 test.only('condition transformation', () => {
-  const css = new CSSCondition(conditions)
+  const css = new CSSCondition({ conditions })
   expect(css.normalize('@media (min-width: 768px)')).toMatchInlineSnapshot(`
     {
       "name": "media",

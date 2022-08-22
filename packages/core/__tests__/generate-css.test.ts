@@ -1,16 +1,11 @@
-import { Dictionary } from '@css-panda/dictionary'
 import { conditions, keyframes, semanticTokens, tokens } from '@css-panda/fixture'
 import { expect, test } from 'vitest'
+import { createContext } from '../src/create-context'
 import { generateCss } from '../src/generators/css'
 
 test('[css] should generate css', () => {
-  const dict = new Dictionary({ tokens, semanticTokens })
-
-  const css = generateCss(dict, {
-    root: ':root',
-    conditions,
-    keyframes,
-  })
+  const ctx = createContext({ tokens, semanticTokens, conditions, keyframes })
+  const css = generateCss(ctx, ':root')
 
   expect(css).toMatchInlineSnapshot(`
     ":root {

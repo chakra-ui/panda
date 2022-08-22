@@ -1,9 +1,11 @@
-import { Stylesheet, GeneratorContext } from '@css-panda/atomic'
+import { Stylesheet, GeneratorContext, CSSCondition } from '@css-panda/atomic'
 import { CSSUtility, mergeUtilities } from '@css-panda/css-utility'
 import { Dictionary } from '@css-panda/dictionary'
 import postcss from 'postcss'
 
 export function createContext(config: any) {
+  const { breakpoints = {}, conditions = {} } = config
+
   const dictionary = new Dictionary({
     tokens: config.tokens,
     semanticTokens: config.semanticTokens,
@@ -17,8 +19,12 @@ export function createContext(config: any) {
 
   const context = (): GeneratorContext => ({
     root: postcss.root(),
-    breakpoints: config.breakpoints ?? {},
-    conditions: config.conditions ?? {},
+    breakpoints,
+    conditions,
+    _conditions: new CSSCondition({
+      conditions,
+      breakpoints,
+    }),
     transform(prop, value) {
       return utilities.resolve(prop, value)
     },

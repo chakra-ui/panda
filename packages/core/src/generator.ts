@@ -1,14 +1,13 @@
-import { createDebugger, info } from '@css-panda/logger'
+import { info } from '@css-panda/logger'
 import { loadConfigFile } from '@css-panda/read-config'
 import path from 'path'
 import { contentWatcher } from './content-watcher'
 import { createContext } from './create-context'
+import { createDebug } from './debug'
 import { generateSystem } from './generators'
 import { getCommonDir } from './get-common-dir'
 import { tempWatcher } from './temp-watcher'
 import { createWatcher } from './watcher'
-
-const debug = createDebugger('generator')
 
 process.setMaxListeners(Infinity)
 
@@ -17,7 +16,7 @@ export async function generator(genOpts: { outdir: string; content: string[]; cw
 
   const fixtureDir = path.dirname(require.resolve('@css-panda/fixture'))
 
-  let { config, code, dependencies } = await loadConfigFile({
+  const { config, code, dependencies } = await loadConfigFile({
     root: path.join(fixtureDir, 'src'),
   })
 
@@ -42,12 +41,10 @@ export async function generator(genOpts: { outdir: string; content: string[]; cw
 
   const commonDir = getCommonDir(dependencies)
 
-  debug.extend('config:dependencies', ' > ')(commonDir)
+  createDebug('config:dependencies', commonDir)
 
-  const configWatcher = createWatcher(
-    dependencies.map((file) => file.replace(commonDir, '')),
-    { cwd: getCommonDir(dependencies) },
-  )
+  const _deps = dependencies.map((file) => file.replace(commonDir, ''))
+  const configWatcher = createWatcher(_deps, { cwd: getCommonDir(dependencies) })
 
   async function close() {
     await configWatcher.close()

@@ -16,12 +16,6 @@ export const conditions: Conditions = {
 
   motionReduce: { type: 'at-rule', value: '(prefers-reduced-motion: reduce)' },
 
-  sm: { type: 'screen', value: 'sm', rawValue: '@media screen and (min-width: 30em)' },
-  md: { type: 'screen', value: 'md', rawValue: '@media screen and (min-width: 48em)' },
-  lg: { type: 'screen', value: 'lg', rawValue: '@media screen and (min-width: 62em)' },
-  xl: { type: 'screen', value: 'xl', rawValue: '@media screen and (min-width: 80em)' },
-  '2xl': { type: 'screen', value: '2xl', rawValue: '@media screen and (min-width: 96em)' },
-
   dark: { type: 'color-scheme', value: '[data-theme=dark] &', colorScheme: 'dark' },
   light: { type: 'color-scheme', value: '[data-theme=light] &', colorScheme: 'light' },
   hiConstrast: { type: 'at-rule', value: '@media (forced-colors: active)' },

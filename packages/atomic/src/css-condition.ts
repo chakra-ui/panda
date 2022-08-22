@@ -22,10 +22,11 @@ export class CSSCondition {
   private record: Map<string, RawCondition> = new Map()
   values: Set<RawCondition> = new Set()
 
-  constructor(conditions: Conditions) {
+  constructor({ conditions, breakpoints = {} }: { conditions: Conditions; breakpoints?: Record<string, string> }) {
     for (const [key, value] of Object.entries(conditions)) {
       this.record.set(key, this.normalize(value))
     }
+    this.addBreakpoints(breakpoints)
   }
 
   resolve(conditions: string[]) {
@@ -59,6 +60,10 @@ export class CSSCondition {
       return parseAtRule(condition)
     }
 
+    if (this.record.has(condition)) {
+      return this.record.get(condition)!
+    }
+
     throw new Error('Invalid condition: ' + condition)
   }
 
@@ -79,14 +84,16 @@ export class CSSCondition {
       })
   }
 
-  addBreakpoints(breakpoints: Record<string, string>) {
+  addBreakpoints(breakpoints: Record<string, string> = {}) {
     for (const [key, value] of Object.entries(breakpoints)) {
-      const cond: Condition = {
-        type: 'screen',
+      const cond: RawCondition = {
+        type: 'at-rule',
+        name: 'screen',
         value: key,
+        raw: key,
         rawValue: `@media screen and (min-width: ${value})`,
       }
-      this.record.set(key, this.normalize(cond))
+      this.record.set(key, cond)
     }
     return this
   }
