@@ -48,6 +48,9 @@ export function createCollector() {
     css: new Set<PluginResult>(),
     globalStyle: new Set<PluginResult>(),
     fontFace: new Set<PluginResult>(),
+    isEmpty() {
+      return this.css.size === 0 && this.globalStyle.size === 0 && this.fontFace.size === 0
+    },
   }
 }
 
