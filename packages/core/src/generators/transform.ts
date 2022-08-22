@@ -9,12 +9,13 @@ export function generateTransform(configPath: string) {
           for (const key in utility.properties) {
             if (prop === key) {
               const { className } = utility.properties[key]
-              return { className: typeof className === 'string' ? \`\${className}:\${value}\` : className }
+              return { className: typeof className === 'string' ? \`\${className}_\${value}\` : className }
             }
           }
         }
-      
-        return { className: \`\${prop}:\${value}\` }
+        
+        value = value.replaceAll(' ', '_')
+        return { className: \`\${prop}_\${value}\` }
       }
   
       export {
