@@ -1,51 +1,50 @@
-import { debug, info } from '@css-panda/logger'
+import { debug } from '@css-panda/logger'
 import { createCollector, createPlugins, transformFileSync } from '@css-panda/parser'
 import { loadConfigFile } from '@css-panda/read-config'
 import fs from 'fs-extra'
 import path from 'path'
 import { createContext } from './create-context'
+import { createWatcher } from './create-watcher'
 import { generateSystem } from './generators'
-import { createWatcher } from './watcher'
 
-export async function generator() {
+export async function generator({ outdir, content, cwd }: { outdir: string; content: string[]; cwd: string }) {
   const fixtureDir = path.dirname(require.resolve('@css-panda/fixture'))
   const { config, code } = await loadConfigFile({ root: path.join(fixtureDir, 'src') })
 
   if (!config) {
-    debug('💥 No config found')
     throw new Error('💥 No config found')
   }
 
   const ctx = createContext(config)
 
-  const outdir = '__generated__'
-
-  generateSystem(ctx, { outdir, config: code })
+  await generateSystem(ctx, { outdir, config: code, clean: true })
 
   /* -----------------------------------------------------------------------------
    * [codegen] Parse files and extract css
    * -----------------------------------------------------------------------------*/
 
-  const watcher = createWatcher(['*.js'], {
-    cwd: process.cwd(),
-    ignore: ['node_modules', '.git', '__tests__', '__generated__'],
+  const watcher = createWatcher(content, {
+    cwd,
+    ignore: ['node_modules', '.git', '__tests__', outdir],
   })
 
+  const cssPath = path.join(cwd, outdir, 'styles.css')
+
   function extract(file: string) {
-    ctx.stylesheet.reset()
-    const collected = createCollector()
+    const collector = createCollector()
 
     transformFileSync(file, {
-      file: 'js',
-      plugins: createPlugins(collected, './__generated__/css'),
+      file: 'jsx',
+      plugins: createPlugins(collector, '../__generated__/css'),
     })
 
-    collected.css.forEach((result) => {
+    collector.css.forEach((result) => {
       ctx.stylesheet.process(result)
     })
 
     ctx.stylesheet.addImports(['./design-tokens/index.css'])
-    fs.writeFileSync('__generated__/styles.css', ctx.stylesheet.toCss())
+    const css = ctx.stylesheet.toCss()
+    fs.writeFileSync(cssPath, css)
   }
 
   watcher.on('update', (file) => {
@@ -58,5 +57,3 @@ export async function generator() {
     extract(file)
   })
 }
-
-generator()

@@ -1,4 +1,5 @@
-import fs from 'fs-extra'
+import { promises as fs } from 'fs'
+import { ensureDir, emptyDir } from 'fs-extra'
 import path from 'path'
 import { InternalContext } from '../create-context'
 import { generateConditions } from './conditions'
@@ -21,21 +22,22 @@ export async function generateSystem(ctx: InternalContext, options: Options) {
   const { outdir, clean = true, config } = options
   const { dictionary, context } = ctx
 
-  const configPath = path.join(outdir, 'config.js')
-  await fs.writeFile(configPath, config)
-
   if (clean) {
-    await fs.emptyDir(outdir)
+    await emptyDir(outdir)
   }
 
+  await ensureDir(outdir)
+  const configPath = path.join(outdir, 'config.js')
+  await fs.writeFile(configPath, config!)
+
   const cssPath = path.join(outdir, 'css')
-  await fs.ensureDir(cssPath)
+  await ensureDir(cssPath)
 
   const dsPath = path.join(outdir, 'design-tokens')
-  await fs.ensureDir(dsPath)
+  await ensureDir(dsPath)
 
   const typesPath = path.join(outdir, 'types')
-  await fs.ensureDir(path.join(typesPath))
+  await ensureDir(path.join(typesPath))
 
   const cx = generateCx()
 

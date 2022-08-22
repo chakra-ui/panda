@@ -3,12 +3,12 @@ import { error, createDebugger } from '@css-panda/logger'
 
 type WatcherOptions = {
   ignore?: string[]
-  cwd: string
+  cwd?: string
 }
 
 const debug = createDebugger('file:watcher')
 
-export function createWatcher(files: string[], options: WatcherOptions) {
+export function createWatcher(files: string[], options: WatcherOptions = {}) {
   const { ignore, cwd = process.cwd() } = options
 
   debug('files: %o', files)
