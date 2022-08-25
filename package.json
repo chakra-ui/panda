@@ -4,6 +4,7 @@
   "description": "The repository of css panda",
   "scripts": {
     "build": "pnpm -r build",
+    "clean": "pnpm -r --parallel exec rm -rf dist .turbo *.log",
     "test": "vitest",
     "test-watch": "vitest --watch -u",
     "extension-watch": "pnpm --prefix ./packages/vscode run watch:extension"
