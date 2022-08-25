@@ -1,7 +1,7 @@
 import path from 'path'
-import fs from 'fs'
 import { debug } from '@css-panda/logger'
-import { findUpSync } from 'find-up'
+import fs, { constants, statSync, lstatSync } from 'fs'
+import { dirname, parse, resolve } from 'path'
 
 export function findConfigFile({ root = process.cwd(), file }: { root: string; file?: string }) {
   let resolvedPath: string | undefined
@@ -10,7 +10,8 @@ export function findConfigFile({ root = process.cwd(), file }: { root: string; f
 
   // check package.json for type: "module" and set `isMjs` to true
   try {
-    const pkg = findUpSync('package.json', { cwd: root })
+    const pkgPath = findUp(['package.json'], { cwd: root })[0]
+    const pkg = fs.readFileSync(pkgPath, 'utf8')
     if (pkg && JSON.parse(pkg).type === 'module') {
       isESM = true
     }
@@ -42,4 +43,57 @@ export function findConfigFile({ root = process.cwd(), file }: { root: string; f
   }
 
   return { resolvedPath, isTS, isESM }
+}
+
+function existsSync(fp: string) {
+  try {
+    fs.accessSync(fp, constants.R_OK)
+    return true
+  } catch {
+    return false
+  }
+}
+
+export interface FindUpOptions {
+  /**
+   * @default process.cwd
+   */
+  cwd?: string
+  /**
+   * @default path.parse(cwd).root
+   */
+  stopAt?: string
+  /**
+   * @default false
+   */
+  multiple?: boolean
+  /**
+   * @default true
+   */
+  allowSymlinks?: boolean
+}
+
+function findUp(paths: string[], options: FindUpOptions = {}): string[] {
+  const { cwd = process.cwd(), stopAt = parse(cwd).root, multiple = false, allowSymlinks = true } = options
+
+  let current = cwd
+
+  const files: string[] = []
+
+  const stat = allowSymlinks ? statSync : lstatSync
+
+  while (current && current !== stopAt) {
+    for (const path of paths) {
+      const filepath = resolve(current, path)
+      if (existsSync(filepath) && stat(filepath).isFile()) {
+        files.push(filepath)
+        if (!multiple) return files
+      }
+    }
+    const parent = dirname(current)
+    if (parent === current) break
+    current = parent
+  }
+
+  return files
 }
