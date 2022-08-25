@@ -217,9 +217,17 @@ importers:
       find-up: ^6.3.0
     dependencies:
       '@css-panda/logger': link:../logger
-      '@esbuild-plugins/tsconfig-paths': 0.0.4_esbuild@0.15.5+typescript@4.7.4
+      '@esbuild-plugins/tsconfig-paths': 0.0.4_esbuild@0.15.5
       esbuild: 0.15.5
       find-up: 6.3.0
+
+  packages/sandbox:
+    specifiers:
+      '@css-panda/read-config': workspace:*
+      '@css-panda/types': workspace:*
+    dependencies:
+      '@css-panda/read-config': link:../read-config
+      '@css-panda/types': link:../types
 
   packages/types:
     specifiers:
@@ -581,7 +589,7 @@ packages:
       get-tsconfig: 4.2.0
     dev: false
 
-  /@esbuild-plugins/tsconfig-paths/0.0.4_esbuild@0.15.5+typescript@4.7.4:
+  /@esbuild-plugins/tsconfig-paths/0.0.4_esbuild@0.15.5:
     resolution: {integrity: sha512-/86k8BmhfJOFoFLR2oKtoxUVUpIYBtJy29QSM5TXzZP8vdjuMPtXSUeCL+8Aa2GZ3to2k6VD9WLBE9OU+j1yQQ==}
     peerDependencies:
       esbuild: '*'
@@ -591,7 +599,6 @@ packages:
       esbuild: 0.15.5
       find-up: 5.0.0
       strip-json-comments: 3.1.1
-      typescript: 4.7.4
     transitivePeerDependencies:
       - supports-color
     dev: false

@@ -40,7 +40,7 @@ export function TypographyPlayground(props: TypographyPlaygroundProps) {
     <VSCodeDropdown value={config[token]} onChange={(e) => onChangeConfig(e, token)} className="token-switch">
       {Object.entries(configProp[`${token}s`]).map(([label, value]) => (
         <VSCodeOption key={value as string} value={label}>
-          {label} ({value})
+          {`${label} (${value})`}
         </VSCodeOption>
       ))}
     </VSCodeDropdown>

@@ -74,10 +74,5 @@
     "prettier": "^2.7.1",
     "typescript": "^4.7.4",
     "vscode-test": "^1.5.0"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "ts-import@4.0.0-beta.6": "patches/ts-import@4.0.0-beta.6.patch"
-    }
   }
 }
