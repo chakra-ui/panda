@@ -56,14 +56,20 @@ export class CSSUtility {
     }
   }
 
+  normalize(value: string | PropertyUtility<any> | undefined): PropertyUtility<any> | undefined {
+    return typeof value === 'string' ? { className: value } : value
+  }
+
   private assignProperties() {
     for (const [property, propertyConfig] of Object.entries(this.config.properties)) {
-      this.setTransform(property, propertyConfig?.transform)
+      const propConfig = this.normalize(propertyConfig)
 
-      if (!propertyConfig) continue
-      this.propertyConfigMap.set(property, propertyConfig)
+      this.setTransform(property, propConfig?.transform)
 
-      const values = this.getPropertyValues(propertyConfig)
+      if (!propConfig) continue
+      this.propertyConfigMap.set(property, propConfig)
+
+      const values = this.getPropertyValues(propConfig)
       if (!values) continue
 
       for (const [alias, raw] of Object.entries(values)) {
@@ -76,9 +82,11 @@ export class CSSUtility {
 
   private assignValueMap() {
     for (const [property, propertyConfig] of Object.entries(this.config.properties)) {
-      if (!propertyConfig) continue
+      const propConfig = this.normalize(propertyConfig)
 
-      const values = this.getPropertyValues(propertyConfig)
+      if (!propConfig) continue
+
+      const values = this.getPropertyValues(propConfig)
       if (!values) continue
 
       this.valuesMap.set(property, new Set(Object.keys(values)))

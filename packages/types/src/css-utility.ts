@@ -9,12 +9,12 @@ type ValuesFn = (token: (path: string) => any) => Record<string, string>
 export type PropertyUtility<T> = {
   className: PropertyClassName
   transform?: (value: string) => CssProperties
-  values: keyof T | string[] | Record<string, string> | ValuesFn
+  values?: keyof T | string[] | Record<string, string> | ValuesFn
 }
 
 export type UtilityConfig<T = any> = {
   properties: {
-    [property in CssProperty | (string & {})]?: PropertyUtility<T>
+    [property in CssProperty | (string & {})]?: string | PropertyUtility<T>
   }
 
   shorthands?: {
