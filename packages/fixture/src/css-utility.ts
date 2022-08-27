@@ -173,6 +173,10 @@ export const utilities: UtilityConfig = {
       className: 'fs',
       values: 'fontSizes',
     },
+    fontFamily: {
+      className: 'font',
+      values: 'fonts',
+    },
     fontWeight: {
       className: 'fw',
       values: 'fontWeights',
@@ -249,7 +253,7 @@ export const utilities: UtilityConfig = {
     },
     minWidth: {
       className: 'min-w',
-      values: 'spacing',
+      values: 'sizes',
     },
     maxWidth: {
       className: 'max-w',
