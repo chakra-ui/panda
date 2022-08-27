@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs'
 import { ensureDir, emptyDir } from 'fs-extra'
+import { outdent } from 'outdent'
 import path from 'path'
 import { InternalContext } from '../create-context'
 import { generateConditions } from './conditions'
@@ -7,6 +8,7 @@ import { generateCss } from './css'
 import { generateCssType } from './css-type'
 import { generateCx } from './cx'
 import { generateDts } from './dts'
+import { generateFontFace } from './font-face'
 import { generateJs } from './js'
 import { generatePropertyTypes } from './property-types'
 import { generateSerializer } from './serializer'
@@ -42,6 +44,7 @@ export async function generateSystem(ctx: InternalContext, options: Options) {
   await ensureDir(path.join(typesPath))
 
   const cx = generateCx()
+  const fontFace = generateFontFace()
 
   const types = await generateCssType()
 
@@ -59,11 +62,35 @@ export async function generateSystem(ctx: InternalContext, options: Options) {
 
     // serializer (css)
     fs.writeFile(path.join(cssPath, 'transform.js'), generateTransform('../config')),
-    fs.writeFile(path.join(cssPath, 'index.js'), generateSerializer('./transform', hash)),
-    fs.writeFile(path.join(cssPath, 'index.d.ts'), types.css),
+    fs.writeFile(path.join(cssPath, 'css.js'), generateSerializer('./transform', hash)),
+    fs.writeFile(path.join(cssPath, 'css.d.ts'), types.css),
 
     // cx
     fs.writeFile(path.join(cssPath, 'cx.js'), cx.js),
     fs.writeFile(path.join(cssPath, 'cx.d.ts'), cx.dts),
+
+    // font face
+    fs.writeFile(path.join(cssPath, 'font-face.js'), fontFace.js),
+    fs.writeFile(path.join(cssPath, 'font-face.d.ts'), fontFace.dts),
+
+    // css / index.js
+    fs.writeFile(
+      path.join(cssPath, 'index.js'),
+      outdent`
+     export * from './css'
+     export * from './cx'
+     export * from './font-face'
+    `,
+    ),
+
+    // css / index.d.ts
+    fs.writeFile(
+      path.join(cssPath, 'index.d.ts'),
+      outdent`
+     export * from './css'
+     export * from './cx'
+     export * from './font-face'
+    `,
+    ),
   ])
 }

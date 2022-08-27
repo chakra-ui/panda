@@ -32,6 +32,10 @@ export async function contentWatcher(ctx: InternalContext, options: Options) {
       plugins: createPlugins(collector, '../__generated__/css'),
     })
 
+    collector.fontFace.forEach((result) => {
+      sheet.processFontFace(result)
+    })
+
     collector.css.forEach((result) => {
       sheet.process(result)
     })

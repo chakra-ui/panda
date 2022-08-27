@@ -4,7 +4,7 @@ import { GeneratorContext } from './types'
 import { optimizeCss } from './optimize'
 import { PluginResult } from '@css-panda/types'
 import { toCss } from './to-css'
-import postcss from 'postcss'
+import postcss, { Root, Rule } from 'postcss'
 
 export class Stylesheet {
   hash: boolean
@@ -18,10 +18,33 @@ export class Stylesheet {
     return type === 'object' ? this.processAtomic(data) : this.processObject(name!, data)
   }
 
-  processObject(selector: string, styleObject: Record<string, any>) {
-    const cssString = toCss(styleObject)
-    const rule = postcss.rule({ selector, nodes: cssString.root.nodes })
-    this.context.root.append(rule)
+  processFontFace(result: PluginResult) {
+    const src = result.data.src?.join(',')
+    return this.processObject({
+      '@font-face': {
+        ...result.data,
+        fontFamily: JSON.stringify(result.name),
+        src,
+      },
+    })
+  }
+
+  processObject(styleObject: Record<string, any>): ThisType<StyleSheet>
+  processObject(selector: string, styleObject: Record<string, any>): ThisType<StyleSheet>
+  processObject(...args: [string, Record<string, any>] | [Record<string, any>]) {
+    let output: Rule | Root
+
+    if (args.length === 1 && typeof args[0] === 'object') {
+      const [styleObject] = args
+      const result = toCss(styleObject)
+      output = result.root
+    } else {
+      const [selector, styleObject] = args as [string, Record<string, any>]
+      const cssString = toCss(styleObject)
+      output = postcss.rule({ selector, nodes: cssString.root.nodes })
+    }
+
+    this.context.root.append(output)
     return this
   }
 
@@ -47,8 +70,8 @@ export class Stylesheet {
   }
 
   addImports(imports: string[]) {
-    const rules = imports.map((n) => `@import '${n}';`)
-    this.context.root.prepend(...rules, '\n')
+    const rules = imports.map((n) => `@import '${n}';\n`)
+    this.context.root.prepend(...rules)
     return this
   }
 
@@ -63,7 +86,7 @@ export class Stylesheet {
   }
 
   append(css: string) {
-    this.context.root.append('\n', css)
+    this.context.root.append(css)
     return this
   }
 }
