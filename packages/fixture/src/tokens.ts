@@ -102,6 +102,10 @@ export const tokens: Tokens = {
     base: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
     md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
   },
+  dropShadows: {
+    sm: 'drop-shadow(0 1px 1px rgb(0 0 0 / 0.05)',
+    md: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06))',
+  },
   spacing: {
     0.5: '0.125rem',
     1: '0.25rem',
@@ -150,6 +154,7 @@ export const tokens: Tokens = {
   easings: {
     'ease-in': 'cubic-bezier(0.4, 0, 1, 1)',
     'ease-out': 'cubic-bezier(0, 0, 0.2, 1)',
+    'ease-in-out': 'cubic-bezier(0.4, 0, 0.2, 1)',
   },
   durations: {
     '75': '75ms',
@@ -159,7 +164,11 @@ export const tokens: Tokens = {
   transitionProperties: {
     all: 'all',
     none: 'none',
+    opacity: 'opacity',
+    shadow: 'box-shadow',
+    transform: 'transform',
+    base: 'color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter',
     background: 'background, background-color',
-    colors: 'color, background-color',
+    colors: 'color, background-color, border-color, text-decoration-color, fill, stroke',
   },
 }

@@ -14,6 +14,7 @@ export type Tokens = {
   letterSpacings: Record<string, string>
   radii: Record<string, string>
   shadows: Record<string, string>
+  dropShadows: Record<string, string>
   spacing: Record<string, string>
   sizes: Record<string, string>
   largeSizes: Record<string, string>

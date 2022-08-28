@@ -55,12 +55,20 @@ export const utilities: UtilityConfig = {
     },
 
     // Color properties
-    background: {
-      className: 'bg',
-      values: 'colors',
-    },
     color: {
       className: 'text',
+      values: 'colors',
+    },
+    fill: {
+      className: 'fill',
+      values: 'colors',
+    },
+    stroke: {
+      className: 'stroke',
+      values: 'colors',
+    },
+    accentColor: {
+      className: 'accent',
       values: 'colors',
     },
     outlineColor: {
@@ -305,6 +313,10 @@ export const utilities: UtilityConfig = {
     // Background properties
     backgroundAttachment: 'bg',
     backgroundClip: 'bg-clip',
+    background: {
+      className: 'bg',
+      values: 'colors',
+    },
     backgroundColor: {
       className: 'bg',
       values: 'colors',
@@ -352,10 +364,20 @@ export const utilities: UtilityConfig = {
     },
 
     // Transition properties
-    transitionTimingFunction: 'ease',
+    transitionTimingFunction: {
+      className: 'ease',
+      values: 'easings',
+    },
     transitionDelay: 'delay',
     transitionDuration: 'duration',
-    transitionProperty: 'transition',
+    transitionProperty: {
+      className: 'transition',
+      values: 'transitionProperties',
+    },
+    animation: {
+      className: 'animation',
+      values: 'animations',
+    },
 
     // Border properties
     borderRadius: {
@@ -386,5 +408,226 @@ export const utilities: UtilityConfig = {
 
     // Effect properties
     boxShadow: 'shadow',
+    filter: {
+      className: 'filter',
+      values: {
+        auto: [
+          'var(--blur)',
+          'var(--brightness)',
+          'var(--contrast)',
+          'var(--grayscale)',
+          'var(--hue-rotate)',
+          'var(--invert)',
+          'var(--saturate)',
+          'var(--sepia)',
+          'var(--drop-shadow)',
+        ].join(' '),
+      },
+    },
+    brightness: {
+      className: 'brightness',
+      transform(value) {
+        return {
+          '--brightness': `brightness(${value})`,
+        }
+      },
+    },
+    contrast: {
+      className: 'contrast',
+      transform(value) {
+        return {
+          '--contrast': `constrast(${value})`,
+        }
+      },
+    },
+    grayscale: {
+      className: 'grayscale',
+      transform(value) {
+        return {
+          '--grayscale': `grayscale(${value})`,
+        }
+      },
+    },
+    hueRotate: {
+      className: 'hue-rotate',
+      transform(value) {
+        return {
+          '--hue-rotate': `hue-rotate(${value})`,
+        }
+      },
+    },
+    invert: {
+      className: 'invert',
+      transform(value) {
+        return {
+          '--invert': `invert(${value})`,
+        }
+      },
+    },
+    saturate: {
+      className: 'saturate',
+      transform(value) {
+        return {
+          '--saturate': `saturate(${value})`,
+        }
+      },
+    },
+    sepia: {
+      className: 'sepia',
+      transform(value) {
+        return {
+          '--sepia': `sepia(${value})`,
+        }
+      },
+    },
+    dropShadow: {
+      className: 'drop-shadow',
+      transform(value) {
+        return {
+          '--drop-shadow': value,
+        }
+      },
+    },
+    blur: {
+      className: 'blur',
+      transform(value) {
+        return {
+          '--blur': `blur(${value})`,
+        }
+      },
+    },
+
+    // Interactivity properties
+    scrollBehavior: 'scroll',
+    scrollMargin: {
+      className: 'scroll-m',
+      values: 'spacing',
+    },
+    scrollMarginX: {
+      className: 'scroll-mx',
+      values: 'spacing',
+      transform(value) {
+        return {
+          scrollMarginInline: value,
+        }
+      },
+    },
+    scrollMarginY: {
+      className: 'scroll-my',
+      values: 'spacing',
+      transform(value) {
+        return {
+          scrollMarginBlock: value,
+        }
+      },
+    },
+    scrollMarginLeft: {
+      className: 'scroll-ml',
+      values: 'spacing',
+    },
+    scrollMarginRight: {
+      className: 'scroll-mr',
+      values: 'spacing',
+    },
+    scrollMarginTop: {
+      className: 'scroll-mt',
+      values: 'spacing',
+    },
+    scrollMarginBottom: {
+      className: 'scroll-mb',
+      values: 'spacing',
+    },
+    scrollPadding: {
+      className: 'scroll-p',
+      values: 'spacing',
+    },
+    scrollPaddingX: {
+      className: 'scroll-px',
+      values: 'spacing',
+      transform(value) {
+        return {
+          scrollPaddingInline: value,
+        }
+      },
+    },
+    scrollPaddingY: {
+      className: 'scroll-py',
+      values: 'spacing',
+      transform(value) {
+        return {
+          scrollPaddingBlock: value,
+        }
+      },
+    },
+    scrollPaddingLeft: {
+      className: 'scroll-pl',
+      values: 'spacing',
+    },
+    scrollPaddingRight: {
+      className: 'scroll-pr',
+      values: 'spacing',
+    },
+    scrollPaddingTop: {
+      className: 'scroll-pt',
+      values: 'spacing',
+    },
+    scrollPaddingBottom: {
+      className: 'scroll-pb',
+      values: 'spacing',
+    },
+    scrollSnapAlign: 'snap',
+    scrollSnapStop: 'snap',
+    scrollSnapType: {
+      className: 'snap',
+      values: {
+        none: 'none',
+        x: 'x var(--scroll-snap-strictness)',
+        y: 'y var(--scroll-snap-strictness)',
+        both: 'both var(--scroll-snap-strictness)',
+      },
+    },
+    scrollSnapStrictness: {
+      className: 'strictness',
+      values: ['mandatory', 'proximity'],
+      transform(value) {
+        return {
+          '--scroll-snap-strictness': value,
+        }
+      },
+    },
+    touchAction: 'touch',
+    userSelect: 'select',
+
+    // Screen reader
+    srOnly: {
+      className: 'sr',
+      transform(value) {
+        return srMapping[value] || {}
+      },
+    },
+  },
+}
+
+const srMapping = {
+  true: {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    padding: '0',
+    margin: '-1px',
+    overflow: 'hidden',
+    clip: 'rect(0, 0, 0, 0)',
+    whiteSpace: 'nowrap',
+    borderWidth: '0',
+  },
+  false: {
+    position: 'static',
+    width: 'auto',
+    height: 'auto',
+    padding: '0',
+    margin: '0',
+    overflow: 'visible',
+    clip: 'auto',
+    whiteSpace: 'normal',
   },
 }
