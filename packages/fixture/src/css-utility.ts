@@ -10,6 +10,8 @@ export const utilities: UtilityConfig = {
     boxSizing: 'box',
     objectPosition: 'object',
     overscrollBehavior: 'overscroll',
+    overscrollBehaviorX: 'overscroll-x',
+    overscrollBehaviorY: 'overscroll-y',
     position: {
       className: (value) => value,
     },
@@ -310,6 +312,44 @@ export const utilities: UtilityConfig = {
     backgroundOrigin: 'bg-origin',
     backgroundRepeat: 'bg-repeat',
     backgroundBlendMode: 'bg-blend',
+    backgroundGradient: {
+      className: 'bg-gradient',
+      values: {
+        none: 'none',
+        'to-t': 'linear-gradient(to top, var(--gradient-stops))',
+        'to-tr': 'linear-gradient(to top right, var(--gradient-stops))',
+        'to-r': 'linear-gradient(to right, var(--gradient-stops))',
+        'to-br': 'linear-gradient(to bottom right, var(--gradient-stops))',
+        'to-b': 'linear-gradient(to bottom, var(--gradient-stops))',
+        'to-bl': 'linear-gradient(to bottom left, var(--gradient-stops))',
+        'to-l': 'linear-gradient(to left, var(--gradient-stops))',
+        'to-tl': 'linear-gradient(to top left, var(--gradient-stops))',
+      },
+      transform(value) {
+        return {
+          '--gradient-stops': 'var(--gradient-from), var(--gradient-to)',
+          backgroundImage: value,
+        }
+      },
+    },
+    gradientFrom: {
+      className: 'from',
+      values: 'colors',
+      transform(value) {
+        return {
+          '--gradient-from': value,
+        }
+      },
+    },
+    gradientTo: {
+      className: 'to',
+      values: 'colors',
+      transform(value) {
+        return {
+          '--gradient-to': value,
+        }
+      },
+    },
 
     // Transition properties
     transitionTimingFunction: 'ease',
@@ -343,5 +383,8 @@ export const utilities: UtilityConfig = {
         }
       },
     },
+
+    // Effect properties
+    boxShadow: 'shadow',
   },
 }

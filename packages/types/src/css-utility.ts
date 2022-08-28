@@ -6,13 +6,13 @@ export type PropertyClassName = string | ClassNameFn
 
 type ValuesFn = (token: (path: string) => any) => Record<string, string>
 
-export type PropertyUtility<T> = {
+export type PropertyUtility<T extends Record<string, any>> = {
   className: PropertyClassName
   transform?: (value: string) => CssProperties
   values?: keyof T | string[] | Record<string, string> | ValuesFn
 }
 
-export type UtilityConfig<T = any> = {
+export type UtilityConfig<T = Record<string, any>> = {
   properties: {
     [property in CssProperty | (string & {})]?: string | PropertyUtility<T>
   }
