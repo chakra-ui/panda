@@ -25,7 +25,7 @@ export class ClassNames {
         const baseArray = [...conditions, transformed.className]
 
         if (scope) {
-          baseArray.unshift(`[${scope}]`)
+          baseArray.unshift(`[${scope.replaceAll(' ', '_')}]`)
         }
 
         const className = this.hash ? toHash(baseArray.join(':')) : baseArray.join(':')

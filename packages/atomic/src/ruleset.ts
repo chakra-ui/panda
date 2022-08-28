@@ -48,7 +48,7 @@ export class Ruleset {
       const baseArray = [...conditions, transformed.className]
 
       if (scope) {
-        baseArray.unshift(`[${scope}]`)
+        baseArray.unshift(`[${scope.replaceAll(' ', '_')}]`)
         conditions.push(scope)
       }
 
