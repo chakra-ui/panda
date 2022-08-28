@@ -3,12 +3,12 @@ import type { PropertiesFallback, SimplePseudos } from './csstype'
 type Loose = string & { __type?: never }
 // type Clean<T> = Exclude<T, { __type?: never }>
 
-export type Properties = PropertiesFallback<undefined>
+export type Properties = PropertiesFallback<Loose>
 
 export type CssProperty = keyof Properties
 
 export type CssProperties = Properties & {
-  [key in `--${string}`]: string | number | undefined
+  [key: string]: string | number | undefined
 }
 
 export type CssKeyframes = {

@@ -28,12 +28,12 @@ export const utilities: UtilityConfig = {
       },
     },
     divideY: {
-      className: 'divide-x',
+      className: 'divide-y',
       valueType: 'string',
       transform(value) {
         return {
           '& > * ~ *': {
-            '--divide-x': value,
+            '--divide-y': value,
             borderTopWidth: value,
           },
         }
@@ -432,7 +432,10 @@ export const utilities: UtilityConfig = {
     },
 
     // Effect properties
-    boxShadow: 'shadow',
+    boxShadow: {
+      className: 'shadow',
+      values: 'shadows',
+    },
     filter: {
       className: 'filter',
       values: {

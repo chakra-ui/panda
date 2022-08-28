@@ -12,10 +12,10 @@ export function generateTransform(configPath: string) {
               __config =  typeof __config === "string" ? { className: __config } : __config
               
               const { className } = __config
-              
-              if (typeof className === "string") return { className }
-              
-              if (typeof className === "function") return { className: className(value, key) }
+
+              if (typeof className === 'function') {
+                return { className: className(value, key) }
+              }
               
               return { className: \`\${className}_\${value}\` }
             }
