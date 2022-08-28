@@ -9,6 +9,7 @@ import { generateCssType } from './css-type'
 import { generateCx } from './cx'
 import { generateDts } from './dts'
 import { generateFontFace } from './font-face'
+import { generateGlobalStyle } from './global-style'
 import { generateJs } from './js'
 import { generatePropertyTypes } from './property-types'
 import { generateSerializer } from './serializer'
@@ -45,6 +46,7 @@ export async function generateSystem(ctx: InternalContext, options: Options) {
 
   const cx = generateCx()
   const fontFace = generateFontFace()
+  const globalStyle = generateGlobalStyle()
 
   const types = await generateCssType()
 
@@ -73,6 +75,10 @@ export async function generateSystem(ctx: InternalContext, options: Options) {
     fs.writeFile(path.join(cssPath, 'font-face.js'), fontFace.js),
     fs.writeFile(path.join(cssPath, 'font-face.d.ts'), fontFace.dts),
 
+    // global style
+    fs.writeFile(path.join(cssPath, 'global-style.js'), globalStyle.js),
+    fs.writeFile(path.join(cssPath, 'global-style.d.ts'), globalStyle.dts),
+
     // css / index.js
     fs.writeFile(
       path.join(cssPath, 'index.js'),
@@ -80,6 +86,7 @@ export async function generateSystem(ctx: InternalContext, options: Options) {
      export * from './css'
      export * from './cx'
      export * from './font-face'
+     export * from './global-style'
     `,
     ),
 
@@ -90,6 +97,7 @@ export async function generateSystem(ctx: InternalContext, options: Options) {
      export * from './css'
      export * from './cx'
      export * from './font-face'
+     export * from './global-style'
     `,
     ),
   ])
