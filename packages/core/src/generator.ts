@@ -1,4 +1,4 @@
-import { info } from '@css-panda/logger'
+import { error, info } from '@css-panda/logger'
 import { loadConfigFile } from '@css-panda/read-config'
 import { Config, RequiredBy } from '@css-panda/types'
 import { ConfigNotFoundError } from '@css-panda/error'
@@ -70,3 +70,10 @@ export async function generator(userConfig: UserConfig) {
     await generator(userConfig)
   })
 }
+
+process.on('unhandledRejection', (reason) => {
+  error(reason)
+})
+process.on('uncaughtException', (err) => {
+  error(err)
+})

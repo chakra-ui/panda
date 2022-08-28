@@ -114,7 +114,8 @@ export const utilities: UtilityConfig = {
     },
     alignItems: 'items',
     alignSelf: 'self',
-    // Flex
+
+    // Flex properties
     flexBasis: {
       className: 'basis',
       values: {
@@ -490,6 +491,7 @@ export const utilities: UtilityConfig = {
     },
     blur: {
       className: 'blur',
+      valueType: 'string & {}',
       transform(value) {
         return {
           '--blur': `blur(${value})`,
@@ -601,6 +603,7 @@ export const utilities: UtilityConfig = {
     // Screen reader
     srOnly: {
       className: 'sr',
+      values: ['true', 'false'],
       transform(value) {
         return srMapping[value] || {}
       },

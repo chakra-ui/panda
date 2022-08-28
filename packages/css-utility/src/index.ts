@@ -87,9 +87,21 @@ export class CSSUtility {
       if (!propConfig) continue
 
       const values = this.getPropertyValues(propConfig)
-      if (!values) continue
 
-      this.valuesMap.set(property, new Set(Object.keys(values)))
+      if (values) {
+        this.valuesMap.set(property, new Set(Object.keys(values)))
+      }
+
+      const set = this.valuesMap.get(property) ?? new Set()
+
+      if (propConfig.cssType) {
+        this.valuesMap.set(property, set.add(`CSSProperties["${propConfig.cssType}"]`))
+        continue
+      }
+
+      if (propConfig.valueType) {
+        this.valuesMap.set(property, new Set([`__type__${propConfig.valueType}`]))
+      }
     }
 
     for (const [shorthand, longhand] of Object.entries(this.config.shorthands || {})) {

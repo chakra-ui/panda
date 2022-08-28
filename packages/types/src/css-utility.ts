@@ -10,6 +10,8 @@ export type PropertyUtility<T extends Record<string, any>> = {
   className: PropertyClassName
   transform?: (value: string) => CssProperties
   values?: keyof T | string[] | Record<string, string> | ValuesFn
+  cssType?: keyof CssProperties
+  valueType?: string
 }
 
 export type UtilityConfig<T = Record<string, any>> = {
