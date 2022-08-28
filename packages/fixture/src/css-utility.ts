@@ -15,6 +15,30 @@ export const utilities: UtilityConfig = {
     position: {
       className: (value) => value,
     },
+    divideX: {
+      className: 'divide-x',
+      valueType: 'string',
+      transform(value) {
+        return {
+          '& > * ~ *': {
+            '--divide-x': value,
+            borderLeftWidth: value,
+          },
+        }
+      },
+    },
+    divideY: {
+      className: 'divide-x',
+      valueType: 'string',
+      transform(value) {
+        return {
+          '& > * ~ *': {
+            '--divide-x': value,
+            borderTopWidth: value,
+          },
+        }
+      },
+    },
 
     // Position properties
     top: {
