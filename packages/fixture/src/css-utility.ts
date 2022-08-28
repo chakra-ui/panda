@@ -15,14 +15,16 @@ export const utilities: UtilityConfig = {
     position: {
       className: (value) => value,
     },
+
+    // Divider
     divideX: {
       className: 'divide-x',
       valueType: 'string',
       transform(value) {
         return {
           '& > * ~ *': {
-            '--divide-x': value,
             borderLeftWidth: value,
+            borderRightWidth: '0px',
           },
         }
       },
@@ -33,8 +35,30 @@ export const utilities: UtilityConfig = {
       transform(value) {
         return {
           '& > * ~ *': {
-            '--divide-y': value,
             borderTopWidth: value,
+            borderBottomWidth: '0px',
+          },
+        }
+      },
+    },
+    divideColor: {
+      className: 'divide',
+      values: 'colors',
+      transform(value) {
+        return {
+          '& > * ~ *': {
+            borderColor: value,
+          },
+        }
+      },
+    },
+    divideStyle: {
+      className: 'divide',
+      cssType: 'borderStyle',
+      transform(value) {
+        return {
+          '& > * ~ *': {
+            borderStyle: value,
           },
         }
       },
