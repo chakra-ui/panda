@@ -47,6 +47,8 @@ type ConditionCssProperties<
     Conditions,
     true extends StrictValue ? Strict<Key, Properties, UserProperties> : Union<Key, Properties, UserProperties>
   >
+} & {
+  [Key in keyof Omit<UserProperties, keyof Properties>]?: ConditionalValue<Conditions, UserProperties[Key]>
 }
 
 type PseudoProperty = `&${SimplePseudos}`

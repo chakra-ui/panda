@@ -8,8 +8,16 @@ export function generateTransform(configPath: string) {
         for (const utility of config.utilities) {
           for (const key in utility.properties) {
             if (prop === key) {
-              const { className } = utility.properties[key]
-              return { className: typeof className === 'string' ? \`\${className}_\${value}\` : className }
+              let __config = utility.properties[key]
+              __config =  typeof __config === "string" ? { className: __config } : __config
+              
+              const { className } = __config
+              
+              if (typeof className === "string") return { className }
+              
+              if (typeof className === "function") return { className: className(value, key) }
+              
+              return { className: \`\${className}_\${value}\` }
             }
           }
         }

@@ -41,6 +41,11 @@ export class Stylesheet {
     } else {
       const [selector, styleObject] = args as [string, Record<string, any>]
       const cssString = toCss(styleObject)
+      const { nodes } = postcss.parse(cssString)
+
+      // don't process empty rulesets
+      if (nodes.length === 0) return this
+
       output = postcss.rule({ selector, nodes: cssString.root.nodes })
     }
 

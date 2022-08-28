@@ -43,6 +43,9 @@ export class Ruleset {
       const cssRoot = toCss(transformed.styles)
       const rawNodes = cssRoot.root.nodes
 
+      // no empty rulesets
+      if (!rawNodes.length) return
+
       // get the base class name
       const baseArray = [...conditions, transformed.className]
 
