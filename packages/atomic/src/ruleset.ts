@@ -21,6 +21,7 @@ export class Ruleset {
   }
 
   private rule: Rule | AtRule | undefined
+  private selector = ''
 
   wrapRule(options: WrapOptions) {
     if (!this.rule) return
@@ -43,9 +44,6 @@ export class Ruleset {
       const cssRoot = toCss(transformed.styles)
       const rawNodes = cssRoot.root.nodes
 
-      // no empty rulesets
-      if (!rawNodes.length) return
-
       // get the base class name
       const baseArray = [...conditions, transformed.className]
 
@@ -55,10 +53,13 @@ export class Ruleset {
       }
 
       const selectorString = this.hash ? esc(toHash(baseArray.join(':'))) : esc(baseArray.join(':'))
-      let currentSelector = `.${selectorString}`
+      this.selector = `.${selectorString}`
+
+      // no empty rulesets
+      if (!rawNodes.length) return
 
       this.rule = postcss.rule({
-        selector: currentSelector,
+        selector: this.selector,
         nodes: rawNodes,
       })
 
@@ -77,9 +78,9 @@ export class Ruleset {
             })
           })
           .otherwise(() => {
-            currentSelector = expandNesting(cond.raw, currentSelector)
+            this.selector = expandNesting(cond.raw, this.selector)
             this.rule = postcss.rule({
-              selector: currentSelector,
+              selector: this.selector,
               nodes: rawNodes,
             })
           })
