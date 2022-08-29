@@ -10,7 +10,6 @@ describe('Token types', () => {
         "fonts.heading" => {
           "category": "fonts",
           "key": "heading",
-          "keyRef": "$heading",
           "negative": false,
           "prop": "fonts.heading",
           "value": "-apple-system, BlinkMacSystemFont",
@@ -20,7 +19,6 @@ describe('Token types', () => {
         "fonts.body" => {
           "category": "fonts",
           "key": "body",
-          "keyRef": "$body",
           "negative": false,
           "prop": "fonts.body",
           "value": "Helvetica, Arial, sans-serif",
@@ -30,7 +28,6 @@ describe('Token types', () => {
         "fonts.mono" => {
           "category": "fonts",
           "key": "mono",
-          "keyRef": "$mono",
           "negative": false,
           "prop": "fonts.mono",
           "value": "SFMono-Regular, Menlo, Monaco",
@@ -40,7 +37,6 @@ describe('Token types', () => {
         "colors.current" => {
           "category": "colors",
           "key": "current",
-          "keyRef": "$current",
           "negative": false,
           "prop": "colors.current",
           "value": "currentColor",
@@ -50,7 +46,6 @@ describe('Token types', () => {
         "colors.gray.50" => {
           "category": "colors",
           "key": "gray.50",
-          "keyRef": "$gray.50",
           "negative": false,
           "prop": "colors.gray.50",
           "value": "#FAFAFA",
@@ -60,7 +55,6 @@ describe('Token types', () => {
         "colors.gray.100" => {
           "category": "colors",
           "key": "gray.100",
-          "keyRef": "$gray.100",
           "negative": false,
           "prop": "colors.gray.100",
           "value": "#F5F5F5",
@@ -70,7 +64,6 @@ describe('Token types', () => {
         "colors.gray.200" => {
           "category": "colors",
           "key": "gray.200",
-          "keyRef": "$gray.200",
           "negative": false,
           "prop": "colors.gray.200",
           "value": "#E5E5E5",
@@ -80,7 +73,6 @@ describe('Token types', () => {
         "colors.gray.300" => {
           "category": "colors",
           "key": "gray.300",
-          "keyRef": "$gray.300",
           "negative": false,
           "prop": "colors.gray.300",
           "value": "#D4D4D4",
@@ -90,7 +82,6 @@ describe('Token types', () => {
         "colors.gray.400" => {
           "category": "colors",
           "key": "gray.400",
-          "keyRef": "$gray.400",
           "negative": false,
           "prop": "colors.gray.400",
           "value": "#A3A3A3",
@@ -100,7 +91,6 @@ describe('Token types', () => {
         "colors.gray.500" => {
           "category": "colors",
           "key": "gray.500",
-          "keyRef": "$gray.500",
           "negative": false,
           "prop": "colors.gray.500",
           "value": "#737373",
@@ -110,7 +100,6 @@ describe('Token types', () => {
         "colors.gray.600" => {
           "category": "colors",
           "key": "gray.600",
-          "keyRef": "$gray.600",
           "negative": false,
           "prop": "colors.gray.600",
           "value": "#525252",
@@ -120,7 +109,6 @@ describe('Token types', () => {
         "colors.gray.700" => {
           "category": "colors",
           "key": "gray.700",
-          "keyRef": "$gray.700",
           "negative": false,
           "prop": "colors.gray.700",
           "value": "#333333",
@@ -130,7 +118,6 @@ describe('Token types', () => {
         "colors.gray.800" => {
           "category": "colors",
           "key": "gray.800",
-          "keyRef": "$gray.800",
           "negative": false,
           "prop": "colors.gray.800",
           "value": "#121212",
@@ -140,7 +127,6 @@ describe('Token types', () => {
         "colors.gray.900" => {
           "category": "colors",
           "key": "gray.900",
-          "keyRef": "$gray.900",
           "negative": false,
           "prop": "colors.gray.900",
           "value": "#0A0A0A",
@@ -150,7 +136,6 @@ describe('Token types', () => {
         "colors.green.50" => {
           "category": "colors",
           "key": "green.50",
-          "keyRef": "$green.50",
           "negative": false,
           "prop": "colors.green.50",
           "value": "#F0FFF4",
@@ -160,7 +145,6 @@ describe('Token types', () => {
         "colors.green.100" => {
           "category": "colors",
           "key": "green.100",
-          "keyRef": "$green.100",
           "negative": false,
           "prop": "colors.green.100",
           "value": "#C6F6D5",
@@ -170,7 +154,6 @@ describe('Token types', () => {
         "colors.green.200" => {
           "category": "colors",
           "key": "green.200",
-          "keyRef": "$green.200",
           "negative": false,
           "prop": "colors.green.200",
           "value": "#9AE6B4",
@@ -180,7 +163,6 @@ describe('Token types', () => {
         "colors.green.300" => {
           "category": "colors",
           "key": "green.300",
-          "keyRef": "$green.300",
           "negative": false,
           "prop": "colors.green.300",
           "value": "#68D391",
@@ -190,7 +172,6 @@ describe('Token types', () => {
         "colors.green.400" => {
           "category": "colors",
           "key": "green.400",
-          "keyRef": "$green.400",
           "negative": false,
           "prop": "colors.green.400",
           "value": "#48BB78",
@@ -200,7 +181,6 @@ describe('Token types', () => {
         "colors.green.500" => {
           "category": "colors",
           "key": "green.500",
-          "keyRef": "$green.500",
           "negative": false,
           "prop": "colors.green.500",
           "value": "#38A169",
@@ -210,7 +190,6 @@ describe('Token types', () => {
         "colors.green.600" => {
           "category": "colors",
           "key": "green.600",
-          "keyRef": "$green.600",
           "negative": false,
           "prop": "colors.green.600",
           "value": "#2F855A",
@@ -220,7 +199,6 @@ describe('Token types', () => {
         "colors.green.700" => {
           "category": "colors",
           "key": "green.700",
-          "keyRef": "$green.700",
           "negative": false,
           "prop": "colors.green.700",
           "value": "#276749",
@@ -230,7 +208,6 @@ describe('Token types', () => {
         "colors.green.800" => {
           "category": "colors",
           "key": "green.800",
-          "keyRef": "$green.800",
           "negative": false,
           "prop": "colors.green.800",
           "value": "#22543D",
@@ -240,7 +217,6 @@ describe('Token types', () => {
         "colors.green.900" => {
           "category": "colors",
           "key": "green.900",
-          "keyRef": "$green.900",
           "negative": false,
           "prop": "colors.green.900",
           "value": "#1C4532",
@@ -250,7 +226,6 @@ describe('Token types', () => {
         "colors.red.50" => {
           "category": "colors",
           "key": "red.50",
-          "keyRef": "$red.50",
           "negative": false,
           "prop": "colors.red.50",
           "value": "#FEF2F2",
@@ -260,7 +235,6 @@ describe('Token types', () => {
         "colors.red.100" => {
           "category": "colors",
           "key": "red.100",
-          "keyRef": "$red.100",
           "negative": false,
           "prop": "colors.red.100",
           "value": "#FEE2E2",
@@ -270,7 +244,6 @@ describe('Token types', () => {
         "colors.red.200" => {
           "category": "colors",
           "key": "red.200",
-          "keyRef": "$red.200",
           "negative": false,
           "prop": "colors.red.200",
           "value": "#FECACA",
@@ -280,7 +253,6 @@ describe('Token types', () => {
         "colors.red.300" => {
           "category": "colors",
           "key": "red.300",
-          "keyRef": "$red.300",
           "negative": false,
           "prop": "colors.red.300",
           "value": "#FCA5A5",
@@ -290,7 +262,6 @@ describe('Token types', () => {
         "colors.red.400" => {
           "category": "colors",
           "key": "red.400",
-          "keyRef": "$red.400",
           "negative": false,
           "prop": "colors.red.400",
           "value": "#F87171",
@@ -300,7 +271,6 @@ describe('Token types', () => {
         "colors.red.500" => {
           "category": "colors",
           "key": "red.500",
-          "keyRef": "$red.500",
           "negative": false,
           "prop": "colors.red.500",
           "value": "#EF4444",
@@ -310,7 +280,6 @@ describe('Token types', () => {
         "colors.red.600" => {
           "category": "colors",
           "key": "red.600",
-          "keyRef": "$red.600",
           "negative": false,
           "prop": "colors.red.600",
           "value": "#DC2626",
@@ -320,7 +289,6 @@ describe('Token types', () => {
         "colors.red.700" => {
           "category": "colors",
           "key": "red.700",
-          "keyRef": "$red.700",
           "negative": false,
           "prop": "colors.red.700",
           "value": "#B91C1C",
@@ -330,7 +298,6 @@ describe('Token types', () => {
         "colors.red.800" => {
           "category": "colors",
           "key": "red.800",
-          "keyRef": "$red.800",
           "negative": false,
           "prop": "colors.red.800",
           "value": "#991B1B",
@@ -340,7 +307,6 @@ describe('Token types', () => {
         "colors.red.900" => {
           "category": "colors",
           "key": "red.900",
-          "keyRef": "$red.900",
           "negative": false,
           "prop": "colors.red.900",
           "value": "#7F1D1D",
@@ -350,7 +316,6 @@ describe('Token types', () => {
         "fontSizes.sm" => {
           "category": "fontSizes",
           "key": "sm",
-          "keyRef": "$sm",
           "negative": false,
           "prop": "fontSizes.sm",
           "value": "0.5rem",
@@ -360,7 +325,6 @@ describe('Token types', () => {
         "fontSizes.xs" => {
           "category": "fontSizes",
           "key": "xs",
-          "keyRef": "$xs",
           "negative": false,
           "prop": "fontSizes.xs",
           "value": "0.75rem",
@@ -370,7 +334,6 @@ describe('Token types', () => {
         "fontSizes.md" => {
           "category": "fontSizes",
           "key": "md",
-          "keyRef": "$md",
           "negative": false,
           "prop": "fontSizes.md",
           "value": "0.875rem",
@@ -380,7 +343,6 @@ describe('Token types', () => {
         "fontSizes.lg" => {
           "category": "fontSizes",
           "key": "lg",
-          "keyRef": "$lg",
           "negative": false,
           "prop": "fontSizes.lg",
           "value": "1.125rem",
@@ -390,7 +352,6 @@ describe('Token types', () => {
         "fontSizes.xl" => {
           "category": "fontSizes",
           "key": "xl",
-          "keyRef": "$xl",
           "negative": false,
           "prop": "fontSizes.xl",
           "value": "1.25rem",
@@ -400,7 +361,6 @@ describe('Token types', () => {
         "lineHeights.normal" => {
           "category": "lineHeights",
           "key": "normal",
-          "keyRef": "$normal",
           "negative": false,
           "prop": "lineHeights.normal",
           "value": "normal",
@@ -410,7 +370,6 @@ describe('Token types', () => {
         "lineHeights.none" => {
           "category": "lineHeights",
           "key": "none",
-          "keyRef": "$none",
           "negative": false,
           "prop": "lineHeights.none",
           "value": "1",
@@ -420,7 +379,6 @@ describe('Token types', () => {
         "lineHeights.shorter" => {
           "category": "lineHeights",
           "key": "shorter",
-          "keyRef": "$shorter",
           "negative": false,
           "prop": "lineHeights.shorter",
           "value": "1.25",
@@ -430,7 +388,6 @@ describe('Token types', () => {
         "lineHeights.short" => {
           "category": "lineHeights",
           "key": "short",
-          "keyRef": "$short",
           "negative": false,
           "prop": "lineHeights.short",
           "value": "1.375",
@@ -440,7 +397,6 @@ describe('Token types', () => {
         "lineHeights.base" => {
           "category": "lineHeights",
           "key": "base",
-          "keyRef": "$base",
           "negative": false,
           "prop": "lineHeights.base",
           "value": "1.5",
@@ -450,7 +406,6 @@ describe('Token types', () => {
         "lineHeights.tall" => {
           "category": "lineHeights",
           "key": "tall",
-          "keyRef": "$tall",
           "negative": false,
           "prop": "lineHeights.tall",
           "value": "1.625",
@@ -460,7 +415,6 @@ describe('Token types', () => {
         "lineHeights.taller" => {
           "category": "lineHeights",
           "key": "taller",
-          "keyRef": "$taller",
           "negative": false,
           "prop": "lineHeights.taller",
           "value": "2",
@@ -470,7 +424,6 @@ describe('Token types', () => {
         "fontWeights.normal" => {
           "category": "fontWeights",
           "key": "normal",
-          "keyRef": "$normal",
           "negative": false,
           "prop": "fontWeights.normal",
           "value": "400",
@@ -480,7 +433,6 @@ describe('Token types', () => {
         "fontWeights.medium" => {
           "category": "fontWeights",
           "key": "medium",
-          "keyRef": "$medium",
           "negative": false,
           "prop": "fontWeights.medium",
           "value": "500",
@@ -490,7 +442,6 @@ describe('Token types', () => {
         "fontWeights.semibold" => {
           "category": "fontWeights",
           "key": "semibold",
-          "keyRef": "$semibold",
           "negative": false,
           "prop": "fontWeights.semibold",
           "value": "600",
@@ -500,7 +451,6 @@ describe('Token types', () => {
         "fontWeights.bold" => {
           "category": "fontWeights",
           "key": "bold",
-          "keyRef": "$bold",
           "negative": false,
           "prop": "fontWeights.bold",
           "value": "700",
@@ -510,7 +460,6 @@ describe('Token types', () => {
         "letterSpacings.tighter" => {
           "category": "letterSpacings",
           "key": "tighter",
-          "keyRef": "$tighter",
           "negative": false,
           "prop": "letterSpacings.tighter",
           "value": "-0.05em",
@@ -520,7 +469,6 @@ describe('Token types', () => {
         "letterSpacings.tight" => {
           "category": "letterSpacings",
           "key": "tight",
-          "keyRef": "$tight",
           "negative": false,
           "prop": "letterSpacings.tight",
           "value": "-0.025em",
@@ -530,7 +478,6 @@ describe('Token types', () => {
         "letterSpacings.normal" => {
           "category": "letterSpacings",
           "key": "normal",
-          "keyRef": "$normal",
           "negative": false,
           "prop": "letterSpacings.normal",
           "value": "0",
@@ -540,7 +487,6 @@ describe('Token types', () => {
         "letterSpacings.wide" => {
           "category": "letterSpacings",
           "key": "wide",
-          "keyRef": "$wide",
           "negative": false,
           "prop": "letterSpacings.wide",
           "value": "0.025em",
@@ -550,7 +496,6 @@ describe('Token types', () => {
         "letterSpacings.wider" => {
           "category": "letterSpacings",
           "key": "wider",
-          "keyRef": "$wider",
           "negative": false,
           "prop": "letterSpacings.wider",
           "value": "0.05em",
@@ -560,7 +505,6 @@ describe('Token types', () => {
         "letterSpacings.widest" => {
           "category": "letterSpacings",
           "key": "widest",
-          "keyRef": "$widest",
           "negative": false,
           "prop": "letterSpacings.widest",
           "value": "0.1em",
@@ -570,7 +514,6 @@ describe('Token types', () => {
         "radii.none" => {
           "category": "radii",
           "key": "none",
-          "keyRef": "$none",
           "negative": false,
           "prop": "radii.none",
           "value": "0",
@@ -580,7 +523,6 @@ describe('Token types', () => {
         "radii.sm" => {
           "category": "radii",
           "key": "sm",
-          "keyRef": "$sm",
           "negative": false,
           "prop": "radii.sm",
           "value": "0.125rem",
@@ -590,7 +532,6 @@ describe('Token types', () => {
         "radii.base" => {
           "category": "radii",
           "key": "base",
-          "keyRef": "$base",
           "negative": false,
           "prop": "radii.base",
           "value": "0.25rem",
@@ -600,7 +541,6 @@ describe('Token types', () => {
         "radii.md" => {
           "category": "radii",
           "key": "md",
-          "keyRef": "$md",
           "negative": false,
           "prop": "radii.md",
           "value": "0.375rem",
@@ -610,7 +550,6 @@ describe('Token types', () => {
         "radii.lg" => {
           "category": "radii",
           "key": "lg",
-          "keyRef": "$lg",
           "negative": false,
           "prop": "radii.lg",
           "value": "0.5rem",
@@ -620,7 +559,6 @@ describe('Token types', () => {
         "radii.xl" => {
           "category": "radii",
           "key": "xl",
-          "keyRef": "$xl",
           "negative": false,
           "prop": "radii.xl",
           "value": "0.75rem",
@@ -630,7 +568,6 @@ describe('Token types', () => {
         "radii.2xl" => {
           "category": "radii",
           "key": "2xl",
-          "keyRef": "$2xl",
           "negative": false,
           "prop": "radii.2xl",
           "value": "1rem",
@@ -640,7 +577,6 @@ describe('Token types', () => {
         "radii.3xl" => {
           "category": "radii",
           "key": "3xl",
-          "keyRef": "$3xl",
           "negative": false,
           "prop": "radii.3xl",
           "value": "1.5rem",
@@ -650,7 +586,6 @@ describe('Token types', () => {
         "radii.full" => {
           "category": "radii",
           "key": "full",
-          "keyRef": "$full",
           "negative": false,
           "prop": "radii.full",
           "value": "9999px",
@@ -660,7 +595,6 @@ describe('Token types', () => {
         "shadows.xs" => {
           "category": "shadows",
           "key": "xs",
-          "keyRef": "$xs",
           "negative": false,
           "prop": "shadows.xs",
           "value": "0 0 0 1px rgba(0, 0, 0, 0.05)",
@@ -670,7 +604,6 @@ describe('Token types', () => {
         "shadows.sm" => {
           "category": "shadows",
           "key": "sm",
-          "keyRef": "$sm",
           "negative": false,
           "prop": "shadows.sm",
           "value": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
@@ -680,7 +613,6 @@ describe('Token types', () => {
         "shadows.base" => {
           "category": "shadows",
           "key": "base",
-          "keyRef": "$base",
           "negative": false,
           "prop": "shadows.base",
           "value": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
@@ -690,7 +622,6 @@ describe('Token types', () => {
         "shadows.md" => {
           "category": "shadows",
           "key": "md",
-          "keyRef": "$md",
           "negative": false,
           "prop": "shadows.md",
           "value": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
@@ -700,7 +631,6 @@ describe('Token types', () => {
         "dropShadows.sm" => {
           "category": "dropShadows",
           "key": "sm",
-          "keyRef": "$sm",
           "negative": false,
           "prop": "dropShadows.sm",
           "value": "drop-shadow(0 1px 1px rgb(0 0 0 / 0.05))",
@@ -710,7 +640,6 @@ describe('Token types', () => {
         "dropShadows.md" => {
           "category": "dropShadows",
           "key": "md",
-          "keyRef": "$md",
           "negative": false,
           "prop": "dropShadows.md",
           "value": "drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06))",
@@ -720,7 +649,6 @@ describe('Token types', () => {
         "spacing.1" => {
           "category": "spacing",
           "key": "1",
-          "keyRef": "$1",
           "negative": false,
           "prop": "spacing.1",
           "value": "0.25rem",
@@ -730,7 +658,6 @@ describe('Token types', () => {
         "spacing.-1" => {
           "category": "spacing",
           "key": "-1",
-          "keyRef": "-$1",
           "negative": true,
           "prop": "spacing.-1",
           "value": "-0.25rem",
@@ -740,7 +667,6 @@ describe('Token types', () => {
         "spacing.2" => {
           "category": "spacing",
           "key": "2",
-          "keyRef": "$2",
           "negative": false,
           "prop": "spacing.2",
           "value": "0.5rem",
@@ -750,7 +676,6 @@ describe('Token types', () => {
         "spacing.-2" => {
           "category": "spacing",
           "key": "-2",
-          "keyRef": "-$2",
           "negative": true,
           "prop": "spacing.-2",
           "value": "-0.5rem",
@@ -760,7 +685,6 @@ describe('Token types', () => {
         "spacing.3" => {
           "category": "spacing",
           "key": "3",
-          "keyRef": "$3",
           "negative": false,
           "prop": "spacing.3",
           "value": "0.75rem",
@@ -770,7 +694,6 @@ describe('Token types', () => {
         "spacing.-3" => {
           "category": "spacing",
           "key": "-3",
-          "keyRef": "-$3",
           "negative": true,
           "prop": "spacing.-3",
           "value": "-0.75rem",
@@ -780,7 +703,6 @@ describe('Token types', () => {
         "spacing.4" => {
           "category": "spacing",
           "key": "4",
-          "keyRef": "$4",
           "negative": false,
           "prop": "spacing.4",
           "value": "1rem",
@@ -790,7 +712,6 @@ describe('Token types', () => {
         "spacing.-4" => {
           "category": "spacing",
           "key": "-4",
-          "keyRef": "-$4",
           "negative": true,
           "prop": "spacing.-4",
           "value": "-1rem",
@@ -800,7 +721,6 @@ describe('Token types', () => {
         "spacing.5" => {
           "category": "spacing",
           "key": "5",
-          "keyRef": "$5",
           "negative": false,
           "prop": "spacing.5",
           "value": "1.25rem",
@@ -810,7 +730,6 @@ describe('Token types', () => {
         "spacing.-5" => {
           "category": "spacing",
           "key": "-5",
-          "keyRef": "-$5",
           "negative": true,
           "prop": "spacing.-5",
           "value": "-1.25rem",
@@ -820,7 +739,6 @@ describe('Token types', () => {
         "spacing.6" => {
           "category": "spacing",
           "key": "6",
-          "keyRef": "$6",
           "negative": false,
           "prop": "spacing.6",
           "value": "1.5rem",
@@ -830,7 +748,6 @@ describe('Token types', () => {
         "spacing.-6" => {
           "category": "spacing",
           "key": "-6",
-          "keyRef": "-$6",
           "negative": true,
           "prop": "spacing.-6",
           "value": "-1.5rem",
@@ -840,7 +757,6 @@ describe('Token types', () => {
         "spacing.0.5" => {
           "category": "spacing",
           "key": "0.5",
-          "keyRef": "$0.5",
           "negative": false,
           "prop": "spacing.0.5",
           "value": "0.125rem",
@@ -850,7 +766,6 @@ describe('Token types', () => {
         "spacing.-0.5" => {
           "category": "spacing",
           "key": "-0.5",
-          "keyRef": "-$0.5",
           "negative": true,
           "prop": "spacing.-0.5",
           "value": "-0.125rem",
@@ -860,7 +775,6 @@ describe('Token types', () => {
         "spacing.1.5" => {
           "category": "spacing",
           "key": "1.5",
-          "keyRef": "$1.5",
           "negative": false,
           "prop": "spacing.1.5",
           "value": "0.375rem",
@@ -870,7 +784,6 @@ describe('Token types', () => {
         "spacing.-1.5" => {
           "category": "spacing",
           "key": "-1.5",
-          "keyRef": "-$1.5",
           "negative": true,
           "prop": "spacing.-1.5",
           "value": "-0.375rem",
@@ -880,7 +793,6 @@ describe('Token types', () => {
         "spacing.2.5" => {
           "category": "spacing",
           "key": "2.5",
-          "keyRef": "$2.5",
           "negative": false,
           "prop": "spacing.2.5",
           "value": "0.625rem",
@@ -890,7 +802,6 @@ describe('Token types', () => {
         "spacing.-2.5" => {
           "category": "spacing",
           "key": "-2.5",
-          "keyRef": "-$2.5",
           "negative": true,
           "prop": "spacing.-2.5",
           "value": "-0.625rem",
@@ -900,7 +811,6 @@ describe('Token types', () => {
         "spacing.3.5" => {
           "category": "spacing",
           "key": "3.5",
-          "keyRef": "$3.5",
           "negative": false,
           "prop": "spacing.3.5",
           "value": "0.875rem",
@@ -910,7 +820,6 @@ describe('Token types', () => {
         "spacing.-3.5" => {
           "category": "spacing",
           "key": "-3.5",
-          "keyRef": "-$3.5",
           "negative": true,
           "prop": "spacing.-3.5",
           "value": "-0.875rem",
@@ -920,7 +829,6 @@ describe('Token types', () => {
         "sizes.1" => {
           "category": "sizes",
           "key": "1",
-          "keyRef": "$1",
           "negative": false,
           "prop": "sizes.1",
           "value": "0.25rem",
@@ -930,7 +838,6 @@ describe('Token types', () => {
         "sizes.2" => {
           "category": "sizes",
           "key": "2",
-          "keyRef": "$2",
           "negative": false,
           "prop": "sizes.2",
           "value": "0.5rem",
@@ -940,7 +847,6 @@ describe('Token types', () => {
         "sizes.3" => {
           "category": "sizes",
           "key": "3",
-          "keyRef": "$3",
           "negative": false,
           "prop": "sizes.3",
           "value": "0.75rem",
@@ -950,7 +856,6 @@ describe('Token types', () => {
         "sizes.4" => {
           "category": "sizes",
           "key": "4",
-          "keyRef": "$4",
           "negative": false,
           "prop": "sizes.4",
           "value": "1rem",
@@ -960,7 +865,6 @@ describe('Token types', () => {
         "sizes.5" => {
           "category": "sizes",
           "key": "5",
-          "keyRef": "$5",
           "negative": false,
           "prop": "sizes.5",
           "value": "1.25rem",
@@ -970,7 +874,6 @@ describe('Token types', () => {
         "sizes.6" => {
           "category": "sizes",
           "key": "6",
-          "keyRef": "$6",
           "negative": false,
           "prop": "sizes.6",
           "value": "1.5rem",
@@ -980,7 +883,6 @@ describe('Token types', () => {
         "sizes.0.5" => {
           "category": "sizes",
           "key": "0.5",
-          "keyRef": "$0.5",
           "negative": false,
           "prop": "sizes.0.5",
           "value": "0.125rem",
@@ -990,7 +892,6 @@ describe('Token types', () => {
         "sizes.1.5" => {
           "category": "sizes",
           "key": "1.5",
-          "keyRef": "$1.5",
           "negative": false,
           "prop": "sizes.1.5",
           "value": "0.375rem",
@@ -1000,7 +901,6 @@ describe('Token types', () => {
         "sizes.2.5" => {
           "category": "sizes",
           "key": "2.5",
-          "keyRef": "$2.5",
           "negative": false,
           "prop": "sizes.2.5",
           "value": "0.625rem",
@@ -1010,7 +910,6 @@ describe('Token types', () => {
         "sizes.3.5" => {
           "category": "sizes",
           "key": "3.5",
-          "keyRef": "$3.5",
           "negative": false,
           "prop": "sizes.3.5",
           "value": "0.875rem",
@@ -1020,7 +919,6 @@ describe('Token types', () => {
         "largeSizes.xs" => {
           "category": "largeSizes",
           "key": "xs",
-          "keyRef": "$xs",
           "negative": false,
           "prop": "largeSizes.xs",
           "value": "20rem",
@@ -1030,7 +928,6 @@ describe('Token types', () => {
         "largeSizes.sm" => {
           "category": "largeSizes",
           "key": "sm",
-          "keyRef": "$sm",
           "negative": false,
           "prop": "largeSizes.sm",
           "value": "24rem",
@@ -1040,7 +937,6 @@ describe('Token types', () => {
         "largeSizes.md" => {
           "category": "largeSizes",
           "key": "md",
-          "keyRef": "$md",
           "negative": false,
           "prop": "largeSizes.md",
           "value": "28rem",
@@ -1050,7 +946,6 @@ describe('Token types', () => {
         "largeSizes.lg" => {
           "category": "largeSizes",
           "key": "lg",
-          "keyRef": "$lg",
           "negative": false,
           "prop": "largeSizes.lg",
           "value": "32rem",
@@ -1060,7 +955,6 @@ describe('Token types', () => {
         "largeSizes.xl" => {
           "category": "largeSizes",
           "key": "xl",
-          "keyRef": "$xl",
           "negative": false,
           "prop": "largeSizes.xl",
           "value": "36rem",
@@ -1070,7 +964,6 @@ describe('Token types', () => {
         "animations.none" => {
           "category": "animations",
           "key": "none",
-          "keyRef": "$none",
           "negative": false,
           "prop": "animations.none",
           "value": "none",
@@ -1080,7 +973,6 @@ describe('Token types', () => {
         "animations.spin" => {
           "category": "animations",
           "key": "spin",
-          "keyRef": "$spin",
           "negative": false,
           "prop": "animations.spin",
           "value": "spin 1s linear infinite",
@@ -1090,7 +982,6 @@ describe('Token types', () => {
         "animations.ping" => {
           "category": "animations",
           "key": "ping",
-          "keyRef": "$ping",
           "negative": false,
           "prop": "animations.ping",
           "value": "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite",
@@ -1100,7 +991,6 @@ describe('Token types', () => {
         "animations.pulse" => {
           "category": "animations",
           "key": "pulse",
-          "keyRef": "$pulse",
           "negative": false,
           "prop": "animations.pulse",
           "value": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
@@ -1110,7 +1000,6 @@ describe('Token types', () => {
         "animations.bounce" => {
           "category": "animations",
           "key": "bounce",
-          "keyRef": "$bounce",
           "negative": false,
           "prop": "animations.bounce",
           "value": "bounce 1s infinite",
@@ -1120,7 +1009,6 @@ describe('Token types', () => {
         "opacity.0" => {
           "category": "opacity",
           "key": "0",
-          "keyRef": "$0",
           "negative": false,
           "prop": "opacity.0",
           "value": "0",
@@ -1130,7 +1018,6 @@ describe('Token types', () => {
         "opacity.25" => {
           "category": "opacity",
           "key": "25",
-          "keyRef": "$25",
           "negative": false,
           "prop": "opacity.25",
           "value": "0.25",
@@ -1140,7 +1027,6 @@ describe('Token types', () => {
         "opacity.50" => {
           "category": "opacity",
           "key": "50",
-          "keyRef": "$50",
           "negative": false,
           "prop": "opacity.50",
           "value": "0.5",
@@ -1150,7 +1036,6 @@ describe('Token types', () => {
         "opacity.75" => {
           "category": "opacity",
           "key": "75",
-          "keyRef": "$75",
           "negative": false,
           "prop": "opacity.75",
           "value": "0.75",
@@ -1160,7 +1045,6 @@ describe('Token types', () => {
         "opacity.100" => {
           "category": "opacity",
           "key": "100",
-          "keyRef": "$100",
           "negative": false,
           "prop": "opacity.100",
           "value": "1",
@@ -1170,7 +1054,6 @@ describe('Token types', () => {
         "easings.ease-in" => {
           "category": "easings",
           "key": "ease-in",
-          "keyRef": "$ease-in",
           "negative": false,
           "prop": "easings.ease-in",
           "value": "cubic-bezier(0.4, 0, 1, 1)",
@@ -1180,7 +1063,6 @@ describe('Token types', () => {
         "easings.ease-out" => {
           "category": "easings",
           "key": "ease-out",
-          "keyRef": "$ease-out",
           "negative": false,
           "prop": "easings.ease-out",
           "value": "cubic-bezier(0, 0, 0.2, 1)",
@@ -1190,7 +1072,6 @@ describe('Token types', () => {
         "easings.ease-in-out" => {
           "category": "easings",
           "key": "ease-in-out",
-          "keyRef": "$ease-in-out",
           "negative": false,
           "prop": "easings.ease-in-out",
           "value": "cubic-bezier(0.4, 0, 0.2, 1)",
@@ -1200,7 +1081,6 @@ describe('Token types', () => {
         "durations.75" => {
           "category": "durations",
           "key": "75",
-          "keyRef": "$75",
           "negative": false,
           "prop": "durations.75",
           "value": "75ms",
@@ -1210,7 +1090,6 @@ describe('Token types', () => {
         "durations.100" => {
           "category": "durations",
           "key": "100",
-          "keyRef": "$100",
           "negative": false,
           "prop": "durations.100",
           "value": "100ms",
@@ -1220,7 +1099,6 @@ describe('Token types', () => {
         "durations.150" => {
           "category": "durations",
           "key": "150",
-          "keyRef": "$150",
           "negative": false,
           "prop": "durations.150",
           "value": "150ms",
@@ -1230,7 +1108,6 @@ describe('Token types', () => {
         "transitionProperties.all" => {
           "category": "transitionProperties",
           "key": "all",
-          "keyRef": "$all",
           "negative": false,
           "prop": "transitionProperties.all",
           "value": "all",
@@ -1240,7 +1117,6 @@ describe('Token types', () => {
         "transitionProperties.none" => {
           "category": "transitionProperties",
           "key": "none",
-          "keyRef": "$none",
           "negative": false,
           "prop": "transitionProperties.none",
           "value": "none",
@@ -1250,7 +1126,6 @@ describe('Token types', () => {
         "transitionProperties.opacity" => {
           "category": "transitionProperties",
           "key": "opacity",
-          "keyRef": "$opacity",
           "negative": false,
           "prop": "transitionProperties.opacity",
           "value": "opacity",
@@ -1260,7 +1135,6 @@ describe('Token types', () => {
         "transitionProperties.shadow" => {
           "category": "transitionProperties",
           "key": "shadow",
-          "keyRef": "$shadow",
           "negative": false,
           "prop": "transitionProperties.shadow",
           "value": "box-shadow",
@@ -1270,7 +1144,6 @@ describe('Token types', () => {
         "transitionProperties.transform" => {
           "category": "transitionProperties",
           "key": "transform",
-          "keyRef": "$transform",
           "negative": false,
           "prop": "transitionProperties.transform",
           "value": "transform",
@@ -1280,7 +1153,6 @@ describe('Token types', () => {
         "transitionProperties.base" => {
           "category": "transitionProperties",
           "key": "base",
-          "keyRef": "$base",
           "negative": false,
           "prop": "transitionProperties.base",
           "value": "color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter",
@@ -1290,7 +1162,6 @@ describe('Token types', () => {
         "transitionProperties.background" => {
           "category": "transitionProperties",
           "key": "background",
-          "keyRef": "$background",
           "negative": false,
           "prop": "transitionProperties.background",
           "value": "background, background-color",
@@ -1300,7 +1171,6 @@ describe('Token types', () => {
         "transitionProperties.colors" => {
           "category": "transitionProperties",
           "key": "colors",
-          "keyRef": "$colors",
           "negative": false,
           "prop": "transitionProperties.colors",
           "value": "color, background-color, border-color, text-decoration-color, fill, stroke",
@@ -1310,7 +1180,6 @@ describe('Token types', () => {
         "colors.primary" => {
           "category": "colors",
           "key": "primary",
-          "keyRef": "$primary",
           "negative": false,
           "prop": "colors.primary",
           "value": "var(--colors-primary)",
@@ -1320,7 +1189,6 @@ describe('Token types', () => {
         "colors.secondary" => {
           "category": "colors",
           "key": "secondary",
-          "keyRef": "$secondary",
           "negative": false,
           "prop": "colors.secondary",
           "value": "var(--colors-secondary)",
@@ -1330,7 +1198,6 @@ describe('Token types', () => {
         "spacing.gutter" => {
           "category": "spacing",
           "key": "gutter",
-          "keyRef": "$gutter",
           "negative": false,
           "prop": "spacing.gutter",
           "value": "var(--spacing-gutter)",
@@ -1340,7 +1207,6 @@ describe('Token types', () => {
         "spacing.-gutter" => {
           "category": "spacing",
           "key": "-gutter",
-          "keyRef": "-$gutter",
           "negative": true,
           "prop": "spacing.-gutter",
           "value": "calc(var(--spacing-gutter) * -1)",
@@ -1878,7 +1744,6 @@ describe('Token types', () => {
           "heading" => {
             "category": "fonts",
             "key": "heading",
-            "keyRef": "$heading",
             "negative": false,
             "prop": "fonts.heading",
             "value": "-apple-system, BlinkMacSystemFont",
@@ -1888,7 +1753,6 @@ describe('Token types', () => {
           "body" => {
             "category": "fonts",
             "key": "body",
-            "keyRef": "$body",
             "negative": false,
             "prop": "fonts.body",
             "value": "Helvetica, Arial, sans-serif",
@@ -1898,7 +1762,6 @@ describe('Token types', () => {
           "mono" => {
             "category": "fonts",
             "key": "mono",
-            "keyRef": "$mono",
             "negative": false,
             "prop": "fonts.mono",
             "value": "SFMono-Regular, Menlo, Monaco",
@@ -1910,7 +1773,6 @@ describe('Token types', () => {
           "current" => {
             "category": "colors",
             "key": "current",
-            "keyRef": "$current",
             "negative": false,
             "prop": "colors.current",
             "value": "currentColor",
@@ -1920,7 +1782,6 @@ describe('Token types', () => {
           "gray.50" => {
             "category": "colors",
             "key": "gray.50",
-            "keyRef": "$gray.50",
             "negative": false,
             "prop": "colors.gray.50",
             "value": "#FAFAFA",
@@ -1930,7 +1791,6 @@ describe('Token types', () => {
           "gray.100" => {
             "category": "colors",
             "key": "gray.100",
-            "keyRef": "$gray.100",
             "negative": false,
             "prop": "colors.gray.100",
             "value": "#F5F5F5",
@@ -1940,7 +1800,6 @@ describe('Token types', () => {
           "gray.200" => {
             "category": "colors",
             "key": "gray.200",
-            "keyRef": "$gray.200",
             "negative": false,
             "prop": "colors.gray.200",
             "value": "#E5E5E5",
@@ -1950,7 +1809,6 @@ describe('Token types', () => {
           "gray.300" => {
             "category": "colors",
             "key": "gray.300",
-            "keyRef": "$gray.300",
             "negative": false,
             "prop": "colors.gray.300",
             "value": "#D4D4D4",
@@ -1960,7 +1818,6 @@ describe('Token types', () => {
           "gray.400" => {
             "category": "colors",
             "key": "gray.400",
-            "keyRef": "$gray.400",
             "negative": false,
             "prop": "colors.gray.400",
             "value": "#A3A3A3",
@@ -1970,7 +1827,6 @@ describe('Token types', () => {
           "gray.500" => {
             "category": "colors",
             "key": "gray.500",
-            "keyRef": "$gray.500",
             "negative": false,
             "prop": "colors.gray.500",
             "value": "#737373",
@@ -1980,7 +1836,6 @@ describe('Token types', () => {
           "gray.600" => {
             "category": "colors",
             "key": "gray.600",
-            "keyRef": "$gray.600",
             "negative": false,
             "prop": "colors.gray.600",
             "value": "#525252",
@@ -1990,7 +1845,6 @@ describe('Token types', () => {
           "gray.700" => {
             "category": "colors",
             "key": "gray.700",
-            "keyRef": "$gray.700",
             "negative": false,
             "prop": "colors.gray.700",
             "value": "#333333",
@@ -2000,7 +1854,6 @@ describe('Token types', () => {
           "gray.800" => {
             "category": "colors",
             "key": "gray.800",
-            "keyRef": "$gray.800",
             "negative": false,
             "prop": "colors.gray.800",
             "value": "#121212",
@@ -2010,7 +1863,6 @@ describe('Token types', () => {
           "gray.900" => {
             "category": "colors",
             "key": "gray.900",
-            "keyRef": "$gray.900",
             "negative": false,
             "prop": "colors.gray.900",
             "value": "#0A0A0A",
@@ -2020,7 +1872,6 @@ describe('Token types', () => {
           "green.50" => {
             "category": "colors",
             "key": "green.50",
-            "keyRef": "$green.50",
             "negative": false,
             "prop": "colors.green.50",
             "value": "#F0FFF4",
@@ -2030,7 +1881,6 @@ describe('Token types', () => {
           "green.100" => {
             "category": "colors",
             "key": "green.100",
-            "keyRef": "$green.100",
             "negative": false,
             "prop": "colors.green.100",
             "value": "#C6F6D5",
@@ -2040,7 +1890,6 @@ describe('Token types', () => {
           "green.200" => {
             "category": "colors",
             "key": "green.200",
-            "keyRef": "$green.200",
             "negative": false,
             "prop": "colors.green.200",
             "value": "#9AE6B4",
@@ -2050,7 +1899,6 @@ describe('Token types', () => {
           "green.300" => {
             "category": "colors",
             "key": "green.300",
-            "keyRef": "$green.300",
             "negative": false,
             "prop": "colors.green.300",
             "value": "#68D391",
@@ -2060,7 +1908,6 @@ describe('Token types', () => {
           "green.400" => {
             "category": "colors",
             "key": "green.400",
-            "keyRef": "$green.400",
             "negative": false,
             "prop": "colors.green.400",
             "value": "#48BB78",
@@ -2070,7 +1917,6 @@ describe('Token types', () => {
           "green.500" => {
             "category": "colors",
             "key": "green.500",
-            "keyRef": "$green.500",
             "negative": false,
             "prop": "colors.green.500",
             "value": "#38A169",
@@ -2080,7 +1926,6 @@ describe('Token types', () => {
           "green.600" => {
             "category": "colors",
             "key": "green.600",
-            "keyRef": "$green.600",
             "negative": false,
             "prop": "colors.green.600",
             "value": "#2F855A",
@@ -2090,7 +1935,6 @@ describe('Token types', () => {
           "green.700" => {
             "category": "colors",
             "key": "green.700",
-            "keyRef": "$green.700",
             "negative": false,
             "prop": "colors.green.700",
             "value": "#276749",
@@ -2100,7 +1944,6 @@ describe('Token types', () => {
           "green.800" => {
             "category": "colors",
             "key": "green.800",
-            "keyRef": "$green.800",
             "negative": false,
             "prop": "colors.green.800",
             "value": "#22543D",
@@ -2110,7 +1953,6 @@ describe('Token types', () => {
           "green.900" => {
             "category": "colors",
             "key": "green.900",
-            "keyRef": "$green.900",
             "negative": false,
             "prop": "colors.green.900",
             "value": "#1C4532",
@@ -2120,7 +1962,6 @@ describe('Token types', () => {
           "red.50" => {
             "category": "colors",
             "key": "red.50",
-            "keyRef": "$red.50",
             "negative": false,
             "prop": "colors.red.50",
             "value": "#FEF2F2",
@@ -2130,7 +1971,6 @@ describe('Token types', () => {
           "red.100" => {
             "category": "colors",
             "key": "red.100",
-            "keyRef": "$red.100",
             "negative": false,
             "prop": "colors.red.100",
             "value": "#FEE2E2",
@@ -2140,7 +1980,6 @@ describe('Token types', () => {
           "red.200" => {
             "category": "colors",
             "key": "red.200",
-            "keyRef": "$red.200",
             "negative": false,
             "prop": "colors.red.200",
             "value": "#FECACA",
@@ -2150,7 +1989,6 @@ describe('Token types', () => {
           "red.300" => {
             "category": "colors",
             "key": "red.300",
-            "keyRef": "$red.300",
             "negative": false,
             "prop": "colors.red.300",
             "value": "#FCA5A5",
@@ -2160,7 +1998,6 @@ describe('Token types', () => {
           "red.400" => {
             "category": "colors",
             "key": "red.400",
-            "keyRef": "$red.400",
             "negative": false,
             "prop": "colors.red.400",
             "value": "#F87171",
@@ -2170,7 +2007,6 @@ describe('Token types', () => {
           "red.500" => {
             "category": "colors",
             "key": "red.500",
-            "keyRef": "$red.500",
             "negative": false,
             "prop": "colors.red.500",
             "value": "#EF4444",
@@ -2180,7 +2016,6 @@ describe('Token types', () => {
           "red.600" => {
             "category": "colors",
             "key": "red.600",
-            "keyRef": "$red.600",
             "negative": false,
             "prop": "colors.red.600",
             "value": "#DC2626",
@@ -2190,7 +2025,6 @@ describe('Token types', () => {
           "red.700" => {
             "category": "colors",
             "key": "red.700",
-            "keyRef": "$red.700",
             "negative": false,
             "prop": "colors.red.700",
             "value": "#B91C1C",
@@ -2200,7 +2034,6 @@ describe('Token types', () => {
           "red.800" => {
             "category": "colors",
             "key": "red.800",
-            "keyRef": "$red.800",
             "negative": false,
             "prop": "colors.red.800",
             "value": "#991B1B",
@@ -2210,7 +2043,6 @@ describe('Token types', () => {
           "red.900" => {
             "category": "colors",
             "key": "red.900",
-            "keyRef": "$red.900",
             "negative": false,
             "prop": "colors.red.900",
             "value": "#7F1D1D",
@@ -2220,7 +2052,6 @@ describe('Token types', () => {
           "primary" => {
             "category": "colors",
             "key": "primary",
-            "keyRef": "$primary",
             "negative": false,
             "prop": "colors.primary",
             "value": "var(--colors-primary)",
@@ -2230,7 +2061,6 @@ describe('Token types', () => {
           "secondary" => {
             "category": "colors",
             "key": "secondary",
-            "keyRef": "$secondary",
             "negative": false,
             "prop": "colors.secondary",
             "value": "var(--colors-secondary)",
@@ -2242,7 +2072,6 @@ describe('Token types', () => {
           "sm" => {
             "category": "fontSizes",
             "key": "sm",
-            "keyRef": "$sm",
             "negative": false,
             "prop": "fontSizes.sm",
             "value": "0.5rem",
@@ -2252,7 +2081,6 @@ describe('Token types', () => {
           "xs" => {
             "category": "fontSizes",
             "key": "xs",
-            "keyRef": "$xs",
             "negative": false,
             "prop": "fontSizes.xs",
             "value": "0.75rem",
@@ -2262,7 +2090,6 @@ describe('Token types', () => {
           "md" => {
             "category": "fontSizes",
             "key": "md",
-            "keyRef": "$md",
             "negative": false,
             "prop": "fontSizes.md",
             "value": "0.875rem",
@@ -2272,7 +2099,6 @@ describe('Token types', () => {
           "lg" => {
             "category": "fontSizes",
             "key": "lg",
-            "keyRef": "$lg",
             "negative": false,
             "prop": "fontSizes.lg",
             "value": "1.125rem",
@@ -2282,7 +2108,6 @@ describe('Token types', () => {
           "xl" => {
             "category": "fontSizes",
             "key": "xl",
-            "keyRef": "$xl",
             "negative": false,
             "prop": "fontSizes.xl",
             "value": "1.25rem",
@@ -2294,7 +2119,6 @@ describe('Token types', () => {
           "normal" => {
             "category": "lineHeights",
             "key": "normal",
-            "keyRef": "$normal",
             "negative": false,
             "prop": "lineHeights.normal",
             "value": "normal",
@@ -2304,7 +2128,6 @@ describe('Token types', () => {
           "none" => {
             "category": "lineHeights",
             "key": "none",
-            "keyRef": "$none",
             "negative": false,
             "prop": "lineHeights.none",
             "value": "1",
@@ -2314,7 +2137,6 @@ describe('Token types', () => {
           "shorter" => {
             "category": "lineHeights",
             "key": "shorter",
-            "keyRef": "$shorter",
             "negative": false,
             "prop": "lineHeights.shorter",
             "value": "1.25",
@@ -2324,7 +2146,6 @@ describe('Token types', () => {
           "short" => {
             "category": "lineHeights",
             "key": "short",
-            "keyRef": "$short",
             "negative": false,
             "prop": "lineHeights.short",
             "value": "1.375",
@@ -2334,7 +2155,6 @@ describe('Token types', () => {
           "base" => {
             "category": "lineHeights",
             "key": "base",
-            "keyRef": "$base",
             "negative": false,
             "prop": "lineHeights.base",
             "value": "1.5",
@@ -2344,7 +2164,6 @@ describe('Token types', () => {
           "tall" => {
             "category": "lineHeights",
             "key": "tall",
-            "keyRef": "$tall",
             "negative": false,
             "prop": "lineHeights.tall",
             "value": "1.625",
@@ -2354,7 +2173,6 @@ describe('Token types', () => {
           "taller" => {
             "category": "lineHeights",
             "key": "taller",
-            "keyRef": "$taller",
             "negative": false,
             "prop": "lineHeights.taller",
             "value": "2",
@@ -2366,7 +2184,6 @@ describe('Token types', () => {
           "normal" => {
             "category": "fontWeights",
             "key": "normal",
-            "keyRef": "$normal",
             "negative": false,
             "prop": "fontWeights.normal",
             "value": "400",
@@ -2376,7 +2193,6 @@ describe('Token types', () => {
           "medium" => {
             "category": "fontWeights",
             "key": "medium",
-            "keyRef": "$medium",
             "negative": false,
             "prop": "fontWeights.medium",
             "value": "500",
@@ -2386,7 +2202,6 @@ describe('Token types', () => {
           "semibold" => {
             "category": "fontWeights",
             "key": "semibold",
-            "keyRef": "$semibold",
             "negative": false,
             "prop": "fontWeights.semibold",
             "value": "600",
@@ -2396,7 +2211,6 @@ describe('Token types', () => {
           "bold" => {
             "category": "fontWeights",
             "key": "bold",
-            "keyRef": "$bold",
             "negative": false,
             "prop": "fontWeights.bold",
             "value": "700",
@@ -2408,7 +2222,6 @@ describe('Token types', () => {
           "tighter" => {
             "category": "letterSpacings",
             "key": "tighter",
-            "keyRef": "$tighter",
             "negative": false,
             "prop": "letterSpacings.tighter",
             "value": "-0.05em",
@@ -2418,7 +2231,6 @@ describe('Token types', () => {
           "tight" => {
             "category": "letterSpacings",
             "key": "tight",
-            "keyRef": "$tight",
             "negative": false,
             "prop": "letterSpacings.tight",
             "value": "-0.025em",
@@ -2428,7 +2240,6 @@ describe('Token types', () => {
           "normal" => {
             "category": "letterSpacings",
             "key": "normal",
-            "keyRef": "$normal",
             "negative": false,
             "prop": "letterSpacings.normal",
             "value": "0",
@@ -2438,7 +2249,6 @@ describe('Token types', () => {
           "wide" => {
             "category": "letterSpacings",
             "key": "wide",
-            "keyRef": "$wide",
             "negative": false,
             "prop": "letterSpacings.wide",
             "value": "0.025em",
@@ -2448,7 +2258,6 @@ describe('Token types', () => {
           "wider" => {
             "category": "letterSpacings",
             "key": "wider",
-            "keyRef": "$wider",
             "negative": false,
             "prop": "letterSpacings.wider",
             "value": "0.05em",
@@ -2458,7 +2267,6 @@ describe('Token types', () => {
           "widest" => {
             "category": "letterSpacings",
             "key": "widest",
-            "keyRef": "$widest",
             "negative": false,
             "prop": "letterSpacings.widest",
             "value": "0.1em",
@@ -2470,7 +2278,6 @@ describe('Token types', () => {
           "none" => {
             "category": "radii",
             "key": "none",
-            "keyRef": "$none",
             "negative": false,
             "prop": "radii.none",
             "value": "0",
@@ -2480,7 +2287,6 @@ describe('Token types', () => {
           "sm" => {
             "category": "radii",
             "key": "sm",
-            "keyRef": "$sm",
             "negative": false,
             "prop": "radii.sm",
             "value": "0.125rem",
@@ -2490,7 +2296,6 @@ describe('Token types', () => {
           "base" => {
             "category": "radii",
             "key": "base",
-            "keyRef": "$base",
             "negative": false,
             "prop": "radii.base",
             "value": "0.25rem",
@@ -2500,7 +2305,6 @@ describe('Token types', () => {
           "md" => {
             "category": "radii",
             "key": "md",
-            "keyRef": "$md",
             "negative": false,
             "prop": "radii.md",
             "value": "0.375rem",
@@ -2510,7 +2314,6 @@ describe('Token types', () => {
           "lg" => {
             "category": "radii",
             "key": "lg",
-            "keyRef": "$lg",
             "negative": false,
             "prop": "radii.lg",
             "value": "0.5rem",
@@ -2520,7 +2323,6 @@ describe('Token types', () => {
           "xl" => {
             "category": "radii",
             "key": "xl",
-            "keyRef": "$xl",
             "negative": false,
             "prop": "radii.xl",
             "value": "0.75rem",
@@ -2530,7 +2332,6 @@ describe('Token types', () => {
           "2xl" => {
             "category": "radii",
             "key": "2xl",
-            "keyRef": "$2xl",
             "negative": false,
             "prop": "radii.2xl",
             "value": "1rem",
@@ -2540,7 +2341,6 @@ describe('Token types', () => {
           "3xl" => {
             "category": "radii",
             "key": "3xl",
-            "keyRef": "$3xl",
             "negative": false,
             "prop": "radii.3xl",
             "value": "1.5rem",
@@ -2550,7 +2350,6 @@ describe('Token types', () => {
           "full" => {
             "category": "radii",
             "key": "full",
-            "keyRef": "$full",
             "negative": false,
             "prop": "radii.full",
             "value": "9999px",
@@ -2562,7 +2361,6 @@ describe('Token types', () => {
           "xs" => {
             "category": "shadows",
             "key": "xs",
-            "keyRef": "$xs",
             "negative": false,
             "prop": "shadows.xs",
             "value": "0 0 0 1px rgba(0, 0, 0, 0.05)",
@@ -2572,7 +2370,6 @@ describe('Token types', () => {
           "sm" => {
             "category": "shadows",
             "key": "sm",
-            "keyRef": "$sm",
             "negative": false,
             "prop": "shadows.sm",
             "value": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
@@ -2582,7 +2379,6 @@ describe('Token types', () => {
           "base" => {
             "category": "shadows",
             "key": "base",
-            "keyRef": "$base",
             "negative": false,
             "prop": "shadows.base",
             "value": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
@@ -2592,7 +2388,6 @@ describe('Token types', () => {
           "md" => {
             "category": "shadows",
             "key": "md",
-            "keyRef": "$md",
             "negative": false,
             "prop": "shadows.md",
             "value": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
@@ -2604,7 +2399,6 @@ describe('Token types', () => {
           "sm" => {
             "category": "dropShadows",
             "key": "sm",
-            "keyRef": "$sm",
             "negative": false,
             "prop": "dropShadows.sm",
             "value": "drop-shadow(0 1px 1px rgb(0 0 0 / 0.05))",
@@ -2614,7 +2408,6 @@ describe('Token types', () => {
           "md" => {
             "category": "dropShadows",
             "key": "md",
-            "keyRef": "$md",
             "negative": false,
             "prop": "dropShadows.md",
             "value": "drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06))",
@@ -2626,7 +2419,6 @@ describe('Token types', () => {
           "1" => {
             "category": "spacing",
             "key": "1",
-            "keyRef": "$1",
             "negative": false,
             "prop": "spacing.1",
             "value": "0.25rem",
@@ -2636,7 +2428,6 @@ describe('Token types', () => {
           "-1" => {
             "category": "spacing",
             "key": "-1",
-            "keyRef": "-$1",
             "negative": true,
             "prop": "spacing.-1",
             "value": "-0.25rem",
@@ -2646,7 +2437,6 @@ describe('Token types', () => {
           "2" => {
             "category": "spacing",
             "key": "2",
-            "keyRef": "$2",
             "negative": false,
             "prop": "spacing.2",
             "value": "0.5rem",
@@ -2656,7 +2446,6 @@ describe('Token types', () => {
           "-2" => {
             "category": "spacing",
             "key": "-2",
-            "keyRef": "-$2",
             "negative": true,
             "prop": "spacing.-2",
             "value": "-0.5rem",
@@ -2666,7 +2455,6 @@ describe('Token types', () => {
           "3" => {
             "category": "spacing",
             "key": "3",
-            "keyRef": "$3",
             "negative": false,
             "prop": "spacing.3",
             "value": "0.75rem",
@@ -2676,7 +2464,6 @@ describe('Token types', () => {
           "-3" => {
             "category": "spacing",
             "key": "-3",
-            "keyRef": "-$3",
             "negative": true,
             "prop": "spacing.-3",
             "value": "-0.75rem",
@@ -2686,7 +2473,6 @@ describe('Token types', () => {
           "4" => {
             "category": "spacing",
             "key": "4",
-            "keyRef": "$4",
             "negative": false,
             "prop": "spacing.4",
             "value": "1rem",
@@ -2696,7 +2482,6 @@ describe('Token types', () => {
           "-4" => {
             "category": "spacing",
             "key": "-4",
-            "keyRef": "-$4",
             "negative": true,
             "prop": "spacing.-4",
             "value": "-1rem",
@@ -2706,7 +2491,6 @@ describe('Token types', () => {
           "5" => {
             "category": "spacing",
             "key": "5",
-            "keyRef": "$5",
             "negative": false,
             "prop": "spacing.5",
             "value": "1.25rem",
@@ -2716,7 +2500,6 @@ describe('Token types', () => {
           "-5" => {
             "category": "spacing",
             "key": "-5",
-            "keyRef": "-$5",
             "negative": true,
             "prop": "spacing.-5",
             "value": "-1.25rem",
@@ -2726,7 +2509,6 @@ describe('Token types', () => {
           "6" => {
             "category": "spacing",
             "key": "6",
-            "keyRef": "$6",
             "negative": false,
             "prop": "spacing.6",
             "value": "1.5rem",
@@ -2736,7 +2518,6 @@ describe('Token types', () => {
           "-6" => {
             "category": "spacing",
             "key": "-6",
-            "keyRef": "-$6",
             "negative": true,
             "prop": "spacing.-6",
             "value": "-1.5rem",
@@ -2746,7 +2527,6 @@ describe('Token types', () => {
           "0.5" => {
             "category": "spacing",
             "key": "0.5",
-            "keyRef": "$0.5",
             "negative": false,
             "prop": "spacing.0.5",
             "value": "0.125rem",
@@ -2756,7 +2536,6 @@ describe('Token types', () => {
           "-0.5" => {
             "category": "spacing",
             "key": "-0.5",
-            "keyRef": "-$0.5",
             "negative": true,
             "prop": "spacing.-0.5",
             "value": "-0.125rem",
@@ -2766,7 +2545,6 @@ describe('Token types', () => {
           "1.5" => {
             "category": "spacing",
             "key": "1.5",
-            "keyRef": "$1.5",
             "negative": false,
             "prop": "spacing.1.5",
             "value": "0.375rem",
@@ -2776,7 +2554,6 @@ describe('Token types', () => {
           "-1.5" => {
             "category": "spacing",
             "key": "-1.5",
-            "keyRef": "-$1.5",
             "negative": true,
             "prop": "spacing.-1.5",
             "value": "-0.375rem",
@@ -2786,7 +2563,6 @@ describe('Token types', () => {
           "2.5" => {
             "category": "spacing",
             "key": "2.5",
-            "keyRef": "$2.5",
             "negative": false,
             "prop": "spacing.2.5",
             "value": "0.625rem",
@@ -2796,7 +2572,6 @@ describe('Token types', () => {
           "-2.5" => {
             "category": "spacing",
             "key": "-2.5",
-            "keyRef": "-$2.5",
             "negative": true,
             "prop": "spacing.-2.5",
             "value": "-0.625rem",
@@ -2806,7 +2581,6 @@ describe('Token types', () => {
           "3.5" => {
             "category": "spacing",
             "key": "3.5",
-            "keyRef": "$3.5",
             "negative": false,
             "prop": "spacing.3.5",
             "value": "0.875rem",
@@ -2816,7 +2590,6 @@ describe('Token types', () => {
           "-3.5" => {
             "category": "spacing",
             "key": "-3.5",
-            "keyRef": "-$3.5",
             "negative": true,
             "prop": "spacing.-3.5",
             "value": "-0.875rem",
@@ -2826,7 +2599,6 @@ describe('Token types', () => {
           "gutter" => {
             "category": "spacing",
             "key": "gutter",
-            "keyRef": "$gutter",
             "negative": false,
             "prop": "spacing.gutter",
             "value": "var(--spacing-gutter)",
@@ -2836,7 +2608,6 @@ describe('Token types', () => {
           "-gutter" => {
             "category": "spacing",
             "key": "-gutter",
-            "keyRef": "-$gutter",
             "negative": true,
             "prop": "spacing.-gutter",
             "value": "calc(var(--spacing-gutter) * -1)",
@@ -2848,7 +2619,6 @@ describe('Token types', () => {
           "1" => {
             "category": "sizes",
             "key": "1",
-            "keyRef": "$1",
             "negative": false,
             "prop": "sizes.1",
             "value": "0.25rem",
@@ -2858,7 +2628,6 @@ describe('Token types', () => {
           "2" => {
             "category": "sizes",
             "key": "2",
-            "keyRef": "$2",
             "negative": false,
             "prop": "sizes.2",
             "value": "0.5rem",
@@ -2868,7 +2637,6 @@ describe('Token types', () => {
           "3" => {
             "category": "sizes",
             "key": "3",
-            "keyRef": "$3",
             "negative": false,
             "prop": "sizes.3",
             "value": "0.75rem",
@@ -2878,7 +2646,6 @@ describe('Token types', () => {
           "4" => {
             "category": "sizes",
             "key": "4",
-            "keyRef": "$4",
             "negative": false,
             "prop": "sizes.4",
             "value": "1rem",
@@ -2888,7 +2655,6 @@ describe('Token types', () => {
           "5" => {
             "category": "sizes",
             "key": "5",
-            "keyRef": "$5",
             "negative": false,
             "prop": "sizes.5",
             "value": "1.25rem",
@@ -2898,7 +2664,6 @@ describe('Token types', () => {
           "6" => {
             "category": "sizes",
             "key": "6",
-            "keyRef": "$6",
             "negative": false,
             "prop": "sizes.6",
             "value": "1.5rem",
@@ -2908,7 +2673,6 @@ describe('Token types', () => {
           "0.5" => {
             "category": "sizes",
             "key": "0.5",
-            "keyRef": "$0.5",
             "negative": false,
             "prop": "sizes.0.5",
             "value": "0.125rem",
@@ -2918,7 +2682,6 @@ describe('Token types', () => {
           "1.5" => {
             "category": "sizes",
             "key": "1.5",
-            "keyRef": "$1.5",
             "negative": false,
             "prop": "sizes.1.5",
             "value": "0.375rem",
@@ -2928,7 +2691,6 @@ describe('Token types', () => {
           "2.5" => {
             "category": "sizes",
             "key": "2.5",
-            "keyRef": "$2.5",
             "negative": false,
             "prop": "sizes.2.5",
             "value": "0.625rem",
@@ -2938,7 +2700,6 @@ describe('Token types', () => {
           "3.5" => {
             "category": "sizes",
             "key": "3.5",
-            "keyRef": "$3.5",
             "negative": false,
             "prop": "sizes.3.5",
             "value": "0.875rem",
@@ -2950,7 +2711,6 @@ describe('Token types', () => {
           "xs" => {
             "category": "largeSizes",
             "key": "xs",
-            "keyRef": "$xs",
             "negative": false,
             "prop": "largeSizes.xs",
             "value": "20rem",
@@ -2960,7 +2720,6 @@ describe('Token types', () => {
           "sm" => {
             "category": "largeSizes",
             "key": "sm",
-            "keyRef": "$sm",
             "negative": false,
             "prop": "largeSizes.sm",
             "value": "24rem",
@@ -2970,7 +2729,6 @@ describe('Token types', () => {
           "md" => {
             "category": "largeSizes",
             "key": "md",
-            "keyRef": "$md",
             "negative": false,
             "prop": "largeSizes.md",
             "value": "28rem",
@@ -2980,7 +2738,6 @@ describe('Token types', () => {
           "lg" => {
             "category": "largeSizes",
             "key": "lg",
-            "keyRef": "$lg",
             "negative": false,
             "prop": "largeSizes.lg",
             "value": "32rem",
@@ -2990,7 +2747,6 @@ describe('Token types', () => {
           "xl" => {
             "category": "largeSizes",
             "key": "xl",
-            "keyRef": "$xl",
             "negative": false,
             "prop": "largeSizes.xl",
             "value": "36rem",
@@ -3002,7 +2758,6 @@ describe('Token types', () => {
           "none" => {
             "category": "animations",
             "key": "none",
-            "keyRef": "$none",
             "negative": false,
             "prop": "animations.none",
             "value": "none",
@@ -3012,7 +2767,6 @@ describe('Token types', () => {
           "spin" => {
             "category": "animations",
             "key": "spin",
-            "keyRef": "$spin",
             "negative": false,
             "prop": "animations.spin",
             "value": "spin 1s linear infinite",
@@ -3022,7 +2776,6 @@ describe('Token types', () => {
           "ping" => {
             "category": "animations",
             "key": "ping",
-            "keyRef": "$ping",
             "negative": false,
             "prop": "animations.ping",
             "value": "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite",
@@ -3032,7 +2785,6 @@ describe('Token types', () => {
           "pulse" => {
             "category": "animations",
             "key": "pulse",
-            "keyRef": "$pulse",
             "negative": false,
             "prop": "animations.pulse",
             "value": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
@@ -3042,7 +2794,6 @@ describe('Token types', () => {
           "bounce" => {
             "category": "animations",
             "key": "bounce",
-            "keyRef": "$bounce",
             "negative": false,
             "prop": "animations.bounce",
             "value": "bounce 1s infinite",
@@ -3054,7 +2805,6 @@ describe('Token types', () => {
           "0" => {
             "category": "opacity",
             "key": "0",
-            "keyRef": "$0",
             "negative": false,
             "prop": "opacity.0",
             "value": "0",
@@ -3064,7 +2814,6 @@ describe('Token types', () => {
           "25" => {
             "category": "opacity",
             "key": "25",
-            "keyRef": "$25",
             "negative": false,
             "prop": "opacity.25",
             "value": "0.25",
@@ -3074,7 +2823,6 @@ describe('Token types', () => {
           "50" => {
             "category": "opacity",
             "key": "50",
-            "keyRef": "$50",
             "negative": false,
             "prop": "opacity.50",
             "value": "0.5",
@@ -3084,7 +2832,6 @@ describe('Token types', () => {
           "75" => {
             "category": "opacity",
             "key": "75",
-            "keyRef": "$75",
             "negative": false,
             "prop": "opacity.75",
             "value": "0.75",
@@ -3094,7 +2841,6 @@ describe('Token types', () => {
           "100" => {
             "category": "opacity",
             "key": "100",
-            "keyRef": "$100",
             "negative": false,
             "prop": "opacity.100",
             "value": "1",
@@ -3106,7 +2852,6 @@ describe('Token types', () => {
           "ease-in" => {
             "category": "easings",
             "key": "ease-in",
-            "keyRef": "$ease-in",
             "negative": false,
             "prop": "easings.ease-in",
             "value": "cubic-bezier(0.4, 0, 1, 1)",
@@ -3116,7 +2861,6 @@ describe('Token types', () => {
           "ease-out" => {
             "category": "easings",
             "key": "ease-out",
-            "keyRef": "$ease-out",
             "negative": false,
             "prop": "easings.ease-out",
             "value": "cubic-bezier(0, 0, 0.2, 1)",
@@ -3126,7 +2870,6 @@ describe('Token types', () => {
           "ease-in-out" => {
             "category": "easings",
             "key": "ease-in-out",
-            "keyRef": "$ease-in-out",
             "negative": false,
             "prop": "easings.ease-in-out",
             "value": "cubic-bezier(0.4, 0, 0.2, 1)",
@@ -3138,7 +2881,6 @@ describe('Token types', () => {
           "75" => {
             "category": "durations",
             "key": "75",
-            "keyRef": "$75",
             "negative": false,
             "prop": "durations.75",
             "value": "75ms",
@@ -3148,7 +2890,6 @@ describe('Token types', () => {
           "100" => {
             "category": "durations",
             "key": "100",
-            "keyRef": "$100",
             "negative": false,
             "prop": "durations.100",
             "value": "100ms",
@@ -3158,7 +2899,6 @@ describe('Token types', () => {
           "150" => {
             "category": "durations",
             "key": "150",
-            "keyRef": "$150",
             "negative": false,
             "prop": "durations.150",
             "value": "150ms",
@@ -3170,7 +2910,6 @@ describe('Token types', () => {
           "all" => {
             "category": "transitionProperties",
             "key": "all",
-            "keyRef": "$all",
             "negative": false,
             "prop": "transitionProperties.all",
             "value": "all",
@@ -3180,7 +2919,6 @@ describe('Token types', () => {
           "none" => {
             "category": "transitionProperties",
             "key": "none",
-            "keyRef": "$none",
             "negative": false,
             "prop": "transitionProperties.none",
             "value": "none",
@@ -3190,7 +2928,6 @@ describe('Token types', () => {
           "opacity" => {
             "category": "transitionProperties",
             "key": "opacity",
-            "keyRef": "$opacity",
             "negative": false,
             "prop": "transitionProperties.opacity",
             "value": "opacity",
@@ -3200,7 +2937,6 @@ describe('Token types', () => {
           "shadow" => {
             "category": "transitionProperties",
             "key": "shadow",
-            "keyRef": "$shadow",
             "negative": false,
             "prop": "transitionProperties.shadow",
             "value": "box-shadow",
@@ -3210,7 +2946,6 @@ describe('Token types', () => {
           "transform" => {
             "category": "transitionProperties",
             "key": "transform",
-            "keyRef": "$transform",
             "negative": false,
             "prop": "transitionProperties.transform",
             "value": "transform",
@@ -3220,7 +2955,6 @@ describe('Token types', () => {
           "base" => {
             "category": "transitionProperties",
             "key": "base",
-            "keyRef": "$base",
             "negative": false,
             "prop": "transitionProperties.base",
             "value": "color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter",
@@ -3230,7 +2964,6 @@ describe('Token types', () => {
           "background" => {
             "category": "transitionProperties",
             "key": "background",
-            "keyRef": "$background",
             "negative": false,
             "prop": "transitionProperties.background",
             "value": "background, background-color",
@@ -3240,7 +2973,6 @@ describe('Token types', () => {
           "colors" => {
             "category": "transitionProperties",
             "key": "colors",
-            "keyRef": "$colors",
             "negative": false,
             "prop": "transitionProperties.colors",
             "value": "color, background-color, border-color, text-decoration-color, fill, stroke",
