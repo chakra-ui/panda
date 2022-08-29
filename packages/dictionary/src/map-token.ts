@@ -10,7 +10,9 @@ export function mapTokens(
   options: { prefix?: string } = {},
 ) {
   const { prefix } = options
+
   for (const entry of objectEntries(tokens)) {
+    //
     match(entry)
       .with({ type: 'colors' }, ({ type, values }) => {
         if (!values) return
@@ -41,8 +43,11 @@ export function mapSemanticTokens(
   options: { prefix?: string } = {},
 ) {
   const { prefix } = options
+
   for (const entry of objectEntries(tokens)) {
+    //
     const map = getSemanticTokenMap(entry.values)
+
     match(entry)
       .with({ type: 'spacing' }, () => {
         map.forEach((values, condition) => {

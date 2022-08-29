@@ -27,9 +27,9 @@ export function getSemanticTokenMap(values: TSemanticToken) {
     }
 
     const [key, condition] = path
-    const isDefault = condition === '_'
+    const isDefault = condition === '_' || condition === 'base'
 
-    let prop = isDefault ? 'raw' : condition
+    let prop = isDefault ? 'base' : condition
 
     if (!map.has(prop)) {
       map.set(prop, new Map())
