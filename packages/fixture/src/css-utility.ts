@@ -9,6 +9,7 @@ export const utilities: UtilityConfig = {
     zIndex: 'z',
     boxSizing: 'box',
     objectPosition: 'object',
+    objectFit: 'object',
     overscrollBehavior: 'overscroll',
     overscrollBehaviorX: 'overscroll-x',
     overscrollBehaviorY: 'overscroll-y',
@@ -73,9 +74,33 @@ export const utilities: UtilityConfig = {
       className: 'l',
       values: 'spacing',
     },
+    start: {
+      className: 's',
+      values: 'spacing',
+      transform(value) {
+        return {
+          left: value,
+          "[dir='rtl'] &": {
+            right: value,
+          },
+        }
+      },
+    },
     right: {
       className: 'r',
       values: 'spacing',
+    },
+    end: {
+      className: 'e',
+      values: 'spacing',
+      transform(value) {
+        return {
+          right: value,
+          "[dir='rtl'] &": {
+            left: value,
+          },
+        }
+      },
     },
     bottom: {
       className: 'b',
@@ -98,6 +123,33 @@ export const utilities: UtilityConfig = {
         return {
           top: value,
           bottom: value,
+        }
+      },
+    },
+    float: {
+      className: 'float',
+      values: ['left', 'right', 'start', 'end'],
+      transform(value) {
+        if (value === 'start') {
+          return {
+            float: 'left',
+            '[dir="rtl"] &': {
+              float: 'right',
+            },
+          }
+        }
+
+        if (value === 'end') {
+          return {
+            float: 'right',
+            '[dir="rtl"] &': {
+              float: 'left',
+            },
+          }
+        }
+
+        return {
+          float: value,
         }
       },
     },
@@ -252,6 +304,11 @@ export const utilities: UtilityConfig = {
         }
       },
     },
+    fontVariantNumeric: {
+      className(value) {
+        return value
+      },
+    },
     letterSpacing: {
       className: 'tracking',
       values: 'letterSpacings',
@@ -281,6 +338,25 @@ export const utilities: UtilityConfig = {
     },
     verticalAlign: 'align',
     wordBreak: 'break',
+    lineClamp: {
+      className: 'clamp',
+      transform(value) {
+        if (value === 'none') {
+          return {
+            '-webkit-line-clamp': 'unset',
+          }
+        }
+
+        return {
+          overflow: 'hidden',
+          display: '-webkit-box',
+          '-webkit-line-clamp': value,
+          '-webkit-box-orient': 'vertical',
+        }
+      },
+    },
+
+    // List properties
     listStyleType: 'list',
     listStylePosition: 'list',
 

@@ -1,11 +1,13 @@
-import type { PropertiesFallback, SimplePseudos } from './csstype'
+import * as CSS from './csstype'
 
 type Loose = string & { __type?: never }
 // type Clean<T> = Exclude<T, { __type?: never }>
 
-export type Properties = PropertiesFallback<Loose>
+export type Properties = CSS.PropertiesFallback<Loose>
 
 export type CssProperty = keyof Properties
+
+type PseudoProperty = `&${CSS.SimplePseudos}`
 
 export type CssProperties = Properties & {
   [key: string]: string | number | undefined
@@ -13,7 +15,7 @@ export type CssProperties = Properties & {
 
 export type CssKeyframes = {
   [time: string]: {
-    [T in Loose | 'from' | 'to']?: CssProperties
+    string?: CssProperties
   }
 }
 
@@ -50,8 +52,6 @@ type ConditionCssProperties<
 } & {
   [Key in keyof Omit<UserProperties, keyof Properties>]?: ConditionalValue<Conditions, UserProperties[Key]>
 }
-
-type PseudoProperty = `&${SimplePseudos}`
 
 type MixedCssProperties<T> = T & {
   selectors?: {
