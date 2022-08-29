@@ -14,7 +14,7 @@ export const conditions: Conditions = {
 
   open: { type: 'self-nesting', value: '&[open]' },
 
-  motionReduce: { type: 'at-rule', value: '(prefers-reduced-motion: reduce)' },
+  motionReduce: { type: 'at-rule', value: '@media (prefers-reduced-motion: reduce)' },
 
   dark: { type: 'color-scheme', value: '[data-theme=dark] &', colorScheme: 'dark' },
   light: { type: 'color-scheme', value: '[data-theme=light] &', colorScheme: 'light' },
