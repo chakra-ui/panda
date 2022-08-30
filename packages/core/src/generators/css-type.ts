@@ -20,7 +20,9 @@ export async function generateCssType() {
     import { PropertyTypes } from '../types/property-type'
     import { Conditions } from '../types/conditions'
     
-    export declare function css(styles: CssObject<Conditions, PropertyTypes>): string
+    export type UserCssObject = CssObject<Conditions, PropertyTypes>
+    
+    export declare function css(styles: UserCssObject): string
     `,
   }
 }

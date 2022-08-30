@@ -5,6 +5,7 @@ import path from 'path'
 import { InternalContext } from '../create-context'
 import { generateConditions } from './conditions'
 import { generateCss } from './css'
+import { generateCssMap } from './css-map'
 import { generateCssType } from './css-type'
 import { generateCx } from './cx'
 import { generateDts } from './dts'
@@ -38,8 +39,8 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
   const cx = generateCx()
   const fontFace = generateFontFace()
   const globalStyle = generateGlobalStyle()
-
   const types = await generateCssType()
+  const cssMap = generateCssMap()
 
   await Promise.all([
     // design tokens
@@ -57,6 +58,10 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
     fs.writeFile(path.join(cssPath, 'transform.js'), generateTransform('../config')),
     fs.writeFile(path.join(cssPath, 'css.js'), generateSerializer('./transform', hash)),
     fs.writeFile(path.join(cssPath, 'css.d.ts'), types.css),
+
+    // css map
+    fs.writeFile(path.join(cssPath, 'css-map.js'), cssMap.js),
+    fs.writeFile(path.join(cssPath, 'css-map.d.ts'), cssMap.dts),
 
     // cx
     fs.writeFile(path.join(cssPath, 'cx.js'), cx.js),
@@ -78,6 +83,7 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
      export * from './cx'
      export * from './font-face'
      export * from './global-style'
+     export * from './css-map'
     `,
     ),
 
@@ -89,6 +95,7 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
      export * from './cx'
      export * from './font-face'
      export * from './global-style'
+     export * from './css-map'
     `,
     ),
   ])

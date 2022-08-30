@@ -32,6 +32,12 @@ export async function contentWatcher(ctx: InternalContext) {
       sheet.process(result)
     })
 
+    collector.cssMap.forEach((result) => {
+      for (const data of Object.values(result.data)) {
+        sheet.process({ type: 'object', data })
+      }
+    })
+
     if (collector.isEmpty()) return
 
     const filepath = getTempFile(file)
