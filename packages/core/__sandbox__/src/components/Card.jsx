@@ -1,18 +1,16 @@
-import { css, cx } from '../../__generated__/css'
+import { css, cx, cssMap } from '../../__generated__/css'
 import React from 'react'
+
+const base = css({})
+
+const sheet = cssMap({
+  primary: { background: 'blue' },
+  secondary: { background: 'aqua' },
+})
 
 export function Card({ className }) {
   return (
-    <div
-      className={cx(
-        'card',
-        css({
-          background: 'white',
-          '--bg': 'colors.red.200',
-        }),
-        className,
-      )}
-    >
+    <div>
       <div></div>
     </div>
   )

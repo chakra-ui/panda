@@ -6,6 +6,6 @@ export default defineConfig({
   clean: true,
   // hash: true,
   outdir: '__generated__',
-  cwd: process.cwd(),
+  // cwd: process.cwd(),
   content: ['*.jsx'],
 })

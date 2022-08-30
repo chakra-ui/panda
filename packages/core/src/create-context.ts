@@ -47,6 +47,7 @@ export function createContext(config: UserConfig) {
       css: `${config.outdir}/css`,
       recipe: `${config.outdir}/recipe`,
     },
+    cwd: process.cwd(),
     tempDir,
     config,
     dictionary,

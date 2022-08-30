@@ -17,6 +17,7 @@ export function generateTransform(configPath: string) {
                 return { className: className(value, key) }
               }
               
+              value = value.replaceAll(' ', '_')
               return { className: \`\${className}_\${value}\` }
             }
           }

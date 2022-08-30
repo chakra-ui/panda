@@ -3,6 +3,7 @@ import { outdent } from 'outdent'
 export function generateCssMap() {
   return {
     js: outdent`
+    import { css } from "./css"
     export function cssMap(obj){
       return (...args) => {
         const finalCss = args.reduce((acc, arg) => {
