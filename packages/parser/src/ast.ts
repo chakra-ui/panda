@@ -159,7 +159,7 @@ export function importDeclaration(node: swc.ImportDeclaration, options: { module
 
   const result: ImportResult[] = []
 
-  if (source.value !== options.module) return
+  if (!source.value.includes(options.module)) return
 
   for (let i = 0; i < specifiers.length; i++) {
     match(specifiers[i])
