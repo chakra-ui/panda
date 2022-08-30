@@ -109,8 +109,17 @@ export class CSSUtility {
     }
   }
 
+  defaultTransform = (value: string, prop: string) => {
+    const isCssVariable = prop.startsWith('--')
+    if (isCssVariable) {
+      const tokenValue = this.dictionary.values.get(value)?.varRef
+      value = typeof tokenValue === 'string' ? tokenValue : value
+    }
+    return { [prop]: value }
+  }
+
   private setTransform(property: string, transform?: Function) {
-    const defaultTransform = (value: string) => ({ [property]: value })
+    const defaultTransform = (value: string) => this.defaultTransform(value, property)
     const transformFn = transform ?? defaultTransform
     this.transformMap.set(property, transformFn)
     return this
@@ -118,7 +127,7 @@ export class CSSUtility {
 
   private setStyles(property: string, raw: string, propKey?: string) {
     propKey = propKey ?? this.getPropKey(property, raw)
-    const defaultTransform = (value: string) => ({ [property]: value })
+    const defaultTransform = (value: string) => this.defaultTransform(value, property)
     const getStyles = this.transformMap.get(property) ?? defaultTransform
     this.stylesMap.set(propKey, getStyles(raw))
     return this

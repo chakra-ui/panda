@@ -135,6 +135,7 @@ export class Dictionary {
   }
 
   query(path: string) {
-    return dlv(Object.fromEntries(this.flattenedTokens.entries()), path)
+    const obj = Object.fromEntries(this.flattenedTokens.entries())
+    return dlv(obj, path)
   }
 }

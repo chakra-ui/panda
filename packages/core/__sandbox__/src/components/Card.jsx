@@ -3,7 +3,16 @@ import React from 'react'
 
 export function Card({ className }) {
   return (
-    <div className={cx('card', css({ background: 'white' }), className)}>
+    <div
+      className={cx(
+        'card',
+        css({
+          background: 'white',
+          '--bg': 'colors.red.200',
+        }),
+        className,
+      )}
+    >
       <div></div>
     </div>
   )
