@@ -1,6 +1,7 @@
 import type * as swc from '@swc/core'
 import BaseVisitor from '@swc/core/Visitor'
 import * as ast from './ast'
+import { createDebug } from './debug'
 import { ImportResult, PluginContext } from './types'
 
 export class CallVisitor extends BaseVisitor {
@@ -12,16 +13,18 @@ export class CallVisitor extends BaseVisitor {
 
   visitImportDeclaration(node: swc.ImportDeclaration): swc.ImportDeclaration {
     const result = ast.importDeclaration(node, this.ctx.import)
+
     if (result) {
+      createDebug('import', `Found import { ${result.identifer} } in ${this.ctx.import.filename}`)
       this.import = result
     }
+
     return node
   }
 
   visitCallExpression(node: swc.CallExpression): swc.Expression {
     // bail out if the function we're interested in has not been called
     if (!this.import) return node
-
     const expression = ast.callExpression(node, this.import.alias)
     if (!expression) return node
 

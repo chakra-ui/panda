@@ -110,7 +110,7 @@ describe('ast parser', () => {
     `)
   })
 
-  test.only('should extract nested css', () => {
+  test('should extract nested css', () => {
     const code = `
       import { css } from '.panda/css'
 
@@ -140,6 +140,35 @@ console.log(
               "background": "red.200",
             },
           },
+        },
+      }
+    `)
+  })
+
+  test.only('should extract complex setup', () => {
+    const code = `
+      import { css, cx } from '.panda/css'
+import React from 'react'
+
+export function Card({ className }) {
+  return (
+    <div className={cx('card', css({ background: 'white' }), className)}>
+      <div></div>
+    </div>
+  )
+}
+
+      `
+    const collect = new Set()
+
+    transformSync(code, {
+      plugins: [cssPlugin(collect)],
+    })
+
+    expect(collect).toMatchInlineSnapshot(`
+      Set {
+        {
+          "background": "white",
         },
       }
     `)

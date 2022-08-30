@@ -1,7 +1,7 @@
 import { PluginResult } from '@css-panda/types'
 
 export type PluginContext = {
-  import: { module: string; name: string }
+  import: { module: string; name: string; filename?: string }
   onData: (result: PluginResult) => void
 }
 

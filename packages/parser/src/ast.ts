@@ -139,14 +139,16 @@ export function callExpression(node: swc.CallExpression, scope: string) {
   const result: swc.CallExpression[] = []
 
   const inner = (node: swc.CallExpression) => {
-    if (node.callee.type === 'MemberExpression') {
-      node.arguments.forEach((arg) => {
-        if (arg.expression.type === 'CallExpression') {
-          inner(arg.expression)
-        }
-      })
-    } else if (node.callee.type === 'Identifier' && node.callee.value === scope) {
-      result.push(node)
+    if (node.callee.type === 'MemberExpression' || node.callee.type === 'Identifier') {
+      if (node.callee.type === 'Identifier' && node.callee.value === scope) {
+        result.push(node)
+      } else {
+        node.arguments.forEach((arg) => {
+          if (arg.expression.type === 'CallExpression') {
+            inner(arg.expression)
+          }
+        })
+      }
     }
   }
 

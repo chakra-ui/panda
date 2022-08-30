@@ -17,7 +17,7 @@ export async function contentWatcher(ctx: InternalContext) {
     const collector = createCollector()
 
     transformFileSync(file, {
-      plugins: createPlugins(collector, importMap.css),
+      plugins: createPlugins(collector, importMap.css, file),
     })
 
     collector.globalStyle.forEach((result) => {

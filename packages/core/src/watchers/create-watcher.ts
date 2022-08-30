@@ -11,7 +11,7 @@ const debug = createDebugger('file:watcher')
 export function createWatcher(files: string[], options: WatcherOptions = {}) {
   const { ignore, cwd = process.cwd() } = options
 
-  debug('files: %o', files)
+  debug('files: %o', { cwd, files })
 
   const watcher = filespy(cwd, {
     only: files,
