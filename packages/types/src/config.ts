@@ -49,7 +49,6 @@ export type Config<
   semanticTokens?: SemanticTokens<Tokens, Conditions, Breakpoints>
   shorthands?: Shorthands
   utilities?: UtilityConfig<Tokens>[]
-  importMap?: Record<'css' | 'recipe', string>
 }
 
 export type TConfig = Config<TConditions, TBreakpoints, TTokens>
@@ -60,4 +59,4 @@ export function defineConfig<Conditions extends TConditions, Breakpoints extends
   return config
 }
 
-export type UserConfig = RequiredBy<Config, 'outdir' | 'cwd' | 'content' | 'importMap'>
+export type UserConfig = RequiredBy<Config, 'outdir' | 'cwd' | 'content'>

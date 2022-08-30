@@ -43,6 +43,10 @@ export function createContext(config: UserConfig) {
   return {
     ...config,
     ignore: BASE_IGNORE.concat(config.outdir, config.ignore ?? []),
+    importMap: {
+      css: `${config.outdir}/css`,
+      recipe: `${config.outdir}/recipe`,
+    },
     tempDir,
     config,
     dictionary,

@@ -8,8 +8,4 @@ export default defineConfig({
   outdir: '__generated__',
   cwd: process.cwd(),
   content: ['*.jsx'],
-  importMap: {
-    css: '../__generated__/css',
-    recipe: '../__generated__/recipe',
-  },
 })
