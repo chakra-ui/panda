@@ -4,52 +4,34 @@ import { createDebug } from './debug'
 import { Collector } from './types'
 import { CallVisitor } from './visitor'
 
-export function cssPlugin(data: Set<PluginResult>, moduleName: string, fileName?: string) {
-  return function (program: swc.Program) {
-    const visitor = new CallVisitor({
-      import: { name: 'css', module: moduleName, filename: fileName },
-      onData(result) {
-        createDebug('css', fileName, result)
-        data.add(result)
-      },
-    })
-    return visitor.visitProgram(program)
+function createPlugin(name: string) {
+  return function plugin(data: Set<PluginResult>, moduleName: string, fileName?: string) {
+    return function (program: swc.Program) {
+      const visitor = new CallVisitor({
+        import: { name, module: moduleName, filename: fileName },
+        onData(result) {
+          createDebug(name, fileName, result)
+          data.add(result)
+        },
+      })
+      return visitor.visitProgram(program)
+    }
   }
 }
 
-export function globalStylePlugin(data: Set<PluginResult>, moduleName: string, fileName?: string) {
-  return function (program: swc.Program) {
-    const visitor = new CallVisitor({
-      import: { name: 'globalStyle', module: moduleName, filename: fileName },
-      onData(result) {
-        createDebug('globalStyle', fileName, result)
-        data.add(result)
-      },
-    })
-    return visitor.visitProgram(program)
-  }
-}
-
-export function fontFacePlugin(data: Set<PluginResult>, moduleName: string, fileName?: string) {
-  return function (program: swc.Program) {
-    const visitor = new CallVisitor({
-      import: { name: 'fontFace', module: moduleName, filename: fileName },
-      onData(result) {
-        createDebug('fontFace', fileName, result)
-        data.add(result)
-      },
-    })
-    return visitor.visitProgram(program)
-  }
-}
+export const cssPlugin = createPlugin('css')
+export const globalStylePlugin = createPlugin('globalStyle')
+export const fontFacePlugin = createPlugin('fontFace')
+export const cssMapPlugin = createPlugin('cssMap')
 
 export function createCollector() {
   return {
     css: new Set<PluginResult>(),
     globalStyle: new Set<PluginResult>(),
     fontFace: new Set<PluginResult>(),
+    cssMap: new Set<PluginResult>(),
     isEmpty() {
-      return this.css.size === 0 && this.globalStyle.size === 0 && this.fontFace.size === 0
+      return this.css.size === 0 && this.globalStyle.size === 0 && this.fontFace.size === 0 && this.cssMap.size === 0
     },
   }
 }
@@ -59,5 +41,6 @@ export function createPlugins(data: Collector, moduleName: string, fileName?: st
     cssPlugin(data.css, moduleName, fileName),
     fontFacePlugin(data.fontFace, moduleName, fileName),
     globalStylePlugin(data.globalStyle, moduleName, fileName),
+    cssMapPlugin(data.cssMap, moduleName, fileName),
   ]
 }

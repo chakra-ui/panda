@@ -14,4 +14,5 @@ export type Collector = {
   css: Set<PluginResult>
   globalStyle: Set<PluginResult>
   fontFace: Set<PluginResult>
+  cssMap: Set<PluginResult>
 }
