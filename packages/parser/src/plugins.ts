@@ -1,6 +1,6 @@
-import { createDebugger } from '@css-panda/logger'
 import { PluginResult } from '@css-panda/types'
 import * as swc from '@swc/core'
+import { createDebug } from './debug'
 import { Collector } from './types'
 import { CallVisitor } from './visitor'
 
@@ -9,7 +9,7 @@ export function cssPlugin(data: Set<PluginResult>, moduleName: string) {
     const visitor = new CallVisitor({
       import: { name: 'css', module: moduleName },
       onData(result) {
-        createDebugger('plugin:css')(result)
+        createDebug('css', result)
         data.add(result)
       },
     })
@@ -22,7 +22,7 @@ export function globalStylePlugin(data: Set<PluginResult>, moduleName: string) {
     const visitor = new CallVisitor({
       import: { name: 'globalStyle', module: moduleName },
       onData(result) {
-        createDebugger('plugin:global-style')(result)
+        createDebug('globalStyle', result)
         data.add(result)
       },
     })
@@ -35,7 +35,7 @@ export function fontFacePlugin(data: Set<PluginResult>, moduleName: string) {
     const visitor = new CallVisitor({
       import: { name: 'fontFace', module: moduleName },
       onData(result) {
-        createDebugger('plugin:font-face')(result)
+        createDebug('fontFace', result)
         data.add(result)
       },
     })

@@ -1,4 +1,4 @@
-import { Tokens, TSemanticTokens } from '@css-panda/types'
+import { Tokens, SemanticTokens } from '@css-panda/types'
 import dlv from 'lodash.get'
 import { match, P } from 'ts-pattern'
 import { TokenData } from './get-token-data'
@@ -17,7 +17,7 @@ export class Dictionary {
    * The original token definitions
    */
   private tokens: Partial<Tokens>
-  private semanticTokens: TSemanticTokens
+  private semanticTokens: Partial<SemanticTokens>
   private prefix: string | undefined
 
   constructor({
@@ -26,7 +26,7 @@ export class Dictionary {
     prefix,
   }: {
     tokens: Partial<Tokens>
-    semanticTokens?: TSemanticTokens
+    semanticTokens?: Partial<SemanticTokens>
     prefix?: string
   }) {
     this.tokens = tokens

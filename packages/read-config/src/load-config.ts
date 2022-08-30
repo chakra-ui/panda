@@ -1,14 +1,17 @@
 import fs from 'fs'
 import path from 'path'
 import { pathToFileURL } from 'url'
-import { bundleConfigFile } from './bundle'
-import { findConfigFile } from './find'
-import { loadBundledFile } from './load-bundled'
+import { bundleConfigFile } from './bundle-config'
+import { findConfigFile } from './find-config'
+import { loadBundledFile } from './load-bundled-config'
 import { normalizePath } from './normalize-path'
 
 const dynamicImport = new Function('file', 'return import(file)')
 
-export async function loadConfigFile({ root = process.cwd(), file }: { root?: string; file?: string } = {}) {
+export async function loadConfigFile<T extends Record<string, any> = Record<string, any>>({
+  root = process.cwd(),
+  file,
+}: { root?: string; file?: string } = {}) {
   const { isESM, resolvedPath } = findConfigFile({ root, file }) ?? {}
 
   if (!resolvedPath) return {}
@@ -17,7 +20,7 @@ export async function loadConfigFile({ root = process.cwd(), file }: { root?: st
   const dependencies = bundled.dependencies ?? []
 
   const fileName = resolvedPath
-  let config: any
+  let config: T
 
   if (isESM) {
     const fileBase = `${fileName}.timestamp-${Date.now()}`
@@ -38,7 +41,7 @@ export async function loadConfigFile({ root = process.cwd(), file }: { root?: st
   }
   // for cjs, we can register a custom loader via `_require.extensions`
   else {
-    config = loadBundledFile(fileName, bundled.code)
+    config = await loadBundledFile(fileName, bundled.code)
   }
 
   if (typeof config !== 'object') {
@@ -51,4 +54,11 @@ export async function loadConfigFile({ root = process.cwd(), file }: { root?: st
     dependencies: dependencies.map((dep) => normalizePath(path.resolve(dep))),
     code: bundled.code,
   }
+}
+
+export type LoadConfigResult<T> = {
+  path: string
+  config: T
+  dependencies: string[]
+  code: string
 }

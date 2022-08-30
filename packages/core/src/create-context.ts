@@ -1,14 +1,19 @@
 import { Stylesheet, GeneratorContext, CSSCondition } from '@css-panda/atomic'
 import { CSSUtility, mergeUtilities } from '@css-panda/css-utility'
 import { Dictionary } from '@css-panda/dictionary'
+import { UserConfig } from '@css-panda/types'
+import path from 'path'
 import postcss from 'postcss'
+import { createDebug } from './debug'
 
-export function createContext(config: any) {
+const BASE_IGNORE = ['node_modules', '.git', '__tests__', 'tests']
+
+export function createContext(config: UserConfig) {
   const { breakpoints = {}, conditions = {} } = config
 
   const dictionary = new Dictionary({
-    tokens: config.tokens,
-    semanticTokens: config.semanticTokens,
+    tokens: config.tokens ?? {},
+    semanticTokens: config.semanticTokens ?? {},
     prefix: config.prefix,
   })
 
@@ -32,7 +37,13 @@ export function createContext(config: any) {
 
   const stylesheet = new Stylesheet(context())
 
+  const tempDir = path.join(config.outdir, '.temp')
+  createDebug('config:tmpfile', tempDir)
+
   return {
+    ...config,
+    ignore: BASE_IGNORE.concat(config.outdir, config.ignore ?? []),
+    tempDir,
     config,
     dictionary,
     context,

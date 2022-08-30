@@ -13,7 +13,7 @@ export async function bundleConfigFile(
     platform: 'node',
     bundle: true,
     format: isESM ? 'esm' : 'cjs',
-    sourcemap: 'inline',
+    sourcemap: false,
     metafile: true,
     plugins: [TsconfigPathsPlugin({})],
   })

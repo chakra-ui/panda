@@ -1,73 +1,52 @@
+import { ConfigNotFoundError } from '@css-panda/error'
 import { error, info } from '@css-panda/logger'
 import { loadConfigFile } from '@css-panda/read-config'
-import { Config, RequiredBy } from '@css-panda/types'
-import { ConfigNotFoundError } from '@css-panda/error'
-import path from 'path'
-import { contentWatcher } from './content-watcher'
+import { UserConfig } from '@css-panda/types'
 import { createContext } from './create-context'
-import { createDebug } from './debug'
+import { createDebug, debug } from './debug'
 import { generateSystem } from './generators'
-import { getCommonDir } from './get-common-dir'
-import { tempWatcher } from './temp-watcher'
-import { createWatcher } from './watcher'
+import { configWatcher } from './watchers/config'
+import { contentWatcher } from './watchers/content'
+import { tempWatcher } from './watchers/temp'
 
 process.setMaxListeners(Infinity)
 
-type UserConfig = RequiredBy<Config, 'outdir' | 'cwd' | 'content'>
+export async function generator() {
+  debug('starting...')
 
-export async function generator(userConfig: UserConfig) {
-  const { outdir, content, cwd, clean, hash } = userConfig
+  const conf = await loadConfigFile<UserConfig>()
 
-  const fixtureDir = path.dirname(require.resolve('@css-panda/fixture'))
-
-  const conf = await loadConfigFile({
-    root: path.join(fixtureDir, 'src'),
-  })
-
-  createDebug('config:file', conf.path)
+  createDebug('config:file', conf)
 
   if (!conf.config) {
-    throw new ConfigNotFoundError({ cwd, configPath: conf.path })
+    throw new ConfigNotFoundError({
+      cwd: process.cwd(),
+      path: conf.path,
+    })
   }
 
   const ctx = createContext(conf.config)
 
-  await generateSystem(ctx, { outdir, configCode: conf.code, clean, hash })
+  createDebug('context', ctx)
+
+  await generateSystem(ctx, conf.code)
 
   info('⚙️ generated system')
 
-  const tmp = await tempWatcher(ctx, { outdir, cwd })
-  createDebug('config:tmpfile', tmp.dir)
-
-  const userContent = await contentWatcher(ctx, {
-    content,
-    cwd,
-    outdir,
-    tmpdir: tmp.dir,
-    hash,
-  })
-
-  if (!conf.dependencies) return
-
-  const commonDir = getCommonDir(conf.dependencies)
-
-  createDebug('config:deps', commonDir)
-
-  const absDependencies = conf.dependencies.map((file) => file.replace(commonDir, ''))
-  const configWatcher = createWatcher(absDependencies, {
-    cwd: getCommonDir(conf.dependencies),
-  })
+  const _tmpWatcher = await tempWatcher(ctx)
+  const _contentWatcher = await contentWatcher(ctx)
+  const _configWatcher = await configWatcher(conf)
 
   async function close() {
-    await configWatcher.close()
-    await tmp.watcher.close()
-    await userContent.watcher.close()
+    await _configWatcher.close()
+    await _tmpWatcher.close()
+    await _contentWatcher.close()
   }
 
-  configWatcher.on('update', async () => {
+  _configWatcher.on('update', async () => {
     await close()
     info('⚙️ Config updated, restarting...')
-    await generator(userConfig)
+    await generator()
   })
 }
 

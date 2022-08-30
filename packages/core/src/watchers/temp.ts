@@ -1,23 +1,29 @@
-import { debug } from '@css-panda/logger'
 import fs from 'fs-extra'
 import path from 'path'
-import { InternalContext } from './create-context'
-import { createWatcher } from './watcher'
+import { InternalContext } from '../create-context'
+import { createDebug } from '../debug'
+import { createWatcher } from './create-watcher'
 
 /* -----------------------------------------------------------------------------
  * Temp file watcher
  * -----------------------------------------------------------------------------*/
 
-export async function tempWatcher(ctx: InternalContext, { outdir, cwd }: { outdir: string; cwd: string }) {
-  const tempPathDir = path.join(outdir, '.temp')
+export async function tempWatcher(ctx: InternalContext) {
+  const { cwd, outdir } = ctx
+
+  const tempPathDir = ctx.tempDir
   fs.ensureDirSync(tempPathDir)
 
-  const tempWatcher = createWatcher([`${tempPathDir}/*.css`], { cwd })
+  createDebug('temp:dir', tempPathDir)
+  const watcher = createWatcher([`${tempPathDir}/*.css`], { cwd })
 
   const cssPath = path.join(cwd, outdir, 'styles.css')
 
-  tempWatcher.on('all', async (_event, file) => {
-    debug('🔎 Temp file changed', file)
+  let initial = false
+
+  watcher.on('all', async (event, file) => {
+    initial = true
+    createDebug(`temp:${event}`, file)
 
     ctx.stylesheet.reset()
     ctx.stylesheet.addImports(['./design-tokens/index.css'])
@@ -35,7 +41,15 @@ export async function tempWatcher(ctx: InternalContext, { outdir, cwd }: { outdi
     fs.writeFileSync(cssPath, css)
   })
 
-  return { dir: tempPathDir, watcher: tempWatcher }
+  // force re-generate stylesheet on initial run
+  if (!initial) {
+    createDebug('temp:force', '------------------ initial run, forcing re-generate ---------------------')
+    const touchFile = path.join(tempPathDir, '__initial__.css')
+    fs.writeFileSync(touchFile, process.hrtime.toString())
+    fs.unlinkSync(touchFile)
+  }
+
+  return watcher
 }
 
 export function getTempFile(file: string) {

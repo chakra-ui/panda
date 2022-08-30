@@ -15,17 +15,8 @@ import { generatePropertyTypes } from './property-types'
 import { generateSerializer } from './serializer'
 import { generateTransform } from './transform'
 
-type Options = {
-  outdir: string
-  clean?: boolean
-  configCode?: string
-  hash?: boolean
-}
-
-export async function generateSystem(ctx: InternalContext, options: Options) {
-  const { outdir, clean = true, configCode, hash } = options
-
-  const { dictionary } = ctx
+export async function generateSystem(ctx: InternalContext, configCode: string) {
+  const { dictionary, clean, outdir, hash } = ctx
 
   if (clean) {
     await emptyDir(outdir)

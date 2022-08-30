@@ -1,32 +1,23 @@
 import type { DotPath, Loose, TDotPath } from './shared'
-import type { CssKeyframes, CssProperty } from './panda-csstype'
+import type { Keyframes, CssProperty } from './panda-csstype'
 import { UtilityConfig } from './css-utility'
 import { Conditions as TConditions } from './conditions'
+import { Dict, RequiredBy } from './helper'
 
 type TBreakpoints = {
   [breakpoint: string]: string
 }
 
-type TTokens = {
+export type TTokens = {
   [key: string]: string | TTokens
 }
 
-type SemanticTokens<Tokens extends TDotPath, Conditions, Breakpoints> = {
+export type SemanticTokens<Tokens extends TDotPath = Dict, Conditions = Dict, Breakpoints = Dict> = {
   [K in keyof Tokens]?: {
     [token: string]: {
-      [P in keyof Conditions | keyof Breakpoints | '_']?: DotPath<Tokens>
+      [P in keyof Conditions | keyof Breakpoints | '_' | 'base']?: DotPath<Tokens>
     }
   }
-}
-
-export type TSemanticToken = {
-  [token: string]: {
-    [condition: string]: string
-  }
-}
-
-export type TSemanticTokens = {
-  [category: string]: TSemanticToken
 }
 
 type TokensMap<Tokens> = {
@@ -37,8 +28,6 @@ type Shorthands = {
   [shorthand: string]: Array<CssProperty>
 }
 
-export type Format = 'css' | 'cjs' | 'esm' | 'dts'
-
 export type Config<
   Conditions extends TConditions = TConditions,
   Breakpoints extends TBreakpoints = TBreakpoints,
@@ -47,19 +36,20 @@ export type Config<
   cwd?: string
   hash?: boolean
   clean?: boolean
-  format?: Format[]
   outdir?: string
   prefix?: string
   incremental?: boolean
   content?: string[]
+  ignore?: string[]
   conditions?: TConditions
   breakpoints?: Breakpoints
-  keyframes?: CssKeyframes
+  keyframes?: Keyframes
   tokens?: Tokens
   tokensMap?: TokensMap<Tokens>
   semanticTokens?: SemanticTokens<Tokens, Conditions, Breakpoints>
   shorthands?: Shorthands
   utilities?: UtilityConfig<Tokens>[]
+  importMap?: Record<'css' | 'recipe', string>
 }
 
 export type TConfig = Config<TConditions, TBreakpoints, TTokens>
@@ -69,3 +59,5 @@ export function defineConfig<Conditions extends TConditions, Breakpoints extends
 ): Partial<Config<Conditions, Breakpoints, Tokens>> {
   return config
 }
+
+export type UserConfig = RequiredBy<Config, 'outdir' | 'cwd' | 'content' | 'importMap'>

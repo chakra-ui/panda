@@ -8,8 +8,7 @@
   "author": "Abraham Aremu <anubra266@gmail.com>",
   "scripts": {
     "build": "pnpm tsup src/ --dts",
-    "dev": "pnpm build -- --watch",
-    "test": "DEBUG=* tsx src/test.ts"
+    "dev": "pnpm build -- --watch"
   },
   "files": [
     "dist"
