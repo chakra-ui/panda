@@ -51,12 +51,12 @@ export function createCollector() {
   }
 }
 
-export function createPlugins(data: Collector, moduleName: string, fileName?: string) {
+export function createPlugins(data: Collector, importMap: Record<string, string>, fileName?: string) {
   return [
-    cssPlugin(data.css, moduleName, fileName),
-    fontFacePlugin(data.fontFace, moduleName, fileName),
-    globalStylePlugin(data.globalStyle, moduleName, fileName),
-    cssMapPlugin(data.cssMap, moduleName, fileName),
-    recipePlugin(data.recipe, moduleName, fileName),
+    cssPlugin(data.css, importMap.css, fileName),
+    fontFacePlugin(data.fontFace, importMap.css, fileName),
+    globalStylePlugin(data.globalStyle, importMap.css, fileName),
+    cssMapPlugin(data.cssMap, importMap.css, fileName),
+    recipePlugin(data.recipe, importMap.recipe, fileName),
   ]
 }

@@ -47,8 +47,9 @@ export class ClassNames {
   }
 }
 
-export const css = (styleObject: Dict) => {
-  //@ts-ignore - This is intentional. `context` will be auto-generated
-  const generator = new ClassNames(context)
-  return Array.from(generator.css(styleObject)).join(' ')
+export const createCss = (context: any) => {
+  return (styleObject: Dict) => {
+    const generator = new ClassNames(context)
+    return Array.from(generator.css(styleObject)).join(' ')
+  }
 }

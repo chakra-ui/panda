@@ -17,7 +17,7 @@ export async function contentWatcher(ctx: InternalContext) {
     const collector = createCollector()
 
     transformFileSync(file, {
-      plugins: createPlugins(collector, importMap.css, file),
+      plugins: createPlugins(collector, importMap, file),
     })
 
     collector.globalStyle.forEach((result) => {
@@ -36,6 +36,12 @@ export async function contentWatcher(ctx: InternalContext) {
       for (const data of Object.values(result.data)) {
         sheet.process({ type: 'object', data })
       }
+    })
+
+    collector.recipe.forEach((result, name) => {
+      result.forEach((item) => {
+        sheet.processRecipe(ctx.recipes[name], item.data)
+      })
     })
 
     if (collector.isEmpty()) return

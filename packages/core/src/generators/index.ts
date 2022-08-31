@@ -13,6 +13,7 @@ import { generateFontFace } from './font-face'
 import { generateGlobalStyle } from './global-style'
 import { generateJs } from './js'
 import { generatePropertyTypes } from './property-types'
+import { generateRecipes } from './recipe'
 import { generateSerializer } from './serializer'
 import { generateTransform } from './transform'
 
@@ -36,11 +37,16 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
   const typesPath = path.join(outdir, 'types')
   await ensureDir(path.join(typesPath))
 
+  const recipePath = path.join(outdir, 'recipes')
+  await ensureDir(path.join(recipePath))
+
   const cx = generateCx()
   const fontFace = generateFontFace()
   const globalStyle = generateGlobalStyle()
   const types = await generateCssType()
   const cssMap = generateCssMap()
+  const serialier = generateSerializer(hash)
+  const recipes = generateRecipes(ctx.config)
 
   await Promise.all([
     // design tokens
@@ -51,12 +57,14 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
     // helper types
     fs.writeFile(path.join(typesPath, 'csstype.d.ts'), types.cssType),
     fs.writeFile(path.join(typesPath, 'panda-csstype.d.ts'), types.pandaCssType),
+    fs.writeFile(path.join(typesPath, 'public.d.ts'), types.publicType),
     fs.writeFile(path.join(typesPath, 'property-type.d.ts'), generatePropertyTypes(ctx.utilities)),
     fs.writeFile(path.join(typesPath, 'conditions.d.ts'), generateConditions(ctx)),
 
     // serializer (css)
     fs.writeFile(path.join(cssPath, 'transform.js'), generateTransform('../config')),
-    fs.writeFile(path.join(cssPath, 'css.js'), generateSerializer('./transform', hash)),
+    fs.writeFile(path.join(cssPath, 'serializer.js'), serialier.serializer),
+    fs.writeFile(path.join(cssPath, 'css.js'), serialier.css),
     fs.writeFile(path.join(cssPath, 'css.d.ts'), types.css),
 
     // css map
@@ -74,6 +82,9 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
     // global style
     fs.writeFile(path.join(cssPath, 'global-style.js'), globalStyle.js),
     fs.writeFile(path.join(cssPath, 'global-style.d.ts'), globalStyle.dts),
+
+    // recipes
+    fs.writeFile(path.join(recipePath, 'index.js'), recipes),
 
     // css / index.js
     fs.writeFile(

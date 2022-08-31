@@ -74,7 +74,7 @@ export class DynamicCallVisitor extends BaseVisitor {
     const result = ast.importDeclarations(node, this.ctx.import.module)
 
     if (result) {
-      createDebug('import', `Found import { ${result.join(',')} } in ${this.ctx.import.filename}`)
+      createDebug('import', `Found import { ${result.map((t) => t.alias).join(', ')} } in ${this.ctx.import.filename}`)
       this.imports = result
     }
 

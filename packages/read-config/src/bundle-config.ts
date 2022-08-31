@@ -16,9 +16,6 @@ export async function bundleConfigFile(
     sourcemap: false,
     metafile: true,
     plugins: [TsconfigPathsPlugin({})],
-    define: {
-      'process.cwd()': process.cwd(),
-    },
   })
 
   const { text } = result.outputFiles[0]

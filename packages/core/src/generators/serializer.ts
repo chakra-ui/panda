@@ -17,15 +17,22 @@ function readAtomicPkgFiles() {
   return text
 }
 
-export function generateSerializer(transform: string, hash?: boolean) {
+export function generateSerializer(hash?: boolean) {
   const code = readAtomicPkgFiles()
 
-  return outdent`
+  return {
+    css: outdent`
     // panda.config
-      import { transform } from '${transform}'
+    import { transform } from "./transform"
+    import { createCss } from "./serializer"
       
-      const context = ${hash ? '{ transform, hash: true }' : '{ transform }'}
+    const context = ${hash ? '{ transform, hash: true }' : '{ transform }'}
+      
+    export const css = createCss(context)
+    `,
 
-      ${code}
-    `
+    serializer: outdent`
+    ${code}
+    `,
+  }
 }

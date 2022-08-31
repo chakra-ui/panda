@@ -1,6 +1,6 @@
 import '../__generated__/styles.css'
 import { css, fontFace, globalStyle } from '../__generated__/css'
-import { Button } from './Button'
+import { textStyle } from '../__generated__/recipes'
 import { Alert } from './components/Alert'
 
 fontFace('Roboto Mono', {
@@ -15,6 +15,12 @@ globalStyle({
     borderStyle: 'solid',
   },
 })
+
+const tt = textStyle({
+  size: 'h1',
+})
+
+console.log(tt)
 
 function App() {
   return (

@@ -88,6 +88,7 @@ importers:
       '@css-panda/parser': workspace:*
       '@css-panda/read-config': workspace:*
       '@css-panda/types': workspace:*
+      '@css-panda/walk-object': workspace:*
       '@types/fs-extra': ^9.0.13
       '@types/pluralize': ^0.0.29
       esbuild: ^0.15.5
@@ -108,6 +109,7 @@ importers:
       '@css-panda/parser': link:../parser
       '@css-panda/read-config': link:../read-config
       '@css-panda/types': link:../types
+      '@css-panda/walk-object': link:../walk-object
       esbuild: 0.15.5
       filespy: 1.2.4
       find-up: 6.3.0

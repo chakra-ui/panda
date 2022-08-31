@@ -15,13 +15,15 @@ export async function generateCssType() {
   return {
     cssType: await getCssType('csstype.d.ts'),
     pandaCssType: await getCssType('panda-csstype.ts'),
-    css: outdent`
-    import { CssObject } from '../types/panda-csstype'
-    import { PropertyTypes } from '../types/property-type'
-    import { Conditions } from '../types/conditions'
+    publicType: outdent`
+    import { CssObject } from './panda-csstype'
+    import { PropertyTypes } from './property-type'
+    import { Conditions } from './conditions'
     
     export type UserCssObject = CssObject<Conditions, PropertyTypes>
-    
+    `,
+    css: outdent`
+    import { UserCssObject } from '../types/public'
     export declare function css(styles: UserCssObject): string
     `,
   }

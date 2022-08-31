@@ -2,6 +2,7 @@ import { Stylesheet, GeneratorContext, CSSCondition } from '@css-panda/atomic'
 import { CSSUtility, mergeUtilities } from '@css-panda/css-utility'
 import { Dictionary } from '@css-panda/dictionary'
 import { UserConfig } from '@css-panda/types'
+import { walkObject } from '@css-panda/walk-object'
 import path from 'path'
 import postcss from 'postcss'
 import { createDebug } from './debug'
@@ -40,13 +41,27 @@ export function createContext(config: UserConfig) {
   const tempDir = path.join(config.outdir, '.temp')
   createDebug('config:tmpfile', tempDir)
 
+  const flattenedRecipes = Object.fromEntries(
+    (config.recipes ?? []).map((recipe) => {
+      const base = {}
+      walkObject(recipe.base, (value, paths) => {
+        const [prop] = paths as string[]
+        const { styles } = utilities.resolve(prop, value)
+        Object.assign(base, styles)
+      })
+      createDebug(`recipe:${recipe.name}`, base)
+      return [recipe.name, recipe]
+    }),
+  )
+
   return {
     ...config,
     ignore: BASE_IGNORE.concat(config.outdir, config.ignore ?? []),
     importMap: {
       css: `${config.outdir}/css`,
-      recipe: `${config.outdir}/recipe`,
+      recipe: `${config.outdir}/recipes`,
     },
+    recipes: flattenedRecipes,
     cwd: process.cwd(),
     tempDir,
     config,

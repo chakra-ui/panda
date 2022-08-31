@@ -3,6 +3,7 @@ import { breakpoints } from './breakpoints'
 import { conditions } from './conditions'
 import { utilities } from './css-utility'
 import { keyframes } from './keyframes'
+import { recipes } from './recipes'
 import { semanticTokens, tokens } from './tokens'
 
 export const config = defineConfig({
@@ -13,4 +14,5 @@ export const config = defineConfig({
   semanticTokens: semanticTokens as any,
   conditions,
   utilities: [utilities],
+  recipes,
 })

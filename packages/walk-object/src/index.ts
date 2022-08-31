@@ -4,11 +4,11 @@ function isObject(value: any): value is object {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-type Mapped<T, K> = {
+export type MappedObject<T, K> = {
   [Prop in keyof T]: T[Prop] extends Array<any>
-    ? Mapped<T[Prop][number], K>[]
+    ? MappedObject<T[Prop][number], K>[]
     : T[Prop] extends object
-    ? Mapped<T[Prop], K>
+    ? MappedObject<T[Prop], K>
     : K
 }
 
@@ -16,7 +16,7 @@ export function walkObject<T, K>(
   target: T,
   predicate: Predicate<K>,
   options: { maxDepth?: number } = {},
-): Mapped<T, ReturnType<Predicate<K>>> {
+): MappedObject<T, ReturnType<Predicate<K>>> {
   const { maxDepth = Infinity } = options
 
   function inner(value: any, path: string[] = []): any {
