@@ -2,7 +2,8 @@ import { PluginResult } from '@css-panda/types'
 
 export type PluginContext = {
   import: { module: string; name: string; filename?: string }
-  onData: (result: PluginResult) => void
+  onData?: (result: PluginResult) => void
+  onDynamicData?: (name: string, result: PluginResult) => void
 }
 
 export type ImportResult = {
@@ -15,4 +16,5 @@ export type Collector = {
   globalStyle: Set<PluginResult>
   fontFace: Set<PluginResult>
   cssMap: Set<PluginResult>
+  recipe: Map<string, Set<PluginResult>>
 }

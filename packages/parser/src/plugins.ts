@@ -2,7 +2,7 @@ import { PluginResult } from '@css-panda/types'
 import * as swc from '@swc/core'
 import { createDebug } from './debug'
 import { Collector } from './types'
-import { CallVisitor } from './visitor'
+import { CallVisitor, DynamicCallVisitor } from './visitor'
 
 function createPlugin(name: string) {
   return function plugin(data: Set<PluginResult>, moduleName: string, fileName?: string) {
@@ -24,12 +24,27 @@ export const globalStylePlugin = createPlugin('globalStyle')
 export const fontFacePlugin = createPlugin('fontFace')
 export const cssMapPlugin = createPlugin('cssMap')
 
+export function recipePlugin(data: Map<string, Set<PluginResult>>, moduleName: string, fileName?: string) {
+  return function (program: swc.Program) {
+    const visitor = new DynamicCallVisitor({
+      import: { name: '*', module: moduleName, filename: fileName },
+      onDynamicData(name, result) {
+        createDebug(name, fileName, result)
+        data.set(name, data.get(name) || new Set())
+        data.get(name)!.add(result)
+      },
+    })
+    return visitor.visitProgram(program)
+  }
+}
+
 export function createCollector() {
   return {
     css: new Set<PluginResult>(),
     globalStyle: new Set<PluginResult>(),
     fontFace: new Set<PluginResult>(),
     cssMap: new Set<PluginResult>(),
+    recipe: new Map<string, Set<PluginResult>>(),
     isEmpty() {
       return this.css.size === 0 && this.globalStyle.size === 0 && this.fontFace.size === 0 && this.cssMap.size === 0
     },
@@ -42,5 +57,6 @@ export function createPlugins(data: Collector, moduleName: string, fileName?: st
     fontFacePlugin(data.fontFace, moduleName, fileName),
     globalStylePlugin(data.globalStyle, moduleName, fileName),
     cssMapPlugin(data.cssMap, moduleName, fileName),
+    recipePlugin(data.recipe, moduleName, fileName),
   ]
 }

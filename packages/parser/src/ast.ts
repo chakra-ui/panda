@@ -190,3 +190,38 @@ export function importDeclaration(node: swc.ImportDeclaration, options: { module
 
   return result.find((item) => item.identifer === options.name)
 }
+
+export function importDeclarations(node: swc.ImportDeclaration, module: string) {
+  const { specifiers, source } = node
+
+  const result: ImportResult[] = []
+  const regex = new RegExp(module)
+  if (!regex.test(source.value)) return
+
+  for (let i = 0; i < specifiers.length; i++) {
+    match(specifiers[i])
+      .with(
+        {
+          type: 'ImportSpecifier',
+          local: { type: 'Identifier', value: P.select() },
+          imported: P.nullish,
+        },
+        (value) => {
+          result.push({ identifer: value, alias: value })
+        },
+      )
+      .with(
+        {
+          type: 'ImportSpecifier',
+          local: { type: 'Identifier', value: P.select('alias') },
+          imported: { type: 'Identifier', value: P.select('main') },
+        },
+        ({ main, alias }) => {
+          result.push({ identifer: main, alias: alias })
+        },
+      )
+      .otherwise(() => {})
+  }
+
+  return result
+}
