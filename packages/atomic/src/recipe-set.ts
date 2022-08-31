@@ -32,10 +32,7 @@ export class RecipeSet extends Ruleset {
       styles: { [this.recipe.name]: '__ignore__' },
     })
 
-    const styleObject = {
-      ...this.recipe.defaultVariants,
-      ...styles,
-    }
+    const styleObject = scope ? styles : { ...this.recipe.defaultVariants, ...styles }
 
     this.process({ scope, styles: styleObject })
 

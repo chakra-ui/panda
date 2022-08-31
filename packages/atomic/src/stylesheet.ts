@@ -54,31 +54,34 @@ export class Stylesheet {
     return this
   }
 
-  processAtomic(styleObject: Record<string, any>) {
+  private forEach(styleObject: any, fn: Function) {
     const { selectors = {}, '@media': mediaQueries = {}, ...styles } = styleObject
 
-    const inner = (props: any, scope?: string) => {
-      const ruleset = new Ruleset(this.context, { hash: this.hash })
-      ruleset.process({ scope, styles: props })
-    }
-
-    inner(styles)
+    fn(styles)
 
     for (const [scope, scopeStyles] of Object.entries(selectors)) {
-      inner(scopeStyles as any, scope)
+      fn(scopeStyles as any, scope)
     }
 
     for (const [scope, scopeStyles] of Object.entries(mediaQueries)) {
-      inner(scopeStyles as any, `@media ${scope}`)
+      fn(scopeStyles as any, `@media ${scope}`)
     }
 
     return this
   }
 
-  processRecipe(recipe: Recipe, styles: Record<string, any>) {
-    const ruleset = new RecipeSet(this.context, recipe, { hash: this.hash })
-    ruleset.resolve({ styles })
-    return this
+  processAtomic(styleObject: Record<string, any>) {
+    return this.forEach(styleObject, (props: any, scope?: string) => {
+      const ruleset = new Ruleset(this.context, { hash: this.hash })
+      ruleset.process({ scope, styles: props })
+    })
+  }
+
+  processRecipe(recipe: Recipe, styleObject: Record<string, any>) {
+    return this.forEach(styleObject, (props: any, scope?: string) => {
+      const ruleset = new RecipeSet(this.context, recipe, { hash: this.hash })
+      ruleset.resolve({ scope, styles: props })
+    })
   }
 
   addImports(imports: string[]) {
