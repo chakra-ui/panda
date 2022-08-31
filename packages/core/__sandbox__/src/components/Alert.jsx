@@ -4,6 +4,9 @@ import React from 'react'
 const base = css({
   fontSize: 'lg',
   fontFamily: 'body',
+  paddingX: '6',
+  paddingY: '4',
+  borderRadius: 'md',
 })
 
 const variants = cssMap({
@@ -21,16 +24,9 @@ const variants = cssMap({
 
 export function Alert() {
   return (
-    <div>
+    <div className={css({ display: 'flex', flexDirection: 'column', gap: '5' })}>
       <div className={cx(base, variants('warning'))}>Hello</div>
       <div className={cx(base, variants('error'))}>Hello</div>
-      <div
-        className={css({
-          border: '2px solid red',
-        })}
-      >
-        Paragraph
-      </div>
     </div>
   )
 }
