@@ -15,5 +15,8 @@
   ],
   "dependencies": {
     "@css-panda/css-unit": "workspace:*"
+  },
+  "devDependencies": {
+    "@css-panda/fixture": "workspace:*"
   }
 }
