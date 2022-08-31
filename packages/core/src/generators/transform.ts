@@ -17,13 +17,13 @@ export function generateTransform(configPath: string) {
                 return { className: className(value, key) }
               }
               
-              value = value.replaceAll(' ', '_')
+              value = value.toString().replaceAll(' ', '_')
               return { className: \`\${className}_\${value}\` }
             }
           }
         }
         
-        value = value.replaceAll(' ', '_')
+        value = value.toString().replaceAll(' ', '_')
         return { className: \`\${prop}_\${value}\` }
       }
   

@@ -3,7 +3,7 @@ import type { Dict, UtilityConfig, PropertyUtility } from '@css-panda/types'
 
 const isString = (v: any): v is string => typeof v === 'string'
 const isFunction = (v: any): v is Function => typeof v === 'function'
-const clean = (v: string) => v.replaceAll(' ', '_')
+const clean = (v: string) => v.toString().replaceAll(' ', '_')
 
 export class CSSUtility {
   dictionary: Dictionary

@@ -1,4 +1,4 @@
-import { Stylesheet, GeneratorContext, CSSCondition } from '@css-panda/atomic'
+import { CSSCondition, GeneratorContext, Stylesheet } from '@css-panda/atomic'
 import { CSSUtility, mergeUtilities } from '@css-panda/css-utility'
 import { Dictionary } from '@css-panda/dictionary'
 import { UserConfig } from '@css-panda/types'
@@ -6,8 +6,23 @@ import { walkObject } from '@css-panda/walk-object'
 import path from 'path'
 import postcss from 'postcss'
 import { createDebug } from './debug'
+import merge from 'lodash/merge'
 
 const BASE_IGNORE = ['node_modules', '.git', '__tests__', 'tests']
+
+function forEach(obj: any, fn: Function) {
+  const { selectors = {}, '@media': mediaQueries = {}, ...styles } = obj
+
+  fn(styles)
+
+  for (const [scope, scopeStyles] of Object.entries(selectors)) {
+    fn(scopeStyles as any, scope)
+  }
+
+  for (const [scope, scopeStyles] of Object.entries(mediaQueries)) {
+    fn(scopeStyles as any, `@media ${scope}`)
+  }
+}
 
 export function createContext(config: UserConfig) {
   const { breakpoints = {}, conditions = {} } = config
@@ -41,16 +56,50 @@ export function createContext(config: UserConfig) {
   const tempDir = path.join(config.outdir, '.temp')
   createDebug('config:tmpfile', tempDir)
 
-  const flattenedRecipes = Object.fromEntries(
-    (config.recipes ?? []).map((recipe) => {
-      const base = {}
-      walkObject(recipe.base, (value, paths) => {
+  function css(obj: any) {
+    const __styles: any = {}
+
+    forEach(obj, (styles: any, selector: string) => {
+      const result: any = {}
+
+      walkObject(styles, (value, paths) => {
         const [prop] = paths as string[]
         const { styles } = utilities.resolve(prop, value)
-        Object.assign(base, styles)
+
+        if (selector) {
+          result[selector] ||= {}
+          merge(result[selector], styles)
+        } else {
+          merge(result, styles)
+        }
       })
-      createDebug(`recipe:${recipe.name}`, base)
-      return [recipe.name, recipe]
+
+      merge(__styles, result)
+    })
+
+    return __styles
+  }
+
+  const flattenedRecipes = Object.fromEntries(
+    (config.recipes ?? []).map((recipe) => {
+      const __recipe: any = {
+        name: recipe.name,
+        base: {},
+        variants: {},
+        defaultVariants: recipe.defaultVariants ?? {},
+      }
+
+      merge(__recipe.base, css(recipe.base))
+
+      for (const variant in recipe.variants) {
+        const element = recipe.variants[variant]
+        for (const [value, style] of Object.entries(element)) {
+          merge(__recipe.variants, { [variant]: { [value]: css(style) } })
+        }
+      }
+
+      createDebug(`recipe:${recipe.name}`, recipe, __recipe)
+      return [recipe.name, __recipe]
     }),
   )
 

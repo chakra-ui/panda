@@ -4,8 +4,14 @@ export const recipes: Recipe[] = [
   {
     name: 'textStyle',
     base: {
-      '--color': '#fff',
+      '--color': 'colors.gray.500',
       fontFamily: 'body',
+      divideX: '2px',
+      '@media': {
+        print: {
+          fontFamily: 'sans',
+        },
+      },
     },
     variants: {
       size: {
