@@ -2,9 +2,10 @@ import { Ruleset } from './ruleset'
 import { expandScreenAtRule } from './expand-screen'
 import { GeneratorContext } from './types'
 import { optimizeCss } from './optimize'
-import { PluginResult } from '@css-panda/types'
+import { PluginResult, Recipe } from '@css-panda/types'
 import { toCss } from './to-css'
 import postcss, { Root, Rule } from 'postcss'
+import { RecipeSet } from './recipe-set'
 
 export class Stylesheet {
   hash: boolean
@@ -71,6 +72,12 @@ export class Stylesheet {
       inner(scopeStyles as any, `@media ${scope}`)
     }
 
+    return this
+  }
+
+  processRecipe(recipe: Recipe, styles: Record<string, any>) {
+    const ruleset = new RecipeSet(this.context, recipe, { hash: this.hash })
+    ruleset.resolve({ styles })
     return this
   }
 

@@ -19,6 +19,8 @@ describe('[dynamic] ast parser', () => {
           variant: { _:"h4", md: "h5" }
       })
 
+      textStyle()
+
       console.log("ere")
      `
 
@@ -49,6 +51,10 @@ describe('[dynamic] ast parser', () => {
               "md": "h5",
             },
           },
+          "name": "textStyle",
+        },
+        {
+          "data": {},
           "name": "textStyle",
         },
       }

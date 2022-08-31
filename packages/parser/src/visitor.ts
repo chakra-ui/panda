@@ -90,14 +90,21 @@ export class DynamicCallVisitor extends BaseVisitor {
       if (!expression) continue
 
       const args = expression.arguments
-      if (!args.length || args.length > 2) continue
 
-      const [config] = args
+      if (args.length > 2) continue
 
-      if (config.expression.type === 'ObjectExpression') {
+      if (args.length) {
+        const [config] = args
+        if (config.expression.type === 'ObjectExpression') {
+          this.ctx.onDynamicData?.(_import.alias, {
+            type: 'object',
+            data: ast.objectExpression(config.expression),
+          })
+        }
+      } else {
         this.ctx.onDynamicData?.(_import.alias, {
           type: 'object',
-          data: ast.objectExpression(config.expression),
+          data: {},
         })
       }
     }

@@ -1,5 +1,5 @@
-import { Root } from 'postcss'
 import { getBreakpointDetails } from '@css-panda/breakpoint-utils'
+import { Root } from 'postcss'
 import { Dict } from './types'
 
 export function expandScreenAtRule(root: Root, breakpoints: Dict) {

@@ -56,8 +56,11 @@ importers:
   packages/breakpoint-utils:
     specifiers:
       '@css-panda/css-unit': workspace:*
+      '@css-panda/fixture': workspace:*
     dependencies:
       '@css-panda/css-unit': link:../css-unit
+    devDependencies:
+      '@css-panda/fixture': link:../fixture
 
   packages/calc:
     specifiers: {}
