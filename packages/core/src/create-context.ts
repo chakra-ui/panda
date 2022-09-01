@@ -11,11 +11,11 @@ import { createDebug } from './debug'
 
 const BASE_IGNORE = ['node_modules', '.git', '__tests__', 'tests']
 
-function arrayToObject<T>(array: T[]) {
+function arrayToObject(array: any[]) {
   return array.reduce((acc, item) => {
-    Object.assign(acc, item)
+    Object.assign(acc, { [item.name]: item })
     return acc
-  }, {} as Record<string, T>)
+  }, {} as Record<string, any>)
 }
 
 export function createContext(conf: LoadConfigResult<UserConfig>) {

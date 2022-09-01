@@ -192,7 +192,8 @@ export class CSSUtility {
     return this.isShorthand(prop) ? inner(this.resolveShorthand(prop), value) : inner(prop, value)
   }
 
-  resolve(prop: string, value: string) {
+  resolve(prop: string, value: string | undefined) {
+    if (!value) return { className: '', styles: {} }
     return {
       className: this.getOrCreateClassName(prop, clean(value)),
       styles: this.getOrCreateStyle(prop, value),

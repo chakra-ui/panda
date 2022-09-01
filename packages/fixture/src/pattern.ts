@@ -10,12 +10,14 @@ export const patterns: Pattern[] = [
       gap: { type: 'token', value: 'spacing' },
     },
     transform(props) {
-      const { align, justify, direction, gap } = props
+      const { align = 'flex-start', justify, direction = 'column', gap = '10px' } = props
       return {
+        display: 'flex',
         flexDirection: direction,
         alignItems: align,
         justifyContent: justify,
         gap,
+        minWidth: '0',
       }
     },
   },
