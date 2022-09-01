@@ -102,6 +102,7 @@ importers:
       pluralize: ^8.0.0
       postcss: ^8.4.14
       recrawl: ^2.2.1
+      ts-pattern: ^4.0.5
     dependencies:
       '@css-panda/atomic': link:../atomic
       '@css-panda/css-recipe': link:../css-recipe
@@ -123,6 +124,7 @@ importers:
       pluralize: 8.0.0
       postcss: 8.4.14
       recrawl: 2.2.1
+      ts-pattern: 4.0.5
     devDependencies:
       '@css-panda/dictionary': link:../dictionary
       '@types/fs-extra': 9.0.13

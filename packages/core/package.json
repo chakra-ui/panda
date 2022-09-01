@@ -35,7 +35,8 @@
     "postcss": "^8.4.14",
     "pkg-types": "^0.3.3",
     "pluralize": "^8.0.0",
-    "recrawl": "^2.2.1"
+    "recrawl": "^2.2.1",
+    "ts-pattern": "^4.0.5"
   },
   "devDependencies": {
     "@css-panda/dictionary": "workspace:*",

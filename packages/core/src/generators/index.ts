@@ -12,9 +12,11 @@ import { generateDts } from './dts'
 import { generateFontFace } from './font-face'
 import { generateGlobalStyle } from './global-style'
 import { generateJs } from './js'
+import { generatePattern } from './pattern'
 import { generatePropertyTypes } from './property-types'
 import { generateRecipes } from './recipe'
 import { generateSerializer } from './serializer'
+import { generateTokenDts } from './token-dts'
 import { generateTransform } from './transform'
 
 export async function generateSystem(ctx: InternalContext, configCode: string) {
@@ -36,6 +38,9 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
   const recipePath = path.join(outdir, 'recipes')
   await ensureDir(path.join(recipePath))
 
+  const patternPath = path.join(outdir, 'patterns')
+  await ensureDir(patternPath)
+
   const cx = generateCx()
   const fontFace = generateFontFace()
   const globalStyle = generateGlobalStyle()
@@ -43,17 +48,19 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
   const cssMap = generateCssMap()
   const serialier = generateSerializer(hash)
   const recipes = generateRecipes(ctx.config)
+  const patterns = generatePattern(ctx.config)
 
   await Promise.all([
     // design tokens
     fs.writeFile(path.join(dsPath, 'index.css'), generateCss(ctx)),
-    fs.writeFile(path.join(dsPath, 'index.d.ts'), generateDts(dictionary)),
+    fs.writeFile(path.join(dsPath, 'index.d.ts'), generateDts()),
     fs.writeFile(path.join(dsPath, 'index.js'), generateJs(dictionary)),
 
     // helper types
     fs.writeFile(path.join(typesPath, 'csstype.d.ts'), types.cssType),
     fs.writeFile(path.join(typesPath, 'panda-csstype.d.ts'), types.pandaCssType),
     fs.writeFile(path.join(typesPath, 'public.d.ts'), types.publicType),
+    fs.writeFile(path.join(typesPath, 'token.d.ts'), generateTokenDts(dictionary)),
     fs.writeFile(path.join(typesPath, 'property-type.d.ts'), generatePropertyTypes(ctx.utilities)),
     fs.writeFile(path.join(typesPath, 'conditions.d.ts'), generateConditions(ctx)),
 
@@ -82,6 +89,10 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
     // recipes
     fs.writeFile(path.join(recipePath, 'index.js'), recipes.js),
     fs.writeFile(path.join(recipePath, 'index.d.ts'), recipes.dts),
+
+    // pattern
+    fs.writeFile(path.join(patternPath, 'index.js'), patterns.js),
+    fs.writeFile(path.join(patternPath, 'index.d.ts'), patterns.dts),
 
     // css / index.js
     fs.writeFile(
