@@ -6,5 +6,5 @@ export default defineConfig({
   clean: false,
   watch: false,
   outdir: '__generated__',
-  content: ['*.jsx'],
+  include: ['*.jsx'],
 })

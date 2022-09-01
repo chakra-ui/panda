@@ -10,9 +10,9 @@ export async function createConfigWatcher(conf: LoadConfigResult<UserConfig>) {
 }
 
 export async function createContentWatcher(ctx: InternalContext, callback: (file: string) => void) {
-  const { content, cwd, ignore } = ctx
+  const { include, cwd, exclude } = ctx
 
-  const watcher = createWatcher(content, { cwd, ignore })
+  const watcher = createWatcher(include, { cwd, ignore: exclude })
 
   watcher.on('update', (file) => {
     createDebug('file:changed', file)

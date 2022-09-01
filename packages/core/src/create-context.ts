@@ -77,7 +77,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
 
   return {
     ...config,
-    ignore: BASE_IGNORE.concat(config.outdir, config.ignore ?? []),
+    exclude: BASE_IGNORE.concat(config.outdir, config.exclude ?? []),
     importMap: {
       css: `${config.outdir}/css`,
       recipe: `${config.outdir}/recipes`,

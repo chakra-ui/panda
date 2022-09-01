@@ -56,8 +56,8 @@ export async function generator() {
     })
   } else {
     const crawl = recrawl({
-      only: ctx.content,
-      skip: ctx.ignore,
+      only: ctx.include,
+      skip: ctx.exclude,
     })
 
     crawl(ctx.cwd, (file) => {

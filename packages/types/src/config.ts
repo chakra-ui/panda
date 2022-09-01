@@ -3,7 +3,7 @@ import { UtilityConfig } from './css-utility'
 import { Dict, RequiredBy } from './helper'
 import type { CssProperty, Keyframes } from './panda-csstype'
 import { Recipe } from './recipe'
-import type { DotPath, Loose, TDotPath } from './shared'
+import type { DotPath, TDotPath } from './shared'
 
 type TBreakpoints = {
   [breakpoint: string]: string
@@ -35,10 +35,8 @@ export type Config<
   clean?: boolean
   outdir?: string
   prefix?: string
-  // include
-  content?: string[]
-  // exclude
-  ignore?: string[]
+  include?: string[]
+  exclude?: string[]
   watch?: boolean
   conditions?: TConditions
   breakpoints?: Breakpoints
@@ -58,4 +56,4 @@ export function defineConfig<Conditions extends TConditions, Breakpoints extends
   return config
 }
 
-export type UserConfig = RequiredBy<Config, 'outdir' | 'cwd' | 'content'>
+export type UserConfig = RequiredBy<Config, 'outdir' | 'cwd' | 'include'>
