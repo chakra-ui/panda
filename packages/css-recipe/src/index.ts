@@ -2,7 +2,7 @@ import { CSSUtility } from '@css-panda/css-utility'
 import { Recipe } from '@css-panda/types'
 import { walkObject } from '@css-panda/walk-object'
 import merge from 'lodash.merge'
-import { createDebugger } from '@css-panda/logger'
+import { createDebugger, error } from '@css-panda/logger'
 
 const debug = createDebugger('recipe')
 
@@ -24,6 +24,13 @@ export class CSSRecipe {
       const result: StyleObject = {}
 
       walkObject(styles, (value, paths) => {
+        if (paths.length > 1) {
+          error(`
+          Conditional values are not supported in recipes.
+          You provided the follow conditions for ${paths[0]}: ${paths.slice(1).join(', ')}
+          `)
+        }
+
         const [prop] = paths as string[]
         const { styles } = this.utility.resolve(prop, value)
 
