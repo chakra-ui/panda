@@ -1,35 +1,54 @@
+import { Recipe } from '@css-panda/types'
 import { outdent } from 'outdent'
 
-export function generateRecipes(config: any, hash?: boolean) {
-  let recipes = [
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+export function generateRecipes(config: { recipes?: Recipe[] }, hash?: boolean) {
+  let js = [
     outdent`
    import { createCss } from "../css/serializer"
   `,
   ]
 
-  config.recipes.forEach((recipe: any) => {
-    recipes.push(outdent`
-     export const ${recipe.name} = (styles) => {
+  let dts = ['']
+
+  ;(config.recipes ?? []).forEach((recipe) => {
+    js.push(outdent`
+    export const ${recipe.name} = (styles) => {
 
      const transform = (prop, value) => {
-        if (value === '__ignore__') {
-           return { className: ${recipe.name} }
-        }
-
+        value = value.toString().replaceAll(" ", "_")
         return { className: \`${recipe.name}__\${prop}-\${value}\` }
      }
      
      const context = ${hash ? '{ transform, hash: true }' : '{ transform }'}
      const css = createCss(context)
      
-     const classNames = new Set()
-     classNames.add('${recipe.name}')
-     classNames.add(css(styles))
+     return ['${recipe.name}', css(styles)].join(' ')
+    }
+    `)
 
-     return Array.from(classNames).join(' ')
-     }
+    dts.push(outdent`
+    import { UserConditionalValue as ConditionalValue } from "../types/public"
+
+    export type ${capitalize(recipe.name)}Value = {
+      ${Object.keys(recipe.variants ?? {})
+        .map((key) => {
+          const value = recipe.variants![key]
+          const enums = Object.keys(value)
+            .map((t) => JSON.stringify(t))
+            .join(' | ')
+          return `${key}?: ConditionalValue<${enums}>`
+        })
+        .join('\n')}
+    }
+
+    export declare function ${recipe.name}(value: ${capitalize(recipe.name)}Value): string
     `)
   })
 
-  return outdent.string(recipes.join('\n\n'))
+  return {
+    js: outdent.string(js.join('\n\n')),
+    dts: outdent.string(dts.join('\n\n')),
+  }
 }

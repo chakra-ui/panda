@@ -3,7 +3,7 @@ import { defineConfig } from '@css-panda/types'
 
 export default defineConfig({
   ...config,
-  clean: true,
+  clean: false,
   outdir: '__generated__',
   content: ['*.jsx'],
 })

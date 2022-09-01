@@ -15,7 +15,7 @@ export type CssProperties = Properties & {
 
 export type Keyframes = Record<string, { [time: string]: CssProperties }>
 
-type ConditionalValue<C extends Record<string, string>, V> =
+export type ConditionalValue<C extends Record<string, string>, V> =
   // NOTE: When using Clean<V>, it doesn't allow arbrtrary values. So I removed it.
   | V
   | {

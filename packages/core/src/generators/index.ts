@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs'
-import { ensureDir, emptyDir } from 'fs-extra'
+import { ensureDir } from 'fs-extra'
 import { outdent } from 'outdent'
 import path from 'path'
 import { InternalContext } from '../create-context'
@@ -18,11 +18,7 @@ import { generateSerializer } from './serializer'
 import { generateTransform } from './transform'
 
 export async function generateSystem(ctx: InternalContext, configCode: string) {
-  const { dictionary, clean, outdir, hash } = ctx
-
-  if (clean) {
-    await emptyDir(outdir)
-  }
+  const { dictionary, outdir, hash } = ctx
 
   await ensureDir(outdir)
   const configPath = path.join(outdir, 'config.js')
@@ -84,7 +80,8 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
     fs.writeFile(path.join(cssPath, 'global-style.d.ts'), globalStyle.dts),
 
     // recipes
-    fs.writeFile(path.join(recipePath, 'index.js'), recipes),
+    fs.writeFile(path.join(recipePath, 'index.js'), recipes.js),
+    fs.writeFile(path.join(recipePath, 'index.d.ts'), recipes.dts),
 
     // css / index.js
     fs.writeFile(

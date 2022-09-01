@@ -24,7 +24,6 @@ export class CSSRecipe {
       const result: StyleObject = {}
 
       walkObject(styles, (value, paths) => {
-        console.log(paths)
         const [prop] = paths as string[]
         const { styles } = this.utility.resolve(prop, value)
 

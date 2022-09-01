@@ -77,11 +77,9 @@ export class Stylesheet {
     })
   }
 
-  processRecipe(recipe: Recipe, styleObject: Record<string, any>) {
-    return this.forEach(styleObject, (props: any, scope?: string) => {
-      const ruleset = new RecipeSet(this.context, recipe, { hash: this.hash })
-      ruleset.resolve({ scope, styles: props })
-    })
+  processRecipe(recipe: Recipe, styles: Record<string, any>) {
+    const ruleset = new RecipeSet(this.context, recipe, { hash: this.hash })
+    ruleset.resolve({ styles })
   }
 
   addImports(imports: string[]) {

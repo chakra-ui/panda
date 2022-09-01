@@ -46,7 +46,13 @@ export function createCollector() {
     cssMap: new Set<PluginResult>(),
     recipe: new Map<string, Set<PluginResult>>(),
     isEmpty() {
-      return this.css.size === 0 && this.globalStyle.size === 0 && this.fontFace.size === 0 && this.cssMap.size === 0
+      return (
+        this.css.size === 0 &&
+        this.globalStyle.size === 0 &&
+        this.fontFace.size === 0 &&
+        this.cssMap.size === 0 &&
+        this.recipe.size === 0
+      )
     },
   }
 }

@@ -26,15 +26,15 @@ export class RecipeSet extends Ruleset {
   }
 
   resolve(options: ProcessOptions) {
-    const { scope, styles } = options
+    const { styles } = options
 
     this.process({
-      styles: { [this.recipe.name]: '__ignore__' },
+      styles: {
+        [this.recipe.name]: '__ignore__',
+        ...this.recipe.defaultVariants,
+        ...styles,
+      },
     })
-
-    const styleObject = scope ? styles : { ...this.recipe.defaultVariants, ...styles }
-
-    this.process({ scope, styles: styleObject })
 
     return this
   }

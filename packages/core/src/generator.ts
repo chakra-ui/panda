@@ -2,6 +2,7 @@ import { ConfigNotFoundError } from '@css-panda/error'
 import { error, info } from '@css-panda/logger'
 import { loadConfigFile } from '@css-panda/read-config'
 import { UserConfig } from '@css-panda/types'
+import { emptyDir } from 'fs-extra'
 import { createContext } from './create-context'
 import { createDebug, debug } from './debug'
 import { generateSystem } from './generators'
@@ -10,6 +11,8 @@ import { contentWatcher } from './watchers/content'
 import { tempWatcher } from './watchers/temp'
 
 process.setMaxListeners(Infinity)
+
+let cleaned = false
 
 export async function generator() {
   debug('starting...')
@@ -28,6 +31,11 @@ export async function generator() {
   const ctx = createContext(conf.config)
 
   createDebug('context', ctx)
+
+  if (ctx.clean && !cleaned) {
+    cleaned = true
+    await emptyDir(ctx.outdir)
+  }
 
   await generateSystem(ctx, conf.code)
 

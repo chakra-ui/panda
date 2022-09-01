@@ -39,9 +39,9 @@ export async function contentWatcher(ctx: InternalContext) {
     })
 
     collector.recipe.forEach((result, name) => {
-      result.forEach((item) => {
+      for (const item of result) {
         sheet.processRecipe(ctx.recipes[name], item.data)
-      })
+      }
     })
 
     if (collector.isEmpty()) return
