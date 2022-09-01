@@ -17,4 +17,5 @@ export type Collector = {
   fontFace: Set<PluginResult>
   cssMap: Set<PluginResult>
   recipe: Map<string, Set<PluginResult>>
+  pattern: Map<string, Set<PluginResult>>
 }

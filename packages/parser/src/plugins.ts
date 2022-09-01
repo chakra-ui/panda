@@ -24,7 +24,7 @@ export const globalStylePlugin = createPlugin('globalStyle')
 export const fontFacePlugin = createPlugin('fontFace')
 export const cssMapPlugin = createPlugin('cssMap')
 
-export function recipePlugin(data: Map<string, Set<PluginResult>>, moduleName: string, fileName?: string) {
+export function dynamicPlugin(data: Map<string, Set<PluginResult>>, moduleName: string, fileName?: string) {
   return function (program: swc.Program) {
     const visitor = new DynamicCallVisitor({
       import: { name: '*', module: moduleName, filename: fileName },
@@ -45,13 +45,15 @@ export function createCollector() {
     fontFace: new Set<PluginResult>(),
     cssMap: new Set<PluginResult>(),
     recipe: new Map<string, Set<PluginResult>>(),
+    pattern: new Map<string, Set<PluginResult>>(),
     isEmpty() {
       return (
         this.css.size === 0 &&
         this.globalStyle.size === 0 &&
         this.fontFace.size === 0 &&
         this.cssMap.size === 0 &&
-        this.recipe.size === 0
+        this.recipe.size === 0 &&
+        this.pattern.size === 0
       )
     },
   }
@@ -63,6 +65,7 @@ export function createPlugins(data: Collector, importMap: Record<string, string>
     fontFacePlugin(data.fontFace, importMap.css, fileName),
     globalStylePlugin(data.globalStyle, importMap.css, fileName),
     cssMapPlugin(data.cssMap, importMap.css, fileName),
-    recipePlugin(data.recipe, importMap.recipe, fileName),
+    dynamicPlugin(data.recipe, importMap.recipe, fileName),
+    dynamicPlugin(data.pattern, importMap.pattern, fileName),
   ]
 }

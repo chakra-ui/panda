@@ -81,6 +81,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
     importMap: {
       css: `${config.outdir}/css`,
       recipe: `${config.outdir}/recipes`,
+      pattern: `${config.outdir}/patterns`,
     },
     recipes: mergeRecipes(config.recipes, utilities),
     cwd,
