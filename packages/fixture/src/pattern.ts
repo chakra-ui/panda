@@ -36,4 +36,22 @@ export const patterns: Pattern[] = [
       }
     },
   },
+  {
+    name: 'simpleGrid',
+    properties: {
+      gap: { type: 'token', value: 'spacing' },
+      columns: { type: 'number' },
+      minChildWidth: { type: 'token', value: 'sizes', cssProp: 'width' },
+    },
+    transform(props) {
+      const { gap, columns, minChildWidth } = props
+      return {
+        display: 'grid',
+        gridGap: gap,
+        gridTemplateColumns: columns
+          ? `repeat(${columns}, minmax(0, 1fr))`
+          : `repeat(auto-fit, minmax(${minChildWidth}, 1fr))`,
+      }
+    },
+  },
 ]

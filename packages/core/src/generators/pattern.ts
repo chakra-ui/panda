@@ -25,6 +25,7 @@ export function generatePattern(config: { patterns?: Pattern[] }) {
   let dts: string[] = [
     outdent`
   import { UserCssObject, UserConditionalValue } from "../types/public"
+  import { Properties } from "../types/csstype"
   import { Tokens } from "../types/token"
   `,
   ]
@@ -45,6 +46,9 @@ export function generatePattern(config: { patterns?: Pattern[] }) {
                 return `${key}?: UserCssObject["${value.value}"]`
               })
               .with({ type: 'token' }, (value) => {
+                if (value.cssProp) {
+                  return `${key}?: UserConditionalValue<Tokens["${value.value}"] | Properties["${value.cssProp}"]>`
+                }
                 return `${key}?: UserConditionalValue<Tokens["${value.value}"]>`
               })
               .with({ type: 'enum' }, (value) => {
