@@ -20,6 +20,7 @@ function createPlugin(name: string) {
 }
 
 export const cssPlugin = createPlugin('css')
+export const sxPlugin = createPlugin('sx')
 export const globalStylePlugin = createPlugin('globalStyle')
 export const fontFacePlugin = createPlugin('fontFace')
 export const cssMapPlugin = createPlugin('cssMap')
@@ -61,6 +62,7 @@ export function createCollector() {
 
 export function createPlugins(data: Collector, importMap: Record<string, string>, fileName?: string) {
   return [
+    sxPlugin(data.css, importMap.css, fileName),
     cssPlugin(data.css, importMap.css, fileName),
     fontFacePlugin(data.fontFace, importMap.css, fileName),
     globalStylePlugin(data.globalStyle, importMap.css, fileName),

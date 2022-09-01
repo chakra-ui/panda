@@ -18,6 +18,7 @@ import { generateRecipes } from './recipe'
 import { generateSerializer } from './serializer'
 import { generateTokenDts } from './token-dts'
 import { generateTransform } from './transform'
+import { generateSx } from './sx'
 
 export async function generateSystem(ctx: InternalContext, configCode: string) {
   const { dictionary, outdir, hash } = ctx
@@ -49,6 +50,7 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
   const serialier = generateSerializer(hash)
   const recipes = generateRecipes(ctx.config)
   const patterns = generatePattern(ctx.config)
+  const sx = generateSx()
 
   await Promise.all([
     // design tokens
@@ -78,6 +80,10 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
     fs.writeFile(path.join(cssPath, 'cx.js'), cx.js),
     fs.writeFile(path.join(cssPath, 'cx.d.ts'), cx.dts),
 
+    // sx
+    fs.writeFile(path.join(cssPath, 'sx.js'), sx.js),
+    fs.writeFile(path.join(cssPath, 'sx.d.ts'), sx.dts),
+
     // font face
     fs.writeFile(path.join(cssPath, 'font-face.js'), fontFace.js),
     fs.writeFile(path.join(cssPath, 'font-face.d.ts'), fontFace.dts),
@@ -103,6 +109,7 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
      export * from './font-face'
      export * from './global-style'
      export * from './css-map'
+     export * from './sx'
     `,
     ),
 
@@ -115,6 +122,7 @@ export async function generateSystem(ctx: InternalContext, configCode: string) {
      export * from './font-face'
      export * from './global-style'
      export * from './css-map'
+     export * from './sx'
     `,
     ),
   ])
