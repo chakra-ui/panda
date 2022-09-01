@@ -19,11 +19,11 @@ export function generateCss(ctx: InternalContext, root = ':where(:root, :host)')
 
   const output = [inner(ctx.dictionary.vars)]
 
-  const { _conditions } = ctx.context()
+  const { conditions } = ctx.context()
 
   for (const [condition, conditionMap] of ctx.dictionary.conditionVars) {
     //
-    const cond = _conditions.normalize(condition)
+    const cond = conditions.normalize(condition)
     const selector = cond.rawValue ?? cond.value.replace(/&/, root)
 
     if (!selector) {

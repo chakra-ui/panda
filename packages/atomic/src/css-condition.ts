@@ -1,9 +1,7 @@
-import { BaseCondition, BaseConditionType, Condition, Conditions } from '@css-panda/types'
+import { BaseCondition, BaseConditionType, Conditions } from '@css-panda/types'
 import postcss, { AtRule } from 'postcss'
-import { match, P } from 'ts-pattern'
 
 type RawCondition = BaseCondition & { raw: string }
-type MixedCondition = Condition | string
 
 const order: BaseConditionType[] = ['self-nesting', 'parent-nesting', 'at-rule']
 
@@ -22,11 +20,18 @@ export class CSSCondition {
   private record: Map<string, RawCondition> = new Map()
   values: Set<RawCondition> = new Set()
 
-  constructor({ conditions, breakpoints = {} }: { conditions: Conditions; breakpoints?: Record<string, string> }) {
+  constructor(private options: { conditions: Conditions; breakpoints?: Record<string, string> }) {
+    const { conditions, breakpoints = {} } = this.options
+
     for (const [key, value] of Object.entries(conditions)) {
       this.record.set(key, this.normalize(value))
     }
+
     this.addBreakpoints(breakpoints)
+  }
+
+  clone() {
+    return new CSSCondition(this.options)
   }
 
   resolve(conditions: string[]) {
@@ -67,21 +72,8 @@ export class CSSCondition {
     throw new Error('Invalid condition: ' + condition)
   }
 
-  normalize(condition: MixedCondition): RawCondition {
-    return match<MixedCondition, RawCondition>(condition)
-      .with(P.string, (value) => {
-        return value.startsWith('@') ? parseAtRule(value) : this.parse(value)
-      })
-      .with({ type: 'color-scheme' }, (cond) => {
-        const type = cond.value.startsWith('@') ? 'at-rule' : 'parent-nesting'
-        return { ...cond, type, raw: cond.value }
-      })
-      .with({ type: 'screen' }, (cond) => {
-        return { ...cond, type: 'at-rule', name: 'screen', raw: cond.value }
-      })
-      .otherwise((cond: any) => {
-        return { ...cond, raw: cond.value }
-      })
+  normalize(condition: string): RawCondition {
+    return condition.startsWith('@') ? parseAtRule(condition) : this.parse(condition)
   }
 
   addBreakpoints(breakpoints: Record<string, string> = {}) {

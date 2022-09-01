@@ -32,8 +32,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
   const context = (): GeneratorContext => ({
     root: postcss.root(),
     breakpoints,
-    conditions,
-    _conditions: new CSSCondition({
+    conditions: new CSSCondition({
       conditions,
       breakpoints,
     }),

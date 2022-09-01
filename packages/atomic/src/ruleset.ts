@@ -1,7 +1,6 @@
 import { walkObject } from '@css-panda/walk-object'
 import postcss, { AtRule, Rule } from 'postcss'
 import { match } from 'ts-pattern'
-import { CSSCondition } from './css-condition'
 import { esc } from './esc'
 import { filterDefaults } from './filter-defaults'
 import { toHash } from './hash'
@@ -63,10 +62,7 @@ export class Ruleset {
         nodes: rawNodes,
       })
 
-      const css = new CSSCondition({
-        conditions: this.context.conditions,
-        breakpoints: this.context.breakpoints,
-      })
+      const css = this.context.conditions.clone()
 
       for (const cond of css.resolve(conditions)) {
         match(cond)

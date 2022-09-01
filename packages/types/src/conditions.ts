@@ -22,7 +22,7 @@ export type BaseCondition = {
 export type Condition = ColorSchemeCondition | ScreenCondition | BaseCondition
 
 export type Conditions = {
-  [key: string]: Condition
+  [condition: string]: string
 }
 
 export type RecursiveCondition<T extends string, C extends string> =

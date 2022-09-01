@@ -13,8 +13,10 @@ const propMap = {
 
 export const createContext = (): GeneratorContext => ({
   root: postcss.root(),
-  conditions: conditions,
-  _conditions: new CSSCondition({ conditions, breakpoints }),
+  conditions: new CSSCondition({
+    conditions,
+    breakpoints,
+  }),
   breakpoints,
   transform: (prop, value) => {
     const key = propMap[prop] ?? prop
