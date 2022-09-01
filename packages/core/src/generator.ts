@@ -1,16 +1,15 @@
 import { ConfigNotFoundError } from '@css-panda/error'
-import { error, info } from '@css-panda/logger'
+import { info } from '@css-panda/logger'
 import { loadConfigFile } from '@css-panda/read-config'
 import { UserConfig } from '@css-panda/types'
-import { emptyDir } from 'fs-extra'
+import fs, { emptyDir } from 'fs-extra'
+import { recrawl } from 'recrawl'
 import { createContext } from './create-context'
 import { createDebug, debug } from './debug'
+import { extractContent } from './extract-content'
+import { extractTemp } from './extract-tmp'
 import { generateSystem } from './generators'
-import { configWatcher } from './watchers/config'
-import { contentWatcher } from './watchers/content'
-import { tempWatcher } from './watchers/temp'
-
-process.setMaxListeners(Infinity)
+import { watch } from './watchers'
 
 let cleaned = false
 
@@ -28,7 +27,7 @@ export async function generator() {
     })
   }
 
-  const ctx = createContext(conf.config)
+  const ctx = createContext(conf)
 
   createDebug('context', ctx)
 
@@ -41,26 +40,31 @@ export async function generator() {
 
   info('⚙️ generated system')
 
-  const _tmpWatcher = await tempWatcher(ctx)
-  const _contentWatcher = await contentWatcher(ctx)
-  const _configWatcher = await configWatcher(conf)
+  fs.ensureDirSync(ctx.temp.dir)
 
-  async function close() {
-    await _configWatcher.close()
-    await _tmpWatcher.close()
-    await _contentWatcher.close()
+  if (ctx.watch) {
+    watch(ctx, {
+      onConfigChange() {
+        return generator()
+      },
+      onTmpChange() {
+        return extractTemp(ctx)
+      },
+      onContentChange(file) {
+        return extractContent(ctx, file)
+      },
+    })
+  } else {
+    const crawl = recrawl({
+      only: ctx.content,
+      skip: ctx.ignore,
+    })
+
+    crawl(ctx.cwd, (file) => {
+      createDebug('file:', file)
+      extractContent(ctx, file)
+    })
+
+    await extractTemp(ctx)
   }
-
-  _configWatcher.on('update', async () => {
-    await close()
-    info('⚙️ Config updated, restarting...')
-    await generator()
-  })
 }
-
-process.on('unhandledRejection', (reason) => {
-  error(reason)
-})
-process.on('uncaughtException', (err) => {
-  error(err)
-})

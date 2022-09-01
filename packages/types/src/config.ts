@@ -42,6 +42,7 @@ export type Config<
   incremental?: boolean
   content?: string[]
   ignore?: string[]
+  watch?: boolean
   conditions?: TConditions
   breakpoints?: Breakpoints
   keyframes?: Keyframes

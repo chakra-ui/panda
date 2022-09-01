@@ -2,21 +2,20 @@ import { CSSCondition, GeneratorContext, Stylesheet } from '@css-panda/atomic'
 import { mergeRecipes } from '@css-panda/css-recipe'
 import { CSSUtility, mergeUtilities } from '@css-panda/css-utility'
 import { Dictionary } from '@css-panda/dictionary'
+import { LoadConfigResult } from '@css-panda/read-config'
 import { UserConfig } from '@css-panda/types'
 import path from 'path'
 import postcss from 'postcss'
+import fs from 'fs-extra'
 import { createDebug } from './debug'
 
 const BASE_IGNORE = ['node_modules', '.git', '__tests__', 'tests']
 
-export function createContext(config: UserConfig) {
-  const { breakpoints = {}, conditions = {} } = config
+export function createContext(conf: LoadConfigResult<UserConfig>) {
+  const { config } = conf
+  const { breakpoints = {}, conditions = {}, tokens = {}, semanticTokens = {}, prefix } = config
 
-  const dictionary = new Dictionary({
-    tokens: config.tokens ?? {},
-    semanticTokens: config.semanticTokens ?? {},
-    prefix: config.prefix,
-  })
+  const dictionary = new Dictionary({ tokens, semanticTokens, prefix })
 
   const utilities = new CSSUtility({
     tokens: dictionary,
@@ -38,8 +37,43 @@ export function createContext(config: UserConfig) {
 
   const stylesheet = new Stylesheet(context())
 
-  const tempDir = path.join(config.outdir, '.temp')
-  createDebug('config:tmpfile', tempDir)
+  const temp = {
+    dir: path.join(config.outdir, '.temp'),
+    getPath(file: string) {
+      return path.join(temp.dir, temp.format(file))
+    },
+    readFile(file: string) {
+      return fs.readFile(temp.getPath(file), 'utf8')
+    },
+    getFiles() {
+      return fs.readdirSync(temp.dir)
+    },
+    format(file: string) {
+      return file.replaceAll(path.sep, '__').replace(path.extname(file), '.css')
+    },
+    write(file: string, css: string) {
+      const filepath = temp.getPath(file)
+      fs.writeFileSync(filepath, css)
+      return filepath
+    },
+    rm(file: string) {
+      fs.unlinkSync(temp.getPath(file))
+    },
+    get glob() {
+      return [`${temp.dir}/*.css`]
+    },
+  }
+
+  createDebug('config:tmpfile', temp.dir)
+
+  const cwd = config.cwd || process.cwd()
+
+  const outputCss = {
+    path: path.join(config.outdir, 'styles.css'),
+    write(css: string) {
+      return fs.writeFileSync(outputCss.path, css)
+    },
+  }
 
   return {
     ...config,
@@ -49,8 +83,12 @@ export function createContext(config: UserConfig) {
       recipe: `${config.outdir}/recipes`,
     },
     recipes: mergeRecipes(config.recipes, utilities),
-    cwd: process.cwd(),
-    tempDir,
+    cwd,
+
+    outputCss,
+    temp,
+
+    conf,
     config,
     dictionary,
     context,

@@ -34,7 +34,8 @@
     "outdent": " ^0.8.0",
     "postcss": "^8.4.14",
     "pkg-types": "^0.3.3",
-    "pluralize": "^8.0.0"
+    "pluralize": "^8.0.0",
+    "recrawl": "^2.2.1"
   },
   "devDependencies": {
     "@css-panda/dictionary": "workspace:*",
