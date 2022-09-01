@@ -21,10 +21,6 @@ export type SemanticTokens<Tokens extends TDotPath = Dict, Conditions = Dict, Br
   }
 }
 
-type TokensMap<Tokens> = {
-  [K in keyof Tokens]?: Array<CssProperty | Loose>
-}
-
 type Shorthands = {
   [shorthand: string]: Array<CssProperty>
 }
@@ -39,15 +35,15 @@ export type Config<
   clean?: boolean
   outdir?: string
   prefix?: string
-  incremental?: boolean
+  // include
   content?: string[]
+  // exclude
   ignore?: string[]
   watch?: boolean
   conditions?: TConditions
   breakpoints?: Breakpoints
   keyframes?: Keyframes
   tokens?: Tokens
-  tokensMap?: TokensMap<Tokens>
   semanticTokens?: SemanticTokens<Tokens, Conditions, Breakpoints>
   shorthands?: Shorthands
   utilities?: UtilityConfig<Tokens>[]
