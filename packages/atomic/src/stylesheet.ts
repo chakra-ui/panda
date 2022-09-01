@@ -2,7 +2,7 @@ import { Ruleset } from './ruleset'
 import { expandScreenAtRule } from './expand-screen'
 import { GeneratorContext } from './types'
 import { optimizeCss } from './optimize'
-import { PluginResult, Recipe } from '@css-panda/types'
+import { Pattern, PluginResult, Recipe } from '@css-panda/types'
 import { toCss } from './to-css'
 import postcss, { Root, Rule } from 'postcss'
 import { RecipeSet } from './recipe-set'
@@ -80,6 +80,11 @@ export class Stylesheet {
   processRecipe(recipe: Recipe, styles: Record<string, any>) {
     const ruleset = new RecipeSet(this.context, recipe, { hash: this.hash })
     ruleset.resolve({ styles })
+  }
+
+  processPattern(pattern: Pattern, styles: Record<string, any>) {
+    const styleObject = pattern.transform?.(styles) ?? {}
+    return this.processAtomic(styleObject)
   }
 
   addImports(imports: string[]) {

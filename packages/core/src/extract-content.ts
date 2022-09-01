@@ -37,6 +37,12 @@ export function extractContent(ctx: InternalContext, file: string) {
     }
   })
 
+  collector.pattern.forEach((result, name) => {
+    for (const item of result) {
+      sheet.processPattern(ctx.patterns[name], item.data)
+    }
+  })
+
   if (collector.isEmpty()) return
 
   const tempPath = ctx.temp.write(file, sheet.toCss())

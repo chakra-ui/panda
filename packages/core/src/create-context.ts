@@ -11,6 +11,13 @@ import { createDebug } from './debug'
 
 const BASE_IGNORE = ['node_modules', '.git', '__tests__', 'tests']
 
+function arrayToObject<T>(array: T[]) {
+  return array.reduce((acc, item) => {
+    Object.assign(acc, item)
+    return acc
+  }, {} as Record<string, T>)
+}
+
 export function createContext(conf: LoadConfigResult<UserConfig>) {
   const { config } = conf
   const { breakpoints = {}, conditions = {}, tokens = {}, semanticTokens = {}, prefix } = config
@@ -77,14 +84,17 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
 
   return {
     ...config,
+    cwd,
     exclude: BASE_IGNORE.concat(config.outdir, config.exclude ?? []),
+
     importMap: {
       css: `${config.outdir}/css`,
       recipe: `${config.outdir}/recipes`,
       pattern: `${config.outdir}/patterns`,
     },
+
     recipes: mergeRecipes(config.recipes, utilities),
-    cwd,
+    patterns: arrayToObject(config.patterns ?? []),
 
     outputCss,
     temp,
