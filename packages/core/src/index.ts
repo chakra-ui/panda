@@ -1,5 +1,1 @@
-export { generateCss } from './generators/css'
-export { generateDts } from './generators/dts'
-export { generateJs } from './generators/js'
-export { generatePropertyTypes } from './generators/property-types'
-export { createWatcher } from './watchers/create-watcher'
+export { generator } from './generator'
