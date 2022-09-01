@@ -1,7 +1,8 @@
 import { Conditions as TConditions } from './conditions'
-import { UtilityConfig } from './css-utility'
+import { Utility } from './css-utility'
 import { Dict, RequiredBy } from './helper'
 import type { CssProperty, Keyframes } from './panda-csstype'
+import { Pattern } from './pattern'
 import { Recipe } from './recipe'
 import type { DotPath, TDotPath } from './shared'
 
@@ -44,8 +45,9 @@ export type Config<
   tokens?: Tokens
   semanticTokens?: SemanticTokens<Tokens, Conditions, Breakpoints>
   shorthands?: Shorthands
-  utilities?: UtilityConfig<Tokens>[]
+  utilities?: Utility<Tokens>[]
   recipes?: Recipe[]
+  patterns?: Pattern[]
 }
 
 export type TConfig = Config<TConditions, TBreakpoints, TTokens>

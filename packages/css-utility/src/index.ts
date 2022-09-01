@@ -1,5 +1,5 @@
 import type { Dictionary } from '@css-panda/dictionary'
-import type { Dict, UtilityConfig, PropertyUtility } from '@css-panda/types'
+import type { Dict, Utility, PropertyUtility } from '@css-panda/types'
 
 const isString = (v: any): v is string => typeof v === 'string'
 const isFunction = (v: any): v is Function => typeof v === 'function'
@@ -12,7 +12,7 @@ export class CSSUtility {
   stylesMap: Map<string, Dict> = new Map()
   valuesMap: Map<string, Set<string>> = new Map()
 
-  config: UtilityConfig<Dict> = { properties: {} }
+  config: Utility<Dict> = { properties: {} }
   report: Map<string, string> = new Map()
 
   private transformMap: Map<string, Function> = new Map()
@@ -45,7 +45,7 @@ export class CSSUtility {
     return values as Dict<string>
   }
 
-  constructor(options: { config?: UtilityConfig<Dict>; tokens: Dictionary }) {
+  constructor(options: { config?: Utility<Dict>; tokens: Dictionary }) {
     const { tokens, config } = options
     this.dictionary = tokens
 
@@ -200,8 +200,8 @@ export class CSSUtility {
   }
 }
 
-export function mergeUtilities(utilities: UtilityConfig[] | undefined): UtilityConfig {
-  return (utilities ?? []).reduce<UtilityConfig>(
+export function mergeUtilities(utilities: Utility[] | undefined): Utility {
+  return (utilities ?? []).reduce<Utility>(
     (acc, utility) => {
       acc.properties = { ...acc.properties, ...utility.properties }
       acc.shorthands = { ...acc.shorthands, ...utility.shorthands }
