@@ -1,12 +1,12 @@
-import { CssProperties } from './panda-csstype'
+import { CssProperties, WithNesting } from './panda-csstype'
 
-export type RecipeVariant = Record<string, CssProperties>
+export type RecipeVariant = Record<string, WithNesting<CssProperties>>
 
 type TRecipe = Record<string, RecipeVariant>
 
 export type Recipe<Variants extends TRecipe = TRecipe> = {
   name: string
-  base?: CssProperties
+  base?: WithNesting<CssProperties>
   variants?: Variants
   defaultVariants?: {
     [K in keyof Variants]?: keyof Variants[K]

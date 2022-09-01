@@ -5,7 +5,7 @@ export const recipes: Recipe[] = [
     name: 'textStyle',
     base: {
       '--color': 'colors.gray.500',
-      fontFamily: 'body',
+      fontFamily: 'mono',
       divideX: '2px',
       '@media': {
         print: {

@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsup src/ --dts",
     "dev": "pnpm build -- --watch",
-    "watch": "DEBUG=generator:recipe* tsx src/sandbox.ts",
+    "watch": "DEBUG=recipe* tsx src/sandbox.ts",
     "app": "cd __sandbox__ && pnpm dev"
   },
   "files": [
@@ -20,6 +20,7 @@
     "@css-panda/error": "workspace:*",
     "@css-panda/parser": "workspace:*",
     "@css-panda/css-utility": "workspace:*",
+    "@css-panda/css-recipe": "workspace:*",
     "@css-panda/walk-object": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "@css-panda/atomic": "workspace:*",

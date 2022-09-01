@@ -1,0 +1,26 @@
+{
+  "name": "@css-panda/css-recipe",
+  "version": "0.0.1",
+  "description": "Common error messages for css panda",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "scripts": {
+    "build": "tsup src/ --dts",
+    "dev": "pnpm build -- --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@css-panda/css-utility": "workspace:*",
+    "@css-panda/types": "workspace:*",
+    "@css-panda/logger": "workspace:*",
+    "@css-panda/walk-object": "workspace:*",
+    "lodash.merge": "^4.6.2"
+  },
+  "devDependencies": {
+    "@types/lodash.merge": "^4.6.7"
+  }
+}

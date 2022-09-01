@@ -80,6 +80,7 @@ importers:
   packages/core:
     specifiers:
       '@css-panda/atomic': workspace:*
+      '@css-panda/css-recipe': workspace:*
       '@css-panda/css-utility': workspace:*
       '@css-panda/dictionary': workspace:*
       '@css-panda/error': workspace:*
@@ -102,6 +103,7 @@ importers:
       postcss: ^8.4.14
     dependencies:
       '@css-panda/atomic': link:../atomic
+      '@css-panda/css-recipe': link:../css-recipe
       '@css-panda/css-utility': link:../css-utility
       '@css-panda/error': link:../error
       '@css-panda/fixture': link:../fixture
@@ -140,6 +142,23 @@ importers:
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.0.1_vite@3.0.9
       vite: 3.0.9
+
+  packages/css-recipe:
+    specifiers:
+      '@css-panda/css-utility': workspace:*
+      '@css-panda/logger': workspace:*
+      '@css-panda/types': workspace:*
+      '@css-panda/walk-object': workspace:*
+      '@types/lodash.merge': ^4.6.7
+      lodash.merge: ^4.6.2
+    dependencies:
+      '@css-panda/css-utility': link:../css-utility
+      '@css-panda/logger': link:../logger
+      '@css-panda/types': link:../types
+      '@css-panda/walk-object': link:../walk-object
+      lodash.merge: 4.6.2
+    devDependencies:
+      '@types/lodash.merge': 4.6.7
 
   packages/css-unit:
     specifiers: {}
@@ -950,6 +969,12 @@ packages:
 
   /@types/lodash.get/4.4.7:
     resolution: {integrity: sha512-af34Mj+KdDeuzsJBxc/XeTtOx0SZHZNLd+hdrn+PcKGQs0EG2TJTzQAOTCZTgDJCArahlCzLWSy8c2w59JRz7Q==}
+    dependencies:
+      '@types/lodash': 4.14.182
+    dev: true
+
+  /@types/lodash.merge/4.6.7:
+    resolution: {integrity: sha512-OwxUJ9E50gw3LnAefSHJPHaBLGEKmQBQ7CZe/xflHkyy/wH2zVyEIAKReHvVrrn7zKdF58p16We9kMfh7v0RRQ==}
     dependencies:
       '@types/lodash': 4.14.182
     dev: true
@@ -2560,7 +2585,6 @@ packages:
 
   /lodash.merge/4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
-    dev: true
 
   /lodash.sortby/4.7.0:
     resolution: {integrity: sha512-HDWXG8isMntAyRF5vZ7xKuEvOhT4AhlRt/3czTSjvGUxjYCBVRQY48ViDHyfYz9VIoBkW4TMGQNapx+l3RUwdA==}

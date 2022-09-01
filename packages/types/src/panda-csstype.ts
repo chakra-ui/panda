@@ -10,7 +10,7 @@ export type CssProperty = keyof Properties
 type PseudoProperty = `&${CSS.SimplePseudos}`
 
 export type CssProperties = Properties & {
-  [key: string]: string | number | undefined
+  [key: string]: string | number | Record<string, any> | undefined
 }
 
 export type Keyframes = Record<string, { [time: string]: CssProperties }>
@@ -49,7 +49,7 @@ type ConditionCssProperties<
   [Key in keyof Omit<UserProperties, keyof Properties>]?: ConditionalValue<Conditions, UserProperties[Key]>
 }
 
-type MixedCssProperties<T> = T & {
+export type WithNesting<T> = T & {
   selectors?: {
     [key in PseudoProperty | Loose]?: T
   }
@@ -61,7 +61,7 @@ type MixedCssProperties<T> = T & {
 export type CssObject<
   Conditions extends Record<string, string>,
   UserProperties extends Record<string, string> = { __type?: 'never' },
-  StrictValue extends boolean = false,
-> = MixedCssProperties<ConditionCssProperties<Conditions, UserProperties, StrictValue>>
+  Strict extends boolean = false,
+> = WithNesting<ConditionCssProperties<Conditions, UserProperties, Strict>>
 
 export {}

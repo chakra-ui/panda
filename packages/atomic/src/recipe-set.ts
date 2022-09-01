@@ -17,7 +17,7 @@ export class RecipeSet extends Ruleset {
 
       return {
         className: `${this.recipe.name}__${prop}-${value}`,
-        styles: this.recipe.variants?.[prop][value] ?? {},
+        styles: this.recipe.variants?.[prop]?.[value] ?? {},
       }
     }
 
