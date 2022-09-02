@@ -12,7 +12,10 @@ export async function createConfigWatcher(conf: LoadConfigResult<UserConfig>) {
 export async function createContentWatcher(ctx: InternalContext, callback: (file: string) => void) {
   const { include, cwd, exclude } = ctx
 
-  const watcher = createWatcher(include, { cwd, ignore: exclude })
+  const watcher = createWatcher(include, {
+    cwd,
+    ignore: exclude,
+  })
 
   watcher.on('update', (file) => {
     createDebug('file:changed', file)
@@ -33,8 +36,9 @@ export async function createContentWatcher(ctx: InternalContext, callback: (file
 }
 
 export async function createTempWatcher(ctx: InternalContext, callback: () => Promise<void>) {
-  const { cwd } = ctx
-  const watcher = createWatcher(ctx.temp.glob, { cwd })
+  const watcher = createWatcher(ctx.temp.glob, {
+    cwd: ctx.temp.dir,
+  })
 
   watcher.on('update', async (file) => {
     createDebug(`temp:update`, file)
