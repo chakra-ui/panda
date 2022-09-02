@@ -25,7 +25,6 @@
     "@css-panda/logger": "workspace:*",
     "@css-panda/atomic": "workspace:*",
     "@css-panda/read-config": "workspace:*",
-    "@css-panda/fixture": "workspace:*",
     "esbuild": "^0.15.5",
     "filespy": "^1.2.4",
     "find-up": "^6.3.0",
@@ -40,6 +39,7 @@
   },
   "devDependencies": {
     "@css-panda/dictionary": "workspace:*",
+    "@css-panda/fixture": "workspace:*",
     "@types/fs-extra": "^9.0.13",
     "@types/pluralize": "^0.0.29"
   }

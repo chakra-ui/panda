@@ -1,5 +1,5 @@
 import type * as swc from '@swc/core'
-import merge from 'lodash/merge'
+import merge from 'lodash.merge'
 import { match, P } from 'ts-pattern'
 import type { ImportResult } from './types'
 

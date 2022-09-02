@@ -112,7 +112,6 @@ importers:
       '@css-panda/css-recipe': link:../css-recipe
       '@css-panda/css-utility': link:../css-utility
       '@css-panda/error': link:../error
-      '@css-panda/fixture': link:../fixture
       '@css-panda/logger': link:../logger
       '@css-panda/parser': link:../parser
       '@css-panda/read-config': link:../read-config
@@ -131,6 +130,7 @@ importers:
       ts-pattern: 4.0.5
     devDependencies:
       '@css-panda/dictionary': link:../dictionary
+      '@css-panda/fixture': link:../fixture
       '@types/fs-extra': 9.0.13
       '@types/pluralize': 0.0.29
 
@@ -234,18 +234,18 @@ importers:
       '@css-panda/logger': workspace:*
       '@css-panda/types': workspace:*
       '@swc/core': ^1.2.237
-      '@types/lodash': ^4.14.182
-      lodash: ^4.17.21
+      '@types/lodash.merge': ^4.6.7
+      lodash.merge: ^4.6.2
       ts-pattern: ^4.0.5
     dependencies:
       '@css-panda/logger': link:../logger
       '@css-panda/types': link:../types
       '@swc/core': 1.2.237
-      lodash: 4.17.21
+      lodash.merge: 4.6.2
       ts-pattern: 4.0.5
     devDependencies:
       '@css-panda/fixture': link:../fixture
-      '@types/lodash': 4.14.182
+      '@types/lodash.merge': 4.6.7
 
   packages/read-config:
     specifiers:
@@ -2669,6 +2669,7 @@ packages:
 
   /lodash/4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
+    dev: true
 
   /loose-envify/1.4.0:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
