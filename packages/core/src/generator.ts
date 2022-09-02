@@ -2,7 +2,7 @@ import { ConfigNotFoundError } from '@css-panda/error'
 import { info } from '@css-panda/logger'
 import { loadConfigFile } from '@css-panda/read-config'
 import type { UserConfig } from '@css-panda/types'
-import fs, { emptyDir } from 'fs-extra'
+import fs from 'fs-extra'
 import { recrawl } from 'recrawl'
 import { createContext } from './create-context'
 import { createDebug, debug } from './debug'
@@ -33,7 +33,7 @@ export async function generator() {
 
   if (ctx.clean && !cleaned) {
     cleaned = true
-    await emptyDir(ctx.outdir)
+    await fs.emptyDir(ctx.outdir)
   }
 
   await generateSystem(ctx, conf.code)
