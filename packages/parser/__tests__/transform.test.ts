@@ -56,6 +56,7 @@ describe('ast parser', () => {
             "type": "object",
           },
         },
+        "cssMap": Set {},
         "fontFace": Set {
           {
             "data": {
@@ -75,6 +76,9 @@ describe('ast parser', () => {
             "type": "object",
           },
         },
+        "isEmpty": [Function],
+        "pattern": Map {},
+        "recipe": Map {},
       }
     `)
   })
