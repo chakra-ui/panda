@@ -56,6 +56,9 @@ export type WithNesting<T> = T & {
   '@media'?: {
     [query: string]: T
   }
+  '@container'?: {
+    [query: string]: T
+  }
 }
 
 export type CssObject<
