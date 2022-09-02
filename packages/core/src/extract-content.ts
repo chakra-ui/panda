@@ -1,5 +1,6 @@
 import { Stylesheet } from '@css-panda/atomic'
 import { createCollector, createPlugins, transformFileSync } from '@css-panda/parser'
+import path from 'path'
 import type { InternalContext } from './create-context'
 import { createDebug } from './debug'
 
@@ -9,7 +10,8 @@ export function extractContent(ctx: InternalContext, file: string) {
   const sheet = new Stylesheet(ctx.context(), { hash })
   const collector = createCollector()
 
-  transformFileSync(file, {
+  const absPath = path.join(ctx.cwd, file)
+  transformFileSync(absPath, {
     plugins: createPlugins(collector, importMap, file),
   })
 

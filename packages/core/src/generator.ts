@@ -1,8 +1,9 @@
 import { ConfigNotFoundError } from '@css-panda/error'
 import { info } from '@css-panda/logger'
 import { loadConfigFile } from '@css-panda/read-config'
-import type { UserConfig } from '@css-panda/types'
+import type { Config, UserConfig } from '@css-panda/types'
 import fs from 'fs-extra'
+import merge from 'lodash.merge'
 import { recrawl } from 'recrawl'
 import { createContext } from './create-context'
 import { createDebug, debug } from './debug'
@@ -11,28 +12,25 @@ import { extractTemp } from './extract-tmp'
 import { generateSystem } from './generators'
 import { watch } from './watchers'
 
-let cleaned = false
+export async function generator(options: Config & { configPath?: string } = {}) {
+  const { cwd = process.cwd(), configPath, ...rest } = options
 
-export async function generator() {
   debug('starting...')
 
-  const conf = await loadConfigFile<UserConfig>()
+  const conf = await loadConfigFile<UserConfig>({ root: cwd, file: configPath })
+  merge(conf.config, { cwd, ...rest })
 
   createDebug('config:file', conf)
 
   if (!conf.config) {
-    throw new ConfigNotFoundError({
-      cwd: process.cwd(),
-      path: conf.path,
-    })
+    throw new ConfigNotFoundError({ cwd, path: conf.path })
   }
 
   const ctx = createContext(conf)
 
   createDebug('context', ctx)
 
-  if (ctx.clean && !cleaned) {
-    cleaned = true
+  if (conf.config.clean) {
     await fs.emptyDir(ctx.outdir)
   }
 
@@ -45,7 +43,7 @@ export async function generator() {
   if (ctx.watch) {
     watch(ctx, {
       onConfigChange() {
-        return generator()
+        return generator({ ...options, clean: false })
       },
       onTmpChange() {
         return extractTemp(ctx)

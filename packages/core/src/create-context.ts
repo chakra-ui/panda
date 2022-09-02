@@ -35,13 +35,15 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
     utilities: _utilities = [],
   } = config
 
-  const configPath = path.join(outdir, 'config.js')
-  const cssPath = path.join(outdir, 'css')
-  const dsPath = path.join(outdir, 'design-tokens')
-  const typesPath = path.join(outdir, 'types')
-  const recipePath = path.join(outdir, 'recipes')
-  const patternPath = path.join(outdir, 'patterns')
-  const tempPath = path.join(outdir, '.temp')
+  const cwd = path.resolve(_cwd) || process.cwd()
+
+  const configPath = path.join(cwd, outdir, 'config.js')
+  const cssPath = path.join(cwd, outdir, 'css')
+  const dsPath = path.join(cwd, outdir, 'design-tokens')
+  const typesPath = path.join(cwd, outdir, 'types')
+  const recipePath = path.join(cwd, outdir, 'recipes')
+  const patternPath = path.join(cwd, outdir, 'patterns')
+  const tempPath = path.join(cwd, outdir, '.temp')
 
   const dictionary = new Dictionary({ tokens, semanticTokens, prefix })
 
@@ -93,10 +95,8 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
 
   createDebug('config:tmpfile', temp.dir)
 
-  const cwd = _cwd || process.cwd()
-
   const outputCss = {
-    path: path.join(outdir, 'styles.css'),
+    path: path.join(cwd, outdir, 'styles.css'),
     write(css: string) {
       return fs.writeFileSync(outputCss.path, css)
     },
@@ -120,6 +120,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
     temp,
 
     paths: {
+      temp: tempPath,
       css: cssPath,
       ds: dsPath,
       types: typesPath,
