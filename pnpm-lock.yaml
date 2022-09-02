@@ -32,7 +32,6 @@ importers:
       '@types/postcss-js': ^4.0.0
       postcss: ^8.4.14
       postcss-discard-duplicates: ^5.1.0
-      postcss-dropunusedvars: ^1.2.1
       postcss-js: ^4.0.0
       postcss-nested: ^5.0.6
       postcss-normalize-whitespace: ^5.1.1
@@ -47,7 +46,6 @@ importers:
       '@css-panda/types': link:../types
       postcss: 8.4.14
       postcss-discard-duplicates: 5.1.0_postcss@8.4.14
-      postcss-dropunusedvars: 1.2.1
       postcss-js: 4.0.0_postcss@8.4.14
       postcss-nested: 5.0.6_postcss@8.4.14
       postcss-normalize-whitespace: 5.1.1_postcss@8.4.14
@@ -2888,10 +2886,6 @@ packages:
     resolution: {integrity: sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==}
     dev: false
 
-  /picocolors/0.2.1:
-    resolution: {integrity: sha512-cMlDqaLEqfSaW8Z7N5Jw+lyIW869EzT73/F5lhtY9cLGoVxSXznfgfXMO0Z5K0o0Q2TkTXq+0KFsdnSe3jDViA==}
-    dev: false
-
   /picocolors/1.0.0:
     resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
 
@@ -2924,13 +2918,6 @@ packages:
       postcss: ^8.2.15
     dependencies:
       postcss: 8.4.14
-    dev: false
-
-  /postcss-dropunusedvars/1.2.1:
-    resolution: {integrity: sha512-2C86zbwebwNTnVqrvvgIJobnG3FO5QRSfccafPm+qrGGrplZUERiRqwuTlbIwJF4WpcT2j/+G8rH/Piw70Ex5g==}
-    dependencies:
-      postcss: 7.0.39
-      postcss-value-parser: 4.2.0
     dev: false
 
   /postcss-js/4.0.0_postcss@8.4.14:
@@ -3015,14 +3002,6 @@ packages:
       js-base64: 2.6.4
       source-map: 0.5.7
       supports-color: 3.2.3
-    dev: false
-
-  /postcss/7.0.39:
-    resolution: {integrity: sha512-yioayjNbHn6z1/Bywyb2Y4s3yvDAeXGOyxqD+LnVOinq6Mdmd++SW2wUNVzavyyHxd6+DxzWGIuosg6P1Rj8uA==}
-    engines: {node: '>=6.0.0'}
-    dependencies:
-      picocolors: 0.2.1
-      source-map: 0.6.1
     dev: false
 
   /postcss/8.4.14:
