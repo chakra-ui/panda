@@ -36,10 +36,22 @@ export async function createTempWatcher(ctx: InternalContext, callback: () => Pr
   const { cwd } = ctx
   const watcher = createWatcher(ctx.temp.glob, { cwd })
 
-  watcher.on('all', async (event, file) => {
-    createDebug(`temp:${event}`, file)
+  watcher.on('update', async (file) => {
+    createDebug(`temp:update`, file)
     await callback()
   })
+
+  watcher.on('create', async (file) => {
+    createDebug(`temp:create`, file)
+    await callback()
+  })
+
+  watcher.on('delete', async (file) => {
+    createDebug(`temp:delete`, file)
+    await callback()
+  })
+
+  await callback()
 
   return watcher
 }

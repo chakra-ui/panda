@@ -58,7 +58,7 @@ export async function generator(options: Config & { configPath?: string } = {}) 
       skip: ctx.exclude,
     })
 
-    crawl(ctx.cwd, (file) => {
+    await crawl(ctx.cwd, (file) => {
       createDebug('file:', file)
       extractContent(ctx, file)
     })
