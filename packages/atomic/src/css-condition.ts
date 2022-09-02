@@ -16,77 +16,63 @@ function parseAtRule(value: string): RawCondition {
   }
 }
 
-export class CSSCondition {
-  private record: Map<string, RawCondition> = new Map()
-  values: Set<RawCondition> = new Set()
-
-  constructor(private options: { conditions: Conditions; breakpoints?: Record<string, string> }) {
-    const { conditions, breakpoints = {} } = this.options
-
-    for (const [key, value] of Object.entries(conditions)) {
-      this.record.set(key, this.normalize(value))
-    }
-
-    this.addBreakpoints(breakpoints)
+function parseCondition(condition: string): RawCondition {
+  if (condition.startsWith('@')) {
+    return parseAtRule(condition)
   }
 
-  clone() {
-    return new CSSCondition(this.options)
+  if (condition.includes('&')) {
+    return {
+      type: condition.startsWith('&') ? 'self-nesting' : 'parent-nesting',
+      value: condition,
+      raw: condition,
+    }
   }
 
-  resolve(conditions: string[]) {
-    for (const condition of conditions) {
-      let rawCondition = this.record.get(condition)
-      if (!rawCondition) {
-        rawCondition = this.normalize(condition)
-        this.record.set(condition, rawCondition)
-      }
-      this.values.add(rawCondition)
-    }
-    return this.sort()
+  throw new Error('Invalid condition: ' + condition)
+}
+
+const breakpoint = (key: string, value: string) => ({
+  type: 'at-rule',
+  name: 'screen',
+  value: key,
+  raw: key,
+  rawValue: `@media screen and (min-width: ${value})`,
+})
+
+function parseBreakpoints(breakpoints: Record<string, string>): Record<string, RawCondition> {
+  const entries = Object.entries(breakpoints).map(([key, value]) => [key, breakpoint(key, value)])
+  return Object.fromEntries(entries)
+}
+
+export function createConditions(options: { conditions: Conditions; breakpoints?: Record<string, string> }) {
+  const { conditions, breakpoints = {} } = options
+
+  // conditions
+  const entries = Object.entries(conditions).map(([key, value]) => [key, parseCondition(value)])
+  const conditionEntries = Object.fromEntries(entries)
+
+  // breakpoints
+  const breakpointEntries = parseBreakpoints(breakpoints)
+
+  const values: Record<string, RawCondition> = {
+    ...conditionEntries,
+    ...breakpointEntries,
   }
 
-  private sort() {
-    const sortedConditions = Array.from(this.values).sort((a, b) => {
-      const aIndex = order.indexOf(a.type)
-      const bIndex = order.indexOf(b.type)
-      return aIndex - bIndex
-    })
-    this.values = new Set(sortedConditions)
-    return this.values
-  }
-
-  private parse(condition: string): RawCondition {
-    if (condition.includes('&')) {
-      return { type: condition.startsWith('&') ? 'self-nesting' : 'parent-nesting', value: condition, raw: condition }
-    }
-
-    if (condition.startsWith('@')) {
-      return parseAtRule(condition)
-    }
-
-    if (this.record.has(condition)) {
-      return this.record.get(condition)!
-    }
-
-    throw new Error('Invalid condition: ' + condition)
-  }
-
-  normalize(condition: string): RawCondition {
-    return condition.startsWith('@') ? parseAtRule(condition) : this.parse(condition)
-  }
-
-  addBreakpoints(breakpoints: Record<string, string> = {}) {
-    for (const [key, value] of Object.entries(breakpoints)) {
-      const cond: RawCondition = {
-        type: 'at-rule',
-        name: 'screen',
-        value: key,
-        raw: key,
-        rawValue: `@media screen and (min-width: ${value})`,
-      }
-      this.record.set(key, cond)
-    }
-    return this
+  return {
+    values,
+    get(condition: string): RawCondition {
+      return values[condition] ?? parseCondition(condition)
+    },
+    sort(conditions: string[]): RawCondition[] {
+      const rawConditions = conditions.map(this.get)
+      return rawConditions.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type))
+    },
+    normalize(condition: string | RawCondition): RawCondition {
+      return typeof condition === 'string' ? this.get(condition) : condition
+    },
   }
 }
+
+export type CSSCondition = ReturnType<typeof createConditions>

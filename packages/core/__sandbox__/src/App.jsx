@@ -7,7 +7,7 @@ function App() {
   return (
     <div>
       <Alert />
-      <p className={textStyle({ size: 'h2' })}>Welcome</p>
+      <p className={textStyle({ size: { _: 'h2', md: 'h1' } })}>Welcome</p>
       <p className={cx(textStyle({ size: 'h1' }), css({ background: 'red.200' }))}>Hello world</p>
     </div>
   )

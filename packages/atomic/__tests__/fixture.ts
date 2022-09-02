@@ -1,7 +1,7 @@
+import { breakpoints, conditions } from '@css-panda/fixture'
 import postcss from 'postcss'
+import { createConditions } from '../src'
 import { GeneratorContext } from '../src/types'
-import { conditions, breakpoints } from '@css-panda/fixture'
-import { CSSCondition } from '../src'
 
 const propMap = {
   display: 'd',
@@ -13,7 +13,7 @@ const propMap = {
 
 export const createContext = (): GeneratorContext => ({
   root: postcss.root(),
-  conditions: new CSSCondition({
+  conditions: createConditions({
     conditions,
     breakpoints,
   }),

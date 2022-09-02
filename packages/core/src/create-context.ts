@@ -1,4 +1,4 @@
-import { CSSCondition, GeneratorContext, Stylesheet } from '@css-panda/atomic'
+import { createConditions, GeneratorContext, Stylesheet } from '@css-panda/atomic'
 import { mergeRecipes } from '@css-panda/css-recipe'
 import { CSSUtility, mergeUtilities } from '@css-panda/css-utility'
 import { Dictionary } from '@css-panda/dictionary'
@@ -32,7 +32,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
   const context = (): GeneratorContext => ({
     root: postcss.root(),
     breakpoints,
-    conditions: new CSSCondition({
+    conditions: createConditions({
       conditions,
       breakpoints,
     }),

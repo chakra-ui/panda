@@ -62,9 +62,9 @@ export class Ruleset {
         nodes: rawNodes,
       })
 
-      const css = this.context.conditions.clone()
+      const sortedConditions = this.context.conditions.sort(conditions)
 
-      for (const cond of css.resolve(conditions)) {
+      for (const cond of sortedConditions) {
         match(cond)
           .with({ type: 'at-rule' }, (data) => {
             this.wrapRule({

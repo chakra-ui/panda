@@ -1,4 +1,5 @@
-export { CSSCondition } from './css-condition'
+export { createConditions } from './css-condition'
+export type { CSSCondition } from './css-condition'
 export { expandScreenAtRule } from './expand-screen'
 export { Stylesheet } from './stylesheet'
 export { toCss } from './to-css'

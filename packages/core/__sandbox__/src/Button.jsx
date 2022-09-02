@@ -8,7 +8,7 @@ export function Button({ children }) {
     <button
       className={css({
         fontSize: '15px',
-        background: 'red',
+        background: { _: 'red', md: 'pink' },
         border: '1px solid marron',
       })}
     >
