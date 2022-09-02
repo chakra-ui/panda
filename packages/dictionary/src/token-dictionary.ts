@@ -1,7 +1,7 @@
-import { Tokens, SemanticTokens } from '@css-panda/types'
+import type { Tokens, SemanticTokens } from '@css-panda/types'
 import dlv from 'lodash.get'
 import { match, P } from 'ts-pattern'
-import { TokenData } from './get-token-data'
+import type { TokenData } from './get-token-data'
 import { mapSemanticTokens, mapTokens } from './map-token'
 
 export type VarData = Record<'category' | 'value', string>

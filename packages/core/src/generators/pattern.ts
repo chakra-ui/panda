@@ -1,4 +1,4 @@
-import { Pattern } from '@css-panda/types'
+import type { Pattern } from '@css-panda/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 

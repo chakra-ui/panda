@@ -1,13 +1,12 @@
-import { Ruleset } from './ruleset'
-import { expandScreenAtRule } from './expand-screen'
-import { GeneratorContext } from './types'
-import { optimizeCss } from './optimize'
-import { Pattern, PluginResult, Recipe } from '@css-panda/types'
-import { toCss } from './to-css'
+import { walkStyles } from '@css-panda/shared'
+import type { Pattern, PluginResult, Recipe } from '@css-panda/types'
 import postcss, { Root, Rule } from 'postcss'
+import { expandScreenAtRule } from './expand-screen'
+import { optimizeCss } from './optimize'
 import { RecipeSet } from './recipe-set'
-
-type AnyFunction = (...args: any[]) => any
+import { Ruleset } from './ruleset'
+import { toCss } from './to-css'
+import type { GeneratorContext } from './types'
 
 export class Stylesheet {
   hash: boolean
@@ -56,24 +55,8 @@ export class Stylesheet {
     return this
   }
 
-  private forEach(styleObject: any, fn: AnyFunction) {
-    const { selectors = {}, '@media': mediaQueries = {}, ...styles } = styleObject
-
-    fn(styles)
-
-    for (const [scope, scopeStyles] of Object.entries(selectors)) {
-      fn(scopeStyles as any, scope)
-    }
-
-    for (const [scope, scopeStyles] of Object.entries(mediaQueries)) {
-      fn(scopeStyles as any, `@media ${scope}`)
-    }
-
-    return this
-  }
-
   processAtomic(styleObject: Record<string, any>) {
-    return this.forEach(styleObject, (props: any, scope?: string) => {
+    return walkStyles(styleObject, (props: any, scope?: string) => {
       const ruleset = new Ruleset(this.context, { hash: this.hash })
       ruleset.process({ scope, styles: props })
     })

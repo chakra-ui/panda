@@ -2,7 +2,7 @@ import { CSSUtility } from '@css-panda/css-utility'
 import { Dictionary } from '@css-panda/dictionary'
 import { semanticTokens, tokens, utilities } from '@css-panda/fixture'
 import { describe, expect, test } from 'vitest'
-import { generatePropertyTypes } from '../src/generator-property-types'
+import { generatePropertyTypes } from '../src/generators/property-types'
 
 describe('generate property types', () => {
   test('should ', () => {
@@ -10,7 +10,7 @@ describe('generate property types', () => {
       generatePropertyTypes(
         new CSSUtility({
           tokens: new Dictionary({ tokens, semanticTokens }),
-          config: utilities,
+          config: utilities[0],
         }),
       ),
     ).toMatchInlineSnapshot(`

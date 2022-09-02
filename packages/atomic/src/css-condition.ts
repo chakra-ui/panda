@@ -1,4 +1,4 @@
-import { BaseCondition, BaseConditionType, Conditions } from '@css-panda/types'
+import type { BaseCondition, BaseConditionType, Conditions } from '@css-panda/types'
 import postcss, { AtRule } from 'postcss'
 
 type RawCondition = BaseCondition & { raw: string }

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { RecipeSet } from '../src/recipe-set'
-import { ProcessOptions } from '../src/ruleset'
+import type { ProcessOptions } from '../src/ruleset'
 import { createContext } from './fixture'
 
 function recipe(obj: ProcessOptions) {

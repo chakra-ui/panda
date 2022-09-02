@@ -1,4 +1,4 @@
-import { Pattern } from '@css-panda/types'
+import type { Pattern } from '@css-panda/types'
 
 export const patterns: Pattern[] = [
   {

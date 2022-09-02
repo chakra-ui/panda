@@ -1,6 +1,6 @@
-import { Recipe } from '@css-panda/types'
+import type { Recipe } from '@css-panda/types'
 import { ProcessOptions, Ruleset } from './ruleset'
-import { GeneratorContext } from './types'
+import type { GeneratorContext } from './types'
 
 export class RecipeSet extends Ruleset {
   __context: Omit<GeneratorContext, 'transform'>

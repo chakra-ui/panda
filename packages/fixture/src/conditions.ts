@@ -1,4 +1,4 @@
-import { Conditions } from '@css-panda/types'
+import type { Conditions } from '@css-panda/types'
 
 export const conditions: Conditions = {
   even: '&:even',

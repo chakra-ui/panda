@@ -1,7 +1,7 @@
-import * as swc from '@swc/core'
+import type * as swc from '@swc/core'
 import merge from 'lodash/merge'
 import { match, P } from 'ts-pattern'
-import { ImportResult } from './types'
+import type { ImportResult } from './types'
 
 export function keyValue(node: swc.KeyValueProperty, result: Record<string, any> = {}) {
   const key = match(node.key)

@@ -1,5 +1,5 @@
 import { error, info } from '@css-panda/logger'
-import { InternalContext } from '../create-context'
+import type { InternalContext } from '../create-context'
 import { createConfigWatcher, createContentWatcher, createTempWatcher } from './watchers'
 
 process.setMaxListeners(Infinity)

@@ -27,8 +27,8 @@ importers:
       '@css-panda/breakpoint-utils': workspace:*
       '@css-panda/error': workspace:*
       '@css-panda/fixture': workspace:*
+      '@css-panda/shared': workspace:*
       '@css-panda/types': workspace:*
-      '@css-panda/walk-object': workspace:*
       '@types/postcss-js': ^4.0.0
       postcss: ^8.4.14
       postcss-discard-duplicates: ^5.1.0
@@ -42,8 +42,8 @@ importers:
     dependencies:
       '@css-panda/breakpoint-utils': link:../breakpoint-utils
       '@css-panda/error': link:../error
+      '@css-panda/shared': link:../shared
       '@css-panda/types': link:../types
-      '@css-panda/walk-object': link:../walk-object
       postcss: 8.4.14
       postcss-discard-duplicates: 5.1.0_postcss@8.4.14
       postcss-js: 4.0.0_postcss@8.4.14
@@ -92,8 +92,8 @@ importers:
       '@css-panda/logger': workspace:*
       '@css-panda/parser': workspace:*
       '@css-panda/read-config': workspace:*
+      '@css-panda/shared': workspace:*
       '@css-panda/types': workspace:*
-      '@css-panda/walk-object': workspace:*
       '@types/fs-extra': ^9.0.13
       '@types/pluralize': ^0.0.29
       esbuild: ^0.15.5
@@ -116,8 +116,8 @@ importers:
       '@css-panda/logger': link:../logger
       '@css-panda/parser': link:../parser
       '@css-panda/read-config': link:../read-config
+      '@css-panda/shared': link:../shared
       '@css-panda/types': link:../types
-      '@css-panda/walk-object': link:../walk-object
       esbuild: 0.15.5
       filespy: 1.2.4
       find-up: 6.3.0
@@ -155,15 +155,15 @@ importers:
     specifiers:
       '@css-panda/css-utility': workspace:*
       '@css-panda/logger': workspace:*
+      '@css-panda/shared': workspace:*
       '@css-panda/types': workspace:*
-      '@css-panda/walk-object': workspace:*
       '@types/lodash.merge': ^4.6.7
       lodash.merge: ^4.6.2
     dependencies:
       '@css-panda/css-utility': link:../css-utility
       '@css-panda/logger': link:../logger
+      '@css-panda/shared': link:../shared
       '@css-panda/types': link:../types
-      '@css-panda/walk-object': link:../walk-object
       lodash.merge: 4.6.2
     devDependencies:
       '@types/lodash.merge': 4.6.7
@@ -191,8 +191,8 @@ importers:
       '@css-panda/css-var': workspace:*
       '@css-panda/error': workspace:*
       '@css-panda/fixture': workspace:*
+      '@css-panda/shared': workspace:*
       '@css-panda/types': workspace:*
-      '@css-panda/walk-object': workspace:*
       '@types/lodash.get': ^4.4.7
       lodash.get: ^4.4.2
       ts-pattern: ^4.0.5
@@ -200,8 +200,8 @@ importers:
       '@css-panda/calc': link:../calc
       '@css-panda/css-var': link:../css-var
       '@css-panda/error': link:../error
+      '@css-panda/shared': link:../shared
       '@css-panda/types': link:../types
-      '@css-panda/walk-object': link:../walk-object
       lodash.get: 4.4.2
       ts-pattern: 4.0.5
     devDependencies:
@@ -230,6 +230,7 @@ importers:
 
   packages/parser:
     specifiers:
+      '@css-panda/fixture': workspace:*
       '@css-panda/logger': workspace:*
       '@css-panda/types': workspace:*
       '@swc/core': ^1.2.237
@@ -243,6 +244,7 @@ importers:
       lodash: 4.17.21
       ts-pattern: 4.0.5
     devDependencies:
+      '@css-panda/fixture': link:../fixture
       '@types/lodash': 4.14.182
 
   packages/read-config:
@@ -256,6 +258,9 @@ importers:
       '@esbuild-plugins/tsconfig-paths': 0.0.4_esbuild@0.15.5+typescript@4.7.4
       esbuild: 0.15.5
       find-up: 6.3.0
+
+  packages/shared:
+    specifiers: {}
 
   packages/types:
     specifiers:
@@ -317,9 +322,6 @@ importers:
       '@vitejs/plugin-react': 1.3.2
       typescript: 4.7.4
       vite: 2.9.14
-
-  packages/walk-object:
-    specifiers: {}
 
 packages:
 

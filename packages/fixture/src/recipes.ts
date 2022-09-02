@@ -1,4 +1,4 @@
-import { Recipe } from '@css-panda/types'
+import type { Recipe } from '@css-panda/types'
 
 export const recipes: Recipe[] = [
   {

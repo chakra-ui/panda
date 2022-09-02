@@ -1,5 +1,5 @@
 import outdent from 'outdent'
-import { InternalContext } from '../create-context'
+import type { InternalContext } from '../create-context'
 
 export function generateConditions({ context }: InternalContext) {
   const ctx = context()

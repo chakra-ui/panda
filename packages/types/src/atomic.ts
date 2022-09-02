@@ -1,5 +1,5 @@
-import { Properties } from './panda-csstype'
-import { TokenCategory } from './tokens'
+import type { Properties } from './panda-csstype'
+import type { TokenCategory } from './tokens'
 
 type Getter = (category: TokenCategory) => Record<string, string>
 

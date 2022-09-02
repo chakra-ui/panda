@@ -1,7 +1,7 @@
-import { PluginResult } from '@css-panda/types'
-import * as swc from '@swc/core'
+import type { PluginResult } from '@css-panda/types'
+import type * as swc from '@swc/core'
 import { createDebug } from './debug'
-import { Collector } from './types'
+import type { Collector } from './types'
 import { CallVisitor, DynamicCallVisitor } from './visitor'
 
 function createPlugin(name: string) {
@@ -60,7 +60,11 @@ export function createCollector() {
   }
 }
 
-export function createPlugins(data: Collector, importMap: Record<string, string>, fileName?: string) {
+export function createPlugins(
+  data: Collector,
+  importMap: Record<'css' | 'recipe' | 'pattern', string>,
+  fileName?: string,
+) {
   return [
     sxPlugin(data.css, importMap.css, fileName),
     cssPlugin(data.css, importMap.css, fileName),

@@ -1,10 +1,23 @@
 import { conditions, keyframes, semanticTokens, tokens } from '@css-panda/fixture'
+import type { LoadConfigResult } from '@css-panda/read-config'
 import { expect, test } from 'vitest'
 import { createContext } from '../src/create-context'
 import { generateCss } from '../src/generators/css'
 
+const conf: LoadConfigResult<any> = {
+  dependencies: [],
+  code: '',
+  config: {
+    tokens,
+    semanticTokens,
+    conditions,
+    keyframes,
+  },
+  path: '',
+}
+
 test('[css] should generate css', () => {
-  const ctx = createContext({ tokens, semanticTokens, conditions, keyframes })
+  const ctx = createContext(conf)
   const css = generateCss(ctx, ':root')
 
   expect(css).toMatchInlineSnapshot(`

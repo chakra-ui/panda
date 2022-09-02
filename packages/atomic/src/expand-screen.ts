@@ -1,6 +1,6 @@
 import { getBreakpointDetails } from '@css-panda/breakpoint-utils'
-import { Root } from 'postcss'
-import { Dict } from './types'
+import type { Root } from 'postcss'
+import type { Dict } from './types'
 
 export function expandScreenAtRule(root: Root, breakpoints: Dict) {
   const bp = getBreakpointDetails(breakpoints)

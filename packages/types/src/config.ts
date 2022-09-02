@@ -1,18 +1,10 @@
-import { Conditions as TConditions } from './conditions'
-import { Utility } from './css-utility'
-import { Dict, RequiredBy } from './helper'
-import type { CssProperty, Keyframes } from './panda-csstype'
-import { Pattern } from './pattern'
-import { Recipe } from './recipe'
+import type { Conditions as TConditions } from './conditions'
+import type { Utility } from './css-utility'
+import type { Dict, RequiredBy } from './helper'
+import type { Keyframes } from './panda-csstype'
+import type { Pattern } from './pattern'
+import type { Recipe } from './recipe'
 import type { DotPath, TDotPath } from './shared'
-
-type TBreakpoints = {
-  [breakpoint: string]: string
-}
-
-export type TTokens = {
-  [key: string]: string | TTokens
-}
 
 export type SemanticTokens<Tokens extends TDotPath = Dict, Conditions = Dict, Breakpoints = Dict> = {
   [K in keyof Tokens]?: {
@@ -22,14 +14,10 @@ export type SemanticTokens<Tokens extends TDotPath = Dict, Conditions = Dict, Br
   }
 }
 
-type Shorthands = {
-  [shorthand: string]: Array<CssProperty>
-}
-
 export type Config<
   Conditions extends TConditions = TConditions,
-  Breakpoints extends TBreakpoints = TBreakpoints,
-  Tokens extends TTokens = TTokens,
+  Breakpoints extends Dict = Dict,
+  Tokens extends Dict = Dict,
 > = {
   cwd?: string
   hash?: boolean
@@ -44,15 +32,14 @@ export type Config<
   keyframes?: Keyframes
   tokens?: Tokens
   semanticTokens?: SemanticTokens<Tokens, Conditions, Breakpoints>
-  shorthands?: Shorthands
   utilities?: Utility<Tokens>[]
   recipes?: Recipe[]
   patterns?: Pattern[]
 }
 
-export type TConfig = Config<TConditions, TBreakpoints, TTokens>
+export type TConfig = Config<TConditions, Dict, Dict>
 
-export function defineConfig<Conditions extends TConditions, Breakpoints extends TBreakpoints, Tokens extends TTokens>(
+export function defineConfig<Conditions extends TConditions, Breakpoints extends Dict, Tokens extends Dict>(
   config: Partial<Config<Conditions, Breakpoints, Tokens>>,
 ): Partial<Config<Conditions, Breakpoints, Tokens>> {
   return config

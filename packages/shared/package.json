@@ -1,7 +1,7 @@
 {
-  "name": "@css-panda/walk-object",
+  "name": "@css-panda/shared",
   "version": "0.0.1",
-  "description": "JS utility to walk objects",
+  "description": "Shared utilities for css panda",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",

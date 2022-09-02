@@ -1,6 +1,6 @@
 import postcss from 'postcss'
 import { toCss } from './to-css'
-import { Dict } from './types'
+import type { Dict } from './types'
 
 function toString(name: string, definition: Dict) {
   return postcss

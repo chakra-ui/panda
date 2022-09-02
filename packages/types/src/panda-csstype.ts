@@ -1,4 +1,4 @@
-import * as CSS from './csstype'
+import type * as CSS from './csstype'
 
 type Loose = string & { __type?: never }
 // type Clean<T> = Exclude<T, { __type?: never }>

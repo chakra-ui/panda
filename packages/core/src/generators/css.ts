@@ -1,7 +1,7 @@
 import { toCss, toKeyframeCss } from '@css-panda/atomic'
-import { VarData } from '@css-panda/dictionary'
+import type { VarData } from '@css-panda/dictionary'
 import { error } from '@css-panda/logger'
-import { InternalContext } from '../create-context'
+import type { InternalContext } from '../create-context'
 
 export function generateCss(ctx: InternalContext, root = ':where(:root, :host)') {
   function inner(vars: Map<string, VarData>, wrap = true) {

@@ -1,6 +1,6 @@
 import { TokenError } from '@css-panda/error'
-import type { SemanticTokens } from '@css-panda/types'
-import { walkObject } from '@css-panda/walk-object'
+import { walkObject } from '@css-panda/shared'
+import type { Dict } from '@css-panda/types'
 
 export function getTokenMap(values: Record<string, any>, options: { maxDepth?: number } = {}) {
   const { maxDepth = 1 } = options
@@ -18,7 +18,7 @@ export function getTokenMap(values: Record<string, any>, options: { maxDepth?: n
   return map
 }
 
-export function getSemanticTokenMap(values: SemanticTokens) {
+export function getSemanticTokenMap(values: Dict) {
   const map = new Map<string, Map<string, string>>()
 
   walkObject(values, (value, path) => {

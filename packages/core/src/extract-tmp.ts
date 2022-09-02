@@ -1,4 +1,4 @@
-import { InternalContext } from './create-context'
+import type { InternalContext } from './create-context'
 
 export async function extractTemp(ctx: InternalContext) {
   ctx.stylesheet.reset()

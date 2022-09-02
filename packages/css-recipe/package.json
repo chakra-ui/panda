@@ -17,7 +17,7 @@
     "@css-panda/css-utility": "workspace:*",
     "@css-panda/types": "workspace:*",
     "@css-panda/logger": "workspace:*",
-    "@css-panda/walk-object": "workspace:*",
+    "@css-panda/shared": "workspace:*",
     "lodash.merge": "^4.6.2"
   },
   "devDependencies": {

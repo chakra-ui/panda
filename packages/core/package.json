@@ -21,7 +21,7 @@
     "@css-panda/parser": "workspace:*",
     "@css-panda/css-utility": "workspace:*",
     "@css-panda/css-recipe": "workspace:*",
-    "@css-panda/walk-object": "workspace:*",
+    "@css-panda/shared": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "@css-panda/atomic": "workspace:*",
     "@css-panda/read-config": "workspace:*",

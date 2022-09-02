@@ -1,7 +1,7 @@
 import { ConfigNotFoundError } from '@css-panda/error'
 import { info } from '@css-panda/logger'
 import { loadConfigFile } from '@css-panda/read-config'
-import { UserConfig } from '@css-panda/types'
+import type { UserConfig } from '@css-panda/types'
 import fs, { emptyDir } from 'fs-extra'
 import { recrawl } from 'recrawl'
 import { createContext } from './create-context'

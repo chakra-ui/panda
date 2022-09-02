@@ -1,5 +1,5 @@
-import { Root } from 'postcss'
-import { CSSCondition } from './css-condition'
+import type { Root } from 'postcss'
+import type { CSSCondition } from './css-condition'
 
 export type TransformResult = {
   className: string

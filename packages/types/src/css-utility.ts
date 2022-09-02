@@ -1,4 +1,4 @@
-import { Properties } from './panda-csstype'
+import type { Properties } from './panda-csstype'
 
 type ClassNameFn = (value: string, prop: string) => string
 

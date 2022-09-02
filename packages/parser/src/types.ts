@@ -1,4 +1,4 @@
-import { PluginResult } from '@css-panda/types'
+import type { PluginResult } from '@css-panda/types'
 
 export type PluginContext = {
   import: { module: string; name: string; filename?: string }

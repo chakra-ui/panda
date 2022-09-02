@@ -1,4 +1,4 @@
-import { CssProperties, WithNesting } from './panda-csstype'
+import type { CssProperties, WithNesting } from './panda-csstype'
 
 export type RecipeVariant = Record<string, WithNesting<CssProperties>>
 

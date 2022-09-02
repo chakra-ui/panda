@@ -1,4 +1,4 @@
-import { Dictionary } from '@css-panda/dictionary'
+import type { Dictionary } from '@css-panda/dictionary'
 import { singular } from 'pluralize'
 
 function union(values: IterableIterator<string>) {

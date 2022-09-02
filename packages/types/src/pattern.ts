@@ -1,4 +1,4 @@
-import { CssProperty } from './panda-csstype'
+import type { CssProperty } from './panda-csstype'
 
 type PropertyConfig =
   | { type: 'cssProp'; value: CssProperty }

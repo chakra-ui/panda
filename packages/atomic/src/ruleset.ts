@@ -1,11 +1,8 @@
-import { walkObject } from '@css-panda/walk-object'
+import { esc, filterBaseConditions, toHash, walkObject } from '@css-panda/shared'
 import postcss, { AtRule, Rule } from 'postcss'
 import { match } from 'ts-pattern'
-import { esc } from './esc'
-import { filterDefaults } from './filter-defaults'
-import { toHash } from './hash'
 import { toCss } from './to-css'
-import { Dict, GeneratorContext } from './types'
+import type { Dict, GeneratorContext } from './types'
 
 export type ProcessOptions = {
   scope?: string
@@ -31,10 +28,10 @@ export class Ruleset {
     const { scope, styles } = options
 
     walkObject(styles, (value, paths) => {
-      const [prop, ..._conditions] = paths
+      const [prop, ...allConditions] = paths
 
       // remove default condition
-      const conditions = filterDefaults(_conditions)
+      const conditions = filterBaseConditions(allConditions)
 
       // allow users transform the generated class and styles
       const transformed = this.context.transform(prop, value)

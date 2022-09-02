@@ -1,4 +1,4 @@
-import { Utility } from '@css-panda/types'
+import type { Utility } from '@css-panda/types'
 
 export const utilities: Utility[] = [
   {

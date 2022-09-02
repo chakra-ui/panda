@@ -1,8 +1,8 @@
-import { CSSUtility } from '@css-panda/css-utility'
-import { Recipe } from '@css-panda/types'
-import { walkObject } from '@css-panda/walk-object'
-import merge from 'lodash.merge'
+import type { CSSUtility } from '@css-panda/css-utility'
 import { createDebugger, error } from '@css-panda/logger'
+import { walkObject, walkStyles } from '@css-panda/shared'
+import type { Recipe } from '@css-panda/types'
+import merge from 'lodash.merge'
 
 const debug = createDebugger('recipe')
 
@@ -17,10 +17,10 @@ export class CSSRecipe {
     this.config = options.config
   }
 
-  private walk(obj: StyleObject) {
+  private walk(styleObject: StyleObject) {
     const transformed: StyleObject = {}
 
-    forEach(obj, (styles, selector) => {
+    walkStyles(styleObject, (styles, selector) => {
       const result: StyleObject = {}
 
       walkObject(styles, (value, paths) => {
@@ -67,20 +67,6 @@ export class CSSRecipe {
     }
 
     return recipe
-  }
-}
-
-function forEach(obj: Record<string, any>, fn: (style: Record<string, any>, scope?: string) => void) {
-  const { selectors = {}, '@media': mediaQueries = {}, ...styles } = obj
-
-  fn(styles)
-
-  for (const [scope, _styles] of Object.entries(selectors)) {
-    fn(_styles as any, scope)
-  }
-
-  for (const [scope, _styles] of Object.entries(mediaQueries)) {
-    fn(_styles as any, `@media ${scope}`)
   }
 }
 

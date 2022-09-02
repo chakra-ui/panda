@@ -19,7 +19,7 @@
     "lodash.get": "^4.4.2",
     "@css-panda/css-var": "workspace:*",
     "@css-panda/error": "workspace:*",
-    "@css-panda/walk-object": "workspace:*",
+    "@css-panda/shared": "workspace:*",
     "ts-pattern": "^4.0.5"
   },
   "devDependencies": {

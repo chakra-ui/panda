@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { ClassNames } from '../src/classname'
+import { createCss } from '../src/classname'
 import { createContext } from './fixture'
 
 describe('generate classnames', () => {
   test('should convert object to class', () => {
-    const { css } = new ClassNames(createContext())
+    const css = createCss(createContext())
     expect(
       css({
         color: { light: 'red', dark: 'green' },

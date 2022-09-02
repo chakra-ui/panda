@@ -18,6 +18,7 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
+    "@css-panda/fixture": "workspace:*",
     "@types/lodash": "^4.14.182"
   },
   "files": [

@@ -20,8 +20,9 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "suppressImplicitAnyIndexErrors": true
+    "suppressImplicitAnyIndexErrors": true,
+    "importsNotUsedAsValues": "error"
   },
   "include": ["./**/*.ts"],
-  "exclude": ["node_modules/**/*"]
+  "exclude": ["node_modules"]
 }

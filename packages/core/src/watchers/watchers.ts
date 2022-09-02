@@ -1,6 +1,6 @@
 import { getConfigDependencies, LoadConfigResult } from '@css-panda/read-config'
-import { UserConfig } from '@css-panda/types'
-import { InternalContext } from '../create-context'
+import type { UserConfig } from '@css-panda/types'
+import type { InternalContext } from '../create-context'
 import { createDebug } from '../debug'
 import { createWatcher } from './create-watcher'
 

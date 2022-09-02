@@ -1,4 +1,4 @@
-import { Recipe } from '@css-panda/types'
+import type { Recipe } from '@css-panda/types'
 import { outdent } from 'outdent'
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)

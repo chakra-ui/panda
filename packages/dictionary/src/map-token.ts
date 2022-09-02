@@ -1,4 +1,4 @@
-import { Tokens, TSemanticTokens } from '@css-panda/types'
+import type { Tokens, SemanticTokens } from '@css-panda/types'
 import { match } from 'ts-pattern'
 import { objectEntries } from './entries'
 import { getTokenData, TokenData } from './get-token-data'
@@ -38,7 +38,7 @@ export function mapTokens(
 }
 
 export function mapSemanticTokens(
-  tokens: TSemanticTokens,
+  tokens: SemanticTokens,
   callback: (data: TokenData, condition: string) => void,
   options: { prefix?: string } = {},
 ) {
@@ -46,7 +46,7 @@ export function mapSemanticTokens(
 
   for (const entry of objectEntries(tokens)) {
     //
-    const map = getSemanticTokenMap(entry.values)
+    const map = getSemanticTokenMap(entry.values as any)
 
     match(entry)
       .with({ type: 'spacing' }, () => {

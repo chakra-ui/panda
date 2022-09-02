@@ -1,6 +1,6 @@
 import { Stylesheet } from '@css-panda/atomic'
 import { createCollector, createPlugins, transformFileSync } from '@css-panda/parser'
-import { InternalContext } from './create-context'
+import type { InternalContext } from './create-context'
 import { createDebug } from './debug'
 
 export function extractContent(ctx: InternalContext, file: string) {

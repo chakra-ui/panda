@@ -1,6 +1,7 @@
 import { describe, test, expect } from 'vitest'
 import { createCollector, createPlugins } from '../src/plugins'
 import { transformSync } from '../src/transform'
+import { importMap } from '@css-panda/fixture'
 
 describe('ast parser', () => {
   test('[without import] should not parse', () => {
@@ -31,7 +32,7 @@ describe('ast parser', () => {
     const data = createCollector()
 
     transformSync(code, {
-      plugins: createPlugins(data),
+      plugins: createPlugins(data, importMap),
     })
 
     expect(data).toMatchInlineSnapshot(`

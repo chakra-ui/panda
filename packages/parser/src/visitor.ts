@@ -2,7 +2,7 @@ import type * as swc from '@swc/core'
 import BaseVisitor from '@swc/core/Visitor'
 import * as ast from './ast'
 import { createDebug } from './debug'
-import { ImportResult, PluginContext } from './types'
+import type { ImportResult, PluginContext } from './types'
 
 export class CallVisitor extends BaseVisitor {
   constructor(private ctx: PluginContext) {
