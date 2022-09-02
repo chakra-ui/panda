@@ -8,6 +8,8 @@
     "test": "vitest",
     "test-watch": "vitest --watch -u",
     "lint": "eslint packages --ext .ts",
+    "prettier": "prettier --check packages",
+    "prettier-fix": "prettier --write packages",
     "extension-watch": "pnpm --prefix ./packages/vscode run watch:extension"
   },
   "keywords": [],

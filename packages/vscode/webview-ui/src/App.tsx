@@ -8,7 +8,7 @@ import { TypographyPlayground } from './components/typography-playground'
 import { Sizes } from './components/size-docs'
 import { SpacingPlayground } from './components/spacing-playground'
 import { ContrastChecker } from './components/contrast-checker'
-import { vscode } from './utilities/vscode' 
+import { vscode } from './utilities/vscode'
 import type { Config } from '@css-panda/types'
 
 function App() {
