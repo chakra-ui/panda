@@ -1,10 +1,10 @@
-import { unionType } from '@css-panda/shared'
+import { unionType, capitalize } from '@css-panda/shared'
 import type { Recipe } from '@css-panda/types'
 import { outdent } from 'outdent'
 
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+export function generateRecipes(config: { recipes?: Recipe[]; hash?: boolean }) {
+  const { recipes = [], hash } = config
 
-export function generateRecipes(config: { recipes?: Recipe[] }, hash?: boolean) {
   const js = [
     outdent`
    import { createCss } from "../css/serializer"
@@ -13,11 +13,15 @@ export function generateRecipes(config: { recipes?: Recipe[] }, hash?: boolean) 
 
   const dts = ['']
 
-  ;(config.recipes ?? []).forEach((recipe) => {
+  recipes.forEach((recipe) => {
     js.push(outdent`
     export const ${recipe.name} = (styles) => {
 
      const transform = (prop, value) => {
+        if (value === '__ignore__') {
+          return { className: "${recipe.name}" }
+        }
+
         value = value.toString().replaceAll(" ", "_")
         return { className: \`${recipe.name}__\${prop}-\${value}\` }
      }
@@ -25,7 +29,7 @@ export function generateRecipes(config: { recipes?: Recipe[] }, hash?: boolean) 
      const context = ${hash ? '{ transform, hash: true }' : '{ transform }'}
      const css = createCss(context)
      
-     return ['${recipe.name}', css(styles)].join(' ')
+     return css({ ${recipe.name}: '__ignore__' , ...styles })
     }
     `)
 

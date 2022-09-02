@@ -1,9 +1,7 @@
-import { unionType } from '@css-panda/shared'
+import { unionType, capitalize } from '@css-panda/shared'
 import type { Pattern } from '@css-panda/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
-
-const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 
 export function generatePattern(config: { patterns?: Pattern[] }) {
   const patterns = config.patterns ?? []
