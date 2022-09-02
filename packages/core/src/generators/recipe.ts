@@ -1,3 +1,4 @@
+import { unionType } from '@css-panda/shared'
 import type { Recipe } from '@css-panda/types'
 import { outdent } from 'outdent'
 
@@ -35,10 +36,8 @@ export function generateRecipes(config: { recipes?: Recipe[] }, hash?: boolean) 
       ${Object.keys(recipe.variants ?? {})
         .map((key) => {
           const value = recipe.variants![key]
-          const enums = Object.keys(value)
-            .map((t) => JSON.stringify(t))
-            .join(' | ')
-          return `${key}?: ConditionalValue<${enums}>`
+          const keys = Object.keys(value)
+          return `${key}?: ConditionalValue<${unionType(keys)}>`
         })
         .join('\n')}
     }

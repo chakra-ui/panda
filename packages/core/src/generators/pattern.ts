@@ -1,3 +1,4 @@
+import { unionType } from '@css-panda/shared'
 import type { Pattern } from '@css-panda/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
@@ -52,7 +53,7 @@ export function generatePattern(config: { patterns?: Pattern[] }) {
                 return `${key}?: UserConditionalValue<Tokens["${value.value}"]>`
               })
               .with({ type: 'enum' }, (value) => {
-                return `${key}?: UserConditionalValue<${value.value.map((t) => JSON.stringify(t)).join(' | ')}>`
+                return `${key}?: UserConditionalValue<${unionType(value.value)}>`
               })
               .otherwise(() => {
                 return `${key}?: UserConditionalValue<${value.type}>`
