@@ -17,7 +17,7 @@ test('condition transformation', () => {
     {
       "name": "screen",
       "raw": "sm",
-      "rawValue": "@media (min-width: 320px)",
+      "rawValue": "@media screen and (min-width: 30em)",
       "type": "at-rule",
       "value": "sm",
     }
