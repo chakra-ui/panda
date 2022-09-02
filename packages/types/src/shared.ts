@@ -1,4 +1,4 @@
-export type Loose = string & {}
+export type Loose = string & Record<never, never>
 
 type PathsToStringProps<T> = T extends string
   ? []

@@ -8,12 +8,12 @@ const DIGIT_REGEX = new RegExp(String.raw`-?\d+(?:\.\d+|\d*)`)
 
 const UNIT_REGEX = new RegExp(`${UNIT_PX}|${UNIT_EM}|${UNIT_REM}`)
 
-export function getUnit(value = '') {
+export function getUnit(value = ''): string | undefined {
   const unit = value.match(new RegExp(`${DIGIT_REGEX.source}(${UNIT_REGEX.source})`))
   return unit?.[1]
 }
 
-export function toPx(value = '') {
+export function toPx(value = ''): string | undefined {
   const unit = getUnit(value)
 
   if (!unit) return value
@@ -27,7 +27,7 @@ export function toPx(value = '') {
   }
 }
 
-export function toEm(value = '', fontSize = BASE_FONT_SIZE) {
+export function toEm(value = '', fontSize = BASE_FONT_SIZE): string | undefined {
   const unit = getUnit(value)
 
   if (!unit) return value
@@ -45,7 +45,7 @@ export function toEm(value = '', fontSize = BASE_FONT_SIZE) {
   }
 }
 
-export function toRem(value = '') {
+export function toRem(value = ''): string | undefined {
   const unit = getUnit(value)
 
   if (!unit) return value

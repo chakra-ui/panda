@@ -3,7 +3,7 @@ function toAlphabeticChar(code: number) {
 }
 
 function toAlphabeticName(code: number) {
-  let name: string = ''
+  let name = ''
   let x: number
   for (x = Math.abs(code); x > 52; x = (x / 52) | 0) name = toAlphabeticChar(x % 52) + name
   return toAlphabeticChar(x % 52) + name

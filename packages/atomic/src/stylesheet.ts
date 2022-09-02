@@ -7,6 +7,8 @@ import { toCss } from './to-css'
 import postcss, { Root, Rule } from 'postcss'
 import { RecipeSet } from './recipe-set'
 
+type AnyFunction = (...args: any[]) => any
+
 export class Stylesheet {
   hash: boolean
 
@@ -54,7 +56,7 @@ export class Stylesheet {
     return this
   }
 
-  private forEach(styleObject: any, fn: Function) {
+  private forEach(styleObject: any, fn: AnyFunction) {
     const { selectors = {}, '@media': mediaQueries = {}, ...styles } = styleObject
 
     fn(styles)

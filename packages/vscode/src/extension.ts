@@ -15,7 +15,7 @@ export function activate(context: ExtensionContext) {
 
   context.subscriptions.push(
     commands.registerCommand('pandacss.askquestion', async () => {
-      let response = await window.showInformationMessage('How are you doing?', 'Good', 'Bad')
+      const response = await window.showInformationMessage('How are you doing?', 'Good', 'Bad')
       if (response === 'Bad') {
         window.showInformationMessage("I'm sorry")
       }

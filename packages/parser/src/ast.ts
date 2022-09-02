@@ -185,7 +185,9 @@ export function importDeclaration(node: swc.ImportDeclaration, options: { module
           result.push({ identifer: main, alias: alias })
         },
       )
-      .otherwise(() => {})
+      .otherwise(() => {
+        // noop
+      })
   }
 
   return result.find((item) => item.identifer === options.name)
@@ -220,7 +222,9 @@ export function importDeclarations(node: swc.ImportDeclaration, module: string) 
           result.push({ identifer: main, alias: alias })
         },
       )
-      .otherwise(() => {})
+      .otherwise(() => {
+        // noop
+      })
   }
 
   return result

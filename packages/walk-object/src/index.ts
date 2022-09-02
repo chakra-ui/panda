@@ -1,13 +1,13 @@
 type Predicate<R = any> = (value: any, path: string[]) => R
 
-function isObject(value: any): value is object {
+function isObject(value: any): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 export type MappedObject<T, K> = {
   [Prop in keyof T]: T[Prop] extends Array<any>
     ? MappedObject<T[Prop][number], K>[]
-    : T[Prop] extends object
+    : T[Prop] extends Record<string, unknown>
     ? MappedObject<T[Prop], K>
     : K
 }

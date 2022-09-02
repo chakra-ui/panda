@@ -3,7 +3,7 @@ import { createDebug } from './debug'
 
 function commonSequence(a: string[], b: string[]) {
   const result: string[] = []
-  for (var i = 0; i < Math.min(a.length, b.length); i++) {
+  for (let i = 0; i < Math.min(a.length, b.length); i++) {
     if (a[i] === b[i]) {
       result.push(a[i])
     } else {

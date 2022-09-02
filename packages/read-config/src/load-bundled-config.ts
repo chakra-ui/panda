@@ -12,7 +12,8 @@ export function loadBundledFile(fileName: string, bundledCode: string): Promise<
 
   __require.extensions[extension] = (module: NodeModule, filename: string) => {
     if (filename === realFileName) {
-      ;(module as any)._compile(bundledCode, filename)
+      const m = module as any
+      m._compile(bundledCode, filename)
     } else {
       defaultLoader(module, filename)
     }

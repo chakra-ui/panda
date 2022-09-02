@@ -1,7 +1,7 @@
 import ColorContrastChecker from 'color-contrast-checker'
 
 export const getContrastPairs = (colorA?: string, colorB?: string) => {
-  var contrastChecker = new ColorContrastChecker()
+  const contrastChecker = new ColorContrastChecker()
   let res
   try {
     res = contrastChecker.checkPairs([
@@ -22,9 +22,9 @@ export const getContrastPairs = (colorA?: string, colorB?: string) => {
 }
 
 export const getContrastRatio = (colorA?: string, colorB?: string) => {
-  var contrastChecker = new ColorContrastChecker()
-  var luminanceA, luminanceB
-  var ratio: number | undefined
+  const contrastChecker = new ColorContrastChecker()
+  let luminanceA, luminanceB
+  let ratio: number | undefined
 
   try {
     luminanceA = contrastChecker.hexToLuminance(colorA)

@@ -4,13 +4,13 @@ import { outdent } from 'outdent'
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 export function generateRecipes(config: { recipes?: Recipe[] }, hash?: boolean) {
-  let js = [
+  const js = [
     outdent`
    import { createCss } from "../css/serializer"
   `,
   ]
 
-  let dts = ['']
+  const dts = ['']
 
   ;(config.recipes ?? []).forEach((recipe) => {
     js.push(outdent`

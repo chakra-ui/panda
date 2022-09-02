@@ -20,9 +20,9 @@ export type PropertyUtility<T extends Record<string, any>> = {
   valueType?: string
 }
 
-export type Utility<T = Record<string, any>> = {
+export type Utility<T extends Record<string, any> = Record<string, any>> = {
   properties: {
-    [property in keyof Properties | (string & {})]?: string | PropertyUtility<T>
+    [property in keyof Properties | (string & Record<never, never>)]?: string | PropertyUtility<T>
   }
 
   shorthands?: {

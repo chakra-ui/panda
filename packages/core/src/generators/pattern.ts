@@ -6,7 +6,7 @@ const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 
 export function generatePattern(config: { patterns?: Pattern[] }) {
   const patterns = config.patterns ?? []
-  let js = [
+  const js = [
     outdent`
   import config from "../config"
   import { css } from "../css"
@@ -22,7 +22,7 @@ export function generatePattern(config: { patterns?: Pattern[] }) {
   `,
   ]
 
-  let dts: string[] = [
+  const dts: string[] = [
     outdent`
   import { UserCssObject, UserConditionalValue } from "../types/public"
   import { Properties } from "../types/csstype"

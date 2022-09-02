@@ -1,5 +1,5 @@
 import { TokenError } from '@css-panda/error'
-import type { TSemanticToken } from '@css-panda/types'
+import type { SemanticTokens } from '@css-panda/types'
 import { walkObject } from '@css-panda/walk-object'
 
 export function getTokenMap(values: Record<string, any>, options: { maxDepth?: number } = {}) {
@@ -18,7 +18,7 @@ export function getTokenMap(values: Record<string, any>, options: { maxDepth?: n
   return map
 }
 
-export function getSemanticTokenMap(values: TSemanticToken) {
+export function getSemanticTokenMap(values: SemanticTokens) {
   const map = new Map<string, Map<string, string>>()
 
   walkObject(values, (value, path) => {
@@ -29,7 +29,7 @@ export function getSemanticTokenMap(values: TSemanticToken) {
     const [key, condition] = path
     const isDefault = condition === '_' || condition === 'base'
 
-    let prop = isDefault ? 'base' : condition
+    const prop = isDefault ? 'base' : condition
 
     if (!map.has(prop)) {
       map.set(prop, new Map())

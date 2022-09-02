@@ -31,10 +31,10 @@ export class Ruleset {
     const { scope, styles } = options
 
     walkObject(styles, (value, paths) => {
-      let [prop, ...conditions] = paths
+      const [prop, ..._conditions] = paths
 
       // remove default condition
-      conditions = filterDefaults(conditions)
+      const conditions = filterDefaults(_conditions)
 
       // allow users transform the generated class and styles
       const transformed = this.context.transform(prop, value)

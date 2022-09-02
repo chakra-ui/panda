@@ -80,7 +80,9 @@ export class Dictionary {
               value,
             })
           })
-          .otherwise(() => {})
+          .otherwise(() => {
+            // do nothing
+          })
       },
       { prefix: this.prefix },
     )

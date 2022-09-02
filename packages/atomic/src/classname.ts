@@ -16,9 +16,9 @@ export class ClassNames {
 
     const inner = (props: Dict, scope?: string) => {
       walkObject(props, (value, paths) => {
-        let [prop, ...conditions] = paths
+        const [prop, ..._conditions] = paths
 
-        conditions = filterDefaults(conditions)
+        const conditions = filterDefaults(_conditions)
         const transformed = this.context.transform(prop, value)
 
         // get the base class name

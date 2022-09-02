@@ -2,10 +2,10 @@ import colors from 'picocolors'
 import __debug from 'debug'
 import util from 'util'
 
-export let prefix = '🐼 '
+export const prefix = '🐼 '
 
 function format(args: Array<any>, customPrefix?: string) {
-  let fullPrefix = [prefix, customPrefix].filter(Boolean).join(' ')
+  const fullPrefix = [prefix, customPrefix].filter(Boolean).join(' ')
   return (
     fullPrefix +
     util

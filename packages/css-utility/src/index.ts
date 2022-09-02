@@ -1,8 +1,10 @@
 import type { Dictionary } from '@css-panda/dictionary'
 import type { Dict, Utility, PropertyUtility } from '@css-panda/types'
 
+type AnyFunction = (...args: any[]) => any
+
 const isString = (v: any): v is string => typeof v === 'string'
-const isFunction = (v: any): v is Function => typeof v === 'function'
+const isFunction = (v: any): v is AnyFunction => typeof v === 'function'
 const clean = (v: string) => v.toString().replaceAll(' ', '_')
 
 export class CSSUtility {
@@ -15,7 +17,7 @@ export class CSSUtility {
   config: Utility<Dict> = { properties: {} }
   report: Map<string, string> = new Map()
 
-  private transformMap: Map<string, Function> = new Map()
+  private transformMap: Map<string, AnyFunction> = new Map()
   private propertyConfigMap: Map<string, PropertyUtility<any>> = new Map()
 
   private getPropKey(prop: string, value: string) {
@@ -118,7 +120,7 @@ export class CSSUtility {
     return { [prop]: value }
   }
 
-  private setTransform(property: string, transform?: Function) {
+  private setTransform(property: string, transform?: AnyFunction) {
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
     const transformFn = transform ?? defaultTransform
     this.transformMap.set(property, transformFn)
