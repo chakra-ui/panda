@@ -45,10 +45,10 @@ describe('Token types', () => {
     expect(getTokenMap(tokens.fontWeights)).toMatchInlineSnapshot(
       `
       Map {
-        "normal" => 400,
-        "medium" => 500,
-        "semibold" => 600,
-        "bold" => 700,
+        "normal" => "400",
+        "medium" => "500",
+        "semibold" => "600",
+        "bold" => "700",
       }
     `,
     )
@@ -76,13 +76,13 @@ describe('semantic tokens', () => {
   test('colors', () => {
     expect(getSemanticTokenMap(semanticTokens.colors)).toMatchInlineSnapshot(`
       Map {
-        "raw" => Map {
-          "primary" => "$red.500",
-          "secondary" => "$red.800",
+        "base" => Map {
+          "primary" => "red.500",
+          "secondary" => "red.800",
         },
         "dark" => Map {
-          "primary" => "$red.400",
-          "secondary" => "$red.700",
+          "primary" => "red.400",
+          "secondary" => "red.700",
         },
       }
     `)
@@ -90,17 +90,17 @@ describe('semantic tokens', () => {
 
   test('spacing', () => {
     expect(getSemanticTokenMap(semanticTokens.spacing)).toMatchInlineSnapshot(`
-        Map {
-          "raw" => Map {
-            "gutter" => "$4",
-          },
-          "lg" => Map {
-            "gutter" => "$5",
-          },
-          "dark" => Map {
-            "gutter" => "40px",
-          },
-        }
-      `)
+      Map {
+        "base" => Map {
+          "gutter" => "4",
+        },
+        "lg" => Map {
+          "gutter" => "5",
+        },
+        "dark" => Map {
+          "gutter" => "40px",
+        },
+      }
+    `)
   })
 })
