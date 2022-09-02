@@ -1,4 +1,4 @@
-import { conditions, keyframes, semanticTokens, tokens } from '@css-panda/fixture'
+import { breakpoints, conditions, keyframes, semanticTokens, tokens } from '@css-panda/fixture'
 import type { LoadConfigResult } from '@css-panda/read-config'
 import { expect, test } from 'vitest'
 import { createContext } from '../src/create-context'
@@ -10,8 +10,10 @@ const conf: LoadConfigResult<any> = {
   config: {
     tokens,
     semanticTokens,
+    breakpoints,
     conditions,
     keyframes,
+    outdir: '',
   },
   path: '',
 }
@@ -62,16 +64,16 @@ test('[css] should generate css', () => {
         --font-sizes-lg: 1.125rem;
         --font-sizes-xl: 1.25rem;
         --line-heights-normal: normal;
-        --line-heights-none: 1px;
-        --line-heights-shorter: 1.25px;
-        --line-heights-short: 1.375px;
-        --line-heights-base: 1.5px;
-        --line-heights-tall: 1.625px;
+        --line-heights-none: 1;
+        --line-heights-shorter: 1.25;
+        --line-heights-short: 1.375;
+        --line-heights-base: 1.5;
+        --line-heights-tall: 1.625;
         --line-heights-taller: 2;
-        --font-weights-normal: 400px;
-        --font-weights-medium: 500px;
-        --font-weights-semibold: 600px;
-        --font-weights-bold: 700px;
+        --font-weights-normal: 400;
+        --font-weights-medium: 500;
+        --font-weights-semibold: 600;
+        --font-weights-bold: 700;
         --letter-spacings-tighter: -0.05em;
         --letter-spacings-tight: -0.025em;
         --letter-spacings-normal: 0;
@@ -91,16 +93,18 @@ test('[css] should generate css', () => {
         --shadows-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         --shadows-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         --shadows-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        --spacing-1: -0.25rem;
-        --spacing-2: -0.5rem;
-        --spacing-3: -0.75rem;
-        --spacing-4: -1rem;
-        --spacing-5: -1.25rem;
-        --spacing-6: -1.5rem;
-        --spacing-0\\\\.5: -0.125rem;
-        --spacing-1\\\\.5: -0.375rem;
-        --spacing-2\\\\.5: -0.625rem;
-        --spacing-3\\\\.5: -0.875rem;
+        --drop-shadows-sm: drop-shadow(0 1px 1px rgb(0 0 0 / 0.05));
+        --drop-shadows-md: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
+        --spacing-1: 0.25rem;
+        --spacing-2: 0.5rem;
+        --spacing-3: 0.75rem;
+        --spacing-4: 1rem;
+        --spacing-5: 1.25rem;
+        --spacing-6: 1.5rem;
+        --spacing-0\\\\.5: 0.125rem;
+        --spacing-1\\\\.5: 0.375rem;
+        --spacing-2\\\\.5: 0.625rem;
+        --spacing-3\\\\.5: 0.875rem;
         --sizes-1: 0.25rem;
         --sizes-2: 0.5rem;
         --sizes-3: 0.75rem;
@@ -128,24 +132,27 @@ test('[css] should generate css', () => {
         --opacity-100: 1;
         --easings-ease-in: cubic-bezier(0.4, 0, 1, 1);
         --easings-ease-out: cubic-bezier(0, 0, 0.2, 1);
+        --easings-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
         --durations-75: 75ms;
         --durations-100: 100ms;
         --durations-150: 150ms;
         --transition-properties-all: all;
         --transition-properties-none: none;
+        --transition-properties-opacity: opacity;
+        --transition-properties-shadow: box-shadow;
+        --transition-properties-transform: transform;
+        --transition-properties-base: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
         --transition-properties-background: background, background-color;
-        --transition-properties-colors: color, background-color;
+        --transition-properties-colors: color, background-color, border-color, text-decoration-color, fill, stroke;
         --colors-primary: var(--colors-red\\\\.500);
         --colors-secondary: var(--colors-red\\\\.800);
         --spacing-gutter: var(--spacing-4)
     }
 
-    [data-theme=dark] & {
-     :root {
-        --colors-primary: var(--colors-red\\\\.400);
-        --colors-secondary: var(--colors-red\\\\.700);
-        --spacing-gutter: 40px
-    } 
+    [data-theme=dark] :root {
+     --colors-primary: var(--colors-red\\\\.400);
+    --colors-secondary: var(--colors-red\\\\.700);
+    --spacing-gutter: 40px 
     }
 
     @media screen and (min-width: 62em) {
