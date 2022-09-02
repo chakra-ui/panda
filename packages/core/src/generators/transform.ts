@@ -1,8 +1,8 @@
 import outdent from 'outdent'
 
-export function generateTransform(configPath: string) {
+export function generateTransform() {
   return outdent`
-      import config from '${configPath}'
+      import config from '../config'
   
       var transform = (prop, value) => {
         for (const utility of config.utilities) {

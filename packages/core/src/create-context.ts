@@ -3,7 +3,7 @@ import { mergeRecipes } from '@css-panda/css-recipe'
 import { CSSUtility, mergeUtilities } from '@css-panda/css-utility'
 import { Dictionary } from '@css-panda/dictionary'
 import type { LoadConfigResult } from '@css-panda/read-config'
-import type { UserConfig } from '@css-panda/types'
+import type { Pattern, UserConfig } from '@css-panda/types'
 import path from 'path'
 import postcss from 'postcss'
 import fs from 'fs-extra'
@@ -11,22 +11,43 @@ import { createDebug } from './debug'
 
 const BASE_IGNORE = ['node_modules', '.git', '__tests__', 'tests']
 
-function arrayToObject(array: any[]) {
-  return array.reduce((acc, item) => {
-    Object.assign(acc, { [item.name]: item })
+function mergePatterns(values: Pattern[]) {
+  return values.reduce<Record<string, Pattern>>((acc, value) => {
+    Object.assign(acc, { [value.name]: value })
     return acc
-  }, {} as Record<string, any>)
+  }, {})
 }
 
 export function createContext(conf: LoadConfigResult<UserConfig>) {
   const { config } = conf
-  const { breakpoints = {}, conditions = {}, tokens = {}, semanticTokens = {}, prefix } = config
+
+  const {
+    cwd: _cwd,
+    breakpoints = {},
+    conditions = {},
+    tokens = {},
+    semanticTokens = {},
+    prefix,
+    outdir,
+    exclude,
+    patterns = [],
+    recipes = [],
+    utilities: _utilities = [],
+  } = config
+
+  const configPath = path.join(outdir, 'config.js')
+  const cssPath = path.join(outdir, 'css')
+  const dsPath = path.join(outdir, 'design-tokens')
+  const typesPath = path.join(outdir, 'types')
+  const recipePath = path.join(outdir, 'recipes')
+  const patternPath = path.join(outdir, 'patterns')
+  const tempPath = path.join(outdir, '.temp')
 
   const dictionary = new Dictionary({ tokens, semanticTokens, prefix })
 
   const utilities = new CSSUtility({
     tokens: dictionary,
-    config: mergeUtilities(config.utilities),
+    config: mergeUtilities(_utilities),
   })
 
   const context = (): GeneratorContext => ({
@@ -44,12 +65,12 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
   const stylesheet = new Stylesheet(context())
 
   const temp = {
-    dir: path.join(config.outdir, '.temp'),
+    dir: tempPath,
     getPath(file: string) {
       return path.join(temp.dir, temp.format(file))
     },
     readFile(file: string) {
-      return fs.readFile(temp.getPath(file), 'utf8')
+      return fs.readFile(path.join(temp.dir, file), 'utf8')
     },
     getFiles() {
       return fs.readdirSync(temp.dir)
@@ -72,10 +93,10 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
 
   createDebug('config:tmpfile', temp.dir)
 
-  const cwd = config.cwd || process.cwd()
+  const cwd = _cwd || process.cwd()
 
   const outputCss = {
-    path: path.join(config.outdir, 'styles.css'),
+    path: path.join(outdir, 'styles.css'),
     write(css: string) {
       return fs.writeFileSync(outputCss.path, css)
     },
@@ -84,22 +105,31 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
   return {
     ...config,
     cwd,
-    exclude: BASE_IGNORE.concat(config.outdir, config.exclude ?? []),
+    exclude: BASE_IGNORE.concat(outdir, exclude ?? []),
 
     importMap: {
-      css: `${config.outdir}/css`,
-      recipe: `${config.outdir}/recipes`,
-      pattern: `${config.outdir}/patterns`,
+      css: `${outdir}/css`,
+      recipe: `${outdir}/recipes`,
+      pattern: `${outdir}/patterns`,
     },
 
-    recipes: mergeRecipes(config.recipes, utilities),
-    patterns: arrayToObject(config.patterns ?? []),
+    recipes: mergeRecipes(recipes, utilities),
+    patterns: mergePatterns(patterns),
 
     outputCss,
     temp,
 
+    paths: {
+      css: cssPath,
+      ds: dsPath,
+      types: typesPath,
+      recipe: recipePath,
+      pattern: patternPath,
+    },
+
     conf,
     config,
+    configPath,
     dictionary,
     context,
     stylesheet,

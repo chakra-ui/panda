@@ -23,9 +23,5 @@ export async function generateCssType() {
     export type UserCssObject = CssObject<Conditions, PropertyTypes>
     export type UserConditionalValue<V> = ConditionalValue<Conditions, V>
     `,
-    css: outdent`
-    import { UserCssObject } from '../types/public'
-    export declare function css(styles: UserCssObject): string
-    `,
   }
 }

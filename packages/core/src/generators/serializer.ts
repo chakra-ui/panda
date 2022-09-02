@@ -34,5 +34,9 @@ export function generateSerializer(hash?: boolean) {
     serializer: outdent`
     ${code}
     `,
+    dts: outdent`
+    import { UserCssObject } from '../types/public'
+    export declare function css(styles: UserCssObject): string
+    `,
   }
 }

@@ -1,5 +1,5 @@
-import { promises as fs } from 'fs'
-import { ensureDir } from 'fs-extra'
+import type { Dictionary } from '@css-panda/dictionary'
+import fs from 'fs-extra'
 import { outdent } from 'outdent'
 import path from 'path'
 import type { InternalContext } from '../create-context'
@@ -16,114 +16,133 @@ import { generatePattern } from './pattern'
 import { generatePropertyTypes } from './property-types'
 import { generateRecipes } from './recipe'
 import { generateSerializer } from './serializer'
+import { generateSx } from './sx'
 import { generateTokenDts } from './token-dts'
 import { generateTransform } from './transform'
-import { generateSx } from './sx'
+
+async function setupPaths(paths: Record<string, string>) {
+  return Promise.all(Object.values(paths).map((dir) => fs.ensureDir(dir)))
+}
+
+async function setupDesignTokens(ctx: InternalContext, dict: Dictionary) {
+  return Promise.all([
+    fs.writeFile(path.join(ctx.paths.ds, 'index.css'), generateCss(ctx)),
+    fs.writeFile(path.join(ctx.paths.ds, 'index.d.ts'), generateDts()),
+    fs.writeFile(path.join(ctx.paths.ds, 'index.js'), generateJs(dict)),
+  ])
+}
+
+async function setupGlobalStyle(ctx: InternalContext) {
+  const code = generateGlobalStyle()
+  return Promise.all([
+    fs.writeFile(path.join(ctx.paths.css, 'global-style.js'), code.js),
+    fs.writeFile(path.join(ctx.paths.css, 'global-style.d.ts'), code.dts),
+  ])
+}
+
+async function setupTypes(ctx: InternalContext, dict: Dictionary) {
+  const code = await generateCssType()
+  return Promise.all([
+    fs.writeFile(path.join(ctx.paths.types, 'csstype.d.ts'), code.cssType),
+    fs.writeFile(path.join(ctx.paths.types, 'panda-csstype.d.ts'), code.pandaCssType),
+    fs.writeFile(path.join(ctx.paths.types, 'public.d.ts'), code.publicType),
+    fs.writeFile(path.join(ctx.paths.types, 'token.d.ts'), generateTokenDts(dict)),
+    fs.writeFile(path.join(ctx.paths.types, 'property-type.d.ts'), generatePropertyTypes(ctx.utilities)),
+    fs.writeFile(path.join(ctx.paths.types, 'conditions.d.ts'), generateConditions(ctx)),
+  ])
+}
+
+async function setupCss(ctx: InternalContext) {
+  const code = generateSerializer(ctx.hash)
+  return Promise.all([
+    fs.writeFile(path.join(ctx.paths.css, 'transform.js'), generateTransform()),
+    fs.writeFile(path.join(ctx.paths.css, 'serializer.js'), code.serializer),
+    fs.writeFile(path.join(ctx.paths.css, 'css.js'), code.css),
+    fs.writeFile(path.join(ctx.paths.css, 'css.d.ts'), code.dts),
+  ])
+}
+
+async function setupCssMap(ctx: InternalContext) {
+  const code = generateCssMap()
+  return Promise.all([
+    fs.writeFile(path.join(ctx.paths.css, 'css-map.js'), code.js),
+    fs.writeFile(path.join(ctx.paths.css, 'css-map.d.ts'), code.dts),
+  ])
+}
+
+async function setupCx(ctx: InternalContext) {
+  const code = generateCx()
+  return Promise.all([
+    fs.writeFile(path.join(ctx.paths.css, 'cx.js'), code.js),
+    fs.writeFile(path.join(ctx.paths.css, 'cx.d.ts'), code.dts),
+  ])
+}
+
+async function setupSx(ctx: InternalContext) {
+  const code = generateSx()
+  return Promise.all([
+    fs.writeFile(path.join(ctx.paths.css, 'sx.js'), code.js),
+    fs.writeFile(path.join(ctx.paths.css, 'sx.d.ts'), code.dts),
+  ])
+}
+
+async function setupFontFace(ctx: InternalContext) {
+  const code = generateFontFace()
+  return Promise.all([
+    fs.writeFile(path.join(ctx.paths.css, 'font-face.js'), code.js),
+    fs.writeFile(path.join(ctx.paths.css, 'font-face.d.ts'), code.dts),
+  ])
+}
+
+async function setupRecipes(ctx: InternalContext) {
+  const code = generateRecipes(ctx.config)
+  return Promise.all([
+    fs.writeFile(path.join(ctx.paths.recipe, 'index.js'), code.js),
+    fs.writeFile(path.join(ctx.paths.recipe, 'index.d.ts'), code.dts),
+  ])
+}
+
+async function setupPatterns(ctx: InternalContext) {
+  const code = generatePattern(ctx.config)
+  return Promise.all([
+    fs.writeFile(path.join(ctx.paths.pattern, 'index.js'), code.js),
+    fs.writeFile(path.join(ctx.paths.pattern, 'index.d.ts'), code.dts),
+  ])
+}
+
+async function setupCssIndex(ctx: InternalContext) {
+  const code = outdent`
+  export * from './css'
+  export * from './cx'
+  export * from './font-face'
+  export * from './global-style'
+  export * from './css-map'
+  export * from './sx'
+ `
+
+  return Promise.all([
+    fs.writeFile(path.join(ctx.paths.css, 'index.js'), code),
+    fs.writeFile(path.join(ctx.paths.css, 'index.d.ts'), code),
+  ])
+}
 
 export async function generateSystem(ctx: InternalContext, configCode: string) {
-  const { dictionary, outdir, hash } = ctx
+  const { dictionary, paths, configPath } = ctx
 
-  await ensureDir(outdir)
-  const configPath = path.join(outdir, 'config.js')
-  await fs.writeFile(configPath, configCode!)
-
-  const cssPath = path.join(outdir, 'css')
-  await ensureDir(cssPath)
-
-  const dsPath = path.join(outdir, 'design-tokens')
-  await ensureDir(dsPath)
-
-  const typesPath = path.join(outdir, 'types')
-  await ensureDir(path.join(typesPath))
-
-  const recipePath = path.join(outdir, 'recipes')
-  await ensureDir(path.join(recipePath))
-
-  const patternPath = path.join(outdir, 'patterns')
-  await ensureDir(patternPath)
-
-  const cx = generateCx()
-  const fontFace = generateFontFace()
-  const globalStyle = generateGlobalStyle()
-  const types = await generateCssType()
-  const cssMap = generateCssMap()
-  const serialier = generateSerializer(hash)
-  const recipes = generateRecipes(ctx.config)
-  const patterns = generatePattern(ctx.config)
-  const sx = generateSx()
+  await setupPaths(paths)
+  await fs.writeFile(configPath, configCode)
 
   await Promise.all([
-    // design tokens
-    fs.writeFile(path.join(dsPath, 'index.css'), generateCss(ctx)),
-    fs.writeFile(path.join(dsPath, 'index.d.ts'), generateDts()),
-    fs.writeFile(path.join(dsPath, 'index.js'), generateJs(dictionary)),
-
-    // helper types
-    fs.writeFile(path.join(typesPath, 'csstype.d.ts'), types.cssType),
-    fs.writeFile(path.join(typesPath, 'panda-csstype.d.ts'), types.pandaCssType),
-    fs.writeFile(path.join(typesPath, 'public.d.ts'), types.publicType),
-    fs.writeFile(path.join(typesPath, 'token.d.ts'), generateTokenDts(dictionary)),
-    fs.writeFile(path.join(typesPath, 'property-type.d.ts'), generatePropertyTypes(ctx.utilities)),
-    fs.writeFile(path.join(typesPath, 'conditions.d.ts'), generateConditions(ctx)),
-
-    // serializer (css)
-    fs.writeFile(path.join(cssPath, 'transform.js'), generateTransform('../config')),
-    fs.writeFile(path.join(cssPath, 'serializer.js'), serialier.serializer),
-    fs.writeFile(path.join(cssPath, 'css.js'), serialier.css),
-    fs.writeFile(path.join(cssPath, 'css.d.ts'), types.css),
-
-    // css map
-    fs.writeFile(path.join(cssPath, 'css-map.js'), cssMap.js),
-    fs.writeFile(path.join(cssPath, 'css-map.d.ts'), cssMap.dts),
-
-    // cx
-    fs.writeFile(path.join(cssPath, 'cx.js'), cx.js),
-    fs.writeFile(path.join(cssPath, 'cx.d.ts'), cx.dts),
-
-    // sx
-    fs.writeFile(path.join(cssPath, 'sx.js'), sx.js),
-    fs.writeFile(path.join(cssPath, 'sx.d.ts'), sx.dts),
-
-    // font face
-    fs.writeFile(path.join(cssPath, 'font-face.js'), fontFace.js),
-    fs.writeFile(path.join(cssPath, 'font-face.d.ts'), fontFace.dts),
-
-    // global style
-    fs.writeFile(path.join(cssPath, 'global-style.js'), globalStyle.js),
-    fs.writeFile(path.join(cssPath, 'global-style.d.ts'), globalStyle.dts),
-
-    // recipes
-    fs.writeFile(path.join(recipePath, 'index.js'), recipes.js),
-    fs.writeFile(path.join(recipePath, 'index.d.ts'), recipes.dts),
-
-    // pattern
-    fs.writeFile(path.join(patternPath, 'index.js'), patterns.js),
-    fs.writeFile(path.join(patternPath, 'index.d.ts'), patterns.dts),
-
-    // css / index.js
-    fs.writeFile(
-      path.join(cssPath, 'index.js'),
-      outdent`
-     export * from './css'
-     export * from './cx'
-     export * from './font-face'
-     export * from './global-style'
-     export * from './css-map'
-     export * from './sx'
-    `,
-    ),
-
-    // css / index.d.ts
-    fs.writeFile(
-      path.join(cssPath, 'index.d.ts'),
-      outdent`
-     export * from './css'
-     export * from './cx'
-     export * from './font-face'
-     export * from './global-style'
-     export * from './css-map'
-     export * from './sx'
-    `,
-    ),
+    setupDesignTokens(ctx, dictionary),
+    setupTypes(ctx, dictionary),
+    setupCssMap(ctx),
+    setupCx(ctx),
+    setupSx(ctx),
+    setupCss(ctx),
+    setupFontFace(ctx),
+    setupGlobalStyle(ctx),
+    setupRecipes(ctx),
+    setupPatterns(ctx),
+    setupCssIndex(ctx),
   ])
 }
