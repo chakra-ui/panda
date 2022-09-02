@@ -11,7 +11,7 @@ function css(obj: ProcessOptions) {
 describe('atomic ruleset', () => {
   test('should work with basic', () => {
     expect(css({ styles: { bg: 'red.300' } })).toMatchInlineSnapshot(`
-      " .bg-red\\\\.300 {
+      ".bg-red\\\\.300 {
           bg: red.300
       }"
     `)
@@ -71,12 +71,12 @@ describe('atomic ruleset', () => {
           }
       }
       @screen sm {
-           .sm\\\\:hover\\\\:top-50px:hover {
+          .sm\\\\:hover\\\\:top-50px:hover {
               top: 50px
           }
       }
       @screen lg {
-           .lg\\\\:top-120px {
+          .lg\\\\:top-120px {
               top: 120px
           }
       }"
@@ -91,11 +91,11 @@ describe('atomic ruleset', () => {
         },
       }),
     ).toMatchInlineSnapshot(`
-      " .left-20px {
+      ".left-20px {
           left: 20px
       }
       @screen md {
-           .md\\\\:left-40px {
+          .md\\\\:left-40px {
               left: 40px
           }
       }"
@@ -113,25 +113,25 @@ describe('atomic ruleset', () => {
         },
       }),
     ).toMatchInlineSnapshot(`
-      ".\\\\[\\\\& \\\\> p\\\\]\\\\:left-20px > p {
+      ".\\\\[\\\\&_\\\\>_p\\\\]\\\\:left-20px > p {
           left: 20px
       }
       @screen md {
-          .\\\\[\\\\& \\\\> p\\\\]\\\\:md\\\\:left-40px > p {
+          .\\\\[\\\\&_\\\\>_p\\\\]\\\\:md\\\\:left-40px > p {
               left: 40px
           }
       }
-      [data-theme=light] .\\\\[\\\\& \\\\> p\\\\]\\\\:light\\\\:bg-red400 > p {
+      [data-theme=light] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:light\\\\:bg-red400 > p {
           bg: red400
       }
-      [data-theme=dark] .\\\\[\\\\& \\\\> p\\\\]\\\\:dark\\\\:bg-green500 > p {
+      [data-theme=dark] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:dark\\\\:bg-green500 > p {
           bg: green500
       }
-      [dir=rtl] .\\\\[\\\\& \\\\> p\\\\]\\\\:rtl\\\\:font-sans > p {
+      [dir=rtl] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:rtl\\\\:font-sans > p {
           font: sans
       }
       @screen sm {
-          [dir=ltr] [data-theme=dark] .\\\\[\\\\& \\\\> p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font-serif:hover > p {
+          [data-theme=dark] [dir=ltr] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font-serif:hover > p {
               font: serif
           }
       }"
@@ -148,16 +148,16 @@ describe('atomic ruleset', () => {
         },
       }),
     ).toMatchInlineSnapshot(`
-      "input:hover .\\\\[input\\\\:hover \\\\&\\\\]\\\\:bg-red400 {
+      "input:hover .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:bg-red400 {
           bg: red400
       }
       @screen sm {
-          input:hover .\\\\[input\\\\:hover \\\\&\\\\]\\\\:sm\\\\:fontSize-14px {
+          input:hover .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:sm\\\\:fontSize-14px {
               font-size: 14px
           }
       }
       @screen lg {
-          input:hover .\\\\[input\\\\:hover \\\\&\\\\]\\\\:lg\\\\:fontSize-18px {
+          input:hover .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:lg\\\\:fontSize-18px {
               font-size: 18px
           }
       }"
@@ -200,13 +200,13 @@ describe('atomic ruleset', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@media base {
-           .\\\\[@media base\\\\]\\\\:left-40px {
+          .\\\\[\\\\@media_base\\\\]\\\\:left-40px {
               left: 40px
           }
       }
       @media base {
           @screen sm {
-               .\\\\[@media base\\\\]\\\\:sm\\\\:ta-left {
+              .\\\\[\\\\@media_base\\\\]\\\\:sm\\\\:ta-left {
                   text-align: left
               }
           }
