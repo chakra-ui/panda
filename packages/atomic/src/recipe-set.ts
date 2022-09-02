@@ -1,41 +1,39 @@
 import type { Recipe } from '@css-panda/types'
-import { ProcessOptions, Ruleset } from './ruleset'
+import { createRuleset, ProcessOptions } from './ruleset'
 import type { GeneratorContext } from './types'
 
-export class RecipeSet extends Ruleset {
-  __context: Omit<GeneratorContext, 'transform'>
-
-  constructor(context: Omit<GeneratorContext, 'transform'>, private recipe: Recipe, options: { hash?: boolean } = {}) {
-    const transform = (prop: string, value: string) => {
-      //
-      if (value === '__ignore__') {
-        return {
-          className: recipe.name,
-          styles: recipe.base ?? {},
-        }
-      }
-
+export function createRecipeSet(context: GeneratorContext, recipe: Recipe, options: { hash?: boolean } = {}) {
+  function transform(prop: string, value: string) {
+    if (value === '__ignore__') {
       return {
-        className: `${this.recipe.name}__${prop}-${value}`,
-        styles: this.recipe.variants?.[prop]?.[value] ?? {},
+        className: recipe.name,
+        styles: recipe.base ?? {},
       }
     }
 
-    super({ ...context, transform }, options)
-    this.__context = context
+    return {
+      className: `${recipe.name}__${prop}-${value}`,
+      styles: recipe.variants?.[prop]?.[value] ?? {},
+    }
   }
 
-  resolve(options: ProcessOptions) {
-    const { styles } = options
+  const ruleset = createRuleset({ ...context, transform }, options)
 
-    this.process({
-      styles: {
-        [this.recipe.name]: '__ignore__',
-        ...this.recipe.defaultVariants,
-        ...styles,
-      },
-    })
-
-    return this
+  return {
+    process(options: ProcessOptions) {
+      const { styles } = options
+      return ruleset.process({
+        styles: {
+          [recipe.name]: '__ignore__',
+          ...recipe.defaultVariants,
+          ...styles,
+        },
+      })
+    },
+    toCss() {
+      return context.root.toString()
+    },
   }
 }
+
+export type RecipeSet = ReturnType<typeof createRecipeSet>

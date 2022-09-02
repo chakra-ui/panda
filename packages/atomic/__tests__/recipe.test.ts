@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { RecipeSet } from '../src/recipe-set'
+import { createRecipeSet } from '../src/recipe-set'
 import type { ProcessOptions } from '../src/ruleset'
 import { createContext } from './fixture'
 
 function recipe(obj: ProcessOptions) {
-  const ruleset = new RecipeSet(createContext(), {
+  const ruleset = createRecipeSet(createContext(), {
     name: 'textStyle',
     base: {
       textAlign: 'center',
@@ -31,7 +31,8 @@ function recipe(obj: ProcessOptions) {
     },
   })
 
-  return ruleset.resolve(obj).toCss()
+  ruleset.process(obj)
+  return ruleset.toCss()
 }
 
 describe('recipe ruleset', () => {

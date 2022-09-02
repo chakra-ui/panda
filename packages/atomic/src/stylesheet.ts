@@ -3,8 +3,8 @@ import type { Pattern, PluginResult, Recipe } from '@css-panda/types'
 import postcss, { Root, Rule } from 'postcss'
 import { expandScreenAtRule } from './expand-screen'
 import { optimizeCss } from './optimize'
-import { RecipeSet } from './recipe-set'
-import { Ruleset } from './ruleset'
+import { createRecipeSet } from './recipe-set'
+import { createRuleset } from './ruleset'
 import { toCss } from './to-css'
 import type { GeneratorContext } from './types'
 
@@ -57,14 +57,14 @@ export class Stylesheet {
 
   processAtomic(styleObject: Record<string, any>) {
     return walkStyles(styleObject, (props: any, scope?: string) => {
-      const ruleset = new Ruleset(this.context, { hash: this.hash })
+      const ruleset = createRuleset(this.context, { hash: this.hash })
       ruleset.process({ scope, styles: props })
     })
   }
 
   processRecipe(recipe: Recipe, styles: Record<string, any>) {
-    const ruleset = new RecipeSet(this.context, recipe, { hash: this.hash })
-    ruleset.resolve({ styles })
+    const ruleset = createRecipeSet(this.context, recipe, { hash: this.hash })
+    ruleset.process({ styles })
   }
 
   processPattern(pattern: Pattern, styles: Record<string, any>) {

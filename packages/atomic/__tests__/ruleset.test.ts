@@ -1,10 +1,11 @@
 import { describe, expect, test } from 'vitest'
-import { Ruleset, ProcessOptions } from '../src/ruleset'
+import { createRuleset, ProcessOptions } from '../src/ruleset'
 import { createContext } from './fixture'
 
 function css(obj: ProcessOptions) {
-  const ruleset = new Ruleset(createContext())
-  return ruleset.process(obj).toCss()
+  const ruleset = createRuleset(createContext())
+  ruleset.process(obj)
+  return ruleset.toCss()
 }
 
 describe('atomic ruleset', () => {
