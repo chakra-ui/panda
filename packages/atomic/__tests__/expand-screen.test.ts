@@ -15,7 +15,7 @@ describe('expand screen at rule', () => {
     expandScreenAtRule(root, breakpoints)
     expect(root.toString()).toMatchInlineSnapshot(`
       "
-          @media (min-width: 48em){
+          @media screen and (min-width: 48em){
               .foo{
                   color: red;
               }
