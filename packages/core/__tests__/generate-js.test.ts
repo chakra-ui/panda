@@ -169,23 +169,23 @@ test('[dts] should generate package', () => {
         \\"variable\\": \\"var(--line-heights-normal)\\"
       },
       \\"lineHeights.none\\": {
-        \\"value\\": 1,
+        \\"value\\": \\"1\\",
         \\"variable\\": \\"var(--line-heights-none)\\"
       },
       \\"lineHeights.shorter\\": {
-        \\"value\\": 1.25,
+        \\"value\\": \\"1.25\\",
         \\"variable\\": \\"var(--line-heights-shorter)\\"
       },
       \\"lineHeights.short\\": {
-        \\"value\\": 1.375,
+        \\"value\\": \\"1.375\\",
         \\"variable\\": \\"var(--line-heights-short)\\"
       },
       \\"lineHeights.base\\": {
-        \\"value\\": 1.5,
+        \\"value\\": \\"1.5\\",
         \\"variable\\": \\"var(--line-heights-base)\\"
       },
       \\"lineHeights.tall\\": {
-        \\"value\\": 1.625,
+        \\"value\\": \\"1.625\\",
         \\"variable\\": \\"var(--line-heights-tall)\\"
       },
       \\"lineHeights.taller\\": {
@@ -193,19 +193,19 @@ test('[dts] should generate package', () => {
         \\"variable\\": \\"var(--line-heights-taller)\\"
       },
       \\"fontWeights.normal\\": {
-        \\"value\\": 400,
+        \\"value\\": \\"400\\",
         \\"variable\\": \\"var(--font-weights-normal)\\"
       },
       \\"fontWeights.medium\\": {
-        \\"value\\": 500,
+        \\"value\\": \\"500\\",
         \\"variable\\": \\"var(--font-weights-medium)\\"
       },
       \\"fontWeights.semibold\\": {
-        \\"value\\": 600,
+        \\"value\\": \\"600\\",
         \\"variable\\": \\"var(--font-weights-semibold)\\"
       },
       \\"fontWeights.bold\\": {
-        \\"value\\": 700,
+        \\"value\\": \\"700\\",
         \\"variable\\": \\"var(--font-weights-bold)\\"
       },
       \\"letterSpacings.tighter\\": {
@@ -283,6 +283,14 @@ test('[dts] should generate package', () => {
       \\"shadows.md\\": {
         \\"value\\": \\"0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)\\",
         \\"variable\\": \\"var(--shadows-md)\\"
+      },
+      \\"dropShadows.sm\\": {
+        \\"value\\": \\"drop-shadow(0 1px 1px rgb(0 0 0 / 0.05))\\",
+        \\"variable\\": \\"var(--drop-shadows-sm)\\"
+      },
+      \\"dropShadows.md\\": {
+        \\"value\\": \\"drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06))\\",
+        \\"variable\\": \\"var(--drop-shadows-md)\\"
       },
       \\"spacing.1\\": {
         \\"value\\": \\"0.25rem\\",
@@ -472,6 +480,10 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"cubic-bezier(0, 0, 0.2, 1)\\",
         \\"variable\\": \\"var(--easings-ease-out)\\"
       },
+      \\"easings.ease-in-out\\": {
+        \\"value\\": \\"cubic-bezier(0.4, 0, 0.2, 1)\\",
+        \\"variable\\": \\"var(--easings-ease-in-out)\\"
+      },
       \\"durations.75\\": {
         \\"value\\": \\"75ms\\",
         \\"variable\\": \\"var(--durations-75)\\"
@@ -492,12 +504,28 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"none\\",
         \\"variable\\": \\"var(--transition-properties-none)\\"
       },
+      \\"transitionProperties.opacity\\": {
+        \\"value\\": \\"opacity\\",
+        \\"variable\\": \\"var(--transition-properties-opacity)\\"
+      },
+      \\"transitionProperties.shadow\\": {
+        \\"value\\": \\"box-shadow\\",
+        \\"variable\\": \\"var(--transition-properties-shadow)\\"
+      },
+      \\"transitionProperties.transform\\": {
+        \\"value\\": \\"transform\\",
+        \\"variable\\": \\"var(--transition-properties-transform)\\"
+      },
+      \\"transitionProperties.base\\": {
+        \\"value\\": \\"color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter\\",
+        \\"variable\\": \\"var(--transition-properties-base)\\"
+      },
       \\"transitionProperties.background\\": {
         \\"value\\": \\"background, background-color\\",
         \\"variable\\": \\"var(--transition-properties-background)\\"
       },
       \\"transitionProperties.colors\\": {
-        \\"value\\": \\"color, background-color\\",
+        \\"value\\": \\"color, background-color, border-color, text-decoration-color, fill, stroke\\",
         \\"variable\\": \\"var(--transition-properties-colors)\\"
       },
       \\"colors.primary\\": {
