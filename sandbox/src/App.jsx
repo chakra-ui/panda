@@ -1,12 +1,27 @@
-import { css, cx } from '../styled-system/css'
+import { css, globalStyle } from '../styled-system/css'
 import { textStyle } from '../styled-system/recipes'
 import '../styled-system/styles.css'
+
+globalStyle({
+  '*': {
+    margin: '0px',
+  },
+})
 
 function App() {
   return (
     <div>
-      <p className={css({ fontSize: '24px' })}>Welcome</p>
-      <p className={cx(textStyle({ size: 'h1' }), css({ background: 'red.200' }))}>Hello world</p>
+      <p
+        className={css({
+          fontSize: '24px',
+          fontFamily: 'body',
+          marginBottom: '40px',
+          color: { _: 'blue', hover: 'red.200' },
+        })}
+      >
+        Welcome
+      </p>
+      <p className={textStyle({ size: { _: 'h2', md: 'h1' } })}>Hello world</p>
     </div>
   )
 }

@@ -4,7 +4,7 @@ import type { InternalContext } from '../create-context'
 
 export function generateConditions({ context }: InternalContext) {
   const ctx = context()
-  const keys = Object.keys({ ...ctx.conditions, ...ctx.breakpoints }).concat('_', 'base')
+  const keys = Object.keys(ctx.conditions.values).concat('_', 'base')
   return outdent`
   export type Condition = ${unionType(keys)}
   export type Conditions = Record<Condition, string>
