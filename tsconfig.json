@@ -6,7 +6,7 @@
     "downlevelIteration": true,
     "esModuleInterop": true,
     "isolatedModules": true,
-    "incremental": true,
+    // "incremental": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "preserve",
     "noEmit": true,

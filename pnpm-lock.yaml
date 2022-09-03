@@ -4,6 +4,7 @@ importers:
 
   .:
     specifiers:
+      '@css-panda/cli': workspace:*
       '@types/node': ^18.6.1
       '@typescript-eslint/eslint-plugin': ^4.14.1
       '@typescript-eslint/parser': ^4.14.1
@@ -13,6 +14,7 @@ importers:
       typescript: ^4.7.4
       vitest: ^0.19.1
     dependencies:
+      '@css-panda/cli': link:packages/cli
       '@types/node': 18.6.1
       '@typescript-eslint/eslint-plugin': 4.33.0_2853fd47b9f1fc944d59643e7de0f1e2
       '@typescript-eslint/parser': 4.33.0_typescript@4.7.4
@@ -76,12 +78,15 @@ importers:
       '@css-panda/core': workspace:*
       '@css-panda/error': workspace:*
       '@css-panda/logger': workspace:*
-      commander: ^9.4.0
+      cac: ^6.7.14
+      esbuild-register: ^3.3.3
     dependencies:
       '@css-panda/core': link:../core
       '@css-panda/error': link:../error
       '@css-panda/logger': link:../logger
-      commander: 9.4.0
+      cac: 6.7.14
+    devDependencies:
+      esbuild-register: 3.3.3
 
   packages/core:
     specifiers:
@@ -1472,6 +1477,11 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /cac/6.7.14:
+    resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
+    engines: {node: '>=8'}
+    dev: false
+
   /callsites/3.1.0:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
@@ -1576,11 +1586,6 @@ packages:
   /commander/4.1.1:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
     engines: {node: '>= 6'}
-    dev: false
-
-  /commander/9.4.0:
-    resolution: {integrity: sha512-sRPT+umqkz90UA8M1yqYfnHlZA7fF6nSphDtxeywPZ49ysjxDQybzk13CL+mXekDRG92skbcqCLVovuCusNmFw==}
-    engines: {node: ^12.20.0 || >=14}
     dev: false
 
   /concat-map/0.0.1:
@@ -1965,6 +1970,12 @@ packages:
     requiresBuild: true
     dev: false
     optional: true
+
+  /esbuild-register/3.3.3:
+    resolution: {integrity: sha512-eFHOkutgIMJY5gc8LUp/7c+LLlDqzNi9T6AwCZ2WKKl3HmT+5ef3ZRyPPxDOynInML0fgaC50yszPKfPnjC0NQ==}
+    peerDependencies:
+      esbuild: '>=0.12 <1'
+    dev: true
 
   /esbuild-sunos-64/0.14.50:
     resolution: {integrity: sha512-gBxNY/wyptvD7PkHIYcq7se6SQEXcSC8Y7mE0FJB+CGgssEWf6vBPfTTZ2b6BWKnmaP6P6qb7s/KRIV5T2PxsQ==}

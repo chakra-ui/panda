@@ -23,6 +23,7 @@
     "prettier": "^2.7.1",
     "tsup": "^6.2.0",
     "tsx": "^3.8.2",
+    "@css-panda/cli": "workspace:*",
     "typescript": "^4.7.4",
     "vitest": "^0.19.1"
   }
