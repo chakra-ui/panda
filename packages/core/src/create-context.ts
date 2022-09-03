@@ -22,7 +22,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
   const { config } = conf
 
   const {
-    cwd: _cwd,
+    cwd: _cwd = process.cwd(),
     breakpoints = {},
     conditions = {},
     tokens = {},
@@ -35,7 +35,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
     utilities: _utilities = [],
   } = config
 
-  const cwd = path.resolve(_cwd) || process.cwd()
+  const cwd = path.resolve(_cwd)
 
   const configPath = path.join(cwd, outdir, 'config.js')
   const cssPath = path.join(cwd, outdir, 'css')
