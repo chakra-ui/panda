@@ -10,6 +10,7 @@ import { createDebug, debug } from './debug'
 import { extractContent } from './extract-content'
 import { extractTemp } from './extract-tmp'
 import { generateSystem } from './generators'
+import { updateGitIgnore } from './git-ignore'
 import { watch } from './watchers'
 
 export async function generator(options: Config & { configPath?: string } = {}) {
@@ -33,6 +34,8 @@ export async function generator(options: Config & { configPath?: string } = {}) 
   if (conf.config.clean) {
     await fs.emptyDir(ctx.outdir)
   }
+
+  await updateGitIgnore(ctx)
 
   await generateSystem(ctx, conf.code)
 

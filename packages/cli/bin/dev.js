@@ -2,7 +2,7 @@
 
 const { register } = require('esbuild-register/dist/node')
 
-register()
+register({ platform: 'node' })
 
 const { main } = require('../src')
 

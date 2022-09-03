@@ -25,7 +25,6 @@
     "@css-panda/read-config": "workspace:*",
     "esbuild": "^0.15.5",
     "filespy": "^1.2.4",
-    "find-up": "^6.3.0",
     "fs-extra": "^10.1.0",
     "hookable": "^5.1.1",
     "lodash.merge": "^4.6.2",

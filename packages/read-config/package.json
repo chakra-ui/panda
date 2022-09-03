@@ -16,8 +16,8 @@
   "dependencies": {
     "bundle-require": "^3.1.0",
     "@css-panda/logger": "workspace:*",
+    "@css-panda/shared": "workspace:*",
     "@esbuild-plugins/tsconfig-paths": "^0.0.4",
-    "esbuild": "^0.15.5",
-    "find-up": "^6.3.0"
+    "esbuild": "^0.15.5"
   }
 }

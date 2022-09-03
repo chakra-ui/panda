@@ -1,7 +1,7 @@
+import { findUp } from '@css-panda/shared'
 import fs from 'fs'
 import path from 'path'
 import { createDebug } from './debug'
-import { findUp } from './find-up'
 
 export function findConfigFile({ root, file }: { root: string; file?: string }) {
   let filepath: string | undefined
@@ -27,13 +27,15 @@ export function findConfigFile({ root, file }: { root: string; file?: string }) 
     //
     const extensions = ['.ts', '.js', '.mjs', '.cjs']
 
-    extensions.forEach((ext) => {
+    for (const ext of extensions) {
+      //
       const jsconfigFile = path.resolve(root, `panda.config${ext}`)
+
       if (fs.existsSync(jsconfigFile)) {
         filepath = jsconfigFile
         isESM = ext === '.mjs' || ext === '.ts'
       }
-    })
+    }
   }
 
   if (!filepath) {

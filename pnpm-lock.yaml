@@ -104,7 +104,6 @@ importers:
       '@types/pluralize': ^0.0.29
       esbuild: ^0.15.5
       filespy: ^1.2.4
-      find-up: ^6.3.0
       fs-extra: ^10.1.0
       hookable: ^5.1.1
       lodash.merge: ^4.6.2
@@ -126,7 +125,6 @@ importers:
       '@css-panda/types': link:../types
       esbuild: 0.15.5
       filespy: 1.2.4
-      find-up: 6.3.0
       fs-extra: 10.1.0
       hookable: 5.1.1
       lodash.merge: 4.6.2
@@ -142,23 +140,6 @@ importers:
       '@types/fs-extra': 9.0.13
       '@types/lodash.merge': 4.6.7
       '@types/pluralize': 0.0.29
-
-  packages/core/__sandbox__:
-    specifiers:
-      '@types/react': ^18.0.17
-      '@types/react-dom': ^18.0.6
-      '@vitejs/plugin-react': ^2.0.1
-      react: ^18.2.0
-      react-dom: ^18.2.0
-      vite: ^3.0.7
-    dependencies:
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-    devDependencies:
-      '@types/react': 18.0.17
-      '@types/react-dom': 18.0.6
-      '@vitejs/plugin-react': 2.0.1_vite@3.0.9
-      vite: 3.0.9
 
   packages/css-recipe:
     specifiers:
@@ -259,16 +240,16 @@ importers:
   packages/read-config:
     specifiers:
       '@css-panda/logger': workspace:*
+      '@css-panda/shared': workspace:*
       '@esbuild-plugins/tsconfig-paths': ^0.0.4
       bundle-require: ^3.1.0
       esbuild: ^0.15.5
-      find-up: ^6.3.0
     dependencies:
       '@css-panda/logger': link:../logger
+      '@css-panda/shared': link:../shared
       '@esbuild-plugins/tsconfig-paths': 0.0.4_esbuild@0.15.5+typescript@4.7.4
       bundle-require: 3.1.0_esbuild@0.15.5
       esbuild: 0.15.5
-      find-up: 6.3.0
 
   packages/shared:
     specifiers: {}
@@ -2364,14 +2345,6 @@ packages:
       path-exists: 4.0.0
     dev: false
 
-  /find-up/6.3.0:
-    resolution: {integrity: sha512-v2ZsoEuVHYy8ZIlYqwPe/39Cy+cFDzp4dXPaxNvkEuouymu+2Jbz0PxpKarJHYJTmv2HWT3O382qY8l4jMWthw==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    dependencies:
-      locate-path: 7.1.1
-      path-exists: 5.0.0
-    dev: false
-
   /flat-cache/3.0.4:
     resolution: {integrity: sha512-dm9s5Pw7Jc0GvMYbshN6zchCA9RgQlzzEZX3vylR9IqFfS8XciblUXOKfW6SiuJ0e13eDYZoZV5wdrev7P3Nwg==}
     engines: {node: ^10.12.0 || >=12.0.0}
@@ -2711,13 +2684,6 @@ packages:
       p-locate: 5.0.0
     dev: false
 
-  /locate-path/7.1.1:
-    resolution: {integrity: sha512-vJXaRMJgRVD3+cUZs3Mncj2mxpt5mP0EmNOsxRSZRMlbqjvxzDEOIUWXGmavo0ZC9+tNZCBLQ66reA11nbpHZg==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    dependencies:
-      p-locate: 6.0.0
-    dev: false
-
   /lodash.get/4.4.2:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
     dev: false
@@ -2896,25 +2862,11 @@ packages:
       yocto-queue: 0.1.0
     dev: false
 
-  /p-limit/4.0.0:
-    resolution: {integrity: sha512-5b0R4txpzjPWVw/cXXUResoD4hb6U/x9BH08L7nw+GN1sezDzPdxeRvpc9c433fZhBan/wusjbCsqwqm4EIBIQ==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    dependencies:
-      yocto-queue: 1.0.0
-    dev: false
-
   /p-locate/5.0.0:
     resolution: {integrity: sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw==}
     engines: {node: '>=10'}
     dependencies:
       p-limit: 3.1.0
-    dev: false
-
-  /p-locate/6.0.0:
-    resolution: {integrity: sha512-wPrq66Llhl7/4AGC6I+cqxT07LhXvWL08LNXz1fENOw0Ap4sRZZ/gZpTTJ5jpurzzzfS2W/Ge9BY3LgLjCShcw==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    dependencies:
-      p-limit: 4.0.0
     dev: false
 
   /parent-module/1.0.1:
@@ -2927,11 +2879,6 @@ packages:
   /path-exists/4.0.0:
     resolution: {integrity: sha512-ak9Qy5Q7jYb2Wwcey5Fpvg2KoAc/ZIhLSLOSBmRmygPsGwkVVt0fZa0qrtMz+m6tJTAHfZQ8FnmB4MG4LWy7/w==}
     engines: {node: '>=8'}
-    dev: false
-
-  /path-exists/5.0.0:
-    resolution: {integrity: sha512-RjhtfwJOxzcFmNOi6ltcbcu4Iu+FL3zEj83dk4kAS+fVpTxXLO1b38RvJgT/0QwvV/L3aY9TAnyv0EOqW4GoMQ==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dev: false
 
   /path-is-absolute/1.0.1:
@@ -3851,9 +3798,4 @@ packages:
   /yocto-queue/0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
-    dev: false
-
-  /yocto-queue/1.0.0:
-    resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
-    engines: {node: '>=12.20'}
     dev: false
