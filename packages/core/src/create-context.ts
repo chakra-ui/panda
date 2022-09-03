@@ -43,7 +43,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
   const typesPath = path.join(cwd, outdir, 'types')
   const recipePath = path.join(cwd, outdir, 'recipes')
   const patternPath = path.join(cwd, outdir, 'patterns')
-  const tempPath = path.join(cwd, outdir, '.temp')
+  const tempPath = path.join(cwd, outdir, 'assets')
 
   const dictionary = new Dictionary({ tokens, semanticTokens, prefix })
 
