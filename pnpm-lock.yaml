@@ -4,7 +4,6 @@ importers:
 
   .:
     specifiers:
-      '@css-panda/cli': workspace:*
       '@types/node': ^18.6.1
       '@typescript-eslint/eslint-plugin': ^4.14.1
       '@typescript-eslint/parser': ^4.14.1
@@ -14,7 +13,6 @@ importers:
       typescript: ^4.7.4
       vitest: ^0.19.1
     dependencies:
-      '@css-panda/cli': link:packages/cli
       '@types/node': 18.6.1
       '@typescript-eslint/eslint-plugin': 4.33.0_2853fd47b9f1fc944d59643e7de0f1e2
       '@typescript-eslint/parser': 4.33.0_typescript@4.7.4
@@ -102,12 +100,14 @@ importers:
       '@css-panda/shared': workspace:*
       '@css-panda/types': workspace:*
       '@types/fs-extra': ^9.0.13
+      '@types/lodash.merge': ^4.6.7
       '@types/pluralize': ^0.0.29
       esbuild: ^0.15.5
       filespy: ^1.2.4
       find-up: ^6.3.0
       fs-extra: ^10.1.0
       hookable: ^5.1.1
+      lodash.merge: ^4.6.2
       outdent: ' ^0.8.0'
       pkg-types: ^0.3.3
       pluralize: ^8.0.0
@@ -129,6 +129,7 @@ importers:
       find-up: 6.3.0
       fs-extra: 10.1.0
       hookable: 5.1.1
+      lodash.merge: 4.6.2
       outdent: 0.8.0
       pkg-types: 0.3.3
       pluralize: 8.0.0
@@ -139,6 +140,7 @@ importers:
       '@css-panda/dictionary': link:../dictionary
       '@css-panda/fixture': link:../fixture
       '@types/fs-extra': 9.0.13
+      '@types/lodash.merge': 4.6.7
       '@types/pluralize': 0.0.29
 
   packages/core/__sandbox__:
@@ -258,11 +260,13 @@ importers:
     specifiers:
       '@css-panda/logger': workspace:*
       '@esbuild-plugins/tsconfig-paths': ^0.0.4
+      bundle-require: ^3.1.0
       esbuild: ^0.15.5
       find-up: ^6.3.0
     dependencies:
       '@css-panda/logger': link:../logger
       '@esbuild-plugins/tsconfig-paths': 0.0.4_esbuild@0.15.5+typescript@4.7.4
+      bundle-require: 3.1.0_esbuild@0.15.5
       esbuild: 0.15.5
       find-up: 6.3.0
 
@@ -329,6 +333,29 @@ importers:
       '@vitejs/plugin-react': 1.3.2
       typescript: 4.7.4
       vite: 2.9.14
+
+  sandbox:
+    specifiers:
+      '@css-panda/cli': workspace:*
+      '@css-panda/fixture': workspace:*
+      '@css-panda/types': workspace:*
+      '@types/react': ^18.0.17
+      '@types/react-dom': ^18.0.6
+      '@vitejs/plugin-react': ^2.0.1
+      react: ^18.2.0
+      react-dom: ^18.2.0
+      vite: ^3.0.7
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    devDependencies:
+      '@css-panda/cli': link:../packages/cli
+      '@css-panda/fixture': link:../packages/fixture
+      '@css-panda/types': link:../packages/types
+      '@types/react': 18.0.17
+      '@types/react-dom': 18.0.6
+      '@vitejs/plugin-react': 2.0.1_vite@3.0.9
+      vite: 3.0.9
 
 packages:
 
@@ -1469,6 +1496,16 @@ packages:
       esbuild: '>=0.13'
     dependencies:
       esbuild: 0.14.50
+      load-tsconfig: 0.2.3
+    dev: false
+
+  /bundle-require/3.1.0_esbuild@0.15.5:
+    resolution: {integrity: sha512-IIXtAO7fKcwPHNPt9kY/WNVJqy7NDy6YqJvv6ENH0TOZoJ+yjpEsn1w40WKZbR2ibfu5g1rfgJTvmFHpm5aOMA==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    peerDependencies:
+      esbuild: '>=0.13'
+    dependencies:
+      esbuild: 0.15.5
       load-tsconfig: 0.2.3
     dev: false
 

@@ -6,7 +6,6 @@
     "downlevelIteration": true,
     "esModuleInterop": true,
     "isolatedModules": true,
-    // "incremental": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "preserve",
     "noEmit": true,
@@ -23,6 +22,6 @@
     "suppressImplicitAnyIndexErrors": true,
     "importsNotUsedAsValues": "error"
   },
-  "include": ["./**/*.ts"],
+  "include": ["./**/*.ts", "./**/*.tsx", "./**/*.js", "./**/*.jsx"],
   "exclude": ["node_modules"]
 }

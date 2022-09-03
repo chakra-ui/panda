@@ -1,35 +1,47 @@
+import { info } from '@css-panda/logger'
 import fs from 'fs'
 import path from 'path'
 import { pathToFileURL } from 'url'
 import { bundleConfigFile } from './bundle-config'
+import { createDebug } from './debug'
 import { findConfigFile } from './find-config'
 import { loadBundledFile } from './load-bundled-config'
 import { normalizePath } from './normalize-path'
 
 const dynamicImport = new Function('file', 'return import(file)')
 
-export async function loadConfigFile<T extends Record<string, any> = Record<string, any>>({
-  root = process.cwd(),
-  file,
-}: { root?: string; file?: string } = {}) {
-  const { isESM, resolvedPath } = findConfigFile({ root, file }) ?? {}
+type ConfigFileOptions = {
+  root: string
+  file?: string
+}
 
-  if (!resolvedPath) return {}
+export async function loadConfigFile<T extends Record<string, any> = Record<string, any>>(options: ConfigFileOptions) {
+  const { root, file } = options
 
-  const bundled = await bundleConfigFile(resolvedPath, true)
+  const { isESM, filepath } = findConfigFile({ root, file }) ?? {}
+
+  createDebug('resolve', { isESM, filepath })
+  info('resolved config file', filepath)
+
+  if (!filepath) return {}
+
+  const bundled = await bundleConfigFile(filepath, true)
+
+  info('bundle', 'Successful...')
+
   const dependencies = bundled.dependencies ?? []
 
-  const fileName = resolvedPath
+  const fileName = filepath
   let config: T
 
   if (isESM) {
     const fileBase = `${fileName}.timestamp-${Date.now()}`
     const fileNameTmp = `${fileBase}.mjs`
-    const fileUrl = `${pathToFileURL(fileBase)}.mjs`
 
     fs.writeFileSync(fileNameTmp, bundled.code)
 
     try {
+      const fileUrl = `${pathToFileURL(fileBase)}.mjs`
       config = (await dynamicImport(fileUrl)).default
     } finally {
       try {
@@ -38,9 +50,7 @@ export async function loadConfigFile<T extends Record<string, any> = Record<stri
         // already removed if this function is called twice simultaneously
       }
     }
-  }
-  // for cjs, we can register a custom loader via `_require.extensions`
-  else {
+  } else {
     config = await loadBundledFile(fileName, bundled.code)
   }
 
@@ -49,7 +59,7 @@ export async function loadConfigFile<T extends Record<string, any> = Record<stri
   }
 
   return {
-    path: resolvedPath,
+    path: filepath,
     config,
     dependencies: dependencies.map((dep) => normalizePath(path.resolve(dep))),
     code: bundled.code,

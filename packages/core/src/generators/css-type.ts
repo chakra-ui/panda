@@ -1,12 +1,9 @@
-import { createRequire } from 'module'
 import fs from 'fs-extra'
 import path from 'path'
 import outdent from 'outdent'
 
-const _require = createRequire(import.meta.url)
-
 async function getCssType(file: string) {
-  const cssType = _require.resolve('@css-panda/types')
+  const cssType = require.resolve('@css-panda/types')
   const cssPath = path.join(path.dirname(cssType), 'src', file)
   return fs.readFile(cssPath, 'utf8')
 }

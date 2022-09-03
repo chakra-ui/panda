@@ -8,9 +8,7 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "scripts": {
     "build": "tsup src/ --dts",
-    "dev": "pnpm build -- --watch",
-    "watch": "DEBUG=generator:file* tsx sandbox.ts",
-    "app": "cd __sandbox__ && pnpm dev"
+    "dev": "pnpm build -- --watch"
   },
   "files": [
     "dist"
@@ -30,6 +28,7 @@
     "find-up": "^6.3.0",
     "fs-extra": "^10.1.0",
     "hookable": "^5.1.1",
+    "lodash.merge": "^4.6.2",
     "outdent": " ^0.8.0",
     "postcss": "^8.4.14",
     "pkg-types": "^0.3.3",
@@ -41,6 +40,7 @@
     "@css-panda/dictionary": "workspace:*",
     "@css-panda/fixture": "workspace:*",
     "@types/fs-extra": "^9.0.13",
-    "@types/pluralize": "^0.0.29"
+    "@types/pluralize": "^0.0.29",
+    "@types/lodash.merge": "^4.6.7"
   }
 }

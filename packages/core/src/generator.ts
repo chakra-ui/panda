@@ -15,7 +15,7 @@ import { watch } from './watchers'
 export async function generator(options: Config & { configPath?: string } = {}) {
   const { cwd = process.cwd(), configPath, ...rest } = options
 
-  debug('starting...')
+  debug('Panda generator starting...')
 
   const conf = await loadConfigFile<UserConfig>({ root: cwd, file: configPath })
   merge(conf.config, { cwd, ...rest })
@@ -37,8 +37,6 @@ export async function generator(options: Config & { configPath?: string } = {}) 
   await generateSystem(ctx, conf.code)
 
   info('⚙️ generated system')
-
-  fs.ensureDirSync(ctx.temp.dir)
 
   if (ctx.watch) {
     watch(ctx, {

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "css": "DEBUG=cli* panda-dev"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -15,6 +16,9 @@
   "devDependencies": {
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
+    "@css-panda/fixture": "workspace:*",
+    "@css-panda/cli": "workspace:*",
+    "@css-panda/types": "workspace:*",
     "@vitejs/plugin-react": "^2.0.1",
     "vite": "^3.0.7"
   }

@@ -1,10 +1,10 @@
 import fs from 'fs'
-import module from 'module'
+import { createRequire } from 'module'
 import path from 'path'
 
-const __require = module.createRequire(import.meta.url)
-
 export function loadBundledFile(fileName: string, bundledCode: string): Promise<any> {
+  const __require = createRequire(import.meta.url)
+
   const extension = path.extname(fileName)
   const realFileName = fs.realpathSync(fileName)
 
@@ -12,8 +12,8 @@ export function loadBundledFile(fileName: string, bundledCode: string): Promise<
 
   __require.extensions[extension] = (module: NodeModule, filename: string) => {
     if (filename === realFileName) {
-      const m = module as any
-      m._compile(bundledCode, filename)
+      const __module = module as any
+      __module._compile(bundledCode, filename)
     } else {
       defaultLoader(module, filename)
     }

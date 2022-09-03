@@ -1,23 +1,43 @@
 import { cac } from 'cac'
 import path from 'path'
 import fs from 'fs'
+import { generator } from '@css-panda/core'
+import { createDebug } from './debug'
 
-export async function main(options = {}) {
+export async function main() {
   const cli = cac('panda')
 
+  const options: Record<string, any> = {}
+
   cli
-    .command('[...files]', 'Include files', {
+    .command('[files]', 'Include files', {
       ignoreOptionDefaultValue: true,
     })
     .option('-o, --out-dir <dir>', 'Output directory', { default: '.panda' })
     .option('--minify', 'Minify generated code')
-    .option('--cwd <cwd>', 'Current working directory')
+    .option('--cwd <cwd>', 'Current working directory', { default: process.cwd() })
     .option('--watch', 'Watch files and rebuild')
     .option('--exclude <exclude>', 'Define compile-time env variables')
     .option('--clean', 'Clean output directory')
     .option('--silent', 'Suppress non-error logs (excluding "onSuccess" process output)')
     .action(async (files: string[], flags) => {
-      console.log({ options, files, flags })
+      if (files) {
+        options.include = files
+      }
+      if (flags.cwd) {
+        options.cwd = flags.cwd
+      }
+      if (flags.outDir) {
+        options.outdir = flags.outDir
+      }
+      if (flags.minify) {
+        options.minify = true
+      }
+      if (flags.watch) {
+        options.watch = true
+      }
+      createDebug('options', options)
+      await generator(options)
     })
 
   cli.help()

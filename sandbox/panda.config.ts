@@ -6,6 +6,6 @@ export default defineConfig({
   clean: false,
   watch: false,
   hash: false,
-  outdir: '__generated__',
+  outdir: 'styled-system',
   include: ['*.jsx'],
 })

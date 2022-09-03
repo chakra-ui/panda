@@ -1,0 +1,24 @@
+@import './design-tokens/index.css';
+
+.fs_24px {
+  font-size: 24px;
+}
+
+.bg_red\.200 {
+  background: var(--pd-colors-red\.200);
+}
+
+.textStyle {
+  font-family: var(--pd-fonts-mono);
+}
+
+.textStyle > * ~ * {
+  border-left-width: 20px;
+  border-right-width: 0px;
+}
+
+.textStyle__size-h1 {
+  font-size: 5rem;
+  line-height: 1em;
+  font-weight: 800;
+}

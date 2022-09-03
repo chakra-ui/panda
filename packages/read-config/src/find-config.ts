@@ -4,7 +4,7 @@ import { createDebug } from './debug'
 import { findUp } from './find-up'
 
 export function findConfigFile({ root, file }: { root: string; file?: string }) {
-  let resolvedPath: string | undefined
+  let filepath: string | undefined
   let isESM = false
 
   // check package.json for type: "module" and set `isMjs` to true
@@ -14,11 +14,13 @@ export function findConfigFile({ root, file }: { root: string; file?: string }) 
     if (pkg && JSON.parse(pkg).type === 'module') {
       isESM = true
     }
-  } catch (e) {}
+  } catch (e) {
+    // ignore
+  }
 
   if (file) {
     // explicit config path is always resolved from cwd
-    resolvedPath = path.resolve(file)
+    filepath = path.resolve(file)
     isESM = file.endsWith('.mjs') || file.endsWith('.ts')
     //
   } else {
@@ -28,16 +30,16 @@ export function findConfigFile({ root, file }: { root: string; file?: string }) 
     extensions.forEach((ext) => {
       const jsconfigFile = path.resolve(root, `panda.config${ext}`)
       if (fs.existsSync(jsconfigFile)) {
-        resolvedPath = jsconfigFile
+        filepath = jsconfigFile
         isESM = ext === '.mjs' || ext === '.ts'
       }
     })
   }
 
-  if (!resolvedPath) {
+  if (!filepath) {
     createDebug('find:file', '💥 no config file found.')
     return null
   }
 
-  return { resolvedPath, isESM }
+  return { filepath, isESM }
 }
