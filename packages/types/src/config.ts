@@ -19,6 +19,8 @@ export type Config<
   Breakpoints extends Dict = Dict,
   Tokens extends Dict = Dict,
 > = {
+  preflight?: boolean
+  minify?: boolean
   cwd?: string
   hash?: boolean
   clean?: boolean
