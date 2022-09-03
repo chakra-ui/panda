@@ -1,11 +1,13 @@
+import { outdent } from 'outdent'
+
 export function generateGlobalStyle() {
   return {
-    js: `
+    js: outdent`
      export function globalStyle(styles){
-        return void 0
+        return void styles
      }
     `,
-    dts: `
+    dts: outdent`
     import { Properties } from '../types/csstype'
     
     export type GlobalStyles = Record<string, Properties>
