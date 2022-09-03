@@ -1,4 +1,4 @@
-import { findUp } from '@css-panda/shared'
+import { lookItUpSync } from 'look-it-up'
 import fs from 'fs'
 import path from 'path'
 import { createDebug } from './debug'
@@ -9,10 +9,12 @@ export function findConfigFile({ root, file }: { root: string; file?: string }) 
 
   // check package.json for type: "module" and set `isMjs` to true
   try {
-    const pkgPath = findUp(['package.json'], { cwd: root })[0]
-    const pkg = fs.readFileSync(pkgPath, 'utf8')
-    if (pkg && JSON.parse(pkg).type === 'module') {
-      isESM = true
+    const pkgPath = lookItUpSync('package.json', root)
+    if (pkgPath) {
+      const pkg = fs.readFileSync(pkgPath, 'utf8')
+      if (pkg && JSON.parse(pkg).type === 'module') {
+        isESM = true
+      }
     }
   } catch (e) {
     // ignore

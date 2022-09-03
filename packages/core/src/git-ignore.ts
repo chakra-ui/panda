@@ -1,23 +1,22 @@
-import { findUp } from '@css-panda/shared'
+import { lookItUpSync } from 'look-it-up'
 import fs from 'fs-extra'
 import { outdent } from 'outdent'
 import type { InternalContext } from './create-context'
 
 export async function updateGitIgnore(ctx: InternalContext) {
-  const [gitIgnorePath] = findUp(['.gitignore'])
+  const filepath = lookItUpSync('.gitignore')
 
-  const _content = outdent`
+  if (!filepath) return
+
+  const txt = outdent`
   
   ## CSS Panda
   ${ctx.outdir}
   `
 
-  if (gitIgnorePath) {
-    //
-    const content = await fs.readFile(gitIgnorePath)
+  const content = await fs.readFile(filepath)
 
-    if (!content.includes(ctx.outdir)) {
-      await fs.appendFile(gitIgnorePath, _content)
-    }
+  if (!content.includes(ctx.outdir)) {
+    await fs.appendFile(filepath, txt)
   }
 }

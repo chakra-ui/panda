@@ -107,6 +107,7 @@ importers:
       fs-extra: ^10.1.0
       hookable: ^5.1.1
       lodash.merge: ^4.6.2
+      look-it-up: ^2.1.0
       outdent: ' ^0.8.0'
       pkg-types: ^0.3.3
       pluralize: ^8.0.0
@@ -128,6 +129,7 @@ importers:
       fs-extra: 10.1.0
       hookable: 5.1.1
       lodash.merge: 4.6.2
+      look-it-up: 2.1.0
       outdent: 0.8.0
       pkg-types: 0.3.3
       pluralize: 8.0.0
@@ -244,12 +246,14 @@ importers:
       '@esbuild-plugins/tsconfig-paths': ^0.0.4
       bundle-require: ^3.1.0
       esbuild: ^0.15.5
+      look-it-up: ^2.1.0
     dependencies:
       '@css-panda/logger': link:../logger
       '@css-panda/shared': link:../shared
       '@esbuild-plugins/tsconfig-paths': 0.0.4_esbuild@0.15.5+typescript@4.7.4
       bundle-require: 3.1.0_esbuild@0.15.5
       esbuild: 0.15.5
+      look-it-up: 2.1.0
 
   packages/shared:
     specifiers: {}
@@ -2702,6 +2706,10 @@ packages:
   /lodash/4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
     dev: true
+
+  /look-it-up/2.1.0:
+    resolution: {integrity: sha512-nMoGWW2HurtuJf6XAL56FWTDCWLOTSsanrgwOyaR5Y4e3zfG5N/0cU5xWZSEU3tBxhQugRbV1xL9jb+ug7yZww==}
+    dev: false
 
   /loose-envify/1.4.0:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
