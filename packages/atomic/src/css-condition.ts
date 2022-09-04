@@ -1,3 +1,4 @@
+import { getBreakpointDetails } from '@css-panda/breakpoint-utils'
 import type { BaseCondition, BaseConditionType, Conditions } from '@css-panda/types'
 import postcss, { AtRule } from 'postcss'
 
@@ -37,11 +38,15 @@ const breakpoint = (key: string, value: string) => ({
   name: 'screen',
   value: key,
   raw: key,
-  rawValue: `@media screen and (min-width: ${value})`,
+  rawValue: `@media ${value}`,
 })
 
 function parseBreakpoints(breakpoints: Record<string, string>): Record<string, RawCondition> {
-  const entries = Object.entries(breakpoints).map(([key, value]) => [key, breakpoint(key, value)])
+  const details = getBreakpointDetails(breakpoints)
+  const entries = Object.keys(breakpoints).flatMap((key) => [
+    [key, breakpoint(key, details[key].minQuery)],
+    [`${key}_only`, breakpoint(`${key}_only`, details[key].minMaxQuery)],
+  ])
   return Object.fromEntries(entries)
 }
 
