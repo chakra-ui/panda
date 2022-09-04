@@ -16,7 +16,10 @@ function App() {
           fontSize: '24px',
           fontFamily: 'body',
           marginBottom: '40px',
-          color: { _: 'blue', hover: 'red.200' },
+          hover: {
+            color: 'red.200',
+            background: 'pink',
+          },
         })}
       >
         Welcome

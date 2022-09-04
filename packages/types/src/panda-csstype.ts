@@ -47,6 +47,8 @@ type ConditionCssProperties<
   >
 } & {
   [Key in keyof Omit<UserProperties, keyof Properties>]?: ConditionalValue<Conditions, UserProperties[Key]>
+} & {
+  [Key in keyof Conditions]?: ConditionCssProperties<Omit<Conditions, Key>, UserProperties, StrictValue>
 }
 
 export type WithNesting<T> = T & {
