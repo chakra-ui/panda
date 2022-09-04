@@ -67,6 +67,9 @@ export function createConditions(options: { conditions: Conditions; breakpoints?
 
   return {
     values,
+    is(key: string) {
+      return Object.prototype.hasOwnProperty.call(values, key)
+    },
     get(condition: string): RawCondition {
       return values[condition] ?? parseCondition(condition)
     },
