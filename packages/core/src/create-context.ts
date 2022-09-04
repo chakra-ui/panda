@@ -138,4 +138,4 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
   }
 }
 
-export type InternalContext = ReturnType<typeof createContext>
+export type Context = ReturnType<typeof createContext>

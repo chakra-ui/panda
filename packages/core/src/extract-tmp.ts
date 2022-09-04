@@ -1,6 +1,6 @@
-import type { InternalContext } from './create-context'
+import type { Context } from './create-context'
 
-export async function extractTemp(ctx: InternalContext) {
+export async function extractTemp(ctx: Context) {
   ctx.stylesheet.reset()
   ctx.stylesheet.addImports(['./design-tokens/index.css'])
 

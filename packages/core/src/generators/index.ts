@@ -2,7 +2,7 @@ import type { Dictionary } from '@css-panda/dictionary'
 import fs from 'fs-extra'
 import { outdent } from 'outdent'
 import path from 'path'
-import type { InternalContext } from '../create-context'
+import type { Context } from '../create-context'
 import { generateConditions } from './conditions'
 import { generateCss } from './css'
 import { generateCssMap } from './css-map'
@@ -24,7 +24,7 @@ async function setupPaths(paths: Record<string, string>) {
   return Promise.all(Object.values(paths).map((dir) => fs.ensureDir(dir)))
 }
 
-async function setupDesignTokens(ctx: InternalContext, dict: Dictionary) {
+async function setupDesignTokens(ctx: Context, dict: Dictionary) {
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.ds, 'index.css'), generateCss(ctx)),
     fs.writeFile(path.join(ctx.paths.ds, 'index.d.ts'), generateDts()),
@@ -32,7 +32,7 @@ async function setupDesignTokens(ctx: InternalContext, dict: Dictionary) {
   ])
 }
 
-async function setupGlobalStyle(ctx: InternalContext) {
+async function setupGlobalStyle(ctx: Context) {
   const code = generateGlobalStyle()
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.css, 'global-style.js'), code.js),
@@ -40,7 +40,7 @@ async function setupGlobalStyle(ctx: InternalContext) {
   ])
 }
 
-async function setupTypes(ctx: InternalContext, dict: Dictionary) {
+async function setupTypes(ctx: Context, dict: Dictionary) {
   const code = await generateCssType()
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.types, 'csstype.d.ts'), code.cssType),
@@ -52,7 +52,7 @@ async function setupTypes(ctx: InternalContext, dict: Dictionary) {
   ])
 }
 
-async function setupCss(ctx: InternalContext) {
+async function setupCss(ctx: Context) {
   const code = generateSerializer(ctx.hash)
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.css, 'transform.js'), generateTransform()),
@@ -62,7 +62,7 @@ async function setupCss(ctx: InternalContext) {
   ])
 }
 
-async function setupCssMap(ctx: InternalContext) {
+async function setupCssMap(ctx: Context) {
   const code = generateCssMap()
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.css, 'css-map.js'), code.js),
@@ -70,7 +70,7 @@ async function setupCssMap(ctx: InternalContext) {
   ])
 }
 
-async function setupCx(ctx: InternalContext) {
+async function setupCx(ctx: Context) {
   const code = generateCx()
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.css, 'cx.js'), code.js),
@@ -78,7 +78,7 @@ async function setupCx(ctx: InternalContext) {
   ])
 }
 
-async function setupSx(ctx: InternalContext) {
+async function setupSx(ctx: Context) {
   const code = generateSx()
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.css, 'sx.js'), code.js),
@@ -86,7 +86,7 @@ async function setupSx(ctx: InternalContext) {
   ])
 }
 
-async function setupFontFace(ctx: InternalContext) {
+async function setupFontFace(ctx: Context) {
   const code = generateFontFace()
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.css, 'font-face.js'), code.js),
@@ -94,7 +94,7 @@ async function setupFontFace(ctx: InternalContext) {
   ])
 }
 
-async function setupRecipes(ctx: InternalContext) {
+async function setupRecipes(ctx: Context) {
   const code = generateRecipes(ctx.config)
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.recipe, 'index.js'), code.js),
@@ -102,7 +102,7 @@ async function setupRecipes(ctx: InternalContext) {
   ])
 }
 
-async function setupPatterns(ctx: InternalContext) {
+async function setupPatterns(ctx: Context) {
   const code = generatePattern(ctx.config)
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.pattern, 'index.js'), code.js),
@@ -110,7 +110,7 @@ async function setupPatterns(ctx: InternalContext) {
   ])
 }
 
-async function setupCssIndex(ctx: InternalContext) {
+async function setupCssIndex(ctx: Context) {
   const code = outdent`
   export * from './css'
   export * from './cx'
@@ -126,7 +126,7 @@ async function setupCssIndex(ctx: InternalContext) {
   ])
 }
 
-export async function generateSystem(ctx: InternalContext, configCode: string) {
+export async function generateSystem(ctx: Context, configCode: string) {
   const { dictionary, paths, configPath } = ctx
 
   await setupPaths(paths)

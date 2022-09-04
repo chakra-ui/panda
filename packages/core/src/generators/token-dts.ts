@@ -1,5 +1,6 @@
 import type { Dictionary } from '@css-panda/dictionary'
 import { unionType } from '@css-panda/shared'
+import { outdent } from 'outdent'
 import { singular } from 'pluralize'
 
 function capitalize(str: string) {
@@ -23,5 +24,5 @@ export function generateTokenDts(dict: Dictionary) {
 
   set.add(Array.from(interfaceSet).join('\n'))
 
-  return Array.from(set).join('\n\n')
+  return outdent.string(Array.from(set).join('\n\n'))
 }

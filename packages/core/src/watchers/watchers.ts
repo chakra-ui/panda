@@ -1,6 +1,6 @@
 import { getConfigDependencies, LoadConfigResult } from '@css-panda/read-config'
 import type { UserConfig } from '@css-panda/types'
-import type { InternalContext } from '../create-context'
+import type { Context } from '../create-context'
 import { createDebug } from '../debug'
 import { createWatcher } from './create-watcher'
 
@@ -9,7 +9,7 @@ export async function createConfigWatcher(conf: LoadConfigResult<UserConfig>) {
   return createWatcher(deps.value, { cwd: deps.cwd })
 }
 
-export async function createContentWatcher(ctx: InternalContext, callback: (file: string) => void) {
+export async function createContentWatcher(ctx: Context, callback: (file: string) => void) {
   const { include, cwd, exclude } = ctx
 
   const watcher = createWatcher(include, {
@@ -35,7 +35,7 @@ export async function createContentWatcher(ctx: InternalContext, callback: (file
   return watcher
 }
 
-export async function createTempWatcher(ctx: InternalContext, callback: () => Promise<void>) {
+export async function createTempWatcher(ctx: Context, callback: () => Promise<void>) {
   const watcher = createWatcher(ctx.temp.glob, {
     cwd: ctx.temp.dir,
   })

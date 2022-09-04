@@ -1,5 +1,5 @@
 import { error, info } from '@css-panda/logger'
-import type { InternalContext } from '../create-context'
+import type { Context } from '../create-context'
 import { createConfigWatcher, createContentWatcher, createTempWatcher } from './watchers'
 
 process.setMaxListeners(Infinity)
@@ -10,7 +10,7 @@ type Options = {
   onTmpChange: () => Promise<void>
 }
 
-export async function watch(ctx: InternalContext, options: Options) {
+export async function watch(ctx: Context, options: Options) {
   const temp = await createTempWatcher(ctx, options.onTmpChange)
   const content = await createContentWatcher(ctx, options.onContentChange)
   const config = await createConfigWatcher(ctx.conf)

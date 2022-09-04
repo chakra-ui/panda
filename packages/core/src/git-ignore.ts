@@ -1,9 +1,9 @@
 import { lookItUpSync } from 'look-it-up'
 import fs from 'fs-extra'
 import { outdent } from 'outdent'
-import type { InternalContext } from './create-context'
+import type { Context } from './create-context'
 
-export async function updateGitIgnore(ctx: InternalContext) {
+export async function updateGitIgnore(ctx: Context) {
   const filepath = lookItUpSync('.gitignore')
 
   if (!filepath) return
