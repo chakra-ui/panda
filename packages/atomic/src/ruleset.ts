@@ -79,7 +79,8 @@ export function createRuleset(context: GeneratorContext, options: { hash?: boole
     const { scope, styles } = options
 
     walkObject(styles, (value, paths) => {
-      const [prop, ...allConditions] = paths
+      // conditions.shift was done to support condition groups
+      const [prop, ...allConditions] = context.conditions.shift(paths)
 
       // remove default condition
       const conditions = filterBaseConditions(allConditions)

@@ -67,6 +67,16 @@ export function createConditions(options: { conditions: Conditions; breakpoints?
 
   return {
     values,
+    // float non-condition values to the start
+    shift(paths: string[]) {
+      return paths.slice().sort((a, b) => {
+        const aIsCondition = a in values
+        const bIsCondition = b in values
+        if (aIsCondition && !bIsCondition) return 1
+        if (!aIsCondition && bIsCondition) return -1
+        return 0
+      })
+    },
     is(key: string) {
       return Object.prototype.hasOwnProperty.call(values, key)
     },

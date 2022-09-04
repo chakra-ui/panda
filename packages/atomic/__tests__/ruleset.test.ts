@@ -214,3 +214,54 @@ describe('atomic ruleset', () => {
     `)
   })
 })
+
+describe('grouped conditions styles', () => {
+  test('simple', () => {
+    expect(
+      css({
+        styles: {
+          hover: { bg: 'pink.400' },
+        },
+      }),
+    ).toMatchInlineSnapshot(`
+      ".hover\\\\:bg-pink\\\\.400:hover {
+          bg: pink.400
+      }"
+    `)
+  })
+
+  test('nested > property', () => {
+    expect(
+      css({
+        styles: {
+          hover: { bg: { sm: { dark: 'red.300' } }, color: 'pink.400' },
+        },
+      }),
+    ).toMatchInlineSnapshot(`
+      "@screen sm {
+          [data-theme=dark] .hover\\\\:sm\\\\:dark\\\\:bg-red\\\\.300:hover {
+              bg: red.300
+          }
+      }
+      .hover\\\\:color-pink\\\\.400:hover {
+          color: pink.400
+      }"
+    `)
+  })
+
+  test('nested > nested > property', () => {
+    expect(
+      css({
+        styles: {
+          hover: { disabled: { bg: { sm: 'red.300' } } },
+        },
+      }),
+    ).toMatchInlineSnapshot(`
+      "@screen sm {
+          .hover\\\\:disabled\\\\:sm\\\\:bg-red\\\\.300:hover:disabled {
+              bg: red.300
+          }
+      }"
+    `)
+  })
+})
