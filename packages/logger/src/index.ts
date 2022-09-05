@@ -42,9 +42,9 @@ function parseErr({ err }: { err: any }) {
     err: null,
     code: err.code,
     class: err.constructor.name,
-    message: err.message,
     stack: stack.slice(1, -1),
-    msg: err.stack,
+    type: err.constructor.name,
+    msg: colors.red(err.message),
   }
 }
 

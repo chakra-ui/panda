@@ -1,4 +1,5 @@
 import { Stylesheet } from '@css-panda/atomic'
+import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import { createCollector, createPlugins, transformFileSync } from '@css-panda/parser'
 import path from 'path'
@@ -34,16 +35,32 @@ export function extractContent(ctx: Context, file: string) {
   })
 
   collector.recipe.forEach((result, name) => {
-    for (const item of result) {
-      sheet.processRecipe(ctx.recipes[name], item.data)
+    try {
+      for (const item of result) {
+        const recipe = ctx.recipes[name]
+        if (!recipe) {
+          throw new NotFoundError({ type: 'recipe', name })
+        }
+        sheet.processRecipe(recipe, item.data)
+      }
+    } catch (error: any) {
+      logger.fatal({ err: error })
     }
   })
 
   collector.pattern.forEach((result, name) => {
-    for (const item of result) {
-      const pattern = ctx.patterns[name]
-      const styleObject = pattern.transform?.(item.data, ctx.helpers) ?? {}
-      sheet.processAtomic(styleObject)
+    try {
+      for (const item of result) {
+        const pattern = ctx.patterns[name]
+        console.log({ pattern })
+        if (!pattern) {
+          throw new NotFoundError({ type: 'pattern', name })
+        }
+        const styleObject = pattern.transform?.(item.data, ctx.helpers) ?? {}
+        sheet.processAtomic(styleObject)
+      }
+    } catch (error) {
+      logger.fatal({ err: error })
     }
   })
 

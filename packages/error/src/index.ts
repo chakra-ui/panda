@@ -29,3 +29,9 @@ export class ConfigError extends PandaError {
     super('CONFIG_ERROR', `ConfigReadError (${path}): ${error}`)
   }
 }
+
+export class NotFoundError extends PandaError {
+  constructor({ name, type }: { name: string; type: string }) {
+    super('NOT_FOUND', `${type} not found: \`${name}\``)
+  }
+}
