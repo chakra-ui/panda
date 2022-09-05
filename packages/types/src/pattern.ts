@@ -6,8 +6,13 @@ type PropertyConfig =
   | { type: 'token'; value: string; cssProp?: CssProperty }
   | { type: 'string' | 'boolean' | 'number' }
 
+export type TransformHelpers = {
+  map: (value: any, fn: (value: any) => any) => any
+  theme: (value: string) => any
+}
+
 export type Pattern<T extends Record<string, any> = Record<string, any>> = {
   name: string
   properties: Record<string, PropertyConfig>
-  transform?: (props: Record<string, any>) => T
+  transform?: (props: Record<string, any>, helpers: TransformHelpers) => T
 }

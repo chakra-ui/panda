@@ -3,7 +3,7 @@ import { mergeRecipes } from '@css-panda/css-recipe'
 import { CSSUtility, mergeUtilities } from '@css-panda/css-utility'
 import { Dictionary } from '@css-panda/dictionary'
 import type { LoadConfigResult } from '@css-panda/read-config'
-import type { Pattern, UserConfig } from '@css-panda/types'
+import type { Pattern, TransformHelpers, UserConfig } from '@css-panda/types'
 import path from 'path'
 import postcss from 'postcss'
 import fs from 'fs-extra'
@@ -16,6 +16,11 @@ function mergePatterns(values: Pattern[]) {
     Object.assign(acc, { [value.name]: value })
     return acc
   }, {})
+}
+
+function mapObject(obj: string | Record<string, any>, fn: (value: any) => any) {
+  if (typeof obj === 'string') return fn(obj)
+  return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, fn(value)]))
 }
 
 export function createContext(conf: LoadConfigResult<UserConfig>) {
@@ -52,6 +57,11 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
     config: mergeUtilities(_utilities),
   })
 
+  const helpers: TransformHelpers = {
+    map: mapObject,
+    theme: (key) => dictionary.query(key),
+  }
+
   const context = (): GeneratorContext => ({
     root: postcss.root(),
     breakpoints,
@@ -59,6 +69,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
       conditions,
       breakpoints,
     }),
+    helpers,
     transform(prop, value) {
       return utilities.resolve(prop, value)
     },
@@ -127,6 +138,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
       recipe: recipePath,
       pattern: patternPath,
     },
+    helpers,
 
     conf,
     config,

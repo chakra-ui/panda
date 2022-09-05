@@ -1,5 +1,5 @@
 import { walkStyles } from '@css-panda/shared'
-import type { Pattern, PluginResult, Recipe } from '@css-panda/types'
+import type { PluginResult, Recipe } from '@css-panda/types'
 import postcss, { Root, Rule } from 'postcss'
 import { expandScreenAtRule } from './expand-screen'
 import { optimizeCss } from './optimize'
@@ -65,11 +65,6 @@ export class Stylesheet {
   processRecipe(recipe: Recipe, styles: Record<string, any>) {
     const ruleset = createRecipeSet(this.context, recipe, { hash: this.hash })
     ruleset.process({ styles })
-  }
-
-  processPattern(pattern: Pattern, styles: Record<string, any>) {
-    const styleObject = pattern.transform?.(styles) ?? {}
-    return this.processAtomic(styleObject)
   }
 
   addImports(imports: string[]) {

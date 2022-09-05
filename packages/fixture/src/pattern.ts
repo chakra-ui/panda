@@ -43,14 +43,26 @@ export const patterns: Pattern[] = [
       columns: { type: 'number' },
       minChildWidth: { type: 'token', value: 'sizes', cssProp: 'width' },
     },
-    transform(props) {
+    transform(props, { map }) {
       const { gap, columns, minChildWidth } = props
       return {
         display: 'grid',
         gridGap: gap,
         gridTemplateColumns: columns
-          ? `repeat(${columns}, minmax(0, 1fr))`
-          : `repeat(auto-fit, minmax(${minChildWidth}, 1fr))`,
+          ? map(columns, (value) => `repeat(${value}, minmax(0, 1fr))`)
+          : map(minChildWidth, (value) => `repeat(auto-fill, minmax(${value}, 1fr))`),
+      }
+    },
+  },
+  {
+    name: 'gridItem',
+    properties: {
+      colSpan: { type: 'number' },
+    },
+    transform(props) {
+      const { colSpan } = props
+      return {
+        gridColumn: colSpan ? `span ${colSpan}` : 'auto',
       }
     },
   },

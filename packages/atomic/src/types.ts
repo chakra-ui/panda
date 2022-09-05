@@ -1,3 +1,4 @@
+import type { TransformHelpers } from '@css-panda/types'
 import type { Root } from 'postcss'
 import type { CSSCondition } from './css-condition'
 
@@ -10,6 +11,7 @@ export type GeneratorContext = {
   root: Root
   conditions: CSSCondition
   breakpoints: Record<string, string>
+  helpers: TransformHelpers
   transform: (prop: string, value: string) => TransformResult
 }
 

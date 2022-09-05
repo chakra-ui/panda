@@ -41,7 +41,9 @@ export function extractContent(ctx: Context, file: string) {
 
   collector.pattern.forEach((result, name) => {
     for (const item of result) {
-      sheet.processPattern(ctx.patterns[name], item.data)
+      const pattern = ctx.patterns[name]
+      const styleObject = pattern.transform?.(item.data, ctx.helpers) ?? {}
+      sheet.processAtomic(styleObject)
     }
   })
 
