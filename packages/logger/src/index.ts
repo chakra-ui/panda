@@ -1,44 +1,128 @@
 import colors from 'picocolors'
-import __debug from 'debug'
 import util from 'util'
 
-export const prefix = '🐼 '
-
-function format(args: Array<any>, customPrefix?: string) {
-  const fullPrefix = [prefix, customPrefix].filter(Boolean).join(' ')
-  return (
-    fullPrefix +
-    util
-      .format('', ...args)
-      .split('\n')
-      .join('\n' + fullPrefix + ' ')
-  )
+const omitKeys = ['level', 'type', 'time', 'pid']
+function compact(obj: any) {
+  const res = {}
+  for (const key in obj) {
+    if (!omitKeys.includes(key) && obj[key] != null) {
+      res[key] = obj[key]
+    }
+  }
+  return res
 }
 
-export function createDebugger(namespace: string) {
-  return __debug(namespace)
+const LEVELS = {
+  debug: { w: 0, c: colors.blue },
+  info: { w: 1, c: colors.green },
+  warn: { w: 2, c: colors.yellow },
+  error: { w: 3, c: colors.red },
+  fatal: { w: 4, c: colors.red },
 }
 
-export function error(...args: Array<any>) {
-  console.error(format(args, colors.red('error')))
+function output(entry: any) {
+  const uword = entry.type == 'event' ? entry.level : entry.type
+  entry.time.setMinutes(entry.time.getMinutes() - entry.time.getTimezoneOffset())
+
+  const color = LEVELS[entry.level].c
+
+  const data = compact(entry)
+  const formatted = typeof entry.msg == 'string' ? entry.msg : util.inspect(data, { colors: true, depth: null })
+  const msg = `🐼 ${colors.bold(color(`${entry.level.toUpperCase()}`))} ${uword} - ${formatted}`
+
+  console.log(msg)
 }
 
-export function info(...args: Array<any>) {
-  console.info(format(args, colors.cyan('info')))
+function parseErr({ err }: any) {
+  if (!(err instanceof Error)) err = new Error(err)
+  const stack = err.stack.split(/[\r\n]+\s*/g)
+  return {
+    err: null,
+    code: err.code,
+    class: err.constructor.name,
+    message: err.message,
+    stack: stack.slice(1, -1),
+    msg: err.stack,
+  }
 }
 
-export function log(...args: Array<any>) {
-  console.log(format(args))
+function getEntry(this: Logger, level: LogLevel, args: any[]) {
+  const data = typeof args[0] == 'object' ? args.shift() : {}
+  let msg = util.format(...args)
+  const type = data.type || 'event'
+
+  const pid = process.pid != 1 ? process.pid : null
+
+  for (const key in this.parsers) {
+    if (key in data) {
+      Object.assign(data, this.parsers[key](data))
+    }
+  }
+
+  msg = msg || data.msg
+  return { level, type, ...data, msg, pid, time: new Date() }
 }
 
-export function success(...args: Array<any>) {
-  console.log(format(args, colors.green('success')))
+function log(this: Logger, level: LogLevel, ...args: any[]) {
+  const entry = {
+    ...this.defaults,
+    ...getEntry.call(this, level, args),
+  }
+
+  const badLevel = LEVELS[this.level].w > LEVELS[level].w
+  const badType = this.except.includes(entry.type) || (this.only.length > 0 && !this.only.includes(entry.type))
+  if (badType || badLevel) return false
+
+  output(entry)
+
+  return entry
 }
 
-export function warn(...args: Array<any>) {
-  console.warn(format(args, colors.yellow('warn')))
+type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal'
+
+type Config = {
+  level?: LogLevel
+  defaults?: any
+  only?: string[]
+  except?: string[]
 }
 
-export function debug(...args: Array<any>) {
-  createDebugger('panda')(args)
+class Logger {
+  level: LogLevel
+  only: string[] = []
+  except: string[] = []
+  defaults: any
+  parsers: any
+
+  warn: (...args: any[]) => void
+  info: (...args: any[]) => void
+  debug: (...args: any[]) => void
+  error: (...args: any[]) => void
+  fatal: (...args: any[]) => void
+
+  constructor(conf: Config = {}) {
+    this.level = conf.level || 'debug'
+    if (conf.only) {
+      this.only = conf.only
+    }
+    if (conf.except) {
+      this.except = conf.except
+    }
+    this.defaults = conf.defaults || {}
+    this.parsers = { err: parseErr }
+
+    const op = conf === false ? () => false : log
+
+    this.warn = op.bind(this, 'warn')
+    this.info = op.bind(this, 'info')
+    this.debug = op.bind(this, 'debug')
+    this.error = op.bind(this, 'error')
+    this.fatal = op.bind(this, 'fatal')
+  }
+
+  addParser(key: string, parser: (data: any) => any) {
+    this.parsers[key] = parser
+  }
 }
+
+export const logger = new Logger()

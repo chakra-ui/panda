@@ -14,10 +14,6 @@
     "dist"
   ],
   "dependencies": {
-    "debug": "^4.3.4",
     "picocolors": "^1.0.0"
-  },
-  "devDependencies": {
-    "@types/debug": "^4.1.7"
   }
 }
