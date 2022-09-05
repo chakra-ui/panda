@@ -1,17 +1,15 @@
+import { logger } from '@css-panda/logger'
 import { filespy } from 'filespy'
-import { error, createDebugger } from '@css-panda/logger'
 
 type WatcherOptions = {
   ignore?: string[]
   cwd?: string
 }
 
-const debug = createDebugger('file:watcher')
-
 export function createWatcher(files: string[], options: WatcherOptions = {}) {
   const { ignore, cwd = process.cwd() } = options
 
-  debug('files: %o', { cwd, files })
+  logger.debug({ type: 'file:watcher', cwd, files })
 
   const watcher = filespy(cwd, {
     only: files,
@@ -27,9 +25,9 @@ export function createWatcher(files: string[], options: WatcherOptions = {}) {
 
 export function onProcessExceptions() {
   process.on('unhandledRejection', (reason) => {
-    error(reason)
+    logger.error(reason)
   })
   process.on('uncaughtException', (err) => {
-    error(err)
+    logger.error(err)
   })
 }

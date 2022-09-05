@@ -1,10 +1,8 @@
 import type { CSSUtility } from '@css-panda/css-utility'
-import { createDebugger, error } from '@css-panda/logger'
+import { logger } from '@css-panda/logger'
 import { walkObject, walkStyles } from '@css-panda/shared'
 import type { Recipe } from '@css-panda/types'
 import merge from 'lodash.merge'
-
-const debug = createDebugger('recipe')
 
 type StyleObject = Record<string, any>
 
@@ -25,10 +23,13 @@ export class CSSRecipe {
 
       walkObject(styles, (value, paths) => {
         if (paths.length > 1) {
-          error(`
+          logger.error({
+            type: 'recipe',
+            msg: `
           Conditional values are not supported in recipes.
           You provided the follow conditions for ${paths[0]}: ${paths.slice(1).join(', ')}
-          `)
+          `,
+          })
         }
 
         const [prop] = paths as string[]
@@ -77,7 +78,7 @@ export function mergeRecipes(recipes: Recipe[] | undefined, utility: CSSUtility)
       const recipe = new CSSRecipe({ utility, config })
       const transformed = recipe.transform()
 
-      debug(config.name, transformed)
+      logger.debug({ type: 'recipe', name: config.name, transformed })
 
       return [config.name, transformed]
     }),

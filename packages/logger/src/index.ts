@@ -28,8 +28,9 @@ function output(entry: any) {
 
   const data = compact(entry)
   const formatted = typeof entry.msg == 'string' ? entry.msg : util.inspect(data, { colors: true, depth: null })
-  const msg = `🐼 ${colors.bold(color(`${entry.level.toUpperCase()}`))} ${uword} - ${formatted}`
+  const msg = `🐼 ${colors.bold(color(`${entry.level.toUpperCase()}`))} [${uword}] ${formatted}`
 
+  console.log('\n--------------------------------------------------------------\n')
   console.log(msg)
 }
 

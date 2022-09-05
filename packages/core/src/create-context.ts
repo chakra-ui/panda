@@ -7,7 +7,7 @@ import type { Pattern, UserConfig } from '@css-panda/types'
 import path from 'path'
 import postcss from 'postcss'
 import fs from 'fs-extra'
-import { createDebug } from './debug'
+import { logger } from '@css-panda/logger'
 
 const BASE_IGNORE = ['node_modules', '.git', '__tests__', 'tests']
 
@@ -93,7 +93,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
     },
   }
 
-  createDebug('config:tmpfile', temp.dir)
+  logger.debug({ type: 'config:tmpfile', dir: temp.dir })
 
   const outputCss = {
     path: path.join(cwd, outdir, 'styles.css'),

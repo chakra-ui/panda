@@ -1,8 +1,8 @@
 import { Stylesheet } from '@css-panda/atomic'
+import { logger } from '@css-panda/logger'
 import { createCollector, createPlugins, transformFileSync } from '@css-panda/parser'
 import path from 'path'
 import type { Context } from './create-context'
-import { createDebug } from './debug'
 
 export function extractContent(ctx: Context, file: string) {
   const { hash, importMap } = ctx
@@ -48,7 +48,7 @@ export function extractContent(ctx: Context, file: string) {
   if (collector.isEmpty()) return
 
   const tempPath = ctx.temp.write(file, sheet.toCss())
-  createDebug('temp:write', tempPath)
+  logger.debug({ type: 'temp:write', tempPath })
 
   sheet.reset()
 }

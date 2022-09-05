@@ -1,12 +1,11 @@
 import { ConfigNotFoundError } from '@css-panda/error'
-import { info } from '@css-panda/logger'
+import { logger } from '@css-panda/logger'
 import { loadConfigFile } from '@css-panda/read-config'
 import type { Config, UserConfig } from '@css-panda/types'
 import fs from 'fs-extra'
 import merge from 'lodash.merge'
 import { recrawl } from 'recrawl'
 import { createContext } from './create-context'
-import { createDebug, debug } from './debug'
 import { extractContent } from './extract-content'
 import { extractTemp } from './extract-tmp'
 import { generateSystem } from './generators'
@@ -16,12 +15,12 @@ import { watch } from './watchers'
 export async function generator(options: Config & { configPath?: string } = {}) {
   const { cwd = process.cwd(), configPath, ...rest } = options
 
-  debug('Panda generator starting...')
+  logger.info('Panda generator starting...')
 
   const conf = await loadConfigFile<UserConfig>({ root: cwd, file: configPath })
   merge(conf.config, { cwd, ...rest })
 
-  createDebug('config:file', conf)
+  logger.debug({ type: 'config:file', path: conf.path })
 
   if (!conf.config) {
     throw new ConfigNotFoundError({ cwd, path: conf.path })
@@ -29,7 +28,7 @@ export async function generator(options: Config & { configPath?: string } = {}) 
 
   const ctx = createContext(conf)
 
-  createDebug('context', ctx)
+  logger.info('Panda context created...')
 
   if (conf.config.clean) {
     await fs.emptyDir(ctx.outdir)
@@ -39,7 +38,7 @@ export async function generator(options: Config & { configPath?: string } = {}) 
 
   await generateSystem(ctx, conf.code)
 
-  info('⚙️ generated system')
+  logger.info('⚙️ generated system')
 
   if (ctx.watch) {
     watch(ctx, {
@@ -60,7 +59,7 @@ export async function generator(options: Config & { configPath?: string } = {}) 
     })
 
     await crawl(ctx.cwd, (file) => {
-      createDebug('file:', file)
+      logger.debug({ type: 'file', file })
       extractContent(ctx, file)
     })
 

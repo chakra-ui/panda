@@ -1,5 +1,5 @@
+import { logger } from '@css-panda/logger'
 import path from 'path'
-import { createDebug } from './debug'
 
 function commonSequence(a: string[], b: string[]) {
   const result: string[] = []
@@ -24,7 +24,7 @@ function getCommonDir(paths: string[]) {
 
 export function getConfigDependencies(conf: { dependencies: string[] }) {
   const commonDir = getCommonDir(conf.dependencies)
-  createDebug('config:deps', commonDir)
+  logger.debug({ type: 'config:deps', commonDir })
   const deps = conf.dependencies.map((file) => file.replace(commonDir, ''))
   return {
     cwd: commonDir,

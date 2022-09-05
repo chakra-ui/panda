@@ -1,8 +1,7 @@
 import { lookItUpSync } from 'look-it-up'
 import fs from 'fs'
 import path from 'path'
-import { createDebug } from './debug'
-
+import { logger } from '@css-panda/logger'
 export function findConfigFile({ root, file }: { root: string; file?: string }) {
   let filepath: string | undefined
   let isESM = false
@@ -41,7 +40,7 @@ export function findConfigFile({ root, file }: { root: string; file?: string }) 
   }
 
   if (!filepath) {
-    createDebug('find:file', '💥 no config file found.')
+    logger.fatal({ type: 'find:file', info: '💥 no config file found.' })
     return null
   }
 

@@ -1,9 +1,8 @@
-import { info } from '@css-panda/logger'
+import { logger } from '@css-panda/logger'
 import fs from 'fs'
 import path from 'path'
 import { pathToFileURL } from 'url'
 import { bundleConfigFile } from './bundle-config'
-import { createDebug } from './debug'
 import { findConfigFile } from './find-config'
 import { loadBundledFile } from './load-bundled-config'
 import { normalizePath } from './normalize-path'
@@ -20,14 +19,14 @@ export async function loadConfigFile<T extends Record<string, any> = Record<stri
 
   const { isESM, filepath } = findConfigFile({ root, file }) ?? {}
 
-  createDebug('resolve', { isESM, filepath })
-  info('resolved config file', filepath)
+  logger.debug({ type: 'config:details', isESM, filepath })
+  logger.info(`found config file at: \n${filepath}`)
 
   if (!filepath) return {}
 
   const bundled = await bundleConfigFile(filepath, true)
 
-  info('bundle', 'Successful...')
+  logger.info('bundle', 'Successful...')
 
   const dependencies = bundled.dependencies ?? []
 

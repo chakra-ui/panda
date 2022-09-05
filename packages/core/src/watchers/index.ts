@@ -1,4 +1,4 @@
-import { error, info } from '@css-panda/logger'
+import { logger } from '@css-panda/logger'
 import type { Context } from '../create-context'
 import { createConfigWatcher, createContentWatcher, createTempWatcher } from './watchers'
 
@@ -23,14 +23,14 @@ export async function watch(ctx: Context, options: Options) {
 
   config.on('update', async () => {
     await close()
-    info('⚙️ Config updated, restarting...')
+    logger.info('⚙️ Config updated, restarting...')
     await options.onConfigChange()
   })
 }
 
 process.on('unhandledRejection', (reason) => {
-  error(reason)
+  logger.error(reason)
 })
 process.on('uncaughtException', (err) => {
-  error(err)
+  logger.error(err)
 })
