@@ -12,7 +12,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const view = _view || this._view
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
     const workspaceUri = workspaceFolder?.uri
-    const conf = loadConfigFile({ root: workspaceUri?.fsPath })
+
+    const filepath = workspaceUri?.fsPath
+
+    if (!filepath) return
+
+    const conf = loadConfigFile({ root: filepath })
 
     conf.then(({ config }) => {
       view?.webview.postMessage({
@@ -76,9 +81,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
     const workspaceUri = workspaceFolder?.uri
-    const conf = loadConfigFile({ root: workspaceUri?.fsPath })
+    const filepath = workspaceUri?.fsPath
 
-    if (workspaceFolder) {
+    if (filepath && workspaceFolder) {
+      const conf = loadConfigFile({ root: filepath })
       conf.then(({ path }) => {
         if (path) {
           const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolder, path))

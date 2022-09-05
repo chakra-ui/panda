@@ -22,7 +22,11 @@ export function activate(context: ExtensionContext) {
     }),
   )
 
-  const config = loadConfigFile({ root: workspace.workspaceFolders?.[0]?.uri?.fsPath })
+  const filepath = workspace.workspaceFolders?.[0]?.uri?.fsPath
+
+  if (!filepath) return
+
+  const config = loadConfigFile({ root: filepath })
 
   config.then(({ config }) => {
     if (!config) {
