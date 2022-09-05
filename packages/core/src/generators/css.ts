@@ -1,6 +1,6 @@
 import { toCss, toKeyframeCss } from '@css-panda/atomic'
 import type { VarData } from '@css-panda/dictionary'
-import { error } from '@css-panda/logger'
+import { logger } from '@css-panda/logger'
 import type { Context } from '../create-context'
 
 export function generateCss(ctx: Context, root = ':where(:root, :host)') {
@@ -27,7 +27,7 @@ export function generateCss(ctx: Context, root = ':where(:root, :host)') {
     const selector = cond.rawValue ?? cond.value.replace(/&/, root)
 
     if (!selector) {
-      error(`Condition ${selector} is not defined`)
+      logger.error(`Condition ${selector} is not defined`)
       continue
     }
 

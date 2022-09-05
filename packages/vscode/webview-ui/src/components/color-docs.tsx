@@ -18,7 +18,7 @@ export function Colors(props: ColorsProps) {
         </div>
       )
     }
-    return Object.entries(shadesOrValue).map(([shade, value]) => (
+    return Object.entries(shadesOrValue).map(([shade, value]: any) => (
       <div className="shade">
         <div className="color-box" style={{ background: value as string }} />
         <div className="shade-label">{shade}</div>

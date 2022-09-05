@@ -14,7 +14,7 @@ export function ContrastChecker(props: ContrastCheckerProps) {
     .map(([color, shadesOrValue]) =>
       typeof shadesOrValue === 'string'
         ? { label: color, value: shadesOrValue }
-        : Object.entries(shadesOrValue).map(([shade, value]) => ({ label: `${color}.${shade}`, value })),
+        : Object.entries(shadesOrValue as any).map(([shade, value]) => ({ label: `${color}.${shade}`, value })),
     )
     .flat()
 
