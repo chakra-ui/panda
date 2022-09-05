@@ -2,7 +2,7 @@ import { cac } from 'cac'
 import path from 'path'
 import fs from 'fs'
 import { generator } from '@css-panda/core'
-import { createDebug } from './debug'
+import { logger } from '@css-panda/logger'
 
 export async function main() {
   const cli = cac('panda')
@@ -36,7 +36,7 @@ export async function main() {
       if (flags.watch) {
         options.watch = true
       }
-      createDebug('options', options)
+      logger.debug({ type: 'cli', msg: options })
       await generator(options)
     })
 
