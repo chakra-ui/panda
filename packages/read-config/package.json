@@ -7,7 +7,7 @@
   "types": "dist/index.d.ts",
   "author": "Abraham Aremu <anubra266@gmail.com>",
   "scripts": {
-    "build": "pnpm tsup src/ --dts",
+    "build": "pnpm tsup src/ --format=esm,cjs --dts",
     "dev": "pnpm build -- --watch"
   },
   "files": [

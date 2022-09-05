@@ -7,7 +7,7 @@
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "scripts": {
-    "build": "tsup src/ --dts",
+    "build": "tsup src/ --format=esm,cjs --dts",
     "dev": "pnpm build -- --watch"
   },
   "files": [

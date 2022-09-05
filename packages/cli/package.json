@@ -11,7 +11,7 @@
     "panda-dev": "./bin/dev.js"
   },
   "scripts": {
-    "build": "tsup src/ --dts",
+    "build": "tsup src/ --format=esm,cjs --dts",
     "dev": "pnpm build -- --watch"
   },
   "files": [
