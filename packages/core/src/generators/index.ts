@@ -1,5 +1,6 @@
 import type { Dictionary } from '@css-panda/dictionary'
-import fs from 'fs-extra'
+import { logger } from '@css-panda/logger'
+import fs, { ensureDir } from 'fs-extra'
 import { outdent } from 'outdent'
 import path from 'path'
 import type { Context } from '../create-context'
@@ -20,11 +21,8 @@ import { generateSx } from './sx'
 import { generateTokenDts } from './token-dts'
 import { generateTransform } from './transform'
 
-async function setupPaths(paths: Record<string, string>) {
-  return Promise.all(Object.values(paths).map((dir) => fs.ensureDir(dir)))
-}
-
 async function setupDesignTokens(ctx: Context, dict: Dictionary) {
+  ensureDir(ctx.paths.ds)
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.ds, 'index.css'), generateCss(ctx)),
     fs.writeFile(path.join(ctx.paths.ds, 'index.d.ts'), generateDts()),
@@ -33,6 +31,7 @@ async function setupDesignTokens(ctx: Context, dict: Dictionary) {
 }
 
 async function setupGlobalStyle(ctx: Context) {
+  ensureDir(ctx.paths.css)
   const code = generateGlobalStyle()
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.css, 'global-style.js'), code.js),
@@ -41,6 +40,7 @@ async function setupGlobalStyle(ctx: Context) {
 }
 
 async function setupTypes(ctx: Context, dict: Dictionary) {
+  ensureDir(ctx.paths.types)
   const code = await generateCssType()
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.types, 'csstype.d.ts'), code.cssType),
@@ -53,6 +53,7 @@ async function setupTypes(ctx: Context, dict: Dictionary) {
 }
 
 async function setupCss(ctx: Context) {
+  ensureDir(ctx.paths.css)
   const code = generateSerializer(ctx.hash)
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.css, 'transform.js'), generateTransform()),
@@ -63,6 +64,7 @@ async function setupCss(ctx: Context) {
 }
 
 async function setupCssMap(ctx: Context) {
+  ensureDir(ctx.paths.css)
   const code = generateCssMap()
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.css, 'css-map.js'), code.js),
@@ -71,6 +73,7 @@ async function setupCssMap(ctx: Context) {
 }
 
 async function setupCx(ctx: Context) {
+  ensureDir(ctx.paths.css)
   const code = generateCx()
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.css, 'cx.js'), code.js),
@@ -79,6 +82,7 @@ async function setupCx(ctx: Context) {
 }
 
 async function setupSx(ctx: Context) {
+  ensureDir(ctx.paths.css)
   const code = generateSx()
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.css, 'sx.js'), code.js),
@@ -87,6 +91,7 @@ async function setupSx(ctx: Context) {
 }
 
 async function setupFontFace(ctx: Context) {
+  ensureDir(ctx.paths.css)
   const code = generateFontFace()
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.css, 'font-face.js'), code.js),
@@ -96,6 +101,11 @@ async function setupFontFace(ctx: Context) {
 
 async function setupRecipes(ctx: Context) {
   const code = generateRecipes(ctx.config)
+
+  if (!code) return
+  ensureDir(ctx.paths.recipe)
+  logger.info("Recipes are generated. Don't forget to import them in your project.")
+
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.recipe, 'index.js'), code.js),
     fs.writeFile(path.join(ctx.paths.recipe, 'index.d.ts'), code.dts),
@@ -104,6 +114,11 @@ async function setupRecipes(ctx: Context) {
 
 async function setupPatterns(ctx: Context) {
   const code = generatePattern(ctx.config)
+
+  if (!code) return
+  ensureDir(ctx.paths.pattern)
+  logger.info("Patterns are generated. Don't forget to import them in your project.")
+
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.pattern, 'index.js'), code.js),
     fs.writeFile(path.join(ctx.paths.pattern, 'index.d.ts'), code.dts),
@@ -127,9 +142,9 @@ async function setupCssIndex(ctx: Context) {
 }
 
 export async function generateSystem(ctx: Context, configCode: string) {
-  const { dictionary, paths, configPath } = ctx
+  const { dictionary, configPath } = ctx
 
-  await setupPaths(paths)
+  ensureDir(ctx.outdir)
   await fs.writeFile(configPath, configCode)
 
   await Promise.all([

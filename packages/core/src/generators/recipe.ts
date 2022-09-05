@@ -5,6 +5,8 @@ import { outdent } from 'outdent'
 export function generateRecipes(config: { recipes?: Recipe[]; hash?: boolean }) {
   const { recipes = [], hash } = config
 
+  if (!recipes.length) return
+
   const js = [
     outdent`
    import { createCss } from "../css/serializer"

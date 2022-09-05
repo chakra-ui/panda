@@ -2,7 +2,7 @@ import { ConfigNotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import { loadConfigFile } from '@css-panda/read-config'
 import type { Config, UserConfig } from '@css-panda/types'
-import fs from 'fs-extra'
+import fs, { ensureDir } from 'fs-extra'
 import merge from 'lodash.merge'
 import { recrawl } from 'recrawl'
 import { createContext } from './create-context'
@@ -37,6 +37,8 @@ export async function generator(options: Config & { configPath?: string } = {}) 
   await updateGitIgnore(ctx)
 
   await generateSystem(ctx, conf.code)
+
+  ensureDir(ctx.paths.temp)
 
   logger.info('⚙️ generated system')
 

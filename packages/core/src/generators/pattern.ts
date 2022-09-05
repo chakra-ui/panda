@@ -5,6 +5,7 @@ import { match } from 'ts-pattern'
 
 export function generatePattern(config: { patterns?: Pattern[] }) {
   const patterns = config.patterns ?? []
+  if (!patterns.length) return
   const js = [
     outdent`
   import config from "../config"
