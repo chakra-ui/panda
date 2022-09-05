@@ -1,7 +1,7 @@
+import { logger } from '@css-panda/logger'
 import type * as swc from '@swc/core'
 import BaseVisitor from '@swc/core/Visitor'
 import * as ast from './ast'
-import { createDebug } from './debug'
 import type { ImportResult, PluginContext } from './types'
 
 export class CallVisitor extends BaseVisitor {
@@ -15,7 +15,10 @@ export class CallVisitor extends BaseVisitor {
     const result = ast.importDeclaration(node, this.ctx.import)
 
     if (result) {
-      createDebug('import', `Found import { ${result.identifer} } in ${this.ctx.import.filename}`)
+      logger.debug({
+        type: 'ast:import',
+        msg: `Found import { ${result.identifer} } in ${this.ctx.import.filename}`,
+      })
       this.import = result
     }
 
@@ -74,7 +77,10 @@ export class DynamicCallVisitor extends BaseVisitor {
     const result = ast.importDeclarations(node, this.ctx.import.module)
 
     if (result) {
-      createDebug('import', `Found import { ${result.map((t) => t.alias).join(', ')} } in ${this.ctx.import.filename}`)
+      logger.debug({
+        type: 'ast:import',
+        msg: `Found import { ${result.map((t) => t.alias).join(', ')} } in ${this.ctx.import.filename}`,
+      })
       this.imports = result
     }
 

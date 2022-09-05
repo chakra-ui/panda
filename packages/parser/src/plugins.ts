@@ -1,6 +1,6 @@
+import { logger } from '@css-panda/logger'
 import type { PluginResult } from '@css-panda/types'
 import type * as swc from '@swc/core'
-import { createDebug } from './debug'
 import type { Collector } from './types'
 import { CallVisitor, DynamicCallVisitor } from './visitor'
 
@@ -10,7 +10,7 @@ function createPlugin(name: string) {
       const visitor = new CallVisitor({
         import: { name, module: moduleName, filename: fileName },
         onData(result) {
-          createDebug(name, fileName, result)
+          logger.debug({ type: `ast:${name}`, fileName, result })
           data.add(result)
         },
       })
@@ -30,7 +30,7 @@ export function dynamicPlugin(data: Map<string, Set<PluginResult>>, moduleName: 
     const visitor = new DynamicCallVisitor({
       import: { name: '*', module: moduleName, filename: fileName },
       onDynamicData(name, result) {
-        createDebug(name, fileName, result)
+        logger.debug({ type: `ast:${name}`, fileName, result })
         data.set(name, data.get(name) || new Set())
         data.get(name)!.add(result)
       },
