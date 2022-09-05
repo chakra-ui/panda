@@ -52,6 +52,8 @@ export function createRuleset(context: GeneratorContext, options: { hash?: boole
     const sorted = context.conditions.sort(conditions)
 
     for (const cond of sorted) {
+      if (!cond) continue
+
       match(cond)
         .with({ type: 'at-rule' }, (data) => {
           if (!rule) return

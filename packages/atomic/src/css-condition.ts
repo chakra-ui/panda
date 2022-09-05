@@ -1,4 +1,6 @@
 import { getBreakpointDetails } from '@css-panda/breakpoint-utils'
+import { ConditionError } from '@css-panda/error'
+import { logger } from '@css-panda/logger'
 import type { BaseCondition, BaseConditionType, Conditions } from '@css-panda/types'
 import postcss, { AtRule } from 'postcss'
 
@@ -30,7 +32,7 @@ function parseCondition(condition: string): RawCondition {
     }
   }
 
-  throw new Error('Invalid condition: ' + condition)
+  throw new ConditionError('Invalid condition: ' + condition)
 }
 
 const breakpoint = (key: string, value: string) => ({
@@ -80,14 +82,21 @@ export function createConditions(options: { conditions: Conditions; breakpoints?
     is(key: string) {
       return Object.prototype.hasOwnProperty.call(values, key)
     },
-    get(condition: string): RawCondition {
-      return values[condition] ?? parseCondition(condition)
+    isEmpty() {
+      return Object.keys(values).length === 0
+    },
+    get(condition: string): RawCondition | undefined {
+      try {
+        return values[condition] ?? parseCondition(condition)
+      } catch (error) {
+        logger.fatal({ err: error })
+      }
     },
     sort(conditions: string[]): RawCondition[] {
-      const rawConditions = conditions.map(this.get)
+      const rawConditions = conditions.map(this.get).filter(Boolean) as RawCondition[]
       return rawConditions.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type))
     },
-    normalize(condition: string | RawCondition): RawCondition {
+    normalize(condition: string | RawCondition): RawCondition | undefined {
       return typeof condition === 'string' ? this.get(condition) : condition
     },
   }

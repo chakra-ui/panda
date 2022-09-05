@@ -17,6 +17,7 @@
     "@css-panda/error": "workspace:*",
     "@css-panda/types": "workspace:*",
     "@css-panda/shared": "workspace:*",
+    "@css-panda/logger": "workspace:*",
     "@css-panda/breakpoint-utils": "workspace:*",
     "postcss": "^8.4.14",
     "postcss-js": "^4.0.0",

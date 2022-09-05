@@ -35,3 +35,9 @@ export class NotFoundError extends PandaError {
     super('NOT_FOUND', `${type} not found: \`${name}\``)
   }
 }
+
+export class ConditionError extends PandaError {
+  constructor(message: string) {
+    super('CONDITION', message)
+  }
+}

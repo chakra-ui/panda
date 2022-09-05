@@ -35,6 +35,9 @@ export function generateCss(ctx: Context, root = ':where(:root, :host)') {
   for (const [condition, conditionMap] of ctx.dictionary.conditionVars) {
     //
     const cond = conditions.normalize(condition)
+
+    if (!cond) continue
+
     const selector = cond.rawValue ?? cond.value.replace(/&/, root)
 
     if (!selector) {
