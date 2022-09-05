@@ -116,7 +116,7 @@ class Logger {
     const entry = { ...this.defaults, ...baseEntry }
 
     const badLevel = levelsMap[this.level].w > levelsMap[level].w
-    const badType = matches(this.except, entry.type) || !matches(this.only, entry.type)
+    const badType = matches(this.except, entry.type) || (this.only.length > 0 && !matches(this.only, entry.type))
 
     if (badType || badLevel) return false
 

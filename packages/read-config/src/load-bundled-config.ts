@@ -2,9 +2,9 @@ import fs from 'fs'
 import { createRequire } from 'module'
 import path from 'path'
 
-export function loadBundledFile(fileName: string, bundledCode: string): Promise<any> {
-  const __require = createRequire(import.meta.url)
+const __require = createRequire(import.meta.url)
 
+export function loadBundledFile(fileName: string, bundledCode: string): Promise<any> {
   const extension = path.extname(fileName)
   const realFileName = fs.realpathSync(fileName)
 

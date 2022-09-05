@@ -2,7 +2,12 @@
 
 const { register } = require('esbuild-register/dist/node')
 
-register({ platform: 'node' })
+register({
+  platform: 'node',
+  define: {
+    'import.meta.url': JSON.stringify(new URL('file:' + __filename).href),
+  },
+})
 
 const { main } = require('../src')
 
