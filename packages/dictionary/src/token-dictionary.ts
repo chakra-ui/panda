@@ -140,4 +140,8 @@ export class Dictionary {
     const obj = Object.fromEntries(this.flattenedTokens.entries())
     return dlv(obj, path)
   }
+
+  get isEmpty() {
+    return this.values.size === 0
+  }
 }
