@@ -14,6 +14,7 @@
     "dist"
   ],
   "dependencies": {
-    "picocolors": "^1.0.0"
+    "picocolors": "^1.0.0",
+    "matcher": "^5.0.0"
   }
 }

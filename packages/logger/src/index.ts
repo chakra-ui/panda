@@ -1,8 +1,9 @@
+import { isMatch } from 'matcher'
 import colors from 'picocolors'
 import util from 'util'
 
 const omitKeys = ['level', 'type', 'time', 'pid']
-function compact(obj: any) {
+function compact(obj: Entry) {
   const res = {}
   for (const key in obj) {
     if (!omitKeys.includes(key) && obj[key] != null) {
@@ -12,7 +13,7 @@ function compact(obj: any) {
   return res
 }
 
-const LEVELS = {
+const levelsMap = {
   debug: { w: 0, c: colors.blue },
   info: { w: 1, c: colors.green },
   warn: { w: 2, c: colors.yellow },
@@ -20,11 +21,11 @@ const LEVELS = {
   fatal: { w: 4, c: colors.red },
 }
 
-function output(entry: any) {
+function output(entry: Entry) {
   const uword = entry.type == 'event' ? entry.level : entry.type
   entry.time.setMinutes(entry.time.getMinutes() - entry.time.getTimezoneOffset())
 
-  const color = LEVELS[entry.level].c
+  const color = levelsMap[entry.level].c
 
   const data = compact(entry)
   const formatted = typeof entry.msg == 'string' ? entry.msg : util.inspect(data, { colors: true, depth: null })
@@ -34,7 +35,7 @@ function output(entry: any) {
   console.log(msg)
 }
 
-function parseErr({ err }: any) {
+function parseErr({ err }: { err: any }) {
   if (!(err instanceof Error)) err = new Error(err)
   const stack = err.stack.split(/[\r\n]+\s*/g)
   return {
@@ -47,45 +48,27 @@ function parseErr({ err }: any) {
   }
 }
 
-function getEntry(this: Logger, level: LogLevel, args: any[]) {
-  const data = typeof args[0] == 'object' ? args.shift() : {}
-  let msg = util.format(...args)
-  const type = data.type || 'event'
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal'
 
-  const pid = process.pid != 1 ? process.pid : null
-
-  for (const key in this.parsers) {
-    if (key in data) {
-      Object.assign(data, this.parsers[key](data))
-    }
-  }
-
-  msg = msg || data.msg
-  return { level, type, ...data, msg, pid, time: new Date() }
-}
-
-function log(this: Logger, level: LogLevel, ...args: any[]) {
-  const entry = {
-    ...this.defaults,
-    ...getEntry.call(this, level, args),
-  }
-
-  const badLevel = LEVELS[this.level].w > LEVELS[level].w
-  const badType = this.except.includes(entry.type) || (this.only.length > 0 && !this.only.includes(entry.type))
-  if (badType || badLevel) return false
-
-  output(entry)
-
-  return entry
-}
-
-type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal'
-
-type Config = {
+export type Config = {
   level?: LogLevel
   defaults?: any
   only?: string[]
   except?: string[]
+}
+
+type Entry = {
+  type: string
+  level: LogLevel
+  time: Date
+  pid: number
+  msg: string
+  err?: Error | string
+  [key: string]: any
+}
+
+function matches(filters: string[], value: string) {
+  return filters.some((search) => isMatch(value, search))
 }
 
 class Logger {
@@ -94,12 +77,6 @@ class Logger {
   except: string[] = []
   defaults: any
   parsers: any
-
-  warn: (...args: any[]) => void
-  info: (...args: any[]) => void
-  debug: (...args: any[]) => void
-  error: (...args: any[]) => void
-  fatal: (...args: any[]) => void
 
   constructor(conf: Config = {}) {
     this.level = conf.level || 'debug'
@@ -111,18 +88,61 @@ class Logger {
     }
     this.defaults = conf.defaults || {}
     this.parsers = { err: parseErr }
-
-    const op = conf === false ? () => false : log
-
-    this.warn = op.bind(this, 'warn')
-    this.info = op.bind(this, 'info')
-    this.debug = op.bind(this, 'debug')
-    this.error = op.bind(this, 'error')
-    this.fatal = op.bind(this, 'fatal')
   }
 
   addParser(key: string, parser: (data: any) => any) {
     this.parsers[key] = parser
+  }
+
+  getEntry(level: LogLevel, args: any[]): Entry {
+    const data = typeof args[0] == 'object' ? args.shift() : {}
+    let msg = util.format(...args)
+    const type = data.type || 'event'
+
+    const pid = process.pid != 1 ? process.pid : null
+
+    for (const key in this.parsers) {
+      if (key in data) {
+        Object.assign(data, this.parsers[key](data))
+      }
+    }
+
+    msg = msg || data.msg
+    return { level, type, ...data, msg, pid, time: new Date() }
+  }
+
+  log(level: LogLevel, ...args: any[]) {
+    const baseEntry = this.getEntry(level, args)
+    const entry = { ...this.defaults, ...baseEntry }
+
+    const badLevel = levelsMap[this.level].w > levelsMap[level].w
+    const badType = matches(this.except, entry.type) || !matches(this.only, entry.type)
+
+    if (badType || badLevel) return false
+
+    output(entry)
+
+    return entry
+  }
+
+  warn(...args: any[]) {
+    return this.log('warn', ...args)
+  }
+
+  info(...args: any[]) {
+    return this.log('info', ...args)
+  }
+
+  debug(...args: any[]) {
+    return this.log('debug', ...args)
+  }
+
+  error(...args: any[]) {
+    return this.log('error', ...args)
+  }
+
+  fatal(...args: any[]) {
+    return this.log('fatal', ...args)
   }
 }
 
