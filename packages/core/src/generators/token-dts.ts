@@ -10,14 +10,18 @@ function capitalize(str: string) {
 export function generateTokenDts(dict: Dictionary) {
   const set = new Set<string>()
 
+  set.add(`export type Token = ${dict.isEmpty ? 'string' : unionType(dict.values.keys())}`)
+
   const interfaceSet = new Set<string>(['export interface Tokens {'])
 
-  set.add(`export type Token = ${unionType(dict.values.keys())}`)
-
-  for (const [key, value] of dict.categoryMap.entries()) {
-    const typeName = capitalize(singular(key))
-    set.add(`export type ${typeName} = ${unionType(value.keys())}`)
-    interfaceSet.add(`\t\t${key}: ${typeName}`)
+  if (dict.isEmpty) {
+    interfaceSet.add('[token: string]: string')
+  } else {
+    for (const [key, value] of dict.categoryMap.entries()) {
+      const typeName = capitalize(singular(key))
+      set.add(`export type ${typeName} = ${unionType(value.keys())}`)
+      interfaceSet.add(`\t\t${key}: ${typeName}`)
+    }
   }
 
   interfaceSet.add('}')

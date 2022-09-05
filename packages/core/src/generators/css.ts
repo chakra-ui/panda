@@ -3,6 +3,12 @@ import type { VarData } from '@css-panda/dictionary'
 import { logger } from '@css-panda/logger'
 import type { Context } from '../create-context'
 
+export function generateKeyframes(ctx: Context) {
+  if (ctx.config.keyframes) {
+    return toKeyframeCss(ctx.config.keyframes)
+  }
+}
+
 export function generateCss(ctx: Context, root = ':where(:root, :host)') {
   function inner(vars: Map<string, VarData>, wrap = true) {
     const map = new Map<string, string>()
@@ -12,6 +18,11 @@ export function generateCss(ctx: Context, root = ':where(:root, :host)') {
     }
 
     const styleObj = Object.fromEntries(map)
+
+    if (Object.keys(styleObj).length === 0) {
+      return ''
+    }
+
     const { css } = wrap ? toCss({ [root]: styleObj }) : toCss(styleObj)
 
     return css
@@ -34,9 +45,5 @@ export function generateCss(ctx: Context, root = ':where(:root, :host)') {
     output.push(`${selector} {\n ${inner(conditionMap, cond.type === 'at-rule')} \n}`)
   }
 
-  if (ctx.config.keyframes) {
-    output.push(toKeyframeCss(ctx.config.keyframes))
-  }
-
-  return output.join('\n\n')
+  return output.join('\n\n') + '\n\n'
 }

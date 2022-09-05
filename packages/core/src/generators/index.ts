@@ -1,11 +1,11 @@
 import type { Dictionary } from '@css-panda/dictionary'
 import { logger } from '@css-panda/logger'
-import fs, { ensureDir } from 'fs-extra'
+import fs, { appendFile, ensureDir, ensureFile } from 'fs-extra'
 import { outdent } from 'outdent'
 import path from 'path'
 import type { Context } from '../create-context'
 import { generateConditions } from './conditions'
-import { generateCss } from './css'
+import { generateCss, generateKeyframes } from './css'
 import { generateCssMap } from './css-map'
 import { generateCssType } from './css-type'
 import { generateCx } from './cx'
@@ -21,7 +21,17 @@ import { generateSx } from './sx'
 import { generateTokenDts } from './token-dts'
 import { generateTransform } from './transform'
 
+async function setupKeyframes(ctx: Context) {
+  const code = generateKeyframes(ctx)
+  if (!code) return
+  ensureDir(ctx.paths.ds)
+  const filepath = path.join(ctx.paths.ds, 'index.css')
+  ensureFile(filepath)
+  return appendFile(filepath, code)
+}
+
 async function setupDesignTokens(ctx: Context, dict: Dictionary) {
+  if (dict.isEmpty) return
   ensureDir(ctx.paths.ds)
   return Promise.all([
     fs.writeFile(path.join(ctx.paths.ds, 'index.css'), generateCss(ctx)),
@@ -149,6 +159,7 @@ export async function generateSystem(ctx: Context, configCode: string) {
 
   await Promise.all([
     setupDesignTokens(ctx, dictionary),
+    setupKeyframes(ctx),
     setupTypes(ctx, dictionary),
     setupCssMap(ctx),
     setupCx(ctx),
