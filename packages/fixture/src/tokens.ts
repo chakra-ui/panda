@@ -161,14 +161,4 @@ export const tokens: Tokens = {
     '100': '100ms',
     '150': '150ms',
   },
-  transitionProperties: {
-    all: 'all',
-    none: 'none',
-    opacity: 'opacity',
-    shadow: 'box-shadow',
-    transform: 'transform',
-    base: 'color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter',
-    background: 'background, background-color',
-    colors: 'color, background-color, border-color, text-decoration-color, fill, stroke',
-  },
 }

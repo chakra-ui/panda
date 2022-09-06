@@ -20,7 +20,6 @@ export type Tokens = {
   largeSizes: Record<string, string>
   opacity: Record<string, string>
   animations: Record<string, string>
-  transitionProperties: Record<string, string>
   easings: Record<string, string>
   durations: Record<string, string>
 }
