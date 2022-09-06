@@ -1,3 +1,4 @@
+import type { LoadConfigResult } from '@css-panda/config'
 import {
   createConditions,
   CSSUtility,
@@ -6,7 +7,6 @@ import {
   mergeUtilities,
   Stylesheet,
 } from '@css-panda/core'
-import type { LoadConfigResult } from '@css-panda/config'
 import { logger } from '@css-panda/logger'
 import { TokenMap } from '@css-panda/tokens'
 import type { Pattern, TransformHelpers, UserConfig } from '@css-panda/types'

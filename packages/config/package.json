@@ -14,11 +14,11 @@
     "dist"
   ],
   "dependencies": {
-    "bundle-require": "^3.1.0",
+    "bundle-require": "3.1.0",
     "@css-panda/logger": "workspace:*",
     "@css-panda/shared": "workspace:*",
-    "@esbuild-plugins/tsconfig-paths": "^0.0.4",
-    "esbuild": "^0.15.5",
-    "look-it-up": "^2.1.0"
+    "@esbuild-plugins/tsconfig-paths": "0.0.4",
+    "esbuild": "0.15.5",
+    "look-it-up": "2.1.0"
   }
 }

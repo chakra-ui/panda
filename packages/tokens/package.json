@@ -16,14 +16,14 @@
   "dependencies": {
     "@css-panda/types": "workspace:*",
     "@css-panda/calc": "workspace:*",
-    "lodash.get": "^4.4.2",
+    "lodash.get": "4.4.2",
     "@css-panda/css-var": "workspace:*",
     "@css-panda/error": "workspace:*",
     "@css-panda/shared": "workspace:*",
-    "ts-pattern": "^4.0.5"
+    "ts-pattern": "4.0.5"
   },
   "devDependencies": {
-    "@types/lodash.get": "^4.4.7",
+    "@types/lodash.get": "4.4.7",
     "@css-panda/fixture": "workspace:*"
   }
 }

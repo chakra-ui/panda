@@ -22,9 +22,9 @@
     "@css-panda/node": "workspace:*",
     "@css-panda/error": "workspace:*",
     "@css-panda/logger": "workspace:*",
-    "cac": "^6.7.14"
+    "cac": "6.7.14"
   },
   "devDependencies": {
-    "esbuild-register": "^3.3.3"
+    "esbuild-register": "3.3.3"
   }
 }
