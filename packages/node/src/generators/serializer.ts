@@ -1,14 +1,17 @@
-import outdent from 'outdent'
-import path from 'path'
 import esbuild from 'esbuild'
+import outdent from 'outdent'
+import { getEntrypoint } from './__utils'
 
 function readAtomicPkgFiles() {
-  const basePath = path.join(path.dirname(require.resolve('@css-panda/core')), 'src')
+  const filepath = getEntrypoint('@css-panda/core', {
+    dev: 'classname.ts',
+    prod: 'classname.mjs',
+  })
 
   const { outputFiles } = esbuild.buildSync({
     write: false,
     metafile: true,
-    entryPoints: [path.join(basePath, 'classname.ts')],
+    entryPoints: [filepath],
     bundle: true,
     format: 'esm',
   })

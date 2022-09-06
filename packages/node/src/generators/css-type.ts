@@ -1,11 +1,14 @@
 import fs from 'fs-extra'
-import path from 'path'
 import outdent from 'outdent'
+import { extname } from 'path'
+import { getEntrypoint } from './__utils'
 
 async function getCssType(file: string) {
-  const cssType = require.resolve('@css-panda/types')
-  const cssPath = path.join(path.dirname(cssType), 'src', file)
-  return fs.readFile(cssPath, 'utf8')
+  const filepath = getEntrypoint('@css-panda/types', {
+    dev: file,
+    prod: file.replace(extname(file), '.d.ts'),
+  })
+  return fs.readFile(filepath, 'utf8')
 }
 
 export async function generateCssType() {
