@@ -1,6 +1,6 @@
+import { loadConfigFile } from '@css-panda/config'
 import { ConfigNotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
-import { loadConfigFile } from '@css-panda/read-config'
 import type { Config, UserConfig } from '@css-panda/types'
 import fs, { ensureDir } from 'fs-extra'
 import merge from 'lodash.merge'

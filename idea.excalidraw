@@ -2634,12 +2634,12 @@
       "locked": false,
       "fontSize": 20,
       "fontFamily": 1,
-      "text": "@css-panda/read-config",
+      "text": "@css-panda/config",
       "baseline": 18,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
-      "originalText": "@css-panda/read-config"
+      "originalText": "@css-panda/config"
     },
     {
       "type": "text",
@@ -2668,12 +2668,12 @@
       "locked": false,
       "fontSize": 20,
       "fontFamily": 1,
-      "text": "import { getConfig } @css-panda/read-config\n\ngetConfig(\"breakpoints\")",
+      "text": "import { getConfig } @css-panda/config\n\ngetConfig(\"breakpoints\")",
       "baseline": 69,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
-      "originalText": "import { getConfig } @css-panda/read-config\n\ngetConfig(\"breakpoints\")"
+      "originalText": "import { getConfig } @css-panda/config\n\ngetConfig(\"breakpoints\")"
     },
     {
       "id": "q-u5Gy_aoIMSDp3-NCaa0",

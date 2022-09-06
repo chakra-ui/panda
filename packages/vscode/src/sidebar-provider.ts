@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { getUri } from './utilities/get-uri'
-import { loadConfigFile } from '@css-panda/read-config'
+import { loadConfigFile } from '@css-panda/config'
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView

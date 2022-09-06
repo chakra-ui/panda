@@ -1,4 +1,4 @@
-import type { Dictionary } from '@css-panda/dictionary'
+import type { Dictionary } from '@css-panda/token-dictionary'
 import type { Dict, Utility, PropertyUtility } from '@css-panda/types'
 
 type AnyFunction = (...args: any[]) => any

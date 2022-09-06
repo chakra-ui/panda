@@ -1,4 +1,4 @@
-import { Dictionary } from '@css-panda/dictionary'
+import { Dictionary } from '@css-panda/token-dictionary'
 import { semanticTokens, tokens } from '@css-panda/fixture'
 import { expect, test } from 'vitest'
 import { generateTokenDts } from '../src/generators/token-dts'

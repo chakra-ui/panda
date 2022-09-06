@@ -1,5 +1,5 @@
 import { commands, ConfigurationTarget, ExtensionContext, window, workspace } from 'vscode'
-import { loadConfigFile } from '@css-panda/read-config'
+import { loadConfigFile } from '@css-panda/config'
 import { SidebarProvider } from './sidebar-provider'
 
 export function activate(context: ExtensionContext) {

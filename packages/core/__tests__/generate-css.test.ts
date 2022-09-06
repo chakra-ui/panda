@@ -1,5 +1,5 @@
 import { breakpoints, conditions, keyframes, semanticTokens, tokens } from '@css-panda/fixture'
-import type { LoadConfigResult } from '@css-panda/read-config'
+import type { LoadConfigResult } from '@css-panda/config'
 import { expect, test } from 'vitest'
 import { createContext } from '../src/create-context'
 import { generateCss } from '../src/generators/css'

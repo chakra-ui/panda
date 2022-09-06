@@ -1,4 +1,4 @@
-import type { CSSUtility } from '@css-panda/css-utility'
+import type { CSSUtility } from './css-utility'
 import { logger } from '@css-panda/logger'
 import { walkObject, walkStyles } from '@css-panda/shared'
 import type { Recipe } from '@css-panda/types'

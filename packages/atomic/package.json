@@ -18,6 +18,7 @@
     "@css-panda/types": "workspace:*",
     "@css-panda/shared": "workspace:*",
     "@css-panda/logger": "workspace:*",
+    "@css-panda/token-dictionary": "workspace:*",
     "@css-panda/breakpoint-utils": "workspace:*",
     "postcss": "^8.4.14",
     "postcss-selector-parser": "^6.0.10",

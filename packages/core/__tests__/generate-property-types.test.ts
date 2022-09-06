@@ -1,5 +1,5 @@
-import { CSSUtility } from '@css-panda/css-utility'
-import { Dictionary } from '@css-panda/dictionary'
+import { CSSUtility } from '@css-panda/atomic'
+import { Dictionary } from '@css-panda/token-dictionary'
 import { semanticTokens, tokens, utilities } from '@css-panda/fixture'
 import { describe, expect, test } from 'vitest'
 import { generatePropertyTypes } from '../src/generators/property-types'

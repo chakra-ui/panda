@@ -66,7 +66,7 @@
     "@types/vscode": "^1.46.0",
     "@typescript-eslint/eslint-plugin": "^4.14.1",
     "@typescript-eslint/parser": "^4.14.1",
-    "@css-panda/read-config": "workspace:*",
+    "@css-panda/config": "workspace:*",
     "@css-panda/types": "workspace:*",
     "concurrently": "^7.3.0",
     "eslint": "^7.19.0",

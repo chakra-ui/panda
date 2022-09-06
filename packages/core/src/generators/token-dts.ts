@@ -1,4 +1,4 @@
-import type { Dictionary } from '@css-panda/dictionary'
+import type { Dictionary } from '@css-panda/token-dictionary'
 import { unionType } from '@css-panda/shared'
 import { outdent } from 'outdent'
 import { singular } from 'pluralize'

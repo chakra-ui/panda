@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/read-config",
+  "name": "@css-panda/config",
   "version": "0.0.1",
   "description": "Find and load panda config",
   "main": "dist/index.js",

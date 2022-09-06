@@ -48,6 +48,7 @@ importers:
       '@css-panda/fixture': workspace:*
       '@css-panda/logger': workspace:*
       '@css-panda/shared': workspace:*
+      '@css-panda/token-dictionary': workspace:*
       '@css-panda/types': workspace:*
       autoprefixer: ^10.4.8
       postcss: ^8.4.14
@@ -63,6 +64,7 @@ importers:
       '@css-panda/error': link:../error
       '@css-panda/logger': link:../logger
       '@css-panda/shared': link:../shared
+      '@css-panda/token-dictionary': link:../token-dictionary
       '@css-panda/types': link:../types
       autoprefixer: 10.4.8_postcss@8.4.14
       postcss: 8.4.14
@@ -103,18 +105,32 @@ importers:
     devDependencies:
       esbuild-register: 3.3.3
 
+  packages/config:
+    specifiers:
+      '@css-panda/logger': workspace:*
+      '@css-panda/shared': workspace:*
+      '@esbuild-plugins/tsconfig-paths': ^0.0.4
+      bundle-require: ^3.1.0
+      esbuild: ^0.15.5
+      look-it-up: ^2.1.0
+    dependencies:
+      '@css-panda/logger': link:../logger
+      '@css-panda/shared': link:../shared
+      '@esbuild-plugins/tsconfig-paths': 0.0.4_esbuild@0.15.5+typescript@4.7.4
+      bundle-require: 3.1.0_esbuild@0.15.5
+      esbuild: 0.15.5
+      look-it-up: 2.1.0
+
   packages/core:
     specifiers:
       '@css-panda/ast': workspace:*
       '@css-panda/atomic': workspace:*
-      '@css-panda/css-recipe': workspace:*
-      '@css-panda/css-utility': workspace:*
-      '@css-panda/dictionary': workspace:*
+      '@css-panda/config': workspace:*
       '@css-panda/error': workspace:*
       '@css-panda/fixture': workspace:*
       '@css-panda/logger': workspace:*
-      '@css-panda/read-config': workspace:*
       '@css-panda/shared': workspace:*
+      '@css-panda/token-dictionary': workspace:*
       '@css-panda/types': workspace:*
       '@types/fs-extra': ^9.0.13
       '@types/lodash.merge': ^4.6.7
@@ -134,11 +150,9 @@ importers:
     dependencies:
       '@css-panda/ast': link:../ast
       '@css-panda/atomic': link:../atomic
-      '@css-panda/css-recipe': link:../css-recipe
-      '@css-panda/css-utility': link:../css-utility
+      '@css-panda/config': link:../config
       '@css-panda/error': link:../error
       '@css-panda/logger': link:../logger
-      '@css-panda/read-config': link:../read-config
       '@css-panda/shared': link:../shared
       '@css-panda/types': link:../types
       esbuild: 0.15.5
@@ -154,47 +168,39 @@ importers:
       recrawl: 2.2.1
       ts-pattern: 4.0.5
     devDependencies:
-      '@css-panda/dictionary': link:../dictionary
       '@css-panda/fixture': link:../fixture
+      '@css-panda/token-dictionary': link:../token-dictionary
       '@types/fs-extra': 9.0.13
       '@types/lodash.merge': 4.6.7
       '@types/pluralize': 0.0.29
 
-  packages/css-recipe:
-    specifiers:
-      '@css-panda/css-utility': workspace:*
-      '@css-panda/logger': workspace:*
-      '@css-panda/shared': workspace:*
-      '@css-panda/types': workspace:*
-      '@types/lodash.merge': ^4.6.7
-      lodash.merge: ^4.6.2
-    dependencies:
-      '@css-panda/css-utility': link:../css-utility
-      '@css-panda/logger': link:../logger
-      '@css-panda/shared': link:../shared
-      '@css-panda/types': link:../types
-      lodash.merge: 4.6.2
-    devDependencies:
-      '@types/lodash.merge': 4.6.7
-
   packages/css-unit:
     specifiers: {}
-
-  packages/css-utility:
-    specifiers:
-      '@css-panda/dictionary': workspace:*
-      '@css-panda/fixture': workspace:*
-      '@css-panda/types': workspace:*
-    dependencies:
-      '@css-panda/dictionary': link:../dictionary
-      '@css-panda/types': link:../types
-    devDependencies:
-      '@css-panda/fixture': link:../fixture
 
   packages/css-var:
     specifiers: {}
 
-  packages/dictionary:
+  packages/error:
+    specifiers: {}
+
+  packages/fixture:
+    specifiers:
+      '@css-panda/types': workspace:*
+    dependencies:
+      '@css-panda/types': link:../types
+
+  packages/logger:
+    specifiers:
+      matcher: ^5.0.0
+      picocolors: ^1.0.0
+    dependencies:
+      matcher: 5.0.0
+      picocolors: 1.0.0
+
+  packages/shared:
+    specifiers: {}
+
+  packages/token-dictionary:
     specifiers:
       '@css-panda/calc': workspace:*
       '@css-panda/css-var': workspace:*
@@ -217,42 +223,6 @@ importers:
       '@css-panda/fixture': link:../fixture
       '@types/lodash.get': 4.4.7
 
-  packages/error:
-    specifiers: {}
-
-  packages/fixture:
-    specifiers:
-      '@css-panda/types': workspace:*
-    dependencies:
-      '@css-panda/types': link:../types
-
-  packages/logger:
-    specifiers:
-      matcher: ^5.0.0
-      picocolors: ^1.0.0
-    dependencies:
-      matcher: 5.0.0
-      picocolors: 1.0.0
-
-  packages/read-config:
-    specifiers:
-      '@css-panda/logger': workspace:*
-      '@css-panda/shared': workspace:*
-      '@esbuild-plugins/tsconfig-paths': ^0.0.4
-      bundle-require: ^3.1.0
-      esbuild: ^0.15.5
-      look-it-up: ^2.1.0
-    dependencies:
-      '@css-panda/logger': link:../logger
-      '@css-panda/shared': link:../shared
-      '@esbuild-plugins/tsconfig-paths': 0.0.4_esbuild@0.15.5+typescript@4.7.4
-      bundle-require: 3.1.0_esbuild@0.15.5
-      esbuild: 0.15.5
-      look-it-up: 2.1.0
-
-  packages/shared:
-    specifiers: {}
-
   packages/types:
     specifiers:
       csstype: ^3.1.0
@@ -261,7 +231,7 @@ importers:
 
   packages/vscode:
     specifiers:
-      '@css-panda/read-config': workspace:*
+      '@css-panda/config': workspace:*
       '@css-panda/types': workspace:*
       '@types/glob': ^7.1.3
       '@types/node': ^12.11.7
@@ -275,7 +245,7 @@ importers:
       typescript: ^4.7.4
       vscode-test: ^1.5.0
     devDependencies:
-      '@css-panda/read-config': link:../read-config
+      '@css-panda/config': link:../config
       '@css-panda/types': link:../types
       '@types/glob': 7.2.0
       '@types/node': 12.20.55

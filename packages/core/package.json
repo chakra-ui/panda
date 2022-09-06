@@ -17,12 +17,10 @@
     "@css-panda/types": "workspace:*",
     "@css-panda/error": "workspace:*",
     "@css-panda/ast": "workspace:*",
-    "@css-panda/css-utility": "workspace:*",
-    "@css-panda/css-recipe": "workspace:*",
     "@css-panda/shared": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "@css-panda/atomic": "workspace:*",
-    "@css-panda/read-config": "workspace:*",
+    "@css-panda/config": "workspace:*",
     "esbuild": "^0.15.5",
     "filespy": "^1.2.4",
     "fs-extra": "^10.1.0",
@@ -37,7 +35,7 @@
     "ts-pattern": "^4.0.5"
   },
   "devDependencies": {
-    "@css-panda/dictionary": "workspace:*",
+    "@css-panda/token-dictionary": "workspace:*",
     "@css-panda/fixture": "workspace:*",
     "@types/fs-extra": "^9.0.13",
     "@types/pluralize": "^0.0.29",

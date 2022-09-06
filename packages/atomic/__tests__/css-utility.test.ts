@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
-import { CSSUtility } from '../src'
+import { CSSUtility } from '../src/css-utility'
 import { semanticTokens, tokens } from '@css-panda/fixture'
-import { Dictionary } from '@css-panda/dictionary'
+import { Dictionary } from '@css-panda/token-dictionary'
 
 describe('utilty class', () => {
   test('should prime cache for faster lookup', () => {

@@ -1,4 +1,4 @@
-import type { Dictionary } from '@css-panda/dictionary'
+import type { Dictionary } from '@css-panda/token-dictionary'
 import outdent from 'outdent'
 
 export function generateJs(dict: Dictionary) {

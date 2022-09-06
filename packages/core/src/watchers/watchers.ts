@@ -1,5 +1,5 @@
 import { logger } from '@css-panda/logger'
-import { getConfigDependencies, LoadConfigResult } from '@css-panda/read-config'
+import { getConfigDependencies, LoadConfigResult } from '@css-panda/config'
 import type { UserConfig } from '@css-panda/types'
 import type { Context } from '../create-context'
 import { createWatcher } from './create-watcher'
