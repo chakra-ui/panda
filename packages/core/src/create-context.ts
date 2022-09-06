@@ -59,7 +59,6 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
 
   const helpers: TransformHelpers = {
     map: mapObject,
-    theme: (key) => dictionary.query(key),
   }
 
   const context = (): GeneratorContext => ({

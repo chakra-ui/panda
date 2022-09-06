@@ -8,7 +8,8 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "scripts": {
     "build": "tsup src/ --format=esm,cjs --dts",
-    "dev": "pnpm build -- --watch"
+    "dev": "pnpm build -- --watch",
+    "purge": "tsx watch ./__config__/main.ts"
   },
   "dependencies": {
     "@swc/core": "^1.2.237",

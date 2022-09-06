@@ -20,7 +20,6 @@ export const createContext = (): GeneratorContext => ({
   breakpoints,
   helpers: {
     map: () => '',
-    theme: () => '',
   },
   transform: (prop, value) => {
     const key = propMap[prop] ?? prop

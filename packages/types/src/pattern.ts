@@ -8,7 +8,6 @@ type PropertyConfig =
 
 export type TransformHelpers = {
   map: (value: any, fn: (value: any) => any) => any
-  theme: (value: string) => any
 }
 
 export type Pattern<T extends Record<string, any> = Record<string, any>> = {

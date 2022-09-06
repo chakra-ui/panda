@@ -1,5 +1,6 @@
 import type { Dictionary } from '@css-panda/dictionary'
 import { logger } from '@css-panda/logger'
+import { minifyConfig } from '@css-panda/parser'
 import fs, { appendFile, ensureDir, ensureFile } from 'fs-extra'
 import { outdent } from 'outdent'
 import path from 'path'
@@ -155,7 +156,7 @@ export async function generateSystem(ctx: Context, configCode: string) {
   const { dictionary, configPath } = ctx
 
   ensureDir(ctx.outdir)
-  await fs.writeFile(configPath, configCode)
+  await fs.writeFile(configPath, minifyConfig(configCode, { minify: true }))
 
   await Promise.all([
     setupDesignTokens(ctx, dictionary),

@@ -19,6 +19,13 @@ export function generatePattern(config: { patterns?: Pattern[] }) {
     if (!pattern) throw new Error(\`Pattern \${key} not found\`)
     cache.set(key, pattern)
   }
+
+  function mapObject(obj, fn) {
+    if (typeof obj === 'string') return fn(obj)
+    return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, fn(value)]))
+  }
+
+  const helpers = { map: mapObject }
   `,
   ]
 
@@ -33,7 +40,7 @@ export function generatePattern(config: { patterns?: Pattern[] }) {
   patterns.forEach((pattern) => {
     js.push(outdent`
      const ${pattern.name}Transform = getPattern("${pattern.name}").transform
-     export const ${pattern.name} = (styles) => css(${pattern.name}Transform(styles))
+     export const ${pattern.name} = (styles) => css(${pattern.name}Transform(styles, helpers))
     `)
 
     dts.push(outdent`
