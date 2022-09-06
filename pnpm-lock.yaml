@@ -30,11 +30,9 @@ importers:
       '@css-panda/logger': workspace:*
       '@css-panda/shared': workspace:*
       '@css-panda/types': workspace:*
-      '@types/postcss-js': ^4.0.0
       autoprefixer: ^10.4.8
       postcss: ^8.4.14
       postcss-discard-duplicates: ^5.1.0
-      postcss-js: ^4.0.0
       postcss-nested: ^5.0.6
       postcss-normalize-whitespace: ^5.1.1
       postcss-prettify: ^0.3.4
@@ -50,7 +48,6 @@ importers:
       autoprefixer: 10.4.8_postcss@8.4.14
       postcss: 8.4.14
       postcss-discard-duplicates: 5.1.0_postcss@8.4.14
-      postcss-js: 4.0.0_postcss@8.4.14
       postcss-nested: 5.0.6_postcss@8.4.14
       postcss-normalize-whitespace: 5.1.1_postcss@8.4.14
       postcss-prettify: 0.3.4
@@ -59,7 +56,6 @@ importers:
       ts-pattern: 4.0.5
     devDependencies:
       '@css-panda/fixture': link:../fixture
-      '@types/postcss-js': 4.0.0
 
   packages/breakpoint-utils:
     specifiers:
@@ -1023,12 +1019,6 @@ packages:
     resolution: {integrity: sha512-BYOID+l2Aco2nBik+iYS4SZX0Lf20KPILP5RGmM1IgzdwNdTs0eebiFriOPcej1sX9mLnSoiNte5zcFxssgpGA==}
     dev: true
 
-  /@types/postcss-js/4.0.0:
-    resolution: {integrity: sha512-ieu0u7T7jnUCFmXcf8JzoJ3/1U5NI3ZYpfX5zW2td0x/BqVQrpCQ6uOY9Ef/0WJuIjc9OCtdfYF/JE7MGax2TA==}
-    dependencies:
-      postcss: 8.4.14
-    dev: true
-
   /@types/prop-types/15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
     dev: true
@@ -1497,11 +1487,6 @@ packages:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
     dev: true
-
-  /camelcase-css/2.0.1:
-    resolution: {integrity: sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==}
-    engines: {node: '>= 6'}
-    dev: false
 
   /caniuse-lite/1.0.30001374:
     resolution: {integrity: sha512-mWvzatRx3w+j5wx/mpFN5v5twlPrabG8NqX2c6e45LCpymdoGqNvRkRutFUqpRTXKFQFNQJasvK0YT7suW6/Hw==}
@@ -2944,16 +2929,6 @@ packages:
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.14
-    dev: false
-
-  /postcss-js/4.0.0_postcss@8.4.14:
-    resolution: {integrity: sha512-77QESFBwgX4irogGVPgQ5s07vLvFqWr228qZY+w6lW599cRlK/HmnlivnnVUxkjHnCu4J16PDMHcH+e+2HbvTQ==}
-    engines: {node: ^12 || ^14 || >= 16}
-    peerDependencies:
-      postcss: ^8.3.3
-    dependencies:
-      camelcase-css: 2.0.1
       postcss: 8.4.14
     dev: false
 
