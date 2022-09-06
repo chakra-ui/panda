@@ -4,7 +4,7 @@ import { join, resolve } from 'path'
 import { minifyConfig } from '..'
 
 const dir = resolve(__dirname, './input')
-const filter = ['v2.js']
+const filter = ['v3.js']
 
 const files = readdirSync(dir).filter((file) => filter.includes(file))
 
