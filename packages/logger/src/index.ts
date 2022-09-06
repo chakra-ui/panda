@@ -22,16 +22,21 @@ const levelsMap = {
 }
 
 function output(entry: Entry) {
-  const uword = entry.type == 'event' ? entry.level : entry.type
   entry.time.setMinutes(entry.time.getMinutes() - entry.time.getTimezoneOffset())
 
   const color = levelsMap[entry.level].c
 
   const data = compact(entry)
   const formatted = typeof entry.msg == 'string' ? entry.msg : util.inspect(data, { colors: true, depth: null })
-  const msg = `🐼 ${colors.bold(color(`${entry.level.toUpperCase()}`))} [${uword}] ${formatted}`
 
-  console.log('\n--------------------------------------------------------------\n')
+  let uword = entry.type == 'event' ? entry.level : entry.type
+  uword = colors.gray(`[${uword}]`)
+
+  const label = colors.bold(color(`${entry.level.toUpperCase()}`))
+
+  const msg = `🐼 ${label} ${uword} ${formatted}`
+
+  console.log('\n\n')
   console.log(msg)
 }
 
