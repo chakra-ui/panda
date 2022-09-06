@@ -1,5 +1,8 @@
 lockfileVersion: 5.3
 
+overrides:
+  '@types/react': 18.0.17
+
 importers:
 
   .:
@@ -263,7 +266,7 @@ importers:
 
   packages/vscode/webview-ui:
     specifiers:
-      '@types/react': 17.0.33
+      '@types/react': 18.0.17
       '@types/react-dom': 17.0.10
       '@types/vscode-webview': 1.57.0
       '@vitejs/plugin-react': 1.0.7
@@ -279,7 +282,7 @@ importers:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
     devDependencies:
-      '@types/react': 17.0.33
+      '@types/react': 18.0.17
       '@types/react-dom': 17.0.10
       '@types/vscode-webview': 1.57.0
       '@vitejs/plugin-react': 1.0.7
@@ -963,14 +966,6 @@ packages:
     resolution: {integrity: sha512-/5OFZgfIPSwy+YuIBP/FgJnQnsxhZhjjrnxudMddeblOouIodEQ75X14Rr4wGSG/bknL+Omy9iWlLo1u/9GzAA==}
     dependencies:
       '@types/react': 18.0.17
-    dev: true
-
-  /@types/react/17.0.33:
-    resolution: {integrity: sha512-pLWntxXpDPaU+RTAuSGWGSEL2FRTNyRQOjSWDke/rxRg14ncsZvx8AKWMWZqvc1UOaJIAoObdZhAWvRaHFi5rw==}
-    dependencies:
-      '@types/prop-types': 15.7.5
-      '@types/scheduler': 0.16.2
-      csstype: 3.1.0
     dev: true
 
   /@types/react/18.0.17:

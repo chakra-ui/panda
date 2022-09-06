@@ -40,7 +40,9 @@ export function FontTokens(props: FontTokensProps) {
           <Fragment key={weight}>
             <div className="font-wrapper">
               <div>
-                <span className="label">{weight}</span> <span> ({value})</span>
+                <span className="label">{weight}</span>
+                {/* @ts-ignore */}
+                <span>({value})</span>
               </div>
               <span className="render" style={{ [token]: value }}>
                 {text}
