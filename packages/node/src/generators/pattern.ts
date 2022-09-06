@@ -31,7 +31,7 @@ export function generatePattern(config: { patterns?: Pattern[] }) {
 
   const dts: string[] = [
     outdent`
-  import { UserCssObject, UserConditionalValue } from "../types/public"
+  import { CssObject, ConditionalValue } from "../types/public"
   import { Properties } from "../types/csstype"
   import { Tokens } from "../types/token"
   `,
@@ -50,19 +50,19 @@ export function generatePattern(config: { patterns?: Pattern[] }) {
             const value = pattern.properties![key]
             return match(value)
               .with({ type: 'cssProp' }, (value) => {
-                return `${key}?: UserCssObject["${value.value}"]`
+                return `${key}?: CssObject["${value.value}"]`
               })
               .with({ type: 'token' }, (value) => {
                 if (value.cssProp) {
-                  return `${key}?: UserConditionalValue<Tokens["${value.value}"] | Properties["${value.cssProp}"]>`
+                  return `${key}?: ConditionalValue<Tokens["${value.value}"] | Properties["${value.cssProp}"]>`
                 }
-                return `${key}?: UserConditionalValue<Tokens["${value.value}"]>`
+                return `${key}?: ConditionalValue<Tokens["${value.value}"]>`
               })
               .with({ type: 'enum' }, (value) => {
-                return `${key}?: UserConditionalValue<${unionType(value.value)}>`
+                return `${key}?: ConditionalValue<${unionType(value.value)}>`
               })
               .otherwise(() => {
-                return `${key}?: UserConditionalValue<${value.type}>`
+                return `${key}?: ConditionalValue<${value.type}>`
               })
           })
           .join('\n\t')}

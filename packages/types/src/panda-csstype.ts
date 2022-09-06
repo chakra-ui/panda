@@ -15,11 +15,11 @@ export type CssProperties = Properties & {
 
 export type Keyframes = Record<string, { [time: string]: CssProperties }>
 
-export type ConditionalValue<C extends Record<string, string>, V> =
+export type PandaConditionalValue<C extends Record<string, string>, V> =
   // NOTE: When using Clean<V>, it doesn't allow arbrtrary values. So I removed it.
   | V
   | {
-      [Key in keyof C]?: ConditionalValue<C, V>
+      [Key in keyof C]?: PandaConditionalValue<C, V>
     }
 
 type Union<Key extends string, CssProperties extends Record<Key, any>, UserProperties> = UserProperties extends {
@@ -41,12 +41,12 @@ type ConditionCssProperties<
   UserProperties extends Record<string, string> = { __type?: 'never' },
   StrictValue extends boolean = false,
 > = {
-  [Key in keyof Properties]?: ConditionalValue<
+  [Key in keyof Properties]?: PandaConditionalValue<
     Conditions,
     true extends StrictValue ? Strict<Key, Properties, UserProperties> : Union<Key, Properties, UserProperties>
   >
 } & {
-  [Key in keyof Omit<UserProperties, keyof Properties>]?: ConditionalValue<Conditions, UserProperties[Key]>
+  [Key in keyof Omit<UserProperties, keyof Properties>]?: PandaConditionalValue<Conditions, UserProperties[Key]>
 } & {
   [Key in keyof Conditions]?: ConditionCssProperties<Omit<Conditions, Key>, UserProperties, StrictValue>
 }
@@ -63,7 +63,7 @@ export type WithNesting<T> = T & {
   }
 }
 
-export type CssObject<
+export type PandaCssObject<
   Conditions extends Record<string, string>,
   UserProperties extends Record<string, string> = { __type?: 'never' },
   Strict extends boolean = false,

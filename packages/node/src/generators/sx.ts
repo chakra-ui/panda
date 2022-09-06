@@ -6,8 +6,8 @@ export function generateSx() {
     export const sx = (styles) => styles
     `,
     dts: outdent`
-    import { UserCssObject } from '../types/public'
-    export declare function sx(styles: UserCssObject): any
+    import { CssObject } from '../types/public'
+    export declare function sx(styles: CssObject): any
     `,
   }
 }
