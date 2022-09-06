@@ -8,10 +8,10 @@ export function generateTransform() {
         for (const utility of config.utilities) {
           for (const key in utility.properties) {
             if (prop === key) {
-              let __config = utility.properties[key]
-              __config =  typeof __config === "string" ? { className: __config } : __config
+              let conf = utility.properties[key]
+              conf =  typeof conf === "string" ? { className: conf } : conf
               
-              const { className } = __config
+              const { className } = conf
 
               if (typeof className === 'function') {
                 return { className: className(value, key) }
