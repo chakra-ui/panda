@@ -12,7 +12,7 @@
     "purge": "tsx watch ./__config__/main.ts"
   },
   "dependencies": {
-    "@swc/core": "1.2.237",
+    "@swc/core": "1.2.248",
     "@css-panda/logger": "workspace:*",
     "@css-panda/types": "workspace:*",
     "ts-pattern": "4.0.5",
