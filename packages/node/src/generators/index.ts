@@ -1,4 +1,4 @@
-import type { Dictionary } from '@css-panda/token-dictionary'
+import type { TokenMap } from '@css-panda/tokens'
 import { logger } from '@css-panda/logger'
 import { minifyConfig } from '@css-panda/ast'
 import fs, { appendFile, ensureDir, ensureFile } from 'fs-extra'
@@ -31,7 +31,7 @@ async function setupKeyframes(ctx: Context) {
   return appendFile(filepath, code)
 }
 
-async function setupDesignTokens(ctx: Context, dict: Dictionary) {
+async function setupDesignTokens(ctx: Context, dict: TokenMap) {
   if (dict.isEmpty) return
   ensureDir(ctx.paths.ds)
   return Promise.all([
@@ -50,7 +50,7 @@ async function setupGlobalStyle(ctx: Context) {
   ])
 }
 
-async function setupTypes(ctx: Context, dict: Dictionary) {
+async function setupTypes(ctx: Context, dict: TokenMap) {
   ensureDir(ctx.paths.types)
   const code = await generateCssType()
   return Promise.all([

@@ -19,7 +19,7 @@
     "bin"
   ],
   "dependencies": {
-    "@css-panda/core": "workspace:*",
+    "@css-panda/node": "workspace:*",
     "@css-panda/error": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "cac": "^6.7.14"

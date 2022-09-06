@@ -3266,12 +3266,12 @@
       "locked": false,
       "fontSize": 20,
       "fontFamily": 1,
-      "text": "@css-panda/core",
+      "text": "@css-panda/node",
       "baseline": 18,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
-      "originalText": "@css-panda/core"
+      "originalText": "@css-panda/node"
     }
   ],
   "appState": {

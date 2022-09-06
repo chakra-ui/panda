@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
 import { semanticTokens, tokens } from '@css-panda/fixture'
-import { Dictionary } from '../src/token-dictionary'
+import { TokenMap } from '../src/token-map'
 
 describe('Token types', () => {
   test('semantic tokens', () => {
-    const dict = new Dictionary({ tokens, semanticTokens })
+    const dict = new TokenMap({ tokens, semanticTokens })
     expect(dict.values).toMatchInlineSnapshot(`
       Map {
         "fonts.heading" => {

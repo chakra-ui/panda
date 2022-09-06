@@ -28,11 +28,11 @@ function getTokenVar(path) {
 
 ```js
 import { generateCssVar, generateDts, generateJs } from '@css-panda/generator'
-import { createDictionary } from '@css-panda/token-dictionary'
+import { createTokenMap } from '@css-panda/tokens'
 
 const conf = new Conf()
 
-const dict = createDictionary(config)
+const dict = createTokenMap(config)
 
 const cssVars = generateCssVar(dict, { root: ':root' })
 const dts = generateDts(dict)

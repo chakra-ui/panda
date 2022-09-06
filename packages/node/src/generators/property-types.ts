@@ -1,4 +1,4 @@
-import type { CSSUtility } from '@css-panda/atomic'
+import type { CSSUtility } from '@css-panda/core'
 
 export function generatePropertyTypes(utility: CSSUtility) {
   const result: string[] = [

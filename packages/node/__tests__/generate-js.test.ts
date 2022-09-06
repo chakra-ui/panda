@@ -1,10 +1,10 @@
-import { Dictionary } from '@css-panda/token-dictionary'
+import { TokenMap } from '@css-panda/tokens'
 import { semanticTokens, tokens } from '@css-panda/fixture'
 import { expect, test } from 'vitest'
 import { generateJs } from '../src/generators/js'
 
 test('[dts] should generate package', () => {
-  const dict = new Dictionary({ tokens, semanticTokens })
+  const dict = new TokenMap({ tokens, semanticTokens })
   expect(generateJs(dict)).toMatchInlineSnapshot(
     `
     "const tokens = {

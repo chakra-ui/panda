@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'vitest'
 import { CSSUtility } from '../src/css-utility'
 import { semanticTokens, tokens } from '@css-panda/fixture'
-import { Dictionary } from '@css-panda/token-dictionary'
+import { TokenMap } from '@css-panda/tokens'
 
 describe('utilty class', () => {
   test('should prime cache for faster lookup', () => {
     const css = new CSSUtility({
-      tokens: new Dictionary({ tokens, semanticTokens }),
+      tokens: new TokenMap({ tokens, semanticTokens }),
       config: {
         properties: {
           backgroundColor: {
@@ -356,7 +356,7 @@ describe('utilty class', () => {
   test('should resolve arbitrary property', () => {
     const values = { auto: 'auto', sm: '20px', md: '40px' }
     const css = new CSSUtility({
-      tokens: new Dictionary({ tokens, semanticTokens }),
+      tokens: new TokenMap({ tokens, semanticTokens }),
       config: {
         properties: {
           marginLeft: {

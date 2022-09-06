@@ -1,5 +1,5 @@
-import { CSSUtility } from '@css-panda/atomic'
-import { Dictionary } from '@css-panda/token-dictionary'
+import { CSSUtility } from '@css-panda/core'
+import { TokenMap } from '@css-panda/tokens'
 import { semanticTokens, tokens, utilities } from '@css-panda/fixture'
 import { describe, expect, test } from 'vitest'
 import { generatePropertyTypes } from '../src/generators/property-types'
@@ -9,7 +9,7 @@ describe('generate property types', () => {
     expect(
       generatePropertyTypes(
         new CSSUtility({
-          tokens: new Dictionary({ tokens, semanticTokens }),
+          tokens: new TokenMap({ tokens, semanticTokens }),
           config: utilities[0],
         }),
       ),

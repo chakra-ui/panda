@@ -1,4 +1,4 @@
-import type { Dictionary } from '@css-panda/token-dictionary'
+import type { TokenMap } from '@css-panda/tokens'
 import type { Dict, Utility, PropertyUtility } from '@css-panda/types'
 
 type AnyFunction = (...args: any[]) => any
@@ -8,7 +8,7 @@ const isFunction = (v: any): v is AnyFunction => typeof v === 'function'
 const clean = (v: string) => v.toString().replaceAll(' ', '_')
 
 export class CSSUtility {
-  dictionary: Dictionary
+  dictionary: TokenMap
 
   classNameMap: Map<string, string> = new Map()
   stylesMap: Map<string, Dict> = new Map()
@@ -47,7 +47,7 @@ export class CSSUtility {
     return values as Dict<string>
   }
 
-  constructor(options: { config?: Utility<Dict>; tokens: Dictionary }) {
+  constructor(options: { config?: Utility<Dict>; tokens: TokenMap }) {
     const { tokens, config } = options
     this.dictionary = tokens
 

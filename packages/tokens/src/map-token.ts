@@ -2,7 +2,7 @@ import type { Tokens, SemanticTokens } from '@css-panda/types'
 import { match } from 'ts-pattern'
 import { objectEntries } from './entries'
 import { getTokenData, TokenData } from './get-token-data'
-import { getSemanticTokenMap, getTokenMap } from './token-map'
+import { getSemanticTokenMap, getTokenMap } from './walk-token'
 
 export function mapTokens(
   tokens: Partial<Tokens>,

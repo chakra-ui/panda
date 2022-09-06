@@ -5,10 +5,10 @@ import {
   mergeRecipes,
   mergeUtilities,
   Stylesheet,
-} from '@css-panda/atomic'
+} from '@css-panda/core'
 import type { LoadConfigResult } from '@css-panda/config'
 import { logger } from '@css-panda/logger'
-import { Dictionary } from '@css-panda/token-dictionary'
+import { TokenMap } from '@css-panda/tokens'
 import type { Pattern, TransformHelpers, UserConfig } from '@css-panda/types'
 import fs from 'fs-extra'
 import path from 'path'
@@ -55,7 +55,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
   const patternPath = path.join(cwd, outdir, 'patterns')
   const tempPath = path.join(cwd, outdir, 'assets')
 
-  const dictionary = new Dictionary({ tokens, semanticTokens, prefix })
+  const dictionary = new TokenMap({ tokens, semanticTokens, prefix })
 
   const utilities = new CSSUtility({
     tokens: dictionary,

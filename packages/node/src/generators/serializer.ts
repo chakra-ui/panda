@@ -3,7 +3,7 @@ import path from 'path'
 import esbuild from 'esbuild'
 
 function readAtomicPkgFiles() {
-  const basePath = path.join(path.dirname(require.resolve('@css-panda/atomic')), 'src')
+  const basePath = path.join(path.dirname(require.resolve('@css-panda/core')), 'src')
 
   const { outputFiles } = esbuild.buildSync({
     write: false,

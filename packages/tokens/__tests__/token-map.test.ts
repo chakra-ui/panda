@@ -1,6 +1,6 @@
 import { semanticTokens, tokens } from '@css-panda/fixture'
 import { describe, expect, test } from 'vitest'
-import { getSemanticTokenMap, getTokenMap } from '../src/token-map'
+import { getSemanticTokenMap, getTokenMap } from '../src/walk-token'
 
 describe('Token types', () => {
   test('colors', () => {

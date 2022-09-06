@@ -1,4 +1,4 @@
-import { Stylesheet } from '@css-panda/atomic'
+import { Stylesheet } from '@css-panda/core'
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import { createCollector, createPlugins, transformFileSync } from '@css-panda/ast'

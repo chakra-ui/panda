@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/token-dictionary",
+  "name": "@css-panda/tokens",
   "version": "0.0.1",
   "description": "The token dictionary utility",
   "main": "dist/index.js",

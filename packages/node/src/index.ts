@@ -1,0 +1,1 @@
+export { generator } from './generator'

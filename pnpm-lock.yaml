@@ -41,43 +41,6 @@ importers:
       '@css-panda/fixture': link:../fixture
       '@types/lodash.merge': 4.6.7
 
-  packages/atomic:
-    specifiers:
-      '@css-panda/breakpoint-utils': workspace:*
-      '@css-panda/error': workspace:*
-      '@css-panda/fixture': workspace:*
-      '@css-panda/logger': workspace:*
-      '@css-panda/shared': workspace:*
-      '@css-panda/token-dictionary': workspace:*
-      '@css-panda/types': workspace:*
-      autoprefixer: ^10.4.8
-      postcss: ^8.4.14
-      postcss-discard-duplicates: ^5.1.0
-      postcss-nested: ^5.0.6
-      postcss-normalize-whitespace: ^5.1.1
-      postcss-prettify: ^0.3.4
-      postcss-selector-parser: ^6.0.10
-      postcss-sort-media-queries: ^4.2.1
-      ts-pattern: ^4.0.5
-    dependencies:
-      '@css-panda/breakpoint-utils': link:../breakpoint-utils
-      '@css-panda/error': link:../error
-      '@css-panda/logger': link:../logger
-      '@css-panda/shared': link:../shared
-      '@css-panda/token-dictionary': link:../token-dictionary
-      '@css-panda/types': link:../types
-      autoprefixer: 10.4.8_postcss@8.4.14
-      postcss: 8.4.14
-      postcss-discard-duplicates: 5.1.0_postcss@8.4.14
-      postcss-nested: 5.0.6_postcss@8.4.14
-      postcss-normalize-whitespace: 5.1.1_postcss@8.4.14
-      postcss-prettify: 0.3.4
-      postcss-selector-parser: 6.0.10
-      postcss-sort-media-queries: 4.2.1_postcss@8.4.14
-      ts-pattern: 4.0.5
-    devDependencies:
-      '@css-panda/fixture': link:../fixture
-
   packages/breakpoint-utils:
     specifiers:
       '@css-panda/css-unit': workspace:*
@@ -92,15 +55,15 @@ importers:
 
   packages/cli:
     specifiers:
-      '@css-panda/core': workspace:*
       '@css-panda/error': workspace:*
       '@css-panda/logger': workspace:*
+      '@css-panda/node': workspace:*
       cac: ^6.7.14
       esbuild-register: ^3.3.3
     dependencies:
-      '@css-panda/core': link:../core
       '@css-panda/error': link:../error
       '@css-panda/logger': link:../logger
+      '@css-panda/node': link:../node
       cac: 6.7.14
     devDependencies:
       esbuild-register: 3.3.3
@@ -123,56 +86,44 @@ importers:
 
   packages/core:
     specifiers:
-      '@css-panda/ast': workspace:*
-      '@css-panda/atomic': workspace:*
-      '@css-panda/config': workspace:*
+      '@css-panda/breakpoint-utils': workspace:*
       '@css-panda/error': workspace:*
       '@css-panda/fixture': workspace:*
       '@css-panda/logger': workspace:*
       '@css-panda/shared': workspace:*
-      '@css-panda/token-dictionary': workspace:*
+      '@css-panda/tokens': workspace:*
       '@css-panda/types': workspace:*
-      '@types/fs-extra': ^9.0.13
       '@types/lodash.merge': ^4.6.7
-      '@types/pluralize': ^0.0.29
-      esbuild: ^0.15.5
-      filespy: ^1.2.4
-      fs-extra: ^10.1.0
-      hookable: ^5.1.1
+      autoprefixer: ^10.4.8
       lodash.merge: ^4.6.2
-      look-it-up: ^2.1.0
-      outdent: ' ^0.8.0'
-      pkg-types: ^0.3.3
-      pluralize: ^8.0.0
       postcss: ^8.4.14
-      recrawl: ^2.2.1
+      postcss-discard-duplicates: ^5.1.0
+      postcss-nested: ^5.0.6
+      postcss-normalize-whitespace: ^5.1.1
+      postcss-prettify: ^0.3.4
+      postcss-selector-parser: ^6.0.10
+      postcss-sort-media-queries: ^4.2.1
       ts-pattern: ^4.0.5
     dependencies:
-      '@css-panda/ast': link:../ast
-      '@css-panda/atomic': link:../atomic
-      '@css-panda/config': link:../config
+      '@css-panda/breakpoint-utils': link:../breakpoint-utils
       '@css-panda/error': link:../error
       '@css-panda/logger': link:../logger
       '@css-panda/shared': link:../shared
+      '@css-panda/tokens': link:../tokens
       '@css-panda/types': link:../types
-      esbuild: 0.15.5
-      filespy: 1.2.4
-      fs-extra: 10.1.0
-      hookable: 5.1.1
+      autoprefixer: 10.4.8_postcss@8.4.14
       lodash.merge: 4.6.2
-      look-it-up: 2.1.0
-      outdent: 0.8.0
-      pkg-types: 0.3.3
-      pluralize: 8.0.0
       postcss: 8.4.14
-      recrawl: 2.2.1
+      postcss-discard-duplicates: 5.1.0_postcss@8.4.14
+      postcss-nested: 5.0.6_postcss@8.4.14
+      postcss-normalize-whitespace: 5.1.1_postcss@8.4.14
+      postcss-prettify: 0.3.4
+      postcss-selector-parser: 6.0.10
+      postcss-sort-media-queries: 4.2.1_postcss@8.4.14
       ts-pattern: 4.0.5
     devDependencies:
       '@css-panda/fixture': link:../fixture
-      '@css-panda/token-dictionary': link:../token-dictionary
-      '@types/fs-extra': 9.0.13
       '@types/lodash.merge': 4.6.7
-      '@types/pluralize': 0.0.29
 
   packages/css-unit:
     specifiers: {}
@@ -197,10 +148,63 @@ importers:
       matcher: 5.0.0
       picocolors: 1.0.0
 
+  packages/node:
+    specifiers:
+      '@css-panda/ast': workspace:*
+      '@css-panda/config': workspace:*
+      '@css-panda/core': workspace:*
+      '@css-panda/error': workspace:*
+      '@css-panda/fixture': workspace:*
+      '@css-panda/logger': workspace:*
+      '@css-panda/shared': workspace:*
+      '@css-panda/tokens': workspace:*
+      '@css-panda/types': workspace:*
+      '@types/fs-extra': ^9.0.13
+      '@types/lodash.merge': ^4.6.7
+      '@types/pluralize': ^0.0.29
+      esbuild: ^0.15.5
+      filespy: ^1.2.4
+      fs-extra: ^10.1.0
+      hookable: ^5.1.1
+      lodash.merge: ^4.6.2
+      look-it-up: ^2.1.0
+      outdent: ' ^0.8.0'
+      pkg-types: ^0.3.3
+      pluralize: ^8.0.0
+      postcss: ^8.4.14
+      recrawl: ^2.2.1
+      ts-pattern: ^4.0.5
+    dependencies:
+      '@css-panda/ast': link:../ast
+      '@css-panda/config': link:../config
+      '@css-panda/core': link:../core
+      '@css-panda/error': link:../error
+      '@css-panda/logger': link:../logger
+      '@css-panda/shared': link:../shared
+      '@css-panda/types': link:../types
+      esbuild: 0.15.5
+      filespy: 1.2.4
+      fs-extra: 10.1.0
+      hookable: 5.1.1
+      lodash.merge: 4.6.2
+      look-it-up: 2.1.0
+      outdent: 0.8.0
+      pkg-types: 0.3.3
+      pluralize: 8.0.0
+      postcss: 8.4.16
+      recrawl: 2.2.1
+      ts-pattern: 4.0.5
+    devDependencies:
+      '@css-panda/fixture': link:../fixture
+      '@css-panda/tokens': link:../tokens
+      '@types/fs-extra': 9.0.13
+      '@types/lodash.merge': 4.6.7
+      '@types/pluralize': 0.0.29
+
   packages/shared:
     specifiers: {}
 
-  packages/token-dictionary:
+  packages/tokens:
     specifiers:
       '@css-panda/calc': workspace:*
       '@css-panda/css-var': workspace:*
@@ -2991,7 +2995,6 @@ packages:
       nanoid: 3.3.4
       picocolors: 1.0.0
       source-map-js: 1.0.2
-    dev: true
 
   /prelude-ls/1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}

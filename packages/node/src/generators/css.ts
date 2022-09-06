@@ -1,5 +1,5 @@
-import { toCss, toKeyframeCss } from '@css-panda/atomic'
-import type { VarData } from '@css-panda/token-dictionary'
+import { toCss, toKeyframeCss } from '@css-panda/core'
+import type { VarData } from '@css-panda/tokens'
 import { logger } from '@css-panda/logger'
 import type { Context } from '../create-context'
 

@@ -1,7 +1,7 @@
 {
   "name": "@css-panda/core",
   "version": "0.0.1",
-  "description": "The core css panda library",
+  "description": "core functions for extract-it",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -14,31 +14,25 @@
     "dist"
   ],
   "dependencies": {
-    "@css-panda/types": "workspace:*",
     "@css-panda/error": "workspace:*",
-    "@css-panda/ast": "workspace:*",
+    "@css-panda/types": "workspace:*",
     "@css-panda/shared": "workspace:*",
     "@css-panda/logger": "workspace:*",
-    "@css-panda/atomic": "workspace:*",
-    "@css-panda/config": "workspace:*",
-    "esbuild": "^0.15.5",
-    "filespy": "^1.2.4",
-    "fs-extra": "^10.1.0",
-    "hookable": "^5.1.1",
-    "lodash.merge": "^4.6.2",
-    "look-it-up": "^2.1.0",
-    "outdent": " ^0.8.0",
+    "@css-panda/tokens": "workspace:*",
+    "@css-panda/breakpoint-utils": "workspace:*",
     "postcss": "^8.4.14",
-    "pkg-types": "^0.3.3",
-    "pluralize": "^8.0.0",
-    "recrawl": "^2.2.1",
-    "ts-pattern": "^4.0.5"
+    "postcss-selector-parser": "^6.0.10",
+    "postcss-nested": "^5.0.6",
+    "postcss-sort-media-queries": "^4.2.1",
+    "postcss-discard-duplicates": "^5.1.0",
+    "postcss-normalize-whitespace": "^5.1.1",
+    "postcss-prettify": "^0.3.4",
+    "autoprefixer": "^10.4.8",
+    "ts-pattern": "^4.0.5",
+    "lodash.merge": "^4.6.2"
   },
   "devDependencies": {
-    "@css-panda/token-dictionary": "workspace:*",
     "@css-panda/fixture": "workspace:*",
-    "@types/fs-extra": "^9.0.13",
-    "@types/pluralize": "^0.0.29",
     "@types/lodash.merge": "^4.6.7"
   }
 }

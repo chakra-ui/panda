@@ -1,0 +1,44 @@
+{
+  "name": "@css-panda/node",
+  "version": "0.0.1",
+  "description": "The core css panda library",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "scripts": {
+    "build": "tsup src/ --format=esm,cjs --dts",
+    "dev": "pnpm build -- --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@css-panda/types": "workspace:*",
+    "@css-panda/error": "workspace:*",
+    "@css-panda/ast": "workspace:*",
+    "@css-panda/shared": "workspace:*",
+    "@css-panda/logger": "workspace:*",
+    "@css-panda/core": "workspace:*",
+    "@css-panda/config": "workspace:*",
+    "esbuild": "^0.15.5",
+    "filespy": "^1.2.4",
+    "fs-extra": "^10.1.0",
+    "hookable": "^5.1.1",
+    "lodash.merge": "^4.6.2",
+    "look-it-up": "^2.1.0",
+    "outdent": " ^0.8.0",
+    "postcss": "^8.4.14",
+    "pkg-types": "^0.3.3",
+    "pluralize": "^8.0.0",
+    "recrawl": "^2.2.1",
+    "ts-pattern": "^4.0.5"
+  },
+  "devDependencies": {
+    "@css-panda/tokens": "workspace:*",
+    "@css-panda/fixture": "workspace:*",
+    "@types/fs-extra": "^9.0.13",
+    "@types/pluralize": "^0.0.29",
+    "@types/lodash.merge": "^4.6.7"
+  }
+}

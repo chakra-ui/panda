@@ -1,7 +1,7 @@
 import { cac } from 'cac'
 import path from 'path'
 import fs from 'fs'
-import { generator } from '@css-panda/core'
+import { generator } from '@css-panda/node'
 import { logger } from '@css-panda/logger'
 
 export async function main() {
