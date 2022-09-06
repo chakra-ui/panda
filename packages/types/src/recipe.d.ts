@@ -12,7 +12,3 @@ export type Recipe<Variants extends TRecipe = TRecipe> = {
     [K in keyof Variants]?: keyof Variants[K]
   }
 }
-
-export function defineRecipe<Variants extends Record<string, RecipeVariant>>(config: Recipe<Variants>) {
-  return config
-}

@@ -22,13 +22,18 @@ const __require = createRequire(import.meta.url)
 
 export function getEntrypoint(pkg: string, file: { dev: string; prod?: string }) {
   const { dev, prod = dev } = file
-
   const entry = __require.resolve(pkg)
-  const isDist = entry.includes('dist')
 
-  if (isDist) {
-    return join(dirname(entry), prod)
+  const isDist = entry.includes('dist')
+  const isType = pkg.includes('/types')
+
+  if (isType) {
+    return join(dirname(entry), dev)
   }
 
-  return join(dirname(entry), 'src', dev)
+  if (!isDist) {
+    return join(dirname(entry), 'src', dev)
+  }
+
+  return join(dirname(entry), prod)
 }

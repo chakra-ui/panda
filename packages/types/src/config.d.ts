@@ -41,10 +41,4 @@ export type Config<
 
 export type TConfig = Config<TConditions, Dict, Dict>
 
-export function defineConfig<Conditions extends TConditions, Breakpoints extends Dict, Tokens extends Dict>(
-  config: Partial<Config<Conditions, Breakpoints, Tokens>>,
-): Partial<Config<Conditions, Breakpoints, Tokens>> {
-  return config
-}
-
 export type UserConfig = RequiredBy<Config, 'outdir' | 'cwd' | 'include'>

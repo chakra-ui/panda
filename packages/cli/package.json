@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/cli",
+  "name": "css-panda",
   "version": "0.0.1",
   "description": "The types for css panda",
   "main": "dist/index.js",
@@ -21,6 +21,7 @@
   "dependencies": {
     "@css-panda/node": "workspace:*",
     "@css-panda/error": "workspace:*",
+    "@css-panda/types": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "cac": "6.7.14"
   },

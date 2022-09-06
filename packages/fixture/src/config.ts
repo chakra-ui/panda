@@ -1,4 +1,4 @@
-import { defineConfig } from '@css-panda/types'
+import type { Config } from '@css-panda/types'
 import { breakpoints } from './breakpoints'
 import { conditions } from './conditions'
 import { utilities } from './css-utility'
@@ -7,14 +7,14 @@ import { patterns } from './pattern'
 import { recipes } from './recipes'
 import { semanticTokens, tokens } from './tokens'
 
-export const config = defineConfig({
+export const config: Config = {
   breakpoints,
   prefix: 'pd',
   keyframes,
-  tokens: tokens as any,
-  semanticTokens: semanticTokens as any,
+  tokens,
+  semanticTokens,
   conditions,
   utilities,
   recipes,
   patterns,
-})
+}

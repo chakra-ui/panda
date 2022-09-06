@@ -61,12 +61,14 @@ importers:
       '@css-panda/error': workspace:*
       '@css-panda/logger': workspace:*
       '@css-panda/node': workspace:*
+      '@css-panda/types': workspace:*
       cac: 6.7.14
       esbuild-register: 3.3.3
     dependencies:
       '@css-panda/error': link:../error
       '@css-panda/logger': link:../logger
       '@css-panda/node': link:../node
+      '@css-panda/types': link:../types
       cac: 6.7.14
     devDependencies:
       esbuild-register: 3.3.3
@@ -148,8 +150,9 @@ importers:
       matcher: 5.0.0
       picocolors: 1.0.0
     dependencies:
-      matcher: 5.0.0
       picocolors: 1.0.0
+    devDependencies:
+      matcher: 5.0.0
 
   packages/node:
     specifiers:
@@ -279,12 +282,11 @@ importers:
 
   sandbox:
     specifiers:
-      '@css-panda/cli': workspace:*
       '@css-panda/fixture': workspace:*
-      '@css-panda/types': workspace:*
       '@types/react': 18.0.17
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.1.0
+      css-panda: workspace:*
       react: 18.2.0
       react-dom: 18.2.0
       vite: 3.1.0
@@ -292,12 +294,11 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
-      '@css-panda/cli': link:../packages/cli
       '@css-panda/fixture': link:../packages/fixture
-      '@css-panda/types': link:../packages/types
       '@types/react': 18.0.17
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.1.0_vite@3.1.0
+      css-panda: link:../packages/cli
       vite: 3.1.0
 
 packages:
@@ -2114,7 +2115,7 @@ packages:
   /escape-string-regexp/5.0.0:
     resolution: {integrity: sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==}
     engines: {node: '>=12'}
-    dev: false
+    dev: true
 
   /eslint-scope/5.1.1:
     resolution: {integrity: sha512-2NxwbF/hZ0KpepYN0cNbo+FN6XoK7GaHlQhgx/hIZl6Va0bF45RQOOwhLIy8lQDbuCiadSLCBnH2CFYquit5bw==}
@@ -2554,7 +2555,7 @@ packages:
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dependencies:
       escape-string-regexp: 5.0.0
-    dev: false
+    dev: true
 
   /merge-stream/2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}

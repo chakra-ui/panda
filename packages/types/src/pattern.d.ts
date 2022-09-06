@@ -1,6 +1,6 @@
 import type { CssProperty } from './panda-csstype'
 
-type PropertyConfig =
+export type PatternProperty =
   | { type: 'cssProp'; value: CssProperty }
   | { type: 'enum'; value: string[] }
   | { type: 'token'; value: string; cssProp?: CssProperty }
@@ -12,6 +12,6 @@ export type TransformHelpers = {
 
 export type Pattern<T extends Record<string, any> = Record<string, any>> = {
   name: string
-  properties: Record<string, PropertyConfig>
+  properties: Record<string, PatternProperty>
   transform?: (props: Record<string, any>, helpers: TransformHelpers) => T
 }
