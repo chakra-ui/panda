@@ -16,7 +16,9 @@ export const getContrastPairs = (colorA?: string, colorB?: string) => {
         fontSize: 18,
       },
     ])
-  } catch (error) {}
+  } catch (error) {
+    //
+  }
 
   return res
 }
@@ -30,7 +32,9 @@ export const getContrastRatio = (colorA?: string, colorB?: string) => {
     luminanceA = contrastChecker.hexToLuminance(colorA)
     luminanceB = contrastChecker.hexToLuminance(colorB)
     ratio = contrastChecker.getContrastRatio(luminanceA, luminanceB)
-  } catch (error) {}
+  } catch (error) {
+    //
+  }
 
   return ratio
 }
