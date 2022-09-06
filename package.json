@@ -5,6 +5,7 @@
   "scripts": {
     "build": "pnpm -r build --filter=!./sandbox",
     "clean": "pnpm -r --parallel exec rm -rf dist .turbo *.log",
+    "reset": "pnpm -r --parallel exec rm -rf node_modules && rm -rf node_modules",
     "test": "vitest",
     "test-watch": "vitest --watch -u",
     "lint": "eslint packages --ext .ts",

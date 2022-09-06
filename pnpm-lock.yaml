@@ -267,14 +267,14 @@ importers:
       '@types/react-dom': 17.0.10
       '@types/vscode-webview': 1.57.0
       '@vitejs/plugin-react': 1.0.7
-      '@vscode/webview-ui-toolkit': 1.0.0
+      '@vscode/webview-ui-toolkit': 1.0.1
       color-contrast-checker: 2.1.0
       react: 17.0.2
       react-dom: 17.0.2
       typescript: 4.4.4
       vite: 2.7.2
     dependencies:
-      '@vscode/webview-ui-toolkit': 1.0.0_react@17.0.2
+      '@vscode/webview-ui-toolkit': 1.0.1_react@17.0.2
       color-contrast-checker: 2.1.0
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
@@ -1254,8 +1254,8 @@ packages:
       - supports-color
     dev: true
 
-  /@vscode/webview-ui-toolkit/1.0.0_react@17.0.2:
-    resolution: {integrity: sha512-/qaHYZXqvIKkao54b7bLzyNH8BC+X4rBmTUx1MvcIiCjqRMxml0BCpqJhnDpfrCb0IOxXRO8cAy1eB5ayzQfBA==}
+  /@vscode/webview-ui-toolkit/1.0.1_react@17.0.2:
+    resolution: {integrity: sha512-jitA17enYUoMadv9exoHJiYcBK+X+gTlUyyIFvXRrA/mhHrxZfel5Eh6z/u57UZScK/i0Sn7EtlEYV1ZKFbeHw==}
     peerDependencies:
       react: '>=16.9.0'
     dependencies:
