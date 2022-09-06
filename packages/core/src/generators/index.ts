@@ -1,6 +1,6 @@
 import type { Dictionary } from '@css-panda/dictionary'
 import { logger } from '@css-panda/logger'
-import { minifyConfig } from '@css-panda/parser'
+import { minifyConfig } from '@css-panda/ast'
 import fs, { appendFile, ensureDir, ensureFile } from 'fs-extra'
 import { outdent } from 'outdent'
 import path from 'path'

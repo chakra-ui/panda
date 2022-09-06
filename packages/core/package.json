@@ -16,7 +16,7 @@
   "dependencies": {
     "@css-panda/types": "workspace:*",
     "@css-panda/error": "workspace:*",
-    "@css-panda/parser": "workspace:*",
+    "@css-panda/ast": "workspace:*",
     "@css-panda/css-utility": "workspace:*",
     "@css-panda/css-recipe": "workspace:*",
     "@css-panda/shared": "workspace:*",

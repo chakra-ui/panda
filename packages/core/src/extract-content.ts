@@ -1,7 +1,7 @@
 import { Stylesheet } from '@css-panda/atomic'
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
-import { createCollector, createPlugins, transformFileSync } from '@css-panda/parser'
+import { createCollector, createPlugins, transformFileSync } from '@css-panda/ast'
 import path from 'path'
 import type { Context } from './create-context'
 

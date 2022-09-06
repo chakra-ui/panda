@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/parser",
+  "name": "@css-panda/ast",
   "version": "0.0.1",
   "description": "The static parser for css panda",
   "main": "dist/index.js",

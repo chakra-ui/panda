@@ -22,6 +22,25 @@ importers:
       typescript: 4.7.4
       vitest: 0.19.1
 
+  packages/ast:
+    specifiers:
+      '@css-panda/fixture': workspace:*
+      '@css-panda/logger': workspace:*
+      '@css-panda/types': workspace:*
+      '@swc/core': ^1.2.237
+      '@types/lodash.merge': ^4.6.7
+      lodash.merge: ^4.6.2
+      ts-pattern: ^4.0.5
+    dependencies:
+      '@css-panda/logger': link:../logger
+      '@css-panda/types': link:../types
+      '@swc/core': 1.2.237
+      lodash.merge: 4.6.2
+      ts-pattern: 4.0.5
+    devDependencies:
+      '@css-panda/fixture': link:../fixture
+      '@types/lodash.merge': 4.6.7
+
   packages/atomic:
     specifiers:
       '@css-panda/breakpoint-utils': workspace:*
@@ -86,6 +105,7 @@ importers:
 
   packages/core:
     specifiers:
+      '@css-panda/ast': workspace:*
       '@css-panda/atomic': workspace:*
       '@css-panda/css-recipe': workspace:*
       '@css-panda/css-utility': workspace:*
@@ -93,7 +113,6 @@ importers:
       '@css-panda/error': workspace:*
       '@css-panda/fixture': workspace:*
       '@css-panda/logger': workspace:*
-      '@css-panda/parser': workspace:*
       '@css-panda/read-config': workspace:*
       '@css-panda/shared': workspace:*
       '@css-panda/types': workspace:*
@@ -113,12 +132,12 @@ importers:
       recrawl: ^2.2.1
       ts-pattern: ^4.0.5
     dependencies:
+      '@css-panda/ast': link:../ast
       '@css-panda/atomic': link:../atomic
       '@css-panda/css-recipe': link:../css-recipe
       '@css-panda/css-utility': link:../css-utility
       '@css-panda/error': link:../error
       '@css-panda/logger': link:../logger
-      '@css-panda/parser': link:../parser
       '@css-panda/read-config': link:../read-config
       '@css-panda/shared': link:../shared
       '@css-panda/types': link:../types
@@ -214,25 +233,6 @@ importers:
     dependencies:
       matcher: 5.0.0
       picocolors: 1.0.0
-
-  packages/parser:
-    specifiers:
-      '@css-panda/fixture': workspace:*
-      '@css-panda/logger': workspace:*
-      '@css-panda/types': workspace:*
-      '@swc/core': ^1.2.237
-      '@types/lodash.merge': ^4.6.7
-      lodash.merge: ^4.6.2
-      ts-pattern: ^4.0.5
-    dependencies:
-      '@css-panda/logger': link:../logger
-      '@css-panda/types': link:../types
-      '@swc/core': 1.2.237
-      lodash.merge: 4.6.2
-      ts-pattern: 4.0.5
-    devDependencies:
-      '@css-panda/fixture': link:../fixture
-      '@types/lodash.merge': 4.6.7
 
   packages/read-config:
     specifiers:
