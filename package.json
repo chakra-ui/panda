@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "The repository of css panda",
   "scripts": {
-    "build": "pnpm -r build --filter=!./sandbox",
+    "build": "pnpm -r --parallel build --filter=!./sandbox",
     "clean": "pnpm -r --parallel exec rm -rf dist .turbo *.log",
     "reset": "pnpm -r --parallel exec rm -rf node_modules && rm -rf node_modules",
     "test": "vitest",
