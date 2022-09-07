@@ -1,5 +1,5 @@
-import { calc } from '@css-panda/calc'
 import { createVar } from '@css-panda/css-var'
+import { negate } from './calc'
 
 export function getTokenData(category: string, entry: Entry, options: Options = {}): TokenData {
   const { negative, prefix } = options
@@ -14,10 +14,10 @@ export function getTokenData(category: string, entry: Entry, options: Options = 
     negative: !!negative,
     key: negative ? `-${key}` : key,
     category,
-    value: negative ? calc.negate(value) : value,
+    value: negative ? negate(value) : value,
     prop: negative ? `${category}.-${key}` : `${category}.${key}`,
     var: variable.var,
-    varRef: negative ? calc.negate(variable.ref) : variable.ref,
+    varRef: negative ? negate(variable.ref) : variable.ref,
   }
 }
 
