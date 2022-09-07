@@ -16,7 +16,6 @@
   ],
   "dependencies": {
     "@css-panda/types": "workspace:*",
-    "@css-panda/calc": "workspace:*",
     "lodash.get": "4.4.2",
     "@css-panda/css-var": "workspace:*",
     "@css-panda/error": "workspace:*",
