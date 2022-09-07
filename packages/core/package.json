@@ -14,6 +14,10 @@
   "files": [
     "dist"
   ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@css-panda/error": "workspace:*",
     "@css-panda/types": "workspace:*",

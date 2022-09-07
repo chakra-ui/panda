@@ -6,6 +6,10 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "pnpm tsup src/index.ts --format=esm,cjs --shims --dts",
     "build-fast": "pnpm tsup src/index.ts --format=esm,cjs --shims --no-dts",
