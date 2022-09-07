@@ -14,11 +14,11 @@ function compact(obj: Entry) {
 }
 
 const levelsMap = {
-  debug: { w: 0, c: colors.blue },
-  info: { w: 1, c: colors.green },
+  debug: { w: 0, c: colors.magenta },
+  info: { w: 1, c: colors.blue },
   warn: { w: 2, c: colors.yellow },
   error: { w: 3, c: colors.red },
-  fatal: { w: 4, c: colors.red },
+  fatal: { w: 4, c: colors.bgRed },
 }
 
 function output(entry: Entry) {
@@ -29,14 +29,11 @@ function output(entry: Entry) {
   const data = compact(entry)
   const formatted = typeof entry.msg == 'string' ? entry.msg : util.inspect(data, { colors: true, depth: null })
 
-  let uword = entry.type == 'event' ? entry.level : entry.type
-  uword = colors.gray(`[${uword}]`)
+  const uword = entry.type ? colors.gray(`[${entry.type}]`) : undefined
+  const label = colors.bold(color(`${entry.level}`))
 
-  const label = colors.bold(color(`${entry.level.toUpperCase()}`))
+  const msg = [`🐼`, label, uword, formatted].filter(Boolean).join(' ')
 
-  const msg = `🐼 ${label} ${uword} ${formatted}`
-
-  console.log('\n\n')
   console.log(msg)
 }
 
@@ -102,7 +99,6 @@ class Logger {
   getEntry(level: LogLevel, args: any[]): Entry {
     const data = typeof args[0] == 'object' ? args.shift() : {}
     let msg = util.format(...args)
-    const type = data.type || 'event'
 
     const pid = process.pid != 1 ? process.pid : null
 
@@ -113,7 +109,7 @@ class Logger {
     }
 
     msg = msg || data.msg
-    return { level, type, ...data, msg, pid, time: new Date() }
+    return { level, ...data, msg, pid, time: new Date() }
   }
 
   log(level: LogLevel, ...args: any[]) {
@@ -152,3 +148,5 @@ class Logger {
 }
 
 export const logger = new Logger()
+
+export { colors }

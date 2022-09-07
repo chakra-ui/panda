@@ -74,12 +74,8 @@ export class CSSRecipe {
 export function mergeRecipes(recipes: Recipe[] | undefined, utility: CSSUtility) {
   return Object.fromEntries(
     (recipes ?? []).map((config) => {
-      //
       const recipe = new CSSRecipe({ utility, config })
       const transformed = recipe.transform()
-
-      logger.debug({ type: 'recipe', name: config.name, transformed })
-
       return [config.name, transformed]
     }),
   )

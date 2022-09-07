@@ -40,7 +40,7 @@ export function findConfigFile({ root, file }: { root: string; file?: string }) 
   }
 
   if (!filepath) {
-    logger.fatal({ type: 'find:file', info: '💥 no config file found.' })
+    logger.fatal({ type: 'config:file', info: '💥 no config file found.' })
     return null
   }
 

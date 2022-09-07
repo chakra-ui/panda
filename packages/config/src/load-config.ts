@@ -19,14 +19,15 @@ export async function loadConfigFile<T extends Record<string, any> = Record<stri
 
   const { isESM, filepath } = findConfigFile({ root, file }) ?? {}
 
-  logger.debug({ type: 'config:details', isESM, filepath })
-  logger.info(`found config file at: \n${filepath}`)
+  logger.debug({ type: 'config', isESM, filepath })
+
+  logger.info({ type: 'config', msg: `Found config file at: \n${filepath}` })
 
   if (!filepath) return {}
 
   const bundled = await bundleConfigFile(filepath, true)
 
-  logger.info('bundle', 'Successful...')
+  logger.info({ type: 'config', msg: 'Bundled Config File' })
 
   const dependencies = bundled.dependencies ?? []
 
