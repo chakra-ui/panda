@@ -14,7 +14,8 @@
     "prettier": "prettier --check packages",
     "prettier-fix": "prettier --write packages",
     "typecheck": "tsc --noEmit",
-    "extension-watch": "pnpm --prefix ./packages/vscode run watch:extension"
+    "extension-watch": "pnpm --prefix ./packages/vscode run watch:extension",
+    "release-dev": "changeset version --snapshot dev && changeset publish tag --dev"
   },
   "keywords": [],
   "author": "Segun Adebayo <joseshegs@gmail.com>",
