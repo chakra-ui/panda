@@ -7,8 +7,7 @@
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "bin": {
-    "panda": "./bin/index.js",
-    "panda-dev": "./bin/dev.js"
+    "panda": "./bin/index.js"
   },
   "scripts": {
     "build": "tsup src/index.ts --format=esm,cjs",
