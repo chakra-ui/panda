@@ -7,8 +7,9 @@
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "scripts": {
-    "build": "tsup src/ --format=esm,cjs --dts",
-    "dev": "pnpm build -- --watch"
+    "build": "tsup --entry src/index.ts --entry src/classname.ts --format=esm,cjs",
+    "build-fast": "tsup --entry src/index.ts --entry src/classname.ts --format=esm,cjs --no-dts",
+    "dev": "pnpm build-fast -- --watch"
   },
   "files": [
     "dist"
@@ -17,9 +18,9 @@
     "@css-panda/error": "workspace:*",
     "@css-panda/types": "workspace:*",
     "@css-panda/shared": "workspace:*",
+    "@css-panda/css-unit": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "@css-panda/tokens": "workspace:*",
-    "@css-panda/breakpoint-utils": "workspace:*",
     "postcss": "8.4.16",
     "postcss-selector-parser": "6.0.10",
     "postcss-nested": "5.0.6",

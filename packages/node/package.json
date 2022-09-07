@@ -7,8 +7,9 @@
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "scripts": {
-    "build": "tsup src/",
-    "dev": "pnpm build -- --watch"
+    "build": "tsup src/index.ts --format=cjs,esm --shims",
+    "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
+    "dev": "pnpm build-fast -- --watch"
   },
   "files": [
     "dist"
@@ -18,6 +19,7 @@
     "@css-panda/error": "workspace:*",
     "@css-panda/ast": "workspace:*",
     "@css-panda/shared": "workspace:*",
+    "@css-panda/tokens": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "@css-panda/core": "workspace:*",
     "@css-panda/config": "workspace:*",

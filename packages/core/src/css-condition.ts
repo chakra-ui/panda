@@ -1,4 +1,4 @@
-import { getBreakpointDetails } from '@css-panda/breakpoint-utils'
+import { getBreakpointDetails } from './breakpoint'
 import { ConditionError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import type { BaseCondition, BaseConditionType, Conditions } from '@css-panda/types'

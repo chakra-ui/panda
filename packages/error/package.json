@@ -7,8 +7,9 @@
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "scripts": {
-    "build": "tsup src/ --format=esm,cjs --dts",
-    "dev": "pnpm build -- --watch"
+    "build": "tsup src/index.ts --format=esm,cjs",
+    "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
+    "dev": "pnpm build-fast -- --watch"
   },
   "files": [
     "dist"

@@ -1,4 +1,4 @@
-import { getBreakpointDetails } from '@css-panda/breakpoint-utils'
+import { getBreakpointDetails } from './breakpoint'
 import type { Root } from 'postcss'
 import type { Dict } from './types'
 

@@ -1,4 +1,4 @@
-export type { Conditions } from './conditions'
+export type { Conditions, BaseCondition, BaseConditionType } from './conditions'
 export type { Config, UserConfig, SemanticTokens, TConfig } from './config'
 export type { TextStyle } from './text-style'
 export type { TokenCategory, Tokens } from './tokens'

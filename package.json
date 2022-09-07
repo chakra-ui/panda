@@ -4,6 +4,7 @@
   "private": true,
   "description": "The repository of css panda",
   "scripts": {
+    "dev": "pnpm -r --parallel dev --filter=!./sandbox",
     "build": "pnpm -r --parallel build --filter=!./sandbox",
     "clean": "pnpm -r --parallel exec rm -rf dist .turbo *.log",
     "reset": "pnpm -r --parallel exec rm -rf node_modules && rm -rf node_modules",

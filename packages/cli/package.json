@@ -11,8 +11,9 @@
     "panda-dev": "./bin/dev.js"
   },
   "scripts": {
-    "build": "tsup src/ --format=esm,cjs --dts",
-    "dev": "pnpm build -- --watch"
+    "build": "tsup src/index.ts --format=esm,cjs",
+    "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
+    "dev": "pnpm build-fast -- --watch"
   },
   "files": [
     "dist",
@@ -24,8 +25,5 @@
     "@css-panda/types": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "cac": "6.7.14"
-  },
-  "devDependencies": {
-    "esbuild-register": "3.3.3"
   }
 }
