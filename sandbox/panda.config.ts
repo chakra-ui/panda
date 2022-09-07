@@ -1,4 +1,4 @@
-import { config } from '@css-panda/fixture'
+import { config } from '../packages/fixture/src/config'
 import { defineConfig } from 'css-panda'
 
 export default defineConfig({
