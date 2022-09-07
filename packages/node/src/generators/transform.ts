@@ -3,9 +3,11 @@ import outdent from 'outdent'
 export function generateTransform() {
   return outdent`
       import config from '../config'
-  
+      
+      const utilities = config.utilities ?? []
+
       var transform = (prop, value) => {
-        for (const utility of config.utilities) {
+        for (const utility of utilities) {
           for (const key in utility.properties) {
             if (prop === key) {
               let conf = utility.properties[key]
