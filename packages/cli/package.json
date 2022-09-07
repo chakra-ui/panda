@@ -10,7 +10,7 @@
     "panda": "./bin/index.js"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format=esm,cjs",
+    "build": "tsup src/index.ts --format=esm,cjs --dts",
     "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
     "dev": "pnpm build-fast -- --watch"
   },
