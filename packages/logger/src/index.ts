@@ -82,8 +82,9 @@ class Logger {
 
   constructor(conf: Config = {}) {
     this.level = conf.level || 'debug'
-    if (conf.only) {
-      this.only = conf.only
+    const only = conf.only ?? process.env.DEBUG
+    if (only && only !== '*') {
+      this.only = Array.isArray(only) ? only : only.split(/[\s,]+/)
     }
     if (conf.except) {
       this.except = conf.except

@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "css": "panda",
-    "css:dev": "DEBUG=cli* panda --watch"
+    "css:dev": "panda --watch"
   },
   "dependencies": {
     "react": "18.2.0",

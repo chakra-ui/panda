@@ -1,17 +1,13 @@
 import { cac } from 'cac'
 import path from 'path'
 import fs from 'fs'
-import { generate, initialize } from '@css-panda/node'
+import { generate } from '@css-panda/node'
 import { logger } from '@css-panda/logger'
 
 export async function main() {
   const cli = cac('panda')
 
   const options: Record<string, any> = {}
-
-  cli.command('init', 'Initialize a new project').action(async () => {
-    await initialize()
-  })
 
   cli
     .command('[files]', 'Include files', {

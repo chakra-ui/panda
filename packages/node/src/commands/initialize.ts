@@ -1,10 +1,9 @@
 import { loadConfigFile } from '@css-panda/config'
 import { ConfigNotFoundError } from '@css-panda/error'
-import { colors, logger } from '@css-panda/logger'
+import { logger } from '@css-panda/logger'
 import type { Config, UserConfig } from '@css-panda/types'
 import fs from 'fs-extra'
 import merge from 'lodash.merge'
-import { outdent } from 'outdent'
 import { createContext } from '../create-context'
 import { generateSystem } from '../generators'
 import { updateGitIgnore } from '../git-ignore'
@@ -36,18 +35,6 @@ export async function initialize(options: Config & { configPath?: string } = {})
   await generateSystem(ctx, conf.code)
 
   logger.info('Generated system')
-
-  logger.info(outdent`
-  Thanks for choosing ${colors.green('Panda')} to write your CSS!
-  
-  You should be set up to start using panda now!
-
-  We have added a \`${colors.bold(ctx.outdir)}\` folder, and a couple of files to help you out:
-
-  - ${colors.blue(`\`${ctx.outdir}/design-tokens\``)} - contains all of your design tokens artifacts.
-  - ${colors.blue(`\`${ctx.outdir}/css\``)} - the css system to create styles with.
-
-  `)
 
   return ctx
 }
