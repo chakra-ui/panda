@@ -1,5 +1,5 @@
 import { isMatch } from 'matcher'
-import colors from 'picocolors'
+import colors from 'kleur'
 import util from 'util'
 
 const omitKeys = ['level', 'type', 'time', 'pid']
