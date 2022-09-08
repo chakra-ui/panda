@@ -1,7 +1,7 @@
 import { minifyConfig } from '@css-panda/ast'
 import { logger } from '@css-panda/logger'
 import type { TokenMap } from '@css-panda/tokens'
-import { appendFile, ensureDir, ensureFile } from 'fs-extra'
+import { ensureDir } from 'fs-extra'
 import { outdent } from 'outdent'
 import path from 'path'
 import type { Context } from '../create-context'
@@ -14,7 +14,6 @@ import { generateFontFace } from './font-face'
 import { generateGlobalStyle } from './global-style'
 import { generateJs } from './js'
 import { generateDts } from './js-dts'
-import { writeFileWithNote } from './__utils'
 import { generatePattern } from './pattern'
 import { generatePropertyTypes } from './property-types'
 import { generateRecipes } from './recipe'
@@ -22,19 +21,19 @@ import { generateSerializer } from './serializer'
 import { generateSx } from './sx'
 import { generateTokenDts } from './token-dts'
 import { generateTransform } from './transform'
+import { writeFileWithNote } from './__utils'
 
 async function setupKeyframes(ctx: Context) {
   const code = generateKeyframes(ctx)
   if (!code) return
-  ensureDir(ctx.paths.ds)
-  const filepath = path.join(ctx.paths.ds, 'index.css')
-  ensureFile(filepath)
-  return appendFile(filepath, code)
+  await ensureDir(ctx.paths.ds)
+  const filepath = path.join(ctx.paths.ds, 'keyframes.css')
+  return writeFileWithNote(filepath, code)
 }
 
 async function setupDesignTokens(ctx: Context, dict: TokenMap) {
   if (dict.isEmpty) return
-  ensureDir(ctx.paths.ds)
+  await ensureDir(ctx.paths.ds)
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.ds, 'index.css'), generateCss(ctx)),
     writeFileWithNote(path.join(ctx.paths.ds, 'index.d.ts'), generateDts()),
@@ -43,7 +42,7 @@ async function setupDesignTokens(ctx: Context, dict: TokenMap) {
 }
 
 async function setupGlobalStyle(ctx: Context) {
-  ensureDir(ctx.paths.css)
+  await ensureDir(ctx.paths.css)
   const code = generateGlobalStyle()
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.css, 'global-style.js'), code.js),
@@ -52,7 +51,7 @@ async function setupGlobalStyle(ctx: Context) {
 }
 
 async function setupTypes(ctx: Context, dict: TokenMap) {
-  ensureDir(ctx.paths.types)
+  await ensureDir(ctx.paths.types)
   const code = await generateCssType()
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.types, 'csstype.d.ts'), code.cssType),
@@ -65,7 +64,7 @@ async function setupTypes(ctx: Context, dict: TokenMap) {
 }
 
 async function setupCss(ctx: Context) {
-  ensureDir(ctx.paths.css)
+  await ensureDir(ctx.paths.css)
   const code = generateSerializer(ctx.hash)
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.css, 'transform.js'), generateTransform()),
@@ -76,7 +75,7 @@ async function setupCss(ctx: Context) {
 }
 
 async function setupCssMap(ctx: Context) {
-  ensureDir(ctx.paths.css)
+  await ensureDir(ctx.paths.css)
   const code = generateCssMap()
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.css, 'css-map.js'), code.js),
@@ -85,7 +84,7 @@ async function setupCssMap(ctx: Context) {
 }
 
 async function setupCx(ctx: Context) {
-  ensureDir(ctx.paths.css)
+  await ensureDir(ctx.paths.css)
   const code = generateCx()
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.css, 'cx.js'), code.js),
@@ -94,7 +93,7 @@ async function setupCx(ctx: Context) {
 }
 
 async function setupSx(ctx: Context) {
-  ensureDir(ctx.paths.css)
+  await ensureDir(ctx.paths.css)
   const code = generateSx()
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.css, 'sx.js'), code.js),
@@ -103,7 +102,7 @@ async function setupSx(ctx: Context) {
 }
 
 async function setupFontFace(ctx: Context) {
-  ensureDir(ctx.paths.css)
+  await ensureDir(ctx.paths.css)
   const code = generateFontFace()
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.css, 'font-face.js'), code.js),
@@ -115,7 +114,7 @@ async function setupRecipes(ctx: Context) {
   const code = generateRecipes(ctx.config)
 
   if (!code) return
-  ensureDir(ctx.paths.recipe)
+  await ensureDir(ctx.paths.recipe)
   logger.info("Recipes are generated. Don't forget to import them in your project.")
 
   return Promise.all([
@@ -128,7 +127,7 @@ async function setupPatterns(ctx: Context) {
   const code = generatePattern(ctx.config)
 
   if (!code) return
-  ensureDir(ctx.paths.pattern)
+  await ensureDir(ctx.paths.pattern)
   logger.info("Patterns are generated. Don't forget to import them in your project.")
 
   return Promise.all([
