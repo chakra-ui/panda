@@ -18,6 +18,7 @@ export function generatePattern(config: { patterns?: Pattern[] }) {
     const pattern = config.patterns.find(p => p.name === key)
     if (!pattern) throw new Error(\`Pattern \${key} not found\`)
     cache.set(key, pattern)
+    return pattern
   }
 
   function mapObject(obj, fn) {
