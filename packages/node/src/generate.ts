@@ -2,9 +2,9 @@ import { logger } from '@css-panda/logger'
 import type { Config } from '@css-panda/types'
 import { ensureDir } from 'fs-extra'
 import { recrawl } from 'recrawl'
-import { extractContent } from '../extract-content'
-import { extractTemp } from '../extract-tmp'
-import { watch } from '../watchers'
+import { extractContent } from './extract-content'
+import { extractTemp } from './extract-tmp'
+import { watch } from './watchers'
 import { initialize } from './initialize'
 
 export async function generate(options: Config & { configPath?: string } = {}) {

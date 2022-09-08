@@ -1,1 +1,1 @@
-export { generate } from './commands/generate'
+export { generate } from './generate'

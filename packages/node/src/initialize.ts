@@ -5,9 +5,9 @@ import type { Config, UserConfig } from '@css-panda/types'
 import fs from 'fs-extra'
 import merge from 'lodash.merge'
 import { outdent } from 'outdent'
-import { Context, createContext } from '../create-context'
-import { generateSystem } from '../generators'
-import { updateGitIgnore } from '../git-ignore'
+import { Context, createContext } from './create-context'
+import { generateSystem } from './generators'
+import { updateGitIgnore } from './git-ignore'
 
 function validateContext(ctx: Context) {
   if (!ctx.config.include) {
