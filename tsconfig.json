@@ -8,6 +8,7 @@
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "preserve",
+    "incremental": true,
     "noEmit": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "target": "esnext",
