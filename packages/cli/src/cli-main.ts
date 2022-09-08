@@ -7,9 +7,7 @@ import { logger } from '@css-panda/logger'
 export async function main() {
   const cli = cac('panda')
 
-  const options: Record<string, any> = {
-    outdir: 'panda',
-  }
+  const options: Record<string, any> = {}
 
   cli
     .command('[files]', 'Include files', {

@@ -29,19 +29,25 @@ function validateContext(ctx: Context) {
   }
 }
 
+const defaultOptions = {
+  outdir: 'panda',
+  cwd: process.cwd(),
+}
+
 export async function initialize(options: Config & { configPath?: string } = {}) {
-  const { cwd = process.cwd(), configPath, ...rest } = options
+  const { cwd, configPath, ...rest } = merge({}, defaultOptions, options)
 
   logger.info('Panda generator starting...')
 
   const conf = await loadConfigFile<UserConfig>({ root: cwd, file: configPath })
-  merge(conf.config, { cwd, ...rest })
-
-  logger.debug({ type: 'config:file', path: conf.path })
 
   if (!conf.config) {
     throw new ConfigNotFoundError({ cwd, path: conf.path })
   }
+
+  conf.config = merge({ cwd, ...rest }, conf.config)
+
+  logger.debug({ type: 'config:file', path: conf.path })
 
   const ctx = createContext(conf)
   validateContext(ctx)
