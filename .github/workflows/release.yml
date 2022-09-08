@@ -1,0 +1,47 @@
+name: Publish
+
+on:
+  push:
+    paths:
+      - '.changeset/**'
+      - 'packages/**'
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install
+        uses: ./.github/composite-actions/install
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Publish packages
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: pnpm release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Release to dev tag
+        if: steps.changesets.outputs.published != 'true'
+        run: |
+          git checkout main
+          pnpm changeset version --snapshot dev
+          pnpm changeset publish --tag dev
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
