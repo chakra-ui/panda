@@ -1,7 +1,6 @@
 import { build, Plugin } from 'esbuild'
-import { TsconfigPathsPlugin } from '@esbuild-plugins/tsconfig-paths'
-import path from 'path'
 import { lookItUpSync } from 'look-it-up'
+import path from 'path'
 import { pathToFileURL } from 'url'
 
 export async function bundleConfigFile(
@@ -43,7 +42,7 @@ export async function bundleConfigFile(
     format: isESM ? 'esm' : 'cjs',
     sourcemap: false,
     metafile: true,
-    plugins: [TsconfigPathsPlugin({}), externalPlugin],
+    plugins: [externalPlugin],
   })
 
   const { text } = result.outputFiles[0]
