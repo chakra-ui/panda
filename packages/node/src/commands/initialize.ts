@@ -4,9 +4,30 @@ import { logger } from '@css-panda/logger'
 import type { Config, UserConfig } from '@css-panda/types'
 import fs from 'fs-extra'
 import merge from 'lodash.merge'
-import { createContext } from '../create-context'
+import { outdent } from 'outdent'
+import { Context, createContext } from '../create-context'
 import { generateSystem } from '../generators'
 import { updateGitIgnore } from '../git-ignore'
+
+function validateContext(ctx: Context) {
+  if (!ctx.config.include) {
+    throw new Error(outdent`
+    You are missing the required property: "include".
+    Please add it to your config file.
+
+    ---
+
+    import { defineConfig } from "css-panda";
+
+    defineConfig({
+      include: ['*.jsx'],
+    })
+    
+    ---
+
+    `)
+  }
+}
 
 export async function initialize(options: Config & { configPath?: string } = {}) {
   const { cwd = process.cwd(), configPath, ...rest } = options
@@ -23,6 +44,7 @@ export async function initialize(options: Config & { configPath?: string } = {})
   }
 
   const ctx = createContext(conf)
+  validateContext(ctx)
 
   logger.info('Panda context created...')
 
