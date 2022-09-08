@@ -1,4 +1,4 @@
-import { toEm, toPx } from '@css-panda/css-unit'
+import { toEm, toPx } from '@css-panda/shared'
 
 type BuildOptions = {
   min?: string | null

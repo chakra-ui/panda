@@ -1,4 +1,4 @@
-import { createVar } from '@css-panda/css-var'
+import { cssVar } from '@css-panda/shared'
 import { negate } from './calc'
 
 export function getTokenData(category: string, entry: Entry, options: Options = {}): TokenData {
@@ -6,7 +6,7 @@ export function getTokenData(category: string, entry: Entry, options: Options = 
 
   const [key, value] = entry
 
-  const variable = createVar(key, {
+  const variable = cssVar(key, {
     prefix: [prefix, category].filter(Boolean).join('-'),
   })
 

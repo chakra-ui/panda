@@ -6,17 +6,17 @@ function dashCase(string: string) {
   return string.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)
 }
 
-type CssVar = {
+export type CssVar = {
   var: `--${string}`
   ref: string
 }
 
-export type CreateVarOptions = {
+export type CssVarOptions = {
   fallback?: string
   prefix?: string
 }
 
-export function createVar(name: string, options: CreateVarOptions = {}): CssVar {
+export function cssVar(name: string, options: CssVarOptions = {}): CssVar {
   const { fallback = '', prefix = '' } = options
 
   const variable = dashCase(['-', prefix, esc(name)].filter(Boolean).join('-'))

@@ -78,7 +78,6 @@ importers:
 
   packages/core:
     specifiers:
-      '@css-panda/css-unit': workspace:*
       '@css-panda/error': workspace:*
       '@css-panda/fixture': workspace:*
       '@css-panda/logger': workspace:*
@@ -97,7 +96,6 @@ importers:
       postcss-sort-media-queries: 4.3.0
       ts-pattern: 4.0.5
     dependencies:
-      '@css-panda/css-unit': link:../css-unit
       '@css-panda/error': link:../error
       '@css-panda/logger': link:../logger
       '@css-panda/shared': link:../shared
@@ -116,12 +114,6 @@ importers:
     devDependencies:
       '@css-panda/fixture': link:../fixture
       '@types/lodash.merge': 4.6.7
-
-  packages/css-unit:
-    specifiers: {}
-
-  packages/css-var:
-    specifiers: {}
 
   packages/error:
     specifiers: {}
@@ -199,7 +191,6 @@ importers:
 
   packages/tokens:
     specifiers:
-      '@css-panda/css-var': workspace:*
       '@css-panda/error': workspace:*
       '@css-panda/fixture': workspace:*
       '@css-panda/shared': workspace:*
@@ -208,7 +199,6 @@ importers:
       lodash.get: 4.4.2
       ts-pattern: 4.0.5
     dependencies:
-      '@css-panda/css-var': link:../css-var
       '@css-panda/error': link:../error
       '@css-panda/shared': link:../shared
       '@css-panda/types': link:../types

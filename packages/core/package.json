@@ -22,7 +22,6 @@
     "@css-panda/error": "workspace:*",
     "@css-panda/types": "workspace:*",
     "@css-panda/shared": "workspace:*",
-    "@css-panda/css-unit": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "@css-panda/tokens": "workspace:*",
     "postcss": "8.4.16",
