@@ -11,6 +11,8 @@ export function createCss(context: Context) {
 
     walkStyles(styleObject, (props: Dict, scope?: string) => {
       walkObject(props, (value, paths) => {
+        if (value == null) return
+
         const [prop, ...allConditions] = paths
 
         const conditions = filterBaseConditions(allConditions)

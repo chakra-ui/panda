@@ -81,6 +81,9 @@ export function createRuleset(context: GeneratorContext, options: { hash?: boole
     const { scope, styles } = options
 
     walkObject(styles, (value, paths) => {
+      // if value doesn't exist
+      if (value == null) return
+
       // conditions.shift was done to support condition groups
       const [prop, ...allConditions] = context.conditions.shift(paths)
 
