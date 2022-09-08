@@ -18,11 +18,11 @@ export function writeFileWithNote(path: string, text: string) {
   return writeFile(path, withNote(text))
 }
 
-const __require = createRequire(import.meta.url)
+const req = typeof globalThis.require === 'function' ? globalThis.require : createRequire(import.meta.url)
 
 export function getEntrypoint(pkg: string, file: { dev: string; prod?: string }) {
   const { dev, prod = dev } = file
-  const entry = __require.resolve(pkg)
+  const entry = req.resolve(pkg)
 
   const isDist = entry.includes('dist')
   const isType = pkg.includes('/types')

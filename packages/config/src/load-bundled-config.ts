@@ -2,15 +2,15 @@ import fs from 'fs'
 import { createRequire } from 'module'
 import path from 'path'
 
-const __require = createRequire(import.meta.url)
+const req = typeof globalThis.require === 'function' ? globalThis.require : createRequire(import.meta.url)
 
 export function loadBundledFile(fileName: string, bundledCode: string): Promise<any> {
   const extension = path.extname(fileName)
   const realFileName = fs.realpathSync(fileName)
 
-  const defaultLoader = __require.extensions[extension]!
+  const defaultLoader = req.extensions[extension]!
 
-  __require.extensions[extension] = (module: NodeModule, filename: string) => {
+  req.extensions[extension] = (module: NodeModule, filename: string) => {
     if (filename === realFileName) {
       const __module = module as any
       __module._compile(bundledCode, filename)
@@ -20,11 +20,11 @@ export function loadBundledFile(fileName: string, bundledCode: string): Promise<
   }
 
   // clear cache in case of server restart
-  delete __require.cache[__require.resolve(fileName)]
+  delete req.cache[req.resolve(fileName)]
 
-  const raw = __require(fileName)
+  const raw = req(fileName)
   const config = raw.__esModule ? raw.default : raw
-  __require.extensions[extension] = defaultLoader
+  req.extensions[extension] = defaultLoader
 
   return config
 }
