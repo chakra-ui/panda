@@ -25,7 +25,7 @@ export async function loadConfigFile<T extends Record<string, any> = Record<stri
 
   if (!filepath) return {}
 
-  const bundled = await bundleConfigFile(filepath, true)
+  const bundled = await bundleConfigFile(filepath, isESM)
 
   logger.info({ type: 'config', msg: 'Bundled Config File' })
 
