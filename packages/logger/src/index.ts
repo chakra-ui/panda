@@ -21,35 +21,6 @@ const levelsMap = {
   fatal: { w: 4, c: colors.bgRed },
 }
 
-function output(entry: Entry) {
-  entry.time.setMinutes(entry.time.getMinutes() - entry.time.getTimezoneOffset())
-
-  const color = levelsMap[entry.level].c
-
-  const data = compact(entry)
-  const formatted = typeof entry.msg == 'string' ? entry.msg : util.inspect(data, { colors: true, depth: null })
-
-  const uword = entry.type ? colors.gray(`[${entry.type}]`) : undefined
-  const label = colors.bold(color(`${entry.level}`))
-
-  const msg = [`🐼`, label, uword, formatted].filter(Boolean).join(' ')
-
-  console.log(msg)
-}
-
-function parseErr({ err }: { err: any }) {
-  if (!(err instanceof Error)) err = new Error(err)
-  const stack = err.stack.split(/[\r\n]+\s*/g)
-  return {
-    err: null,
-    code: err.code,
-    class: err.constructor.name,
-    stack: stack.slice(1, -1),
-    type: err.constructor.name,
-    msg: colors.red(err.message),
-  }
-}
-
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal'
 
 export type Config = {
@@ -81,23 +52,29 @@ class Logger {
   parsers: any
 
   constructor(conf: Config = {}) {
-    this.level = conf.level || 'debug'
-    const only = conf.only ?? process.env.DEBUG
+    const debugEnv = process.env.DEBUG
+
+    this.level = debugEnv ? 'debug' : conf.level || 'info'
+
+    const only = conf.only ?? debugEnv
+
     if (only && only !== '*') {
       this.only = Array.isArray(only) ? only : only.split(/[\s,]+/)
     }
+
     if (conf.except) {
       this.except = conf.except
     }
+
     this.defaults = conf.defaults || {}
-    this.parsers = { err: parseErr }
+    this.parsers = { err: this.parseErr }
   }
 
   addParser(key: string, parser: (data: any) => any) {
     this.parsers[key] = parser
   }
 
-  getEntry(level: LogLevel, args: any[]): Entry {
+  private getEntry(level: LogLevel, args: any[]): Entry {
     const data = typeof args[0] == 'object' ? args.shift() : {}
     let msg = util.format(...args)
 
@@ -113,7 +90,36 @@ class Logger {
     return { level, ...data, msg, pid, time: new Date() }
   }
 
-  log(level: LogLevel, ...args: any[]) {
+  output(entry: Entry) {
+    entry.time.setMinutes(entry.time.getMinutes() - entry.time.getTimezoneOffset())
+
+    const color = levelsMap[entry.level].c
+
+    const data = compact(entry)
+    const formatted = typeof entry.msg == 'string' ? entry.msg : util.inspect(data, { colors: true, depth: null })
+
+    const uword = entry.type ? colors.gray(`[${entry.type}]`) : undefined
+    const label = colors.bold(color(`${entry.level}`))
+
+    const msg = [`🐼`, label, uword, formatted].filter(Boolean).join(' ')
+
+    console.log(msg)
+  }
+
+  parseErr({ err }: { err: any }) {
+    if (!(err instanceof Error)) err = new Error(err)
+    const stack = err.stack.split(/[\r\n]+\s*/g)
+    return {
+      err: null,
+      code: err.code,
+      class: err.constructor.name,
+      stack: stack.slice(1, -1),
+      type: err.constructor.name,
+      msg: colors.red(err.message),
+    }
+  }
+
+  private log(level: LogLevel, ...args: any[]) {
     const baseEntry = this.getEntry(level, args)
     const entry = { ...this.defaults, ...baseEntry }
 
@@ -122,7 +128,7 @@ class Logger {
 
     if (badType || badLevel) return false
 
-    output(entry)
+    this.output(entry)
 
     return entry
   }

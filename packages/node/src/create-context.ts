@@ -14,7 +14,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import postcss from 'postcss'
 
-const BASE_IGNORE = ['node_modules', '.git', '__tests__', 'tests']
+const BASE_IGNORE = ['node_modules', '.git']
 
 function mergePatterns(values: Pattern[]) {
   return values.reduce<Record<string, Pattern>>((acc, value) => {

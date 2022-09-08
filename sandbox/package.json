@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "css": "panda",
-    "css:dev": "panda --watch"
+    "css": "DEBUG=* panda",
+    "css:dev": "DEBUG=* panda --watch"
   },
   "dependencies": {
     "react": "18.2.0",
