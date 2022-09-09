@@ -1,10 +1,13 @@
 import { filterBaseConditions, toHash, walkObject, walkStyles } from '@css-panda/shared'
 import type { Dict, GeneratorContext } from './types'
 
-type Context = Pick<GeneratorContext, 'transform'> & { hash?: boolean }
+type Context = Pick<GeneratorContext, 'transform'> & {
+  hash?: boolean
+  conditions?: { shift: (paths: string[]) => string[] }
+}
 
 export function createCss(context: Context) {
-  const { transform, hash } = context
+  const { transform, hash, conditions: conds = { shift: (v) => v } } = context
 
   return (styleObject: Dict) => {
     const classNames = new Set<string>()
@@ -13,7 +16,7 @@ export function createCss(context: Context) {
       walkObject(props, (value, paths) => {
         if (value == null) return
 
-        const [prop, ...allConditions] = paths
+        const [prop, ...allConditions] = conds.shift(paths)
 
         const conditions = filterBaseConditions(allConditions)
         const transformed = transform(prop, value)

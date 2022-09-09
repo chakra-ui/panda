@@ -28,8 +28,10 @@ export function generateSerializer(hash?: boolean) {
     // panda.config
     import { transform } from "./transform"
     import { createCss } from "./serializer"
-      
-    const context = ${hash ? '{ transform, hash: true }' : '{ transform }'}
+    import { sortConditions } from "./conditions"
+
+    const conditions = { shift: sortConditions }
+    const context = ${hash ? '{ transform, conditions, hash: true }' : '{ transform, conditions }'}
       
     export const css = createCss(context)
     `,

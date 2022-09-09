@@ -51,14 +51,19 @@ async function setupGlobalStyle(ctx: Context) {
 
 async function setupTypes(ctx: Context, dict: TokenMap) {
   await ensureDir(ctx.paths.types)
+
   const code = await generateCssType()
+  const conditions = generateConditions(ctx)
+
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.types, 'csstype.d.ts'), code.cssType),
     writeFileWithNote(path.join(ctx.paths.types, 'panda-csstype.d.ts'), code.pandaCssType),
     writeFileWithNote(path.join(ctx.paths.types, 'public.d.ts'), code.publicType),
     writeFileWithNote(path.join(ctx.paths.types, 'token.d.ts'), generateTokenDts(dict)),
     writeFileWithNote(path.join(ctx.paths.types, 'property-type.d.ts'), generatePropertyTypes(ctx.utilities)),
-    writeFileWithNote(path.join(ctx.paths.types, 'conditions.d.ts'), generateConditions(ctx)),
+
+    writeFileWithNote(path.join(ctx.paths.css, 'conditions.js'), conditions.js),
+    writeFileWithNote(path.join(ctx.paths.types, 'conditions.d.ts'), conditions.dts),
   ])
 }
 
