@@ -104,7 +104,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
       fs.unlinkSync(temp.getPath(file))
     },
     get glob() {
-      return ['*.css']
+      return [`${temp.dir}/**/*.css`]
     },
   }
 

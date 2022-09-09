@@ -31,12 +31,10 @@ export async function createContentWatcher(ctx: Context, callback: (file: string
 }
 
 export async function createTempWatcher(ctx: Context, callback: () => Promise<void>) {
-  const watcher = createWatcher(ctx.temp.glob, {
-    cwd: ctx.temp.dir,
-  })
+  const watcher = createWatcher(ctx.temp.glob)
 
   watcher.on('all', async (event, file) => {
-    logger.debug(`temp:${event}}`, file)
+    logger.debug({ type: `temp:${event}`, file })
     await callback()
   })
 

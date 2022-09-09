@@ -67,7 +67,7 @@ export async function extractContent(ctx: Context, file: string) {
   if (collector.isEmpty()) return
 
   const tempPath = ctx.temp.write(file, sheet.toCss())
-  logger.debug({ type: 'temp:write', tempPath })
+  logger.debug({ type: 'temp:write', file, tempPath })
 
   sheet.reset()
 }
