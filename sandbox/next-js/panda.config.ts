@@ -4,5 +4,5 @@ import { defineConfig } from 'css-panda'
 export default defineConfig({
   ...config,
   outdir: 'styled-system',
-  include: ['*.jsx'],
+  include: ['pages/**/*.jsx'],
 })

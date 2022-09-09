@@ -1,0 +1,24 @@
+{
+  "name": "next-js",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "css": "DEBUG=* panda",
+    "css:dev": "DEBUG=* panda --watch"
+  },
+  "dependencies": {
+    "next": "12.3.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "eslint": "8.23.0",
+    "eslint-config-next": "12.3.0",
+    "@css-panda/fixture": "workspace:*",
+    "css-panda": "workspace:*"
+  }
+}
