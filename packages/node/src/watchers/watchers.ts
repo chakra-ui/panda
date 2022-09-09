@@ -35,22 +35,10 @@ export async function createTempWatcher(ctx: Context, callback: () => Promise<vo
     cwd: ctx.temp.dir,
   })
 
-  watcher.on('change', async (file) => {
-    logger.debug(`temp:update`, file)
+  watcher.on('all', async (event, file) => {
+    logger.debug(`temp:${event}}`, file)
     await callback()
   })
-
-  watcher.on('add', async (file) => {
-    logger.debug(`temp:create`, file)
-    await callback()
-  })
-
-  watcher.on('unlink', async (file) => {
-    logger.debug(`temp:delete`, file)
-    await callback()
-  })
-
-  await callback()
 
   return watcher
 }
