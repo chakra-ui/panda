@@ -1,5 +1,5 @@
-import { logger } from '@css-panda/logger'
 import { getConfigDependencies, LoadConfigResult } from '@css-panda/config'
+import { logger } from '@css-panda/logger'
 import type { UserConfig } from '@css-panda/types'
 import type { Context } from '../create-context'
 import { createWatcher } from './create-watcher'
@@ -9,7 +9,7 @@ export async function createConfigWatcher(conf: LoadConfigResult<UserConfig>) {
   return createWatcher(deps.value, { cwd: deps.cwd })
 }
 
-export async function createContentWatcher(ctx: Context, callback: (file: string) => void) {
+export async function createContentWatcher(ctx: Context, callback: (file: string) => Promise<void>) {
   const { include, cwd, exclude } = ctx
 
   const watcher = createWatcher(include, {
@@ -17,19 +17,14 @@ export async function createContentWatcher(ctx: Context, callback: (file: string
     ignore: exclude,
   })
 
-  watcher.on('update', (file) => {
-    logger.debug('file:changed', file)
-    callback(file)
-  })
+  watcher.on('all', async (event, file) => {
+    logger.debug({ type: `file:${event}`, file })
 
-  watcher.on('create', (file) => {
-    logger.debug('file:detected', file)
-    callback(file)
-  })
-
-  watcher.on('delete', (file) => {
-    logger.debug('file:deleted', file)
-    ctx.temp.rm(file)
+    if (event === 'unlink') {
+      ctx.temp.rm(file)
+    } else {
+      await callback(file)
+    }
   })
 
   return watcher
@@ -40,17 +35,17 @@ export async function createTempWatcher(ctx: Context, callback: () => Promise<vo
     cwd: ctx.temp.dir,
   })
 
-  watcher.on('update', async (file) => {
+  watcher.on('change', async (file) => {
     logger.debug(`temp:update`, file)
     await callback()
   })
 
-  watcher.on('create', async (file) => {
+  watcher.on('add', async (file) => {
     logger.debug(`temp:create`, file)
     await callback()
   })
 
-  watcher.on('delete', async (file) => {
+  watcher.on('unlink', async (file) => {
     logger.debug(`temp:delete`, file)
     await callback()
   })

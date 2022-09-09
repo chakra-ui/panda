@@ -1,18 +1,18 @@
 import { Stylesheet } from '@css-panda/core'
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
-import { createCollector, createPlugins, transformFileSync } from '@css-panda/ast'
+import { createCollector, createPlugins, transformFile } from '@css-panda/ast'
 import path from 'path'
 import type { Context } from './create-context'
 
-export function extractContent(ctx: Context, file: string) {
+export async function extractContent(ctx: Context, file: string) {
   const { hash, importMap } = ctx
 
   const sheet = new Stylesheet(ctx.context(), { hash })
   const collector = createCollector()
 
-  const absPath = path.join(ctx.cwd, file)
-  transformFileSync(absPath, {
+  const absPath = path.isAbsolute(file) ? file : path.join(ctx.cwd, file)
+  await transformFile(absPath, {
     plugins: createPlugins(collector, importMap, file),
   })
 

@@ -148,8 +148,9 @@ importers:
       '@types/fs-extra': 9.0.13
       '@types/lodash.merge': 4.6.7
       '@types/pluralize': 0.0.29
+      chokidar: ^3.5.3
       esbuild: 0.15.7
-      filespy: 1.2.4
+      fast-glob: ^3.2.11
       fs-extra: 10.1.0
       hookable: 5.3.0
       lodash.merge: 4.6.2
@@ -158,7 +159,6 @@ importers:
       pkg-types: 0.3.5
       pluralize: 8.0.0
       postcss: 8.4.16
-      recrawl: 2.2.1
       ts-pattern: 4.0.5
     dependencies:
       '@css-panda/ast': link:../ast
@@ -169,8 +169,9 @@ importers:
       '@css-panda/shared': link:../shared
       '@css-panda/tokens': link:../tokens
       '@css-panda/types': link:../types
+      chokidar: 3.5.3
       esbuild: 0.15.7
-      filespy: 1.2.4
+      fast-glob: 3.2.11
       fs-extra: 10.1.0
       hookable: 5.3.0
       lodash.merge: 4.6.2
@@ -179,7 +180,6 @@ importers:
       pkg-types: 0.3.5
       pluralize: 8.0.0
       postcss: 8.4.16
-      recrawl: 2.2.1
       ts-pattern: 4.0.5
     devDependencies:
       '@css-panda/fixture': link:../fixture
@@ -761,10 +761,6 @@ packages:
       prettier: 2.7.1
     dev: false
 
-  /@cush/relative/1.0.0:
-    resolution: {integrity: sha512-RpfLEtTlyIxeNPGKcokS+p3BZII/Q3bYxryFRglh5H3A3T8q9fsLYm72VYAMEOOIBLEa8o93kFLiBDUWKrwXZA==}
-    dev: false
-
   /@esbuild-kit/cjs-loader/2.3.3:
     resolution: {integrity: sha512-Rt4O1mXlPEDVxvjsHLgbtHVdUXYK9C1/6ThpQnt7FaXIjUOsI6qhHYMgALhNnlIMZffag44lXd6Dqgx3xALbpQ==}
     dependencies:
@@ -909,15 +905,6 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
-    dev: false
-
-  /@parcel/watcher/2.0.5:
-    resolution: {integrity: sha512-x0hUbjv891omnkcHD7ZOhiyyUqUUR6MNjq89JhEI3BxppeKWAm6NPQsqqRrAkCJBogdT/o/My21sXtTI9rJIsw==}
-    engines: {node: '>= 10.0.0'}
-    requiresBuild: true
-    dependencies:
-      node-addon-api: 3.2.1
-      node-gyp-build: 4.5.0
     dev: false
 
   /@swc/core-android-arm-eabi/1.2.248:
@@ -1463,10 +1450,6 @@ packages:
   /binary-extensions/2.2.0:
     resolution: {integrity: sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==}
     engines: {node: '>=8'}
-    dev: false
-
-  /binary-insert/1.2.1:
-    resolution: {integrity: sha512-CGsSYzBUL/QqnmL4CTwLQnnVBj5RqPCmVifo5SnqTSbH5heFPtDijsIZJCKmOaXowaYUiiDOc+eZUjpU6NdpMg==}
     dev: false
 
   /binary/0.3.0:
@@ -2608,15 +2591,6 @@ packages:
       reusify: 1.0.4
     dev: false
 
-  /filespy/1.2.4:
-    resolution: {integrity: sha512-eEfawBwgA0vXsjaO3K2vkbmSoh3gdoID1z79VZsQStSL9WL2YPAEZRyjBSf7x1o6/ajttiFTeUBTkwR5nj6YCA==}
-    dependencies:
-      '@parcel/watcher': 2.0.5
-      binary-insert: 1.2.1
-      glob-regex: 0.3.2
-      slash: 3.0.0
-    dev: false
-
   /fill-range/7.0.1:
     resolution: {integrity: sha512-qOo9F+dMUmC2Lcb4BbVvnKJxTPjCm+RRpe4gDuGrzkL7mEVl/djYSu2OdQ2Pa302N4oqkSg9ir6jaLWJ2USVpQ==}
     engines: {node: '>=8'}
@@ -2762,10 +2736,6 @@ packages:
     engines: {node: '>= 6'}
     dependencies:
       is-glob: 4.0.3
-    dev: false
-
-  /glob-regex/0.3.2:
-    resolution: {integrity: sha512-m5blUd3/OqDTWwzBBtWBPrGlAzatRywHameHeekAZyZrskYouOGdNB8T/q6JucucvJXtOuyHIn0/Yia7iDasDw==}
     dev: false
 
   /glob/7.1.6:
@@ -3351,10 +3321,6 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  /node-addon-api/3.2.1:
-    resolution: {integrity: sha512-mmcei9JghVNDYydghQmeDX8KoAm0FAiYyIcUt/N4nhyAipB17pllZQDOJD2fotxABnt4Mdz+dKTO7eftLg4d0A==}
-    dev: false
-
   /node-fetch/2.6.7:
     resolution: {integrity: sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==}
     engines: {node: 4.x || >=6.0.0}
@@ -3365,11 +3331,6 @@ packages:
         optional: true
     dependencies:
       whatwg-url: 5.0.0
-    dev: false
-
-  /node-gyp-build/4.5.0:
-    resolution: {integrity: sha512-2iGbaQBV+ITgCz76ZEjmhUKAKVf7xfY1sRl4UiKQspfZMH2h06SyhNsnSVy50cwkFQDGLyif6m/6uFXHkOZ6rg==}
-    hasBin: true
     dev: false
 
   /node-releases/2.0.6:
@@ -3789,15 +3750,6 @@ packages:
     engines: {node: '>=8.10.0'}
     dependencies:
       picomatch: 2.3.1
-    dev: false
-
-  /recrawl/2.2.1:
-    resolution: {integrity: sha512-tBdAdiJ1f6Wi8PCI5RTKG/82j3qvTQJTvdPmq3LWLu40FMc0BKLFKzH3SzTJrmpa87qAfFAEhfUraBOZ9cGPXA==}
-    dependencies:
-      '@cush/relative': 1.0.0
-      glob-regex: 0.3.2
-      slash: 3.0.0
-      tslib: 1.14.1
     dev: false
 
   /redent/3.0.0:

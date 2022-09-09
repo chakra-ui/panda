@@ -1,5 +1,12 @@
 import { logger } from '@css-panda/logger'
-import { filespy } from 'filespy'
+import chokidar, { WatchOptions } from 'chokidar'
+import glob from 'fast-glob'
+
+const getWatchOptions = (): WatchOptions => {
+  return {
+    disableGlobbing: true,
+  }
+}
 
 type WatcherOptions = {
   ignore?: string[]
@@ -9,12 +16,10 @@ type WatcherOptions = {
 export function createWatcher(files: string[], options: WatcherOptions = {}) {
   const { ignore, cwd = process.cwd() } = options
 
-  logger.debug({ type: 'file:watcher', cwd, files })
+  const globFiles = glob.sync(files, { cwd, ignore })
+  const watcher = chokidar.watch(globFiles, getWatchOptions())
 
-  const watcher = filespy(cwd, {
-    only: files,
-    skip: ignore,
-  })
+  logger.debug({ type: 'file:watcher', files: watcher.getWatched() })
 
   process.once('SIGINT', async () => {
     await watcher.close()

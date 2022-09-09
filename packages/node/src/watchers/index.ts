@@ -6,7 +6,7 @@ process.setMaxListeners(Infinity)
 
 type Options = {
   onConfigChange: () => Promise<void>
-  onContentChange: (file: string) => void
+  onContentChange: (file: string) => Promise<void>
   onTmpChange: () => Promise<void>
 }
 
@@ -21,7 +21,7 @@ export async function watch(ctx: Context, options: Options) {
     await content.close()
   }
 
-  config.on('update', async () => {
+  config.on('change', async () => {
     await close()
     logger.info('⚙️ Config updated, restarting...')
     await options.onConfigChange()

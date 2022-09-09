@@ -1,11 +1,11 @@
 import { logger } from '@css-panda/logger'
 import type { Config } from '@css-panda/types'
+import glob from 'fast-glob'
 import { ensureDir } from 'fs-extra'
-import { recrawl } from 'recrawl'
 import { extractContent } from './extract-content'
 import { extractTemp } from './extract-tmp'
-import { watch } from './watchers'
 import { initialize } from './initialize'
+import { watch } from './watchers'
 
 export async function generate(options: Config & { configPath?: string } = {}) {
   const ctx = await initialize(options)
@@ -25,15 +25,17 @@ export async function generate(options: Config & { configPath?: string } = {}) {
       },
     })
   } else {
-    const crawl = recrawl({
-      only: ctx.include,
-      skip: ctx.exclude,
+    const globFiles = glob.sync(ctx.include, {
+      cwd: ctx.cwd,
+      ignore: ctx.exclude,
     })
 
-    await crawl(ctx.cwd, (file) => {
-      logger.debug({ type: 'file', file })
-      extractContent(ctx, file)
-    })
+    await Promise.all(
+      globFiles.map(async (file) => {
+        logger.debug({ type: 'file', file })
+        return extractContent(ctx, file)
+      }),
+    )
 
     await extractTemp(ctx)
   }
