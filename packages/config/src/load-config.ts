@@ -1,3 +1,4 @@
+import { minifyConfig } from '@css-panda/ast'
 import { logger } from '@css-panda/logger'
 import fs from 'fs'
 import path from 'path'
@@ -63,6 +64,7 @@ export async function loadConfigFile<T extends Record<string, any> = Record<stri
     config,
     dependencies: dependencies.map((dep) => normalizePath(path.resolve(dep))),
     code: bundled.code,
+    minifiedCode: minifyConfig(bundled.code),
   }
 }
 
@@ -71,4 +73,5 @@ export type LoadConfigResult<T> = {
   config: T
   dependencies: string[]
   code: string
+  minifiedCode: string
 }

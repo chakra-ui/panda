@@ -48,6 +48,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
   const cwd = path.resolve(_cwd)
 
   const configPath = path.join(cwd, outdir, 'config.js')
+  const minConfigPath = path.join(cwd, outdir, 'config.min.js')
   const cssPath = path.join(cwd, outdir, 'css')
   const dsPath = path.join(cwd, outdir, 'design-tokens')
   const typesPath = path.join(cwd, outdir, 'types')
@@ -141,6 +142,8 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
       types: typesPath,
       recipe: recipePath,
       pattern: patternPath,
+      configMin: minConfigPath,
+      config: configPath,
     },
     helpers,
 

@@ -1,4 +1,3 @@
-import { minifyConfig } from '@css-panda/ast'
 import { logger } from '@css-panda/logger'
 import type { TokenMap } from '@css-panda/tokens'
 import { ensureDir } from 'fs-extra'
@@ -152,11 +151,8 @@ async function setupCssIndex(ctx: Context) {
   ])
 }
 
-export async function generateSystem(ctx: Context, configCode: string) {
-  const { dictionary, configPath } = ctx
-
-  ensureDir(ctx.outdir)
-  await writeFileWithNote(configPath, minifyConfig(configCode, { minify: true }))
+export async function generateSystem(ctx: Context) {
+  const { dictionary } = ctx
 
   await Promise.all([
     setupDesignTokens(ctx, dictionary),

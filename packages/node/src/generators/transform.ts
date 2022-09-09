@@ -2,7 +2,7 @@ import outdent from 'outdent'
 
 export function generateTransform() {
   return outdent`
-      import config from '../config'
+      import config from '../config.min'
       
       const utilities = config.utilities ?? []
 

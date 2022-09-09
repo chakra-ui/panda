@@ -2,11 +2,12 @@ import { loadConfigFile } from '@css-panda/config'
 import { ConfigNotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import type { Config, UserConfig } from '@css-panda/types'
-import fs from 'fs-extra'
+import { emptyDir, ensureDir } from 'fs-extra'
 import merge from 'lodash.merge'
 import { outdent } from 'outdent'
 import { Context, createContext } from './create-context'
 import { generateSystem } from './generators'
+import { writeFileWithNote } from './generators/__utils'
 import { updateGitIgnore } from './git-ignore'
 
 function validateContext(ctx: Context) {
@@ -20,7 +21,7 @@ function validateContext(ctx: Context) {
     import { defineConfig } from "css-panda";
 
     defineConfig({
-      include: ['*.jsx'],
+      include: ['src/**/*.jsx'],
     })
     
     ---
@@ -55,12 +56,18 @@ export async function initialize(options: Config & { configPath?: string } = {})
   logger.info('Panda context created...')
 
   if (conf.config.clean) {
-    await fs.emptyDir(ctx.outdir)
+    await emptyDir(ctx.outdir)
   }
 
-  await updateGitIgnore(ctx)
+  await ensureDir(ctx.outdir)
 
-  await generateSystem(ctx, conf.code)
+  await Promise.all([
+    updateGitIgnore(ctx),
+    writeFileWithNote(ctx.paths.configMin, conf.minifiedCode),
+    writeFileWithNote(ctx.paths.config, conf.code),
+  ])
+
+  await generateSystem(ctx)
 
   logger.info('Generated system')
 

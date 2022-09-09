@@ -1,4 +1,4 @@
-import { unionType, capitalize } from '@css-panda/shared'
+import { capitalize, unionType } from '@css-panda/shared'
 import type { Pattern } from '@css-panda/types'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
@@ -8,17 +8,13 @@ export function generatePattern(config: { patterns?: Pattern[] }) {
   if (!patterns.length) return
   const js = [
     outdent`
-  import config from "../config"
+  import config from "../config.min"
   import { css } from "../css"
+
+  const patterns = config.patterns ?? []
   
-  const cache = new Map()
-  
-  const getPattern = (key) => {
-    if (cache.has(key)) return cache.get(key)
-    const pattern = config.patterns.find(p => p.name === key)
-    if (!pattern) throw new Error(\`Pattern \${key} not found\`)
-    cache.set(key, pattern)
-    return pattern
+  function getPattern(key){
+    return patterns.find((pattern) => pattern.name === key)
   }
 
   function mapObject(obj, fn) {
