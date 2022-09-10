@@ -21,7 +21,7 @@ export async function createContentWatcher(ctx: Context, callback: (file: string
     logger.debug({ type: `file:${event}`, file })
 
     if (event === 'unlink') {
-      ctx.temp.rm(file)
+      ctx.assets.rm(file)
     } else {
       await callback(file)
     }
@@ -30,11 +30,11 @@ export async function createContentWatcher(ctx: Context, callback: (file: string
   return watcher
 }
 
-export async function createTempWatcher(ctx: Context, callback: () => Promise<void>) {
-  const watcher = createWatcher(ctx.temp.glob)
+export async function createAssetWatcher(ctx: Context, callback: () => Promise<void>) {
+  const watcher = createWatcher(ctx.assets.glob)
 
   watcher.on('all', async (event, file) => {
-    logger.debug({ type: `temp:${event}`, file })
+    logger.debug({ type: `asset:${event}`, file })
     await callback()
   })
 

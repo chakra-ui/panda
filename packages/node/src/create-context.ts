@@ -7,7 +7,6 @@ import {
   mergeUtilities,
   Stylesheet,
 } from '@css-panda/core'
-import { logger } from '@css-panda/logger'
 import { TokenMap } from '@css-panda/tokens'
 import type { Pattern, TransformHelpers, UserConfig } from '@css-panda/types'
 import fs from 'fs-extra'
@@ -54,7 +53,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
   const typesPath = path.join(cwd, outdir, 'types')
   const recipePath = path.join(cwd, outdir, 'recipes')
   const patternPath = path.join(cwd, outdir, 'patterns')
-  const tempPath = path.join(cwd, outdir, 'assets')
+  const assetPath = path.join(cwd, outdir, 'assets')
 
   const dictionary = new TokenMap({
     tokens,
@@ -86,34 +85,32 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
 
   const stylesheet = new Stylesheet(context())
 
-  const temp = {
-    dir: tempPath,
+  const assets = {
+    dir: assetPath,
     getPath(file: string) {
-      return path.join(temp.dir, temp.format(file))
+      return path.join(assets.dir, assets.format(file))
     },
     readFile(file: string) {
-      return fs.readFile(path.join(temp.dir, file), 'utf8')
+      return fs.readFile(path.join(assets.dir, file), 'utf8')
     },
     getFiles() {
-      return fs.readdirSync(temp.dir)
+      return fs.readdirSync(assets.dir)
     },
     format(file: string) {
       return file.replaceAll(path.sep, '__').replace(path.extname(file), '.css')
     },
     write(file: string, css: string) {
-      const filepath = temp.getPath(file)
+      const filepath = assets.getPath(file)
       fs.writeFileSync(filepath, css)
       return filepath
     },
     rm(file: string) {
-      fs.unlinkSync(temp.getPath(file))
+      fs.unlinkSync(assets.getPath(file))
     },
     get glob() {
-      return [`${temp.dir}/**/*.css`]
+      return [`${assets.dir}/**/*.css`]
     },
   }
-
-  logger.debug({ type: 'config:tmpfile', dir: temp.dir })
 
   const outputCss = {
     path: path.join(cwd, outdir, 'styles.css'),
@@ -137,10 +134,10 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
     patterns: mergePatterns(patterns),
 
     outputCss,
-    temp,
+    assets,
 
     paths: {
-      temp: tempPath,
+      asset: assetPath,
       css: cssPath,
       ds: dsPath,
       types: typesPath,

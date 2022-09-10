@@ -1,6 +1,6 @@
 import type { Context } from './create-context'
 
-export async function extractTemp(ctx: Context) {
+export async function extractAssets(ctx: Context) {
   ctx.stylesheet.reset()
 
   const imports: string[] = []
@@ -15,10 +15,10 @@ export async function extractTemp(ctx: Context) {
 
   ctx.stylesheet.addImports(imports)
 
-  const files = ctx.temp.getFiles()
+  const files = ctx.assets.getFiles()
   await Promise.all(
     files.map(async (file) => {
-      const css = await ctx.temp.readFile(file)
+      const css = await ctx.assets.readFile(file)
       ctx.stylesheet.append(css)
     }),
   )

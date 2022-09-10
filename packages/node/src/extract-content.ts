@@ -1,7 +1,7 @@
+import { createCollector, createPlugins, transformFile } from '@css-panda/ast'
 import { Stylesheet } from '@css-panda/core'
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
-import { createCollector, createPlugins, transformFile } from '@css-panda/ast'
 import path from 'path'
 import type { Context } from './create-context'
 
@@ -52,7 +52,6 @@ export async function extractContent(ctx: Context, file: string) {
     try {
       for (const item of result) {
         const pattern = ctx.patterns[name]
-        console.log({ pattern })
         if (!pattern) {
           throw new NotFoundError({ type: 'pattern', name })
         }
@@ -66,8 +65,8 @@ export async function extractContent(ctx: Context, file: string) {
 
   if (collector.isEmpty()) return
 
-  const tempPath = ctx.temp.write(file, sheet.toCss())
-  logger.debug({ type: 'temp:write', file, tempPath })
+  const assetPath = ctx.assets.write(file, sheet.toCss())
+  logger.debug({ type: 'asset:write', file, path: assetPath })
 
   sheet.reset()
 }
