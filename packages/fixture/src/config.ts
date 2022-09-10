@@ -9,7 +9,7 @@ import { semanticTokens, tokens } from './tokens'
 
 export const config: Config = {
   breakpoints,
-  prefix: 'pd',
+  cssVar: { prefix: 'pd' },
   keyframes,
   tokens,
   semanticTokens,

@@ -25,7 +25,10 @@ export type Config<
   hash?: boolean
   clean?: boolean
   outdir?: string
-  prefix?: string
+  cssVar?: {
+    prefix?: string
+    root?: string
+  }
   include?: string[]
   exclude?: string[]
   watch?: boolean

@@ -34,7 +34,7 @@ async function setupDesignTokens(ctx: Context, dict: TokenMap) {
   if (dict.isEmpty) return
   await ensureDir(ctx.paths.ds)
   return Promise.all([
-    writeFileWithNote(path.join(ctx.paths.ds, 'index.css'), generateCss(ctx)),
+    writeFileWithNote(path.join(ctx.paths.ds, 'index.css'), generateCss(ctx, ctx.cssVar?.root)),
     writeFileWithNote(path.join(ctx.paths.ds, 'index.d.ts'), generateDts()),
     writeFileWithNote(path.join(ctx.paths.ds, 'index.js'), generateJs(dict)),
   ])

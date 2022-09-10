@@ -37,7 +37,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
     conditions = {},
     tokens = {},
     semanticTokens = {},
-    prefix,
+    cssVar,
     outdir,
     exclude,
     patterns = [],
@@ -56,7 +56,11 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
   const patternPath = path.join(cwd, outdir, 'patterns')
   const tempPath = path.join(cwd, outdir, 'assets')
 
-  const dictionary = new TokenMap({ tokens, semanticTokens, prefix })
+  const dictionary = new TokenMap({
+    tokens,
+    semanticTokens,
+    prefix: cssVar?.prefix,
+  })
 
   const utilities = new CSSUtility({
     tokens: dictionary,
