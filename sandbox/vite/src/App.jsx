@@ -1,30 +1,31 @@
 import { css, globalStyle } from '../styled-system/css'
 import { textStyle } from '../styled-system/recipes'
+import { stack } from '../styled-system/patterns'
 import '../styled-system/styles.css'
 
 globalStyle({
   '*': {
-    margin: '0px',
+    margin: '0',
   },
 })
 
 function App() {
   return (
-    <div>
+    <div className={stack({ gap: '20px', align: 'center' })}>
       <p
         className={css({
-          fontSize: '24px',
-          fontFamily: 'body',
-          marginBottom: '40px',
+          color: 'red.300',
+          fontSize: 'lg',
+          fontFamily: 'sans-serif',
           hover: {
-            color: 'red.200',
-            background: 'pink',
+            color: 'red.300',
+            background: { _: 'purple', md: 'red' },
           },
         })}
       >
         Welcome
       </p>
-      <p className={textStyle({ size: { _: 'h2', md: 'h1' } })}>Hello world</p>
+      <h1 className={textStyle({ size: 'h2' })}>Beesama</h1>
     </div>
   )
 }

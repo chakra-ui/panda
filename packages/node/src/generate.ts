@@ -10,21 +10,9 @@ import { watch } from './watchers'
 export async function generate(options: Config & { configPath?: string } = {}) {
   const ctx = await initialize(options)
 
-  ensureDir(ctx.paths.asset)
+  await ensureDir(ctx.paths.asset)
 
-  if (ctx.watch) {
-    watch(ctx, {
-      onConfigChange() {
-        return generate({ ...options, clean: false })
-      },
-      onAssetChange() {
-        return extractAssets(ctx)
-      },
-      onContentChange(file) {
-        return extractContent(ctx, file)
-      },
-    })
-  } else {
+  async function buildOnce() {
     const globFiles = glob.sync(ctx.include, {
       cwd: ctx.cwd,
       ignore: ctx.exclude,
@@ -38,5 +26,21 @@ export async function generate(options: Config & { configPath?: string } = {}) {
     )
 
     await extractAssets(ctx)
+  }
+
+  await buildOnce()
+
+  if (ctx.watch) {
+    await watch(ctx, {
+      onConfigChange() {
+        return generate({ ...options, clean: false })
+      },
+      onAssetChange() {
+        return extractAssets(ctx)
+      },
+      onContentChange(file) {
+        return extractContent(ctx, file)
+      },
+    })
   }
 }

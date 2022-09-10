@@ -107,9 +107,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
     rm(file: string) {
       fs.unlinkSync(assets.getPath(file))
     },
-    get glob() {
-      return [`${assets.dir}/**/*.css`]
-    },
+    glob: [`${assetPath}/**/*.css`],
   }
 
   const outputCss = {

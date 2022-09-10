@@ -31,7 +31,8 @@ export async function createContentWatcher(ctx: Context, callback: (file: string
 }
 
 export async function createAssetWatcher(ctx: Context, callback: () => Promise<void>) {
-  const watcher = createWatcher(ctx.assets.glob)
+  const { cwd } = ctx
+  const watcher = createWatcher(ctx.assets.glob, { cwd })
 
   watcher.on('all', async (event, file) => {
     logger.debug({ type: `asset:${event}`, file })

@@ -4,6 +4,7 @@ import glob from 'fast-glob'
 
 const getWatchOptions = (): WatchOptions => {
   return {
+    ignoreInitial: true,
     disableGlobbing: true,
   }
 }
@@ -19,7 +20,10 @@ export function createWatcher(files: string[], options: WatcherOptions = {}) {
   const globFiles = glob.sync(files, { cwd, ignore })
   const watcher = chokidar.watch(globFiles, getWatchOptions())
 
-  logger.debug({ type: 'file:watcher', msg: `watching ${globFiles.length} files  /  glob: [${files}]` })
+  logger.debug({
+    type: 'file:watcher',
+    msg: `watching ${globFiles.length} files  /  glob: [${files}]`,
+  })
 
   process.once('SIGINT', async () => {
     await watcher.close()

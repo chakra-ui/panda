@@ -16,6 +16,7 @@ export async function extractAssets(ctx: Context) {
   ctx.stylesheet.addImports(imports)
 
   const files = ctx.assets.getFiles()
+
   await Promise.all(
     files.map(async (file) => {
       const css = await ctx.assets.readFile(file)
