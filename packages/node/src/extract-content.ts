@@ -8,10 +8,13 @@ import type { Context } from './create-context'
 export async function extractContent(ctx: Context, file: string) {
   const { hash, importMap } = ctx
 
+  logger.debug({ type: 'file:extract', file })
+
   const sheet = new Stylesheet(ctx.context(), { hash })
   const collector = createCollector()
 
   const absPath = path.isAbsolute(file) ? file : path.join(ctx.cwd, file)
+
   await transformFile(absPath, {
     plugins: createPlugins(collector, importMap, file),
   })
@@ -63,10 +66,7 @@ export async function extractContent(ctx: Context, file: string) {
     }
   })
 
-  if (collector.isEmpty()) return
+  if (collector.isEmpty()) return ''
 
-  const assetPath = ctx.assets.write(file, sheet.toCss())
-  logger.debug({ type: 'asset:write', file, path: assetPath })
-
-  sheet.reset()
+  return sheet.toCss()
 }

@@ -1,4 +1,3 @@
-import { logger } from '@css-panda/logger'
 import type { Config } from '@css-panda/types'
 import glob from 'fast-glob'
 import { ensureDir } from 'fs-extra'
@@ -20,8 +19,8 @@ export async function generate(options: Config & { configPath?: string } = {}) {
 
     await Promise.all(
       globFiles.map(async (file) => {
-        logger.debug({ type: 'file', file })
-        return extractContent(ctx, file)
+        const css = await extractContent(ctx, file)
+        await ctx.assets.write(file, css)
       }),
     )
 
@@ -38,8 +37,9 @@ export async function generate(options: Config & { configPath?: string } = {}) {
       onAssetChange() {
         return extractAssets(ctx)
       },
-      onContentChange(file) {
-        return extractContent(ctx, file)
+      async onContentChange(file) {
+        const css = await extractContent(ctx, file)
+        await ctx.assets.write(file, css)
       },
     })
   }

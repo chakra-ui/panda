@@ -7,6 +7,7 @@ import {
   mergeUtilities,
   Stylesheet,
 } from '@css-panda/core'
+import { logger } from '@css-panda/logger'
 import { TokenMap } from '@css-panda/tokens'
 import type { Pattern, TransformHelpers, UserConfig } from '@css-panda/types'
 import fs from 'fs-extra'
@@ -99,10 +100,10 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
     format(file: string) {
       return file.replaceAll(path.sep, '__').replace(path.extname(file), '.css')
     },
-    write(file: string, css: string) {
+    async write(file: string, css: string) {
       const filepath = assets.getPath(file)
-      fs.writeFileSync(filepath, css)
-      return filepath
+      await fs.writeFile(filepath, css)
+      logger.debug({ type: 'asset:write', file, path: filepath })
     },
     rm(file: string) {
       fs.unlinkSync(assets.getPath(file))
