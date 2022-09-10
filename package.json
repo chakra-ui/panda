@@ -4,8 +4,8 @@
   "private": true,
   "description": "The repository of css panda",
   "scripts": {
-    "dev": "pnpm -r --parallel --filter=./packages dev",
-    "build": "pnpm -r --parallel --filter=./packages build",
+    "dev": "pnpm -r --parallel --filter={packages} dev",
+    "build": "pnpm -r --parallel --filter={packages} build",
     "clean": "pnpm -r --parallel exec rm -rf dist .turbo *.log",
     "reset": "pnpm -r --parallel exec rm -rf node_modules && rm -rf node_modules",
     "test": "vitest",
