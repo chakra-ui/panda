@@ -33,6 +33,11 @@ export type PropertyUtility<T extends Record<string, any>> = {
    * Custom TS type for this property.
    */
   valueType?: string
+  /**
+   * [Experimental] The conditions this property can be used in.
+   * Useful for initial class generation.
+   */
+  conditions?: string[]
 }
 
 export type Utility<T extends Record<string, any> = Record<string, any>> = {

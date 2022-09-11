@@ -195,6 +195,12 @@ importers:
       '@types/lodash.merge': 4.6.7
       '@types/pluralize': 0.0.29
 
+  packages/preset:
+    specifiers:
+      '@css-panda/types': workspace:*
+    dependencies:
+      '@css-panda/types': link:../types
+
   packages/shared:
     specifiers: {}
 
