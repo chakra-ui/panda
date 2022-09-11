@@ -18,7 +18,6 @@ const levelsMap = {
   info: { w: 1, c: colors.blue },
   warn: { w: 2, c: colors.yellow },
   error: { w: 3, c: colors.red },
-  fatal: { w: 4, c: colors.bgRed },
 }
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal'
@@ -148,12 +147,12 @@ class Logger {
   error(...args: any[]) {
     return this.log('error', ...args)
   }
-
-  fatal(...args: any[]) {
-    return this.log('fatal', ...args)
-  }
 }
 
 export const logger = new Logger()
+
+export function quote(...str: string[]) {
+  return colors.cyan(`\`${str.join('')}\``)
+}
 
 export { colors }

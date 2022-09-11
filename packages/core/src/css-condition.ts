@@ -89,7 +89,7 @@ export function createConditions(options: { conditions: Conditions; breakpoints?
       try {
         return values[condition] ?? parseCondition(condition)
       } catch (error) {
-        logger.fatal({ err: error })
+        logger.error({ err: error })
       }
     },
     sort(conditions: string[]): RawCondition[] {
