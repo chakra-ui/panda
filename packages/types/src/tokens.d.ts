@@ -6,6 +6,7 @@ export type Tokens = {
   lineHeights: Record<string, string | number>
   letterSpacings: Record<string, string>
   radii: Record<string, string>
+  blurs: Record<string, string>
   shadows: Record<string, string>
   dropShadows: Record<string, string>
   spacing: Record<string, string>
