@@ -6,11 +6,10 @@ export type PatternProperty =
   | { type: 'token'; value: string; cssProp?: CssProperty }
   | { type: 'string' | 'boolean' | 'number' }
 
-type Primitive = string
-type Value = Primitive | { [key: string]: Value<Primitive> }
+type Value = string | { [key: string]: Value<string> }
 
 export type TransformHelpers = {
-  map: (value: Value, fn: (value: Primitive) => string | undefined) => any
+  map: (value: Value, fn: (value: string) => string | undefined) => any
 }
 
 export type Pattern = {

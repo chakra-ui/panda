@@ -5,6 +5,7 @@ import type { Keyframes } from './panda-csstype'
 import type { Pattern } from './pattern'
 import type { Recipe } from './recipe'
 import type { DotPath, TDotPath } from './shared'
+import type { PartialTokens } from './tokens'
 
 export type SemanticTokens<Tokens extends TDotPath = Dict, Conditions = Dict, Breakpoints = Dict> = {
   [K in keyof Tokens]?: {
@@ -17,7 +18,7 @@ export type SemanticTokens<Tokens extends TDotPath = Dict, Conditions = Dict, Br
 export type Config<
   Conditions extends TConditions = TConditions,
   Breakpoints extends Dict = Dict,
-  Tokens extends Dict = Dict,
+  Tokens extends PartialTokens = PartialTokens,
 > = {
   preflight?: boolean
   minify?: boolean

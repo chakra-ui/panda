@@ -22,6 +22,9 @@ export type Tokens = {
   animations: Record<string, string>
   easings: Record<string, string>
   durations: Record<string, string>
+  [group: string]: Record<string, string | Record<string, string>>
 }
+
+export type PartialTokens = Partial<Tokens>
 
 export type TokenCategory = keyof Tokens
