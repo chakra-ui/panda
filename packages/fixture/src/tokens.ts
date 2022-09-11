@@ -1,4 +1,4 @@
-import type { SemanticTokens, Tokens } from '@css-panda/types'
+import type { PartialTokens, SemanticTokens } from '@css-panda/types'
 
 export const semanticTokens: SemanticTokens = {
   colors: {
@@ -10,7 +10,7 @@ export const semanticTokens: SemanticTokens = {
   },
 }
 
-export const tokens: Tokens = {
+export const tokens: PartialTokens = {
   fonts: {
     heading: '-apple-system, BlinkMacSystemFont',
     body: 'Helvetica, Arial, sans-serif',
