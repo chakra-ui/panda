@@ -13,6 +13,7 @@ export type ImportResult = {
 
 export type Collector = {
   css: Set<PluginResult>
+  sx: Set<PluginResult>
   globalStyle: Set<PluginResult>
   fontFace: Set<PluginResult>
   cssMap: Set<PluginResult>

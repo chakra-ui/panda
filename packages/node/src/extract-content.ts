@@ -37,6 +37,10 @@ export async function extractContent(ctx: Context, file: string) {
     sheet.process(result)
   })
 
+  collector.sx.forEach((result) => {
+    sheet.process(result)
+  })
+
   collector.cssMap.forEach((result) => {
     for (const data of Object.values(result.data)) {
       sheet.process({ type: 'object', data })
