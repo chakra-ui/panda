@@ -2,13 +2,14 @@ import { lookItUpSync } from 'look-it-up'
 import fs from 'fs'
 import path from 'path'
 import { logger } from '@css-panda/logger'
-export function findConfigFile({ root, file }: { root: string; file?: string }) {
+
+export function findConfigFile({ cwd, file }: { cwd: string; file?: string }) {
   let filepath: string | undefined
   let isESM = false
 
   // check package.json for type: "module" and set `isMjs` to true
   try {
-    const pkgPath = lookItUpSync('package.json', root)
+    const pkgPath = lookItUpSync('package.json', cwd)
     if (pkgPath) {
       const pkg = fs.readFileSync(pkgPath, 'utf8')
       if (pkg && JSON.parse(pkg).type === 'module') {
@@ -30,7 +31,7 @@ export function findConfigFile({ root, file }: { root: string; file?: string }) 
 
     for (const ext of extensions) {
       //
-      const jsconfigFile = path.resolve(root, `panda.config${ext}`)
+      const jsconfigFile = path.resolve(cwd, `panda.config${ext}`)
 
       if (fs.existsSync(jsconfigFile)) {
         filepath = jsconfigFile

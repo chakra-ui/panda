@@ -1,5 +1,6 @@
 import { minifyConfig } from '@css-panda/ast'
 import { logger } from '@css-panda/logger'
+import type { UserConfig } from '@css-panda/types'
 import fs from 'fs'
 import path from 'path'
 import { pathToFileURL } from 'url'
@@ -11,29 +12,27 @@ import { normalizePath } from './normalize-path'
 const dynamicImport = new Function('file', 'return import(file)')
 
 type ConfigFileOptions = {
-  root: string
+  cwd: string
   file?: string
 }
 
-export async function loadConfigFile<T extends Record<string, any> = Record<string, any>>(options: ConfigFileOptions) {
-  const { root, file } = options
+export async function loadConfigFile(options: ConfigFileOptions) {
+  const { cwd, file } = options
 
-  const { isESM, filepath } = findConfigFile({ root, file }) ?? {}
+  const { isESM, filepath } = findConfigFile({ cwd, file }) ?? {}
 
-  logger.debug({ type: 'config', isESM, filepath })
-
-  logger.info({ type: 'config', msg: `Found config file at: \n${filepath}` })
+  logger.debug({ type: 'config', msg: `Found config file at: \n${filepath}` })
 
   if (!filepath) return {}
 
   const bundled = await bundleConfigFile(filepath, isESM)
 
-  logger.info({ type: 'config', msg: 'Bundled Config File' })
+  logger.debug({ type: 'config', msg: 'Bundled Config File' })
 
   const dependencies = bundled.dependencies ?? []
 
   const fileName = filepath
-  let config: T
+  let config: UserConfig
 
   if (isESM) {
     const fileBase = `${fileName}.timestamp-${Date.now()}`
@@ -68,9 +67,9 @@ export async function loadConfigFile<T extends Record<string, any> = Record<stri
   }
 }
 
-export type LoadConfigResult<T> = {
+export type LoadConfigResult = {
   path: string
-  config: T
+  config: UserConfig
   dependencies: string[]
   code: string
   minifiedCode: string
