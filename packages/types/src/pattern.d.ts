@@ -1,4 +1,4 @@
-import type { CssProperty } from './panda-csstype'
+import type { CssProperty, ConditionCssProperties } from './panda-csstype'
 
 export type PatternProperty =
   | { type: 'cssProp'; value: CssProperty }
@@ -6,12 +6,15 @@ export type PatternProperty =
   | { type: 'token'; value: string; cssProp?: CssProperty }
   | { type: 'string' | 'boolean' | 'number' }
 
+type Primitive = string
+type Value = Primitive | { [key: string]: Value<Primitive> }
+
 export type TransformHelpers = {
-  map: (value: any, fn: (value: any) => any) => any
+  map: (value: Value, fn: (value: Primitive) => string | undefined) => any
 }
 
-export type Pattern<T extends Record<string, any> = Record<string, any>> = {
+export type Pattern = {
   name: string
   properties: Record<string, PatternProperty>
-  transform?: (props: Record<string, any>, helpers: TransformHelpers) => T
+  transform?: (props: Record<string, Value>, helpers: TransformHelpers) => ConditionCssProperties
 }

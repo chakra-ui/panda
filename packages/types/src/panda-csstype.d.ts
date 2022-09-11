@@ -1,13 +1,13 @@
-import type * as CSS from './csstype'
+import { PropertiesFallback, SimplePseudos } from './csstype'
 
 type Loose = string & { __type?: never }
 // type Clean<T> = Exclude<T, { __type?: never }>
 
-export type Properties = CSS.PropertiesFallback<Loose>
+export type Properties = PropertiesFallback<Loose>
 
 export type CssProperty = keyof Properties
 
-type PseudoProperty = `&${CSS.SimplePseudos}`
+type Pseudo = `&${SimplePseudos}`
 
 export type CssProperties = Properties & {
   [key: string]: string | number | Record<string, any> | undefined
@@ -25,7 +25,7 @@ export type PandaConditionalValue<C extends Record<string, string>, V> =
 type Union<Key extends string, CssProperties extends Record<Key, any>, UserProperties> = UserProperties extends {
   __type?: 'never'
 }
-  ? CssProperties[Key]
+  ? CssProperties[Key] | Loose
   : Key extends keyof UserProperties
   ? CssProperties[Key] | UserProperties[Key]
   : CssProperties[Key]
@@ -36,8 +36,8 @@ type Strict<
   UserProperties,
 > = Key extends keyof UserProperties ? UserProperties[Key] : CssProperties[Key]
 
-type ConditionCssProperties<
-  Conditions extends Record<string, string>,
+export type ConditionCssProperties<
+  Conditions extends Record<string, string> = Record<string, string>,
   UserProperties extends Record<string, string> = { __type?: 'never' },
   StrictValue extends boolean = false,
 > = {
@@ -53,7 +53,7 @@ type ConditionCssProperties<
 
 export type WithNesting<T> = T & {
   selectors?: {
-    [key in PseudoProperty | Loose]?: T
+    [key in Pseudo | Loose]?: T
   }
   '@media'?: {
     [query: string]: T
