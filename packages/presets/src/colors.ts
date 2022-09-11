@@ -1,4 +1,5 @@
 export const colors = {
+  current: 'currentColor',
   black: '#000',
   white: '#fff',
   rose: {
