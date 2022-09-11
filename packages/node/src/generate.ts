@@ -6,6 +6,7 @@ import { createContext } from './create-context'
 import { extractAssets } from './extract-assets'
 import { extractContent } from './extract-content'
 import { loadConfig } from './load-config'
+import { setupSystem } from './setup-system'
 import { watch } from './watchers'
 
 export async function generate(config: LoadConfigResult) {
@@ -34,7 +35,9 @@ export async function generate(config: LoadConfigResult) {
   if (ctx.watch) {
     await watch(ctx, {
       async onConfigChange() {
+        logger.info(`Config changed. Rebuilding...`)
         const newConfig = await loadConfig(ctx.cwd)
+        await setupSystem(newConfig)
         return generate(newConfig)
       },
       onAssetChange() {
