@@ -1,10 +1,3 @@
-export type TextStyles = {
-  fontSize?: string
-  lineHeight?: string
-  letterSpacing?: string
-  fontWeight?: string | number
-}
-
 export type Tokens = {
   colors: Record<string, string | Record<string, string>>
   fontSizes: Record<string, string>

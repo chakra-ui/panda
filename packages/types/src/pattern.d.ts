@@ -13,7 +13,16 @@ export type TransformHelpers = {
 }
 
 export type Pattern = {
+  /**
+   * The name of the pattern.
+   */
   name: string
+  /**
+   * The properties of the pattern.
+   */
   properties: Record<string, PatternProperty>
+  /**
+   * The css object this pattern will generate.
+   */
   transform?: (props: Record<string, Value>, helpers: TransformHelpers) => ConditionCssProperties
 }
