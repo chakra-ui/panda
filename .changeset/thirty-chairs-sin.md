@@ -3,6 +3,7 @@
 'css-panda': patch
 '@css-panda/config': patch
 '@css-panda/core': patch
+'@css-panda/presets': patch
 '@css-panda/error': patch
 '@css-panda/fixture': patch
 '@css-panda/logger': patch
