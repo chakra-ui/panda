@@ -1,13 +1,27 @@
-import { cac } from 'cac'
-import path from 'path'
-import fs from 'fs'
-import { generate } from '@css-panda/node'
 import { logger } from '@css-panda/logger'
+import { execCommand, generate, loadConfig, setupConfig, setupSystem } from '@css-panda/node'
+import { compact } from '@css-panda/shared'
+import { cac } from 'cac'
+import fs from 'fs'
+import path from 'path'
 
 export async function main() {
   const cli = cac('panda')
 
-  const options: Record<string, any> = {}
+  const cwd = process.cwd()
+  const pkgPath = path.join(__dirname, '../package.json')
+  const pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+
+  cli.command('init', "Initialize the panda's config file").action(async () => {
+    logger.info(`Panda v${pkgJson.version}`)
+    await setupConfig(cwd)
+    await execCommand('panda gen', cwd)
+  })
+
+  cli.command('gen', 'Generate the panda system').action(async () => {
+    const config = await loadConfig(cwd)
+    await setupSystem(config)
+  })
 
   cli
     .command('[files]', 'Include files', {
@@ -21,29 +35,18 @@ export async function main() {
     .option('--clean', 'Clean output directory')
     .option('--silent', 'Suppress non-error logs (excluding "onSuccess" process output)')
     .action(async (files: string[], flags) => {
-      if (files) {
-        options.include = files
-      }
-      if (flags.cwd) {
-        options.cwd = flags.cwd
-      }
-      if (flags.outDir) {
-        options.outdir = flags.outDir
-      }
-      if (flags.minify) {
-        options.minify = true
-      }
-      if (flags.watch) {
-        options.watch = true
-      }
+      const options = compact({ files, ...flags })
       logger.debug({ type: 'cli', msg: options })
-      await generate(options)
+
+      const config = await loadConfig(cwd)
+      Object.assign(config.config, options)
+
+      await generate(config)
     })
 
   cli.help()
 
-  const pkgPath = path.join(__dirname, '../package.json')
-  cli.version(JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version)
+  cli.version(pkgJson.version)
 
   cli.parse(process.argv, { run: false })
   await cli.runMatchedCommand()

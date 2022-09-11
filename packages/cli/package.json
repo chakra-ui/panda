@@ -25,6 +25,7 @@
   "dependencies": {
     "@css-panda/node": "workspace:*",
     "@css-panda/error": "workspace:*",
+    "@css-panda/shared": "workspace:*",
     "@css-panda/types": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "cac": "6.7.14"

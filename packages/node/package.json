@@ -35,6 +35,7 @@
     "lodash.merge": "4.6.2",
     "look-it-up": "2.1.0",
     "outdent": " ^0.8.0",
+    "preferred-pm": "^3.0.3",
     "postcss": "8.4.16",
     "pkg-types": "0.3.5",
     "pluralize": "8.0.0",

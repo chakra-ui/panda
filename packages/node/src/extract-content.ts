@@ -47,7 +47,7 @@ export async function extractContent(ctx: Context, file: string) {
         sheet.processRecipe(recipe, item.data)
       }
     } catch (error: any) {
-      logger.fatal({ err: error })
+      logger.error({ err: error })
     }
   })
 
@@ -62,7 +62,7 @@ export async function extractContent(ctx: Context, file: string) {
         sheet.processAtomic(styleObject)
       }
     } catch (error) {
-      logger.fatal({ err: error })
+      logger.error({ err: error })
     }
   })
 

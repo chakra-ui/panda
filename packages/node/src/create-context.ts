@@ -5,11 +5,11 @@ import {
   GeneratorContext,
   mergeRecipes,
   mergeUtilities,
-  Stylesheet,
+  Stylesheet
 } from '@css-panda/core'
 import { logger } from '@css-panda/logger'
 import { TokenMap } from '@css-panda/tokens'
-import type { Pattern, TransformHelpers, UserConfig } from '@css-panda/types'
+import type { Pattern, TransformHelpers } from '@css-panda/types'
 import fs from 'fs-extra'
 import path from 'path'
 import postcss from 'postcss'
@@ -28,7 +28,7 @@ function mapObject(obj: string | Record<string, any>, fn: (value: any) => any) {
   return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, fn(value)]))
 }
 
-export function createContext(conf: LoadConfigResult<UserConfig>) {
+export function createContext(conf: LoadConfigResult) {
   const { config } = conf
 
   const {
@@ -101,6 +101,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
       return file.replaceAll(path.sep, '__').replace(path.extname(file), '.css')
     },
     async write(file: string, css: string) {
+      if (!css) return
       const filepath = assets.getPath(file)
       await fs.writeFile(filepath, css)
       logger.debug({ type: 'asset:write', file, path: filepath })
@@ -135,6 +136,10 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
     outputCss,
     assets,
 
+    hasTokens: !dictionary.isEmpty,
+    hasRecipes: recipes.length > 0,
+    hasPatterns: patterns.length > 0,
+
     paths: {
       asset: assetPath,
       css: cssPath,
@@ -145,6 +150,7 @@ export function createContext(conf: LoadConfigResult<UserConfig>) {
       configMin: minConfigPath,
       config: configPath,
     },
+
     helpers,
 
     conf,

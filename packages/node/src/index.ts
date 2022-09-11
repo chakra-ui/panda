@@ -1,1 +1,5 @@
+export { execCommand } from './exec-command'
 export { generate } from './generate'
+export { loadConfig } from './load-config'
+export { setupConfig } from './setup-config'
+export { setupSystem } from './setup-system'

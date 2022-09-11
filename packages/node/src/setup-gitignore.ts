@@ -1,9 +1,8 @@
 import { lookItUpSync } from 'look-it-up'
 import fs from 'fs-extra'
 import { outdent } from 'outdent'
-import type { Context } from './create-context'
 
-export async function updateGitIgnore(ctx: Context) {
+export async function updateGitIgnore(outdir: string) {
   const filepath = lookItUpSync('.gitignore')
 
   if (!filepath) return
@@ -11,12 +10,12 @@ export async function updateGitIgnore(ctx: Context) {
   const txt = outdent`
   
   ## CSS Panda
-  ${ctx.outdir}
+  ${outdir}
   `
 
   const content = await fs.readFile(filepath)
 
-  if (!content.includes(ctx.outdir)) {
+  if (!content.includes(outdir)) {
     await fs.appendFile(filepath, txt)
   }
 }

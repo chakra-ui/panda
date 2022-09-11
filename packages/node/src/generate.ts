@@ -1,13 +1,14 @@
-import type { Config } from '@css-panda/types'
+import type { LoadConfigResult } from '@css-panda/config'
 import glob from 'fast-glob'
 import { ensureDir } from 'fs-extra'
+import { createContext } from './create-context'
 import { extractAssets } from './extract-assets'
 import { extractContent } from './extract-content'
-import { initialize } from './initialize'
+import { loadConfig } from './load-config'
 import { watch } from './watchers'
 
-export async function generate(options: Config & { configPath?: string } = {}) {
-  const ctx = await initialize(options)
+export async function generate(config: LoadConfigResult) {
+  const ctx = createContext(config)
 
   await ensureDir(ctx.paths.asset)
 
@@ -31,8 +32,9 @@ export async function generate(options: Config & { configPath?: string } = {}) {
 
   if (ctx.watch) {
     await watch(ctx, {
-      onConfigChange() {
-        return generate({ ...options, clean: false })
+      async onConfigChange() {
+        const newConfig = await loadConfig(ctx.cwd)
+        return generate(newConfig)
       },
       onAssetChange() {
         return extractAssets(ctx)
