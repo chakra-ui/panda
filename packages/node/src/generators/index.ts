@@ -1,4 +1,3 @@
-import { logger } from '@css-panda/logger'
 import type { TokenMap } from '@css-panda/tokens'
 import { ensureDir } from 'fs-extra'
 import { outdent } from 'outdent'
@@ -119,7 +118,6 @@ async function setupRecipes(ctx: Context) {
 
   if (!code) return
   await ensureDir(ctx.paths.recipe)
-  logger.info("Recipes are generated. Don't forget to import them in your project.")
 
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.recipe, 'index.js'), code.js),
@@ -132,7 +130,6 @@ async function setupPatterns(ctx: Context) {
 
   if (!code) return
   await ensureDir(ctx.paths.pattern)
-  logger.info("Patterns are generated. Don't forget to import them in your project.")
 
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.pattern, 'index.js'), code.js),
