@@ -1,15 +1,11 @@
-import type { Config } from '@css-panda/types'
-
-export type Colors = NonNullable<Config['tokens']>['colors']
-
 type ColorsProps = {
-  colors: Colors
+  colors?: Record<string, any>
 }
 
 export function Colors(props: ColorsProps) {
-  const { colors } = props
+  const { colors = {} } = props
 
-  const renderShades = (shadesOrValue: Colors) => {
+  const renderShades = (shadesOrValue: Record<string, any>) => {
     if (typeof shadesOrValue === 'string') {
       return (
         <div className="shade">

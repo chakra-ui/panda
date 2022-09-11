@@ -1,10 +1,9 @@
 import { getConfigDependencies, LoadConfigResult } from '@css-panda/config'
 import { logger } from '@css-panda/logger'
-import type { UserConfig } from '@css-panda/types'
 import type { Context } from '../create-context'
 import { createWatcher } from './create-watcher'
 
-export async function createConfigWatcher(conf: LoadConfigResult<UserConfig>) {
+export async function createConfigWatcher(conf: LoadConfigResult) {
   const deps = getConfigDependencies(conf)
   return createWatcher(deps.value, { cwd: deps.cwd })
 }

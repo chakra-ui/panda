@@ -1,6 +1,6 @@
-import type { Tokens } from '@css-panda/types'
+import type { SemanticTokens, Tokens } from '@css-panda/types'
 
-export const semanticTokens = {
+export const semanticTokens: SemanticTokens = {
   colors: {
     primary: { _: 'red.500', dark: 'red.400' },
     secondary: { _: 'red.800', dark: 'red.700' },

@@ -4,10 +4,12 @@ import { expect, test } from 'vitest'
 import { createContext } from '../src/create-context'
 import { generateCss } from '../src/generators/css'
 
-const conf: LoadConfigResult<any> = {
+const conf: LoadConfigResult = {
   dependencies: [],
   code: '',
   config: {
+    cwd: '',
+    include: [],
     tokens,
     semanticTokens,
     breakpoints,

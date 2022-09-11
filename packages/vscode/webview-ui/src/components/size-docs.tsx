@@ -1,8 +1,7 @@
-import type { Config } from '@css-panda/types'
 import { remToPixels } from '../utilities/rem-to-pixels'
 import { getSortedSizes } from '../utilities/sizes-sort'
 
-export type SizesProps = { sizes: NonNullable<Config['tokens']>['sizes'] }
+export type SizesProps = { sizes?: Record<string, any> }
 
 export const renderPixels = (size: string) => {
   if (size.endsWith('px')) return size
@@ -10,7 +9,7 @@ export const renderPixels = (size: string) => {
 }
 
 export function Sizes(props: SizesProps) {
-  const { sizes: sizesProp } = props
+  const { sizes: sizesProp = {} } = props
 
   const sizes = getSortedSizes(sizesProp)
 

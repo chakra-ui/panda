@@ -6,16 +6,15 @@ import {
   VSCodePanelView,
 } from '@vscode/webview-ui-toolkit/react'
 import { useState } from 'react'
-import type { Config } from '@css-panda/types'
 import { getSortedSizes } from '../utilities/sizes-sort'
 import { renderPixels } from './size-docs'
 
-export type SpacingPlaygroundProps = { sizes: NonNullable<Config['tokens']>['sizes'] }
+export type SpacingPlaygroundProps = { sizes?: Record<string, string> }
 
 const NUMBER_OF_ITEMS = 3
 
 export function SpacingPlayground(props: SpacingPlaygroundProps) {
-  const { sizes: sizesProp } = props
+  const { sizes: sizesProp = {} } = props
   if (typeof sizesProp === 'string') return null
   const sizes = getSortedSizes(sizesProp) as unknown as string[]
 

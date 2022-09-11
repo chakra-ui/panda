@@ -2,13 +2,13 @@ import { TokenError } from '@css-panda/error'
 import { walkObject } from '@css-panda/shared'
 import type { Dict } from '@css-panda/types'
 
-export function getTokenMap(values: Record<string, any>, options: { maxDepth?: number } = {}) {
+export function getTokenMap(values: Record<string, any> | undefined, options: { maxDepth?: number } = {}) {
   const { maxDepth = 1 } = options
 
   const map = new Map<string, string>()
 
   walkObject(
-    values,
+    values ?? {},
     (value, path) => {
       map.set(path.join('.'), value)
     },
@@ -18,10 +18,10 @@ export function getTokenMap(values: Record<string, any>, options: { maxDepth?: n
   return map
 }
 
-export function getSemanticTokenMap(values: Dict) {
+export function getSemanticTokenMap(values: Dict | undefined) {
   const map = new Map<string, Map<string, string>>()
 
-  walkObject(values, (value, path) => {
+  walkObject(values ?? {}, (value, path) => {
     if (path.length > 2) {
       throw new TokenError('[semantic-token] Expect token to be 2-levels deep')
     }

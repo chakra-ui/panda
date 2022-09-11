@@ -17,7 +17,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
     if (!filepath) return
 
-    const conf = loadConfigFile({ root: filepath })
+    const conf = loadConfigFile({ cwd: filepath })
 
     conf.then(({ config }) => {
       view?.webview.postMessage({
@@ -84,7 +84,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const filepath = workspaceUri?.fsPath
 
     if (filepath && workspaceFolder) {
-      const conf = loadConfigFile({ root: filepath })
+      const conf = loadConfigFile({ cwd: filepath })
       conf.then(({ path }) => {
         if (path) {
           const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolder, path))

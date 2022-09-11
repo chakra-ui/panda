@@ -1,15 +1,15 @@
 import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react'
 import { useState } from 'react'
 import { getContrastPairs, getContrastRatio } from '../utilities/color'
-import type { Colors } from './color-docs'
 import { ErrorIcon, SuccessIcon } from './icons'
 
 type ContrastCheckerProps = {
-  colors: Colors
+  colors?: Record<string, any>
 }
 
 export function ContrastChecker(props: ContrastCheckerProps) {
-  const { colors: colorsObj } = props
+  const { colors: colorsObj = {} } = props
+
   const colors = Object.entries(colorsObj)
     .map(([color, shadesOrValue]) =>
       typeof shadesOrValue === 'string'
