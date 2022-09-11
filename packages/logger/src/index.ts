@@ -102,10 +102,10 @@ class Logger {
 
     const msg = [`🐼`, label, uword, formatted].filter(Boolean).join(' ')
 
-    console.log(msg)
+    return msg
   }
 
-  parseErr({ err }: { err: any }) {
+  private parseErr({ err }: { err: any }) {
     if (!(err instanceof Error)) err = new Error(err)
     const stack = err.stack.split(/[\r\n]+\s*/g)
     return {
@@ -127,7 +127,8 @@ class Logger {
 
     if (badType || badLevel) return false
 
-    this.output(entry)
+    const msg = this.output(entry)
+    console.log(msg)
 
     return entry
   }
@@ -146,6 +147,15 @@ class Logger {
 
   error(...args: any[]) {
     return this.log('error', ...args)
+  }
+
+  time(msg: string, ...args: any[]) {
+    const label = colors.bold(colors.blue('info'))
+    const str = `🐼 ${label} ${msg} ${args.join(' ')}`
+    console.time(str)
+    return () => {
+      console.timeEnd(str)
+    }
   }
 }
 

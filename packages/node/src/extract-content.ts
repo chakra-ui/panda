@@ -1,7 +1,7 @@
 import { createCollector, createPlugins, transformFile } from '@css-panda/ast'
 import { Stylesheet } from '@css-panda/core'
 import { NotFoundError } from '@css-panda/error'
-import { logger } from '@css-panda/logger'
+import { logger, quote } from '@css-panda/logger'
 import path from 'path'
 import type { Context } from './create-context'
 
@@ -15,9 +15,15 @@ export async function extractContent(ctx: Context, file: string) {
 
   const absPath = path.isAbsolute(file) ? file : path.join(ctx.cwd, file)
 
-  await transformFile(absPath, {
-    plugins: createPlugins(collector, importMap, file),
-  })
+  const markEnd = logger.time('Extracted', quote(file))
+
+  try {
+    await transformFile(absPath, {
+      plugins: createPlugins(collector, importMap, file),
+    })
+  } catch (error) {
+    logger.error({ err: error })
+  }
 
   collector.globalStyle.forEach((result) => {
     sheet.processObject(result.data)
@@ -65,6 +71,8 @@ export async function extractContent(ctx: Context, file: string) {
       logger.error({ err: error })
     }
   })
+
+  markEnd()
 
   if (collector.isEmpty()) return ''
 

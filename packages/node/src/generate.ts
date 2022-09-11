@@ -1,4 +1,5 @@
 import type { LoadConfigResult } from '@css-panda/config'
+import { logger } from '@css-panda/logger'
 import glob from 'fast-glob'
 import { ensureDir } from 'fs-extra'
 import { createContext } from './create-context'
@@ -40,6 +41,7 @@ export async function generate(config: LoadConfigResult) {
         return extractAssets(ctx)
       },
       async onContentChange(file) {
+        logger.info(`File changed: ${file}`)
         const css = await extractContent(ctx, file)
         await ctx.assets.write(file, css)
       },
