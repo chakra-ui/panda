@@ -24,6 +24,5 @@ export async function extractAssets(ctx: Context) {
     }),
   )
 
-  const css = ctx.stylesheet.toCss()
-  ctx.outputCss.write(css)
+  return ctx.stylesheet.toCss()
 }

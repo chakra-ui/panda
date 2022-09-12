@@ -5,7 +5,7 @@ import {
   GeneratorContext,
   mergeRecipes,
   mergeUtilities,
-  Stylesheet
+  Stylesheet,
 } from '@css-panda/core'
 import { logger } from '@css-panda/logger'
 import { TokenMap } from '@css-panda/tokens'
@@ -13,6 +13,7 @@ import type { Pattern, TransformHelpers } from '@css-panda/types'
 import fs from 'fs-extra'
 import path from 'path'
 import postcss from 'postcss'
+import { Writer } from 'steno'
 
 const BASE_IGNORE = ['node_modules', '.git']
 
@@ -55,6 +56,7 @@ export function createContext(conf: LoadConfigResult) {
   const recipePath = path.join(cwd, outdir, 'recipes')
   const patternPath = path.join(cwd, outdir, 'patterns')
   const assetPath = path.join(cwd, outdir, 'assets')
+  const outCssPath = path.join(cwd, outdir, 'styles.css')
 
   const dictionary = new TokenMap({
     tokens,
@@ -112,10 +114,12 @@ export function createContext(conf: LoadConfigResult) {
     glob: [`${assetPath}/**/*.css`],
   }
 
+  const outputWriter = new Writer(outCssPath)
+
   const outputCss = {
-    path: path.join(cwd, outdir, 'styles.css'),
+    path: outCssPath,
     write(css: string) {
-      return fs.writeFileSync(outputCss.path, css)
+      return outputWriter.write(css)
     },
   }
 

@@ -1,5 +1,5 @@
-import type { LoadConfigResult } from '@css-panda/config'
 import { logger } from '@css-panda/logger'
+import type { Config } from '@css-panda/types'
 import glob from 'fast-glob'
 import { ensureDir } from 'fs-extra'
 import { createContext } from './create-context'
@@ -9,8 +9,13 @@ import { loadConfig } from './load-config'
 import { setupSystem } from './setup-system'
 import { watch } from './watchers'
 
-export async function generate(config: LoadConfigResult) {
+export async function generate(options: Config) {
+  const config = await loadConfig(process.cwd())
+
+  Object.assign(config.config, options)
   const ctx = createContext(config)
+
+  await setupSystem(config)
 
   await ensureDir(ctx.paths.asset)
 
@@ -35,13 +40,11 @@ export async function generate(config: LoadConfigResult) {
   if (ctx.watch) {
     await watch(ctx, {
       async onConfigChange() {
-        logger.info(`Config changed. Rebuilding...`)
-        const newConfig = await loadConfig(ctx.cwd)
-        await setupSystem(newConfig)
-        return generate(newConfig)
+        await generate(options)
       },
-      onAssetChange() {
-        return extractAssets(ctx)
+      async onAssetChange() {
+        const css = await extractAssets(ctx)
+        await ctx.outputCss.write(css)
       },
       async onContentChange(file) {
         logger.info(`File changed: ${file}`)
