@@ -2,12 +2,10 @@ import { minifyConfig } from '@css-panda/ast'
 import { logger } from '@css-panda/logger'
 import type { UserConfig } from '@css-panda/types'
 import fs from 'fs'
-import path from 'path'
 import { pathToFileURL } from 'url'
 import { bundleConfigFile } from './bundle-config'
 import { findConfigFile } from './find-config'
 import { loadBundledFile } from './load-bundled-config'
-import { normalizePath } from './normalize-path'
 
 const dynamicImport = new Function('file', 'return import(file)')
 
@@ -61,7 +59,7 @@ export async function loadConfigFile(options: ConfigFileOptions) {
   return {
     path: filepath,
     config,
-    dependencies: dependencies.map((dep) => normalizePath(path.resolve(dep))),
+    dependencies,
     code: bundled.code,
     minifiedCode: minifyConfig(bundled.code),
   }
