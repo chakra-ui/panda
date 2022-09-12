@@ -46,6 +46,7 @@
     "@css-panda/fixture": "workspace:*",
     "@types/fs-extra": "9.0.13",
     "@types/pluralize": "0.0.29",
-    "@types/lodash.merge": "4.6.7"
+    "@types/lodash.merge": "4.6.7",
+    "steno": "^2.1.0"
   }
 }

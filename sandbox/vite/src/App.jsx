@@ -11,7 +11,7 @@ globalStyle({
 
 function App() {
   return (
-    <div className={stack({ gap: '20px', align: 'center' })}>
+    <div className={stack({ gap: '10px', align: 'center' })}>
       <p
         className={css({
           color: 'red.300',
