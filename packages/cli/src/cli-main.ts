@@ -20,7 +20,8 @@ export async function main() {
 
   cli.command('gen', 'Generate the panda system').action(async () => {
     const config = await loadConfig(cwd)
-    await setupSystem(config)
+    const { message: msg } = await setupSystem(config)
+    logger.info(msg)
   })
 
   cli

@@ -46,5 +46,5 @@ export async function setupSystem(conf: LoadConfigResult) {
   `,
   ].filter(Boolean)
 
-  logger.info(msg.join('\n'))
+  return { message: msg.join('\n') }
 }
