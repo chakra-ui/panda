@@ -23,7 +23,7 @@ export async function watch(ctx: Context, options: Options) {
 
   configWatcher.on('change', async () => {
     await close()
-    logger.info('⚙️ Config updated, restarting...')
+    logger.info('Config changed, restarting...')
     await options.onConfigChange()
   })
 }
