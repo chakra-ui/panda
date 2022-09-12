@@ -35,13 +35,9 @@ export async function main() {
     .option('--clean', 'Clean output directory')
     .option('--silent', 'Suppress non-error logs (excluding "onSuccess" process output)')
     .action(async (files: string[], flags) => {
-      const options = compact({ files, ...flags })
+      const options = compact({ include: files, ...flags })
       logger.debug({ type: 'cli', msg: options })
-
-      const config = await loadConfig(cwd)
-      Object.assign(config.config, options)
-
-      await generate(config)
+      await generate(options)
     })
 
   cli.help()
