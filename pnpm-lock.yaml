@@ -71,14 +71,12 @@ importers:
 
   packages/config:
     specifiers:
-      '@css-panda/ast': workspace:*
       '@css-panda/logger': workspace:*
       '@css-panda/shared': workspace:*
       '@css-panda/types': workspace:*
       esbuild: 0.15.7
       look-it-up: 2.1.0
     dependencies:
-      '@css-panda/ast': link:../ast
       '@css-panda/logger': link:../logger
       '@css-panda/shared': link:../shared
       '@css-panda/types': link:../types

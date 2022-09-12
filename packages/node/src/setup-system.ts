@@ -1,3 +1,4 @@
+import { minifyConfig } from '@css-panda/ast'
 import type { LoadConfigResult } from '@css-panda/config'
 import { logger, quote } from '@css-panda/logger'
 import { emptyDir, ensureDir } from 'fs-extra'
@@ -18,9 +19,11 @@ export async function setupSystem(conf: LoadConfigResult) {
 
   await ensureDir(ctx.outdir)
 
+  const minifiedCode = minifyConfig(conf.code)
+
   await Promise.all([
     updateGitIgnore(ctx.outdir),
-    writeFileWithNote(ctx.paths.configMin, conf.minifiedCode),
+    writeFileWithNote(ctx.paths.configMin, minifiedCode),
     writeFileWithNote(ctx.paths.config, conf.code),
   ])
 

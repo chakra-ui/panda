@@ -18,7 +18,6 @@ const conf: LoadConfigResult = {
     outdir: '',
   },
   path: '',
-  minifiedCode: '',
 }
 
 test('[css] should generate css', () => {

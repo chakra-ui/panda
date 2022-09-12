@@ -1,4 +1,3 @@
-import { minifyConfig } from '@css-panda/ast'
 import { logger } from '@css-panda/logger'
 import type { UserConfig } from '@css-panda/types'
 import fs from 'fs'
@@ -61,7 +60,6 @@ export async function loadConfigFile(options: ConfigFileOptions) {
     config,
     dependencies,
     code: bundled.code,
-    minifiedCode: minifyConfig(bundled.code),
   }
 }
 
@@ -70,5 +68,4 @@ export type LoadConfigResult = {
   config: UserConfig
   dependencies: string[]
   code: string
-  minifiedCode: string
 }
