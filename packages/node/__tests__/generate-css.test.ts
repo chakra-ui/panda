@@ -138,14 +138,6 @@ test('[css] should generate css', () => {
         --durations-75: 75ms;
         --durations-100: 100ms;
         --durations-150: 150ms;
-        --transition-properties-all: all;
-        --transition-properties-none: none;
-        --transition-properties-opacity: opacity;
-        --transition-properties-shadow: box-shadow;
-        --transition-properties-transform: transform;
-        --transition-properties-base: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-        --transition-properties-background: background, background-color;
-        --transition-properties-colors: color, background-color, border-color, text-decoration-color, fill, stroke;
         --colors-primary: var(--colors-red\\\\.500);
         --colors-secondary: var(--colors-red\\\\.800);
         --spacing-gutter: var(--spacing-4)
@@ -161,36 +153,6 @@ test('[css] should generate css', () => {
      :root {
         --spacing-gutter: var(--spacing-5)
     } 
-    }
-
-    @keyframes spin {
-        to {
-            transform: rotate(360deg)
-        }
-    }
-
-    @keyframes ping {
-        75%, 100% {
-            transform: scale(2);
-            opacity: 0
-        }
-    }
-
-    @keyframes pulse {
-        50% {
-            opacity: .5
-        }
-    }
-
-    @keyframes bounce {
-        0%, 100% {
-            transform: translateY(-25%);
-            animation-timing-function: cubic-bezier(0.8,0,1,1)
-        }
-        50% {
-            transform: none;
-            animation-timing-function: cubic-bezier(0,0,0.2,1)
-        }
     }
 
     "

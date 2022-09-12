@@ -5,6 +5,8 @@ import type { TokenData } from './get-token-data'
 import { mapSemanticTokens, mapTokens } from './map-token'
 
 export type VarData = Record<'category' | 'value', string>
+type CategoryMap = Map<string, Map<string, TokenData>>
+type FlattenedTokenMap = Map<string, Record<string, string>>
 
 /**
  * The token dictionary is a map of tokens to values
@@ -19,6 +21,22 @@ export class TokenMap {
   private tokens: Partial<Tokens>
   private semanticTokens: Partial<SemanticTokens>
   private prefix: string | undefined
+  categoryMap: CategoryMap
+  flattenedTokens: FlattenedTokenMap
+  /**
+   * The map of token 'dot path' to the token details
+   */
+  values = new Map<string, TokenData>()
+
+  /**
+   * The map of token to the css variable data
+   */
+  vars = new Map<string, VarData>()
+
+  /**
+   * Used for semantic tokens. It is a map of the condition to the token maps
+   */
+  conditionVars = new Map<string, Map<string, VarData>>()
 
   constructor({
     tokens,
@@ -34,6 +52,8 @@ export class TokenMap {
     this.prefix = prefix
     this.assignTokens()
     this.assignSemanticTokens()
+    this.categoryMap = this.getCategoryMap()
+    this.flattenedTokens = this.getFlattenedTokens()
   }
 
   assignTokens() {
@@ -89,21 +109,6 @@ export class TokenMap {
   }
 
   /**
-   * The map of token 'dot path' to the token details
-   */
-  values = new Map<string, TokenData>()
-
-  /**
-   * The map of token to the css variable data
-   */
-  vars = new Map<string, VarData>()
-
-  /**
-   * Used for semantic tokens. It is a map of the condition to the token maps
-   */
-  conditionVars = new Map<string, Map<string, VarData>>()
-
-  /**
    * Get the css variable reference of a value
    */
   resolve(category: string, value: string) {
@@ -114,8 +119,8 @@ export class TokenMap {
   /**
    * A map of the category to the token values
    */
-  get categoryMap() {
-    const map = new Map<string, Map<string, TokenData>>()
+  private getCategoryMap() {
+    const map: CategoryMap = new Map()
     for (const value of this.values.values()) {
       map.get(value.category) ?? map.set(value.category, new Map())
       map.get(value.category)!.set(value.key, value)
@@ -123,8 +128,8 @@ export class TokenMap {
     return map
   }
 
-  get flattenedTokens() {
-    const map = new Map<string, Record<string, string>>()
+  private getFlattenedTokens() {
+    const map: FlattenedTokenMap = new Map()
 
     for (const [category, data] of this.categoryMap.entries()) {
       for (const [token, tokenData] of data.entries()) {

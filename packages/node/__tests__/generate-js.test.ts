@@ -496,38 +496,6 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"150ms\\",
         \\"variable\\": \\"var(--durations-150)\\"
       },
-      \\"transitionProperties.all\\": {
-        \\"value\\": \\"all\\",
-        \\"variable\\": \\"var(--transition-properties-all)\\"
-      },
-      \\"transitionProperties.none\\": {
-        \\"value\\": \\"none\\",
-        \\"variable\\": \\"var(--transition-properties-none)\\"
-      },
-      \\"transitionProperties.opacity\\": {
-        \\"value\\": \\"opacity\\",
-        \\"variable\\": \\"var(--transition-properties-opacity)\\"
-      },
-      \\"transitionProperties.shadow\\": {
-        \\"value\\": \\"box-shadow\\",
-        \\"variable\\": \\"var(--transition-properties-shadow)\\"
-      },
-      \\"transitionProperties.transform\\": {
-        \\"value\\": \\"transform\\",
-        \\"variable\\": \\"var(--transition-properties-transform)\\"
-      },
-      \\"transitionProperties.base\\": {
-        \\"value\\": \\"color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter\\",
-        \\"variable\\": \\"var(--transition-properties-base)\\"
-      },
-      \\"transitionProperties.background\\": {
-        \\"value\\": \\"background, background-color\\",
-        \\"variable\\": \\"var(--transition-properties-background)\\"
-      },
-      \\"transitionProperties.colors\\": {
-        \\"value\\": \\"color, background-color, border-color, text-decoration-color, fill, stroke\\",
-        \\"variable\\": \\"var(--transition-properties-colors)\\"
-      },
       \\"colors.primary\\": {
         \\"value\\": \\"var(--colors-primary)\\",
         \\"variable\\": \\"var(--colors-primary)\\"
