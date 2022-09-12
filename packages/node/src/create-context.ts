@@ -1,12 +1,5 @@
 import type { LoadConfigResult } from '@css-panda/config'
-import {
-  createConditions,
-  CSSUtility,
-  GeneratorContext,
-  mergeRecipes,
-  mergeUtilities,
-  Stylesheet,
-} from '@css-panda/core'
+import { createConditions, Utility, GeneratorContext, mergeRecipes, mergeUtilities, Stylesheet } from '@css-panda/core'
 import { logger } from '@css-panda/logger'
 import { TokenMap } from '@css-panda/tokens'
 import type { Pattern, TransformHelpers } from '@css-panda/types'
@@ -64,7 +57,7 @@ export function createContext(conf: LoadConfigResult) {
     prefix: cssVar?.prefix,
   })
 
-  const utilities = new CSSUtility({
+  const utilities = new Utility({
     tokens: dictionary,
     config: mergeUtilities(_utilities),
   })

@@ -1,8 +1,8 @@
-import type { Recipe } from '@css-panda/types'
+import type { RecipeConfig } from '@css-panda/types'
 import { createRuleset, ProcessOptions } from './ruleset'
 import type { GeneratorContext } from './types'
 
-export function createRecipeSet(context: GeneratorContext, recipe: Recipe, options: { hash?: boolean } = {}) {
+export function createRecipeSet(context: GeneratorContext, recipe: RecipeConfig, options: { hash?: boolean } = {}) {
   function transform(prop: string, value: string) {
     if (value === '__ignore__') {
       return {

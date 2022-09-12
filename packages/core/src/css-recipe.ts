@@ -1,16 +1,16 @@
-import type { CSSUtility } from './css-utility'
+import type { Utility } from './css-utility'
 import { logger } from '@css-panda/logger'
 import { walkObject, walkStyles } from '@css-panda/shared'
-import type { Recipe } from '@css-panda/types'
+import type { RecipeConfig } from '@css-panda/types'
 import merge from 'lodash.merge'
 
 type StyleObject = Record<string, any>
 
-export class CSSRecipe {
-  private utility: CSSUtility
-  private config: Recipe
+export class Recipe {
+  private utility: Utility
+  private config: RecipeConfig
 
-  constructor(options: { utility: CSSUtility; config: Recipe }) {
+  constructor(options: { utility: Utility; config: RecipeConfig }) {
     this.utility = options.utility
     this.config = options.config
   }
@@ -52,7 +52,7 @@ export class CSSRecipe {
   transform() {
     const { name, base = {}, variants = {}, defaultVariants = {} } = this.config
 
-    const recipe: Required<Recipe> = {
+    const recipe: Required<RecipeConfig> = {
       name,
       base: {},
       variants: {},
@@ -71,10 +71,10 @@ export class CSSRecipe {
   }
 }
 
-export function mergeRecipes(recipes: Recipe[] | undefined, utility: CSSUtility) {
+export function mergeRecipes(recipes: RecipeConfig[] | undefined, utility: Utility) {
   return Object.fromEntries(
     (recipes ?? []).map((config) => {
-      const recipe = new CSSRecipe({ utility, config })
+      const recipe = new Recipe({ utility, config })
       const transformed = recipe.transform()
       return [config.name, transformed]
     }),

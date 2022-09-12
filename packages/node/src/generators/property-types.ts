@@ -1,6 +1,6 @@
-import type { CSSUtility } from '@css-panda/core'
+import type { Utility } from '@css-panda/core'
 
-export function generatePropertyTypes(utility: CSSUtility) {
+export function generatePropertyTypes(utility: Utility) {
   const result: string[] = [
     'import { Properties as CSSProperties } from "./csstype"',
     '',

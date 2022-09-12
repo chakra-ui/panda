@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'vitest'
-import { CSSUtility } from '../src/css-utility'
+import { Utility } from '../src/css-utility'
 import { semanticTokens, tokens } from '@css-panda/fixture'
 import { TokenMap } from '@css-panda/tokens'
 
 describe('utilty class', () => {
   test('should prime cache for faster lookup', () => {
-    const css = new CSSUtility({
+    const css = new Utility({
       tokens: new TokenMap({ tokens, semanticTokens }),
       config: {
         properties: {
@@ -355,7 +355,7 @@ describe('utilty class', () => {
 
   test('should resolve arbitrary property', () => {
     const values = { auto: 'auto', sm: '20px', md: '40px' }
-    const css = new CSSUtility({
+    const css = new Utility({
       tokens: new TokenMap({ tokens, semanticTokens }),
       config: {
         properties: {

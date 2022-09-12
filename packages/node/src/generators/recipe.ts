@@ -1,8 +1,8 @@
 import { capitalize, unionType } from '@css-panda/shared'
-import type { Recipe } from '@css-panda/types'
+import type { RecipeConfig } from '@css-panda/types'
 import { outdent } from 'outdent'
 
-export function generateRecipes(config: { recipes?: Recipe[]; hash?: boolean }) {
+export function generateRecipes(config: { recipes?: RecipeConfig[]; hash?: boolean }) {
   const { recipes = [], hash } = config
 
   if (!recipes.length) return

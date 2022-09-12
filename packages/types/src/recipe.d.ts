@@ -4,7 +4,7 @@ export type RecipeVariant = Record<string, WithNesting<CssProperties>>
 
 type TRecipe = Record<string, RecipeVariant>
 
-export type Recipe<Variants extends TRecipe = TRecipe> = {
+export type RecipeConfig<Variants extends TRecipe = TRecipe> = {
   /**
    * The name of the recipe.
    */

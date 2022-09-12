@@ -1,4 +1,4 @@
-import { CSSUtility } from '@css-panda/core'
+import { Utility } from '@css-panda/core'
 import { TokenMap } from '@css-panda/tokens'
 import { semanticTokens, tokens, utilities } from '@css-panda/fixture'
 import { describe, expect, test } from 'vitest'
@@ -8,7 +8,7 @@ describe('generate property types', () => {
   test('should ', () => {
     expect(
       generatePropertyTypes(
-        new CSSUtility({
+        new Utility({
           tokens: new TokenMap({ tokens, semanticTokens }),
           config: utilities[0],
         }),

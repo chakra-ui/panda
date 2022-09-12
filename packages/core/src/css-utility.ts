@@ -7,18 +7,32 @@ const isString = (v: any): v is string => typeof v === 'string'
 const isFunction = (v: any): v is AnyFunction => typeof v === 'function'
 const clean = (v: string) => v.toString().replaceAll(' ', '_')
 
-export class CSSUtility {
-  dictionary: TokenMap
+type Options = {
+  config?: UtilityConfig<Dict>
+  tokens: TokenMap
+}
 
+export class Utility {
+  tokenMap: TokenMap
   classNameMap: Map<string, string> = new Map()
   stylesMap: Map<string, Dict> = new Map()
   valuesMap: Map<string, Set<string>> = new Map()
-
   config: UtilityConfig<Dict> = { properties: {} }
   report: Map<string, string> = new Map()
 
   private transformMap: Map<string, AnyFunction> = new Map()
   private propertyConfigMap: Map<string, PropertyConfig<any>> = new Map()
+
+  constructor(options: Options) {
+    const { tokens, config } = options
+    this.tokenMap = tokens
+
+    if (config) {
+      this.config = config
+      this.assignProperties()
+      this.assignValueMap()
+    }
+  }
 
   private getPropKey(prop: string, value: string) {
     return `(${prop} = ${value})`
@@ -28,9 +42,11 @@ export class CSSUtility {
     return `${prop}_${value}`
   }
 
-  private getPropertyValues({ values }: PropertyConfig<any>): Dict<string> {
+  private getPropertyValues(config: PropertyConfig<any>): Dict<string> {
+    const { values } = config
+
     if (isString(values)) {
-      return this.dictionary.flattenedTokens.get(values) ?? {}
+      return this.tokenMap.flattenedTokens.get(values) ?? {}
     }
 
     if (Array.isArray(values)) {
@@ -41,21 +57,10 @@ export class CSSUtility {
     }
 
     if (isFunction(values)) {
-      return values((path) => this.dictionary.query(path))
+      return values((path) => this.tokenMap.query(path))
     }
 
     return values as Dict<string>
-  }
-
-  constructor(options: { config?: UtilityConfig<Dict>; tokens: TokenMap }) {
-    const { tokens, config } = options
-    this.dictionary = tokens
-
-    if (config) {
-      this.config = config
-      this.assignProperties()
-      this.assignValueMap()
-    }
   }
 
   normalize(value: string | PropertyConfig<any> | undefined): PropertyConfig<any> | undefined {
@@ -114,7 +119,7 @@ export class CSSUtility {
   defaultTransform = (value: string, prop: string) => {
     const isCssVariable = prop.startsWith('--')
     if (isCssVariable) {
-      const tokenValue = this.dictionary.values.get(value)?.varRef
+      const tokenValue = this.tokenMap.values.get(value)?.varRef
       value = typeof tokenValue === 'string' ? tokenValue : value
     }
     return { [prop]: value }
