@@ -1,6 +1,6 @@
-import type { Utility } from '@css-panda/types'
+import type { UtilityConfig } from '@css-panda/types'
 
-export const utilities: Utility[] = [
+export const utilities: UtilityConfig[] = [
   {
     properties: {
       // Layout properties

@@ -1,5 +1,5 @@
 import type { TokenMap } from '@css-panda/tokens'
-import type { Dict, Utility, PropertyUtility } from '@css-panda/types'
+import type { Dict, UtilityConfig, PropertyConfig } from '@css-panda/types'
 
 type AnyFunction = (...args: any[]) => any
 
@@ -14,11 +14,11 @@ export class CSSUtility {
   stylesMap: Map<string, Dict> = new Map()
   valuesMap: Map<string, Set<string>> = new Map()
 
-  config: Utility<Dict> = { properties: {} }
+  config: UtilityConfig<Dict> = { properties: {} }
   report: Map<string, string> = new Map()
 
   private transformMap: Map<string, AnyFunction> = new Map()
-  private propertyConfigMap: Map<string, PropertyUtility<any>> = new Map()
+  private propertyConfigMap: Map<string, PropertyConfig<any>> = new Map()
 
   private getPropKey(prop: string, value: string) {
     return `(${prop} = ${value})`
@@ -28,7 +28,7 @@ export class CSSUtility {
     return `${prop}_${value}`
   }
 
-  private getPropertyValues({ values }: PropertyUtility<any>): Dict<string> {
+  private getPropertyValues({ values }: PropertyConfig<any>): Dict<string> {
     if (isString(values)) {
       return this.dictionary.flattenedTokens.get(values) ?? {}
     }
@@ -47,7 +47,7 @@ export class CSSUtility {
     return values as Dict<string>
   }
 
-  constructor(options: { config?: Utility<Dict>; tokens: TokenMap }) {
+  constructor(options: { config?: UtilityConfig<Dict>; tokens: TokenMap }) {
     const { tokens, config } = options
     this.dictionary = tokens
 
@@ -58,7 +58,7 @@ export class CSSUtility {
     }
   }
 
-  normalize(value: string | PropertyUtility<any> | undefined): PropertyUtility<any> | undefined {
+  normalize(value: string | PropertyConfig<any> | undefined): PropertyConfig<any> | undefined {
     return typeof value === 'string' ? { className: value } : value
   }
 
@@ -203,8 +203,8 @@ export class CSSUtility {
   }
 }
 
-export function mergeUtilities(utilities: Utility[] | undefined): Utility {
-  return (utilities ?? []).reduce<Utility>(
+export function mergeUtilities(utilities: UtilityConfig[] | undefined): UtilityConfig {
+  return (utilities ?? []).reduce<UtilityConfig>(
     (acc, utility) => {
       acc.properties = { ...acc.properties, ...utility.properties }
       acc.shorthands = { ...acc.shorthands, ...utility.shorthands }

@@ -1,6 +1,6 @@
-import type { Utility } from '@css-panda/types'
+import type { UtilityConfig } from '@css-panda/types'
 
-const layout: Utility = {
+const layout: UtilityConfig = {
   properties: {
     aspectRatio: {
       className: 'aspect',
@@ -122,7 +122,7 @@ const layout: Utility = {
   },
 }
 
-const spacing: Utility = {
+const spacing: UtilityConfig = {
   properties: {
     padding: {
       className: 'p',
@@ -227,7 +227,7 @@ const spacing: Utility = {
   },
 }
 
-const flexGrid: Utility = {
+const flexGrid: UtilityConfig = {
   properties: {
     flexBasis: {
       className: 'basis',
@@ -368,7 +368,7 @@ const flexGrid: Utility = {
   },
 }
 
-const sizing: Utility = {
+const sizing: UtilityConfig = {
   properties: {
     // Sizing properties
     width: {
@@ -448,7 +448,7 @@ const sizing: Utility = {
   },
 }
 
-const typography: Utility = {
+const typography: UtilityConfig = {
   properties: {
     color: {
       className: 'text',
@@ -548,14 +548,14 @@ const typography: Utility = {
   },
 }
 
-const list: Utility = {
+const list: UtilityConfig = {
   properties: {
     listStyleType: 'list',
     listStylePosition: 'list',
   },
 }
 
-const background: Utility = {
+const background: UtilityConfig = {
   properties: {
     backgroundAttachment: 'bg',
     backgroundClip: 'bg-clip',
@@ -623,7 +623,7 @@ const background: Utility = {
   },
 }
 
-const border: Utility = {
+const border: UtilityConfig = {
   properties: {
     borderRadius: {
       className: 'rounded',
@@ -800,7 +800,7 @@ const border: Utility = {
   },
 }
 
-const effects: Utility = {
+const effects: UtilityConfig = {
   properties: {
     boxShadow: {
       className: 'shadow',
@@ -989,7 +989,7 @@ const effects: Utility = {
   },
 }
 
-const tables: Utility = {
+const tables: UtilityConfig = {
   properties: {
     borderCollapse: 'border',
     borderSpacing: {
@@ -1023,7 +1023,7 @@ const tables: Utility = {
   },
 }
 
-const transitions: Utility = {
+const transitions: UtilityConfig = {
   properties: {
     transitionTimingFunction: {
       className: 'ease',
@@ -1061,7 +1061,7 @@ const transformVars = [
   'var(--tw-scale-y)',
 ].join(' ')
 
-const transforms: Utility = {
+const transforms: UtilityConfig = {
   properties: {
     transform: {
       className: 'transform',
@@ -1163,7 +1163,7 @@ const transforms: Utility = {
   },
 }
 
-const interactivity: Utility = {
+const interactivity: UtilityConfig = {
   properties: {
     accentColor: {
       className: 'accent',
@@ -1275,7 +1275,7 @@ const interactivity: Utility = {
   },
 }
 
-const svg: Utility = {
+const svg: UtilityConfig = {
   properties: {
     fill: {
       className: 'fill',
@@ -1312,7 +1312,7 @@ const srMapping = {
   },
 }
 
-const accessibility: Utility = {
+const accessibility: UtilityConfig = {
   properties: {
     srOnly: {
       className: 'sr',
@@ -1324,7 +1324,7 @@ const accessibility: Utility = {
   },
 }
 
-export const utilities: Utility[] = [
+export const utilities: UtilityConfig[] = [
   layout,
   flexGrid,
   spacing,
