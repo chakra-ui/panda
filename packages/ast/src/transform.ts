@@ -1,22 +1,14 @@
 import * as swc from '@swc/core'
 
-type FileType = 'jsx' | 'tsx' | 'js' | 'ts'
-
-function getParser(file: FileType): swc.ParserConfig {
-  const isTsx = /ts(x)?/.test(file)
-  return isTsx ? { tsx: true, syntax: 'typescript' } : { jsx: true, syntax: 'ecmascript' }
-}
-
 type TransformOptions = {
-  file?: FileType
   plugins: swc.Plugin[]
 }
 
 function getSwcOptions(options: TransformOptions): swc.Options {
-  const { file = 'ts', plugins } = options
+  const { plugins } = options
   return {
     plugin: swc.plugins(plugins),
-    jsc: { parser: getParser(file) },
+    jsc: { parser: { tsx: true, syntax: 'typescript' } },
   }
 }
 
