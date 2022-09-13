@@ -753,7 +753,7 @@ const border: UtilityConfig = {
     // Divider
     divideX: {
       className: 'divide-x',
-      valueType: 'string',
+      values: { type: 'string' },
       transform(value) {
         return {
           '& > :not([hidden]) ~ :not([hidden])': {
@@ -765,7 +765,7 @@ const border: UtilityConfig = {
     },
     divideY: {
       className: 'divide-y',
-      valueType: 'string',
+      values: { type: 'string' },
       transform(value) {
         return {
           '& > :not([hidden]) ~ :not([hidden])': {
