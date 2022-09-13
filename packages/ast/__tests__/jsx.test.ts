@@ -26,7 +26,10 @@ describe('[jsx]', () => {
     expect(collect).toMatchInlineSnapshot(`
       Set {
         {
-          "data": {},
+          "data": {
+            "marginBottom": "42px",
+            "marginTop": "40px",
+          },
           "name": "panda",
         },
         {
@@ -60,7 +63,10 @@ describe('[jsx]', () => {
     expect(collect).toMatchInlineSnapshot(`
       Set {
         {
-          "data": {},
+          "data": {
+            "marginBottom": "42px",
+            "marginTop": "40px",
+          },
           "name": "panda",
         },
         {
@@ -95,7 +101,15 @@ describe('[jsx]', () => {
     expect(collect).toMatchInlineSnapshot(`
       Set {
         {
-          "data": {},
+          "data": {
+            "marginBottom": "42px",
+            "marginTop": {
+              "md": {
+                "rtl": "40px",
+              },
+              "sm": "40px",
+            },
+          },
           "name": "panda",
         },
         {
@@ -115,7 +129,6 @@ describe('[jsx]', () => {
          return (
             <div marginTop="55555px">
                <panda.button marginLeft={disabled ? "40px" : "50px"} marginBottom="42px">Click me</panda.button>
-               <panda.div bg={disabled ? "red.200": { dark: "green.400" }}>Click me</panda.div>
             </div>
         )
        }
@@ -130,11 +143,17 @@ describe('[jsx]', () => {
     expect(collect).toMatchInlineSnapshot(`
       Set {
         {
-          "data": {},
-          "name": "panda",
-        },
-        {
-          "data": {},
+          "data": {
+            "conditions": [
+              {
+                "marginLeft": "40px",
+              },
+              {
+                "marginLeft": "50px",
+              },
+            ],
+            "marginBottom": "42px",
+          },
           "name": "panda",
         },
       }

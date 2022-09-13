@@ -1,7 +1,7 @@
 import type * as swc from '@swc/core'
 import { CallVisitor, DynamicCallVisitor } from '../src/visitor'
 import { JSXPropVisitor } from '../src/jsx-visitor'
-import { isValidCSSProp } from '@css-panda/is-valid-prop'
+import { isCssProperty } from '@css-panda/is-valid-prop'
 
 export function cssPlugin(collector: Set<any>) {
   return function (program: swc.Program) {
@@ -35,7 +35,7 @@ export function jsxPlugin(collector: Set<any>) {
         collector.add({ name: 'panda', data: result.data })
       },
       isValidProp(prop) {
-        return isValidCSSProp(prop)
+        return isCssProperty(prop)
       },
     })
     return visitor.visitProgram(program)

@@ -3,7 +3,7 @@ import Visitor from '@swc/core/Visitor'
 import merge from 'lodash.merge'
 import * as ast from './ast'
 import type { ImportResult, PluginContext } from './types'
-import { match, P } from 'ts-pattern'
+import { match } from 'ts-pattern'
 import { logger } from '@css-panda/logger'
 
 export class JSXPropVisitor extends Visitor {
@@ -42,13 +42,9 @@ export class JSXPropVisitor extends Visitor {
 
     const attrs = node.attributes.filter((attr) => {
       return match(attr)
-        .with(
-          {
-            type: 'JSXAttribute',
-            name: { type: 'Identifier', name: { value: P.when(this.ctx.isValidProp) } },
-          },
-          () => true,
-        )
+        .with({ type: 'JSXAttribute', name: { type: 'Identifier' } }, (value) => {
+          return this.ctx.isValidProp(value.name.value)
+        })
         .otherwise(() => false)
     })
 

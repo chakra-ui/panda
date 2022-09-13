@@ -15,11 +15,17 @@ export async function extractContent(ctx: Context, file: string) {
 
   const absPath = path.isAbsolute(file) ? file : path.join(ctx.cwd, file)
 
-  const markEnd = logger.time('Extracted', quote(file))
+  const done = logger.time('Extracted', quote(file))
 
   try {
     await transformFile(absPath, {
-      plugins: createPlugins(collector, importMap, file),
+      plugins: createPlugins({
+        data: collector,
+        importMap,
+        fileName: file,
+        jsxName: ctx.jsx?.name,
+        isUtilityProp: ctx.isUtilityProp,
+      }),
     })
   } catch (error) {
     logger.error({ err: error })
@@ -45,6 +51,15 @@ export async function extractContent(ctx: Context, file: string) {
     for (const data of Object.values(result.data)) {
       sheet.process({ type: 'object', data })
     }
+  })
+
+  collector.jsx.forEach((result) => {
+    const { data, type } = result
+    const { conditions = [], css = {}, ...rest } = data
+    sheet.process({ type, data: { ...rest, ...css } })
+    conditions.forEach((style: any) => {
+      sheet.process(style)
+    })
   })
 
   collector.recipe.forEach((result, name) => {
@@ -76,7 +91,7 @@ export async function extractContent(ctx: Context, file: string) {
     }
   })
 
-  markEnd()
+  done()
 
   if (collector.isEmpty()) return ''
 

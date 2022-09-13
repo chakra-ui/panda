@@ -21,7 +21,7 @@ writeFileSync(
   const properties = [${Array.from(new Set(properties)).join(',')}]
   const regex = new RegExp('^(?:' + Array.from(properties).join('|') + ')$')
    
-  export const isValidCSSProp = memo((prop: string) => {
+  export const isCssProperty = memo((prop: string) => {
     return regex.test(prop)
   })
 `,

@@ -79,7 +79,9 @@ export function createContext(conf: LoadConfigResult) {
     },
   })
 
-  const stylesheet = new Stylesheet(context())
+  const ctx = context()
+
+  const stylesheet = new Stylesheet(ctx)
 
   const assets = {
     dir: assetPath,
@@ -116,6 +118,15 @@ export function createContext(conf: LoadConfigResult) {
     },
   }
 
+  const cssPropKeys = Array.from(
+    // prettier-ignore
+    new Set([
+      'css',
+      ...Object.keys(utilities.config.properties),
+      ...Object.keys(ctx.conditions.values),
+    ]),
+  )
+
   return {
     ...config,
     cwd,
@@ -150,6 +161,12 @@ export function createContext(conf: LoadConfigResult) {
     },
 
     helpers,
+
+    cssPropKeys,
+    isUtilityProp(prop: string) {
+      const regex = new RegExp('^(?:' + Array.from(cssPropKeys).join('|') + ')$')
+      return regex.test(prop)
+    },
 
     conf,
     config,

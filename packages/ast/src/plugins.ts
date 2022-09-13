@@ -1,4 +1,4 @@
-import { isValidCSSProp } from '@css-panda/is-valid-prop'
+import { isCssProperty } from '@css-panda/is-valid-prop'
 import { logger } from '@css-panda/logger'
 import type { PluginResult } from '@css-panda/types'
 import type * as swc from '@swc/core'
@@ -42,17 +42,22 @@ export function dynamicPlugin(data: Map<string, Set<PluginResult>>, moduleName: 
   }
 }
 
-export function jsxPlugin(data: Map<string, Set<PluginResult>>, moduleName: string, fileName?: string) {
+export function jsxPlugin(
+  data: Set<PluginResult>,
+  jsxName: string,
+  isUtilityProp: ((name: string) => boolean) | undefined,
+  moduleName: string,
+  fileName?: string,
+) {
   return function (program: swc.Program) {
     const visitor = new JSXPropVisitor({
-      import: { name: 'panda', module: moduleName, filename: fileName },
-      onDynamicData(name, result) {
-        logger.debug({ type: `ast:${name}`, fileName, result })
-        data.set(name, data.get(name) || new Set())
-        data.get(name)!.add(result)
+      import: { name: jsxName, module: moduleName, filename: fileName },
+      onData(result) {
+        logger.debug({ type: `ast:jsx`, fileName, result })
+        data.add(result)
       },
       isValidProp(prop) {
-        return isValidCSSProp(prop)
+        return isCssProperty(prop) || !!isUtilityProp?.(prop)
       },
     })
     return visitor.visitProgram(program)
@@ -83,11 +88,16 @@ export function createCollector() {
   }
 }
 
-export function createPlugins(
-  data: Collector,
-  importMap: Record<'css' | 'recipe' | 'pattern', string>,
-  fileName?: string,
-) {
+export type PluginOptions = {
+  jsxName?: string
+  data: Collector
+  importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string>
+  fileName?: string
+  isUtilityProp?: (prop: string) => boolean
+}
+
+export function createPlugins(options: PluginOptions) {
+  const { jsxName = 'panda', data, importMap, fileName, isUtilityProp } = options
   return [
     sxPlugin(data.css, importMap.css, fileName),
     cssPlugin(data.css, importMap.css, fileName),
@@ -95,5 +105,6 @@ export function createPlugins(
     globalStylePlugin(data.globalStyle, importMap.css, fileName),
     cssMapPlugin(data.cssMap, importMap.css, fileName),
     dynamicPlugin(data.recipe, importMap.recipe, fileName),
+    jsxPlugin(data.jsx, jsxName, isUtilityProp, importMap.jsx, fileName),
   ]
 }
