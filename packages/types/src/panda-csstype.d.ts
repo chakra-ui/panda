@@ -3,7 +3,13 @@ import { PropertiesFallback, SimplePseudos } from './csstype'
 type Loose = string & { __type?: never }
 // type Clean<T> = Exclude<T, { __type?: never }>
 
-export type Properties = PropertiesFallback<Loose>
+type ContainerProperties = {
+  container?: string
+  containerType?: 'size' | 'inline-size' | (string & {})
+  containerName?: string
+}
+
+export type Properties = PropertiesFallback<Loose> & ContainerProperties
 
 export type CssProperty = keyof Properties
 
