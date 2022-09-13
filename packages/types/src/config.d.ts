@@ -1,9 +1,9 @@
 import type { Conditions as TConditions } from './conditions'
-import type { Utility } from './css-utility'
+import type { UtilityConfig } from './css-utility'
 import type { Dict, RequiredBy } from './helper'
 import type { Keyframes } from './panda-csstype'
 import type { Pattern } from './pattern'
-import type { Recipe } from './recipe'
+import type { RecipeConfig } from './recipe'
 import type { DotPath, TDotPath } from './shared'
 import type { PartialTokens } from './tokens'
 
@@ -95,12 +95,12 @@ export type Config<
   /**
    * The css utility definitions.
    */
-  utilities?: Utility<Tokens>[]
+  utilities?: UtilityConfig[]
   /**
    * Multi-variant style definitions for your project.
    * Useful for defining component styles.
    */
-  recipes?: Recipe[]
+  recipes?: RecipeConfig[]
   /**
    * Common styling or layout patterns for your project.
    */
