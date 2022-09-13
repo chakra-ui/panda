@@ -105,6 +105,28 @@ export type Config<
    * Common styling or layout patterns for your project.
    */
   patterns?: Pattern[]
+  /**
+   * @experimental
+   * The JSX version to be emitted in JavaScript files.
+   * Useful for generating supercharged elements
+   */
+  jsx?: {
+    /**
+     * The framework to use for generating supercharged elements.
+     * @default 'react'
+     */
+    framework?: 'react' | 'solid'
+    /**
+     * The group name of the element
+     * @default 'panda'
+     *
+     * @example
+     * ```jsx
+     * <panda.button marginTop="40px">Click me</panda.button>
+     * ```
+     */
+    name?: string
+  }
 }
 
 export type TConfig = Config<TConditions, Dict, Dict>
