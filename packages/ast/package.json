@@ -19,6 +19,7 @@
   "dependencies": {
     "@swc/core": "1.2.248",
     "@css-panda/logger": "workspace:*",
+    "@css-panda/is-valid-prop": "workspace:*",
     "@css-panda/types": "workspace:*",
     "ts-pattern": "4.0.5",
     "lodash.merge": "4.6.2"

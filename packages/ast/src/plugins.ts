@@ -1,7 +1,10 @@
+import { isValidCSSProp } from '@css-panda/is-valid-prop'
 import { logger } from '@css-panda/logger'
 import type { PluginResult } from '@css-panda/types'
 import type * as swc from '@swc/core'
+import { JSXPropVisitor } from './jsx-visitor'
 import type { Collector } from './types'
+
 import { CallVisitor, DynamicCallVisitor } from './visitor'
 
 function createPlugin(name: string) {
@@ -39,9 +42,27 @@ export function dynamicPlugin(data: Map<string, Set<PluginResult>>, moduleName: 
   }
 }
 
+export function jsxPlugin(data: Map<string, Set<PluginResult>>, moduleName: string, fileName?: string) {
+  return function (program: swc.Program) {
+    const visitor = new JSXPropVisitor({
+      import: { name: 'panda', module: moduleName, filename: fileName },
+      onDynamicData(name, result) {
+        logger.debug({ type: `ast:${name}`, fileName, result })
+        data.set(name, data.get(name) || new Set())
+        data.get(name)!.add(result)
+      },
+      isValidProp(prop) {
+        return isValidCSSProp(prop)
+      },
+    })
+    return visitor.visitProgram(program)
+  }
+}
+
 export function createCollector() {
   return {
     sx: new Set<PluginResult>(),
+    jsx: new Set<PluginResult>(),
     css: new Set<PluginResult>(),
     globalStyle: new Set<PluginResult>(),
     fontFace: new Set<PluginResult>(),
@@ -74,6 +95,5 @@ export function createPlugins(
     globalStylePlugin(data.globalStyle, importMap.css, fileName),
     cssMapPlugin(data.cssMap, importMap.css, fileName),
     dynamicPlugin(data.recipe, importMap.recipe, fileName),
-    dynamicPlugin(data.pattern, importMap.pattern, fileName),
   ]
 }

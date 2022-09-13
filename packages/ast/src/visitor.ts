@@ -1,10 +1,10 @@
 import { logger } from '@css-panda/logger'
 import type * as swc from '@swc/core'
-import BaseVisitor from '@swc/core/Visitor'
+import Visitor from '@swc/core/Visitor'
 import * as ast from './ast'
 import type { ImportResult, PluginContext } from './types'
 
-export class CallVisitor extends BaseVisitor {
+export class CallVisitor extends Visitor {
   constructor(private ctx: PluginContext) {
     super()
   }
@@ -66,7 +66,7 @@ export class CallVisitor extends BaseVisitor {
  * Dynamic call expression visitor
  * -----------------------------------------------------------------------------*/
 
-export class DynamicCallVisitor extends BaseVisitor {
+export class DynamicCallVisitor extends Visitor {
   constructor(private ctx: PluginContext) {
     super()
   }
