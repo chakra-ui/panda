@@ -1,4 +1,12 @@
-import memo from '@emotion/memoize'
+function memo<V>(fn: (args: string) => V): (args: string) => V {
+  const cache = Object.create(null)
+  return (arg: string) => {
+    if (cache[arg] === undefined) cache[arg] = fn(arg)
+    return cache[arg]
+  }
+}
+
+const userGenerated: string[] = []
 
 const properties = [
   'msAccelerator',
@@ -515,6 +523,7 @@ const properties = [
   'writingMode',
   'zIndex',
   'zoom',
+  ...userGenerated,
 ]
 const regex = new RegExp('^(?:' + Array.from(properties).join('|') + ')$')
 

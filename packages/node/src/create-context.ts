@@ -49,6 +49,7 @@ export function createContext(conf: LoadConfigResult) {
   const patternPath = path.join(cwd, outdir, 'patterns')
   const assetPath = path.join(cwd, outdir, 'assets')
   const outCssPath = path.join(cwd, outdir, 'styles.css')
+  const jsxPath = path.join(cwd, outdir, 'jsx')
 
   const dictionary = new TokenMap({
     tokens,
@@ -124,6 +125,7 @@ export function createContext(conf: LoadConfigResult) {
       css: `${outdir}/css`,
       recipe: `${outdir}/recipes`,
       pattern: `${outdir}/patterns`,
+      jsx: `${outdir}/jsx`,
     },
 
     recipes: mergeRecipes(recipes, utilities),
@@ -144,6 +146,7 @@ export function createContext(conf: LoadConfigResult) {
       recipe: recipePath,
       pattern: patternPath,
       config: configPath,
+      jsx: jsxPath,
     },
 
     helpers,

@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@css-panda/types": "workspace:*",
+    "@css-panda/is-valid-prop": "workspace:*",
     "@css-panda/error": "workspace:*",
     "@css-panda/ast": "workspace:*",
     "@css-panda/shared": "workspace:*",

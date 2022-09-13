@@ -19,11 +19,8 @@
   "files": [
     "dist"
   ],
-  "dependencies": {
-    "outdent": " ^0.8.0",
-    "@emotion/memoize": "^0.8.0"
-  },
   "devDependencies": {
+    "outdent": " ^0.8.0",
     "mdn-data": "^2.0.29",
     "css-in-js-utils": "^3.1.0"
   }

@@ -135,16 +135,13 @@ importers:
 
   packages/is-valid-prop:
     specifiers:
-      '@emotion/memoize': ^0.8.0
       css-in-js-utils: ^3.1.0
       mdn-data: ^2.0.29
       outdent: ' ^0.8.0'
-    dependencies:
-      '@emotion/memoize': 0.8.0
-      outdent: 0.8.0
     devDependencies:
       css-in-js-utils: 3.1.0
       mdn-data: 2.0.29
+      outdent: 0.8.0
 
   packages/logger:
     specifiers:
@@ -162,6 +159,7 @@ importers:
       '@css-panda/core': workspace:*
       '@css-panda/error': workspace:*
       '@css-panda/fixture': workspace:*
+      '@css-panda/is-valid-prop': workspace:*
       '@css-panda/logger': workspace:*
       '@css-panda/shared': workspace:*
       '@css-panda/tokens': workspace:*
@@ -188,6 +186,7 @@ importers:
       '@css-panda/config': link:../config
       '@css-panda/core': link:../core
       '@css-panda/error': link:../error
+      '@css-panda/is-valid-prop': link:../is-valid-prop
       '@css-panda/logger': link:../logger
       '@css-panda/shared': link:../shared
       '@css-panda/tokens': link:../tokens
@@ -816,10 +815,6 @@ packages:
       fs-extra: 7.0.1
       human-id: 1.0.2
       prettier: 2.7.1
-    dev: false
-
-  /@emotion/memoize/0.8.0:
-    resolution: {integrity: sha512-G/YwXTkv7Den9mXDO7AhLWkE3q+I92B+VqAE+dYG4NGPaHZGvt3G8Q0p9vmE+sq7rTGphUbAvmQ9YpbfMQGGlA==}
     dev: false
 
   /@esbuild-kit/cjs-loader/2.3.3:
@@ -2074,22 +2069,12 @@ packages:
 
   /debug/2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
     dependencies:
       ms: 2.0.0
     dev: true
 
   /debug/3.2.7:
     resolution: {integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
     dependencies:
       ms: 2.1.2
     dev: true
@@ -2884,13 +2869,12 @@ packages:
       eslint: 8.23.0
       eslint-import-resolver-node: 0.3.6
       eslint-import-resolver-typescript: 2.7.1_281cc4e22b3419695ab0c330ccaae282
-      eslint-plugin-import: 2.26.0_42594f11e3dc6410ff1fa30ff742f548
+      eslint-plugin-import: 2.26.0_eslint@8.23.0
       eslint-plugin-jsx-a11y: 6.6.1_eslint@8.23.0
       eslint-plugin-react: 7.31.8_eslint@8.23.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.23.0
       typescript: 4.7.4
     transitivePeerDependencies:
-      - eslint-import-resolver-webpack
       - supports-color
     dev: true
 
@@ -2899,8 +2883,6 @@ packages:
     dependencies:
       debug: 3.2.7
       resolve: 1.22.1
-    transitivePeerDependencies:
-      - supports-color
     dev: true
 
   /eslint-import-resolver-typescript/2.7.1_281cc4e22b3419695ab0c330ccaae282:
@@ -2912,7 +2894,7 @@ packages:
     dependencies:
       debug: 4.3.4
       eslint: 8.23.0
-      eslint-plugin-import: 2.26.0_42594f11e3dc6410ff1fa30ff742f548
+      eslint-plugin-import: 2.26.0_eslint@8.23.0
       glob: 7.2.3
       is-glob: 4.0.3
       resolve: 1.22.1
@@ -2921,54 +2903,32 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-module-utils/2.7.4_e91fc355434a534d9ebe6b5c51403096:
+  /eslint-module-utils/2.7.4_eslint@8.23.0:
     resolution: {integrity: sha512-j4GT+rqzCoRKHwURX7pddtIPGySnX9Si/cgMI5ztrcqOPtk5dDEeZ34CQVPphnqkJytlc97Vuk05Um2mJ3gEQA==}
     engines: {node: '>=4'}
     peerDependencies:
-      '@typescript-eslint/parser': '*'
       eslint: '*'
-      eslint-import-resolver-node: '*'
-      eslint-import-resolver-typescript: '*'
-      eslint-import-resolver-webpack: '*'
     peerDependenciesMeta:
-      '@typescript-eslint/parser':
-        optional: true
       eslint:
         optional: true
-      eslint-import-resolver-node:
-        optional: true
-      eslint-import-resolver-typescript:
-        optional: true
-      eslint-import-resolver-webpack:
-        optional: true
     dependencies:
-      '@typescript-eslint/parser': 5.36.2_eslint@8.23.0+typescript@4.7.4
       debug: 3.2.7
       eslint: 8.23.0
-      eslint-import-resolver-node: 0.3.6
-      eslint-import-resolver-typescript: 2.7.1_281cc4e22b3419695ab0c330ccaae282
-    transitivePeerDependencies:
-      - supports-color
     dev: true
 
-  /eslint-plugin-import/2.26.0_42594f11e3dc6410ff1fa30ff742f548:
+  /eslint-plugin-import/2.26.0_eslint@8.23.0:
     resolution: {integrity: sha512-hYfi3FXaM8WPLf4S1cikh/r4IxnO6zrhZbEGz2b660EJRbuxgpDS5gkCuYgGWg2xxh2rBuIr4Pvhve/7c31koA==}
     engines: {node: '>=4'}
     peerDependencies:
-      '@typescript-eslint/parser': '*'
       eslint: ^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0 || ^8
-    peerDependenciesMeta:
-      '@typescript-eslint/parser':
-        optional: true
     dependencies:
-      '@typescript-eslint/parser': 5.36.2_eslint@8.23.0+typescript@4.7.4
       array-includes: 3.1.5
       array.prototype.flat: 1.3.0
       debug: 2.6.9
       doctrine: 2.1.0
       eslint: 8.23.0
       eslint-import-resolver-node: 0.3.6
-      eslint-module-utils: 2.7.4_e91fc355434a534d9ebe6b5c51403096
+      eslint-module-utils: 2.7.4_eslint@8.23.0
       has: 1.0.3
       is-core-module: 2.9.0
       is-glob: 4.0.3
@@ -2976,10 +2936,6 @@ packages:
       object.values: 1.1.5
       resolve: 1.22.1
       tsconfig-paths: 3.14.1
-    transitivePeerDependencies:
-      - eslint-import-resolver-typescript
-      - eslint-import-resolver-webpack
-      - supports-color
     dev: true
 
   /eslint-plugin-jsx-a11y/6.6.1_eslint@8.23.0:
@@ -4228,7 +4184,6 @@ packages:
 
   /outdent/0.8.0:
     resolution: {integrity: sha512-KiOAIsdpUTcAXuykya5fnVVT+/5uS0Q1mrkRHcF89tpieSmY33O/tmc54CqwA+bfhbtEfZUNLHaPUiB9X3jt1A==}
-    dev: false
 
   /p-filter/2.1.0:
     resolution: {integrity: sha512-ZBxxZ5sL2HghephhpGAQdoskxplTwr7ICaehZwLIlfL6acuVgZPm8yBNuRAFBGEqtD/hmUeq9eqLg2ys9Xr/yw==}
@@ -5227,6 +5182,7 @@ packages:
     resolution: {integrity: sha512-C0WQT0gezHuw6AdY1M2jxUO83Rjf0HP7Sk1DtXj6j1EwkQNZrHAg2XPWlq62oqEhYvONq5pkC2Y9oPljWToLmQ==}
     engines: {node: '>=4.2.0'}
     hasBin: true
+    dev: false
 
   /ufo/0.8.5:
     resolution: {integrity: sha512-e4+UtA5IRO+ha6hYklwj6r7BjiGMxS0O+UaSg9HbaTefg4kMkzj4tXzEBajRR+wkxf+golgAWKzLbytCUDMJAA==}

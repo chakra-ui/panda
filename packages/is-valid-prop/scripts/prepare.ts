@@ -10,7 +10,13 @@ const properties = Object.keys(json)
 writeFileSync(
   './src/index.ts',
   outdent`
-  import memo from '@emotion/memoize'
+  function memo<T>(fn: (value: string) => T): (value: string) => T {
+    const cache = Object.create(null)
+    return (arg: string) => {
+      if (cache[arg] === undefined) cache[arg] = fn(arg)
+      return cache[arg]
+    }
+  }
 
   const properties = [${Array.from(new Set(properties)).join(',')}]
   const regex = new RegExp('^(?:' + Array.from(properties).join('|') + ')$')

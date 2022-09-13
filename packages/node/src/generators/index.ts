@@ -10,6 +10,7 @@ import { generateCssType } from './css-type'
 import { generateCx } from './cx'
 import { generateFontFace } from './font-face'
 import { generateGlobalStyle } from './global-style'
+import { generateisValidProp } from './is-valid-prop'
 import { generateJs } from './js'
 import { generateDts } from './js-dts'
 import { generatePattern } from './pattern'
@@ -137,6 +138,13 @@ async function setupPatterns(ctx: Context) {
   ])
 }
 
+async function setupJsx(ctx: Context) {
+  // if (!ctx.jsx) return
+  const code = await generateisValidProp(ctx)
+  await ensureDir(ctx.paths.jsx)
+  return Promise.all([writeFileWithNote(path.join(ctx.paths.jsx, 'is-valid-prop.js'), code.js)])
+}
+
 async function setupCssIndex(ctx: Context) {
   const code = outdent`
   export * from './css'
@@ -169,5 +177,6 @@ export async function generateSystem(ctx: Context) {
     setupRecipes(ctx),
     setupPatterns(ctx),
     setupCssIndex(ctx),
+    setupJsx(ctx),
   ])
 }
