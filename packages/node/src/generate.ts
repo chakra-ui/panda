@@ -32,7 +32,8 @@ export async function generate(options: Config) {
       }),
     )
 
-    await extractAssets(ctx)
+    const css = await extractAssets(ctx)
+    await ctx.outputCss.write(css)
   }
 
   await buildOnce()
