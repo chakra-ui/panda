@@ -77,6 +77,7 @@ describe('ast parser', () => {
           },
         },
         "isEmpty": [Function],
+        "jsx": Set {},
         "pattern": Map {},
         "recipe": Map {},
         "sx": Set {},
