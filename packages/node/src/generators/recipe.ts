@@ -35,7 +35,7 @@ export function generateRecipes(config: { recipes?: RecipeConfig[]; hash?: boole
     `)
 
     dts.push(outdent`
-    import { ConditionalValue } from "../types/public"
+    import { ConditionalValue } from "../types"
 
     export type ${capitalize(recipe.name)}Value = {
       ${Object.keys(recipe.variants ?? {})

@@ -6,7 +6,7 @@ import type { Context } from '../create-context'
 import { generateConditions } from './conditions'
 import { generateCss, generateKeyframes } from './css'
 import { generateCssMap } from './css-map'
-import { generateCssType } from './css-type'
+import { generateCssType } from './css-dts'
 import { generateCx } from './cx'
 import { generateFontFace } from './font-face'
 import { generateGlobalStyle } from './global-style'
@@ -21,6 +21,7 @@ import { generateSx } from './sx'
 import { generateTokenDts } from './token-dts'
 import { generateTransform } from './transform'
 import { writeFileWithNote } from './__utils'
+import { generateJsxFactory } from './jsx'
 
 async function setupKeyframes(ctx: Context) {
   const code = generateKeyframes(ctx)
@@ -58,7 +59,7 @@ async function setupTypes(ctx: Context, dict: TokenMap) {
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.types, 'csstype.d.ts'), code.cssType),
     writeFileWithNote(path.join(ctx.paths.types, 'panda-csstype.d.ts'), code.pandaCssType),
-    writeFileWithNote(path.join(ctx.paths.types, 'public.d.ts'), code.publicType),
+    writeFileWithNote(path.join(ctx.paths.types, 'index.d.ts'), code.publicType),
     writeFileWithNote(path.join(ctx.paths.types, 'token.d.ts'), generateTokenDts(dict)),
     writeFileWithNote(path.join(ctx.paths.types, 'property-type.d.ts'), generatePropertyTypes(ctx.utilities)),
 
@@ -140,9 +141,16 @@ async function setupPatterns(ctx: Context) {
 
 async function setupJsx(ctx: Context) {
   // if (!ctx.jsx) return
-  const code = await generateisValidProp(ctx)
+  const isValidProp = await generateisValidProp(ctx)
+  const factory = generateJsxFactory(ctx)
+
   await ensureDir(ctx.paths.jsx)
-  return Promise.all([writeFileWithNote(path.join(ctx.paths.jsx, 'is-valid-prop.js'), code.js)])
+
+  return Promise.all([
+    writeFileWithNote(path.join(ctx.paths.jsx, 'is-valid-prop.js'), isValidProp.js),
+    writeFileWithNote(path.join(ctx.paths.jsx, 'index.d.ts'), factory.dts),
+    writeFileWithNote(path.join(ctx.paths.jsx, 'index.js'), factory.js),
+  ])
 }
 
 async function setupCssIndex(ctx: Context) {

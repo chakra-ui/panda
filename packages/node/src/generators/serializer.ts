@@ -40,7 +40,7 @@ export function generateSerializer(hash?: boolean) {
     ${code}
     `,
     dts: outdent`
-    import { CssObject } from '../types/public'
+    import { CssObject } from '../types'
     export declare function css(styles: CssObject): string
     `,
   }

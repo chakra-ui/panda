@@ -4,6 +4,7 @@ export function generateCssMap() {
   return {
     js: outdent`
     import { css } from "./css"
+    
     export function cssMap(obj){
       return (...args) => {
         const finalCss = args.reduce((acc, arg) => {
@@ -15,7 +16,8 @@ export function generateCssMap() {
     }
     `,
     dts: outdent`
-    import { CssObject } from "../types/public"
+    import { CssObject } from "../types"
+    
     export declare function cssMap<T extends string>(obj: Record<T, CssObject>): (...args: Array<T>) => CssObject;
     `,
   }

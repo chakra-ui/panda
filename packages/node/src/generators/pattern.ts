@@ -28,7 +28,7 @@ export function generatePattern(config: { patterns?: Pattern[] }) {
 
   const dts: string[] = [
     outdent`
-  import { CssObject, ConditionalValue } from "../types/public"
+  import { CssObject, ConditionalValue } from "../types"
   import { Properties } from "../types/csstype"
   import { Tokens } from "../types/token"
   `,

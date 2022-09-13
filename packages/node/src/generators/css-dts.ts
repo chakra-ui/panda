@@ -12,12 +12,15 @@ export async function generateCssType() {
     cssType: await getCssType('csstype.d.ts'),
     pandaCssType: await getCssType('panda-csstype.d.ts'),
     publicType: outdent`
-    import { PandaCssObject, PandaConditionalValue } from './panda-csstype'
+    import { PandaCssObject, PandaConditionalValue, ConditionCssProperties } from './panda-csstype'
     import { PropertyTypes } from './property-type'
     import { Conditions } from './conditions'
     
     export type CssObject = PandaCssObject<Conditions, PropertyTypes>
+
     export type ConditionalValue<V> = PandaConditionalValue<Conditions, V>
+    
+    export type CssProperties = ConditionCssProperties<Conditions, PropertyTypes>
     `,
   }
 }

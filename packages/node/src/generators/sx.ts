@@ -6,7 +6,7 @@ export function generateSx() {
     export const sx = (styles) => styles
     `,
     dts: outdent`
-    import { CssObject } from '../types/public'
+    import { CssObject } from '../types'
     export declare function sx(styles: CssObject): any
     `,
   }
