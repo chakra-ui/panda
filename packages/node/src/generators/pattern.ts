@@ -8,7 +8,7 @@ export function generatePattern(config: { patterns?: Pattern[] }) {
   if (!patterns.length) return
   const js = [
     outdent`
-  import config from "../config.min"
+  import config from "../config"
   import { css } from "../css"
 
   const patterns = config.patterns ?? []

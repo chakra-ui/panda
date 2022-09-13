@@ -11,7 +11,7 @@ import { updateGitIgnore } from './setup-gitignore'
 export async function setupSystem(conf: LoadConfigResult) {
   const ctx = createContext(conf)
 
-  logger.debug('panda context created')
+  logger.debug('Panda context created')
 
   if (conf.config.clean) {
     await emptyDir(ctx.outdir)
@@ -19,13 +19,7 @@ export async function setupSystem(conf: LoadConfigResult) {
 
   await ensureDir(ctx.outdir)
 
-  const minifiedCode = minifyConfig(conf.code)
-
-  await Promise.all([
-    updateGitIgnore(ctx.outdir),
-    writeFileWithNote(ctx.paths.configMin, minifiedCode),
-    writeFileWithNote(ctx.paths.config, conf.code),
-  ])
+  await Promise.all([updateGitIgnore(ctx.outdir), writeFileWithNote(ctx.paths.config, minifyConfig(conf.code))])
 
   await generateSystem(ctx)
 
