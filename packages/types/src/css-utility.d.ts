@@ -12,7 +12,9 @@ type CssObject =
       [selector: string]: string | number | null | undefined | Properties
     }
 
-export type PropertyConfig<T extends Record<string, any>> = {
+export type PropertyValues = string | string[] | Record<string, string> | ValuesFn
+
+export type PropertyConfig = {
   /**
    * The classname this property will generate.
    */
@@ -24,15 +26,11 @@ export type PropertyConfig<T extends Record<string, any>> = {
   /**
    * The possible values this property can have.
    */
-  values?: keyof T | string[] | Record<string, string> | ValuesFn
+  values?: string | string[] | { type: string } | Record<string, string> | ValuesFn
   /**
    * The css property this utility maps to.
    */
   cssType?: keyof Properties
-  /**
-   * Custom TS type for this property.
-   */
-  valueType?: string
   /**
    * [Experimental] The conditions this property can be used in.
    * Useful for initial class generation.
@@ -40,12 +38,12 @@ export type PropertyConfig<T extends Record<string, any>> = {
   conditions?: string[]
 }
 
-export type UtilityConfig<T extends Record<string, any> = Record<string, any>> = {
+export type UtilityConfig = {
   /**
    * The css properties matched by this utility.
    */
   properties: {
-    [property in keyof Properties | (string & Record<never, never>)]?: string | PropertyConfig<T>
+    [property in keyof Properties | (string & {})]?: string | PropertyConfig
   }
 
   /**

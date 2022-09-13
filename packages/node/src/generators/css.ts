@@ -1,6 +1,5 @@
 import { toCss, toKeyframeCss } from '@css-panda/core'
 import type { VarData } from '@css-panda/tokens'
-import { logger } from '@css-panda/logger'
 import type { Context } from '../create-context'
 
 export function generateKeyframes(ctx: Context) {
@@ -40,10 +39,7 @@ export function generateCss(ctx: Context, root = ':where(:root, :host)') {
 
     const selector = cond.rawValue ?? cond.value.replace(/&/, root)
 
-    if (!selector) {
-      logger.error(`Condition ${selector} is not defined`)
-      continue
-    }
+    if (!selector) continue
 
     output.push(`${selector} {\n ${inner(conditionMap, cond.type === 'at-rule')} \n}`)
   }

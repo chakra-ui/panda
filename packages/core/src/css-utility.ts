@@ -1,3 +1,4 @@
+import { logger, quote } from '@css-panda/logger'
 import type { TokenMap } from '@css-panda/tokens'
 import type { Dict, UtilityConfig, PropertyConfig } from '@css-panda/types'
 
@@ -8,7 +9,7 @@ const isFunction = (v: any): v is AnyFunction => typeof v === 'function'
 const clean = (v: string) => v.toString().replaceAll(' ', '_')
 
 type Options = {
-  config?: UtilityConfig<Dict>
+  config?: UtilityConfig
   tokens: TokenMap
 }
 
@@ -17,11 +18,11 @@ export class Utility {
   classNameMap: Map<string, string> = new Map()
   stylesMap: Map<string, Dict> = new Map()
   valuesMap: Map<string, Set<string>> = new Map()
-  config: UtilityConfig<Dict> = { properties: {} }
+  config: UtilityConfig = { properties: {} }
   report: Map<string, string> = new Map()
 
   private transformMap: Map<string, AnyFunction> = new Map()
-  private propertyConfigMap: Map<string, PropertyConfig<any>> = new Map()
+  private propertyConfigMap: Map<string, PropertyConfig> = new Map()
 
   constructor(options: Options) {
     const { tokens, config } = options
@@ -42,11 +43,18 @@ export class Utility {
     return `${prop}_${value}`
   }
 
-  private getPropertyValues(config: PropertyConfig<any>): Dict<string> {
+  private getPropertyValues(config: PropertyConfig) {
     const { values } = config
 
     if (isString(values)) {
-      return this.tokenMap.flattenedTokens.get(values) ?? {}
+      const result = this.tokenMap.flattenedTokens.get(values)
+
+      if (!result) {
+        logger.warn(`Token ${quote(values)} not found in ${quote('config.tokens')}`)
+        return {}
+      }
+
+      return result
     }
 
     if (Array.isArray(values)) {
@@ -60,10 +68,10 @@ export class Utility {
       return values((path) => this.tokenMap.query(path))
     }
 
-    return values as Dict<string>
+    return values
   }
 
-  normalize(value: string | PropertyConfig<any> | undefined): PropertyConfig<any> | undefined {
+  normalize(value: string | PropertyConfig | undefined): PropertyConfig | undefined {
     return typeof value === 'string' ? { className: value } : value
   }
 
@@ -95,6 +103,11 @@ export class Utility {
 
       const values = this.getPropertyValues(propConfig)
 
+      if (typeof values === 'object' && values.type) {
+        this.valuesMap.set(property, new Set([`type:${values.type}`]))
+        continue
+      }
+
       if (values) {
         this.valuesMap.set(property, new Set(Object.keys(values)))
       }
@@ -105,15 +118,32 @@ export class Utility {
         this.valuesMap.set(property, set.add(`CSSProperties["${propConfig.cssType}"]`))
         continue
       }
-
-      if (propConfig.valueType) {
-        this.valuesMap.set(property, new Set([`__type__${propConfig.valueType}`]))
-      }
     }
 
     for (const [shorthand, longhand] of Object.entries(this.config.shorthands || {})) {
       this.valuesMap.set(shorthand, this.valuesMap.get(longhand)!)
     }
+  }
+
+  get valueTypes() {
+    const map = new Map<string, string[]>()
+    for (const [prop, tokens] of this.valuesMap.entries()) {
+      // When tokens does not exist in the config
+      if (tokens.size === 0) {
+        map.set(prop, ['string'])
+        continue
+      }
+
+      map.set(
+        prop,
+        Array.from(tokens).map((key) => {
+          if (key.startsWith('CSSProperties')) return key
+          if (key.startsWith('type:')) return key.replace('type:', '')
+          return JSON.stringify(key)
+        }),
+      )
+    }
+    return map
   }
 
   defaultTransform = (value: string, prop: string) => {

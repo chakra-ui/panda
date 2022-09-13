@@ -6,17 +6,12 @@ export function generatePropertyTypes(utility: Utility) {
     '',
     'export type PropertyTypes  = {',
   ]
-  for (const [prop, values] of utility.valuesMap.entries()) {
-    result.push(
-      `\t${prop}: ${Array.from(values)
-        .map((key) => {
-          if (key.startsWith('CSSProperties')) return key
-          if (key.startsWith('__type__')) return key.replace('__type__', '')
-          return JSON.stringify(key)
-        })
-        .join(' | ')};`,
-    )
+
+  const valueTypes = utility.valueTypes
+  for (const [prop, values] of valueTypes.entries()) {
+    result.push(`\t${prop}: ${values.join(' | ')};`)
   }
+
   result.push('}')
   return result.join('\n')
 }

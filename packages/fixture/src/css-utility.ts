@@ -21,7 +21,7 @@ export const utilities: UtilityConfig[] = [
       // Divider
       divideX: {
         className: 'divide-x',
-        valueType: 'string',
+        values: { type: 'string' },
         transform(value) {
           return {
             '& > * ~ *': {
@@ -33,7 +33,7 @@ export const utilities: UtilityConfig[] = [
       },
       divideY: {
         className: 'divide-y',
-        valueType: 'string',
+        values: { type: 'string' },
         transform(value) {
           return {
             '& > * ~ *': {
@@ -628,7 +628,7 @@ export const utilities: UtilityConfig[] = [
       },
       blur: {
         className: 'blur',
-        valueType: 'string & {}',
+        values: { type: 'string | number' },
         transform(value) {
           return {
             '--blur': `blur(${value})`,
