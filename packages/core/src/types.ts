@@ -1,6 +1,7 @@
 import type { TransformHelpers } from '@css-panda/types'
 import type { Root } from 'postcss'
-import type { CSSCondition } from './css-condition'
+import type { Conditions } from './conditions'
+import type { Utility } from './utility'
 
 export type TransformResult = {
   className: string
@@ -9,10 +10,12 @@ export type TransformResult = {
 
 export type GeneratorContext = {
   root: Root
-  conditions: CSSCondition
+  utility: Utility
+  conditions: Conditions
   breakpoints: Record<string, string>
   helpers: TransformHelpers
   transform: (prop: string, value: string) => TransformResult
+  hash?: boolean
 }
 
 export type Dict<T = any> = Record<string, T>

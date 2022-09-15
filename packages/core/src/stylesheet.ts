@@ -1,26 +1,22 @@
 import { walkStyles } from '@css-panda/shared'
 import type { PluginResult, RecipeConfig } from '@css-panda/types'
 import postcss, { Root, Rule } from 'postcss'
-import { expandScreenAtRule } from './expand-screen'
+import { AtomicRule } from './atomic-rule'
+import { Breakpoints } from './breakpoints'
 import { optimizeCss } from './optimize'
-import { createRecipeSet } from './recipe-set'
-import { createRuleset } from './ruleset'
+import { Recipe } from './recipe'
 import { toCss } from './to-css'
 import type { GeneratorContext } from './types'
 
 export class Stylesheet {
-  hash: boolean
+  constructor(private context: GeneratorContext) {}
 
-  constructor(private context: GeneratorContext, options: { hash?: boolean } = {}) {
-    this.hash = !!options.hash
-  }
-
-  process(result: PluginResult) {
+  process = (result: PluginResult) => {
     const { type, data, name } = result
     return type === 'object' ? this.processAtomic(data) : this.processObject(name!, data)
   }
 
-  processFontFace(result: PluginResult) {
+  processFontFace = (result: PluginResult) => {
     const src = result.data.src?.join(',')
     return this.processObject({
       '@font-face': {
@@ -55,35 +51,36 @@ export class Stylesheet {
     return this
   }
 
-  processAtomic(styleObject: Record<string, any>) {
+  processAtomic = (styleObject: Record<string, any>) => {
     return walkStyles(styleObject, (props: any, scope?: string) => {
-      const ruleset = createRuleset(this.context, { hash: this.hash })
+      const ruleset = new AtomicRule(this.context)
       ruleset.process({ scope, styles: props })
     })
   }
 
-  processRecipe(recipe: RecipeConfig, styles: Record<string, any>) {
-    const ruleset = createRecipeSet(this.context, recipe, { hash: this.hash })
-    ruleset.process({ styles })
+  processRecipe = (recipe: RecipeConfig, styles: Record<string, any>) => {
+    const _recipe = new Recipe(recipe, this.context)
+    _recipe.process({ styles })
   }
 
-  addImports(imports: string[]) {
+  addImports = (imports: string[]) => {
     const rules = imports.map((n) => `@import '${n}';\n`)
     this.context.root.prepend(...rules)
     return this
   }
 
-  toCss({ optimize = true, minify }: { optimize?: boolean; minify?: boolean } = {}) {
-    expandScreenAtRule(this.context.root, this.context.breakpoints)
+  toCss = ({ optimize = true, minify }: { optimize?: boolean; minify?: boolean } = {}) => {
+    const breakpoint = new Breakpoints(this.context.breakpoints)
+    breakpoint.expandScreenAtRule(this.context.root)
     const css = this.context.root.toString()
     return optimize ? optimizeCss(css, { minify }) : css
   }
 
-  reset() {
+  reset = () => {
     this.context.root.removeAll()
   }
 
-  append(css: string) {
+  append = (css: string) => {
     this.context.root.append(css)
     return this
   }

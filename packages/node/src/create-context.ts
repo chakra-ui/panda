@@ -1,5 +1,5 @@
 import type { LoadConfigResult } from '@css-panda/config'
-import { createConditions, Utility, GeneratorContext, mergeRecipes, mergeUtilities, Stylesheet } from '@css-panda/core'
+import { Conditions, GeneratorContext, mergeRecipes, mergeUtilities, Stylesheet, Utility } from '@css-panda/core'
 import { logger } from '@css-panda/logger'
 import { TokenMap } from '@css-panda/tokens'
 import type { Pattern, TransformHelpers } from '@css-panda/types'
@@ -69,11 +69,12 @@ export function createContext(conf: LoadConfigResult) {
   const context = (): GeneratorContext => ({
     root: postcss.root(),
     breakpoints,
-    conditions: createConditions({
+    conditions: new Conditions({
       conditions,
       breakpoints,
     }),
     helpers,
+    utility: utilities,
     transform(prop, value) {
       return utilities.resolve(prop, value)
     },
@@ -139,7 +140,7 @@ export function createContext(conf: LoadConfigResult) {
       jsx: `${outdir}/jsx`,
     },
 
-    recipes: mergeRecipes(recipes, utilities),
+    recipes: mergeRecipes(recipes, ctx),
     patterns: mergePatterns(patterns),
 
     outputCss,

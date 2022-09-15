@@ -101,10 +101,12 @@ function parse(obj: Record<string, any>, parent: Container) {
   }
 }
 
-const postCssJsImpl = (obj: Record<string, any>) => {
+const postCssPlugin = (obj: Record<string, any>) => {
   const root = postcss.root()
   parse(obj, root)
   return root
 }
 
-export const postcssJs = postCssJsImpl as Parser
+const _parser = postCssPlugin as Parser
+
+export { _parser as parser }

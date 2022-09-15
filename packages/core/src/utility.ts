@@ -1,11 +1,8 @@
 import { logger, quote } from '@css-panda/logger'
+import { isFunction, isString } from '@css-panda/shared'
 import type { TokenMap } from '@css-panda/tokens'
-import type { Dict, UtilityConfig, PropertyConfig } from '@css-panda/types'
+import type { AnyFunction, Dict, PropertyConfig, UtilityConfig } from '@css-panda/types'
 
-type AnyFunction = (...args: any[]) => any
-
-const isString = (v: any): v is string => typeof v === 'string'
-const isFunction = (v: any): v is AnyFunction => typeof v === 'function'
 const clean = (v: string) => v.toString().replaceAll(' ', '_')
 
 type Options = {

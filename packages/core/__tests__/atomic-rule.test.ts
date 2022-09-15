@@ -1,14 +1,14 @@
 import { describe, expect, test } from 'vitest'
-import { createRuleset, ProcessOptions } from '../src/ruleset'
+import { AtomicRule, ProcessOptions } from '../src/atomic-rule'
 import { createContext } from './fixture'
 
 function css(obj: ProcessOptions) {
-  const ruleset = createRuleset(createContext())
+  const ruleset = new AtomicRule(createContext())
   ruleset.process(obj)
   return ruleset.toCss()
 }
 
-describe('atomic ruleset', () => {
+describe('AtomicRule', () => {
   test('should work with basic', () => {
     expect(css({ styles: { bg: 'red.300' } })).toMatchInlineSnapshot(`
       ".bg-red\\\\.300 {

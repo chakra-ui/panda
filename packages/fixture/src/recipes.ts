@@ -23,4 +23,61 @@ export const recipes: RecipeConfig[] = [
       },
     },
   },
+  {
+    name: 'buttonStyle',
+    base: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    variants: {
+      size: {
+        sm: {
+          height: '2.5rem',
+          minWidth: '2.5rem',
+          padding: '0 0.5rem',
+        },
+        md: {
+          height: '3rem',
+          minWidth: '3rem',
+          padding: '0 0.75rem',
+        },
+      },
+      variant: {
+        solid: {
+          backgroundColor: 'blue',
+          color: 'white',
+          hover: {
+            backgroundColor: 'darkblue',
+          },
+          selectors: {
+            '&[data-disabled]': {
+              backgroundColor: 'gray',
+              color: 'black',
+            },
+          },
+        },
+        outline: {
+          backgroundColor: 'transparent',
+          border: '1px solid blue',
+          color: 'blue',
+          hover: {
+            backgroundColor: 'blue',
+            color: 'white',
+          },
+          selectors: {
+            '&[data-disabled]': {
+              backgroundColor: 'transparent',
+              border: '1px solid gray',
+              color: 'gray',
+            },
+          },
+        },
+      },
+    },
+    defaultVariants: {
+      size: 'md',
+      variant: 'solid',
+    },
+  },
 ]

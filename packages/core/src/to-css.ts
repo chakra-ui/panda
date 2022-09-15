@@ -1,7 +1,7 @@
 import postcss from 'postcss'
-import { postcssJs } from './post-css-js'
 import postcssNested from 'postcss-nested'
 import type { Dict } from './types'
+import { postCssJs } from './vendor'
 
 export function toCss(styles: Dict) {
   return postcss([
@@ -9,6 +9,10 @@ export function toCss(styles: Dict) {
       bubble: ['screen'],
     }),
   ]).process(styles, {
-    parser: postcssJs,
+    parser: postCssJs.parser,
   })
+}
+
+export function cssToJs(css: string) {
+  return postCssJs.objectify(postcss.parse(css))
 }

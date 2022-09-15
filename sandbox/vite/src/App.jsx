@@ -1,7 +1,7 @@
 import { css, globalStyle } from '../styled-system/css'
-import { textStyle } from '../styled-system/recipes'
-import { stack } from '../styled-system/patterns'
 import { panda } from '../styled-system/jsx'
+import { stack } from '../styled-system/patterns'
+import { buttonStyle, textStyle } from '../styled-system/recipes'
 import '../styled-system/styles.css'
 
 globalStyle({
@@ -29,7 +29,7 @@ function App() {
       <h1 className={textStyle({ size: 'h2' })}>Beesama</h1>
       <panda.div
         fontFamily="body"
-        marginTop="20px"
+        marginTop="64px"
         paddingX="4"
         paddingY="6"
         backgroundColor="red.200"
@@ -40,15 +40,7 @@ function App() {
       >
         Welcome home
       </panda.div>
-      <panda.button
-        css={{
-          color: 'red',
-          border: '0',
-          active: { color: 'darkred' },
-        }}
-      >
-        Click me
-      </panda.button>
+      <button className={buttonStyle({ size: 'sm', variant: { md: 'outline' } })}>Teting</button>
     </div>
   )
 }

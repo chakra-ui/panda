@@ -1,9 +1,9 @@
-import { describe, expect, test } from 'vitest'
-import { Utility } from '../src/css-utility'
 import { semanticTokens, tokens } from '@css-panda/fixture'
 import { TokenMap } from '@css-panda/tokens'
+import { describe, expect, test } from 'vitest'
+import { Utility } from '../src/utility'
 
-describe('utilty class', () => {
+describe('Utility', () => {
   test('should prime cache for faster lookup', () => {
     const css = new Utility({
       tokens: new TokenMap({ tokens, semanticTokens }),

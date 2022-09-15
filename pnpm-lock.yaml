@@ -95,6 +95,7 @@ importers:
       '@css-panda/types': workspace:*
       '@types/lodash.merge': 4.6.7
       autoprefixer: 10.4.8
+      camelcase-css: ^2.0.1
       lodash.merge: 4.6.2
       postcss: 8.4.16
       postcss-discard-duplicates: 5.1.0
@@ -111,6 +112,7 @@ importers:
       '@css-panda/tokens': link:../tokens
       '@css-panda/types': link:../types
       autoprefixer: 10.4.8_postcss@8.4.16
+      camelcase-css: 2.0.1
       lodash.merge: 4.6.2
       postcss: 8.4.16
       postcss-discard-duplicates: 5.1.0_postcss@8.4.16
@@ -1841,6 +1843,11 @@ packages:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
     dev: true
+
+  /camelcase-css/2.0.1:
+    resolution: {integrity: sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==}
+    engines: {node: '>= 6'}
+    dev: false
 
   /camelcase-keys/6.2.2:
     resolution: {integrity: sha512-YrwaA0vEKazPBkn0ipTiMpSajYDSe+KjQfrjhcBMxJt/znbvlHd8Pw/Vamaz5EB4Wfhs3SUR3Z9mwRu/P3s3Yg==}

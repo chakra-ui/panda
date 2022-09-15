@@ -6,6 +6,8 @@ export type BaseCondition = {
   [key: string]: string
 }
 
+export type RawCondition = BaseCondition & { raw: string }
+
 export type Conditions = {
   [condition: string]: string
 }

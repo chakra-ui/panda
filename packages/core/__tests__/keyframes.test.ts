@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'vitest'
-import { toKeyframeCss } from '../src/to-keyframes-css'
 import { keyframes } from '@css-panda/fixture'
+import { describe, expect, test } from 'vitest'
+import { toKeyframeCss } from '../src/keyframes'
 
 describe('Generates keyframes', () => {
   test('should generate keyframes', () => {

@@ -1,3 +1,5 @@
+// NOTE: This file is used by the generators (in @css-panda/node). Do not rename or move it.
+
 import { filterBaseConditions, toHash, walkObject, walkStyles } from '@css-panda/shared'
 import type { Dict, GeneratorContext } from './types'
 

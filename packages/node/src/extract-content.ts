@@ -6,11 +6,11 @@ import path from 'path'
 import type { Context } from './create-context'
 
 export async function extractContent(ctx: Context, file: string) {
-  const { hash, importMap } = ctx
+  const { importMap } = ctx
 
   logger.debug({ type: 'file:extract', file })
 
-  const sheet = new Stylesheet(ctx.context(), { hash })
+  const sheet = new Stylesheet(ctx.context())
   const collector = createCollector()
 
   const absPath = path.isAbsolute(file) ? file : path.join(ctx.cwd, file)

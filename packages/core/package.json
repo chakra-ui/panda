@@ -15,7 +15,7 @@
     "dist"
   ],
   "sideEffects": false,
-  "publishConfig": {
+"publishConfig": {
     "access": "public"
   },
   "dependencies": {
@@ -24,6 +24,7 @@
     "@css-panda/shared": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "@css-panda/tokens": "workspace:*",
+    "camelcase-css": "^2.0.1",
     "postcss": "8.4.16",
     "postcss-selector-parser": "6.0.10",
     "postcss-nested": "5.0.6",
