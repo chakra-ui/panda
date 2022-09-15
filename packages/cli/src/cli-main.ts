@@ -28,10 +28,10 @@ export async function main() {
     .command('[files]', 'Include files', {
       ignoreOptionDefaultValue: true,
     })
-    .option('-o, --out-dir <dir>', 'Output directory', { default: '.panda' })
-    .option('--minify', 'Minify generated code')
+    .option('-o, --outdir <dir>', 'Output directory', { default: '.panda' })
+    .option('-m, --minify', 'Minify generated code')
     .option('--cwd <cwd>', 'Current working directory', { default: process.cwd() })
-    .option('--watch', 'Watch files and rebuild')
+    .option('-w, --watch', 'Watch files and rebuild')
     .option('--exclude <exclude>', 'Define compile-time env variables')
     .option('--clean', 'Clean output directory')
     .option('--silent', 'Suppress non-error logs (excluding "onSuccess" process output)')
