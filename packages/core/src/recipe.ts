@@ -1,4 +1,4 @@
-import { walkObject, walkStyles } from '@css-panda/shared'
+import { filterBaseConditions, isImportant, walkObject, walkStyles, withoutImportant } from '@css-panda/shared'
 import type { RecipeConfig } from '@css-panda/types'
 import merge from 'lodash.merge'
 import { AtomicRule, ProcessOptions } from './atomic-rule'
@@ -21,19 +21,24 @@ export class Recipe {
       const result: StyleObject = {}
 
       walkObject(styles, (value, paths) => {
+        const important = isImportant(value)
+
         const [prop, ...allConditions] = conditions.shift(paths)
 
-        let { styles } = utility.resolve(prop, value)
+        // remove default condition
+        const _conditions = filterBaseConditions(allConditions)
 
-        const hasConditions = allConditions.length > 0
+        let { styles } = utility.resolve(prop, withoutImportant(value))
+
+        const hasConditions = _conditions.length > 0
 
         if (hasConditions) {
-          const cssRoot = toCss(styles)
+          const cssRoot = toCss(styles, { important })
           rule.nodes = cssRoot.root.nodes
           rule.selector = `&`
           rule.update()
 
-          rule.applyConditions(allConditions)
+          rule.applyConditions(_conditions)
 
           styles = cssToJs(rule.toString())
         }

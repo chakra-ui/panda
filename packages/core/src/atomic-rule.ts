@@ -1,4 +1,4 @@
-import { esc, filterBaseConditions, toHash, walkObject } from '@css-panda/shared'
+import { esc, filterBaseConditions, isImportant, toHash, walkObject, withoutImportant } from '@css-panda/shared'
 import { ConditionalRule } from './conditional-rule'
 import { toCss } from './to-css'
 import type { Dict, GeneratorContext } from './types'
@@ -27,6 +27,8 @@ export class AtomicRule {
     const rule = this.rule
 
     walkObject(styles, (value, paths) => {
+      const important = isImportant(value)
+
       // if value doesn't exist
       if (value == null) return
 
@@ -37,10 +39,11 @@ export class AtomicRule {
       const conditions = filterBaseConditions(allConditions)
 
       // allow users transform the generated class and styles
-      const transformed = this.context.transform(prop, value)
+      const transformed = this.context.transform(prop, withoutImportant(value))
 
       // convert css-in-js to css rule
-      const cssRoot = toCss(transformed.styles)
+      const cssRoot = toCss(transformed.styles, { important })
+
       rule.nodes = cssRoot.root.nodes
 
       // get the base class name
@@ -51,8 +54,8 @@ export class AtomicRule {
         conditions.push(scope)
       }
 
-      const selectorString = this.hash(baseArray.join(':'))
-      rule.selector = `.${selectorString}`
+      const selector = this.hash(baseArray.join(':'))
+      rule.selector = important ? `.${selector}\\!` : `.${selector}`
 
       // no empty rulesets
       if (rule.isEmpty) return
