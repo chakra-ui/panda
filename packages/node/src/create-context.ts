@@ -4,6 +4,7 @@ import { logger } from '@css-panda/logger'
 import { TokenMap } from '@css-panda/tokens'
 import type { Pattern, TransformHelpers } from '@css-panda/types'
 import fs from 'fs-extra'
+import glob from 'fast-glob'
 import path from 'path'
 import postcss from 'postcss'
 import { Writer } from 'steno'
@@ -128,6 +129,8 @@ export function createContext(conf: LoadConfigResult) {
     ]),
   )
 
+  const sourceFiles = glob.sync(config.include, { cwd, ignore: config.exclude })
+
   return {
     ...config,
     cwd,
@@ -149,6 +152,8 @@ export function createContext(conf: LoadConfigResult) {
     hasTokens: !dictionary.isEmpty,
     hasRecipes: recipes.length > 0,
     hasPatterns: patterns.length > 0,
+
+    sourceFiles,
 
     paths: {
       asset: assetPath,

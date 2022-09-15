@@ -140,7 +140,7 @@ async function setupPatterns(ctx: Context) {
 }
 
 async function setupJsx(ctx: Context) {
-  // if (!ctx.jsx) return
+  if (!ctx.jsx) return
   const isValidProp = await generateisValidProp(ctx)
   const factory = generateJsxFactory(ctx)
 

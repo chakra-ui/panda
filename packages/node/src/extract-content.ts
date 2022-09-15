@@ -91,9 +91,11 @@ export async function extractContent(ctx: Context, file: string) {
     }
   })
 
-  done()
+  if (collector.isEmpty()) {
+    return
+  }
 
-  if (collector.isEmpty()) return ''
+  done()
 
   return sheet.toCss()
 }
