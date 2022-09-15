@@ -152,9 +152,11 @@ class Logger {
   time(msg: string, ...args: any[]) {
     const label = colors.bold(colors.blue('info'))
     const str = `🐼 ${label} ${msg} ${args.join(' ')}`
-    console.time(str)
+    const start = process.hrtime()
     return () => {
-      console.timeEnd(str)
+      const end = process.hrtime(start)
+      const ms = end[0] * 1e3 + end[1] * 1e-6
+      console.log(`${str} ${colors.gray(`(${ms.toFixed(2)}ms)`)}`)
     }
   }
 }
