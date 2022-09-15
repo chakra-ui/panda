@@ -30,7 +30,7 @@ function parseCondition(condition: string): RawCondition {
     }
   }
 
-  throw new ConditionError('[parseCondition] Invalid condition: ' + condition)
+  throw new ConditionError('Invalid condition. Did you forget to add the conditions in your panda config?')
 }
 
 type Options = {
