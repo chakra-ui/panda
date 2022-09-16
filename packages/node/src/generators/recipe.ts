@@ -10,6 +10,24 @@ export function generateRecipes(config: { recipes?: RecipeConfig[]; hash?: boole
   const js = [
     outdent`
    import { createCss } from "../css/serializer"
+
+   const createRecipe = (name) => {
+     return (styles) => {
+      const transform = (prop, value) => {
+         if (value === '__ignore__') {
+           return { className: name }
+         }
+ 
+         value = value.toString().replaceAll(" ", "_")
+         return { className: \`\${name}__\${prop}-\${value}\` }
+      }
+      
+      const context = ${hash ? '{ transform, hash: true }' : '{ transform }'}
+      const css = createCss(context)
+      
+      return css({ [name]: '__ignore__' , ...styles })
+     }
+   }
   `,
   ]
 
@@ -17,21 +35,7 @@ export function generateRecipes(config: { recipes?: RecipeConfig[]; hash?: boole
 
   recipes.forEach((recipe) => {
     js.push(outdent`
-    export const ${recipe.name} = (styles) => {
-     const transform = (prop, value) => {
-        if (value === '__ignore__') {
-          return { className: "${recipe.name}" }
-        }
-
-        value = value.toString().replaceAll(" ", "_")
-        return { className: \`${recipe.name}__\${prop}-\${value}\` }
-     }
-     
-     const context = ${hash ? '{ transform, hash: true }' : '{ transform }'}
-     const css = createCss(context)
-     
-     return css({ ${recipe.name}: '__ignore__' , ...styles })
-    }
+    export const ${recipe.name} = createRecipe('${recipe.name}')
     `)
 
     dts.push(outdent`
