@@ -1,5 +1,5 @@
+import { createCss } from '@css-panda/shared'
 import { describe, expect, test } from 'vitest'
-import { createCss } from '../src/classname'
 import { createContext } from './fixture'
 
 describe('generate classnames', () => {

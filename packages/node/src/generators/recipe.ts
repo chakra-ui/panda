@@ -9,7 +9,7 @@ export function generateRecipes(config: { recipes?: RecipeConfig[]; hash?: boole
 
   const js = [
     outdent`
-   import { createCss } from "../css/serializer"
+   import { createCss } from "../helpers"
 
    const createRecipe = (name) => {
      return (styles) => {

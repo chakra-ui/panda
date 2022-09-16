@@ -3,7 +3,7 @@ import { defineConfig } from 'css-panda'
 
 export default defineConfig({
   ...config,
-  clean: false,
+  clean: true,
   outdir: 'styled-system',
   include: ['src/**/*.jsx'],
 })

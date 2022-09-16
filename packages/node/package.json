@@ -28,7 +28,6 @@
     "@css-panda/logger": "workspace:*",
     "@css-panda/core": "workspace:*",
     "@css-panda/config": "workspace:*",
-    "esbuild": "0.15.7",
     "chokidar": "^3.5.3",
     "fast-glob": "^3.2.11",
     "fs-extra": "10.1.0",

@@ -1,9 +1,10 @@
-// NOTE: This file is used by the generators (in @css-panda/node). Do not rename or move it.
+import { filterBaseConditions } from './filter-condition'
+import { toHash } from './hash'
+import { walkObject } from './walk-object'
+import { walkStyles } from './walk-styles'
 
-import { filterBaseConditions, toHash, walkObject, walkStyles } from '@css-panda/shared'
-import type { Dict, GeneratorContext } from './types'
-
-type Context = Pick<GeneratorContext, 'transform'> & {
+type Context = {
+  transform: (prop: string, value: any) => { className: string }
   hash?: boolean
   conditions?: { shift: (paths: string[]) => string[] }
 }
@@ -11,10 +12,10 @@ type Context = Pick<GeneratorContext, 'transform'> & {
 export function createCss(context: Context) {
   const { transform, hash, conditions: conds = { shift: (v) => v } } = context
 
-  return (styleObject: Dict) => {
+  return (styleObject: Record<string, any>) => {
     const classNames = new Set<string>()
 
-    walkStyles(styleObject, (props: Dict, scope?: string) => {
+    walkStyles(styleObject, (props: Record<string, any>, scope?: string) => {
       walkObject(props, (value, paths) => {
         if (value == null) return
 

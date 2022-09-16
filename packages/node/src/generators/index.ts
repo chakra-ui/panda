@@ -1,5 +1,5 @@
 import type { TokenMap } from '@css-panda/tokens'
-import { ensureDir } from 'fs-extra'
+import { ensureDir, readFile } from 'fs-extra'
 import { outdent } from 'outdent'
 import path from 'path'
 import type { Context } from '../create-context'
@@ -21,7 +21,14 @@ import { generateSerializer } from './serializer'
 import { generateSx } from './sx'
 import { generateTokenDts } from './token-dts'
 import { generateTransform } from './transform'
-import { writeFileWithNote } from './__utils'
+import { getEntrypoint, writeFileWithNote } from './__utils'
+
+async function setupHelpers(ctx: Context) {
+  const file = getEntrypoint('@css-panda/shared', { dev: 'shared.mjs' })
+  const code = await readFile(file, 'utf-8')
+  const filepath = path.join(ctx.outdir, 'helpers.js')
+  return writeFileWithNote(filepath, code)
+}
 
 async function setupKeyframes(ctx: Context) {
   const code = generateKeyframes(ctx)
@@ -73,8 +80,7 @@ async function setupCss(ctx: Context) {
   const code = generateSerializer(ctx.hash)
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.css, 'transform.js'), generateTransform()),
-    writeFileWithNote(path.join(ctx.paths.css, 'serializer.js'), code.serializer),
-    writeFileWithNote(path.join(ctx.paths.css, 'css.js'), code.css),
+    writeFileWithNote(path.join(ctx.paths.css, 'css.js'), code.js),
     writeFileWithNote(path.join(ctx.paths.css, 'css.d.ts'), code.dts),
   ])
 }
@@ -128,17 +134,16 @@ async function setupRecipes(ctx: Context) {
 }
 
 async function setupPatterns(ctx: Context) {
-  const code = generatePattern(ctx)
+  const files = generatePattern(ctx)
 
-  if (!code) return
+  if (!files) return
   await ensureDir(ctx.paths.pattern)
 
-  const indexCode = outdent.string(code.files.map((file) => `export * from './${file.name}'`).join('\n'))
+  const indexCode = outdent.string(files.map((file) => `export * from './${file.name}'`).join('\n'))
 
   return Promise.all([
-    ...code.files.map((file) => writeFileWithNote(path.join(ctx.paths.pattern, `${file.name}.js`), file.js)),
-    ...code.files.map((file) => writeFileWithNote(path.join(ctx.paths.pattern, `${file.name}.d.ts`), file.dts)),
-    writeFileWithNote(path.join(ctx.paths.pattern, 'shared.js'), code.shared.js),
+    ...files.map((file) => writeFileWithNote(path.join(ctx.paths.pattern, `${file.name}.js`), file.js)),
+    ...files.map((file) => writeFileWithNote(path.join(ctx.paths.pattern, `${file.name}.d.ts`), file.dts)),
     writeFileWithNote(path.join(ctx.paths.pattern, 'index.js'), indexCode),
     writeFileWithNote(path.join(ctx.paths.pattern, 'index.d.ts'), indexCode),
   ])
@@ -178,6 +183,7 @@ export async function generateSystem(ctx: Context) {
   const { dictionary } = ctx
 
   await Promise.all([
+    setupHelpers(ctx),
     setupDesignTokens(ctx, dictionary),
     setupKeyframes(ctx),
     setupTypes(ctx, dictionary),

@@ -37,3 +37,8 @@ export function walkObject<T, K>(
 
   return inner(target)
 }
+
+export function mapObject(obj: any, fn: (value: any) => any) {
+  if (!isObject(obj)) return fn(obj)
+  return walkObject(obj, (value) => fn(value))
+}

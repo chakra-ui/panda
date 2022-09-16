@@ -1,10 +1,11 @@
 import type { LoadConfigResult } from '@css-panda/config'
 import { Conditions, GeneratorContext, mergeRecipes, mergeUtilities, Stylesheet, Utility } from '@css-panda/core'
 import { logger } from '@css-panda/logger'
+import { mapObject } from '@css-panda/shared'
 import { TokenMap } from '@css-panda/tokens'
-import type { Pattern, TransformHelpers } from '@css-panda/types'
-import fs from 'fs-extra'
+import type { Pattern } from '@css-panda/types'
 import glob from 'fast-glob'
+import fs from 'fs-extra'
 import path from 'path'
 import postcss from 'postcss'
 import { Writer } from 'steno'
@@ -16,11 +17,6 @@ function mergePatterns(values: Pattern[]) {
     Object.assign(acc, { [value.name]: value })
     return acc
   }, {})
-}
-
-function mapObject(obj: string | Record<string, any>, fn: (value: any) => any) {
-  if (typeof obj === 'string') return fn(obj)
-  return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, fn(value)]))
 }
 
 export function createContext(conf: LoadConfigResult) {
@@ -63,9 +59,7 @@ export function createContext(conf: LoadConfigResult) {
     config: mergeUtilities(_utilities),
   })
 
-  const helpers: TransformHelpers = {
-    map: mapObject,
-  }
+  const helpers = { map: mapObject }
 
   const context = (): GeneratorContext => ({
     root: postcss.root(),
