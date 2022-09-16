@@ -34,6 +34,7 @@ importers:
       '@babel/generator': 7.19.0
       '@babel/parser': 7.19.1
       '@babel/traverse': 7.19.1
+      '@babel/types': 7.19.0
       '@css-panda/fixture': workspace:*
       '@css-panda/is-valid-prop': workspace:*
       '@css-panda/logger': workspace:*
@@ -47,6 +48,7 @@ importers:
       '@babel/generator': 7.19.0
       '@babel/parser': 7.19.1
       '@babel/traverse': 7.19.1
+      '@babel/types': 7.19.0
       '@css-panda/is-valid-prop': link:../is-valid-prop
       '@css-panda/logger': link:../logger
       '@css-panda/types': link:../types
@@ -178,7 +180,6 @@ importers:
       '@types/lodash.merge': 4.6.7
       '@types/pluralize': 0.0.29
       chokidar: ^3.5.3
-      esbuild: 0.15.7
       fast-glob: ^3.2.11
       fs-extra: 10.1.0
       hookable: 5.3.0
@@ -202,7 +203,6 @@ importers:
       '@css-panda/tokens': link:../tokens
       '@css-panda/types': link:../types
       chokidar: 3.5.3
-      esbuild: 0.15.7
       fast-glob: 3.2.11
       fs-extra: 10.1.0
       hookable: 5.3.0

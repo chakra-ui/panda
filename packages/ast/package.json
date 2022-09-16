@@ -21,7 +21,7 @@
     "@babel/parser": "7.19.1",
     "@babel/generator": "7.19.0",
     "@babel/traverse": "7.19.1",
-    "@babel/types": "7.19.1",
+    "@babel/types": "7.19.0",
     "@swc/core": "1.2.248",
     "@css-panda/logger": "workspace:*",
     "@css-panda/is-valid-prop": "workspace:*",
