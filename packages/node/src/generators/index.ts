@@ -5,14 +5,15 @@ import path from 'path'
 import type { Context } from '../create-context'
 import { generateConditions } from './conditions'
 import { generateCss, generateKeyframes } from './css'
-import { generateCssMap } from './css-map'
 import { generateCssType } from './css-dts'
+import { generateCssMap } from './css-map'
 import { generateCx } from './cx'
 import { generateFontFace } from './font-face'
 import { generateGlobalStyle } from './global-style'
 import { generateisValidProp } from './is-valid-prop'
 import { generateJs } from './js'
 import { generateDts } from './js-dts'
+import { generateJsxFactory } from './jsx'
 import { generatePattern } from './pattern'
 import { generatePropertyTypes } from './property-types'
 import { generateRecipes } from './recipe'
@@ -21,7 +22,6 @@ import { generateSx } from './sx'
 import { generateTokenDts } from './token-dts'
 import { generateTransform } from './transform'
 import { writeFileWithNote } from './__utils'
-import { generateJsxFactory } from './jsx'
 
 async function setupKeyframes(ctx: Context) {
   const code = generateKeyframes(ctx)
@@ -128,14 +128,19 @@ async function setupRecipes(ctx: Context) {
 }
 
 async function setupPatterns(ctx: Context) {
-  const code = generatePattern(ctx.config)
+  const code = generatePattern(ctx)
 
   if (!code) return
   await ensureDir(ctx.paths.pattern)
 
+  const indexCode = outdent.string(code.files.map((file) => `export * from './${file.name}'`).join('\n'))
+
   return Promise.all([
-    writeFileWithNote(path.join(ctx.paths.pattern, 'index.js'), code.js),
-    writeFileWithNote(path.join(ctx.paths.pattern, 'index.d.ts'), code.dts),
+    ...code.files.map((file) => writeFileWithNote(path.join(ctx.paths.pattern, `${file.name}.js`), file.js)),
+    ...code.files.map((file) => writeFileWithNote(path.join(ctx.paths.pattern, `${file.name}.d.ts`), file.dts)),
+    writeFileWithNote(path.join(ctx.paths.pattern, 'shared.js'), code.shared.js),
+    writeFileWithNote(path.join(ctx.paths.pattern, 'index.js'), indexCode),
+    writeFileWithNote(path.join(ctx.paths.pattern, 'index.d.ts'), indexCode),
   ])
 }
 

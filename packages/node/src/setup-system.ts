@@ -19,9 +19,13 @@ export async function setupSystem(conf: LoadConfigResult) {
 
   await ensureDir(ctx.outdir)
 
-  await Promise.all([updateGitIgnore(ctx.outdir), writeFileWithNote(ctx.paths.config, minifyConfig(conf.code))])
-
   await generateSystem(ctx)
+
+  // prettier-ignore
+  await Promise.all([
+    updateGitIgnore(ctx.outdir),
+    writeFileWithNote(ctx.paths.config, minifyConfig(conf.code))
+  ])
 
   const msg = [
     outdent`

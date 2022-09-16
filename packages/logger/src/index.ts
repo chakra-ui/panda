@@ -51,7 +51,7 @@ class Logger {
   parsers: any
 
   constructor(conf: Config = {}) {
-    const debugEnv = process.env.DEBUG
+    const debugEnv = process.env.PANDA_DEBUG
 
     this.level = debugEnv ? 'debug' : conf.level || 'info'
 

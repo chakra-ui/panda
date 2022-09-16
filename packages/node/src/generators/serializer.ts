@@ -25,7 +25,6 @@ export function generateSerializer(hash?: boolean) {
 
   return {
     css: outdent`
-    // panda.config
     import { transform } from "./transform"
     import { createCss } from "./serializer"
     import { sortConditions } from "./conditions"

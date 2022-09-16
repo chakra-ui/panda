@@ -4,9 +4,13 @@ import { join, resolve } from 'path'
 import { minifyConfig } from '..'
 
 const dir = resolve(__dirname, './input')
-const filter = ['v3.js']
+const filter: string[] = []
 
-const files = readdirSync(dir).filter((file) => filter.includes(file))
+let files = readdirSync(dir)
+
+if (filter.length) {
+  files = files.filter((file) => filter.includes(file))
+}
 
 for (const file of files) {
   const filepath = join(dir, file)

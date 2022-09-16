@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "css": "DEBUG=* panda",
-    "css:dev": "DEBUG=* panda --watch"
+    "css": "PANDA_DEBUG=* panda",
+    "css:dev": "PANDA_DEBUG=* panda --watch"
   },
   "dependencies": {
     "next": "12.3.0",
