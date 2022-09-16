@@ -40,7 +40,7 @@ export function generateSolidJsxFactory(ctx: Context) {
         const classes = () => {
           const { css: cssStyles, ...otherStyles } = styleProps
           const atomicClass = css({ ...otherStyles, ...cssStyles })
-          return cx(localProps.class, localProps.className, atomicClass)
+          return cx(atomicClass, localProps.class, localProps.className)
         }
     
         return <Dynamic {...elementProps} class={classes()} />

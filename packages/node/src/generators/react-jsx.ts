@@ -22,47 +22,59 @@ export function generateReactJsxFactory(ctx: Context) {
     export declare const ${name}: JSXFactory
     `,
     js: outdent`
-    import { createElement, forwardRef } from "react"
-    import { isCssProperty } from "./is-valid-prop"
-    import { css } from "../css"
+    import { forwardRef } from 'react'
+    import { isCssProperty } from './is-valid-prop'
+    import { css } from '../css'
     
-    function splitProps(allProps) {
-      const {css, ...props} = allProps
-      
-      const cssProps = new Map()
-      const otherProps = new Map()
-      
+    function cx(...args) {
+      return args.filter(Boolean).join(' ')
+    }
+    
+    function splitProps(props) {
+      const styleProps = {}
+      const elementProps = {}
+    
       for (const [key, value] of Object.entries(props)) {
         if (isCssProperty(key)) {
-          cssProps.set(key, value)
+          styleProps[key] = value
         } else {
-          otherProps.set(key, value)
+          elementProps[key] = value
         }
       }
-      return [{ ...Object.fromEntries(cssProps), ...css }, Object.fromEntries(otherProps)]
+    
+      return [styleProps, elementProps]
     }
-
-    function styled(el) {
-      return forwardRef(function PandaComponent(props, ref){
-        const [cssProps, otherProps] = splitProps(props)
-        const className = [css(cssProps), otherProps.className].filter(Boolean).join(" ")
-        return createElement(el, { ...otherProps, className, ref });
-      });
+    
+    function styled(Dynamic) {
+      const PandaComponent = forwardRef((props, ref) => {
+        const [styleProps, elementProps] = splitProps(props)
+    
+        const classes = () => {
+          const { css: cssStyles, ...otherStyles } = styleProps
+          const atomicClass = css({ ...otherStyles, ...cssStyles })
+          return cx(atomicClass, elementProps.className)
+        }
+    
+        return <Dynamic ref={ref} {...elementProps} className={classes()} />
+      })
+      
+      PandaComponent.displayName = \`${name}.\${Dynamic}\`
+      return PandaComponent
     }
     
     function createFactory() {
-      const cache = new Map();
+      const cache = new Map()
     
       return new Proxy(Object.create(null), {
         get(_, el) {
           if (!cache.has(el)) {
-            cache.set(el, styled(el));
+            cache.set(el, styled(el))
           }
-          return cache.get(el);
+          return cache.get(el)
         },
       })
     }
-      
+
     export const ${name} = createFactory();
     `,
   }
