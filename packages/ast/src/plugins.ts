@@ -82,7 +82,8 @@ export function createCollector() {
         this.fontFace.size === 0 &&
         this.cssMap.size === 0 &&
         this.recipe.size === 0 &&
-        this.pattern.size === 0
+        this.pattern.size === 0 &&
+        this.jsx.size === 0
       )
     },
   }

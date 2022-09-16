@@ -4,7 +4,7 @@ export function generateTransform() {
   return outdent`
   import config from '../config'
 
-  const utilities = Object.keys(config.utilities).reduce((acc, key) => {
+  const utilities = Object.keys(config.utilities || []).reduce((acc, key) => {
     return Object.assign(acc, config.utilities[key])
   }, {})
   

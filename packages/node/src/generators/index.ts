@@ -159,7 +159,7 @@ async function setupJsx(ctx: Context) {
   return Promise.all([
     writeFileWithNote(path.join(ctx.paths.jsx, 'is-valid-prop.js'), isValidProp.js),
     writeFileWithNote(path.join(ctx.paths.jsx, 'index.d.ts'), factory.dts),
-    writeFileWithNote(path.join(ctx.paths.jsx, 'index.js'), factory.js),
+    writeFileWithNote(path.join(ctx.paths.jsx, 'index.jsx'), factory.js),
   ])
 }
 

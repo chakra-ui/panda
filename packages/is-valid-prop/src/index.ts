@@ -8,7 +8,7 @@ function memo<V>(fn: (args: string) => V): (args: string) => V {
 
 const userGenerated: string[] = []
 
-const properties = [
+const allCssProperties = [
   'msAccelerator',
   'msBlockProgression',
   'msContentZoomChaining',
@@ -525,8 +525,11 @@ const properties = [
   'zoom',
   ...userGenerated,
 ]
-const regex = new RegExp('^(?:' + Array.from(properties).join('|') + ')$')
 
-export const isCssProperty = memo((prop: string) => {
+const regex = new RegExp('^(?:' + Array.from(allCssProperties).join('|') + ')$')
+
+const isCssProperty = memo((prop: string) => {
   return regex.test(prop)
 })
+
+export { isCssProperty, allCssProperties }

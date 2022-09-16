@@ -1,7 +1,7 @@
 import { outdent } from 'outdent'
 import type { Context } from '../create-context'
 
-export function generateJsxFactory(ctx: Context) {
+export function generateReactJsxFactory(ctx: Context) {
   const name = ctx.jsx?.name ?? 'panda'
   const upperName = name[0].toUpperCase() + name.slice(1)
   return {
@@ -25,7 +25,7 @@ export function generateJsxFactory(ctx: Context) {
     import { createElement, forwardRef } from "react"
     import { isCssProperty } from "./is-valid-prop"
     import { css } from "../css"
-
+    
     function splitProps(allProps) {
       const {css, ...props} = allProps
       
