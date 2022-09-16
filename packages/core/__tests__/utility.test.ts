@@ -8,26 +8,24 @@ describe('Utility', () => {
     const css = new Utility({
       tokens: new TokenMap({ tokens, semanticTokens }),
       config: {
-        properties: {
-          backgroundColor: {
-            className: 'bg',
-            values: 'colors',
+        backgroundColor: {
+          className: 'bg',
+          values: 'colors',
+        },
+        display: {
+          className: 'd',
+          values: ['flex', 'inline-flex'],
+        },
+        margin: {
+          className: 'm',
+          values: (tokens) => tokens('spacing'),
+        },
+        marginX: {
+          className: 'mx',
+          transform(value) {
+            return { marginTop: value, marginBottom: value }
           },
-          display: {
-            className: 'd',
-            values: ['flex', 'inline-flex'],
-          },
-          margin: {
-            className: 'm',
-            values: (tokens) => tokens('spacing'),
-          },
-          marginX: {
-            className: 'mx',
-            transform(value) {
-              return { marginTop: value, marginBottom: value }
-            },
-            values: { sm: '20px', md: '40px' },
-          },
+          values: { sm: '20px', md: '40px' },
         },
       },
     })
@@ -358,24 +356,19 @@ describe('Utility', () => {
     const css = new Utility({
       tokens: new TokenMap({ tokens, semanticTokens }),
       config: {
-        properties: {
-          marginLeft: {
-            className: 'ml',
-            values,
-            transform(value) {
-              return { marginLeft: value }
-            },
-          },
-          marginRight: {
-            className: 'mr',
-            values,
-            transform(value) {
-              return { marginRight: value }
-            },
+        marginLeft: {
+          className: 'ml',
+          values,
+          transform(value) {
+            return { marginLeft: value }
           },
         },
-        shorthands: {
-          ml: 'marginLeft',
+        marginRight: {
+          className: 'mr',
+          values,
+          transform(value) {
+            return { marginRight: value }
+          },
         },
       },
     })

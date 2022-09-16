@@ -1,5 +1,5 @@
 import type { Conditions as TConditions } from './conditions'
-import type { UtilityConfig } from './css-utility'
+import type { UtilityConfig } from './utility'
 import type { Dict, RequiredBy } from './helper'
 import type { Keyframes } from './panda-csstype'
 import type { Pattern } from './pattern'

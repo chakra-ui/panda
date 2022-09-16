@@ -118,7 +118,7 @@ export function createContext(conf: LoadConfigResult) {
     // prettier-ignore
     new Set([
       'css',
-      ...Object.keys(utilities.config.properties),
+      ...Object.keys(utilities.config),
       ...Object.keys(ctx.conditions.values),
     ]),
   )

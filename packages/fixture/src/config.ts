@@ -1,7 +1,7 @@
 import type { Config } from '@css-panda/types'
 import { breakpoints } from './breakpoints'
 import { conditions } from './conditions'
-import { utilities } from './css-utility'
+import { utilities } from './utility'
 import { keyframes } from './keyframes'
 import { patterns } from './pattern'
 import { recipes } from './recipes'

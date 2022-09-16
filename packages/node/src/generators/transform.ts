@@ -2,35 +2,32 @@ import outdent from 'outdent'
 
 export function generateTransform() {
   return outdent`
-      import config from '../config'
-      
-      const utilities = config.utilities ?? []
+  import config from '../config'
 
-      var transform = (prop, value) => {
-        for (const utility of utilities) {
-          for (const key in utility.properties) {
-            if (prop === key) {
-              let conf = utility.properties[key]
-              conf =  typeof conf === "string" ? { className: conf } : conf
-              
-              const { className } = conf
-
-              if (typeof className === 'function') {
-                return { className: className(value, key) }
-              }
-              
-              value = value.toString().replaceAll(' ', '_')
-              return { className: \`\${className}_\${value}\` }
-            }
-          }
-        }
-        
-        value = value.toString().replaceAll(' ', '_')
-        return { className: \`\${prop}_\${value}\` }
-      }
+  const utilities = Object.keys(config.utilities).reduce((acc, key) => {
+    return Object.assign(acc, config.utilities[key])
+  }, {})
   
-      export {
-        transform 
+  const clean = (value) => value.toString().replaceAll(' ', '_')
+  
+  function transform(prop, value) {
+    let className = \`\${prop}_\${clean(value)}\`
+  
+    let config = utilities[prop]
+  
+    if (config) {
+      config = typeof config === 'string' ? { className: config } : config
+  
+      if (typeof config.className === 'function') {
+        className = config.className(value, key)
+      } else {
+        className = \`\${config.className}_\${clean(value)}\`
       }
+    }
+  
+    return { className }
+  }
+  
+  export { transform }  
       `
 }

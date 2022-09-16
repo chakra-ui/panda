@@ -15,7 +15,7 @@ export class Utility {
   classNameMap: Map<string, string> = new Map()
   stylesMap: Map<string, Dict> = new Map()
   valuesMap: Map<string, Set<string>> = new Map()
-  config: UtilityConfig = { properties: {} }
+  config: UtilityConfig = {}
   report: Map<string, string> = new Map()
 
   private transformMap: Map<string, AnyFunction> = new Map()
@@ -73,7 +73,7 @@ export class Utility {
   }
 
   private assignProperties() {
-    for (const [property, propertyConfig] of Object.entries(this.config.properties)) {
+    for (const [property, propertyConfig] of Object.entries(this.config)) {
       const propConfig = this.normalize(propertyConfig)
 
       this.setTransform(property, propConfig?.transform)
@@ -93,7 +93,7 @@ export class Utility {
   }
 
   private assignValueMap() {
-    for (const [property, propertyConfig] of Object.entries(this.config.properties)) {
+    for (const [property, propertyConfig] of Object.entries(this.config)) {
       const propConfig = this.normalize(propertyConfig)
 
       if (!propConfig) continue
@@ -115,10 +115,6 @@ export class Utility {
         this.valuesMap.set(property, set.add(`CSSProperties["${propConfig.cssType}"]`))
         continue
       }
-    }
-
-    for (const [shorthand, longhand] of Object.entries(this.config.shorthands || {})) {
-      this.valuesMap.set(shorthand, this.valuesMap.get(longhand)!)
     }
   }
 
@@ -185,20 +181,8 @@ export class Utility {
     return this
   }
 
-  private isShorthand(prop: string) {
-    return !!this.config.shorthands?.[prop]
-  }
-
   private isProperty(prop: string) {
     return this.propertyConfigMap.has(prop)
-  }
-
-  private resolveShorthand(prop: string) {
-    const longhand = this.config.shorthands![prop]
-    if (!this.config.properties[longhand]) {
-      throw new Error(`Property '${longhand}' not found in config`)
-    }
-    return longhand
   }
 
   private getOrCreateClassName(prop: string, value: string) {
@@ -213,7 +197,7 @@ export class Utility {
       return this.classNameMap.get(propKey)!
     }
 
-    return this.isShorthand(prop) ? inner(this.resolveShorthand(prop), value) : inner(prop, value)
+    return inner(prop, value)
   }
 
   private getOrCreateStyle(prop: string, value: string) {
@@ -223,7 +207,7 @@ export class Utility {
       return this.stylesMap.get(propKey)!
     }
 
-    return this.isShorthand(prop) ? inner(this.resolveShorthand(prop), value) : inner(prop, value)
+    return inner(prop, value)
   }
 
   resolve(prop: string, value: string | undefined) {
@@ -236,12 +220,8 @@ export class Utility {
 }
 
 export function mergeUtilities(utilities: UtilityConfig[] | undefined): UtilityConfig {
-  return (utilities ?? []).reduce<UtilityConfig>(
-    (acc, utility) => {
-      acc.properties = { ...acc.properties, ...utility.properties }
-      acc.shorthands = { ...acc.shorthands, ...utility.shorthands }
-      return acc
-    },
-    { properties: {}, shorthands: {} },
-  )
+  return (utilities ?? []).reduce<UtilityConfig>((acc, utility) => {
+    Object.assign(acc, utility)
+    return acc
+  }, {})
 }

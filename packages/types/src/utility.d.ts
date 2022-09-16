@@ -39,20 +39,7 @@ export type PropertyConfig = {
 }
 
 export type UtilityConfig = {
-  /**
-   * The css properties matched by this utility.
-   */
-  properties: {
-    [property in keyof Properties | (string & {})]?: string | PropertyConfig
-  }
-
-  /**
-   * Shortcuts for the defined properties.
-   * e.g. `p` for `padding`
-   */
-  shorthands?: {
-    [shorthand: string]: string
-  }
+  [property in keyof Properties | (string & {})]?: string | PropertyConfig
 }
 
 export type PluginResult = {

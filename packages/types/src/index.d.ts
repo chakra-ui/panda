@@ -1,6 +1,6 @@
 export type { BaseCondition, BaseConditionType, Conditions, RawCondition } from './conditions'
 export type { Config, SemanticTokens, TConfig, UserConfig } from './config'
-export type { PluginResult, PropertyClassName, PropertyConfig, UtilityConfig } from './css-utility'
+export type { PluginResult, PropertyClassName, PropertyConfig, UtilityConfig } from './utility'
 export type { AnyFunction, Dict } from './helper'
 export type { CssProperties, Keyframes, PandaCssObject } from './panda-csstype'
 export type { Pattern, PatternProperty, TransformHelpers } from './pattern'
