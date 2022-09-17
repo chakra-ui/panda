@@ -1,7 +1,7 @@
 import type { TokenMap } from '@css-panda/tokens'
-import { ensureDir, readFile } from 'fs-extra'
+import { ensureDir, readFile, writeFile } from 'fs-extra'
 import { outdent } from 'outdent'
-import path from 'path'
+import { join } from 'path'
 import type { Context } from '../create-context'
 import { generateConditions } from './conditions'
 import { generateCss, generateKeyframes } from './css'
@@ -17,6 +17,7 @@ import { generateJsxFactory } from './jsx'
 import { generatePattern } from './pattern'
 import { generatePropertyTypes } from './property-types'
 import { generateRecipes } from './recipe'
+import { generateReset } from './reset'
 import { generateSerializer } from './serializer'
 import { generateSx } from './sx'
 import { generateTokenDts } from './token-dts'
@@ -26,7 +27,7 @@ import { getEntrypoint, writeFileWithNote } from './__utils'
 async function setupHelpers(ctx: Context) {
   const file = getEntrypoint('@css-panda/shared', { dev: 'shared.mjs' })
   const code = await readFile(file, 'utf-8')
-  const filepath = path.join(ctx.outdir, 'helpers.js')
+  const filepath = join(ctx.outdir, 'helpers.js')
   return writeFileWithNote(filepath, code)
 }
 
@@ -34,7 +35,7 @@ async function setupKeyframes(ctx: Context) {
   const code = generateKeyframes(ctx)
   if (!code) return
   await ensureDir(ctx.paths.ds)
-  const filepath = path.join(ctx.paths.ds, 'keyframes.css')
+  const filepath = join(ctx.paths.ds, 'keyframes.css')
   return writeFileWithNote(filepath, code)
 }
 
@@ -42,9 +43,9 @@ async function setupDesignTokens(ctx: Context, dict: TokenMap) {
   if (dict.isEmpty) return
   await ensureDir(ctx.paths.ds)
   return Promise.all([
-    writeFileWithNote(path.join(ctx.paths.ds, 'index.css'), generateCss(ctx, ctx.cssVar?.root)),
-    writeFileWithNote(path.join(ctx.paths.ds, 'index.d.ts'), generateDts()),
-    writeFileWithNote(path.join(ctx.paths.ds, 'index.js'), generateJs(dict)),
+    writeFileWithNote(join(ctx.paths.ds, 'index.css'), generateCss(ctx, ctx.cssVar?.root)),
+    writeFileWithNote(join(ctx.paths.ds, 'index.d.ts'), generateDts()),
+    writeFileWithNote(join(ctx.paths.ds, 'index.js'), generateJs(dict)),
   ])
 }
 
@@ -52,8 +53,8 @@ async function setupGlobalStyle(ctx: Context) {
   await ensureDir(ctx.paths.css)
   const code = generateGlobalStyle()
   return Promise.all([
-    writeFileWithNote(path.join(ctx.paths.css, 'global-style.js'), code.js),
-    writeFileWithNote(path.join(ctx.paths.css, 'global-style.d.ts'), code.dts),
+    writeFileWithNote(join(ctx.paths.css, 'global-style.js'), code.js),
+    writeFileWithNote(join(ctx.paths.css, 'global-style.d.ts'), code.dts),
   ])
 }
 
@@ -64,14 +65,14 @@ async function setupTypes(ctx: Context, dict: TokenMap) {
   const conditions = generateConditions(ctx)
 
   return Promise.all([
-    writeFileWithNote(path.join(ctx.paths.types, 'csstype.d.ts'), code.cssType),
-    writeFileWithNote(path.join(ctx.paths.types, 'panda-csstype.d.ts'), code.pandaCssType),
-    writeFileWithNote(path.join(ctx.paths.types, 'index.d.ts'), code.publicType),
-    writeFileWithNote(path.join(ctx.paths.types, 'token.d.ts'), generateTokenDts(dict)),
-    writeFileWithNote(path.join(ctx.paths.types, 'property-type.d.ts'), generatePropertyTypes(ctx.utilities)),
+    writeFileWithNote(join(ctx.paths.types, 'csstype.d.ts'), code.cssType),
+    writeFileWithNote(join(ctx.paths.types, 'panda-csstype.d.ts'), code.pandaCssType),
+    writeFileWithNote(join(ctx.paths.types, 'index.d.ts'), code.publicType),
+    writeFileWithNote(join(ctx.paths.types, 'token.d.ts'), generateTokenDts(dict)),
+    writeFileWithNote(join(ctx.paths.types, 'property-type.d.ts'), generatePropertyTypes(ctx.utilities)),
 
-    writeFileWithNote(path.join(ctx.paths.css, 'conditions.js'), conditions.js),
-    writeFileWithNote(path.join(ctx.paths.types, 'conditions.d.ts'), conditions.dts),
+    writeFileWithNote(join(ctx.paths.css, 'conditions.js'), conditions.js),
+    writeFileWithNote(join(ctx.paths.types, 'conditions.d.ts'), conditions.dts),
   ])
 }
 
@@ -79,9 +80,9 @@ async function setupCss(ctx: Context) {
   await ensureDir(ctx.paths.css)
   const code = generateSerializer(ctx.hash)
   return Promise.all([
-    writeFileWithNote(path.join(ctx.paths.css, 'transform.js'), generateTransform()),
-    writeFileWithNote(path.join(ctx.paths.css, 'css.js'), code.js),
-    writeFileWithNote(path.join(ctx.paths.css, 'css.d.ts'), code.dts),
+    writeFileWithNote(join(ctx.paths.css, 'transform.js'), generateTransform()),
+    writeFileWithNote(join(ctx.paths.css, 'css.js'), code.js),
+    writeFileWithNote(join(ctx.paths.css, 'css.d.ts'), code.dts),
   ])
 }
 
@@ -89,8 +90,8 @@ async function setupCssMap(ctx: Context) {
   await ensureDir(ctx.paths.css)
   const code = generateCssMap()
   return Promise.all([
-    writeFileWithNote(path.join(ctx.paths.css, 'css-map.js'), code.js),
-    writeFileWithNote(path.join(ctx.paths.css, 'css-map.d.ts'), code.dts),
+    writeFileWithNote(join(ctx.paths.css, 'css-map.js'), code.js),
+    writeFileWithNote(join(ctx.paths.css, 'css-map.d.ts'), code.dts),
   ])
 }
 
@@ -98,8 +99,8 @@ async function setupCx(ctx: Context) {
   await ensureDir(ctx.paths.css)
   const code = generateCx()
   return Promise.all([
-    writeFileWithNote(path.join(ctx.paths.css, 'cx.js'), code.js),
-    writeFileWithNote(path.join(ctx.paths.css, 'cx.d.ts'), code.dts),
+    writeFileWithNote(join(ctx.paths.css, 'cx.js'), code.js),
+    writeFileWithNote(join(ctx.paths.css, 'cx.d.ts'), code.dts),
   ])
 }
 
@@ -107,8 +108,8 @@ async function setupSx(ctx: Context) {
   await ensureDir(ctx.paths.css)
   const code = generateSx()
   return Promise.all([
-    writeFileWithNote(path.join(ctx.paths.css, 'sx.js'), code.js),
-    writeFileWithNote(path.join(ctx.paths.css, 'sx.d.ts'), code.dts),
+    writeFileWithNote(join(ctx.paths.css, 'sx.js'), code.js),
+    writeFileWithNote(join(ctx.paths.css, 'sx.d.ts'), code.dts),
   ])
 }
 
@@ -116,8 +117,8 @@ async function setupFontFace(ctx: Context) {
   await ensureDir(ctx.paths.css)
   const code = generateFontFace()
   return Promise.all([
-    writeFileWithNote(path.join(ctx.paths.css, 'font-face.js'), code.js),
-    writeFileWithNote(path.join(ctx.paths.css, 'font-face.d.ts'), code.dts),
+    writeFileWithNote(join(ctx.paths.css, 'font-face.js'), code.js),
+    writeFileWithNote(join(ctx.paths.css, 'font-face.d.ts'), code.dts),
   ])
 }
 
@@ -128,8 +129,8 @@ async function setupRecipes(ctx: Context) {
   await ensureDir(ctx.paths.recipe)
 
   return Promise.all([
-    writeFileWithNote(path.join(ctx.paths.recipe, 'index.js'), code.js),
-    writeFileWithNote(path.join(ctx.paths.recipe, 'index.d.ts'), code.dts),
+    writeFileWithNote(join(ctx.paths.recipe, 'index.js'), code.js),
+    writeFileWithNote(join(ctx.paths.recipe, 'index.d.ts'), code.dts),
   ])
 }
 
@@ -142,10 +143,10 @@ async function setupPatterns(ctx: Context) {
   const indexCode = outdent.string(files.map((file) => `export * from './${file.name}'`).join('\n'))
 
   return Promise.all([
-    ...files.map((file) => writeFileWithNote(path.join(ctx.paths.pattern, `${file.name}.js`), file.js)),
-    ...files.map((file) => writeFileWithNote(path.join(ctx.paths.pattern, `${file.name}.d.ts`), file.dts)),
-    writeFileWithNote(path.join(ctx.paths.pattern, 'index.js'), indexCode),
-    writeFileWithNote(path.join(ctx.paths.pattern, 'index.d.ts'), indexCode),
+    ...files.map((file) => writeFileWithNote(join(ctx.paths.pattern, `${file.name}.js`), file.js)),
+    ...files.map((file) => writeFileWithNote(join(ctx.paths.pattern, `${file.name}.d.ts`), file.dts)),
+    writeFileWithNote(join(ctx.paths.pattern, 'index.js'), indexCode),
+    writeFileWithNote(join(ctx.paths.pattern, 'index.d.ts'), indexCode),
   ])
 }
 
@@ -157,9 +158,9 @@ async function setupJsx(ctx: Context) {
   await ensureDir(ctx.paths.jsx)
 
   return Promise.all([
-    writeFileWithNote(path.join(ctx.paths.jsx, 'is-valid-prop.js'), isValidProp.js),
-    writeFileWithNote(path.join(ctx.paths.jsx, 'index.d.ts'), factory.dts),
-    writeFileWithNote(path.join(ctx.paths.jsx, 'index.jsx'), factory.js),
+    writeFileWithNote(join(ctx.paths.jsx, 'is-valid-prop.js'), isValidProp.js),
+    writeFileWithNote(join(ctx.paths.jsx, 'index.d.ts'), factory.dts),
+    writeFileWithNote(join(ctx.paths.jsx, 'index.jsx'), factory.js),
   ])
 }
 
@@ -174,9 +175,16 @@ async function setupCssIndex(ctx: Context) {
  `
 
   return Promise.all([
-    writeFileWithNote(path.join(ctx.paths.css, 'index.js'), code),
-    writeFileWithNote(path.join(ctx.paths.css, 'index.d.ts'), code),
+    writeFileWithNote(join(ctx.paths.css, 'index.js'), code),
+    writeFileWithNote(join(ctx.paths.css, 'index.d.ts'), code),
   ])
+}
+
+async function setupReset(ctx: Context) {
+  if (!ctx.preflight) return
+  const code = await generateReset()
+  await ensureDir(ctx.paths.asset)
+  return writeFile(join(ctx.paths.asset, 'reset.css'), code)
 }
 
 export async function generateSystem(ctx: Context) {
@@ -197,5 +205,6 @@ export async function generateSystem(ctx: Context) {
     setupPatterns(ctx),
     setupCssIndex(ctx),
     setupJsx(ctx),
+    setupReset(ctx),
   ])
 }
