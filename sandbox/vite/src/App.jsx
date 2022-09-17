@@ -1,11 +1,5 @@
-import { css, globalStyle } from '../styled-system/css'
+import { css } from '../styled-system/css'
 import '../styled-system/styles.css'
-
-globalStyle({
-  '*': {
-    margin: '0',
-  },
-})
 
 function App() {
   return (
