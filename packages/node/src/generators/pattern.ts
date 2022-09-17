@@ -17,7 +17,7 @@ export function generatePattern(ctx: Context) {
     return {
       name: dashCase(pattern.name),
       js: outdent`
-      import { mapObject } from "./helpers"
+      import { mapObject } from "../helpers"
       import { css } from "../css"
 
       ${extracted.get(pattern.name)}

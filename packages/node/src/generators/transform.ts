@@ -19,7 +19,7 @@ export function generateTransform() {
       config = typeof config === 'string' ? { className: config } : config
   
       if (typeof config.className === 'function') {
-        className = config.className(value, key)
+        className = config.className(value, prop)
       } else {
         className = \`\${config.className}_\${clean(value)}\`
       }
