@@ -8,7 +8,7 @@
     "esModuleInterop": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
-    "types": ["vite/client", "./panda"],
+    "types": ["vite/client"],
     "noEmit": true,
     "isolatedModules": true
   }
