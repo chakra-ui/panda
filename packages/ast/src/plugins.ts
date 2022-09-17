@@ -106,7 +106,7 @@ export function createPlugins(options: PluginOptions) {
     globalStylePlugin(data.globalStyle, importMap.css, fileName),
     cssMapPlugin(data.cssMap, importMap.css, fileName),
     dynamicPlugin(data.recipe, importMap.recipe, fileName),
-    dynamicPlugin(data.recipe, importMap.pattern, fileName),
+    dynamicPlugin(data.pattern, importMap.pattern, fileName),
     jsxPlugin(data.jsx, jsxName, isUtilityProp, importMap.jsx, fileName),
   ]
 }
