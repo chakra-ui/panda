@@ -2,6 +2,7 @@
   "name": "sandbox-solid",
   "version": "0.0.0",
   "description": "",
+  "private": true,
   "scripts": {
     "start": "vite",
     "dev": "concurrently \"vite\" \"pnpm css:dev\"",
