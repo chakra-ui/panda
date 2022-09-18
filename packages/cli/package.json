@@ -9,6 +9,26 @@
   "bin": {
     "panda": "dist/cli-default.js"
   },
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./presets": {
+      "import": "./dist/presets.mjs",
+      "require": "./dist/presets.js",
+      "types": "./dist/presets.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "presets": [
+        "./dist/presets.d.ts"
+      ]
+    }
+  },
   "sideEffects": false,
   "publishConfig": {
     "access": "public"
