@@ -34,6 +34,7 @@ export async function main() {
     .option('-w, --watch', 'Watch files and rebuild')
     .option('--exclude <exclude>', 'Define compile-time env variables')
     .option('--clean', 'Clean output directory')
+    .option('--hash', 'Hash the generated classnames to make them shorter')
     .option('--silent', 'Suppress non-error logs (excluding "onSuccess" process output)')
     .action(async (files: string[], flags) => {
       const options = compact({ include: files, ...flags })
