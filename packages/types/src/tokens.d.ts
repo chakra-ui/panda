@@ -1,4 +1,4 @@
-export type Tokens = {
+type RecommendedTokens = {
   colors: Record<string, string | Record<string, string>>
   fontSizes: Record<string, string>
   fontWeights: Record<string, string | number>
@@ -12,13 +12,15 @@ export type Tokens = {
   spacing: Record<string, string>
   sizes: Record<string, string>
   largeSizes: Record<string, string>
-  opacity: Record<string, string>
   animations: Record<string, string>
   easings: Record<string, string>
   durations: Record<string, string>
+}
+
+export type Tokens = RecommendedTokens & {
   [group: string]: Record<string, string | Record<string, string>>
 }
 
 export type PartialTokens = Partial<Tokens>
 
-export type TokenCategory = keyof Tokens
+export type TokenCategory = keyof RecommendedTokens | (string & {})
