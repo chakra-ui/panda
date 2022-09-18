@@ -34,6 +34,7 @@ export function createContext(conf: LoadConfigResult) {
     patterns = [],
     recipes = [],
     utilities: _utilities = [],
+    hash,
   } = config
 
   const cwd = path.resolve(_cwd)
@@ -68,6 +69,7 @@ export function createContext(conf: LoadConfigResult) {
       conditions,
       breakpoints,
     }),
+    hash,
     helpers,
     utility: utilities,
     transform(prop, value) {
