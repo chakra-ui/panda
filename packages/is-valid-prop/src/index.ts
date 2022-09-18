@@ -8,7 +8,9 @@ function memo<V>(fn: (args: string) => V): (args: string) => V {
 
 const userGenerated: string[] = []
 
-const allCssProperties = [
+const uniq = (arr: string[]) => Array.from(new Set(arr))
+
+const allCssProperties = uniq([
   'msAccelerator',
   'msBlockProgression',
   'msContentZoomChaining',
@@ -524,11 +526,11 @@ const allCssProperties = [
   'zIndex',
   'zoom',
   ...userGenerated,
-]
+])
 
-const regex = new RegExp('^(?:' + Array.from(allCssProperties).join('|') + ')$')
+const regex = new RegExp('^(?:' + allCssProperties.join('|') + ')$')
 
-const isCssProperty = memo((prop: string) => {
+const isCssProperty = memo((prop) => {
   return regex.test(prop)
 })
 
