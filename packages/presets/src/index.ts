@@ -3,6 +3,14 @@ import { colors } from './colors'
 import { conditions } from './conditions'
 import { utilities } from './utilities'
 
+function createDropShadows(values: Record<string, string | string[]>): Record<string, string> {
+  return Object.entries(values).reduce((acc, [key, value]) => {
+    const values = Array.isArray(value) ? value : [value]
+    const shadows = values.map((value) => `drop-shadow(${value})`).join(' ')
+    return { ...acc, [key]: shadows }
+  }, {})
+}
+
 const spacing = {
   px: '1px',
   0: '0px',
@@ -50,6 +58,74 @@ export const config: Config = {
     '2xl': '1536px',
   },
   tokens: {
+    easings: {
+      default: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      linear: 'linear',
+      in: 'cubic-bezier(0.4, 0, 1, 1)',
+      out: 'cubic-bezier(0, 0, 0.2, 1)',
+      'in-out': 'cubic-bezier(0.4, 0, 0.2, 1)',
+    },
+    durations: {
+      '75': '75ms',
+      '100': '100ms',
+      '150': '150ms',
+    },
+    radii: {
+      none: '0px',
+      xs: '0.125rem',
+      sm: '0.25rem',
+      md: '0.375rem',
+      lg: '0.5rem',
+      xl: '0.75rem',
+      '2xl': '1rem',
+      '3xl': '1.5rem',
+      full: '9999px',
+    },
+    fontSizes: {
+      '2xs': '0.75rem',
+      xs: '0.875rem',
+      md: '1rem',
+      lg: '1.125rem',
+      xl: '1.25rem',
+      '2xl': '1.5rem',
+      '3xl': '1.875rem',
+      '4xl': '2.25rem',
+      '5xl': '3rem',
+      '6xl': '3.75rem',
+      '7xl': '4.5rem',
+      '8xl': '6rem',
+      '9xl': '8rem',
+    },
+    fontWeights: {
+      thin: '100',
+      extralight: '200',
+      light: '300',
+      normal: '400',
+      medium: '500',
+      semibold: '600',
+      bold: '700',
+      extrabold: '800',
+      black: '900',
+    },
+    shadows: {
+      xs: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+      sm: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+      md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+      lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+      xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+      '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+      inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
+      none: 'none',
+    },
+    dropShadows: createDropShadows({
+      xs: '0 1px 1px rgb(0 0 0 / 0.05)',
+      sm: ['0 1px 2px rgb(0 0 0 / 0.1)', '0 1px 1px rgb(0 0 0 / 0.06)'],
+      md: ['0 4px 3px rgb(0 0 0 / 0.07)', '0 2px 2px rgb(0 0 0 / 0.06)'],
+      lg: ['0 10px 8px rgb(0 0 0 / 0.04)', '0 4px 3px rgb(0 0 0 / 0.1)'],
+      xl: ['0 20px 13px rgb(0 0 0 / 0.03)', '0 8px 5px rgb(0 0 0 / 0.08)'],
+      '2xl': '0 25px 25px rgb(0 0 0 / 0.15)',
+      none: '0 0 #0000',
+    }),
     colors,
     fonts: {
       sans: `ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"`,
