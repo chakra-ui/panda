@@ -4,7 +4,7 @@ import util from 'util'
 
 const omitKeys = ['level', 'type', 'time', 'pid']
 function compact(obj: Entry) {
-  const res = {}
+  const res: Record<string, any> = {}
   for (const key in obj) {
     if (!omitKeys.includes(key) && obj[key] != null) {
       res[key] = obj[key]
