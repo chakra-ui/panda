@@ -30,10 +30,6 @@ export function createWatcher(files: string[], options: WatcherOptions = {}) {
     await watcher.close()
   })
 
-  process.stdin.on('end', () => {
-    process.exit(0)
-  })
-
   return watcher
 }
 
