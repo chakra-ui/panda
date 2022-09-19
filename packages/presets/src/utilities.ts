@@ -588,18 +588,19 @@ const background: UtilityConfig = {
     className: 'bg-gradient',
     values: {
       none: 'none',
-      'to-t': 'linear-gradient(to top, var(--gradient-stops))',
-      'to-tr': 'linear-gradient(to top right, var(--gradient-stops))',
-      'to-r': 'linear-gradient(to right, var(--gradient-stops))',
-      'to-br': 'linear-gradient(to bottom right, var(--gradient-stops))',
-      'to-b': 'linear-gradient(to bottom, var(--gradient-stops))',
-      'to-bl': 'linear-gradient(to bottom left, var(--gradient-stops))',
-      'to-l': 'linear-gradient(to left, var(--gradient-stops))',
-      'to-tl': 'linear-gradient(to top left, var(--gradient-stops))',
+      'to-t': 'linear-gradient(to top, var(--gradient))',
+      'to-tr': 'linear-gradient(to top right, var(--gradient))',
+      'to-r': 'linear-gradient(to right, var(--gradient))',
+      'to-br': 'linear-gradient(to bottom right, var(--gradient))',
+      'to-b': 'linear-gradient(to bottom, var(--gradient))',
+      'to-bl': 'linear-gradient(to bottom left, var(--gradient))',
+      'to-l': 'linear-gradient(to left, var(--gradient))',
+      'to-tl': 'linear-gradient(to top left, var(--gradient))',
     },
     transform(value) {
       return {
         '--gradient-stops': 'var(--gradient-from), var(--gradient-to)',
+        '--gradient': 'var(--gradient-via-stops, var(--gradient-stops))',
         backgroundImage: value,
       }
     },
@@ -627,7 +628,7 @@ const background: UtilityConfig = {
     values: 'colors',
     transform(value) {
       return {
-        '--gradient-stops': 'var(--gradient-from),var(--gradient-via), var(--gradient-to)',
+        '--gradient-via-stops': 'var(--gradient-from), var(--gradient-via), var(--gradient-to)',
         '--gradient-via': value,
       }
     },
@@ -1012,7 +1013,7 @@ const tables: UtilityConfig = {
     values: 'spacing',
     transform(value) {
       return {
-        borderSpacing: `${value} var(--tw-border-spacing-y)`,
+        borderSpacing: `${value} var(--border-spacing-y)`,
       }
     },
   },
@@ -1021,7 +1022,7 @@ const tables: UtilityConfig = {
     values: 'spacing',
     transform(value) {
       return {
-        borderSpacing: `var(--tw-border-spacing-x) ${value}`,
+        borderSpacing: `var(--border-spacing-x) ${value}`,
       }
     },
   },
@@ -1055,13 +1056,13 @@ const transitions: UtilityConfig = {
 }
 
 const transformVars = [
-  'var(--tw-translate-x)',
-  'var(--tw-translate-y)',
-  'var(--tw-rotate)',
-  'var(--tw-skew-x)',
-  'var(--tw-skew-y)',
-  'var(--tw-scale-x)',
-  'var(--tw-scale-y)',
+  'var(--translate-x)',
+  'var(--translate-y)',
+  'var(--rotate)',
+  'var(--skew-x)',
+  'var(--skew-y)',
+  'var(--scale-x)',
+  'var(--scale-y)',
 ].join(' ')
 
 const transforms: UtilityConfig = {
@@ -1077,8 +1078,8 @@ const transforms: UtilityConfig = {
     className: 'scale',
     transform(value) {
       return {
-        '--tw-scale-x': value,
-        '--tw-scale-y': value,
+        '--scale-x': value,
+        '--scale-y': value,
       }
     },
   },
@@ -1086,7 +1087,7 @@ const transforms: UtilityConfig = {
     className: 'scale-x',
     transform(value) {
       return {
-        '--tw-scale-x': value,
+        '--scale-x': value,
       }
     },
   },
@@ -1094,7 +1095,7 @@ const transforms: UtilityConfig = {
     className: 'scale-y',
     transform(value) {
       return {
-        '--tw-scale-y': value,
+        '--scale-y': value,
       }
     },
   },
@@ -1102,7 +1103,7 @@ const transforms: UtilityConfig = {
     className: 'rotate',
     transform(value) {
       return {
-        '--tw-rotate': value,
+        '--rotate': value,
       }
     },
   },
@@ -1122,7 +1123,7 @@ const transforms: UtilityConfig = {
     },
     transform(value) {
       return {
-        '--tw-translate-x': value,
+        '--translate-x': value,
       }
     },
   },
@@ -1142,7 +1143,7 @@ const transforms: UtilityConfig = {
     },
     transform(value) {
       return {
-        '--tw-translate-y': value,
+        '--translate-y': value,
       }
     },
   },
@@ -1150,7 +1151,7 @@ const transforms: UtilityConfig = {
     className: 'skew-x',
     transform(value) {
       return {
-        '--tw-skew-x': value,
+        '--skew-x': value,
       }
     },
   },
@@ -1158,7 +1159,7 @@ const transforms: UtilityConfig = {
     className: 'skew-y',
     transform(value) {
       return {
-        '--tw-skew-y': value,
+        '--skew-y': value,
       }
     },
   },
