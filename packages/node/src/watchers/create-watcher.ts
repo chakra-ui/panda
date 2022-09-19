@@ -4,6 +4,7 @@ import glob from 'fast-glob'
 
 const getWatchOptions = (): WatchOptions => {
   return {
+    atomic: true,
     ignoreInitial: true,
     disableGlobbing: true,
   }
@@ -27,6 +28,10 @@ export function createWatcher(files: string[], options: WatcherOptions = {}) {
 
   process.once('SIGINT', async () => {
     await watcher.close()
+  })
+
+  process.stdin.on('end', () => {
+    process.exit(0)
   })
 
   return watcher
