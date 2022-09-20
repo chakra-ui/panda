@@ -20,6 +20,12 @@ The universal design system solution for enterprise team.
   - stack, flex, grid
   - visually hidden, no scroll, etc
 
+## Getting Started
+
+```sh
+yarn install css-panda
+```
+
 ## Ideas
 
 User creates a `panda.config.ts` file at the root of their project
@@ -27,7 +33,7 @@ User creates a `panda.config.ts` file at the root of their project
 ```jsx
 // chakra.config.ts
 
-import { defineConfig } from 'css-panda';
+import { defineConfig } from 'css-panda'
 
 export default defineConfig({
   outfile: 'styles.css',
@@ -127,7 +133,7 @@ export default defineConfig({
       },
     },
   ],
-});
+})
 ```
 
 User runs a command to generate the initial css file that contains all css utility classes for the tokens
@@ -156,20 +162,20 @@ This will output a css file in the specified `outfile`.
 This will also out a strongly typed module at `.css-panda/css`
 
 ```jsx
-import { css, cx } from '.css-panda/css';
+import { css, cx } from '.css-panda/css'
 
 function App() {
-  return <div className={css({ bg: '$red.200' })} />;
+  return <div className={css({ bg: '$red.200' })} />
 }
 ```
 
 The token related artifacts are exposed at `.css-panda/token`
 
 ```jsx
-import { $ } from '.css-panda/token';
+import { $ } from '.css-panda/token'
 
 function App() {
-  return <div style={{ background: $('colors.green.400') }} />;
+  return <div style={{ background: $('colors.green.400') }} />
 }
 ```
 
@@ -177,8 +183,8 @@ The token getter function can be used in different ways
 
 ```jsx
 // get by scale and value.
-const red200 = $('colors', 'red.200'); // evaluate `colors.red.200` but return `red.200` if not found
-const red200 = $('colors.red.200');
+const red200 = $('colors', 'red.200') // evaluate `colors.red.200` but return `red.200` if not found
+const red200 = $('colors.red.200')
 ```
 
 The user can now run a command to watch the specified `content` and extract new classes as needed.
@@ -196,7 +202,7 @@ Add the `label` option. This approach will allow users pass arbitrary rules, and
 > This approach might bloat the size of the final css
 
 ```jsx
-import { apply, $ } from '.css-panda/css';
+import { apply, $ } from '.css-panda/css'
 
 function App() {
   return (
@@ -209,7 +215,7 @@ function App() {
         margin: { _: '40px', md: '-$6' },
       })}
     />
-  );
+  )
 }
 ```
 
@@ -226,19 +232,19 @@ function App() {
 ## Global styles
 
 ```jsx
-import { globalStyle } from '.css-panda/css';
+import { globalStyle } from '.css-panda/css'
 
-globalStyle('html, body', {});
+globalStyle('html, body', {})
 ```
 
 ## Adding font face styles
 
 ```jsx live=false
-import { fontFace } from '.css-panda/css';
+import { fontFace } from '.css-panda/css'
 
 fontFace('Inter UI', {
   src: 'local("Comic Sans MS")',
-});
+})
 ```
 
 To generate the final build output, user can run
@@ -252,8 +258,8 @@ css-panda --minify --purge
 
 ## Visualization
 
-To visualize the tokens used within the system, the user can run.
-This command will serve the token docs in `localhost:5000`
+To visualize the tokens used within the system, the user can run. This command will serve the token docs in
+`localhost:5000`
 
 ```sh
 css-panda --visualize
@@ -267,15 +273,13 @@ To report the usage of tokens in a project, the user can run
 css-panda --report=json
 ```
 
-The reporter can be either json, html or xml. The reporter will scrape the
-entire project to find area where hard-coded and design tokens are used.
+The reporter can be either json, html or xml. The reporter will scrape the entire project to find area where hard-coded
+and design tokens are used.
 
 ## Other CLI options
 
-`--config`: The path to the config file, by default, we'll search for the closest config file.
-`--list`: List the files what will be processed.
-`--version`: Show the version.
-`--force`: Bust the cache and create clean build artifacts.
+`--config`: The path to the config file, by default, we'll search for the closest config file. `--list`: List the files
+what will be processed. `--version`: Show the version. `--force`: Bust the cache and create clean build artifacts.
 `--strict`: Generate strict output type for tokens
 
 ## CSS Handling
@@ -295,7 +299,7 @@ const styles = css({
   padding: { sm: '4', hover: '6' },
   color: { light: { sm: 'green.200', md: 'green.60' }, dark: 'pink.400' },
   content: { after: '40px', before: '6' },
-});
+})
 
 const out = [
   {
@@ -305,7 +309,7 @@ const out = [
     prop: 'padding',
     _original: `{ sm: "4", hover: "6" }`,
   },
-];
+]
 ```
 
 ```css
@@ -330,7 +334,7 @@ dark:color-pink-400 md:light:color-green-60 sm:light:color-green-200
 ## Layout helpers
 
 ```js
-import { grid, stack, pseudo, divide, cx, shadow, filter, transform, gradient } from '.css-panda';
+import { grid, stack, pseudo, divide, cx, shadow, filter, transform, gradient } from '.css-panda'
 
 function Example() {
   return (
@@ -360,7 +364,7 @@ function Example() {
         text
       </div>
     </div>
-  );
+  )
 }
 ```
 
@@ -373,11 +377,11 @@ const tokens = {
   fonts: {
     lg: '45px',
   },
-};
+}
 
 export default defineConfig({
   tokens,
-});
+})
 ```
 
 ```bash
@@ -410,17 +414,17 @@ panda init
 ```
 
 ```ts
-import 'css-panda/style.css';
+import 'css-panda/style.css'
 
-import { css } from 'css-panda';
+import { css } from 'css-panda'
 
 const className = css({
   display: { sm: 'flex', md: 'none' },
   backgroundColor: 'red',
   borderColor: 'red',
-});
+})
 
-const out = 'bg-color-red border-color-red sm:display-flex md:display-none';
+const out = 'bg-color-red border-color-red sm:display-flex md:display-none'
 ```
 
 ```jsx
