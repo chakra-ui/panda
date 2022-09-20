@@ -2,6 +2,7 @@ import fs from 'fs'
 import { createRequire } from 'module'
 import path from 'path'
 
+//@ts-ignore
 const req = typeof globalThis.require === 'function' ? globalThis.require : createRequire(import.meta.url)
 
 export function loadBundledFile(fileName: string, bundledCode: string): Promise<any> {

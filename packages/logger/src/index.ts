@@ -20,7 +20,7 @@ const levelsMap = {
   error: { w: 3, c: colors.red },
 }
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal'
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 export type Config = {
   level?: LogLevel

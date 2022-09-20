@@ -6,7 +6,7 @@ export type PatternProperty =
   | { type: 'token'; value: string; cssProp?: CssProperty }
   | { type: 'string' | 'boolean' | 'number' }
 
-type Value = string | { [key: string]: Value<string> }
+type Value = string | { [key: string]: Value }
 
 export type TransformHelpers = {
   map: (value: Value, fn: (value: string) => string | undefined) => any
