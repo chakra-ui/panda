@@ -9,6 +9,10 @@ export class CallVisitor extends Visitor {
     super()
   }
 
+  visitTsType(t: any) {
+    return t
+  }
+
   import: ImportResult | undefined
 
   visitImportDeclaration(node: swc.ImportDeclaration): swc.ImportDeclaration {
@@ -69,6 +73,10 @@ export class CallVisitor extends Visitor {
 export class DynamicCallVisitor extends Visitor {
   constructor(private ctx: PluginContext) {
     super()
+  }
+
+  visitTsType(t: any) {
+    return t
   }
 
   imports: ImportResult[] | undefined
