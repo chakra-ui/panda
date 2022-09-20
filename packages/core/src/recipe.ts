@@ -17,7 +17,10 @@ export class Recipe {
 
     const transformed: StyleObject = {}
 
-    walkStyles(styleObject, (styles, selector) => {
+    walkStyles(styleObject, (styles, scopes) => {
+      // recipe can only have one scope (for now)
+      const [selector] = scopes || []
+
       const result: StyleObject = {}
 
       walkObject(styles, (value, paths) => {

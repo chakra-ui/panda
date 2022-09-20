@@ -105,7 +105,7 @@ describe('AtomicRule', () => {
   test('[pseudo] should work with nested selector', () => {
     expect(
       css({
-        scope: '& > p',
+        scope: ['& > p'],
         styles: {
           left: { _: '20px', md: '40px' },
           bg: { light: 'red400', dark: 'green500' },
@@ -141,7 +141,7 @@ describe('AtomicRule', () => {
   test('[parent selector] should work with nested selector', () => {
     expect(
       css({
-        scope: 'input:hover &',
+        scope: ['input:hover &'],
         styles: {
           bg: 'red400',
           fontSize: { sm: '14px', lg: '18px' },
@@ -167,7 +167,7 @@ describe('AtomicRule', () => {
   test('[selector] should work with nested selector', () => {
     expect(
       css({
-        scope: '&::placeholder',
+        scope: ['&::placeholder'],
         styles: {
           left: '40px',
           bg: 'red400',
@@ -192,7 +192,7 @@ describe('AtomicRule', () => {
   test('[@media] should work with nested selector', () => {
     expect(
       css({
-        scope: '@media base',
+        scope: ['@media base'],
         styles: {
           left: '40px',
           textAlign: { sm: 'left' },
@@ -260,6 +260,31 @@ describe('grouped conditions styles', () => {
       "@screen sm {
           .hover\\\\:disabled\\\\:sm\\\\:bg-red\\\\.300:hover:disabled {
               bg: red.300
+          }
+      }"
+    `)
+  })
+
+  test('multiple scopes', () => {
+    expect(
+      css({
+        scope: ['@media base', '&:hover'],
+        styles: {
+          left: '40px',
+          textAlign: { sm: 'left' },
+        },
+      }),
+    ).toMatchInlineSnapshot(`
+      "@media base {
+          .\\\\[\\\\@media_base__\\\\&\\\\:hover\\\\]\\\\:left-40px:hover {
+              left: 40px
+          }
+      }
+      @media base {
+          @screen sm {
+              .\\\\[\\\\@media_base__\\\\&\\\\:hover\\\\]\\\\:sm\\\\:ta-left:hover {
+                  text-align: left
+              }
           }
       }"
     `)

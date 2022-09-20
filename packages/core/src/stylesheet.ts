@@ -52,7 +52,7 @@ export class Stylesheet {
   }
 
   processAtomic = (styleObject: Record<string, any>) => {
-    return walkStyles(styleObject, (props: any, scope?: string) => {
+    return walkStyles(styleObject, (props: any, scope?: string[]) => {
       const ruleset = new AtomicRule(this.context)
       ruleset.process({ scope, styles: props })
     })

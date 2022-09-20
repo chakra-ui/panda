@@ -1,3 +1,4 @@
+import { withoutSpace } from './css-important'
 import { filterBaseConditions } from './filter-condition'
 import { toHash } from './hash'
 import { walkObject } from './walk-object'
@@ -15,7 +16,7 @@ export function createCss(context: Context) {
   return (styleObject: Record<string, any>) => {
     const classNames = new Set<string>()
 
-    walkStyles(styleObject, (props: Record<string, any>, scope?: string) => {
+    walkStyles(styleObject, (props: Record<string, any>, scope?: string[]) => {
       walkObject(props, (value, paths) => {
         if (value == null) return
 
@@ -27,8 +28,8 @@ export function createCss(context: Context) {
         // get the base class name
         const baseArray = [...conditions, transformed.className]
 
-        if (scope) {
-          baseArray.unshift(`[${scope.replaceAll(' ', '_')}]`)
+        if (scope && scope.length > 0) {
+          baseArray.unshift(`[${withoutSpace(scope.join('__'))}]`)
         }
 
         const className = hash ? toHash(baseArray.join(':')) : baseArray.join(':')

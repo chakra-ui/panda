@@ -1,14 +1,20 @@
-import { esc, filterBaseConditions, isImportant, toHash, walkObject, withoutImportant } from '@css-panda/shared'
+import {
+  esc,
+  filterBaseConditions,
+  isImportant,
+  toHash,
+  walkObject,
+  withoutImportant,
+  withoutSpace,
+} from '@css-panda/shared'
 import { ConditionalRule } from './conditional-rule'
 import { toCss } from './to-css'
 import type { Dict, GeneratorContext } from './types'
 
 export type ProcessOptions = {
-  scope?: string
+  scope?: string[]
   styles: Dict
 }
-
-const withoutSpace = (str: string) => str.replace(/\s/g, '_')
 
 export class AtomicRule {
   constructor(private context: GeneratorContext) {}
@@ -49,9 +55,9 @@ export class AtomicRule {
       // get the base class name
       const baseArray = [...conditions, transformed.className]
 
-      if (scope) {
-        baseArray.unshift(`[${withoutSpace(scope)}]`)
-        conditions.push(scope)
+      if (scope && scope.length > 0) {
+        baseArray.unshift(`[${withoutSpace(scope.join('__'))}]`)
+        conditions.push(...scope)
       }
 
       const selector = this.hash(baseArray.join(':'))

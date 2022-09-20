@@ -407,7 +407,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(css.resolve('ml', 'sm')).toMatchInlineSnapshot(`
+    expect(css.resolve('marginLeft', 'sm')).toMatchInlineSnapshot(`
       {
         "className": "ml_sm",
         "styles": {
@@ -416,7 +416,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(css.resolve('ml', '40px')).toMatchInlineSnapshot(`
+    expect(css.resolve('marginLeft', '40px')).toMatchInlineSnapshot(`
       {
         "className": "ml_40px",
         "styles": {
