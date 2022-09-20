@@ -1,1 +1,1 @@
-export { config } from '@css-panda/presets'
+export * from '@css-panda/presets'
