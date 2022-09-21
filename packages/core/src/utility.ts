@@ -1,5 +1,5 @@
 import { logger, quote } from '@css-panda/logger'
-import { isFunction, isString, isObject } from '@css-panda/shared'
+import { isFunction, isString } from '@css-panda/shared'
 import type { TokenMap } from '@css-panda/tokens'
 import type { AnyFunction, Dict, PropertyConfig, UtilityConfig } from '@css-panda/types'
 
@@ -11,15 +11,45 @@ type Options = {
 }
 
 export class Utility {
+  /**
+   * The token map or dictionary of tokens
+   */
   tokenMap: TokenMap
-  classNameMap: Map<string, string> = new Map()
-  stylesMap: Map<string, Dict> = new Map()
-  valuesMap: Map<string, Set<string>> = new Map()
-  config: UtilityConfig = {}
-  report: Map<string, string> = new Map()
 
+  /**
+   * The map of property names to their resolved class names
+   */
+  classNameMap: Map<string, string> = new Map()
+
+  /**
+   * The map of the property to their resolved styless
+   */
+  stylesMap: Map<string, Dict> = new Map()
+
+  /**
+   * The map of possible values for each property
+   */
+  valuesMap: Map<string, Set<string>> = new Map()
+
+  /**
+   * The utility config
+   */
+  config: UtilityConfig = {}
+
+  /**
+   * Useful for reporting custom values
+   */
+  customValueMap: Map<string, string> = new Map()
+
+  /**
+   * The map of property names to their transform functions
+   */
   private transformMap: Map<string, AnyFunction> = new Map()
-  private propertyConfigMap: Map<string, PropertyConfig> = new Map()
+
+  /**
+   * The map of property names to their config
+   */
+  private propertyConfigMap: Map<string, PropertyConfig & { category: string | undefined }> = new Map()
 
   constructor(options: Options) {
     const { tokens, config } = options
@@ -40,6 +70,9 @@ export class Utility {
     return `${prop}_${value}`
   }
 
+  /**
+   * Get all the possible values for the defined property
+   */
   private getPropertyValues(config: PropertyConfig) {
     const { values } = config
 
@@ -68,6 +101,9 @@ export class Utility {
     return values
   }
 
+  /**
+   * Normalize the property config
+   */
   normalize(value: string | PropertyConfig | undefined): PropertyConfig | undefined {
     return typeof value === 'string' ? { className: value } : value
   }
@@ -79,7 +115,8 @@ export class Utility {
       this.setTransform(property, propConfig?.transform)
 
       if (!propConfig) continue
-      this.propertyConfigMap.set(property, propConfig)
+      const category = typeof propConfig.values === 'string' ? propConfig.values : undefined
+      this.propertyConfigMap.set(property, { ...propConfig, category })
 
       const values = this.getPropertyValues(propConfig)
       if (!values) continue
@@ -118,6 +155,9 @@ export class Utility {
     }
   }
 
+  /**
+   * Returns the Typescript type for the define properties
+   */
   get valueTypes() {
     const map = new Map<string, string[]>()
     for (const [prop, tokens] of this.valuesMap.entries()) {
@@ -185,12 +225,15 @@ export class Utility {
     return this.propertyConfigMap.has(prop)
   }
 
+  /**
+   * Returns the resolved className for a given property and value
+   */
   private getOrCreateClassName(prop: string, value: string) {
     const inner = (prop: string, value: string) => {
       const propKey = this.getPropKey(prop, value)
       if (!this.classNameMap.has(propKey)) {
         if (this.isProperty(prop)) {
-          this.report.set(prop, value)
+          this.customValueMap.set(prop, value)
         }
         this.setClassName(prop, value)
       }
@@ -200,6 +243,9 @@ export class Utility {
     return inner(prop, value)
   }
 
+  /**
+   * Get or create the resolved styles for a given property and value
+   */
   private getOrCreateStyle(prop: string, value: string) {
     const inner = (prop: string, value: string) => {
       const propKey = this.getPropKey(prop, value)
@@ -210,6 +256,9 @@ export class Utility {
     return inner(prop, value)
   }
 
+  /**
+   * Returns the resolved className and styles for a given property and value
+   */
   resolve(prop: string, value: string | undefined) {
     if (!value) return { className: '', styles: {} }
     return {
@@ -218,22 +267,23 @@ export class Utility {
     }
   }
 
-  getResolvedValue(key: string, value: string) {
-    const prop = this.config[key]
+  /**
+   * Given a property and a value, return its raw details (category, raw, value)
+   */
+  getRawData(prop: string, value: string) {
+    const propConfig = this.propertyConfigMap.get(prop)
+    if (!propConfig) return
 
-    if (!prop) return
-
-    const scale = isObject(prop) && typeof prop.values === 'string' ? prop.values : undefined
-    const computedProp = this.normalize(prop)!
-    const values = this.getPropertyValues(computedProp)
+    const category = propConfig.category
+    const values = this.getPropertyValues(this.normalize(propConfig)!)
 
     let raw = values?.[value] ?? value
 
-    if (scale) {
-      raw = this.tokenMap.categoryMap.get(scale)?.get(value)?.value ?? raw
+    if (category) {
+      raw = this.tokenMap.categoryMap.get(category)?.get(value)?.value ?? raw
     }
 
-    return { scale, raw }
+    return { category, raw, value }
   }
 }
 

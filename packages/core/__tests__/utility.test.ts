@@ -350,10 +350,11 @@ describe('Utility', () => {
       }
     `)
 
-    expect(utility.getResolvedValue('backgroundColor', 'red.400')).toMatchInlineSnapshot(`
+    expect(utility.getRawData('backgroundColor', 'red.400')).toMatchInlineSnapshot(`
       {
+        "category": "colors",
         "raw": "#F87171",
-        "scale": "colors",
+        "value": "red.400",
       }
     `)
   })
@@ -432,7 +433,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(utility.report).toMatchInlineSnapshot(`
+    expect(utility.customValueMap).toMatchInlineSnapshot(`
       Map {
         "marginLeft" => "40px",
       }
