@@ -1,8 +1,18 @@
 import type { Tokens, SemanticTokens } from '@css-panda/types'
 import { match } from 'ts-pattern'
-import { objectEntries } from './entries'
 import { getTokenData, TokenData } from './get-token-data'
+import { formatBoxShadowValue, parseBoxShadowValue } from './parse-shadow'
 import { getSemanticTokenMap, getTokenMap } from './walk-token'
+
+type ObjectEntries<T> = {
+  [K in keyof T]: { type: K; values: T[K] }
+}[keyof T][]
+
+function* entries<T>(obj: T): IterableIterator<ObjectEntries<T>[number]> {
+  for (const key in obj) {
+    yield { type: key, values: obj[key] }
+  }
+}
 
 export function mapTokens(
   tokens: Partial<Tokens>,
@@ -11,13 +21,23 @@ export function mapTokens(
 ) {
   const { prefix } = options
 
-  for (const entry of objectEntries(tokens)) {
+  for (const entry of entries(tokens)) {
     //
     match(entry)
       .with({ type: 'colors' }, ({ type, values }) => {
         if (!values) return
-        getTokenMap(values, { maxDepth: 3 }).forEach((value, key) => {
+        getTokenMap(values).forEach((value, key) => {
           callback(getTokenData(type, [key, value], { prefix }))
+        })
+      })
+      .with({ type: 'shadows' }, ({ type, values }) => {
+        if (!values) return
+        getTokenMap(values).forEach((value, key) => {
+          const parsedValue = parseBoxShadowValue(value).map((value) => {
+            if (value.valid) value.color = `var(--shadow-color, ${value.color})`
+            return value
+          })
+          callback(getTokenData(type, [key, formatBoxShadowValue(parsedValue)], { prefix }))
         })
       })
       .with({ type: 'spacing' }, ({ type, values }) => {
@@ -44,7 +64,7 @@ export function mapSemanticTokens(
 ) {
   const { prefix } = options
 
-  for (const entry of objectEntries(tokens)) {
+  for (const entry of entries(tokens)) {
     //
     const map = getSemanticTokenMap(entry.values as any)
 

@@ -1,11 +1,7 @@
 import type { TokenMap } from '@css-panda/tokens'
-import { unionType } from '@css-panda/shared'
+import { unionType, capitalize } from '@css-panda/shared'
 import { outdent } from 'outdent'
 import { singular } from 'pluralize'
-
-function capitalize(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1)
-}
 
 export function generateTokenDts(dict: TokenMap) {
   const set = new Set<string>()

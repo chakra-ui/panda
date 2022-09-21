@@ -4,7 +4,7 @@ import { getSemanticTokenMap, getTokenMap } from '../src/walk-token'
 
 describe('Token types', () => {
   test('colors', () => {
-    expect(getTokenMap(tokens.colors, { maxDepth: 3 })).toMatchInlineSnapshot(`
+    expect(getTokenMap(tokens.colors)).toMatchInlineSnapshot(`
       Map {
         "current" => "currentColor",
         "gray.50" => "#FAFAFA",

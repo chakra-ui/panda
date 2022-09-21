@@ -269,19 +269,19 @@ test('[dts] should generate package', () => {
         \\"variable\\": \\"var(--radii-full)\\"
       },
       \\"shadows.xs\\": {
-        \\"value\\": \\"0 0 0 1px rgba(0, 0, 0, 0.05)\\",
+        \\"value\\": \\"0 0 0 1px var(--shadow-color, rgba(0, 0, 0, 0.05))\\",
         \\"variable\\": \\"var(--shadows-xs)\\"
       },
       \\"shadows.sm\\": {
-        \\"value\\": \\"0 1px 2px 0 rgba(0, 0, 0, 0.05)\\",
+        \\"value\\": \\"0 1px 2px 0 var(--shadow-color, rgba(0, 0, 0, 0.05))\\",
         \\"variable\\": \\"var(--shadows-sm)\\"
       },
       \\"shadows.base\\": {
-        \\"value\\": \\"0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)\\",
+        \\"value\\": \\"0 1px 3px 0 var(--shadow-color, rgba(0, 0, 0, 0.1)), 0 1px 2px 0 var(--shadow-color, rgba(0, 0, 0, 0.06))\\",
         \\"variable\\": \\"var(--shadows-base)\\"
       },
       \\"shadows.md\\": {
-        \\"value\\": \\"0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)\\",
+        \\"value\\": \\"0 4px 6px -1px var(--shadow-color, rgba(0, 0, 0, 0.1)), 0 2px 4px -1px var(--shadow-color, rgba(0, 0, 0, 0.06))\\",
         \\"variable\\": \\"var(--shadows-md)\\"
       },
       \\"dropShadows.sm\\": {
