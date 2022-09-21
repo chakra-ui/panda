@@ -1,8 +1,6 @@
-type Predicate<R = any> = (value: any, path: string[]) => R
+import { isObject } from './assert'
 
-function isObject(value: any): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
+type Predicate<R = any> = (value: any, path: string[]) => R
 
 export type MappedObject<T, K> = {
   [Prop in keyof T]: T[Prop] extends Array<any>
