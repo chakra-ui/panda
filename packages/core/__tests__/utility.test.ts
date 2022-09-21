@@ -5,7 +5,7 @@ import { Utility } from '../src/utility'
 
 describe('Utility', () => {
   test('should prime cache for faster lookup', () => {
-    const css = new Utility({
+    const utility = new Utility({
       tokens: new TokenMap({ tokens, semanticTokens }),
       config: {
         backgroundColor: {
@@ -30,7 +30,7 @@ describe('Utility', () => {
       },
     })
 
-    expect(css.valuesMap).toMatchInlineSnapshot(`
+    expect(utility.valuesMap).toMatchInlineSnapshot(`
       Map {
         "backgroundColor" => Set {
           "current",
@@ -102,7 +102,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(css.classNameMap).toMatchInlineSnapshot(`
+    expect(utility.classNameMap).toMatchInlineSnapshot(`
       Map {
         "(backgroundColor = current)" => "bg_current",
         "(backgroundColor = gray.50)" => "bg_gray.50",
@@ -166,7 +166,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(css.stylesMap).toMatchInlineSnapshot(`
+    expect(utility.stylesMap).toMatchInlineSnapshot(`
       Map {
         "(backgroundColor = current)" => {
           "backgroundColor": "var(--colors-current)",
@@ -349,11 +349,18 @@ describe('Utility', () => {
         },
       }
     `)
+
+    expect(utility.getResolvedValue('backgroundColor', 'red.400')).toMatchInlineSnapshot(`
+      {
+        "raw": "#F87171",
+        "scale": "colors",
+      }
+    `)
   })
 
   test('should resolve arbitrary property', () => {
     const values = { auto: 'auto', sm: '20px', md: '40px' }
-    const css = new Utility({
+    const utility = new Utility({
       tokens: new TokenMap({ tokens, semanticTokens }),
       config: {
         marginLeft: {
@@ -373,7 +380,7 @@ describe('Utility', () => {
       },
     })
 
-    expect(css.stylesMap).toMatchInlineSnapshot(`
+    expect(utility.stylesMap).toMatchInlineSnapshot(`
       Map {
         "(marginLeft = auto)" => {
           "marginLeft": "auto",
@@ -396,7 +403,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(css.classNameMap).toMatchInlineSnapshot(`
+    expect(utility.classNameMap).toMatchInlineSnapshot(`
       Map {
         "(marginLeft = auto)" => "ml_auto",
         "(marginLeft = sm)" => "ml_sm",
@@ -407,7 +414,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(css.resolve('marginLeft', 'sm')).toMatchInlineSnapshot(`
+    expect(utility.resolve('marginLeft', 'sm')).toMatchInlineSnapshot(`
       {
         "className": "ml_sm",
         "styles": {
@@ -416,7 +423,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(css.resolve('marginLeft', '40px')).toMatchInlineSnapshot(`
+    expect(utility.resolve('marginLeft', '40px')).toMatchInlineSnapshot(`
       {
         "className": "ml_40px",
         "styles": {
@@ -425,7 +432,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(css.report).toMatchInlineSnapshot(`
+    expect(utility.report).toMatchInlineSnapshot(`
       Map {
         "marginLeft" => "40px",
       }

@@ -1,5 +1,5 @@
 import { logger, quote } from '@css-panda/logger'
-import { isFunction, isString } from '@css-panda/shared'
+import { isFunction, isString, isObject } from '@css-panda/shared'
 import type { TokenMap } from '@css-panda/tokens'
 import type { AnyFunction, Dict, PropertyConfig, UtilityConfig } from '@css-panda/types'
 
@@ -216,6 +216,24 @@ export class Utility {
       className: this.getOrCreateClassName(prop, clean(value)),
       styles: this.getOrCreateStyle(prop, value),
     }
+  }
+
+  getResolvedValue(key: string, value: string) {
+    const prop = this.config[key]
+
+    if (!prop) return
+
+    const scale = isObject(prop) && typeof prop.values === 'string' ? prop.values : undefined
+    const computedProp = this.normalize(prop)!
+    const values = this.getPropertyValues(computedProp)
+
+    let raw = values?.[value] ?? value
+
+    if (scale) {
+      raw = this.tokenMap.categoryMap.get(scale)?.get(value)?.value ?? raw
+    }
+
+    return { scale, raw }
   }
 }
 
