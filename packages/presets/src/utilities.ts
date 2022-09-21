@@ -39,10 +39,7 @@ const layout: UtilityConfig = {
     values: 'spacing',
     transform(value) {
       return {
-        left: value,
-        "[dir='rtl'] &": {
-          right: value,
-        },
+        insetInlineStart: value,
       }
     },
   },
@@ -55,10 +52,7 @@ const layout: UtilityConfig = {
     values: 'spacing',
     transform(value) {
       return {
-        right: value,
-        "[dir='rtl'] &": {
-          left: value,
-        },
+        insetInlineEnd: value,
       }
     },
   },
@@ -69,20 +63,20 @@ const layout: UtilityConfig = {
   insetX: {
     className: 'inset-x',
     values: 'spacing',
+    cssType: 'insetInline',
     transform(value) {
       return {
-        left: value,
-        right: value,
+        insetInline: value,
       }
     },
   },
   insetY: {
     className: 'inset-y',
     values: 'spacing',
+    cssType: 'insetBlock',
     transform(value) {
       return {
-        top: value,
-        bottom: value,
+        insetBlock: value,
       }
     },
   },
@@ -143,6 +137,7 @@ const spacing: UtilityConfig = {
   },
   paddingX: {
     className: 'px',
+    cssType: 'paddingInline',
     values: 'spacing',
     transform(value) {
       return {
@@ -153,6 +148,7 @@ const spacing: UtilityConfig = {
   paddingY: {
     className: 'py',
     values: 'spacing',
+    cssType: 'paddingBlock',
     transform(value) {
       return {
         paddingBlock: value,
@@ -183,6 +179,7 @@ const spacing: UtilityConfig = {
   marginX: {
     className: 'mx',
     values: 'spacing',
+    cssType: 'marginInline',
     transform(value) {
       return {
         marginInline: value,
@@ -192,6 +189,7 @@ const spacing: UtilityConfig = {
   marginY: {
     className: 'my',
     values: 'spacing',
+    cssType: 'marginBlock',
     transform(value) {
       return {
         marginBlock: value,
@@ -688,6 +686,7 @@ const border: UtilityConfig = {
   borderXColor: {
     className: 'border-x',
     values: 'colors',
+    cssType: 'borderColor',
     transform(value) {
       return {
         borderLeftColor: value,
@@ -698,6 +697,7 @@ const border: UtilityConfig = {
   borderYColor: {
     className: 'border-y',
     values: 'colors',
+    cssType: 'borderColor',
     transform(value) {
       return {
         borderTopColor: value,
@@ -727,6 +727,7 @@ const border: UtilityConfig = {
   },
   borderX: {
     className: 'border-x',
+    cssType: 'border',
     transform(value) {
       return {
         borderInline: value,
@@ -735,6 +736,7 @@ const border: UtilityConfig = {
   },
   borderY: {
     className: 'border-y',
+    cssType: 'border',
     transform(value) {
       return {
         borderBlock: value,
@@ -814,6 +816,15 @@ const effects: UtilityConfig = {
   boxShadow: {
     className: 'shadow',
     values: 'shadows',
+  },
+  boxShadowColor: {
+    className: 'shadow',
+    values: 'colors',
+    transform(value) {
+      return {
+        '--shadow-color': value,
+      }
+    },
   },
   mixBlendMode: 'mix-blend',
   filter: {
@@ -1182,6 +1193,7 @@ const interactivity: UtilityConfig = {
   scrollMarginX: {
     className: 'scroll-mx',
     values: 'spacing',
+    cssType: 'scrollMarginInline',
     transform(value) {
       return {
         scrollMarginInline: value,
@@ -1191,6 +1203,7 @@ const interactivity: UtilityConfig = {
   scrollMarginY: {
     className: 'scroll-my',
     values: 'spacing',
+    cssType: 'scrollMarginBlock',
     transform(value) {
       return {
         scrollMarginBlock: value,
@@ -1220,6 +1233,7 @@ const interactivity: UtilityConfig = {
   scrollPaddingX: {
     className: 'scroll-px',
     values: 'spacing',
+    cssType: 'scrollPaddingInline',
     transform(value) {
       return {
         scrollPaddingInline: value,
@@ -1229,6 +1243,7 @@ const interactivity: UtilityConfig = {
   scrollPaddingY: {
     className: 'scroll-py',
     values: 'spacing',
+    cssType: 'scrollPaddingBlock',
     transform(value) {
       return {
         scrollPaddingBlock: value,
