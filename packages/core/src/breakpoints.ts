@@ -1,4 +1,4 @@
-import { toEm, toPx } from '@css-panda/shared'
+import { capitalize, toEm, toPx } from '@css-panda/shared'
 import type { RawCondition } from '@css-panda/types'
 import type { Root } from 'postcss'
 
@@ -50,10 +50,10 @@ export class Breakpoints {
       .flatMap((_name, index) => {
         const min = breakpoints[index]
         const up = [min, this.up(min)] as [string, string]
-        const only = [`${min}_only`, this.only(min)] as [string, string]
+        const only = [`${min}Only`, this.only(min)] as [string, string]
         return [up, only]
       })
-      .concat(permuations.map(([min, max]) => [`${min}_to_${max}`, this.between(min, max)]))
+      .concat(permuations.map(([min, max]) => [`${min}To${capitalize(max)}`, this.between(min, max)]))
 
     return Object.fromEntries(values)
   }
