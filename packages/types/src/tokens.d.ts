@@ -1,3 +1,28 @@
+type ShadowToken = {
+  /**
+   * The color of the shadow
+   */
+  color: string
+  /**
+   * The horizontal offset that shadow has from the element it is applied to.
+   */
+  offsetX: string
+  /**
+   * The vertical offset that shadow has from the element it is applied to
+   */
+  offsetY: string
+  /**
+   * The blur radius that is applied to the shadow
+   */
+  blur: string
+  /**
+   * The amount by which to expand or contract the shadow
+   */
+  spread: string
+}
+
+type Shadows = ShadowToken | ShadowToken[]
+
 type RecommendedTokens = {
   colors: Record<string, string | Record<string, string>>
   fontSizes: Record<string, string>
