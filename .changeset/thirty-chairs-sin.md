@@ -12,6 +12,7 @@
 '@css-panda/shared': patch
 '@css-panda/tokens': patch
 '@css-panda/types': patch
+'@css-panda/vite': patch
 ---
 
 Initial release
