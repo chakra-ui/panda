@@ -4,8 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
-    "start": "vite",
-    "dev": "concurrently \"vite\" \"pnpm css:dev\"",
+    "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
     "css": "PANDA_DEBUG=* panda",
@@ -13,6 +12,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@css-panda/vite": "workspace:*",
     "css-panda": "workspace:*",
     "typescript": "^4.8.2",
     "vite": "^3.0.9",

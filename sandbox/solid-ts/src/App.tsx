@@ -8,11 +8,12 @@ const App: Component = () => {
       background="pink"
       paddingBlock="20px"
       fontFamily="SF Mono"
-      color="red"
+      color="black"
       class={value() === 3 ? 'red' : 'blue'}
       fontSize="20px"
-      marginTop="90px"
+      marginTop="20px"
       paddingLeft="90px"
+      borderRadius="10px"
       data-value={value()}
       onClick={() => {
         setValue(value() + 1)
@@ -24,6 +25,7 @@ const App: Component = () => {
           },
           '&:hover': {
             color: 'yellow',
+            background: 'red',
           },
         },
       }}

@@ -1,0 +1,31 @@
+{
+  "name": "@css-panda/vite",
+  "version": "0.0.1",
+  "description": "The Vite plugin for CSS Panda",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format=esm,cjs --dts",
+    "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
+    "dev": "pnpm build-fast -- --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@css-panda/node": "workspace:*",
+    "fast-glob": "^3.2.12"
+  },
+  "devDependencies": {
+    "vite": "3.1.0"
+  },
+  "peerDependencies": {
+    "vite": ">=3.0.0"
+  }
+}

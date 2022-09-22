@@ -7,13 +7,13 @@ export function generateReactJsxFactory(ctx: Context) {
   return {
     dts: outdent`
     import type { ComponentProps } from "react"
-    import type { CssProperties } from "../types"
+    import type { CssProperties, CssObject } from "../types"
     
     type Element = keyof JSX.IntrinsicElements
 
     type Merge<P, T> = Omit<P, "color"> & T;
     
-    export type HTML${upperName}Props<T extends Element> = Merge<ComponentProps<T>, CssProperties> & { css?: CssProperties }
+    export type HTML${upperName}Props<T extends Element> = Merge<ComponentProps<T>, CssProperties> & { css?: CssObject }
 
     type JSXFactory = {
       [K in Element]: (props: HTML${upperName}Props<K>) => JSX.Element

@@ -257,6 +257,17 @@ importers:
     devDependencies:
       csstype: 3.1.0
 
+  packages/vite:
+    specifiers:
+      '@css-panda/node': workspace:*
+      fast-glob: ^3.2.12
+      vite: 3.1.0
+    dependencies:
+      '@css-panda/node': link:../node
+      fast-glob: 3.2.12
+    devDependencies:
+      vite: 3.1.0
+
   packages/vscode:
     specifiers:
       '@css-panda/config': workspace:*
@@ -334,6 +345,7 @@ importers:
 
   sandbox/solid-ts:
     specifiers:
+      '@css-panda/vite': workspace:*
       css-panda: workspace:*
       solid-js: ^1.5.1
       typescript: ^4.8.2
@@ -342,6 +354,7 @@ importers:
     dependencies:
       solid-js: 1.5.5
     devDependencies:
+      '@css-panda/vite': link:../../packages/vite
       css-panda: link:../../packages/cli
       typescript: 4.8.3
       vite: 3.1.0
@@ -350,6 +363,7 @@ importers:
   sandbox/vite:
     specifiers:
       '@css-panda/fixture': workspace:*
+      '@css-panda/vite': workspace:*
       '@types/react': 18.0.17
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.1.0
@@ -362,6 +376,7 @@ importers:
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
       '@css-panda/fixture': link:../../packages/fixture
+      '@css-panda/vite': link:../../packages/vite
       '@types/react': 18.0.17
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.1.0_vite@3.1.0
@@ -3926,6 +3941,17 @@ packages:
       glob-parent: 5.1.2
       merge2: 1.4.1
       micromatch: 4.0.5
+
+  /fast-glob/3.2.12:
+    resolution: {integrity: sha512-DVj4CQIYYow0BlaelwK1pHl5n5cRSJfM60UA0zK891sVInoPri2Ekj7+e1CT3/3qxXenpI+nBBmQAcJPJgaj4w==}
+    engines: {node: '>=8.6.0'}
+    dependencies:
+      '@nodelib/fs.stat': 2.0.5
+      '@nodelib/fs.walk': 1.2.8
+      glob-parent: 5.1.2
+      merge2: 1.4.1
+      micromatch: 4.0.5
+    dev: false
 
   /fast-json-stable-stringify/2.1.0:
     resolution: {integrity: sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==}
