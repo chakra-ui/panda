@@ -89,4 +89,8 @@ export class Conditions {
   normalize = (condition: string | RawCondition): RawCondition | undefined => {
     return typeof condition === 'string' ? this.get(condition) : condition
   }
+
+  keys = () => {
+    return Object.keys(this.values)
+  }
 }

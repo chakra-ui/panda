@@ -44,7 +44,10 @@ export class Stylesheet {
       // don't process empty rulesets
       if (nodes.length === 0) return this
 
-      output = postcss.rule({ selector, nodes: cssString.root.nodes })
+      output = postcss.rule({
+        selector,
+        nodes: cssString.root.nodes,
+      })
     }
 
     this.context.root.append(output)
@@ -58,9 +61,9 @@ export class Stylesheet {
     })
   }
 
-  processRecipe = (recipe: RecipeConfig, styles: Record<string, any>) => {
-    const _recipe = new Recipe(recipe, this.context)
-    _recipe.process({ styles })
+  processRecipe = (config: RecipeConfig, styles: Record<string, any>) => {
+    const recipe = new Recipe(config, this.context)
+    recipe.process({ styles })
   }
 
   addImports = (imports: string[]) => {

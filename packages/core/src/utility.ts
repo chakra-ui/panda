@@ -285,6 +285,10 @@ export class Utility {
 
     return { category, raw, value }
   }
+
+  keys() {
+    return Object.keys(this.config)
+  }
 }
 
 export function mergeUtilities(utilities: UtilityConfig[] | undefined): UtilityConfig {

@@ -19,6 +19,69 @@ function mergePatterns(values: Pattern[]) {
   }, {})
 }
 
+export class ContextV2 {
+  constructor(public conf: LoadConfigResult) {}
+
+  get tokens() {
+    const { tokens = {}, semanticTokens = {}, cssVar } = this.conf.config
+    return new TokenMap({
+      tokens,
+      semanticTokens,
+      prefix: cssVar?.prefix,
+    })
+  }
+
+  get utility() {
+    const { utilities = [] } = this.conf.config
+    return new Utility({
+      tokens: this.tokens,
+      config: mergeUtilities(utilities),
+    })
+  }
+
+  get conditions() {
+    const { conditions = {}, breakpoints = {} } = this.conf.config
+    return new Conditions({
+      conditions,
+      breakpoints,
+    })
+  }
+
+  get properties() {
+    const props = ['css', ...this.utility.keys(), ...this.conditions.keys()]
+    return Array.from(new Set(props))
+  }
+
+  isProperty(prop: string) {
+    const regex = new RegExp('^(?:' + this.properties.join('|') + ')$')
+    return regex.test(prop)
+  }
+
+  get hasTokens() {
+    return !this.tokens.isEmpty
+  }
+
+  get hasRecipes() {
+    const { recipes = [] } = this.conf.config
+    return recipes.length > 0
+  }
+
+  get hasPattern() {
+    const { patterns = [] } = this.conf.config
+    return patterns.length > 0
+  }
+
+  get importMap() {
+    const { outdir } = this.conf.config
+    return {
+      css: `${outdir}/css`,
+      recipe: `${outdir}/recipes`,
+      pattern: `${outdir}/patterns`,
+      jsx: `${outdir}/jsx`,
+    }
+  }
+}
+
 export function createContext(conf: LoadConfigResult) {
   const { config } = conf
 
@@ -117,12 +180,7 @@ export function createContext(conf: LoadConfigResult) {
   }
 
   const cssPropKeys = Array.from(
-    // prettier-ignore
-    new Set([
-      'css',
-      ...Object.keys(utilities.config),
-      ...Object.keys(ctx.conditions.values),
-    ]),
+    new Set(['css', ...Object.keys(utilities.config), ...Object.keys(ctx.conditions.values)]),
   )
 
   const sourceFiles = glob.sync(config.include, { cwd, ignore: config.exclude })
