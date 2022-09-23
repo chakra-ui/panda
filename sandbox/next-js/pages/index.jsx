@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <div
       className={css({
-        fontSize: '120px',
+        fontSize: '40px',
         color: 'pink',
       })}
     >

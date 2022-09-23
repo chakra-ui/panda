@@ -1,12 +1,10 @@
 import { extractPatterns } from '@css-panda/ast'
-import { capitalize, unionType } from '@css-panda/shared'
+import { capitalize, dashCase, unionType } from '@css-panda/shared'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
-import type { Context } from '../create-context'
+import type { PandaContext } from '../context'
 
-const dashCase = (str: string) => str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
-
-export function generatePattern(ctx: Context) {
+export function generatePattern(ctx: PandaContext) {
   const patterns = ctx.config.patterns ?? []
 
   if (!patterns.length) return

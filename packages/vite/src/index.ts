@@ -1,36 +1,24 @@
-import type { Plugin } from 'vite'
-import { createContext, extractContent, loadConfig } from '@css-panda/node'
+import { createContext, extractFile, getBaseCss, loadConfig } from '@css-panda/node'
 import glob from 'fast-glob'
-import { readFile } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import type { Plugin } from 'vite'
 
 export async function pandaPlugin(): Promise<Plugin> {
   const conf = await loadConfig(process.cwd())
   const ctx = createContext(conf)
 
-  const dsPath = join(ctx.paths.ds, 'index.css')
-  const dsCss = existsSync(dsPath) ? await readFile(dsPath, 'utf-8') : ''
-
-  const resetPath = join(ctx.paths.asset, 'reset.css')
-  const resetCss = existsSync(resetPath) ? await readFile(resetPath, 'utf-8') : ''
-
   const files = glob.sync(conf.config.include, { absolute: true })
   const filter = (id: string) => files.includes(id)
 
-  const fileMap = new Map<string, string | undefined>([
-    ['tokens.css', dsCss],
-    ['reset.css', resetCss],
-  ])
+  const fileMap = new Map<string, string | undefined>([['base.css', getBaseCss(ctx)]])
 
-  const isEmpty = () => fileMap.size === 2
+  const isEmpty = () => fileMap.size === 1
   const compile = () => Array.from(fileMap.values()).join('')
 
   const compileFiles = async () => {
     await Promise.all([
       ...files.map(async (file) => {
-        const result = await extractContent(ctx, file)
-        fileMap.set(file, result)
+        const result = await extractFile(ctx, file)
+        fileMap.set(file, result?.css)
       }),
     ])
   }
@@ -41,13 +29,17 @@ export async function pandaPlugin(): Promise<Plugin> {
 
     async load(id) {
       if (!filter(id)) return
-      fileMap.set(id, await extractContent(ctx, id))
+      const result = await extractFile(ctx, id)
+      fileMap.set(id, result?.css)
     },
 
     async transform(code, id) {
-      if (!filter(id)) return code
+      if (!filter(id)) {
+        return code
+      }
 
-      fileMap.set(id, await extractContent(ctx, id))
+      const result = await extractFile(ctx, id)
+      fileMap.set(id, result?.css)
 
       return `${code}
       if (import.meta.hot) {
@@ -64,8 +56,8 @@ export async function pandaPlugin(): Promise<Plugin> {
     async handleHotUpdate(hmrContext) {
       const { file, server } = hmrContext
       if (!filter(file)) return
-      const css = await extractContent(ctx, file)
-      fileMap.set(file, css)
+      const result = await extractFile(ctx, file)
+      fileMap.set(file, result?.css)
       server.ws.send({
         type: 'custom',
         event: 'panda:style-update',

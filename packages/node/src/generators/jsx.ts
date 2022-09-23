@@ -1,4 +1,4 @@
-import type { Context } from '../create-context'
+import type { PandaContext } from '../context'
 import { generateReactJsxFactory } from './react-jsx'
 import { generateSolidJsxFactory } from './solid-jsx'
 
@@ -7,6 +7,6 @@ const frameworks = {
   solid: generateSolidJsxFactory,
 }
 
-export function generateJsxFactory(ctx: Context) {
-  return frameworks[ctx.jsx?.framework ?? 'react'](ctx)
+export function generateJsxFactory(ctx: PandaContext) {
+  return frameworks[ctx.jsxFramework](ctx)
 }

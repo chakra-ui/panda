@@ -93,6 +93,6 @@ const reset = css`
   }
 `
 
-export async function generateReset() {
+export function generateReset() {
   return reset
 }

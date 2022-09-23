@@ -1,7 +1,7 @@
 import type { LoadConfigResult } from '@css-panda/config'
 import { breakpoints, conditions, keyframes, semanticTokens, tokens } from '@css-panda/fixture'
 import { expect, test } from 'vitest'
-import { createContext } from '../src/create-context'
+import { createContext } from '../src/context'
 import { generateCss } from '../src/generators/css'
 
 const conf: LoadConfigResult = {

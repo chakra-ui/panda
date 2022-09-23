@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "pnpm css && vite build",
     "preview": "vite preview",
-    "css": "PANDA_DEBUG=ast* panda",
-    "css:dev": "PANDA_DEBUG=ast* panda --watch"
+    "css": "PANDA_DEBUG=hrtime panda",
+    "css:gen": "PANDA_DEBUG=* panda gen",
+    "css:dev": "PANDA_DEBUG=* panda --watch"
   },
   "dependencies": {
     "react": "18.2.0",

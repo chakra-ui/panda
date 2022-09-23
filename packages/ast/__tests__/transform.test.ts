@@ -1,7 +1,8 @@
-import { describe, test, expect } from 'vitest'
-import { createCollector, createPlugins } from '../src/plugins'
-import { transformSync } from '../src/transform'
 import { importMap } from '@css-panda/fixture'
+import { describe, expect, test } from 'vitest'
+import { createCollector } from '../src/collector'
+import { createPlugins } from '../src/plugins'
+import { transformSync } from '../src/transform'
 
 describe('ast parser', () => {
   test('[without import] should not parse', () => {

@@ -1,8 +1,8 @@
 import { outdent } from 'outdent'
-import type { Context } from '../create-context'
+import type { PandaContext } from '../context'
 
-export function generateSolidJsxFactory(ctx: Context) {
-  const name = ctx.jsx?.name ?? 'panda'
+export function generateSolidJsxFactory(ctx: PandaContext) {
+  const name = ctx.jsxFactory
   const upperName = name[0].toUpperCase() + name.slice(1)
   return {
     dts: outdent`

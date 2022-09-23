@@ -1,5 +1,5 @@
 import { logger } from '@css-panda/logger'
-import { execCommand, generate, loadConfig, setupConfig, setupSystem } from '@css-panda/node'
+import { emitArtifacts, execCommand, generate, loadConfigAndCreateContext, setupConfig } from '@css-panda/node'
 import { compact } from '@css-panda/shared'
 import { cac } from 'cac'
 import fs from 'fs'
@@ -19,9 +19,11 @@ export async function main() {
   })
 
   cli.command('gen', 'Generate the panda system').action(async () => {
-    const config = await loadConfig(cwd)
-    const { message: msg } = await setupSystem(config)
-    logger.info(msg)
+    const ctx = await loadConfigAndCreateContext()
+    const msg = await emitArtifacts(ctx)
+    if (msg) {
+      logger.info(msg)
+    }
   })
 
   cli

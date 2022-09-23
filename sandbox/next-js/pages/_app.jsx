@@ -1,4 +1,4 @@
-import '../styled-system/assets/pages__index.css'
+import '../styled-system/styles.css'
 
 function MyApp({ Component, pageProps }) {
   return <Component {...pageProps} />

@@ -1,14 +1,16 @@
 import { toCss, toKeyframeCss } from '@css-panda/core'
 import type { VarData } from '@css-panda/tokens'
-import type { Context } from '../create-context'
+import type { PandaContext } from '../context'
 
-export function generateKeyframes(ctx: Context) {
-  if (ctx.config.keyframes) {
-    return toKeyframeCss(ctx.config.keyframes)
+export function generateKeyframes(keyframes: Record<string, any> | undefined) {
+  if (keyframes) {
+    return toKeyframeCss(keyframes)
   }
 }
 
-export function generateCss(ctx: Context, root = ':where(:root, :host)') {
+export function generateCss(ctx: PandaContext, varRoot?: string) {
+  const root = varRoot ?? ctx.cssVarRoot
+
   function inner(vars: Map<string, VarData>, wrap = true) {
     const map = new Map<string, string>()
 
@@ -27,11 +29,11 @@ export function generateCss(ctx: Context, root = ':where(:root, :host)') {
     return css
   }
 
-  const output = [inner(ctx.dictionary.vars)]
+  const output = [inner(ctx.tokens.vars)]
 
-  const { conditions } = ctx.context()
+  const conditions = ctx.conditions
 
-  for (const [condition, conditionMap] of ctx.dictionary.conditionVars) {
+  for (const [condition, conditionMap] of ctx.tokens.conditionVars) {
     //
     const cond = conditions.normalize(condition)
 

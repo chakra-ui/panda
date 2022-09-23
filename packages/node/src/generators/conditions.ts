@@ -1,9 +1,8 @@
 import { unionType } from '@css-panda/shared'
 import outdent from 'outdent'
-import type { Context } from '../create-context'
+import type { PandaContext } from '../context'
 
-export function generateConditions({ context }: Context) {
-  const ctx = context()
+export function generateConditions(ctx: PandaContext) {
   const keys = Object.keys(ctx.conditions.values).concat('_', 'base')
   return {
     js: outdent`

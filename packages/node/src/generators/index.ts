@@ -1,14 +1,13 @@
-import type { TokenMap } from '@css-panda/tokens'
-import { ensureDir, readFile, writeFile } from 'fs-extra'
+import { readFileSync } from 'fs'
 import { outdent } from 'outdent'
-import { join } from 'path'
-import type { Context } from '../create-context'
+import type { Output, PandaContext } from '../context'
 import { generateConditions } from './conditions'
 import { generateCss, generateKeyframes } from './css'
 import { generateCssType } from './css-dts'
 import { generateCssMap } from './css-map'
 import { generateCx } from './cx'
 import { generateFontFace } from './font-face'
+import { getEntrypoint } from './get-entrypoint'
 import { generateGlobalStyle } from './global-style'
 import { generateisValidProp } from './is-valid-prop'
 import { generateJs } from './js'
@@ -22,149 +21,177 @@ import { generateSerializer } from './serializer'
 import { generateSx } from './sx'
 import { generateTokenDts } from './token-dts'
 import { generateTransform } from './transform'
-import { getEntrypoint, writeFileWithNote } from './__utils'
+import { lookItUpSync } from 'look-it-up'
+import { dirname } from 'path'
+import { minifyConfig } from '@css-panda/ast'
 
-async function setupHelpers(ctx: Context) {
-  const file = getEntrypoint('@css-panda/shared', { dev: 'shared.mjs' })
-  const code = await readFile(file, 'utf-8')
-  const filepath = join(ctx.outdir, 'helpers.js')
-  return writeFileWithNote(filepath, code)
+function setupHelpers(ctx: PandaContext): Output {
+  const sharedMjs = getEntrypoint('@css-panda/shared', { dev: 'shared.mjs' })
+  const code = readFileSync(sharedMjs, 'utf-8')
+  return {
+    dir: ctx.outdir,
+    files: [{ file: 'helpers.js', code }],
+  }
 }
 
-async function setupKeyframes(ctx: Context) {
-  const code = generateKeyframes(ctx)
-  if (!code) return
-  await ensureDir(ctx.paths.ds)
-  const filepath = join(ctx.paths.ds, 'keyframes.css')
-  return writeFileWithNote(filepath, code)
+function setupKeyframes(ctx: PandaContext): Output {
+  const code = generateKeyframes(ctx.keyframes)
+  return {
+    dir: ctx.paths.ds,
+    files: [{ file: 'keyframes.css', code }],
+  }
 }
 
-async function setupDesignTokens(ctx: Context, dict: TokenMap) {
-  if (dict.isEmpty) return
-  await ensureDir(ctx.paths.ds)
-  return Promise.all([
-    writeFileWithNote(join(ctx.paths.ds, 'index.css'), generateCss(ctx, ctx.cssVar?.root)),
-    writeFileWithNote(join(ctx.paths.ds, 'index.d.ts'), generateDts()),
-    writeFileWithNote(join(ctx.paths.ds, 'index.js'), generateJs(dict)),
-  ])
+function setupDesignTokens(ctx: PandaContext): Output {
+  if (ctx.tokens.isEmpty) {
+    return { files: [] }
+  }
+
+  return {
+    dir: ctx.paths.ds,
+    files: [
+      { file: 'index.css', code: generateCss(ctx) },
+      { file: 'index.d.ts', code: generateDts() },
+      { file: 'index.js', code: generateJs(ctx.tokens) },
+    ],
+  }
 }
 
-async function setupGlobalStyle(ctx: Context) {
-  await ensureDir(ctx.paths.css)
+function setupGlobalStyle(ctx: PandaContext): Output {
   const code = generateGlobalStyle()
-  return Promise.all([
-    writeFileWithNote(join(ctx.paths.css, 'global-style.js'), code.js),
-    writeFileWithNote(join(ctx.paths.css, 'global-style.d.ts'), code.dts),
-  ])
+  return {
+    dir: ctx.paths.css,
+    files: [
+      { file: 'global-style.js', code: code.js },
+      { file: 'global-style.d.ts', code: code.dts },
+    ],
+  }
 }
 
-async function setupTypes(ctx: Context, dict: TokenMap) {
-  await ensureDir(ctx.paths.types)
-
-  const code = await generateCssType()
+function setupTypes(ctx: PandaContext): Output {
+  const code = generateCssType()
   const conditions = generateConditions(ctx)
-
-  return Promise.all([
-    writeFileWithNote(join(ctx.paths.types, 'csstype.d.ts'), code.cssType),
-    writeFileWithNote(join(ctx.paths.types, 'panda-csstype.d.ts'), code.pandaCssType),
-    writeFileWithNote(join(ctx.paths.types, 'index.d.ts'), code.publicType),
-    writeFileWithNote(join(ctx.paths.types, 'token.d.ts'), generateTokenDts(dict)),
-    writeFileWithNote(join(ctx.paths.types, 'property-type.d.ts'), generatePropertyTypes(ctx.utilities)),
-
-    writeFileWithNote(join(ctx.paths.css, 'conditions.js'), conditions.js),
-    writeFileWithNote(join(ctx.paths.types, 'conditions.d.ts'), conditions.dts),
-  ])
+  return {
+    dir: ctx.paths.types,
+    files: [
+      { file: 'csstype.d.ts', code: code.cssType },
+      { file: 'panda-csstype.d.ts', code: code.pandaCssType },
+      { file: 'index.d.ts', code: code.publicType },
+      { file: 'token.d.ts', code: generateTokenDts(ctx.tokens) },
+      { file: 'property-type.d.ts', code: generatePropertyTypes(ctx.utility) },
+      { file: 'conditions.d.ts', code: conditions.dts },
+    ],
+  }
 }
 
-async function setupCss(ctx: Context) {
-  await ensureDir(ctx.paths.css)
+function setupCss(ctx: PandaContext): Output {
   const code = generateSerializer(ctx.hash)
-  return Promise.all([
-    writeFileWithNote(join(ctx.paths.css, 'transform.js'), generateTransform()),
-    writeFileWithNote(join(ctx.paths.css, 'css.js'), code.js),
-    writeFileWithNote(join(ctx.paths.css, 'css.d.ts'), code.dts),
-  ])
+  const conditions = generateConditions(ctx)
+  return {
+    dir: ctx.paths.css,
+    files: [
+      { file: 'conditions.js', code: conditions.js },
+      { file: 'transform.js', code: generateTransform() },
+      { file: 'css.js', code: code.js },
+      { file: 'css.d.ts', code: code.dts },
+    ],
+  }
 }
 
-async function setupCssMap(ctx: Context) {
-  await ensureDir(ctx.paths.css)
+function setupCssMap(ctx: PandaContext): Output {
   const code = generateCssMap()
-  return Promise.all([
-    writeFileWithNote(join(ctx.paths.css, 'css-map.js'), code.js),
-    writeFileWithNote(join(ctx.paths.css, 'css-map.d.ts'), code.dts),
-  ])
+  return {
+    dir: ctx.paths.css,
+    files: [
+      { file: 'css-map.js', code: code.js },
+      { file: 'css-map.d.ts', code: code.dts },
+    ],
+  }
 }
 
-async function setupCx(ctx: Context) {
-  await ensureDir(ctx.paths.css)
+function setupCx(ctx: PandaContext): Output {
   const code = generateCx()
-  return Promise.all([
-    writeFileWithNote(join(ctx.paths.css, 'cx.js'), code.js),
-    writeFileWithNote(join(ctx.paths.css, 'cx.d.ts'), code.dts),
-  ])
+  return {
+    dir: ctx.paths.css,
+    files: [
+      { file: 'cx.js', code: code.js },
+      { file: 'cx.d.ts', code: code.dts },
+    ],
+  }
 }
 
-async function setupSx(ctx: Context) {
-  await ensureDir(ctx.paths.css)
+function setupSx(ctx: PandaContext): Output {
   const code = generateSx()
-  return Promise.all([
-    writeFileWithNote(join(ctx.paths.css, 'sx.js'), code.js),
-    writeFileWithNote(join(ctx.paths.css, 'sx.d.ts'), code.dts),
-  ])
+  return {
+    dir: ctx.paths.css,
+    files: [
+      { file: 'sx.js', code: code.js },
+      { file: 'sx.d.ts', code: code.dts },
+    ],
+  }
 }
 
-async function setupFontFace(ctx: Context) {
-  await ensureDir(ctx.paths.css)
+function setupFontFace(ctx: PandaContext): Output {
   const code = generateFontFace()
-  return Promise.all([
-    writeFileWithNote(join(ctx.paths.css, 'font-face.js'), code.js),
-    writeFileWithNote(join(ctx.paths.css, 'font-face.d.ts'), code.dts),
-  ])
+  return {
+    dir: ctx.paths.css,
+    files: [
+      { file: 'font-face.js', code: code.js },
+      { file: 'font-face.d.ts', code: code.dts },
+    ],
+  }
 }
 
-async function setupRecipes(ctx: Context) {
+function setupRecipes(ctx: PandaContext): Output {
   const code = generateRecipes(ctx.config)
-
-  if (!code) return
-  await ensureDir(ctx.paths.recipe)
-
-  return Promise.all([
-    writeFileWithNote(join(ctx.paths.recipe, 'index.js'), code.js),
-    writeFileWithNote(join(ctx.paths.recipe, 'index.d.ts'), code.dts),
-  ])
+  if (!code) {
+    return { files: [] }
+  }
+  return {
+    dir: ctx.paths.recipe,
+    files: [
+      { file: 'index.js', code: code.js },
+      { file: 'index.d.ts', code: code.dts },
+    ],
+  }
 }
 
-async function setupPatterns(ctx: Context) {
+function setupPatterns(ctx: PandaContext): Output {
   const files = generatePattern(ctx)
-
-  if (!files) return
-  await ensureDir(ctx.paths.pattern)
+  if (!files) {
+    return { files: [] }
+  }
 
   const indexCode = outdent.string(files.map((file) => `export * from './${file.name}'`).join('\n'))
 
-  return Promise.all([
-    ...files.map((file) => writeFileWithNote(join(ctx.paths.pattern, `${file.name}.js`), file.js)),
-    ...files.map((file) => writeFileWithNote(join(ctx.paths.pattern, `${file.name}.d.ts`), file.dts)),
-    writeFileWithNote(join(ctx.paths.pattern, 'index.js'), indexCode),
-    writeFileWithNote(join(ctx.paths.pattern, 'index.d.ts'), indexCode),
-  ])
+  return {
+    dir: ctx.paths.pattern,
+    files: [
+      ...files.map((file) => ({ file: `${file.name}.js`, code: file.js })),
+      ...files.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
+      { file: 'index.js', code: indexCode },
+      { file: 'index.d.ts', code: indexCode },
+    ],
+  }
 }
 
-async function setupJsx(ctx: Context) {
-  if (!ctx.jsx) return
-  const isValidProp = await generateisValidProp(ctx)
+function setupJsx(ctx: PandaContext): Output {
+  if (!ctx.config.jsx) return { files: [] }
+
+  const isValidProp = generateisValidProp(ctx)
   const factory = generateJsxFactory(ctx)
 
-  await ensureDir(ctx.paths.jsx)
-
-  return Promise.all([
-    writeFileWithNote(join(ctx.paths.jsx, 'is-valid-prop.js'), isValidProp.js),
-    writeFileWithNote(join(ctx.paths.jsx, 'index.d.ts'), factory.dts),
-    writeFileWithNote(join(ctx.paths.jsx, 'index.jsx'), factory.js),
-  ])
+  return {
+    dir: ctx.paths.jsx,
+    files: [
+      { file: 'is-valid-prop.js', code: isValidProp.js },
+      { file: 'index.d.ts', code: factory.dts },
+      { file: 'index.jsx', code: factory.js },
+    ],
+  }
 }
 
-async function setupCssIndex(ctx: Context) {
+function setupCssIndex(ctx: PandaContext): Output {
   const code = outdent`
   export * from './css'
   export * from './cx'
@@ -174,27 +201,64 @@ async function setupCssIndex(ctx: Context) {
   export * from './sx'
  `
 
-  return Promise.all([
-    writeFileWithNote(join(ctx.paths.css, 'index.js'), code),
-    writeFileWithNote(join(ctx.paths.css, 'index.d.ts'), code),
-  ])
+  return {
+    dir: ctx.paths.css,
+    files: [
+      { file: 'index.js', code },
+      { file: 'index.d.ts', code },
+    ],
+  }
 }
 
-async function setupReset(ctx: Context) {
-  if (!ctx.preflight) return
-  const code = await generateReset()
-  await ensureDir(ctx.paths.asset)
-  return writeFile(join(ctx.paths.asset, 'reset.css'), code)
+function setupReset(ctx: PandaContext): Output {
+  if (!ctx.preflight) return { files: [] }
+  const code = generateReset()
+  return { files: [{ file: 'reset.css', code }] }
 }
 
-export async function generateSystem(ctx: Context) {
-  const { dictionary } = ctx
+function setupGitIgnore(ctx: PandaContext): Output {
+  const txt = outdent`
+  ## CSS Panda
+  ${ctx.outdir}
+  `
 
-  await Promise.all([
+  const file = lookItUpSync('.gitignore')
+
+  if (!file)
+    return {
+      dir: ctx.cwd,
+      files: [{ file: '.gitignore', code: txt }],
+    }
+
+  let content = readFileSync(file, 'utf-8')
+
+  if (!content.includes(ctx.outdir)) {
+    content = `
+    ${content}
+    
+    ${txt}
+    `
+  }
+
+  return {
+    dir: dirname(file),
+    files: [{ file: '.gitignore', code: content }],
+  }
+}
+
+function setupMinifiedConfig(ctx: PandaContext): Output {
+  return {
+    dir: ctx.outdir,
+    files: [{ file: 'config.js', code: minifyConfig(ctx.conf.code) }],
+  }
+}
+
+export function generateSystem(ctx: PandaContext): Output[] {
+  return [
     setupHelpers(ctx),
-    setupDesignTokens(ctx, dictionary),
+    setupDesignTokens(ctx),
     setupKeyframes(ctx),
-    setupTypes(ctx, dictionary),
+    setupTypes(ctx),
     setupCssMap(ctx),
     setupCx(ctx),
     setupSx(ctx),
@@ -206,5 +270,7 @@ export async function generateSystem(ctx: Context) {
     setupCssIndex(ctx),
     setupJsx(ctx),
     setupReset(ctx),
-  ])
+    setupGitIgnore(ctx),
+    setupMinifiedConfig(ctx),
+  ]
 }

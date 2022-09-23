@@ -10,7 +10,7 @@ globalStyle({
 
 function App() {
   return (
-    <div className={css({ paddingY: '120px' })}>
+    <div className={css({ paddingY: '30px' })}>
       <div className={css({ maxWidth: '840px', marginX: 'auto', textAlign: 'center' })}>
         <div className={stack({ align: 'center' })}>
           <h1 className={css({ color: 'gray.600', fontSize: '56px', lineHeight: '1.1em' })}>

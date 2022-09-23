@@ -1,16 +1,16 @@
-import fs from 'fs-extra'
+import { readFileSync } from 'fs-extra'
 import outdent from 'outdent'
-import { getEntrypoint } from './__utils'
+import { getEntrypoint } from './get-entrypoint'
 
-async function getCssType(file: string) {
+function getType(file: string) {
   const filepath = getEntrypoint('@css-panda/types', { dev: file })
-  return fs.readFile(filepath, 'utf8')
+  return readFileSync(filepath, 'utf8')
 }
 
-export async function generateCssType() {
+export function generateCssType() {
   return {
-    cssType: await getCssType('csstype.d.ts'),
-    pandaCssType: await getCssType('panda-csstype.d.ts'),
+    cssType: getType('csstype.d.ts'),
+    pandaCssType: getType('panda-csstype.d.ts'),
     publicType: outdent`
     import { PandaCssObject, PandaConditionalValue, ConditionCssProperties } from './panda-csstype'
     import { PropertyTypes } from './property-type'

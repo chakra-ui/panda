@@ -118,14 +118,18 @@ class Logger {
     }
   }
 
+  private isValid(level: LogLevel, type: string) {
+    const badLevel = levelsMap[this.level].w > levelsMap[level].w
+    const badType = matches(this.except, type) || (this.only.length > 0 && !matches(this.only, type))
+    return !(badType || badLevel)
+  }
+
   private log(level: LogLevel, ...args: any[]) {
     const baseEntry = this.getEntry(level, args)
     const entry = { ...this.defaults, ...baseEntry }
 
-    const badLevel = levelsMap[this.level].w > levelsMap[level].w
-    const badType = matches(this.except, entry.type) || (this.only.length > 0 && !matches(this.only, entry.type))
-
-    if (badType || badLevel) return false
+    const valid = this.isValid(level, entry.type)
+    if (!valid) return false
 
     const msg = this.output(entry)
     console.log(msg)
@@ -149,14 +153,20 @@ class Logger {
     return this.log('error', ...args)
   }
 
-  time(msg: string, ...args: any[]) {
-    const label = colors.bold(colors.blue('info'))
-    const str = `🐼 ${label} ${msg} ${args.join(' ')}`
-    const start = process.hrtime()
-    return () => {
-      const end = process.hrtime(start)
-      const ms = end[0] * 1e3 + end[1] * 1e-6
-      console.log(`${str} ${colors.gray(`(${ms.toFixed(2)}ms)`)}`)
+  get time() {
+    const base = (level: LogLevel, msg: string, ...args: any[]) => {
+      const str = `${msg} ${args.join(' ')}`
+      const start = process.hrtime()
+      return () => {
+        const end = process.hrtime(start)
+        const ms = end[0] * 1e3 + end[1] * 1e-6
+        this.log(level, { type: 'hrtime', msg: `${str} ${colors.gray(`(${ms.toFixed(2)}ms)`)}` })
+      }
+    }
+
+    return {
+      info: (msg: string, ...args: any[]) => base('info', msg, ...args),
+      debug: (msg: string, ...args: any[]) => base('debug', msg, ...args),
     }
   }
 }

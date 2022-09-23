@@ -6,7 +6,8 @@ import { join } from 'path'
 import getPackageManager from 'preferred-pm'
 import { findConfig } from './load-config'
 
-export async function setupConfig(cwd: string) {
+export async function setupConfig(_cwd?: string) {
+  const cwd = _cwd ?? process.cwd()
   const configFile = findConfig(cwd)
 
   const pmResult = await getPackageManager(cwd)
@@ -39,13 +40,17 @@ export async function setupConfig(cwd: string) {
        import { defineConfig } from "css-panda"
 
        export default defineConfig({
+        // where to look for your css declarations
         include: ["./src/**/*.{tsx,jsx}", "./pages/**/*.{jsx,tsx}"],
+        // The output directory for system
         outdir: "panda",
         // Add your tokens here
         tokens: {},
+        // Add your semantic tokens here
+        semanticTokens: {},
         // Add your breakpoints here
         breakpoints: {
-          sm: "640px",
+          sm: "480px",
           md: "768px",
           lg: "1024px",
           xl: "1280px",
