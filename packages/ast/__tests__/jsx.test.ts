@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { transformSync } from '../src/transform'
+import { parseSync } from '../src/transform'
 import { jsxPlugin } from './fixture'
 
 describe('[jsx]', () => {
@@ -19,9 +19,7 @@ describe('[jsx]', () => {
 
     const collect = new Set()
 
-    transformSync(code, {
-      plugins: [jsxPlugin(collect)],
-    })
+    parseSync(code, [jsxPlugin(collect)])
 
     expect(collect).toMatchInlineSnapshot(`
       Set {
@@ -56,9 +54,7 @@ describe('[jsx]', () => {
 
     const collect = new Set()
 
-    transformSync(code, {
-      plugins: [jsxPlugin(collect)],
-    })
+    parseSync(code, [jsxPlugin(collect)])
 
     expect(collect).toMatchInlineSnapshot(`
       Set {
@@ -94,9 +90,7 @@ describe('[jsx]', () => {
 
     const collect = new Set()
 
-    transformSync(code, {
-      plugins: [jsxPlugin(collect)],
-    })
+    parseSync(code, [jsxPlugin(collect)])
 
     expect(collect).toMatchInlineSnapshot(`
       Set {
@@ -136,9 +130,7 @@ describe('[jsx]', () => {
 
     const collect = new Set()
 
-    transformSync(code, {
-      plugins: [jsxPlugin(collect)],
-    })
+    parseSync(code, [jsxPlugin(collect)])
 
     expect(collect).toMatchInlineSnapshot(`
       Set {
@@ -176,9 +168,7 @@ describe('[jsx]', () => {
 
     const collect = new Set()
 
-    transformSync(code, {
-      plugins: [jsxPlugin(collect)],
-    })
+    parseSync(code, [jsxPlugin(collect)])
 
     expect(collect).toMatchInlineSnapshot(`
       Set {

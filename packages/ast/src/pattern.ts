@@ -13,9 +13,7 @@ const scope = {
 export function extractPatterns(code: string) {
   const map = new Map<string, string>()
 
-  const ast = parse(code, {
-    sourceType: 'module',
-  })
+  const ast = parse(code, { sourceType: 'module' })
 
   traverse(ast, {
     ObjectExpression(path) {

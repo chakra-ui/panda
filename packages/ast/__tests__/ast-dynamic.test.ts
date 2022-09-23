@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import { recipePlugin } from './fixture'
-import { transformSync } from '../src/transform'
+import { parseSync } from '../src/transform'
 
 describe('[dynamic] ast parser', () => {
   test('should parse', () => {
@@ -26,9 +26,7 @@ describe('[dynamic] ast parser', () => {
 
     const collect = new Set()
 
-    transformSync(code, {
-      plugins: [recipePlugin(collect)],
-    })
+    parseSync(code, [recipePlugin(collect)])
 
     expect(collect).toMatchInlineSnapshot(`
       Set {

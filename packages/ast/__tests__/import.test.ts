@@ -2,7 +2,7 @@ import { describe, test, expect } from 'vitest'
 import type * as swc from '@swc/core'
 import Visitor from '@swc/core/Visitor'
 import * as ast from '../src/ast'
-import { transformSync } from '../src/transform'
+import { parseSync } from '../src/transform'
 
 class TestVisitor extends Visitor {
   constructor(private collector: Record<string, any>) {
@@ -35,9 +35,7 @@ describe('extract imports', () => {
 
     const collect = {}
 
-    transformSync(code, {
-      plugins: [plugin(collect)],
-    })
+    parseSync(code, [plugin(collect)])
 
     expect(collect).toMatchInlineSnapshot(`
       {

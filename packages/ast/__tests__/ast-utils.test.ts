@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import { cssPlugin } from './fixture'
-import { transformSync } from '../src/transform'
+import { parseSync } from '../src/transform'
 
 describe('ast parser', () => {
   test('[without import] should not parse', () => {
@@ -19,9 +19,7 @@ describe('ast parser', () => {
 
     const collect = new Set()
 
-    transformSync(code, {
-      plugins: [cssPlugin(collect)],
-    })
+    parseSync(code, [cssPlugin(collect)])
 
     expect(collect).toMatchInlineSnapshot('Set {}')
   })
@@ -43,9 +41,7 @@ describe('ast parser', () => {
 
     const collect = new Set()
 
-    transformSync(code, {
-      plugins: [cssPlugin(collect)],
-    })
+    parseSync(code, [cssPlugin(collect)])
 
     expect(collect).toMatchInlineSnapshot(`
       Set {
@@ -85,9 +81,7 @@ describe('ast parser', () => {
 
     const collect = new Set()
 
-    transformSync(code, {
-      plugins: [cssPlugin(collect)],
-    })
+    parseSync(code, [cssPlugin(collect)])
 
     expect(collect).toMatchInlineSnapshot(`
       Set {
@@ -128,9 +122,7 @@ console.log(
 `
     const collect = new Set()
 
-    transformSync(code, {
-      plugins: [cssPlugin(collect)],
-    })
+    parseSync(code, [cssPlugin(collect)])
 
     expect(collect).toMatchInlineSnapshot(`
       Set {
@@ -145,7 +137,7 @@ console.log(
     `)
   })
 
-  test.only('should extract complex setup', () => {
+  test('should extract complex setup', () => {
     const code = `
       import { css, cx } from '.panda/css'
 import React from 'react'
@@ -161,9 +153,7 @@ export function Card({ className }) {
       `
     const collect = new Set()
 
-    transformSync(code, {
-      plugins: [cssPlugin(collect)],
-    })
+    parseSync(code, [cssPlugin(collect)])
 
     expect(collect).toMatchInlineSnapshot(`
       Set {

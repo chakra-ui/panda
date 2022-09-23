@@ -5,45 +5,36 @@ describe('recipe ruleset', () => {
   test('should work with basic', () => {
     expect(processRecipe('textStyle', { variant: 'h1' })).toMatchInlineSnapshot(`
       ".textStyle {
-          text-align: center;
-          text-indent: 2px
-      }
-      .textStyle__variant-h1 {
-          font-size: 2rem;
-          line-height: 1.4
+          font-family: var(--fonts-mono);
+          & > * ~ * {
+              border-left-width: 20px;
+              border-right-width: 0px
+          }
       }"
     `)
 
     expect(processRecipe('textStyle', {})).toMatchInlineSnapshot(`
       ".textStyle {
-          text-align: center;
-          text-indent: 2px
-      }
-      .textStyle__variant-h2 {
-          font-size: 1.5rem;
-          line-height: 1.2
+          font-family: var(--fonts-mono);
+          & > * ~ * {
+              border-left-width: 20px;
+              border-right-width: 0px
+          }
       }"
     `)
 
     expect(processRecipe('textStyle', { variant: { _: 'h1', md: 'h2' } })).toMatchInlineSnapshot(`
       ".textStyle {
-          text-align: center;
-          text-indent: 2px
-      }
-      .textStyle__variant-h1 {
-          font-size: 2rem;
-          line-height: 1.4
-      }
-      @screen md {
-          .md\\\\:textStyle__variant-h2 {
-              font-size: 1.5rem;
-              line-height: 1.2
+          font-family: var(--fonts-mono);
+          & > * ~ * {
+              border-left-width: 20px;
+              border-right-width: 0px
           }
       }"
     `)
   })
 
-  test.only('should process recipe with conditions', () => {
+  test('should process recipe with conditions', () => {
     expect(getRecipe('buttonStyle')).toMatchInlineSnapshot(`
       {
         "base": {

@@ -1,5 +1,5 @@
 export * from './transform'
 export * from './plugins'
 export * from './minify'
-export * from './extract-pattern'
+export * from './pattern'
 export * from './collector'

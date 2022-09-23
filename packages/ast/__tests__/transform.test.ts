@@ -2,7 +2,7 @@ import { importMap } from '@css-panda/fixture'
 import { describe, expect, test } from 'vitest'
 import { createCollector } from '../src/collector'
 import { createPlugins } from '../src/plugins'
-import { transformSync } from '../src/transform'
+import { parseSync } from '../src/transform'
 
 describe('ast parser', () => {
   test('[without import] should not parse', () => {
@@ -32,9 +32,7 @@ describe('ast parser', () => {
 
     const data = createCollector()
 
-    transformSync(code, {
-      plugins: createPlugins({ data, importMap }),
-    })
+    parseSync(code, createPlugins({ data, importMap }))
 
     expect(data).toMatchInlineSnapshot(`
       {

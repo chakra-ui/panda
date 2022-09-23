@@ -4,7 +4,6 @@ import type { PluginResult } from '@css-panda/types'
 import type * as swc from '@swc/core'
 import type { Collector } from './collector'
 import { JSXPropVisitor } from './jsx-visitor'
-
 import { CallVisitor, DynamicCallVisitor } from './visitor'
 
 function createPlugin(name: string) {

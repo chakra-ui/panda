@@ -49,9 +49,9 @@ export function getRecipe(key: 'buttonStyle' | 'textStyle') {
 }
 
 export function processRecipe(key: 'buttonStyle' | 'textStyle', value: Record<string, any>) {
-  const recipe = getRecipe(key)
+  const config = getRecipe(key)
   const context = createContext()
-  const _recipe = new Recipe(recipe, context)
-  _recipe.process({ styles: value })
-  return _recipe.toCss()
+  const recipe = new Recipe(config, context)
+  recipe.process({ styles: value })
+  return recipe.toCss()
 }

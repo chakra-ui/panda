@@ -1,4 +1,4 @@
-import { createCollector, createPlugins, transformFile } from '@css-panda/ast'
+import { createCollector, createPlugins, parseFile } from '@css-panda/ast'
 import { Stylesheet } from '@css-panda/core'
 import { logger, quote } from '@css-panda/logger'
 import type { Config } from '@css-panda/types'
@@ -79,15 +79,16 @@ export async function extractFile(ctx: PandaContext, file: string) {
   const done = logger.time.info('Extracted', quote(file))
 
   try {
-    await transformFile(absPath, {
-      plugins: createPlugins({
+    await parseFile(
+      absPath,
+      createPlugins({
         data: collector,
         importMap: ctx.importMap,
         fileName: file,
         jsxName: ctx.jsxFactory,
         isUtilityProp: ctx.isProperty,
       }),
-    })
+    )
   } catch (error) {
     logger.error({ err: error })
   }

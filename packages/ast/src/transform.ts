@@ -1,29 +1,21 @@
 import * as swc from '@swc/core'
 
-type TransformOptions = {
-  plugins: swc.Plugin[]
+export async function parseFile(file: string, plugins: swc.Plugin[]) {
+  const ast = await swc.parseFile(file, { tsx: true, syntax: 'typescript' })
+  plugins.forEach((plugin) => {
+    plugin(ast)
+  })
+}
+export async function parse(code: string, plugins: swc.Plugin[]) {
+  const ast = await swc.parse(code, { tsx: true, syntax: 'typescript' })
+  plugins.forEach((plugin) => {
+    plugin(ast)
+  })
 }
 
-function getSwcOptions(options: TransformOptions): swc.Options {
-  const { plugins } = options
-  return {
-    plugin: swc.plugins(plugins),
-    jsc: { parser: { tsx: true, syntax: 'typescript' } },
-  }
-}
-
-export async function transform(code: string, options: TransformOptions) {
-  return swc.transform(code, getSwcOptions(options))
-}
-
-export function transformSync(code: string, options: TransformOptions) {
-  return swc.transformSync(code, getSwcOptions(options))
-}
-
-export async function transformFile(code: string, options: TransformOptions) {
-  return swc.transformFile(code, getSwcOptions(options))
-}
-
-export function transformFileSync(code: string, options: TransformOptions) {
-  return swc.transformFileSync(code, getSwcOptions(options))
+export async function parseSync(code: string, plugins: swc.Plugin[]) {
+  const ast = swc.parseSync(code, { tsx: true, syntax: 'typescript' })
+  plugins.forEach((plugin) => {
+    plugin(ast)
+  })
 }
