@@ -304,6 +304,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   return {
     ...config,
     config,
+    configPath: conf.path,
     cwd,
     conf,
     assets,
