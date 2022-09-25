@@ -12,11 +12,15 @@ export async function main() {
   const pkgPath = path.join(__dirname, '../package.json')
   const pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
 
-  cli.command('init', "Initialize the panda's config file").action(async () => {
-    logger.info(`Panda v${pkgJson.version}`)
-    await setupConfig(cwd)
-    await execCommand('panda gen', cwd)
-  })
+  cli
+    .command('init', "Initialize the panda's config file")
+    // TODO implement
+    .option('-p, --postcss', 'Emit postcss config file')
+    .action(async () => {
+      logger.info(`Panda v${pkgJson.version}`)
+      await setupConfig(cwd)
+      await execCommand('panda gen', cwd)
+    })
 
   cli.command('gen', 'Generate the panda system').action(async () => {
     const ctx = await loadConfigAndCreateContext()
