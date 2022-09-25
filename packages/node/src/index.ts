@@ -1,3 +1,5 @@
+export { discardDuplicate } from '@css-panda/core'
+export { Builder } from './builder'
 export { createContext } from './context'
 export * from './context-utils'
 export { execCommand } from './exec-command'

@@ -1,6 +1,14 @@
 import type { Collector } from '@css-panda/ast'
 import type { LoadConfigResult } from '@css-panda/config'
-import { Conditions, GeneratorContext, mergeRecipes, mergeUtilities, Stylesheet, Utility } from '@css-panda/core'
+import {
+  Conditions,
+  discardDuplicate,
+  GeneratorContext,
+  mergeRecipes,
+  mergeUtilities,
+  Stylesheet,
+  Utility,
+} from '@css-panda/core'
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import { mapObject } from '@css-panda/shared'
@@ -8,7 +16,7 @@ import { TokenMap } from '@css-panda/tokens'
 import type { Pattern } from '@css-panda/types'
 import glob from 'fast-glob'
 import { readdirSync } from 'fs'
-import { emptyDir, ensureDir } from 'fs-extra'
+import { emptyDir, ensureDir, existsSync } from 'fs-extra'
 import { readFile, unlink, writeFile } from 'fs/promises'
 import { outdent } from 'outdent'
 import { extname, join, resolve, sep } from 'path'
@@ -205,8 +213,12 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     },
     write(file: string, css: string) {
       const fileName = assets.format(file)
+
+      const oldCss = existsSync(file) ? assets.readFile(file) : ''
+      const newCss = discardDuplicate(oldCss + css)
+
       logger.debug({ type: 'asset:write', file, path: fileName })
-      return write(paths.asset, [{ file: fileName, code: css }])
+      return write(paths.asset, [{ file: fileName, code: newCss }])
     },
     rm(file: string) {
       const fileName = assets.format(file)
@@ -215,7 +227,11 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     glob: [`${paths.asset}/**/*.css`],
   }
 
-  const files = glob.sync(config.include, { cwd, ignore: config.exclude })
+  const files = glob.sync(config.include, {
+    cwd,
+    ignore: config.exclude,
+    absolute: true,
+  })
 
   /* -----------------------------------------------------------------------------
    * Collect extracted styles

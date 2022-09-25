@@ -3,7 +3,6 @@ import { Stylesheet } from '@css-panda/core'
 import { logger, quote } from '@css-panda/logger'
 import type { Config } from '@css-panda/types'
 import { outdent } from 'outdent'
-import { isAbsolute, join } from 'path'
 import { createContext, PandaContext } from './context'
 import { generateSystem } from './generators'
 import { generateCss, generateKeyframes } from './generators/css'
@@ -70,25 +69,22 @@ export async function emitAndExtract(ctx: PandaContext) {
 }
 
 export async function extractFile(ctx: PandaContext, file: string) {
-  const absPath = isAbsolute(file) ? file : join(ctx.cwd, file)
-
   logger.debug({ type: 'file:extract', file })
 
   const collector = createCollector()
 
-  const done = logger.time.info('Extracted', quote(file))
+  const done = logger.time.debug('Extracted', quote(file))
+
+  const plugins = createPlugins({
+    data: collector,
+    importMap: ctx.importMap,
+    fileName: file,
+    jsxName: ctx.jsxFactory,
+    isUtilityProp: ctx.isProperty,
+  })
 
   try {
-    await parseFile(
-      absPath,
-      createPlugins({
-        data: collector,
-        importMap: ctx.importMap,
-        fileName: file,
-        jsxName: ctx.jsxFactory,
-        isUtilityProp: ctx.isProperty,
-      }),
-    )
+    await parseFile(file, plugins)
   } catch (error) {
     logger.error({ err: error })
   }

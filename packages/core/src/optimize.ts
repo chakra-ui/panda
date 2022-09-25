@@ -16,3 +16,8 @@ export function optimizeCss(code: string, { minify = false }: { minify?: boolean
   ]).process(code)
   return css
 }
+
+export function discardDuplicate(code: string) {
+  const { css } = postcss([discardDuplicates()]).process(code)
+  return css
+}

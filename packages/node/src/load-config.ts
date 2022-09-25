@@ -1,8 +1,7 @@
 import { loadConfigFile } from '@css-panda/config'
 import { ConfigNotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
-import { existsSync } from 'fs-extra'
-import { join } from 'path'
+import { lookItUpSync } from 'look-it-up'
 
 export async function loadConfig(cwd: string, file?: string) {
   const conf = await loadConfigFile({ cwd, file })
@@ -18,8 +17,11 @@ export async function loadConfig(cwd: string, file?: string) {
 
 const configs = ['.ts', '.js', '.mjs', '.cjs']
 
-export function findConfig(cwd: string) {
-  return configs.find((config) => {
-    return existsSync(join(cwd, `panda.config${config}`))
-  })
+export function findConfig() {
+  for (const config of configs) {
+    const result = lookItUpSync(`panda.config${config}`)
+    if (result) {
+      return result
+    }
+  }
 }

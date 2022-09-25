@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently 'next dev' 'pnpm css:dev'",
+    "dev": "rm -rf .next && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -19,6 +19,7 @@
     "eslint": "8.23.0",
     "eslint-config-next": "12.3.0",
     "@css-panda/fixture": "workspace:*",
+    "@css-panda/node": "workspace:*",
     "css-panda": "workspace:*"
   }
 }

@@ -1,6 +1,7 @@
 export { Breakpoints } from './breakpoints'
 export { Conditions } from './conditions'
 export { toKeyframeCss } from './keyframes'
+export { discardDuplicate, optimizeCss } from './optimize'
 export { mergeRecipes, Recipe } from './recipe'
 export { Stylesheet } from './stylesheet'
 export { toCss } from './to-css'

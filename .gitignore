@@ -12,6 +12,7 @@ dist
 tsconfig.tsbuildinfo
 .DS_Store
 __generated__
+*.env
 
 ## CSS Panda
 panda

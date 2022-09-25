@@ -14,13 +14,14 @@ function compact(obj: Entry) {
 }
 
 const levelsMap = {
+  silent: { w: 0, c: colors.white },
   debug: { w: 0, c: colors.magenta },
   info: { w: 1, c: colors.blue },
   warn: { w: 2, c: colors.yellow },
   error: { w: 3, c: colors.red },
 }
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+export type LogLevel = keyof typeof levelsMap
 
 export type Config = {
   level?: LogLevel

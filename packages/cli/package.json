@@ -20,6 +20,7 @@
       "require": "./dist/presets.js",
       "types": "./dist/presets.d.ts"
     },
+    "./postcss": "./postcss.cjs",
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -34,13 +35,14 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --dts",
-    "build-fast": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --no-dts",
+    "build": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --dts --no-splitting",
+    "build-fast": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --no-dts --no-splitting",
     "dev": "pnpm build-fast -- --watch"
   },
   "files": [
     "dist",
-    "bin"
+    "bin",
+    "postcss.js"
   ],
   "dependencies": {
     "@css-panda/node": "workspace:*",

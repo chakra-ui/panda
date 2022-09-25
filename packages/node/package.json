@@ -31,6 +31,8 @@
     "chokidar": "^3.5.3",
     "fast-glob": "^3.2.11",
     "fs-extra": "10.1.0",
+    "is-glob": "^4.0.3",
+    "glob-parent": "^6.0.2",
     "hookable": "5.3.0",
     "lodash.merge": "4.6.2",
     "look-it-up": "2.1.0",
@@ -45,6 +47,8 @@
     "@css-panda/tokens": "workspace:*",
     "@css-panda/fixture": "workspace:*",
     "@types/fs-extra": "9.0.13",
+    "@types/is-glob": "^4.0.2",
+    "@types/glob-parent": "^5.1.1",
     "@types/pluralize": "0.0.29",
     "@types/lodash.merge": "4.6.7",
     "steno": "^2.1.0"

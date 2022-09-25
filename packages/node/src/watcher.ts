@@ -13,7 +13,7 @@ type WatcherOptions = {
  * Create a watcher for the source files
  * -----------------------------------------------------------------------------*/
 
-function createWatcher(files: string[], options: WatcherOptions = {}) {
+export function createWatcher(files: string[], options: WatcherOptions = {}) {
   const { ignore, cwd = process.cwd() } = options
 
   const watcher = chokidar.watch(files, {

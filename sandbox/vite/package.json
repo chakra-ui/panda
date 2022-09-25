@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "PANDA_DEBUG=hrtime vite",
     "build": "pnpm css && vite build",
     "preview": "vite preview",
     "css": "PANDA_DEBUG=hrtime panda",
@@ -22,6 +22,7 @@
     "@css-panda/vite": "workspace:*",
     "css-panda": "workspace:*",
     "@vitejs/plugin-react": "2.1.0",
-    "vite": "3.1.0"
+    "postcss": "8.4.16",
+    "vite": "3.1.3"
   }
 }
