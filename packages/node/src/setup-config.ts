@@ -6,8 +6,7 @@ import { join } from 'path'
 import getPackageManager from 'preferred-pm'
 import { findConfig } from './load-config'
 
-export async function setupConfig(_cwd?: string) {
-  const cwd = _cwd ?? process.cwd()
+export async function setupConfig(cwd: string) {
   const configFile = findConfig()
 
   const pmResult = await getPackageManager(cwd)
@@ -63,4 +62,16 @@ export async function setupConfig(_cwd?: string) {
 
     logger.info(msg)
   }
+}
+
+export async function setupPostcss(cwd: string) {
+  const content = outdent`
+  module.exports = {
+    plugins: {
+      'css-panda/postcss': {},
+    },
+  }
+  `
+
+  await writeFile(join(cwd, 'postcss.config.js'), content)
 }

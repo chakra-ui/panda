@@ -1,24 +1,36 @@
 import { logger } from '@css-panda/logger'
-import { emitArtifacts, execCommand, generate, loadConfigAndCreateContext, setupConfig } from '@css-panda/node'
+import {
+  emitArtifacts,
+  execCommand,
+  generate,
+  loadConfigAndCreateContext,
+  setupConfig,
+  setupPostcss,
+} from '@css-panda/node'
 import { compact } from '@css-panda/shared'
 import { cac } from 'cac'
-import fs from 'fs'
-import path from 'path'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
 export async function main() {
   const cli = cac('panda')
 
   const cwd = process.cwd()
-  const pkgPath = path.join(__dirname, '../package.json')
-  const pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+  const pkgPath = join(__dirname, '../package.json')
+  const pkgJson = JSON.parse(readFileSync(pkgPath, 'utf8'))
 
   cli
     .command('init', "Initialize the panda's config file")
-    // TODO implement
     .option('-p, --postcss', 'Emit postcss config file')
-    .action(async () => {
+    .action(async (flags) => {
       logger.info(`Panda v${pkgJson.version}`)
+
       await setupConfig(cwd)
+
+      if (flags.postcss) {
+        await setupPostcss(cwd)
+      }
+
       await execCommand('panda gen', cwd)
     })
 
