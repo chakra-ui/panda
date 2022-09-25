@@ -23,6 +23,6 @@
     "suppressImplicitAnyIndexErrors": true,
     "importsNotUsedAsValues": "error"
   },
-  "include": ["./**/*.ts", "./**/*.tsx", "./**/*.js", "./**/*.jsx"],
+  "include": ["packages"],
   "exclude": ["node_modules"]
 }

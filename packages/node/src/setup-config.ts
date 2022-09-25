@@ -8,7 +8,7 @@ import { findConfig } from './load-config'
 
 export async function setupConfig(_cwd?: string) {
   const cwd = _cwd ?? process.cwd()
-  const configFile = findConfig(cwd)
+  const configFile = findConfig()
 
   const pmResult = await getPackageManager(cwd)
   const pm = pmResult?.name ?? 'npm'
