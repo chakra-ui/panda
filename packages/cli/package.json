@@ -20,7 +20,7 @@
       "require": "./dist/presets.js",
       "types": "./dist/presets.d.ts"
     },
-    "./postcss": "./postcss.cjs",
+    "./postcss": "./postcss.js",
     "./package.json": "./package.json"
   },
   "typesVersions": {
