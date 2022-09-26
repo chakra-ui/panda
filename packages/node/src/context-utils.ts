@@ -66,6 +66,7 @@ export function extractFiles(ctx: PandaContext) {
 export async function emitAndExtract(ctx: PandaContext) {
   await emitArtifacts(ctx)
   await extractFiles(ctx)
+  await bundleAssets(ctx)
 }
 
 export async function extractFile(ctx: PandaContext, file: string) {
@@ -129,12 +130,12 @@ export async function extractAssets(ctx: PandaContext) {
   return sheet.toCss()
 }
 
-export async function onAssetChange(ctx: PandaContext) {
+export async function bundleAssets(ctx: PandaContext) {
   const css = await extractAssets(ctx)
   await ctx.write(ctx.outdir, [{ file: 'styles.css', code: css }])
 }
 
-export async function onContentChange(ctx: PandaContext, file: string) {
+export async function writeFileAsset(ctx: PandaContext, file: string) {
   logger.info(`File changed: ${file}`)
   const result = await extractFile(ctx, file)
   if (!result) return

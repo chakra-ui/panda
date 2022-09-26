@@ -24,7 +24,7 @@ export function createWatcher(files: string[], options: WatcherOptions = {}) {
 
   logger.debug({
     type: 'file:watcher',
-    msg: `watching glob: [${files}]`,
+    msg: `watching [${files}]`,
   })
 
   process.once('SIGINT', async () => {

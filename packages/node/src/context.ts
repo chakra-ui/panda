@@ -19,7 +19,7 @@ import { readdirSync } from 'fs'
 import { emptyDir, ensureDir, existsSync } from 'fs-extra'
 import { readFile, unlink, writeFile } from 'fs/promises'
 import { outdent } from 'outdent'
-import { extname, join, resolve, sep } from 'path'
+import { extname, join, relative, resolve, sep } from 'path'
 import postcss from 'postcss'
 
 function mergePatterns(values: Pattern[]) {
@@ -202,22 +202,27 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   const assets = {
     dir: paths.asset,
     readFile(file: string) {
-      const fileName = assets.format(file)
-      return io.read(join(paths.asset, fileName))
+      let fileName = assets.format(file)
+      fileName = join(paths.asset, fileName)
+      if (!existsSync(fileName)) {
+        return Promise.resolve('')
+      }
+      return io.read(fileName)
     },
     getFiles() {
       return readdirSync(assets.dir)
     },
     format(file: string) {
-      return file.replaceAll(sep, '__').replace(extname(file), '.css')
+      return relative(cwd, file).replaceAll(sep, '__').replace(extname(file), '.css')
     },
-    write(file: string, css: string) {
+    async write(file: string, css: string) {
       const fileName = assets.format(file)
 
-      const oldCss = existsSync(file) ? assets.readFile(file) : ''
+      const oldCss = await assets.readFile(file)
       const newCss = discardDuplicate(oldCss + css)
 
       logger.debug({ type: 'asset:write', file, path: fileName })
+
       return write(paths.asset, [{ file: fileName, code: newCss }])
     },
     rm(file: string) {
@@ -227,11 +232,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     glob: [`${paths.asset}/**/*.css`],
   }
 
-  const files = glob.sync(config.include, {
-    cwd,
-    ignore: config.exclude,
-    absolute: true,
-  })
+  const files = glob.sync(config.include, { cwd, ignore: config.exclude, absolute: true })
 
   /* -----------------------------------------------------------------------------
    * Collect extracted styles
@@ -323,8 +324,10 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     configPath: conf.path,
     cwd,
     conf,
+
     assets,
     files,
+
     helpers,
     context,
     exclude,

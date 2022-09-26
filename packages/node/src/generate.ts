@@ -1,5 +1,5 @@
 import type { Config } from '@css-panda/types'
-import { emitAndExtract, loadConfigAndCreateContext, onAssetChange, onContentChange } from './context-utils'
+import { emitAndExtract, loadConfigAndCreateContext, bundleAssets, writeFileAsset } from './context-utils'
 import { watch } from './watcher'
 
 export async function generate(config: Config) {
@@ -15,10 +15,10 @@ export async function generate(config: Config) {
         return generate(config)
       },
       onAssetChange() {
-        return onAssetChange(ctx)
+        return bundleAssets(ctx)
       },
       onContentChange: (file) => {
-        return onContentChange(ctx, file)
+        return writeFileAsset(ctx, file)
       },
     })
   }
