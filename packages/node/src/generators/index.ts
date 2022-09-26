@@ -143,7 +143,7 @@ function setupFontFace(ctx: PandaContext): Output {
 }
 
 function setupRecipes(ctx: PandaContext): Output {
-  const code = generateRecipes(ctx.config)
+  const code = generateRecipes(ctx)
   if (!code) {
     return { files: [] }
   }

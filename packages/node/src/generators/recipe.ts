@@ -1,11 +1,11 @@
 import { capitalize, unionType } from '@css-panda/shared'
-import type { RecipeConfig } from '@css-panda/types'
 import { outdent } from 'outdent'
+import type { PandaContext } from '../context'
 
-export function generateRecipes(config: { recipes?: RecipeConfig[]; hash?: boolean }) {
-  const { recipes = [], hash } = config
+export function generateRecipes(ctx: PandaContext) {
+  const { recipes = {}, hash, hasRecipes } = ctx
 
-  if (!recipes.length) return
+  if (!hasRecipes) return
 
   const js = [
     outdent`
@@ -33,7 +33,7 @@ export function generateRecipes(config: { recipes?: RecipeConfig[]; hash?: boole
 
   const dts = ['']
 
-  recipes.forEach((recipe) => {
+  Object.values(recipes).forEach((recipe) => {
     js.push(outdent`
     export const ${recipe.name} = createRecipe('${recipe.name}')
     `)

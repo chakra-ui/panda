@@ -1,19 +1,11 @@
 import type { Collector } from '@css-panda/ast'
 import type { LoadConfigResult } from '@css-panda/config'
-import {
-  Conditions,
-  discardDuplicate,
-  GeneratorContext,
-  mergeRecipes,
-  mergeUtilities,
-  Stylesheet,
-  Utility,
-} from '@css-panda/core'
+import { Conditions, discardDuplicate, GeneratorContext, Stylesheet, Utility } from '@css-panda/core'
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import { mapObject } from '@css-panda/shared'
 import { TokenMap } from '@css-panda/tokens'
-import type { Pattern } from '@css-panda/types'
+import type { RecipeConfig } from '@css-panda/types'
 import glob from 'fast-glob'
 import { readdirSync } from 'fs'
 import { emptyDir, ensureDir, existsSync } from 'fs-extra'
@@ -21,13 +13,6 @@ import { readFile, unlink, writeFile } from 'fs/promises'
 import { outdent } from 'outdent'
 import { extname, join, relative, resolve, sep } from 'path'
 import postcss from 'postcss'
-
-function mergePatterns(values: Pattern[]) {
-  return values.reduce<Record<string, Pattern>>((acc, value) => {
-    Object.assign(acc, { [value.name]: value })
-    return acc
-  }, {})
-}
 
 type IO = {
   read(id: string): Promise<string>
@@ -71,9 +56,9 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     cssVar,
     outdir,
     exclude: _exclude = [],
-    patterns: _patterns = [],
-    recipes: _recipes = [],
-    utilities: _utilities = [],
+    patterns = {},
+    recipes = {},
+    utilities = {},
     hash,
   } = config
 
@@ -92,7 +77,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
   const utility = new Utility({
     tokens: tokens,
-    config: mergeUtilities(_utilities),
+    config: utilities,
   })
 
   const conditions = new Conditions({
@@ -112,13 +97,10 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     },
   })
 
-  const ctx = context()
-
   /* -----------------------------------------------------------------------------
    * Patterns
    * -----------------------------------------------------------------------------*/
 
-  const patterns = mergePatterns(_patterns)
   function getPattern(name: string) {
     const pattern = patterns[name]
     if (!pattern) {
@@ -135,8 +117,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * Recipes
    * -----------------------------------------------------------------------------*/
 
-  const recipes = mergeRecipes(_recipes, ctx)
-  function getRecipe(name: string) {
+  function getRecipe(name: string): RecipeConfig {
     const recipe = recipes[name]
     if (!recipe) {
       throw new NotFoundError({ type: 'recipe', name })
@@ -275,8 +256,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     collector.recipe.forEach((result, name) => {
       try {
         for (const item of result) {
-          const recipe = getRecipe(name)
-          sheet.processRecipe(recipe, item.data)
+          sheet.processRecipe(getRecipe(name), item.data)
         }
       } catch (error) {
         logger.error({ err: error })
@@ -353,13 +333,13 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     collectStyles,
 
     patterns,
-    hasPattern: _patterns.length > 0,
+    hasPattern: Object.keys(patterns).length > 0,
     getPattern,
     execPattern,
 
     recipes,
     getRecipe,
-    hasRecipes: _recipes.length > 0,
+    hasRecipes: Object.keys(recipes).length > 0,
 
     jsxFramework: config.jsx?.framework ?? 'react',
     jsxFactory: config.jsx?.name ?? 'panda',

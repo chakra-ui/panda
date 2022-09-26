@@ -1335,7 +1335,8 @@ const accessibility: UtilityConfig = {
   },
 }
 
-export const utilities: UtilityConfig[] = [
+export const utilities: UtilityConfig = Object.assign(
+  {},
   layout,
   flexGrid,
   spacing,
@@ -1351,4 +1352,4 @@ export const utilities: UtilityConfig[] = [
   interactivity,
   svg,
   accessibility,
-]
+)

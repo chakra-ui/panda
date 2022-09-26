@@ -1,8 +1,8 @@
 import * as mocks from '@css-panda/fixture'
 import { TokenMap } from '@css-panda/tokens'
 import postcss from 'postcss'
-import { Conditions, mergeUtilities, Utility } from '../src'
-import { mergeRecipes, Recipe } from '../src/recipe'
+import { Conditions, Utility } from '../src'
+import { Recipe } from '../src/recipe'
 import type { GeneratorContext } from '../src/types'
 
 const propMap = {
@@ -28,7 +28,7 @@ export const createContext = (): GeneratorContext => ({
   conditions: conditions,
   breakpoints: mocks.breakpoints,
   utility: new Utility({
-    config: mergeUtilities(mocks.utilities),
+    config: mocks.utilities,
     tokens,
   }),
   helpers: {
@@ -44,14 +44,12 @@ export const createContext = (): GeneratorContext => ({
 })
 
 export function getRecipe(key: 'buttonStyle' | 'textStyle') {
-  const recipes = mergeRecipes(mocks.recipes, createContext())
-  return recipes[key]
+  const recipe = new Recipe(mocks.recipes[key], createContext())
+  return recipe.config
 }
 
 export function processRecipe(key: 'buttonStyle' | 'textStyle', value: Record<string, any>) {
-  const config = getRecipe(key)
-  const context = createContext()
-  const recipe = new Recipe(config, context)
+  const recipe = new Recipe(mocks.recipes[key], createContext())
   recipe.process({ styles: value })
   return recipe.toCss()
 }

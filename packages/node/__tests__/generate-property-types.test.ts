@@ -10,7 +10,7 @@ describe('generate property types', () => {
       generatePropertyTypes(
         new Utility({
           tokens: new TokenMap({ tokens, semanticTokens }),
-          config: utilities[0],
+          config: utilities,
         }),
       ),
     ).toMatchInlineSnapshot(`

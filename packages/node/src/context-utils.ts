@@ -14,23 +14,23 @@ function emitComplete(ctx: PandaContext) {
     outdent`
       We have generated the panda system for you:
 
-      - ${quote(ctx.outdir, '/css')}: the css function to author styles
+      ✔ ${quote(ctx.outdir, '/css')}: the css function to author styles
     `,
     ctx.hasTokens &&
       outdent`
-      - ${quote(ctx.outdir, '/design-tokens')}: the css variables and js function to query your tokens
+      ✔ ${quote(ctx.outdir, '/design-tokens')}: the css variables and js function to query your tokens
     `,
     ctx.hasRecipes &&
       outdent`
-      - ${quote(ctx.outdir, '/patterns')}: functions to implement common css patterns
+      ✔ ${quote(ctx.outdir, '/patterns')}: functions to implement common css patterns
     `,
     ctx.hasPattern &&
       outdent`
-      - ${quote(ctx.outdir, '/recipes')}: functions to create multi-variant styles
+      ✔ ${quote(ctx.outdir, '/recipes')}: functions to create multi-variant styles
     `,
     ctx.jsx &&
       outdent`
-      - ${quote(ctx.outdir, '/jsx')}: style prop powered elements for ${ctx.jsxFramework}
+      ✔ ${quote(ctx.outdir, '/jsx')}: style prop powered elements for ${ctx.jsxFramework}
     `,
   ]
     .filter(Boolean)

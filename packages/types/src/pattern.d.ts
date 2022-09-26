@@ -12,7 +12,7 @@ export type TransformHelpers = {
   map: (value: Value, fn: (value: string) => string | undefined) => any
 }
 
-export type Pattern = {
+export type PatternConfig = {
   /**
    * The name of the pattern.
    */

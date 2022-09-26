@@ -1,7 +1,7 @@
-import type { Pattern } from '@css-panda/types'
+import type { PatternConfig } from '@css-panda/types'
 
-export const patterns: Pattern[] = [
-  {
+export const patterns: Record<string, PatternConfig> = {
+  stack: {
     name: 'stack',
     properties: {
       align: { type: 'cssProp', value: 'alignItems' },
@@ -21,7 +21,8 @@ export const patterns: Pattern[] = [
       }
     },
   },
-  {
+
+  absoluteCenter: {
     name: 'absoluteCenter',
     properties: {
       axis: { type: 'enum', value: ['x', 'y', 'both'] },
@@ -36,7 +37,8 @@ export const patterns: Pattern[] = [
       }
     },
   },
-  {
+
+  simpleGrid: {
     name: 'simpleGrid',
     properties: {
       gap: { type: 'token', value: 'spacing' },
@@ -54,7 +56,8 @@ export const patterns: Pattern[] = [
       }
     },
   },
-  {
+
+  gridItem: {
     name: 'gridItem',
     properties: {
       colSpan: { type: 'number' },
@@ -66,4 +69,4 @@ export const patterns: Pattern[] = [
       }
     },
   },
-]
+}

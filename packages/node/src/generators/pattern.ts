@@ -11,7 +11,7 @@ export function generatePattern(ctx: PandaContext) {
 
   const extracted = extractPatterns(ctx.conf.code)
 
-  const files = patterns.map((pattern) => {
+  const files = Object.values(patterns).map((pattern) => {
     return {
       name: dashCase(pattern.name),
       js: outdent`

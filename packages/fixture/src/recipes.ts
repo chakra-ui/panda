@@ -1,7 +1,7 @@
 import type { RecipeConfig } from '@css-panda/types'
 
-export const recipes: RecipeConfig[] = [
-  {
+export const recipes: Record<string, RecipeConfig> = {
+  textStyle: {
     name: 'textStyle',
     base: {
       fontFamily: 'mono',
@@ -23,7 +23,7 @@ export const recipes: RecipeConfig[] = [
       },
     },
   },
-  {
+  buttonStyle: {
     name: 'buttonStyle',
     base: {
       display: 'inline-flex',
@@ -80,4 +80,4 @@ export const recipes: RecipeConfig[] = [
       variant: 'solid',
     },
   },
-]
+}

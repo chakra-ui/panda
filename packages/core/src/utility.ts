@@ -290,10 +290,3 @@ export class Utility {
     return Object.keys(this.config)
   }
 }
-
-export function mergeUtilities(utilities: UtilityConfig[] | undefined): UtilityConfig {
-  return (utilities ?? []).reduce<UtilityConfig>((acc, utility) => {
-    Object.assign(acc, utility)
-    return acc
-  }, {})
-}

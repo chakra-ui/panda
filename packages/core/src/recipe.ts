@@ -9,7 +9,27 @@ import type { GeneratorContext } from './types'
 type StyleObject = Record<string, any>
 
 export class Recipe {
-  constructor(private config: RecipeConfig, private context: GeneratorContext) {}
+  config: RecipeConfig
+  constructor(config: RecipeConfig, private context: GeneratorContext) {
+    const { name, base = {}, variants = {}, defaultVariants = {} } = config
+
+    const recipe: Required<RecipeConfig> = {
+      name,
+      base: {},
+      variants: {},
+      defaultVariants,
+    }
+
+    recipe.base = this.walk(base)
+
+    for (const [key, variant] of Object.entries(variants)) {
+      for (const [value, styles] of Object.entries(variant)) {
+        merge(recipe.variants, { [key]: { [value]: this.walk(styles) } })
+      }
+    }
+
+    this.config = recipe
+  }
 
   walk = (styleObject: StyleObject) => {
     const { utility, conditions } = this.context
@@ -76,27 +96,6 @@ export class Recipe {
     }
   }
 
-  expand = () => {
-    const { name, base = {}, variants = {}, defaultVariants = {} } = this.config
-
-    const recipe: Required<RecipeConfig> = {
-      name,
-      base: {},
-      variants: {},
-      defaultVariants,
-    }
-
-    recipe.base = this.walk(base)
-
-    for (const [key, variant] of Object.entries(variants)) {
-      for (const [value, styles] of Object.entries(variant)) {
-        merge(recipe.variants, { [key]: { [value]: this.walk(styles) } })
-      }
-    }
-
-    return recipe
-  }
-
   process = (options: ProcessOptions) => {
     const { styles } = options
 
@@ -104,7 +103,7 @@ export class Recipe {
     const ctx = { ...this.context, transform: this.transform }
     const rule = new AtomicRule(ctx)
 
-    return rule.process({
+    rule.process({
       styles: {
         [name]: '__ignore__',
         ...defaultVariants,
@@ -116,13 +115,4 @@ export class Recipe {
   toCss = () => {
     return this.context.root.toString()
   }
-}
-
-export function mergeRecipes(recipes: RecipeConfig[] | undefined = [], ctx: GeneratorContext) {
-  return Object.fromEntries(
-    recipes.map((config) => {
-      const recipe = new Recipe(config, ctx)
-      return [config.name, recipe.expand()]
-    }),
-  )
 }

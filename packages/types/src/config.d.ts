@@ -2,7 +2,7 @@ import type { Conditions as TConditions } from './conditions'
 import type { UtilityConfig } from './utility'
 import type { Dict, RequiredBy } from './helper'
 import type { Keyframes } from './panda-csstype'
-import type { Pattern } from './pattern'
+import type { PatternConfig } from './pattern'
 import type { RecipeConfig } from './recipe'
 import type { DotPath, TDotPath } from './shared'
 import type { PartialTokens } from './tokens'
@@ -23,7 +23,7 @@ export type Config<
   /**
    * Whether to include css reset styles in the generated css.
    */
-  preflight?: boolean | { scope: string }
+  preflight?: boolean
   /**
    * Whether to minify the generated css.
    */
@@ -95,16 +95,16 @@ export type Config<
   /**
    * The css utility definitions.
    */
-  utilities?: UtilityConfig[]
+  utilities?: UtilityConfig
   /**
    * Multi-variant style definitions for your project.
    * Useful for defining component styles.
    */
-  recipes?: RecipeConfig[]
+  recipes?: Record<string, RecipeConfig>
   /**
    * Common styling or layout patterns for your project.
    */
-  patterns?: Pattern[]
+  patterns?: Record<string, PatternConfig>
   /**
    * @experimental
    * The JSX version to be emitted in JavaScript files.
