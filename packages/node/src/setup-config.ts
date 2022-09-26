@@ -37,24 +37,29 @@ export async function setupConfig(cwd: string) {
 
     const content = outdent`
        import { defineConfig } from "css-panda"
+       import { utilities, patterns, breakpoints, conditions, keyframes } from "css-panda/presets"
 
        export default defineConfig({
         // where to look for your css declarations
         include: ["./src/**/*.{tsx,jsx}", "./pages/**/*.{jsx,tsx}"],
+        // files to exclude
+        exclude: [],
         // The output directory for system
         outdir: "panda",
+        // Add your css conditions here (&:hover, &:focus, etc)
+        conditions,
         // Add your tokens here
         tokens: {},
         // Add your semantic tokens here
         semanticTokens: {},
-        // Add your breakpoints here
-        breakpoints: {
-          sm: "480px",
-          md: "768px",
-          lg: "1024px",
-          xl: "1280px",
-          "2xl": "1536px",
-        }
+        // Add your keyframes here (spin, fade, etc)
+        keyframes,
+        // Add your breakpoints here (sm, md, lg, xl)
+        breakpoints,
+        // Add your css property utilities here (mt, ml, etc)
+        utilities,
+        // Add your css patterns here (stack, grid, etc)
+        patterns,
        })
     `
 

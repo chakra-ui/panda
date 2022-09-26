@@ -1,6 +1,6 @@
 import { createCollector, createPlugins, parseFile } from '@css-panda/ast'
 import { Stylesheet } from '@css-panda/core'
-import { logger, quote } from '@css-panda/logger'
+import { colors, logger, quote } from '@css-panda/logger'
 import type { Config } from '@css-panda/types'
 import { outdent } from 'outdent'
 import { createContext, PandaContext } from './context'
@@ -9,28 +9,30 @@ import { generateCss, generateKeyframes } from './generators/css'
 import { generateReset } from './generators/reset'
 import { loadConfig } from './load-config'
 
+const tick = colors.green().bold('✔️')
+
 function emitComplete(ctx: PandaContext) {
   return [
     outdent`
       We have generated the panda system for you:
 
-      ✔ ${quote(ctx.outdir, '/css')}: the css function to author styles
+      ${tick} ${quote(ctx.outdir, '/css')}: the css function to author styles
     `,
     ctx.hasTokens &&
       outdent`
-      ✔ ${quote(ctx.outdir, '/design-tokens')}: the css variables and js function to query your tokens
+      ${tick} ${quote(ctx.outdir, '/design-tokens')}: the css variables and js function to query your tokens
     `,
     ctx.hasRecipes &&
       outdent`
-      ✔ ${quote(ctx.outdir, '/patterns')}: functions to implement common css patterns
+      ${tick} ${quote(ctx.outdir, '/patterns')}: functions to implement common css patterns
     `,
     ctx.hasPattern &&
       outdent`
-      ✔ ${quote(ctx.outdir, '/recipes')}: functions to create multi-variant styles
+      ${tick} ${quote(ctx.outdir, '/recipes')}: functions to create multi-variant styles
     `,
     ctx.jsx &&
       outdent`
-      ✔ ${quote(ctx.outdir, '/jsx')}: style prop powered elements for ${ctx.jsxFramework}
+      ${tick} ${quote(ctx.outdir, '/jsx')}: style prop powered elements for ${ctx.jsxFramework}
     `,
   ]
     .filter(Boolean)
