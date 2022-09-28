@@ -43,13 +43,13 @@ export class Conditions {
 
   constructor(private options: Options) {
     const { breakpoints = {}, conditions } = this.options
-    const _breakpoints = new Breakpoints(breakpoints)
+    const instance = new Breakpoints(breakpoints)
 
     const entries = Object.entries(conditions).map(([key, value]) => [key, parseCondition(value)])
 
     this.values = {
       ...Object.fromEntries(entries),
-      ..._breakpoints.conditions,
+      ...instance.conditions,
     }
   }
 
