@@ -37,24 +37,20 @@ export function createSemanticTokenFn(tokens: SemanticTokens, options: Options =
 export function createSemanticTokenMap(values: Dict = {}) {
   const map = new Map<string, Map<string, string>>()
 
-  walkObject(
-    values,
-    function resolve(value, path) {
-      const condition = path.pop()!
-      const key = path.join('.')
+  const walk = (value: string, path: string[]) => {
+    const condition = path.pop()!
+    const key = path.join('.')
 
-      const isDefault = condition === '_' || condition === 'base'
-      const prop = isDefault ? 'base' : condition
+    const isDefault = condition === '_' || condition === 'base'
+    const prop = isDefault ? 'base' : condition
 
-      map.get(prop) ?? map.set(prop, new Map())
-      map.get(prop)?.set(key, value)
-    },
-    {
-      stop(value) {
-        return Array.isArray(value)
-      },
-    },
-  )
+    map.get(prop) ?? map.set(prop, new Map())
+    map.get(prop)?.set(key, value)
+  }
+
+  walkObject(values, walk, {
+    stop: (value) => Array.isArray(value),
+  })
 
   return map
 }
