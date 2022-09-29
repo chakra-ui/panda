@@ -16,17 +16,16 @@ export class TokenError extends PandaError {
 }
 
 export class ConfigNotFoundError extends PandaError {
-  constructor(options: { path?: string; cwd: string }) {
-    const { path, cwd } = options
-    const message = path ? `Couldn't find ${path}` : `Could not find panda.config.ts or panda.config.js in ${cwd}`
-    super('NO_CONFIG_FOUND', message)
+  constructor() {
+    const message = `Cannot find config file: panda.config.ts or panda.config.js. Do you forget to run \`panda init\`?`
+    super('NO_CONFIG', message)
   }
 }
 
 export class ConfigError extends PandaError {
   constructor(options: { readonly path: string; readonly error: unknown }) {
     const { path, error } = options
-    super('CONFIG_ERROR', `ConfigReadError (${path}): ${error}`)
+    super('CONFIG_ERROR', `Unable to read ${path}): ${error}`)
   }
 }
 

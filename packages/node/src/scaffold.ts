@@ -4,7 +4,7 @@ import { lookItUpSync } from 'look-it-up'
 import { outdent } from 'outdent'
 import { join } from 'path'
 import getPackageManager from 'preferred-pm'
-import { findConfig } from './load-config'
+import { findConfig } from './config'
 
 export async function setupConfig(cwd: string) {
   const configFile = findConfig()

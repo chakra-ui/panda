@@ -1,14 +1,16 @@
 import { discardDuplicate } from '@css-panda/core'
+import { ConfigNotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import { toHash } from '@css-panda/shared'
 import { existsSync, readFileSync } from 'fs'
 import { statSync } from 'fs-extra'
 import { resolve } from 'path'
 import type { Message, Root } from 'postcss'
+import { getBaseCss } from './artifacts'
+import { findConfig, loadConfigAndCreateContext } from './config'
 import type { PandaContext } from './context'
-import { extractFile, getBaseCss, loadConfigAndCreateContext } from './context-utils'
-import { findConfig } from './load-config'
-import { parseDependency } from './parse-glob'
+import { extractFile } from './file'
+import { parseDependency } from './glob'
 
 type CachedData = {
   fileMap: Map<string, string>
@@ -21,7 +23,7 @@ const builderCache = new WeakMap<PandaContext, CachedData>()
 function getConfigHash() {
   const file = findConfig()
   if (!file) {
-    throw new Error("Can't find config file")
+    throw new ConfigNotFoundError()
   }
   return toHash(readFileSync(file, 'utf-8'))
 }
