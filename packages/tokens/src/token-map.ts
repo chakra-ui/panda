@@ -1,8 +1,9 @@
 import type { SemanticTokens, Tokens } from '@css-panda/types'
 import dlv from 'lodash.get'
 import { match, P } from 'ts-pattern'
+import { createSemanticTokenFn } from './semantic-token-fn'
 import type { TokenData } from './token-data'
-import { mapSemanticTokens, mapTokens } from './map-token'
+import { createTokenFn } from './token-fn'
 
 export type VarData = Record<'category' | 'value', string>
 
@@ -74,35 +75,36 @@ export class TokenMap {
   }
 
   private assignTokens() {
-    const mapFn = (data: TokenData) => {
-      this.values.set(data.prop, data)
+    const each = createTokenFn(this.tokens, { prefix: this.prefix })
+    each((token) => {
+      this.values.set(token.prop, token)
 
-      if (data.negative) return
+      if (token.negative) return
 
-      this.vars.set(data.var, {
-        category: data.category,
-        value: data.value,
+      this.vars.set(token.var, {
+        category: token.category,
+        value: token.value,
       })
-    }
-
-    mapTokens(this.tokens, mapFn, { prefix: this.prefix })
+    })
   }
 
   private assignSemanticTokens() {
-    const mapFn = (data: TokenData, condition: string) => {
-      const value = this.resolve(data.category, data.value)
+    const each = createSemanticTokenFn(this.semanticTokens, { prefix: this.prefix })
 
-      match([condition, data.negative])
+    each((token, condition) => {
+      const value = this.resolve(token.category, token.value)
+
+      match([condition, token.negative])
         .with(['base', true], () => {
-          data.value = data.varRef
-          this.values.set(data.prop, data)
+          token.value = token.varRef
+          this.values.set(token.prop, token)
         })
 
         .with(['base', false], () => {
-          data.value = data.varRef
-          this.values.set(data.prop, data)
-          this.vars.set(data.var, {
-            category: data.category,
+          token.value = token.varRef
+          this.values.set(token.prop, token)
+          this.vars.set(token.var, {
+            category: token.category,
             value,
           })
         })
@@ -112,8 +114,8 @@ export class TokenMap {
             this.conditionVars.set(condition, new Map())
           }
 
-          this.conditionVars.get(condition)!.set(data.var, {
-            category: data.category,
+          this.conditionVars.get(condition)!.set(token.var, {
+            category: token.category,
             value,
           })
         })
@@ -121,9 +123,7 @@ export class TokenMap {
         .otherwise(() => {
           // do nothing
         })
-    }
-
-    mapSemanticTokens(this.semanticTokens, mapFn, { prefix: this.prefix })
+    })
   }
 
   /**

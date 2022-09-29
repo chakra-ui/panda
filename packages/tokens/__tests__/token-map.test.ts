@@ -1,10 +1,11 @@
 import { semanticTokens, tokens } from '@css-panda/fixture'
 import { describe, expect, test } from 'vitest'
-import { getSemanticTokenMap, getTokenMap } from '../src/walk-token'
+import { createSemanticTokenMap } from '../src/semantic-token-fn'
+import { createTokenMap } from '../src/token-fn'
 
 describe('Token types', () => {
   test('colors', () => {
-    expect(getTokenMap(tokens.colors)).toMatchInlineSnapshot(`
+    expect(createTokenMap(tokens.colors)).toMatchInlineSnapshot(`
       Map {
         "current" => "currentColor",
         "gray.50" => "#FAFAFA",
@@ -42,7 +43,7 @@ describe('Token types', () => {
   })
 
   test('tokens', () => {
-    expect(getTokenMap(tokens.fontWeights)).toMatchInlineSnapshot(
+    expect(createTokenMap(tokens.fontWeights)).toMatchInlineSnapshot(
       `
       Map {
         "normal" => "400",
@@ -55,7 +56,7 @@ describe('Token types', () => {
   })
 
   test('spacing', () => {
-    expect(getTokenMap(tokens.spacing)).toMatchInlineSnapshot(`
+    expect(createTokenMap(tokens.spacing)).toMatchInlineSnapshot(`
         Map {
           "1" => "0.25rem",
           "2" => "0.5rem",
@@ -74,7 +75,7 @@ describe('Token types', () => {
 
 describe('semantic tokens', () => {
   test('colors', () => {
-    expect(getSemanticTokenMap(semanticTokens.colors)).toMatchInlineSnapshot(`
+    expect(createSemanticTokenMap(semanticTokens.colors)).toMatchInlineSnapshot(`
       Map {
         "base" => Map {
           "primary" => "red.500",
@@ -89,7 +90,7 @@ describe('semantic tokens', () => {
   })
 
   test('spacing', () => {
-    expect(getSemanticTokenMap(semanticTokens.spacing)).toMatchInlineSnapshot(`
+    expect(createSemanticTokenMap(semanticTokens.spacing)).toMatchInlineSnapshot(`
       Map {
         "base" => Map {
           "gutter" => "4",
