@@ -1,4 +1,4 @@
-import { walkObject } from '@css-panda/shared'
+import { isBaseCondition, walkObject } from '@css-panda/shared'
 import type { Dict, SemanticTokens } from '@css-panda/types'
 import { match } from 'ts-pattern'
 import { TokenData } from './token-data'
@@ -41,9 +41,7 @@ export function createSemanticTokenMap(values: Dict = {}) {
     const condition = path.pop()!
     const key = path.join('.')
 
-    const isDefault = condition === '_' || condition === 'base'
-    const prop = isDefault ? 'base' : condition
-
+    const prop = isBaseCondition(condition) ? 'base' : condition
     map.get(prop) ?? map.set(prop, new Map())
     map.get(prop)?.set(key, value)
   }

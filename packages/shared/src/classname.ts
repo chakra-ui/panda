@@ -1,5 +1,5 @@
 import { withoutSpace } from './css-important'
-import { filterBaseConditions } from './filter-condition'
+import { filterBaseConditions } from './condition'
 import { toHash } from './hash'
 import { walkObject } from './walk-object'
 import { walkStyles } from './walk-styles'
