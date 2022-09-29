@@ -1,7 +1,7 @@
-import { css, cx, globalStyle } from '../styled-system/css'
-import { stack } from '../styled-system/patterns'
+import { css, cx, globalCss } from '../design-system/css'
+import { stack } from '../design-system/patterns'
 
-globalStyle({
+globalCss({
   '*': {
     fontFamily: 'Inter',
     margin: '0',

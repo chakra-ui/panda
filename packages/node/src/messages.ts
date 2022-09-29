@@ -4,11 +4,9 @@ import type { PandaContext } from './context'
 
 const tick = colors.green().bold('✔️')
 
-export function emitComplete(ctx: PandaContext) {
+export function artifactsGeneratedMessage(ctx: PandaContext) {
   return [
     outdent`
-      We have generated the panda system for you:
-
       ${tick} ${quote(ctx.outdir, '/css')}: the css function to author styles
     `,
     ctx.hasTokens &&
@@ -27,7 +25,47 @@ export function emitComplete(ctx: PandaContext) {
       outdent`
       ${tick} ${quote(ctx.outdir, '/jsx')}: style prop powered elements for ${ctx.jsxFramework}
     `,
+    '\n',
   ]
     .filter(Boolean)
     .join('\n')
+}
+
+export function configExistsMessage(cmd: string) {
+  return outdent`
+      \n
+      It looks like you already have panda created\`.
+      
+      You can now run ${quote(cmd, ' panda --watch')}.
+
+      `
+}
+
+export function thankYouMessage() {
+  return outdent`
+
+  🚀 Thanks for choosing ${colors.cyan('Panda')} to write your css.
+
+  You are set up to start using Panda!
+
+  `
+}
+
+export function scaffoldCompleteMessage() {
+  return outdent`
+  ----------------------------------------
+
+  Next steps:
+  
+  - Create a ${quote('index.css')} file in your project that contains:
+  
+  :root {
+    --panda: 1;
+  }
+
+  - Import the ${quote('index.css')} file at the root of your project.
+
+  ----------------------------------------
+
+  `
 }

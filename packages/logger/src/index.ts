@@ -74,7 +74,7 @@ class Logger {
     this.parsers[key] = parser
   }
 
-  private getEntry(level: LogLevel, args: any[]): Entry {
+  private getEntry(level: LogLevel | null, args: any[]): Entry {
     const data = typeof args[0] == 'object' ? args.shift() : {}
     let msg = util.format(...args)
 
@@ -90,15 +90,19 @@ class Logger {
     return { level, ...data, msg, pid, time: new Date() }
   }
 
-  output(entry: Entry) {
+  format(entry: Entry) {
     entry.time.setMinutes(entry.time.getMinutes() - entry.time.getTimezoneOffset())
 
-    const color = levelsMap[entry.level].c
-
     const data = compact(entry)
-    const formatted = typeof entry.msg == 'string' ? entry.msg : util.inspect(data, { colors: true, depth: null })
 
+    const formatted = typeof entry.msg == 'string' ? entry.msg : util.inspect(data, { colors: true, depth: null })
     const uword = entry.type ? colors.gray(`[${entry.type}]`) : undefined
+
+    if (!entry.level) {
+      return [uword, formatted].filter(Boolean).join(' ')
+    }
+
+    const color = levelsMap[entry.level].c
     const label = colors.bold(color(`${entry.level}`))
 
     const msg = [`🐼`, label, uword, formatted].filter(Boolean).join(' ')
@@ -125,33 +129,38 @@ class Logger {
     return !(badType || badLevel)
   }
 
-  private log(level: LogLevel, ...args: any[]) {
+  private stdout(level: LogLevel, ...args: any[]) {
     const baseEntry = this.getEntry(level, args)
     const entry = { ...this.defaults, ...baseEntry }
 
     const valid = this.isValid(level, entry.type)
     if (!valid) return false
 
-    const msg = this.output(entry)
+    const msg = this.format(entry)
     console.log(msg)
 
     return entry
   }
 
   warn(...args: any[]) {
-    return this.log('warn', ...args)
+    return this.stdout('warn', ...args)
   }
 
   info(...args: any[]) {
-    return this.log('info', ...args)
+    return this.stdout('info', ...args)
   }
 
   debug(...args: any[]) {
-    return this.log('debug', ...args)
+    return this.stdout('debug', ...args)
   }
 
   error(...args: any[]) {
-    return this.log('error', ...args)
+    return this.stdout('error', ...args)
+  }
+
+  log(...args: any[]) {
+    const entry = this.getEntry(null, args)
+    console.log(this.format(entry))
   }
 
   get time() {
@@ -161,7 +170,7 @@ class Logger {
       return () => {
         const end = process.hrtime(start)
         const ms = end[0] * 1e3 + end[1] * 1e-6
-        this.log(level, { type: 'hrtime', msg: `${str} ${colors.gray(`(${ms.toFixed(2)}ms)`)}` })
+        this.stdout(level, { type: 'hrtime', msg: `${str} ${colors.gray(`(${ms.toFixed(2)}ms)`)}` })
       }
     }
 

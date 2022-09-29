@@ -1,4 +1,5 @@
-# Logs
+
+    # Logs
 logs
 *.log
 npm-debug.log*
@@ -24,4 +25,4 @@ dist-ssr
 *.sw?
 
 ## CSS Panda
-styled-system
+design-system

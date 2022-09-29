@@ -1,12 +1,13 @@
-import { colors, logger, quote } from '@css-panda/logger'
+import { logger, quote } from '@css-panda/logger'
 import { writeFile } from 'fs-extra'
 import { lookItUpSync } from 'look-it-up'
 import { outdent } from 'outdent'
 import { join } from 'path'
 import getPackageManager from 'preferred-pm'
 import { findConfig } from './config'
+import { configExistsMessage, thankYouMessage } from './messages'
 
-export async function setupConfig(cwd: string) {
+export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
   const configFile = findConfig()
 
   const pmResult = await getPackageManager(cwd)
@@ -14,42 +15,30 @@ export async function setupConfig(cwd: string) {
   const cmd = pm === 'npm' ? 'npm run' : pm
 
   const isTs = lookItUpSync('tsconfig.json', cwd)
+  const file = isTs ? 'panda.config.ts' : 'panda.config.mjs'
 
-  if (configFile) {
-    logger.warn(
-      'config exists',
-      outdent`
-      \n
-      It looks like you already have panda initialized in \`panda.config${configFile}\`.
-      
-      You can now run ${quote(cmd, ' panda --watch')}.
+  logger.info({ type: 'init', msg: `creating panda config file: ${quote(file)}` })
 
-      `,
-    )
+  if (!force && configFile) {
+    logger.warn('config exists', configExistsMessage(cmd))
   } else {
-    const file = isTs ? 'panda.config.ts' : 'panda.config.mjs'
-
-    const msg = outdent`
-    Thanks for choosing ${colors.cyan('Panda')} to write your css.
-
-    You are set up to start using Panda 🥰!    
-    `
-
     const content = outdent`
        import { defineConfig } from "css-panda"
-       import { utilities, patterns, breakpoints, conditions, keyframes } from "css-panda/presets"
+       import { utilities, breakpoints, conditions, keyframes, tokens } from "css-panda/presets"
 
        export default defineConfig({
+        // whether to use css reset
+        preflight: true,
         // where to look for your css declarations
         include: ["./src/**/*.{tsx,jsx}", "./pages/**/*.{jsx,tsx}"],
         // files to exclude
         exclude: [],
         // The output directory for system
-        outdir: "panda",
+        outdir: "design-system",
         // Add your css conditions here (&:hover, &:focus, etc)
         conditions,
         // Add your tokens here
-        tokens: {},
+        tokens,
         // Add your semantic tokens here
         semanticTokens: {},
         // Add your keyframes here (spin, fade, etc)
@@ -59,17 +48,18 @@ export async function setupConfig(cwd: string) {
         // Add your css property utilities here (mt, ml, etc)
         utilities,
         // Add your css patterns here (stack, grid, etc)
-        patterns,
+        patterns: {},
        })
     `
 
     await writeFile(join(cwd, file), content)
-
-    logger.info(msg)
+    logger.log(thankYouMessage())
   }
 }
 
 export async function setupPostcss(cwd: string) {
+  logger.info({ type: 'init', msg: `creating postcss config file: ${quote('postcss.config.cjs')}` })
+
   const content = outdent`
   module.exports = {
     plugins: {

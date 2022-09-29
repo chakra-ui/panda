@@ -8,6 +8,7 @@ const clean = (v: string) => v.toString().replaceAll(' ', '_')
 type Options = {
   config?: UtilityConfig
   tokens: TokenMap
+  verbose?: boolean
 }
 
 export class Utility {
@@ -51,7 +52,7 @@ export class Utility {
    */
   private propertyConfigMap: Map<string, PropertyConfig & { category: string | undefined }> = new Map()
 
-  constructor(options: Options) {
+  constructor(private options: Options) {
     const { tokens, config } = options
     this.tokenMap = tokens
 
@@ -70,6 +71,8 @@ export class Utility {
     return `${prop}_${value}`
   }
 
+  private warnMap: Map<string, boolean> = new Map()
+
   /**
    * Get all the possible values for the defined property
    */
@@ -80,7 +83,10 @@ export class Utility {
       const result = this.tokenMap.flattenedTokens.get(values)
 
       if (!result) {
-        logger.warn(`Token ${quote(values)} not found in ${quote('config.tokens')}`)
+        if (!this.warnMap.get(values) && this.options.verbose) {
+          logger.warn({ type: 'token', msg: `token ${quote(values)} not found in ${quote('config.tokens')}` })
+          this.warnMap.set(values, true)
+        }
         return {}
       }
 

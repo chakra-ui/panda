@@ -21,24 +21,26 @@ export async function main() {
 
   cli
     .command('init', "Initialize the panda's config file")
+    .option('-f, --force', 'Force overwrite existing config file')
     .option('-p, --postcss', 'Emit postcss config file')
     .action(async (flags) => {
-      logger.info(`Panda v${pkgJson.version}`)
-
-      await setupConfig(cwd)
+      logger.info(`Panda v${pkgJson.version}\n`)
+      const done = logger.time.info('✨ Panda initialized')
 
       if (flags.postcss) {
         await setupPostcss(cwd)
       }
-
+      await setupConfig(cwd, { force: flags.force })
       await execCommand('panda gen', cwd)
+
+      done()
     })
 
   cli.command('gen', 'Generate the panda system').action(async () => {
     const ctx = await loadConfigAndCreateContext()
     const msg = await emitArtifacts(ctx)
     if (msg) {
-      logger.info(msg)
+      logger.log(msg)
     }
   })
 
@@ -53,7 +55,6 @@ export async function main() {
     .option('--exclude <exclude>', 'Define compile-time env variables')
     .option('--clean', 'Clean output directory')
     .option('--hash', 'Hash the generated classnames to make them shorter')
-    .option('--silent', 'Suppress non-error logs (excluding "onSuccess" process output)')
     .action(async (files: string[], flags) => {
       const options = compact({ include: files, ...flags })
       logger.debug({ type: 'cli', msg: options })

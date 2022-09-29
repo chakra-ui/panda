@@ -44,7 +44,7 @@ type Strict<
 
 export type ConditionCssProperties<
   Conditions extends Record<string, string> = Record<string, string>,
-  UserProperties extends Record<string, string> = { __type?: 'never' },
+  UserProperties extends Record<string, any> = { __type?: 'never' },
   StrictValue extends boolean = false,
 > = {
   [Key in keyof Properties]?: PandaConditionalValue<
@@ -71,7 +71,7 @@ export type WithNesting<T> = T & {
 
 export type PandaCssObject<
   Conditions extends Record<string, string>,
-  UserProperties extends Record<string, string> = { __type?: 'never' },
+  UserProperties extends Record<string, any> = { __type?: 'never' },
   Strict extends boolean = false,
 > = WithNesting<ConditionCssProperties<Conditions, UserProperties, Strict>>
 

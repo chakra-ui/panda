@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs'
-import { outdent } from 'outdent'
+import outdent from 'outdent'
 import type { Output, PandaContext } from '../context'
 import { generateConditions } from './conditions'
 import { generateCss, generateKeyframes } from './css'
@@ -217,8 +217,7 @@ function setupReset(ctx: PandaContext): Output {
 }
 
 function setupGitIgnore(ctx: PandaContext): Output {
-  const txt = outdent`
-  ## CSS Panda
+  const txt = outdent`## CSS Panda
   ${ctx.outdir}
   `
 
@@ -233,11 +232,7 @@ function setupGitIgnore(ctx: PandaContext): Output {
   let content = readFileSync(file, 'utf-8')
 
   if (!content.includes(ctx.outdir)) {
-    content = `
-    ${content}
-    
-    ${txt}
-    `
+    content += txt
   }
 
   return {

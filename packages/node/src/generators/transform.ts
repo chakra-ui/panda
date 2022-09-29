@@ -4,14 +4,12 @@ export function generateTransform() {
   return outdent`
   import config from '../config'
 
-  const utilities = Object.keys(config.utilities || []).reduce((acc, key) => {
-    return Object.assign(acc, config.utilities[key])
-  }, {})
+  const utilities = config.utilities || {}
   
-  const clean = (value) => value.toString().replaceAll(' ', '_')
+  const withoutSpace = (v) => v.replace(/\\s/g, '_')
   
   function transform(prop, value) {
-    let className = \`\${prop}_\${clean(value)}\`
+    let className = \`\${prop}_\${withoutSpace(value)}\`
   
     let config = utilities[prop]
   
@@ -21,7 +19,7 @@ export function generateTransform() {
       if (typeof config.className === 'function') {
         className = config.className(value, prop)
       } else {
-        className = \`\${config.className}_\${clean(value)}\`
+        className = \`\${config.className}_\${withoutSpace(value)}\`
       }
     }
   
