@@ -78,5 +78,5 @@ export async function setupPostcss(cwd: string) {
   }
   `
 
-  await writeFile(join(cwd, 'postcss.config.js'), content)
+  await writeFile(join(cwd, 'postcss.config.cjs'), content)
 }

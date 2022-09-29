@@ -34,6 +34,18 @@ export function keyValue(node: swc.KeyValueProperty, result: Record<string, any>
   return result
 }
 
+export function conditionalExpression(node: swc.ConditionalExpression, key: string, result: Record<string, any>) {
+  result.conditions ||= []
+  const consequent = expression(node.consequent)
+  const alternate = expression(node.alternate)
+  if (consequent.length) {
+    result.conditions.push({ [key]: consequent[0] })
+  }
+  if (alternate.length) {
+    result.conditions.push({ [key]: alternate[0] })
+  }
+}
+
 export function arrayExpression(node: swc.ArrayExpression, result: Array<string | number> = []) {
   const len = node.elements.length
 
@@ -117,17 +129,7 @@ export function jsxAttribute(node: swc.JSXAttribute, result: Record<string, any>
         expression: { type: 'ConditionalExpression' },
       },
       (node) => {
-        result.conditions ||= []
-        const consequent = expression(node.expression.consequent)
-        const alternate = expression(node.expression.alternate)
-
-        if (consequent.length) {
-          result.conditions.push({ [key]: consequent[0] })
-        }
-
-        if (alternate.length) {
-          result.conditions.push({ [key]: alternate[0] })
-        }
+        conditionalExpression(node.expression, key, result)
       },
     )
     .run()

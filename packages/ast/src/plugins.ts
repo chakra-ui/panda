@@ -23,7 +23,7 @@ function createPlugin(name: string) {
 
 export const cssPlugin = createPlugin('css')
 export const sxPlugin = createPlugin('sx')
-export const globalStylePlugin = createPlugin('globalStyle')
+export const globalCssPlugin = createPlugin('globalCss')
 export const fontFacePlugin = createPlugin('fontFace')
 export const cssMapPlugin = createPlugin('cssMap')
 
@@ -77,7 +77,7 @@ export function createPlugins(options: PluginOptions) {
     sxPlugin(data.css, importMap.css, fileName),
     cssPlugin(data.css, importMap.css, fileName),
     fontFacePlugin(data.fontFace, importMap.css, fileName),
-    globalStylePlugin(data.globalStyle, importMap.css, fileName),
+    globalCssPlugin(data.globalCss, importMap.css, fileName),
     cssMapPlugin(data.cssMap, importMap.css, fileName),
     dynamicPlugin(data.recipe, importMap.recipe, fileName),
     dynamicPlugin(data.pattern, importMap.pattern, fileName),

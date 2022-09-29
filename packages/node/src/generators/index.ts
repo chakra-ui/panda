@@ -8,7 +8,7 @@ import { generateCssMap } from './css-map'
 import { generateCx } from './cx'
 import { generateFontFace } from './font-face'
 import { getEntrypoint } from './get-entrypoint'
-import { generateGlobalStyle } from './global-style'
+import { generateGlobalCss } from './global-css'
 import { generateisValidProp } from './is-valid-prop'
 import { generateJs } from './js'
 import { generateDts } from './js-dts'
@@ -57,13 +57,13 @@ function setupDesignTokens(ctx: PandaContext): Output {
   }
 }
 
-function setupGlobalStyle(ctx: PandaContext): Output {
-  const code = generateGlobalStyle()
+function setupGlobalCss(ctx: PandaContext): Output {
+  const code = generateGlobalCss()
   return {
     dir: ctx.paths.css,
     files: [
-      { file: 'global-style.js', code: code.js },
-      { file: 'global-style.d.ts', code: code.dts },
+      { file: 'global-css.js', code: code.js },
+      { file: 'global-css.d.ts', code: code.dts },
     ],
   }
 }
@@ -196,7 +196,7 @@ function setupCssIndex(ctx: PandaContext): Output {
   export * from './css'
   export * from './cx'
   export * from './font-face'
-  export * from './global-style'
+  export * from './global-css'
   export * from './css-map'
   export * from './sx'
  `
@@ -264,7 +264,7 @@ export function generateSystem(ctx: PandaContext): Output[] {
     setupSx(ctx),
     setupCss(ctx),
     setupFontFace(ctx),
-    setupGlobalStyle(ctx),
+    setupGlobalCss(ctx),
     setupRecipes(ctx),
     setupPatterns(ctx),
     setupCssIndex(ctx),

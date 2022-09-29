@@ -5,7 +5,7 @@ export function createCollector() {
     sx: new Set<PluginResult>(),
     jsx: new Set<PluginResult>(),
     css: new Set<PluginResult>(),
-    globalStyle: new Set<PluginResult>(),
+    globalCss: new Set<PluginResult>(),
     fontFace: new Set<PluginResult>(),
     cssMap: new Set<PluginResult>(),
     recipe: new Map<string, Set<PluginResult>>(),
@@ -14,7 +14,7 @@ export function createCollector() {
       return (
         this.css.size === 0 &&
         this.sx.size === 0 &&
-        this.globalStyle.size === 0 &&
+        this.globalCss.size === 0 &&
         this.fontFace.size === 0 &&
         this.cssMap.size === 0 &&
         this.recipe.size === 0 &&

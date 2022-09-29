@@ -99,8 +99,8 @@ export class DynamicCallVisitor extends Visitor {
     // bail out if the function we're interested in has not been called
     if (!this.imports) return node
 
-    for (const _import of this.imports) {
-      const expression = ast.callExpression(node, _import.alias)
+    for (const { alias } of this.imports) {
+      const expression = ast.callExpression(node, alias)
       if (!expression) continue
 
       const args = expression.arguments
@@ -110,13 +110,13 @@ export class DynamicCallVisitor extends Visitor {
       if (args.length) {
         const [config] = args
         if (config.expression.type === 'ObjectExpression') {
-          this.ctx.onDynamicData?.(_import.alias, {
+          this.ctx.onDynamicData?.(alias, {
             type: 'object',
             data: ast.objectExpression(config.expression),
           })
         }
       } else {
-        this.ctx.onDynamicData?.(_import.alias, {
+        this.ctx.onDynamicData?.(alias, {
           type: 'object',
           data: {},
         })

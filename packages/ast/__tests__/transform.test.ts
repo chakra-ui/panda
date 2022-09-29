@@ -7,9 +7,9 @@ import { parseSync } from '../src/transform'
 describe('ast parser', () => {
   test('[without import] should not parse', () => {
     const code = `
-    import {css, globalStyle, fontFace} from ".panda/css"
+    import {css, globalCss, fontFace} from ".panda/css"
 
-    globalStyle({
+    globalCss({
         html: {
             fontSize: '12px',
         }
@@ -65,7 +65,7 @@ describe('ast parser', () => {
             "type": "named-object",
           },
         },
-        "globalStyle": Set {
+        "globalCss": Set {
           {
             "data": {
               "html": {

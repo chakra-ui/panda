@@ -222,7 +222,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   function collectStyles(collector: Collector, file: string) {
     const sheet = new Stylesheet(context())
 
-    collector.globalStyle.forEach((result) => {
+    collector.globalCss.forEach((result) => {
       sheet.processObject(result.data)
     })
 
