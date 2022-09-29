@@ -1,10 +1,12 @@
 export type Loose = string & Record<never, never>
 
+type Str<T> = T extends number ? `${T}` : T
+
 type PathsToStringProps<T> = T extends string
   ? []
   : {
-      [Key in Extract<keyof T, string>]: [Key, ...PathsToStringProps<T[Key]>]
-    }[Extract<keyof T, string>]
+      [Key in Extract<keyof T, string | number>]: [Str<Key>, ...PathsToStringProps<T[Key]>]
+    }[Extract<keyof T, string | number>]
 
 type Join<Paths extends string[], Delimiter extends string> = Paths extends []
   ? never
@@ -16,7 +18,7 @@ type Join<Paths extends string[], Delimiter extends string> = Paths extends []
     : never
   : string
 
-export type TDotPath = Record<string, any> | string
+type TDotPath = Record<string, any> | string
 
 export type DotPath<T extends TDotPath> = Join<PathsToStringProps<T>, '.'>
 

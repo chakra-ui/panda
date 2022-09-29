@@ -95,7 +95,7 @@ export class Utility {
     }
 
     if (isFunction(values)) {
-      return values((path) => this.tokenMap.query(path))
+      return values((path) => this.tokenMap.get(path))
     }
 
     return values

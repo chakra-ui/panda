@@ -7,14 +7,6 @@ import type { RecipeConfig } from './recipe'
 import type { DotPath, TDotPath } from './shared'
 import type { PartialTokens } from './tokens'
 
-export type SemanticTokens<Tokens extends TDotPath = Dict, Conditions = Dict, Breakpoints = Dict> = {
-  [K in keyof Tokens]?: {
-    [token: string]: {
-      [P in keyof Conditions | keyof Breakpoints | '_' | 'base']?: DotPath<Tokens>
-    }
-  }
-}
-
 export type Config<
   Conditions extends TConditions = TConditions,
   Breakpoints extends Dict = Dict,
@@ -127,6 +119,11 @@ export type Config<
      */
     name?: string
   }
+  /**
+   * Not implemented yet.
+   * @experimental - Custom parsers for call expressions and jsx style props.
+   */
+  parsers?: Record<string, (file: string, data: any) => void>
 }
 
 export type TConfig = Config<TConditions, Dict, Dict>

@@ -3,7 +3,7 @@ import { semanticTokens, tokens } from '@css-panda/fixture'
 import { TokenMap } from '../src/token-map'
 
 describe('Token types', () => {
-  test('semantic tokens', () => {
+  test('should create token map', () => {
     const dict = new TokenMap({ tokens, semanticTokens })
     expect(dict.values).toMatchInlineSnapshot(`
       Map {
@@ -2801,6 +2801,125 @@ describe('Token types', () => {
             "var": "--durations-150",
             "varRef": "var(--durations-150)",
           },
+        },
+      }
+    `)
+  })
+
+  test('should resolve array values', () => {
+    const dict = new TokenMap({
+      tokens: {
+        fonts: {
+          mono: ['Inter', 'system-ui', 'sans-serif'],
+        },
+        shadows: {
+          xs: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+          sm: ['0 1px 3px 0 rgb(0 0 0 / 0.1)', '0 1px 2px -1px rgb(0 0 0 / 0.1)'],
+          md: ['0 4px 6px -1px rgb(0 0 0 / 0.1)', '0 2px 4px -2px rgb(0 0 0 / 0.1)'],
+        },
+      },
+    })
+
+    expect(dict.values).toMatchInlineSnapshot(`
+      Map {
+        "fonts.mono" => {
+          "category": "fonts",
+          "key": "mono",
+          "negative": false,
+          "prop": "fonts.mono",
+          "value": "Inter, system-ui, sans-serif",
+          "var": "--fonts-mono",
+          "varRef": "var(--fonts-mono)",
+        },
+        "shadows.xs" => {
+          "category": "shadows",
+          "key": "xs",
+          "negative": false,
+          "prop": "shadows.xs",
+          "value": "0 1px 2px 0 var(--shadow-color, rgb(0 0 0 / 0.05))",
+          "var": "--shadows-xs",
+          "varRef": "var(--shadows-xs)",
+        },
+        "shadows.sm" => {
+          "category": "shadows",
+          "key": "sm",
+          "negative": false,
+          "prop": "shadows.sm",
+          "value": "0 1px 3px 0 var(--shadow-color, rgb(0 0 0 / 0.1)), 0 1px 2px -1px var(--shadow-color, rgb(0 0 0 / 0.1))",
+          "var": "--shadows-sm",
+          "varRef": "var(--shadows-sm)",
+        },
+        "shadows.md" => {
+          "category": "shadows",
+          "key": "md",
+          "negative": false,
+          "prop": "shadows.md",
+          "value": "0 4px 6px -1px var(--shadow-color, rgb(0 0 0 / 0.1)), 0 2px 4px -2px var(--shadow-color, rgb(0 0 0 / 0.1))",
+          "var": "--shadows-md",
+          "varRef": "var(--shadows-md)",
+        },
+      }
+    `)
+  })
+
+  test('should resolve semantic tokens', () => {
+    const map = new TokenMap({
+      tokens: {},
+      semanticTokens: {
+        colors: {
+          onPrimary: { base: '#baseColor', dark: '#darkColor' },
+        },
+        fonts: {
+          funky: {
+            base: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    })
+
+    expect(map.values).toMatchInlineSnapshot(`
+      Map {
+        "colors.onPrimary" => {
+          "category": "colors",
+          "key": "onPrimary",
+          "negative": false,
+          "prop": "colors.onPrimary",
+          "value": "var(--colors-on-primary)",
+          "var": "--colors-on-primary",
+          "varRef": "var(--colors-on-primary)",
+        },
+        "fonts.funky" => {
+          "category": "fonts",
+          "key": "funky",
+          "negative": false,
+          "prop": "fonts.funky",
+          "value": "var(--fonts-funky)",
+          "var": "--fonts-funky",
+          "varRef": "var(--fonts-funky)",
+        },
+      }
+    `)
+
+    expect(map.conditionVars).toMatchInlineSnapshot(`
+      Map {
+        "dark" => Map {
+          "--colors-on-primary" => {
+            "category": "colors",
+            "value": "#darkColor",
+          },
+        },
+      }
+    `)
+
+    expect(map.vars).toMatchInlineSnapshot(`
+      Map {
+        "--colors-on-primary" => {
+          "category": "colors",
+          "value": "#baseColor",
+        },
+        "--fonts-funky" => {
+          "category": "fonts",
+          "value": "Inter, system-ui, sans-serif",
         },
       }
     `)

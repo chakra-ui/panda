@@ -1,3 +1,4 @@
+import type { Tokens } from '@css-panda/types'
 import { colors } from './colors'
 import { animations } from './keyframes'
 import { dropShadows, shadows } from './shadows'
@@ -5,7 +6,7 @@ import { largeSizes, sizes } from './sizes'
 import { spacing } from './spacing'
 import { fonts, fontSizes, fontWeights, letterSpacings, lineHeights } from './typography'
 
-export const tokens = {
+export const tokens: Tokens = {
   easings: {
     default: 'cubic-bezier(0.4, 0, 0.2, 1)',
     linear: 'linear',

@@ -13,16 +13,16 @@ export type MappedObject<T, K> = {
 export function walkObject<T, K>(
   target: T,
   predicate: Predicate<K>,
-  options: { maxDepth?: number } = {},
+  options: { stop?(value: any, path: string[]): boolean } = {},
 ): MappedObject<T, ReturnType<Predicate<K>>> {
-  const { maxDepth = Infinity } = options
+  const { stop } = options
 
   function inner(value: any, path: string[] = []): any {
     if (isObject(value) || Array.isArray(value)) {
       const result: Record<string, string> = {}
       for (const [key, child] of Object.entries(value)) {
         const childPath = [...path, key]
-        if (childPath.length > maxDepth) {
+        if (stop?.(value, childPath)) {
           return predicate(value, path)
         }
         result[key] = inner(child, childPath)

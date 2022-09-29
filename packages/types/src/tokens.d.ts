@@ -2,13 +2,13 @@ type RecommendedTokens = {
   colors: Record<string, string | Record<string, string>>
   fontSizes: Record<string, string>
   fontWeights: Record<string, string | number>
-  fonts: Record<string, string>
+  fonts: Record<string, string | string[]>
   lineHeights: Record<string, string | number>
   letterSpacings: Record<string, string>
   radii: Record<string, string>
   blurs: Record<string, string>
-  shadows: Record<string, string>
-  dropShadows: Record<string, string>
+  shadows: Record<string, string | string[]>
+  dropShadows: Record<string, string | string[]>
   spacing: Record<string, string>
   sizes: Record<string, string>
   largeSizes: Record<string, string>
@@ -18,9 +18,17 @@ type RecommendedTokens = {
 }
 
 export type Tokens = RecommendedTokens & {
-  [group: string]: Record<string, string | Record<string, string>>
+  [group: string]: Record<string, string | string[] | Record<string, string>>
 }
 
 export type PartialTokens = Partial<Tokens>
 
 export type TokenCategory = keyof RecommendedTokens | (string & {})
+
+export type SemanticTokens<Tokens extends PartialTokens = PartialTokens, Conditions = Dict, Breakpoints = Dict> = {
+  [K in keyof Tokens]?: {
+    [token: string]: {
+      [P in keyof Conditions | keyof Breakpoints | '_' | 'base']?: DotPath<Tokens[K]> | (string & {}) | string[]
+    }
+  }
+}

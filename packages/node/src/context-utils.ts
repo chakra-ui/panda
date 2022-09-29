@@ -74,25 +74,24 @@ export async function emitAndExtract(ctx: PandaContext) {
 export async function extractFile(ctx: PandaContext, file: string) {
   logger.debug({ type: 'file:extract', file })
 
-  const collector = createCollector()
+  const data = createCollector()
 
   const done = logger.time.debug('Extracted', quote(file))
 
-  const plugins = createPlugins({
-    data: collector,
-    importMap: ctx.importMap,
-    fileName: file,
-    jsxName: ctx.jsxFactory,
-    isUtilityProp: ctx.isProperty,
-  })
-
   try {
+    const plugins = createPlugins({
+      data: data,
+      importMap: ctx.importMap,
+      fileName: file,
+      jsxName: ctx.jsxFactory,
+      isUtilityProp: ctx.isProperty,
+    })
     await parseFile(file, plugins)
   } catch (error) {
     logger.error({ err: error })
   }
 
-  const result = ctx.collectStyles(collector, file)
+  const result = ctx.collectStyles(data, file)
 
   if (result) {
     done()
