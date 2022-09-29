@@ -4,18 +4,8 @@ import { formatBoxShadowValue, parseBoxShadowValue } from './parse-shadow'
 import { TokenData } from './token-data'
 import { getSemanticTokenMap, getTokenMap } from './walk-token'
 
-type ObjectEntries<T> = {
-  [K in keyof T]: { type: K; values: T[K] }
-}[keyof T][]
-
-function* entries<T>(obj: T): IterableIterator<ObjectEntries<T>[number]> {
-  for (const key in obj) {
-    yield { type: key, values: obj[key] }
-  }
-}
-
-function transform(type: string, value: any): string {
-  return match(type)
+function transform(category: string, value: any): string {
+  return match(category)
     .with('shadows', () => {
       if (Array.isArray(value)) {
         value = value.join(',')
@@ -53,19 +43,20 @@ type Options = { prefix?: string }
 export function mapTokens(tokens: Partial<Tokens>, fn: (data: TokenData) => void, options: Options = {}) {
   const { prefix } = options
 
-  for (const entry of entries(tokens)) {
-    match(entry)
-      .with({ type: 'spacing' }, ({ type, values }) => {
-        getTokenMap(values).forEach((value, key) => {
-          const data = { category: type, entry: [key, value] } as const
+  for (const [category, values] of Object.entries(tokens)) {
+    const map = getTokenMap(values)
+
+    match(category)
+      .with('spacing', () => {
+        map.forEach((value, key) => {
+          const data = { category, entry: [key, value] } as const
           fn(new TokenData(data, { prefix }))
           fn(new TokenData(data, { negative: true, prefix }))
         })
       })
-      .otherwise((entry: any) => {
-        const { type, values } = entry
-        getTokenMap(values).forEach((value, key) => {
-          const data = { category: type, entry: [key, transform(type, value)] } as const
+      .otherwise(() => {
+        map.forEach((value, key) => {
+          const data = { category, entry: [key, transform(category, value)] } as const
           fn(new TokenData(data, { prefix }))
         })
       })
@@ -79,14 +70,14 @@ export function mapSemanticTokens(
 ) {
   const { prefix } = options
 
-  for (const entry of entries(tokens)) {
-    const map = getSemanticTokenMap(entry.values)
+  for (const [category, values] of Object.entries(tokens)) {
+    const map = getSemanticTokenMap(values)
 
-    match(entry)
-      .with({ type: 'spacing' }, () => {
+    match(category)
+      .with('spacing', () => {
         map.forEach((values, condition) => {
           values.forEach((value, key) => {
-            const data = { category: entry.type, entry: [key, value] } as const
+            const data = { category, entry: [key, value] } as const
 
             // positive
             const token = new TokenData(data, { prefix })
@@ -101,10 +92,7 @@ export function mapSemanticTokens(
       .otherwise(() => {
         map.forEach((values, condition) => {
           values.forEach((value, key) => {
-            const data = {
-              category: entry.type,
-              entry: [key, transform(entry.type, value)],
-            } as const
+            const data = { category, entry: [key, transform(category, value)] } as const
 
             const token = new TokenData(data, { prefix })
             fn(token, condition)
