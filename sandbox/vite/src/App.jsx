@@ -1,5 +1,4 @@
-import { css, cx, globalCss } from '../design-system/css'
-import { stack } from '../design-system/patterns'
+import { css, globalCss } from '../design-system/css'
 
 globalCss({
   '*': {
@@ -10,10 +9,10 @@ globalCss({
 
 function App() {
   return (
-    <div className={css({ paddingY: '80px' })}>
+    <div className={css({ paddingY: '180px' })}>
       <div className={css({ maxWidth: '840px', marginX: 'auto', textAlign: 'center' })}>
-        <div className={stack({ align: 'center' })}>
-          <h1 className={css({ color: 'gray.600', fontSize: '56px', lineHeight: '1.1em' })}>
+        <div>
+          <h1 className={css({ color: 'black', fontSize: '56px', lineHeight: '1.1em' })}>
             Create accessible React apps <span className={css({ color: 'teal' })}>with speed</span>
           </h1>
           <p className={css({ color: { _: 'gray.500', hover: 'red' }, fontSize: '20px', marginTop: '40px' })}>
@@ -21,7 +20,7 @@ function App() {
             to build your React applications.
           </p>
 
-          <div className={cx(stack({ direction: 'row', gap: '12px' }), css({ marginTop: '40px' }))}>
+          <div className={css({ marginTop: '40px', display: 'inline-flex', spaceX: '4' })}>
             <button
               className={css({
                 height: '40px',
