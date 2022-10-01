@@ -3,7 +3,7 @@ import outdent from 'outdent'
 import type { Output, PandaContext } from '../context'
 import { generateConditions } from './conditions'
 import { generateCss, generateKeyframes } from './css'
-import { generateCssType } from './css-dts'
+import { generateCssType } from './types'
 import { generateCssMap } from './css-map'
 import { generateCx } from './cx'
 import { generateFontFace } from './font-face'
@@ -69,7 +69,7 @@ function setupGlobalCss(ctx: PandaContext): Output {
 }
 
 function setupTypes(ctx: PandaContext): Output {
-  const code = generateCssType()
+  const code = generateCssType(ctx)
   const conditions = generateConditions(ctx)
   return {
     dir: ctx.paths.types,

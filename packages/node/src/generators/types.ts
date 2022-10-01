@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs-extra'
 import outdent from 'outdent'
+import type { PandaContext } from '../context'
 import { getEntrypoint } from './get-entrypoint'
 
 function getType(file: string) {
@@ -7,7 +8,8 @@ function getType(file: string) {
   return readFileSync(filepath, 'utf8')
 }
 
-export function generateCssType() {
+export function generateCssType(ctx: PandaContext) {
+  const strict = ctx.types?.strictTokens
   return {
     cssType: getType('csstype.d.ts'),
     pandaCssType: getType('panda-csstype.d.ts'),
@@ -16,11 +18,17 @@ export function generateCssType() {
     import { PropertyTypes } from './property-type'
     import { Conditions } from './conditions'
     
-    export type CssObject = PandaCssObject<Conditions, PropertyTypes>
+    export type CssObject = ${
+      strict ? 'PandaCssObject<Conditions, PropertyTypes, true>' : 'PandaCssObject<Conditions, PropertyTypes>'
+    } 
 
-    export type ConditionalValue<V> = PandaConditionalValue<Conditions, V>
+    export type ConditionalValue<Value> = PandaConditionalValue<Conditions, Value>
     
-    export type CssProperties = ConditionCssProperties<Conditions, PropertyTypes>
+    export type CssProperties = ${
+      strict
+        ? 'ConditionCssProperties<Conditions, PropertyTypes, true>'
+        : 'ConditionCssProperties<Conditions, PropertyTypes>'
+    }
     `,
   }
 }

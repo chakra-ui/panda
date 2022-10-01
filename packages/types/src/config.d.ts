@@ -124,6 +124,15 @@ export type Config<
    * @experimental - Custom parsers for call expressions and jsx style props.
    */
   parsers?: Record<string, (file: string, data: any) => void>
+  /**
+   * Options for the generated typescript definitions.
+   */
+  types?: {
+    /**
+     * Whether to generate strict types for css properties
+     */
+    strictTokens?: boolean
+  }
 }
 
 export type TConfig = Config<TConditions, Dict, Dict>
