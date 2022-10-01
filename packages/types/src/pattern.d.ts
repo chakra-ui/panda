@@ -1,9 +1,9 @@
 import type { CssProperty, ConditionCssProperties } from './panda-csstype'
 
 export type PatternProperty =
-  | { type: 'cssProp'; value: CssProperty }
+  | { type: 'property'; value: CssProperty }
   | { type: 'enum'; value: string[] }
-  | { type: 'token'; value: string; cssProp?: CssProperty }
+  | { type: 'token'; value: string; property?: CssProperty }
   | { type: 'string' | 'boolean' | 'number' }
 
 type Value = string | { [key: string]: Value }

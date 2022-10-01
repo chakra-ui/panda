@@ -114,15 +114,17 @@ export class Utility {
 
   private assignProperties() {
     for (const [property, propertyConfig] of Object.entries(this.config)) {
-      const propConfig = this.normalize(propertyConfig)
+      const config = this.normalize(propertyConfig)
 
-      this.setTransform(property, propConfig?.transform)
+      this.setTransform(property, config?.transform)
 
-      if (!propConfig) continue
-      const category = typeof propConfig.values === 'string' ? propConfig.values : undefined
-      this.propertyConfigMap.set(property, { ...propConfig, category })
+      if (!config) continue
 
-      const values = this.getPropertyValues(propConfig)
+      const category = typeof config.values === 'string' ? config.values : undefined
+      this.propertyConfigMap.set(property, { ...config, category })
+
+      const values = this.getPropertyValues(config)
+
       if (!values) continue
 
       for (const [alias, raw] of Object.entries(values)) {
@@ -135,11 +137,11 @@ export class Utility {
 
   private assignValueMap() {
     for (const [property, propertyConfig] of Object.entries(this.config)) {
-      const propConfig = this.normalize(propertyConfig)
+      const config = this.normalize(propertyConfig)
 
-      if (!propConfig) continue
+      if (!config) continue
 
-      const values = this.getPropertyValues(propConfig)
+      const values = this.getPropertyValues(config)
 
       if (typeof values === 'object' && values.type) {
         this.valuesMap.set(property, new Set([`type:${values.type}`]))
@@ -152,8 +154,8 @@ export class Utility {
 
       const set = this.valuesMap.get(property) ?? new Set()
 
-      if (propConfig.cssType) {
-        this.valuesMap.set(property, set.add(`CSSProperties["${propConfig.cssType}"]`))
+      if (config.property) {
+        this.valuesMap.set(property, set.add(`CSSProperties["${config.property}"]`))
         continue
       }
     }
@@ -164,6 +166,7 @@ export class Utility {
    */
   get valueTypes() {
     const map = new Map<string, string[]>()
+
     for (const [prop, tokens] of this.valuesMap.entries()) {
       // When tokens does not exist in the config
       if (tokens.size === 0) {
@@ -180,30 +183,38 @@ export class Utility {
         }),
       )
     }
+
     return map
   }
 
   defaultTransform = (value: string, prop: string) => {
-    const isCssVariable = prop.startsWith('--')
-    if (isCssVariable) {
+    const isCssVar = prop.startsWith('--')
+
+    if (isCssVar) {
       const tokenValue = this.tokenMap.values.get(value)?.varRef
       value = typeof tokenValue === 'string' ? tokenValue : value
     }
+
     return { [prop]: value }
   }
 
   private setTransform(property: string, transform?: AnyFunction) {
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
+
     const transformFn = transform ?? defaultTransform
     this.transformMap.set(property, transformFn)
+
     return this
   }
 
   private setStyles(property: string, raw: string, propKey?: string) {
     propKey = propKey ?? this.getPropKey(property, raw)
+
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
     const getStyles = this.transformMap.get(property) ?? defaultTransform
+
     this.stylesMap.set(propKey, getStyles(raw))
+
     return this
   }
 
@@ -233,12 +244,16 @@ export class Utility {
   private getOrCreateClassName(prop: string, value: string) {
     const inner = (prop: string, value: string) => {
       const propKey = this.getPropKey(prop, value)
+
       if (!this.classNameMap.has(propKey)) {
+        //
         if (this.isProperty(prop)) {
           this.customValueMap.set(prop, value)
         }
+
         this.setClassName(prop, value)
       }
+
       return this.classNameMap.get(propKey)!
     }
 
@@ -251,7 +266,9 @@ export class Utility {
   private getOrCreateStyle(prop: string, value: string) {
     const inner = (prop: string, value: string) => {
       const propKey = this.getPropKey(prop, value)
+
       this.stylesMap.get(propKey) ?? this.setStyles(prop, value, propKey)
+
       return this.stylesMap.get(propKey)!
     }
 
@@ -273,11 +290,11 @@ export class Utility {
    * Given a property and a value, return its raw details (category, raw, value)
    */
   getRawData(prop: string, value: string) {
-    const propConfig = this.propertyConfigMap.get(prop)
-    if (!propConfig) return
+    const config = this.propertyConfigMap.get(prop)
+    if (!config) return
 
-    const category = propConfig.category
-    const values = this.getPropertyValues(this.normalize(propConfig)!)
+    const category = config.category
+    const values = this.getPropertyValues(this.normalize(config)!)
 
     let raw = values?.[value] ?? value
 

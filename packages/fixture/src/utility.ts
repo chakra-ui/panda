@@ -54,7 +54,7 @@ export const utilities: UtilityConfig = {
   },
   divideStyle: {
     className: 'divide',
-    cssType: 'borderStyle',
+    property: 'borderStyle',
     transform(value) {
       return {
         '& > * ~ *': {

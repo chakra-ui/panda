@@ -4,9 +4,9 @@ export const patterns: Record<string, PatternConfig> = {
   stack: {
     name: 'stack',
     properties: {
-      align: { type: 'cssProp', value: 'alignItems' },
-      justify: { type: 'cssProp', value: 'justifyContent' },
-      direction: { type: 'cssProp', value: 'flexDirection' },
+      align: { type: 'property', value: 'alignItems' },
+      justify: { type: 'property', value: 'justifyContent' },
+      direction: { type: 'property', value: 'flexDirection' },
       gap: { type: 'token', value: 'spacing' },
     },
     transform(props) {
@@ -43,7 +43,7 @@ export const patterns: Record<string, PatternConfig> = {
     properties: {
       gap: { type: 'token', value: 'spacing' },
       columns: { type: 'number' },
-      minChildWidth: { type: 'token', value: 'sizes', cssProp: 'width' },
+      minChildWidth: { type: 'token', value: 'sizes', property: 'width' },
     },
     transform(props, { map }) {
       const { gap, columns, minChildWidth } = props

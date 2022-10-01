@@ -36,12 +36,12 @@ export function generatePattern(ctx: PandaContext) {
            .map((key) => {
              const value = pattern.properties![key]
              return match(value)
-               .with({ type: 'cssProp' }, (value) => {
+               .with({ type: 'property' }, (value) => {
                  return `${key}?: CssObject["${value.value}"]`
                })
                .with({ type: 'token' }, (value) => {
-                 if (value.cssProp) {
-                   return `${key}?: ConditionalValue<Tokens["${value.value}"] | Properties["${value.cssProp}"]>`
+                 if (value.property) {
+                   return `${key}?: ConditionalValue<Tokens["${value.value}"] | Properties["${value.property}"]>`
                  }
                  return `${key}?: ConditionalValue<Tokens["${value.value}"]>`
                })
