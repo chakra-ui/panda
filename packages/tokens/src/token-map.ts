@@ -164,9 +164,9 @@ export class TokenMap {
   /**
    * Get the token data by dot path
    */
-  get(path: string) {
-    const obj = Object.fromEntries(this.flattenedTokens.entries())
-    return dlv(obj, path)
+  get(path: string, fallback?: string | number) {
+    const obj = Object.fromEntries(this.flattenedTokens)
+    return dlv(obj, path, fallback)
   }
 
   /**
