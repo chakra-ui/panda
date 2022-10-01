@@ -27,13 +27,15 @@ export const patterns: Record<string, PatternConfig> = {
     properties: {
       axis: { type: 'enum', value: ['x', 'y', 'both'] },
     },
-    transform(props) {
+    transform(props, { map }) {
       const { axis } = props
       return {
         position: 'absolute',
-        top: axis === 'x' ? 'auto' : '50%',
-        left: axis === 'y' ? 'auto' : '50%',
-        transform: axis === 'both' ? 'translate(-50%, -50%)' : axis === 'x' ? 'translateX(-50%)' : 'translateY(-50%)',
+        top: map(axis, (v) => (v === 'x' ? 'auto' : '50%')),
+        left: map(axis, (v) => (v === 'y' ? 'auto' : '50%')),
+        transform: map(axis, (v) =>
+          v === 'both' ? 'translate(-50%, -50%)' : v === 'x' ? 'translateX(-50%)' : 'translateY(-50%)',
+        ),
       }
     },
   },
@@ -51,8 +53,8 @@ export const patterns: Record<string, PatternConfig> = {
         display: 'grid',
         gridGap: gap,
         gridTemplateColumns: columns
-          ? map(columns, (value) => `repeat(${value}, minmax(0, 1fr))`)
-          : map(minChildWidth, (value) => `repeat(auto-fill, minmax(${value}, 1fr))`),
+          ? map(columns, (v) => `repeat(${v}, minmax(0, 1fr))`)
+          : map(minChildWidth, (v) => `repeat(auto-fill, minmax(${v}, 1fr))`),
       }
     },
   },
@@ -62,10 +64,10 @@ export const patterns: Record<string, PatternConfig> = {
     properties: {
       colSpan: { type: 'number' },
     },
-    transform(props) {
+    transform(props, { map }) {
       const { colSpan } = props
       return {
-        gridColumn: colSpan ? `span ${colSpan}` : 'auto',
+        gridColumn: map(colSpan, (v) => (v ? `span ${v}` : 'auto')),
       }
     },
   },
