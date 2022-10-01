@@ -1,9 +1,7 @@
 import { logger, quote } from '@css-panda/logger'
-import { isFunction, isString } from '@css-panda/shared'
+import { isFunction, isString, withoutSpace } from '@css-panda/shared'
 import type { TokenMap } from '@css-panda/tokens'
 import type { AnyFunction, Dict, PropertyConfig, UtilityConfig } from '@css-panda/types'
-
-const clean = (v: string) => v.toString().replaceAll(' ', '_')
 
 type Options = {
   config?: UtilityConfig
@@ -218,11 +216,9 @@ export class Utility {
       return this
     }
 
-    const resolvedClassName = isString(config.className)
-      ? this.hash(config.className, raw)
-      : config.className(raw, property)
+    const className = isString(config.className) ? this.hash(config.className, raw) : config.className(raw, property)
 
-    this.classNameMap.set(propKey, resolvedClassName)
+    this.classNameMap.set(propKey, className)
 
     return this
   }
@@ -266,9 +262,9 @@ export class Utility {
    * Returns the resolved className and styles for a given property and value
    */
   resolve(prop: string, value: string | undefined) {
-    if (!value) return { className: '', styles: {} }
+    if (value == null) return { className: '', styles: {} }
     return {
-      className: this.getOrCreateClassName(prop, clean(value)),
+      className: this.getOrCreateClassName(prop, withoutSpace(value)),
       styles: this.getOrCreateStyle(prop, value),
     }
   }

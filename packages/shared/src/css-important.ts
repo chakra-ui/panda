@@ -1,6 +1,11 @@
-export const isImportant = (value: string) => /!(important)?$/.test(value)
+export function isImportant(value: string) {
+  return /!(important)?$/.test(value)
+}
 
-export const withoutImportant = (value: string) =>
-  typeof value === 'string' ? value.replace(/!(important)?$/, '').trim() : value
+export function withoutImportant(value: string) {
+  return typeof value === 'string' ? value.replace(/!(important)?$/, '').trim() : value
+}
 
-export const withoutSpace = (str: string) => str.replace(/\s/g, '_')
+export function withoutSpace(str: string) {
+  return typeof str === 'string' ? str.replace(/\s/g, '_') : str
+}

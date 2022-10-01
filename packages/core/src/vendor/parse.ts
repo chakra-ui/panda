@@ -107,6 +107,6 @@ const postCssPlugin = (obj: Record<string, any>) => {
   return root
 }
 
-const _parser = postCssPlugin as Parser
+const impl = postCssPlugin as Parser
 
-export { _parser as parser }
+export { impl as parser }

@@ -14,7 +14,7 @@ describe('Conditions', () => {
       }
     `)
 
-    expect(css.get('sm')).toMatchInlineSnapshot(`
+    expect(css.getRaw('sm')).toMatchInlineSnapshot(`
       {
         "name": "screen",
         "params": "screen and (min-width: 30em)",

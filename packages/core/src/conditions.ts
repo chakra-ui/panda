@@ -64,7 +64,7 @@ export class Conditions {
     })
   }
 
-  is = (key: string) => {
+  has = (key: string) => {
     return Object.prototype.hasOwnProperty.call(this.values, key)
   }
 
@@ -72,22 +72,26 @@ export class Conditions {
     return Object.keys(this.values).length === 0
   }
 
-  get = (condition: string): RawCondition | undefined => {
+  get = (key: string) => {
+    const result = this.values[key]
+    return result?.rawValue ?? result?.value
+  }
+
+  getRaw = (condition: string): RawCondition | undefined => {
     try {
       return this.values[condition] ?? parseCondition(condition)
     } catch (error) {
-      console.log({ condition })
       logger.error({ err: error })
     }
   }
 
   sort = (conditions: string[]): RawCondition[] => {
-    const rawConditions = conditions.map(this.get).filter(Boolean) as RawCondition[]
+    const rawConditions = conditions.map(this.getRaw).filter(Boolean) as RawCondition[]
     return rawConditions.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type))
   }
 
   normalize = (condition: string | RawCondition): RawCondition | undefined => {
-    return typeof condition === 'string' ? this.get(condition) : condition
+    return typeof condition === 'string' ? this.getRaw(condition) : condition
   }
 
   keys = () => {

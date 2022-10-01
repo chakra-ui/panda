@@ -223,7 +223,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     const sheet = new Stylesheet(context())
 
     collector.globalCss.forEach((result) => {
-      sheet.processObject(result.data)
+      sheet.processGlobalCss(result)
     })
 
     collector.fontFace.forEach((result) => {

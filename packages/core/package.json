@@ -15,7 +15,7 @@
     "dist"
   ],
   "sideEffects": false,
-"publishConfig": {
+  "publishConfig": {
     "access": "public"
   },
   "dependencies": {
