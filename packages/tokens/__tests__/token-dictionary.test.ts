@@ -49,8 +49,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.gray.50",
           "value": "#FAFAFA",
-          "var": "--colors-gray\\\\.50",
-          "varRef": "var(--colors-gray\\\\.50)",
+          "var": "--colors-gray-50",
+          "varRef": "var(--colors-gray-50)",
         },
         "colors.gray.100" => {
           "category": "colors",
@@ -58,8 +58,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.gray.100",
           "value": "#F5F5F5",
-          "var": "--colors-gray\\\\.100",
-          "varRef": "var(--colors-gray\\\\.100)",
+          "var": "--colors-gray-100",
+          "varRef": "var(--colors-gray-100)",
         },
         "colors.gray.200" => {
           "category": "colors",
@@ -67,8 +67,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.gray.200",
           "value": "#E5E5E5",
-          "var": "--colors-gray\\\\.200",
-          "varRef": "var(--colors-gray\\\\.200)",
+          "var": "--colors-gray-200",
+          "varRef": "var(--colors-gray-200)",
         },
         "colors.gray.300" => {
           "category": "colors",
@@ -76,8 +76,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.gray.300",
           "value": "#D4D4D4",
-          "var": "--colors-gray\\\\.300",
-          "varRef": "var(--colors-gray\\\\.300)",
+          "var": "--colors-gray-300",
+          "varRef": "var(--colors-gray-300)",
         },
         "colors.gray.400" => {
           "category": "colors",
@@ -85,8 +85,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.gray.400",
           "value": "#A3A3A3",
-          "var": "--colors-gray\\\\.400",
-          "varRef": "var(--colors-gray\\\\.400)",
+          "var": "--colors-gray-400",
+          "varRef": "var(--colors-gray-400)",
         },
         "colors.gray.500" => {
           "category": "colors",
@@ -94,8 +94,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.gray.500",
           "value": "#737373",
-          "var": "--colors-gray\\\\.500",
-          "varRef": "var(--colors-gray\\\\.500)",
+          "var": "--colors-gray-500",
+          "varRef": "var(--colors-gray-500)",
         },
         "colors.gray.600" => {
           "category": "colors",
@@ -103,8 +103,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.gray.600",
           "value": "#525252",
-          "var": "--colors-gray\\\\.600",
-          "varRef": "var(--colors-gray\\\\.600)",
+          "var": "--colors-gray-600",
+          "varRef": "var(--colors-gray-600)",
         },
         "colors.gray.700" => {
           "category": "colors",
@@ -112,8 +112,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.gray.700",
           "value": "#333333",
-          "var": "--colors-gray\\\\.700",
-          "varRef": "var(--colors-gray\\\\.700)",
+          "var": "--colors-gray-700",
+          "varRef": "var(--colors-gray-700)",
         },
         "colors.gray.800" => {
           "category": "colors",
@@ -121,8 +121,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.gray.800",
           "value": "#121212",
-          "var": "--colors-gray\\\\.800",
-          "varRef": "var(--colors-gray\\\\.800)",
+          "var": "--colors-gray-800",
+          "varRef": "var(--colors-gray-800)",
         },
         "colors.gray.900" => {
           "category": "colors",
@@ -130,8 +130,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.gray.900",
           "value": "#0A0A0A",
-          "var": "--colors-gray\\\\.900",
-          "varRef": "var(--colors-gray\\\\.900)",
+          "var": "--colors-gray-900",
+          "varRef": "var(--colors-gray-900)",
         },
         "colors.green.50" => {
           "category": "colors",
@@ -139,8 +139,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.green.50",
           "value": "#F0FFF4",
-          "var": "--colors-green\\\\.50",
-          "varRef": "var(--colors-green\\\\.50)",
+          "var": "--colors-green-50",
+          "varRef": "var(--colors-green-50)",
         },
         "colors.green.100" => {
           "category": "colors",
@@ -148,8 +148,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.green.100",
           "value": "#C6F6D5",
-          "var": "--colors-green\\\\.100",
-          "varRef": "var(--colors-green\\\\.100)",
+          "var": "--colors-green-100",
+          "varRef": "var(--colors-green-100)",
         },
         "colors.green.200" => {
           "category": "colors",
@@ -157,8 +157,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.green.200",
           "value": "#9AE6B4",
-          "var": "--colors-green\\\\.200",
-          "varRef": "var(--colors-green\\\\.200)",
+          "var": "--colors-green-200",
+          "varRef": "var(--colors-green-200)",
         },
         "colors.green.300" => {
           "category": "colors",
@@ -166,8 +166,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.green.300",
           "value": "#68D391",
-          "var": "--colors-green\\\\.300",
-          "varRef": "var(--colors-green\\\\.300)",
+          "var": "--colors-green-300",
+          "varRef": "var(--colors-green-300)",
         },
         "colors.green.400" => {
           "category": "colors",
@@ -175,8 +175,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.green.400",
           "value": "#48BB78",
-          "var": "--colors-green\\\\.400",
-          "varRef": "var(--colors-green\\\\.400)",
+          "var": "--colors-green-400",
+          "varRef": "var(--colors-green-400)",
         },
         "colors.green.500" => {
           "category": "colors",
@@ -184,8 +184,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.green.500",
           "value": "#38A169",
-          "var": "--colors-green\\\\.500",
-          "varRef": "var(--colors-green\\\\.500)",
+          "var": "--colors-green-500",
+          "varRef": "var(--colors-green-500)",
         },
         "colors.green.600" => {
           "category": "colors",
@@ -193,8 +193,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.green.600",
           "value": "#2F855A",
-          "var": "--colors-green\\\\.600",
-          "varRef": "var(--colors-green\\\\.600)",
+          "var": "--colors-green-600",
+          "varRef": "var(--colors-green-600)",
         },
         "colors.green.700" => {
           "category": "colors",
@@ -202,8 +202,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.green.700",
           "value": "#276749",
-          "var": "--colors-green\\\\.700",
-          "varRef": "var(--colors-green\\\\.700)",
+          "var": "--colors-green-700",
+          "varRef": "var(--colors-green-700)",
         },
         "colors.green.800" => {
           "category": "colors",
@@ -211,8 +211,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.green.800",
           "value": "#22543D",
-          "var": "--colors-green\\\\.800",
-          "varRef": "var(--colors-green\\\\.800)",
+          "var": "--colors-green-800",
+          "varRef": "var(--colors-green-800)",
         },
         "colors.green.900" => {
           "category": "colors",
@@ -220,8 +220,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.green.900",
           "value": "#1C4532",
-          "var": "--colors-green\\\\.900",
-          "varRef": "var(--colors-green\\\\.900)",
+          "var": "--colors-green-900",
+          "varRef": "var(--colors-green-900)",
         },
         "colors.red.50" => {
           "category": "colors",
@@ -229,8 +229,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.red.50",
           "value": "#FEF2F2",
-          "var": "--colors-red\\\\.50",
-          "varRef": "var(--colors-red\\\\.50)",
+          "var": "--colors-red-50",
+          "varRef": "var(--colors-red-50)",
         },
         "colors.red.100" => {
           "category": "colors",
@@ -238,8 +238,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.red.100",
           "value": "#FEE2E2",
-          "var": "--colors-red\\\\.100",
-          "varRef": "var(--colors-red\\\\.100)",
+          "var": "--colors-red-100",
+          "varRef": "var(--colors-red-100)",
         },
         "colors.red.200" => {
           "category": "colors",
@@ -247,8 +247,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.red.200",
           "value": "#FECACA",
-          "var": "--colors-red\\\\.200",
-          "varRef": "var(--colors-red\\\\.200)",
+          "var": "--colors-red-200",
+          "varRef": "var(--colors-red-200)",
         },
         "colors.red.300" => {
           "category": "colors",
@@ -256,8 +256,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.red.300",
           "value": "#FCA5A5",
-          "var": "--colors-red\\\\.300",
-          "varRef": "var(--colors-red\\\\.300)",
+          "var": "--colors-red-300",
+          "varRef": "var(--colors-red-300)",
         },
         "colors.red.400" => {
           "category": "colors",
@@ -265,8 +265,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.red.400",
           "value": "#F87171",
-          "var": "--colors-red\\\\.400",
-          "varRef": "var(--colors-red\\\\.400)",
+          "var": "--colors-red-400",
+          "varRef": "var(--colors-red-400)",
         },
         "colors.red.500" => {
           "category": "colors",
@@ -274,8 +274,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.red.500",
           "value": "#EF4444",
-          "var": "--colors-red\\\\.500",
-          "varRef": "var(--colors-red\\\\.500)",
+          "var": "--colors-red-500",
+          "varRef": "var(--colors-red-500)",
         },
         "colors.red.600" => {
           "category": "colors",
@@ -283,8 +283,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.red.600",
           "value": "#DC2626",
-          "var": "--colors-red\\\\.600",
-          "varRef": "var(--colors-red\\\\.600)",
+          "var": "--colors-red-600",
+          "varRef": "var(--colors-red-600)",
         },
         "colors.red.700" => {
           "category": "colors",
@@ -292,8 +292,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.red.700",
           "value": "#B91C1C",
-          "var": "--colors-red\\\\.700",
-          "varRef": "var(--colors-red\\\\.700)",
+          "var": "--colors-red-700",
+          "varRef": "var(--colors-red-700)",
         },
         "colors.red.800" => {
           "category": "colors",
@@ -301,8 +301,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.red.800",
           "value": "#991B1B",
-          "var": "--colors-red\\\\.800",
-          "varRef": "var(--colors-red\\\\.800)",
+          "var": "--colors-red-800",
+          "varRef": "var(--colors-red-800)",
         },
         "colors.red.900" => {
           "category": "colors",
@@ -310,8 +310,8 @@ describe('Token types', () => {
           "negative": false,
           "prop": "colors.red.900",
           "value": "#7F1D1D",
-          "var": "--colors-red\\\\.900",
-          "varRef": "var(--colors-red\\\\.900)",
+          "var": "--colors-red-900",
+          "varRef": "var(--colors-red-900)",
         },
         "fontSizes.sm" => {
           "category": "fontSizes",
@@ -1107,6 +1107,7 @@ describe('Token types', () => {
         },
         "colors.primary" => {
           "category": "colors",
+          "condition": "base",
           "key": "primary",
           "negative": false,
           "prop": "colors.primary",
@@ -1116,6 +1117,7 @@ describe('Token types', () => {
         },
         "colors.secondary" => {
           "category": "colors",
+          "condition": "base",
           "key": "secondary",
           "negative": false,
           "prop": "colors.secondary",
@@ -1125,6 +1127,7 @@ describe('Token types', () => {
         },
         "spacing.gutter" => {
           "category": "spacing",
+          "condition": "base",
           "key": "gutter",
           "negative": false,
           "prop": "spacing.gutter",
@@ -1134,6 +1137,7 @@ describe('Token types', () => {
         },
         "spacing.-gutter" => {
           "category": "spacing",
+          "condition": "base",
           "key": "-gutter",
           "negative": true,
           "prop": "spacing.-gutter",
@@ -1162,123 +1166,123 @@ describe('Token types', () => {
           "category": "colors",
           "value": "currentColor",
         },
-        "--colors-gray\\\\.50" => {
+        "--colors-gray-50" => {
           "category": "colors",
           "value": "#FAFAFA",
         },
-        "--colors-gray\\\\.100" => {
+        "--colors-gray-100" => {
           "category": "colors",
           "value": "#F5F5F5",
         },
-        "--colors-gray\\\\.200" => {
+        "--colors-gray-200" => {
           "category": "colors",
           "value": "#E5E5E5",
         },
-        "--colors-gray\\\\.300" => {
+        "--colors-gray-300" => {
           "category": "colors",
           "value": "#D4D4D4",
         },
-        "--colors-gray\\\\.400" => {
+        "--colors-gray-400" => {
           "category": "colors",
           "value": "#A3A3A3",
         },
-        "--colors-gray\\\\.500" => {
+        "--colors-gray-500" => {
           "category": "colors",
           "value": "#737373",
         },
-        "--colors-gray\\\\.600" => {
+        "--colors-gray-600" => {
           "category": "colors",
           "value": "#525252",
         },
-        "--colors-gray\\\\.700" => {
+        "--colors-gray-700" => {
           "category": "colors",
           "value": "#333333",
         },
-        "--colors-gray\\\\.800" => {
+        "--colors-gray-800" => {
           "category": "colors",
           "value": "#121212",
         },
-        "--colors-gray\\\\.900" => {
+        "--colors-gray-900" => {
           "category": "colors",
           "value": "#0A0A0A",
         },
-        "--colors-green\\\\.50" => {
+        "--colors-green-50" => {
           "category": "colors",
           "value": "#F0FFF4",
         },
-        "--colors-green\\\\.100" => {
+        "--colors-green-100" => {
           "category": "colors",
           "value": "#C6F6D5",
         },
-        "--colors-green\\\\.200" => {
+        "--colors-green-200" => {
           "category": "colors",
           "value": "#9AE6B4",
         },
-        "--colors-green\\\\.300" => {
+        "--colors-green-300" => {
           "category": "colors",
           "value": "#68D391",
         },
-        "--colors-green\\\\.400" => {
+        "--colors-green-400" => {
           "category": "colors",
           "value": "#48BB78",
         },
-        "--colors-green\\\\.500" => {
+        "--colors-green-500" => {
           "category": "colors",
           "value": "#38A169",
         },
-        "--colors-green\\\\.600" => {
+        "--colors-green-600" => {
           "category": "colors",
           "value": "#2F855A",
         },
-        "--colors-green\\\\.700" => {
+        "--colors-green-700" => {
           "category": "colors",
           "value": "#276749",
         },
-        "--colors-green\\\\.800" => {
+        "--colors-green-800" => {
           "category": "colors",
           "value": "#22543D",
         },
-        "--colors-green\\\\.900" => {
+        "--colors-green-900" => {
           "category": "colors",
           "value": "#1C4532",
         },
-        "--colors-red\\\\.50" => {
+        "--colors-red-50" => {
           "category": "colors",
           "value": "#FEF2F2",
         },
-        "--colors-red\\\\.100" => {
+        "--colors-red-100" => {
           "category": "colors",
           "value": "#FEE2E2",
         },
-        "--colors-red\\\\.200" => {
+        "--colors-red-200" => {
           "category": "colors",
           "value": "#FECACA",
         },
-        "--colors-red\\\\.300" => {
+        "--colors-red-300" => {
           "category": "colors",
           "value": "#FCA5A5",
         },
-        "--colors-red\\\\.400" => {
+        "--colors-red-400" => {
           "category": "colors",
           "value": "#F87171",
         },
-        "--colors-red\\\\.500" => {
+        "--colors-red-500" => {
           "category": "colors",
           "value": "#EF4444",
         },
-        "--colors-red\\\\.600" => {
+        "--colors-red-600" => {
           "category": "colors",
           "value": "#DC2626",
         },
-        "--colors-red\\\\.700" => {
+        "--colors-red-700" => {
           "category": "colors",
           "value": "#B91C1C",
         },
-        "--colors-red\\\\.800" => {
+        "--colors-red-800" => {
           "category": "colors",
           "value": "#991B1B",
         },
-        "--colors-red\\\\.900" => {
+        "--colors-red-900" => {
           "category": "colors",
           "value": "#7F1D1D",
         },
@@ -1596,11 +1600,11 @@ describe('Token types', () => {
         },
         "--colors-primary" => {
           "category": "colors",
-          "value": "var(--colors-red\\\\.500)",
+          "value": "var(--colors-red-500)",
         },
         "--colors-secondary" => {
           "category": "colors",
-          "value": "var(--colors-red\\\\.800)",
+          "value": "var(--colors-red-800)",
         },
         "--spacing-gutter" => {
           "category": "spacing",
@@ -1614,11 +1618,11 @@ describe('Token types', () => {
         "dark" => Map {
           "--colors-primary" => {
             "category": "colors",
-            "value": "var(--colors-red\\\\.400)",
+            "value": "var(--colors-red-400)",
           },
           "--colors-secondary" => {
             "category": "colors",
-            "value": "var(--colors-red\\\\.700)",
+            "value": "var(--colors-red-700)",
           },
         },
         "lg" => Map {
@@ -1677,8 +1681,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.gray.50",
             "value": "#FAFAFA",
-            "var": "--colors-gray\\\\.50",
-            "varRef": "var(--colors-gray\\\\.50)",
+            "var": "--colors-gray-50",
+            "varRef": "var(--colors-gray-50)",
           },
           "gray.100" => {
             "category": "colors",
@@ -1686,8 +1690,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.gray.100",
             "value": "#F5F5F5",
-            "var": "--colors-gray\\\\.100",
-            "varRef": "var(--colors-gray\\\\.100)",
+            "var": "--colors-gray-100",
+            "varRef": "var(--colors-gray-100)",
           },
           "gray.200" => {
             "category": "colors",
@@ -1695,8 +1699,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.gray.200",
             "value": "#E5E5E5",
-            "var": "--colors-gray\\\\.200",
-            "varRef": "var(--colors-gray\\\\.200)",
+            "var": "--colors-gray-200",
+            "varRef": "var(--colors-gray-200)",
           },
           "gray.300" => {
             "category": "colors",
@@ -1704,8 +1708,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.gray.300",
             "value": "#D4D4D4",
-            "var": "--colors-gray\\\\.300",
-            "varRef": "var(--colors-gray\\\\.300)",
+            "var": "--colors-gray-300",
+            "varRef": "var(--colors-gray-300)",
           },
           "gray.400" => {
             "category": "colors",
@@ -1713,8 +1717,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.gray.400",
             "value": "#A3A3A3",
-            "var": "--colors-gray\\\\.400",
-            "varRef": "var(--colors-gray\\\\.400)",
+            "var": "--colors-gray-400",
+            "varRef": "var(--colors-gray-400)",
           },
           "gray.500" => {
             "category": "colors",
@@ -1722,8 +1726,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.gray.500",
             "value": "#737373",
-            "var": "--colors-gray\\\\.500",
-            "varRef": "var(--colors-gray\\\\.500)",
+            "var": "--colors-gray-500",
+            "varRef": "var(--colors-gray-500)",
           },
           "gray.600" => {
             "category": "colors",
@@ -1731,8 +1735,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.gray.600",
             "value": "#525252",
-            "var": "--colors-gray\\\\.600",
-            "varRef": "var(--colors-gray\\\\.600)",
+            "var": "--colors-gray-600",
+            "varRef": "var(--colors-gray-600)",
           },
           "gray.700" => {
             "category": "colors",
@@ -1740,8 +1744,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.gray.700",
             "value": "#333333",
-            "var": "--colors-gray\\\\.700",
-            "varRef": "var(--colors-gray\\\\.700)",
+            "var": "--colors-gray-700",
+            "varRef": "var(--colors-gray-700)",
           },
           "gray.800" => {
             "category": "colors",
@@ -1749,8 +1753,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.gray.800",
             "value": "#121212",
-            "var": "--colors-gray\\\\.800",
-            "varRef": "var(--colors-gray\\\\.800)",
+            "var": "--colors-gray-800",
+            "varRef": "var(--colors-gray-800)",
           },
           "gray.900" => {
             "category": "colors",
@@ -1758,8 +1762,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.gray.900",
             "value": "#0A0A0A",
-            "var": "--colors-gray\\\\.900",
-            "varRef": "var(--colors-gray\\\\.900)",
+            "var": "--colors-gray-900",
+            "varRef": "var(--colors-gray-900)",
           },
           "green.50" => {
             "category": "colors",
@@ -1767,8 +1771,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.green.50",
             "value": "#F0FFF4",
-            "var": "--colors-green\\\\.50",
-            "varRef": "var(--colors-green\\\\.50)",
+            "var": "--colors-green-50",
+            "varRef": "var(--colors-green-50)",
           },
           "green.100" => {
             "category": "colors",
@@ -1776,8 +1780,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.green.100",
             "value": "#C6F6D5",
-            "var": "--colors-green\\\\.100",
-            "varRef": "var(--colors-green\\\\.100)",
+            "var": "--colors-green-100",
+            "varRef": "var(--colors-green-100)",
           },
           "green.200" => {
             "category": "colors",
@@ -1785,8 +1789,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.green.200",
             "value": "#9AE6B4",
-            "var": "--colors-green\\\\.200",
-            "varRef": "var(--colors-green\\\\.200)",
+            "var": "--colors-green-200",
+            "varRef": "var(--colors-green-200)",
           },
           "green.300" => {
             "category": "colors",
@@ -1794,8 +1798,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.green.300",
             "value": "#68D391",
-            "var": "--colors-green\\\\.300",
-            "varRef": "var(--colors-green\\\\.300)",
+            "var": "--colors-green-300",
+            "varRef": "var(--colors-green-300)",
           },
           "green.400" => {
             "category": "colors",
@@ -1803,8 +1807,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.green.400",
             "value": "#48BB78",
-            "var": "--colors-green\\\\.400",
-            "varRef": "var(--colors-green\\\\.400)",
+            "var": "--colors-green-400",
+            "varRef": "var(--colors-green-400)",
           },
           "green.500" => {
             "category": "colors",
@@ -1812,8 +1816,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.green.500",
             "value": "#38A169",
-            "var": "--colors-green\\\\.500",
-            "varRef": "var(--colors-green\\\\.500)",
+            "var": "--colors-green-500",
+            "varRef": "var(--colors-green-500)",
           },
           "green.600" => {
             "category": "colors",
@@ -1821,8 +1825,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.green.600",
             "value": "#2F855A",
-            "var": "--colors-green\\\\.600",
-            "varRef": "var(--colors-green\\\\.600)",
+            "var": "--colors-green-600",
+            "varRef": "var(--colors-green-600)",
           },
           "green.700" => {
             "category": "colors",
@@ -1830,8 +1834,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.green.700",
             "value": "#276749",
-            "var": "--colors-green\\\\.700",
-            "varRef": "var(--colors-green\\\\.700)",
+            "var": "--colors-green-700",
+            "varRef": "var(--colors-green-700)",
           },
           "green.800" => {
             "category": "colors",
@@ -1839,8 +1843,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.green.800",
             "value": "#22543D",
-            "var": "--colors-green\\\\.800",
-            "varRef": "var(--colors-green\\\\.800)",
+            "var": "--colors-green-800",
+            "varRef": "var(--colors-green-800)",
           },
           "green.900" => {
             "category": "colors",
@@ -1848,8 +1852,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.green.900",
             "value": "#1C4532",
-            "var": "--colors-green\\\\.900",
-            "varRef": "var(--colors-green\\\\.900)",
+            "var": "--colors-green-900",
+            "varRef": "var(--colors-green-900)",
           },
           "red.50" => {
             "category": "colors",
@@ -1857,8 +1861,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.red.50",
             "value": "#FEF2F2",
-            "var": "--colors-red\\\\.50",
-            "varRef": "var(--colors-red\\\\.50)",
+            "var": "--colors-red-50",
+            "varRef": "var(--colors-red-50)",
           },
           "red.100" => {
             "category": "colors",
@@ -1866,8 +1870,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.red.100",
             "value": "#FEE2E2",
-            "var": "--colors-red\\\\.100",
-            "varRef": "var(--colors-red\\\\.100)",
+            "var": "--colors-red-100",
+            "varRef": "var(--colors-red-100)",
           },
           "red.200" => {
             "category": "colors",
@@ -1875,8 +1879,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.red.200",
             "value": "#FECACA",
-            "var": "--colors-red\\\\.200",
-            "varRef": "var(--colors-red\\\\.200)",
+            "var": "--colors-red-200",
+            "varRef": "var(--colors-red-200)",
           },
           "red.300" => {
             "category": "colors",
@@ -1884,8 +1888,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.red.300",
             "value": "#FCA5A5",
-            "var": "--colors-red\\\\.300",
-            "varRef": "var(--colors-red\\\\.300)",
+            "var": "--colors-red-300",
+            "varRef": "var(--colors-red-300)",
           },
           "red.400" => {
             "category": "colors",
@@ -1893,8 +1897,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.red.400",
             "value": "#F87171",
-            "var": "--colors-red\\\\.400",
-            "varRef": "var(--colors-red\\\\.400)",
+            "var": "--colors-red-400",
+            "varRef": "var(--colors-red-400)",
           },
           "red.500" => {
             "category": "colors",
@@ -1902,8 +1906,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.red.500",
             "value": "#EF4444",
-            "var": "--colors-red\\\\.500",
-            "varRef": "var(--colors-red\\\\.500)",
+            "var": "--colors-red-500",
+            "varRef": "var(--colors-red-500)",
           },
           "red.600" => {
             "category": "colors",
@@ -1911,8 +1915,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.red.600",
             "value": "#DC2626",
-            "var": "--colors-red\\\\.600",
-            "varRef": "var(--colors-red\\\\.600)",
+            "var": "--colors-red-600",
+            "varRef": "var(--colors-red-600)",
           },
           "red.700" => {
             "category": "colors",
@@ -1920,8 +1924,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.red.700",
             "value": "#B91C1C",
-            "var": "--colors-red\\\\.700",
-            "varRef": "var(--colors-red\\\\.700)",
+            "var": "--colors-red-700",
+            "varRef": "var(--colors-red-700)",
           },
           "red.800" => {
             "category": "colors",
@@ -1929,8 +1933,8 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.red.800",
             "value": "#991B1B",
-            "var": "--colors-red\\\\.800",
-            "varRef": "var(--colors-red\\\\.800)",
+            "var": "--colors-red-800",
+            "varRef": "var(--colors-red-800)",
           },
           "red.900" => {
             "category": "colors",
@@ -1938,11 +1942,12 @@ describe('Token types', () => {
             "negative": false,
             "prop": "colors.red.900",
             "value": "#7F1D1D",
-            "var": "--colors-red\\\\.900",
-            "varRef": "var(--colors-red\\\\.900)",
+            "var": "--colors-red-900",
+            "varRef": "var(--colors-red-900)",
           },
           "primary" => {
             "category": "colors",
+            "condition": "base",
             "key": "primary",
             "negative": false,
             "prop": "colors.primary",
@@ -1952,6 +1957,7 @@ describe('Token types', () => {
           },
           "secondary" => {
             "category": "colors",
+            "condition": "base",
             "key": "secondary",
             "negative": false,
             "prop": "colors.secondary",
@@ -2490,6 +2496,7 @@ describe('Token types', () => {
           },
           "gutter" => {
             "category": "spacing",
+            "condition": "base",
             "key": "gutter",
             "negative": false,
             "prop": "spacing.gutter",
@@ -2499,6 +2506,7 @@ describe('Token types', () => {
           },
           "-gutter" => {
             "category": "spacing",
+            "condition": "base",
             "key": "-gutter",
             "negative": true,
             "prop": "spacing.-gutter",
@@ -2877,6 +2885,7 @@ describe('Token types', () => {
       Map {
         "colors.onPrimary" => {
           "category": "colors",
+          "condition": "base",
           "key": "onPrimary",
           "negative": false,
           "prop": "colors.onPrimary",
@@ -2886,6 +2895,7 @@ describe('Token types', () => {
         },
         "fonts.funky" => {
           "category": "fonts",
+          "condition": "base",
           "key": "funky",
           "negative": false,
           "prop": "fonts.funky",

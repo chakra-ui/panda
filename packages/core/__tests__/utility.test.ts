@@ -172,94 +172,94 @@ describe('Utility', () => {
           "backgroundColor": "var(--colors-current)",
         },
         "(backgroundColor = gray.50)" => {
-          "backgroundColor": "var(--colors-gray\\\\.50)",
+          "backgroundColor": "var(--colors-gray-50)",
         },
         "(backgroundColor = gray.100)" => {
-          "backgroundColor": "var(--colors-gray\\\\.100)",
+          "backgroundColor": "var(--colors-gray-100)",
         },
         "(backgroundColor = gray.200)" => {
-          "backgroundColor": "var(--colors-gray\\\\.200)",
+          "backgroundColor": "var(--colors-gray-200)",
         },
         "(backgroundColor = gray.300)" => {
-          "backgroundColor": "var(--colors-gray\\\\.300)",
+          "backgroundColor": "var(--colors-gray-300)",
         },
         "(backgroundColor = gray.400)" => {
-          "backgroundColor": "var(--colors-gray\\\\.400)",
+          "backgroundColor": "var(--colors-gray-400)",
         },
         "(backgroundColor = gray.500)" => {
-          "backgroundColor": "var(--colors-gray\\\\.500)",
+          "backgroundColor": "var(--colors-gray-500)",
         },
         "(backgroundColor = gray.600)" => {
-          "backgroundColor": "var(--colors-gray\\\\.600)",
+          "backgroundColor": "var(--colors-gray-600)",
         },
         "(backgroundColor = gray.700)" => {
-          "backgroundColor": "var(--colors-gray\\\\.700)",
+          "backgroundColor": "var(--colors-gray-700)",
         },
         "(backgroundColor = gray.800)" => {
-          "backgroundColor": "var(--colors-gray\\\\.800)",
+          "backgroundColor": "var(--colors-gray-800)",
         },
         "(backgroundColor = gray.900)" => {
-          "backgroundColor": "var(--colors-gray\\\\.900)",
+          "backgroundColor": "var(--colors-gray-900)",
         },
         "(backgroundColor = green.50)" => {
-          "backgroundColor": "var(--colors-green\\\\.50)",
+          "backgroundColor": "var(--colors-green-50)",
         },
         "(backgroundColor = green.100)" => {
-          "backgroundColor": "var(--colors-green\\\\.100)",
+          "backgroundColor": "var(--colors-green-100)",
         },
         "(backgroundColor = green.200)" => {
-          "backgroundColor": "var(--colors-green\\\\.200)",
+          "backgroundColor": "var(--colors-green-200)",
         },
         "(backgroundColor = green.300)" => {
-          "backgroundColor": "var(--colors-green\\\\.300)",
+          "backgroundColor": "var(--colors-green-300)",
         },
         "(backgroundColor = green.400)" => {
-          "backgroundColor": "var(--colors-green\\\\.400)",
+          "backgroundColor": "var(--colors-green-400)",
         },
         "(backgroundColor = green.500)" => {
-          "backgroundColor": "var(--colors-green\\\\.500)",
+          "backgroundColor": "var(--colors-green-500)",
         },
         "(backgroundColor = green.600)" => {
-          "backgroundColor": "var(--colors-green\\\\.600)",
+          "backgroundColor": "var(--colors-green-600)",
         },
         "(backgroundColor = green.700)" => {
-          "backgroundColor": "var(--colors-green\\\\.700)",
+          "backgroundColor": "var(--colors-green-700)",
         },
         "(backgroundColor = green.800)" => {
-          "backgroundColor": "var(--colors-green\\\\.800)",
+          "backgroundColor": "var(--colors-green-800)",
         },
         "(backgroundColor = green.900)" => {
-          "backgroundColor": "var(--colors-green\\\\.900)",
+          "backgroundColor": "var(--colors-green-900)",
         },
         "(backgroundColor = red.50)" => {
-          "backgroundColor": "var(--colors-red\\\\.50)",
+          "backgroundColor": "var(--colors-red-50)",
         },
         "(backgroundColor = red.100)" => {
-          "backgroundColor": "var(--colors-red\\\\.100)",
+          "backgroundColor": "var(--colors-red-100)",
         },
         "(backgroundColor = red.200)" => {
-          "backgroundColor": "var(--colors-red\\\\.200)",
+          "backgroundColor": "var(--colors-red-200)",
         },
         "(backgroundColor = red.300)" => {
-          "backgroundColor": "var(--colors-red\\\\.300)",
+          "backgroundColor": "var(--colors-red-300)",
         },
         "(backgroundColor = red.400)" => {
-          "backgroundColor": "var(--colors-red\\\\.400)",
+          "backgroundColor": "var(--colors-red-400)",
         },
         "(backgroundColor = red.500)" => {
-          "backgroundColor": "var(--colors-red\\\\.500)",
+          "backgroundColor": "var(--colors-red-500)",
         },
         "(backgroundColor = red.600)" => {
-          "backgroundColor": "var(--colors-red\\\\.600)",
+          "backgroundColor": "var(--colors-red-600)",
         },
         "(backgroundColor = red.700)" => {
-          "backgroundColor": "var(--colors-red\\\\.700)",
+          "backgroundColor": "var(--colors-red-700)",
         },
         "(backgroundColor = red.800)" => {
-          "backgroundColor": "var(--colors-red\\\\.800)",
+          "backgroundColor": "var(--colors-red-800)",
         },
         "(backgroundColor = red.900)" => {
-          "backgroundColor": "var(--colors-red\\\\.900)",
+          "backgroundColor": "var(--colors-red-900)",
         },
         "(backgroundColor = primary)" => {
           "backgroundColor": "var(--colors-primary)",

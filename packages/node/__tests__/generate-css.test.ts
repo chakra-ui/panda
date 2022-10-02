@@ -30,36 +30,36 @@ test('[css] should generate css', () => {
         --fonts-body: Helvetica, Arial, sans-serif;
         --fonts-mono: SFMono-Regular, Menlo, Monaco;
         --colors-current: currentColor;
-        --colors-gray\\\\.50: #FAFAFA;
-        --colors-gray\\\\.100: #F5F5F5;
-        --colors-gray\\\\.200: #E5E5E5;
-        --colors-gray\\\\.300: #D4D4D4;
-        --colors-gray\\\\.400: #A3A3A3;
-        --colors-gray\\\\.500: #737373;
-        --colors-gray\\\\.600: #525252;
-        --colors-gray\\\\.700: #333333;
-        --colors-gray\\\\.800: #121212;
-        --colors-gray\\\\.900: #0A0A0A;
-        --colors-green\\\\.50: #F0FFF4;
-        --colors-green\\\\.100: #C6F6D5;
-        --colors-green\\\\.200: #9AE6B4;
-        --colors-green\\\\.300: #68D391;
-        --colors-green\\\\.400: #48BB78;
-        --colors-green\\\\.500: #38A169;
-        --colors-green\\\\.600: #2F855A;
-        --colors-green\\\\.700: #276749;
-        --colors-green\\\\.800: #22543D;
-        --colors-green\\\\.900: #1C4532;
-        --colors-red\\\\.50: #FEF2F2;
-        --colors-red\\\\.100: #FEE2E2;
-        --colors-red\\\\.200: #FECACA;
-        --colors-red\\\\.300: #FCA5A5;
-        --colors-red\\\\.400: #F87171;
-        --colors-red\\\\.500: #EF4444;
-        --colors-red\\\\.600: #DC2626;
-        --colors-red\\\\.700: #B91C1C;
-        --colors-red\\\\.800: #991B1B;
-        --colors-red\\\\.900: #7F1D1D;
+        --colors-gray-50: #FAFAFA;
+        --colors-gray-100: #F5F5F5;
+        --colors-gray-200: #E5E5E5;
+        --colors-gray-300: #D4D4D4;
+        --colors-gray-400: #A3A3A3;
+        --colors-gray-500: #737373;
+        --colors-gray-600: #525252;
+        --colors-gray-700: #333333;
+        --colors-gray-800: #121212;
+        --colors-gray-900: #0A0A0A;
+        --colors-green-50: #F0FFF4;
+        --colors-green-100: #C6F6D5;
+        --colors-green-200: #9AE6B4;
+        --colors-green-300: #68D391;
+        --colors-green-400: #48BB78;
+        --colors-green-500: #38A169;
+        --colors-green-600: #2F855A;
+        --colors-green-700: #276749;
+        --colors-green-800: #22543D;
+        --colors-green-900: #1C4532;
+        --colors-red-50: #FEF2F2;
+        --colors-red-100: #FEE2E2;
+        --colors-red-200: #FECACA;
+        --colors-red-300: #FCA5A5;
+        --colors-red-400: #F87171;
+        --colors-red-500: #EF4444;
+        --colors-red-600: #DC2626;
+        --colors-red-700: #B91C1C;
+        --colors-red-800: #991B1B;
+        --colors-red-900: #7F1D1D;
         --font-sizes-sm: 0.5rem;
         --font-sizes-xs: 0.75rem;
         --font-sizes-md: 0.875rem;
@@ -138,14 +138,14 @@ test('[css] should generate css', () => {
         --durations-75: 75ms;
         --durations-100: 100ms;
         --durations-150: 150ms;
-        --colors-primary: var(--colors-red\\\\.500);
-        --colors-secondary: var(--colors-red\\\\.800);
+        --colors-primary: var(--colors-red-500);
+        --colors-secondary: var(--colors-red-800);
         --spacing-gutter: var(--spacing-4)
     }
 
     [data-theme=dark] {
-     --colors-primary: var(--colors-red\\\\.400);
-    --colors-secondary: var(--colors-red\\\\.700) 
+     --colors-primary: var(--colors-red-400);
+    --colors-secondary: var(--colors-red-700) 
     }
 
     @media screen and (min-width: 62em) {

@@ -26,123 +26,123 @@ test('[dts] should generate package', () => {
       },
       \\"colors.gray.50\\": {
         \\"value\\": \\"#FAFAFA\\",
-        \\"variable\\": \\"var(--colors-gray\\\\\\\\.50)\\"
+        \\"variable\\": \\"var(--colors-gray-50)\\"
       },
       \\"colors.gray.100\\": {
         \\"value\\": \\"#F5F5F5\\",
-        \\"variable\\": \\"var(--colors-gray\\\\\\\\.100)\\"
+        \\"variable\\": \\"var(--colors-gray-100)\\"
       },
       \\"colors.gray.200\\": {
         \\"value\\": \\"#E5E5E5\\",
-        \\"variable\\": \\"var(--colors-gray\\\\\\\\.200)\\"
+        \\"variable\\": \\"var(--colors-gray-200)\\"
       },
       \\"colors.gray.300\\": {
         \\"value\\": \\"#D4D4D4\\",
-        \\"variable\\": \\"var(--colors-gray\\\\\\\\.300)\\"
+        \\"variable\\": \\"var(--colors-gray-300)\\"
       },
       \\"colors.gray.400\\": {
         \\"value\\": \\"#A3A3A3\\",
-        \\"variable\\": \\"var(--colors-gray\\\\\\\\.400)\\"
+        \\"variable\\": \\"var(--colors-gray-400)\\"
       },
       \\"colors.gray.500\\": {
         \\"value\\": \\"#737373\\",
-        \\"variable\\": \\"var(--colors-gray\\\\\\\\.500)\\"
+        \\"variable\\": \\"var(--colors-gray-500)\\"
       },
       \\"colors.gray.600\\": {
         \\"value\\": \\"#525252\\",
-        \\"variable\\": \\"var(--colors-gray\\\\\\\\.600)\\"
+        \\"variable\\": \\"var(--colors-gray-600)\\"
       },
       \\"colors.gray.700\\": {
         \\"value\\": \\"#333333\\",
-        \\"variable\\": \\"var(--colors-gray\\\\\\\\.700)\\"
+        \\"variable\\": \\"var(--colors-gray-700)\\"
       },
       \\"colors.gray.800\\": {
         \\"value\\": \\"#121212\\",
-        \\"variable\\": \\"var(--colors-gray\\\\\\\\.800)\\"
+        \\"variable\\": \\"var(--colors-gray-800)\\"
       },
       \\"colors.gray.900\\": {
         \\"value\\": \\"#0A0A0A\\",
-        \\"variable\\": \\"var(--colors-gray\\\\\\\\.900)\\"
+        \\"variable\\": \\"var(--colors-gray-900)\\"
       },
       \\"colors.green.50\\": {
         \\"value\\": \\"#F0FFF4\\",
-        \\"variable\\": \\"var(--colors-green\\\\\\\\.50)\\"
+        \\"variable\\": \\"var(--colors-green-50)\\"
       },
       \\"colors.green.100\\": {
         \\"value\\": \\"#C6F6D5\\",
-        \\"variable\\": \\"var(--colors-green\\\\\\\\.100)\\"
+        \\"variable\\": \\"var(--colors-green-100)\\"
       },
       \\"colors.green.200\\": {
         \\"value\\": \\"#9AE6B4\\",
-        \\"variable\\": \\"var(--colors-green\\\\\\\\.200)\\"
+        \\"variable\\": \\"var(--colors-green-200)\\"
       },
       \\"colors.green.300\\": {
         \\"value\\": \\"#68D391\\",
-        \\"variable\\": \\"var(--colors-green\\\\\\\\.300)\\"
+        \\"variable\\": \\"var(--colors-green-300)\\"
       },
       \\"colors.green.400\\": {
         \\"value\\": \\"#48BB78\\",
-        \\"variable\\": \\"var(--colors-green\\\\\\\\.400)\\"
+        \\"variable\\": \\"var(--colors-green-400)\\"
       },
       \\"colors.green.500\\": {
         \\"value\\": \\"#38A169\\",
-        \\"variable\\": \\"var(--colors-green\\\\\\\\.500)\\"
+        \\"variable\\": \\"var(--colors-green-500)\\"
       },
       \\"colors.green.600\\": {
         \\"value\\": \\"#2F855A\\",
-        \\"variable\\": \\"var(--colors-green\\\\\\\\.600)\\"
+        \\"variable\\": \\"var(--colors-green-600)\\"
       },
       \\"colors.green.700\\": {
         \\"value\\": \\"#276749\\",
-        \\"variable\\": \\"var(--colors-green\\\\\\\\.700)\\"
+        \\"variable\\": \\"var(--colors-green-700)\\"
       },
       \\"colors.green.800\\": {
         \\"value\\": \\"#22543D\\",
-        \\"variable\\": \\"var(--colors-green\\\\\\\\.800)\\"
+        \\"variable\\": \\"var(--colors-green-800)\\"
       },
       \\"colors.green.900\\": {
         \\"value\\": \\"#1C4532\\",
-        \\"variable\\": \\"var(--colors-green\\\\\\\\.900)\\"
+        \\"variable\\": \\"var(--colors-green-900)\\"
       },
       \\"colors.red.50\\": {
         \\"value\\": \\"#FEF2F2\\",
-        \\"variable\\": \\"var(--colors-red\\\\\\\\.50)\\"
+        \\"variable\\": \\"var(--colors-red-50)\\"
       },
       \\"colors.red.100\\": {
         \\"value\\": \\"#FEE2E2\\",
-        \\"variable\\": \\"var(--colors-red\\\\\\\\.100)\\"
+        \\"variable\\": \\"var(--colors-red-100)\\"
       },
       \\"colors.red.200\\": {
         \\"value\\": \\"#FECACA\\",
-        \\"variable\\": \\"var(--colors-red\\\\\\\\.200)\\"
+        \\"variable\\": \\"var(--colors-red-200)\\"
       },
       \\"colors.red.300\\": {
         \\"value\\": \\"#FCA5A5\\",
-        \\"variable\\": \\"var(--colors-red\\\\\\\\.300)\\"
+        \\"variable\\": \\"var(--colors-red-300)\\"
       },
       \\"colors.red.400\\": {
         \\"value\\": \\"#F87171\\",
-        \\"variable\\": \\"var(--colors-red\\\\\\\\.400)\\"
+        \\"variable\\": \\"var(--colors-red-400)\\"
       },
       \\"colors.red.500\\": {
         \\"value\\": \\"#EF4444\\",
-        \\"variable\\": \\"var(--colors-red\\\\\\\\.500)\\"
+        \\"variable\\": \\"var(--colors-red-500)\\"
       },
       \\"colors.red.600\\": {
         \\"value\\": \\"#DC2626\\",
-        \\"variable\\": \\"var(--colors-red\\\\\\\\.600)\\"
+        \\"variable\\": \\"var(--colors-red-600)\\"
       },
       \\"colors.red.700\\": {
         \\"value\\": \\"#B91C1C\\",
-        \\"variable\\": \\"var(--colors-red\\\\\\\\.700)\\"
+        \\"variable\\": \\"var(--colors-red-700)\\"
       },
       \\"colors.red.800\\": {
         \\"value\\": \\"#991B1B\\",
-        \\"variable\\": \\"var(--colors-red\\\\\\\\.800)\\"
+        \\"variable\\": \\"var(--colors-red-800)\\"
       },
       \\"colors.red.900\\": {
         \\"value\\": \\"#7F1D1D\\",
-        \\"variable\\": \\"var(--colors-red\\\\\\\\.900)\\"
+        \\"variable\\": \\"var(--colors-red-900)\\"
       },
       \\"fontSizes.sm\\": {
         \\"value\\": \\"0.5rem\\",

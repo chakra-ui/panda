@@ -34,7 +34,7 @@ export function createTokenMap(values: any) {
   const map = new Map<string, string>()
 
   const walk = (value: string, path: string[]) => {
-    map.set(path.join('.'), value)
+    map.set(path.join('/'), value)
   }
 
   walkObject(values, walk, {

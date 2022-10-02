@@ -46,11 +46,11 @@ describe('Global styles', () => {
       }
 
       a:focus {
-        color: var(--colors-red\\\\.200);
+        color: var(--colors-red-200);
       }
 
       a:focus:hover {
-        background-color: var(--colors-red\\\\.400);
+        background-color: var(--colors-red-400);
       }
 
       @media screen and (min-width: 30em) {

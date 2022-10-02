@@ -1,7 +1,8 @@
-import { cssVar } from '@css-panda/shared'
+import { compact, cssVar } from '@css-panda/shared'
 import { negate } from './calc'
 
 type Data = {
+  condition?: string
   category: string
   entry: Entry | Readonly<Entry>
 }
@@ -16,7 +17,13 @@ export class TokenData {
    */
   value: string
 
+  /**
+   * The css condition for this token (e.g 'dark')
+   */
+  condition: string | undefined
+
   constructor(private data: Data | Readonly<Data>, private options: Options = {}) {
+    this.condition = data.condition
     this.value = this.getValue()
   }
 
@@ -35,10 +42,28 @@ export class TokenData {
   }
 
   /**
-   * The name of the token (e.g green.500)
+   * The dot notation of the token (e.g 'green.500')
+   * Used for property keys
+   */
+  public get dotKey() {
+    const [key] = this.data.entry
+    return key.replaceAll('/', '.')
+  }
+
+  /**
+   * The dash notation of the token (e.g 'colors-green-500').
+   * Used for css variables
+   */
+  public get dashKey(): string {
+    const [key] = this.data.entry
+    return key.replaceAll('/', '-')
+  }
+
+  /**
+   * The resolved key of the token (e.g green.500)
    */
   public get key() {
-    const [key] = this.data.entry
+    const key = this.dotKey
     return this.negative ? `-${key}` : key
   }
 
@@ -46,8 +71,7 @@ export class TokenData {
    * The css variable represeatation of the token
    */
   private get variable() {
-    const [key] = this.data.entry
-    return cssVar(key, {
+    return cssVar(this.dashKey, {
       prefix: [this.options.prefix, this.category].filter(Boolean).join('-'),
     })
   }
@@ -56,7 +80,7 @@ export class TokenData {
    * The string composed of the category and token name (e.g 'colors.green.500')
    */
   public get prop(): string {
-    const [key] = this.data.entry
+    const key = this.dotKey
     return this.negative ? `${this.category}.-${key}` : `${this.category}.${key}`
   }
 
@@ -85,7 +109,8 @@ export class TokenData {
   }
 
   toJSON() {
-    return {
+    return compact({
+      condition: this.condition,
       category: this.category,
       key: this.key,
       prop: this.prop,
@@ -93,6 +118,6 @@ export class TokenData {
       var: this.var,
       varRef: this.varRef,
       negative: this.negative,
-    }
+    })
   }
 }
