@@ -1,37 +1,9 @@
-import { ConditionError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import type { BaseConditionType, Dict, RawCondition } from '@css-panda/types'
-import postcss, { AtRule } from 'postcss'
 import { Breakpoints } from './breakpoints'
+import { parseCondition } from './parse-condition'
 
 const order: BaseConditionType[] = ['self-nesting', 'parent-nesting', 'at-rule']
-
-function parseAtRule(value: string): RawCondition {
-  const result = postcss.parse(value)
-  const rule = result.nodes[0] as AtRule
-  return {
-    type: 'at-rule',
-    name: rule.name,
-    value: rule.params,
-    raw: value,
-  }
-}
-
-function parseCondition(condition: string): RawCondition {
-  if (condition.startsWith('@')) {
-    return parseAtRule(condition)
-  }
-
-  if (condition.includes('&')) {
-    return {
-      type: condition.startsWith('&') ? 'self-nesting' : 'parent-nesting',
-      value: condition,
-      raw: condition,
-    }
-  }
-
-  throw new ConditionError('Invalid condition. Did you forget to add the conditions in your panda config?')
-}
 
 type Options = {
   conditions: Dict<string>
