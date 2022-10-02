@@ -1620,10 +1620,6 @@ describe('Token types', () => {
             "category": "colors",
             "value": "var(--colors-red\\\\.700)",
           },
-          "--spacing-gutter" => {
-            "category": "spacing",
-            "value": "40px",
-          },
         },
         "lg" => Map {
           "--spacing-gutter" => {

@@ -1,4 +1,5 @@
 import { ConditionError } from '@css-panda/error'
+import { splitBy } from '@css-panda/shared'
 import type { RawCondition } from '@css-panda/types'
 import postcss, { AtRule } from 'postcss'
 
@@ -14,17 +15,27 @@ function parseAtRule(value: string): RawCondition {
 }
 
 export function parseCondition(condition: string): RawCondition {
+  if (splitBy(condition, ',').length > 1) {
+    throw new ConditionError('Multiple css conditions are not allowed')
+  }
+
   if (condition.startsWith('@')) {
     return parseAtRule(condition)
   }
 
-  if (condition.includes('&')) {
-    return {
-      type: condition.startsWith('&') ? 'self-nesting' : 'parent-nesting',
-      value: condition,
-      raw: condition,
-    }
+  let type: RawCondition['type'] | undefined
+
+  if (condition.startsWith('&')) {
+    type = 'self-nesting'
+  } else if (condition.endsWith(' &')) {
+    type = 'parent-nesting'
+  } else if (condition.includes('&')) {
+    type = 'combinator-nesting'
   }
 
-  throw new ConditionError('Invalid condition. Did you forget to add the conditions in your panda config?')
+  if (type) {
+    return { type, value: condition, raw: condition }
+  }
+
+  throw new ConditionError('Invalid css condition or selector')
 }

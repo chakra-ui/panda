@@ -98,9 +98,6 @@ describe('semantic tokens', () => {
         "lg" => Map {
           "gutter" => "5",
         },
-        "dark" => Map {
-          "gutter" => "40px",
-        },
       }
     `)
   })

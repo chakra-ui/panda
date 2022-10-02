@@ -1,5 +1,6 @@
 import { toCss, toKeyframeCss } from '@css-panda/core'
 import type { VarData } from '@css-panda/tokens'
+import { outdent } from 'outdent'
 import type { PandaContext } from '../context'
 
 export function generateKeyframes(keyframes: Record<string, any> | undefined) {
@@ -39,7 +40,28 @@ export function generateCss(ctx: PandaContext, varRoot?: string) {
 
     if (!cond) continue
 
-    const selector = cond.rawValue ?? cond.value.replace(/&/, root)
+    if (cond.type !== 'at-rule' && cond.type !== 'parent-nesting') {
+      throw new Error(
+        outdent`
+      It seems you provided an invalid condition for semantic tokens.
+      
+      - You provided: \`${cond.raw}\`
+      
+      Valid conditions are those that reference a parent selectors or at-rules.
+      @media (min-width: 768px), or .dark &
+      `,
+      )
+    }
+
+    let selector: string | undefined
+
+    if (cond.type === 'parent-nesting') {
+      selector = cond.value.replace(/\s&/g, '')
+    }
+
+    if (cond.type === 'at-rule') {
+      selector = cond.rawValue
+    }
 
     if (!selector) continue
 

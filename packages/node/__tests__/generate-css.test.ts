@@ -143,10 +143,9 @@ test('[css] should generate css', () => {
         --spacing-gutter: var(--spacing-4)
     }
 
-    [data-theme=dark] :root {
+    [data-theme=dark] {
      --colors-primary: var(--colors-red\\\\.400);
-    --colors-secondary: var(--colors-red\\\\.700);
-    --spacing-gutter: 40px 
+    --colors-secondary: var(--colors-red\\\\.700) 
     }
 
     @media screen and (min-width: 62em) {

@@ -2,11 +2,11 @@ import type { PartialTokens, SemanticTokens } from '@css-panda/types'
 
 export const semanticTokens: SemanticTokens = {
   colors: {
-    primary: { _: 'red.500', dark: 'red.400' },
-    secondary: { _: 'red.800', dark: 'red.700' },
+    primary: { base: 'red.500', dark: 'red.400' },
+    secondary: { base: 'red.800', dark: 'red.700' },
   },
   spacing: {
-    gutter: { _: '4', lg: '5', dark: '40px' },
+    gutter: { base: '4', lg: '5' },
   },
 }
 

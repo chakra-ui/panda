@@ -3,7 +3,7 @@ import type { BaseConditionType, Dict, RawCondition } from '@css-panda/types'
 import { Breakpoints } from './breakpoints'
 import { parseCondition } from './parse-condition'
 
-const order: BaseConditionType[] = ['self-nesting', 'parent-nesting', 'at-rule']
+const order: BaseConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-nesting', 'at-rule']
 
 type Options = {
   conditions: Dict<string>

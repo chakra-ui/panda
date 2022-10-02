@@ -1,4 +1,4 @@
-export type BaseConditionType = 'at-rule' | 'parent-nesting' | 'self-nesting'
+export type BaseConditionType = 'at-rule' | 'parent-nesting' | 'self-nesting' | 'combinator-nesting'
 
 export type BaseCondition = {
   type: BaseConditionType
