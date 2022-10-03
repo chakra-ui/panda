@@ -1,12 +1,24 @@
 {
   "name": "@css-panda/vscode",
-  "displayName": "Panda CSS",
-  "description": "Panda CSS",
+  "displayName": "Panda",
+  "description": "🐼 The official Panda plugin for VS Code",
   "version": "0.0.1",
   "private": true,
   "engines": {
     "vscode": "^1.47.0"
   },
+  "keywords": [
+    "css",
+    "design tokens",
+    "documentation",
+    "framework",
+    "design system",
+    "design",
+    "tokens",
+    "panda",
+    "semantic",
+    "w3c"
+  ],
   "categories": [
     "Other"
   ],
