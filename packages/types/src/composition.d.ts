@@ -30,5 +30,5 @@ type LayerProperties = Pick<
 >
 
 export type LayerStyle = {
-  [key: string]: TypographyProperties | LayerStyle
+  [key: string]: LayerProperties | LayerStyle
 }

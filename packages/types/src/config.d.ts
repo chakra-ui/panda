@@ -6,6 +6,7 @@ import type { PatternConfig } from './pattern'
 import type { RecipeConfig } from './recipe'
 import type { DotPath, TDotPath } from './shared'
 import type { PartialTokens } from './tokens'
+import type { LayerStyle, TextStyle } from './composition'
 
 export type Config<
   Conditions extends TConditions = TConditions,
@@ -84,6 +85,14 @@ export type Config<
    * The semantic design tokens for your project.
    */
   semanticTokens?: SemanticTokens<Tokens, Conditions, Breakpoints>
+  /**
+   * The typography styles for your project.
+   */
+  textStyles?: TextStyle
+  /**
+   * The layer styles for your project.
+   */
+  layerStyles?: LayerStyle
   /**
    * The css utility definitions.
    */

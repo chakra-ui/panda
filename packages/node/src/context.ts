@@ -59,6 +59,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     patterns = {},
     recipes = {},
     utilities = {},
+    textStyles,
+    layerStyles,
     hash,
   } = config
 
@@ -78,6 +80,10 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   const utility = new Utility({
     tokens: tokens,
     config: utilities,
+    compositions: {
+      textStyle: textStyles,
+      layerStyle: layerStyles,
+    },
   })
 
   const conditions = new Conditions({

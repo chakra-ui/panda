@@ -19,7 +19,19 @@ const isValuesProperty = isMatching({
   },
 })
 
-const OMITTED = ['tokens', 'semanticTokens', 'breakpoints', 'keyframes', 'conditions', 'recipes', 'patterns']
+const OMITTED = [
+  'tokens',
+  'semanticTokens',
+  'breakpoints',
+  'keyframes',
+  'conditions',
+  'recipes',
+  'patterns',
+  'textStyles',
+  'layerStyles',
+  'include',
+  'exclude',
+]
 
 function isOmitted(value: string) {
   return OMITTED.includes(value)

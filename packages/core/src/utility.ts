@@ -1,12 +1,16 @@
-import { logger, quote } from '@css-panda/logger'
-import { isFunction, isString, withoutSpace } from '@css-panda/shared'
+import { isFunction, isImportant, isString, walkObject, withoutImportant, withoutSpace } from '@css-panda/shared'
 import type { TokenMap } from '@css-panda/tokens'
-import type { AnyFunction, Dict, PropertyConfig, UtilityConfig } from '@css-panda/types'
+import type { AnyFunction, Dict, LayerStyle, PropertyConfig, TextStyle, UtilityConfig } from '@css-panda/types'
+import merge from 'lodash.merge'
+import { cssToJs, toCss } from './to-css'
 
 type Options = {
   config?: UtilityConfig
+  compositions?: {
+    textStyle?: TextStyle
+    layerStyle?: LayerStyle
+  }
   tokens: TokenMap
-  verbose?: boolean
 }
 
 export class Utility {
@@ -51,14 +55,48 @@ export class Utility {
   private propertyConfigMap: Map<string, PropertyConfig & { category: string | undefined }> = new Map()
 
   constructor(private options: Options) {
-    const { tokens, config } = options
+    const { tokens, config = {} } = options
     this.tokenMap = tokens
 
-    if (config) {
-      this.config = config
-      this.assignProperties()
-      this.assignValueMap()
+    this.config = config
+    this.assignCompositions()
+
+    this.assignProperties()
+    this.assignValueMap()
+  }
+
+  private assignCompositions() {
+    const compositions = this.options.compositions ?? {}
+
+    for (const [key, values] of Object.entries(compositions)) {
+      if (!values || this.config[key]) continue
+
+      const config: PropertyConfig = {
+        className: key,
+        values: Object.keys(values),
+        transform: (value) => {
+          return this.transform(values[value])
+        },
+      }
+
+      Object.assign(this.config, { [key]: config })
     }
+  }
+
+  private transform(styles: Dict) {
+    const result: Dict = {}
+
+    walkObject(styles, (value, paths) => {
+      const [prop] = paths
+
+      let { styles } = this.resolve(prop, withoutImportant(value))
+      const cssRoot = toCss(styles, { important: isImportant(value) })
+
+      styles = cssToJs(cssRoot.root.toString())
+      merge(result, styles)
+    })
+
+    return result
   }
 
   private getPropKey(prop: string, value: string) {
@@ -69,8 +107,6 @@ export class Utility {
     return `${prop}_${value}`
   }
 
-  private warnMap: Map<string, boolean> = new Map()
-
   /**
    * Get all the possible values for the defined property
    */
@@ -78,23 +114,13 @@ export class Utility {
     const { values } = config
 
     if (isString(values)) {
-      const result = this.tokenMap.flattenedTokens.get(values)
-
-      if (!result) {
-        if (!this.warnMap.get(values) && this.options.verbose) {
-          logger.warn({ type: 'token', msg: `token ${quote(values)} not found in ${quote('config.tokens')}` })
-          this.warnMap.set(values, true)
-        }
-        return {}
-      }
-
-      return result
+      return this.tokenMap.flattenedTokens.get(values) ?? {}
     }
 
     if (Array.isArray(values)) {
-      return values.reduce<Dict<string>>((acc, v) => {
-        acc[v] = v
-        return acc
+      return values.reduce<Dict<string>>((result, value) => {
+        result[value] = value
+        return result
       }, {})
     }
 
@@ -266,9 +292,7 @@ export class Utility {
   private getOrCreateStyle(prop: string, value: string) {
     const inner = (prop: string, value: string) => {
       const propKey = this.getPropKey(prop, value)
-
       this.stylesMap.get(propKey) ?? this.setStyles(prop, value, propKey)
-
       return this.stylesMap.get(propKey)!
     }
 

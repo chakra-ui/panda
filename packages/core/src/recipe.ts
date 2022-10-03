@@ -47,13 +47,11 @@ export class Recipe {
         const important = isImportant(value)
 
         const [prop, ...allConditions] = conditions.shift(paths)
-
-        // remove default condition
-        const _conditions = filterBaseConditions(allConditions)
+        const conds = filterBaseConditions(allConditions)
 
         let { styles } = utility.resolve(prop, withoutImportant(value))
 
-        const hasConditions = _conditions.length > 0
+        const hasConditions = conds.length > 0
 
         if (hasConditions) {
           const cssRoot = toCss(styles, { important })
@@ -61,7 +59,7 @@ export class Recipe {
           rule.selector = `&`
           rule.update()
 
-          rule.applyConditions(_conditions)
+          rule.applyConditions(conds)
 
           styles = cssToJs(rule.toString())
         }
