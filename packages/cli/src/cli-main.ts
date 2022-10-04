@@ -1,12 +1,5 @@
 import { logger } from '@css-panda/logger'
-import {
-  emitArtifacts,
-  execCommand,
-  generate,
-  loadConfigAndCreateContext,
-  setupConfig,
-  setupPostcss,
-} from '@css-panda/node'
+import { emitArtifacts, generate, loadConfigAndCreateContext, setupConfig, setupPostcss } from '@css-panda/node'
 import { compact } from '@css-panda/shared'
 import { cac } from 'cac'
 import { readFileSync } from 'fs'
@@ -35,7 +28,11 @@ export async function main() {
 
       if (postcss) await setupPostcss(cwd)
       await setupConfig(cwd, { force })
-      await execCommand(`panda gen${silent ? ' --slient' : ''}`, cwd)
+
+      const ctx = await loadConfigAndCreateContext()
+      const msg = await emitArtifacts(ctx)
+
+      logger.log(msg)
 
       done()
     })
