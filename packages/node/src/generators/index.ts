@@ -176,7 +176,7 @@ function setupPatterns(ctx: PandaContext): Output {
 }
 
 function setupJsx(ctx: PandaContext): Output {
-  if (!ctx.config.jsx) return { files: [] }
+  if (!ctx.jsxFramework) return { files: [] }
 
   const isValidProp = generateisValidProp(ctx)
   const factory = generateJsxFactory(ctx)

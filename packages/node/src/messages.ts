@@ -21,7 +21,7 @@ export function artifactsGeneratedMessage(ctx: PandaContext) {
       outdent`
       ${tick} ${quote(ctx.outdir, '/recipes')}: functions to create multi-variant styles
     `,
-    ctx.jsx &&
+    ctx.jsxFramework &&
       outdent`
       ${tick} ${quote(ctx.outdir, '/jsx')}: style prop powered elements for ${ctx.jsxFramework}
     `,

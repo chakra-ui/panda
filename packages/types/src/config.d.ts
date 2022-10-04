@@ -1,12 +1,11 @@
+import type { LayerStyle, TextStyle } from './composition'
 import type { Conditions as TConditions } from './conditions'
-import type { UtilityConfig } from './utility'
-import type { Dict, RequiredBy } from './helper'
 import type { Keyframes } from './panda-csstype'
 import type { PatternConfig } from './pattern'
 import type { RecipeConfig } from './recipe'
-import type { DotPath, TDotPath } from './shared'
-import type { PartialTokens } from './tokens'
-import type { LayerStyle, TextStyle } from './composition'
+import type { Dict, RequiredBy } from './shared'
+import type { PartialTokens, SemanticTokens } from './tokens'
+import type { UtilityConfig } from './utility'
 
 export type Config<
   Conditions extends TConditions = TConditions,

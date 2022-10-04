@@ -1,3 +1,5 @@
+import type { Dict, DotPath } from './shared'
+
 type RecommendedTokens = {
   colors: Record<string, string | Record<string, string>>
   fontSizes: Record<string, string>
@@ -25,10 +27,16 @@ export type PartialTokens = Partial<Tokens>
 
 export type TokenCategory = keyof RecommendedTokens | (string & {})
 
-export type SemanticTokens<Tokens extends PartialTokens = PartialTokens, Conditions = Dict, Breakpoints = Dict> = {
-  [K in keyof Tokens]?: {
-    [token: string]: {
-      [P in keyof Conditions | keyof Breakpoints | '_' | 'base']?: DotPath<Tokens[K]> | (string & {}) | string[]
-    }
+type SemanticToken<Tokens extends PartialTokens = PartialTokens, Conditions = Dict, Breakpoints = Dict> = {
+  [token: string]: {
+    [P in keyof Conditions | keyof Breakpoints | '_' | 'base']?:
+      | DotPath<Tokens[K]>
+      | (string & {})
+      | string[]
+      | SemanticToken<Tokens, Conditions, Breakpoints>
   }
+}
+
+export type SemanticTokens<Tokens extends PartialTokens = PartialTokens, Conditions = Dict, Breakpoints = Dict> = {
+  [K in keyof Tokens]?: SemanticToken<Tokens, Conditions, Breakpoints>
 }

@@ -25,3 +25,9 @@ export type DotPath<T extends TDotPath> = Join<PathsToStringProps<T>, '.'>
 export type Primitive = string | number | boolean | null | undefined
 
 export type Entry<T> = [keyof T, T[keyof T]]
+
+export type Dict<T = any> = Record<string, T>
+
+export type RequiredBy<T, K extends keyof T> = Partial<Omit<T, K>> & Required<Pick<T, K>>
+
+export type AnyFunction = (...args: any[]) => any
