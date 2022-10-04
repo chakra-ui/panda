@@ -45,20 +45,23 @@ export async function main() {
   })
 
   cli
-    .command('[files]', 'Include files', {
+    .command('[files]', 'Include file glob', {
       ignoreOptionDefaultValue: true,
     })
-    .option('-o, --outdir <dir>', 'Output directory', { default: '.panda' })
+    .option('-o, --outdir <dir>', 'Output directory', { default: 'panda' })
     .option('-m, --minify', 'Minify generated code')
     .option('--cwd <cwd>', 'Current working directory', { default: process.cwd() })
     .option('-w, --watch', 'Watch files and rebuild')
-    .option('--exclude <exclude>', 'Define compile-time env variables')
+    .option('-c, --config <path>', 'Path to panda config file')
+    .option('--preflight', 'Enable css reset')
+    .option('-e, --exclude <files>', 'Exclude files', { default: [] })
     .option('--clean', 'Clean output directory')
     .option('--hash', 'Hash the generated classnames to make them shorter')
     .action(async (files: string[], flags) => {
-      const options = compact({ include: files, ...flags })
+      const { config: configPath, ...rest } = flags
+      const options = compact({ include: files, ...rest })
       logger.debug({ type: 'cli', msg: options })
-      await generate(options)
+      await generate(options, configPath)
     })
 
   cli.help()

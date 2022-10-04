@@ -4,8 +4,8 @@ import { bundleAssets, writeFileAsset } from './assets'
 import { loadConfigAndCreateContext } from './config'
 import { watch } from './watch'
 
-export async function generate(config: Config) {
-  const ctx = await loadConfigAndCreateContext({ config })
+export async function generate(config: Config, configPath?: string) {
+  const ctx = await loadConfigAndCreateContext({ config, configPath })
   await emitAndExtract(ctx)
 
   if (ctx.watch) {
@@ -14,7 +14,7 @@ export async function generate(config: Config) {
 
     await watch(ctx, {
       onConfigChange: () => {
-        return generate(config)
+        return generate(config, configPath)
       },
       onAssetChange() {
         return bundleAssets(ctx)

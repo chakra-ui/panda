@@ -28,9 +28,9 @@ export function findConfig() {
   }
 }
 
-export async function loadConfigAndCreateContext(options: { cwd?: string; config?: Config } = {}) {
-  const { cwd = process.cwd(), config } = options
-  const conf = await loadConfig(cwd)
+export async function loadConfigAndCreateContext(options: { cwd?: string; config?: Config; configPath?: string } = {}) {
+  const { cwd = process.cwd(), config, configPath } = options
+  const conf = await loadConfig(cwd, configPath)
   if (config) {
     Object.assign(conf.config, config)
   }
