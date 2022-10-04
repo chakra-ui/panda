@@ -14,4 +14,4 @@
 '@css-panda/types': patch
 ---
 
-Initial release
+Initial release.
