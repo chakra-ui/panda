@@ -109,7 +109,7 @@ export type Config<
    * The framework to use for generating supercharged elements.
    * @default 'react'
    */
-  jsxFramework?: 'react' | 'solid'
+  jsxFramework?: 'react' | 'solid' | 'preact'
   /**
    * The factory name of the element
    * @default 'panda'
