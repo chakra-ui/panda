@@ -31,7 +31,7 @@ export async function extractAssets(ctx: PandaContext) {
     }),
   )
 
-  return sheet.toCss()
+  return sheet.toCss({ minify: ctx.minify })
 }
 
 export async function bundleAssets(ctx: PandaContext) {

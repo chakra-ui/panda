@@ -285,7 +285,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     }
 
     return {
-      css: sheet.toCss(),
+      css: sheet.toCss({ minify: config.minify }),
       file: assets.format(file),
     }
   }
