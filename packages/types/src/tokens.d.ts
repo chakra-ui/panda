@@ -27,16 +27,23 @@ export type PartialTokens = Partial<Tokens>
 
 export type TokenCategory = keyof RecommendedTokens | (string & {})
 
-type SemanticToken<Tokens extends PartialTokens = PartialTokens, Conditions = Dict, Breakpoints = Dict> = {
-  [token: string]: {
-    [P in keyof Conditions | keyof Breakpoints | '_' | 'base']?:
-      | DotPath<Tokens[K]>
-      | (string & {})
-      | string[]
-      | SemanticToken<Tokens, Conditions, Breakpoints>
-  }
-}
+// type SemanticToken<
+//   Key extends string,
+//   Tokens extends PartialTokens = PartialTokens,
+//   Conditions = Dict,
+//   Breakpoints = Dict,
+// > = {
+//   [token: string]: {
+//     [P in keyof Conditions | keyof Breakpoints | '_' | 'base']?:
+//       | DotPath<Tokens[Key]>
+//       | (string & {})
+//       | string[]
+//       | SemanticToken<Tokens, Conditions, Breakpoints>
+//   }
+// }
 
 export type SemanticTokens<Tokens extends PartialTokens = PartialTokens, Conditions = Dict, Breakpoints = Dict> = {
-  [K in keyof Tokens]?: SemanticToken<Tokens, Conditions, Breakpoints>
+  [Key in keyof Tokens]?: {
+    [token: string]: any
+  }
 }
