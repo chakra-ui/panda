@@ -62,6 +62,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     textStyles,
     layerStyles,
     hash,
+    jsxFactory = 'panda',
+    jsxFramework = 'react',
   } = config
 
   const cwd = resolve(_cwd)
@@ -347,8 +349,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     getRecipe,
     hasRecipes: Object.keys(recipes).length > 0,
 
-    jsxFramework: config.jsx?.framework ?? 'react',
-    jsxFactory: config.jsx?.name ?? 'panda',
+    jsxFramework,
+    jsxFactory,
     cssVarRoot: config.cssVar?.root ?? ':where(:root, :host)',
 
     properties,

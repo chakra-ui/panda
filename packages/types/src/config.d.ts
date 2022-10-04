@@ -107,27 +107,20 @@ export type Config<
    */
   patterns?: Record<string, PatternConfig>
   /**
-   * @experimental
-   * The JSX version to be emitted in JavaScript files.
-   * Useful for generating supercharged elements
+   * The framework to use for generating supercharged elements.
+   * @default 'react'
    */
-  jsx?: {
-    /**
-     * The framework to use for generating supercharged elements.
-     * @default 'react'
-     */
-    framework?: 'react' | 'solid'
-    /**
-     * The group name of the element
-     * @default 'panda'
-     *
-     * @example
-     * ```jsx
-     * <panda.button marginTop="40px">Click me</panda.button>
-     * ```
-     */
-    name?: string
-  }
+  jsxFramework?: 'react' | 'solid'
+  /**
+   * The factory name of the element
+   * @default 'panda'
+   *
+   * @example
+   * ```jsx
+   * <panda.button marginTop="40px">Click me</panda.button>
+   * ```
+   */
+  jsxFactory?: string
   /**
    * Not implemented yet.
    * @experimental - Custom parsers for call expressions and jsx style props.
@@ -136,12 +129,7 @@ export type Config<
   /**
    * Options for the generated typescript definitions.
    */
-  types?: {
-    /**
-     * Whether to generate strict types for css properties
-     */
-    strictTokens?: boolean
-  }
+  strictTokens?: boolean
 }
 
 export type TConfig = Config<TConditions, Dict, Dict>

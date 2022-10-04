@@ -9,7 +9,7 @@ function getType(file: string) {
 }
 
 export function generateCssType(ctx: PandaContext) {
-  const strict = ctx.types?.strictTokens
+  const strict = ctx.strictTokens
   return {
     cssType: getType('csstype.d.ts'),
     pandaCssType: getType('panda-csstype.d.ts'),
