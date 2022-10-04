@@ -6,9 +6,11 @@
     "lib": ["es2020", "dom"],
     "sourceMap": true,
     "rootDir": "src",
+    "skipLibCheck": true,
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "node"
   },
+  "include": ["src"],
   "exclude": ["node_modules", ".vscode-test", "webview-ui"]
 }
