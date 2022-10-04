@@ -24,6 +24,9 @@ jobs:
       - name: Build packages
         run: pnpm build
 
+      - name: Build VSCode extension
+        run: pnpm --prefix ./packages/vscode exec vsce package
+
       - name: Publish packages
         id: changesets
         uses: changesets/action@v1
@@ -32,6 +35,14 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Publish VSCode extension
+        if: steps.changesets.outputs.published == 'true'
+        run: pnpm --prefix ./packages/vscode exec vsce publish -p ${{ secrets.VSCE_TOKEN }}
+
+      - name: Publish VSCode extension (pre-release)
+        if: steps.changesets.outputs.published != 'true'
+        run: pnpm --prefix ./packages/vscode exec vsce publish --pre-release -p ${{ secrets.VSCE_TOKEN }}
 
       - name: Release to dev tag
         if: steps.changesets.outputs.published != 'true'

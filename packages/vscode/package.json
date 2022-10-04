@@ -86,6 +86,7 @@
     "@css-panda/types": "workspace:*",
     "concurrently": "7.3.0",
     "glob": "7.1.6",
-    "vscode-test": "1.6.1"
+    "vscode-test": "1.6.1",
+    "vsce": "2.11.0"
   }
 }
