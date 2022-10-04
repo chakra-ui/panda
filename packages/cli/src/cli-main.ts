@@ -23,26 +23,36 @@ export async function main() {
     .command('init', "Initialize the panda's config file")
     .option('-f, --force', 'Force overwrite existing config file')
     .option('-p, --postcss', 'Emit postcss config file')
+    .option('--silent', "Don't print any logs")
     .action(async (flags) => {
+      const { force, postcss, silent } = flags
+
+      if (silent) logger.level = 'silent'
+
       logger.info(`Panda v${pkgJson.version}\n`)
+
       const done = logger.time.info('✨ Panda initialized')
 
-      if (flags.postcss) {
-        await setupPostcss(cwd)
-      }
-      await setupConfig(cwd, { force: flags.force })
-      await execCommand('panda gen', cwd)
+      if (postcss) await setupPostcss(cwd)
+      await setupConfig(cwd, { force })
+      await execCommand(`panda gen${silent ? ' --slient' : ''}`, cwd)
 
       done()
     })
 
-  cli.command('gen', 'Generate the panda system').action(async () => {
-    const ctx = await loadConfigAndCreateContext()
-    const msg = await emitArtifacts(ctx)
-    if (msg) {
+  cli
+    .command('gen', 'Generate the panda system')
+    .option('--silent', "Don't print any logs")
+    .action(async (flags) => {
+      const { silent } = flags
+
+      if (silent) logger.level = 'silent'
+
+      const ctx = await loadConfigAndCreateContext()
+      const msg = await emitArtifacts(ctx)
+
       logger.log(msg)
-    }
-  })
+    })
 
   cli
     .command('[files]', 'Include file glob', {
@@ -54,11 +64,14 @@ export async function main() {
     .option('-w, --watch', 'Watch files and rebuild')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--preflight', 'Enable css reset')
+    .option('--silent', "Don't print any logs")
     .option('-e, --exclude <files>', 'Exclude files', { default: [] })
     .option('--clean', 'Clean output directory')
     .option('--hash', 'Hash the generated classnames to make them shorter')
     .action(async (files: string[], flags) => {
-      const { config: configPath, ...rest } = flags
+      const { config: configPath, silent, ...rest } = flags
+      if (silent) logger.level = 'silent'
+
       const options = compact({ include: files, ...rest })
       logger.debug({ type: 'cli', msg: options })
       await generate(options, configPath)

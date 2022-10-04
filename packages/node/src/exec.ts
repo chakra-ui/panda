@@ -11,7 +11,7 @@ export async function execCommand(cmd: string, cwd: string) {
     args.unshift('run')
   }
 
-  const check = spawnSync(pm, args, { cwd, stdio: 'inherit' })
+  const check = spawnSync(pm, args, { cwd, stdio: 'pipe' })
 
   if (check.status !== 0) {
     logger.error(check.stderr.toString())

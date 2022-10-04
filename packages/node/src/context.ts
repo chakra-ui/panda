@@ -63,7 +63,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     layerStyles,
     hash,
     jsxFactory = 'panda',
-    jsxFramework = 'react',
+    jsxFramework,
   } = config
 
   const cwd = resolve(_cwd)
