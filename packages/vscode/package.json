@@ -1,11 +1,11 @@
 {
-  "name": "@css-panda/vscode",
+  "name": "css-panda-vscode",
   "displayName": "Panda",
   "description": "🐼 The official Panda plugin for VS Code",
   "version": "0.0.1",
   "private": true,
   "engines": {
-    "vscode": "^1.47.0"
+    "vscode": "^1.71.2"
   },
   "keywords": [
     "css",
@@ -75,7 +75,7 @@
   },
   "devDependencies": {
     "@types/glob": "7.1.3",
-    "@types/vscode": "1.71.0",
+    "@types/vscode": "^1.71.0",
     "@css-panda/config": "workspace:*",
     "@css-panda/types": "workspace:*",
     "concurrently": "7.3.0",
