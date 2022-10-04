@@ -14,11 +14,11 @@ function compact(obj: Entry) {
 }
 
 const levelsMap = {
-  silent: { w: 0, c: colors.white },
   debug: { w: 0, c: colors.magenta },
   info: { w: 1, c: colors.blue },
   warn: { w: 2, c: colors.yellow },
   error: { w: 3, c: colors.red },
+  silent: { w: 4, c: colors.white },
 }
 
 export type LogLevel = keyof typeof levelsMap
@@ -160,6 +160,7 @@ class Logger {
 
   log(...args: any[]) {
     const entry = this.getEntry(null, args)
+    if (this.level === 'silent') return
     console.log(this.format(entry))
   }
 
