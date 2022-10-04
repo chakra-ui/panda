@@ -4,6 +4,12 @@
   "description": "🐼 The official Panda plugin for VS Code",
   "version": "0.0.1",
   "private": true,
+  "publisher": "chakra-ui",
+  "repository": {
+    "url": "https://github.com/chakra-ui/css-panda",
+    "directory": "packages/vscode"
+  },
+  "license": "MIT",
   "engines": {
     "vscode": "^1.71.2"
   },
