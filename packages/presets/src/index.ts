@@ -4,6 +4,7 @@ import { conditions } from './conditions'
 import { keyframes } from './keyframes'
 import { tokens } from './tokens'
 import { utilities } from './utilities'
+import { textStyles } from './typography'
 
 export const config: Config = {
   breakpoints,
@@ -11,6 +12,7 @@ export const config: Config = {
   conditions,
   keyframes,
   utilities,
+  textStyles,
 }
 
-export { tokens, breakpoints, conditions, utilities, keyframes }
+export { tokens, breakpoints, conditions, utilities, keyframes, textStyles }
