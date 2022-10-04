@@ -43,13 +43,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build VSCode extension
-        run: pnpm --prefix ./packages/vscode exec vsce package
-
       - name: Publish VSCode extension
         if: steps.changesets.outputs.published == 'true'
-        run: pnpm --prefix ./packages/vscode exec vsce publish -p ${{ secrets.VSCE_TOKEN }}
-
-      - name: Publish VSCode extension (pre-release)
-        if: steps.changesets.outputs.published != 'true'
-        run: pnpm --prefix ./packages/vscode exec vsce publish --pre-release -p ${{ secrets.VSCE_TOKEN }}
+        run: |
+          pnpm --prefix ./packages/vscode exec vsce package
+          pnpm --prefix ./packages/vscode exec vsce publish -p ${{ secrets.VSCE_TOKEN }}
