@@ -9,7 +9,7 @@ export function generateKeyframes(keyframes: Record<string, any> | undefined) {
   }
 }
 
-export function generateCss(ctx: PandaContext, varRoot?: string) {
+export function generateDesignTokenCss(ctx: PandaContext, varRoot?: string) {
   const root = varRoot ?? ctx.cssVarRoot
 
   function inner(vars: Map<string, VarData>, wrap = true) {

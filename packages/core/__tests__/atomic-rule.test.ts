@@ -11,8 +11,22 @@ function css(obj: ProcessOptions) {
 describe('AtomicRule', () => {
   test('should work with basic', () => {
     expect(css({ styles: { bg: 'red.300' } })).toMatchInlineSnapshot(`
-      ".bg-red\\\\.300 {
-          bg: red.300
+      ".background-red\\\\.300 {
+          background: red.300
+      }"
+    `)
+  })
+
+  test('should resolve shorthand', () => {
+    expect(css({ styles: { width: '50px', w: '20px' } })).toMatchInlineSnapshot(`
+      ".w-20px {
+          width: 20px
+      }"
+    `)
+
+    expect(css({ styles: { width: { _: '50px', md: '60px' }, w: '70px' } })).toMatchInlineSnapshot(`
+      ".w-70px {
+          width: 70px
       }"
     `)
   })
@@ -26,12 +40,12 @@ describe('AtomicRule', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@screen sm {
-          [dir=ltr] .ltr\\\\:sm\\\\:ml-4 {
-              ml: 4
+          [dir=ltr] .ltr\\\\:sm\\\\:marginLeft-4 {
+              margin-left: 4
           }
       }
-      [dir=rtl] .rtl\\\\:ml--4 {
-          ml: -4
+      [dir=rtl] .rtl\\\\:marginLeft--4 {
+          margin-left: -4
       }"
     `)
   })
@@ -121,11 +135,11 @@ describe('AtomicRule', () => {
               left: 40px
           }
       }
-      [data-theme=light] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:light\\\\:bg-red400 > p {
-          bg: red400
+      [data-theme=light] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:light\\\\:background-red400 > p {
+          background: red400
       }
-      [data-theme=dark] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:dark\\\\:bg-green500 > p {
-          bg: green500
+      [data-theme=dark] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:dark\\\\:background-green500 > p {
+          background: green500
       }
       [dir=rtl] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:rtl\\\\:font-sans > p {
           font: sans
@@ -148,8 +162,8 @@ describe('AtomicRule', () => {
         },
       }),
     ).toMatchInlineSnapshot(`
-      "input:hover .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:bg-red400 {
-          bg: red400
+      "input:hover .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:background-red400 {
+          background: red400
       }
       @screen sm {
           input:hover .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:sm\\\\:fontSize-14px {
@@ -178,8 +192,8 @@ describe('AtomicRule', () => {
       ".\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:left-40px::placeholder {
           left: 40px
       }
-      .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:bg-red400::placeholder {
-          bg: red400
+      .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:background-red400::placeholder {
+          background: red400
       }
       @screen sm {
           .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:sm\\\\:ta-left::placeholder {
@@ -224,8 +238,8 @@ describe('grouped conditions styles', () => {
         },
       }),
     ).toMatchInlineSnapshot(`
-      ".hover\\\\:bg-pink\\\\.400:hover {
-          bg: pink.400
+      ".hover\\\\:background-pink\\\\.400:hover {
+          background: pink.400
       }"
     `)
   })
@@ -239,8 +253,8 @@ describe('grouped conditions styles', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@screen sm {
-          [data-theme=dark] .hover\\\\:sm\\\\:dark\\\\:bg-red\\\\.300:hover {
-              bg: red.300
+          [data-theme=dark] .hover\\\\:sm\\\\:dark\\\\:background-red\\\\.300:hover {
+              background: red.300
           }
       }
       .hover\\\\:color-pink\\\\.400:hover {
@@ -258,8 +272,8 @@ describe('grouped conditions styles', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@screen sm {
-          .hover\\\\:disabled\\\\:sm\\\\:bg-red\\\\.300:hover:disabled {
-              bg: red.300
+          .hover\\\\:disabled\\\\:sm\\\\:background-red\\\\.300:hover:disabled {
+              background: red.300
           }
       }"
     `)

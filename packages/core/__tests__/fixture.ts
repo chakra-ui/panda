@@ -34,6 +34,10 @@ export const createContext = (): GeneratorContext => ({
   helpers: {
     map: () => '',
   },
+  hasShorthand: true,
+  resolveShorthand(prop) {
+    return propMap[prop] || prop
+  },
   transform: (prop, value) => {
     const key = propMap[prop] ?? prop
     return {

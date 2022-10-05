@@ -14,6 +14,8 @@ export type GeneratorContext = {
   conditions: Conditions
   breakpoints: Record<string, string>
   helpers: TransformHelpers
+  hasShorthand: boolean
+  resolveShorthand: (prop: string) => string
   transform: (prop: string, value: string) => TransformResult
   hash?: boolean
 }

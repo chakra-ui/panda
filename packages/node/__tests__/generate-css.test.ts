@@ -2,7 +2,7 @@ import type { LoadConfigResult } from '@css-panda/config'
 import { breakpoints, conditions, keyframes, semanticTokens, tokens } from '@css-panda/fixture'
 import { expect, test } from 'vitest'
 import { createContext } from '../src/context'
-import { generateCss } from '../src/generators/css'
+import { generateDesignTokenCss } from '../src/generators/design-token-css'
 
 const conf: LoadConfigResult = {
   dependencies: [],
@@ -22,7 +22,7 @@ const conf: LoadConfigResult = {
 
 test('[css] should generate css', () => {
   const ctx = createContext(conf)
-  const css = generateCss(ctx, ':root')
+  const css = generateDesignTokenCss(ctx, ':root')
 
   expect(css).toMatchInlineSnapshot(`
     ":root {

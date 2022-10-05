@@ -7,5 +7,5 @@ export function withoutImportant(value: string) {
 }
 
 export function withoutSpace(str: string) {
-  return typeof str === 'string' ? str.replace(/\s/g, '_') : str
+  return typeof str === 'string' ? str.replaceAll(' ', '_') : str
 }

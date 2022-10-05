@@ -24,4 +24,25 @@ describe('generate classnames', () => {
       }),
     ).toMatchInlineSnapshot('"left-20px md:left-40px"')
   })
+
+  test('should expand shorthand before processing', () => {
+    const css = createCss(createContext())
+    expect(
+      css({
+        w: '40px',
+        width: '80px',
+      }),
+    ).toMatchInlineSnapshot('"w-80px"')
+
+    // override even responsive values
+    expect(
+      css({
+        width: { _: '50px', md: '60px' },
+        w: '70px',
+      }),
+    ).toMatchInlineSnapshot('"w-70px"')
+
+    // override in nested condition
+    expect(css({ hover: { width: '40px', w: '90px' } })).toMatchInlineSnapshot('"hover:w-90px"')
+  })
 })

@@ -30,10 +30,14 @@ export class Utility {
   stylesMap: Map<string, Dict> = new Map()
 
   /**
+   * Map of shorthand properties to their longhand properties
+   */
+  shorthandMap = new Map<string, string>()
+
+  /**
    * The map of possible values for each property
    */
   valuesMap: Map<string, Set<string>> = new Map()
-
   /**
    * The utility config
    */
@@ -59,10 +63,40 @@ export class Utility {
     this.tokenMap = tokens
 
     this.config = config
+    this.assignShorthands()
     this.assignCompositions()
 
     this.assignProperties()
     this.assignValueMap()
+  }
+
+  private assignShorthands() {
+    for (const [property, config] of Object.entries(this.config)) {
+      const { shorthand } = this.normalize(config) ?? {}
+      if (!shorthand) continue
+      this.shorthandMap.set(shorthand, property)
+    }
+  }
+
+  resolveShorthand = (prop: string) => {
+    const shorthand = this.shorthandMap.get(prop)
+    return shorthand ?? prop
+  }
+
+  public get hasShorthand() {
+    return this.shorthandMap.size > 0
+  }
+
+  public get isEmpty() {
+    return Object.keys(this.config).length === 0
+  }
+
+  public entries() {
+    const value = Object.entries(this.config)
+      .filter(([, value]) => !!value?.className)
+      .map(([key, value]) => [key, value!.className])
+
+    return value as [string, string][]
   }
 
   private assignCompositions() {
@@ -134,8 +168,8 @@ export class Utility {
   /**
    * Normalize the property config
    */
-  normalize(value: string | PropertyConfig | undefined): PropertyConfig | undefined {
-    return typeof value === 'string' ? { className: value } : value
+  normalize(value: PropertyConfig | undefined): PropertyConfig | undefined {
+    return value
   }
 
   private assignProperties() {
@@ -248,12 +282,13 @@ export class Utility {
     const propKey = this.getPropKey(property, raw)
     const config = this.propertyConfigMap.get(property)
 
-    if (!config) {
-      this.classNameMap.set(propKey, this.hash(property, raw))
-      return this
-    }
+    let className: string
 
-    const className = isString(config.className) ? this.hash(config.className, raw) : config.className(raw, property)
+    if (!config || !config.className) {
+      className = this.hash(property, raw)
+    } else {
+      className = this.hash(config.className, raw)
+    }
 
     this.classNameMap.set(propKey, className)
 
@@ -303,10 +338,13 @@ export class Utility {
    * Returns the resolved className and styles for a given property and value
    */
   resolve(prop: string, value: string | undefined) {
-    if (value == null) return { className: '', styles: {} }
+    if (value == null) {
+      return { className: '', styles: {} }
+    }
+    const key = this.resolveShorthand(prop)
     return {
-      className: this.getOrCreateClassName(prop, withoutSpace(value)),
-      styles: this.getOrCreateStyle(prop, value),
+      className: this.getOrCreateClassName(key, withoutSpace(value)),
+      styles: this.getOrCreateStyle(key, value),
     }
   }
 

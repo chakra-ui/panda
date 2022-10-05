@@ -5,18 +5,24 @@ import { walkObject } from './walk-object'
 import { walkStyles } from './walk-styles'
 
 type Context = {
+  hasShorthand: boolean
+  resolveShorthand: (prop: string) => string
   transform: (prop: string, value: any) => { className: string }
   hash?: boolean
   conditions?: { shift: (paths: string[]) => string[] }
 }
 
 export function createCss(context: Context) {
-  const { transform, hash, conditions: conds = { shift: (v) => v } } = context
+  const { transform, hash, conditions: conds = { shift: (v) => v }, resolveShorthand, hasShorthand } = context
 
   return (styleObject: Record<string, any>) => {
+    const normalizedObject = hasShorthand
+      ? walkObject(styleObject, (v) => v, { getKey: resolveShorthand })
+      : styleObject
+
     const classNames = new Set<string>()
 
-    walkStyles(styleObject, (props: Record<string, any>, scope?: string[]) => {
+    walkStyles(normalizedObject, (props: Record<string, any>, scope?: string[]) => {
       walkObject(props, (value, paths) => {
         if (value == null) return
 

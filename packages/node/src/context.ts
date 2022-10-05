@@ -100,6 +100,10 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     hash,
     helpers,
     utility,
+    hasShorthand: utility.hasShorthand,
+    resolveShorthand(prop) {
+      return utility.resolveShorthand(prop)
+    },
     transform(prop, value) {
       return utility.resolve(prop, value)
     },
@@ -274,8 +278,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     collector.pattern.forEach((result, name) => {
       try {
         for (const item of result) {
-          const styleObject = execPattern(name, item.data)
-          sheet.processAtomic(styleObject)
+          const styles = execPattern(name, item.data)
+          sheet.processAtomic(styles)
         }
       } catch (error) {
         logger.error({ err: error })

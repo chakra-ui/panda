@@ -29,10 +29,17 @@ export class AtomicRule {
 
   process = (options: ProcessOptions) => {
     const { scope, styles } = options
+    const { utility } = this.context
+
+    const styleObject = utility.hasShorthand
+      ? walkObject(styles, (v) => v, {
+          getKey: (prop) => utility.resolveShorthand(prop),
+        })
+      : styles
 
     const rule = this.rule
 
-    walkObject(styles, (value, paths) => {
+    walkObject(styleObject, (value, paths) => {
       const important = isImportant(value)
 
       // if value doesn't exist

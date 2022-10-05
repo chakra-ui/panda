@@ -3,17 +3,37 @@ import type { UtilityConfig } from '@css-panda/types'
 export const utilities: UtilityConfig = {
   // Layout properties
   display: {
-    className: (value) => (value === 'none' ? 'hidden' : value),
+    className: 'd',
   },
-  zIndex: 'z',
-  boxSizing: 'box',
-  objectPosition: 'object',
-  objectFit: 'object',
-  overscrollBehavior: 'overscroll',
-  overscrollBehaviorX: 'overscroll-x',
-  overscrollBehaviorY: 'overscroll-y',
+  zIndex: {
+    className: 'z',
+    shorthand: 'z',
+  },
+  boxSizing: {
+    className: 'box',
+  },
+  objectPosition: {
+    className: 'object',
+    shorthand: 'objectPos',
+  },
+  objectFit: {
+    className: 'object',
+  },
+  overscrollBehavior: {
+    className: 'overscroll',
+    shorthand: 'overscroll',
+  },
+  overscrollBehaviorX: {
+    className: 'overscroll-x',
+    shorthand: 'overscrollX',
+  },
+  overscrollBehaviorY: {
+    className: 'overscroll-y',
+    shorthand: 'overscrollY',
+  },
   position: {
-    className: (value) => value,
+    className: 'pos',
+    shorthand: 'pos',
   },
 
   // Divider
@@ -188,11 +208,21 @@ export const utilities: UtilityConfig = {
   gridTemplateColumns: {
     className: 'grid-cols',
   },
-  gridColumnStart: 'grid-col-start',
-  gridColumnEnd: 'grid-col-end',
-  gridAutoFlow: 'grid-flow',
-  gridAutoColumns: 'auto-cols',
-  gridAutoRows: 'auto-rows',
+  gridColumnStart: {
+    className: 'grid-col-start',
+  },
+  gridColumnEnd: {
+    className: 'grid-col-end',
+  },
+  gridAutoFlow: {
+    className: 'grid-flow',
+  },
+  gridAutoColumns: {
+    className: 'auto-cols',
+  },
+  gridAutoRows: {
+    className: 'auto-rows',
+  },
   gap: {
     className: 'gap',
     values: 'spacing',
@@ -211,8 +241,12 @@ export const utilities: UtilityConfig = {
   alignContent: {
     className: 'content',
   },
-  alignItems: 'items',
-  alignSelf: 'self',
+  alignItems: {
+    className: 'items',
+  },
+  alignSelf: {
+    className: 'self',
+  },
 
   // Flex properties
   flexBasis: {
@@ -234,33 +268,46 @@ export const utilities: UtilityConfig = {
       none: 'none',
     },
   },
-  flexDirection: 'flex',
-  flexGrow: 'grow',
-  flexShrink: 'shrink',
+  flexDirection: {
+    className: 'flex',
+    shorthand: 'flexDir',
+  },
+  flexGrow: {
+    className: 'grow',
+  },
+  flexShrink: {
+    className: 'shrink',
+  },
 
   // Padding properties
   padding: {
     className: 'p',
+    shorthand: 'p',
     values: 'spacing',
   },
   paddingLeft: {
     className: 'pl',
+    shorthand: 'pl',
     values: 'spacing',
   },
   paddingRight: {
     className: 'pr',
+    shorthand: 'pr',
     values: 'spacing',
   },
   paddingTop: {
     className: 'pt',
+    shorthand: 'pt',
     values: 'spacing',
   },
   paddingBottom: {
     className: 'pb',
+    shorthand: 'pb',
     values: 'spacing',
   },
   paddingX: {
     className: 'px',
+    shorthand: 'px',
     values: 'spacing',
     transform(value) {
       return {
@@ -270,6 +317,7 @@ export const utilities: UtilityConfig = {
   },
   paddingY: {
     className: 'py',
+    shorthand: 'py',
     values: 'spacing',
     transform(value) {
       return {
@@ -304,9 +352,7 @@ export const utilities: UtilityConfig = {
     },
   },
   fontVariantNumeric: {
-    className(value) {
-      return value
-    },
+    className: 'numeric',
   },
   letterSpacing: {
     className: 'tracking',
@@ -316,34 +362,42 @@ export const utilities: UtilityConfig = {
     className: 'leading',
     values: 'lineHeights',
   },
-  textAlign: 'text',
-  textDecoration: {
-    className(value) {
-      return value
-    },
+  textAlign: {
+    className: 'text',
   },
-  textDecorationColor: 'decoration',
-  textDecorationStyle: 'decoration',
-  textDecorationThickness: 'decoration',
-  textUnderlineOffset: 'underline',
+  textDecoration: {
+    className: 'decor',
+  },
+  textDecorationColor: {
+    className: 'decoration',
+  },
+  textDecorationStyle: {
+    className: 'decoration',
+  },
+  textDecorationThickness: {
+    className: 'decoration',
+  },
+  textUnderlineOffset: {
+    className: 'underline',
+  },
   textTransform: {
-    className(value) {
-      return value
-    },
+    className: 'case',
   },
   textIndent: {
     className: 'indent',
     values: 'spacing',
   },
-  verticalAlign: 'align',
-  wordBreak: 'break',
+  verticalAlign: {
+    className: 'align',
+  },
+  wordBreak: {
+    className: 'break',
+  },
   lineClamp: {
     className: 'clamp',
     transform(value) {
       if (value === 'none') {
-        return {
-          '-webkit-line-clamp': 'unset',
-        }
+        return { '-webkit-line-clamp': 'unset' }
       }
 
       return {
@@ -356,11 +410,16 @@ export const utilities: UtilityConfig = {
   },
 
   // List properties
-  listStyleType: 'list',
-  listStylePosition: 'list',
+  listStyleType: {
+    className: 'list',
+  },
+  listStylePosition: {
+    className: 'list',
+  },
 
   // Sizing properties
   width: {
+    shorthand: 'w',
     className: 'w',
     values(theme) {
       return {
@@ -375,47 +434,58 @@ export const utilities: UtilityConfig = {
   },
   height: {
     className: 'h',
+    shorthand: 'h',
     values: 'sizes',
   },
   minHeight: {
+    shorthand: 'minH',
     className: 'min-h',
     values: 'sizes',
   },
   maxHeight: {
+    shorthand: 'maxH',
     className: 'max-h',
     values: 'sizes',
   },
   minWidth: {
+    shorthand: 'minW',
     className: 'min-w',
     values: 'sizes',
   },
   maxWidth: {
+    shorthand: 'maxW',
     className: 'max-w',
     values: 'largeSizes',
   },
 
   // Margin properties
   marginLeft: {
+    shorthand: 'ml',
     className: 'ml',
     values: 'spacing',
   },
   marginRight: {
+    shorthand: 'mr',
     className: 'mr',
     values: 'spacing',
   },
   marginTop: {
+    shorthand: 'mt',
     className: 'mt',
     values: 'spacing',
   },
   marginBottom: {
+    shorthand: 'mb',
     className: 'mb',
     values: 'spacing',
   },
   margin: {
+    shorthand: 'm',
     className: 'm',
     values: 'spacing',
   },
   marginX: {
+    shorthand: 'mx',
     className: 'mx',
     values: 'spacing',
     transform(value) {
@@ -425,6 +495,7 @@ export const utilities: UtilityConfig = {
     },
   },
   marginY: {
+    shorthand: 'my',
     className: 'my',
     values: 'spacing',
     transform(value) {
@@ -435,20 +506,38 @@ export const utilities: UtilityConfig = {
   },
 
   // Background properties
-  backgroundAttachment: 'bg',
-  backgroundClip: 'bg-clip',
+  backgroundAttachment: {
+    shorthand: 'bgAttachment',
+    className: 'bg',
+  },
+  backgroundClip: {
+    shorthand: 'bgClip',
+    className: 'bg-clip',
+  },
   background: {
+    shorthand: 'bg',
     className: 'bg',
     values: 'colors',
   },
   backgroundColor: {
+    shorthand: 'bgColor',
     className: 'bg',
     values: 'colors',
   },
-  backgroundOrigin: 'bg-origin',
-  backgroundRepeat: 'bg-repeat',
-  backgroundBlendMode: 'bg-blend',
+  backgroundOrigin: {
+    shorthand: 'bgOrigin',
+    className: 'bg-origin',
+  },
+  backgroundRepeat: {
+    shorthand: 'bgRepeat',
+    className: 'bg-repeat',
+  },
+  backgroundBlendMode: {
+    shorthand: 'bgBlend',
+    className: 'bg-blend',
+  },
   backgroundGradient: {
+    shorthand: 'bgGradient',
     className: 'bg-gradient',
     values: {
       none: 'none',
@@ -492,8 +581,12 @@ export const utilities: UtilityConfig = {
     className: 'ease',
     values: 'easings',
   },
-  transitionDelay: 'delay',
-  transitionDuration: 'duration',
+  transitionDelay: {
+    className: 'delay',
+  },
+  transitionDuration: {
+    className: 'duration',
+  },
   transitionProperty: {
     className: 'transition',
     values: {
@@ -517,11 +610,21 @@ export const utilities: UtilityConfig = {
     className: 'rounded',
     values: 'radii',
   },
-  border: 'border',
-  borderLeft: 'border-l',
-  borderRight: 'border-r',
-  borderTop: 'border-t',
-  borderBottom: 'border-b',
+  border: {
+    className: 'border',
+  },
+  borderLeft: {
+    className: 'border-l',
+  },
+  borderRight: {
+    className: 'border-r',
+  },
+  borderTop: {
+    className: 'border-t',
+  },
+  borderBottom: {
+    className: 'border-b',
+  },
   borderX: {
     className: 'border-x',
     transform(value) {
@@ -541,6 +644,7 @@ export const utilities: UtilityConfig = {
 
   // Effect properties
   boxShadow: {
+    shorthand: 'shadow',
     className: 'shadow',
     values: 'shadows',
   },
@@ -635,7 +739,9 @@ export const utilities: UtilityConfig = {
   },
 
   // Interactivity properties
-  scrollBehavior: 'scroll',
+  scrollBehavior: {
+    className: 'scroll',
+  },
   scrollMargin: {
     className: 'scroll-m',
     values: 'spacing',
@@ -712,8 +818,12 @@ export const utilities: UtilityConfig = {
     className: 'scroll-pb',
     values: 'spacing',
   },
-  scrollSnapAlign: 'snap',
-  scrollSnapStop: 'snap',
+  scrollSnapAlign: {
+    className: 'snap',
+  },
+  scrollSnapStop: {
+    className: 'snap',
+  },
   scrollSnapType: {
     className: 'snap',
     values: {
@@ -732,8 +842,12 @@ export const utilities: UtilityConfig = {
       }
     },
   },
-  touchAction: 'touch',
-  userSelect: 'select',
+  touchAction: {
+    className: 'touch',
+  },
+  userSelect: {
+    className: 'select',
+  },
 
   // Screen reader
   srOnly: {

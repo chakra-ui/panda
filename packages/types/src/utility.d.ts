@@ -12,13 +12,13 @@ type CssObject =
       [selector: string]: string | number | null | undefined | Properties
     }
 
-export type PropertyValues = string | string[] | Record<string, string> | ThemeFn
+export type PropertyValues = string | string[] | { type: string } | Record<string, string> | ThemeFn
 
 export type PropertyConfig = {
   /**
    * The classname this property will generate.
    */
-  className: PropertyClassName
+  className?: string
   /**
    * The css style object this property will generate.
    */
@@ -26,15 +26,19 @@ export type PropertyConfig = {
   /**
    * The possible values this property can have.
    */
-  values?: string | string[] | { type: string } | Record<string, string> | ThemeFn
+  values?: PropertyValues
   /**
    * The css property this utility maps to.
    */
   property?: keyof Properties
+  /**
+   * The shorthand of the property.
+   */
+  shorthand?: string
 }
 
 export type UtilityConfig = {
-  [property in keyof Properties | (string & {})]?: string | PropertyConfig
+  [property in keyof Properties | (string & {})]?: PropertyConfig
 }
 
 export type PluginResult = {

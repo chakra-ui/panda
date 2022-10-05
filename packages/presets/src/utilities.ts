@@ -9,22 +9,39 @@ const layout: UtilityConfig = {
       video: '16 / 9',
     },
   },
-  boxDecorationBreak: 'box-decoration',
-  display: {
-    className: (value) => (value === 'none' ? 'hidden' : value),
+  boxDecorationBreak: {
+    className: 'box-decoration',
   },
-  zIndex: 'z',
-  boxSizing: 'box',
+  display: {
+    className: 'd',
+  },
+  zIndex: {
+    className: 'z',
+  },
+  boxSizing: {
+    className: 'box',
+  },
 
-  objectPosition: 'object',
-  objectFit: 'object',
+  objectPosition: {
+    className: 'object',
+  },
+  objectFit: {
+    className: 'object',
+  },
 
-  overscrollBehavior: 'overscroll',
-  overscrollBehaviorX: 'overscroll-x',
-  overscrollBehaviorY: 'overscroll-y',
+  overscrollBehavior: {
+    className: 'overscroll',
+  },
+  overscrollBehaviorX: {
+    className: 'overscroll-x',
+  },
+  overscrollBehaviorY: {
+    className: 'overscroll-y',
+  },
 
   position: {
-    className: (value) => value,
+    className: 'pos',
+    shorthand: 'pos',
   },
   top: {
     className: 't',
@@ -108,35 +125,39 @@ const layout: UtilityConfig = {
     },
   },
   visibility: {
-    className(value) {
-      return value === 'visible' ? 'visible' : 'invisible'
-    },
+    className: 'vis',
   },
 }
 
 const spacing: UtilityConfig = {
   padding: {
     className: 'p',
+    shorthand: 'p',
     values: 'spacing',
   },
   paddingLeft: {
     className: 'pl',
+    shorthand: 'pl',
     values: 'spacing',
   },
   paddingRight: {
     className: 'pr',
+    shorthand: 'pr',
     values: 'spacing',
   },
   paddingTop: {
     className: 'pt',
+    shorthand: 'pt',
     values: 'spacing',
   },
   paddingBottom: {
     className: 'pb',
+    shorthand: 'pb',
     values: 'spacing',
   },
   paddingX: {
     className: 'px',
+    shorthand: 'px',
     property: 'paddingInline',
     values: 'spacing',
     transform(value) {
@@ -147,6 +168,7 @@ const spacing: UtilityConfig = {
   },
   paddingY: {
     className: 'py',
+    shorthand: 'py',
     values: 'spacing',
     property: 'paddingBlock',
     transform(value) {
@@ -158,26 +180,32 @@ const spacing: UtilityConfig = {
 
   marginLeft: {
     className: 'ml',
+    shorthand: 'ml',
     values: 'spacing',
   },
   marginRight: {
     className: 'mr',
+    shorthand: 'mr',
     values: 'spacing',
   },
   marginTop: {
     className: 'mt',
+    shorthand: 'mt',
     values: 'spacing',
   },
   marginBottom: {
     className: 'mb',
+    shorthand: 'mb',
     values: 'spacing',
   },
   margin: {
     className: 'm',
+    shorthand: 'm',
     values: 'spacing',
   },
   marginX: {
     className: 'mx',
+    shorthand: 'mx',
     values: 'spacing',
     property: 'marginInline',
     transform(value) {
@@ -188,6 +216,7 @@ const spacing: UtilityConfig = {
   },
   marginY: {
     className: 'my',
+    shorthand: 'my',
     values: 'spacing',
     property: 'marginBlock',
     transform(value) {
@@ -266,9 +295,16 @@ const flexGrid: UtilityConfig = {
       none: 'none',
     },
   },
-  flexDirection: 'flex',
-  flexGrow: 'grow',
-  flexShrink: 'shrink',
+  flexDirection: {
+    className: 'flex',
+    shorthand: 'flexDir',
+  },
+  flexGrow: {
+    className: 'grow',
+  },
+  flexShrink: {
+    className: 'shrink',
+  },
 
   gridTemplateColumns: {
     className: 'grid-cols',
@@ -342,9 +378,15 @@ const flexGrid: UtilityConfig = {
       '12': 'span 12 / span 12',
     },
   },
-  gridColumnStart: 'col-start',
-  gridColumnEnd: 'col-end',
-  gridAutoFlow: 'grid-flow',
+  gridColumnStart: {
+    className: 'col-start',
+  },
+  gridColumnEnd: {
+    className: 'col-end',
+  },
+  gridAutoFlow: {
+    className: 'grid-flow',
+  },
   gridAutoColumns: {
     className: 'auto-cols',
     values: {
@@ -381,13 +423,18 @@ const flexGrid: UtilityConfig = {
   alignContent: {
     className: 'content',
   },
-  alignItems: 'items',
-  alignSelf: 'self',
+  alignItems: {
+    className: 'items',
+  },
+  alignSelf: {
+    className: 'self',
+  },
 }
 
 const sizing: UtilityConfig = {
   // Sizing properties
   width: {
+    shorthand: 'w',
     className: 'w',
     values(theme) {
       return {
@@ -423,6 +470,7 @@ const sizing: UtilityConfig = {
     },
   },
   height: {
+    shorthand: 'h',
     className: 'h',
     values(theme) {
       return {
@@ -446,18 +494,22 @@ const sizing: UtilityConfig = {
     },
   },
   minHeight: {
+    shorthand: 'minH',
     className: 'min-h',
     values: 'sizes',
   },
   maxHeight: {
+    shorthand: 'maxH',
     className: 'max-h',
     values: 'sizes',
   },
   minWidth: {
+    shorthand: 'minW',
     className: 'min-w',
     values: 'sizes',
   },
   maxWidth: {
+    shorthand: 'maxW',
     className: 'max-w',
     values: 'largeSizes',
   },
@@ -493,9 +545,7 @@ const typography: UtilityConfig = {
     },
   },
   fontVariantNumeric: {
-    className(value) {
-      return value
-    },
+    className: 'numeric',
   },
   letterSpacing: {
     className: 'tracking',
@@ -505,20 +555,26 @@ const typography: UtilityConfig = {
     className: 'leading',
     values: 'lineHeights',
   },
-  textAlign: 'text',
-  textDecoration: {
-    className(value) {
-      return value === 'none' ? 'no-underline' : value
-    },
+  textAlign: {
+    className: 'text',
   },
-  textDecorationColor: 'decoration',
-  textDecorationStyle: 'decoration',
-  textDecorationThickness: 'decoration',
-  textUnderlineOffset: 'underline-offset',
+  textDecoration: {
+    className: 'decor',
+  },
+  textDecorationColor: {
+    className: 'decoration',
+  },
+  textDecorationStyle: {
+    className: 'decoration',
+  },
+  textDecorationThickness: {
+    className: 'decoration',
+  },
+  textUnderlineOffset: {
+    className: 'underline-offset',
+  },
   textTransform: {
-    className(value) {
-      return value === 'none' ? 'normal-case' : value
-    },
+    className: 'text',
   },
   textIndent: {
     className: 'indent',
@@ -540,8 +596,12 @@ const typography: UtilityConfig = {
       }
     },
   },
-  verticalAlign: 'align',
-  wordBreak: 'break',
+  verticalAlign: {
+    className: 'align',
+  },
+  wordBreak: {
+    className: 'break',
+  },
   lineClamp: {
     className: 'clamp',
     transform(value) {
@@ -562,27 +622,55 @@ const typography: UtilityConfig = {
 }
 
 const list: UtilityConfig = {
-  listStyleType: 'list',
-  listStylePosition: 'list',
+  listStyleType: {
+    className: 'list',
+  },
+  listStylePosition: {
+    className: 'list',
+  },
 }
 
 const background: UtilityConfig = {
-  backgroundAttachment: 'bg',
-  backgroundClip: 'bg-clip',
+  backgroundAttachment: {
+    shorthand: 'bgAttachment',
+    className: 'bg',
+  },
+  backgroundClip: {
+    shorthand: 'bgClip',
+    className: 'bg-clip',
+  },
   background: {
+    shorthand: 'bg',
     className: 'bg',
     values: 'colors',
   },
   backgroundColor: {
+    shorthand: 'bgColor',
     className: 'bg',
     values: 'colors',
   },
-  backgroundPosition: 'bg',
-  backgroundOrigin: 'bg-origin',
-  backgroundRepeat: 'bg-repeat',
-  backgroundBlendMode: 'bg-blend',
-  backgroundSize: 'bg',
+  backgroundPosition: {
+    shorthand: 'bgPos',
+    className: 'bg',
+  },
+  backgroundOrigin: {
+    shorthand: 'bgOrigin',
+    className: 'bg-origin',
+  },
+  backgroundRepeat: {
+    shorthand: 'bgRepeat',
+    className: 'bg-repeat',
+  },
+  backgroundBlendMode: {
+    shorthand: 'bgBlend',
+    className: 'bg-blend',
+  },
+  backgroundSize: {
+    shorthand: 'bgSize',
+    className: 'bg',
+  },
   backgroundGradient: {
+    shorthand: 'bgGradient',
     className: 'bg-gradient',
     values: {
       none: 'none',
@@ -678,7 +766,9 @@ const border: UtilityConfig = {
       }
     },
   },
-  border: 'border',
+  border: {
+    className: 'border',
+  },
   borderColor: {
     className: 'border',
     values: 'colors',
@@ -705,22 +795,30 @@ const border: UtilityConfig = {
       }
     },
   },
-  borderLeft: 'border-l',
+  borderLeft: {
+    className: 'border-l',
+  },
   borderLeftColor: {
     className: 'border-l',
     values: 'colors',
   },
-  borderRight: 'border-r',
+  borderRight: {
+    className: 'border-r',
+  },
   borderRightColor: {
     className: 'border-r',
     values: 'colors',
   },
-  borderTop: 'border-t',
+  borderTop: {
+    className: 'border-t',
+  },
   borderTopColor: {
     className: 'border-t',
     values: 'colors',
   },
-  borderBottom: 'border-b',
+  borderBottom: {
+    className: 'border-b',
+  },
   borderBottomColor: {
     className: 'border-b',
     values: 'colors',
@@ -743,11 +841,17 @@ const border: UtilityConfig = {
       }
     },
   },
-  borderStyle: 'border',
+  borderStyle: {
+    className: 'border',
+  },
 
   // Outline
-  outlineWidth: 'outline',
-  outlineColor: 'outline',
+  outlineWidth: {
+    className: 'outline',
+  },
+  outlineColor: {
+    className: 'outline',
+  },
   outline: {
     className: 'outline',
     transform(value) {
@@ -814,10 +918,12 @@ const border: UtilityConfig = {
 
 const effects: UtilityConfig = {
   boxShadow: {
+    shorthand: 'shadow',
     className: 'shadow',
     values: 'shadows',
   },
   boxShadowColor: {
+    shorthand: 'shadowColor',
     className: 'shadow',
     values: 'colors',
     transform(value) {
@@ -826,7 +932,9 @@ const effects: UtilityConfig = {
       }
     },
   },
-  mixBlendMode: 'mix-blend',
+  mixBlendMode: {
+    className: 'mix-blend',
+  },
   filter: {
     className: 'filter',
     values: {
@@ -1009,7 +1117,9 @@ const effects: UtilityConfig = {
 }
 
 const tables: UtilityConfig = {
-  borderCollapse: 'border',
+  borderCollapse: {
+    className: 'border',
+  },
   borderSpacing: {
     className: 'border-spacing',
     values: 'spacing',
@@ -1037,7 +1147,9 @@ const tables: UtilityConfig = {
       }
     },
   },
-  tableLayout: 'table',
+  tableLayout: {
+    className: 'table',
+  },
 }
 
 const transitions: UtilityConfig = {
@@ -1045,8 +1157,12 @@ const transitions: UtilityConfig = {
     className: 'ease',
     values: 'easings',
   },
-  transitionDelay: 'delay',
-  transitionDuration: 'duration',
+  transitionDelay: {
+    className: 'delay',
+  },
+  transitionDuration: {
+    className: 'duration',
+  },
   transitionProperty: {
     className: 'transition',
     values: {
@@ -1084,7 +1200,9 @@ const transforms: UtilityConfig = {
       'auto-gpu': `translate3d(${transformVars})`,
     },
   },
-  transformOrigin: 'origin',
+  transformOrigin: {
+    className: 'origin',
+  },
   scale: {
     className: 'scale',
     transform(value) {
@@ -1119,6 +1237,7 @@ const transforms: UtilityConfig = {
     },
   },
   translateX: {
+    shorthand: 'x',
     className: 'translate-x',
     values(theme) {
       return {
@@ -1139,6 +1258,7 @@ const transforms: UtilityConfig = {
     },
   },
   translateY: {
+    shorthand: 'y',
     className: 'translate-y',
     values(theme) {
       return {
@@ -1185,7 +1305,9 @@ const interactivity: UtilityConfig = {
     className: 'caret',
     values: 'colors',
   },
-  scrollBehavior: 'scroll',
+  scrollBehavior: {
+    className: 'scroll',
+  },
   scrollMargin: {
     className: 'scroll-m',
     values: 'spacing',
@@ -1266,8 +1388,12 @@ const interactivity: UtilityConfig = {
     className: 'scroll-pb',
     values: 'spacing',
   },
-  scrollSnapAlign: 'snap',
-  scrollSnapStop: 'snap',
+  scrollSnapAlign: {
+    className: 'snap',
+  },
+  scrollSnapStop: {
+    className: 'snap',
+  },
   scrollSnapType: {
     className: 'snap',
     values: {
@@ -1286,8 +1412,12 @@ const interactivity: UtilityConfig = {
       }
     },
   },
-  touchAction: 'touch',
-  userSelect: 'select',
+  touchAction: {
+    className: 'touch',
+  },
+  userSelect: {
+    className: 'select',
+  },
 }
 
 const svg: UtilityConfig = {

@@ -1,29 +1,26 @@
 import { readFileSync } from 'fs'
+import { lookItUpSync } from 'look-it-up'
 import outdent from 'outdent'
+import { dirname } from 'path'
 import type { Output, PandaContext } from '../context'
 import { generateConditions } from './conditions'
-import { generateCss, generateKeyframes } from './css'
-import { generateCssType } from './types'
+import { generateDesignTokenCss, generateKeyframes } from './design-token-css'
 import { generateCssMap } from './css-map'
 import { generateCx } from './cx'
 import { generateFontFace } from './font-face'
 import { getEntrypoint } from './get-entrypoint'
 import { generateGlobalCss } from './global-css'
 import { generateisValidProp } from './is-valid-prop'
-import { generateJs } from './js'
-import { generateDts } from './js-dts'
+import { generateDesignTokenJs } from './design-token-js'
 import { generateJsxFactory } from './jsx'
 import { generatePattern } from './pattern'
 import { generatePropertyTypes } from './property-types'
 import { generateRecipes } from './recipe'
 import { generateReset } from './reset'
-import { generateSerializer } from './serializer'
+import { generateCssFn } from './css-fn'
 import { generateSx } from './sx'
 import { generateTokenDts } from './token-dts'
-import { generateTransform } from './transform'
-import { lookItUpSync } from 'look-it-up'
-import { dirname } from 'path'
-import { minifyConfig } from '@css-panda/ast'
+import { generateCssType } from './types'
 
 function setupHelpers(ctx: PandaContext): Output {
   const sharedMjs = getEntrypoint('@css-panda/shared', { dev: 'shared.mjs' })
@@ -47,12 +44,15 @@ function setupDesignTokens(ctx: PandaContext): Output {
     return { files: [] }
   }
 
+  const code = generateDesignTokenJs(ctx.tokens)
+  const css = generateDesignTokenCss(ctx)
+
   return {
     dir: ctx.paths.ds,
     files: [
-      { file: 'index.css', code: generateCss(ctx) },
-      { file: 'index.d.ts', code: generateDts() },
-      { file: 'index.js', code: generateJs(ctx.tokens) },
+      { file: 'index.css', code: css },
+      { file: 'index.d.ts', code: code.dts },
+      { file: 'index.js', code: code.js },
     ],
   }
 }
@@ -85,13 +85,12 @@ function setupTypes(ctx: PandaContext): Output {
 }
 
 function setupCss(ctx: PandaContext): Output {
-  const code = generateSerializer(ctx.hash)
+  const code = generateCssFn(ctx)
   const conditions = generateConditions(ctx)
   return {
     dir: ctx.paths.css,
     files: [
       { file: 'conditions.js', code: conditions.js },
-      { file: 'transform.js', code: generateTransform() },
       { file: 'css.js', code: code.js },
       { file: 'css.d.ts', code: code.dts },
     ],
@@ -241,13 +240,6 @@ function setupGitIgnore(ctx: PandaContext): Output {
   }
 }
 
-function setupMinifiedConfig(ctx: PandaContext): Output {
-  return {
-    dir: ctx.outdir,
-    files: [{ file: 'config.js', code: minifyConfig(ctx.conf.code) }],
-  }
-}
-
 export function generateSystem(ctx: PandaContext): Output[] {
   return [
     setupHelpers(ctx),
@@ -266,6 +258,5 @@ export function generateSystem(ctx: PandaContext): Output[] {
     setupJsx(ctx),
     setupReset(ctx),
     setupGitIgnore(ctx),
-    setupMinifiedConfig(ctx),
   ]
 }

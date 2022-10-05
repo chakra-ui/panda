@@ -10,17 +10,23 @@ export type MappedObject<T, K> = {
     : K
 }
 
+type Options = {
+  stop?(value: any, path: string[]): boolean
+  getKey?(prop: string): string
+}
+
 export function walkObject<T, K>(
   target: T,
   predicate: Predicate<K>,
-  options: { stop?(value: any, path: string[]): boolean } = {},
+  options: Options = {},
 ): MappedObject<T, ReturnType<Predicate<K>>> {
-  const { stop } = options
+  const { stop, getKey } = options
 
   function inner(value: any, path: string[] = []): any {
     if (isObject(value) || Array.isArray(value)) {
       const result: Record<string, string> = {}
-      for (const [key, child] of Object.entries(value)) {
+      for (const [prop, child] of Object.entries(value)) {
+        const key = getKey?.(prop) ?? prop
         const childPath = [...path, key]
         if (stop?.(value, childPath)) {
           return predicate(value, path)
