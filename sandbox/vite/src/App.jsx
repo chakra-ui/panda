@@ -1,4 +1,5 @@
 import { css, globalCss } from '../design-system/css'
+import { circle, vstack } from '../design-system/patterns'
 
 globalCss({
   '*': {
@@ -12,6 +13,11 @@ function App() {
     <div className={css({ paddingY: '180px' })}>
       <div className={css({ maxWidth: '840px', marginX: 'auto', textAlign: 'center' })}>
         <div>
+          <div className={vstack({ justify: 'center', bg: 'red.200', py: '2', mb: '30px' })}>
+            <button>Button 1</button>
+            <button>Button 2</button>
+            <div className={circle({ size: '10', bg: 'purple', color: 'white' })}>3</div>
+          </div>
           <h1 className={css({ color: 'black', fontSize: '56px', lineHeight: '1.1em' })}>
             Create accessible React apps <span className={css({ color: 'teal' })}>with speed</span>
           </h1>

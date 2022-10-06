@@ -1465,6 +1465,21 @@ const accessibility: UtilityConfig = {
   },
 }
 
+const others: UtilityConfig = {
+  debug: {
+    className: 'debug',
+    values: { type: 'boolean' },
+    transform() {
+      return {
+        outline: '1px solid blue !important',
+        '&>*': {
+          outline: '1px solid red !important',
+        },
+      }
+    },
+  },
+}
+
 export const utilities: UtilityConfig = Object.assign(
   {},
   layout,
@@ -1482,4 +1497,5 @@ export const utilities: UtilityConfig = Object.assign(
   interactivity,
   svg,
   accessibility,
+  others,
 )

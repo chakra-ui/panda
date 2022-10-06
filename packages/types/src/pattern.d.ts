@@ -1,9 +1,10 @@
 import type { CssProperty, ConditionCssProperties } from './panda-csstype'
+import type { TokenCategory } from './tokens'
 
 export type PatternProperty =
   | { type: 'property'; value: CssProperty }
   | { type: 'enum'; value: string[] }
-  | { type: 'token'; value: string; property?: CssProperty }
+  | { type: 'token'; value: TokenCategory; property?: CssProperty }
   | { type: 'string' | 'boolean' | 'number' }
 
 type Value = string | { [key: string]: Value }
@@ -14,9 +15,10 @@ export type TransformHelpers = {
 
 export type PatternConfig = {
   /**
-   * The name of the pattern.
+   * Whether to only generate types for the specified properties.
+   * This will disallow css properties
    */
-  name: string
+  strict?: boolean
   /**
    * The properties of the pattern.
    */

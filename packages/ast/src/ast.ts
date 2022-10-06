@@ -14,7 +14,7 @@ export function keyValue(node: swc.KeyValueProperty, result: Record<string, any>
   if (!key) return result
 
   match(node.value)
-    .with({ type: P.union('StringLiteral', 'NumericLiteral') }, (node) => {
+    .with({ type: P.union('StringLiteral', 'NumericLiteral', 'BooleanLiteral') }, (node) => {
       result[key] = node.value
     })
     .with({ type: 'ObjectExpression' }, (node) => {

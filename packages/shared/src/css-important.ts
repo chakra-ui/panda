@@ -1,5 +1,5 @@
 export function isImportant(value: string) {
-  return /!(important)?$/.test(value)
+  return typeof value === 'string' ? /!(important)?$/.test(value) : false
 }
 
 export function withoutImportant(value: string) {

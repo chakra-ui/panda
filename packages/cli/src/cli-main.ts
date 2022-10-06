@@ -40,12 +40,13 @@ export async function main() {
   cli
     .command('gen', 'Generate the panda system')
     .option('--silent', "Don't print any logs")
+    .option('--clean', 'Clean the output directory before generating')
     .action(async (flags) => {
-      const { silent } = flags
+      const { silent, clean } = flags
 
       if (silent) logger.level = 'silent'
 
-      const ctx = await loadConfigAndCreateContext()
+      const ctx = await loadConfigAndCreateContext({ config: { clean } })
       const msg = await emitArtifacts(ctx)
 
       logger.log(msg)

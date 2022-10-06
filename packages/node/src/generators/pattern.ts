@@ -1,64 +1,69 @@
-import { extractPatterns } from '@css-panda/ast'
 import { capitalize, dashCase, unionType } from '@css-panda/shared'
+import type { PatternConfig } from '@css-panda/types'
 import { outdent } from 'outdent'
+import { stringify } from 'telejson'
 import { match } from 'ts-pattern'
 import type { PandaContext } from '../context'
 
-export function generatePattern(ctx: PandaContext) {
-  const patterns = ctx.config.patterns ?? []
+function generate(name: string, pattern: PatternConfig) {
+  const { properties, transform, strict } = pattern
 
-  if (!patterns.length) return
+  return {
+    name: dashCase(name),
+    dts: outdent`
+    import { CssObject, ConditionalValue } from "../types"
+    import { Properties } from "../types/csstype"
+    import { Tokens } from "../types/token"
 
-  const extracted = extractPatterns(ctx.conf.code)
-
-  const files = Object.values(patterns).map((pattern) => {
-    return {
-      name: dashCase(pattern.name),
-      js: outdent`
-      import { mapObject } from "../helpers"
-      import { css } from "../css"
-
-      ${extracted.get(pattern.name)}
-      
-      const helpers = { map: mapObject }
-      
-      const { transform } = ${pattern.name}Fn
-      export const ${pattern.name} = (styles) => css(transform(styles, helpers))
-      `,
-
-      dts: outdent`
-      import { CssObject, ConditionalValue } from "../types"
-      import { Properties } from "../types/csstype"
-      import { Tokens } from "../types/token"
-
-      export type ${capitalize(pattern.name)}Options = {
-         ${Object.keys(pattern.properties ?? {})
-           .map((key) => {
-             const value = pattern.properties![key]
-             return match(value)
-               .with({ type: 'property' }, (value) => {
-                 return `${key}?: CssObject["${value.value}"]`
-               })
-               .with({ type: 'token' }, (value) => {
-                 if (value.property) {
-                   return `${key}?: ConditionalValue<Tokens["${value.value}"] | Properties["${value.property}"]>`
-                 }
-                 return `${key}?: ConditionalValue<Tokens["${value.value}"]>`
-               })
-               .with({ type: 'enum' }, (value) => {
-                 return `${key}?: ConditionalValue<${unionType(value.value)}>`
-               })
-               .otherwise(() => {
-                 return `${key}?: ConditionalValue<${value.type}>`
-               })
-           })
-           .join('\n\t')}
-      }
-
-      export declare function ${pattern.name}(options: ${capitalize(pattern.name)}Options): string
-     `,
+    export type ${capitalize(name)}Options = {
+       ${Object.keys(properties ?? {})
+         .map((key) => {
+           const value = properties![key]
+           return match(value)
+             .with({ type: 'property' }, (value) => {
+               return `${key}?: CssObject["${value.value}"]`
+             })
+             .with({ type: 'token' }, (value) => {
+               if (value.property) {
+                 return `${key}?: ConditionalValue<Tokens["${value.value}"] | Properties["${value.property}"]>`
+               }
+               return `${key}?: ConditionalValue<Tokens["${value.value}"]>`
+             })
+             .with({ type: 'enum' }, (value) => {
+               return `${key}?: ConditionalValue<${unionType(value.value)}>`
+             })
+             .otherwise(() => {
+               return `${key}?: ConditionalValue<${value.type}>`
+             })
+         })
+         .join('\n\t')}
     }
-  })
 
-  return files
+    ${
+      strict
+        ? outdent`export declare function ${name}(options: ${capitalize(name)}Options): string`
+        : outdent`
+        type Merge<T> = Omit<CssObject, keyof T> & T
+        export declare function ${name}(options: Merge<${capitalize(name)}Options>): string
+        `
+    }
+
+   `,
+    js: outdent`
+  import { mapObject } from "../helpers"
+  import { css } from "../css"
+
+  const dfn = ${stringify({ transform })}
+
+  export const ${name} = (styles) => css(dfn.transform(styles, { map: mapObject }))
+  `
+      .replace(/"_function_([^|]*)\|(.*)"/, '$2')
+      .replace(/\\"/g, '"')
+      .replace('return', '; return'),
+  }
+}
+
+export function generatePattern(ctx: PandaContext) {
+  if (!ctx.hasPattern) return
+  return Object.entries(ctx.patterns).map(([name, pattern]) => generate(name, pattern))
 }

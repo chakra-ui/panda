@@ -14,7 +14,7 @@ export function generateCssFn(ctx: PandaContext) {
     import { createCss } from "../helpers"
     import { sortConditions } from "./conditions"
 
-    const withoutSpace = (v) => v.replaceAll(' ', '_')
+    const withoutSpace = (v) => typeof v === "string" ? v.replaceAll(' ', '_') : v
 
     const classNameMap = ${stringify(utility.entries())}
     const shorthands = ${stringify(utility.shorthandMap)}

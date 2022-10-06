@@ -13,15 +13,9 @@
   "scripts": {
     "build": "tsup src/index.ts --format=esm,cjs --dts",
     "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
-    "dev": "pnpm build-fast -- --watch",
-    "minify": "tsx watch ./__sandbox__/minify.ts",
-    "patterns": "tsx watch ./__sandbox__/extract-pattern.ts"
+    "dev": "pnpm build-fast -- --watch"
   },
   "dependencies": {
-    "@babel/parser": "7.19.1",
-    "@babel/generator": "7.19.0",
-    "@babel/traverse": "7.19.1",
-    "@babel/types": "7.19.0",
     "@swc/core": "1.2.248",
     "@css-panda/logger": "workspace:*",
     "@css-panda/is-valid-prop": "workspace:*",
@@ -31,8 +25,7 @@
   },
   "devDependencies": {
     "@css-panda/fixture": "workspace:*",
-    "@types/lodash.merge": "4.6.7",
-    "@types/babel__traverse": "7.18.1"
+    "@types/lodash.merge": "4.6.7"
   },
   "files": [
     "dist"
