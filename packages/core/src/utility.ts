@@ -368,6 +368,8 @@ export class Utility {
   }
 
   keys() {
-    return Object.keys(this.config)
+    const shorthands = Array.from(this.shorthandMap.keys())
+    const properties = Object.keys(this.config)
+    return [...shorthands, ...properties]
   }
 }
