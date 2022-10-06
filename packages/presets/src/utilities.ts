@@ -1469,12 +1469,25 @@ const others: UtilityConfig = {
   debug: {
     className: 'debug',
     values: { type: 'boolean' },
-    transform() {
+    transform(value) {
+      if (!value) return {}
       return {
         outline: '1px solid blue !important',
         '&>*': {
           outline: '1px solid red !important',
         },
+      }
+    },
+  },
+  truncate: {
+    className: 'truncate',
+    values: { type: 'boolean' },
+    transform(value) {
+      if (!value) return {}
+      return {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
       }
     },
   },
