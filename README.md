@@ -33,3 +33,24 @@ yarn panda init
 # or
 yarn panda init --postcss
 ```
+
+## Usage
+
+```js
+import { css } from '../design-system/css'
+import { stack, vstack, hstack } from '../design-system/patterns'
+```
+
+```jsx
+import { css } from '../design-system/css'
+import { stack, vstack, hstack } from '../design-system/patterns'
+
+function Example(params) {
+  return (
+    <div>
+      <div className={hstack({ gap: '30px', color: 'pink.300' })}></div>
+      <div className={css({ fontSize: 'lg', color: 'red.400' })}></div>
+    </div>
+  )
+}
+```
