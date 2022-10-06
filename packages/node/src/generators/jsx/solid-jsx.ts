@@ -1,5 +1,5 @@
 import { outdent } from 'outdent'
-import type { PandaContext } from '../context'
+import type { PandaContext } from '../../context'
 
 export function generateSolidJsxFactory(ctx: PandaContext) {
   const name = ctx.jsxFactory

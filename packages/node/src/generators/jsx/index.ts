@@ -1,4 +1,4 @@
-import type { PandaContext } from '../context'
+import type { PandaContext } from '../../context'
 import { generatePreactJsxFactory } from './preact-jsx'
 import { generateReactJsxFactory } from './react-jsx'
 import { generateSolidJsxFactory } from './solid-jsx'
