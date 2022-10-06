@@ -24,7 +24,7 @@ export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
   } else {
     const content = outdent`
        import { defineConfig } from "css-panda"
-       import { utilities, breakpoints, conditions, keyframes, tokens } from "css-panda/presets"
+       import { utilities, breakpoints, conditions, keyframes, tokens, patterns } from "css-panda/presets"
 
        export default defineConfig({
         // whether to use css reset
@@ -48,7 +48,7 @@ export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
         // Add your css property utilities here (mt, ml, etc)
         utilities,
         // Add your css patterns here (stack, grid, etc)
-        patterns: {},
+        patterns,
        })
     `
 
