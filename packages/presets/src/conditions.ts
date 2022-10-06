@@ -92,4 +92,8 @@ export const conditions = {
 
   ltr: '[dir=ltr] &',
   rtl: '[dir=rtl] &',
+
+  scrollbar: '&::-webkit-scrollbar',
+  scrollbarThumb: '&::-webkit-scrollbar-thumb',
+  scrollbarTrack: '&::-webkit-scrollbar-track',
 }

@@ -22,7 +22,7 @@ export type PropertyConfig = {
   /**
    * The css style object this property will generate.
    */
-  transform?: (value: string) => CssObject
+  transform?: (value: any) => CssObject
   /**
    * The possible values this property can have.
    */
@@ -38,7 +38,9 @@ export type PropertyConfig = {
 }
 
 export type UtilityConfig = {
-  [property in keyof Properties | (string & {})]?: PropertyConfig
+  [property in keyof Properties]?: PropertyConfig
+} & {
+  [key: string]: PropertyConfig
 }
 
 export type PluginResult = {
