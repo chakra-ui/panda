@@ -12,7 +12,11 @@ export function getUnit(value = ''): string | undefined {
   return unit?.[1]
 }
 
-export function toPx(value = ''): string | undefined {
+export function toPx(value: string | number = ''): string | undefined {
+  if (typeof value === 'number') {
+    return `${value}px`
+  }
+
   const unit = getUnit(value)
 
   if (!unit) return value

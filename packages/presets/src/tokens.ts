@@ -1,34 +1,33 @@
 import type { Tokens } from '@css-panda/types'
 import { colors } from './colors'
 import { animations } from './keyframes'
-import { dropShadows, shadows } from './shadows'
+import { shadows } from './shadows'
 import { largeSizes, sizes } from './sizes'
 import { spacing } from './spacing'
 import { fonts, fontSizes, fontWeights, letterSpacings, lineHeights } from './typography'
 
 export const tokens: Tokens = {
   easings: {
-    default: 'cubic-bezier(0.4, 0, 0.2, 1)',
-    linear: 'linear',
-    in: 'cubic-bezier(0.4, 0, 1, 1)',
-    out: 'cubic-bezier(0, 0, 0.2, 1)',
-    'in-out': 'cubic-bezier(0.4, 0, 0.2, 1)',
+    default: { value: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+    linear: { value: 'linear' },
+    in: { value: 'cubic-bezier(0.4, 0, 1, 1)' },
+    out: { value: 'cubic-bezier(0, 0, 0.2, 1)' },
+    'in-out': { value: 'cubic-bezier(0.4, 0, 0.2, 1)' },
   },
   durations: {
-    '75': '75ms',
-    '100': '100ms',
-    '150': '150ms',
+    '75': { value: '75ms' },
+    '100': { value: '100ms' },
+    '150': { value: '150ms' },
   },
   radii: {
-    none: '0px',
-    xs: '0.125rem',
-    sm: '0.25rem',
-    md: '0.375rem',
-    lg: '0.5rem',
-    xl: '0.75rem',
-    '2xl': '1rem',
-    '3xl': '1.5rem',
-    full: '9999px',
+    xs: { value: '0.125rem' },
+    sm: { value: '0.25rem' },
+    md: { value: '0.375rem' },
+    lg: { value: '0.5rem' },
+    xl: { value: '0.75rem' },
+    '2xl': { value: '1rem' },
+    '3xl': { value: '1.5rem' },
+    full: { value: '9999px' },
   },
   fontWeights,
   lineHeights,
@@ -36,18 +35,16 @@ export const tokens: Tokens = {
   letterSpacings,
   fontSizes,
   shadows,
-  dropShadows,
+  // dropShadows,
   colors,
   blurs: {
-    '0': '0',
-    none: '0',
-    sm: '4px',
-    base: '8px',
-    md: '12px',
-    lg: '16px',
-    xl: '24px',
-    '2xl': '40px',
-    '3xl': '64px',
+    sm: { value: '4px' },
+    base: { value: '8px' },
+    md: { value: '12px' },
+    lg: { value: '16px' },
+    xl: { value: '24px' },
+    '2xl': { value: '40px' },
+    '3xl': { value: '64px' },
   },
   spacing,
   sizes,

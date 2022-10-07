@@ -91,12 +91,10 @@ test('[css] should generate css', () => {
         --radii-2xl: 1rem;
         --radii-3xl: 1.5rem;
         --radii-full: 9999px;
-        --shadows-xs: 0 0 0 1px var(--shadow-color, rgba(0, 0, 0, 0.05));
-        --shadows-sm: 0 1px 2px 0 var(--shadow-color, rgba(0, 0, 0, 0.05));
-        --shadows-base: 0 1px 3px 0 var(--shadow-color, rgba(0, 0, 0, 0.1)), 0 1px 2px 0 var(--shadow-color, rgba(0, 0, 0, 0.06));
-        --shadows-md: 0 4px 6px -1px var(--shadow-color, rgba(0, 0, 0, 0.1)), 0 2px 4px -1px var(--shadow-color, rgba(0, 0, 0, 0.06));
-        --drop-shadows-sm: drop-shadow(0 1px 1px rgb(0 0 0 / 0.05));
-        --drop-shadows-md: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
+        --shadows-xs: 0 0 0 1px rgba(0, 0, 0, 0.05);
+        --shadows-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadows-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        --shadows-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         --spacing-1: 0.25rem;
         --spacing-2: 0.5rem;
         --spacing-3: 0.75rem;
@@ -127,11 +125,6 @@ test('[css] should generate css', () => {
         --animations-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
         --animations-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         --animations-bounce: bounce 1s infinite;
-        --opacity-0: 0;
-        --opacity-25: 0.25;
-        --opacity-50: 0.5;
-        --opacity-75: 0.75;
-        --opacity-100: 1;
         --easings-ease-in: cubic-bezier(0.4, 0, 1, 1);
         --easings-ease-out: cubic-bezier(0, 0, 0.2, 1);
         --easings-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);

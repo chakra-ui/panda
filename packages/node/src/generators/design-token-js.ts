@@ -4,9 +4,10 @@ import outdent from 'outdent'
 export function generateDesignTokenJs(dict: TokenMap) {
   const map = new Map<string, { value: string; variable: string }>()
 
-  for (const [key, entry] of dict.values.entries()) {
-    map.set(key, { value: entry.value, variable: entry.varRef })
-  }
+  dict.forEach((token) => {
+    const value = token.condition ? token.varRef : token.value
+    map.set(token.prop, { value, variable: token.varRef })
+  })
 
   const obj = Object.fromEntries(map)
 

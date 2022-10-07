@@ -148,7 +148,7 @@ export class Utility {
     const { values } = config
 
     if (isString(values)) {
-      return this.tokenMap.flattenedTokens.get(values) ?? {}
+      return this.tokenMap.flatValues.get(values) ?? {}
     }
 
     if (Array.isArray(values)) {
@@ -346,25 +346,6 @@ export class Utility {
       className: this.getOrCreateClassName(key, withoutSpace(value)),
       styles: this.getOrCreateStyle(key, value),
     }
-  }
-
-  /**
-   * Given a property and a value, return its raw details (category, raw, value)
-   */
-  getRawData(prop: string, value: string) {
-    const config = this.propertyConfigMap.get(prop)
-    if (!config) return
-
-    const category = config.category
-    const values = this.getPropertyValues(this.normalize(config)!)
-
-    let raw = values?.[value] ?? value
-
-    if (category) {
-      raw = this.tokenMap.categoryMap.get(category)?.get(value)?.value ?? raw
-    }
-
-    return { category, raw, value }
   }
 
   keys() {

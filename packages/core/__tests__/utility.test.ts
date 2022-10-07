@@ -349,14 +349,6 @@ describe('Utility', () => {
         },
       }
     `)
-
-    expect(utility.getRawData('backgroundColor', 'red.400')).toMatchInlineSnapshot(`
-      {
-        "category": "colors",
-        "raw": "#F87171",
-        "value": "red.400",
-      }
-    `)
   })
 
   test('should resolve arbitrary property', () => {

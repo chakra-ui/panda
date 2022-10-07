@@ -1,47 +1,63 @@
-import type { Dict, DotPath } from './shared'
+/**
+ * Modeled after https://tr.designtokens.org/format/ with slight modifications for DX
+ */
 
-type RecommendedTokens = {
-  colors: Record<string, string | Record<string, string>>
-  fontSizes: Record<string, string>
-  fontWeights: Record<string, string | number>
-  fonts: Record<string, string | string[]>
-  lineHeights: Record<string, string | number>
-  letterSpacings: Record<string, string>
-  radii: Record<string, string>
-  blurs: Record<string, string>
-  shadows: Record<string, string | string[]>
-  dropShadows: Record<string, string | string[]>
-  spacing: Record<string, string>
-  sizes: Record<string, string>
-  largeSizes: Record<string, string>
-  animations: Record<string, string>
-  easings: Record<string, string>
-  durations: Record<string, string>
+export type Token<V = any> = {
+  description?: string
+  value: V
 }
 
-export type Tokens = RecommendedTokens & {
-  [group: string]: Record<string, string | string[] | Record<string, string>>
+export type SemanticToken<V = string, C extends string = string> = {
+  description?: string
+  value: V | Record<C, V>
 }
 
-export type PartialTokens = Partial<Tokens>
-
-export type TokenCategory = keyof RecommendedTokens | (string & {})
-
-type SemanticToken<
-  Key extends string | number | symbol,
-  Tokens extends Dict,
-  Conditions extends Dict,
-  Breakpoints extends Dict,
-> = {
-  [token: string]: {
-    [P in keyof Conditions | keyof Breakpoints | '_' | 'base']?:
-      | (string & {})
-      | string[]
-      | DotPath<Tokens[Key]>
-      | SemanticToken<string, Tokens, Conditions, Breakpoints>
-  }
+type Border = {
+  color: string
+  width: string
+  style: string
 }
 
-export type SemanticTokens<Tokens extends PartialTokens = PartialTokens, Conditions = Dict, Breakpoints = Dict> = {
-  [Key in keyof Tokens]?: SemanticToken<Key, Tokens, Conditions, Breakpoints>
+type Shadow = {
+  x: number
+  y: number
+  blur: number
+  spread: number
+  color: string
+  inset?: boolean
 }
+
+type Nested<T> = { [key: string]: T | Nested<T> }
+
+export type TokenValues = {
+  colors: string
+  fonts: string | string[]
+  fontSizes: string
+  fontWeights: string | number
+  lineHeights: string | number
+  letterSpacings: string
+  sizes: string
+  largeSizes: string
+  shadows: Shadow | Shadow[] | string | string[]
+  spacing: string | number
+  radii: string
+  borders: string | Border
+  durations: string
+  easings: string | number[]
+  animations: string
+  blurs: string
+}
+
+export type TokenEntries = {
+  [K in keyof TokenValues]: [K, TokenValues[K]]
+}[keyof TokenValues]
+
+export type Tokens = {
+  [key in keyof TokenValues]?: Nested<Token<TokenValues[key]>>
+}
+
+export type SemanticTokens<C extends string = string> = {
+  [key in keyof TokenValues]?: Nested<SemanticToken<TokenValues[key], C>>
+}
+
+export type TokenCategory = keyof TokenValues

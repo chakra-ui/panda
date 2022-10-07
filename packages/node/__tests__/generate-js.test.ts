@@ -269,28 +269,20 @@ test('[dts] should generate package', () => {
         \\"variable\\": \\"var(--radii-full)\\"
       },
       \\"shadows.xs\\": {
-        \\"value\\": \\"0 0 0 1px var(--shadow-color, rgba(0, 0, 0, 0.05))\\",
+        \\"value\\": \\"0 0 0 1px rgba(0, 0, 0, 0.05)\\",
         \\"variable\\": \\"var(--shadows-xs)\\"
       },
       \\"shadows.sm\\": {
-        \\"value\\": \\"0 1px 2px 0 var(--shadow-color, rgba(0, 0, 0, 0.05))\\",
+        \\"value\\": \\"0 1px 2px 0 rgba(0, 0, 0, 0.05)\\",
         \\"variable\\": \\"var(--shadows-sm)\\"
       },
       \\"shadows.base\\": {
-        \\"value\\": \\"0 1px 3px 0 var(--shadow-color, rgba(0, 0, 0, 0.1)), 0 1px 2px 0 var(--shadow-color, rgba(0, 0, 0, 0.06))\\",
+        \\"value\\": \\"0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)\\",
         \\"variable\\": \\"var(--shadows-base)\\"
       },
       \\"shadows.md\\": {
-        \\"value\\": \\"0 4px 6px -1px var(--shadow-color, rgba(0, 0, 0, 0.1)), 0 2px 4px -1px var(--shadow-color, rgba(0, 0, 0, 0.06))\\",
+        \\"value\\": \\"0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)\\",
         \\"variable\\": \\"var(--shadows-md)\\"
-      },
-      \\"dropShadows.sm\\": {
-        \\"value\\": \\"drop-shadow(0 1px 1px rgb(0 0 0 / 0.05))\\",
-        \\"variable\\": \\"var(--drop-shadows-sm)\\"
-      },
-      \\"dropShadows.md\\": {
-        \\"value\\": \\"drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06))\\",
-        \\"variable\\": \\"var(--drop-shadows-md)\\"
       },
       \\"spacing.1\\": {
         \\"value\\": \\"0.25rem\\",
@@ -451,26 +443,6 @@ test('[dts] should generate package', () => {
       \\"animations.bounce\\": {
         \\"value\\": \\"bounce 1s infinite\\",
         \\"variable\\": \\"var(--animations-bounce)\\"
-      },
-      \\"opacity.0\\": {
-        \\"value\\": \\"0\\",
-        \\"variable\\": \\"var(--opacity-0)\\"
-      },
-      \\"opacity.25\\": {
-        \\"value\\": \\"0.25\\",
-        \\"variable\\": \\"var(--opacity-25)\\"
-      },
-      \\"opacity.50\\": {
-        \\"value\\": \\"0.5\\",
-        \\"variable\\": \\"var(--opacity-50)\\"
-      },
-      \\"opacity.75\\": {
-        \\"value\\": \\"0.75\\",
-        \\"variable\\": \\"var(--opacity-75)\\"
-      },
-      \\"opacity.100\\": {
-        \\"value\\": \\"1\\",
-        \\"variable\\": \\"var(--opacity-100)\\"
       },
       \\"easings.ease-in\\": {
         \\"value\\": \\"cubic-bezier(0.4, 0, 1, 1)\\",

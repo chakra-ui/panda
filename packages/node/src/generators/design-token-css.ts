@@ -1,5 +1,4 @@
 import { toCss, toKeyframeCss } from '@css-panda/core'
-import type { VarData } from '@css-panda/tokens'
 import { outdent } from 'outdent'
 import type { PandaContext } from '../context'
 
@@ -12,10 +11,10 @@ export function generateKeyframes(keyframes: Record<string, any> | undefined) {
 export function generateDesignTokenCss(ctx: PandaContext, varRoot?: string) {
   const root = varRoot ?? ctx.cssVarRoot
 
-  function inner(vars: Map<string, VarData>, wrap = true) {
+  function inner(vars: Map<string, string>, wrap = true) {
     const map = new Map<string, string>()
 
-    for (const [key, { value }] of vars) {
+    for (const [key, value] of vars) {
       map.set(key, value)
     }
 

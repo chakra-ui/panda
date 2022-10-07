@@ -19,7 +19,7 @@ import { generateRecipes } from './recipe'
 import { generateReset } from './reset'
 import { generateCssFn } from './css-fn'
 import { generateSx } from './sx'
-import { generateTokenDts } from './token-dts'
+import { generateTokenDts } from './design-token-dts'
 import { generateCssType } from './types'
 
 function setupHelpers(ctx: PandaContext): Output {
