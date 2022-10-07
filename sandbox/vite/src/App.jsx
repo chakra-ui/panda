@@ -21,7 +21,7 @@ function App() {
           <h1 className={css({ color: 'black', fontSize: '56px', lineHeight: '1.1em' })}>
             Create accessible React apps <span className={css({ color: 'teal' })}>with speed</span>
           </h1>
-          <p className={css({ color: { _: 'gray.500', hover: 'red' }, fontSize: '20px', marginTop: '40px' })}>
+          <p className={css({ color: 'text', fontSize: '20px', marginTop: '40px' })}>
             Chakra UI is a simple, modular and accessible component library that gives you the building blocks you need
             to build your React applications.
           </p>

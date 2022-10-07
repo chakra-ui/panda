@@ -83,7 +83,7 @@ export type Config<
   /**
    * The semantic design tokens for your project.
    */
-  semanticTokens?: SemanticTokens<Tokens, Conditions, Breakpoints>
+  semanticTokens?: SemanticTokens<keyof Conditions | keyof Breakpoints | 'base' | '_'>
   /**
    * The typography styles for your project.
    */

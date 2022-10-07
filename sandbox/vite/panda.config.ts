@@ -15,7 +15,11 @@ export default defineConfig({
   // Add your tokens here
   tokens,
   // Add your semantic tokens here
-  semanticTokens: {},
+  semanticTokens: {
+    colors: {
+      text: { value: { base: 'gray.600', dark: 'gray.400' } },
+    },
+  },
   // Add your keyframes here (spin, fade, etc)
   keyframes,
   // Add your breakpoints here (sm, md, lg, xl)
