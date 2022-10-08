@@ -9,7 +9,7 @@ import type { Message, Root } from 'postcss'
 import { getBaseCss } from './artifacts'
 import { findConfig, loadConfigAndCreateContext } from './config'
 import type { PandaContext } from './context'
-import { extractFile } from './file'
+import { extractFile } from './extract'
 import { parseDependency } from './glob'
 
 type CachedData = {

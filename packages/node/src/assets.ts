@@ -1,7 +1,7 @@
 import { Stylesheet } from '@css-panda/core'
 import { logger } from '@css-panda/logger'
 import type { PandaContext } from './context'
-import { extractFile } from './file'
+import { extractFile } from './extract'
 
 export async function extractAssets(ctx: PandaContext) {
   const sheet = new Stylesheet(ctx.context())

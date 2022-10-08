@@ -1,6 +1,6 @@
 import { bundleAssets } from './assets'
 import type { PandaContext } from './context'
-import { extractFiles } from './file'
+import { extractFiles } from './extract'
 import { generateSystem } from './generators'
 import { generateTokenCss, generateKeyframes } from './generators/token-css'
 import { generateReset } from './generators/reset'
