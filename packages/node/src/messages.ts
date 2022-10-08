@@ -11,7 +11,7 @@ export function artifactsGeneratedMessage(ctx: PandaContext) {
     `,
     ctx.hasTokens &&
       outdent`
-      ${tick} ${quote(ctx.outdir, '/design-tokens')}: the css variables and js function to query your tokens
+      ${tick} ${quote(ctx.outdir, '/tokens')}: the css variables and js function to query your tokens
     `,
     ctx.hasPattern &&
       outdent`

@@ -8,7 +8,7 @@ export function generateKeyframes(keyframes: Record<string, any> | undefined) {
   }
 }
 
-export function generateDesignTokenCss(ctx: PandaContext, varRoot?: string) {
+export function generateTokenCss(ctx: PandaContext, varRoot?: string) {
   const root = varRoot ?? ctx.cssVarRoot
 
   function inner(vars: Map<string, string>, wrap = true) {

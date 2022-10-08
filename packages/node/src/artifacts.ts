@@ -2,7 +2,7 @@ import { bundleAssets } from './assets'
 import type { PandaContext } from './context'
 import { extractFiles } from './file'
 import { generateSystem } from './generators'
-import { generateDesignTokenCss, generateKeyframes } from './generators/design-token-css'
+import { generateTokenCss, generateKeyframes } from './generators/token-css'
 import { generateReset } from './generators/reset'
 import { artifactsGeneratedMessage, scaffoldCompleteMessage } from './messages'
 
@@ -20,6 +20,6 @@ export async function emitAndExtract(ctx: PandaContext) {
 }
 
 export function getBaseCss(ctx: PandaContext) {
-  const css = [generateReset(), generateDesignTokenCss(ctx), generateKeyframes(ctx.keyframes)]
+  const css = [generateReset(), generateTokenCss(ctx), generateKeyframes(ctx.keyframes)]
   return css.join('\n')
 }

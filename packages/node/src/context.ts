@@ -158,7 +158,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   const paths = {
     config: getPath('config.js'),
     css: getPath('css'),
-    ds: getPath('design-tokens'),
+    token: getPath('tokens'),
     types: getPath('types'),
     recipe: getPath('recipes'),
     pattern: getPath('patterns'),

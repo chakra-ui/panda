@@ -1,7 +1,7 @@
 import { TokenMap } from '@css-panda/tokens'
 import { semanticTokens, tokens } from '@css-panda/fixture'
 import { expect, test } from 'vitest'
-import { generateTokenDts } from '../src/generators/design-token-dts'
+import { generateTokenDts } from '../src/generators/token-dts'
 
 test('[dts] should generate package', () => {
   const dict = new TokenMap({ tokens, semanticTokens })

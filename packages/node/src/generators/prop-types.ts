@@ -1,13 +1,13 @@
 import type { Utility } from '@css-panda/core'
 import { outdent } from 'outdent'
 
-export function generatePropertyTypes(utility: Utility) {
+export function generatePropTypes(utility: Utility) {
   // prettier-ignore
   const result: string[] = [
     outdent`
     import { Properties as CSSProperties } from "./csstype"
 
-    type ValueTypes  = {`,
+    type BasePropTypes  = {`,
   ]
 
   const valueTypes = utility.valueTypes
@@ -18,9 +18,9 @@ export function generatePropertyTypes(utility: Utility) {
   result.push('}', '\n')
 
   result.push(`
-   type Get<T> = T extends keyof ValueTypes ? ValueTypes[T] : T extends keyof CSSProperties ? CSSProperties[T] : string
+   type Get<T> = T extends keyof BasePropTypes ? BasePropTypes[T] : T extends keyof CSSProperties ? CSSProperties[T] : string
    
-   export type PropertyTypes = ValueTypes & {
+   export type PropTypes = BasePropTypes & {
   `)
 
   utility.shorthandMap.forEach((value, key) => {

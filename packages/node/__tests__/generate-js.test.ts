@@ -1,11 +1,11 @@
 import { TokenMap } from '@css-panda/tokens'
 import { semanticTokens, tokens } from '@css-panda/fixture'
 import { expect, test } from 'vitest'
-import { generateDesignTokenJs } from '../src/generators/design-token-js'
+import { generateTokenJs } from '../src/generators/token-js'
 
 test('[dts] should generate package', () => {
   const dict = new TokenMap({ tokens, semanticTokens })
-  expect(generateDesignTokenJs(dict).js).toMatchInlineSnapshot(
+  expect(generateTokenJs(dict).js).toMatchInlineSnapshot(
     `
     "const tokens = {
       \\"fonts.heading\\": {

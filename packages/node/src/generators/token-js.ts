@@ -1,7 +1,7 @@
 import type { TokenMap } from '@css-panda/tokens'
 import outdent from 'outdent'
 
-export function generateDesignTokenJs(dict: TokenMap) {
+export function generateTokenJs(dict: TokenMap) {
   const map = new Map<string, { value: string; variable: string }>()
 
   dict.forEach((token) => {

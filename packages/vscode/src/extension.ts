@@ -32,7 +32,7 @@ export function activate(context: ExtensionContext) {
     if (!config) {
       window.showErrorMessage('Panda config not found in workspace root.')
     } else {
-      const pandaCSSVariablesPath = `./${config.outdir}/design-tokens/index.css`
+      const pandaCSSVariablesPath = `./${config.outdir}/tokens/index.css`
       const cssvars = workspace.getConfiguration('cssvar', workspace?.workspaceFolders?.[0]?.uri)
       const cssvarsFiles = cssvars.get('files') as any[]
       if (!cssvarsFiles) {

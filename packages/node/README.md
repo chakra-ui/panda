@@ -1,7 +1,7 @@
 ## Folder structure
 
 - `.panda`
-  - `design-tokens` (index.js, index.d.ts, index.css)
+  - `tokens` (index.js, index.d.ts, index.css)
   - `styled-system` (index.js, index.d.ts)
   - `package.json`
 
@@ -44,8 +44,8 @@ const files = generateJs(dict, { formats: ['esm', 'cjs'] })
   "name": "dot-panda",
   "description": "...",
   "exports": {
-    "./design-tokens": {
-      "import": "./generated/design-tokens/index.mjs"
+    "./tokens": {
+      "import": "./generated/tokens/index.mjs"
     },
     "./css": {
       "import": "./generated/css/index.mjs"
@@ -53,7 +53,7 @@ const files = generateJs(dict, { formats: ['esm', 'cjs'] })
   },
   "typeVersions": {
     "*": {
-      "design-tokens": ["./generated/design-tokens"],
+      "tokens": ["./generated/tokens"],
       "css": ["./generated/css"]
     }
   }
@@ -67,7 +67,7 @@ const pkg = setupPackage({
   name: 'dot-panda',
   description: '...',
   dir: 'generated',
-  exports: ['design-tokens', 'css'],
+  exports: ['tokens', 'css'],
 })
 
 writePackage(pkg)

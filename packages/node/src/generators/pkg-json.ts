@@ -7,9 +7,9 @@ export function generatePackageJSON() {
     version: `0.0.0-${performance.now()}`,
     exports: {
       './css': './css/index.js',
-      './design-tokens': './design-tokens/index.js',
+      './tokens': './tokens/index.js',
       './jsx': './jsx/index.jsx',
-      './tokens.css': './design-tokens/index.css',
+      './tokens.css': './tokens/index.css',
       './styles.css': './styles.css',
       './package.json': './package.json',
     },
@@ -17,7 +17,7 @@ export function generatePackageJSON() {
       '*': {
         css: ['./css'],
         jsx: ['./jsx'],
-        'design-tokens': ['./design-tokens'],
+        tokens: ['./tokens'],
       },
     },
   }

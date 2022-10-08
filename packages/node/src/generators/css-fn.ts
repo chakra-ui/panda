@@ -35,7 +35,7 @@ export function generateCssFn(ctx: PandaContext) {
     const context = {
       transform,
       conditions: { shift: sortConditions },
-      ${hash ? 'hash: true,' : ''}
+      hash: ${hash ? 'true' : 'false'},
       hasShorthand,
       resolveShorthand,
     }

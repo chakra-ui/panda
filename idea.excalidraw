@@ -1626,12 +1626,12 @@
       "locked": false,
       "fontSize": 20,
       "fontFamily": 1,
-      "text": "$ROOT/.panda\n\ndesign-tokens\n- js\n- css\n\nstyled-system\n- css function\n- globalStyle function",
+      "text": "$ROOT/.panda\n\ntokens\n- js\n- css\n\nstyled-system\n- css function\n- globalStyle function",
       "baseline": 221,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
-      "originalText": "$ROOT/.panda\n\ndesign-tokens\n- js\n- css\n\nstyled-system\n- css function\n- globalStyle function"
+      "originalText": "$ROOT/.panda\n\ntokens\n- js\n- css\n\nstyled-system\n- css function\n- globalStyle function"
     },
     {
       "type": "text",

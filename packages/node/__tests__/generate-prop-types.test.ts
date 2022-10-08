@@ -2,12 +2,12 @@ import { Utility } from '@css-panda/core'
 import { TokenMap } from '@css-panda/tokens'
 import { semanticTokens, tokens, utilities } from '@css-panda/fixture'
 import { describe, expect, test } from 'vitest'
-import { generatePropertyTypes } from '../src/generators/property-types'
+import { generatePropTypes } from '../src/generators/prop-types'
 
 describe('generate property types', () => {
   test('should ', () => {
     expect(
-      generatePropertyTypes(
+      generatePropTypes(
         new Utility({
           tokens: new TokenMap({ tokens, semanticTokens }),
           config: utilities,
@@ -103,7 +103,7 @@ describe('generate property types', () => {
 
          type Get<T> = T extends keyof ValueTypes ? ValueTypes[T] : T extends keyof CSSProperties ? CSSProperties[T] : string
          
-         export type PropertyTypes = ValueTypes & {
+         export type PropTypes = ValueTypes & {
         
       	z: Get<\\"zIndex\\">;
       	objectPos: Get<\\"objectPosition\\">;

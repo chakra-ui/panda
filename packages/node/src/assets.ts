@@ -13,11 +13,11 @@ export async function extractAssets(ctx: PandaContext) {
   }
 
   if (!ctx.tokens.isEmpty) {
-    imports.push('./design-tokens/index.css')
+    imports.push('./tokens/index.css')
   }
 
   if (ctx.keyframes) {
-    imports.push('./design-tokens/keyframes.css')
+    imports.push('./tokens/keyframes.css')
   }
 
   sheet.addImports(imports)

@@ -4,22 +4,22 @@ import outdent from 'outdent'
 import { dirname } from 'path'
 import type { Output, PandaContext } from '../context'
 import { generateConditions } from './conditions'
-import { generateDesignTokenCss, generateKeyframes } from './design-token-css'
+import { generateTokenCss, generateKeyframes } from './token-css'
 import { generateCssMap } from './css-map'
 import { generateCx } from './cx'
 import { generateFontFace } from './font-face'
 import { getEntrypoint } from './get-entrypoint'
 import { generateGlobalCss } from './global-css'
 import { generateisValidProp } from './is-valid-prop'
-import { generateDesignTokenJs } from './design-token-js'
+import { generateTokenJs } from './token-js'
 import { generateJsxFactory } from './jsx'
 import { generatePattern } from './pattern'
-import { generatePropertyTypes } from './property-types'
+import { generatePropTypes } from './prop-types'
 import { generateRecipes } from './recipe'
 import { generateReset } from './reset'
 import { generateCssFn } from './css-fn'
 import { generateSx } from './sx'
-import { generateTokenDts } from './design-token-dts'
+import { generateTokenDts } from './token-dts'
 import { generateCssType } from './types'
 
 function setupHelpers(ctx: PandaContext): Output {
@@ -34,7 +34,7 @@ function setupHelpers(ctx: PandaContext): Output {
 function setupKeyframes(ctx: PandaContext): Output {
   const code = generateKeyframes(ctx.keyframes)
   return {
-    dir: ctx.paths.ds,
+    dir: ctx.paths.token,
     files: [{ file: 'keyframes.css', code }],
   }
 }
@@ -44,11 +44,11 @@ function setupDesignTokens(ctx: PandaContext): Output {
     return { files: [] }
   }
 
-  const code = generateDesignTokenJs(ctx.tokens)
-  const css = generateDesignTokenCss(ctx)
+  const code = generateTokenJs(ctx.tokens)
+  const css = generateTokenCss(ctx)
 
   return {
-    dir: ctx.paths.ds,
+    dir: ctx.paths.token,
     files: [
       { file: 'index.css', code: css },
       { file: 'index.d.ts', code: code.dts },
@@ -78,7 +78,7 @@ function setupTypes(ctx: PandaContext): Output {
       { file: 'panda-csstype.d.ts', code: code.pandaCssType },
       { file: 'index.d.ts', code: code.publicType },
       { file: 'token.d.ts', code: generateTokenDts(ctx.tokens) },
-      { file: 'property-type.d.ts', code: generatePropertyTypes(ctx.utility) },
+      { file: 'prop-type.d.ts', code: generatePropTypes(ctx.utility) },
       { file: 'conditions.d.ts', code: conditions.dts },
     ],
   }
