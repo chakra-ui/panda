@@ -78,13 +78,13 @@ export const conditions = {
 
   motionReduce: '@media (prefers-reduced-motion: reduce)',
   motionSafe: '@media (prefers-reduced-motion: no-preference)',
-
   print: '@media print',
-
   landscape: '@media (orientation: landscape)',
   portrait: '@media (orientation: portrait)',
 
   dark: '.dark &',
+  osDark: '@media (prefers-color-scheme: dark)',
+  osLight: '@media (prefers-color-scheme: light)',
 
   highConstrast: '@media (forced-colors: active)',
   lessContrast: '@media (prefers-contrast: less)',
