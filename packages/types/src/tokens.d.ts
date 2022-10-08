@@ -5,6 +5,7 @@
 export type Token<V = any> = {
   description?: string
   value: V
+  meta?: Record<string, string>
 }
 
 export type SemanticToken<V = string, C extends string = string> = {
@@ -27,9 +28,20 @@ type Shadow = {
   inset?: boolean
 }
 
+type Gradient = {
+  type: 'linear' | 'radial'
+  placement: string | number
+  stops: Array<{
+    color: string
+    position: number
+  }>
+}
+
 type Nested<T> = { [key: string]: T | Nested<T> }
 
 export type TokenValues = {
+  zIndex: number
+  opacity: number
   colors: string
   fonts: string | string[]
   fontSizes: string
@@ -46,6 +58,7 @@ export type TokenValues = {
   easings: string | number[]
   animations: string
   blurs: string
+  gradients: string | Gradient
 }
 
 export type TokenEntries = {

@@ -1,9 +1,5 @@
 import type { Properties } from './panda-csstype'
-
-type Token<V = any> = {
-  description?: string
-  value: V
-}
+import type { Token } from './tokens'
 
 type Nested<T> = { [key: string]: T | Nested<T> }
 
@@ -18,6 +14,7 @@ type TextStyle = Pick<
   | 'fontVariant'
   | 'fontStyle'
   | 'textTransform'
+  | 'textIndent'
 >
 
 type LayerStyle = Pick<
@@ -27,6 +24,8 @@ type LayerStyle = Pick<
   | 'backgroundImage'
   | 'borderRadius'
   | 'border'
+  | 'borderWidth'
+  | 'borderColor'
   | 'boxShadow'
   | 'opacity'
   | 'backgroundBlendMode'

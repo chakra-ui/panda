@@ -2,6 +2,7 @@ export const colors = {
   current: { value: 'currentColor' },
   black: { value: '#000' },
   white: { value: '#fff' },
+  transparent: { value: 'rgb(0 0 0 / 0)' },
   rose: {
     50: { value: '#fff1f2' },
     100: { value: '#ffe4e6' },

@@ -4,9 +4,12 @@ const layout: UtilityConfig = {
   aspectRatio: {
     className: 'aspect',
     values: {
-      auto: 'auto',
       square: '1 / 1',
-      video: '16 / 9',
+      landscape: '4 / 3',
+      portrait: '3 / 4',
+      wide: '16 / 9',
+      ultrawide: '18 / 5',
+      golden: '1.618 / 1',
     },
   },
   boxDecorationBreak: {
@@ -343,7 +346,6 @@ const flexGrid: UtilityConfig = {
   gridColumn: {
     className: 'col-span',
     values: {
-      auto: 'auto',
       full: '1 / -1',
       '1': 'span 1 / span 1',
       '2': 'span 2 / span 2',
@@ -362,7 +364,6 @@ const flexGrid: UtilityConfig = {
   gridRow: {
     className: 'row-span',
     values: {
-      auto: 'auto',
       full: '1 / -1',
       '1': 'span 1 / span 1',
       '2': 'span 2 / span 2',
@@ -390,7 +391,6 @@ const flexGrid: UtilityConfig = {
   gridAutoColumns: {
     className: 'auto-cols',
     values: {
-      auto: 'auto',
       min: 'min-content',
       max: 'max-content',
       fr: 'minmax(0, 1fr)',
@@ -399,7 +399,6 @@ const flexGrid: UtilityConfig = {
   gridAutoRows: {
     className: 'auto-rows',
     values: {
-      auto: 'auto',
       min: 'min-content',
       max: 'max-content',
       fr: 'minmax(0, 1fr)',
@@ -672,22 +671,48 @@ const background: UtilityConfig = {
   backgroundGradient: {
     shorthand: 'bgGradient',
     className: 'bg-gradient',
-    values: {
-      none: 'none',
-      'to-t': 'linear-gradient(to top, var(--gradient))',
-      'to-tr': 'linear-gradient(to top right, var(--gradient))',
-      'to-r': 'linear-gradient(to right, var(--gradient))',
-      'to-br': 'linear-gradient(to bottom right, var(--gradient))',
-      'to-b': 'linear-gradient(to bottom, var(--gradient))',
-      'to-bl': 'linear-gradient(to bottom left, var(--gradient))',
-      'to-l': 'linear-gradient(to left, var(--gradient))',
-      'to-tl': 'linear-gradient(to top left, var(--gradient))',
+    values(theme) {
+      return {
+        ...theme('gradients'),
+        'to-t': 'linear-gradient(to top, var(--gradient))',
+        'to-tr': 'linear-gradient(to top right, var(--gradient))',
+        'to-r': 'linear-gradient(to right, var(--gradient))',
+        'to-br': 'linear-gradient(to bottom right, var(--gradient))',
+        'to-b': 'linear-gradient(to bottom, var(--gradient))',
+        'to-bl': 'linear-gradient(to bottom left, var(--gradient))',
+        'to-l': 'linear-gradient(to left, var(--gradient))',
+        'to-tl': 'linear-gradient(to top left, var(--gradient))',
+      }
     },
     transform(value) {
       return {
         '--gradient-stops': 'var(--gradient-from), var(--gradient-to)',
         '--gradient': 'var(--gradient-via-stops, var(--gradient-stops))',
         backgroundImage: value,
+      }
+    },
+  },
+  textGradient: {
+    className: 'text-gradient',
+    values(theme) {
+      return {
+        ...theme('gradients'),
+        'to-t': 'linear-gradient(to top, var(--gradient))',
+        'to-tr': 'linear-gradient(to top right, var(--gradient))',
+        'to-r': 'linear-gradient(to right, var(--gradient))',
+        'to-br': 'linear-gradient(to bottom right, var(--gradient))',
+        'to-b': 'linear-gradient(to bottom, var(--gradient))',
+        'to-bl': 'linear-gradient(to bottom left, var(--gradient))',
+        'to-l': 'linear-gradient(to left, var(--gradient))',
+        'to-tl': 'linear-gradient(to top left, var(--gradient))',
+      }
+    },
+    transform(value) {
+      return {
+        '--gradient-stops': 'var(--gradient-from), var(--gradient-to)',
+        '--gradient': 'var(--gradient-via-stops, var(--gradient-stops))',
+        backgroundImage: value,
+        WebkitBackgroundClip: 'text',
       }
     },
   },
@@ -724,6 +749,22 @@ const background: UtilityConfig = {
 const border: UtilityConfig = {
   borderRadius: {
     className: 'rounded',
+    values: 'radii',
+  },
+  borderTopLeftRadius: {
+    className: 'rounded-tl',
+    values: 'radii',
+  },
+  borderTopRightRadius: {
+    className: 'rounded-tr',
+    values: 'radii',
+  },
+  borderBottomRightRadius: {
+    className: 'rounded-br',
+    values: 'radii',
+  },
+  borderBottomLeftRadius: {
+    className: 'rounded-bl',
     values: 'radii',
   },
   borderTopRadius: {

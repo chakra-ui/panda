@@ -102,12 +102,29 @@ export class TokenMap {
         })
         return values.join(', ')
       })
+      .with(['gradients', P.select()], (value) => {
+        if (isString(value)) {
+          return this.getByCategory('gradients', value)
+        }
+
+        const { type, stops, placement } = value
+
+        const rawStops = stops.map((stop) => {
+          const { color, position } = stop
+          const rawColor = this.getByCategory('colors', color)
+          return `${rawColor} ${toPx(position)}`
+        })
+
+        return `${type}-gradient(${placement}, ${rawStops.join(', ')})`
+      })
+
       .with(['easings', P.select()], (value) => {
         if (isString(value)) {
           return this.getByCategory('easings', value)
         }
         return `cubic-bezier(${value.join(', ')})`
       })
+
       .with(['borders', P.select()], (value) => {
         if (isString(value)) {
           return this.getByCategory('borders', value)
@@ -116,6 +133,7 @@ export class TokenMap {
         const rawColor = this.getByCategory('colors', color)
         return `${toPx(width)} ${style} ${rawColor}`
       })
+
       .otherwise(([category, value]) => {
         const _value = value as string | number | string[] | number[]
         const str = toArray(_value).join(', ')
