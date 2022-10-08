@@ -16,7 +16,7 @@ describe('generate property types', () => {
     ).toMatchInlineSnapshot(`
       "import { Properties as CSSProperties } from \\"./csstype\\"
 
-      type ValueTypes  = {
+      type BasePropTypes  = {
       	divideX: string;
       	divideY: string;
       	divideColor: \\"current\\" | \\"gray.50\\" | \\"gray.100\\" | \\"gray.200\\" | \\"gray.300\\" | \\"gray.400\\" | \\"gray.500\\" | \\"gray.600\\" | \\"gray.700\\" | \\"gray.800\\" | \\"gray.900\\" | \\"green.50\\" | \\"green.100\\" | \\"green.200\\" | \\"green.300\\" | \\"green.400\\" | \\"green.500\\" | \\"green.600\\" | \\"green.700\\" | \\"green.800\\" | \\"green.900\\" | \\"red.50\\" | \\"red.100\\" | \\"red.200\\" | \\"red.300\\" | \\"red.400\\" | \\"red.500\\" | \\"red.600\\" | \\"red.700\\" | \\"red.800\\" | \\"red.900\\" | \\"primary\\" | \\"secondary\\";
@@ -101,9 +101,9 @@ describe('generate property types', () => {
 
 
 
-         type Get<T> = T extends keyof ValueTypes ? ValueTypes[T] : T extends keyof CSSProperties ? CSSProperties[T] : string
+         type Get<T> = T extends keyof BasePropTypes ? BasePropTypes[T] : T extends keyof CSSProperties ? CSSProperties[T] : string
          
-         export type PropTypes = ValueTypes & {
+         export type PropTypes = BasePropTypes & {
         
       	z: Get<\\"zIndex\\">;
       	objectPos: Get<\\"objectPosition\\">;
