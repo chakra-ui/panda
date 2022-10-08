@@ -1,14 +1,22 @@
-import { isFunction, isImportant, isString, walkObject, withoutImportant, withoutSpace } from '@css-panda/shared'
+import {
+  isFunction,
+  isImportant,
+  isObject,
+  isString,
+  walkObject,
+  withoutImportant,
+  withoutSpace,
+} from '@css-panda/shared'
 import type { TokenMap } from '@css-panda/tokens'
-import type { AnyFunction, Dict, LayerStyle, PropertyConfig, TextStyle, UtilityConfig } from '@css-panda/types'
+import type { AnyFunction, Dict, LayerStyles, PropertyConfig, TextStyles, UtilityConfig } from '@css-panda/types'
 import merge from 'lodash.merge'
 import { cssToJs, toCss } from './to-css'
 
 type Options = {
   config?: UtilityConfig
   compositions?: {
-    textStyle?: TextStyle
-    layerStyle?: LayerStyle
+    textStyle?: TextStyles
+    layerStyle?: LayerStyles
   }
   tokens: TokenMap
 }
@@ -105,32 +113,20 @@ export class Utility {
     for (const [key, values] of Object.entries(compositions)) {
       if (!values || this.config[key]) continue
 
+      const flattened = flattenComposition(values)
+
       const config: PropertyConfig = {
         className: key,
-        values: Object.keys(values),
+        values: Object.keys(flattened),
         transform: (value) => {
-          return this.transform(values[value])
+          return getCompositionStyles(flattened[value], (prop, value) => {
+            return this.resolve(prop, value)
+          })
         },
       }
 
       Object.assign(this.config, { [key]: config })
     }
-  }
-
-  private transform(styles: Dict) {
-    const result: Dict = {}
-
-    walkObject(styles, (value, paths) => {
-      const [prop] = paths
-
-      let { styles } = this.resolve(prop, withoutImportant(value))
-      const cssRoot = toCss(styles, { important: isImportant(value) })
-
-      styles = cssToJs(cssRoot.root.toString())
-      merge(result, styles)
-    })
-
-    return result
   }
 
   private getPropKey(prop: string, value: string) {
@@ -353,4 +349,38 @@ export class Utility {
     const properties = Object.keys(this.config)
     return [...shorthands, ...properties]
   }
+}
+
+function flattenComposition(values: TextStyles | LayerStyles) {
+  const result: Dict = {}
+
+  walkObject(
+    values,
+    (token, paths) => {
+      result[paths.join('.')] = token.value
+    },
+    {
+      stop(v) {
+        return isObject(v) && 'value' in v
+      },
+    },
+  )
+
+  return result
+}
+
+function getCompositionStyles(styles: Dict, fn: AnyFunction) {
+  const result: Dict = {}
+
+  walkObject(styles, (value, paths) => {
+    const [prop] = paths
+
+    let { styles } = fn(prop, withoutImportant(value))
+    const cssRoot = toCss(styles, { important: isImportant(value) })
+
+    styles = cssToJs(cssRoot.root.toString())
+    merge(result, styles)
+  })
+
+  return result
 }

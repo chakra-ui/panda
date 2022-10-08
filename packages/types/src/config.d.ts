@@ -1,4 +1,4 @@
-import type { LayerStyle, TextStyle } from './composition'
+import type { LayerStyles, TextStyles } from './composition'
 import type { Conditions as TConditions } from './conditions'
 import type { Keyframes } from './panda-csstype'
 import type { PatternConfig } from './pattern'
@@ -87,11 +87,11 @@ export type Config<
   /**
    * The typography styles for your project.
    */
-  textStyles?: TextStyle
+  textStyles?: TextStyles
   /**
    * The layer styles for your project.
    */
-  layerStyles?: LayerStyle
+  layerStyles?: LayerStyles
   /**
    * The css utility definitions.
    */

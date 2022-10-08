@@ -444,14 +444,18 @@ describe('Utility', () => {
       compositions: {
         textStyle: {
           h1: {
-            fontSize: 'md',
-            fontWeight: 'bold',
-            lineHeight: 'tight',
+            value: {
+              fontSize: 'md',
+              fontWeight: 'bold',
+              lineHeight: 'tight',
+            },
           },
           h2: {
-            fontSize: 'sm',
-            fontWeight: 'semibold',
-            lineHeight: 'tight',
+            value: {
+              fontSize: 'sm',
+              fontWeight: 'semibold',
+              lineHeight: 'tight',
+            },
           },
         },
       },

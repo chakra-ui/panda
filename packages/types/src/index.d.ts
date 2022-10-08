@@ -4,6 +4,6 @@ export type { PluginResult, PropertyClassName, PropertyConfig, UtilityConfig } f
 export type { CssProperties, Keyframes, PandaCssObject } from './panda-csstype'
 export type { PatternConfig, PatternProperty, TransformHelpers } from './pattern'
 export type { RecipeConfig, RecipeVariant } from './recipe'
-export type { TextStyle, LayerStyle } from './composition'
+export type { TextStyles, LayerStyles } from './composition'
 export type * from './tokens'
 export type { AnyFunction, Dict } from './shared'
