@@ -7,12 +7,12 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
 
   return {
     dts: outdent`
-    import type { ComponentProps, JSX } from "preact"
-    import type { CssProperties, CssObject } from "../types"
+    import type { ComponentProps, JSX } from 'preact'
+    import type { CssProperties, CssObject } from '../types'
     
     type Element = keyof JSX.IntrinsicElements
 
-    type Merge<P, T> = Omit<P, "color"> & T;
+    type Merge<P, T> = Omit<P, 'color'> & T;
     
     export type HTML${upperName}Props<T extends Element> = Merge<ComponentProps<T>, CssProperties> & { css?: CssObject }
 
@@ -23,8 +23,8 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
     export declare const ${name}: JSXFactory
     `,
     js: outdent`
-    import { h } from "preact";
-    import { forwardRef } from "preact/compat";
+    import { h } from 'preact';
+    import { forwardRef } from 'preact/compat';
     import { isCssProperty } from './is-valid-prop'
     import { css } from '../css'
     
@@ -48,7 +48,7 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
     }
     
     function styled(Dynamic) {
-      const PandaComponent = forwardRef((props, ref) => {
+      const ${upperName}Component = forwardRef((props, ref) => {
         const [styleProps, elementProps] = splitProps(props)
     
         const classes = () => {
@@ -60,8 +60,8 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
         return h(Dynamic, { ...elementProps, ref, className: classes() });
       })
       
-      PandaComponent.displayName = \`${name}.\${Dynamic}\`
-      return PandaComponent
+      ${upperName}Component.displayName = \`${name}.\${Dynamic}\`
+      return ${upperName}Component
     }
     
     function createFactory() {

@@ -53,13 +53,14 @@ function generate(name: string, pattern: PatternConfig) {
   import { mapObject } from "../helpers"
   import { css } from "../css"
 
-  const dfn = ${stringify({ transform })}
+  export const config = ${stringify({ transform })}
 
-  export const ${name} = (styles) => css(dfn.transform(styles, { map: mapObject }))
+  export const ${name} = (styles) => css(config.transform(styles, { map: mapObject }))
   `
       .replace(/"_function_([^|]*)\|(.*)"/, '$2')
       .replace(/\\"/g, '"')
-      .replace('return', '; return'),
+      .replace('return', '; return')
+      .replace(';;', ';'),
   }
 }
 

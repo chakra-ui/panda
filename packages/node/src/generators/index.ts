@@ -21,6 +21,7 @@ import { generateCssFn } from './css-fn'
 import { generateSx } from './sx'
 import { generateTokenDts } from './token-dts'
 import { generateCssType } from './types'
+import { generateJsxPattern } from './jsx/react-pattern'
 
 function setupHelpers(ctx: PandaContext): Output {
   const sharedMjs = getEntrypoint('@css-panda/shared', { dev: 'shared.mjs' })
@@ -179,13 +180,23 @@ function setupJsx(ctx: PandaContext): Output {
 
   const isValidProp = generateisValidProp(ctx)
   const factory = generateJsxFactory(ctx)
+  const patterns = generateJsxPattern(ctx)
+
+  const indexCode = outdent`
+  export * from './factory'
+  ${outdent.string(patterns.map((file) => `export * from './${file.name}'`).join('\n'))}
+`
 
   return {
     dir: ctx.paths.jsx,
     files: [
+      ...patterns.map((file) => ({ file: `${file.name}.jsx`, code: file.js })),
+      ...patterns.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
       { file: 'is-valid-prop.js', code: isValidProp.js },
-      { file: 'index.d.ts', code: factory.dts },
-      { file: 'index.jsx', code: factory.js },
+      { file: 'factory.d.ts', code: factory.dts },
+      { file: 'factory.jsx', code: factory.js },
+      { file: 'index.d.ts', code: indexCode },
+      { file: 'index.jsx', code: indexCode },
     ],
   }
 }
