@@ -3,7 +3,7 @@ import type { LoadConfigResult } from '@css-panda/config'
 import { Conditions, discardDuplicate, GeneratorContext, Stylesheet, Utility } from '@css-panda/core'
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
-import { mapObject } from '@css-panda/shared'
+import { capitalize, mapObject, uncapitalize } from '@css-panda/shared'
 import { TokenMap } from '@css-panda/tokens'
 import type { RecipeConfig } from '@css-panda/types'
 import glob from 'fast-glob'
@@ -120,9 +120,20 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     }
     return pattern
   }
+
   function execPattern(name: string, data: Record<string, any>) {
     const pattern = getPattern(name)
     return pattern.transform?.(data, helpers) ?? {}
+  }
+
+  const patternNodes = Object.entries(patterns).map(([name, pattern]) => ({
+    name: pattern.jsx ?? capitalize(name),
+    props: Object.keys(pattern.properties),
+    baseName: name,
+  }))
+
+  function getPatternFnName(jsx: string) {
+    return patternNodes.find((node) => node.name === jsx)?.baseName ?? uncapitalize(jsx)
   }
 
   /* -----------------------------------------------------------------------------
@@ -257,12 +268,26 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     })
 
     collector.jsx.forEach((result) => {
-      const { data, type } = result
+      const { data, type, name } = result
+
       const { conditions = [], css = {}, ...rest } = data
-      sheet.process({ type, data: { ...rest, ...css } })
-      conditions.forEach((style: any) => {
-        sheet.process(style)
-      })
+      const styles = { ...css, ...rest }
+
+      // treat pattern jsx like regular pattern
+      if (name && type === 'pattern') {
+        //
+        const patternName = getPatternFnName(name)
+        collector.pattern.get(patternName) ?? collector.pattern.set(patternName, new Set([]))
+        collector.pattern.get(patternName)?.add({ type: 'object', data: styles, name: patternName })
+        //
+      } else {
+        //
+        sheet.process({ type, data: styles })
+        conditions.forEach((style: any) => {
+          sheet.process(style)
+        })
+        //
+      }
     })
 
     collector.recipe.forEach((result, name) => {
@@ -348,6 +373,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     hasPattern: Object.keys(patterns).length > 0,
     getPattern,
     execPattern,
+    patternNodes,
+    getPatternFnName,
 
     recipes,
     getRecipe,

@@ -3,7 +3,7 @@ import { logger } from '@css-panda/logger'
 import type { PluginResult } from '@css-panda/types'
 import type * as swc from '@swc/core'
 import type { Collector } from './collector'
-import { JSXPropVisitor } from './jsx-visitor'
+import { JsxNode, JSXVisitor, JsxVisitorOptions } from './jsx-visitor'
 import { CallVisitor, DynamicCallVisitor } from './visitor'
 
 function createPlugin(name: string) {
@@ -41,22 +41,18 @@ export function dynamicPlugin(data: Map<string, Set<PluginResult>>, moduleName: 
   }
 }
 
-export function jsxPlugin(
-  data: Set<PluginResult>,
-  jsxName: string,
-  isUtilityProp: ((name: string) => boolean) | undefined,
-  moduleName: string,
-  fileName?: string,
-) {
+export function jsxPlugin(data: Set<PluginResult>, options: Omit<JsxVisitorOptions, 'onData'>) {
+  const { isStyleProp, fileName } = options
+
   return function (program: swc.Program) {
-    const visitor = new JSXPropVisitor({
-      import: { name: jsxName, module: moduleName, filename: fileName },
+    const visitor = new JSXVisitor({
+      ...options,
       onData(result) {
         logger.debug({ type: `ast:jsx`, fileName, result })
         data.add(result)
       },
-      isValidProp(prop) {
-        return isCssProperty(prop) || !!isUtilityProp?.(prop)
+      isStyleProp(prop) {
+        return isCssProperty(prop) || isStyleProp?.(prop)
       },
     })
     return visitor.visitProgram(program)
@@ -64,15 +60,17 @@ export function jsxPlugin(
 }
 
 export type PluginOptions = {
-  jsxName?: string
-  data: Collector
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string>
   fileName?: string
-  isUtilityProp?: (prop: string) => boolean
+  jsx?: {
+    factory: string
+    nodes: JsxNode[]
+    isStyleProp: (prop: string) => boolean
+  }
 }
 
-export function createPlugins(options: PluginOptions) {
-  const { jsxName = 'panda', data, importMap, fileName, isUtilityProp } = options
+export function createPlugins(data: Collector, options: PluginOptions) {
+  const { jsx, importMap, fileName } = options
   return [
     sxPlugin(data.css, importMap.css, fileName),
     cssPlugin(data.css, importMap.css, fileName),
@@ -81,6 +79,14 @@ export function createPlugins(options: PluginOptions) {
     cssMapPlugin(data.cssMap, importMap.css, fileName),
     dynamicPlugin(data.recipe, importMap.recipe, fileName),
     dynamicPlugin(data.pattern, importMap.pattern, fileName),
-    jsxPlugin(data.jsx, jsxName, isUtilityProp, importMap.jsx, fileName),
-  ]
+    jsx
+      ? jsxPlugin(data.jsx, {
+          factory: jsx.factory,
+          module: importMap.jsx,
+          nodes: jsx.nodes,
+          isStyleProp: jsx.isStyleProp,
+          fileName,
+        })
+      : undefined,
+  ].filter(Boolean) as swc.Plugin[]
 }

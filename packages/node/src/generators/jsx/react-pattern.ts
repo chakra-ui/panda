@@ -1,18 +1,21 @@
+import { capitalize, dashCase } from '@css-panda/shared'
 import type { PatternConfig } from '@css-panda/types'
 import { outdent } from 'outdent'
 import type { PandaContext } from '../../context'
 
 function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
-  const upperName = name[0].toUpperCase() + name.slice(1)
+  const upperName = capitalize(name)
+  const jsxName = pattern.jsx ?? upperName
+
   const keys = Object.keys(pattern.properties ?? {})
   return {
     name,
     js: outdent`
     import { forwardRef } from 'react'
     import { ${jsxFactory} } from './factory'
-    import { config } from '../patterns/${name}'
+    import { config } from '../patterns/${dashCase(name)}'
 
-    export const ${upperName} = forwardRef(function ${upperName}(props, ref) {
+    export const ${jsxName} = forwardRef(function ${jsxName}(props, ref) {
       const { ${keys.join(', ')}, ...restProps } = props
       const styleProps = config.transform({${keys.join(', ')}})
       return <${jsxFactory}.div ref={ref} {...styleProps} {...restProps} />
@@ -30,9 +33,9 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     type Polymorphic<C extends ElementType = 'div', P = {}> = CssObject &
       Merge<PropsWithChildren<PropsOf<C>>, P & { as?: C; color?: string }>
 
-    type ${upperName}Props<C extends ElementType> = Polymorphic<C, ${upperName}Options>
+    type ${jsxName}Props<C extends ElementType> = Polymorphic<C, ${upperName}Options>
     
-    export declare function ${upperName}<V extends ElementType>(props: ${upperName}Props<V>): JSX.Element    
+    export declare function ${jsxName}<V extends ElementType>(props: ${jsxName}Props<V>): JSX.Element    
     `,
   }
 }

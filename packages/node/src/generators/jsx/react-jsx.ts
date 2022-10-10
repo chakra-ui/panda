@@ -1,9 +1,10 @@
+import { capitalize } from '@css-panda/shared'
 import { outdent } from 'outdent'
 import type { PandaContext } from '../../context'
 
 export function generateReactJsxFactory(ctx: PandaContext) {
   const name = ctx.jsxFactory
-  const upperName = name[0].toUpperCase() + name.slice(1)
+  const upperName = capitalize(name)
 
   return {
     dts: outdent`

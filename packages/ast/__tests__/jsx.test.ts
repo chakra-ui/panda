@@ -2,7 +2,7 @@ import { describe, test, expect } from 'vitest'
 import { parseSync } from '../src/transform'
 import { jsxPlugin } from './fixture'
 
-describe('[jsx]', () => {
+describe('jsx', () => {
   test('should extract', () => {
     const code = `
        import { panda } from ".panda/jsx"
@@ -63,10 +63,6 @@ describe('[jsx]', () => {
             "marginBottom": "42px",
             "marginTop": "40px",
           },
-          "name": "panda",
-        },
-        {
-          "data": {},
           "name": "panda",
         },
       }
@@ -173,7 +169,11 @@ describe('[jsx]', () => {
     expect(collect).toMatchInlineSnapshot(`
       Set {
         {
-          "data": {},
+          "data": {
+            "css": {
+              "bg": "red.200",
+            },
+          },
           "name": "panda",
         },
       }

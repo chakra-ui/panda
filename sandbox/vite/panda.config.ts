@@ -28,4 +28,5 @@ export default defineConfig({
   utilities,
   // Add your css patterns here (stack, grid, etc)
   patterns,
+  jsxFramework: 'react',
 })

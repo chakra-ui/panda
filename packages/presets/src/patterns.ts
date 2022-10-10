@@ -21,6 +21,7 @@ const stack: PatternConfig = {
 }
 
 const vstack: PatternConfig = {
+  jsx: 'VStack',
   properties: {
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'token', value: 'spacing' },
@@ -39,6 +40,7 @@ const vstack: PatternConfig = {
 }
 
 const hstack: PatternConfig = {
+  jsx: 'HStack',
   properties: {
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'token', value: 'spacing' },

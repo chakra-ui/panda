@@ -32,7 +32,7 @@ describe('ast parser', () => {
 
     const data = createCollector()
 
-    parseSync(code, createPlugins({ data, importMap }))
+    parseSync(code, createPlugins(data, { importMap }))
 
     expect(data).toMatchInlineSnapshot(`
       {

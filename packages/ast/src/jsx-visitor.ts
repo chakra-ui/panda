@@ -1,13 +1,28 @@
+import { logger } from '@css-panda/logger'
+import type { PluginResult } from '@css-panda/types'
 import type * as AST from '@swc/core'
 import Visitor from '@swc/core/Visitor'
 import merge from 'lodash.merge'
+import { match, P } from 'ts-pattern'
 import * as ast from './ast'
-import type { ImportResult, PluginContext } from './types'
-import { match } from 'ts-pattern'
-import { logger } from '@css-panda/logger'
+import type { ImportResult } from './types'
 
-export class JSXPropVisitor extends Visitor {
-  constructor(private ctx: PluginContext & { isValidProp: (prop: string) => boolean }) {
+export type JsxNode = {
+  name: string
+  props?: string[]
+}
+
+export type JsxVisitorOptions = {
+  fileName?: string
+  nodes: JsxNode[]
+  factory: string
+  module: string
+  onData: (result: PluginResult) => void
+  isStyleProp: (prop: string) => boolean
+}
+
+export class JSXVisitor extends Visitor {
+  constructor(private ctx: JsxVisitorOptions) {
     super()
   }
 
@@ -15,15 +30,19 @@ export class JSXPropVisitor extends Visitor {
     return t
   }
 
-  import: ImportResult | undefined
+  import: ImportResult[] | undefined
 
   visitImportDeclaration(node: AST.ImportDeclaration): AST.ImportDeclaration {
-    const result = ast.importDeclaration(node, this.ctx.import)
+    const nodes = this.ctx.nodes.concat({ name: this.ctx.factory })
+    const result = ast.importDeclaration(node, {
+      module: this.ctx.module,
+      name: nodes.map((node) => node.name),
+    })
 
     if (result) {
       logger.debug({
         type: 'ast:import',
-        msg: `Found import { ${result.identifer} } in ${this.ctx.import.filename}`,
+        msg: `Found import { ${result.map(({ identifer }) => identifer).join(',')} } in ${this.ctx.fileName}`,
       })
       this.import = result
     }
@@ -31,19 +50,39 @@ export class JSXPropVisitor extends Visitor {
     return node
   }
 
+  getJsxName(node: AST.JSXElementName) {
+    if (!this.import?.length) return
+    return (
+      match(node)
+        // <panda.div/>
+        .with({ object: { type: 'Identifier', value: P.select() } }, (value) => {
+          return this.import!.find((item) => item.alias === value)?.alias
+        })
+        // <Box />
+        .with({ type: 'Identifier', value: P.select() }, (value) => {
+          return this.import!.find((item) => item.alias === value)?.alias
+        })
+        .otherwise(() => undefined)
+    )
+  }
+
   visitJSXOpeningElement(node: AST.JSXOpeningElement) {
-    if (!this.import) return node
+    // TODO: read the css prop from generic components
+    // only if the nodename starts with a capital letter (e.g. <Box css={...} />)
 
-    const isValidType = match(node.name)
-      .with({ object: { type: 'Identifier', value: this.import.alias } }, () => true)
-      .otherwise(() => false)
+    const jsxName = this.getJsxName(node.name)
 
-    if (!isValidType) return node
+    if (!jsxName) return node
+
+    const isValidProp = (prop: string) => {
+      const node = this.ctx.nodes.find((node) => node.name === jsxName)
+      return this.ctx.isStyleProp(prop) || node?.props?.includes(prop)
+    }
 
     const attrs = node.attributes.filter((attr) => {
       return match(attr)
-        .with({ type: 'JSXAttribute', name: { type: 'Identifier' } }, (value) => {
-          return this.ctx.isValidProp(value.name.value)
+        .with({ type: 'JSXAttribute', name: { type: 'Identifier' } }, (_node) => {
+          return isValidProp(_node.name.value)
         })
         .otherwise(() => false)
     })
@@ -55,10 +94,11 @@ export class JSXPropVisitor extends Visitor {
       merge(result, ast.jsxAttribute(attr))
     }
 
-    this.ctx.onData?.({
-      type: 'object',
-      data: result,
-    })
+    const isPattern = this.ctx.factory !== jsxName
+
+    if (Object.keys(result).length) {
+      this.ctx.onData?.({ type: isPattern ? 'pattern' : 'object', data: result, name: jsxName })
+    }
 
     return node
   }

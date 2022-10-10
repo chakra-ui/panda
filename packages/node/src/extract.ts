@@ -10,12 +10,14 @@ export async function extractFile(ctx: PandaContext, file: string) {
   const done = logger.time.debug('Extracted', quote(file))
 
   try {
-    const plugins = createPlugins({
-      data: data,
+    const plugins = createPlugins(data, {
       importMap: ctx.importMap,
       fileName: file,
-      jsxName: ctx.jsxFactory,
-      isUtilityProp: ctx.isProperty,
+      jsx: {
+        factory: ctx.jsxFactory,
+        isStyleProp: ctx.isProperty,
+        nodes: ctx.patternNodes,
+      },
     })
     await parseFile(file, plugins)
   } catch (error) {

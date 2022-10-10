@@ -7,7 +7,7 @@
     "dev": "PANDA_DEBUG=hrtime vite",
     "build": "pnpm css && vite build",
     "preview": "vite preview",
-    "css": "PANDA_DEBUG=hrtime panda",
+    "css": "PANDA_DEBUG=* panda",
     "css:gen": "PANDA_DEBUG=* panda gen",
     "css:dev": "PANDA_DEBUG=* panda --watch"
   },

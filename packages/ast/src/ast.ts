@@ -158,7 +158,7 @@ export function callExpression(node: swc.CallExpression, scope: string) {
   return result[0]
 }
 
-export function importDeclaration(node: swc.ImportDeclaration, options: { module: string; name: string }) {
+export function importDeclaration(node: swc.ImportDeclaration, options: { module: string; name: string | string[] }) {
   const { specifiers, source } = node
 
   const result: ImportResult[] = []
@@ -192,7 +192,8 @@ export function importDeclaration(node: swc.ImportDeclaration, options: { module
       })
   }
 
-  return result.find((item) => item.identifer === options.name)
+  const imports = Array.isArray(options.name) ? options.name : [options.name]
+  return result.filter((item) => imports.includes(item.identifer))
 }
 
 export function importDeclarations(node: swc.ImportDeclaration, module: string) {

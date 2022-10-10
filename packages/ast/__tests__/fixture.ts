@@ -1,6 +1,6 @@
 import type * as swc from '@swc/core'
 import { CallVisitor, DynamicCallVisitor } from '../src/visitor'
-import { JSXPropVisitor } from '../src/jsx-visitor'
+import { JSXVisitor } from '../src/jsx-visitor'
 import { isCssProperty } from '@css-panda/is-valid-prop'
 
 export function cssPlugin(collector: Set<any>) {
@@ -29,12 +29,31 @@ export function recipePlugin(collector: Set<any>) {
 
 export function jsxPlugin(collector: Set<any>) {
   return function (program: swc.Program) {
-    const visitor = new JSXPropVisitor({
-      import: { name: 'panda', module: '.panda/jsx' },
+    const visitor = new JSXVisitor({
+      nodes: [],
+      factory: 'panda',
+      module: '.panda/jsx',
       onData(result) {
         collector.add({ name: 'panda', data: result.data })
       },
-      isValidProp(prop) {
+      isStyleProp(prop) {
+        return isCssProperty(prop) || prop === 'css'
+      },
+    })
+    return visitor.visitProgram(program)
+  }
+}
+
+export function jsxPatternPlugin(collector: Set<any>) {
+  return function (program: swc.Program) {
+    const visitor = new JSXVisitor({
+      nodes: [{ name: 'Stack', props: ['align', 'gap', 'direction'] }],
+      factory: 'panda',
+      module: '.panda/jsx',
+      onData(result) {
+        collector.add({ type: 'pattern', data: result.data, name: result.name })
+      },
+      isStyleProp(prop) {
         return isCssProperty(prop)
       },
     })

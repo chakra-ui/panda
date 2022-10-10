@@ -15,11 +15,6 @@ export type TransformHelpers = {
 
 export type PatternConfig = {
   /**
-   * Whether to only generate types for the specified properties.
-   * This will disallow css properties
-   */
-  strict?: boolean
-  /**
    * The properties of the pattern.
    */
   properties: Record<string, PatternProperty>
@@ -27,4 +22,8 @@ export type PatternConfig = {
    * The css object this pattern will generate.
    */
   transform?: (props: Record<string, Value>, helpers: TransformHelpers) => ConditionCssProperties
+  /**
+   * The jsx element name this pattern will generate.
+   */
+  jsx?: string
 }

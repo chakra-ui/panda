@@ -13,7 +13,7 @@ export class CallVisitor extends Visitor {
     return t
   }
 
-  import: ImportResult | undefined
+  import: ImportResult[] | undefined
 
   visitImportDeclaration(node: swc.ImportDeclaration): swc.ImportDeclaration {
     const result = ast.importDeclaration(node, this.ctx.import)
@@ -21,8 +21,9 @@ export class CallVisitor extends Visitor {
     if (result) {
       logger.debug({
         type: 'ast:import',
-        msg: `Found import { ${result.identifer} } in ${this.ctx.import.filename}`,
+        msg: `Found import { ${result.map(({ identifer }) => identifer).join(',')} } in ${this.ctx.import.filename}`,
       })
+
       this.import = result
     }
 
@@ -31,8 +32,9 @@ export class CallVisitor extends Visitor {
 
   visitCallExpression(node: swc.CallExpression): swc.Expression {
     // bail out if the function we're interested in has not been called
-    if (!this.import) return node
-    const expression = ast.callExpression(node, this.import.alias)
+    if (!this.import?.length) return node
+
+    const expression = ast.callExpression(node, this.import[0].alias)
     if (!expression) return node
 
     const args = expression.arguments

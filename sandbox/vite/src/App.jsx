@@ -1,5 +1,6 @@
 import { css, globalCss } from '../design-system/css'
 import { circle, vstack } from '../design-system/patterns'
+import { Stack, panda, Circle, HStack } from '../design-system/jsx'
 
 globalCss({
   '*': {
@@ -11,6 +12,17 @@ globalCss({
 function App() {
   return (
     <div className={css({ paddingY: '180px' })}>
+      <Stack align="center" padding="20px" marginBottom="30px" bg="yellow" gap={{ base: '4', md: '10' }}>
+        <Circle size="40px" bg="red.300" fontSize="1.2em" fontWeight="bold">
+          S
+        </Circle>
+        <HStack gap="40px">
+          <div>Element 1</div>
+          <panda.div color="red" fontWeight="bold" fontSize="50px">
+            Element 2
+          </panda.div>
+        </HStack>
+      </Stack>
       <div className={css({ maxWidth: '840px', marginX: 'auto', textAlign: 'center' })}>
         <div>
           <div className={vstack({ justify: 'center', bg: 'red.200', py: '2', mb: '30px' })}>
