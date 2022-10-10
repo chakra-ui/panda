@@ -34,9 +34,13 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
     
     function styled(element) {
       return function ${upperName}Component(props) {
-        const mergedProps = mergeProps({ component: element }, props)
+        const mergedProps = mergeProps({ as: element }, props)
     
-        const [localProps, styleProps, elementProps] = splitProps(mergedProps, ['class', 'className'], allCssProperties)
+        const [localProps, styleProps, elementProps] = splitProps(
+          mergedProps,
+          ['as', 'class', 'className'],
+          allCssProperties
+        )
     
         const classes = () => {
           const { css: cssStyles, ...otherStyles } = styleProps
@@ -44,7 +48,7 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
           return cx(atomicClass, localProps.class, localProps.className)
         }
     
-        return <Dynamic {...elementProps} class={classes()} />
+        return <Dynamic component={localProps.as} {...elementProps} class={classes()} />
       }
     }
     

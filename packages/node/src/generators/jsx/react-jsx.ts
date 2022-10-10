@@ -49,7 +49,9 @@ export function generateReactJsxFactory(ctx: PandaContext) {
     
     function styled(Dynamic) {
       const ${upperName}Component = forwardRef((props, ref) => {
-        const [styleProps, elementProps] = splitProps(props)
+        const { as: Element = Dynamic, ...restProps } = props
+    
+        const [styleProps, elementProps] = splitProps(restProps)
     
         const classes = () => {
           const { css: cssStyles, ...otherStyles } = styleProps
@@ -57,7 +59,7 @@ export function generateReactJsxFactory(ctx: PandaContext) {
           return cx(atomicClass, elementProps.className)
         }
     
-        return <Dynamic ref={ref} {...elementProps} className={classes()} />
+        return <Element ref={ref} {...elementProps} className={classes()} />
       })
       
       ${upperName}Component.displayName = \`${name}.\${Dynamic}\`

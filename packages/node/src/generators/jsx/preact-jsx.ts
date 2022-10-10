@@ -50,6 +50,8 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
     
     function styled(Dynamic) {
       const ${upperName}Component = forwardRef((props, ref) => {
+        const { as: Element = Dynamic, ...restProps } = props
+
         const [styleProps, elementProps] = splitProps(props)
     
         const classes = () => {
@@ -58,7 +60,7 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
           return cx(atomicClass, elementProps.className)
         }
     
-        return h(Dynamic, { ...elementProps, ref, className: classes() });
+        return h(Element, { ...elementProps, ref, className: classes() });
       })
       
       ${upperName}Component.displayName = \`${name}.\${Dynamic}\`
