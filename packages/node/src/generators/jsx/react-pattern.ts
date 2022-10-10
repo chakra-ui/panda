@@ -9,7 +9,7 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
 
   const keys = Object.keys(pattern.properties ?? {})
   return {
-    name,
+    name: dashCase(name),
     js: outdent`
     import { forwardRef } from 'react'
     import { ${jsxFactory} } from './factory'
