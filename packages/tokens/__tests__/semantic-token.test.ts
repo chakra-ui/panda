@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { TokenMap } from '../src/token-map'
+import { TokenDictionary } from '../src'
 
 describe('semantic tokens / basic', () => {
   test('with reference', () => {
-    const dict = new TokenMap({
+    const dict = new TokenDictionary({
       tokens: {
         colors: {
           blue: { value: '#000' },
@@ -111,7 +111,7 @@ describe('semantic tokens / basic', () => {
   })
 
   test('with raw string', () => {
-    const dict = new TokenMap({
+    const dict = new TokenDictionary({
       tokens: {
         colors: {
           blue: { value: '#000' },
@@ -154,7 +154,7 @@ describe('semantic tokens / basic', () => {
 
 describe('semantic tokens / composite', () => {
   test('shadow', () => {
-    const dict = new TokenMap({
+    const dict = new TokenDictionary({
       semanticTokens: {
         shadows: {
           md: { value: { x: 0, y: 4, blur: 6, spread: 1, color: 'rgba(0,0,0,0)' } },

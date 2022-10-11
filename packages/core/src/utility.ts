@@ -7,7 +7,7 @@ import {
   withoutImportant,
   withoutSpace,
 } from '@css-panda/shared'
-import type { TokenMap } from '@css-panda/tokens'
+import type { TokenDictionary } from '@css-panda/tokens'
 import type { AnyFunction, Dict, LayerStyles, PropertyConfig, TextStyles, UtilityConfig } from '@css-panda/types'
 import merge from 'lodash.merge'
 import { cssToJs, toCss } from './to-css'
@@ -18,14 +18,14 @@ type Options = {
     textStyle?: TextStyles
     layerStyle?: LayerStyles
   }
-  tokens: TokenMap
+  tokens: TokenDictionary
 }
 
 export class Utility {
   /**
    * The token map or dictionary of tokens
    */
-  tokenMap: TokenMap
+  tokenMap: TokenDictionary
 
   /**
    * The map of property names to their resolved class names

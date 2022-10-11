@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { getTokenData } from '../src/token-data'
+import { createToken } from '../src/token'
 
 describe('token data', () => {
   test('basic', () => {
     expect(
-      getTokenData({
+      createToken({
         value: '#000',
         path: ['colors', 'blue', '50'],
       }),
@@ -28,7 +28,7 @@ describe('token data', () => {
     `)
 
     expect(
-      getTokenData({
+      createToken({
         value: '40px',
         negative: true,
         path: ['spacing', 'sm'],

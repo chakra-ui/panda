@@ -11,7 +11,7 @@ type TokenDataOptions = {
   prefix?: string
 }
 
-export function getTokenData(data: TokenDataOptions) {
+export function createToken(data: TokenDataOptions) {
   const { condition = '', path, value, negative = false, prefix, description = '' } = data
   const [category, ...keys] = path
 
@@ -28,7 +28,7 @@ export function getTokenData(data: TokenDataOptions) {
     category: category as TokenCategory,
     path: keyPath,
     key,
-    prop: `${category}.${key}`,
+    prop: [category, key].filter(Boolean).join('.'),
     value: negative ? negate(value) : value,
     var: _var.var,
     varRef: negative ? negate(_var.ref) : _var.ref,
@@ -37,4 +37,4 @@ export function getTokenData(data: TokenDataOptions) {
   }
 }
 
-export type TokenData = ReturnType<typeof getTokenData>
+export type TokenData = ReturnType<typeof createToken>

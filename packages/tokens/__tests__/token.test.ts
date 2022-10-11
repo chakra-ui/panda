@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { TokenMap } from '../src/token-map'
+import { TokenDictionary } from '../src'
 
 describe('tokens / basic', () => {
   test('simple', () => {
-    const dict = new TokenMap({
+    const dict = new TokenDictionary({
       tokens: {
         colors: {
           current: { value: 'currentColor' },
@@ -131,7 +131,7 @@ describe('tokens / basic', () => {
   })
 
   test('with negative spacing', () => {
-    const dict = new TokenMap({
+    const dict = new TokenDictionary({
       tokens: {
         spacing: {
           sm: { value: '0.5rem' },
@@ -182,7 +182,7 @@ describe('tokens / basic', () => {
   })
 
   test('with nested', () => {
-    const dict = new TokenMap({
+    const dict = new TokenDictionary({
       tokens: {
         spacing: {
           card: {
@@ -241,7 +241,7 @@ describe('tokens / basic', () => {
 
 describe('tokens / composite', () => {
   test('shadows - basic', () => {
-    const dict = new TokenMap({
+    const dict = new TokenDictionary({
       tokens: {
         shadows: {
           xs: { value: '0 0 0 1px rgba(0, 0, 0, 0.05)' },
@@ -321,7 +321,7 @@ describe('tokens / composite', () => {
   })
 
   test('shadows - with reference', () => {
-    const dict = new TokenMap({
+    const dict = new TokenDictionary({
       tokens: {
         colors: { red: { 200: { value: '#fed7d7' } } },
         shadows: {

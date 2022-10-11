@@ -4,7 +4,7 @@ import { Conditions, discardDuplicate, GeneratorContext, Stylesheet, Utility } f
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import { capitalize, mapObject, uncapitalize } from '@css-panda/shared'
-import { TokenMap } from '@css-panda/tokens'
+import { TokenDictionary } from '@css-panda/tokens'
 import type { RecipeConfig } from '@css-panda/types'
 import glob from 'fast-glob'
 import { readdirSync } from 'fs'
@@ -73,7 +73,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * Core utilities
    * -----------------------------------------------------------------------------*/
 
-  const tokens = new TokenMap({
+  const tokens = new TokenDictionary({
     tokens: _tokens,
     semanticTokens,
     prefix: cssVar?.prefix,
