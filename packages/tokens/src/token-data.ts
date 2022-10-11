@@ -19,11 +19,14 @@ export function getTokenData(data: TokenDataOptions) {
     prefix: [prefix, category].filter(Boolean).join('-'),
   })
 
-  const key = negative ? getNegativePath(keys).join('.') : keys.join('.')
+  const keyPath = negative ? getNegativePath(keys) : keys
+  const key = keyPath.join('.')
 
   return {
+    semantic: !!condition,
     condition,
     category: category as TokenCategory,
+    path: keyPath,
     key,
     prop: `${category}.${key}`,
     value: negative ? negate(value) : value,

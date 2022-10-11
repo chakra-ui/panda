@@ -39,10 +39,12 @@ describe('extract imports', () => {
 
     expect(collect).toMatchInlineSnapshot(`
       {
-        "result": {
-          "alias": "nCss",
-          "identifer": "css",
-        },
+        "result": [
+          {
+            "alias": "nCss",
+            "identifer": "css",
+          },
+        ],
       }
     `)
   })
