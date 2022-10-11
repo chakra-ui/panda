@@ -1,6 +1,6 @@
 import type { LayerStyles, TextStyles } from './composition'
 import type { Conditions as TConditions } from './conditions'
-import type { Keyframes } from './panda-csstype'
+import type { Keyframes, GlobalStyles } from './panda-csstype'
 import type { PatternConfig } from './pattern'
 import type { RecipeConfig } from './recipe'
 import type { Dict, RequiredBy } from './shared'
@@ -121,14 +121,13 @@ export type Config<
    */
   jsxFactory?: string
   /**
-   * Not implemented yet.
-   * @experimental - Custom parsers for call expressions and jsx style props.
-   */
-  parsers?: Record<string, (file: string, data: any) => void>
-  /**
    * Options for the generated typescript definitions.
    */
   strictTokens?: boolean
+  /**
+   * The global styles for your project.
+   */
+  globalStyles?: GlobalStyles
 }
 
 export type TConfig = Config<TConditions, Dict, Dict>
