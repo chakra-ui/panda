@@ -13,6 +13,10 @@ export type Config<
   Tokens extends PartialTokens = PartialTokens,
 > = {
   /**
+   * Used to create reusable config presets for your project or team.
+   */
+  extends?: string[]
+  /**
    * Whether to include css reset styles in the generated css.
    */
   preflight?: boolean
