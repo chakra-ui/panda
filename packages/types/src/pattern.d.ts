@@ -26,4 +26,9 @@ export type PatternConfig = {
    * The jsx element name this pattern will generate.
    */
   jsx?: string
+  /**
+   * Whether to only generate types for the specified properties.
+   * This will disallow css properties
+   */
+  strict?: boolean
 }

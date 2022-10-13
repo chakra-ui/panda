@@ -75,6 +75,7 @@ importers:
 
   packages/config:
     specifiers:
+      '@css-panda/error': workspace:*
       '@css-panda/logger': workspace:*
       '@css-panda/shared': workspace:*
       '@css-panda/types': workspace:*
@@ -82,6 +83,7 @@ importers:
       look-it-up: 2.1.0
       node-eval: 2.0.0
     dependencies:
+      '@css-panda/error': link:../error
       '@css-panda/logger': link:../logger
       '@css-panda/shared': link:../shared
       '@css-panda/types': link:../types

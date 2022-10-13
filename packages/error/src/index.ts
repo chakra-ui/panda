@@ -23,9 +23,8 @@ export class ConfigNotFoundError extends PandaError {
 }
 
 export class ConfigError extends PandaError {
-  constructor(options: { readonly path: string; readonly error: unknown }) {
-    const { path, error } = options
-    super('CONFIG_ERROR', `Unable to read ${path}): ${error}`)
+  constructor(message: string) {
+    super('CONFIG_ERROR', message)
   }
 }
 

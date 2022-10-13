@@ -21,6 +21,7 @@
   "dependencies": {
     "@css-panda/logger": "workspace:*",
     "@css-panda/shared": "workspace:*",
+    "@css-panda/error": "workspace:*",
     "@css-panda/types": "workspace:*",
     "esbuild": "0.15.7",
     "look-it-up": "2.1.0",
