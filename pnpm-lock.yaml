@@ -177,6 +177,7 @@ importers:
       '@types/is-glob': ^4.0.2
       '@types/lodash.merge': 4.6.7
       '@types/pluralize': 0.0.29
+      boxen: ^7.0.0
       chokidar: ^3.5.3
       fast-glob: ^3.2.11
       fs-extra: 10.1.0
@@ -203,6 +204,7 @@ importers:
       '@css-panda/shared': link:../shared
       '@css-panda/tokens': link:../tokens
       '@css-panda/types': link:../types
+      boxen: 7.0.0
       chokidar: 3.5.3
       fast-glob: 3.2.11
       fs-extra: 10.1.0
@@ -2409,6 +2411,20 @@ packages:
       wrap-ansi: 8.0.1
     dev: false
 
+  /boxen/7.0.0:
+    resolution: {integrity: sha512-j//dBVuyacJbvW+tvZ9HuH03fZ46QcaKvvhZickZqtB271DxJ7SNRSNxrV/dZX0085m7hISRZWbzWlJvx/rHSg==}
+    engines: {node: '>=14.16'}
+    dependencies:
+      ansi-align: 3.0.1
+      camelcase: 7.0.0
+      chalk: 5.0.1
+      cli-boxes: 3.0.0
+      string-width: 5.1.2
+      type-fest: 2.19.0
+      widest-line: 4.0.1
+      wrap-ansi: 8.0.1
+    dev: false
+
   /brace-expansion/1.1.11:
     resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}
     dependencies:
@@ -2517,6 +2533,11 @@ packages:
   /camelcase/6.3.0:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
+    dev: false
+
+  /camelcase/7.0.0:
+    resolution: {integrity: sha512-JToIvOmz6nhGsUhAYScbo2d6Py5wojjNfoxoc2mEVLUdJ70gJK2gnd+ABY1Tc3sVMyK7QDPtN0T/XdlCQWITyQ==}
+    engines: {node: '>=14.16'}
     dev: false
 
   /caniuse-lite/1.0.30001374:
