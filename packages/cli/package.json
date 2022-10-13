@@ -37,7 +37,7 @@
   "scripts": {
     "build": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --dts --no-splitting",
     "build-fast": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --no-dts --no-splitting",
-    "dev": "pnpm build-fast -- --watch"
+    "dev": "pnpm build-fast --watch"
   },
   "files": [
     "dist",

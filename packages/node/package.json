@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
     "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
-    "dev": "pnpm build-fast -- --watch"
+    "dev": "pnpm build-fast --watch"
   },
   "files": [
     "dist"
