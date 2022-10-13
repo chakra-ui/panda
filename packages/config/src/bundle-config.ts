@@ -1,18 +1,14 @@
 import { build } from 'esbuild'
 
-export async function bundleConfigFile(
-  fileName: string,
-  isESM = false,
-): Promise<{ code: string; dependencies: string[] }> {
+export async function bundleConfigFile(fileName: string): Promise<{ code: string; dependencies: string[] }> {
   const result = await build({
     absWorkingDir: process.cwd(),
     entryPoints: [fileName],
     outfile: 'out.js',
     write: false,
     platform: 'node',
-    target: ['es2020', 'node14'],
     bundle: true,
-    format: isESM ? 'esm' : 'cjs',
+    format: 'cjs',
     sourcemap: false,
     metafile: true,
     mainFields: ['module', 'main'],

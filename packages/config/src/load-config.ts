@@ -1,12 +1,8 @@
 import { logger } from '@css-panda/logger'
 import type { UserConfig } from '@css-panda/types'
-import fs from 'fs'
-import { pathToFileURL } from 'url'
 import { bundleConfigFile } from './bundle-config'
 import { findConfigFile } from './find-config'
 import { loadBundledFile } from './load-bundled-config'
-
-const dynamicImport = new Function('file', 'return import(file)')
 
 type ConfigFileOptions = {
   cwd: string
@@ -15,44 +11,25 @@ type ConfigFileOptions = {
 
 export async function loadConfigFile(options: ConfigFileOptions) {
   const { cwd, file } = options
-
-  const { isESM, filepath } = findConfigFile({ cwd, file }) ?? {}
+  const { filepath, isESM } = findConfigFile({ cwd, file }) ?? {}
 
   logger.debug({ type: 'config', msg: `Found config file at: \n${filepath}` })
 
-  if (!filepath) return {}
+  if (!filepath) return
 
-  const bundled = await bundleConfigFile(filepath, isESM)
-
+  const bundled = await bundleConfigFile(filepath)
   logger.debug({ type: 'config', msg: 'Bundled Config File' })
 
   const dependencies = bundled.dependencies ?? []
-
-  const fileName = filepath
   let config: UserConfig
-
   if (isESM) {
-    const fileBase = `${fileName}.timestamp-${Date.now()}`
-    const fileNameTmp = `${fileBase}.mjs`
-
-    fs.writeFileSync(fileNameTmp, bundled.code)
-
-    try {
-      const fileUrl = `${pathToFileURL(fileBase)}.mjs`
-      config = (await dynamicImport(fileUrl)).default
-    } finally {
-      try {
-        fs.unlinkSync(fileNameTmp)
-      } catch {
-        // already removed if this function is called twice simultaneously
-      }
-    }
+    config = require('node-eval')(bundled.code).default
   } else {
-    config = await loadBundledFile(fileName, bundled.code)
+    config = await loadBundledFile(filepath, bundled.code)
   }
 
   if (typeof config !== 'object') {
-    throw new Error(`💥 config must export or return an object.`)
+    throw new Error(`[panda] 💥 Config must export or return an object.`)
   }
 
   return {

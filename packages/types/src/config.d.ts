@@ -13,6 +13,10 @@ export type Config<
   Tokens extends PartialTokens = PartialTokens,
 > = {
   /**
+   * The log level for the built-in logger.
+   */
+  logLevel?: 'debug' | 'info' | 'warn' | 'error' | 'silent'
+  /**
    * Used to create reusable config presets for your project or team.
    */
   extends?: string[]

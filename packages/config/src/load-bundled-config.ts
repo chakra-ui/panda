@@ -4,7 +4,7 @@ import path from 'path'
 
 const req = typeof require === 'function' ? require : createRequire(import.meta.url)
 
-export function loadBundledFile(fileName: string, bundledCode: string): Promise<any> {
+export function loadBundledFile(fileName: string, code: string): Promise<any> {
   const extension = path.extname(fileName)
   const realFileName = fs.realpathSync(fileName)
 
@@ -12,7 +12,7 @@ export function loadBundledFile(fileName: string, bundledCode: string): Promise<
 
   req.extensions[extension] = (mod: any, filename: string) => {
     if (filename === realFileName) {
-      mod._compile(bundledCode, filename)
+      mod._compile(code, filename)
     } else {
       loader(mod, filename)
     }

@@ -13,7 +13,7 @@
   "scripts": {
     "build": "pnpm tsup src/index.ts --format=esm,cjs --shims --dts",
     "build-fast": "pnpm tsup src/index.ts --format=esm,cjs --shims --no-dts",
-    "dev": "pnpm build-fast -- --watch"
+    "dev": "pnpm build-fast --watch"
   },
   "files": [
     "dist"
@@ -23,6 +23,7 @@
     "@css-panda/shared": "workspace:*",
     "@css-panda/types": "workspace:*",
     "esbuild": "0.15.7",
-    "look-it-up": "2.1.0"
+    "look-it-up": "2.1.0",
+    "node-eval": "2.0.0"
   }
 }
