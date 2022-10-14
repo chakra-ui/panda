@@ -19,7 +19,7 @@ export function loadBundledFile(fileName: string, code: string): Promise<any> {
   delete require.cache[require.resolve(fileName)]
 
   const raw = require(fileName)
-  const config = raw.__esModule ? raw.default : raw
+  const config = raw.default ?? raw
 
   require.extensions[extension] = loader
 

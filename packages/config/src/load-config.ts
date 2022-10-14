@@ -1,9 +1,9 @@
 import { ConfigNotFoundError, ConfigError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import type { UserConfig } from '@css-panda/types'
-import { bundleConfigFile } from './bundle-config'
+import { merge } from 'merge-anything'
+import { bundleAndRequire } from './bundle-require'
 import { findConfigFile } from './find-config'
-import { loadBundledFile } from './load-bundled-config'
 
 type ConfigFileOptions = {
   cwd: string
@@ -12,35 +12,33 @@ type ConfigFileOptions = {
 
 export async function loadConfigFile(options: ConfigFileOptions) {
   const { cwd, file } = options
-  const { filepath, isESM } = findConfigFile({ cwd, file }) ?? {}
+  const filePath = findConfigFile({ cwd, file })
 
-  if (!filepath) {
+  if (!filePath) {
     throw new ConfigNotFoundError()
   }
 
-  logger.debug({ type: 'config', path: filepath })
+  logger.debug({ type: 'config', path: filePath })
 
-  const bundled = await bundleConfigFile(filepath)
-  logger.debug({ type: 'config', msg: 'Bundled Config File' })
+  const result = await bundleAndRequire(filePath, cwd)
 
-  const dependencies = bundled.dependencies ?? []
-
-  let config: UserConfig
-  if (isESM) {
-    config = require('node-eval')(bundled.code).default
-  } else {
-    config = await loadBundledFile(filepath, bundled.code)
-  }
-
-  if (typeof config !== 'object') {
+  // TODO: Validate config shape
+  if (typeof result.config !== 'object') {
     throw new ConfigError(`💥 Config must export or return an object.`)
   }
 
+  const presets = result.config.extends ?? []
+
+  for (const preset of presets) {
+    const presetResult = await bundleAndRequire(preset, cwd)
+    result.config = merge({}, result.config, presetResult.config) as any
+  }
+
+  delete result.config.extends
+
   return {
-    path: filepath,
-    config,
-    dependencies,
-    code: bundled.code,
+    ...result,
+    path: filePath,
   }
 }
 
@@ -48,5 +46,4 @@ export type LoadConfigResult = {
   path: string
   config: UserConfig
   dependencies: string[]
-  code: string
 }

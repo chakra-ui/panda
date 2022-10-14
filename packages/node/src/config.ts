@@ -17,6 +17,7 @@ export function findConfig() {
 export async function loadConfigAndCreateContext(options: { cwd?: string; config?: Config; configPath?: string } = {}) {
   const { cwd = process.cwd(), config, configPath } = options
   const conf = await loadConfigFile({ cwd, file: configPath })
+
   if (config) {
     Object.assign(conf.config, config)
   }
