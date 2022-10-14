@@ -64,6 +64,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     hash,
     jsxFactory = 'panda',
     jsxFramework,
+    globalCss,
   } = config
 
   const cwd = resolve(_cwd)
@@ -245,6 +246,10 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   function collectStyles(collector: Collector, file: string) {
     const sheet = new Stylesheet(context())
 
+    if (globalCss) {
+      sheet.addGlobalCss(globalCss)
+    }
+
     collector.globalCss.forEach((result) => {
       sheet.processGlobalCss(result)
     })
@@ -269,24 +274,18 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
     collector.jsx.forEach((result) => {
       const { data, type, name } = result
-
       const { conditions = [], css = {}, ...rest } = data
+
       const styles = { ...css, ...rest }
 
       // treat pattern jsx like regular pattern
       if (name && type === 'pattern') {
-        //
-        const patternName = getPatternFnName(name)
-        collector.pattern.get(patternName) ?? collector.pattern.set(patternName, new Set([]))
-        collector.pattern.get(patternName)?.add({ type: 'object', data: styles, name: patternName })
-        //
+        collector.addPattern(getPatternFnName(name), styles)
       } else {
-        //
         sheet.process({ type, data: styles })
         conditions.forEach((style: any) => {
           sheet.process(style)
         })
-        //
       }
     })
 

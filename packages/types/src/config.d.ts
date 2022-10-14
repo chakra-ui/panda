@@ -85,6 +85,10 @@ export type Config<
    */
   keyframes?: Keyframes
   /**
+   * The global styles for your project.
+   */
+  globalCss?: GlobalStyles
+  /**
    * The design tokens for your project.
    */
   tokens?: Tokens
@@ -132,10 +136,6 @@ export type Config<
    * Options for the generated typescript definitions.
    */
   strictTokens?: boolean
-  /**
-   * The global styles for your project.
-   */
-  globalStyles?: GlobalStyles
 }
 
 export type TConfig = Config<TConditions, Dict, Dict>

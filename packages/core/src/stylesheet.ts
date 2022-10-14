@@ -19,7 +19,7 @@ export class Stylesheet {
 
   processFontFace = (result: PluginResult) => {
     const src = result.data.src?.join(',')
-    return this.processObject({
+    this.processObject({
       '@font-face': {
         ...result.data,
         fontFamily: JSON.stringify(result.name),
@@ -28,11 +28,14 @@ export class Stylesheet {
     })
   }
 
-  processGlobalCss = (result: PluginResult) => {
+  addGlobalCss = (styleObject: Dict) => {
     const { conditions, utility } = this.context
-    const styleObject = result.data
     const css = serializeStyles(styleObject, { conditions, utility })
     this.context.root.append(css)
+  }
+
+  processGlobalCss = (result: PluginResult) => {
+    this.addGlobalCss(result.data)
   }
 
   processSelectorObject(selector: string, styleObject: Dict) {
@@ -40,7 +43,7 @@ export class Stylesheet {
     const { nodes } = postcss.parse(cssString)
 
     // don't process empty rulesets
-    if (nodes.length === 0) return this
+    if (nodes.length === 0) return
 
     const output = postcss.rule({
       selector,
@@ -48,21 +51,18 @@ export class Stylesheet {
     })
 
     this.context.root.append(output)
-
-    return this
   }
 
   processObject(styleObject: Dict) {
     const result = toCss(styleObject)
     const output = result.root
     this.context.root.append(output)
-    return this
   }
 
   processAtomic = (styleObject: Dict) => {
     const ruleset = new AtomicRule(this.context)
-    return walkStyles(styleObject, (props: any, scope?: string[]) => {
-      ruleset.process({ scope, styles: props })
+    return walkStyles(styleObject, (styles: any, scope?: string[]) => {
+      ruleset.process({ scope, styles })
     })
   }
 
@@ -74,7 +74,6 @@ export class Stylesheet {
   addImports = (imports: string[]) => {
     const rules = imports.map((n) => `@import '${n}';\n`)
     this.context.root.prepend(...rules)
-    return this
   }
 
   toCss = ({ optimize = true, minify }: { optimize?: boolean; minify?: boolean } = {}) => {
@@ -86,6 +85,5 @@ export class Stylesheet {
 
   append = (css: string) => {
     this.context.root.append(css)
-    return this
   }
 }
