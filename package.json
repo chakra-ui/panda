@@ -16,8 +16,6 @@
     "prettier": "prettier --check packages",
     "prettier-fix": "prettier --write packages",
     "typecheck": "tsc --noEmit",
-    "extension-watch": "pnpm --prefix ./packages/vscode run watch:extension",
-    "extension-ui": "pnpm --prefix ./packages/vscode run watch:ui",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev"
   },
   "keywords": [],
