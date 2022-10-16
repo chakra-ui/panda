@@ -29,8 +29,9 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     
     type Merge<T, U> = Omit<T, keyof U> & U
     type PropsOf<C extends ElementType> = ComponentProps<C>
+    type StyleProps = CssObject & { css?: CssObject }
     
-    type Polymorphic<C extends ElementType = 'div', P = {}> = CssObject &
+    type Polymorphic<C extends ElementType = 'div', P = {}> = StyleProps &
       Merge<PropsWithChildren<PropsOf<C>>, P & { as?: C; color?: string }>
 
     type ${jsxName}Props<C extends ElementType> = Polymorphic<C, ${upperName}Options>
