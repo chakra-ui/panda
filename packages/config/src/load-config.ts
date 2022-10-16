@@ -27,14 +27,14 @@ export async function loadConfigFile(options: ConfigFileOptions) {
     throw new ConfigError(`💥 Config must export or return an object.`)
   }
 
-  const presets = result.config.extends ?? []
+  const presets = result.config.presets ?? []
 
   for (const preset of presets) {
     const presetResult = await bundleAndRequire(preset, cwd)
     result.config = merge({}, result.config, presetResult.config) as any
   }
 
-  delete result.config.extends
+  delete result.config.presets
 
   return {
     ...result,
