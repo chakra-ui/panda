@@ -15,6 +15,10 @@ export type TransformHelpers = {
 
 export type PatternConfig = {
   /**
+   * The description of the pattern. This will be used in the JSDoc comment.
+   */
+  description?: string
+  /**
    * The properties of the pattern.
    */
   properties: Record<string, PatternProperty>

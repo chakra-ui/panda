@@ -23,4 +23,8 @@ export type RecipeConfig<Variants extends TRecipe = TRecipe> = {
   defaultVariants?: {
     [K in keyof Variants]?: keyof Variants[K]
   }
+  /**
+   * The description of the recipe. This will be used in the JSDoc comment.
+   */
+  description?: string
 }
