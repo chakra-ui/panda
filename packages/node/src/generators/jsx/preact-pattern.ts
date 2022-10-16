@@ -24,7 +24,7 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
 
     dts: outdent`
     import { ComponentProps, JSX, ComponentChildren } from 'preact';
-    import { ${upperName}Options } from '../patterns/${name}'
+    import { ${upperName}Options } from '../patterns/${dashCase(name)}'
     import { CssObject } from '../types'
     
     type ElementType = keyof JSX.IntrinsicElements

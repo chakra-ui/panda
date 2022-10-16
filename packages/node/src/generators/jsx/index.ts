@@ -7,6 +7,7 @@ import { generateReactJsxFactory } from './react-jsx'
 import { generateReactJsxPattern } from './react-pattern'
 
 import { generateSolidJsxFactory } from './solid-jsx'
+import { generateSolidJsxPattern } from './solid-pattern'
 
 const factoryMap = {
   react: generateReactJsxFactory,
@@ -20,7 +21,7 @@ export function generateJsxFactory(ctx: PandaContext) {
 
 const patternMap = {
   react: generateReactJsxPattern,
-  solid: generateReactJsxPattern,
+  solid: generateSolidJsxPattern,
   preact: generatePreactJsxPattern,
 }
 
