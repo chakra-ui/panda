@@ -39,7 +39,7 @@ export class JSXVisitor extends Visitor {
       name: nodes.map((node) => node.name),
     })
 
-    if (result) {
+    if (result?.length) {
       logger.debug({
         type: 'ast:import',
         msg: `Found import { ${result.map(({ identifer }) => identifer).join(',')} } in ${this.ctx.fileName}`,
