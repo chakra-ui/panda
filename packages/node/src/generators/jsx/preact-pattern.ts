@@ -11,7 +11,7 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
   return {
     name: dashCase(name),
     js: outdent`
-    import { forwardRef } from 'react'
+    import { forwardRef } from 'preact/compat'
     import { ${jsxFactory} } from './factory'
     import { config } from '../patterns/${dashCase(name)}'
 
@@ -23,14 +23,18 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     `,
 
     dts: outdent`
-    import { ComponentProps, ElementType, PropsWithChildren } from 'react'
+    import { ComponentProps, JSX, ComponentChildren } from 'preact';
     import { ${upperName}Options } from '../patterns/${name}'
     import { CssObject } from '../types'
     
+    type ElementType = keyof JSX.IntrinsicElements
+    type PropsWithChildren<T> = T & { children?: ComponentChildren }
+
     type Merge<T, U> = Omit<T, keyof U> & U
     type PropsOf<C extends ElementType> = ComponentProps<C>
+    type StyleProps = CssObject & { css?: CssObject }
     
-    type Polymorphic<C extends ElementType = 'div', P = {}> = CssObject &
+    type Polymorphic<C extends ElementType = 'div', P = {}> = StyleProps &
       Merge<PropsWithChildren<PropsOf<C>>, P & { as?: C; color?: string }>
 
     type ${jsxName}Props<C extends ElementType> = Polymorphic<C, ${upperName}Options>
@@ -40,7 +44,7 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
   }
 }
 
-export function generateReactJsxPattern(ctx: PandaContext) {
+export function generatePreactJsxPattern(ctx: PandaContext) {
   if (!ctx.hasPattern) return []
   return Object.entries(ctx.patterns).map(([name, pattern]) => generate(name, pattern, ctx.jsxFactory))
 }

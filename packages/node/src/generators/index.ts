@@ -4,24 +4,23 @@ import outdent from 'outdent'
 import { dirname } from 'path'
 import type { Output, PandaContext } from '../context'
 import { generateConditions } from './conditions'
-import { generateTokenCss, generateKeyframes } from './token-css'
+import { generateCssFn } from './css-fn'
 import { generateCssMap } from './css-map'
 import { generateCx } from './cx'
 import { generateFontFace } from './font-face'
 import { getEntrypoint } from './get-entrypoint'
 import { generateGlobalCss } from './global-css'
 import { generateisValidProp } from './is-valid-prop'
-import { generateTokenJs } from './token-js'
-import { generateJsxFactory } from './jsx'
+import { generateJsxFactory, generateJsxPatterns } from './jsx'
 import { generatePattern } from './pattern'
 import { generatePropTypes } from './prop-types'
 import { generateRecipes } from './recipe'
 import { generateReset } from './reset'
-import { generateCssFn } from './css-fn'
 import { generateSx } from './sx'
+import { generateKeyframes, generateTokenCss } from './token-css'
 import { generateTokenDts } from './token-dts'
+import { generateTokenJs } from './token-js'
 import { generateCssType } from './types'
-import { generateJsxPattern } from './jsx/react-pattern'
 
 function setupHelpers(ctx: PandaContext): Output {
   const sharedMjs = getEntrypoint('@css-panda/shared', { dev: 'shared.mjs' })
@@ -180,7 +179,7 @@ function setupJsx(ctx: PandaContext): Output {
 
   const isValidProp = generateisValidProp(ctx)
   const factory = generateJsxFactory(ctx)
-  const patterns = generateJsxPattern(ctx)
+  const patterns = generateJsxPatterns(ctx)
 
   const indexCode = outdent`
   export * from './factory'

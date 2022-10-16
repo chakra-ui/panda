@@ -96,8 +96,12 @@ export class JSXVisitor extends Visitor {
 
     const isPattern = this.ctx.factory !== jsxName
 
-    if (Object.keys(result).length) {
-      this.ctx.onData?.({ type: isPattern ? 'pattern' : 'object', data: result, name: jsxName })
+    if (isPattern || Object.keys(result).length > 0) {
+      this.ctx.onData?.({
+        type: isPattern ? 'pattern' : 'object',
+        data: result,
+        name: jsxName,
+      })
     }
 
     return node

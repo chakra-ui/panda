@@ -10,7 +10,6 @@ import glob from 'fast-glob'
 import { readdirSync } from 'fs'
 import { emptyDir, ensureDir, existsSync } from 'fs-extra'
 import { readFile, unlink, writeFile } from 'fs/promises'
-import { outdent } from 'outdent'
 import { extname, join, relative, resolve, sep } from 'path'
 import postcss from 'postcss'
 
@@ -320,18 +319,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     }
   }
 
-  async function extract(fn: (file: string) => Promise<{ css: string; file: string } | undefined>) {
-    const results = await Promise.all(files.map(fn))
-
-    if (results.filter(Boolean).length === 0) {
-      logger.warn({
-        type: 'file:empty',
-        msg: outdent`
-          No style object or props were detected in your source files.
-          If this is unexpected, double-check the \`include\` options in your Panda config\n
-        `,
-      })
-    }
+  function extract(fn: (file: string) => Promise<{ css: string; file: string } | undefined>) {
+    return Promise.all(files.map(fn))
   }
 
   return {

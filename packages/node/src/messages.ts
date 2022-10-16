@@ -73,3 +73,10 @@ export function scaffoldCompleteMessage() {
     `🐼 ${pickRandom(randomWords)}! ✨`,
   )
 }
+
+export function noExtractMesssage() {
+  return outdent`
+  No style object or props were detected in your source files.
+  If this is unexpected, double-check the \`include\` options in your Panda config\n
+`
+}
