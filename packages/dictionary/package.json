@@ -1,0 +1,26 @@
+{
+  "name": "@css-panda/dictionary",
+  "version": "0.0.1",
+  "description": "Common error messages for css panda",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format=esm,cjs --dts",
+    "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
+    "dev": "pnpm build-fast --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@css-panda/shared": "workspace:*",
+    "ts-pattern": "4.0.5",
+    "klona": "^2.0.5"
+  }
+}
