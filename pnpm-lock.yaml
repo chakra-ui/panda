@@ -135,11 +135,9 @@ importers:
   packages/dictionary:
     specifiers:
       '@css-panda/shared': workspace:*
-      klona: ^2.0.5
       ts-pattern: 4.0.5
     dependencies:
       '@css-panda/shared': link:../shared
-      klona: 2.0.5
       ts-pattern: 4.0.5
 
   packages/error:
@@ -4659,11 +4657,6 @@ packages:
   /kleur/4.1.5:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
-
-  /klona/2.0.5:
-    resolution: {integrity: sha512-pJiBpiXMbt7dkzXe8Ghj/u4FfXOOa98fPW+bihOJ4SjnoijweJrNThJfd3ifXpXhREjpoF2mZVH1GfS9LV3kHQ==}
-    engines: {node: '>= 8'}
-    dev: false
 
   /language-subtag-registry/0.3.22:
     resolution: {integrity: sha512-tN0MCzyWnoz/4nHS6uxdlFWoUZT7ABptwKPQ52Ea7URk6vll88bWBVhodtnlfEuCcKWNGoc+uGbw1cwa9IKh/w==}
