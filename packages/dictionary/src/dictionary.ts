@@ -7,8 +7,11 @@ const isToken = (value: any): value is TokenEntry => {
   return isObject(value) && 'value' in value
 }
 
+type TransformerEnforce = 'pre' | 'post'
+
 export type TokenTransformer = {
   name: string
+  enforce?: TransformerEnforce
   type?: 'value' | 'name' | 'extensions'
   match?: (token: Token) => boolean
   transform: (token: Token) => any
@@ -59,9 +62,7 @@ export class TokenDictionary {
         const name = path.join('.')
 
         const normalizedToken = isString(token.value) ? { value: { base: token.value } } : token
-
         const { value, ...restData } = normalizedToken
-        const { base: defaultValue, ...conditions } = value
 
         const node = new Token({
           ...restData,
@@ -72,7 +73,7 @@ export class TokenDictionary {
 
         node.setExtensions({
           category,
-          conditions,
+          conditions: value,
           prop: path.slice(1).join('.'),
         })
 
@@ -92,32 +93,39 @@ export class TokenDictionary {
 
   registerTransform(...transforms: TokenTransformer[]) {
     transforms.forEach((transform) => {
+      transform.type ||= 'value'
+      transform.enforce ||= 'pre'
       this.transforms.set(transform.name, transform)
     })
   }
 
-  transform(name: string) {
+  private execTransform(name: string) {
     const transform = this.transforms.get(name)
     if (!transform) return
-
-    const type = transform.type || 'value'
 
     this.allTokens.forEach((token) => {
       if (token.extensions.hasReference) return
       if (typeof transform.match === 'function' && !transform.match(token)) return
       const transformed = transform.transform(token)
 
-      if (type === 'extensions') {
+      if (transform.type === 'extensions') {
         token.setExtensions(transformed)
+      } else if (transform.type === 'value') {
+        token.value = transformed
+        if (token.isComposite) {
+          token.originalValue = transformed
+        }
       } else {
-        token[type] = transformed
+        token[transform.type!] = transformed
       }
     })
   }
 
-  transformAll() {
+  transformTokens(enforce: TransformerEnforce) {
     this.transforms.forEach((transform) => {
-      this.transform(transform.name)
+      if (transform.enforce === enforce) {
+        this.execTransform(transform.name)
+      }
     })
     return this
   }
@@ -175,9 +183,10 @@ export class TokenDictionary {
   }
 
   build() {
-    this.transformAll()
+    this.transformTokens('pre')
     this.addConditionalTokens()
     this.addReferences()
     this.expandReferences()
+    this.transformTokens('post')
   }
 }

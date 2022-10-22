@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
-import { addCssVariables, transformBorders } from '../src/transform'
+import { addConditionalCssVariables, addCssVariables, transformBorders } from '../src/transform'
 
 test.only('transform / border', () => {
   const dictionary = new TokenDictionary({
@@ -18,11 +18,14 @@ test.only('transform / border', () => {
         controlBorder: {
           value: { base: '{borders.sm}', '@hover': '{borders.md}' },
         },
+        dividerBorder: {
+          value: '{borders.controlBorder}',
+        },
       },
     },
   })
 
-  dictionary.registerTransform(transformBorders, addCssVariables)
+  dictionary.registerTransform(transformBorders, addCssVariables, addConditionalCssVariables)
 
   dictionary.build()
 
@@ -71,11 +74,7 @@ test.only('transform / border', () => {
           "varRef": "var(--borders-md)",
         },
         "name": "borders.md",
-        "originalValue": {
-          "color": "{colors.red}",
-          "style": "solid",
-          "width": 2,
-        },
+        "originalValue": "2px solid {colors.red}",
         "path": [
           "borders",
           "md",
@@ -87,6 +86,10 @@ test.only('transform / border', () => {
         "extensions": {
           "category": "borders",
           "condition": "base",
+          "conditions": {
+            "@hover": "{borders.md}",
+            "base": "{borders.sm}",
+          },
           "prop": "controlBorder",
           "var": "--borders-control-border",
           "varRef": "var(--borders-control-border)",
@@ -104,6 +107,10 @@ test.only('transform / border', () => {
         "extensions": {
           "category": "borders",
           "condition": "@hover",
+          "conditions": {
+            "@hover": "{borders.md}",
+            "base": "{borders.sm}",
+          },
           "prop": "controlBorder",
           "var": "--borders-control-border",
           "varRef": "var(--borders-control-border)",
@@ -116,6 +123,26 @@ test.only('transform / border', () => {
         ],
         "type": "border",
         "value": "2px solid #ff0000",
+      },
+      Token {
+        "extensions": {
+          "category": "borders",
+          "condition": "base",
+          "conditions": {
+            "base": "{borders.controlBorder}",
+          },
+          "prop": "dividerBorder",
+          "var": "--borders-divider-border",
+          "varRef": "var(--borders-divider-border)",
+        },
+        "name": "borders.dividerBorder",
+        "originalValue": "{borders.controlBorder}",
+        "path": [
+          "borders",
+          "dividerBorder",
+        ],
+        "type": "border",
+        "value": "var(--borders-control-border)",
       },
     ]
   `)

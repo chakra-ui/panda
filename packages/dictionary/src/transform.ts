@@ -1,5 +1,6 @@
-import { isString, cssVar, calc } from '@css-panda/shared'
+import { calc, cssVar, isString } from '@css-panda/shared'
 import type { TokenTransformer } from './dictionary'
+import { getReferences } from './reference'
 import type { Token } from './token'
 
 export const transformShadow: TokenTransformer = {
@@ -80,5 +81,19 @@ export const addCssVariables: TokenTransformer = {
       var: variable.var,
       varRef: token.extensions.isNegative ? calc.negate(variable) : variable.ref,
     }
+  },
+}
+
+export const addConditionalCssVariables: TokenTransformer = {
+  enforce: 'post',
+  name: 'tokens/conditionals',
+  transform(token) {
+    const refs = getReferences(token.value)
+    if (!refs.length) return token.value
+    refs.forEach((ref) => {
+      const variable = cssVar(ref.split('.').join('-')).ref
+      token.value = token.value.replace(`{${ref}}`, variable)
+    })
+    return token.value
   },
 }

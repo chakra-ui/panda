@@ -67,6 +67,9 @@ test('semantic tokens / nested', () => {
         "extensions": {
           "category": "colors",
           "condition": "base",
+          "conditions": {
+            "base": "#fff",
+          },
           "prop": "grabbed",
         },
         "name": "colors.grabbed",
@@ -101,6 +104,9 @@ test('semantic tokens / nested', () => {
         "extensions": {
           "category": "colors",
           "condition": "base",
+          "conditions": {
+            "base": "red",
+          },
           "prop": "button.primary",
         },
         "name": "colors.button.primary",

@@ -1,3 +1,4 @@
+import { isObject } from '@css-panda/shared'
 import { getReferences, hasReference } from './reference'
 
 /**
@@ -90,6 +91,13 @@ export class Token {
   }
 
   /**
+   * Whether the token is a complex or composite token.
+   */
+  get isComposite() {
+    return isObject(this.originalValue) || Array.isArray(this.originalValue)
+  }
+
+  /**
    * Returns the token value with the references expanded.
    * e.g. {color.gray.100} => #f7fafc
    *
@@ -149,40 +157,25 @@ export class Token {
     if (!this.isConditional) return
     const conditions = this.extensions.conditions ?? {}
 
-    const conditionalTokens = Object.entries(conditions).map(([key, value]) => {
-      const token = this.clone()
+    const conditionalTokens = Object.entries(conditions)
+      .filter(([key]) => key !== 'base')
+      .map(([key, value]) => {
+        const token = this.clone()
 
-      token.value = value
-      token.extensions.condition = key
+        token.value = value
+        token.extensions.condition = key
 
-      delete token.extensions.conditions![key]
-      token.compact()
+        return token
+      })
 
-      return token
-    })
-
-    delete this.extensions.conditions
     return conditionalTokens
-  }
-
-  /**
-   * Remove `undefined` or empty values from the extensions
-   */
-  private compact() {
-    if (this.extensions.conditions && Object.keys(this.extensions.conditions).length === 0) {
-      delete this.extensions.conditions
-    }
   }
 
   /**
    * Add more extensions to the token
    */
   setExtensions(extensions: TokenExtensions) {
-    this.extensions = {
-      ...this.extensions,
-      ...extensions,
-    }
-    this.compact()
+    this.extensions = { ...this.extensions, ...extensions }
     this.setType()
     return this
   }

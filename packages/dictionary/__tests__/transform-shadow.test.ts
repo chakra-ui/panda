@@ -43,13 +43,7 @@ test('transform / shadow', () => {
           "prop": "sm",
         },
         "name": "shadows.sm",
-        "originalValue": {
-          "blur": 4,
-          "color": "{colors.red}",
-          "offsetX": 4,
-          "offsetY": 10,
-          "spread": 0,
-        },
+        "originalValue": "4px 10px 4px 0px {colors.red}",
         "path": [
           "shadows",
           "sm",

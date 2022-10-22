@@ -93,6 +93,7 @@ test('with semantic spacing', () => {
           "condition": "base",
           "conditions": {
             "@small": "0.5rem",
+            "base": "{spacing.sm}",
           },
           "prop": "gutter",
         },
@@ -150,6 +151,10 @@ test('with semantic spacing', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "conditions": {
+            "base": "{spacing.sm}",
+            "sm": "50px",
+          },
           "prop": "nested",
         },
         "name": "spacing.nested",
@@ -165,6 +170,10 @@ test('with semantic spacing', () => {
         "extensions": {
           "category": "spacing",
           "condition": "sm",
+          "conditions": {
+            "base": "{spacing.sm}",
+            "sm": "50px",
+          },
           "prop": "nested",
         },
         "name": "spacing.nested",
@@ -196,6 +205,10 @@ test('with semantic spacing', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "conditions": {
+            "base": "{spacing.sm}",
+            "sm": "50px",
+          },
           "isNegative": true,
           "prop": "nested",
         },
@@ -212,6 +225,10 @@ test('with semantic spacing', () => {
         "extensions": {
           "category": "spacing",
           "condition": "sm",
+          "conditions": {
+            "base": "{spacing.sm}",
+            "sm": "50px",
+          },
           "isNegative": true,
           "prop": "nested",
         },
