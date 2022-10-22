@@ -7,9 +7,9 @@ const isToken = (value: any): value is TokenEntry => {
   return isObject(value) && 'value' in value
 }
 
-export type RegisterTransform = {
+export type TokenTransformer = {
   name: string
-  type: 'value' | 'name' | 'extensions'
+  type?: 'value' | 'name' | 'extensions'
   match?: (token: Token) => boolean
   transform: (token: Token) => any
 }
@@ -88,25 +88,29 @@ export class TokenDictionary {
     }
   })
 
-  private transforms: Map<string, RegisterTransform> = new Map()
+  private transforms: Map<string, TokenTransformer> = new Map()
 
-  registerTransform(transform: RegisterTransform) {
-    this.transforms.set(transform.name, transform)
+  registerTransform(...transforms: TokenTransformer[]) {
+    transforms.forEach((transform) => {
+      this.transforms.set(transform.name, transform)
+    })
   }
 
   transform(name: string) {
     const transform = this.transforms.get(name)
     if (!transform) return
 
+    const type = transform.type || 'value'
+
     this.allTokens.forEach((token) => {
       if (token.extensions.hasReference) return
       if (typeof transform.match === 'function' && !transform.match(token)) return
       const transformed = transform.transform(token)
 
-      if (transform.type === 'extensions') {
+      if (type === 'extensions') {
         token.setExtensions(transformed)
       } else {
-        token[transform.type] = transformed
+        token[type] = transformed
       }
     })
   }
@@ -172,8 +176,8 @@ export class TokenDictionary {
 
   build() {
     this.transformAll()
-    this.addReferences()
     this.addConditionalTokens()
+    this.addReferences()
     this.expandReferences()
   }
 }

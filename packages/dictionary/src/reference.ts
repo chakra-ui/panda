@@ -11,6 +11,7 @@ const REFERENCE_REGEX = /(\$[^\s,]+\w)|({([^}]*)})/g
  * `{colors.red.300} {sizes.sm}` => ['colors.red.300', 'sizes.sm']
  */
 export function getReferences(value: string) {
+  if (typeof value !== 'string') return []
   const matches = value.match(REFERENCE_REGEX)
   if (!matches) return []
   return matches.map((match) => match.replace(/[{}]/g, '')).map((value) => value.trim())

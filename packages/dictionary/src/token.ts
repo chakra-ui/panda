@@ -101,6 +101,7 @@ export class Token {
 
     this.value = Object.keys(references).reduce((valueStr, key) => {
       const referenceToken = references[key]
+
       // If a conditional token is referenced, we'll keep the reference
       if (referenceToken.isConditional) {
         return valueStr
