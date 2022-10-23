@@ -1,7 +1,21 @@
 import { calc, cssVar, isString } from '@css-panda/shared'
+import { isMatching, P } from 'ts-pattern'
 import type { TokenDictionary, TokenTransformer } from './dictionary'
 import { getReferences } from './reference'
 import type { Token } from './token'
+
+/* -----------------------------------------------------------------------------
+ * Shadow token transform
+ * -----------------------------------------------------------------------------*/
+
+const isCompositeShadow = isMatching({
+  inset: P.optional(P.boolean),
+  offsetX: P.number,
+  offsetY: P.number,
+  blur: P.number,
+  spread: P.number,
+  color: P.string,
+})
 
 export const transformShadow: TokenTransformer = {
   name: 'tokens/shadow',
@@ -15,10 +29,27 @@ export const transformShadow: TokenTransformer = {
       return token.value.map((value) => this.transform({ value } as Token)).join(', ')
     }
 
-    const { offsetX, offsetY, blur, spread, color, inset } = token.value
-    return `${inset ? 'inset ' : ''}${offsetX}px ${offsetY}px ${blur}px ${spread}px ${color}`
+    if (isCompositeShadow(token.value)) {
+      const { offsetX, offsetY, blur, spread, color, inset } = token.value
+      return `${inset ? 'inset ' : ''}${offsetX}px ${offsetY}px ${blur}px ${spread}px ${color}`
+    }
+
+    return token.value
   },
 }
+
+/* -----------------------------------------------------------------------------
+ * Gradient token transform
+ * -----------------------------------------------------------------------------*/
+
+const isCompositeGradient = isMatching({
+  type: P.string,
+  placement: P.string,
+  stops: P.array({
+    color: P.string,
+    position: P.number,
+  }),
+})
 
 export const transformGradient: TokenTransformer = {
   name: 'tokens/gradient',
@@ -28,14 +59,16 @@ export const transformGradient: TokenTransformer = {
       return token.value
     }
 
-    const { type, stops, placement } = token.value
+    if (isCompositeGradient(token.value)) {
+      const { type, stops, placement } = token.value
+      const rawStops = stops.map((stop) => {
+        const { color, position } = stop
+        return `${color} ${position}px`
+      })
+      return `${type}-gradient(${placement}, ${rawStops.join(', ')})`
+    }
 
-    const rawStops = stops.map((stop: any) => {
-      const { color, position } = stop
-      return `${color} ${position}px`
-    })
-
-    return `${type}-gradient(${placement}, ${rawStops.join(', ')})`
+    return token.value
   },
 }
 
