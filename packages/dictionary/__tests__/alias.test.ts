@@ -12,7 +12,7 @@ test('resolve aliases', () => {
     },
   })
 
-  dictionary.expandReferences()
+  dictionary.build()
 
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
@@ -44,7 +44,7 @@ test('resolve aliases', () => {
           "border",
         ],
         "type": "color",
-        "value": "{colors.pink}",
+        "value": "#ff00ff",
       },
       Token {
         "extensions": {
@@ -59,7 +59,7 @@ test('resolve aliases', () => {
           "disabled",
         ],
         "type": "color",
-        "value": "{colors.border}",
+        "value": "#ff00ff",
       },
     ]
   `)

@@ -61,6 +61,8 @@ test('semantic tokens / nested', () => {
     },
   })
 
+  dictionary.build()
+
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
@@ -99,6 +101,44 @@ test('semantic tokens / nested', () => {
         ],
         "type": "color",
         "value": "",
+      },
+      Token {
+        "extensions": {
+          "category": "colors",
+          "condition": "@light",
+          "conditions": {
+            "@dark": "#222",
+            "@light": "#333",
+          },
+          "prop": "disabled",
+        },
+        "name": "colors.disabled",
+        "originalValue": "",
+        "path": [
+          "colors",
+          "disabled",
+        ],
+        "type": "color",
+        "value": "#333",
+      },
+      Token {
+        "extensions": {
+          "category": "colors",
+          "condition": "@dark",
+          "conditions": {
+            "@dark": "#222",
+            "@light": "#333",
+          },
+          "prop": "disabled",
+        },
+        "name": "colors.disabled",
+        "originalValue": "",
+        "path": [
+          "colors",
+          "disabled",
+        ],
+        "type": "color",
+        "value": "#222",
       },
       Token {
         "extensions": {
