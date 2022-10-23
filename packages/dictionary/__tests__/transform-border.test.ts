@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
 import { addConditionalCssVariables, addCssVariables, transformBorders } from '../src/transform'
 
-test.only('transform / border', () => {
+test('transform / border', () => {
   const dictionary = new TokenDictionary({
     tokens: {
       colors: {

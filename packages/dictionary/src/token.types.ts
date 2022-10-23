@@ -21,7 +21,7 @@ export type SemanticTokenEntry<V = string, C extends string = string> = {
 
 type Border = {
   color: string
-  width: string
+  width: string | number
   style: string
 }
 
