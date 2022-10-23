@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
-import { groupByCategory } from '../src/format'
+import { formats } from '../src/format'
 import { transforms } from '../src/transform'
 
 test('format / by category', () => {
@@ -17,7 +17,7 @@ test('format / by category', () => {
   dictionary.registerTransform(...transforms)
   dictionary.build()
 
-  expect(groupByCategory(dictionary)).toMatchInlineSnapshot(`
+  expect(formats.groupByCategory(dictionary)).toMatchInlineSnapshot(`
     Map {
       "colors" => Map {
         "red" => Token {

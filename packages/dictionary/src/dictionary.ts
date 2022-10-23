@@ -1,12 +1,8 @@
-import { isObject, isString, memo, walkObject } from '@css-panda/shared'
-import { isMatching } from 'ts-pattern'
-import { getReferences } from './reference'
-import { Token, TokenEntry } from './token'
+import { isString, memo, walkObject } from '@css-panda/shared'
+import { isMatching, match } from 'ts-pattern'
+import { Token } from './token'
 import type { SemanticTokens, Tokens } from './token.types'
-
-const isToken = (value: any): value is TokenEntry => {
-  return isObject(value) && 'value' in value
-}
+import { assertTokenFormat, getReferences, isToken } from './utils'
 
 type TransformerEnforce = 'pre' | 'post'
 
@@ -16,12 +12,6 @@ export type TokenTransformer = {
   type?: 'value' | 'name' | 'extensions'
   match?: (token: Token) => boolean
   transform: (token: Token) => any
-}
-
-function assertTokenFormat(token: any): asserts token is TokenEntry {
-  if (!isToken(token)) {
-    throw new Error(`Invalid token format: ${JSON.stringify(token)}`)
-  }
 }
 
 export type TokenDictionaryOptions = {
@@ -108,18 +98,21 @@ export class TokenDictionary {
     this.allTokens.forEach((token) => {
       if (token.extensions.hasReference) return
       if (typeof transform.match === 'function' && !transform.match(token)) return
-      const transformed = transform.transform(token)
 
-      if (transform.type === 'extensions') {
-        token.setExtensions(transformed)
-      } else if (transform.type === 'value') {
-        token.value = transformed
-        if (token.isComposite) {
-          token.originalValue = transformed
-        }
-      } else {
-        token[transform.type!] = transformed
-      }
+      const transformed = transform.transform(token)
+      match(transform)
+        .with({ type: 'extensions' }, () => {
+          token.setExtensions(transformed)
+        })
+        .with({ type: 'value' }, () => {
+          token.value = transformed
+          if (token.isComposite) {
+            token.originalValue = transformed
+          }
+        })
+        .otherwise(() => {
+          token[transform.type!] = transformed
+        })
     })
   }
 

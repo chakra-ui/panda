@@ -1,8 +1,8 @@
 import { calc, cssVar, isString } from '@css-panda/shared'
 import { isMatching, P } from 'ts-pattern'
-import type { TokenDictionary, TokenTransformer } from './dictionary'
-import { getReferences } from './reference'
+import type { TokenTransformer } from './dictionary'
 import type { Token } from './token'
+import { getReferences } from './utils'
 
 /* -----------------------------------------------------------------------------
  * Shadow token transform
@@ -72,15 +72,25 @@ export const transformGradient: TokenTransformer = {
   },
 }
 
-const toArray = <T>(value: T | T[]): T[] => (Array.isArray(value) ? value : [value])
+/* -----------------------------------------------------------------------------
+ * Fonts token transform
+ * -----------------------------------------------------------------------------*/
 
 export const transformFonts: TokenTransformer = {
   name: 'tokens/fonts',
   match: (token) => token.extensions.category === 'fonts',
   transform(token) {
-    return toArray(token.value).join(', ')
+    if (Array.isArray(token.value)) {
+      return token.value.join(', ')
+    }
+
+    return token.value
   },
 }
+
+/* -----------------------------------------------------------------------------
+ * Easing token transform
+ * -----------------------------------------------------------------------------*/
 
 export const transformEasings: TokenTransformer = {
   name: 'tokens/easings',
@@ -92,6 +102,10 @@ export const transformEasings: TokenTransformer = {
     return `cubic-bezier(${token.value.join(', ')})`
   },
 }
+
+/* -----------------------------------------------------------------------------
+ * Border token transform
+ * -----------------------------------------------------------------------------*/
 
 export const transformBorders: TokenTransformer = {
   name: 'tokens/borders',
@@ -105,6 +119,10 @@ export const transformBorders: TokenTransformer = {
   },
 }
 
+/* -----------------------------------------------------------------------------
+ * Add css variables
+ * -----------------------------------------------------------------------------*/
+
 export const addCssVariables: TokenTransformer = {
   type: 'extensions',
   name: 'tokens/css-var',
@@ -116,6 +134,10 @@ export const addCssVariables: TokenTransformer = {
     }
   },
 }
+
+/* -----------------------------------------------------------------------------
+ * Add conditional css variables (POST)
+ * -----------------------------------------------------------------------------*/
 
 export const addConditionalCssVariables: TokenTransformer = {
   enforce: 'post',
@@ -140,8 +162,3 @@ export const transforms = [
   addCssVariables,
   addConditionalCssVariables,
 ]
-
-export function applyTransforms(dict: TokenDictionary) {
-  dict.registerTransform(...transforms)
-  dict.build()
-}

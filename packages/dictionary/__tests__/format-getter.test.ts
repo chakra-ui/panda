@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
-import { createVarGetter } from '../src/format'
+import { formats } from '../src/format'
 import { transforms } from '../src/transform'
 
 test('format / getter', () => {
@@ -28,7 +28,7 @@ test('format / getter', () => {
   dictionary.registerTransform(...transforms)
   dictionary.build()
 
-  const get = createVarGetter(dictionary)
+  const get = formats.createVarGetter(dictionary)
 
   expect(get('colors')).toMatchInlineSnapshot(`
     {

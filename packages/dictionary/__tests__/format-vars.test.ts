@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
-import { getVars } from '../src/format'
+import { formats } from '../src/format'
 import { transforms } from '../src/transform'
 
 test('format / json flat', () => {
@@ -28,7 +28,7 @@ test('format / json flat', () => {
   dictionary.registerTransform(...transforms)
   dictionary.build()
 
-  expect(getVars(dictionary)).toMatchInlineSnapshot(`
+  expect(formats.getVars(dictionary)).toMatchInlineSnapshot(`
     Map {
       "base" => Map {
         "--colors-red" => "#ff0000",

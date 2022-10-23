@@ -1,5 +1,5 @@
 import { isObject } from '@css-panda/shared'
-import { getReferences, hasReference } from './reference'
+import { getReferences, hasReference } from './utils'
 
 /**
  * The token data provided by the user
