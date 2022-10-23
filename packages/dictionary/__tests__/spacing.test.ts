@@ -66,9 +66,8 @@ test('with semantic spacing', () => {
     },
   })
 
-  dictionary.expandReferences()
-
-  // addNegativeTokens(dictionary)
+  addNegativeTokens(dictionary)
+  dictionary.build()
 
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
@@ -104,7 +103,82 @@ test('with semantic spacing', () => {
           "gutter",
         ],
         "type": "dimension",
-        "value": "{spacing.sm}",
+        "value": "40px",
+      },
+      Token {
+        "extensions": {
+          "category": "spacing",
+          "condition": "@small",
+          "conditions": {
+            "@small": "0.5rem",
+            "base": "{spacing.sm}",
+          },
+          "prop": "gutter",
+        },
+        "name": "spacing.gutter",
+        "originalValue": "{spacing.sm}",
+        "path": [
+          "spacing",
+          "gutter",
+        ],
+        "type": "dimension",
+        "value": "0.5rem",
+      },
+      Token {
+        "extensions": {
+          "category": "spacing",
+          "condition": "base",
+          "isNegative": true,
+          "prop": "sm",
+        },
+        "name": "spacing.-sm",
+        "originalValue": "40px",
+        "path": [
+          "spacing",
+          "-sm",
+        ],
+        "type": "dimension",
+        "value": "40px",
+      },
+      Token {
+        "extensions": {
+          "category": "spacing",
+          "condition": "base",
+          "conditions": {
+            "@small": "0.5rem",
+            "base": "{spacing.sm}",
+          },
+          "isNegative": true,
+          "prop": "gutter",
+        },
+        "name": "spacing.-gutter",
+        "originalValue": "{spacing.sm}",
+        "path": [
+          "spacing",
+          "-gutter",
+        ],
+        "type": "dimension",
+        "value": "40px",
+      },
+      Token {
+        "extensions": {
+          "category": "spacing",
+          "condition": "@small",
+          "conditions": {
+            "@small": "0.5rem",
+            "base": "{spacing.sm}",
+          },
+          "isNegative": true,
+          "prop": "gutter",
+        },
+        "name": "spacing.-gutter",
+        "originalValue": "{spacing.sm}",
+        "path": [
+          "spacing",
+          "-gutter",
+        ],
+        "type": "dimension",
+        "value": "0.5rem",
       },
     ]
   `)
@@ -125,10 +199,7 @@ test('with semantic spacing', () => {
   })
 
   addNegativeTokens(dictionary)
-
-  
-  dictionary.addConditionalTokens()
-  dictionary.expandReferences()
+  dictionary.build()
 
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
@@ -164,7 +235,7 @@ test('with semantic spacing', () => {
           "nested",
         ],
         "type": "dimension",
-        "value": "{spacing.sm}",
+        "value": "40px",
       },
       Token {
         "extensions": {
@@ -219,7 +290,7 @@ test('with semantic spacing', () => {
           "-nested",
         ],
         "type": "dimension",
-        "value": "{spacing.sm}",
+        "value": "40px",
       },
       Token {
         "extensions": {
