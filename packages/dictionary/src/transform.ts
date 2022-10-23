@@ -1,5 +1,5 @@
 import { calc, cssVar, isString } from '@css-panda/shared'
-import type { TokenTransformer } from './dictionary'
+import type { TokenDictionary, TokenTransformer } from './dictionary'
 import { getReferences } from './reference'
 import type { Token } from './token'
 
@@ -96,4 +96,19 @@ export const addConditionalCssVariables: TokenTransformer = {
     })
     return token.value
   },
+}
+
+export const transforms = [
+  transformShadow,
+  transformGradient,
+  transformFonts,
+  transformEasings,
+  transformBorders,
+  addCssVariables,
+  addConditionalCssVariables,
+]
+
+export function applyTransforms(dict: TokenDictionary) {
+  dict.registerTransform(...transforms)
+  dict.build()
 }
