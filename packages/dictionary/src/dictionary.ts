@@ -2,6 +2,7 @@ import { isObject, isString, memo, walkObject } from '@css-panda/shared'
 import { isMatching } from 'ts-pattern'
 import { getReferences } from './reference'
 import { Token, TokenEntry } from './token'
+import type { SemanticTokens, Tokens } from './token.types'
 
 const isToken = (value: any): value is TokenEntry => {
   return isObject(value) && 'value' in value
@@ -23,16 +24,17 @@ function assertTokenFormat(token: any): asserts token is TokenEntry {
   }
 }
 
+export type TokenDictionaryOptions = {
+  tokens?: Tokens
+  semanticTokens?: SemanticTokens
+}
+
 export class TokenDictionary {
   allTokens: Token[] = []
 
-  constructor({
-    tokens = {},
-    semanticTokens = {},
-  }: {
-    tokens?: Record<string, any>
-    semanticTokens?: Record<string, any>
-  }) {
+  constructor(options: TokenDictionaryOptions) {
+    const { tokens = {}, semanticTokens = {} } = options
+
     walkObject(
       tokens,
       (token, path) => {
@@ -188,5 +190,9 @@ export class TokenDictionary {
     this.addReferences()
     this.expandReferences()
     this.transformTokens('post')
+  }
+
+  get isEmpty() {
+    return this.allTokens.length === 0
   }
 }
