@@ -9,6 +9,9 @@ node_modules
 
 lib
 dist
+out
+build
+**/buil
 tsconfig.tsbuildinfo
 .DS_Store
 __generated__
