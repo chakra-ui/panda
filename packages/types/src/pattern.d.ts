@@ -15,6 +15,10 @@ export type TransformHelpers = {
 
 export type PatternConfig = {
   /**
+   * The description of the pattern. This will be used in the JSDoc comment.
+   */
+  description?: string
+  /**
    * The properties of the pattern.
    */
   properties: Record<string, PatternProperty>
@@ -26,4 +30,9 @@ export type PatternConfig = {
    * The jsx element name this pattern will generate.
    */
   jsx?: string
+  /**
+   * Whether to only generate types for the specified properties.
+   * This will disallow css properties
+   */
+  strict?: boolean
 }

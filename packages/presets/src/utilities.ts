@@ -712,7 +712,8 @@ const background: UtilityConfig = {
         '--gradient-stops': 'var(--gradient-from), var(--gradient-to)',
         '--gradient': 'var(--gradient-via-stops, var(--gradient-stops))',
         backgroundImage: value,
-        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        color: 'transparent',
       }
     },
   },

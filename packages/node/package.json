@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
     "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
-    "dev": "pnpm build-fast -- --watch"
+    "dev": "pnpm build-fast --watch"
   },
   "files": [
     "dist"
@@ -45,6 +45,7 @@
     "ts-pattern": "4.0.5"
   },
   "devDependencies": {
+    "boxen": "^7.0.0",
     "@css-panda/tokens": "workspace:*",
     "@css-panda/fixture": "workspace:*",
     "@types/fs-extra": "9.0.13",

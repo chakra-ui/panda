@@ -13,16 +13,18 @@
   "scripts": {
     "build": "pnpm tsup src/index.ts --format=esm,cjs --shims --dts",
     "build-fast": "pnpm tsup src/index.ts --format=esm,cjs --shims --no-dts",
-    "dev": "pnpm build-fast -- --watch"
+    "dev": "pnpm build-fast --watch"
   },
   "files": [
     "dist"
   ],
   "dependencies": {
     "@css-panda/logger": "workspace:*",
-    "@css-panda/shared": "workspace:*",
+    "@css-panda/error": "workspace:*",
     "@css-panda/types": "workspace:*",
+    "merge-anything": "^5.0.4",
     "esbuild": "0.15.7",
-    "look-it-up": "2.1.0"
+    "escalade": "3.1.1",
+    "node-eval": "2.0.0"
   }
 }

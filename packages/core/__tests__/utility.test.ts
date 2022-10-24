@@ -1,12 +1,12 @@
 import { semanticTokens, tokens } from '@css-panda/fixture'
-import { TokenMap } from '@css-panda/tokens'
+import { TokenDictionary } from '@css-panda/tokens'
 import { describe, expect, test } from 'vitest'
 import { Utility } from '../src/utility'
 
 describe('Utility', () => {
   test('should prime cache for faster lookup', () => {
     const utility = new Utility({
-      tokens: new TokenMap({ tokens, semanticTokens }),
+      tokens: new TokenDictionary({ tokens, semanticTokens }),
       config: {
         backgroundColor: {
           className: 'bg',
@@ -354,7 +354,7 @@ describe('Utility', () => {
   test('should resolve arbitrary property', () => {
     const values = { auto: 'auto', sm: '20px', md: '40px' }
     const utility = new Utility({
-      tokens: new TokenMap({ tokens, semanticTokens }),
+      tokens: new TokenDictionary({ tokens, semanticTokens }),
       config: {
         marginLeft: {
           className: 'ml',
@@ -434,7 +434,7 @@ describe('Utility', () => {
 
   test('should resolve compositions', () => {
     const utility = new Utility({
-      tokens: new TokenMap({ tokens, semanticTokens }),
+      tokens: new TokenDictionary({ tokens, semanticTokens }),
       config: {
         fontSize: {
           values: 'fontSizes',

@@ -30,10 +30,6 @@ describe('jsx', () => {
           },
           "name": "panda",
         },
-        {
-          "data": {},
-          "name": "panda",
-        },
       }
     `)
   })
@@ -100,10 +96,6 @@ describe('jsx', () => {
               "sm": "40px",
             },
           },
-          "name": "panda",
-        },
-        {
-          "data": {},
           "name": "panda",
         },
       }

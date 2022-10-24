@@ -11,28 +11,29 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
   return {
     name: dashCase(name),
     js: outdent`
-    import { forwardRef } from 'react'
+    import { splitProps } from 'solid-js'
     import { ${jsxFactory} } from './factory'
     import { config } from '../patterns/${dashCase(name)}'
 
-    export const ${jsxName} = forwardRef(function ${jsxName}(props, ref) {
-      const { ${keys.join(', ')}, ...restProps } = props
-      const styleProps = config.transform({${keys.join(', ')}})
-      return <${jsxFactory}.div ref={ref} {...styleProps} {...restProps} />
-    })    
+    export function ${jsxName}(props) {
+      const [patternProps, restProps] = splitProps(props, [${keys.map((v) => JSON.stringify(v)).join(', ')}]);
+      const styleProps = config.transform(patternProps)
+      return <${jsxFactory}.div {...styleProps} {...restProps} />
+    }
     `,
 
     dts: outdent`
-    import { ComponentProps, ElementType, PropsWithChildren } from 'react'
+    import { ComponentProps, JSX } from 'solid-js'
     import { ${upperName}Options } from '../patterns/${dashCase(name)}'
     import { CssObject } from '../types'
     
-    type Merge<T, U> = Omit<T, keyof U> & U
+    type ElementType = keyof JSX.IntrinsicElements
     type PropsOf<C extends ElementType> = ComponentProps<C>
     type StyleProps = CssObject & { css?: CssObject }
+    type Merge<T, U> = Omit<T, keyof U> & U
     
     type Polymorphic<C extends ElementType = 'div', P = {}> = StyleProps &
-      Merge<PropsWithChildren<PropsOf<C>>, P & { as?: C; color?: string }>
+      Merge<PropsOf<C>, P & { as?: C; color?: string }>
 
     type ${jsxName}Props<C extends ElementType> = Polymorphic<C, ${upperName}Options>
     
@@ -41,7 +42,7 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
   }
 }
 
-export function generateReactJsxPattern(ctx: PandaContext) {
+export function generateSolidJsxPattern(ctx: PandaContext) {
   if (!ctx.hasPattern) return []
   return Object.entries(ctx.patterns).map(([name, pattern]) => generate(name, pattern, ctx.jsxFactory))
 }

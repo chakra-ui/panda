@@ -1,9 +1,9 @@
-import type { TokenMap } from '@css-panda/tokens'
+import type { TokenDictionary } from '@css-panda/tokens'
 import { unionType, capitalize } from '@css-panda/shared'
 import { outdent } from 'outdent'
 import { singular } from 'pluralize'
 
-export function generateTokenDts(dict: TokenMap) {
+export function generateTokenDts(dict: TokenDictionary) {
   const set = new Set<string>()
 
   set.add(`export type Token = ${dict.isEmpty ? 'string' : unionType(dict.values.keys())}`)

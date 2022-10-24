@@ -10,6 +10,10 @@ export function createCollector() {
     cssMap: new Set<PluginResult>(),
     recipe: new Map<string, Set<PluginResult>>(),
     pattern: new Map<string, Set<PluginResult>>(),
+    addPattern(name: string, data: any) {
+      this.pattern.get(name) ?? this.pattern.set(name, new Set([]))
+      this.pattern.get(name)?.add({ type: 'object', data, name })
+    },
     isEmpty() {
       return (
         this.css.size === 0 &&

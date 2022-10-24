@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { TokenMap } from '../src/token-map'
+import { TokenDictionary } from '../src'
 
 describe('tokens / basic', () => {
   test('simple', () => {
-    const dict = new TokenMap({
+    const dict = new TokenDictionary({
       tokens: {
         colors: {
           current: { value: 'currentColor' },
@@ -24,7 +24,11 @@ describe('tokens / basic', () => {
             "description": "",
             "key": "current",
             "negative": false,
+            "path": [
+              "current",
+            ],
             "prop": "colors.current",
+            "semantic": false,
             "value": "currentColor",
             "var": "--colors-current",
             "varRef": "var(--colors-current)",
@@ -35,7 +39,12 @@ describe('tokens / basic', () => {
             "description": "",
             "key": "gray.50",
             "negative": false,
+            "path": [
+              "gray",
+              "50",
+            ],
             "prop": "colors.gray.50",
+            "semantic": false,
             "value": "#FAFAFA",
             "var": "--colors-gray-50",
             "varRef": "var(--colors-gray-50)",
@@ -46,7 +55,12 @@ describe('tokens / basic', () => {
             "description": "",
             "key": "gray.100",
             "negative": false,
+            "path": [
+              "gray",
+              "100",
+            ],
             "prop": "colors.gray.100",
+            "semantic": false,
             "value": "#F5F5F5",
             "var": "--colors-gray-100",
             "varRef": "var(--colors-gray-100)",
@@ -63,7 +77,11 @@ describe('tokens / basic', () => {
           "description": "",
           "key": "current",
           "negative": false,
+          "path": [
+            "current",
+          ],
           "prop": "colors.current",
+          "semantic": false,
           "value": "currentColor",
           "var": "--colors-current",
           "varRef": "var(--colors-current)",
@@ -74,7 +92,12 @@ describe('tokens / basic', () => {
           "description": "",
           "key": "gray.50",
           "negative": false,
+          "path": [
+            "gray",
+            "50",
+          ],
           "prop": "colors.gray.50",
+          "semantic": false,
           "value": "#FAFAFA",
           "var": "--colors-gray-50",
           "varRef": "var(--colors-gray-50)",
@@ -85,7 +108,12 @@ describe('tokens / basic', () => {
           "description": "",
           "key": "gray.100",
           "negative": false,
+          "path": [
+            "gray",
+            "100",
+          ],
           "prop": "colors.gray.100",
+          "semantic": false,
           "value": "#F5F5F5",
           "var": "--colors-gray-100",
           "varRef": "var(--colors-gray-100)",
@@ -103,7 +131,7 @@ describe('tokens / basic', () => {
   })
 
   test('with negative spacing', () => {
-    const dict = new TokenMap({
+    const dict = new TokenDictionary({
       tokens: {
         spacing: {
           sm: { value: '0.5rem' },
@@ -119,7 +147,11 @@ describe('tokens / basic', () => {
           "description": "",
           "key": "sm",
           "negative": false,
+          "path": [
+            "sm",
+          ],
           "prop": "spacing.sm",
+          "semantic": false,
           "value": "0.5rem",
           "var": "--spacing-sm",
           "varRef": "var(--spacing-sm)",
@@ -130,7 +162,11 @@ describe('tokens / basic', () => {
           "description": "",
           "key": "-sm",
           "negative": true,
+          "path": [
+            "-sm",
+          ],
           "prop": "spacing.-sm",
+          "semantic": false,
           "value": "-0.5rem",
           "var": "--spacing-sm",
           "varRef": "calc(var(--spacing-sm) * -1)",
@@ -146,7 +182,7 @@ describe('tokens / basic', () => {
   })
 
   test('with nested', () => {
-    const dict = new TokenMap({
+    const dict = new TokenDictionary({
       tokens: {
         spacing: {
           card: {
@@ -166,7 +202,12 @@ describe('tokens / basic', () => {
           "description": "",
           "key": "card.inner",
           "negative": false,
+          "path": [
+            "card",
+            "inner",
+          ],
           "prop": "spacing.card.inner",
+          "semantic": false,
           "value": "1rem",
           "var": "--spacing-card-inner",
           "varRef": "var(--spacing-card-inner)",
@@ -177,7 +218,12 @@ describe('tokens / basic', () => {
           "description": "",
           "key": "card.-inner",
           "negative": true,
+          "path": [
+            "card",
+            "-inner",
+          ],
           "prop": "spacing.card.-inner",
+          "semantic": false,
           "value": "-1rem",
           "var": "--spacing-card-inner",
           "varRef": "calc(var(--spacing-card-inner) * -1)",
@@ -195,7 +241,7 @@ describe('tokens / basic', () => {
 
 describe('tokens / composite', () => {
   test('shadows - basic', () => {
-    const dict = new TokenMap({
+    const dict = new TokenDictionary({
       tokens: {
         shadows: {
           xs: { value: '0 0 0 1px rgba(0, 0, 0, 0.05)' },
@@ -213,7 +259,11 @@ describe('tokens / composite', () => {
           "description": "",
           "key": "xs",
           "negative": false,
+          "path": [
+            "xs",
+          ],
           "prop": "shadows.xs",
+          "semantic": false,
           "value": "0 0 0 1px rgba(0, 0, 0, 0.05)",
           "var": "--shadows-xs",
           "varRef": "var(--shadows-xs)",
@@ -224,7 +274,11 @@ describe('tokens / composite', () => {
           "description": "",
           "key": "sm",
           "negative": false,
+          "path": [
+            "sm",
+          ],
           "prop": "shadows.sm",
+          "semantic": false,
           "value": "0px 0px 4px 5px #fff",
           "var": "--shadows-sm",
           "varRef": "var(--shadows-sm)",
@@ -235,7 +289,11 @@ describe('tokens / composite', () => {
           "description": "",
           "key": "md",
           "negative": false,
+          "path": [
+            "md",
+          ],
           "prop": "shadows.md",
+          "semantic": false,
           "value": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
           "var": "--shadows-md",
           "varRef": "var(--shadows-md)",
@@ -263,7 +321,7 @@ describe('tokens / composite', () => {
   })
 
   test('shadows - with reference', () => {
-    const dict = new TokenMap({
+    const dict = new TokenDictionary({
       tokens: {
         colors: { red: { 200: { value: '#fed7d7' } } },
         shadows: {
@@ -280,7 +338,12 @@ describe('tokens / composite', () => {
           "description": "",
           "key": "red.200",
           "negative": false,
+          "path": [
+            "red",
+            "200",
+          ],
           "prop": "colors.red.200",
+          "semantic": false,
           "value": "#fed7d7",
           "var": "--colors-red-200",
           "varRef": "var(--colors-red-200)",
@@ -291,7 +354,11 @@ describe('tokens / composite', () => {
           "description": "",
           "key": "sm",
           "negative": false,
+          "path": [
+            "sm",
+          ],
           "prop": "shadows.sm",
+          "semantic": false,
           "value": "0px 0px 4px 5px var(--colors-red-200)",
           "var": "--shadows-sm",
           "varRef": "var(--shadows-sm)",

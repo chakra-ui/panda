@@ -1,5 +1,6 @@
 import { colors, quote } from '@css-panda/logger'
 import { outdent } from 'outdent'
+import { cliBox } from './cli-box'
 import type { PandaContext } from './context'
 
 const tick = colors.green().bold('✔️')
@@ -51,21 +52,31 @@ export function thankYouMessage() {
   `
 }
 
-export function scaffoldCompleteMessage() {
-  return outdent`
-  ----------------------------------------
+const randomWords = ['Sweet', 'Divine', 'Pandalicious', 'Super']
+const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
 
-  Next steps:
+export function scaffoldCompleteMessage() {
+  return cliBox(
+    outdent`
+
+  ${colors.bold().cyan('Next steps:')}
   
-  - Create a ${quote('index.css')} file in your project that contains:
+  ◆ Create a ${quote('index.css')} file in your project that contains:
   
   :root {
     --panda: 1;
   }
 
-  - Import the ${quote('index.css')} file at the root of your project.
+  ◆ Import the ${quote('index.css')} file at the root of your project.
 
-  ----------------------------------------
+  `,
+    `🐼 ${pickRandom(randomWords)}! ✨`,
+  )
+}
 
-  `
+export function noExtractMesssage() {
+  return outdent`
+  No style object or props were detected in your source files.
+  If this is unexpected, double-check the \`include\` options in your Panda config\n
+`
 }

@@ -1,5 +1,5 @@
 import * as mocks from '@css-panda/fixture'
-import { TokenMap } from '@css-panda/tokens'
+import { TokenDictionary } from '@css-panda/tokens'
 import postcss from 'postcss'
 import { Conditions, Utility } from '../src'
 import { Recipe } from '../src/recipe'
@@ -18,7 +18,7 @@ const conditions = new Conditions({
   breakpoints: mocks.breakpoints,
 })
 
-const tokens = new TokenMap({
+const tokens = new TokenDictionary({
   tokens: mocks.tokens,
   semanticTokens: mocks.semanticTokens,
 })

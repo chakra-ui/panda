@@ -6,7 +6,7 @@ runs:
   steps:
     - uses: pnpm/action-setup@v2.2.2
       with:
-        version: 6
+        version: 7
 
     - name: Setup Node.js
       uses: actions/setup-node@v3

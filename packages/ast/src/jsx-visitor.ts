@@ -39,7 +39,7 @@ export class JSXVisitor extends Visitor {
       name: nodes.map((node) => node.name),
     })
 
-    if (result) {
+    if (result?.length) {
       logger.debug({
         type: 'ast:import',
         msg: `Found import { ${result.map(({ identifer }) => identifer).join(',')} } in ${this.ctx.fileName}`,
@@ -96,8 +96,12 @@ export class JSXVisitor extends Visitor {
 
     const isPattern = this.ctx.factory !== jsxName
 
-    if (Object.keys(result).length) {
-      this.ctx.onData?.({ type: isPattern ? 'pattern' : 'object', data: result, name: jsxName })
+    if (isPattern || Object.keys(result).length > 0) {
+      this.ctx.onData?.({
+        type: isPattern ? 'pattern' : 'object',
+        data: result,
+        name: jsxName,
+      })
     }
 
     return node

@@ -18,7 +18,7 @@ export class CallVisitor extends Visitor {
   visitImportDeclaration(node: swc.ImportDeclaration): swc.ImportDeclaration {
     const result = ast.importDeclaration(node, this.ctx.import)
 
-    if (result) {
+    if (result?.length) {
       logger.debug({
         type: 'ast:import',
         msg: `Found import { ${result.map(({ identifer }) => identifer).join(',')} } in ${this.ctx.import.filename}`,
@@ -86,7 +86,7 @@ export class DynamicCallVisitor extends Visitor {
   visitImportDeclaration(node: swc.ImportDeclaration): swc.ImportDeclaration {
     const result = ast.importDeclarations(node, this.ctx.import.module)
 
-    if (result) {
+    if (result?.length) {
       logger.debug({
         type: 'ast:import',
         msg: `Found import { ${result.map((t) => t.alias).join(', ')} } in ${this.ctx.import.filename}`,

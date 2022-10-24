@@ -18,3 +18,5 @@ export const config: Config = {
 }
 
 export { tokens, breakpoints, conditions, utilities, keyframes, textStyles, patterns }
+
+export default config

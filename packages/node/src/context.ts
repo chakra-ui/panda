@@ -4,13 +4,12 @@ import { Conditions, discardDuplicate, GeneratorContext, Stylesheet, Utility } f
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import { capitalize, mapObject, uncapitalize } from '@css-panda/shared'
-import { TokenMap } from '@css-panda/tokens'
+import { TokenDictionary } from '@css-panda/tokens'
 import type { RecipeConfig } from '@css-panda/types'
 import glob from 'fast-glob'
 import { readdirSync } from 'fs'
 import { emptyDir, ensureDir, existsSync } from 'fs-extra'
 import { readFile, unlink, writeFile } from 'fs/promises'
-import { outdent } from 'outdent'
 import { extname, join, relative, resolve, sep } from 'path'
 import postcss from 'postcss'
 
@@ -64,6 +63,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     hash,
     jsxFactory = 'panda',
     jsxFramework,
+    globalCss,
   } = config
 
   const cwd = resolve(_cwd)
@@ -73,7 +73,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * Core utilities
    * -----------------------------------------------------------------------------*/
 
-  const tokens = new TokenMap({
+  const tokens = new TokenDictionary({
     tokens: _tokens,
     semanticTokens,
     prefix: cssVar?.prefix,
@@ -245,6 +245,10 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   function collectStyles(collector: Collector, file: string) {
     const sheet = new Stylesheet(context())
 
+    if (globalCss) {
+      sheet.addGlobalCss(globalCss)
+    }
+
     collector.globalCss.forEach((result) => {
       sheet.processGlobalCss(result)
     })
@@ -269,24 +273,18 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
     collector.jsx.forEach((result) => {
       const { data, type, name } = result
-
       const { conditions = [], css = {}, ...rest } = data
+
       const styles = { ...css, ...rest }
 
       // treat pattern jsx like regular pattern
       if (name && type === 'pattern') {
-        //
-        const patternName = getPatternFnName(name)
-        collector.pattern.get(patternName) ?? collector.pattern.set(patternName, new Set([]))
-        collector.pattern.get(patternName)?.add({ type: 'object', data: styles, name: patternName })
-        //
+        collector.addPattern(getPatternFnName(name), styles)
       } else {
-        //
         sheet.process({ type, data: styles })
         conditions.forEach((style: any) => {
           sheet.process(style)
         })
-        //
       }
     })
 
@@ -321,18 +319,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     }
   }
 
-  async function extract(fn: (file: string) => Promise<{ css: string; file: string } | undefined>) {
-    const results = await Promise.all(files.map(fn))
-
-    if (results.filter(Boolean).length === 0) {
-      logger.warn({
-        type: 'file:empty',
-        msg: outdent`
-          No style object or props were detected in your source files.
-          If this is unexpected, double-check the \`include\` options in your Panda config\n
-        `,
-      })
-    }
+  function extract(fn: (file: string) => Promise<{ css: string; file: string } | undefined>) {
+    return Promise.all(files.map(fn))
   }
 
   return {

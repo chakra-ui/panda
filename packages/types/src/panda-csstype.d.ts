@@ -75,4 +75,8 @@ export type PandaCssObject<
   Strict extends boolean = false,
 > = WithNesting<ConditionCssProperties<Conditions, UserProperties, Strict>>
 
+type Nested<T> = Record<string, T | Nested<T>>
+
+export type GlobalStyles = Nested<Properties>
+
 export {}

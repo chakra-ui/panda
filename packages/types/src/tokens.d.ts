@@ -1,11 +1,14 @@
-/**
- * Modeled after https://tr.designtokens.org/format/ with slight modifications for DX
- */
+interface TokenMeta {
+  deprecated?: boolean
+  public?: boolean
+  source?: string
+  [key: string]: string | boolean | number
+}
 
 export type Token<V = any> = {
   description?: string
   value: V
-  meta?: Record<string, string>
+  meta?: TokenMeta
 }
 
 export type SemanticToken<V = string, C extends string = string> = {

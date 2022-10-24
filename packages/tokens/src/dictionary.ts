@@ -1,7 +1,7 @@
 import { getDotPath, getNegativePath, isObject, toPx, walkObject } from '@css-panda/shared'
 import type { SemanticToken, SemanticTokens, Token, TokenEntries, Tokens } from '@css-panda/types'
 import { match, P } from 'ts-pattern'
-import { getTokenData, TokenData } from './token-data'
+import { createToken, TokenData } from './token'
 
 type Options = {
   tokens?: Tokens
@@ -9,7 +9,7 @@ type Options = {
   prefix?: string
 }
 
-export class TokenMap {
+export class TokenDictionary {
   values = new Map<string, TokenData>()
   conditionValues = new Map<string, Map<string, TokenData>>()
   prefix: string | undefined
@@ -53,12 +53,12 @@ export class TokenMap {
     const { value, description } = token
     const key = path.join('.')
 
-    const data = getTokenData({ path, value, description, prefix: this.prefix })
+    const data = createToken({ path, value, description, prefix: this.prefix })
 
     this.values.set(key, data)
 
     if (data.category === 'spacing') {
-      const negData = getTokenData({ path, value, description, negative: true, prefix: this.prefix })
+      const negData = createToken({ path, value, description, negative: true, prefix: this.prefix })
 
       const negKey = getNegativePath(path).join('.')
       this.values.set(negKey, negData)
@@ -72,13 +72,13 @@ export class TokenMap {
     const values = isDesignToken(value) ? { base: value } : value
 
     for (const [condition, value] of Object.entries(values)) {
-      const data = getTokenData({ path, value, description, condition, prefix: this.prefix })
+      const data = createToken({ path, value, description, condition, prefix: this.prefix })
 
       this.conditionValues.get(condition) ?? this.conditionValues.set(condition, new Map())
       this.conditionValues.get(condition)?.set(key, data)
 
       if (data.category === 'spacing') {
-        const negData = getTokenData({ path, value, description, condition, negative: true, prefix: this.prefix })
+        const negData = createToken({ path, value, description, condition, negative: true, prefix: this.prefix })
         const negKey = getNegativePath(path).join('.')
 
         this.conditionValues.get(condition)?.set(negKey, negData)

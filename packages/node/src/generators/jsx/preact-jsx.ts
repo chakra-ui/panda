@@ -52,7 +52,7 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
       const ${upperName}Component = forwardRef((props, ref) => {
         const { as: Element = Dynamic, ...restProps } = props
 
-        const [styleProps, elementProps] = splitProps(props)
+        const [styleProps, elementProps] = splitProps(restProps)
     
         const classes = () => {
           const { css: cssStyles, ...otherStyles } = styleProps

@@ -1,6 +1,6 @@
 import type { LayerStyles, TextStyles } from './composition'
 import type { Conditions as TConditions } from './conditions'
-import type { Keyframes } from './panda-csstype'
+import type { Keyframes, GlobalStyles } from './panda-csstype'
 import type { PatternConfig } from './pattern'
 import type { RecipeConfig } from './recipe'
 import type { Dict, RequiredBy } from './shared'
@@ -12,6 +12,14 @@ export type Config<
   Breakpoints extends Dict = Dict,
   Tokens extends PartialTokens = PartialTokens,
 > = {
+  /**
+   * The log level for the built-in logger.
+   */
+  logLevel?: 'debug' | 'info' | 'warn' | 'error' | 'silent'
+  /**
+   * Used to create reusable config presets for your project or team.
+   */
+  presets?: string[]
   /**
    * Whether to include css reset styles in the generated css.
    */
@@ -77,6 +85,10 @@ export type Config<
    */
   keyframes?: Keyframes
   /**
+   * The global styles for your project.
+   */
+  globalCss?: GlobalStyles
+  /**
    * The design tokens for your project.
    */
   tokens?: Tokens
@@ -120,11 +132,6 @@ export type Config<
    * ```
    */
   jsxFactory?: string
-  /**
-   * Not implemented yet.
-   * @experimental - Custom parsers for call expressions and jsx style props.
-   */
-  parsers?: Record<string, (file: string, data: any) => void>
   /**
    * Options for the generated typescript definitions.
    */

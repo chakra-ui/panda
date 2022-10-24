@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format=esm,cjs --dts",
     "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
-    "dev": "pnpm build-fast -- --watch"
+    "dev": "pnpm build-fast --watch"
   },
   "dependencies": {
     "@swc/core": "1.2.248",
