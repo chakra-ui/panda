@@ -1,0 +1,7 @@
+src/**
+tsconfig.json
+webview-ui/tsconfig.json
+webview-ui/vite.config.ts
+webview-ui/index.html
+webview-ui/src/**
+webview-ui/node_modules/**
