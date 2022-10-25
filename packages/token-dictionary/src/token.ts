@@ -15,7 +15,7 @@ export type TokenEntry<T = any> = {
 
 type TokenStatus = 'deprecated' | 'experimental' | 'new'
 
-type Metadata = {
+type ExtensionData = {
   status?: TokenStatus
   category?: string
   references?: TokenReferences
@@ -27,7 +27,7 @@ type TokenConditions = Record<string, string>
 
 type TokenReferences = Record<string, Token>
 
-type TokenExtensions = Metadata & {
+type TokenExtensions = ExtensionData & {
   [key: string]: any
 }
 
