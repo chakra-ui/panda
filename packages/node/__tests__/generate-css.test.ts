@@ -6,7 +6,6 @@ import { generateTokenCss } from '../src/generators/token-css'
 
 const conf: LoadConfigResult = {
   dependencies: [],
-  code: '',
   config: {
     cwd: '',
     include: [],

@@ -11,10 +11,11 @@ type StyleObject = Record<string, any>
 export class Recipe {
   config: RecipeConfig
   constructor(config: RecipeConfig, private context: GeneratorContext) {
-    const { name, base = {}, variants = {}, defaultVariants = {} } = config
+    const { name, base = {}, variants = {}, defaultVariants = {}, description = '' } = config
 
     const recipe: Required<RecipeConfig> = {
       name,
+      description,
       base: {},
       variants: {},
       defaultVariants,
