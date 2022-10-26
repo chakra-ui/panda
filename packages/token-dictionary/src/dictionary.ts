@@ -4,11 +4,11 @@ import { Token } from './token'
 import type { SemanticTokens, Tokens } from './token.types'
 import { assertTokenFormat, getReferences, isToken } from './utils'
 
-type TransformerEnforce = 'pre' | 'post'
+type EnforcePhase = 'pre' | 'post'
 
 export type TokenTransformer = {
   name: string
-  enforce?: TransformerEnforce
+  enforce?: EnforcePhase
   type?: 'value' | 'name' | 'extensions'
   match?: (token: Token) => boolean
   transform: (token: Token) => any
@@ -17,6 +17,11 @@ export type TokenTransformer = {
 export type TokenDictionaryOptions = {
   tokens?: Tokens
   semanticTokens?: SemanticTokens
+}
+
+export type TokenMiddleware = {
+  enforce?: EnforcePhase
+  transform: (dict: TokenDictionary) => void
 }
 
 export class TokenDictionary {
@@ -89,6 +94,7 @@ export class TokenDictionary {
       transform.enforce ||= 'pre'
       this.transforms.set(transform.name, transform)
     })
+    return this
   }
 
   private execTransform(name: string) {
@@ -116,13 +122,31 @@ export class TokenDictionary {
     })
   }
 
-  transformTokens(enforce: TransformerEnforce) {
+  transformTokens(enforce: EnforcePhase) {
     this.transforms.forEach((transform) => {
       if (transform.enforce === enforce) {
         this.execTransform(transform.name)
       }
     })
     return this
+  }
+
+  private middlewares: TokenMiddleware[] = []
+
+  registerMiddleware(...middlewares: TokenMiddleware[]) {
+    for (const middleware of middlewares) {
+      middleware.enforce ||= 'pre'
+      this.middlewares.push(middleware)
+    }
+    return this
+  }
+
+  applyMiddlewares(enforce: EnforcePhase) {
+    this.middlewares.forEach((middleware) => {
+      if (middleware.enforce === enforce) {
+        middleware.transform(this)
+      }
+    })
   }
 
   getReferences(value: string) {
@@ -178,10 +202,12 @@ export class TokenDictionary {
   }
 
   build() {
+    this.applyMiddlewares('pre')
     this.transformTokens('pre')
     this.addConditionalTokens()
     this.addReferences()
     this.expandReferences()
+    this.applyMiddlewares('post')
     this.transformTokens('post')
   }
 

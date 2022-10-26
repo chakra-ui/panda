@@ -1,31 +1,69 @@
-import type { TokenDictionary } from './dictionary'
+import type { TokenDictionary, TokenMiddleware } from './dictionary'
+import { Token } from './token'
 
-export function addNegativeTokens(dictionary: TokenDictionary) {
-  // add negative token to spacing tokens
-  const tokens = dictionary.filter({
-    extensions: { category: 'spacing' },
-  })
+export const addNegativeTokens: TokenMiddleware = {
+  enforce: 'pre',
+  transform(dictionary: TokenDictionary) {
+    const tokens = dictionary.filter({
+      extensions: { category: 'spacing' },
+    })
 
-  tokens.forEach((token) => {
-    //
-    const node = token.clone()
-    node.setExtensions({ isNegative: true })
+    tokens.forEach((token) => {
+      //
+      const node = token.clone()
+      node.setExtensions({ isNegative: true })
 
-    modifyLast(node.path, (value) => `-${value}`)
+      const last = node.path.at(-1)
+      if (last != null) {
+        node.path[node.path.length - 1] = `-${last}`
+      }
 
-    if (node.path) {
-      node.name = node.path.join('.')
-    }
+      if (node.path) {
+        node.name = node.path.join('.')
+      }
 
-    dictionary.allTokens.push(node)
-  })
+      dictionary.allTokens.push(node)
+    })
+  },
 }
 
-// replace last index of an array
-function modifyLast<T>(value: T[] | undefined, fn: (last: T) => T) {
-  if (!value) return []
-  const last = value.at(-1)
-  if (last != null) {
-    value[value.length - 1] = fn(last)
-  }
+export const addVirtualPalette: TokenMiddleware = {
+  enforce: 'post',
+  transform(dictionary: TokenDictionary) {
+    const tokens = dictionary.filter({
+      extensions: { category: 'colors' },
+    })
+
+    const keys = new Set<string>()
+    const palettes = new Map<string, Token[]>()
+
+    tokens.forEach((token) => {
+      const palette = token.extensions.palette
+      if (!palette) return
+      const list = palettes.get(palette) || []
+      keys.add(token.path.at(-1) as string)
+      list.push(token)
+      palettes.set(palette, list)
+    })
+
+    keys.forEach((key) => {
+      const node = new Token({
+        name: `colors.palette.${key}`,
+        value: `{colors.palette.${key}}`,
+        path: ['colors', 'palette', key],
+      })
+
+      node.setExtensions({
+        category: 'colors',
+        prop: `palette.${key}`,
+        isVirtual: true,
+      })
+
+      dictionary.allTokens.push(node)
+    })
+
+    dictionary.transformTokens('pre')
+  },
 }
+
+export const middlewares = [addNegativeTokens, addVirtualPalette]
