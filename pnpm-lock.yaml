@@ -238,6 +238,14 @@ importers:
   packages/shared:
     specifiers: {}
 
+  packages/token-dictionary:
+    specifiers:
+      '@css-panda/shared': workspace:*
+      ts-pattern: 4.0.5
+    dependencies:
+      '@css-panda/shared': link:../shared
+      ts-pattern: 4.0.5
+
   packages/tokens:
     specifiers:
       '@css-panda/error': workspace:*
