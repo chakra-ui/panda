@@ -102,7 +102,7 @@ export function jsxAttribute(node: swc.JSXAttribute, result: Record<string, any>
   if (!key) return result
 
   match(node.value)
-    .with({ type: P.union('StringLiteral', 'NumericLiteral') }, (node) => {
+    .with({ type: P.union('StringLiteral', 'NumericLiteral', 'BooleanLiteral') }, (node) => {
       result[key] = node.value
     })
     .with(
@@ -112,6 +112,15 @@ export function jsxAttribute(node: swc.JSXAttribute, result: Record<string, any>
       },
       (node) => {
         merge(result, { [key]: objectExpression(node.expression) })
+      },
+    )
+    .with(
+      {
+        type: 'JSXExpressionContainer',
+        expression: { type: P.union('StringLiteral', 'NumericLiteral', 'BooleanLiteral') },
+      },
+      (node) => {
+        result[key] = node.expression.value
       },
     )
     .with(
