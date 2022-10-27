@@ -18,7 +18,7 @@ export function generateCssMap() {
     dts: outdent`
     import { CssObject } from "../types"
     
-    export declare function cssMap<T extends string>(obj: Record<T, CssObject>): (...args: Array<T>) => CssObject;
+    export declare function cssMap<T extends string>(obj: Record<T, CssObject>): (...args: Array<T>) => string;
     `,
   }
 }
