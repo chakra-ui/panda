@@ -33,6 +33,10 @@ export class TokenDictionary {
   allTokens: Token[] = []
   prefix: string | undefined
 
+  get allNames() {
+    return Array.from(new Set(this.allTokens.map((token) => token.name)))
+  }
+
   constructor(options: TokenDictionaryOptions) {
     const { tokens = {}, semanticTokens = {}, prefix } = options
 
