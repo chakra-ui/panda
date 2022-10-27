@@ -1224,22 +1224,31 @@ const transitions: UtilityConfig = {
   },
 }
 
-const transformVars = [
-  'var(--translate-x)',
-  'var(--translate-y)',
-  'var(--rotate)',
-  'var(--skew-x)',
-  'var(--skew-y)',
-  'var(--scale-x)',
-  'var(--scale-y)',
+const transformTemplate = [
+  'rotate(var(--rotate, 0))',
+  'scaleX(var(--scale-x, 1))',
+  'scaleY(var(--scale-y, 1))',
+  'skewX(var(--skew-x, 0))',
+  'skewY(var(--skew-y, 0))',
+]
+
+const baseTransformTemplate = [
+  'translateX(var(--translate-x, 0))',
+  'translateY(var(--translate-y, 0))',
+  ...transformTemplate,
+].join(' ')
+
+const gpuTransformTemplate = [
+  'translate3d(var(--translate-x, 0), var(--translate-y, 0), 0)',
+  ...transformTemplate,
 ].join(' ')
 
 const transforms: UtilityConfig = {
   transform: {
     className: 'transform',
     values: {
-      auto: `translate(${transformVars})`,
-      'auto-gpu': `translate3d(${transformVars})`,
+      auto: baseTransformTemplate,
+      'auto-gpu': gpuTransformTemplate,
     },
   },
   transformOrigin: {
