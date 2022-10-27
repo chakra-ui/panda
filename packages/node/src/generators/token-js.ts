@@ -5,8 +5,9 @@ export function generateTokenJs(dict: TokenDictionary) {
   const map = new Map<string, { value: string; variable: string }>()
 
   dict.allTokens.forEach((token) => {
-    const value = token.extensions.condition ? token.extensions.varRef : token.value
-    map.set(token.extensions.prop, { value, variable: token.extensions.varRef })
+    const { varRef } = token.extensions
+    const value = token.isConditional ? varRef : token.value
+    map.set(token.name, { value, variable: varRef })
   })
 
   const obj = Object.fromEntries(map)
