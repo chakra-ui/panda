@@ -32,6 +32,10 @@ export class TokenDictionary extends Base {
     return mapToJson(formats.groupByPalette(this))
   }
 
+  get vars() {
+    return formats.getVars(this)
+  }
+
   getValue(path: string) {
     const result = this.values.get(path)
     if (result != null) {

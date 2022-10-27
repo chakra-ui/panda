@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "command": "pnpm vitest utility",
+      "command": "pnpm vitest",
       "name": "Run Vitest",
       "request": "launch",
       "type": "node-terminal"
