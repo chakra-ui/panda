@@ -6,29 +6,37 @@ import { assertTokenFormat, getReferences, isToken } from './utils'
 
 type EnforcePhase = 'pre' | 'post'
 
+type Options = {
+  prefix?: string
+}
+
 export type TokenTransformer = {
   name: string
   enforce?: EnforcePhase
   type?: 'value' | 'name' | 'extensions'
   match?: (token: Token) => boolean
-  transform: (token: Token) => any
+  transform: (token: Token, options: Options) => any
 }
 
 export type TokenDictionaryOptions = {
   tokens?: Tokens
   semanticTokens?: SemanticTokens
+  prefix?: string
 }
 
 export type TokenMiddleware = {
   enforce?: EnforcePhase
-  transform: (dict: TokenDictionary) => void
+  transform: (dict: TokenDictionary, options: Options) => void
 }
 
 export class TokenDictionary {
   allTokens: Token[] = []
+  prefix: string | undefined
 
   constructor(options: TokenDictionaryOptions) {
-    const { tokens = {}, semanticTokens = {} } = options
+    const { tokens = {}, semanticTokens = {}, prefix } = options
+
+    this.prefix = prefix
 
     walkObject(
       tokens,
@@ -105,7 +113,7 @@ export class TokenDictionary {
       if (token.extensions.hasReference) return
       if (typeof transform.match === 'function' && !transform.match(token)) return
 
-      const transformed = transform.transform(token)
+      const transformed = transform.transform(token, { prefix: this.prefix })
       match(transform)
         .with({ type: 'extensions' }, () => {
           token.setExtensions(transformed)
@@ -144,7 +152,7 @@ export class TokenDictionary {
   applyMiddlewares(enforce: EnforcePhase) {
     this.middlewares.forEach((middleware) => {
       if (middleware.enforce === enforce) {
-        middleware.transform(this)
+        middleware.transform(this, { prefix: this.prefix })
       }
     })
   }

@@ -1,4 +1,4 @@
-import type { TokenDictionary } from '@css-panda/tokens'
+import type { TokenDictionary } from '@css-panda/token-dictionary'
 import { unionType, capitalize } from '@css-panda/shared'
 import { outdent } from 'outdent'
 import { singular } from 'pluralize'

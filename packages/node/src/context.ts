@@ -4,7 +4,7 @@ import { Conditions, discardDuplicate, GeneratorContext, Stylesheet, Utility } f
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import { capitalize, mapObject, uncapitalize } from '@css-panda/shared'
-import { TokenDictionary } from '@css-panda/tokens'
+import { TokenDictionary } from '@css-panda/token-dictionary'
 import type { RecipeConfig } from '@css-panda/types'
 import glob from 'fast-glob'
 import { readdirSync } from 'fs'

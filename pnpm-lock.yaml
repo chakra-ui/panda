@@ -97,7 +97,7 @@ importers:
       '@css-panda/fixture': workspace:*
       '@css-panda/logger': workspace:*
       '@css-panda/shared': workspace:*
-      '@css-panda/tokens': workspace:*
+      '@css-panda/token-dictionary': workspace:*
       '@css-panda/types': workspace:*
       '@types/lodash.merge': 4.6.7
       autoprefixer: 10.4.8
@@ -108,14 +108,13 @@ importers:
       postcss-nested: 5.0.6
       postcss-normalize-whitespace: 5.1.1
       postcss-prettify: 0.3.4
-      postcss-selector-parser: 6.0.10
       postcss-sort-media-queries: 4.3.0
       ts-pattern: 4.0.5
     dependencies:
       '@css-panda/error': link:../error
       '@css-panda/logger': link:../logger
       '@css-panda/shared': link:../shared
-      '@css-panda/tokens': link:../tokens
+      '@css-panda/token-dictionary': link:../token-dictionary
       '@css-panda/types': link:../types
       autoprefixer: 10.4.8_postcss@8.4.16
       camelcase-css: 2.0.1
@@ -125,7 +124,6 @@ importers:
       postcss-nested: 5.0.6_postcss@8.4.16
       postcss-normalize-whitespace: 5.1.1_postcss@8.4.16
       postcss-prettify: 0.3.4
-      postcss-selector-parser: 6.0.10
       postcss-sort-media-queries: 4.3.0_postcss@8.4.16
       ts-pattern: 4.0.5
     devDependencies:
@@ -170,7 +168,7 @@ importers:
       '@css-panda/is-valid-prop': workspace:*
       '@css-panda/logger': workspace:*
       '@css-panda/shared': workspace:*
-      '@css-panda/tokens': workspace:*
+      '@css-panda/token-dictionary': workspace:*
       '@css-panda/types': workspace:*
       '@types/fs-extra': 9.0.13
       '@types/glob-parent': ^5.1.1
@@ -202,7 +200,7 @@ importers:
       '@css-panda/is-valid-prop': link:../is-valid-prop
       '@css-panda/logger': link:../logger
       '@css-panda/shared': link:../shared
-      '@css-panda/tokens': link:../tokens
+      '@css-panda/token-dictionary': link:../token-dictionary
       '@css-panda/types': link:../types
       chokidar: 3.5.3
       fast-glob: 3.2.11

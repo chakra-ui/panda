@@ -1,5 +1,5 @@
 import { Utility } from '@css-panda/core'
-import { TokenDictionary } from '@css-panda/tokens'
+import { TokenDictionary } from '@css-panda/token-dictionary'
 import { semanticTokens, tokens, utilities } from '@css-panda/fixture'
 import { describe, expect, test } from 'vitest'
 import { generatePropTypes } from '../src/generators/prop-types'

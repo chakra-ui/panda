@@ -1,1 +1,1 @@
-export * from './src/dictionary'
+export * from './src'

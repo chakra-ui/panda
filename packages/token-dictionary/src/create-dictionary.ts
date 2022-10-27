@@ -1,16 +1,46 @@
-import { TokenDictionary, TokenDictionaryOptions } from './dictionary'
+import { getDotPath, mapToJson } from '@css-panda/shared'
+import { TokenDictionary as Base, TokenDictionaryOptions } from './dictionary'
 import { formats } from './format'
+import { middlewares } from './middleware'
 import { transforms } from './transform'
 
-export function createTokenDictionary(values: TokenDictionaryOptions) {
-  const dictionary = new TokenDictionary(values)
-  dictionary.registerTransform(...transforms)
-  dictionary.build()
-  return Object.assign(dictionary, {
-    value: dictionary,
-    getTokenVar: formats.createVarGetter(dictionary),
-    conditionMap: () => formats.groupByCondition(dictionary),
-    categoryMap: () => formats.groupByCategory(dictionary),
-    flatValues: () => formats.getFlattenedValues(dictionary),
-  })
+export class TokenDictionary extends Base {
+  constructor(values: TokenDictionaryOptions) {
+    super(values)
+    this.registerTransform(...transforms)
+    this.registerMiddleware(...middlewares)
+    this.build()
+  }
+
+  get get() {
+    return formats.createVarGetter(this)
+  }
+
+  get conditionMap() {
+    return formats.groupByCondition(this)
+  }
+
+  get categoryMap() {
+    return formats.groupByCategory(this)
+  }
+
+  get values() {
+    return formats.getFlattenedValues(this)
+  }
+
+  get palettes() {
+    return mapToJson(formats.groupByPalette(this))
+  }
+
+  getValue(path: string) {
+    const result = this.values.get(path)
+    if (result != null) {
+      return Object.fromEntries(result)
+    }
+  }
+
+  getTokenVar(path: string) {
+    const json = mapToJson(this.values)
+    return getDotPath(json, path)
+  }
 }

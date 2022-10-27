@@ -20,13 +20,13 @@ const isCompositeShadow = isMatching({
 export const transformShadow: TokenTransformer = {
   name: 'tokens/shadow',
   match: (token) => token.extensions.category === 'shadows',
-  transform(token) {
+  transform(token, { prefix }) {
     if (isString(token.value)) {
       return token.value
     }
 
     if (Array.isArray(token.value)) {
-      return token.value.map((value) => this.transform({ value } as Token)).join(', ')
+      return token.value.map((value) => this.transform({ value } as Token, { prefix })).join(', ')
     }
 
     if (isCompositeShadow(token.value)) {
@@ -126,8 +126,8 @@ export const transformBorders: TokenTransformer = {
 export const addCssVariables: TokenTransformer = {
   type: 'extensions',
   name: 'tokens/css-var',
-  transform(token) {
-    const variable = cssVar(token.path.join('-'))
+  transform(token, { prefix }) {
+    const variable = cssVar(token.path.join('-'), { prefix })
     return {
       var: variable.var,
       varRef: token.extensions.isNegative ? calc.negate(variable) : variable.ref,
@@ -142,11 +142,11 @@ export const addCssVariables: TokenTransformer = {
 export const addConditionalCssVariables: TokenTransformer = {
   enforce: 'post',
   name: 'tokens/conditionals',
-  transform(token) {
+  transform(token, { prefix }) {
     const refs = getReferences(token.value)
     if (!refs.length) return token.value
     refs.forEach((ref) => {
-      const variable = cssVar(ref.split('.').join('-')).ref
+      const variable = cssVar(ref.split('.').join('-'), { prefix }).ref
       token.value = token.value.replace(`{${ref}}`, variable)
     })
     return token.value
