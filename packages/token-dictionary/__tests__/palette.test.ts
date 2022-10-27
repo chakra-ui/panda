@@ -201,11 +201,11 @@ test('should generate virtual palette', () => {
   expect(formats.getFlattenedValues(dictionary)).toMatchInlineSnapshot(`
     Map {
       "colors" => Map {
-        "primary" => "#000",
-        "red.300" => "#red300",
-        "red.500" => "#red500",
-        "blue.500" => "#blue500",
-        "blue.700" => "#blue700",
+        "primary" => "var(--colors-primary)",
+        "red.300" => "var(--colors-red-300)",
+        "red.500" => "var(--colors-red-500)",
+        "blue.500" => "var(--colors-blue-500)",
+        "blue.700" => "var(--colors-blue-700)",
         "palette.300" => "var(--colors-palette-300)",
         "palette.500" => "var(--colors-palette-500)",
         "palette.700" => "var(--colors-palette-700)",

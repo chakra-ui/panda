@@ -24,11 +24,11 @@ test('format / json flat', () => {
   expect(formats.getFlattenedValues(dictionary)).toMatchInlineSnapshot(`
     Map {
       "colors" => Map {
-        "red" => "#ff0000",
-        "blue" => "#0000ff",
-        "green" => "#00ff00",
-        "pink.50" => "#ff0000",
-        "pink.100" => "#0000ff",
+        "red" => "var(--colors-red)",
+        "blue" => "var(--colors-blue)",
+        "green" => "var(--colors-green)",
+        "pink.50" => "var(--colors-pink-50)",
+        "pink.100" => "var(--colors-pink-100)",
       },
     }
   `)
