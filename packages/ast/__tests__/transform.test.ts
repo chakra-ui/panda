@@ -36,6 +36,7 @@ describe('ast parser', () => {
 
     expect(data).toMatchInlineSnapshot(`
       {
+        "addPattern": [Function],
         "css": Set {
           {
             "data": {

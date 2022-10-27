@@ -61,6 +61,10 @@ describe('jsx', () => {
           },
           "name": "panda",
         },
+        {
+          "data": {},
+          "name": "panda",
+        },
       }
     `)
   })

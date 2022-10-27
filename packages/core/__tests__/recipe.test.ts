@@ -46,6 +46,7 @@ describe('recipe ruleset', () => {
           "size": "md",
           "variant": "solid",
         },
+        "description": "",
         "name": "buttonStyle",
         "variants": {
           "size": {
