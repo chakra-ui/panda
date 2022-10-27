@@ -6,7 +6,7 @@ import { singular } from 'pluralize'
 export function generateTokenDts(dict: TokenDictionary) {
   const set = new Set<string>()
 
-  set.add(`export type Token = ${dict.isEmpty ? 'string' : unionType(dict.values.keys())}`)
+  set.add(`export type Token = ${dict.isEmpty ? 'string' : unionType(dict.allNames)}`)
 
   const interfaceSet = new Set<string>(['export interface Tokens {'])
 
