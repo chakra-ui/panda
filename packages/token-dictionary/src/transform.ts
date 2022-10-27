@@ -127,7 +127,9 @@ export const addCssVariables: TokenTransformer = {
   type: 'extensions',
   name: 'tokens/css-var',
   transform(token, { prefix }) {
-    const variable = cssVar(token.path.join('-'), { prefix })
+    const { isNegative, originalPath } = token.extensions
+    const pathValue = isNegative ? originalPath : token.path
+    const variable = cssVar(pathValue.join('-'), { prefix })
     return {
       var: variable.var,
       varRef: token.extensions.isNegative ? calc.negate(variable) : variable.ref,

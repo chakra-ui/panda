@@ -51,8 +51,8 @@ export const formats = {
     grouped.forEach((tokens, category) => {
       result.get(category) || result.set(category, new Map())
       tokens.forEach((token) => {
-        const value = token.isConditional ? token.extensions.varRef : token.value
-        result.set(category, result.get(category)!.set(token.extensions.prop, value))
+        const { prop, varRef } = token.extensions
+        result.set(category, result.get(category)!.set(prop, varRef))
       })
     })
     return result

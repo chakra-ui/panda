@@ -5,8 +5,8 @@ import { middlewares } from './middleware'
 import { transforms } from './transform'
 
 export class TokenDictionary extends Base {
-  constructor(values: TokenDictionaryOptions) {
-    super(values)
+  constructor(options: TokenDictionaryOptions) {
+    super(options)
     this.registerTransform(...transforms)
     this.registerMiddleware(...middlewares)
     this.build()

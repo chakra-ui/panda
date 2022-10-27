@@ -10,8 +10,13 @@ export const addNegativeTokens: TokenMiddleware = {
 
     tokens.forEach((token) => {
       //
+      const originalPath = [...token.path]
       const node = token.clone()
-      node.setExtensions({ isNegative: true })
+      node.setExtensions({
+        isNegative: true,
+        prop: `-${token.extensions.prop}`,
+        originalPath,
+      })
 
       const last = node.path.at(-1)
       if (last != null) {

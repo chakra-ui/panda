@@ -90,7 +90,6 @@ export class Utility {
   private assignPaletteProperty() {
     const values = this.tokenMap.palettes
     this.config.palette = {
-      className: '{color}',
       values: Object.keys(values),
       transform(value) {
         return values[value]
