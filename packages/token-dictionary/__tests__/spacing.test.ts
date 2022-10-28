@@ -35,7 +35,11 @@ test('should add negative spacing', () => {
           "category": "spacing",
           "condition": "base",
           "isNegative": true,
-          "prop": "sm",
+          "originalPath": [
+            "spacing",
+            "sm",
+          ],
+          "prop": "-sm",
         },
         "name": "spacing.-sm",
         "originalValue": "40px",
@@ -44,7 +48,7 @@ test('should add negative spacing', () => {
           "-sm",
         ],
         "type": "dimension",
-        "value": "40px",
+        "value": "calc(var(--spacing-sm) * -1)",
       },
     ]
   `)
@@ -129,7 +133,11 @@ test('with semantic spacing', () => {
           "category": "spacing",
           "condition": "base",
           "isNegative": true,
-          "prop": "sm",
+          "originalPath": [
+            "spacing",
+            "sm",
+          ],
+          "prop": "-sm",
         },
         "name": "spacing.-sm",
         "originalValue": "40px",
@@ -138,7 +146,7 @@ test('with semantic spacing', () => {
           "-sm",
         ],
         "type": "dimension",
-        "value": "40px",
+        "value": "calc(var(--spacing-sm) * -1)",
       },
       Token {
         "extensions": {
@@ -149,7 +157,11 @@ test('with semantic spacing', () => {
             "base": "{spacing.sm}",
           },
           "isNegative": true,
-          "prop": "gutter",
+          "originalPath": [
+            "spacing",
+            "gutter",
+          ],
+          "prop": "-gutter",
         },
         "name": "spacing.-gutter",
         "originalValue": "{spacing.sm}",
@@ -158,7 +170,7 @@ test('with semantic spacing', () => {
           "-gutter",
         ],
         "type": "dimension",
-        "value": "40px",
+        "value": "calc(var(--spacing-gutter) * -1)",
       },
       Token {
         "extensions": {
@@ -169,10 +181,14 @@ test('with semantic spacing', () => {
             "base": "{spacing.sm}",
           },
           "isNegative": true,
-          "prop": "gutter",
+          "originalPath": [
+            "spacing",
+            "gutter",
+          ],
+          "prop": "-gutter",
         },
         "name": "spacing.-gutter",
-        "originalValue": "{spacing.sm}",
+        "originalValue": "calc(var(--spacing-gutter) * -1)",
         "path": [
           "spacing",
           "-gutter",
@@ -261,7 +277,11 @@ test('with semantic spacing', () => {
           "category": "spacing",
           "condition": "base",
           "isNegative": true,
-          "prop": "sm",
+          "originalPath": [
+            "spacing",
+            "sm",
+          ],
+          "prop": "-sm",
         },
         "name": "spacing.-sm",
         "originalValue": "40px",
@@ -270,7 +290,7 @@ test('with semantic spacing', () => {
           "-sm",
         ],
         "type": "dimension",
-        "value": "40px",
+        "value": "calc(var(--spacing-sm) * -1)",
       },
       Token {
         "extensions": {
@@ -281,7 +301,11 @@ test('with semantic spacing', () => {
             "sm": "50px",
           },
           "isNegative": true,
-          "prop": "nested",
+          "originalPath": [
+            "spacing",
+            "nested",
+          ],
+          "prop": "-nested",
         },
         "name": "spacing.-nested",
         "originalValue": "{spacing.sm}",
@@ -290,7 +314,7 @@ test('with semantic spacing', () => {
           "-nested",
         ],
         "type": "dimension",
-        "value": "40px",
+        "value": "calc(var(--spacing-nested) * -1)",
       },
       Token {
         "extensions": {
@@ -301,10 +325,14 @@ test('with semantic spacing', () => {
             "sm": "50px",
           },
           "isNegative": true,
-          "prop": "nested",
+          "originalPath": [
+            "spacing",
+            "nested",
+          ],
+          "prop": "-nested",
         },
         "name": "spacing.-nested",
-        "originalValue": "{spacing.sm}",
+        "originalValue": "calc(var(--spacing-nested) * -1)",
         "path": [
           "spacing",
           "-nested",

@@ -24,7 +24,7 @@
     "@css-panda/error": "workspace:*",
     "@css-panda/ast": "workspace:*",
     "@css-panda/shared": "workspace:*",
-    "@css-panda/tokens": "workspace:*",
+    "@css-panda/token-dictionary": "workspace:*",
     "@css-panda/logger": "workspace:*",
     "@css-panda/core": "workspace:*",
     "@css-panda/config": "workspace:*",
@@ -46,7 +46,6 @@
   },
   "devDependencies": {
     "boxen": "^7.0.0",
-    "@css-panda/tokens": "workspace:*",
     "@css-panda/fixture": "workspace:*",
     "@types/fs-extra": "9.0.13",
     "@types/is-glob": "^4.0.2",

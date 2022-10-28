@@ -35,7 +35,7 @@ export function getNegativePath(path: string[]) {
   return path.slice(0, -1).concat(`-${path.at(-1)}`)
 }
 
-export function getDotPath(obj: any, path: string, fallback: any): any {
+export function getDotPath(obj: any, path: string, fallback?: any): any {
   const idx = path.indexOf('.')
 
   if (idx === -1) {

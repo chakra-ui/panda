@@ -32,15 +32,15 @@ test('format / getter', () => {
 
   expect(get('colors')).toMatchInlineSnapshot(`
     {
-      "blue": "#0000ff",
+      "blue": "var(--colors-blue)",
       "brand": "var(--colors-brand)",
-      "green": "#00ff00",
-      "pink.100": "#0000ff",
-      "pink.50": "#ff0000",
-      "red": "#ff0000",
+      "green": "var(--colors-green)",
+      "pink.100": "var(--colors-pink-100)",
+      "pink.50": "var(--colors-pink-50)",
+      "red": "var(--colors-red)",
     }
   `)
 
-  expect(get('colors.blue')).toMatchInlineSnapshot('"#0000ff"')
+  expect(get('colors.blue')).toMatchInlineSnapshot('"var(--colors-blue)"')
   expect(get('colors.brand')).toMatchInlineSnapshot('"var(--colors-brand)"')
 })

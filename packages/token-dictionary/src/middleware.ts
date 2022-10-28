@@ -1,17 +1,27 @@
+import { calc, cssVar } from '@css-panda/shared'
 import type { TokenDictionary, TokenMiddleware } from './dictionary'
 import { Token } from './token'
 
 export const addNegativeTokens: TokenMiddleware = {
   enforce: 'pre',
-  transform(dictionary: TokenDictionary) {
+  transform(dictionary: TokenDictionary, { prefix }) {
     const tokens = dictionary.filter({
       extensions: { category: 'spacing' },
     })
 
     tokens.forEach((token) => {
       //
+      const originalPath = [...token.path]
+      const originalVar = cssVar(originalPath.join('-'), { prefix })
+
       const node = token.clone()
-      node.setExtensions({ isNegative: true })
+      node.setExtensions({
+        isNegative: true,
+        prop: `-${token.extensions.prop}`,
+        originalPath,
+      })
+
+      node.value = calc.negate(originalVar)
 
       const last = node.path.at(-1)
       if (last != null) {

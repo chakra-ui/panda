@@ -1,12 +1,13 @@
-import type { TokenDictionary } from '@css-panda/tokens'
+import type { TokenDictionary } from '@css-panda/token-dictionary'
 import outdent from 'outdent'
 
 export function generateTokenJs(dict: TokenDictionary) {
   const map = new Map<string, { value: string; variable: string }>()
 
-  dict.forEach((token) => {
-    const value = token.condition ? token.varRef : token.value
-    map.set(token.prop, { value, variable: token.varRef })
+  dict.allTokens.forEach((token) => {
+    const { varRef } = token.extensions
+    const value = token.isConditional ? varRef : token.value
+    map.set(token.name, { value, variable: varRef })
   })
 
   const obj = Object.fromEntries(map)

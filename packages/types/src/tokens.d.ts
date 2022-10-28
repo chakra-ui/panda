@@ -1,30 +1,33 @@
-interface TokenMeta {
-  deprecated?: boolean
-  public?: boolean
-  source?: string
-  [key: string]: string | boolean | number
-}
+export type TokenStatus = 'deprecated' | 'experimental' | 'new'
 
 export type Token<V = any> = {
-  description?: string
   value: V
-  meta?: TokenMeta
+  description?: string
+  type?: string
+  extensions?: {
+    status?: TokenStatus
+    [key: string]: any
+  }
 }
 
 export type SemanticToken<V = string, C extends string = string> = {
   description?: string
+  type?: string
   value: V | Record<C, V>
+  extensions?: {
+    [key: string]: any
+  }
 }
 
 type Border = {
   color: string
-  width: string
+  width: string | number
   style: string
 }
 
 type Shadow = {
-  x: number
-  y: number
+  offsetX: number
+  offsetY: number
   blur: number
   spread: number
   color: string
@@ -63,10 +66,6 @@ export type TokenValues = {
   blurs: string
   gradients: string | Gradient
 }
-
-export type TokenEntries = {
-  [K in keyof TokenValues]: [K, TokenValues[K]]
-}[keyof TokenValues]
 
 export type Tokens = {
   [key in keyof TokenValues]?: Nested<Token<TokenValues[key]>>

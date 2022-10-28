@@ -1,4 +1,4 @@
-import { TokenDictionary } from '@css-panda/tokens'
+import { TokenDictionary } from '@css-panda/token-dictionary'
 import { semanticTokens, tokens } from '@css-panda/fixture'
 import { expect, test } from 'vitest'
 import { generateTokenJs } from '../src/generators/token-js'
@@ -288,81 +288,41 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"0.25rem\\",
         \\"variable\\": \\"var(--spacing-1)\\"
       },
-      \\"spacing.-1\\": {
-        \\"value\\": \\"-0.25rem\\",
-        \\"variable\\": \\"calc(var(--spacing-1) * -1)\\"
-      },
       \\"spacing.2\\": {
         \\"value\\": \\"0.5rem\\",
         \\"variable\\": \\"var(--spacing-2)\\"
-      },
-      \\"spacing.-2\\": {
-        \\"value\\": \\"-0.5rem\\",
-        \\"variable\\": \\"calc(var(--spacing-2) * -1)\\"
       },
       \\"spacing.3\\": {
         \\"value\\": \\"0.75rem\\",
         \\"variable\\": \\"var(--spacing-3)\\"
       },
-      \\"spacing.-3\\": {
-        \\"value\\": \\"-0.75rem\\",
-        \\"variable\\": \\"calc(var(--spacing-3) * -1)\\"
-      },
       \\"spacing.4\\": {
         \\"value\\": \\"1rem\\",
         \\"variable\\": \\"var(--spacing-4)\\"
-      },
-      \\"spacing.-4\\": {
-        \\"value\\": \\"-1rem\\",
-        \\"variable\\": \\"calc(var(--spacing-4) * -1)\\"
       },
       \\"spacing.5\\": {
         \\"value\\": \\"1.25rem\\",
         \\"variable\\": \\"var(--spacing-5)\\"
       },
-      \\"spacing.-5\\": {
-        \\"value\\": \\"-1.25rem\\",
-        \\"variable\\": \\"calc(var(--spacing-5) * -1)\\"
-      },
       \\"spacing.6\\": {
         \\"value\\": \\"1.5rem\\",
         \\"variable\\": \\"var(--spacing-6)\\"
-      },
-      \\"spacing.-6\\": {
-        \\"value\\": \\"-1.5rem\\",
-        \\"variable\\": \\"calc(var(--spacing-6) * -1)\\"
       },
       \\"spacing.0.5\\": {
         \\"value\\": \\"0.125rem\\",
         \\"variable\\": \\"var(--spacing-0\\\\\\\\.5)\\"
       },
-      \\"spacing.-0.5\\": {
-        \\"value\\": \\"-0.125rem\\",
-        \\"variable\\": \\"calc(var(--spacing-0\\\\\\\\.5) * -1)\\"
-      },
       \\"spacing.1.5\\": {
         \\"value\\": \\"0.375rem\\",
         \\"variable\\": \\"var(--spacing-1\\\\\\\\.5)\\"
-      },
-      \\"spacing.-1.5\\": {
-        \\"value\\": \\"-0.375rem\\",
-        \\"variable\\": \\"calc(var(--spacing-1\\\\\\\\.5) * -1)\\"
       },
       \\"spacing.2.5\\": {
         \\"value\\": \\"0.625rem\\",
         \\"variable\\": \\"var(--spacing-2\\\\\\\\.5)\\"
       },
-      \\"spacing.-2.5\\": {
-        \\"value\\": \\"-0.625rem\\",
-        \\"variable\\": \\"calc(var(--spacing-2\\\\\\\\.5) * -1)\\"
-      },
       \\"spacing.3.5\\": {
         \\"value\\": \\"0.875rem\\",
         \\"variable\\": \\"var(--spacing-3\\\\\\\\.5)\\"
-      },
-      \\"spacing.-3.5\\": {
-        \\"value\\": \\"-0.875rem\\",
-        \\"variable\\": \\"calc(var(--spacing-3\\\\\\\\.5) * -1)\\"
       },
       \\"sizes.1\\": {
         \\"value\\": \\"0.25rem\\",
@@ -480,9 +440,89 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"var(--spacing-gutter)\\",
         \\"variable\\": \\"var(--spacing-gutter)\\"
       },
+      \\"spacing.-1\\": {
+        \\"value\\": \\"calc(var(--spacing-1) * -1)\\",
+        \\"variable\\": \\"var(--spacing-1)\\"
+      },
+      \\"spacing.-2\\": {
+        \\"value\\": \\"calc(var(--spacing-2) * -1)\\",
+        \\"variable\\": \\"var(--spacing-2)\\"
+      },
+      \\"spacing.-3\\": {
+        \\"value\\": \\"calc(var(--spacing-3) * -1)\\",
+        \\"variable\\": \\"var(--spacing-3)\\"
+      },
+      \\"spacing.-4\\": {
+        \\"value\\": \\"calc(var(--spacing-4) * -1)\\",
+        \\"variable\\": \\"var(--spacing-4)\\"
+      },
+      \\"spacing.-5\\": {
+        \\"value\\": \\"calc(var(--spacing-5) * -1)\\",
+        \\"variable\\": \\"var(--spacing-5)\\"
+      },
+      \\"spacing.-6\\": {
+        \\"value\\": \\"calc(var(--spacing-6) * -1)\\",
+        \\"variable\\": \\"var(--spacing-6)\\"
+      },
+      \\"spacing.-0.5\\": {
+        \\"value\\": \\"calc(var(--spacing-0\\\\\\\\.5) * -1)\\",
+        \\"variable\\": \\"var(--spacing-0\\\\\\\\.5)\\"
+      },
+      \\"spacing.-1.5\\": {
+        \\"value\\": \\"calc(var(--spacing-1\\\\\\\\.5) * -1)\\",
+        \\"variable\\": \\"var(--spacing-1\\\\\\\\.5)\\"
+      },
+      \\"spacing.-2.5\\": {
+        \\"value\\": \\"calc(var(--spacing-2\\\\\\\\.5) * -1)\\",
+        \\"variable\\": \\"var(--spacing-2\\\\\\\\.5)\\"
+      },
+      \\"spacing.-3.5\\": {
+        \\"value\\": \\"calc(var(--spacing-3\\\\\\\\.5) * -1)\\",
+        \\"variable\\": \\"var(--spacing-3\\\\\\\\.5)\\"
+      },
       \\"spacing.-gutter\\": {
-        \\"value\\": \\"calc(var(--spacing-gutter) * -1)\\",
-        \\"variable\\": \\"calc(var(--spacing-gutter) * -1)\\"
+        \\"value\\": \\"var(--spacing-gutter)\\",
+        \\"variable\\": \\"var(--spacing-gutter)\\"
+      },
+      \\"colors.palette.50\\": {
+        \\"value\\": \\"var(--colors-palette-50)\\",
+        \\"variable\\": \\"var(--colors-palette-50)\\"
+      },
+      \\"colors.palette.100\\": {
+        \\"value\\": \\"var(--colors-palette-100)\\",
+        \\"variable\\": \\"var(--colors-palette-100)\\"
+      },
+      \\"colors.palette.200\\": {
+        \\"value\\": \\"var(--colors-palette-200)\\",
+        \\"variable\\": \\"var(--colors-palette-200)\\"
+      },
+      \\"colors.palette.300\\": {
+        \\"value\\": \\"var(--colors-palette-300)\\",
+        \\"variable\\": \\"var(--colors-palette-300)\\"
+      },
+      \\"colors.palette.400\\": {
+        \\"value\\": \\"var(--colors-palette-400)\\",
+        \\"variable\\": \\"var(--colors-palette-400)\\"
+      },
+      \\"colors.palette.500\\": {
+        \\"value\\": \\"var(--colors-palette-500)\\",
+        \\"variable\\": \\"var(--colors-palette-500)\\"
+      },
+      \\"colors.palette.600\\": {
+        \\"value\\": \\"var(--colors-palette-600)\\",
+        \\"variable\\": \\"var(--colors-palette-600)\\"
+      },
+      \\"colors.palette.700\\": {
+        \\"value\\": \\"var(--colors-palette-700)\\",
+        \\"variable\\": \\"var(--colors-palette-700)\\"
+      },
+      \\"colors.palette.800\\": {
+        \\"value\\": \\"var(--colors-palette-800)\\",
+        \\"variable\\": \\"var(--colors-palette-800)\\"
+      },
+      \\"colors.palette.900\\": {
+        \\"value\\": \\"var(--colors-palette-900)\\",
+        \\"variable\\": \\"var(--colors-palette-900)\\"
       }
     }
 

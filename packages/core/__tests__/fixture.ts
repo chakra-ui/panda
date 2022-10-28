@@ -1,5 +1,5 @@
 import * as mocks from '@css-panda/fixture'
-import { TokenDictionary } from '@css-panda/tokens'
+import { TokenDictionary } from '@css-panda/token-dictionary'
 import postcss from 'postcss'
 import { Conditions, Utility } from '../src'
 import { Recipe } from '../src/recipe'

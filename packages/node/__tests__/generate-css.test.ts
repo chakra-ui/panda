@@ -130,21 +130,31 @@ test('[css] should generate css', () => {
         --durations-75: 75ms;
         --durations-100: 100ms;
         --durations-150: 150ms;
-        --colors-primary: var(--colors-red-500);
-        --colors-secondary: var(--colors-red-800);
-        --spacing-gutter: var(--spacing-4)
+        --colors-primary: #EF4444;
+        --colors-secondary: #991B1B;
+        --spacing-gutter: 1rem;
+        --colors-palette-50: var(--colors-palette-50);
+        --colors-palette-100: var(--colors-palette-100);
+        --colors-palette-200: var(--colors-palette-200);
+        --colors-palette-300: var(--colors-palette-300);
+        --colors-palette-400: var(--colors-palette-400);
+        --colors-palette-500: var(--colors-palette-500);
+        --colors-palette-600: var(--colors-palette-600);
+        --colors-palette-700: var(--colors-palette-700);
+        --colors-palette-800: var(--colors-palette-800);
+        --colors-palette-900: var(--colors-palette-900)
     }
 
     [data-theme=dark] {
-     --colors-primary: var(--colors-red-400);
-    --colors-secondary: var(--colors-red-700) 
-    }
+     --colors-primary: #F87171;
+    --colors-secondary: #B91C1C; 
+     }
 
-    @media screen and (min-width: 62em) {
-     :root {
-        --spacing-gutter: var(--spacing-5)
-    } 
-    }
+    @media screen and (min-width: 62em) { 
+     :root { 
+     --spacing-gutter: 1.25rem; 
+     } 
+     }
 
     "
   `)

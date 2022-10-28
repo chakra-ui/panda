@@ -21,5 +21,8 @@
   "dependencies": {
     "@css-panda/shared": "workspace:*",
     "ts-pattern": "4.0.5"
+  },
+  "devDependencies": {
+    "@css-panda/fixture": "workspace:*"
   }
 }

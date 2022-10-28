@@ -7,7 +7,7 @@ import {
   withoutImportant,
   withoutSpace,
 } from '@css-panda/shared'
-import type { TokenDictionary } from '@css-panda/tokens'
+import type { TokenDictionary } from '@css-panda/token-dictionary'
 import type { AnyFunction, Dict, LayerStyles, PropertyConfig, TextStyles, UtilityConfig } from '@css-panda/types'
 import merge from 'lodash.merge'
 import { cssToJs, toCss } from './to-css'
@@ -73,6 +73,7 @@ export class Utility {
     this.config = config
     this.assignShorthands()
     this.assignCompositions()
+    this.assignPaletteProperty()
 
     this.assignProperties()
     this.assignValueMap()
@@ -83,6 +84,16 @@ export class Utility {
       const { shorthand } = this.normalize(config) ?? {}
       if (!shorthand) continue
       this.shorthandMap.set(shorthand, property)
+    }
+  }
+
+  private assignPaletteProperty() {
+    const values = this.tokenMap.palettes
+    this.config.palette = {
+      values: Object.keys(values),
+      transform(value) {
+        return values[value]
+      },
     }
   }
 
@@ -144,7 +155,7 @@ export class Utility {
     const { values } = config
 
     if (isString(values)) {
-      return this.tokenMap.flatValues.get(values) ?? {}
+      return this.tokenMap.getValue(values) ?? {}
     }
 
     if (Array.isArray(values)) {
@@ -247,7 +258,7 @@ export class Utility {
     const isCssVar = prop.startsWith('--')
 
     if (isCssVar) {
-      const tokenValue = this.tokenMap.values.get(value)?.varRef
+      const tokenValue = this.tokenMap.getTokenVar(value)
       value = typeof tokenValue === 'string' ? tokenValue : value
     }
 

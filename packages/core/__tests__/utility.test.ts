@@ -1,5 +1,5 @@
 import { semanticTokens, tokens } from '@css-panda/fixture'
-import { TokenDictionary } from '@css-panda/tokens'
+import { TokenDictionary } from '@css-panda/token-dictionary'
 import { describe, expect, test } from 'vitest'
 import { Utility } from '../src/utility'
 
@@ -66,6 +66,16 @@ describe('Utility', () => {
           "red.900",
           "primary",
           "secondary",
+          "palette.50",
+          "palette.100",
+          "palette.200",
+          "palette.300",
+          "palette.400",
+          "palette.500",
+          "palette.600",
+          "palette.700",
+          "palette.800",
+          "palette.900",
         },
         "display" => Set {
           "flex",
@@ -78,26 +88,31 @@ describe('Utility', () => {
           "4",
           "5",
           "6",
+          "0.5",
+          "1.5",
+          "2.5",
+          "3.5",
+          "gutter",
           "-1",
           "-2",
           "-3",
           "-4",
           "-5",
           "-6",
-          "0.5",
           "-0.5",
-          "1.5",
           "-1.5",
-          "2.5",
           "-2.5",
-          "3.5",
           "-3.5",
-          "gutter",
           "-gutter",
         },
         "marginX" => Set {
           "sm",
           "md",
+        },
+        "palette" => Set {
+          "gray",
+          "green",
+          "red",
         },
       }
     `)
@@ -137,6 +152,16 @@ describe('Utility', () => {
         "(backgroundColor = red.900)" => "bg_red.900",
         "(backgroundColor = primary)" => "bg_primary",
         "(backgroundColor = secondary)" => "bg_secondary",
+        "(backgroundColor = palette.50)" => "bg_palette.50",
+        "(backgroundColor = palette.100)" => "bg_palette.100",
+        "(backgroundColor = palette.200)" => "bg_palette.200",
+        "(backgroundColor = palette.300)" => "bg_palette.300",
+        "(backgroundColor = palette.400)" => "bg_palette.400",
+        "(backgroundColor = palette.500)" => "bg_palette.500",
+        "(backgroundColor = palette.600)" => "bg_palette.600",
+        "(backgroundColor = palette.700)" => "bg_palette.700",
+        "(backgroundColor = palette.800)" => "bg_palette.800",
+        "(backgroundColor = palette.900)" => "bg_palette.900",
         "(display = flex)" => "d_flex",
         "(display = inline-flex)" => "d_inline-flex",
         "(margin = 1)" => "m_1",
@@ -145,24 +170,27 @@ describe('Utility', () => {
         "(margin = 4)" => "m_4",
         "(margin = 5)" => "m_5",
         "(margin = 6)" => "m_6",
+        "(margin = 0.5)" => "m_0.5",
+        "(margin = 1.5)" => "m_1.5",
+        "(margin = 2.5)" => "m_2.5",
+        "(margin = 3.5)" => "m_3.5",
+        "(margin = gutter)" => "m_gutter",
         "(margin = -1)" => "m_-1",
         "(margin = -2)" => "m_-2",
         "(margin = -3)" => "m_-3",
         "(margin = -4)" => "m_-4",
         "(margin = -5)" => "m_-5",
         "(margin = -6)" => "m_-6",
-        "(margin = 0.5)" => "m_0.5",
         "(margin = -0.5)" => "m_-0.5",
-        "(margin = 1.5)" => "m_1.5",
         "(margin = -1.5)" => "m_-1.5",
-        "(margin = 2.5)" => "m_2.5",
         "(margin = -2.5)" => "m_-2.5",
-        "(margin = 3.5)" => "m_3.5",
         "(margin = -3.5)" => "m_-3.5",
-        "(margin = gutter)" => "m_gutter",
         "(margin = -gutter)" => "m_-gutter",
         "(marginX = sm)" => "mx_sm",
         "(marginX = md)" => "mx_md",
+        "(palette = gray)" => "palette_gray",
+        "(palette = green)" => "palette_green",
+        "(palette = red)" => "palette_red",
       }
     `)
 
@@ -267,6 +295,36 @@ describe('Utility', () => {
         "(backgroundColor = secondary)" => {
           "backgroundColor": "var(--colors-secondary)",
         },
+        "(backgroundColor = palette.50)" => {
+          "backgroundColor": "var(--colors-palette-50)",
+        },
+        "(backgroundColor = palette.100)" => {
+          "backgroundColor": "var(--colors-palette-100)",
+        },
+        "(backgroundColor = palette.200)" => {
+          "backgroundColor": "var(--colors-palette-200)",
+        },
+        "(backgroundColor = palette.300)" => {
+          "backgroundColor": "var(--colors-palette-300)",
+        },
+        "(backgroundColor = palette.400)" => {
+          "backgroundColor": "var(--colors-palette-400)",
+        },
+        "(backgroundColor = palette.500)" => {
+          "backgroundColor": "var(--colors-palette-500)",
+        },
+        "(backgroundColor = palette.600)" => {
+          "backgroundColor": "var(--colors-palette-600)",
+        },
+        "(backgroundColor = palette.700)" => {
+          "backgroundColor": "var(--colors-palette-700)",
+        },
+        "(backgroundColor = palette.800)" => {
+          "backgroundColor": "var(--colors-palette-800)",
+        },
+        "(backgroundColor = palette.900)" => {
+          "backgroundColor": "var(--colors-palette-900)",
+        },
         "(display = flex)" => {
           "display": "flex",
         },
@@ -291,6 +349,21 @@ describe('Utility', () => {
         "(margin = 6)" => {
           "margin": "var(--spacing-6)",
         },
+        "(margin = 0.5)" => {
+          "margin": "var(--spacing-0\\\\.5)",
+        },
+        "(margin = 1.5)" => {
+          "margin": "var(--spacing-1\\\\.5)",
+        },
+        "(margin = 2.5)" => {
+          "margin": "var(--spacing-2\\\\.5)",
+        },
+        "(margin = 3.5)" => {
+          "margin": "var(--spacing-3\\\\.5)",
+        },
+        "(margin = gutter)" => {
+          "margin": "var(--spacing-gutter)",
+        },
         "(margin = -1)" => {
           "margin": "calc(var(--spacing-1) * -1)",
         },
@@ -309,32 +382,17 @@ describe('Utility', () => {
         "(margin = -6)" => {
           "margin": "calc(var(--spacing-6) * -1)",
         },
-        "(margin = 0.5)" => {
-          "margin": "var(--spacing-0\\\\.5)",
-        },
         "(margin = -0.5)" => {
           "margin": "calc(var(--spacing-0\\\\.5) * -1)",
-        },
-        "(margin = 1.5)" => {
-          "margin": "var(--spacing-1\\\\.5)",
         },
         "(margin = -1.5)" => {
           "margin": "calc(var(--spacing-1\\\\.5) * -1)",
         },
-        "(margin = 2.5)" => {
-          "margin": "var(--spacing-2\\\\.5)",
-        },
         "(margin = -2.5)" => {
           "margin": "calc(var(--spacing-2\\\\.5) * -1)",
         },
-        "(margin = 3.5)" => {
-          "margin": "var(--spacing-3\\\\.5)",
-        },
         "(margin = -3.5)" => {
           "margin": "calc(var(--spacing-3\\\\.5) * -1)",
-        },
-        "(margin = gutter)" => {
-          "margin": "var(--spacing-gutter)",
         },
         "(margin = -gutter)" => {
           "margin": "calc(var(--spacing-gutter) * -1)",
@@ -346,6 +404,42 @@ describe('Utility', () => {
         "(marginX = md)" => {
           "marginBottom": "40px",
           "marginTop": "40px",
+        },
+        "(palette = gray)" => {
+          "--colors-palette-100": "var(--colors-gray-100)",
+          "--colors-palette-200": "var(--colors-gray-200)",
+          "--colors-palette-300": "var(--colors-gray-300)",
+          "--colors-palette-400": "var(--colors-gray-400)",
+          "--colors-palette-50": "var(--colors-gray-50)",
+          "--colors-palette-500": "var(--colors-gray-500)",
+          "--colors-palette-600": "var(--colors-gray-600)",
+          "--colors-palette-700": "var(--colors-gray-700)",
+          "--colors-palette-800": "var(--colors-gray-800)",
+          "--colors-palette-900": "var(--colors-gray-900)",
+        },
+        "(palette = green)" => {
+          "--colors-palette-100": "var(--colors-green-100)",
+          "--colors-palette-200": "var(--colors-green-200)",
+          "--colors-palette-300": "var(--colors-green-300)",
+          "--colors-palette-400": "var(--colors-green-400)",
+          "--colors-palette-50": "var(--colors-green-50)",
+          "--colors-palette-500": "var(--colors-green-500)",
+          "--colors-palette-600": "var(--colors-green-600)",
+          "--colors-palette-700": "var(--colors-green-700)",
+          "--colors-palette-800": "var(--colors-green-800)",
+          "--colors-palette-900": "var(--colors-green-900)",
+        },
+        "(palette = red)" => {
+          "--colors-palette-100": "var(--colors-red-100)",
+          "--colors-palette-200": "var(--colors-red-200)",
+          "--colors-palette-300": "var(--colors-red-300)",
+          "--colors-palette-400": "var(--colors-red-400)",
+          "--colors-palette-50": "var(--colors-red-50)",
+          "--colors-palette-500": "var(--colors-red-500)",
+          "--colors-palette-600": "var(--colors-red-600)",
+          "--colors-palette-700": "var(--colors-red-700)",
+          "--colors-palette-800": "var(--colors-red-800)",
+          "--colors-palette-900": "var(--colors-red-900)",
         },
       }
     `)
@@ -393,6 +487,42 @@ describe('Utility', () => {
         "(marginRight = md)" => {
           "marginRight": "40px",
         },
+        "(palette = gray)" => {
+          "--colors-palette-100": "var(--colors-gray-100)",
+          "--colors-palette-200": "var(--colors-gray-200)",
+          "--colors-palette-300": "var(--colors-gray-300)",
+          "--colors-palette-400": "var(--colors-gray-400)",
+          "--colors-palette-50": "var(--colors-gray-50)",
+          "--colors-palette-500": "var(--colors-gray-500)",
+          "--colors-palette-600": "var(--colors-gray-600)",
+          "--colors-palette-700": "var(--colors-gray-700)",
+          "--colors-palette-800": "var(--colors-gray-800)",
+          "--colors-palette-900": "var(--colors-gray-900)",
+        },
+        "(palette = green)" => {
+          "--colors-palette-100": "var(--colors-green-100)",
+          "--colors-palette-200": "var(--colors-green-200)",
+          "--colors-palette-300": "var(--colors-green-300)",
+          "--colors-palette-400": "var(--colors-green-400)",
+          "--colors-palette-50": "var(--colors-green-50)",
+          "--colors-palette-500": "var(--colors-green-500)",
+          "--colors-palette-600": "var(--colors-green-600)",
+          "--colors-palette-700": "var(--colors-green-700)",
+          "--colors-palette-800": "var(--colors-green-800)",
+          "--colors-palette-900": "var(--colors-green-900)",
+        },
+        "(palette = red)" => {
+          "--colors-palette-100": "var(--colors-red-100)",
+          "--colors-palette-200": "var(--colors-red-200)",
+          "--colors-palette-300": "var(--colors-red-300)",
+          "--colors-palette-400": "var(--colors-red-400)",
+          "--colors-palette-50": "var(--colors-red-50)",
+          "--colors-palette-500": "var(--colors-red-500)",
+          "--colors-palette-600": "var(--colors-red-600)",
+          "--colors-palette-700": "var(--colors-red-700)",
+          "--colors-palette-800": "var(--colors-red-800)",
+          "--colors-palette-900": "var(--colors-red-900)",
+        },
       }
     `)
 
@@ -404,6 +534,9 @@ describe('Utility', () => {
         "(marginRight = auto)" => "mr_auto",
         "(marginRight = sm)" => "mr_sm",
         "(marginRight = md)" => "mr_md",
+        "(palette = gray)" => "palette_gray",
+        "(palette = green)" => "palette_green",
+        "(palette = red)" => "palette_red",
       }
     `)
 

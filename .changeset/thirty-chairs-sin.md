@@ -10,7 +10,7 @@
 '@css-panda/logger': patch
 '@css-panda/node': patch
 '@css-panda/shared': patch
-'@css-panda/tokens': patch
+'@css-panda/token-dictionary': patch
 '@css-panda/types': patch
 ---
 
