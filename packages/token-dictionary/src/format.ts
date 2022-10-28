@@ -37,10 +37,10 @@ export const formats = {
   groupByCategory(dictionary: TokenDictionary) {
     const grouped: Map<string, Map<string, Token>> = new Map()
     dictionary.allTokens.forEach((token) => {
-      const { category } = token.extensions
+      const { category, prop } = token.extensions
       if (!category) return
       grouped.get(category) || grouped.set(category, new Map())
-      grouped.set(category, grouped.get(category)!.set(token.extensions.prop, token))
+      grouped.set(category, grouped.get(category)!.set(prop, token))
     })
     return grouped
   },
@@ -51,8 +51,9 @@ export const formats = {
     grouped.forEach((tokens, category) => {
       result.get(category) || result.set(category, new Map())
       tokens.forEach((token) => {
-        const { prop, varRef } = token.extensions
-        result.set(category, result.get(category)!.set(prop, varRef))
+        const { prop, varRef, isNegative } = token.extensions
+        const value = isNegative ? (token.isConditional ? token.originalValue : token.value) : varRef
+        result.set(category, result.get(category)!.set(prop, value))
       })
     })
     return result
@@ -64,6 +65,7 @@ export const formats = {
     grouped.forEach((tokens, condition) => {
       result.get(condition) || result.set(condition, new Map())
       tokens.forEach((token) => {
+        if (token.extensions.isNegative) return
         result.get(condition)!.set(token.extensions.var, token.value)
       })
     })

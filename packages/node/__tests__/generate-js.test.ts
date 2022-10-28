@@ -441,48 +441,48 @@ test('[dts] should generate package', () => {
         \\"variable\\": \\"var(--spacing-gutter)\\"
       },
       \\"spacing.-1\\": {
-        \\"value\\": \\"0.25rem\\",
-        \\"variable\\": \\"calc(var(--spacing-1) * -1)\\"
+        \\"value\\": \\"calc(var(--spacing-1) * -1)\\",
+        \\"variable\\": \\"var(--spacing-1)\\"
       },
       \\"spacing.-2\\": {
-        \\"value\\": \\"0.5rem\\",
-        \\"variable\\": \\"calc(var(--spacing-2) * -1)\\"
+        \\"value\\": \\"calc(var(--spacing-2) * -1)\\",
+        \\"variable\\": \\"var(--spacing-2)\\"
       },
       \\"spacing.-3\\": {
-        \\"value\\": \\"0.75rem\\",
-        \\"variable\\": \\"calc(var(--spacing-3) * -1)\\"
+        \\"value\\": \\"calc(var(--spacing-3) * -1)\\",
+        \\"variable\\": \\"var(--spacing-3)\\"
       },
       \\"spacing.-4\\": {
-        \\"value\\": \\"1rem\\",
-        \\"variable\\": \\"calc(var(--spacing-4) * -1)\\"
+        \\"value\\": \\"calc(var(--spacing-4) * -1)\\",
+        \\"variable\\": \\"var(--spacing-4)\\"
       },
       \\"spacing.-5\\": {
-        \\"value\\": \\"1.25rem\\",
-        \\"variable\\": \\"calc(var(--spacing-5) * -1)\\"
+        \\"value\\": \\"calc(var(--spacing-5) * -1)\\",
+        \\"variable\\": \\"var(--spacing-5)\\"
       },
       \\"spacing.-6\\": {
-        \\"value\\": \\"1.5rem\\",
-        \\"variable\\": \\"calc(var(--spacing-6) * -1)\\"
+        \\"value\\": \\"calc(var(--spacing-6) * -1)\\",
+        \\"variable\\": \\"var(--spacing-6)\\"
       },
       \\"spacing.-0.5\\": {
-        \\"value\\": \\"0.125rem\\",
-        \\"variable\\": \\"calc(var(--spacing-0\\\\\\\\.5) * -1)\\"
+        \\"value\\": \\"calc(var(--spacing-0\\\\\\\\.5) * -1)\\",
+        \\"variable\\": \\"var(--spacing-0\\\\\\\\.5)\\"
       },
       \\"spacing.-1.5\\": {
-        \\"value\\": \\"0.375rem\\",
-        \\"variable\\": \\"calc(var(--spacing-1\\\\\\\\.5) * -1)\\"
+        \\"value\\": \\"calc(var(--spacing-1\\\\\\\\.5) * -1)\\",
+        \\"variable\\": \\"var(--spacing-1\\\\\\\\.5)\\"
       },
       \\"spacing.-2.5\\": {
-        \\"value\\": \\"0.625rem\\",
-        \\"variable\\": \\"calc(var(--spacing-2\\\\\\\\.5) * -1)\\"
+        \\"value\\": \\"calc(var(--spacing-2\\\\\\\\.5) * -1)\\",
+        \\"variable\\": \\"var(--spacing-2\\\\\\\\.5)\\"
       },
       \\"spacing.-3.5\\": {
-        \\"value\\": \\"0.875rem\\",
-        \\"variable\\": \\"calc(var(--spacing-3\\\\\\\\.5) * -1)\\"
+        \\"value\\": \\"calc(var(--spacing-3\\\\\\\\.5) * -1)\\",
+        \\"variable\\": \\"var(--spacing-3\\\\\\\\.5)\\"
       },
       \\"spacing.-gutter\\": {
-        \\"value\\": \\"calc(var(--spacing-gutter) * -1)\\",
-        \\"variable\\": \\"calc(var(--spacing-gutter) * -1)\\"
+        \\"value\\": \\"var(--spacing-gutter)\\",
+        \\"variable\\": \\"var(--spacing-gutter)\\"
       },
       \\"colors.palette.50\\": {
         \\"value\\": \\"var(--colors-palette-50)\\",

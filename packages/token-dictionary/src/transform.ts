@@ -1,4 +1,4 @@
-import { calc, cssVar, isString } from '@css-panda/shared'
+import { cssVar, isString } from '@css-panda/shared'
 import { isMatching, P } from 'ts-pattern'
 import type { TokenTransformer } from './dictionary'
 import type { Token } from './token'
@@ -132,7 +132,7 @@ export const addCssVariables: TokenTransformer = {
     const variable = cssVar(pathValue.join('-'), { prefix })
     return {
       var: variable.var,
-      varRef: token.extensions.isNegative ? calc.negate(variable) : variable.ref,
+      varRef: variable.ref,
     }
   },
 }
