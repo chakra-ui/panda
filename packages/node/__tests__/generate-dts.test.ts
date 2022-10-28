@@ -10,6 +10,8 @@ test('[dts] should generate package', () => {
 
     export type Font = \\"heading\\" | \\"body\\" | \\"mono\\"
 
+    export type Palette = \\"gray\\" | \\"green\\" | \\"red\\"
+
     export type Color = \\"current\\" | \\"gray.50\\" | \\"gray.100\\" | \\"gray.200\\" | \\"gray.300\\" | \\"gray.400\\" | \\"gray.500\\" | \\"gray.600\\" | \\"gray.700\\" | \\"gray.800\\" | \\"gray.900\\" | \\"green.50\\" | \\"green.100\\" | \\"green.200\\" | \\"green.300\\" | \\"green.400\\" | \\"green.500\\" | \\"green.600\\" | \\"green.700\\" | \\"green.800\\" | \\"green.900\\" | \\"red.50\\" | \\"red.100\\" | \\"red.200\\" | \\"red.300\\" | \\"red.400\\" | \\"red.500\\" | \\"red.600\\" | \\"red.700\\" | \\"red.800\\" | \\"red.900\\" | \\"primary\\" | \\"secondary\\" | \\"palette.50\\" | \\"palette.100\\" | \\"palette.200\\" | \\"palette.300\\" | \\"palette.400\\" | \\"palette.500\\" | \\"palette.600\\" | \\"palette.700\\" | \\"palette.800\\" | \\"palette.900\\"
 
     export type FontSize = \\"sm\\" | \\"xs\\" | \\"md\\" | \\"lg\\" | \\"xl\\"
