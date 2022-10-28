@@ -102,46 +102,50 @@ describe('generate property types', () => {
 
 
 
-         type Get<T> = T extends keyof BasePropTypes ? BasePropTypes[T] : T extends keyof CSSProperties ? CSSProperties[T] : string
-         
-         export type PropTypes = BasePropTypes & {
+        type CssProp<T> = T extends keyof CSSProperties ? CSSProperties[T] : (string & {})
         
-      	z: Get<\\"zIndex\\">;
-      	objectPos: Get<\\"objectPosition\\">;
-      	overscroll: Get<\\"overscrollBehavior\\">;
-      	overscrollX: Get<\\"overscrollBehaviorX\\">;
-      	overscrollY: Get<\\"overscrollBehaviorY\\">;
-      	pos: Get<\\"position\\">;
-      	flexDir: Get<\\"flexDirection\\">;
-      	p: Get<\\"padding\\">;
-      	pl: Get<\\"paddingLeft\\">;
-      	pr: Get<\\"paddingRight\\">;
-      	pt: Get<\\"paddingTop\\">;
-      	pb: Get<\\"paddingBottom\\">;
-      	px: Get<\\"paddingX\\">;
-      	py: Get<\\"paddingY\\">;
-      	w: Get<\\"width\\">;
-      	h: Get<\\"height\\">;
-      	minH: Get<\\"minHeight\\">;
-      	maxH: Get<\\"maxHeight\\">;
-      	minW: Get<\\"minWidth\\">;
-      	maxW: Get<\\"maxWidth\\">;
-      	ml: Get<\\"marginLeft\\">;
-      	mr: Get<\\"marginRight\\">;
-      	mt: Get<\\"marginTop\\">;
-      	mb: Get<\\"marginBottom\\">;
-      	m: Get<\\"margin\\">;
-      	mx: Get<\\"marginX\\">;
-      	my: Get<\\"marginY\\">;
-      	bgAttachment: Get<\\"backgroundAttachment\\">;
-      	bgClip: Get<\\"backgroundClip\\">;
-      	bg: Get<\\"background\\">;
-      	bgColor: Get<\\"backgroundColor\\">;
-      	bgOrigin: Get<\\"backgroundOrigin\\">;
-      	bgRepeat: Get<\\"backgroundRepeat\\">;
-      	bgBlend: Get<\\"backgroundBlendMode\\">;
-      	bgGradient: Get<\\"backgroundGradient\\">;
-      	shadow: Get<\\"boxShadow\\">;
+        type BaseProp<T> = T extends keyof BasePropTypes ? BasePropTypes[T] : (string & {})
+        
+        type Shorthand<T> = CssProp<T> | BaseProp<T>
+         
+        export type PropTypes = BasePropTypes & {
+        
+      	z: Shorthand<\\"zIndex\\">;
+      	objectPos: Shorthand<\\"objectPosition\\">;
+      	overscroll: Shorthand<\\"overscrollBehavior\\">;
+      	overscrollX: Shorthand<\\"overscrollBehaviorX\\">;
+      	overscrollY: Shorthand<\\"overscrollBehaviorY\\">;
+      	pos: Shorthand<\\"position\\">;
+      	flexDir: Shorthand<\\"flexDirection\\">;
+      	p: Shorthand<\\"padding\\">;
+      	pl: Shorthand<\\"paddingLeft\\">;
+      	pr: Shorthand<\\"paddingRight\\">;
+      	pt: Shorthand<\\"paddingTop\\">;
+      	pb: Shorthand<\\"paddingBottom\\">;
+      	px: Shorthand<\\"paddingX\\">;
+      	py: Shorthand<\\"paddingY\\">;
+      	w: Shorthand<\\"width\\">;
+      	h: Shorthand<\\"height\\">;
+      	minH: Shorthand<\\"minHeight\\">;
+      	maxH: Shorthand<\\"maxHeight\\">;
+      	minW: Shorthand<\\"minWidth\\">;
+      	maxW: Shorthand<\\"maxWidth\\">;
+      	ml: Shorthand<\\"marginLeft\\">;
+      	mr: Shorthand<\\"marginRight\\">;
+      	mt: Shorthand<\\"marginTop\\">;
+      	mb: Shorthand<\\"marginBottom\\">;
+      	m: Shorthand<\\"margin\\">;
+      	mx: Shorthand<\\"marginX\\">;
+      	my: Shorthand<\\"marginY\\">;
+      	bgAttachment: Shorthand<\\"backgroundAttachment\\">;
+      	bgClip: Shorthand<\\"backgroundClip\\">;
+      	bg: Shorthand<\\"background\\">;
+      	bgColor: Shorthand<\\"backgroundColor\\">;
+      	bgOrigin: Shorthand<\\"backgroundOrigin\\">;
+      	bgRepeat: Shorthand<\\"backgroundRepeat\\">;
+      	bgBlend: Shorthand<\\"backgroundBlendMode\\">;
+      	bgGradient: Shorthand<\\"backgroundGradient\\">;
+      	shadow: Shorthand<\\"boxShadow\\">;
       }"
     `)
   })

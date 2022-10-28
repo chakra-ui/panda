@@ -18,13 +18,17 @@ export function generatePropTypes(utility: Utility) {
   result.push('}', '\n')
 
   result.push(`
-   type Get<T> = T extends keyof BasePropTypes ? BasePropTypes[T] : T extends keyof CSSProperties ? CSSProperties[T] : string
+  type CssProp<T> = T extends keyof CSSProperties ? CSSProperties[T] : (string & {})
+  
+  type BaseProp<T> = T extends keyof BasePropTypes ? BasePropTypes[T] : (string & {})
+  
+  type Shorthand<T> = CssProp<T> | BaseProp<T>
    
-   export type PropTypes = BasePropTypes & {
+  export type PropTypes = BasePropTypes & {
   `)
 
   utility.shorthandMap.forEach((value, key) => {
-    result.push(`\t${key}: Get<${JSON.stringify(value)}>;`)
+    result.push(`\t${key}: Shorthand<${JSON.stringify(value)}>;`)
   })
 
   result.push('}')
