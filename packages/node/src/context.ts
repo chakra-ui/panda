@@ -1,4 +1,4 @@
-import type { Collector } from '@css-panda/ast'
+import { Collector, createParser, createProject } from '@css-panda/ast'
 import type { LoadConfigResult } from '@css-panda/config'
 import { Conditions, discardDuplicate, GeneratorContext, Stylesheet, Utility } from '@css-panda/core'
 import { NotFoundError } from '@css-panda/error'
@@ -242,6 +242,25 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * Collect extracted styles
    * -----------------------------------------------------------------------------*/
 
+  const importMap = {
+    css: `${outdir}/css`,
+    recipe: `${outdir}/recipes`,
+    pattern: `${outdir}/patterns`,
+    jsx: `${outdir}/jsx`,
+  }
+
+  const tsProject = createProject()
+  tsProject.addSourceFilesAtPaths(files)
+
+  const parseSourceFile = createParser({
+    importMap,
+    jsx: {
+      factory: jsxFactory,
+      isStyleProp: isProperty,
+      nodes: patternNodes,
+    },
+  })
+
   function collectStyles(collector: Collector, file: string) {
     const sheet = new Stylesheet(context())
 
@@ -250,41 +269,30 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     }
 
     collector.globalCss.forEach((result) => {
-      sheet.processGlobalCss(result)
-    })
-
-    collector.fontFace.forEach((result) => {
-      sheet.processFontFace(result)
+      sheet.processGlobalCss(result.data)
     })
 
     collector.css.forEach((result) => {
-      sheet.process(result)
-    })
-
-    collector.sx.forEach((result) => {
-      sheet.process(result)
+      sheet.processAtomic(result.data)
     })
 
     collector.cssMap.forEach((result) => {
       for (const data of Object.values(result.data)) {
-        sheet.process({ type: 'object', data })
+        sheet.processAtomic(data)
       }
     })
 
     collector.jsx.forEach((result) => {
       const { data, type, name } = result
-      const { conditions = [], css = {}, ...rest } = data
+      const { css = {}, ...rest } = data
 
       const styles = { ...css, ...rest }
 
       // treat pattern jsx like regular pattern
       if (name && type === 'pattern') {
-        collector.addPattern(getPatternFnName(name), styles)
+        collector.setPattern(getPatternFnName(name), { data: styles })
       } else {
-        sheet.process({ type, data: styles })
-        conditions.forEach((style: any) => {
-          sheet.process(style)
-        })
+        sheet.processAtomic(styles)
       }
     })
 
@@ -309,7 +317,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       }
     })
 
-    if (collector.isEmpty()) {
+    if (collector.isEmpty) {
       return
     }
 
@@ -338,12 +346,11 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     exclude,
     conditions,
 
-    importMap: {
-      css: `${outdir}/css`,
-      recipe: `${outdir}/recipes`,
-      pattern: `${outdir}/patterns`,
-      jsx: `${outdir}/jsx`,
+    importMap,
+    getSourceFile(file: string) {
+      return tsProject.getSourceFile(file)
     },
+    parseSourceFile,
 
     getPath,
     paths,

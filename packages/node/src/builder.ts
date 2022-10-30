@@ -80,7 +80,7 @@ export class Builder {
       const isUnchanged = this.fileModifiedMap.has(file) && mtime === this.fileModifiedMap.get(file)
       if (isUnchanged) return
 
-      const result = await extractFile(ctx, file)
+      const result = extractFile(ctx, file)
       if (!result) return
 
       this.fileModifiedMap.set(file, mtime)

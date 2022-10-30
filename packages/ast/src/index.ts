@@ -1,3 +1,2 @@
-export * from './transform'
-export * from './plugins'
-export * from './collector'
+export * from './parser'
+export type { Collector } from './collector'

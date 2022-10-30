@@ -13,19 +13,20 @@
   "scripts": {
     "build": "tsup src/index.ts --format=esm,cjs --dts",
     "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
-    "dev": "pnpm build-fast --watch"
+    "dev": "pnpm build-fast --watch",
+    "sandbox": "tsx src/sandbox.ts",
+    "swc": "tsx __tests__/base.ts"
   },
   "dependencies": {
-    "@swc/core": "1.2.248",
     "@css-panda/logger": "workspace:*",
+    "@css-panda/shared": "workspace:*",
     "@css-panda/is-valid-prop": "workspace:*",
     "@css-panda/types": "workspace:*",
     "ts-pattern": "4.0.5",
-    "lodash.merge": "4.6.2"
+    "ts-morph": "16.0.0"
   },
   "devDependencies": {
-    "@css-panda/fixture": "workspace:*",
-    "@types/lodash.merge": "4.6.7"
+    "@css-panda/fixture": "workspace:*"
   },
   "files": [
     "dist"
