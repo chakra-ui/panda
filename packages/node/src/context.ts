@@ -1,6 +1,6 @@
 import { Collector, createParser, createProject } from '@css-panda/ast'
 import type { LoadConfigResult } from '@css-panda/config'
-import { Conditions, discardDuplicate, GeneratorContext, Stylesheet, Utility } from '@css-panda/core'
+import { Conditions, discardDuplicate, StylesheetContext, Stylesheet, Utility } from '@css-panda/core'
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import { capitalize, mapObject, uncapitalize } from '@css-panda/shared'
@@ -93,7 +93,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     breakpoints,
   })
 
-  const context = (): GeneratorContext => ({
+  const context = (): StylesheetContext => ({
     root: postcss.root(),
     breakpoints,
     conditions,

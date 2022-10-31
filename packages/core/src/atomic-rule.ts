@@ -9,7 +9,7 @@ import {
 } from '@css-panda/shared'
 import { ConditionalRule } from './conditional-rule'
 import { toCss } from './to-css'
-import type { Dict, GeneratorContext } from './types'
+import type { Dict, StylesheetContext } from './types'
 
 export type ProcessOptions = {
   scope?: string[]
@@ -17,7 +17,7 @@ export type ProcessOptions = {
 }
 
 export class AtomicRule {
-  constructor(private context: GeneratorContext) {}
+  constructor(private context: StylesheetContext) {}
 
   hash = (name: string) => {
     return this.context.hash ? esc(toHash(name)) : esc(name)

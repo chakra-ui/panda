@@ -7,10 +7,10 @@ import { optimizeCss } from './optimize'
 import { Recipe } from './recipe'
 import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
-import type { GeneratorContext } from './types'
+import type { StylesheetContext } from './types'
 
 export class Stylesheet {
-  constructor(private context: GeneratorContext) {}
+  constructor(private context: StylesheetContext) {}
 
   addGlobalCss = (styleObject: Dict) => {
     const { conditions, utility } = this.context

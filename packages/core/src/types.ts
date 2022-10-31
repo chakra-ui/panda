@@ -8,7 +8,7 @@ export type TransformResult = {
   styles: Dict
 }
 
-export type GeneratorContext = {
+export type StylesheetContext = {
   root: Root
   utility: Utility
   conditions: Conditions

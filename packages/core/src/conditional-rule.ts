@@ -1,6 +1,6 @@
 import postcss, { AtRule, ChildNode, Rule } from 'postcss'
 import { match } from 'ts-pattern'
-import type { GeneratorContext } from './types'
+import type { StylesheetContext } from './types'
 
 export type WrapOptions =
   | {
@@ -18,7 +18,7 @@ export class ConditionalRule {
   selector = ''
   nodes: ChildNode[] = []
 
-  constructor(private conditionsMap: GeneratorContext['conditions']) {}
+  constructor(private conditionsMap: StylesheetContext['conditions']) {}
 
   private wrap = (options: WrapOptions) => {
     if (!this.rule) return
