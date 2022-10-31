@@ -227,7 +227,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       const fileName = assets.format(file)
 
       const oldCss = await assets.readFile(file)
-      const newCss = config.clean ? css : discardDuplicate([oldCss.trim(), css.trim()].filter(Boolean).join('\n\n'))
+      const newCss = discardDuplicate([oldCss.trim(), css.trim()].filter(Boolean).join('\n\n'))
 
       logger.debug({ type: 'asset:write', file, path: fileName })
 
