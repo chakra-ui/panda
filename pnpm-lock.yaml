@@ -107,6 +107,7 @@ importers:
       postcss-normalize-whitespace: 5.1.1
       postcss-prettify: 0.3.4
       postcss-sort-media-queries: 4.3.0
+      sort-css-media-queries: ^2.1.0
       ts-pattern: 4.0.5
     dependencies:
       '@css-panda/error': link:../error
@@ -123,6 +124,7 @@ importers:
       postcss-normalize-whitespace: 5.1.1_postcss@8.4.16
       postcss-prettify: 0.3.4
       postcss-sort-media-queries: 4.3.0_postcss@8.4.16
+      sort-css-media-queries: 2.1.0
       ts-pattern: 4.0.5
     devDependencies:
       '@css-panda/fixture': link:../fixture

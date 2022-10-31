@@ -27,6 +27,7 @@
     "camelcase-css": "^2.0.1",
     "postcss": "8.4.16",
     "postcss-nested": "5.0.6",
+    "sort-css-media-queries": "^2.1.0",
     "postcss-sort-media-queries": "4.3.0",
     "postcss-discard-duplicates": "5.1.0",
     "postcss-normalize-whitespace": "5.1.1",
