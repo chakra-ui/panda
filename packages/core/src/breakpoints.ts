@@ -1,6 +1,6 @@
 import { capitalize, toEm, toPx } from '@css-panda/shared'
 import type { RawCondition } from '@css-panda/types'
-import postcss, { AtRule, Root } from 'postcss'
+import type { Root } from 'postcss'
 
 export class Breakpoints {
   constructor(private breakpoints: Record<string, string>) {}
@@ -73,20 +73,11 @@ export class Breakpoints {
   expandScreenAtRule = (root: Root) => {
     root.walkAtRules('screen', (rule) => {
       const value = this.getCondition(rule.params)
-
       if (!value) {
         throw rule.error(`No \`${screen}\` screen found.`)
       }
-
-      rule.parent?.append(
-        postcss.atRule({
-          name: 'media',
-          params: 'testing',
-          nodes: [postcss.rule({ selector: '.test', nodes: [postcss.decl({ prop: 'color', value: 'reddish' })] })],
-        }),
-      )
-
-      // rule.replaceWith(rule.clone({ name: 'media', params: value.params }))
+      rule.name = 'media'
+      rule.params = value.params
     })
   }
 }
