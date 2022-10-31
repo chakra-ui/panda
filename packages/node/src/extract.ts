@@ -30,7 +30,7 @@ export function extractFile(ctx: PandaContext, file: string) {
 
 export function extractFiles(ctx: PandaContext) {
   return ctx.extract(async (file) => {
-    const result = extractFile(ctx, file)
+    const result = await extractFile(ctx, file)
     if (result) {
       await ctx.assets.write(file, result.css)
       return result

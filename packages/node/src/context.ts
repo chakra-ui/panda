@@ -10,7 +10,7 @@ import glob from 'fast-glob'
 import { readdirSync } from 'fs'
 import { emptyDir, ensureDir, existsSync } from 'fs-extra'
 import { readFile, unlink, writeFile } from 'fs/promises'
-import { extname, join, relative, resolve, sep } from 'path'
+import { extname, isAbsolute, join, relative, resolve, sep } from 'path'
 import postcss from 'postcss'
 
 type IO = {
@@ -166,6 +166,10 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     return join(cwd, outdir, str)
   }
 
+  function absPath(str: string) {
+    return isAbsolute(str) ? str : join(cwd, str)
+  }
+
   const paths = {
     config: getPath('config.js'),
     css: getPath('css'),
@@ -223,7 +227,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       const fileName = assets.format(file)
 
       const oldCss = await assets.readFile(file)
-      const newCss = discardDuplicate(oldCss + css)
+      const newCss = config.clean ? css : discardDuplicate([oldCss.trim(), css.trim()].filter(Boolean).join('\n\n'))
 
       logger.debug({ type: 'asset:write', file, path: fileName })
 
@@ -348,7 +352,16 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
     importMap,
     getSourceFile(file: string) {
-      return tsProject.getSourceFile(file)
+      return tsProject.getSourceFile(absPath(file))
+    },
+    addSourceFile(file: string) {
+      return tsProject.addSourceFileAtPath(absPath(file))
+    },
+    removeSourceFile(file: string) {
+      const sourceFile = tsProject.getSourceFile(absPath(file))
+      if (sourceFile) {
+        return tsProject.removeSourceFile(sourceFile)
+      }
     },
     parseSourceFile,
 

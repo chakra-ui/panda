@@ -17,8 +17,9 @@ export function createWatcher(files: string[], options: WatcherOptions = {}) {
   const { ignore, cwd = process.cwd() } = options
 
   const watcher = chokidar.watch(files, {
-    cwd: cwd,
+    cwd,
     ignoreInitial: true,
+    ignorePermissionErrors: true,
     ignored: ignore,
   })
 
@@ -52,10 +53,12 @@ async function createContentWatcher(ctx: PandaContext, callback: (file: string) 
 
   watcher.on('all', async (event, file) => {
     logger.debug({ type: `file:${event}`, file })
+    ctx.removeSourceFile(file)
 
     if (event === 'unlink') {
       ctx.assets.rm(file)
     } else {
+      ctx.addSourceFile(file)
       await callback(file)
     }
   })

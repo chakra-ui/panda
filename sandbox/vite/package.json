@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "css": "PANDA_DEBUG=* panda",
     "css:gen": "PANDA_DEBUG=* panda gen",
-    "css:dev": "PANDA_DEBUG=* panda --watch"
+    "css:dev": "PANDA_DEBUG=file:* panda --watch"
   },
   "dependencies": {
     "react": "18.2.0",
