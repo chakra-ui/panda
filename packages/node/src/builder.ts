@@ -45,6 +45,7 @@ export class Builder {
     const cachedContext = contextCache.get(configHash)
 
     if (cachedContext) {
+      cachedContext.reloadSourceFiles()
       this.context = cachedContext
 
       this.fileMap = builderCache.get(cachedContext)!.fileMap

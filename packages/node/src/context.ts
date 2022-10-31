@@ -254,7 +254,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   }
 
   const tsProject = createProject()
-  tsProject.addSourceFilesAtPaths(files)
+  const sourceFiles = tsProject.addSourceFilesAtPaths(files)
 
   const parseSourceFile = createParser({
     importMap,
@@ -351,6 +351,9 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     conditions,
 
     importMap,
+    reloadSourceFiles() {
+      sourceFiles.forEach((file) => file.refreshFromFileSystemSync())
+    },
     getSourceFile(file: string) {
       return tsProject.getSourceFile(absPath(file))
     },
