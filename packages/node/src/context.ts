@@ -1,6 +1,6 @@
 import { Collector, createParser, createProject } from '@css-panda/ast'
 import type { LoadConfigResult } from '@css-panda/config'
-import { Conditions, discardDuplicate, StylesheetContext, Stylesheet, Utility } from '@css-panda/core'
+import { Conditions, discardDuplicate, Stylesheet, StylesheetContext, Utility } from '@css-panda/core'
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import { capitalize, mapObject, uncapitalize } from '@css-panda/shared'
@@ -12,6 +12,7 @@ import { emptyDir, ensureDir, existsSync } from 'fs-extra'
 import { readFile, unlink, writeFile } from 'fs/promises'
 import { extname, isAbsolute, join, relative, resolve, sep } from 'path'
 import postcss from 'postcss'
+import type { Project } from 'ts-morph'
 
 type IO = {
   read(id: string): Promise<string>
@@ -253,7 +254,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     jsx: `${outdir}/jsx`,
   }
 
-  const tsProject = createProject()
+  const tsProject: Project = createProject()
   const sourceFiles = tsProject.addSourceFilesAtPaths(files)
 
   const parseSourceFile = createParser({
