@@ -60,6 +60,9 @@ export function extractArrayLiteral(node: ArrayLiteralExpression) {
       .when(isPrimitiveLiteral, (child) => {
         result.push(child.getLiteralValue())
       })
+      .when(Node.isUndefinedKeyword, () => {
+        result.push(undefined)
+      })
       .when(Node.isNullLiteral, () => {
         result.push(null)
       })
