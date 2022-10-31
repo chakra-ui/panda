@@ -1,6 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { parseSync } from '../src/transform'
-import { jsxPatternPlugin } from './fixture'
+import { jsxPatternParser } from './fixture'
 
 describe('pattern jsx', () => {
   test('should extract', () => {
@@ -16,11 +15,7 @@ describe('pattern jsx', () => {
        }
      `
 
-    const collect = new Set()
-
-    parseSync(code, [jsxPatternPlugin(collect)])
-
-    expect(collect).toMatchInlineSnapshot(`
+    expect(jsxPatternParser(code)).toMatchInlineSnapshot(`
       Set {
         {
           "data": {

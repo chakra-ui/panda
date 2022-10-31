@@ -42,9 +42,3 @@ export type UtilityConfig = {
 } & {
   [key: string]: PropertyConfig
 }
-
-export type PluginResult = {
-  type: 'object' | 'named-object' | 'pattern'
-  name?: string
-  data: Record<string, any>
-}

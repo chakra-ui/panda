@@ -1,29 +1,5 @@
-import { describe, test, expect } from 'vitest'
-import type * as swc from '@swc/core'
-import Visitor from '@swc/core/Visitor'
-import * as ast from '../src/ast'
-import { parseSync } from '../src/transform'
-
-class TestVisitor extends Visitor {
-  constructor(private collector: Record<string, any>) {
-    super()
-  }
-
-  visitImportDeclaration(node: swc.ImportDeclaration): swc.ImportDeclaration {
-    this.collector.result = ast.importDeclaration(node, {
-      name: 'css',
-      module: '@panda/css',
-    })
-    return node
-  }
-}
-
-function plugin(c: Record<string, any>) {
-  return (p: swc.Program) => {
-    const visitor = new TestVisitor(c)
-    return visitor.visitProgram(p)
-  }
-}
+import { describe, expect, test } from 'vitest'
+import { importParser } from './fixture'
 
 describe('extract imports', () => {
   test('should work', () => {
@@ -33,19 +9,14 @@ describe('extract imports', () => {
     css({ bg: "red" })
     `
 
-    const collect = {}
-
-    parseSync(code, [plugin(collect)])
-
-    expect(collect).toMatchInlineSnapshot(`
-      {
-        "result": [
-          {
-            "alias": "nCss",
-            "identifer": "css",
-          },
-        ],
-      }
+    expect(importParser(code, { name: 'css', module: '@panda/css' })).toMatchInlineSnapshot(`
+      [
+        {
+          "alias": "nCss",
+          "mod": "@panda/css",
+          "name": "css",
+        },
+      ]
     `)
   })
 })

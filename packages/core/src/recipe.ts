@@ -4,13 +4,13 @@ import merge from 'lodash.merge'
 import { AtomicRule, ProcessOptions } from './atomic-rule'
 import { ConditionalRule } from './conditional-rule'
 import { cssToJs, toCss } from './to-css'
-import type { GeneratorContext } from './types'
+import type { StylesheetContext } from './types'
 
 type StyleObject = Record<string, any>
 
 export class Recipe {
   config: RecipeConfig
-  constructor(config: RecipeConfig, private context: GeneratorContext) {
+  constructor(config: RecipeConfig, private context: StylesheetContext) {
     const { name, base = {}, variants = {}, defaultVariants = {}, description = '' } = config
 
     const recipe: Required<RecipeConfig> = {

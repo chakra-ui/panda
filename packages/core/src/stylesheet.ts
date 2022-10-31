@@ -1,5 +1,5 @@
 import { walkStyles } from '@css-panda/shared'
-import type { Dict, PluginResult, RecipeConfig } from '@css-panda/types'
+import type { Dict, RecipeConfig } from '@css-panda/types'
 import postcss from 'postcss'
 import { AtomicRule } from './atomic-rule'
 import { Breakpoints } from './breakpoints'
@@ -7,26 +7,10 @@ import { optimizeCss } from './optimize'
 import { Recipe } from './recipe'
 import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
-import type { GeneratorContext } from './types'
+import type { StylesheetContext } from './types'
 
 export class Stylesheet {
-  constructor(private context: GeneratorContext) {}
-
-  process = (result: PluginResult) => {
-    const { type, data, name } = result
-    return type === 'object' ? this.processAtomic(data) : this.processSelectorObject(name!, data)
-  }
-
-  processFontFace = (result: PluginResult) => {
-    const src = result.data.src?.join(',')
-    this.processObject({
-      '@font-face': {
-        ...result.data,
-        fontFamily: JSON.stringify(result.name),
-        src,
-      },
-    })
-  }
+  constructor(private context: StylesheetContext) {}
 
   addGlobalCss = (styleObject: Dict) => {
     const { conditions, utility } = this.context
@@ -34,8 +18,8 @@ export class Stylesheet {
     this.context.root.append(css)
   }
 
-  processGlobalCss = (result: PluginResult) => {
-    this.addGlobalCss(result.data)
+  processGlobalCss = (styleObject: Dict) => {
+    this.addGlobalCss(styleObject)
   }
 
   processSelectorObject(selector: string, styleObject: Dict) {

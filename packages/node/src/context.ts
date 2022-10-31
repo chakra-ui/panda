@@ -1,6 +1,6 @@
-import type { Collector } from '@css-panda/ast'
+import { Collector, createParser, createProject } from '@css-panda/ast'
 import type { LoadConfigResult } from '@css-panda/config'
-import { Conditions, discardDuplicate, GeneratorContext, Stylesheet, Utility } from '@css-panda/core'
+import { Conditions, discardDuplicate, StylesheetContext, Stylesheet, Utility } from '@css-panda/core'
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
 import { capitalize, mapObject, uncapitalize } from '@css-panda/shared'
@@ -10,7 +10,7 @@ import glob from 'fast-glob'
 import { readdirSync } from 'fs'
 import { emptyDir, ensureDir, existsSync } from 'fs-extra'
 import { readFile, unlink, writeFile } from 'fs/promises'
-import { extname, join, relative, resolve, sep } from 'path'
+import { extname, isAbsolute, join, relative, resolve, sep } from 'path'
 import postcss from 'postcss'
 
 type IO = {
@@ -93,7 +93,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     breakpoints,
   })
 
-  const context = (): GeneratorContext => ({
+  const context = (): StylesheetContext => ({
     root: postcss.root(),
     breakpoints,
     conditions,
@@ -166,6 +166,10 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     return join(cwd, outdir, str)
   }
 
+  function absPath(str: string) {
+    return isAbsolute(str) ? str : join(cwd, str)
+  }
+
   const paths = {
     config: getPath('config.js'),
     css: getPath('css'),
@@ -223,7 +227,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       const fileName = assets.format(file)
 
       const oldCss = await assets.readFile(file)
-      const newCss = discardDuplicate(oldCss + css)
+      const newCss = config.clean ? css : discardDuplicate([oldCss.trim(), css.trim()].filter(Boolean).join('\n\n'))
 
       logger.debug({ type: 'asset:write', file, path: fileName })
 
@@ -242,6 +246,25 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * Collect extracted styles
    * -----------------------------------------------------------------------------*/
 
+  const importMap = {
+    css: `${outdir}/css`,
+    recipe: `${outdir}/recipes`,
+    pattern: `${outdir}/patterns`,
+    jsx: `${outdir}/jsx`,
+  }
+
+  const tsProject = createProject()
+  const sourceFiles = tsProject.addSourceFilesAtPaths(files)
+
+  const parseSourceFile = createParser({
+    importMap,
+    jsx: {
+      factory: jsxFactory,
+      isStyleProp: isProperty,
+      nodes: patternNodes,
+    },
+  })
+
   function collectStyles(collector: Collector, file: string) {
     const sheet = new Stylesheet(context())
 
@@ -250,41 +273,30 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     }
 
     collector.globalCss.forEach((result) => {
-      sheet.processGlobalCss(result)
-    })
-
-    collector.fontFace.forEach((result) => {
-      sheet.processFontFace(result)
+      sheet.processGlobalCss(result.data)
     })
 
     collector.css.forEach((result) => {
-      sheet.process(result)
-    })
-
-    collector.sx.forEach((result) => {
-      sheet.process(result)
+      sheet.processAtomic(result.data)
     })
 
     collector.cssMap.forEach((result) => {
       for (const data of Object.values(result.data)) {
-        sheet.process({ type: 'object', data })
+        sheet.processAtomic(data)
       }
     })
 
     collector.jsx.forEach((result) => {
       const { data, type, name } = result
-      const { conditions = [], css = {}, ...rest } = data
+      const { css = {}, ...rest } = data
 
       const styles = { ...css, ...rest }
 
       // treat pattern jsx like regular pattern
       if (name && type === 'pattern') {
-        collector.addPattern(getPatternFnName(name), styles)
+        collector.setPattern(getPatternFnName(name), { data: styles })
       } else {
-        sheet.process({ type, data: styles })
-        conditions.forEach((style: any) => {
-          sheet.process(style)
-        })
+        sheet.processAtomic(styles)
       }
     })
 
@@ -309,7 +321,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       }
     })
 
-    if (collector.isEmpty()) {
+    if (collector.isEmpty) {
       return
     }
 
@@ -338,12 +350,23 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     exclude,
     conditions,
 
-    importMap: {
-      css: `${outdir}/css`,
-      recipe: `${outdir}/recipes`,
-      pattern: `${outdir}/patterns`,
-      jsx: `${outdir}/jsx`,
+    importMap,
+    reloadSourceFiles() {
+      sourceFiles.forEach((file) => file.refreshFromFileSystemSync())
     },
+    getSourceFile(file: string) {
+      return tsProject.getSourceFile(absPath(file))
+    },
+    addSourceFile(file: string) {
+      return tsProject.addSourceFileAtPath(absPath(file))
+    },
+    removeSourceFile(file: string) {
+      const sourceFile = tsProject.getSourceFile(absPath(file))
+      if (sourceFile) {
+        return tsProject.removeSourceFile(sourceFile)
+      }
+    },
+    parseSourceFile,
 
     getPath,
     paths,

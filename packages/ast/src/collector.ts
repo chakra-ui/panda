@@ -1,32 +1,38 @@
-import type { PluginResult } from '@css-panda/types'
+type Result = {
+  name?: string
+  data: Record<string, any>
+  type?: string
+}
+export class Collector {
+  jsx = new Set<Result>()
+  css = new Set<Result>()
+  globalCss = new Set<Result>()
+  cssMap = new Set<Result>()
+  recipe = new Map<string, Set<Result>>()
+  pattern = new Map<string, Set<Result>>()
 
-export function createCollector() {
-  return {
-    sx: new Set<PluginResult>(),
-    jsx: new Set<PluginResult>(),
-    css: new Set<PluginResult>(),
-    globalCss: new Set<PluginResult>(),
-    fontFace: new Set<PluginResult>(),
-    cssMap: new Set<PluginResult>(),
-    recipe: new Map<string, Set<PluginResult>>(),
-    pattern: new Map<string, Set<PluginResult>>(),
-    addPattern(name: string, data: any) {
-      this.pattern.get(name) ?? this.pattern.set(name, new Set([]))
-      this.pattern.get(name)?.add({ type: 'object', data, name })
-    },
-    isEmpty() {
-      return (
-        this.css.size === 0 &&
-        this.sx.size === 0 &&
-        this.globalCss.size === 0 &&
-        this.fontFace.size === 0 &&
-        this.cssMap.size === 0 &&
-        this.recipe.size === 0 &&
-        this.pattern.size === 0 &&
-        this.jsx.size === 0
-      )
-    },
+  set(name: string, result: { data: Record<string, any> }) {
+    this[name].add({ type: 'object', ...result })
+  }
+
+  setPattern(name: string, result: { data: Record<string, any> }) {
+    this.pattern.get(name) ?? this.pattern.set(name, new Set())
+    this.pattern.get(name)?.add({ type: 'pattern', name, ...result })
+  }
+
+  setRecipe(name: string, result: { data: Record<string, any> }) {
+    this.recipe.get(name) ?? this.recipe.set(name, new Set())
+    this.recipe.get(name)?.add({ type: 'recipe', ...result })
+  }
+
+  get isEmpty() {
+    return (
+      this.css.size === 0 &&
+      this.globalCss.size === 0 &&
+      this.cssMap.size === 0 &&
+      this.recipe.size === 0 &&
+      this.pattern.size === 0 &&
+      this.jsx.size === 0
+    )
   }
 }
-
-export type Collector = ReturnType<typeof createCollector>

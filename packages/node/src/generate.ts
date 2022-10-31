@@ -9,8 +9,7 @@ export async function generate(config: Config, configPath?: string) {
   await emitAndExtract(ctx)
 
   if (ctx.watch) {
-    process.stdin.on('end', () => process.exit(0))
-    process.stdin.resume()
+    process.stdin.on('end', () => process.exit())
 
     await watch(ctx, {
       onConfigChange: () => {

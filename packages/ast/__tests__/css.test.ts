@@ -1,22 +1,15 @@
-import { importMap } from '@css-panda/fixture'
 import { describe, expect, test } from 'vitest'
-import { createCollector } from '../src/collector'
-import { createPlugins } from '../src/plugins'
-import { parseSync } from '../src/transform'
+import { cssParser } from './fixture'
 
 describe('ast parser', () => {
   test('[without import] should not parse', () => {
     const code = `
-    import {css, globalCss, fontFace} from ".panda/css"
+    import {css, globalCss} from ".panda/css"
 
     globalCss({
         html: {
             fontSize: '12px',
         }
-    })
-
-    fontFace("Inter", {
-        fontFamily: "Inter",
     })
 
         const baseStyle = css({
@@ -30,19 +23,15 @@ describe('ast parser', () => {
         })
      `
 
-    const data = createCollector()
-
-    parseSync(code, createPlugins(data, { importMap }))
-
-    expect(data).toMatchInlineSnapshot(`
+    expect(cssParser(code)).toMatchInlineSnapshot(`
       {
-        "addPattern": [Function],
         "css": Set {
           {
             "data": {
               "color": "red",
               "fontSize": "12px",
             },
+            "name": "css",
             "type": "object",
           },
           {
@@ -53,19 +42,11 @@ describe('ast parser', () => {
                 "xs": "0",
               },
             },
+            "name": "css",
             "type": "object",
           },
         },
         "cssMap": Set {},
-        "fontFace": Set {
-          {
-            "data": {
-              "fontFamily": "Inter",
-            },
-            "name": "Inter",
-            "type": "named-object",
-          },
-        },
         "globalCss": Set {
           {
             "data": {
@@ -73,14 +54,10 @@ describe('ast parser', () => {
                 "fontSize": "12px",
               },
             },
+            "name": "globalCss",
             "type": "object",
           },
         },
-        "isEmpty": [Function],
-        "jsx": Set {},
-        "pattern": Map {},
-        "recipe": Map {},
-        "sx": Set {},
       }
     `)
   })

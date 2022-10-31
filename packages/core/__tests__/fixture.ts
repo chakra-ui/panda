@@ -3,7 +3,7 @@ import { TokenDictionary } from '@css-panda/token-dictionary'
 import postcss from 'postcss'
 import { Conditions, Utility } from '../src'
 import { Recipe } from '../src/recipe'
-import type { GeneratorContext } from '../src/types'
+import type { StylesheetContext } from '../src/types'
 
 const propMap = {
   display: 'd',
@@ -23,7 +23,7 @@ const tokens = new TokenDictionary({
   semanticTokens: mocks.semanticTokens,
 })
 
-export const createContext = (): GeneratorContext => ({
+export const createContext = (): StylesheetContext => ({
   root: postcss.root(),
   conditions: conditions,
   breakpoints: mocks.breakpoints,
