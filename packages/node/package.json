@@ -52,7 +52,6 @@
     "@types/is-glob": "^4.0.2",
     "@types/glob-parent": "^5.1.1",
     "@types/pluralize": "0.0.29",
-    "@types/lodash.merge": "4.6.7",
-    "steno": "^2.1.0"
+    "@types/lodash.merge": "4.6.7"
   }
 }
