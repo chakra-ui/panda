@@ -63,3 +63,5 @@ const sortMediaQuery = (container: Container) => {
       container.append(atRules[query])
     })
 }
+
+sortMediaQueries.postcssPlugin = 'panda-sort-mq'

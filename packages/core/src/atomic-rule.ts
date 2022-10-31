@@ -87,14 +87,16 @@ export class AtomicRule {
       this.root.append(rule.rule!)
     })
 
+    this.context.root.append(this.addToLayer())
+  }
+
+  addToLayer = () => {
     // wrap this.root in an @layer rule
-    const layer = postcss.atRule({
+    return postcss.atRule({
       name: 'layer',
       params: 'utilities',
       nodes: [this.root],
     })
-
-    this.context.root.append(layer)
   }
 
   toCss = () => {

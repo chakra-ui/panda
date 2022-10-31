@@ -15,3 +15,5 @@ export const mergeLayers = (): TransformCallback => {
     })
   }
 }
+
+mergeLayers.postcssPlugin = 'panda-merge-layers'

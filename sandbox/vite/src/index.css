@@ -1,3 +1,1 @@
-:root {
-  --panda: 1;
-}
+@layer reset, base, tokens, recipes, utilities;

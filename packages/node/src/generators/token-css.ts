@@ -60,5 +60,10 @@ export function generateTokenCss(ctx: PandaContext, varRoot?: string) {
     }
   }
 
-  return results.join('\n\n') + '\n\n'
+  const css = results.join('\n\n') + '\n\n'
+
+  return `@layer tokens {
+    ${css}
+  }
+  `
 }

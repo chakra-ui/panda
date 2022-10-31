@@ -15,7 +15,15 @@ export class Stylesheet {
   addGlobalCss = (styleObject: Dict) => {
     const { conditions, utility } = this.context
     const css = serializeStyles(styleObject, { conditions, utility })
-    this.context.root.append(css)
+
+    // wrap css root in @layer directive
+    const layer = postcss.atRule({
+      name: 'layer',
+      params: 'base',
+      nodes: [css],
+    })
+
+    this.context.root.append(layer)
   }
 
   processGlobalCss = (styleObject: Dict) => {
