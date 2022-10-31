@@ -1,6 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { parseSync } from '../src/transform'
-import { jsxPlugin } from './fixture'
+import { jsxParser } from './fixture'
 
 describe('jsx', () => {
   test('should extract', () => {
@@ -17,18 +16,20 @@ describe('jsx', () => {
        }
      `
 
-    const collect = new Set()
-
-    parseSync(code, [jsxPlugin(collect)])
-
-    expect(collect).toMatchInlineSnapshot(`
+    expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
           "data": {
             "marginBottom": "42px",
             "marginTop": "40px",
           },
-          "name": "panda",
+          "name": "panda.button",
+          "type": "jsx-factory",
+        },
+        {
+          "data": {},
+          "name": "panda.div",
+          "type": "jsx-factory",
         },
       }
     `)
@@ -48,22 +49,20 @@ describe('jsx', () => {
        }
      `
 
-    const collect = new Set()
-
-    parseSync(code, [jsxPlugin(collect)])
-
-    expect(collect).toMatchInlineSnapshot(`
+    expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
           "data": {
             "marginBottom": "42px",
             "marginTop": "40px",
           },
-          "name": "panda",
+          "name": "styled.button",
+          "type": "jsx-factory",
         },
         {
           "data": {},
-          "name": "panda",
+          "name": "styled.div",
+          "type": "jsx-factory",
         },
       }
     `)
@@ -84,11 +83,7 @@ describe('jsx', () => {
        }
      `
 
-    const collect = new Set()
-
-    parseSync(code, [jsxPlugin(collect)])
-
-    expect(collect).toMatchInlineSnapshot(`
+    expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
           "data": {
@@ -100,7 +95,13 @@ describe('jsx', () => {
               "sm": "40px",
             },
           },
-          "name": "panda",
+          "name": "panda.button",
+          "type": "jsx-factory",
+        },
+        {
+          "data": {},
+          "name": "panda.div",
+          "type": "jsx-factory",
         },
       }
     `)
@@ -120,25 +121,14 @@ describe('jsx', () => {
        }
      `
 
-    const collect = new Set()
-
-    parseSync(code, [jsxPlugin(collect)])
-
-    expect(collect).toMatchInlineSnapshot(`
+    expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
           "data": {
-            "conditions": [
-              {
-                "marginLeft": "40px",
-              },
-              {
-                "marginLeft": "50px",
-              },
-            ],
             "marginBottom": "42px",
           },
-          "name": "panda",
+          "name": "panda.button",
+          "type": "jsx-factory",
         },
       }
     `)
@@ -158,11 +148,7 @@ describe('jsx', () => {
        }
      `
 
-    const collect = new Set()
-
-    parseSync(code, [jsxPlugin(collect)])
-
-    expect(collect).toMatchInlineSnapshot(`
+    expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
           "data": {
@@ -170,7 +156,8 @@ describe('jsx', () => {
               "bg": "red.200",
             },
           },
-          "name": "panda",
+          "name": "panda.div",
+          "type": "jsx-factory",
         },
       }
     `)

@@ -1,62 +1,69 @@
-import type * as swc from '@swc/core'
-import { CallVisitor, DynamicCallVisitor } from '../src/visitor'
-import { JSXVisitor } from '../src/jsx-visitor'
 import { isCssProperty } from '@css-panda/is-valid-prop'
+import { ScriptKind } from 'ts-morph'
+import { createParser, createProject } from '../src'
+import { getImportDeclarations } from '../src/import'
 
-export function cssPlugin(collector: Set<any>) {
-  return function (program: swc.Program) {
-    const visitor = new CallVisitor({
-      import: { name: 'css', module: '.panda/css' },
-      onData(result) {
-        collector.add(result.data)
-      },
-    })
-    return visitor.visitProgram(program)
+const importMap = {
+  css: '.panda/css',
+  recipe: '.panda/recipe',
+  pattern: '.panda/pattern',
+  jsx: '.panda/jsx',
+}
+
+const project = createProject()
+function toSourceFile(code: string) {
+  return project.createSourceFile('test.tsx', code, { overwrite: true, scriptKind: ScriptKind.TSX })
+}
+
+export function importParser(code: string, option: { name: string; module: string }) {
+  const sourceFile = toSourceFile(code)
+  const imports = getImportDeclarations(sourceFile, {
+    match({ id, mod }) {
+      return id === option.name && mod === option.module
+    },
+  })
+  return imports.value
+}
+
+export function cssParser(code: string) {
+  const parser = createParser({ importMap })
+  const data = parser(toSourceFile(code))!
+  return {
+    css: data.css,
+    globalCss: data.globalCss,
+    cssMap: data.cssMap,
   }
 }
 
-export function recipePlugin(collector: Set<any>) {
-  return function (program: swc.Program) {
-    const visitor = new DynamicCallVisitor({
-      import: { name: '*', module: '.panda/recipe' },
-      onDynamicData(name, result) {
-        collector.add({ name, data: result.data })
-      },
-    })
-    return visitor.visitProgram(program)
-  }
+export function recipeParser(code: string) {
+  const parser = createParser({ importMap })
+  return parser(toSourceFile(code))?.recipe
 }
 
-export function jsxPlugin(collector: Set<any>) {
-  return function (program: swc.Program) {
-    const visitor = new JSXVisitor({
+export function jsxParser(code: string) {
+  const parser = createParser({
+    importMap,
+    jsx: {
       nodes: [],
       factory: 'panda',
-      module: '.panda/jsx',
-      onData(result) {
-        collector.add({ name: 'panda', data: result.data })
-      },
       isStyleProp(prop) {
         return isCssProperty(prop) || prop === 'css'
       },
-    })
-    return visitor.visitProgram(program)
-  }
+    },
+  })
+  return parser(toSourceFile(code))?.jsx
 }
 
-export function jsxPatternPlugin(collector: Set<any>) {
-  return function (program: swc.Program) {
-    const visitor = new JSXVisitor({
+export function jsxPatternParser(code: string) {
+  const parser = createParser({
+    importMap,
+    jsx: {
       nodes: [{ name: 'Stack', props: ['align', 'gap', 'direction'] }],
       factory: 'panda',
-      module: '.panda/jsx',
-      onData(result) {
-        collector.add({ type: 'pattern', data: result.data, name: result.name })
-      },
       isStyleProp(prop) {
-        return isCssProperty(prop)
+        return isCssProperty(prop) || prop === 'css'
       },
-    })
-    return visitor.visitProgram(program)
-  }
+    },
+  })
+  return parser(toSourceFile(code))?.jsx
 }

@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "command": "pnpm vitest tokens.test.ts",
+      "command": "pnpm test ${relativeFile}",
       "name": "Run Vitest",
       "request": "launch",
       "type": "node-terminal"

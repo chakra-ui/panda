@@ -16,13 +16,15 @@ export function visitCallExpressions(
     const expr = node.getExpression()
     const name = expr.getText()
 
-    if (!match(name)) return
+    if (!match(name)) {
+      continue
+    }
 
     const args = node.getArguments()
 
     if (args.length === 0) {
       fn({ name, data: {} })
-      return
+      continue
     }
 
     args.forEach((arg) => {

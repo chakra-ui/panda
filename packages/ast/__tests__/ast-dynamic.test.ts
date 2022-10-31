@@ -1,6 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { recipePlugin } from './fixture'
-import { parseSync } from '../src/transform'
+import { recipeParser } from './fixture'
 
 describe('[dynamic] ast parser', () => {
   test('should parse', () => {
@@ -24,36 +23,40 @@ describe('[dynamic] ast parser', () => {
       console.log("ere")
      `
 
-    const collect = new Set()
-
-    parseSync(code, [recipePlugin(collect)])
-
-    expect(collect).toMatchInlineSnapshot(`
-      Set {
-        {
-          "data": {
-            "variant": "h1",
-          },
-          "name": "textStyle",
-        },
-        {
-          "data": {
-            "variant": "raised",
-          },
-          "name": "layerStyle",
-        },
-        {
-          "data": {
-            "variant": {
-              "_": "h4",
-              "md": "h5",
+    expect(recipeParser(code)).toMatchInlineSnapshot(`
+      Map {
+        "textStyle" => Set {
+          {
+            "data": {
+              "variant": "h1",
             },
+            "name": "textStyle",
+            "type": "recipe",
           },
-          "name": "textStyle",
+          {
+            "data": {
+              "variant": {
+                "_": "h4",
+                "md": "h5",
+              },
+            },
+            "name": "textStyle",
+            "type": "recipe",
+          },
+          {
+            "data": {},
+            "name": "textStyle",
+            "type": "recipe",
+          },
         },
-        {
-          "data": {},
-          "name": "textStyle",
+        "layerStyle" => Set {
+          {
+            "data": {
+              "variant": "raised",
+            },
+            "name": "layerStyle",
+            "type": "recipe",
+          },
         },
       }
     `)
