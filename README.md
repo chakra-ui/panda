@@ -34,6 +34,20 @@ yarn panda init
 yarn panda init --postcss
 ```
 
+To run the extract styles, run
+
+```sh
+yarn panda
+# or
+yarn panda --watch
+```
+
+When you change the config, you may need to regenerate the system
+
+```sh
+yarn panda gen
+```
+
 ## Usage
 
 ```js
@@ -45,11 +59,11 @@ import { stack, vstack, hstack } from '../design-system/patterns'
 import { css } from '../design-system/css'
 import { stack, vstack, hstack } from '../design-system/patterns'
 
-function Example(params) {
+function Example() {
   return (
     <div>
-      <div className={hstack({ gap: '30px', color: 'pink.300' })}></div>
-      <div className={css({ fontSize: 'lg', color: 'red.400' })}></div>
+      <div className={hstack({ gap: '30px', color: 'pink.300' })}>Box 1</div>
+      <div className={css({ fontSize: 'lg', color: 'red.400' })}>Box 2</div>
     </div>
   )
 }
