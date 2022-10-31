@@ -66,6 +66,9 @@ export function extractArrayLiteral(node: ArrayLiteralExpression) {
       .when(Node.isObjectLiteralExpression, (child) => {
         result.push(extractObjectLiteral(child))
       })
+      .when(Node.isArrayLiteralExpression, (child) => {
+        result.push(extractArrayLiteral(child))
+      })
       .otherwise(() => {
         // no op
       })
