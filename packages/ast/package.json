@@ -13,9 +13,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format=esm,cjs --dts",
     "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
-    "dev": "pnpm build-fast --watch",
-    "sandbox": "tsx src/sandbox.ts",
-    "swc": "tsx __tests__/base.ts"
+    "dev": "pnpm build-fast --watch"
   },
   "dependencies": {
     "@css-panda/logger": "workspace:*",
