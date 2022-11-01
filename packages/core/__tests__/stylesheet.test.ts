@@ -36,27 +36,26 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "a {
-        width: 50%;
-      }
-
-      a:hover > * ~ * {
-        border-left-width: 40px;
-        border-right-width: 0px;
-      }
-
-      a:focus {
-        color: var(--colors-red-200);
-      }
-
-      a:focus:hover {
-        background-color: var(--colors-red-400);
-      }
-
-      @media screen and (min-width: 30em) {
-        a {
-          font-size: 12px;
-        }
+      "@layer base {
+          type: object;
+          data a {
+              width: 50%;
+          }
+          data a:hover > * ~ * {
+              border-left-width: 40px;
+              border-right-width: 0px;
+          }
+          data a:focus {
+              color: var(--colors-red-200);
+          }
+          data a:focus:hover {
+              background-color: var(--colors-red-400);
+          }
+          @media screen and (min-width: 30em) {
+              data a {
+                  font-size: 12px;
+              }
+              }
       }"
     `)
   })
@@ -93,40 +92,35 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "html {
-        scroll-padding-top: 80px;
-      }
-
-      html.dragging-ew {
-        -webkit-user-select: none !important;
-           -moz-user-select: none !important;
-                user-select: none !important;
-      }
-
-      html.dragging-ew * {
-        cursor: ew-resize !important;
-      }
-
-      html.dragging-ew:hover {
-        color: red;
-      }
-
-      .content-dark::-webkit-scrollbar-thumb {
-        background-color: var(--colors-bg, #000) !important;
-        border-color: var(--colors-fg, #333) !important;
-        border-radius: 9px;
-        border: 2px solid;
-      }
-
-      #corner {
-        position: fixed;
-        right: 0;
-        bottom: 0;
-        cursor: nwse-resize;
-      }
-
-      .color-picker .react-colorful {
-        width: 100%;
+      "@layer base {
+          type: object;
+          data html {
+              scroll-padding-top: 80px;
+          }
+          data html.dragging-ew {
+              user-select: none !important;
+          }
+          data html.dragging-ew * {
+              cursor: ew-resize !important;
+          }
+          data html.dragging-ew:hover {
+              color: red;
+          }
+          data .content-dark::-webkit-scrollbar-thumb {
+              background-color: var(--colors-bg, #000) !important;
+              border-color: var(--colors-fg, #333) !important;
+              border-radius: 9px;
+              border: 2px solid;
+          }
+          data #corner {
+              position: fixed;
+              right: 0;
+              bottom: 0;
+              cursor: nwse-resize;
+          }
+          data .color-picker .react-colorful {
+              width: 100%;
+          }
       }"
     `)
   })
@@ -139,10 +133,11 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "x-element {
-        -moz-tab-size: none;
-          -o-tab-size: none;
-             tab-size: none;
+      "@layer base {
+          type: object;
+          data x-element {
+              tab-size: none
+          }
       }"
     `)
   })
@@ -157,8 +152,11 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "body > a:not(:hover) {
-        text-decoration: none;
+      "@layer base {
+          type: object;
+          data body > a:not(:hover) {
+              text-decoration: none
+          }
       }"
     `)
   })
@@ -174,12 +172,14 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "p {
-        margin: 0;
-      }
-
-      p ~ p {
-        margin-top: 0;
+      "@layer base {
+          type: object;
+          data p {
+              margin: 0;
+          }
+          data p ~ data p {
+              margin-top: 0;
+          }
       }"
     `)
   })
@@ -195,14 +195,14 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "body > p,
-      body > ul {
-        margin: 0;
-      }
-
-      body > p ~ body > p,
-      body > ul ~ body > ul {
-        margin-top: 10px;
+      "@layer base {
+          type: object;
+          data body > p, data body > ul {
+              margin: 0;
+          }
+          data body > p ~ data body > p, data body > ul ~ data body > ul {
+              margin-top: 10px;
+          }
       }"
     `)
   })

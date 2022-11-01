@@ -101,6 +101,7 @@ export class Recipe {
     const { name, defaultVariants = {} } = this.config
     const ctx = { ...this.context, transform: this.transform }
     const rule = new AtomicRule(ctx)
+    rule.layer = 'recipes'
 
     rule.process({
       styles: {

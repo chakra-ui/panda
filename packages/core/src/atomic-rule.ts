@@ -20,6 +20,7 @@ export type ProcessOptions = {
 
 export class AtomicRule {
   root: Root
+  layer = 'utilities'
   constructor(private context: StylesheetContext) {
     this.root = postcss.root({ nodes: [] })
   }
@@ -94,7 +95,7 @@ export class AtomicRule {
     // wrap this.root in an @layer rule
     return postcss.atRule({
       name: 'layer',
-      params: 'utilities',
+      params: this.layer,
       nodes: [this.root],
     })
   }
