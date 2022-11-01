@@ -22,6 +22,6 @@ export function optimizeCss(code: string, { minify = false }: { minify?: boolean
 }
 
 export function discardDuplicate(code: string) {
-  const { css } = postcss([dudupe()]).process(code)
+  const { css } = postcss([mergeLayers(), dudupe()]).process(code)
   return css
 }
