@@ -1,3 +1,4 @@
+import path from 'path'
 import { logger, colors } from '@css-panda/logger'
 import { emitArtifacts, generate, loadConfigAndCreateContext, setupConfig, setupPostcss } from '@css-panda/node'
 import { compact } from '@css-panda/shared'
@@ -5,6 +6,8 @@ import { cac } from 'cac'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { viteBundler } from '../preview/vite-dev'
+import { viteBuild } from '../preview/vite-build'
+import { vitePreview } from '../preview/vite-preview'
 
 export async function main() {
   const cli = cac('panda')
@@ -78,18 +81,22 @@ export async function main() {
 
   cli
     .command('preview', 'Preview system theme tokens')
-    .option('--build', 'Run in watch mode')
+    .option('--build', 'Build')
+    .option('--preview', 'Preview')
     .action(async (flags) => {
-      const { build } = flags
+      const { build, preview } = flags
+      const outDir = path.join(process.cwd(), 'panda-static')
 
-      if (build) {
-        //build instead
+      if (preview) {
+        await vitePreview({ outDir })
+      } else if (build) {
+        await viteBuild({ outDir })
+      } else {
+        await viteBundler()
+
+        const note = `use ${colors.reset(colors.bold('--build'))} to build`
+        logger.log(colors.dim(`  ${colors.green('➜')}  ${colors.bold('Build')}: ${note}`))
       }
-
-      await viteBundler()
-
-      const note = `use ${colors.reset(colors.bold('--build'))} to build`
-      logger.log(colors.dim(`  ${colors.green('➜')}  ${colors.bold('Build')}: ${note}`))
     })
 
   cli.help()

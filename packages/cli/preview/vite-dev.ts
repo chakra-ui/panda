@@ -13,6 +13,7 @@ export const viteBundler = async () => {
     mode,
     root: previewPath,
     server: {
+      open: true,
       port: port,
       hmr: {
         port: hmrPort,
@@ -33,7 +34,7 @@ export const viteBundler = async () => {
 const virtualModuleId = 'virtual:panda'
 const resolvedVirtualModuleId = '\0' + virtualModuleId
 
-const pandaPreviewPlugin = (): PluginOption => {
+export const pandaPreviewPlugin = (): PluginOption => {
   return {
     name: 'panda:preview',
 
