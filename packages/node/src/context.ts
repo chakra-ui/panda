@@ -241,7 +241,11 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     glob: [`${paths.asset}/**/*.css`],
   }
 
-  const files = glob.sync(config.include, { cwd, ignore: config.exclude, absolute: true })
+  function getFiles() {
+    return glob.sync(config.include, { cwd, ignore: config.exclude, absolute: true })
+  }
+
+  const files = getFiles()
 
   /* -----------------------------------------------------------------------------
    * Collect extracted styles
@@ -255,7 +259,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   }
 
   const tsProject: Project = createProject()
-  const sourceFiles = tsProject.addSourceFilesAtPaths(files)
+  tsProject.addSourceFilesAtPaths(files)
 
   const parseSourceFile = createParser({
     importMap,
@@ -353,7 +357,15 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
     importMap,
     reloadSourceFiles() {
-      sourceFiles.forEach((file) => file.refreshFromFileSystemSync())
+      const files = getFiles()
+      for (const file of files) {
+        const source = tsProject.getSourceFile(file)
+        if (source) {
+          source.refreshFromFileSystemSync()
+        } else {
+          tsProject.addSourceFileAtPath(file)
+        }
+      }
     },
     getSourceFile(file: string) {
       return tsProject.getSourceFile(absPath(file))
