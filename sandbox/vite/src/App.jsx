@@ -11,7 +11,7 @@ globalCss({
 
 function App() {
   return (
-    <div className={css({ paddingY: '180px' })}>
+    <div className={css({ paddingY: '50px', bg: 'teal' })}>
       <Stack align="center" padding="20px" marginBottom="30px" bg="yellow" gap={{ base: '4', md: '10' }}>
         <Circle size="40px" bg="red.300" fontSize="1.2em" fontWeight="bold">
           S
