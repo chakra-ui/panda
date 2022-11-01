@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest'
 import postcss from 'postcss'
-import { mergeLayers } from './merge-layers'
+import { mergeLayers } from '../src/plugins/merge-layers'
 
 function run(code: string) {
   return postcss([mergeLayers()]).process(code, { from: undefined })

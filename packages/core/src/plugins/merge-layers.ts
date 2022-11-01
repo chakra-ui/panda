@@ -1,6 +1,5 @@
 import type { AtRule, TransformCallback } from 'postcss'
 
-// merge similar @layer directives
 export const mergeLayers = (): TransformCallback => {
   return (root) => {
     const layers = new Map<string, AtRule>()
