@@ -1,9 +1,10 @@
-import { logger } from '@css-panda/logger'
+import { logger, colors } from '@css-panda/logger'
 import { emitArtifacts, generate, loadConfigAndCreateContext, setupConfig, setupPostcss } from '@css-panda/node'
 import { compact } from '@css-panda/shared'
 import { cac } from 'cac'
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import { viteBundler } from '../preview/vite-dev'
 
 export async function main() {
   const cli = cac('panda')
@@ -73,6 +74,22 @@ export async function main() {
       const options = compact({ include: files, ...rest })
       logger.debug({ type: 'cli', msg: options })
       await generate(options, configPath)
+    })
+
+  cli
+    .command('preview', 'Preview system theme tokens')
+    .option('--build', 'Run in watch mode')
+    .action(async (flags) => {
+      const { build } = flags
+
+      if (build) {
+        //build instead
+      }
+
+      await viteBundler()
+
+      const note = `use ${colors.reset(colors.bold('--build'))} to build`
+      logger.log(colors.dim(`  ${colors.green('➜')}  ${colors.bold('Build')}: ${note}`))
     })
 
   cli.help()
