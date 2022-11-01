@@ -10,7 +10,7 @@ import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
 
 export class Stylesheet {
-  constructor(private context: StylesheetContext) {}
+  constructor(private context: StylesheetContext, private options?: { content: string }) {}
 
   addGlobalCss = (styleObject: Dict) => {
     const { conditions, utility } = this.context
@@ -63,19 +63,28 @@ export class Stylesheet {
     recipe.process({ styles })
   }
 
-  addImports = (imports: string[]) => {
-    const rules = imports.map((n) => `@import '${n}';\n`)
-    this.context.root.prepend(...rules)
-  }
-
   toCss = ({ optimize = true, minify }: { optimize?: boolean; minify?: boolean } = {}) => {
     const breakpoint = new Breakpoints(this.context.breakpoints)
     breakpoint.expandScreenAtRule(this.context.root)
-    const css = this.context.root.toString()
-    return optimize ? optimizeCss(css, { minify }) : css
+
+    let css = this.context.root.toString()
+
+    if (optimize) {
+      css = optimizeCss(css, { minify })
+    }
+
+    if (this.options) {
+      css = `${this.options.content}\n\n${css}`
+    }
+
+    return css
   }
 
   append = (css: string) => {
     this.context.root.append(css)
+  }
+
+  prepend = (css: string) => {
+    this.context.root.prepend(css)
   }
 }
