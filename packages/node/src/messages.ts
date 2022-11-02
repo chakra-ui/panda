@@ -63,9 +63,7 @@ export function scaffoldCompleteMessage() {
   
   ◆ Create a ${quote('index.css')} file in your project that contains:
   
-  :root {
-    --panda: 1;
-  }
+  @layer reset, base, tokens, recipes, utilities;
 
   ◆ Import the ${quote('index.css')} file at the root of your project.
 
