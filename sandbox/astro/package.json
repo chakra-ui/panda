@@ -9,7 +9,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "css": "panda",
+    "css": "DEBUG=ast:* panda --clean",
     "css:dev": "panda -w"
   },
   "dependencies": {

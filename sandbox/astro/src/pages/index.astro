@@ -1,11 +1,33 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import { Button } from '../components/button.jsx'
-import '../../panda/styles.css'
+import '../index.css'
+import { css, globalCss } from '../../panda/css'
+import { circle, hstack } from '../../panda/patterns'
+
+globalCss({
+  '*': {
+    fontSize: '16px',
+    fontFamily: 'sans-serif',
+  },
+})
 ---
 
 <Layout title="Welcome to Astro.">
   <main>
     <Button>Welcome</Button>
+    <div
+      class={css({
+        bg: 'green.600',
+        padding: '40px',
+        color: 'white',
+        fontSize: '50px',
+      })}
+    >
+      <div class={hstack({ gap: '10' })}>
+        <span> Welcome home</span>
+        <span class={circle({ size: '10', bg: 'yellow', color: 'black' })}>4</span>
+      </div>
+    </div>
   </main>
 </Layout>
