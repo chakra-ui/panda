@@ -29,10 +29,26 @@ aside .title {
   font-size: 1.4rem;
 }
 
+aside > div {
+  margin-top: 2rem;
+}
+
+aside > div > span {
+  font-weight: 700;
+  font-size: small;
+  opacity: 0.7;
+}
+
 aside ul {
   list-style-type: none;
   padding: 0;
+  margin: 0.5rem 0;
 }
+
+aside > div ul:first-of-type {
+  margin-bottom: 2rem;
+}
+
 aside ul li {
   padding: 0.3rem 0;
   cursor: pointer;
@@ -107,7 +123,7 @@ hr {
   position: sticky;
   top: 0;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  background-color: var(--vscode-editor-background);
+  background-color: var(--bg);
 }
 .font-token-input {
   width: 100%;
@@ -193,4 +209,237 @@ hr {
   height: 20px;
   background: rgba(255, 192, 203, 0.5);
   grid-column: span 2 / span 2;
+}
+
+.spacing-playground .token-content .stack-v {
+  display: flex;
+  background-color: #e879f91a;
+  background-image: linear-gradient(
+    135deg,
+    #d946ef80 10%,
+    transparent 0,
+    transparent 50%,
+    #d946ef80 0,
+    #d946ef80 60%,
+    transparent 0,
+    transparent
+  );
+  background-size: 7.07px 7.07px;
+  width: fit-content;
+}
+
+.spacing-playground .token-content .stack-h {
+  display: flex;
+  flex-direction: column;
+  background-color: #818cf81a;
+  background-image: linear-gradient(
+    135deg,
+    #6366f180 10%,
+    transparent 0,
+    transparent 50%,
+    #6366f180 0,
+    #6366f180 60%,
+    transparent 0,
+    transparent
+  );
+  background-size: 7.07px 7.07px;
+}
+
+.spacing-playground .token-content .spacing-item {
+  width: 100%;
+  height: 40px;
+  background: rgb(99 102 241);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.spacing-playground .token-content .stack-v .spacing-item {
+  background: rgb(217 70 239);
+  width: 56px;
+  height: 56px;
+}
+
+.spacing-playground .token-content .switch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  background-color: var(--bg);
+}
+
+.spacing-playground .token-content .switch > span {
+  font-weight: bold;
+}
+
+.spacing-playground .token-content .section > span {
+  font-weight: bold;
+}
+
+.spacing-playground .token-content .section > div {
+  margin-top: 12px;
+}
+
+.spacing-playground .token-content .padding-item {
+  width: 56px;
+  height: 56px;
+  background: rgb(99 102 241);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  padding-inline: 12px;
+}
+
+.spacing-playground .token-content .pad {
+  background-size: 7.07px 7.07px;
+  width: fit-content;
+  border-radius: 0.5rem;
+}
+
+.spacing-playground .token-content .pad-h {
+  background-image: linear-gradient(
+    135deg,
+    hsla(0, 0%, 100%, 0.75) 10%,
+    transparent 0,
+    transparent 50%,
+    hsla(0, 0%, 100%, 0.75) 0,
+    hsla(0, 0%, 100%, 0.75) 60%,
+    transparent 0,
+    transparent
+  );
+  background-color: rgb(99 102 241);
+}
+
+.spacing-playground .token-content .pad-h .padding-item {
+  background: rgb(99 102 241);
+}
+
+.spacing-playground .token-content .pad-v {
+  background-image: linear-gradient(
+    135deg,
+    hsla(0, 0%, 100%, 0.75) 10%,
+    transparent 0,
+    transparent 50%,
+    hsla(0, 0%, 100%, 0.75) 0,
+    hsla(0, 0%, 100%, 0.75) 60%,
+    transparent 0,
+    transparent
+  );
+  background-color: rgb(236 72 153);
+}
+
+.spacing-playground .token-content .pad-v .padding-item {
+  background: rgb(236 72 153);
+}
+
+.spacing-playground .token-content .pad-all {
+  background-image: linear-gradient(
+    135deg,
+    hsla(0, 0%, 100%, 0.75) 10%,
+    transparent 0,
+    transparent 50%,
+    hsla(0, 0%, 100%, 0.75) 0,
+    hsla(0, 0%, 100%, 0.75) 60%,
+    transparent 0,
+    transparent
+  );
+  background-color: rgb(139 92 246);
+}
+
+.spacing-playground .token-content .pad-all .padding-item {
+  background: rgb(139 92 246);
+}
+
+/*  */
+
+.contrast-checker .token-content .color-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+}
+
+.contrast-checker .token-content .color-container > div {
+  display: flex;
+  flex-direction: column;
+  border: solid 1px rgba(182, 180, 180, 0.1);
+  flex: 1;
+  padding-top: 60px;
+}
+
+/*  */
+
+.contrast-checker .token-content .preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 1.4em;
+  padding: 8px;
+  outline: none;
+  border: solid 1px rgba(182, 180, 180, 0.2);
+}
+
+.contrast-checker .token-content .preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 1.4em;
+  padding: 8px;
+  outline: none;
+  border: solid 1px rgba(182, 180, 180, 0.2);
+}
+
+.contrast-checker .token-content .result .contrast-ratio {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  gap: 10px;
+}
+
+.contrast-checker .token-content .result .contrast-ratio span:nth-child(1) {
+  font-weight: 700;
+  font-size: 2.5em;
+}
+
+.contrast-checker .token-content .result .contrast-ratio span:nth-child(2) {
+  font-weight: 600;
+  opacity: 0.5;
+}
+
+.contrast-checker .token-content .result .test-scores {
+  display: flex;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.contrast-checker .token-content .result .test-scores > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.contrast-checker .token-content .result .test-scores > div > span {
+  font-weight: 600;
+}
+
+.contrast-checker .token-content .result .test-scores > div > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+}
+
+.contrast-checker .token-content .result .test-scores > div > div > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }

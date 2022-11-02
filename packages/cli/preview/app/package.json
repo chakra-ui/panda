@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@css-panda/token-dictionary": "workspace:*",
+    "color-contrast-checker": "^2.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

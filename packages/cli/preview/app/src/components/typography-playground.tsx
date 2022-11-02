@@ -57,12 +57,12 @@ export function TypographyPlayground(props: TypographyPlaygroundProps) {
     <div className="token-group">
       <div className="token-content">
         <div className="typography-playground">
-          <div contentEditable="true" style={configValues}>
+          <div contentEditable="true" suppressContentEditableWarning={true} style={configValues}>
             Panda
           </div>
           <div className="controls">
             {Object.keys(config).map((tokenKey) => (
-              <div className="control">
+              <div className="control" key={tokenKey}>
                 <span>{tokenKey.replace(/([a-z0-9])([A-Z])/g, '$1 $2')}</span>
                 {renderTokenSwitch(tokenKey as keyof typeof defaultConfig)}
               </div>

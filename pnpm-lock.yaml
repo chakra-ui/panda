@@ -81,12 +81,14 @@ importers:
       '@types/react': 18.0.17
       '@types/react-dom': ^18.0.7
       '@vitejs/plugin-react': ^2.2.0
+      color-contrast-checker: ^2.1.0
       react: ^18.2.0
       react-dom: ^18.2.0
       typescript: ^4.6.4
       vite: ^3.2.0
     dependencies:
       '@css-panda/token-dictionary': link:../../../token-dictionary
+      color-contrast-checker: 2.1.0
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
@@ -2588,6 +2590,10 @@ packages:
 
   /code-block-writer/11.0.3:
     resolution: {integrity: sha512-NiujjUFB4SwScJq2bwbYUtXbZhBSlY6vYzm++3Q6oC+U+injTqfPYFK8wS9COOmb2lueqp0ZRB4nK1VYeHgNyw==}
+    dev: false
+
+  /color-contrast-checker/2.1.0:
+    resolution: {integrity: sha512-6Y0aIEej3pwZTVlicIqVzhO6T4izDWouaIXnYoDdTuFFAMQ9nnN0dgHNP9J94jRnH6asjPq1/wzUKxwoNbWtRQ==}
     dev: false
 
   /color-convert/1.9.3:

@@ -6,7 +6,8 @@ export function Colors(props: ColorsProps) {
   const { colors } = props
 
   const renderColors = (colors: ColorsProps['colors']) => {
-    const values = Array.from(colors.values())
+    const values = Array.from(colors.values()).filter((color) => !color.isConditional && !color.extensions.isVirtual)
+
     return values?.map((color, i) => {
       return (
         <div className="shade" key={i}>
