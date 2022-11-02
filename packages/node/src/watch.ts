@@ -7,6 +7,7 @@ import type { PandaContext } from './context'
 type WatcherOptions = {
   ignore?: string[]
   cwd?: string
+  poll?: boolean
 }
 
 /* -----------------------------------------------------------------------------
@@ -14,13 +15,16 @@ type WatcherOptions = {
  * -----------------------------------------------------------------------------*/
 
 export function createWatcher(files: string[], options: WatcherOptions = {}) {
-  const { ignore, cwd = process.cwd() } = options
+  const { ignore, cwd = process.cwd(), poll } = options
+  const coalesce = poll || process.platform === 'win32'
 
   const watcher = chokidar.watch(files, {
+    usePolling: poll,
     cwd,
     ignoreInitial: true,
     ignorePermissionErrors: true,
     ignored: ignore,
+    awaitWriteFinish: coalesce ? { stabilityThreshold: 50, pollInterval: 10 } : false,
   })
 
   logger.debug({
