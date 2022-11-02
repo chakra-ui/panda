@@ -60,7 +60,7 @@ async function createContentWatcher(ctx: PandaContext, callback: (file: string) 
     ctx.removeSourceFile(file)
 
     if (event === 'unlink') {
-      ctx.assets.rm(file)
+      ctx.chunks.rm(file)
     } else {
       ctx.addSourceFile(file)
       await callback(file)
@@ -76,7 +76,7 @@ async function createContentWatcher(ctx: PandaContext, callback: (file: string) 
 
 async function createAssetWatcher(ctx: PandaContext, callback: () => Promise<void>) {
   const { cwd } = ctx
-  const watcher = createWatcher([join(ctx.paths.asset, '**/*.css')], { cwd })
+  const watcher = createWatcher([join(ctx.paths.chunk, '**/*.css')], { cwd })
 
   watcher.on('all', async (event, file) => {
     logger.debug({ type: `asset:${event}`, file })
@@ -99,13 +99,13 @@ type Options = {
 }
 
 export async function watch(ctx: PandaContext, options: Options) {
-  const assetsWatcher = await createAssetWatcher(ctx, options.onAssetChange)
+  const chunkDirWatcher = await createAssetWatcher(ctx, options.onAssetChange)
   const contentWatcher = await createContentWatcher(ctx, options.onContentChange)
   const configWatcher = await createConfigWatcher(ctx.conf)
 
   async function close() {
     await configWatcher.close()
-    await assetsWatcher.close()
+    await chunkDirWatcher.close()
     await contentWatcher.close()
   }
 

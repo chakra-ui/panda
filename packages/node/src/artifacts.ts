@@ -1,4 +1,4 @@
-import { bundleAssets } from './assets'
+import { bundleChunks } from './chunks'
 import type { PandaContext } from './context'
 import { extractFiles } from './extract'
 import { generateSystem } from './generators'
@@ -16,7 +16,7 @@ export async function emitArtifacts(ctx: PandaContext) {
 export async function emitAndExtract(ctx: PandaContext) {
   await emitArtifacts(ctx)
   await extractFiles(ctx)
-  await bundleAssets(ctx)
+  await bundleChunks(ctx)
 }
 
 export function getBaseCss(ctx: PandaContext) {

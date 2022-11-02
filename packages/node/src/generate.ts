@@ -1,6 +1,6 @@
 import type { Config } from '@css-panda/types'
 import { emitAndExtract } from './artifacts'
-import { bundleAssets, writeFileAsset } from './assets'
+import { bundleChunks, writeFileChunk } from './chunks'
 import { loadConfigAndCreateContext } from './config'
 import { watch } from './watch'
 
@@ -16,10 +16,10 @@ export async function generate(config: Config, configPath?: string) {
         return generate(config, configPath)
       },
       onAssetChange() {
-        return bundleAssets(ctx)
+        return bundleChunks(ctx)
       },
       onContentChange: (file) => {
-        return writeFileAsset(ctx, file)
+        return writeFileChunk(ctx, file)
       },
     })
   }
