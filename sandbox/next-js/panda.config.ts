@@ -3,7 +3,6 @@ import { defineConfig } from 'css-panda'
 
 export default defineConfig({
   ...config,
-  // breakpoints: {},
   outdir: 'styled-system',
   include: ['pages/**/*.jsx'],
 })
