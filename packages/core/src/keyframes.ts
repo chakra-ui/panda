@@ -3,19 +3,25 @@ import { toCss } from './to-css'
 import type { Dict } from './types'
 
 function toString(name: string, definition: Dict) {
-  return postcss
-    .atRule({
-      name: 'keyframes',
-      params: name,
-      nodes: toCss(definition).root.nodes,
-    })
-    .toString()
+  return postcss.atRule({
+    name: 'keyframes',
+    params: name,
+    nodes: toCss(definition).root.nodes,
+  })
 }
 
 export function toKeyframeCss(values: Dict) {
-  const root: string[] = []
+  const root = postcss.root()
+
   for (const [name, definition] of Object.entries(values)) {
-    root.push(toString(name, definition), '\r')
+    root.append(toString(name, definition))
   }
-  return root.join('\n')
+
+  const rule = postcss.atRule({
+    name: 'layer',
+    params: 'tokens',
+    nodes: root.nodes,
+  })
+
+  return rule.toString()
 }

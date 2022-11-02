@@ -7,6 +7,8 @@ import {
   withoutImportant,
   withoutSpace,
 } from '@css-panda/shared'
+import type { Root } from 'postcss'
+import postcss from 'postcss'
 import { ConditionalRule } from './conditional-rule'
 import { toCss } from './to-css'
 import type { Dict, StylesheetContext } from './types'
@@ -17,7 +19,11 @@ export type ProcessOptions = {
 }
 
 export class AtomicRule {
-  constructor(private context: StylesheetContext) {}
+  root: Root
+  layer = 'utilities'
+  constructor(private context: StylesheetContext) {
+    this.root = postcss.root()
+  }
 
   hash = (name: string) => {
     return this.context.hash ? esc(toHash(name)) : esc(name)
@@ -79,7 +85,18 @@ export class AtomicRule {
       rule.applyConditions(conditions)
 
       // append the rule to the root
-      this.context.root.append(rule.rule!)
+      this.root.append(rule.rule!)
+    })
+
+    this.context.root.append(this.addToLayer())
+  }
+
+  addToLayer = () => {
+    // wrap this.root in an @layer rule
+    return postcss.atRule({
+      name: 'layer',
+      params: this.layer,
+      nodes: [this.root],
     })
   }
 
