@@ -1,6 +1,6 @@
 import type { AtRule, TransformCallback } from 'postcss'
 
-export const mergeLayers = (): TransformCallback => {
+export default function mergeLayers(): TransformCallback {
   return (root) => {
     const layers = new Map<string, AtRule>()
     root.walkAtRules('layer', (rule) => {

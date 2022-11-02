@@ -11,7 +11,7 @@ function prettifyNode(node: Container, indent = 0) {
     })
 }
 
-export const prettify = (): TransformCallback => {
+export default function prettify(): TransformCallback {
   return (root) => {
     prettifyNode(root)
     if (root.first) {

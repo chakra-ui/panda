@@ -2,7 +2,7 @@ import { AtRule, Container, Root, TransformCallback } from 'postcss'
 import sortBy from 'sort-css-media-queries'
 
 // sort media queries within at-rule directives or at the root
-export const sortMediaQueries = (): TransformCallback => {
+export default function sortMediaQueries(): TransformCallback {
   return (root) => {
     // create array of [rulesWithoutLayer, rulesWithLayer]
     const rules = root.nodes.reduce(

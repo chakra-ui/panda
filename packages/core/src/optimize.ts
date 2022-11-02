@@ -2,13 +2,13 @@ import postcss from 'postcss'
 import dedupe from 'postcss-discard-duplicates'
 import nested from 'postcss-nested'
 import normalizeWhiteSpace from 'postcss-normalize-whitespace'
-import { mergeLayers } from './plugins/merge-layers'
-import { sortMediaQueries } from './plugins/sort-mq'
-import { prettify } from './plugins/prettify'
+import mergeCascadeLayers from './plugins/merge-layers'
+import sortMediaQueries from './plugins/sort-mq'
+import prettify from './plugins/prettify'
 
 export function optimizeCss(code: string, { minify = false }: { minify?: boolean } = {}) {
   const { css } = postcss([
-    mergeLayers(),
+    mergeCascadeLayers(),
     sortMediaQueries(),
     dedupe(),
     nested(),
@@ -19,6 +19,6 @@ export function optimizeCss(code: string, { minify = false }: { minify?: boolean
 }
 
 export function discardDuplicate(code: string) {
-  const { css } = postcss([mergeLayers(), dedupe()]).process(code)
+  const { css } = postcss([mergeCascadeLayers(), dedupe()]).process(code)
   return css
 }

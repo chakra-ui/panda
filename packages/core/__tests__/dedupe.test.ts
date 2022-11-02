@@ -1,7 +1,7 @@
 import postcss from 'postcss'
 import { expect, test } from 'vitest'
 import dedupePlugin from 'postcss-discard-duplicates'
-import { mergeLayers } from '../src/plugins/merge-layers'
+import mergeLayers from '../src/plugins/merge-layers'
 
 function run(code: string) {
   return postcss([mergeLayers(), dedupePlugin()]).process(code, { from: undefined })
