@@ -22,7 +22,7 @@
     "@css-panda/fixture": "workspace:*",
     "css-panda": "workspace:*",
     "@vitejs/plugin-react": "2.1.0",
-    "postcss": "8.4.16",
+    "postcss": "8.4.18",
     "vite": "3.1.3"
   }
 }
