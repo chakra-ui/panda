@@ -22,7 +22,7 @@ export class AtomicRule {
   root: Root
   layer = 'utilities'
   constructor(private context: StylesheetContext) {
-    this.root = postcss.root({ nodes: [] })
+    this.root = postcss.root()
   }
 
   hash = (name: string) => {
