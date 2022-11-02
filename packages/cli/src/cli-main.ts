@@ -80,7 +80,7 @@ export async function main() {
     })
 
   cli
-    .command('preview', 'Preview system theme tokens')
+    .command('docs', 'Open design system tokens documentation')
     .option('--build', 'Build')
     .option('--preview', 'Preview')
     .action(async (flags) => {

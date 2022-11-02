@@ -1,8 +1,58 @@
 #root {
+  height: 100vh;
   width: 100%;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+}
+
+@media (prefers-color-scheme: light) {
+  aside {
+    color: white;
+  }
+}
+
+main {
+  display: flex;
+  height: 100%;
+}
+
+main > * {
+  padding: 2rem 1rem;
+  overflow: auto;
+}
+
+aside {
+  min-width: 15rem;
+  background-color: #1a1a1a;
+}
+
+aside .title {
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+aside ul {
+  list-style-type: none;
+  padding: 0;
+}
+aside ul li {
+  padding: 0.3rem 0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+aside ul li[data-active],
+aside ul li:hover {
+  color: #9499ff;
+}
+
+.content {
+  width: 100%;
+}
+
+hr {
+  width: 100%;
+  opacity: 0.2;
 }
 
 .token-group {
@@ -28,7 +78,7 @@
 .color-wrapper .shades {
   display: grid;
   grid-gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
   margin-top: 20px;
 }
 
@@ -48,6 +98,99 @@
 
 .color-box {
   width: 100%;
-  height: 40px;
+  height: 5rem;
   border-radius: 4px;
+}
+
+.font-token-input-wrapper {
+  margin-bottom: 14px;
+  position: sticky;
+  top: 0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  background-color: var(--vscode-editor-background);
+}
+.font-token-input {
+  width: 100%;
+  resize: vertical;
+  padding: 4px;
+}
+
+.font-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.font-wrapper .label {
+  text-transform: capitalize;
+  opacity: 0.4;
+}
+
+.font-wrapper .render {
+  font-size: 2em;
+}
+
+.font-tokens .title {
+  text-transform: capitalize;
+}
+
+.font-tokens .token-content {
+  gap: 12px;
+}
+
+.fontSize-token .font-wrapper .label {
+  text-transform: unset;
+}
+
+.lineHeight-token .font-wrapper .render {
+  font-size: unset;
+}
+
+.typography-playground div[contenteditable] {
+  outline: 0px solid transparent;
+  padding-top: 100px;
+  padding-bottom: 100px;
+  margin-inline-start: auto;
+  margin-inline-end: auto;
+  width: fit-content;
+}
+
+.typography-playground .controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.typography-playground .control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.typography-playground .control span {
+  white-space: nowrap;
+  width: 200px;
+  text-transform: capitalize;
+}
+
+.sizes-tokens .token-content {
+  display: grid;
+  gap: 10px 40px;
+  grid-template-columns: repeat(5, minmax(0px, 1fr));
+}
+
+.sizes-tokens .token-content hr {
+  grid-column: span 5 / span 5;
+}
+
+.sizes-tokens .token-content > span:nth-child(1),
+.sizes-tokens .token-content > span:nth-child(2),
+.sizes-tokens .token-content > span:nth-child(3) {
+  font-weight: 600;
+}
+
+.sizes-tokens .token-content .size-box {
+  height: 20px;
+  background: rgba(255, 192, 203, 0.5);
+  grid-column: span 2 / span 2;
 }
