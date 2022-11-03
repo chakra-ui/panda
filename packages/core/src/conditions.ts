@@ -26,10 +26,9 @@ export class Conditions {
   }
 
   shift = (paths: string[]) => {
-    const values = this.values
     return paths.slice().sort((a, b) => {
-      const aIsCondition = a in values
-      const bIsCondition = b in values
+      const aIsCondition = this.isCondition(a)
+      const bIsCondition = this.isCondition(b)
       if (aIsCondition && !bIsCondition) return 1
       if (!aIsCondition && bIsCondition) return -1
       return 0
@@ -38,6 +37,10 @@ export class Conditions {
 
   has = (key: string) => {
     return Object.prototype.hasOwnProperty.call(this.values, key)
+  }
+
+  isCondition = (key: string) => {
+    return this.has(key) || !!this.getRaw(key)
   }
 
   isEmpty = () => {

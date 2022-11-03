@@ -9,7 +9,7 @@ export function generateConditions(ctx: PandaContext) {
      const conditions = new Set([${keys.map((key) => JSON.stringify(key))}])
      
      export function isCondition(value){
-      return conditions.has(value)
+      return conditions.has(value) || /^@|&|&$/.test(value)
      }
 
      export function sortConditions(paths){

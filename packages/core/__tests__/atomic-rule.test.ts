@@ -8,7 +8,7 @@ function css(obj: ProcessOptions) {
   return ruleset.toCss()
 }
 
-describe('AtomicRule', () => {
+describe('atomic / with basic style object', () => {
   test('should work with basic', () => {
     expect(css({ styles: { bg: 'red.300' } })).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -129,7 +129,9 @@ describe('AtomicRule', () => {
       }"
     `)
   })
+})
 
+describe('atomic / with nesting scope', () => {
   test('[pseudo] should work with nested selector', () => {
     expect(
       css({
@@ -251,7 +253,7 @@ describe('AtomicRule', () => {
   })
 })
 
-describe('grouped conditions styles', () => {
+describe('atomic / with grouped conditions styles', () => {
   test('simple', () => {
     expect(
       css({
@@ -329,6 +331,106 @@ describe('grouped conditions styles', () => {
                       text-align: left
                   }
               }
+          }
+      }"
+    `)
+  })
+})
+
+describe('atomic / with direct nesting', () => {
+  test('outlier: should work with basic', () => {
+    expect(
+      css({
+        styles: {
+          all: 'unset',
+          backgroundColor: 'red',
+          border: 'none',
+          padding: '$3 $3',
+          borderRadius: '$button',
+          fontSize: '$xsmall',
+          cursor: 'pointer',
+          '& + span': {
+            marginLeft: '$2',
+          },
+          '&:focus, &:hover': {
+            boxShadow: 'none',
+          },
+          '.test &': {
+            backgroundColor: 'blue',
+          },
+          '& .my-class': {
+            color: 'red',
+          },
+          ':focus > &': {
+            color: 'white',
+          },
+          '@media (min-width: 768px)': {
+            backgroundColor: 'green',
+            fontSize: '$small',
+            '&:hover': {
+              backgroundColor: 'yellow',
+            },
+          },
+          '& span': {
+            color: 'red',
+          },
+        },
+      }),
+    ).toMatchInlineSnapshot(`
+      "@layer utilities {
+          .all-unset {
+              all: unset
+          }
+          .backgroundColor-red {
+              background-color: red
+          }
+          .border-none {
+              border: none
+          }
+          .padding-\\\\$3\\\\ \\\\$3 {
+              padding: $3 $3
+          }
+          .borderRadius-\\\\$button {
+              border-radius: $button
+          }
+          .fontSize-\\\\$xsmall {
+              font-size: $xsmall
+          }
+          .cursor-pointer {
+              cursor: pointer
+          }
+          .\\\\&\\\\ \\\\+\\\\ span\\\\:marginLeft-\\\\$2 + span {
+              margin-left: $2
+          }
+          .\\\\&\\\\:focus\\\\,\\\\ \\\\&\\\\:hover\\\\:boxShadow-none:focus, .\\\\&\\\\:focus\\\\,\\\\ \\\\&\\\\:hover\\\\:boxShadow-none:hover {
+              box-shadow: none
+          }
+          .test .\\\\.test\\\\ \\\\&\\\\:backgroundColor-blue {
+              background-color: blue
+          }
+          .\\\\&\\\\ \\\\.my-class\\\\:color-red .my-class {
+              color: red
+          }
+          :focus > .\\\\:focus\\\\ \\\\>\\\\ \\\\&\\\\:color-white {
+              color: white
+          }
+          @media (min-width: 768px) {
+              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:backgroundColor-green {
+                  background-color: green
+              }
+          }
+          @media (min-width: 768px) {
+              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:fontSize-\\\\$small {
+                  font-size: $small
+              }
+          }
+          @media (min-width: 768px) {
+              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:\\\\&\\\\:hover\\\\:backgroundColor-yellow:hover {
+                  background-color: yellow
+              }
+          }
+          .\\\\&\\\\ span\\\\:color-red span {
+              color: red
           }
       }"
     `)

@@ -1,5 +1,3 @@
-import { ConditionError } from '@css-panda/error'
-import { splitBy } from '@css-panda/shared'
 import type { RawCondition } from '@css-panda/types'
 import postcss, { AtRule } from 'postcss'
 
@@ -14,11 +12,7 @@ function parseAtRule(value: string): RawCondition {
   }
 }
 
-export function parseCondition(condition: string): RawCondition {
-  if (splitBy(condition, ',').length > 1) {
-    throw new ConditionError('Multiple css conditions are not allowed')
-  }
-
+export function parseCondition(condition: string): RawCondition | undefined {
   if (condition.startsWith('@')) {
     return parseAtRule(condition)
   }
@@ -36,6 +30,4 @@ export function parseCondition(condition: string): RawCondition {
   if (type) {
     return { type, value: condition, raw: condition }
   }
-
-  throw new ConditionError('Invalid css condition or selector')
 }
