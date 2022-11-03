@@ -1,4 +1,5 @@
 import * as mocks from '@css-panda/fixture'
+import { withoutSpace } from '@css-panda/shared'
 import { TokenDictionary } from '@css-panda/token-dictionary'
 import postcss from 'postcss'
 import { Conditions, Utility } from '../src'
@@ -41,7 +42,7 @@ export const createContext = (): StylesheetContext => ({
   transform: (prop, value) => {
     const key = propMap[prop] ?? prop
     return {
-      className: `${key}-${value}`,
+      className: `${key}-${withoutSpace(value)}`,
       styles: { [prop]: value },
     }
   },

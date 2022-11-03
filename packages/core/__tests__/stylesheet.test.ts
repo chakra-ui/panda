@@ -6,19 +6,20 @@ import { createContext } from './fixture'
 function globalCss(values: Dict) {
   const ctx = createContext()
   const sheet = new Stylesheet(ctx)
-
   sheet.processGlobalCss(values)
-
   return sheet.toCss()
 }
 
 describe('Global styles', () => {
-  test('with nested + conditions', () => {
+  test('with direct nesting + conditional value', () => {
     const sheet = globalCss({
-      a: {
-        width: '1/2',
+      '.btn': {
+        width: { base: '40px', lg: '90px' },
         '&:hover': {
           divideX: '40px',
+          '& > span': {
+            color: 'pink',
+          },
         },
         focus: {
           color: 'red.200',
@@ -34,26 +35,36 @@ describe('Global styles', () => {
 
     expect(sheet).toMatchInlineSnapshot(`
       "@layer base {
-        a {
-          width: 50%;
+        .btn {
+          width: 40px;
         }
 
-        a:hover > * ~ * {
+        .btn:hover > * ~ * {
           border-left-width: 40px;
           border-right-width: 0px;
         }
 
-        a:focus {
+        .btn:hover > span {
+          color: pink;
+        }
+
+        .btn:focus {
           color: var(--colors-red-200);
         }
 
-        a:focus:hover {
+        .btn:focus:hover {
           background-color: var(--colors-red-400);
         }
 
         @media screen and (min-width: 30em) {
-          a {
+          .btn {
             font-size: 12px;
+          }
+        }
+
+        @media screen and (min-width: 62em) {
+          .btn {
+            width: 90px;
           }
         }
       }"
@@ -66,7 +77,7 @@ describe('Global styles', () => {
         scrollPaddingTop: '80px',
         '&.dragging-ew': {
           userSelect: 'none !important',
-          '*': {
+          '& *': {
             cursor: 'ew-resize !important',
           },
           hover: {

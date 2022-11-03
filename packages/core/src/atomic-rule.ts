@@ -9,7 +9,6 @@ import {
 } from '@css-panda/shared'
 import type { Root } from 'postcss'
 import postcss from 'postcss'
-import { ConditionalRule } from './conditional-rule'
 import { toCss } from './to-css'
 import type { Dict, StylesheetContext } from './types'
 
@@ -30,7 +29,7 @@ export class AtomicRule {
   }
 
   get rule() {
-    return new ConditionalRule(this.context.conditions)
+    return this.context.conditions.rule()
   }
 
   process = (options: ProcessOptions) => {
@@ -74,6 +73,7 @@ export class AtomicRule {
       }
 
       const selector = this.hash(baseArray.join(':'))
+
       rule.selector = important ? `.${selector}\\!` : `.${selector}`
 
       // no empty rulesets

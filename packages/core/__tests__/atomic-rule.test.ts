@@ -9,6 +9,26 @@ function css(obj: ProcessOptions) {
 }
 
 describe('atomic / with basic style object', () => {
+  test('respect important syntax', () => {
+    expect(
+      css({
+        styles: {
+          color: 'red !important',
+          fontSize: '30px!',
+        },
+      }),
+    ).toMatchInlineSnapshot(`
+      "@layer utilities {
+          .color-red\\\\! {
+              color: red !important
+          }
+          .fontSize-30px\\\\! {
+              font-size: 30px !important
+          }
+      }"
+    `)
+  })
+
   test('should work with basic', () => {
     expect(css({ styles: { bg: 'red.300' } })).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -387,7 +407,7 @@ describe('atomic / with direct nesting', () => {
           .border-none {
               border: none
           }
-          .padding-\\\\$3\\\\ \\\\$3 {
+          .padding-\\\\$3_\\\\$3 {
               padding: $3 $3
           }
           .borderRadius-\\\\$button {

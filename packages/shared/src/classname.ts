@@ -1,4 +1,4 @@
-import { withoutSpace } from './css-important'
+import { isImportant, withoutImportant, withoutSpace } from './css-important'
 import { filterBaseConditions } from './condition'
 import { toHash } from './hash'
 import { walkObject } from './walk-object'
@@ -24,15 +24,22 @@ export function createCss(context: Context) {
 
     walkStyles(normalizedObject, (props: Record<string, any>, scope?: string[]) => {
       walkObject(props, (value, paths) => {
+        const important = isImportant(value)
+
         if (value == null) return
 
         const [prop, ...allConditions] = conds.shift(paths)
 
         const conditions = filterBaseConditions(allConditions)
-        const transformed = transform(prop, value)
+        const transformed = transform(prop, withoutImportant(value))
+        let transformedClassName = transformed.className
+
+        if (important) {
+          transformedClassName = `${transformedClassName}!`
+        }
 
         // get the base class name
-        const baseArray = [...conditions, transformed.className]
+        const baseArray = [...conditions, transformedClassName]
 
         if (scope && scope.length > 0) {
           baseArray.unshift(`[${withoutSpace(scope.join('__'))}]`)
