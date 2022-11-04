@@ -80,7 +80,7 @@ export async function main() {
     })
 
   cli
-    .command('docs', 'Open design system tokens documentation')
+    .command('docs', 'Realtime documentation for your design tokens')
     .option('--build', 'Build')
     .option('--preview', 'Preview')
     .option('--outdir', 'Output directory for static files')
