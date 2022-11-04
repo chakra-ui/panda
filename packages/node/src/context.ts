@@ -178,7 +178,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     types: getPath('types'),
     recipe: getPath('recipes'),
     pattern: getPath('patterns'),
-    asset: getPath('assets'),
+    chunk: getPath('chunks'),
     outCss: getPath('styles.css'),
     jsx: getPath('jsx'),
   }
@@ -208,40 +208,44 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    *  Asssets (generated css per file)
    * -----------------------------------------------------------------------------*/
 
-  const assets = {
-    dir: paths.asset,
+  const chunks = {
+    dir: paths.chunk,
     readFile(file: string) {
-      let fileName = assets.format(file)
-      fileName = join(paths.asset, fileName)
+      let fileName = chunks.format(file)
+      fileName = join(paths.chunk, fileName)
       if (!existsSync(fileName)) {
         return Promise.resolve('')
       }
       return io.read(fileName)
     },
     getFiles() {
-      return readdirSync(assets.dir)
+      return readdirSync(chunks.dir)
     },
     format(file: string) {
       return relative(cwd, file).replaceAll(sep, '__').replace(extname(file), '.css')
     },
     async write(file: string, css: string) {
-      const fileName = assets.format(file)
+      const fileName = chunks.format(file)
 
-      const oldCss = await assets.readFile(file)
+      const oldCss = await chunks.readFile(file)
       const newCss = discardDuplicate([oldCss.trim(), css.trim()].filter(Boolean).join('\n\n'))
 
-      logger.debug({ type: 'asset:write', file, path: fileName })
+      logger.debug({ type: 'chunk:write', file, path: fileName })
 
-      return write(paths.asset, [{ file: fileName, code: newCss }])
+      return write(paths.chunk, [{ file: fileName, code: newCss }])
     },
     rm(file: string) {
-      const fileName = assets.format(file)
-      return io.rm(join(paths.asset, fileName))
+      const fileName = chunks.format(file)
+      return io.rm(join(paths.chunk, fileName))
     },
-    glob: [`${paths.asset}/**/*.css`],
+    glob: [`${paths.chunk}/**/*.css`],
   }
 
-  const files = glob.sync(config.include, { cwd, ignore: config.exclude, absolute: true })
+  function getFiles() {
+    return glob.sync(config.include, { cwd, ignore: config.exclude, absolute: true })
+  }
+
+  const files = getFiles()
 
   /* -----------------------------------------------------------------------------
    * Collect extracted styles
@@ -255,7 +259,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   }
 
   const tsProject: Project = createProject()
-  const sourceFiles = tsProject.addSourceFilesAtPaths(files)
+  tsProject.addSourceFilesAtPaths(files)
 
   const parseSourceFile = createParser({
     importMap,
@@ -328,7 +332,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
     return {
       css: sheet.toCss({ minify: config.minify }),
-      file: assets.format(file),
+      file: chunks.format(file),
     }
   }
 
@@ -343,7 +347,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     cwd,
     conf,
 
-    assets,
+    chunks,
     files,
 
     helpers,
@@ -353,7 +357,15 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
     importMap,
     reloadSourceFiles() {
-      sourceFiles.forEach((file) => file.refreshFromFileSystemSync())
+      const files = getFiles()
+      for (const file of files) {
+        const source = tsProject.getSourceFile(file)
+        if (source) {
+          source.refreshFromFileSystemSync()
+        } else {
+          tsProject.addSourceFileAtPath(file)
+        }
+      }
     },
     getSourceFile(file: string) {
       return tsProject.getSourceFile(absPath(file))

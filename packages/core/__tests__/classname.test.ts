@@ -43,6 +43,20 @@ describe('generate classnames', () => {
     ).toMatchInlineSnapshot('"w-70px"')
 
     // override in nested condition
-    expect(css({ hover: { width: '40px', w: '90px' } })).toMatchInlineSnapshot('"hover:w-90px"')
+    expect(
+      css({
+        hover: { width: '40px', w: '90px' },
+      }),
+    ).toMatchInlineSnapshot('"hover:w-90px"')
+  })
+
+  test('should respect important', () => {
+    const css = createCss(createContext())
+    expect(
+      css({
+        color: 'red !important',
+        fontSize: '30px!',
+      }),
+    ).toMatchInlineSnapshot('"color-red! fontSize-30px!"')
   })
 })

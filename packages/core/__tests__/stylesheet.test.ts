@@ -6,22 +6,20 @@ import { createContext } from './fixture'
 function globalCss(values: Dict) {
   const ctx = createContext()
   const sheet = new Stylesheet(ctx)
-
-  sheet.processGlobalCss({
-    type: 'object',
-    data: values,
-  })
-
+  sheet.processGlobalCss(values)
   return sheet.toCss()
 }
 
 describe('Global styles', () => {
-  test('with nested + conditions', () => {
+  test('with direct nesting + conditional value', () => {
     const sheet = globalCss({
-      a: {
-        width: '1/2',
+      '.btn': {
+        width: { base: '40px', lg: '90px' },
         '&:hover': {
           divideX: '40px',
+          '& > span': {
+            color: 'pink',
+          },
         },
         focus: {
           color: 'red.200',
@@ -36,26 +34,38 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "a {
-        width: 50%;
-      }
+      "@layer base {
+        .btn {
+          width: 40px;
+        }
 
-      a:hover > * ~ * {
-        border-left-width: 40px;
-        border-right-width: 0px;
-      }
+        .btn:hover > * ~ * {
+          border-left-width: 40px;
+          border-right-width: 0px;
+        }
 
-      a:focus {
-        color: var(--colors-red-200);
-      }
+        .btn:hover > span {
+          color: pink;
+        }
 
-      a:focus:hover {
-        background-color: var(--colors-red-400);
-      }
+        .btn:focus {
+          color: var(--colors-red-200);
+        }
 
-      @media screen and (min-width: 30em) {
-        a {
-          font-size: 12px;
+        .btn:focus:hover {
+          background-color: var(--colors-red-400);
+        }
+
+        @media screen and (min-width: 30em) {
+          .btn {
+            font-size: 12px;
+          }
+        }
+
+        @media screen and (min-width: 62em) {
+          .btn {
+            width: 90px;
+          }
         }
       }"
     `)
@@ -67,7 +77,7 @@ describe('Global styles', () => {
         scrollPaddingTop: '80px',
         '&.dragging-ew': {
           userSelect: 'none !important',
-          '*': {
+          '& *': {
             cursor: 'ew-resize !important',
           },
           hover: {
@@ -93,40 +103,40 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "html {
-        scroll-padding-top: 80px;
-      }
+      "@layer base {
+        html {
+          scroll-padding-top: 80px;
+        }
 
-      html.dragging-ew {
-        -webkit-user-select: none !important;
-           -moz-user-select: none !important;
-                user-select: none !important;
-      }
+        html.dragging-ew {
+          user-select: none !important;
+        }
 
-      html.dragging-ew * {
-        cursor: ew-resize !important;
-      }
+        html.dragging-ew * {
+          cursor: ew-resize !important;
+        }
 
-      html.dragging-ew:hover {
-        color: red;
-      }
+        html.dragging-ew:hover {
+          color: red;
+        }
 
-      .content-dark::-webkit-scrollbar-thumb {
-        background-color: var(--colors-bg, #000) !important;
-        border-color: var(--colors-fg, #333) !important;
-        border-radius: 9px;
-        border: 2px solid;
-      }
+        .content-dark::-webkit-scrollbar-thumb {
+          background-color: var(--colors-bg, #000) !important;
+          border-color: var(--colors-fg, #333) !important;
+          border-radius: 9px;
+          border: 2px solid;
+        }
 
-      #corner {
-        position: fixed;
-        right: 0;
-        bottom: 0;
-        cursor: nwse-resize;
-      }
+        #corner {
+          position: fixed;
+          right: 0;
+          bottom: 0;
+          cursor: nwse-resize;
+        }
 
-      .color-picker .react-colorful {
-        width: 100%;
+        .color-picker .react-colorful {
+          width: 100%;
+        }
       }"
     `)
   })
@@ -139,10 +149,10 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "x-element {
-        -moz-tab-size: none;
-          -o-tab-size: none;
-             tab-size: none;
+      "@layer base {
+        x-element {
+          tab-size: none
+        }
       }"
     `)
   })
@@ -157,8 +167,10 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "body > a:not(:hover) {
-        text-decoration: none;
+      "@layer base {
+        body > a:not(:hover) {
+          text-decoration: none
+        }
       }"
     `)
   })
@@ -174,12 +186,14 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "p {
-        margin: 0;
-      }
+      "@layer base {
+        p {
+          margin: 0;
+        }
 
-      p ~ p {
-        margin-top: 0;
+        p ~ p {
+          margin-top: 0;
+        }
       }"
     `)
   })
@@ -195,14 +209,14 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "body > p,
-      body > ul {
-        margin: 0;
-      }
+      "@layer base {
+        body > p, body > ul {
+          margin: 0;
+        }
 
-      body > p ~ body > p,
-      body > ul ~ body > ul {
-        margin-top: 10px;
+        body > p ~ body > p, body > ul ~ body > ul {
+          margin-top: 10px;
+        }
       }"
     `)
   })

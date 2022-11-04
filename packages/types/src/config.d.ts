@@ -72,6 +72,10 @@ export type Config<
    */
   watch?: boolean
   /**
+   * Whether to use polling instead of filesystem events when watching.
+   */
+  poll?: boolean
+  /**
    * The css selectors or media queries shortcuts.
    * @example `{ hover: "&:hover" }`
    */

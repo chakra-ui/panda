@@ -29,4 +29,22 @@ export default defineConfig({
   // Add your css patterns here (stack, grid, etc)
   patterns,
   jsxFramework: 'react',
+  // Add recipes for your component styles
+  recipes: {
+    button: {
+      name: 'button',
+      description: 'A button styles',
+      base: {
+        fontSize: 'lg',
+      },
+      variants: {
+        variant: {
+          primary: {
+            color: 'white',
+            backgroundColor: 'blue.500',
+          },
+        },
+      },
+    },
+  },
 })

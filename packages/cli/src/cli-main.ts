@@ -64,6 +64,7 @@ export async function main() {
     .option('-m, --minify', 'Minify generated code')
     .option('--cwd <cwd>', 'Current working directory', { default: process.cwd() })
     .option('-w, --watch', 'Watch files and rebuild')
+    .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--preflight', 'Enable css reset')
     .option('--silent', "Don't print any logs")

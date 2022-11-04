@@ -21,6 +21,7 @@
       "types": "./dist/presets.d.ts"
     },
     "./postcss": "./postcss.js",
+    "./astro": "./astro.mjs",
     "./package.json": "./package.json"
   },
   "typesVersions": {

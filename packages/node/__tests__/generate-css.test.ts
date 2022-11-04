@@ -24,7 +24,8 @@ test('[css] should generate css', () => {
   const css = generateTokenCss(ctx, ':root')
 
   expect(css).toMatchInlineSnapshot(`
-    ":root {
+    "@layer tokens {
+        :root {
         --fonts-heading: -apple-system, BlinkMacSystemFont;
         --fonts-body: Helvetica, Arial, sans-serif;
         --fonts-mono: SFMono-Regular, Menlo, Monaco;
@@ -156,6 +157,8 @@ test('[css] should generate css', () => {
      } 
      }
 
-    "
+
+      }
+      "
   `)
 })

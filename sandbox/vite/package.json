@@ -7,6 +7,7 @@
     "dev": "PANDA_DEBUG=hrtime vite",
     "build": "pnpm css && vite build",
     "preview": "vite preview",
+    "css:clean": "rm -rf design-system/chunks design-system/styles.css",
     "css": "PANDA_DEBUG=* panda",
     "css:gen": "PANDA_DEBUG=* panda gen",
     "css:dev": "PANDA_DEBUG=file:* panda --watch"
@@ -21,7 +22,7 @@
     "@css-panda/fixture": "workspace:*",
     "css-panda": "workspace:*",
     "@vitejs/plugin-react": "2.1.0",
-    "postcss": "8.4.16",
+    "postcss": "8.4.18",
     "vite": "3.1.3"
   }
 }

@@ -1,6 +1,7 @@
 import { logger } from '@css-panda/logger'
 import type { BaseConditionType, Dict, RawCondition } from '@css-panda/types'
 import { Breakpoints } from './breakpoints'
+import { ConditionalRule } from './conditional-rule'
 import { parseCondition } from './parse-condition'
 
 const order: BaseConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-nesting', 'at-rule']
@@ -26,10 +27,9 @@ export class Conditions {
   }
 
   shift = (paths: string[]) => {
-    const values = this.values
     return paths.slice().sort((a, b) => {
-      const aIsCondition = a in values
-      const bIsCondition = b in values
+      const aIsCondition = this.isCondition(a)
+      const bIsCondition = this.isCondition(b)
       if (aIsCondition && !bIsCondition) return 1
       if (!aIsCondition && bIsCondition) return -1
       return 0
@@ -38,6 +38,10 @@ export class Conditions {
 
   has = (key: string) => {
     return Object.prototype.hasOwnProperty.call(this.values, key)
+  }
+
+  isCondition = (key: string) => {
+    return this.has(key) || !!this.getRaw(key)
   }
 
   isEmpty = () => {
@@ -68,5 +72,9 @@ export class Conditions {
 
   keys = () => {
     return Object.keys(this.values)
+  }
+
+  rule = () => {
+    return new ConditionalRule(this)
   }
 }

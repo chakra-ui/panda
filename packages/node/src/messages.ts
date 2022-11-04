@@ -61,13 +61,12 @@ export function scaffoldCompleteMessage() {
 
   ${colors.bold().cyan('Next steps:')}
   
-  ◆ Create a ${quote('index.css')} file in your project that contains:
+  [1] Create a ${quote('index.css')} file in your project that contains:
   
-  :root {
-    --panda: 1;
-  }
+      @layer reset, base, tokens, recipes, utilities;
 
-  ◆ Import the ${quote('index.css')} file at the root of your project.
+
+  [2] Import the ${quote('index.css')} file at the root of your project.
 
   `,
     `🐼 ${pickRandom(randomWords)}! ✨`,

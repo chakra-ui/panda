@@ -1,23 +1,24 @@
-import discardDuplicates from 'postcss-discard-duplicates'
-import normalizeWhiteSpace from 'postcss-normalize-whitespace'
-import prettify from 'postcss-prettify'
 import postcss from 'postcss'
-import sortMq from 'postcss-sort-media-queries'
+import dedupe from 'postcss-discard-duplicates'
 import nested from 'postcss-nested'
-import prefixer from 'autoprefixer'
+import normalizeWhiteSpace from 'postcss-normalize-whitespace'
+import mergeCascadeLayers from './plugins/merge-layers'
+import sortMediaQueries from './plugins/sort-mq'
+import prettify from './plugins/prettify'
 
 export function optimizeCss(code: string, { minify = false }: { minify?: boolean } = {}) {
   const { css } = postcss([
-    discardDuplicates(),
-    sortMq({ sort: 'mobile-first' }),
-    minify ? normalizeWhiteSpace() : prettify,
+    mergeCascadeLayers(),
+    sortMediaQueries(),
+    dedupe(),
     nested(),
-    prefixer(),
+    minify ? normalizeWhiteSpace() : prettify(),
   ]).process(code)
+
   return css
 }
 
 export function discardDuplicate(code: string) {
-  const { css } = postcss([discardDuplicates()]).process(code)
+  const { css } = postcss([mergeCascadeLayers(), dedupe()]).process(code)
   return css
 }

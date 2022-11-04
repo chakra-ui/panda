@@ -1,9 +1,8 @@
-import { filterBaseConditions, isImportant, walkObject, walkStyles, withoutImportant } from '@css-panda/shared'
+import { walkStyles } from '@css-panda/shared'
 import type { RecipeConfig } from '@css-panda/types'
 import merge from 'lodash.merge'
 import { AtomicRule, ProcessOptions } from './atomic-rule'
-import { ConditionalRule } from './conditional-rule'
-import { cssToJs, toCss } from './to-css'
+import { serializeStyle } from './serialize'
 import type { StylesheetContext } from './types'
 
 type StyleObject = Record<string, any>
@@ -34,7 +33,6 @@ export class Recipe {
 
   walk = (styleObject: StyleObject) => {
     const { utility, conditions } = this.context
-    const rule = new ConditionalRule(conditions)
 
     const transformed: StyleObject = {}
 
@@ -44,34 +42,14 @@ export class Recipe {
 
       const result: StyleObject = {}
 
-      walkObject(styles, (value, paths) => {
-        const important = isImportant(value)
+      const currentStyles = serializeStyle(styles, { utility, conditions })
 
-        const [prop, ...allConditions] = conditions.shift(paths)
-        const conds = filterBaseConditions(allConditions)
-
-        let { styles } = utility.resolve(prop, withoutImportant(value))
-
-        const hasConditions = conds.length > 0
-
-        if (hasConditions) {
-          const cssRoot = toCss(styles, { important })
-          rule.nodes = cssRoot.root.nodes
-          rule.selector = `&`
-          rule.update()
-
-          rule.applyConditions(conds)
-
-          styles = cssToJs(rule.toString())
-        }
-
-        if (selector) {
-          result[selector] ||= {}
-          merge(result[selector], styles)
-        } else {
-          merge(result, styles)
-        }
-      })
+      if (selector) {
+        result[selector] ||= {}
+        merge(result[selector], currentStyles)
+      } else {
+        merge(result, currentStyles)
+      }
 
       merge(transformed, result)
     })
@@ -101,6 +79,7 @@ export class Recipe {
     const { name, defaultVariants = {} } = this.config
     const ctx = { ...this.context, transform: this.transform }
     const rule = new AtomicRule(ctx)
+    rule.layer = 'recipes'
 
     rule.process({
       styles: {
