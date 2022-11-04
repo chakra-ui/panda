@@ -1,9 +1,13 @@
-import { logger } from '@css-panda/logger'
+import path from 'path'
+import { logger, colors } from '@css-panda/logger'
 import { emitArtifacts, generate, loadConfigAndCreateContext, setupConfig, setupPostcss } from '@css-panda/node'
 import { compact } from '@css-panda/shared'
 import { cac } from 'cac'
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import { viteBundler } from '../preview/vite-dev'
+import { viteBuild } from '../preview/vite-build'
+import { vitePreview } from '../preview/vite-preview'
 
 export async function main() {
   const cli = cac('panda')
@@ -74,6 +78,27 @@ export async function main() {
       const options = compact({ include: files, ...rest })
       logger.debug({ type: 'cli', msg: options })
       await generate(options, configPath)
+    })
+
+  cli
+    .command('docs', 'Realtime documentation for your design tokens')
+    .option('--build', 'Build')
+    .option('--preview', 'Preview')
+    .option('--outdir', 'Output directory for static files')
+    .action(async (flags) => {
+      const { build, preview, outdir } = flags
+      const outDir = outdir || path.join(process.cwd(), 'panda-static')
+
+      if (preview) {
+        await vitePreview({ outDir })
+      } else if (build) {
+        await viteBuild({ outDir })
+      } else {
+        await viteBundler()
+
+        const note = `use ${colors.reset(colors.bold('--build'))} to build`
+        logger.log(colors.dim(`  ${colors.green('➜')}  ${colors.bold('Build')}: ${note}`))
+      }
     })
 
   cli.help()

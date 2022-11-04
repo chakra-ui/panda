@@ -1,0 +1,59 @@
+export enum NavKeys {
+  COLORS = 'colors',
+  LETTER_SPACINGS = 'letterSpacings',
+  LINE_HEIGHTS = 'lineHeights',
+  FONT_WEIGHTS = 'fontWeights',
+  FONT_SIZES = 'fontSizes',
+  TYPOGRAPHY_PLAYGROUND = 'typography-playground',
+  SIZES = 'sizes',
+  SPACING_PLAYGROUND = 'spacing-playground',
+  CONTRAST_CHECKER = 'contrast-checker',
+}
+
+export const navItems = [
+  {
+    label: 'Colors',
+    id: NavKeys.COLORS,
+    type: 'token',
+  },
+  {
+    label: 'Letter Spacings',
+    id: NavKeys.LETTER_SPACINGS,
+    type: 'token',
+  },
+  {
+    label: 'Line Heights',
+    id: NavKeys.LINE_HEIGHTS,
+    type: 'token',
+  },
+  {
+    label: 'Font Weights',
+    id: NavKeys.FONT_WEIGHTS,
+    type: 'token',
+  },
+  {
+    label: 'Font Sizes',
+    id: NavKeys.FONT_SIZES,
+    type: 'token',
+  },
+  {
+    label: 'Sizes',
+    id: NavKeys.SIZES,
+    type: 'token',
+  },
+  {
+    label: 'Typography Playground',
+    id: NavKeys.TYPOGRAPHY_PLAYGROUND,
+    type: 'playground',
+  },
+  {
+    label: 'Spacing Playground',
+    id: NavKeys.SPACING_PLAYGROUND,
+    type: 'playground',
+  },
+  {
+    label: 'Color Contrast Checker',
+    id: NavKeys.CONTRAST_CHECKER,
+    type: 'playground',
+  },
+]

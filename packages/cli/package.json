@@ -46,12 +46,14 @@
     "postcss.js"
   ],
   "dependencies": {
-    "@css-panda/node": "workspace:*",
+    "@css-panda/config": "workspace:*",
     "@css-panda/error": "workspace:*",
+    "@css-panda/logger": "workspace:*",
+    "@css-panda/node": "workspace:*",
     "@css-panda/shared": "workspace:*",
     "@css-panda/types": "workspace:*",
-    "@css-panda/logger": "workspace:*",
-    "cac": "6.7.14"
+    "cac": "6.7.14",
+    "vite": "^3.2.0"
   },
   "devDependencies": {
     "@css-panda/presets": "workspace:*",
