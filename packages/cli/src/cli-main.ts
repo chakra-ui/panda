@@ -83,9 +83,10 @@ export async function main() {
     .command('docs', 'Open design system tokens documentation')
     .option('--build', 'Build')
     .option('--preview', 'Preview')
+    .option('--outdir', 'Output directory for static files')
     .action(async (flags) => {
-      const { build, preview } = flags
-      const outDir = path.join(process.cwd(), 'panda-static')
+      const { build, preview, outdir } = flags
+      const outDir = outdir || path.join(process.cwd(), 'panda-static')
 
       if (preview) {
         await vitePreview({ outDir })
