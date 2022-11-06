@@ -76,4 +76,11 @@ export const addVirtualPalette: TokenMiddleware = {
   },
 }
 
-export const middlewares = [addNegativeTokens, addVirtualPalette]
+export const removeEmptyTokens: TokenMiddleware = {
+  enforce: 'post',
+  transform(dictionary: TokenDictionary) {
+    dictionary.allTokens = dictionary.allTokens.filter((token) => token.value !== '')
+  },
+}
+
+export const middlewares = [addNegativeTokens, addVirtualPalette, removeEmptyTokens]
