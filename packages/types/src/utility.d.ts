@@ -4,7 +4,9 @@ type ClassNameFn = (value: string, prop: string) => string
 
 export type PropertyClassName = string | ClassNameFn
 
-type ThemeFn = (token: (path: string) => any) => Record<string, string>
+type Getter = (path: string) => any
+
+type ThemeFn = (token: Getter) => Record<string, string>
 
 type CssObject =
   | Properties
@@ -14,6 +16,8 @@ type CssObject =
 
 export type PropertyValues = string | string[] | { type: string } | Record<string, string> | ThemeFn
 
+export type PropertyTransform<T = CssObject> = (value: any, token: Getter) => T
+
 export type PropertyConfig = {
   /**
    * The classname this property will generate.
@@ -22,7 +26,7 @@ export type PropertyConfig = {
   /**
    * The css style object this property will generate.
    */
-  transform?: (value: any) => CssObject
+  transform?: PropertyTransform
   /**
    * The possible values this property can have.
    */

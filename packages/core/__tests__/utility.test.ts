@@ -27,6 +27,15 @@ describe('Utility', () => {
           },
           values: { sm: '20px', md: '40px' },
         },
+        bt: {
+          transform(value, token) {
+            return {
+              borderTopWidth: value,
+              borderTopStyle: 'solid',
+              borderTopColor: token('colors.gray.500'),
+            }
+          },
+        },
       },
     })
 
@@ -440,6 +449,17 @@ describe('Utility', () => {
           "--colors-palette-700": "var(--colors-red-700)",
           "--colors-palette-800": "var(--colors-red-800)",
           "--colors-palette-900": "var(--colors-red-900)",
+        },
+      }
+    `)
+
+    expect(utility.resolve('bt', '4px')).toMatchInlineSnapshot(`
+      {
+        "className": "bt_4px",
+        "styles": {
+          "borderTopColor": "var(--colors-gray-500)",
+          "borderTopStyle": "solid",
+          "borderTopWidth": "4px",
         },
       }
     `)

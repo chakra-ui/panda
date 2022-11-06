@@ -8,7 +8,15 @@ import {
   withoutSpace,
 } from '@css-panda/shared'
 import type { TokenDictionary } from '@css-panda/token-dictionary'
-import type { AnyFunction, Dict, LayerStyles, PropertyConfig, TextStyles, UtilityConfig } from '@css-panda/types'
+import type {
+  AnyFunction,
+  Dict,
+  LayerStyles,
+  PropertyConfig,
+  PropertyTransform,
+  TextStyles,
+  UtilityConfig,
+} from '@css-panda/types'
 import merge from 'lodash.merge'
 import { cssToJs, toCss } from './to-css'
 
@@ -59,7 +67,7 @@ export class Utility {
   /**
    * The map of property names to their transform functions
    */
-  private transforms: Map<string, AnyFunction> = new Map()
+  private transforms: Map<string, PropertyTransform<any>> = new Map()
 
   /**
    * The map of property names to their config
@@ -166,10 +174,14 @@ export class Utility {
     }
 
     if (isFunction(values)) {
-      return values((path) => this.tokens.get(path))
+      return values(this.getToken.bind(this))
     }
 
     return values
+  }
+
+  getToken(path: string) {
+    return this.tokens.get(path)
   }
 
   /**
@@ -280,7 +292,7 @@ export class Utility {
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
     const getStyles = this.transforms.get(property) ?? defaultTransform
 
-    this.styles.set(propKey, getStyles(raw))
+    this.styles.set(propKey, getStyles(raw, this.getToken.bind(this)))
 
     return this
   }
