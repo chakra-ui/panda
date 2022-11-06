@@ -25,27 +25,27 @@ export class Utility {
   /**
    * The token map or dictionary of tokens
    */
-  tokenMap: TokenDictionary
+  tokens: TokenDictionary
 
   /**
    * The map of property names to their resolved class names
    */
-  classNameMap: Map<string, string> = new Map()
+  classNames: Map<string, string> = new Map()
 
   /**
    * The map of the property to their resolved styless
    */
-  stylesMap: Map<string, Dict> = new Map()
+  styles: Map<string, Dict> = new Map()
 
   /**
    * Map of shorthand properties to their longhand properties
    */
-  shorthandMap = new Map<string, string>()
+  shorthands = new Map<string, string>()
 
   /**
    * The map of possible values for each property
    */
-  valuesMap: Map<string, Set<string>> = new Map()
+  types: Map<string, Set<string>> = new Map()
   /**
    * The utility config
    */
@@ -54,21 +54,21 @@ export class Utility {
   /**
    * Useful for reporting custom values
    */
-  customValueMap: Map<string, string> = new Map()
+  customValues: Map<string, string> = new Map()
 
   /**
    * The map of property names to their transform functions
    */
-  private transformMap: Map<string, AnyFunction> = new Map()
+  private transforms: Map<string, AnyFunction> = new Map()
 
   /**
    * The map of property names to their config
    */
-  private propertyConfigMap: Map<string, PropertyConfig & { category: string | undefined }> = new Map()
+  private configs: Map<string, PropertyConfig & { category: string | undefined }> = new Map()
 
   constructor(private options: Options) {
     const { tokens, config = {} } = options
-    this.tokenMap = tokens
+    this.tokens = tokens
 
     this.config = config
     this.assignShorthands()
@@ -76,19 +76,19 @@ export class Utility {
     this.assignPaletteProperty()
 
     this.assignProperties()
-    this.assignValueMap()
+    this.assignTypes()
   }
 
   private assignShorthands() {
     for (const [property, config] of Object.entries(this.config)) {
       const { shorthand } = this.normalize(config) ?? {}
       if (!shorthand) continue
-      this.shorthandMap.set(shorthand, property)
+      this.shorthands.set(shorthand, property)
     }
   }
 
   private assignPaletteProperty() {
-    const values = this.tokenMap.palettes
+    const values = this.tokens.palettes
     this.config.palette = {
       values: Object.keys(values),
       transform(value) {
@@ -98,12 +98,12 @@ export class Utility {
   }
 
   resolveShorthand = (prop: string) => {
-    const shorthand = this.shorthandMap.get(prop)
+    const shorthand = this.shorthands.get(prop)
     return shorthand ?? prop
   }
 
   public get hasShorthand() {
-    return this.shorthandMap.size > 0
+    return this.shorthands.size > 0
   }
 
   public get isEmpty() {
@@ -155,7 +155,7 @@ export class Utility {
     const { values } = config
 
     if (isString(values)) {
-      return this.tokenMap.getValue(values) ?? {}
+      return this.tokens.getValue(values) ?? {}
     }
 
     if (Array.isArray(values)) {
@@ -166,7 +166,7 @@ export class Utility {
     }
 
     if (isFunction(values)) {
-      return values((path) => this.tokenMap.get(path))
+      return values((path) => this.tokens.get(path))
     }
 
     return values
@@ -188,7 +188,7 @@ export class Utility {
       if (!config) continue
 
       const category = typeof config.values === 'string' ? config.values : undefined
-      this.propertyConfigMap.set(property, { ...config, category })
+      this.configs.set(property, { ...config, category })
 
       const values = this.getPropertyValues(config)
 
@@ -202,7 +202,7 @@ export class Utility {
     }
   }
 
-  private assignValueMap() {
+  private assignTypes() {
     for (const [property, propertyConfig] of Object.entries(this.config)) {
       const config = this.normalize(propertyConfig)
 
@@ -211,18 +211,18 @@ export class Utility {
       const values = this.getPropertyValues(config)
 
       if (typeof values === 'object' && values.type) {
-        this.valuesMap.set(property, new Set([`type:${values.type}`]))
+        this.types.set(property, new Set([`type:${values.type}`]))
         continue
       }
 
       if (values) {
-        this.valuesMap.set(property, new Set(Object.keys(values)))
+        this.types.set(property, new Set(Object.keys(values)))
       }
 
-      const set = this.valuesMap.get(property) ?? new Set()
+      const set = this.types.get(property) ?? new Set()
 
       if (config.property) {
-        this.valuesMap.set(property, set.add(`CSSProperties["${config.property}"]`))
+        this.types.set(property, set.add(`CSSProperties["${config.property}"]`))
         continue
       }
     }
@@ -231,10 +231,10 @@ export class Utility {
   /**
    * Returns the Typescript type for the define properties
    */
-  get valueTypes() {
+  getTypes() {
     const map = new Map<string, string[]>()
 
-    for (const [prop, tokens] of this.valuesMap.entries()) {
+    for (const [prop, tokens] of this.types.entries()) {
       // When tokens does not exist in the config
       if (tokens.size === 0) {
         map.set(prop, ['string'])
@@ -258,7 +258,7 @@ export class Utility {
     const isCssVar = prop.startsWith('--')
 
     if (isCssVar) {
-      const tokenValue = this.tokenMap.getTokenVar(value)
+      const tokenValue = this.tokens.getTokenVar(value)
       value = typeof tokenValue === 'string' ? tokenValue : value
     }
 
@@ -269,7 +269,7 @@ export class Utility {
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
 
     const transformFn = transform ?? defaultTransform
-    this.transformMap.set(property, transformFn)
+    this.transforms.set(property, transformFn)
 
     return this
   }
@@ -278,16 +278,16 @@ export class Utility {
     propKey = propKey ?? this.getPropKey(property, raw)
 
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
-    const getStyles = this.transformMap.get(property) ?? defaultTransform
+    const getStyles = this.transforms.get(property) ?? defaultTransform
 
-    this.stylesMap.set(propKey, getStyles(raw))
+    this.styles.set(propKey, getStyles(raw))
 
     return this
   }
 
   private setClassName(property: string, raw: string) {
     const propKey = this.getPropKey(property, raw)
-    const config = this.propertyConfigMap.get(property)
+    const config = this.configs.get(property)
 
     let className: string
 
@@ -297,13 +297,13 @@ export class Utility {
       className = this.hash(config.className, raw)
     }
 
-    this.classNameMap.set(propKey, className)
+    this.classNames.set(propKey, className)
 
     return this
   }
 
   private isProperty(prop: string) {
-    return this.propertyConfigMap.has(prop)
+    return this.configs.has(prop)
   }
 
   /**
@@ -313,16 +313,16 @@ export class Utility {
     const inner = (prop: string, value: string) => {
       const propKey = this.getPropKey(prop, value)
 
-      if (!this.classNameMap.has(propKey)) {
+      if (!this.classNames.has(propKey)) {
         //
         if (this.isProperty(prop)) {
-          this.customValueMap.set(prop, value)
+          this.customValues.set(prop, value)
         }
 
         this.setClassName(prop, value)
       }
 
-      return this.classNameMap.get(propKey)!
+      return this.classNames.get(propKey)!
     }
 
     return inner(prop, value)
@@ -334,8 +334,8 @@ export class Utility {
   private getOrCreateStyle(prop: string, value: string) {
     const inner = (prop: string, value: string) => {
       const propKey = this.getPropKey(prop, value)
-      this.stylesMap.get(propKey) ?? this.setStyles(prop, value, propKey)
-      return this.stylesMap.get(propKey)!
+      this.styles.get(propKey) ?? this.setStyles(prop, value, propKey)
+      return this.styles.get(propKey)!
     }
 
     return inner(prop, value)
@@ -356,7 +356,7 @@ export class Utility {
   }
 
   keys() {
-    const shorthands = Array.from(this.shorthandMap.keys())
+    const shorthands = Array.from(this.shorthands.keys())
     const properties = Object.keys(this.config)
     return [...shorthands, ...properties]
   }

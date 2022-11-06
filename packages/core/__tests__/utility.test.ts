@@ -30,7 +30,7 @@ describe('Utility', () => {
       },
     })
 
-    expect(utility.valuesMap).toMatchInlineSnapshot(`
+    expect(utility.types).toMatchInlineSnapshot(`
       Map {
         "backgroundColor" => Set {
           "current",
@@ -117,7 +117,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(utility.classNameMap).toMatchInlineSnapshot(`
+    expect(utility.classNames).toMatchInlineSnapshot(`
       Map {
         "(backgroundColor = current)" => "bg_current",
         "(backgroundColor = gray.50)" => "bg_gray.50",
@@ -194,7 +194,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(utility.stylesMap).toMatchInlineSnapshot(`
+    expect(utility.styles).toMatchInlineSnapshot(`
       Map {
         "(backgroundColor = current)" => {
           "backgroundColor": "var(--colors-current)",
@@ -467,7 +467,7 @@ describe('Utility', () => {
       },
     })
 
-    expect(utility.stylesMap).toMatchInlineSnapshot(`
+    expect(utility.styles).toMatchInlineSnapshot(`
       Map {
         "(marginLeft = auto)" => {
           "marginLeft": "auto",
@@ -526,7 +526,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(utility.classNameMap).toMatchInlineSnapshot(`
+    expect(utility.classNames).toMatchInlineSnapshot(`
       Map {
         "(marginLeft = auto)" => "ml_auto",
         "(marginLeft = sm)" => "ml_sm",
@@ -558,7 +558,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(utility.customValueMap).toMatchInlineSnapshot(`
+    expect(utility.customValues).toMatchInlineSnapshot(`
       Map {
         "marginLeft" => "40px",
       }

@@ -23,7 +23,7 @@ export function ContrastChecker(props: ContrastCheckerProps) {
   const activeForeground = (colors.find((col) => col.label === foreground)?.value || foreground) as string
   const activeBackground = (colors.find((col) => col.label === background)?.value || background) as string
 
-  const WCAGTests = getContrastPairs(activeForeground, activeBackground)
+  const wcag = getContrastPairs(activeForeground, activeBackground)
   const constrastRatio = getContrastRatio(activeForeground, activeBackground)
 
   const renderTestScore = (score: { WCAG_AA: boolean; WCAG_AAA: boolean }, size: 'regular' | 'large') => {
@@ -85,16 +85,18 @@ export function ContrastChecker(props: ContrastCheckerProps) {
             <span>{constrastRatio ? `${constrastRatio?.toFixed(2).replace(/[.,]00$/, '')}:1` : ':'}</span>
             <span>Contrast ratio</span>
           </div>
-          <div className="test-scores">
-            <div>
-              <span>Normal Text</span>
-              {renderTestScore(WCAGTests[0], 'regular')}
+          {wcag && (
+            <div className="test-scores">
+              <div>
+                <span>Normal Text</span>
+                {renderTestScore(wcag[0], 'regular')}
+              </div>
+              <div>
+                <span>Large Text</span>
+                {renderTestScore(wcag[1], 'large')}
+              </div>
             </div>
-            <div>
-              <span>Large Text</span>
-              {renderTestScore(WCAGTests[1], 'large')}
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

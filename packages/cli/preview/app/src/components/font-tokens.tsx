@@ -1,4 +1,4 @@
-import { ComponentProps, Fragment, useState } from 'react'
+import { Fragment, InputHTMLAttributes, useState } from 'react'
 type FontTokensProps = {
   text?: string
   largeText?: boolean
@@ -10,7 +10,7 @@ export function FontTokens(props: FontTokensProps) {
   const { text: textProp = 'Panda', largeText = false, token, fontTokens } = props
   const [text, setText] = useState(textProp)
 
-  const inputProps: ComponentProps<"input" | "textarea"> = {
+  const inputProps: InputHTMLAttributes<any> = {
     value: text,
     onChange(event) {
       setText(event.currentTarget.value)

@@ -10,8 +10,8 @@ export function generatePropTypes(utility: Utility) {
     type BasePropTypes  = {`,
   ]
 
-  const valueTypes = utility.valueTypes
-  for (const [prop, values] of valueTypes.entries()) {
+  const types = utility.getTypes()
+  for (const [prop, values] of types.entries()) {
     result.push(`\t${prop}: ${values.join(' | ')};`)
   }
 
@@ -27,7 +27,7 @@ export function generatePropTypes(utility: Utility) {
   export type PropTypes = BasePropTypes & {
   `)
 
-  utility.shorthandMap.forEach((value, key) => {
+  utility.shorthands.forEach((value, key) => {
     result.push(`\t${key}: Shorthand<${JSON.stringify(value)}>;`)
   })
 

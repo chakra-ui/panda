@@ -17,7 +17,7 @@ export function generateCssFn(ctx: PandaContext) {
     const withoutSpace = (v) => typeof v === "string" ? v.replaceAll(' ', '_') : v
 
     const classNameMap = ${stringify(utility.entries())}
-    const shorthands = ${stringify(utility.shorthandMap)}
+    const shorthands = ${stringify(utility.shorthands)}
 
     const hasShorthand = ${utility.hasShorthand ? 'true' : 'false'}
 
