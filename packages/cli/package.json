@@ -36,16 +36,20 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --dts --no-splitting",
-    "build-fast": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --no-dts --no-splitting",
+    "build": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --dts --no-splitting --shims",
+    "build-fast": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --no-dts --no-splitting --shims",
     "dev": "pnpm build-fast --watch"
   },
   "files": [
     "dist",
     "bin",
-    "postcss.js"
+    "app",
+    "postcss.js",
+    "astro.mjs"
   ],
   "dependencies": {
+    "@css-panda/token-dictionary": "workspace:*",
+    "color-contrast-checker": "^2.1.0",
     "@css-panda/config": "workspace:*",
     "@css-panda/error": "workspace:*",
     "@css-panda/logger": "workspace:*",
@@ -53,10 +57,15 @@
     "@css-panda/shared": "workspace:*",
     "@css-panda/types": "workspace:*",
     "cac": "6.7.14",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "vite": "^3.2.0"
   },
   "devDependencies": {
     "@css-panda/presets": "workspace:*",
+    "@types/react": "^18.0.22",
+    "@types/react-dom": "^18.0.7",
+    "@vitejs/plugin-react": "^2.2.0",
     "kleur": "^4.1.5"
   }
 }

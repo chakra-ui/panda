@@ -1,13 +1,13 @@
-import { createServer, PluginOption } from 'vite'
-import path from 'path'
 import { loadConfigFile } from '@css-panda/config'
-import { logger, colors } from '@css-panda/logger'
+import { colors, logger } from '@css-panda/logger'
+import path from 'path'
+import { createServer, PluginOption } from 'vite'
 
 export const viteBundler = async () => {
   const mode = 'development'
   const port = 2666
   const hmrPort = 4000
-  const previewPath = path.join(__dirname, '../preview/app')
+  const previewPath = path.join(__dirname, '../app')
 
   const server = await createServer({
     mode,
@@ -47,9 +47,9 @@ export const pandaPreviewPlugin = (): PluginOption => {
           await viteServer.reloadModule(module)
           logger.log(
             colors.dim(
-              `  ${colors.green('➜')}  ${colors.reset(colors.blue(colors.bold('[Panda]')))} ${colors.green(
-                'config update',
-              )} ${colors.grey(config.path)}`,
+              `🐼 ${colors.reset(colors.blue(colors.bold('[panda]')))} ${colors.green('config update')} ${colors.grey(
+                config.path,
+              )}`,
             ),
           )
         }

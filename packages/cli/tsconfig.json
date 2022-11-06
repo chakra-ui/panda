@@ -1,7 +1,11 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src", "index.ts", "preview"],
+  "include": ["src", "index.ts", "app"],
   "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo"
+    "jsx": "react-jsx",
+    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
+    "paths": {
+      "virtual:panda": ["./virtual-panda.d.ts"]
+    }
   }
 }

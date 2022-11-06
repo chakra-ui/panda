@@ -1,13 +1,12 @@
-import path from 'path'
-import { logger, colors } from '@css-panda/logger'
+import { colors, logger } from '@css-panda/logger'
 import { emitArtifacts, generate, loadConfigAndCreateContext, setupConfig, setupPostcss } from '@css-panda/node'
 import { compact } from '@css-panda/shared'
 import { cac } from 'cac'
 import { readFileSync } from 'fs'
-import { join } from 'path'
-import { viteBundler } from '../preview/vite-dev'
-import { viteBuild } from '../preview/vite-build'
-import { vitePreview } from '../preview/vite-preview'
+import path, { join } from 'path'
+import { viteBuild } from './vite-build'
+import { viteBundler } from './vite-dev'
+import { vitePreview } from './vite-preview'
 
 export async function main() {
   const cli = cac('panda')

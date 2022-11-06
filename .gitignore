@@ -9,6 +9,7 @@ node_modules
 
 lib
 dist
+dist-ssr
 out
 build
 **/buil
@@ -16,7 +17,8 @@ tsconfig.tsbuildinfo
 .DS_Store
 __generated__
 *.env
+.idea
+*.vsix
 
 ## CSS Panda
 panda
-*.vsix

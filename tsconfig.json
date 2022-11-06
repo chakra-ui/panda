@@ -21,10 +21,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "suppressImplicitAnyIndexErrors": true,
-    "importsNotUsedAsValues": "error",
-    "paths": {
-      "virtual:panda": ["./packages/cli/preview/app/virtual-panda.d.ts"]
-    }
+    "importsNotUsedAsValues": "error"
   },
   "include": ["packages"],
   "exclude": ["node_modules"]

@@ -1,7 +1,7 @@
+import { colors, logger } from '@css-panda/logger'
 import { preview } from 'vite'
-import { pandaPreviewPlugin } from './vite-dev.js'
-import { logger, colors } from '@css-panda/logger'
 import type { BuildOpts } from './vite-build.js'
+import { pandaPreviewPlugin } from './vite-dev.js'
 
 export const vitePreview = async ({ outDir }: BuildOpts) => {
   const previewPort = 51000

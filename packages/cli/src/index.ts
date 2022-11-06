@@ -11,3 +11,6 @@ export function defineRecipe<V extends Record<string, RecipeVariant>>(config: Re
 export function definePattern(config: PatternConfig): any {
   return config
 }
+
+// TODO: defineToken, defineTokenGroup
+// TODO: defineSemanticToken, defineSemanticTokenGroup
