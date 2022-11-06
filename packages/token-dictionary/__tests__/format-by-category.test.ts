@@ -21,6 +21,7 @@ test('format / by category', () => {
     Map {
       "colors" => Map {
         "red" => Token {
+          "description": undefined,
           "extensions": {
             "category": "colors",
             "condition": "base",
@@ -39,6 +40,7 @@ test('format / by category', () => {
           "value": "#ff0000",
         },
         "blue" => Token {
+          "description": undefined,
           "extensions": {
             "category": "colors",
             "condition": "base",
@@ -57,6 +59,7 @@ test('format / by category', () => {
           "value": "#0000ff",
         },
         "green" => Token {
+          "description": undefined,
           "extensions": {
             "category": "colors",
             "condition": "base",

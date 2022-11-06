@@ -30,6 +30,7 @@ test('transform / gradient', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -45,6 +46,7 @@ test('transform / gradient', () => {
         "value": "#ff00ff",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "gradients",
           "condition": "base",

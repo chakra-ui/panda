@@ -32,6 +32,7 @@ test('transform / border', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -49,6 +50,7 @@ test('transform / border', () => {
         "value": "#ff0000",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "borders",
           "condition": "base",
@@ -66,6 +68,7 @@ test('transform / border', () => {
         "value": "1px solid #ff0000",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "borders",
           "condition": "base",
@@ -83,6 +86,7 @@ test('transform / border', () => {
         "value": "2px solid #ff0000",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "borders",
           "condition": "base",
@@ -104,6 +108,7 @@ test('transform / border', () => {
         "value": "1px solid #ff0000",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "borders",
           "condition": "@hover",
@@ -125,6 +130,7 @@ test('transform / border', () => {
         "value": "2px solid #ff0000",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "borders",
           "condition": "base",

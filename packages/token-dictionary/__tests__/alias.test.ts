@@ -17,6 +17,7 @@ test('resolve aliases', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -32,6 +33,7 @@ test('resolve aliases', () => {
         "value": "#ff00ff",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -47,6 +49,7 @@ test('resolve aliases', () => {
         "value": "#ff00ff",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",

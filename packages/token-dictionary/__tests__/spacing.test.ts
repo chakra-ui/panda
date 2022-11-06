@@ -16,6 +16,7 @@ test('should add negative spacing', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -31,6 +32,7 @@ test('should add negative spacing', () => {
         "value": "40px",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -76,6 +78,7 @@ test('with semantic spacing', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -91,6 +94,7 @@ test('with semantic spacing', () => {
         "value": "40px",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -110,6 +114,7 @@ test('with semantic spacing', () => {
         "value": "40px",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "@small",
@@ -129,6 +134,7 @@ test('with semantic spacing', () => {
         "value": "0.5rem",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -149,6 +155,7 @@ test('with semantic spacing', () => {
         "value": "calc(var(--spacing-sm) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -173,6 +180,7 @@ test('with semantic spacing', () => {
         "value": "calc(var(--spacing-gutter) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "@small",
@@ -220,6 +228,7 @@ test('with semantic spacing', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -235,6 +244,7 @@ test('with semantic spacing', () => {
         "value": "40px",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -254,6 +264,7 @@ test('with semantic spacing', () => {
         "value": "40px",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "sm",
@@ -273,6 +284,7 @@ test('with semantic spacing', () => {
         "value": "50px",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -293,6 +305,7 @@ test('with semantic spacing', () => {
         "value": "calc(var(--spacing-sm) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -317,6 +330,7 @@ test('with semantic spacing', () => {
         "value": "calc(var(--spacing-nested) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "sm",

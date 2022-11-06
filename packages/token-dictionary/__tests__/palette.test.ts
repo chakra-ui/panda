@@ -29,6 +29,7 @@ test('should generate virtual palette', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -47,6 +48,7 @@ test('should generate virtual palette', () => {
         "value": "#000",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -66,6 +68,7 @@ test('should generate virtual palette', () => {
         "value": "#red300",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -85,6 +88,7 @@ test('should generate virtual palette', () => {
         "value": "#red500",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -104,6 +108,7 @@ test('should generate virtual palette', () => {
         "value": "#blue500",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -123,6 +128,7 @@ test('should generate virtual palette', () => {
         "value": "#blue700",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -143,6 +149,7 @@ test('should generate virtual palette', () => {
         "value": "var(--colors-palette-300)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -163,6 +170,7 @@ test('should generate virtual palette', () => {
         "value": "var(--colors-palette-500)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",

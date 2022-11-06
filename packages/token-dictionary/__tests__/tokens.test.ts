@@ -13,6 +13,7 @@ test('should work with default fixture', () => {
   expect(allSpacings).toMatchInlineSnapshot(`
     [
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -30,6 +31,7 @@ test('should work with default fixture', () => {
         "value": "0.25rem",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -47,6 +49,7 @@ test('should work with default fixture', () => {
         "value": "0.5rem",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -64,6 +67,7 @@ test('should work with default fixture', () => {
         "value": "0.75rem",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -81,6 +85,7 @@ test('should work with default fixture', () => {
         "value": "1rem",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -98,6 +103,7 @@ test('should work with default fixture', () => {
         "value": "1.25rem",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -115,6 +121,7 @@ test('should work with default fixture', () => {
         "value": "1.5rem",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -132,6 +139,7 @@ test('should work with default fixture', () => {
         "value": "0.125rem",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -149,6 +157,7 @@ test('should work with default fixture', () => {
         "value": "0.375rem",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -166,6 +175,7 @@ test('should work with default fixture', () => {
         "value": "0.625rem",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -183,6 +193,7 @@ test('should work with default fixture', () => {
         "value": "0.875rem",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -204,6 +215,7 @@ test('should work with default fixture', () => {
         "value": "1rem",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "lg",
@@ -225,6 +237,7 @@ test('should work with default fixture', () => {
         "value": "1.25rem",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -247,6 +260,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-1) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -269,6 +283,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-2) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -291,6 +306,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-3) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -313,6 +329,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-4) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -335,6 +352,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-5) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -357,6 +375,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-6) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -379,6 +398,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-0\\\\.5) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -401,6 +421,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-1\\\\.5) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -423,6 +444,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-2\\\\.5) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -445,6 +467,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-3\\\\.5) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "base",
@@ -471,6 +494,7 @@ test('should work with default fixture', () => {
         "value": "calc(var(--spacing-gutter) * -1)",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "spacing",
           "condition": "lg",

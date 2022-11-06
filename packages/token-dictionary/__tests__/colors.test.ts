@@ -14,6 +14,7 @@ test('tokens / basic', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -29,6 +30,7 @@ test('tokens / basic', () => {
         "value": "#ff00ff",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -66,6 +68,7 @@ test('semantic tokens / nested', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -84,6 +87,7 @@ test('semantic tokens / nested', () => {
         "value": "#fff",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -103,6 +107,7 @@ test('semantic tokens / nested', () => {
         "value": "",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "@light",
@@ -122,6 +127,7 @@ test('semantic tokens / nested', () => {
         "value": "#333",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "@dark",
@@ -141,6 +147,7 @@ test('semantic tokens / nested', () => {
         "value": "#222",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",

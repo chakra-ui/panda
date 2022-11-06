@@ -22,6 +22,7 @@ test('transform / shadow', () => {
   expect(dictionary.allTokens).toMatchInlineSnapshot(`
     [
       Token {
+        "description": undefined,
         "extensions": {
           "category": "colors",
           "condition": "base",
@@ -37,6 +38,7 @@ test('transform / shadow', () => {
         "value": "#ff0000",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "shadows",
           "condition": "base",
@@ -52,6 +54,7 @@ test('transform / shadow', () => {
         "value": "4px 10px 4px 0px #ff0000",
       },
       Token {
+        "description": undefined,
         "extensions": {
           "category": "shadows",
           "condition": "base",
