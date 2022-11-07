@@ -10,7 +10,7 @@ export function TypographyPlayground(props: TypographyPlaygroundProps) {
   const tokenMap = new TokenDictionary(configP)
   const tokens = Object.fromEntries(tokenMap.categoryMap)
 
-  const getFirstToken = <T extends Map<string, any>>(token: T) => Array.from(token.values())[0].value
+  const getFirstToken = <T extends Map<string, any>>(token: T) => Array.from(token.values())[0].extensions.prop
 
   const defaultConfig = {
     fontSize: getFirstToken(tokens.fontSizes),

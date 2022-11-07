@@ -29,10 +29,10 @@ export function FontTokens(props: FontTokensProps) {
       <div className="token-content">
         <hr />
         {values.map((fontToken) => (
-          <Fragment key={fontToken.key}>
+          <Fragment key={fontToken.extensions.prop}>
             <div className="font-wrapper">
               <div>
-                <span className="label">{fontToken.key}</span>
+                <span className="label">{fontToken.extensions.prop} </span>
                 <span>({fontToken.value})</span>
               </div>
               <span className="render" style={{ [token]: fontToken.value }}>

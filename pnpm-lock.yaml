@@ -89,29 +89,6 @@ importers:
       '@vitejs/plugin-react': 2.2.0_vite@3.2.2
       kleur: 4.1.5
 
-  packages/cli/app:
-    specifiers:
-      '@css-panda/token-dictionary': workspace:*
-      '@types/react': 18.0.17
-      '@types/react-dom': ^18.0.7
-      '@vitejs/plugin-react': ^2.2.0
-      color-contrast-checker: ^2.1.0
-      react: ^18.2.0
-      react-dom: ^18.2.0
-      typescript: ^4.6.4
-      vite: ^3.2.0
-    dependencies:
-      '@css-panda/token-dictionary': link:../../token-dictionary
-      color-contrast-checker: 2.1.0
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-    devDependencies:
-      '@types/react': 18.0.17
-      '@types/react-dom': 18.0.8
-      '@vitejs/plugin-react': 2.2.0_vite@3.2.2
-      typescript: 4.8.3
-      vite: 3.2.2
-
   packages/config:
     specifiers:
       '@css-panda/error': workspace:*
