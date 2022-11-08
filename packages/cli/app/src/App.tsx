@@ -56,7 +56,7 @@ function App() {
         </div>
       </aside>
       <div className="content">
-        {page === NavKeys.COLORS && <Colors colors={tokens.colors} />}
+        {page === NavKeys.COLORS && <Colors colors={tokens.colors} allTokens={tokenDictionary.allTokens} />}
 
         {page === NavKeys.LETTER_SPACINGS && (
           <FontTokens
