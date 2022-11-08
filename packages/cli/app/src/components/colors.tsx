@@ -31,12 +31,37 @@ export function Colors(props: ColorsProps) {
     .reduce(
       (acc, nxt) => ({
         ...acc,
-        [nxt.extensions?.prop]: { ...acc[nxt.extensions?.prop], [nxt.extensions?.condition]: nxt.value },
+        [nxt.extensions?.prop]: {
+          ...acc[nxt.extensions?.prop],
+          [nxt.extensions?.condition]: nxt.value,
+          extra: nxt.extensions,
+        },
       }),
       {},
     )
-  console.log('semanticTokens :>> ', semanticTokens)
 
+  const renderSemanticTokens = () => {
+    return Object.entries<Record<string, any>>(semanticTokens).map(([name, colors], i) => {
+      return (
+        <div className="shade" key={i}>
+          <div className="color-box semantic-wrapper" style={{ background: colors[colors.extra.condition] }}>
+            <span>{colors.extra.condition}</span>
+            <div className="color-box condition" style={{ background: colors.base }}>
+              <span>Base</span>
+            </div>
+          </div>
+          <span>
+            <span className="semantic-title">{name}</span> <span> - {colors.extra.varRef}</span>
+          </span>
+          {Object.entries(colors.extra.conditions).map(([cond, val]) => (
+            <div key={cond}>
+              <span>{`${cond} - ${val}`}</span>
+            </div>
+          ))}
+        </div>
+      )
+    })
+  }
   const renderColors = (values: any[]) => {
     return values?.map((color, i) => {
       return (
@@ -68,7 +93,7 @@ export function Colors(props: ColorsProps) {
           </div>
           <div>
             <span className="title">Semantic tokens</span>
-            <div className="shades">semantic tokens</div>
+            <div className="shades">{renderSemanticTokens()}</div>
           </div>
         </div>
       </div>
