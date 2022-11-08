@@ -95,7 +95,7 @@ hr {
   display: grid;
   grid-gap: 16px;
   grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-  margin-top: 20px;
+  margin: 20px 0 40px 0;
 }
 
 .color-wrapper .shade {
@@ -116,6 +116,43 @@ hr {
   width: 100%;
   height: 5rem;
   border-radius: 4px;
+}
+
+.semantic-wrapper,
+.semantic-wrapper .condition {
+  border-radius: 14px;
+  height: 10rem;
+  position: relative;
+}
+
+.semantic-wrapper .condition {
+  width: 80%;
+}
+
+.semantic-wrapper span {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: medium;
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  min-width: 20px;
+}
+
+.semantic-title {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.alias {
+  font-size: small;
+  border-radius: 24px;
+  padding: 3px 8px;
+  margin-left: 12px;
+  background-color: #1a1a1a;
+  color: white;
 }
 
 .font-token-input-wrapper {
