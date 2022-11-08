@@ -2,6 +2,7 @@ import type { Token } from '@css-panda/types'
 
 type Color = {
   isConditional?: boolean
+  isReference?: boolean
 }
 type ColorsProps = {
   colors: Map<string, any>
@@ -9,6 +10,11 @@ type ColorsProps = {
 }
 
 const UNCATEGORIZED_ID = 'uncategorized' as const
+const extractColor = (col: string) => {
+  const format = /{colors.(.*)}/
+  const result = col.match(format)
+  return `colors.${result?.[1]}`
+}
 export function Colors(props: ColorsProps) {
   const { colors, allTokens } = props
 
@@ -33,7 +39,7 @@ export function Colors(props: ColorsProps) {
         ...acc,
         [nxt.extensions?.prop]: {
           ...acc[nxt.extensions?.prop],
-          [nxt.extensions?.condition]: nxt.value,
+          [nxt.extensions?.condition]: { value: nxt.value, isReference: nxt.isReference },
           extra: nxt.extensions,
         },
       }),
@@ -44,20 +50,26 @@ export function Colors(props: ColorsProps) {
     return Object.entries<Record<string, any>>(semanticTokens).map(([name, colors], i) => {
       return (
         <div className="shade" key={i}>
-          <div className="color-box semantic-wrapper" style={{ background: colors[colors.extra.condition] }}>
+          <div className="color-box semantic-wrapper" style={{ background: colors[colors.extra.condition].value }}>
             <span>{colors.extra.condition}</span>
-            <div className="color-box condition" style={{ background: colors.base }}>
+            <div className="color-box condition" style={{ background: colors.base.value }}>
               <span>Base</span>
             </div>
           </div>
           <span>
-            <span className="semantic-title">{name}</span> <span> - {colors.extra.varRef}</span>
+            <span className="semantic-title">{name}</span>
           </span>
-          {Object.entries(colors.extra.conditions).map(([cond, val]) => (
-            <div key={cond}>
-              <span>{`${cond} - ${val}`}</span>
-            </div>
-          ))}
+          {Object.entries<string>(colors.extra.conditions).map(([cond, val]) => {
+            const isLinked = colors[cond].isReference
+            return (
+              <div key={cond}>
+                <span>
+                  <span>{`${cond}: ${extractColor(val)}`}</span>
+                  {isLinked && <span className="alias">🔗 alias</span>}
+                </span>
+              </div>
+            )
+          })}
         </div>
       )
     })

@@ -146,6 +146,15 @@ hr {
   font-weight: 600;
 }
 
+.alias {
+  font-size: small;
+  border-radius: 24px;
+  padding: 3px 8px;
+  margin-left: 12px;
+  background-color: #1a1a1a;
+  color: white;
+}
+
 .font-token-input-wrapper {
   margin-bottom: 14px;
   position: sticky;
