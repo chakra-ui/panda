@@ -24,7 +24,7 @@ const extractColor = (col: string) => {
   return `colors.${result?.[1]}`
 }
 
-const groupByPalette = (colors: Map<string, any>, filterMethod: (token: ColorToken) => boolean = () => true) => {
+const groupByPalette = (colors: Map<string, any>, filterMethod?: (token: ColorToken) => boolean) => {
   const values = Array.from(colors.values()).filter((color) => !color.isConditional && !color.extensions.isVirtual)
   return values.reduce((acc, nxt) => {
     if (!filterMethod?.(nxt)) return acc
@@ -39,17 +39,22 @@ const groupByPalette = (colors: Map<string, any>, filterMethod: (token: ColorTok
 
 const getSemanticTokens = (
   allTokens: ColorsProps['allTokens'],
-  filterMethod: (token: ColorToken) => boolean = () => true,
+  filterMethod?: (token: ColorToken) => boolean,
+  // filterMethod: (token: ColorToken) => boolean = () => true,
 ) => {
   const semanticTokens = allTokens.filter(
     (token) => token.type === 'color' && token.isConditional && !token.extensions?.isVirtual,
   )
   return semanticTokens
     .reduce((acc, nxt) => {
-      const rawQualified = semanticTokens.filter(filterMethod)
-
-      if (filterMethod(nxt) || rawQualified.some((tok) => tok.name === nxt.name)) {
+      if (!filterMethod) {
         acc.push(nxt)
+      } else {
+        const rawQualified = semanticTokens.filter(filterMethod)
+
+        if (filterMethod(nxt) || rawQualified.some((tok) => tok.name === nxt.name)) {
+          acc.push(nxt)
+        }
       }
       return acc
     }, [] as ColorToken[])
@@ -66,7 +71,7 @@ const getSemanticTokens = (
     )
 }
 
-export function Colors(props: ColorsProps) {
+const useColorDocs = (props: ColorsProps) => {
   const { colors, allTokens } = props
 
   const [filterQuery, setFilterQuery] = useState('')
@@ -87,16 +92,32 @@ export function Colors(props: ColorsProps) {
   }
 
   const colorsInCategories = groupByPalette(colors, filterMethod)
-  const uncategorized = colorsInCategories[UNCATEGORIZED_ID]
+  const uncategorizedColors = colorsInCategories[UNCATEGORIZED_ID]
 
   const categorizedColors = Object.entries<any[]>(colorsInCategories).filter(
     ([category]) => category !== UNCATEGORIZED_ID,
   )
 
-  const semanticTokens = getSemanticTokens(allTokens, filterMethod)
+  const semanticTokens = Object.entries<Record<string, any>>(getSemanticTokens(allTokens, filterMethod))
+  const hasResults =
+    !!categorizedColors.length || !!uncategorizedColors?.length || !!Object.values(semanticTokens).length
+
+  return {
+    filterQuery,
+    setFilterQuery,
+    uncategorizedColors,
+    categorizedColors,
+    semanticTokens,
+    hasResults,
+  }
+}
+
+export function Colors(props: ColorsProps) {
+  const { filterQuery, setFilterQuery, semanticTokens, hasResults, uncategorizedColors, categorizedColors } =
+    useColorDocs(props)
 
   const renderSemanticTokens = () => {
-    return Object.entries<Record<string, any>>(semanticTokens).map(([name, colors], i) => {
+    return semanticTokens.map(([name, colors], i) => {
       return (
         <div className="shade" key={i}>
           <div className="color-box semantic-wrapper" style={{ background: colors[colors.extensions.condition].value }}>
@@ -136,8 +157,6 @@ export function Colors(props: ColorsProps) {
     })
   }
 
-  const hasResults = !!categorizedColors.length || !!uncategorized?.length || !!Object.values(semanticTokens).length
-
   return (
     <div className="token-group">
       <div className="font-token-input-wrapper">
@@ -159,13 +178,13 @@ export function Colors(props: ColorsProps) {
                 </div>
               </div>
             ))}
-          {!!uncategorized?.length && (
+          {!!uncategorizedColors?.length && (
             <div>
               <span className="title">{UNCATEGORIZED_ID}</span>
-              <div className="shades">{renderColors(uncategorized)}</div>
+              <div className="shades">{renderColors(uncategorizedColors)}</div>
             </div>
           )}
-          {!!Object.values(semanticTokens).length && (
+          {!!semanticTokens.length && (
             <div>
               <span className="title">Semantic tokens</span>
               <div className="shades">{renderSemanticTokens()}</div>
