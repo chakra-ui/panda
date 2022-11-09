@@ -136,6 +136,8 @@ export function Colors(props: ColorsProps) {
     })
   }
 
+  const hasResults = !!categorizedColors.length || !!uncategorized?.length || !!Object.values(semanticTokens).length
+
   return (
     <div className="token-group">
       <div className="font-token-input-wrapper">
@@ -148,24 +150,28 @@ export function Colors(props: ColorsProps) {
       </div>
       <div className="token-content">
         <div className="color-wrapper">
-          {categorizedColors.map(([category, colors]) => (
-            <div key={category}>
-              <span className="title">{category}</span>
-              <div className="shades" key={category}>
-                {renderColors(colors)}
+          {!!categorizedColors.length &&
+            categorizedColors.map(([category, colors]) => (
+              <div key={category}>
+                <span className="title">{category}</span>
+                <div className="shades" key={category}>
+                  {renderColors(colors)}
+                </div>
               </div>
-            </div>
-          ))}
-          {uncategorized?.length && (
+            ))}
+          {!!uncategorized?.length && (
             <div>
               <span className="title">{UNCATEGORIZED_ID}</span>
               <div className="shades">{renderColors(uncategorized)}</div>
             </div>
           )}
-          <div>
-            <span className="title">Semantic tokens</span>
-            <div className="shades">{renderSemanticTokens()}</div>
-          </div>
+          {!!Object.values(semanticTokens).length && (
+            <div>
+              <span className="title">Semantic tokens</span>
+              <div className="shades">{renderSemanticTokens()}</div>
+            </div>
+          )}
+          {!hasResults && <div>No pandas found! Try a different breed. 🐼</div>}
         </div>
       </div>
     </div>
