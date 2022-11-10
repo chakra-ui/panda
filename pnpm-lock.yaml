@@ -7,7 +7,7 @@ importers:
 
   .:
     specifiers:
-      '@changesets/changelog-github': 0.4.6
+      '@changesets/changelog-github': 0.4.7
       '@changesets/cli': 2.24.4
       '@types/node': 18.7.15
       '@typescript-eslint/eslint-plugin': 5.36.2
@@ -19,7 +19,7 @@ importers:
       typescript: 4.7.4
       vitest: 0.23.1
     dependencies:
-      '@changesets/changelog-github': 0.4.6
+      '@changesets/changelog-github': 0.4.7
       '@changesets/cli': 2.24.4
       '@types/node': 18.7.15
       '@typescript-eslint/eslint-plugin': 5.36.2_eqfzewrdrcxqofyk6rzfkwrfze
@@ -1054,7 +1054,7 @@ packages:
       '@changesets/config': 2.1.1
       '@changesets/get-version-range-type': 0.3.2
       '@changesets/git': 1.4.1
-      '@changesets/types': 5.1.0
+      '@changesets/types': 5.2.0
       '@manypkg/get-packages': 1.1.3
       detect-indent: 6.1.0
       fs-extra: 7.0.1
@@ -1071,7 +1071,7 @@ packages:
       '@babel/runtime': 7.19.0
       '@changesets/errors': 0.1.4
       '@changesets/get-dependents-graph': 1.3.3
-      '@changesets/types': 5.1.0
+      '@changesets/types': 5.2.0
       '@manypkg/get-packages': 1.1.3
       semver: 5.7.1
     dev: false
@@ -1079,14 +1079,14 @@ packages:
   /@changesets/changelog-git/0.1.12:
     resolution: {integrity: sha512-Xv2CPjTBmwjl8l4ZyQ3xrsXZMq8WafPUpEonDpTmcb24XY8keVzt7ZSCJuDz035EiqrjmDKDhODoQ6XiHudlig==}
     dependencies:
-      '@changesets/types': 5.1.0
+      '@changesets/types': 5.2.0
     dev: false
 
-  /@changesets/changelog-github/0.4.6:
-    resolution: {integrity: sha512-ahR/+o3OPodzfG9kucEMU/tEtBgwy6QoJiWi1sDBPme8n3WjT6pBlbhqNYpWAJKilomwfjBGY0MTUTs6r9d1RQ==}
+  /@changesets/changelog-github/0.4.7:
+    resolution: {integrity: sha512-UUG5sKwShs5ha1GFnayUpZNcDGWoY7F5XxhOEHS62sDPOtoHQZsG3j1nC5RxZ3M1URHA321cwVZHeXgu99Y3ew==}
     dependencies:
       '@changesets/get-github-info': 0.5.1
-      '@changesets/types': 5.1.0
+      '@changesets/types': 5.2.0
       dotenv: 8.6.0
     transitivePeerDependencies:
       - encoding
@@ -1137,7 +1137,7 @@ packages:
       '@changesets/errors': 0.1.4
       '@changesets/get-dependents-graph': 1.3.3
       '@changesets/logger': 0.0.5
-      '@changesets/types': 5.1.0
+      '@changesets/types': 5.2.0
       '@manypkg/get-packages': 1.1.3
       fs-extra: 7.0.1
       micromatch: 4.0.5
@@ -1152,7 +1152,7 @@ packages:
   /@changesets/get-dependents-graph/1.3.3:
     resolution: {integrity: sha512-h4fHEIt6X+zbxdcznt1e8QD7xgsXRAXd2qzLlyxoRDFSa6SxJrDAUyh7ZUNdhjBU4Byvp4+6acVWVgzmTy4UNQ==}
     dependencies:
-      '@changesets/types': 5.1.0
+      '@changesets/types': 5.2.0
       '@manypkg/get-packages': 1.1.3
       chalk: 2.4.2
       fs-extra: 7.0.1
@@ -1176,7 +1176,7 @@ packages:
       '@changesets/config': 2.1.1
       '@changesets/pre': 1.0.12
       '@changesets/read': 0.5.7
-      '@changesets/types': 5.1.0
+      '@changesets/types': 5.2.0
       '@manypkg/get-packages': 1.1.3
     dev: false
 
@@ -1189,7 +1189,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.19.0
       '@changesets/errors': 0.1.4
-      '@changesets/types': 5.1.0
+      '@changesets/types': 5.2.0
       '@manypkg/get-packages': 1.1.3
       is-subdir: 1.2.0
       spawndamnit: 2.0.0
@@ -1204,7 +1204,7 @@ packages:
   /@changesets/parse/0.3.14:
     resolution: {integrity: sha512-SWnNVyC9vz61ueTbuxvA6b4HXcSx2iaWr2VEa37lPg1Vw+cEyQp7lOB219P7uow1xFfdtIEEsxbzXnqLAAaY8w==}
     dependencies:
-      '@changesets/types': 5.1.0
+      '@changesets/types': 5.2.0
       js-yaml: 3.14.1
     dev: false
 
@@ -1213,7 +1213,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.19.0
       '@changesets/errors': 0.1.4
-      '@changesets/types': 5.1.0
+      '@changesets/types': 5.2.0
       '@manypkg/get-packages': 1.1.3
       fs-extra: 7.0.1
     dev: false
@@ -1225,7 +1225,7 @@ packages:
       '@changesets/git': 1.4.1
       '@changesets/logger': 0.0.5
       '@changesets/parse': 0.3.14
-      '@changesets/types': 5.1.0
+      '@changesets/types': 5.2.0
       chalk: 2.4.2
       fs-extra: 7.0.1
       p-filter: 2.1.0
@@ -1239,11 +1239,15 @@ packages:
     resolution: {integrity: sha512-uUByGATZCdaPkaO9JkBsgGDjEvHyY2Sb0e/J23+cwxBi5h0fxpLF/HObggO/Fw8T2nxK6zDfJbPsdQt5RwYFJA==}
     dev: false
 
+  /@changesets/types/5.2.0:
+    resolution: {integrity: sha512-km/66KOqJC+eicZXsm2oq8A8bVTSpkZJ60iPV/Nl5Z5c7p9kk8xxh6XGRTlnludHldxOOfudhnDN2qPxtHmXzA==}
+    dev: false
+
   /@changesets/write/0.2.0:
     resolution: {integrity: sha512-iKHqGYXZvneRzRfvEBpPqKfpGELOEOEP63MKdM/SdSRon40rsUijkTmsGCHT1ueLi3iJPZPmYuZJvjjKrMzumA==}
     dependencies:
       '@babel/runtime': 7.19.0
-      '@changesets/types': 5.1.0
+      '@changesets/types': 5.2.0
       fs-extra: 7.0.1
       human-id: 1.0.2
       prettier: 2.7.1
