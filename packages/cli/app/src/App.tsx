@@ -9,6 +9,7 @@ import { Sizes } from './components/sizes'
 import { TypographyPlayground } from './components/typography-playground'
 import { SpacingPlayground } from './components/spacing-playground'
 import { ContrastChecker } from './components/contrast-checker'
+import { TextStyles } from './components/text-styles'
 
 function App() {
   const tokenDictionary = new TokenDictionary(config)
@@ -76,6 +77,7 @@ function App() {
         {page === NavKeys.FONT_WEIGHTS && <FontTokens fontTokens={tokens.fontWeights} token="fontWeight" />}
         {page === NavKeys.FONT_SIZES && <FontTokens fontTokens={tokens.fontSizes} token="fontSize" />}
         {page === NavKeys.SIZES && <Sizes sizes={tokens.sizes} />}
+        {page === NavKeys.TEXT_STYLES && <TextStyles textStyles={config.textStyles} />}
         {page === NavKeys.TYPOGRAPHY_PLAYGROUND && <TypographyPlayground config={config} />}
         {page === NavKeys.SPACING_PLAYGROUND && <SpacingPlayground sizes={tokens.sizes} />}
         {page === NavKeys.CONTRAST_CHECKER && <ContrastChecker colors={tokens.colors} />}

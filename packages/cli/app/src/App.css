@@ -21,7 +21,7 @@ main > * {
 
 aside {
   min-width: 15rem;
-  background-color: #1a1a1a;
+  background-color: var(--aside-bg);
 }
 
 aside .title {
@@ -197,6 +197,44 @@ hr {
 
 .lineHeight-token .font-wrapper .render {
   font-size: unset;
+}
+
+.text-styles .token-content {
+  gap: 0;
+}
+
+.text-styles .item {
+  border-top: solid 1px;
+  border-color: rgba(128, 128, 128, 0.671);
+  padding: 10px 4px;
+}
+
+.text-styles .item:last-of-type {
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+}
+
+.text-styles .description {
+  width: 25%;
+}
+
+@media (prefers-color-scheme: light) {
+  .text-styles .description {
+    border-color: var(--aside-bg);
+  }
+}
+
+.text-styles .description .name {
+  font-weight: 500;
+}
+
+.text-styles .description .styles {
+  font-size: small;
+}
+
+.text-styles .preview {
+  flex: auto;
+  margin: 12px 0;
 }
 
 .typography-playground div[contenteditable] {

@@ -4,8 +4,9 @@ export enum NavKeys {
   LINE_HEIGHTS = 'lineHeights',
   FONT_WEIGHTS = 'fontWeights',
   FONT_SIZES = 'fontSizes',
-  TYPOGRAPHY_PLAYGROUND = 'typography-playground',
   SIZES = 'sizes',
+  TEXT_STYLES = 'textStyles',
+  TYPOGRAPHY_PLAYGROUND = 'typography-playground',
   SPACING_PLAYGROUND = 'spacing-playground',
   CONTRAST_CHECKER = 'contrast-checker',
 }
@@ -39,6 +40,11 @@ export const navItems = [
   {
     label: 'Sizes',
     id: NavKeys.SIZES,
+    type: 'token',
+  },
+  {
+    label: 'Text Styles',
+    id: NavKeys.TEXT_STYLES,
     type: 'token',
   },
   {
