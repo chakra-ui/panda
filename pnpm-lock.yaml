@@ -194,7 +194,7 @@ importers:
       fast-glob: ^3.2.11
       fs-extra: 10.1.0
       glob-parent: ^6.0.2
-      hookable: 5.3.0
+      hookable: 5.4.1
       is-glob: ^4.0.3
       lodash.merge: 4.6.2
       look-it-up: 2.1.0
@@ -220,7 +220,7 @@ importers:
       fast-glob: 3.2.11
       fs-extra: 10.1.0
       glob-parent: 6.0.2
-      hookable: 5.3.0
+      hookable: 5.4.1
       is-glob: 4.0.3
       lodash.merge: 4.6.2
       look-it-up: 2.1.0
@@ -4200,8 +4200,8 @@ packages:
       space-separated-tokens: 2.0.1
     dev: false
 
-  /hookable/5.3.0:
-    resolution: {integrity: sha512-4gTA2q08HT8G32uIW7Jpro3rSXgT2ZTM8R6+r7H7joq90eZlqFPPTvHD6w8WZUohIrbXbDperL96ilb6dkNxNw==}
+  /hookable/5.4.1:
+    resolution: {integrity: sha512-i808BglQ1OuSIcgPSZoWsDapCMLXKe5wLS6XZvIXpaBWdWLUZARM8vOLayu6cXewj5TSbaZaMzKnq+pRnfscEQ==}
     dev: false
 
   /hosted-git-info/2.8.9:
