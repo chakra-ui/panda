@@ -199,7 +199,7 @@ importers:
       lodash.merge: 4.6.2
       look-it-up: 2.1.0
       outdent: ' ^0.8.0'
-      pkg-types: 0.3.5
+      pkg-types: 0.3.6
       pluralize: 8.0.0
       postcss: 8.4.18
       preferred-pm: ^3.0.3
@@ -225,7 +225,7 @@ importers:
       lodash.merge: 4.6.2
       look-it-up: 2.1.0
       outdent: 0.8.0
-      pkg-types: 0.3.5
+      pkg-types: 0.3.6
       pluralize: 8.0.0
       postcss: 8.4.18
       preferred-pm: 3.0.3
@@ -5454,12 +5454,12 @@ packages:
     hasBin: true
     dev: false
 
-  /mlly/0.5.14:
-    resolution: {integrity: sha512-DgRgNUSX9NIxxCxygX4Xeg9C7GX7OUx1wuQ8cXx9o9LE0e9wrH+OZ9fcnrlEedsC/rtqry3ZhUddC759XD/L0w==}
+  /mlly/0.5.16:
+    resolution: {integrity: sha512-LaJ8yuh4v0zEmge/g3c7jjFlhoCPfQn6RCjXgm9A0Qiuochq4BcuOxVfWmdnCoLTlg2MV+hqhOek+W2OhG0Lwg==}
     dependencies:
       acorn: 8.8.0
-      pathe: 0.3.7
-      pkg-types: 0.3.5
+      pathe: 0.3.9
+      pkg-types: 0.3.6
       ufo: 0.8.5
     dev: false
 
@@ -5859,8 +5859,8 @@ packages:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
     engines: {node: '>=8'}
 
-  /pathe/0.3.7:
-    resolution: {integrity: sha512-yz7GK+kSsS27x727jtXpd5VT4dDfP/JDIQmaowfxyWCnFjOWtE1VIh7i6TzcSfzW0n4+bRQztj1VdKnITNq/MA==}
+  /pathe/0.3.9:
+    resolution: {integrity: sha512-6Y6s0vT112P3jD8dGfuS6r+lpa0qqNrLyHPOwvXMnyNTQaYiwgau2DP3aNDsR13xqtGj7rrPo+jFUATpU6/s+g==}
     dev: false
 
   /pathval/1.1.1:
@@ -5891,12 +5891,12 @@ packages:
       find-up: 4.1.0
     dev: false
 
-  /pkg-types/0.3.5:
-    resolution: {integrity: sha512-VkxCBFVgQhNHYk9subx+HOhZ4jzynH11ah63LZsprTKwPCWG9pfWBlkElWFbvkP9BVR0dP1jS9xPdhaHQNK74Q==}
+  /pkg-types/0.3.6:
+    resolution: {integrity: sha512-uQZutkkh6axl1GxDm5/+8ivVdwuJ5pyDGqJeSiIWIUWIqYiK3p9QKozN/Rv6eVvFoeSWkN1uoYeSDBwwBJBtbg==}
     dependencies:
       jsonc-parser: 3.2.0
-      mlly: 0.5.14
-      pathe: 0.3.7
+      mlly: 0.5.16
+      pathe: 0.3.9
     dev: false
 
   /pluralize/8.0.0:
