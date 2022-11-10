@@ -36,8 +36,6 @@ export function TextStyles(props: TextStylesProps) {
 }
 
 function flattenTextStyles(values: TextStylesType | undefined) {
-  console.log('values :>> ', values)
-
   if (!values) return
 
   const result: Dict = {}
