@@ -23,7 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "@changesets/changelog-github": "0.4.7",
-    "@changesets/cli": "2.24.4",
+    "@changesets/cli": "2.25.2",
     "@types/node": "18.11.9",
     "@typescript-eslint/eslint-plugin": "5.36.2",
     "@typescript-eslint/parser": "5.36.2",
