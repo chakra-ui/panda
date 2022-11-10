@@ -214,10 +214,6 @@ hr {
   border-bottom-style: solid;
 }
 
-.text-styles .description {
-  width: 25%;
-}
-
 @media (prefers-color-scheme: light) {
   .text-styles .description {
     border-color: var(--aside-bg);
@@ -230,6 +226,7 @@ hr {
 
 .text-styles .description .styles {
   font-size: small;
+  flex: auto;
 }
 
 .text-styles .preview {

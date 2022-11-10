@@ -17,8 +17,8 @@ export function TextStyles(props: TextStylesProps) {
               <div className="description">
                 <span className="name">{name}</span>
                 <div className="styles">
-                  {Object.entries(styles).map(([attr], i, arr) => (
-                    <span key={attr}>{`${attr}${i === arr.length - 1 ? '' : ', '}`}</span>
+                  {Object.entries(styles).map(([attr, value], i, arr) => (
+                    <span key={attr}>{`${attr}: ${value}${i === arr.length - 1 ? '' : ', '}`}</span>
                   ))}
                 </div>
               </div>
