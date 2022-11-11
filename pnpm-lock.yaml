@@ -119,7 +119,7 @@ importers:
       autoprefixer: 10.4.13
       camelcase-css: ^2.0.1
       lodash.merge: 4.6.2
-      postcss: 8.4.18
+      postcss: 8.4.19
       postcss-discard-duplicates: ^5.1.0
       postcss-nested: 5.0.6
       postcss-normalize-whitespace: ^5.1.1
@@ -131,13 +131,13 @@ importers:
       '@css-panda/shared': link:../shared
       '@css-panda/token-dictionary': link:../token-dictionary
       '@css-panda/types': link:../types
-      autoprefixer: 10.4.13_postcss@8.4.18
+      autoprefixer: 10.4.13_postcss@8.4.19
       camelcase-css: 2.0.1
       lodash.merge: 4.6.2
-      postcss: 8.4.18
-      postcss-discard-duplicates: 5.1.0_postcss@8.4.18
-      postcss-nested: 5.0.6_postcss@8.4.18
-      postcss-normalize-whitespace: 5.1.1_postcss@8.4.18
+      postcss: 8.4.19
+      postcss-discard-duplicates: 5.1.0_postcss@8.4.19
+      postcss-nested: 5.0.6_postcss@8.4.19
+      postcss-normalize-whitespace: 5.1.1_postcss@8.4.19
       sort-css-media-queries: 2.1.0
       ts-pattern: 4.0.5
     devDependencies:
@@ -201,7 +201,7 @@ importers:
       outdent: ' ^0.8.0'
       pkg-types: 0.3.6
       pluralize: 8.0.0
-      postcss: 8.4.18
+      postcss: 8.4.19
       preferred-pm: ^3.0.3
       telejson: 6.0.8
       ts-morph: 16.0.0
@@ -227,7 +227,7 @@ importers:
       outdent: 0.8.0
       pkg-types: 0.3.6
       pluralize: 8.0.0
-      postcss: 8.4.18
+      postcss: 8.4.19
       preferred-pm: 3.0.3
       telejson: 6.0.8
       ts-morph: 16.0.0
@@ -325,7 +325,7 @@ importers:
       '@types/react-dom': 18.0.8
       '@vitejs/plugin-react': 2.2.0
       css-panda: workspace:*
-      postcss: 8.4.18
+      postcss: 8.4.19
       react: 18.2.0
       react-dom: 18.2.0
       vite: 3.1.3
@@ -338,7 +338,7 @@ importers:
       '@types/react-dom': 18.0.8
       '@vitejs/plugin-react': 2.2.0_vite@3.1.3
       css-panda: link:../../packages/cli
-      postcss: 8.4.18
+      postcss: 8.4.19
       vite: 3.1.3
 
 packages:
@@ -2073,8 +2073,8 @@ packages:
       ora: 6.1.2
       path-browserify: 1.0.1
       path-to-regexp: 6.2.1
-      postcss: 8.4.18
-      postcss-load-config: 3.1.4_postcss@8.4.18
+      postcss: 8.4.19
+      postcss-load-config: 3.1.4_postcss@8.4.19
       preferred-pm: 3.0.3
       prompts: 2.4.2
       recast: 0.20.5
@@ -2103,7 +2103,7 @@ packages:
       - ts-node
     dev: false
 
-  /autoprefixer/10.4.13_postcss@8.4.18:
+  /autoprefixer/10.4.13_postcss@8.4.19:
     resolution: {integrity: sha512-49vKpMqcZYsJjwotvt4+h/BCjJVnhGwcLpDt5xkcaOG3eLrG/HUYLagrihYsQ+qrIBgIzX1Rw7a6L8I/ZA1Atg==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
@@ -2115,7 +2115,7 @@ packages:
       fraction.js: 4.2.0
       normalize-range: 0.1.2
       picocolors: 1.0.0
-      postcss: 8.4.18
+      postcss: 8.4.19
       postcss-value-parser: 4.2.0
     dev: false
 
@@ -5768,13 +5768,13 @@ packages:
     engines: {node: '>=4'}
     dev: false
 
-  /postcss-discard-duplicates/5.1.0_postcss@8.4.18:
+  /postcss-discard-duplicates/5.1.0_postcss@8.4.19:
     resolution: {integrity: sha512-zmX3IoSI2aoenxHV6C7plngHWWhUOV3sP1T8y2ifzxzbtnuhk1EdPwm0S1bIUNaJ2eNbWeGLEwzw8huPD67aQw==}
     engines: {node: ^10 || ^12 || >=14.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.18
+      postcss: 8.4.19
     dev: false
 
   /postcss-load-config/3.1.4:
@@ -5793,7 +5793,7 @@ packages:
       yaml: 1.10.2
     dev: false
 
-  /postcss-load-config/3.1.4_postcss@8.4.18:
+  /postcss-load-config/3.1.4_postcss@8.4.19:
     resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
     engines: {node: '>= 10'}
     peerDependencies:
@@ -5806,27 +5806,27 @@ packages:
         optional: true
     dependencies:
       lilconfig: 2.0.6
-      postcss: 8.4.18
+      postcss: 8.4.19
       yaml: 1.10.2
     dev: false
 
-  /postcss-nested/5.0.6_postcss@8.4.18:
+  /postcss-nested/5.0.6_postcss@8.4.19:
     resolution: {integrity: sha512-rKqm2Fk0KbA8Vt3AdGN0FB9OBOMDVajMG6ZCf/GoHgdxUJ4sBFp0A/uMIRm+MJUdo33YXEtjqIz8u7DAp8B7DA==}
     engines: {node: '>=12.0'}
     peerDependencies:
       postcss: ^8.2.14
     dependencies:
-      postcss: 8.4.18
+      postcss: 8.4.19
       postcss-selector-parser: 6.0.10
     dev: false
 
-  /postcss-normalize-whitespace/5.1.1_postcss@8.4.18:
+  /postcss-normalize-whitespace/5.1.1_postcss@8.4.19:
     resolution: {integrity: sha512-83ZJ4t3NUDETIHTa3uEg6asWjSBYL5EdkVB0sDncx9ERzOKBVJIUeDO9RyA9Zwtig8El1d79HBp0JEi8wvGQnA==}
     engines: {node: ^10 || ^12 || >=14.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.18
+      postcss: 8.4.19
       postcss-value-parser: 4.2.0
     dev: false
 
@@ -5853,6 +5853,14 @@ packages:
 
   /postcss/8.4.18:
     resolution: {integrity: sha512-Wi8mWhncLJm11GATDaQKobXSNEYGUHeQLiQqDFG1qQ5UTDPTEvKw0Xt5NsTpktGTwLps3ByrWsBrG0rB8YQ9oA==}
+    engines: {node: ^10 || ^12 || >=14}
+    dependencies:
+      nanoid: 3.3.4
+      picocolors: 1.0.0
+      source-map-js: 1.0.2
+
+  /postcss/8.4.19:
+    resolution: {integrity: sha512-h+pbPsyhlYj6N2ozBmHhHrs9DzGmbaarbLvWipMRO7RLS+v4onj26MPFXA5OBYFxyqYhUJK456SwDcY9H2/zsA==}
     engines: {node: ^10 || ^12 || >=14}
     dependencies:
       nanoid: 3.3.4
@@ -7168,7 +7176,7 @@ packages:
         optional: true
     dependencies:
       esbuild: 0.15.13
-      postcss: 8.4.18
+      postcss: 8.4.19
       resolve: 1.22.1
       rollup: 2.78.1
     optionalDependencies:
@@ -7195,7 +7203,7 @@ packages:
         optional: true
     dependencies:
       esbuild: 0.15.13
-      postcss: 8.4.18
+      postcss: 8.4.19
       resolve: 1.22.1
       rollup: 2.78.1
     optionalDependencies:
