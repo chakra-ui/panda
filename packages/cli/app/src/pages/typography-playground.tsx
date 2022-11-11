@@ -1,12 +1,8 @@
 import { useState } from 'react'
-import type { Config } from '@css-panda/types'
 import { TokenDictionary } from '@css-panda/token-dictionary'
+import { config as configP } from 'virtual:panda'
 
-type TypographyPlaygroundProps = { config: Config }
-
-export function TypographyPlayground(props: TypographyPlaygroundProps) {
-  const { config: configP } = props
-
+export default function TypographyPlayground() {
   const tokenMap = new TokenDictionary(configP)
   const tokens = Object.fromEntries(tokenMap.categoryMap)
 

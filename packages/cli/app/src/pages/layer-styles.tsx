@@ -1,12 +1,9 @@
 import { walkObject } from '@css-panda/shared'
 import type { Dict, LayerStyles as LayerStylesType } from '@css-panda/types'
+import { config } from 'virtual:panda'
 
-export type LayerStylesProps = { layerStyles: LayerStylesType | undefined }
-
-export function LayerStyles(props: LayerStylesProps) {
-  const { layerStyles: rawLayerStyles } = props
-
-  const textStyles = flattenLayerStyles(rawLayerStyles)
+export default function LayerStyles() {
+  const textStyles = flattenLayerStyles(config.layerStyles)
 
   return (
     <div className="token-group layer-styles">

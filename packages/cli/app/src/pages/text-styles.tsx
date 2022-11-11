@@ -1,12 +1,9 @@
 import { walkObject } from '@css-panda/shared'
 import type { Dict, TextStyles as TextStylesType } from '@css-panda/types'
+import { config } from 'virtual:panda'
 
-export type TextStylesProps = { textStyles: TextStylesType | undefined }
-
-export function TextStyles(props: TextStylesProps) {
-  const { textStyles: rawTextStyles } = props
-
-  const textStyles = flattenTextStyles(rawTextStyles)
+export default function TextStyles() {
+  const textStyles = flattenTextStyles(config.textStyles)
 
   return (
     <div className="token-group text-styles">

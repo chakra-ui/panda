@@ -1,6 +1,9 @@
 import type { Token } from '@css-panda/types'
 import { useState } from 'react'
 
+import { config } from 'virtual:panda'
+import { TokenDictionary } from '@css-panda/token-dictionary'
+
 type Color = {
   isConditional?: boolean
   isReference?: boolean
@@ -10,11 +13,6 @@ type Color = {
 }
 
 type ColorToken = Token & Color
-
-type ColorsProps = {
-  colors: Map<string, any>
-  allTokens: ColorToken[]
-}
 
 const UNCATEGORIZED_ID = 'uncategorized' as const
 
@@ -38,7 +36,7 @@ const groupByPalette = (colors: Map<string, any>, filterMethod?: (token: ColorTo
 }
 
 const getSemanticTokens = (
-  allTokens: ColorsProps['allTokens'],
+  allTokens: ColorToken[],
   filterMethod?: (token: ColorToken) => boolean,
   // filterMethod: (token: ColorToken) => boolean = () => true,
 ) => {
@@ -71,8 +69,12 @@ const getSemanticTokens = (
     )
 }
 
-const useColorDocs = (props: ColorsProps) => {
-  const { colors, allTokens } = props
+const useColorDocs = () => {
+  const tokenDictionary = new TokenDictionary(config)
+  const tokens = Object.fromEntries(tokenDictionary.categoryMap)
+  const allTokens = tokenDictionary.allTokens
+
+  const { colors } = tokens
 
   const [filterQuery, setFilterQuery] = useState('')
 
@@ -112,9 +114,9 @@ const useColorDocs = (props: ColorsProps) => {
   }
 }
 
-export function Colors(props: ColorsProps) {
+export default function Colors() {
   const { filterQuery, setFilterQuery, semanticTokens, hasResults, uncategorizedColors, categorizedColors } =
-    useColorDocs(props)
+    useColorDocs()
 
   const renderSemanticTokens = () => {
     return semanticTokens.map(([name, colors], i) => {

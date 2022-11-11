@@ -5,7 +5,8 @@
     "jsx": "react-jsx",
     "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
     "paths": {
-      "virtual:panda": ["./virtual-panda.d.ts"]
+      "virtual:panda": ["./virtual-panda.d.ts"],
+      "~react-pages": ["./react-pages.d.ts"]
     }
   }
 }
