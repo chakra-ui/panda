@@ -84,6 +84,7 @@ function App() {
         {page === NavKeys.SPACING_PLAYGROUND && <SpacingPlayground sizes={tokens.sizes} />}
         {page === NavKeys.CONTRAST_CHECKER && <ContrastChecker colors={tokens.colors} />}
       </div>
+      <div className="badge">🐼 Made with Panda</div>
     </main>
   )
 }
