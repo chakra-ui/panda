@@ -246,6 +246,7 @@ hr {
   border: solid 1px;
   border-color: rgba(128, 128, 128, 0.671);
   background-color: #1d1d1e1a;
+  margin-top: 20px;
 }
 
 .layer-styles .preview {
