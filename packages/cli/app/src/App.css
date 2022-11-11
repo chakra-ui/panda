@@ -199,39 +199,58 @@ hr {
   font-size: unset;
 }
 
-.text-styles .token-content {
+.text-styles .token-content,
+.layer-styles .token-content {
   gap: 0;
 }
 
-.text-styles .item {
+.text-styles .item,
+.layer-styles .item {
   border-top: solid 1px;
   border-color: rgba(128, 128, 128, 0.671);
   padding: 10px 4px;
 }
 
-.text-styles .item:last-of-type {
+.text-styles .item:last-of-type,
+.layer-styles .item:last-of-type {
   border-bottom-width: 1px;
   border-bottom-style: solid;
 }
 
 @media (prefers-color-scheme: light) {
-  .text-styles .description {
+  .text-styles .description,
+  .layer-styles .description {
     border-color: var(--aside-bg);
   }
 }
 
-.text-styles .description .name {
+.text-styles .description .name,
+.layer-styles .description .name {
   font-weight: 500;
 }
 
-.text-styles .description .styles {
+.text-styles .description .styles,
+.layer-styles .description .styles {
   font-size: small;
   flex: auto;
 }
 
-.text-styles .preview {
+.text-styles .preview,
+.layer-styles .preview {
   flex: auto;
   margin: 12px 0;
+}
+
+.layer-styles .preview-wrapper {
+  padding: 8px 16px;
+  border: solid 1px;
+  border-color: rgba(128, 128, 128, 0.671);
+  background-color: #1d1d1e1a;
+  margin-top: 20px;
+}
+
+.layer-styles .preview {
+  height: 5em;
 }
 
 .typography-playground div[contenteditable] {
