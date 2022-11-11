@@ -54,17 +54,17 @@ export const navItems = [
     type: 'token',
   },
   {
-    label: 'Typography Playground',
+    label: 'Typography',
     id: NavKeys.TYPOGRAPHY_PLAYGROUND,
     type: 'playground',
   },
   {
-    label: 'Spacing Playground',
+    label: 'Spacing',
     id: NavKeys.SPACING_PLAYGROUND,
     type: 'playground',
   },
   {
-    label: 'Color Contrast Checker',
+    label: 'Color Contrast',
     id: NavKeys.CONTRAST_CHECKER,
     type: 'playground',
   },
