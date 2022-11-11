@@ -17,6 +17,15 @@
   -webkit-text-size-adjust: 100%;
 }
 
+.badge {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+  background-color: rgba(0, 0, 0, 0.526);
+  border-radius: 12px;
+  padding: 12px;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
