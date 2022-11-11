@@ -22,7 +22,9 @@ export function LayerStyles(props: LayerStylesProps) {
                   ))}
                 </div>
               </div>
-              <div className="preview" style={styles} />
+              <div className="preview-wrapper">
+                <div className="preview" style={styles} />
+              </div>
             </div>
           ))
         ) : (

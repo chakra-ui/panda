@@ -241,6 +241,13 @@ hr {
   margin: 12px 0;
 }
 
+.layer-styles .preview-wrapper {
+  padding: 8px 16px;
+  border: solid 1px;
+  border-color: rgba(128, 128, 128, 0.671);
+  background-color: #1d1d1e1a;
+}
+
 .layer-styles .preview {
   height: 5em;
 }
