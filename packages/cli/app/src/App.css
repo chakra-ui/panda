@@ -181,6 +181,7 @@ hr {
 
 .font-wrapper .render {
   font-size: 2em;
+  line-height: 1em;
 }
 
 .font-tokens .title {
