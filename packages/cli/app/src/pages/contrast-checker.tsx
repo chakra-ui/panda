@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { getContrastPairs, getContrastRatio } from '../utils/color'
-import { ErrorIcon, SuccessIcon } from './icons'
+import { ErrorIcon, SuccessIcon } from '../components/icons'
+import { config } from 'virtual:panda'
+import { TokenDictionary } from '@css-panda/token-dictionary'
 
-type ContrastCheckerProps = {
-  colors: Map<string, any>
-}
+export default function ContrastChecker() {
+  const tokenDictionary = new TokenDictionary(config)
+  const tokens = Object.fromEntries(tokenDictionary.categoryMap)
 
-export function ContrastChecker(props: ContrastCheckerProps) {
-  const { colors: colorsMap } = props
+  const { colors: colorsMap } = tokens
   const values = Array.from(colorsMap.values())
 
   const colors = values

@@ -1,13 +1,16 @@
 import { useState } from 'react'
 import { getSortedSizes } from '../utils/sizes-sort'
 import { renderPixels } from './sizes'
-
-export type SpacingPlaygroundProps = { sizes: Map<string, any> }
+import { config } from 'virtual:panda'
+import { TokenDictionary } from '@css-panda/token-dictionary'
 
 const NUMBER_OF_ITEMS = 3
 
-export function SpacingPlayground(props: SpacingPlaygroundProps) {
-  const { sizes: sizesProp } = props
+export default function SpacingPlayground() {
+  const tokenDictionary = new TokenDictionary(config)
+  const tokens = Object.fromEntries(tokenDictionary.categoryMap)
+
+  const { sizes: sizesProp } = tokens
   const values = Array.from(sizesProp.values())
   if (typeof sizesProp === 'string') return null
 
