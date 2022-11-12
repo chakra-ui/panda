@@ -19,10 +19,10 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .color-red\\\\! {
+          .text_red\\\\! {
               color: red !important
           }
-          .fontSize-30px\\\\! {
+          .fs_30px\\\\! {
               font-size: 30px !important
           }
       }"
@@ -32,8 +32,8 @@ describe('atomic / with basic style object', () => {
   test('should work with basic', () => {
     expect(css({ styles: { bg: 'red.300' } })).toMatchInlineSnapshot(`
       "@layer utilities {
-          .background-red\\\\.300 {
-              background: red.300
+          .bg_red\\\\.300 {
+              background: var(--colors-red-300)
           }
       }"
     `)
@@ -42,7 +42,7 @@ describe('atomic / with basic style object', () => {
   test('should resolve shorthand', () => {
     expect(css({ styles: { width: '50px', w: '20px' } })).toMatchInlineSnapshot(`
       "@layer utilities {
-          .w-20px {
+          .w_20px {
               width: 20px
           }
       }"
@@ -50,7 +50,7 @@ describe('atomic / with basic style object', () => {
 
     expect(css({ styles: { width: { _: '50px', md: '60px' }, w: '70px' } })).toMatchInlineSnapshot(`
       "@layer utilities {
-          .w-70px {
+          .w_70px {
               width: 70px
           }
       }"
@@ -67,12 +67,12 @@ describe('atomic / with basic style object', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           @screen sm {
-              [dir=ltr] .ltr\\\\:sm\\\\:marginLeft-4 {
-                  margin-left: 4
+              [dir=ltr] .ltr\\\\:sm\\\\:ml_4 {
+                  margin-left: var(--spacing-4)
               }
           }
-          [dir=rtl] .rtl\\\\:marginLeft--4 {
-              margin-left: -4
+          [dir=rtl] .rtl\\\\:ml_-4 {
+              margin-left: calc(var(--spacing-4) * -1)
           }
       }"
     `)
@@ -88,13 +88,13 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          [data-theme=light] .light\\\\:color-red {
+          [data-theme=light] .light\\\\:text_red {
               color: red
           }
-          [data-theme=dark] .dark\\\\:color-green {
+          [data-theme=dark] .dark\\\\:text_green {
               color: green
           }
-          [data-theme=dark] .dark\\\\:opacity-slate400 {
+          [data-theme=dark] .dark\\\\:opacity_slate400 {
               opacity: slate400
           }
       }"
@@ -111,17 +111,17 @@ describe('atomic / with basic style object', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           @screen sm {
-              [dir=rtl] .sm\\\\:rtl\\\\:top-20px {
+              [dir=rtl] .sm\\\\:rtl\\\\:t_20px {
                   top: 20px
               }
           }
           @screen sm {
-              .sm\\\\:hover\\\\:top-50px:hover {
+              .sm\\\\:hover\\\\:t_50px:hover {
                   top: 50px
               }
           }
           @screen lg {
-              .lg\\\\:top-120px {
+              .lg\\\\:t_120px {
                   top: 120px
               }
           }
@@ -138,11 +138,11 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .left-20px {
+          .l_20px {
               left: 20px
           }
           @screen md {
-              .md\\\\:left-40px {
+              .md\\\\:l_40px {
                   left: 40px
               }
           }
@@ -164,25 +164,25 @@ describe('atomic / with nesting scope', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[\\\\&_\\\\>_p\\\\]\\\\:left-20px > p {
+          .\\\\[\\\\&_\\\\>_p\\\\]\\\\:l_20px > p {
               left: 20px
           }
           @screen md {
-              .\\\\[\\\\&_\\\\>_p\\\\]\\\\:md\\\\:left-40px > p {
+              .\\\\[\\\\&_\\\\>_p\\\\]\\\\:md\\\\:l_40px > p {
                   left: 40px
               }
           }
-          [data-theme=light] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:light\\\\:background-red400 > p {
+          [data-theme=light] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:light\\\\:bg_red400 > p {
               background: red400
           }
-          [data-theme=dark] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:dark\\\\:background-green500 > p {
+          [data-theme=dark] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:dark\\\\:bg_green500 > p {
               background: green500
           }
-          [dir=rtl] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:rtl\\\\:font-sans > p {
+          [dir=rtl] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:rtl\\\\:font_sans > p {
               font: sans
           }
           @screen sm {
-              [data-theme=dark] [dir=ltr] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font-serif:hover > p {
+              [data-theme=dark] [dir=ltr] .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif:hover > p {
                   font: serif
               }
           }
@@ -201,16 +201,16 @@ describe('atomic / with nesting scope', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          input:hover .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:background-red400 {
+          input:hover .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:bg_red400 {
               background: red400
           }
           @screen sm {
-              input:hover .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:sm\\\\:fontSize-14px {
+              input:hover .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:sm\\\\:fs_14px {
                   font-size: 14px
               }
           }
           @screen lg {
-              input:hover .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:lg\\\\:fontSize-18px {
+              input:hover .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:lg\\\\:fs_18px {
                   font-size: 18px
               }
           }
@@ -230,14 +230,14 @@ describe('atomic / with nesting scope', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:left-40px::placeholder {
+          .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:l_40px::placeholder {
               left: 40px
           }
-          .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:background-red400::placeholder {
+          .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:bg_red400::placeholder {
               background: red400
           }
           @screen sm {
-              .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:sm\\\\:ta-left::placeholder {
+              .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:sm\\\\:text_left::placeholder {
                   text-align: left
               }
           }
@@ -257,13 +257,13 @@ describe('atomic / with nesting scope', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           @media base {
-              .\\\\[\\\\@media_base\\\\]\\\\:left-40px {
+              .\\\\[\\\\@media_base\\\\]\\\\:l_40px {
                   left: 40px
               }
           }
           @media base {
               @screen sm {
-                  .\\\\[\\\\@media_base\\\\]\\\\:sm\\\\:ta-left {
+                  .\\\\[\\\\@media_base\\\\]\\\\:sm\\\\:text_left {
                       text-align: left
                   }
               }
@@ -283,7 +283,7 @@ describe('atomic / with grouped conditions styles', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .hover\\\\:background-pink\\\\.400:hover {
+          .hover\\\\:bg_pink\\\\.400:hover {
               background: pink.400
           }
       }"
@@ -300,11 +300,11 @@ describe('atomic / with grouped conditions styles', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           @screen sm {
-              [data-theme=dark] .hover\\\\:sm\\\\:dark\\\\:background-red\\\\.300:hover {
-                  background: red.300
+              [data-theme=dark] .hover\\\\:sm\\\\:dark\\\\:bg_red\\\\.300:hover {
+                  background: var(--colors-red-300)
               }
           }
-          .hover\\\\:color-pink\\\\.400:hover {
+          .hover\\\\:text_pink\\\\.400:hover {
               color: pink.400
           }
       }"
@@ -321,8 +321,8 @@ describe('atomic / with grouped conditions styles', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           @screen sm {
-              .hover\\\\:disabled\\\\:sm\\\\:background-red\\\\.300:hover:disabled {
-                  background: red.300
+              .hover\\\\:disabled\\\\:sm\\\\:bg_red\\\\.300:hover:disabled {
+                  background: var(--colors-red-300)
               }
           }
       }"
@@ -341,13 +341,13 @@ describe('atomic / with grouped conditions styles', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           @media base {
-              .\\\\[\\\\@media_base__\\\\&\\\\:hover\\\\]\\\\:left-40px:hover {
+              .\\\\[\\\\@media_base__\\\\&\\\\:hover\\\\]\\\\:l_40px:hover {
                   left: 40px
               }
           }
           @media base {
               @screen sm {
-                  .\\\\[\\\\@media_base__\\\\&\\\\:hover\\\\]\\\\:sm\\\\:ta-left:hover {
+                  .\\\\[\\\\@media_base__\\\\&\\\\:hover\\\\]\\\\:sm\\\\:text_left:hover {
                       text-align: left
                   }
               }
@@ -398,58 +398,58 @@ describe('atomic / with direct nesting', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .all-unset {
+          .all_unset {
               all: unset
           }
-          .backgroundColor-red {
+          .bg_red {
               background-color: red
           }
-          .border-none {
+          .border_none {
               border: none
           }
-          .padding-\\\\$3_\\\\$3 {
+          .p_\\\\$3_\\\\$3 {
               padding: $3 $3
           }
-          .borderRadius-\\\\$button {
+          .rounded_\\\\$button {
               border-radius: $button
           }
-          .fontSize-\\\\$xsmall {
+          .fs_\\\\$xsmall {
               font-size: $xsmall
           }
-          .cursor-pointer {
+          .cursor_pointer {
               cursor: pointer
           }
-          .\\\\&\\\\ \\\\+\\\\ span\\\\:marginLeft-\\\\$2 + span {
+          .\\\\&\\\\ \\\\+\\\\ span\\\\:ml_\\\\$2 + span {
               margin-left: $2
           }
-          .\\\\&\\\\:focus\\\\,\\\\ \\\\&\\\\:hover\\\\:boxShadow-none:focus, .\\\\&\\\\:focus\\\\,\\\\ \\\\&\\\\:hover\\\\:boxShadow-none:hover {
+          .\\\\&\\\\:focus\\\\,\\\\ \\\\&\\\\:hover\\\\:shadow_none:focus, .\\\\&\\\\:focus\\\\,\\\\ \\\\&\\\\:hover\\\\:shadow_none:hover {
               box-shadow: none
           }
-          .test .\\\\.test\\\\ \\\\&\\\\:backgroundColor-blue {
+          .test .\\\\.test\\\\ \\\\&\\\\:bg_blue {
               background-color: blue
           }
-          .\\\\&\\\\ \\\\.my-class\\\\:color-red .my-class {
+          .\\\\&\\\\ \\\\.my-class\\\\:text_red .my-class {
               color: red
           }
-          :focus > .\\\\:focus\\\\ \\\\>\\\\ \\\\&\\\\:color-white {
+          :focus > .\\\\:focus\\\\ \\\\>\\\\ \\\\&\\\\:text_white {
               color: white
           }
           @media (min-width: 768px) {
-              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:backgroundColor-green {
+              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:bg_green {
                   background-color: green
               }
           }
           @media (min-width: 768px) {
-              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:fontSize-\\\\$small {
+              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:fs_\\\\$small {
                   font-size: $small
               }
           }
           @media (min-width: 768px) {
-              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:\\\\&\\\\:hover\\\\:backgroundColor-yellow:hover {
+              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:\\\\&\\\\:hover\\\\:bg_yellow:hover {
                   background-color: yellow
               }
           }
-          .\\\\&\\\\ span\\\\:color-red span {
+          .\\\\&\\\\ span\\\\:text_red span {
               color: red
           }
       }"
