@@ -1,9 +1,16 @@
 import { Collector, createParser, createProject } from '@css-panda/ast'
 import type { LoadConfigResult } from '@css-panda/config'
-import { Conditions, discardDuplicate, Stylesheet, StylesheetContext, Utility } from '@css-panda/core'
+import {
+  assignCompositions,
+  Conditions,
+  discardDuplicate,
+  Stylesheet,
+  StylesheetContext,
+  Utility,
+} from '@css-panda/core'
 import { NotFoundError } from '@css-panda/error'
 import { logger } from '@css-panda/logger'
-import { capitalize, mapObject, uncapitalize } from '@css-panda/shared'
+import { capitalize, compact, mapObject, uncapitalize } from '@css-panda/shared'
 import { TokenDictionary } from '@css-panda/token-dictionary'
 import type { RecipeConfig } from '@css-panda/types'
 import glob from 'fast-glob'
@@ -83,16 +90,20 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   const utility = new Utility({
     tokens: tokens,
     config: utilities,
-    compositions: {
-      textStyle: textStyles,
-      layerStyle: layerStyles,
-    },
   })
 
   const conditions = new Conditions({
     conditions: _conditions,
     breakpoints,
   })
+
+  assignCompositions(
+    { conditions, utility },
+    compact({
+      textStyle: textStyles,
+      layerStyle: layerStyles,
+    }),
+  )
 
   const context = (): StylesheetContext => ({
     root: postcss.root(),

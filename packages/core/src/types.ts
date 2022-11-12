@@ -4,6 +4,7 @@ import type { Conditions } from './conditions'
 import type { Utility } from './utility'
 
 export type TransformResult = {
+  layer?: string
   className: string
   styles: Dict
 }
