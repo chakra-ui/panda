@@ -10,15 +10,17 @@ export type MappedObject<T, K> = {
     : K
 }
 
-type Options = {
-  stop?(value: any, path: string[]): boolean
+export type WalkObjectStopFn = (value: any, path: string[]) => boolean
+
+export type WalkObjectOptions = {
+  stop?: WalkObjectStopFn
   getKey?(prop: string): string
 }
 
 export function walkObject<T, K>(
   target: T,
   predicate: Predicate<K>,
-  options: Options = {},
+  options: WalkObjectOptions = {},
 ): MappedObject<T, ReturnType<Predicate<K>>> {
   const { stop, getKey } = options
 
