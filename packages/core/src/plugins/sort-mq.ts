@@ -1,42 +1,46 @@
-import { AtRule, Container, Root, TransformCallback } from 'postcss'
+import { AtRule, Container, TransformCallback } from 'postcss'
 import sortBy from 'sort-css-media-queries'
 
 // sort media queries within at-rule directives or at the root
 export default function sortMediaQueries(): TransformCallback {
-  return (root) => {
-    // create array of [rulesWithoutLayer, rulesWithLayer]
-    const rules = root.nodes.reduce(
-      (acc, node) => {
-        if (node.type === 'atrule' && node.name === 'layer') {
-          acc[1].push(node)
-        } else {
-          acc[0].push(node as any)
-        }
-        return acc
-      },
-      [[], []] as [Container[], AtRule[]],
-    )
+  const inner = (root: Container) => {
+    const rules = {
+      unlayered: [] as Container[],
+      layered: [] as AtRule[],
+    }
 
-    // sort media queries within each array
-    const [rulesWithoutLayer, rulesWithLayer] = rules
+    for (const node of root.nodes) {
+      const key = node.type === 'atrule' && node.name === 'layer' ? 'layered' : 'unlayered'
+      rules[key].push(node as any)
+    }
+
     // create root for rules without layer
-    const rootWithoutLayer = new Root({ nodes: rulesWithoutLayer })
-    sortMediaQuery(rootWithoutLayer)
+    const unlayeredRoot = root.clone().removeAll()
+    unlayeredRoot.append(...rules.unlayered)
+    sortMediaQuery(unlayeredRoot)
 
-    const roots: any[] = []
+    const layeredRoot = root.clone().removeAll()
 
-    rulesWithLayer.forEach((rule) => {
-      const newRule = rule.clone()
-      roots.push(newRule)
-      sortMediaQuery(newRule)
-    })
+    for (const rule of rules.layered) {
+      layeredRoot.append(...inner(rule))
+    }
+
+    // merge unlayered and layered roots
+    if (layeredRoot.nodes.length) {
+      unlayeredRoot.append(...layeredRoot.nodes)
+    }
 
     // replace root nodes with sorted nodes
-    root.nodes = [...rootWithoutLayer.nodes, ...roots]
+    return [unlayeredRoot]
+  }
+
+  return (root: Container) => {
+    // @ts-expect-error
+    root.nodes = inner(root)
   }
 }
 
-const sortMediaQuery = (container: Container) => {
+const sortMediaQuery = (container: Container | AtRule) => {
   const atRules: AtRule[] = []
 
   container.walkAtRules('media', (atRule) => {

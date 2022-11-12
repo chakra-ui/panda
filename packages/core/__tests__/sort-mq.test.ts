@@ -135,3 +135,77 @@ test('should sort within @layer', () => {
       "
   `)
 })
+
+test.only('should sort within nested @layer', () => {
+  const result = run(css`
+    .py-2 {
+      padding-top: 0.5rem;
+    }
+
+    @layer recipes {
+      .Button {
+        font-size: 1rem;
+      }
+
+      @layer compositions {
+        @media (min-width: 640px) {
+          .Button {
+            font-size: 1.25rem;
+          }
+        }
+
+        @media (min-width: 200px) {
+          .Button {
+            font-size: 1.25rem;
+          }
+        }
+
+        .Button {
+          font-size: 1.2rem;
+        }
+      }
+    }
+
+    .bg-red-500 {
+      background-color: red;
+    }
+  `)
+
+  expect(result.css).toMatchInlineSnapshot(`
+    "
+        .py-2 {
+          padding-top: 0.5rem;
+        }
+
+        .bg-red-500 {
+          background-color: red;
+        }
+
+        @layer recipes {
+          .Button {
+            font-size: 1rem;
+          }
+
+          @layer compositions {
+
+            .Button {
+              font-size: 1.2rem;
+            }
+
+            @media (min-width: 200px) {
+              .Button {
+                font-size: 1.25rem;
+              }
+                }
+
+            @media (min-width: 640px) {
+              .Button {
+                font-size: 1.25rem;
+              }
+                }
+          }
+        }
+      
+      "
+  `)
+})
