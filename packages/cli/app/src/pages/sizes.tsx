@@ -1,3 +1,5 @@
+import { TokenDictionary } from '@css-panda/token-dictionary'
+import { config } from 'virtual:panda'
 import { remToPixels } from '../utils/rem-to-pixels'
 import { getSortedSizes } from '../utils/sizes-sort'
 
@@ -8,9 +10,10 @@ export const renderPixels = (size: string) => {
   else return remToPixels(size)
 }
 
-export function Sizes(props: SizesProps) {
-  const { sizes: sizesProp } = props
-  const values = Array.from(sizesProp.values())
+export default function Page() {
+  const tokenDictionary = new TokenDictionary(config)
+  const tokens = Object.fromEntries(tokenDictionary.categoryMap)
+  const values = Array.from(tokens.sizes.values())
 
   const sizes = getSortedSizes(values)
 
