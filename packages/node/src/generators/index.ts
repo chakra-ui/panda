@@ -7,7 +7,6 @@ import { generateConditions } from './conditions'
 import { generateCssFn } from './css-fn'
 import { generateCssMap } from './css-map'
 import { generateCx } from './cx'
-import { generateFontFace } from './font-face'
 import { getEntrypoint } from './get-entrypoint'
 import { generateGlobalCss } from './global-css'
 import { generateisValidProp } from './is-valid-prop'
@@ -16,7 +15,6 @@ import { generatePattern } from './pattern'
 import { generatePropTypes } from './prop-types'
 import { generateRecipes } from './recipe'
 import { generateReset } from './reset'
-import { generateSx } from './sx'
 import { generateKeyframes, generateTokenCss } from './token-css'
 import { generateTokenDts } from './token-dts'
 import { generateTokenJs } from './token-js'
@@ -115,28 +113,6 @@ function setupCx(ctx: PandaContext): Output {
     files: [
       { file: 'cx.js', code: code.js },
       { file: 'cx.d.ts', code: code.dts },
-    ],
-  }
-}
-
-function setupSx(ctx: PandaContext): Output {
-  const code = generateSx()
-  return {
-    dir: ctx.paths.css,
-    files: [
-      { file: 'sx.js', code: code.js },
-      { file: 'sx.d.ts', code: code.dts },
-    ],
-  }
-}
-
-function setupFontFace(ctx: PandaContext): Output {
-  const code = generateFontFace()
-  return {
-    dir: ctx.paths.css,
-    files: [
-      { file: 'font-face.js', code: code.js },
-      { file: 'font-face.d.ts', code: code.dts },
     ],
   }
 }
@@ -258,9 +234,7 @@ export function generateSystem(ctx: PandaContext): Output[] {
     setupTypes(ctx),
     setupCssMap(ctx),
     setupCx(ctx),
-    setupSx(ctx),
     setupCss(ctx),
-    setupFontFace(ctx),
     setupGlobalCss(ctx),
     setupRecipes(ctx),
     setupPatterns(ctx),
