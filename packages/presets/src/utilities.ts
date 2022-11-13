@@ -54,6 +54,34 @@ const layout: UtilityConfig = {
     className: 'l',
     values: 'spacing',
   },
+  insetInline: {
+    className: 'inset-x',
+    values: 'spacing',
+  },
+  insetBlock: {
+    className: 'inset-y',
+    values: 'spacing',
+  },
+  inset: {
+    className: 'inset',
+    values: 'spacing',
+  },
+  insetBlockEnd: {
+    className: 'inset-b',
+    values: 'spacing',
+  },
+  insetBlockStart: {
+    className: 'inset-t',
+    values: 'spacing',
+  },
+  insetInlineEnd: {
+    className: 'inset-r',
+    values: 'spacing',
+  },
+  insetInlineStart: {
+    className: 'inset-l',
+    values: 'spacing',
+  },
   start: {
     className: 's',
     values: 'spacing',
@@ -158,6 +186,30 @@ const spacing: UtilityConfig = {
     shorthand: 'pb',
     values: 'spacing',
   },
+  paddingBlock: {
+    className: 'py',
+    values: 'spacing',
+  },
+  paddingBlockEnd: {
+    className: 'pb',
+    values: 'spacing',
+  },
+  paddingBlockStart: {
+    className: 'pt',
+    values: 'spacing',
+  },
+  paddingInline: {
+    className: 'px',
+    values: 'spacing',
+  },
+  paddingInlineEnd: {
+    className: 'pr',
+    values: 'spacing',
+  },
+  paddingInlineStart: {
+    className: 'pl',
+    values: 'spacing',
+  },
   paddingX: {
     className: 'px',
     shorthand: 'px',
@@ -227,6 +279,30 @@ const spacing: UtilityConfig = {
         marginBlock: value,
       }
     },
+  },
+  marginBlock: {
+    className: 'my',
+    values: 'spacing',
+  },
+  marginBlockEnd: {
+    className: 'mb',
+    values: 'spacing',
+  },
+  marginBlockStart: {
+    className: 'mt',
+    values: 'spacing',
+  },
+  marginInline: {
+    className: 'mx',
+    values: 'spacing',
+  },
+  marginInlineEnd: {
+    className: 'mr',
+    values: 'spacing',
+  },
+  marginInlineStart: {
+    className: 'ml',
+    values: 'spacing',
   },
 
   spaceX: {
@@ -562,6 +638,11 @@ const typography: UtilityConfig = {
   },
   textDecorationColor: {
     className: 'decoration',
+    values: 'colors',
+  },
+  textEmphasisColor: {
+    className: 'emphasis',
+    values: 'colors',
   },
   textDecorationStyle: {
     className: 'decoration',
@@ -1399,8 +1480,56 @@ const interactivity: UtilityConfig = {
     className: 'scroll-mb',
     values: 'spacing',
   },
+  scrollMarginBlock: {
+    className: 'scroll-my',
+    values: 'spacing',
+  },
+  scrollMarginBlockEnd: {
+    className: 'scroll-mb',
+    values: 'spacing',
+  },
+  scrollMarginBlockStart: {
+    className: 'scroll-mt',
+    values: 'spacing',
+  },
+  scrollMarginInline: {
+    className: 'scroll-mx',
+    values: 'spacing',
+  },
+  scrollMarginInlineEnd: {
+    className: 'scroll-mr',
+    values: 'spacing',
+  },
+  scrollMarginInlineStart: {
+    className: 'scroll-ml',
+    values: 'spacing',
+  },
   scrollPadding: {
     className: 'scroll-p',
+    values: 'spacing',
+  },
+  scrollPaddingBlock: {
+    className: 'scroll-pb',
+    values: 'spacing',
+  },
+  scrollPaddingBlockStart: {
+    className: 'scroll-pt',
+    values: 'spacing',
+  },
+  scrollPaddingBlockEnd: {
+    className: 'scroll-pb',
+    values: 'spacing',
+  },
+  scrollPaddingInline: {
+    className: 'scroll-px',
+    values: 'spacing',
+  },
+  scrollPaddingInlineEnd: {
+    className: 'scroll-pr',
+    values: 'spacing',
+  },
+  scrollPaddingInlineStart: {
+    className: 'scroll-pl',
     values: 'spacing',
   },
   scrollPaddingX: {
@@ -1462,6 +1591,26 @@ const interactivity: UtilityConfig = {
         '--scroll-snap-strictness': value,
       }
     },
+  },
+  scrollSnapMargin: {
+    className: 'snap-m',
+    values: 'spacing',
+  },
+  scrollSnapMarginTop: {
+    className: 'snap-mt',
+    values: 'spacing',
+  },
+  scrollSnapMarginBottom: {
+    className: 'snap-mb',
+    values: 'spacing',
+  },
+  scrollSnapMarginLeft: {
+    className: 'snap-ml',
+    values: 'spacing',
+  },
+  scrollSnapMarginRight: {
+    className: 'snap-mr',
+    values: 'spacing',
   },
   touchAction: {
     className: 'touch',
