@@ -4,6 +4,8 @@ import { compact } from '@css-panda/shared'
 import { cac } from 'cac'
 import { readFileSync } from 'fs'
 import path, { join } from 'path'
+import updateNotifier from 'update-notifier'
+import packageJson from '../package.json' assert { type: 'json' }
 import { viteBuild } from './vite-build'
 import { viteBundler } from './vite-dev'
 import { vitePreview } from './vite-preview'
@@ -106,4 +108,6 @@ export async function main() {
 
   cli.parse(process.argv, { run: false })
   await cli.runMatchedCommand()
+
+  updateNotifier({ pkg: packageJson, distTag: 'dev' }).notify()
 }
