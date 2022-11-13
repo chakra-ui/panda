@@ -1,4 +1,5 @@
 export { Breakpoints } from './breakpoints'
+export { assignCompositions } from './compositions'
 export { Conditions } from './conditions'
 export { toKeyframeCss } from './keyframes'
 export { discardDuplicate, optimizeCss } from './optimize'

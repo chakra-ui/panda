@@ -34,40 +34,42 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "@layer base {
-        .btn {
-          width: 40px;
-        }
-
-        .btn:hover > * ~ * {
-          border-left-width: 40px;
-          border-right-width: 0px;
-        }
-
-        .btn:hover > span {
-          color: pink;
-        }
-
-        .btn:focus {
-          color: var(--colors-red-200);
-        }
-
-        .btn:focus:hover {
-          background-color: var(--colors-red-400);
-        }
-
-        @media screen and (min-width: 30em) {
+      "
+        @layer base {
           .btn {
-            font-size: 12px;
+            width: 40px;
+          }
+
+          .btn:hover > * ~ * {
+            border-left-width: 40px;
+            border-right-width: 0px;
+          }
+
+          .btn:hover > span {
+            color: pink;
+          }
+
+          .btn:focus {
+            color: var(--colors-red-200);
+          }
+
+          .btn:focus:hover {
+            background-color: var(--colors-red-400);
+          }
+
+          @media screen and (min-width: 30em) {
+            .btn {
+              font-size: 12px;
+            }
+          }
+
+          @media screen and (min-width: 62em) {
+            .btn {
+              width: 90px;
+            }
           }
         }
-
-        @media screen and (min-width: 62em) {
-          .btn {
-            width: 90px;
-          }
-        }
-      }"
+      "
     `)
   })
 
@@ -103,41 +105,43 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "@layer base {
-        html {
-          scroll-padding-top: 80px;
-        }
+      "
+        @layer base {
+          html {
+            scroll-padding-top: 80px;
+          }
 
-        html.dragging-ew {
-          user-select: none !important;
-        }
+          html.dragging-ew {
+            user-select: none !important;
+          }
 
-        html.dragging-ew * {
-          cursor: ew-resize !important;
-        }
+          html.dragging-ew * {
+            cursor: ew-resize !important;
+          }
 
-        html.dragging-ew:hover {
-          color: red;
-        }
+          html.dragging-ew:hover {
+            color: red;
+          }
 
-        .content-dark::-webkit-scrollbar-thumb {
-          background-color: var(--colors-bg, #000) !important;
-          border-color: var(--colors-fg, #333) !important;
-          border-radius: 9px;
-          border: 2px solid;
-        }
+          .content-dark::-webkit-scrollbar-thumb {
+            background-color: var(--colors-bg, #000) !important;
+            border-color: var(--colors-fg, #333) !important;
+            border-radius: 9px;
+            border: 2px solid;
+          }
 
-        #corner {
-          position: fixed;
-          right: 0;
-          bottom: 0;
-          cursor: nwse-resize;
-        }
+          #corner {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            cursor: nwse-resize;
+          }
 
-        .color-picker .react-colorful {
-          width: 100%;
+          .color-picker .react-colorful {
+            width: 100%;
+          }
         }
-      }"
+      "
     `)
   })
 
@@ -149,11 +153,13 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "@layer base {
-        x-element {
-          tab-size: none
+      "
+        @layer base {
+          x-element {
+            tab-size: none
+          }
         }
-      }"
+      "
     `)
   })
 
@@ -167,11 +173,13 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "@layer base {
-        body > a:not(:hover) {
-          text-decoration: none
+      "
+        @layer base {
+          body > a:not(:hover) {
+            text-decoration: none
+          }
         }
-      }"
+      "
     `)
   })
 
@@ -186,15 +194,17 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "@layer base {
-        p {
-          margin: 0;
-        }
+      "
+        @layer base {
+          p {
+            margin: 0;
+          }
 
-        p ~ p {
-          margin-top: 0;
+          p ~ p {
+            margin-top: 0;
+          }
         }
-      }"
+      "
     `)
   })
 
@@ -209,15 +219,17 @@ describe('Global styles', () => {
     })
 
     expect(sheet).toMatchInlineSnapshot(`
-      "@layer base {
-        body > p, body > ul {
-          margin: 0;
-        }
+      "
+        @layer base {
+          body > p, body > ul {
+            margin: 0;
+          }
 
-        body > p ~ body > p, body > ul ~ body > ul {
-          margin-top: 10px;
+          body > p ~ body > p, body > ul ~ body > ul {
+            margin-top: 10px;
+          }
         }
-      }"
+      "
     `)
   })
 })

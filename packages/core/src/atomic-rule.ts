@@ -85,19 +85,26 @@ export class AtomicRule {
       rule.applyConditions(conditions)
 
       // append the rule to the root
-      this.root.append(rule.rule!)
+      if (transformed.layer) {
+        // if layer is specified, create a new root with the layer name
+        const atRule = postcss.atRule({
+          name: 'layer',
+          params: transformed.layer,
+          nodes: [rule.rule!],
+        })
+        this.root.append(atRule)
+        //
+      } else {
+        this.root.append(rule.rule!)
+      }
     })
 
-    this.context.root.append(this.addToLayer())
-  }
-
-  addToLayer = () => {
-    // wrap this.root in an @layer rule
-    return postcss.atRule({
+    const atRule = postcss.atRule({
       name: 'layer',
       params: this.layer,
       nodes: [this.root],
     })
+    this.context.root.append(atRule)
   }
 
   toCss = () => {

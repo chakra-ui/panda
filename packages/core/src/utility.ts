@@ -1,31 +1,10 @@
-import {
-  isFunction,
-  isImportant,
-  isObject,
-  isString,
-  walkObject,
-  withoutImportant,
-  withoutSpace,
-} from '@css-panda/shared'
+import { compact, isFunction, isString, withoutSpace } from '@css-panda/shared'
 import type { TokenDictionary } from '@css-panda/token-dictionary'
-import type {
-  AnyFunction,
-  Dict,
-  LayerStyles,
-  PropertyConfig,
-  PropertyTransform,
-  TextStyles,
-  UtilityConfig,
-} from '@css-panda/types'
-import merge from 'lodash.merge'
-import { cssToJs, toCss } from './to-css'
+import type { AnyFunction, Dict, PropertyConfig, PropertyTransform, UtilityConfig } from '@css-panda/types'
+import type { TransformResult } from './types'
 
-type Options = {
+export type UtilityOptions = {
   config?: UtilityConfig
-  compositions?: {
-    textStyle?: TextStyles
-    layerStyle?: LayerStyles
-  }
   tokens: TokenDictionary
 }
 
@@ -72,19 +51,24 @@ export class Utility {
   /**
    * The map of property names to their config
    */
-  private configs: Map<string, PropertyConfig & { category: string | undefined }> = new Map()
+  private configs: Map<string, PropertyConfig> = new Map()
 
-  constructor(private options: Options) {
+  constructor(options: UtilityOptions) {
     const { tokens, config = {} } = options
-    this.tokens = tokens
 
+    this.tokens = tokens
     this.config = config
+
     this.assignShorthands()
-    this.assignCompositions()
     this.assignPaletteProperty()
 
     this.assignProperties()
-    this.assignTypes()
+    this.assignPropertyTypes()
+  }
+
+  register(property: string, config: PropertyConfig) {
+    this.assignProperty(property, config)
+    this.assignPropertyType(property, config)
   }
 
   private assignShorthands() {
@@ -124,28 +108,6 @@ export class Utility {
       .map(([key, value]) => [key, value!.className])
 
     return value as [string, string][]
-  }
-
-  private assignCompositions() {
-    const compositions = this.options.compositions ?? {}
-
-    for (const [key, values] of Object.entries(compositions)) {
-      if (!values || this.config[key]) continue
-
-      const flattened = flattenComposition(values)
-
-      const config: PropertyConfig = {
-        className: key,
-        values: Object.keys(flattened),
-        transform: (value) => {
-          return getCompositionStyles(flattened[value], (prop, value) => {
-            return this.resolve(prop, value)
-          })
-        },
-      }
-
-      Object.assign(this.config, { [key]: config })
-    }
   }
 
   private getPropKey(prop: string, value: string) {
@@ -191,52 +153,56 @@ export class Utility {
     return value
   }
 
-  private assignProperties() {
-    for (const [property, propertyConfig] of Object.entries(this.config)) {
-      const config = this.normalize(propertyConfig)
+  private assignProperty(property: string, propertyConfig: PropertyConfig) {
+    const config = this.normalize(propertyConfig)
+    this.setTransform(property, config?.transform)
 
-      this.setTransform(property, config?.transform)
+    if (!config) return
 
-      if (!config) continue
+    this.configs.set(property, config)
+    const values = this.getPropertyValues(config)
 
-      const category = typeof config.values === 'string' ? config.values : undefined
-      this.configs.set(property, { ...config, category })
+    if (!values) return
 
-      const values = this.getPropertyValues(config)
-
-      if (!values) continue
-
-      for (const [alias, raw] of Object.entries(values)) {
-        const propKey = this.getPropKey(property, alias)
-        this.setStyles(property, raw, propKey)
-        this.setClassName(property, alias)
-      }
+    for (const [alias, raw] of Object.entries(values)) {
+      const propKey = this.getPropKey(property, alias)
+      this.setStyles(property, raw, propKey)
+      this.setClassName(property, alias)
     }
   }
 
-  private assignTypes() {
+  private assignProperties() {
     for (const [property, propertyConfig] of Object.entries(this.config)) {
-      const config = this.normalize(propertyConfig)
+      this.assignProperty(property, propertyConfig)
+    }
+  }
 
-      if (!config) continue
+  private assignPropertyType(property: string, propertyConfig: PropertyConfig) {
+    const config = this.normalize(propertyConfig)
 
-      const values = this.getPropertyValues(config)
+    if (!config) return
 
-      if (typeof values === 'object' && values.type) {
-        this.types.set(property, new Set([`type:${values.type}`]))
-        continue
-      }
+    const values = this.getPropertyValues(config)
 
-      if (values) {
-        this.types.set(property, new Set(Object.keys(values)))
-      }
+    if (typeof values === 'object' && values.type) {
+      this.types.set(property, new Set([`type:${values.type}`]))
+      return
+    }
 
-      const set = this.types.get(property) ?? new Set()
+    if (values) {
+      this.types.set(property, new Set(Object.keys(values)))
+    }
 
-      if (config.property) {
-        this.types.set(property, set.add(`CSSProperties["${config.property}"]`))
-        continue
-      }
+    const set = this.types.get(property) ?? new Set()
+
+    if (config.property) {
+      this.types.set(property, set.add(`CSSProperties["${config.property}"]`))
+    }
+  }
+
+  private assignPropertyTypes() {
+    for (const [property, propertyConfig] of Object.entries(this.config)) {
+      this.assignPropertyType(property, propertyConfig)
     }
   }
 
@@ -253,14 +219,13 @@ export class Utility {
         continue
       }
 
-      map.set(
-        prop,
-        Array.from(tokens).map((key) => {
-          if (key.startsWith('CSSProperties')) return key
-          if (key.startsWith('type:')) return key.replace('type:', '')
-          return JSON.stringify(key)
-        }),
-      )
+      const typeValues = Array.from(tokens).map((key) => {
+        if (key.startsWith('CSSProperties')) return key
+        if (key.startsWith('type:')) return key.replace('type:', '')
+        return JSON.stringify(key)
+      })
+
+      map.set(prop, typeValues)
     }
 
     return map
@@ -314,6 +279,9 @@ export class Utility {
     return this
   }
 
+  /**
+   * Whether a given property exists in the config
+   */
   private isProperty(prop: string) {
     return this.configs.has(prop)
   }
@@ -344,66 +312,32 @@ export class Utility {
    * Get or create the resolved styles for a given property and value
    */
   private getOrCreateStyle(prop: string, value: string) {
-    const inner = (prop: string, value: string) => {
-      const propKey = this.getPropKey(prop, value)
-      this.styles.get(propKey) ?? this.setStyles(prop, value, propKey)
-      return this.styles.get(propKey)!
-    }
-
-    return inner(prop, value)
+    const propKey = this.getPropKey(prop, value)
+    this.styles.get(propKey) ?? this.setStyles(prop, value, propKey)
+    return this.styles.get(propKey)!
   }
 
   /**
    * Returns the resolved className and styles for a given property and value
    */
-  resolve(prop: string, value: string | undefined) {
+  resolve(prop: string, value: string | undefined): TransformResult {
     if (value == null) {
       return { className: '', styles: {} }
     }
     const key = this.resolveShorthand(prop)
-    return {
+    return compact({
+      layer: this.configs.get(key)?.layer,
       className: this.getOrCreateClassName(key, withoutSpace(value)),
       styles: this.getOrCreateStyle(key, value),
-    }
+    })
   }
 
+  /**
+   * All keys including shorthand keys
+   */
   keys() {
     const shorthands = Array.from(this.shorthands.keys())
     const properties = Object.keys(this.config)
     return [...shorthands, ...properties]
   }
-}
-
-function flattenComposition(values: TextStyles | LayerStyles) {
-  const result: Dict = {}
-
-  walkObject(
-    values,
-    (token, paths) => {
-      result[paths.join('.')] = token.value
-    },
-    {
-      stop(v) {
-        return isObject(v) && 'value' in v
-      },
-    },
-  )
-
-  return result
-}
-
-function getCompositionStyles(styles: Dict, fn: AnyFunction) {
-  const result: Dict = {}
-
-  walkObject(styles, (value, paths) => {
-    const [prop] = paths
-
-    let { styles } = fn(prop, withoutImportant(value))
-    const cssRoot = toCss(styles, { important: isImportant(value) })
-
-    styles = cssToJs(cssRoot.root.toString())
-    merge(result, styles)
-  })
-
-  return result
 }

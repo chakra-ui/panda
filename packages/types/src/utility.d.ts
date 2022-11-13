@@ -20,6 +20,11 @@ export type PropertyTransform<T = CssObject> = (value: any, token: Getter) => T
 
 export type PropertyConfig = {
   /**
+   * @internal
+   * The cascade layer to which the property  belongs
+   */
+  layer?: string
+  /**
    * The classname this property will generate.
    */
   className?: string

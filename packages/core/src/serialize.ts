@@ -5,13 +5,12 @@ import type { Conditions } from './conditions'
 import { cssToJs, toCss } from './to-css'
 import type { Utility } from './utility'
 
-export function serializeStyle(
-  styleObj: Dict,
-  context: {
-    conditions: Conditions
-    utility: Utility
-  },
-) {
+export type SerializeContext = {
+  conditions: Conditions
+  utility: Utility
+}
+
+export function serializeStyle(styleObj: Dict, context: SerializeContext) {
   const { utility, conditions } = context
   const rule = conditions.rule()
 

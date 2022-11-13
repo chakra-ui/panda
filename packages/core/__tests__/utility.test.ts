@@ -584,45 +584,4 @@ describe('Utility', () => {
       }
     `)
   })
-
-  test('should resolve compositions', () => {
-    const utility = new Utility({
-      tokens: new TokenDictionary({ tokens, semanticTokens }),
-      config: {
-        fontSize: {
-          values: 'fontSizes',
-          className: 'fs',
-        },
-      },
-      compositions: {
-        textStyle: {
-          h1: {
-            value: {
-              fontSize: 'md',
-              fontWeight: 'bold',
-              lineHeight: 'tight',
-            },
-          },
-          h2: {
-            value: {
-              fontSize: 'sm',
-              fontWeight: 'semibold',
-              lineHeight: 'tight',
-            },
-          },
-        },
-      },
-    })
-
-    expect(utility.resolve('textStyle', 'h1')).toMatchInlineSnapshot(`
-      {
-        "className": "textStyle_h1",
-        "styles": {
-          "fontSize": "var(--font-sizes-md)",
-          "fontWeight": "bold",
-          "lineHeight": "tight",
-        },
-      }
-    `)
-  })
 })

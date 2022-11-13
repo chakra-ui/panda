@@ -1,5 +1,4 @@
 import * as mocks from '@css-panda/fixture'
-import { withoutSpace } from '@css-panda/shared'
 import { TokenDictionary } from '@css-panda/token-dictionary'
 import postcss from 'postcss'
 import { Conditions, Utility } from '../src'
@@ -24,14 +23,16 @@ const tokens = new TokenDictionary({
   semanticTokens: mocks.semanticTokens,
 })
 
+const utility = new Utility({
+  config: mocks.utilities,
+  tokens,
+})
+
 export const createContext = (): StylesheetContext => ({
   root: postcss.root(),
   conditions: conditions,
   breakpoints: mocks.breakpoints,
-  utility: new Utility({
-    config: mocks.utilities,
-    tokens,
-  }),
+  utility: utility,
   helpers: {
     map: () => '',
   },
@@ -40,11 +41,7 @@ export const createContext = (): StylesheetContext => ({
     return propMap[prop] || prop
   },
   transform: (prop, value) => {
-    const key = propMap[prop] ?? prop
-    return {
-      className: `${key}-${withoutSpace(value)}`,
-      styles: { [prop]: value },
-    }
+    return utility.resolve(prop, value)
   },
 })
 
@@ -57,4 +54,23 @@ export function processRecipe(key: 'buttonStyle' | 'textStyle', value: Record<st
   const recipe = new Recipe(mocks.recipes[key], createContext())
   recipe.process({ styles: value })
   return recipe.toCss()
+}
+
+export const compositions = {
+  textStyle: {
+    headline: {
+      h1: {
+        value: {
+          fontSize: '2rem',
+          fontWeight: 'bold',
+        },
+      },
+      h2: {
+        value: {
+          fontSize: { base: '1.5rem', lg: '2rem' },
+          fontWeight: 'bold',
+        },
+      },
+    },
+  },
 }
