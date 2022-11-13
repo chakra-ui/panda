@@ -43,7 +43,7 @@ type TextStyleProperty =
 type TCondition = Record<string, string>
 
 type TextStyle<Conditions extends TCondition = TCondition> = {
-  [K in TextStyleProperty]: PandaConditionalValue<Conditions, Properties[K]>
+  [K in TextStyleProperty]?: PandaConditionalValue<Conditions, Properties[K] | (string & {})>
 }
 
 type Placement =
@@ -98,7 +98,7 @@ type LayerStyleProperty =
   | (string & {})
 
 type LayerStyle<Conditions extends TCondition = TCondition> = {
-  [K in LayerStyleProperty]: PandaConditionalValue<Conditions, Properties[K]>
+  [K in LayerStyleProperty]?: PandaConditionalValue<Conditions, Properties[K]>
 }
 
 export type TextStyles<Conditions extends TCondition = TCondition> = Nested<Composition<TextStyle<Conditions>>>
