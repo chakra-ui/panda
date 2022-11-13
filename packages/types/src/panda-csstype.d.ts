@@ -64,9 +64,7 @@ export type ConditionCssProperties<
 }
 
 type NestedCss<T> = T & {
-  [key in Pseudo]?: T | NestedCss<T>
-} & {
-  [selector: string]: NestedCss<T>
+  [key in Pseudo | Loose]?: NestedCss<T> | Loose<string> | Loose<number> | boolean
 }
 
 export type GroupedCss<T> = {
