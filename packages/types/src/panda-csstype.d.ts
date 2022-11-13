@@ -1,11 +1,10 @@
-import { PropertiesFallback, SimplePseudos } from './csstype'
+import type { PropertiesFallback, SimplePseudos } from './csstype'
 
 type Loose<T = string> = T & { __type?: never }
-// type Clean<T> = Exclude<T, { __type?: never }>
 
 type ContainerProperties = {
   container?: string
-  containerType?: 'size' | 'inline-size' | (string & {})
+  containerType?: 'size' | 'inline-size' | Loose
   containerName?: string
 }
 
@@ -16,21 +15,28 @@ export type CssProperty = keyof Properties
 type Pseudo = `&${SimplePseudos}`
 
 export type CssProperties = Properties & {
-  [key: string]: string | number | Record<string, any> | undefined
+  [property: string]: string | number | Record<string, any> | undefined
 }
 
-export type Keyframes = Record<string, { [time: string]: CssProperties }>
+export type Keyframes = {
+  [time: string]: CssProperties
+}
 
-export type PandaConditionalValue<C extends Record<string, string>, V> =
-  // NOTE: When using Clean<V>, it doesn't allow arbrtrary values. So I removed it.
-  | V
+type TCondition = Record<string, string>
+
+export type PandaConditionalValue<Condition extends TCondition, Value> =
+  | Value
   | {
-      [Key in keyof C]?: PandaConditionalValue<C, V>
+      [Key in keyof Condition]?: PandaConditionalValue<Condition, Value>
     }
 
-type Union<Key extends string, CssProperties extends Record<Key, any>, UserProperties> = UserProperties extends {
-  __type?: 'never'
-}
+type NeverType = { __type?: 'never' }
+
+type Union<
+  Key extends string,
+  CssProperties extends Record<Key, any>,
+  UserProperties,
+> = UserProperties extends NeverType
   ? CssProperties[Key] | Loose
   : Key extends keyof UserProperties
   ? CssProperties[Key] | UserProperties[Key]
@@ -43,8 +49,8 @@ type Strict<
 > = Key extends keyof UserProperties ? UserProperties[Key] : CssProperties[Key]
 
 export type ConditionCssProperties<
-  Conditions extends Record<string, string> = Record<string, string>,
-  UserProperties extends Record<string, any> = { __type?: 'never' },
+  Conditions extends TCondition = TCondition,
+  UserProperties extends Record<string, any> = NeverType,
   StrictValue extends boolean = false,
 > = {
   [Key in keyof Properties]?: PandaConditionalValue<
@@ -57,7 +63,13 @@ export type ConditionCssProperties<
   [Key in keyof Conditions]?: ConditionCssProperties<Omit<Conditions, Key>, UserProperties, StrictValue>
 }
 
-export type WithNesting<T> = T & {
+type NestedCss<T> = T & {
+  [key in Pseudo]?: T | NestedCss<T>
+} & {
+  [selector: string]: NestedCss<T>
+}
+
+export type GroupedCss<T> = {
   selectors?: {
     [key in Pseudo | Loose]?: T
   }
@@ -70,13 +82,16 @@ export type WithNesting<T> = T & {
 }
 
 export type PandaCssObject<
-  Conditions extends Record<string, string>,
-  UserProperties extends Record<string, any> = { __type?: 'never' },
+  Conditions extends TCondition,
+  UserProperties extends Record<string, any> = NeverType,
   Strict extends boolean = false,
-> = WithNesting<ConditionCssProperties<Conditions, UserProperties, Strict>>
+> = NestedCss<ConditionCssProperties<Conditions, UserProperties, Strict>> &
+  GroupedCss<ConditionCssProperties<Conditions, UserProperties, Strict>>
 
-type Nested<T> = Record<string, T | Nested<T>>
-
-export type GlobalStyles = Nested<Properties>
+export type GlobalCss<
+  Conditions extends TCondition,
+  UserProperties extends Record<string, any> = NeverType,
+  Strict extends boolean = false,
+> = Record<string, NestedCss<ConditionCssProperties<Conditions, UserProperties, Strict>>>
 
 export {}

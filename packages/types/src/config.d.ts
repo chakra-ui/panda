@@ -1,6 +1,6 @@
 import type { LayerStyles, TextStyles } from './composition'
 import type { Conditions as TConditions } from './conditions'
-import type { Keyframes, GlobalStyles } from './panda-csstype'
+import type { Keyframes, GlobalCss } from './panda-csstype'
 import type { PatternConfig } from './pattern'
 import type { RecipeConfig } from './recipe'
 import type { Dict, RequiredBy } from './shared'
@@ -91,7 +91,7 @@ export type Config<
   /**
    * The global styles for your project.
    */
-  globalCss?: GlobalStyles
+  globalCss?: GlobalCss
   /**
    * The design tokens for your project.
    */
