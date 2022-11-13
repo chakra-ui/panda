@@ -55,12 +55,15 @@ export class Utility {
 
   constructor(options: UtilityOptions) {
     const { tokens, config = {} } = options
+
     this.tokens = tokens
     this.config = config
+
     this.assignShorthands()
     this.assignPaletteProperty()
+
     this.assignProperties()
-    this.assignTypes()
+    this.assignPropertyTypes()
   }
 
   register(property: string, config: PropertyConfig) {
@@ -197,7 +200,7 @@ export class Utility {
     }
   }
 
-  private assignTypes() {
+  private assignPropertyTypes() {
     for (const [property, propertyConfig] of Object.entries(this.config)) {
       this.assignPropertyType(property, propertyConfig)
     }
