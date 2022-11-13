@@ -136,7 +136,7 @@ test('should sort within @layer', () => {
   `)
 })
 
-test.only('should sort within nested @layer', () => {
+test('should sort within nested @layer', () => {
   const result = run(css`
     .py-2 {
       padding-top: 0.5rem;
