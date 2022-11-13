@@ -53,6 +53,7 @@ test('should sort media queries', () => {
             background-color: yellow;
           }
     }
+      
       "
   `)
 })
@@ -111,9 +112,8 @@ test('should sort within @layer', () => {
             .Button {
               font-size: 1.25rem;
             }
-            }
+          }
         }
-
         @layer base {
 
           .py-2 {
@@ -124,14 +124,15 @@ test('should sort within @layer', () => {
             .py-2 {
               padding-top: 1rem;
             }
-            }
+          }
 
           @media (min-width: 1240px) {
             .py-2 {
               padding-top: 5rem;
             }
-            }
+          }
         }
+      
       "
   `)
 })
