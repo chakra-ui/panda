@@ -7,6 +7,7 @@ import {
   StringLiteral,
 } from 'ts-morph'
 import { match } from 'ts-pattern'
+import { stripQuotes } from './strip-quotes'
 
 export function isPrimitiveLiteral(node: any): node is StringLiteral | NumericLiteral | BooleanLiteral {
   return (
@@ -40,7 +41,7 @@ export function extractObjectLiteral(node: ObjectLiteralExpression) {
 
   for (const property of properties) {
     if (Node.isPropertyAssignment(property)) {
-      const key = property.getName().replace(/^'|'$/g, '')
+      const key = stripQuotes(property.getName())
       const value = property.getInitializer()
       const returnValue = extractValue(value)
       if (returnValue !== undefined) {
