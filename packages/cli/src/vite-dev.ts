@@ -1,5 +1,4 @@
 import { loadConfigFile } from '@css-panda/config'
-import { colors, logger } from '@css-panda/logger'
 import path from 'path'
 import { createServer, PluginOption } from 'vite'
 
@@ -45,13 +44,6 @@ export const pandaPreviewPlugin = (): PluginOption => {
         const module = viteServer.moduleGraph.getModuleById(resolvedVirtualModuleId)
         if (module) {
           await viteServer.reloadModule(module)
-          logger.log(
-            colors.dim(
-              `🐼 ${colors.reset(colors.blue(colors.bold('[panda]')))} ${colors.green('config update')} ${colors.grey(
-                config.path,
-              )}`,
-            ),
-          )
         }
       })
     },
