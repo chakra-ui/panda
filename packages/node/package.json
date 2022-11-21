@@ -42,7 +42,7 @@
     "pkg-types": "1.0.1",
     "pluralize": "8.0.0",
     "telejson": "6.0.8",
-    "ts-pattern": "4.0.5",
+    "ts-pattern": "4.0.6",
     "ts-morph": "16.0.0"
   },
   "devDependencies": {

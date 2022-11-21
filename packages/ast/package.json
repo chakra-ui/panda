@@ -20,7 +20,7 @@
     "@css-panda/shared": "workspace:*",
     "@css-panda/is-valid-prop": "workspace:*",
     "@css-panda/types": "workspace:*",
-    "ts-pattern": "4.0.5",
+    "ts-pattern": "4.0.6",
     "ts-morph": "16.0.0"
   },
   "devDependencies": {
