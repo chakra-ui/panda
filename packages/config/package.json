@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/config",
+  "name": "@pandacss/config",
   "version": "0.0.1",
   "description": "Find and load panda config",
   "main": "dist/index.js",
@@ -19,9 +19,9 @@
     "dist"
   ],
   "dependencies": {
-    "@css-panda/logger": "workspace:*",
-    "@css-panda/error": "workspace:*",
-    "@css-panda/types": "workspace:*",
+    "@pandacss/logger": "workspace:*",
+    "@pandacss/error": "workspace:*",
+    "@pandacss/types": "workspace:*",
     "merge-anything": "^5.0.4",
     "esbuild": "0.15.15",
     "escalade": "3.1.1",

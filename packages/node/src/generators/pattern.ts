@@ -1,5 +1,5 @@
-import { capitalize, dashCase, unionType } from '@css-panda/shared'
-import type { PatternConfig } from '@css-panda/types'
+import { capitalize, dashCase, unionType } from '@pandacss/shared'
+import type { PatternConfig } from '@pandacss/types'
 import { outdent } from 'outdent'
 import { stringify } from 'telejson'
 import { match } from 'ts-pattern'

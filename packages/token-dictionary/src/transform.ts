@@ -1,4 +1,4 @@
-import { cssVar, isString } from '@css-panda/shared'
+import { cssVar, isString } from '@pandacss/shared'
 import { isMatching, P } from 'ts-pattern'
 import type { TokenTransformer } from './dictionary'
 import type { Token } from './token'

@@ -1,4 +1,4 @@
-import { calc, cssVar } from '@css-panda/shared'
+import { calc, cssVar } from '@pandacss/shared'
 import type { TokenDictionary, TokenMiddleware } from './dictionary'
 import { Token } from './token'
 

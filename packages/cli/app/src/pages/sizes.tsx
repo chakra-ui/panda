@@ -1,4 +1,4 @@
-import { TokenDictionary } from '@css-panda/token-dictionary'
+import { TokenDictionary } from '@pandacss/token-dictionary'
 import { config } from 'virtual:panda'
 import { remToPixels } from '../utils/rem-to-pixels'
 import { getSortedSizes } from '../utils/sizes-sort'

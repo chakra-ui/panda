@@ -1,5 +1,5 @@
-import { semanticTokens, tokens } from '@css-panda/fixture'
-import { TokenDictionary } from '@css-panda/token-dictionary'
+import { semanticTokens, tokens } from '@pandacss/fixture'
+import { TokenDictionary } from '@pandacss/token-dictionary'
 import { describe, expect, test } from 'vitest'
 import { Utility } from '../src/utility'
 

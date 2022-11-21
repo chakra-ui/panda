@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { TokenDictionary } from '@css-panda/token-dictionary'
+import { TokenDictionary } from '@pandacss/token-dictionary'
 import { config as configP } from 'virtual:panda'
 
 export default function TypographyPlayground() {

@@ -1,4 +1,4 @@
-import { isString, memo, walkObject } from '@css-panda/shared'
+import { isString, memo, walkObject } from '@pandacss/shared'
 import { isMatching, match } from 'ts-pattern'
 import { Token } from './token'
 import type { SemanticTokens, Tokens } from './token.types'

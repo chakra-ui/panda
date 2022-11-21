@@ -1,4 +1,4 @@
-import type { Config } from '@css-panda/types'
+import type { Config } from '@pandacss/types'
 import { breakpoints } from './breakpoints'
 import { conditions } from './conditions'
 import { utilities } from './utility'

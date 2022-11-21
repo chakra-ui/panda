@@ -1,4 +1,4 @@
-import { isCssProperty } from '@css-panda/is-valid-prop'
+import { isCssProperty } from '@pandacss/is-valid-prop'
 import { ScriptKind } from 'ts-morph'
 import { createParser, createProject } from '../src'
 import { getImportDeclarations } from '../src/import'

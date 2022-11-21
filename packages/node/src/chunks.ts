@@ -1,5 +1,5 @@
-import { Stylesheet } from '@css-panda/core'
-import { logger } from '@css-panda/logger'
+import { Stylesheet } from '@pandacss/core'
+import { logger } from '@pandacss/logger'
 import type { PandaContext } from './context'
 import { extractFile } from './extract'
 

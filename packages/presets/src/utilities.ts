@@ -1,4 +1,4 @@
-import type { UtilityConfig } from '@css-panda/types'
+import type { UtilityConfig } from '@pandacss/types'
 
 const layout: UtilityConfig = {
   aspectRatio: {

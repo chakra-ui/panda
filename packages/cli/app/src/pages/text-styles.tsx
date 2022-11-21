@@ -1,5 +1,5 @@
-import { walkObject } from '@css-panda/shared'
-import type { Dict, TextStyles as TextStylesType } from '@css-panda/types'
+import { walkObject } from '@pandacss/shared'
+import type { Dict, TextStyles as TextStylesType } from '@pandacss/types'
 import { config } from 'virtual:panda'
 
 export default function TextStyles() {

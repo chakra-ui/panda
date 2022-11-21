@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/ast",
+  "name": "@pandacss/ast",
   "version": "0.0.1",
   "description": "The static parser for css panda",
   "main": "dist/index.js",
@@ -16,15 +16,15 @@
     "dev": "pnpm build-fast --watch"
   },
   "dependencies": {
-    "@css-panda/logger": "workspace:*",
-    "@css-panda/shared": "workspace:*",
-    "@css-panda/is-valid-prop": "workspace:*",
-    "@css-panda/types": "workspace:*",
+    "@pandacss/logger": "workspace:*",
+    "@pandacss/shared": "workspace:*",
+    "@pandacss/is-valid-prop": "workspace:*",
+    "@pandacss/types": "workspace:*",
     "ts-pattern": "4.0.6",
     "ts-morph": "16.0.0"
   },
   "devDependencies": {
-    "@css-panda/fixture": "workspace:*"
+    "@pandacss/fixture": "workspace:*"
   },
   "files": [
     "dist"

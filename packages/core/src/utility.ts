@@ -1,6 +1,6 @@
-import { compact, isFunction, isString, withoutSpace } from '@css-panda/shared'
-import type { TokenDictionary } from '@css-panda/token-dictionary'
-import type { AnyFunction, Dict, PropertyConfig, PropertyTransform, UtilityConfig } from '@css-panda/types'
+import { compact, isFunction, isString, withoutSpace } from '@pandacss/shared'
+import type { TokenDictionary } from '@pandacss/token-dictionary'
+import type { AnyFunction, Dict, PropertyConfig, PropertyTransform, UtilityConfig } from '@pandacss/types'
 import type { TransformResult } from './types'
 
 export type UtilityOptions = {

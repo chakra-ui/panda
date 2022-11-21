@@ -1,4 +1,4 @@
-import type { PatternConfig } from '@css-panda/types'
+import type { PatternConfig } from '@pandacss/types'
 
 const stack: PatternConfig = {
   properties: {

@@ -1,5 +1,5 @@
-import type { Collector } from '@css-panda/ast'
-import { logger, quote } from '@css-panda/logger'
+import type { Collector } from '@pandacss/ast'
+import { logger, quote } from '@pandacss/logger'
 import type { PandaContext } from './context'
 
 export function extractFile(ctx: PandaContext, file: string) {

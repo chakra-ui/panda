@@ -1,4 +1,4 @@
-import { toCss, toKeyframeCss } from '@css-panda/core'
+import { toCss, toKeyframeCss } from '@pandacss/core'
 import { outdent } from 'outdent'
 import { match, P } from 'ts-pattern'
 import type { PandaContext } from '../context'

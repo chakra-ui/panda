@@ -1,4 +1,4 @@
-import { colors, logger } from '@css-panda/logger'
+import { colors, logger } from '@pandacss/logger'
 import { preview } from 'vite'
 import type { BuildOpts } from './vite-build.js'
 import { pandaPreviewPlugin } from './vite-dev.js'

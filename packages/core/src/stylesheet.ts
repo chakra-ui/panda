@@ -1,5 +1,5 @@
-import { walkStyles } from '@css-panda/shared'
-import type { Dict, RecipeConfig } from '@css-panda/types'
+import { walkStyles } from '@pandacss/shared'
+import type { Dict, RecipeConfig } from '@pandacss/types'
 import postcss from 'postcss'
 import { AtomicRule } from './atomic-rule'
 import { Breakpoints } from './breakpoints'

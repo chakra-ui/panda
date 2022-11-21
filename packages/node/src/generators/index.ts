@@ -21,7 +21,7 @@ import { generateTokenJs } from './token-js'
 import { generateCssType } from './types'
 
 function setupHelpers(ctx: PandaContext): Output {
-  const sharedMjs = getEntrypoint('@css-panda/shared', { dev: 'shared.mjs' })
+  const sharedMjs = getEntrypoint('@pandacss/shared', { dev: 'shared.mjs' })
   const code = readFileSync(sharedMjs, 'utf-8')
   return {
     dir: ctx.outdir,

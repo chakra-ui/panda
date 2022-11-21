@@ -1,4 +1,4 @@
-import { getDotPath, mapToJson } from '@css-panda/shared'
+import { getDotPath, mapToJson } from '@pandacss/shared'
 import { TokenDictionary as Base, TokenDictionaryOptions } from './dictionary'
 import { formats } from './format'
 import { middlewares } from './middleware'

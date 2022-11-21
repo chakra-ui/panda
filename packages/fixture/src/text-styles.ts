@@ -1,4 +1,4 @@
-import type { TextStyles } from '@css-panda/types'
+import type { TextStyles } from '@pandacss/types'
 
 export const textStyles: TextStyles = {
   xs: { value: { fontSize: '0.75rem', lineHeight: '1rem' } },

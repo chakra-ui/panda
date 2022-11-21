@@ -27,8 +27,8 @@ function getTokenVar(path) {
 ```
 
 ```js
-import { generateCssVar, generateDts, generateJs } from '@css-panda/generator'
-import { createTokenMap } from '@css-panda/token-dictionary'
+import { generateCssVar, generateDts, generateJs } from '@pandacss/generator'
+import { createTokenMap } from '@pandacss/token-dictionary'
 
 const conf = new Conf()
 
@@ -61,7 +61,7 @@ const files = generateJs(dict, { formats: ['esm', 'cjs'] })
 ```
 
 ```js
-import { definePackage, writePackage } from '@css-panda/generators'
+import { definePackage, writePackage } from '@pandacss/generators'
 
 const pkg = setupPackage({
   name: 'dot-panda',

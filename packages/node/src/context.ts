@@ -1,5 +1,5 @@
-import { Collector, createParser, createProject } from '@css-panda/ast'
-import type { LoadConfigResult } from '@css-panda/config'
+import { Collector, createParser, createProject } from '@pandacss/ast'
+import type { LoadConfigResult } from '@pandacss/config'
 import {
   assignCompositions,
   Conditions,
@@ -7,12 +7,12 @@ import {
   Stylesheet,
   StylesheetContext,
   Utility,
-} from '@css-panda/core'
-import { NotFoundError } from '@css-panda/error'
-import { logger } from '@css-panda/logger'
-import { capitalize, compact, mapObject, uncapitalize } from '@css-panda/shared'
-import { TokenDictionary } from '@css-panda/token-dictionary'
-import type { RecipeConfig } from '@css-panda/types'
+} from '@pandacss/core'
+import { NotFoundError } from '@pandacss/error'
+import { logger } from '@pandacss/logger'
+import { capitalize, compact, mapObject, uncapitalize } from '@pandacss/shared'
+import { TokenDictionary } from '@pandacss/token-dictionary'
+import type { RecipeConfig } from '@pandacss/types'
 import glob from 'fast-glob'
 import { readdirSync } from 'fs'
 import { emptyDir, ensureDir, existsSync } from 'fs-extra'

@@ -1,4 +1,4 @@
-export { discardDuplicate } from '@css-panda/core'
+export { discardDuplicate } from '@pandacss/core'
 export { emitAndExtract, emitArtifacts } from './artifacts'
 export { Builder } from './builder'
 export { loadConfigAndCreateContext } from './config'

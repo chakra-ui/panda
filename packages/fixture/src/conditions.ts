@@ -1,4 +1,4 @@
-import type { Conditions } from '@css-panda/types'
+import type { Conditions } from '@pandacss/types'
 
 export const conditions: Conditions = {
   hover: '&:hover',

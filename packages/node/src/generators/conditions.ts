@@ -1,4 +1,4 @@
-import { unionType } from '@css-panda/shared'
+import { unionType } from '@pandacss/shared'
 import outdent from 'outdent'
 import type { PandaContext } from '../context'
 

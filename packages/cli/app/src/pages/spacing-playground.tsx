@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { getSortedSizes } from '../utils/sizes-sort'
 import { renderPixels } from './sizes'
 import { config } from 'virtual:panda'
-import { TokenDictionary } from '@css-panda/token-dictionary'
+import { TokenDictionary } from '@pandacss/token-dictionary'
 
 const NUMBER_OF_ITEMS = 3
 

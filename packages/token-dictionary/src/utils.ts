@@ -1,4 +1,4 @@
-import { isObject } from '@css-panda/shared'
+import { isObject } from '@pandacss/shared'
 import type { TokenEntry } from './token.types'
 
 /* -----------------------------------------------------------------------------

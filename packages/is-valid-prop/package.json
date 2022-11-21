@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/is-valid-prop",
+  "name": "@pandacss/is-valid-prop",
   "version": "0.0.1",
   "description": "Common error messages for css panda",
   "main": "dist/index.js",

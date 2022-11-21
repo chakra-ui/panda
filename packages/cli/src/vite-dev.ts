@@ -1,4 +1,4 @@
-import { loadConfigFile } from '@css-panda/config'
+import { loadConfigFile } from '@pandacss/config'
 import path from 'path'
 import { createServer, PluginOption } from 'vite'
 

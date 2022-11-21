@@ -1,4 +1,4 @@
-import type { Tokens } from '@css-panda/types'
+import type { Tokens } from '@pandacss/types'
 import { colors } from './colors'
 import { animations } from './keyframes'
 import { shadows } from './shadows'

@@ -18,7 +18,7 @@
     "solid-js": "^1.4.3"
   },
   "devDependencies": {
-    "@css-panda/fixture": "workspace:*",
+    "@pandacss/fixture": "workspace:*",
     "css-panda": "workspace:*"
   }
 }

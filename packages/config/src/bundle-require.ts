@@ -1,5 +1,5 @@
-import { logger, quote } from '@css-panda/logger'
-import type { UserConfig } from '@css-panda/types'
+import { logger, quote } from '@pandacss/logger'
+import type { UserConfig } from '@pandacss/types'
 import { realpathSync } from 'fs'
 import { relative } from 'path'
 import { bundleConfigFile } from './bundle-config'

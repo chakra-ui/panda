@@ -1,4 +1,4 @@
-import { colors, quote } from '@css-panda/logger'
+import { colors, quote } from '@pandacss/logger'
 import { outdent } from 'outdent'
 import { cliBox } from './cli-box'
 import type { PandaContext } from './context'

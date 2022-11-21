@@ -1,4 +1,4 @@
-import type { TextStyles, Tokens } from '@css-panda/types'
+import type { TextStyles, Tokens } from '@pandacss/types'
 
 export const fontSizes: Tokens['fontSizes'] = {
   '2xs': { value: '0.5rem' },

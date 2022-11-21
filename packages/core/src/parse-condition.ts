@@ -1,4 +1,4 @@
-import type { RawCondition } from '@css-panda/types'
+import type { RawCondition } from '@pandacss/types'
 import postcss, { AtRule } from 'postcss'
 
 function parseAtRule(value: string): RawCondition {

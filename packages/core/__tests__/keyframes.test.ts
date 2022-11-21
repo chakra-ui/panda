@@ -1,4 +1,4 @@
-import { keyframes } from '@css-panda/fixture'
+import { keyframes } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
 import { toKeyframeCss } from '../src/keyframes'
 

@@ -1,5 +1,5 @@
-import { walkStyles } from '@css-panda/shared'
-import type { RecipeConfig } from '@css-panda/types'
+import { walkStyles } from '@pandacss/shared'
+import type { RecipeConfig } from '@pandacss/types'
 import merge from 'lodash.merge'
 import { AtomicRule, ProcessOptions } from './atomic-rule'
 import { serializeStyle } from './serialize'

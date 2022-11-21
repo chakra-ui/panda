@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/fixture",
+  "name": "@pandacss/fixture",
   "version": "0.0.1",
   "private": true,
   "description": "Test fixtures for css panda",
@@ -16,6 +16,6 @@
     "dist"
   ],
   "dependencies": {
-    "@css-panda/types": "workspace:*"
+    "@pandacss/types": "workspace:*"
   }
 }

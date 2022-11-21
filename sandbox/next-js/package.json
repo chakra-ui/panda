@@ -18,8 +18,8 @@
   "devDependencies": {
     "eslint": "8.28.0",
     "eslint-config-next": "12.3.3",
-    "@css-panda/fixture": "workspace:*",
-    "@css-panda/node": "workspace:*",
+    "@pandacss/fixture": "workspace:*",
+    "@pandacss/node": "workspace:*",
     "css-panda": "workspace:*"
   }
 }

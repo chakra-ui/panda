@@ -1,17 +1,17 @@
 ---
-'@css-panda/ast': patch
+'@pandacss/ast': patch
 'css-panda': patch
-'@css-panda/config': patch
-'@css-panda/core': patch
-'@css-panda/presets': patch
-'@css-panda/is-valid-prop': patch
-'@css-panda/error': patch
-'@css-panda/fixture': patch
-'@css-panda/logger': patch
-'@css-panda/node': patch
-'@css-panda/shared': patch
-'@css-panda/token-dictionary': patch
-'@css-panda/types': patch
+'@pandacss/config': patch
+'@pandacss/core': patch
+'@pandacss/presets': patch
+'@pandacss/is-valid-prop': patch
+'@pandacss/error': patch
+'@pandacss/fixture': patch
+'@pandacss/logger': patch
+'@pandacss/node': patch
+'@pandacss/shared': patch
+'@pandacss/token-dictionary': patch
+'@pandacss/types': patch
 ---
 
 Initial release.

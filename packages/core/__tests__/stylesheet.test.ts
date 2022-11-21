@@ -1,4 +1,4 @@
-import type { Dict } from '@css-panda/types'
+import type { Dict } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { Stylesheet } from '../src'
 import { createContext } from './fixture'

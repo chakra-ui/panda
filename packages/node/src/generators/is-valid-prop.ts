@@ -3,7 +3,7 @@ import type { PandaContext } from '../context'
 import { getEntrypoint } from './get-entrypoint'
 
 export function generateisValidProp(ctx: PandaContext) {
-  const filePath = getEntrypoint('@css-panda/is-valid-prop', { dev: 'index.ts', prod: 'index.mjs' })
+  const filePath = getEntrypoint('@pandacss/is-valid-prop', { dev: 'index.ts', prod: 'index.mjs' })
 
   let content = readFileSync(filePath, 'utf8')
   content = content.replace(

@@ -1,5 +1,5 @@
-import { loadConfigFile } from '@css-panda/config'
-import type { Config } from '@css-panda/types'
+import { loadConfigFile } from '@pandacss/config'
+import type { Config } from '@pandacss/types'
 import { lookItUpSync } from 'look-it-up'
 import { createContext } from './context'
 

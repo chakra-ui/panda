@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/logger",
+  "name": "@pandacss/logger",
   "version": "0.0.1",
   "description": "The core css panda library",
   "main": "dist/index.js",

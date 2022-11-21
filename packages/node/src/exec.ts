@@ -1,4 +1,4 @@
-import { logger } from '@css-panda/logger'
+import { logger } from '@pandacss/logger'
 import { spawnSync } from 'child_process'
 import getPackageManager from 'preferred-pm'
 

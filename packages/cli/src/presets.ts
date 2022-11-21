@@ -1,1 +1,1 @@
-export * from '@css-panda/presets'
+export * from '@pandacss/presets'

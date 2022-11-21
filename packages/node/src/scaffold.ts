@@ -1,4 +1,4 @@
-import { logger, quote } from '@css-panda/logger'
+import { logger, quote } from '@pandacss/logger'
 import { writeFile } from 'fs-extra'
 import { lookItUpSync } from 'look-it-up'
 import { outdent } from 'outdent'

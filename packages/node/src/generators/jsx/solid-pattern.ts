@@ -1,5 +1,5 @@
-import { capitalize, dashCase } from '@css-panda/shared'
-import type { PatternConfig } from '@css-panda/types'
+import { capitalize, dashCase } from '@pandacss/shared'
+import type { PatternConfig } from '@pandacss/types'
 import { outdent } from 'outdent'
 import type { PandaContext } from '../../context'
 

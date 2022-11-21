@@ -1,4 +1,4 @@
-import type { Config } from '@css-panda/types'
+import type { Config } from '@pandacss/types'
 import { emitAndExtract } from './artifacts'
 import { bundleChunks, writeFileChunk } from './chunks'
 import { loadConfigAndCreateContext } from './config'

@@ -1,8 +1,8 @@
-import type { Token } from '@css-panda/types'
+import type { Token } from '@pandacss/types'
 import { useState } from 'react'
 
 import { config } from 'virtual:panda'
-import { TokenDictionary } from '@css-panda/token-dictionary'
+import { TokenDictionary } from '@pandacss/token-dictionary'
 
 type Color = {
   isConditional?: boolean

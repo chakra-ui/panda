@@ -1,4 +1,4 @@
-import { memo } from '@css-panda/shared'
+import { memo } from '@pandacss/shared'
 import type { SourceFile } from 'ts-morph'
 
 type ImportResult = {

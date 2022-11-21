@@ -1,5 +1,5 @@
-import type { LoadConfigResult } from '@css-panda/config'
-import { breakpoints, conditions, keyframes, semanticTokens, tokens } from '@css-panda/fixture'
+import type { LoadConfigResult } from '@pandacss/config'
+import { breakpoints, conditions, keyframes, semanticTokens, tokens } from '@pandacss/fixture'
 import { expect, test } from 'vitest'
 import { createContext } from '../src/context'
 import { generateTokenCss } from '../src/generators/token-css'

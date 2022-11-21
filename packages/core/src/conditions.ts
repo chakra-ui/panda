@@ -1,5 +1,5 @@
-import { logger } from '@css-panda/logger'
-import type { BaseConditionType, Dict, RawCondition } from '@css-panda/types'
+import { logger } from '@pandacss/logger'
+import type { BaseConditionType, Dict, RawCondition } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
 import { ConditionalRule } from './conditional-rule'
 import { parseCondition } from './parse-condition'

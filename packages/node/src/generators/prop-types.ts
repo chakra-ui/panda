@@ -1,4 +1,4 @@
-import type { Utility } from '@css-panda/core'
+import type { Utility } from '@pandacss/core'
 import { outdent } from 'outdent'
 
 export function generatePropTypes(utility: Utility) {

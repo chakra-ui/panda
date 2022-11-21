@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-const { Builder } = require('@css-panda/node')
+const { Builder } = require('@pandacss/node')
 
 const PLUGIN_NAME = 'pandaCss'
 

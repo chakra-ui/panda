@@ -1,5 +1,5 @@
-import type { TokenDictionary } from '@css-panda/token-dictionary'
-import { unionType, capitalize } from '@css-panda/shared'
+import type { TokenDictionary } from '@pandacss/token-dictionary'
+import { unionType, capitalize } from '@pandacss/shared'
 import { outdent } from 'outdent'
 import { singular } from 'pluralize'
 

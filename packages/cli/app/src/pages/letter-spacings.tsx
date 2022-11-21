@@ -1,5 +1,5 @@
 import { config } from 'virtual:panda'
-import { TokenDictionary } from '@css-panda/token-dictionary'
+import { TokenDictionary } from '@pandacss/token-dictionary'
 import { FontTokens } from './font-tokens'
 
 export default function Page() {

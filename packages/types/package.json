@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/types",
+  "name": "@pandacss/types",
   "version": "0.0.1",
   "description": "The types for css panda",
   "main": "src/index.d.ts",

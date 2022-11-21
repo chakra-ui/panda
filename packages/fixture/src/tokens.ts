@@ -1,4 +1,4 @@
-import type { Tokens, SemanticTokens } from '@css-panda/types'
+import type { Tokens, SemanticTokens } from '@pandacss/types'
 
 export const semanticTokens: SemanticTokens = {
   colors: {

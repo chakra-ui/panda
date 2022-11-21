@@ -1,5 +1,5 @@
-import type { LoadConfigResult } from '@css-panda/config'
-import { logger } from '@css-panda/logger'
+import type { LoadConfigResult } from '@pandacss/config'
+import { logger } from '@pandacss/logger'
 import chokidar from 'chokidar'
 import { join } from 'path'
 import type { PandaContext } from './context'

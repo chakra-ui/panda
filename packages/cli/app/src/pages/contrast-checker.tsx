@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { getContrastPairs, getContrastRatio } from '../utils/color'
 import { ErrorIcon, SuccessIcon } from '../components/icons'
 import { config } from 'virtual:panda'
-import { TokenDictionary } from '@css-panda/token-dictionary'
+import { TokenDictionary } from '@pandacss/token-dictionary'
 
 export default function ContrastChecker() {
   const tokenDictionary = new TokenDictionary(config)

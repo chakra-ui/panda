@@ -1,4 +1,4 @@
-import type { Conditions, Dict, RecipeConfig, RecipeVariant, Config, PatternConfig } from '@css-panda/types'
+import type { Conditions, Dict, RecipeConfig, RecipeVariant, Config, PatternConfig } from '@pandacss/types'
 
 export function defineConfig<C extends Conditions, B extends Dict, T extends Dict>(config: Config<C, B, T>): any {
   return config

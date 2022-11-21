@@ -1,4 +1,4 @@
-import { capitalize } from '@css-panda/shared'
+import { capitalize } from '@pandacss/shared'
 import { outdent } from 'outdent'
 import type { PandaContext } from '../../context'
 

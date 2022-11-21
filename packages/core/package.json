@@ -1,5 +1,5 @@
 {
-  "name": "@css-panda/core",
+  "name": "@pandacss/core",
   "version": "0.0.1",
   "description": "core functions for extract-it",
   "main": "dist/index.js",
@@ -19,11 +19,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@css-panda/error": "workspace:*",
-    "@css-panda/types": "workspace:*",
-    "@css-panda/shared": "workspace:*",
-    "@css-panda/logger": "workspace:*",
-    "@css-panda/token-dictionary": "workspace:*",
+    "@pandacss/error": "workspace:*",
+    "@pandacss/types": "workspace:*",
+    "@pandacss/shared": "workspace:*",
+    "@pandacss/logger": "workspace:*",
+    "@pandacss/token-dictionary": "workspace:*",
     "camelcase-css": "^2.0.1",
     "postcss": "8.4.19",
     "postcss-nested": "5.0.6",
@@ -35,7 +35,7 @@
     "lodash.merge": "4.6.2"
   },
   "devDependencies": {
-    "@css-panda/fixture": "workspace:*",
+    "@pandacss/fixture": "workspace:*",
     "@types/lodash.merge": "4.6.7"
   }
 }

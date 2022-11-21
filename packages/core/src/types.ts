@@ -1,4 +1,4 @@
-import type { TransformHelpers } from '@css-panda/types'
+import type { TransformHelpers } from '@pandacss/types'
 import type { Root } from 'postcss'
 import type { Conditions } from './conditions'
 import type { Utility } from './utility'

@@ -1,5 +1,5 @@
-import { filterBaseConditions, isImportant, walkObject, withoutImportant } from '@css-panda/shared'
-import type { Dict } from '@css-panda/types'
+import { filterBaseConditions, isImportant, walkObject, withoutImportant } from '@pandacss/shared'
+import type { Dict } from '@pandacss/types'
 import merge from 'lodash.merge'
 import type { Conditions } from './conditions'
 import { cssToJs, toCss } from './to-css'

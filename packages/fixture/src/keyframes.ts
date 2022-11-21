@@ -1,4 +1,4 @@
-import type { Keyframes } from '@css-panda/types'
+import type { Keyframes } from '@pandacss/types'
 
 export const keyframes: Keyframes = {
   spin: {

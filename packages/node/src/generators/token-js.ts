@@ -1,4 +1,4 @@
-import type { TokenDictionary } from '@css-panda/token-dictionary'
+import type { TokenDictionary } from '@pandacss/token-dictionary'
 import outdent from 'outdent'
 
 export function generateTokenJs(dict: TokenDictionary) {

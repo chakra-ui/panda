@@ -6,7 +6,7 @@ import {
   walkObject,
   withoutImportant,
   withoutSpace,
-} from '@css-panda/shared'
+} from '@pandacss/shared'
 import type { Root } from 'postcss'
 import postcss from 'postcss'
 import { toCss } from './to-css'

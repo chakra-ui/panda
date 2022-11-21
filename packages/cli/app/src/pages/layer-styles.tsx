@@ -1,5 +1,5 @@
-import { walkObject } from '@css-panda/shared'
-import type { Dict, LayerStyles as LayerStylesType } from '@css-panda/types'
+import { walkObject } from '@pandacss/shared'
+import type { Dict, LayerStyles as LayerStylesType } from '@pandacss/types'
 import { config } from 'virtual:panda'
 
 export default function LayerStyles() {

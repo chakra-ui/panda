@@ -1,5 +1,5 @@
-import { capitalize, toEm, toPx } from '@css-panda/shared'
-import type { RawCondition } from '@css-panda/types'
+import { capitalize, toEm, toPx } from '@pandacss/shared'
+import type { RawCondition } from '@pandacss/types'
 import type { Root } from 'postcss'
 
 export class Breakpoints {

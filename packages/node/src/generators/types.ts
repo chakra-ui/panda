@@ -4,7 +4,7 @@ import type { PandaContext } from '../context'
 import { getEntrypoint } from './get-entrypoint'
 
 function getType(file: string) {
-  const filepath = getEntrypoint('@css-panda/types', { dev: file })
+  const filepath = getEntrypoint('@pandacss/types', { dev: file })
   return readFileSync(filepath, 'utf8')
 }
 

@@ -1,5 +1,5 @@
-import { logger } from '@css-panda/logger'
-import { memo } from '@css-panda/shared'
+import { logger } from '@pandacss/logger'
+import { memo } from '@pandacss/shared'
 import { CompilerOptions, Project, SourceFile } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { visitCallExpressions } from './call-expression'
