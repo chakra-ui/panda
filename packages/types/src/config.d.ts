@@ -6,12 +6,18 @@ import type { RecipeConfig } from './recipe'
 import type { Dict, RequiredBy } from './shared'
 import type { PartialTokens, SemanticTokens } from './tokens'
 import type { UtilityConfig } from './utility'
+import type { ClassGeneratorOptions } from './generator'
 
 export type Config<
   Conditions extends TConditions = TConditions,
   Breakpoints extends Dict = Dict,
   Tokens extends PartialTokens = PartialTokens,
 > = {
+  /**
+   * The value separator used in the generated class names.
+   * @default '_'
+   */
+  separator?: string
   /**
    * The log level for the built-in logger.
    */
@@ -140,6 +146,11 @@ export type Config<
    * Options for the generated typescript definitions.
    */
   strictTokens?: boolean
+  /**
+   * @experimental
+   * Used to generate css utility classes for your project.
+   */
+  generator?: ClassGeneratorOptions
 }
 
 export type TConfig = Config<TConditions, Dict, Dict>
