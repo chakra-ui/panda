@@ -18,8 +18,15 @@ export type CssProperties = Properties & {
   [property: string]: string | number | Record<string, any> | undefined
 }
 
-export type Keyframes = {
+export type KeyframeDefinition = {
   [time: string]: CssProperties
+}
+
+export type Keyframes = {
+  [keyframe: string]: {
+    description?: string
+    value: KeyframeDefinition
+  }
 }
 
 type TCondition = Record<string, string>
