@@ -6,6 +6,7 @@ import type { TransformResult } from './types'
 export type UtilityOptions = {
   config?: UtilityConfig
   tokens: TokenDictionary
+  separator?: string
 }
 
 export class Utility {
@@ -53,11 +54,16 @@ export class Utility {
    */
   private configs: Map<string, PropertyConfig> = new Map()
 
+  separator = '_'
+
   constructor(options: UtilityOptions) {
-    const { tokens, config = {} } = options
+    const { tokens, config = {}, separator } = options
 
     this.tokens = tokens
     this.config = config
+    if (separator) {
+      this.separator = separator
+    }
 
     this.assignShorthands()
     this.assignPaletteProperty()
@@ -90,8 +96,7 @@ export class Utility {
   }
 
   resolveShorthand = (prop: string) => {
-    const shorthand = this.shorthands.get(prop)
-    return shorthand ?? prop
+    return this.shorthands.get(prop) ?? prop
   }
 
   public get hasShorthand() {
@@ -115,7 +120,8 @@ export class Utility {
   }
 
   private hash(prop: string, value: string) {
-    return `${prop}_${value}`
+    // mb_40px, or mb=50px
+    return `${prop}${this.separator}${value}`
   }
 
   /**

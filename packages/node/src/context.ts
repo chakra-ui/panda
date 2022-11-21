@@ -72,6 +72,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     jsxFactory = 'panda',
     jsxFramework,
     globalCss,
+    separator,
   } = config
 
   const cwd = resolve(_cwd)
@@ -90,6 +91,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   const utility = new Utility({
     tokens: tokens,
     config: utilities,
+    separator,
   })
 
   const conditions = new Conditions({
