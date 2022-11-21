@@ -39,14 +39,14 @@ importers:
       '@css-panda/shared': workspace:*
       '@css-panda/types': workspace:*
       ts-morph: 16.0.0
-      ts-pattern: 4.0.5
+      ts-pattern: 4.0.6
     dependencies:
       '@css-panda/is-valid-prop': link:../is-valid-prop
       '@css-panda/logger': link:../logger
       '@css-panda/shared': link:../shared
       '@css-panda/types': link:../types
       ts-morph: 16.0.0
-      ts-pattern: 4.0.5
+      ts-pattern: 4.0.6
     devDependencies:
       '@css-panda/fixture': link:../fixture
 
@@ -134,7 +134,7 @@ importers:
       postcss-nested: 5.0.6
       postcss-normalize-whitespace: ^5.1.1
       sort-css-media-queries: ^2.1.0
-      ts-pattern: 4.0.5
+      ts-pattern: 4.0.6
     dependencies:
       '@css-panda/error': link:../error
       '@css-panda/logger': link:../logger
@@ -149,7 +149,7 @@ importers:
       postcss-nested: 5.0.6_postcss@8.4.19
       postcss-normalize-whitespace: 5.1.1_postcss@8.4.19
       sort-css-media-queries: 2.1.0
-      ts-pattern: 4.0.5
+      ts-pattern: 4.0.6
     devDependencies:
       '@css-panda/fixture': link:../fixture
       '@types/lodash.merge': 4.6.7
@@ -215,7 +215,7 @@ importers:
       preferred-pm: ^3.0.3
       telejson: 6.0.8
       ts-morph: 16.0.0
-      ts-pattern: 4.0.5
+      ts-pattern: 4.0.6
     dependencies:
       '@css-panda/ast': link:../ast
       '@css-panda/config': link:../config
@@ -241,7 +241,7 @@ importers:
       preferred-pm: 3.0.3
       telejson: 6.0.8
       ts-morph: 16.0.0
-      ts-pattern: 4.0.5
+      ts-pattern: 4.0.6
     devDependencies:
       '@css-panda/fixture': link:../fixture
       '@types/fs-extra': 9.0.13
@@ -264,10 +264,10 @@ importers:
     specifiers:
       '@css-panda/fixture': workspace:*
       '@css-panda/shared': workspace:*
-      ts-pattern: 4.0.5
+      ts-pattern: 4.0.6
     dependencies:
       '@css-panda/shared': link:../shared
-      ts-pattern: 4.0.5
+      ts-pattern: 4.0.6
     devDependencies:
       '@css-panda/fixture': link:../fixture
 
@@ -7280,8 +7280,8 @@ packages:
       code-block-writer: 11.0.3
     dev: false
 
-  /ts-pattern/4.0.5:
-    resolution: {integrity: sha512-Bq44KCEt7JVaNLa148mBCJkcQf4l7jtLEBDuDdeuLynWDA+1a60P4D0rMkqSM9mOKLQbIWUddE9h3XKyKwBeqA==}
+  /ts-pattern/4.0.6:
+    resolution: {integrity: sha512-sFHQYD4KoysBi7e7a2mzDPvRBeqA4w+vEyRE+P5MU9VLq8eEYxgKCgD9RNEAT+itGRWUTYN+hry94GDPLb1/Yw==}
     dev: false
 
   /ts-toolbelt/9.6.0:
