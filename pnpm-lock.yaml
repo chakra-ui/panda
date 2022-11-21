@@ -332,7 +332,7 @@ importers:
     specifiers:
       '@css-panda/fixture': workspace:*
       '@types/react': 18.0.17
-      '@types/react-dom': 18.0.8
+      '@types/react-dom': 18.0.9
       '@vitejs/plugin-react': 2.2.0
       css-panda: workspace:*
       postcss: 8.4.19
@@ -345,7 +345,7 @@ importers:
     devDependencies:
       '@css-panda/fixture': link:../../packages/fixture
       '@types/react': 18.0.17
-      '@types/react-dom': 18.0.8
+      '@types/react-dom': 18.0.9
       '@vitejs/plugin-react': 2.2.0_vite@3.2.3
       css-panda: link:../../packages/cli
       postcss: 8.4.19
@@ -1699,6 +1699,12 @@ packages:
 
   /@types/react-dom/18.0.8:
     resolution: {integrity: sha512-C3GYO0HLaOkk9dDAz3Dl4sbe4AKUGTCfFIZsz3n/82dPNN8Du533HzKatDxeUYWu24wJgMP1xICqkWk1YOLOIw==}
+    dependencies:
+      '@types/react': 18.0.17
+    dev: true
+
+  /@types/react-dom/18.0.9:
+    resolution: {integrity: sha512-qnVvHxASt/H7i+XG1U1xMiY5t+IHcPGUK7TDMDzom08xa7e86eCeKOiLZezwCKVxJn6NEiiy2ekgX8aQssjIKg==}
     dependencies:
       '@types/react': 18.0.17
     dev: true
