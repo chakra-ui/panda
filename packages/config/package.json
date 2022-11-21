@@ -23,7 +23,7 @@
     "@css-panda/error": "workspace:*",
     "@css-panda/types": "workspace:*",
     "merge-anything": "^5.0.4",
-    "esbuild": "0.15.13",
+    "esbuild": "0.15.15",
     "escalade": "3.1.1",
     "node-eval": "2.0.0"
   }
