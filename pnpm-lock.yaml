@@ -112,7 +112,7 @@ importers:
       lodash.merge: 4.6.2
       postcss: 8.4.19
       postcss-discard-duplicates: ^5.1.0
-      postcss-nested: 5.0.6
+      postcss-nested: 6.0.0
       postcss-normalize-whitespace: ^5.1.1
       sort-css-media-queries: ^2.1.0
       ts-pattern: 4.0.6
@@ -127,7 +127,7 @@ importers:
       lodash.merge: 4.6.2
       postcss: 8.4.19
       postcss-discard-duplicates: 5.1.0_postcss@8.4.19
-      postcss-nested: 5.0.6_postcss@8.4.19
+      postcss-nested: 6.0.0_postcss@8.4.19
       postcss-normalize-whitespace: 5.1.1_postcss@8.4.19
       sort-css-media-queries: 2.1.0
       ts-pattern: 4.0.6
@@ -6241,8 +6241,8 @@ packages:
       yaml: 1.10.2
     dev: false
 
-  /postcss-nested/5.0.6_postcss@8.4.19:
-    resolution: {integrity: sha512-rKqm2Fk0KbA8Vt3AdGN0FB9OBOMDVajMG6ZCf/GoHgdxUJ4sBFp0A/uMIRm+MJUdo33YXEtjqIz8u7DAp8B7DA==}
+  /postcss-nested/6.0.0_postcss@8.4.19:
+    resolution: {integrity: sha512-0DkamqrPcmkBDsLn+vQDIrtkSbNkv5AD/M322ySo9kqFkCIYklym2xEmWkwo+Y3/qZo34tzEPNUw4y7yMCdv5w==}
     engines: {node: '>=12.0'}
     peerDependencies:
       postcss: ^8.2.14
