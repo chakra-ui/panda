@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { Builder } = require('@pandacss/node')
 
-const PLUGIN_NAME = 'pandaCss'
+const PLUGIN_NAME = 'panda-css'
 
 function postcssPlugin() {
   const builder = new Builder()
