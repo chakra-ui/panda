@@ -39,7 +39,7 @@
     "outdent": " ^0.8.0",
     "preferred-pm": "^3.0.3",
     "postcss": "8.4.19",
-    "pkg-types": "0.3.6",
+    "pkg-types": "1.0.1",
     "pluralize": "8.0.0",
     "telejson": "6.0.8",
     "ts-pattern": "4.0.5",
