@@ -1,4 +1,4 @@
-import { Collector, createParser, createProject } from '@pandacss/ast'
+import { Collector, createParser, createProject } from '@pandacss/parser'
 import type { LoadConfigResult } from '@pandacss/config'
 import {
   assignCompositions,

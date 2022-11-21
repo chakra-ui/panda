@@ -22,7 +22,7 @@
     "@pandacss/types": "workspace:*",
     "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/error": "workspace:*",
-    "@pandacss/ast": "workspace:*",
+    "@pandacss/parser": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/logger": "workspace:*",

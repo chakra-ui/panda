@@ -1,5 +1,5 @@
 ---
-'@pandacss/ast': patch
+'@pandacss/parser': patch
 'css-panda': patch
 '@pandacss/config': patch
 '@pandacss/core': patch

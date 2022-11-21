@@ -31,25 +31,6 @@ importers:
       typescript: 4.8.4
       vitest: 0.25.2
 
-  packages/ast:
-    specifiers:
-      '@pandacss/fixture': workspace:*
-      '@pandacss/is-valid-prop': workspace:*
-      '@pandacss/logger': workspace:*
-      '@pandacss/shared': workspace:*
-      '@pandacss/types': workspace:*
-      ts-morph: 16.0.0
-      ts-pattern: 4.0.6
-    dependencies:
-      '@pandacss/is-valid-prop': link:../is-valid-prop
-      '@pandacss/logger': link:../logger
-      '@pandacss/shared': link:../shared
-      '@pandacss/types': link:../types
-      ts-morph: 16.0.0
-      ts-pattern: 4.0.6
-    devDependencies:
-      '@pandacss/fixture': link:../fixture
-
   packages/cli:
     specifiers:
       '@pandacss/config': workspace:*
@@ -184,13 +165,13 @@ importers:
 
   packages/node:
     specifiers:
-      '@pandacss/ast': workspace:*
       '@pandacss/config': workspace:*
       '@pandacss/core': workspace:*
       '@pandacss/error': workspace:*
       '@pandacss/fixture': workspace:*
       '@pandacss/is-valid-prop': workspace:*
       '@pandacss/logger': workspace:*
+      '@pandacss/parser': workspace:*
       '@pandacss/shared': workspace:*
       '@pandacss/token-dictionary': workspace:*
       '@pandacss/types': workspace:*
@@ -217,12 +198,12 @@ importers:
       ts-morph: 16.0.0
       ts-pattern: 4.0.6
     dependencies:
-      '@pandacss/ast': link:../ast
       '@pandacss/config': link:../config
       '@pandacss/core': link:../core
       '@pandacss/error': link:../error
       '@pandacss/is-valid-prop': link:../is-valid-prop
       '@pandacss/logger': link:../logger
+      '@pandacss/parser': link:../parser
       '@pandacss/shared': link:../shared
       '@pandacss/token-dictionary': link:../token-dictionary
       '@pandacss/types': link:../types
@@ -250,6 +231,25 @@ importers:
       '@types/lodash.merge': 4.6.7
       '@types/pluralize': 0.0.29
       boxen: 7.0.0
+
+  packages/parser:
+    specifiers:
+      '@pandacss/fixture': workspace:*
+      '@pandacss/is-valid-prop': workspace:*
+      '@pandacss/logger': workspace:*
+      '@pandacss/shared': workspace:*
+      '@pandacss/types': workspace:*
+      ts-morph: 16.0.0
+      ts-pattern: 4.0.6
+    dependencies:
+      '@pandacss/is-valid-prop': link:../is-valid-prop
+      '@pandacss/logger': link:../logger
+      '@pandacss/shared': link:../shared
+      '@pandacss/types': link:../types
+      ts-morph: 16.0.0
+      ts-pattern: 4.0.6
+    devDependencies:
+      '@pandacss/fixture': link:../fixture
 
   packages/presets:
     specifiers:

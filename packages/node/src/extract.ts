@@ -1,4 +1,4 @@
-import type { Collector } from '@pandacss/ast'
+import type { Collector } from '@pandacss/parser'
 import { logger, quote } from '@pandacss/logger'
 import type { PandaContext } from './context'
 
