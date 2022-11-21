@@ -33,7 +33,7 @@
     "fs-extra": "10.1.0",
     "is-glob": "^4.0.3",
     "glob-parent": "^6.0.2",
-    "hookable": "5.4.1",
+    "hookable": "5.4.2",
     "lodash.merge": "4.6.2",
     "look-it-up": "2.1.0",
     "outdent": " ^0.8.0",
