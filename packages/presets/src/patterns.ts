@@ -173,6 +173,25 @@ const wrap: PatternConfig = {
   },
 }
 
+const container: PatternConfig = {
+  properties: {
+    size: { type: 'token', value: 'sizes' },
+    centerContent: { type: 'boolean' },
+  },
+  transform(props) {
+    const { size, centerContent, ...rest } = props
+    return {
+      ...rest,
+      position: 'relative',
+      width: '100%',
+      maxWidth: size,
+      marginX: 'auto',
+      paddingX: centerContent ? '1rem' : undefined,
+      ...(centerContent && { display: 'flex', alignItems: 'center', justifyContent: 'center' }),
+    }
+  },
+}
+
 export const patterns = {
   stack,
   vstack,
@@ -183,4 +202,5 @@ export const patterns = {
   grid,
   gridItem,
   wrap,
+  container,
 }
