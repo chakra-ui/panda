@@ -1,7 +1,7 @@
 {
   "name": "css-panda",
   "version": "0.0.1",
-  "description": "The types for css panda",
+  "description": "The user facing package for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
