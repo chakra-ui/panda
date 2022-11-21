@@ -55,14 +55,15 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   const { config } = conf
 
   const {
-    cwd: _cwd = process.cwd(),
+    cwd: cwdProp = process.cwd(),
     breakpoints = {},
-    conditions: _conditions = {},
-    tokens: _tokens = {},
+    conditions: conditionsProp = {},
+    tokens: tokensProp = {},
     semanticTokens = {},
-    cssVar,
+    cssVarPrefix,
+    cssVarRoot = ':where(:root, :host)',
     outdir,
-    exclude: _exclude = [],
+    exclude: excludeProp = [],
     patterns = {},
     recipes = {},
     utilities = {},
@@ -75,17 +76,17 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     separator,
   } = config
 
-  const cwd = resolve(_cwd)
-  const exclude = ['.git', 'node_modules', 'test-results'].concat(_exclude)
+  const cwd = resolve(cwdProp)
+  const exclude = ['.git', 'node_modules', 'test-results'].concat(excludeProp)
 
   /* -----------------------------------------------------------------------------
    * Core utilities
    * -----------------------------------------------------------------------------*/
 
   const tokens = new TokenDictionary({
-    tokens: _tokens,
+    tokens: tokensProp,
     semanticTokens,
-    prefix: cssVar?.prefix,
+    prefix: cssVarPrefix,
   })
 
   const utility = new Utility({
@@ -95,7 +96,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   })
 
   const conditions = new Conditions({
-    conditions: _conditions,
+    conditions: conditionsProp,
     breakpoints,
   })
 
@@ -419,7 +420,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
     jsxFramework,
     jsxFactory,
-    cssVarRoot: config.cssVar?.root ?? ':where(:root, :host)',
+    cssVarRoot,
 
     properties,
     isProperty,

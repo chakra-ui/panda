@@ -52,19 +52,14 @@ export type Config<
    */
   outdir?: string
   /**
-   * The css variable options for the generated design tokens
+   * The prefix for the css variables.
    */
-  cssVar?: {
-    /**
-     * The prefix for the css variables.
-     */
-    prefix?: string
-    /**
-     * The root selector for the css variables.
-     * @default ':where(:host, :root)'
-     */
-    root?: string
-  }
+  cssVarPrefix?: string
+  /**
+   * The root selector for the css variables.
+   * @default ':where(:host, :root)'
+   */
+  cssVarRoot?: string
   /**
    * Files to watch for changes.
    */
