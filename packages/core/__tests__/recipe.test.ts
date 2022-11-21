@@ -105,12 +105,12 @@ describe('recipe ruleset', () => {
               align-items: center;
               justify-content: center
           }
-          .buttonStyle__size-md {
+          .buttonStyle--size_md {
               height: 3rem;
               min-width: 3rem;
               padding: 0 0.75rem
           }
-          .buttonStyle__variant-solid {
+          .buttonStyle--variant_solid {
               background-color: blue;
               color: white;
               &:hover {
@@ -131,12 +131,12 @@ describe('recipe ruleset', () => {
               align-items: center;
               justify-content: center
           }
-          .buttonStyle__size-md {
+          .buttonStyle--size_md {
               height: 3rem;
               min-width: 3rem;
               padding: 0 0.75rem
           }
-          .buttonStyle__variant-solid {
+          .buttonStyle--variant_solid {
               background-color: blue;
               color: white;
               &:hover {
@@ -148,7 +148,7 @@ describe('recipe ruleset', () => {
               }
           }
           @screen lg {
-              .lg\\\\:buttonStyle__variant-outline {
+              .lg\\\\:buttonStyle--variant_outline {
                   background-color: transparent;
                   border: 1px solid blue;
                   color: blue;

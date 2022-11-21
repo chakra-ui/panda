@@ -57,7 +57,7 @@ test('[recipe] direct nesting / recipe ruleset', () => {
             padding-top: 0;
             object-position: center
         }
-        .text__variant-sm {
+        .text--variant_sm {
             &:first-child {
                 margin-right: var(--spacing-4)
             }
@@ -85,7 +85,7 @@ test('[recipe] direct nesting / recipe ruleset', () => {
             padding-top: 0;
             object-position: center
         }
-        .text__variant-md {
+        .text--variant_md {
             &:before {
                 --mb: var(--colors-gray-300)
     ;
