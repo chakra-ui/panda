@@ -195,7 +195,7 @@ importers:
       postcss: 8.4.19
       preferred-pm: ^3.0.3
       telejson: 6.0.8
-      ts-morph: 16.0.0
+      ts-morph: 17.0.0
       ts-pattern: 4.0.6
     dependencies:
       '@pandacss/config': link:../config
@@ -221,7 +221,7 @@ importers:
       postcss: 8.4.19
       preferred-pm: 3.0.3
       telejson: 6.0.8
-      ts-morph: 16.0.0
+      ts-morph: 17.0.0
       ts-pattern: 4.0.6
     devDependencies:
       '@pandacss/fixture': link:../fixture
@@ -239,14 +239,14 @@ importers:
       '@pandacss/logger': workspace:*
       '@pandacss/shared': workspace:*
       '@pandacss/types': workspace:*
-      ts-morph: 16.0.0
+      ts-morph: 17.0.0
       ts-pattern: 4.0.6
     dependencies:
       '@pandacss/is-valid-prop': link:../is-valid-prop
       '@pandacss/logger': link:../logger
       '@pandacss/shared': link:../shared
       '@pandacss/types': link:../types
-      ts-morph: 16.0.0
+      ts-morph: 17.0.0
       ts-pattern: 4.0.6
     devDependencies:
       '@pandacss/fixture': link:../fixture
@@ -1512,8 +1512,8 @@ packages:
       defer-to-connect: 2.0.1
     dev: true
 
-  /@ts-morph/common/0.17.0:
-    resolution: {integrity: sha512-RMSSvSfs9kb0VzkvQ2NWobwnj7TxCA9vI/IjR9bDHqgAyVbu2T0DN4wiKVqomyDWqO7dPr/tErSfq7urQ1Q37g==}
+  /@ts-morph/common/0.18.0:
+    resolution: {integrity: sha512-UvWF+oQdMa4qMWhXTOd2JWtAbAJGgkPMNzGHgEcfOwQRIcViKdwsSqXXjSaQCZ4fo+bZMhdfuwQCjlW5bNcqEQ==}
     dependencies:
       fast-glob: 3.2.12
       minimatch: 5.1.0
@@ -7285,10 +7285,10 @@ packages:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
     dev: false
 
-  /ts-morph/16.0.0:
-    resolution: {integrity: sha512-jGNF0GVpFj0orFw55LTsQxVYEUOCWBAbR5Ls7fTYE5pQsbW18ssTb/6UXx/GYAEjS+DQTp8VoTw0vqYMiaaQuw==}
+  /ts-morph/17.0.0:
+    resolution: {integrity: sha512-EJxyHTpBXsYnOgV6UpYs4vjhMS/8IZXg5kkGcM9+b8SygMmmOoeWOpaSG8E4puhewjkIbUObodGhfJkBoFX3og==}
     dependencies:
-      '@ts-morph/common': 0.17.0
+      '@ts-morph/common': 0.18.0
       code-block-writer: 11.0.3
     dev: false
 
