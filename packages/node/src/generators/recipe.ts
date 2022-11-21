@@ -3,13 +3,14 @@ import { outdent } from 'outdent'
 import type { PandaContext } from '../context'
 
 export function generateRecipes(ctx: PandaContext) {
-  const { recipes = {}, hash, hasRecipes } = ctx
+  const { recipes = {}, hash, hasRecipes, utility } = ctx
+  const { separator } = utility
 
   if (!hasRecipes) return
 
   const js = [
     outdent`
-   import { createCss } from "../helpers"
+   import { createCss, withoutSpace } from "../helpers"
 
    const createRecipe = (name) => {
      return (styles) => {
@@ -18,8 +19,8 @@ export function generateRecipes(ctx: PandaContext) {
            return { className: name }
          }
  
-         value = value.toString().replaceAll(" ", "_")
-         return { className: \`\${name}__\${prop}-\${value}\` }
+         value = withoutSpace(value)
+         return { className: \`\${name}--\${prop}${separator}\${value}\` }
       }
       
       const context = ${hash ? '{ transform, hash: true }' : '{ transform }'}

@@ -58,6 +58,7 @@ export class Recipe {
   }
 
   transform = (prop: string, value: string) => {
+    const { separator } = this.context.utility
     const { name, base = {}, variants = {} } = this.config
 
     if (value === '__ignore__') {
@@ -68,7 +69,7 @@ export class Recipe {
     }
 
     return {
-      className: `${name}__${prop}-${value}`,
+      className: `${name}--${prop}${separator}${value}`,
       styles: variants[prop]?.[value] ?? {},
     }
   }

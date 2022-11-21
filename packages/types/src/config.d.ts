@@ -17,7 +17,7 @@ export type Config<
    * The value separator used in the generated class names.
    * @default '_'
    */
-  separator?: string
+  separator?: '_' | '=' | '-'
   /**
    * The log level for the built-in logger.
    */

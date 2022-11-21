@@ -180,10 +180,8 @@ function setupCssIndex(ctx: PandaContext): Output {
   const code = outdent`
   export * from './css'
   export * from './cx'
-  export * from './font-face'
   export * from './global-css'
   export * from './css-map'
-  export * from './sx'
  `
 
   return {
