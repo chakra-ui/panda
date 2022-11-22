@@ -195,7 +195,7 @@ importers:
       postcss: 8.4.19
       preferred-pm: ^3.0.3
       telejson: 6.0.8
-      ts-morph: 17.0.0
+      ts-morph: 17.0.1
       ts-pattern: 4.0.6
     dependencies:
       '@pandacss/config': link:../config
@@ -221,7 +221,7 @@ importers:
       postcss: 8.4.19
       preferred-pm: 3.0.3
       telejson: 6.0.8
-      ts-morph: 17.0.0
+      ts-morph: 17.0.1
       ts-pattern: 4.0.6
     devDependencies:
       '@pandacss/fixture': link:../fixture
@@ -239,14 +239,14 @@ importers:
       '@pandacss/logger': workspace:*
       '@pandacss/shared': workspace:*
       '@pandacss/types': workspace:*
-      ts-morph: 17.0.0
+      ts-morph: 17.0.1
       ts-pattern: 4.0.6
     dependencies:
       '@pandacss/is-valid-prop': link:../is-valid-prop
       '@pandacss/logger': link:../logger
       '@pandacss/shared': link:../shared
       '@pandacss/types': link:../types
-      ts-morph: 17.0.0
+      ts-morph: 17.0.1
       ts-pattern: 4.0.6
     devDependencies:
       '@pandacss/fixture': link:../fixture
@@ -7307,8 +7307,8 @@ packages:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
     dev: false
 
-  /ts-morph/17.0.0:
-    resolution: {integrity: sha512-EJxyHTpBXsYnOgV6UpYs4vjhMS/8IZXg5kkGcM9+b8SygMmmOoeWOpaSG8E4puhewjkIbUObodGhfJkBoFX3og==}
+  /ts-morph/17.0.1:
+    resolution: {integrity: sha512-10PkHyXmrtsTvZSL+cqtJLTgFXkU43Gd0JCc0Rw6GchWbqKe0Rwgt1v3ouobTZwQzF1mGhDeAlWYBMGRV7y+3g==}
     dependencies:
       '@ts-morph/common': 0.18.0
       code-block-writer: 11.0.3
