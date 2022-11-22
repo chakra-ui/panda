@@ -9,8 +9,13 @@ type StyleObject = Record<string, any>
 
 export class Recipe {
   config: RecipeConfig
+  name: string
+  values = new Map<string, Set<{ className: string; value: string }>>()
+
   constructor(config: RecipeConfig, private context: StylesheetContext) {
     const { name, base = {}, variants = {}, defaultVariants = {}, description = '' } = config
+
+    this.name = name
 
     const recipe: Required<RecipeConfig> = {
       name,
@@ -23,15 +28,31 @@ export class Recipe {
     recipe.base = this.walk(base)
 
     for (const [key, variant] of Object.entries(variants)) {
-      for (const [value, styles] of Object.entries(variant)) {
-        merge(recipe.variants, { [key]: { [value]: this.walk(styles) } })
+      for (const [variantKey, styles] of Object.entries(variant)) {
+        this.setValues(key, variantKey)
+        merge(recipe.variants, {
+          [key]: { [variantKey]: this.walk(styles) },
+        })
       }
     }
 
     this.config = recipe
   }
 
-  walk = (styleObject: StyleObject) => {
+  private setValues = (key: string, value: string) => {
+    this.values.get(key) || this.values.set(key, new Set())
+    this.values.get(key)!.add({
+      className: this.getClassName(key, value),
+      value: value,
+    })
+  }
+
+  private getClassName = (key: string, value: string) => {
+    const { separator } = this.context.utility
+    return `${this.name}--${key}${separator}${value}`
+  }
+
+  private walk = (styleObject: StyleObject) => {
     const { utility, conditions } = this.context
 
     const transformed: StyleObject = {}
@@ -57,8 +78,7 @@ export class Recipe {
     return transformed
   }
 
-  transform = (prop: string, value: string) => {
-    const { separator } = this.context.utility
+  private transform = (prop: string, value: string) => {
     const { name, base = {}, variants = {} } = this.config
 
     if (value === '__ignore__') {
@@ -69,7 +89,7 @@ export class Recipe {
     }
 
     return {
-      className: `${name}--${prop}${separator}${value}`,
+      className: this.getClassName(prop, value),
       styles: variants[prop]?.[value] ?? {},
     }
   }

@@ -70,7 +70,7 @@ export type ConditionCssProperties<
   [Key in keyof Conditions]?: ConditionCssProperties<Omit<Conditions, Key>, UserProperties, StrictValue>
 }
 
-type NestedCss<T> = T & {
+export type NestedCss<T> = T & {
   [key in Pseudo | Loose]?: NestedCss<T> | Loose<string> | Loose<number> | boolean
 }
 
@@ -87,14 +87,15 @@ export type GroupedCss<T> = {
 }
 
 export type PandaCssObject<
-  Conditions extends TCondition,
+  Conditions extends TCondition = TCondition,
   UserProperties extends Record<string, any> = NeverType,
   Strict extends boolean = false,
-> = NestedCss<ConditionCssProperties<Conditions, UserProperties, Strict>> &
-  GroupedCss<ConditionCssProperties<Conditions, UserProperties, Strict>>
+> =
+  | NestedCss<ConditionCssProperties<Conditions, UserProperties, Strict>>
+  | GroupedCss<ConditionCssProperties<Conditions, UserProperties, Strict>>
 
 export type GlobalCss<
-  Conditions extends TCondition,
+  Conditions extends TCondition = TCondition,
   UserProperties extends Record<string, any> = NeverType,
   Strict extends boolean = false,
 > = Record<string, NestedCss<ConditionCssProperties<Conditions, UserProperties, Strict>>>
