@@ -43,7 +43,7 @@
     "pluralize": "8.0.0",
     "telejson": "6.0.8",
     "ts-pattern": "4.0.6",
-    "ts-morph": "17.0.0"
+    "ts-morph": "17.0.1"
   },
   "devDependencies": {
     "boxen": "^7.0.0",
