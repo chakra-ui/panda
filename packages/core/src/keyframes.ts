@@ -1,8 +1,8 @@
-import type { KeyframeDefinition, Keyframes } from '@pandacss/types'
 import postcss from 'postcss'
 import { toCss } from './to-css'
+import type { Dict } from './types'
 
-function getKeyframeCss(name: string, definition: KeyframeDefinition) {
+function toString(name: string, definition: Dict) {
   return postcss.atRule({
     name: 'keyframes',
     params: name,
@@ -10,11 +10,11 @@ function getKeyframeCss(name: string, definition: KeyframeDefinition) {
   })
 }
 
-export function toKeyframeCss(keyframes: Keyframes) {
+export function toKeyframeCss(values: Dict) {
   const root = postcss.root()
 
-  for (const [name, definition] of Object.entries(keyframes)) {
-    root.append(getKeyframeCss(name, definition.value))
+  for (const [name, definition] of Object.entries(values)) {
+    root.append(toString(name, definition))
   }
 
   const rule = postcss.atRule({
