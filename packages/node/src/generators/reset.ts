@@ -57,10 +57,12 @@ const reset = css`
 
   ::-webkit-search-decoration {
     -webkit-appearance: none;
+    appearance: none;
   }
 
   ::-webkit-file-upload-button {
     -webkit-appearance: button;
+    appearance: none;
     font: inherit;
   }
 
