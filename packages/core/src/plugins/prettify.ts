@@ -19,3 +19,5 @@ export default function prettify(): TransformCallback {
     }
   }
 }
+
+prettify.postcssPlugin = 'panda-prettify'
