@@ -1,4 +1,4 @@
-import type { TransformHelpers } from '@pandacss/types'
+import type { Dict, TransformHelpers } from '@pandacss/types'
 import type { Root } from 'postcss'
 import type { Conditions } from './conditions'
 import type { Utility } from './utility'
@@ -20,5 +20,3 @@ export type StylesheetContext = {
   transform: (prop: string, value: string) => TransformResult
   hash?: boolean
 }
-
-export type Dict<T = any> = Record<string, T>

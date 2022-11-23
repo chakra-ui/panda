@@ -1,6 +1,6 @@
+import type { Dict } from '@pandacss/types'
 import postcss from 'postcss'
 import postcssNested from 'postcss-nested'
-import type { Dict } from './types'
 import { postCssJs } from './vendor'
 
 export function toCss(styles: Dict, { important }: { important?: boolean } = {}) {
