@@ -15,6 +15,7 @@ type AriaAttributes =
   | '[aria-pressed]'
   | `[aria-current=${'page' | 'step' | 'location' | 'date' | 'time'}]`
   | '[aria-invalid]'
+  | `[aria-sort=${'ascending' | 'descending'}]`
 
 type DataAttributes =
   | '[data-selected]'
@@ -26,6 +27,7 @@ type DataAttributes =
   | '[data-readonly]'
   | '[data-focus]'
   | '[data-focus-visible]'
+  | '[data-focus-visible-added]'
   | '[data-invalid]'
   | '[data-pressed]'
   | '[data-expanded]'
