@@ -33,15 +33,45 @@ export class AtomicRule {
     return this.context.conditions.rule()
   }
 
+  private normalizeStyleObject = (styles: ProcessOptions['styles']) => {
+    const { utility, breakpoints } = this.context
+
+    const breakpointEntries = Object.entries(breakpoints).sort(function sortByBreakpointValue(a, b) {
+      return parseInt(a[1], 10) > parseInt(b[1], 10) ? 1 : -1
+    })
+
+    return walkObject(
+      styles,
+      (value) => {
+        if (Array.isArray(value)) {
+          // convert responsive array notation to object notation
+          return value.reduce((prevValue, currentValue, index) => {
+            const [key] = breakpointEntries[index]
+            if (currentValue != null) {
+              prevValue[key] = currentValue
+            }
+            return prevValue
+          }, {})
+        }
+        return value
+      },
+      {
+        stop: (value) => Array.isArray(value),
+        getKey: (prop) => {
+          if (utility.hasShorthand) {
+            return utility.resolveShorthand(prop)
+          }
+          return prop
+        },
+      },
+    )
+  }
+
   process = (options: ProcessOptions) => {
     const { scope, styles } = options
-    const { utility, conditions: cond } = this.context
+    const { conditions: cond } = this.context
 
-    const styleObject = utility.hasShorthand
-      ? walkObject(styles, (v) => v, {
-          getKey: (prop) => utility.resolveShorthand(prop),
-        })
-      : styles
+    const styleObject = this.normalizeStyleObject(styles)
 
     const rule = this.rule
 
