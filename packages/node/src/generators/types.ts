@@ -14,15 +14,15 @@ export function generateCssType(ctx: PandaContext) {
     cssType: getType('csstype.d.ts'),
     pandaCssType: getType('panda-csstype.d.ts'),
     publicType: outdent`
-    import { PandaCssObject, PandaConditionalValue, ConditionCssProperties } from './panda-csstype'
+    import { StyleObject, Conditional, ConditionCssProperties } from './system-types'
     import { PropTypes } from './prop-type'
     import { Conditions } from './conditions'
     
     export type CssObject = ${
-      strict ? 'PandaCssObject<Conditions, PropTypes, true>' : 'PandaCssObject<Conditions, PropTypes>'
+      strict ? 'StyleObject<Conditions, PropTypes, true>' : 'StyleObject<Conditions, PropTypes>'
     } 
 
-    export type ConditionalValue<Value> = PandaConditionalValue<Conditions, Value>
+    export type ConditionalValue<T> = Conditional<Conditions, T>
     
     export type CssProperties = ${
       strict ? 'ConditionCssProperties<Conditions, PropTypes, true>' : 'ConditionCssProperties<Conditions, PropTypes>'
