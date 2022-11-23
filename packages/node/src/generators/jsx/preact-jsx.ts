@@ -9,13 +9,13 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
   return {
     dts: outdent`
     import type { ComponentProps, JSX } from 'preact'
-    import type { CssProperties, CssObject } from '../types'
+    import type { JSXStyleProperties } from '../types'
     
     type Element = keyof JSX.IntrinsicElements
 
     type Merge<P, T> = Omit<P, 'color'> & T;
     
-    export type HTML${upperName}Props<T extends Element> = Merge<ComponentProps<T>, CssProperties> & { css?: CssObject }
+    export type HTML${upperName}Props<T extends Element> = Merge<ComponentProps<T>, JSXStyleProperties>
 
     type JSXFactory = {
       [K in Element]: (props: HTML${upperName}Props<K>) => JSX.Element

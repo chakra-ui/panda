@@ -8,11 +8,9 @@ export function generateGlobalCss() {
      }
     `,
     dts: outdent`
-    import { Properties } from '../types/csstype'
-    
-    export type GlobalCss = Record<string, Properties>
-    
-    export declare function globalCss(styles: GlobalCss): void;
+    import { GlobalStyleObject } from '../types'
+
+    export declare function globalCss(styles: GlobalStyleObject): void
     `,
   }
 }

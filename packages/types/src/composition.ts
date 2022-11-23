@@ -1,4 +1,4 @@
-import type { Conditional, NativeCssProperties, NestedCss } from './system-types'
+import type { Conditional, NativeCssProperties, Nested } from './system-types'
 import type { LiteralUnion, Primitive, Recursive } from './shared'
 
 export type Composition<Value = any> = {
@@ -43,7 +43,7 @@ type TextStyleProperty = LiteralUnion<
 
 type TCondition = Record<string, string>
 
-export type TextStyle<T extends TCondition = TCondition> = NestedCss<{
+export type TextStyle<T extends TCondition = TCondition> = Nested<{
   [K in TextStyleProperty]?: Conditional<T, K extends keyof NativeCssProperties ? NativeCssProperties[K] : Primitive>
 }>
 
@@ -102,7 +102,7 @@ type LayerStyleProperty = LiteralUnion<
   | `padding${Placement}`
 >
 
-export type LayerStyle<Conditions extends TCondition = TCondition> = NestedCss<{
+export type LayerStyle<Conditions extends TCondition = TCondition> = Nested<{
   [K in LayerStyleProperty]?: Conditional<
     Conditions,
     K extends keyof NativeCssProperties ? NativeCssProperties[K] : Primitive

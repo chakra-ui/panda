@@ -9,8 +9,8 @@ export function generateCssFn(ctx: PandaContext) {
 
   return {
     dts: outdent`
-    import { CssObject } from '../types'
-    export declare function css(styles: CssObject): string
+    import { SystemStyleObject } from '../types'
+    export declare function css(styles: SystemStyleObject): string
     `,
     js: outdent`
     import { createCss, withoutSpace } from "../helpers"

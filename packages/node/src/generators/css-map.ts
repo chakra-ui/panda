@@ -16,9 +16,9 @@ export function generateCssMap() {
     }
     `,
     dts: outdent`
-    import { CssObject } from "../types"
+    import { SystemStyleObject } from "../types"
     
-    export declare function cssMap<T extends string>(obj: Record<T, CssObject>): (...args: Array<T>) => string;
+    export declare function cssMap<T extends string>(obj: Record<T, SystemStyleObject>): (...args: Array<T>) => string;
     `,
   }
 }

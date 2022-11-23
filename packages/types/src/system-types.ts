@@ -5,7 +5,7 @@ type Loose<T = string> = T & { __type?: never }
 /**
  * We currently allow group css properties for better maintainability.
  */
-type GroupedCss<T> = {
+type Grouped<T> = {
   selectors?: {
     [key in Pseudo | Loose]?: T
   }
@@ -20,8 +20,8 @@ type GroupedCss<T> = {
   }
 }
 
-export type NestedCss<T> = T & {
-  [key in Pseudo | Loose]?: NestedCss<T> | Loose<string | number | boolean>
+export type Nested<T> = T & {
+  [key in Pseudo | Loose]?: Nested<T> | Loose<string | number | boolean>
 }
 
 /* -----------------------------------------------------------------------------
@@ -60,7 +60,7 @@ export type Conditional<C extends TCondition, V> =
       [K in keyof C]?: Conditional<C, V>
     }
 
-type WithConditional<C extends TCondition, V> = {
+type NestedConditional<C extends TCondition, V> = {
   [K in keyof V]?: Conditional<C, V[K]>
 }
 
@@ -76,39 +76,45 @@ type EitherOf<Key extends string, Native extends Record<Key, any>, Custom> = Key
   ? Custom[Key]
   : Native[Key]
 
-type StrictCssProperties<CustomProperties extends Record<string, any> = NeverType, Strict extends boolean = false> = {
+type StrictCssProperties<P extends Record<string, any> = NeverType, Strict extends boolean = false> = {
   [Key in NativeCssProperty]?: true extends Strict
-    ? EitherOf<Key, NativeCssProperties, CustomProperties>
-    : UnionOf<Key, NativeCssProperties, CustomProperties>
+    ? EitherOf<Key, NativeCssProperties, P>
+    : UnionOf<Key, NativeCssProperties, P>
 }
 
-type CustomCssProperties<CustomProperties extends Record<string, any> = NeverType> = {
-  [Key in keyof Omit<CustomProperties, NativeCssProperty>]?: CustomProperties[Key]
+type CustomCssProperties<P extends Record<string, any> = NeverType> = {
+  [Key in keyof Omit<P, NativeCssProperty>]?: P[Key]
 }
 
 type MixedCssProperties<
-  Conditions extends TCondition = TCondition,
-  CustomProperties extends Record<string, any> = NeverType,
-  Strict extends boolean = false,
-> = WithConditional<Conditions, StrictCssProperties<CustomCssProperties, Strict>> &
-  WithConditional<Conditions, CustomCssProperties<CustomCssProperties>> & {
-    [Key in keyof Conditions]?: MixedCssProperties<Omit<Conditions, Key>, CustomProperties, Strict>
+  C extends TCondition = TCondition,
+  P extends Record<string, any> = NeverType,
+  S extends boolean = false,
+> = NestedConditional<C, StrictCssProperties<P, S>> &
+  NestedConditional<C, CustomCssProperties<P>> & {
+    [Key in keyof C]?: MixedCssProperties<Omit<C, Key>, P, S>
   }
 
-export type NestedCssProperties = NestedCss<CssProperties>
+export type NestedCssProperties = Nested<CssProperties>
 
 export type StyleObject<
-  Conditions extends TCondition = TCondition,
-  Properties extends Record<string, any> = NeverType,
-  Strict extends boolean = false,
-> =
-  | NestedCss<MixedCssProperties<Conditions, Properties, Strict>>
-  | GroupedCss<MixedCssProperties<Conditions, Properties, Strict>>
+  C extends TCondition = TCondition,
+  P extends Record<string, any> = NeverType,
+  S extends boolean = false,
+> = Nested<MixedCssProperties<C, P, S>> | Grouped<MixedCssProperties<C, P, S>>
+
+export type JSXStyleProperties<
+  C extends TCondition = TCondition,
+  P extends Record<string, any> = NeverType,
+  S extends boolean = false,
+> = Nested<MixedCssProperties<C, P, S>> & {
+  css?: JSXStyleProperties<C, P, S>
+}
 
 export type GlobalStyleObject<
-  Conditions extends TCondition = TCondition,
-  Properties extends Record<string, any> = NeverType,
-  Strict extends boolean = false,
+  C extends TCondition = TCondition,
+  P extends Record<string, any> = NeverType,
+  S extends boolean = false,
 > = {
-  [selector: string]: NestedCss<MixedCssProperties<Conditions, Properties, Strict>>
+  [selector: string]: Nested<MixedCssProperties<C, P, S>>
 }

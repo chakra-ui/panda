@@ -8,13 +8,11 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
   return {
     dts: outdent`
     import type { JSX } from 'solid-js'
-    import type { CssProperties, CssObject } from '../types'
+    import type { JSXStyleProperties, Assign} from '../types'
     
     type Element = keyof JSX.IntrinsicElements
-
-    type Merge<P, T> = Omit<P, 'color'> & T;
     
-    export type HTML${upperName}Props<T extends Element> = Merge<JSX.IntrinsicElements[T], CssProperties> & { css?: CssObject }
+    export type HTML${upperName}Props<T extends Element> = Assign<JSX.IntrinsicElements[T], JSXStyleProperties>
 
     type JSXFactory = {
       [K in Element]: (props: HTML${upperName}Props<K>) => JSX.Element
