@@ -46,7 +46,6 @@
     "ts-morph": "17.0.1"
   },
   "devDependencies": {
-    "boxen": "^7.0.0",
     "@pandacss/fixture": "workspace:*",
     "@types/fs-extra": "9.0.13",
     "@types/is-glob": "^4.0.2",
