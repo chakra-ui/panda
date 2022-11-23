@@ -74,6 +74,23 @@ describe('atomic / with basic style object', () => {
     `)
   })
 
+  test('should resolve responsive array with gaps', () => {
+    expect(css({ styles: { width: ['50px', null, '60px'] } })).toMatchInlineSnapshot(`
+      "@layer utilities {
+          @screen sm {
+              .sm\\\\:w_50px {
+                  width: 50px
+              }
+          }
+          @screen lg {
+              .lg\\\\:w_60px {
+                  width: 60px
+              }
+          }
+      }"
+    `)
+  })
+
   test('should work with inner responsive', () => {
     expect(
       css({
