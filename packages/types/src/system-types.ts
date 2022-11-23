@@ -2,12 +2,48 @@ import type * as CSS from './csstype'
 
 type Loose<T = string> = T & { __type?: never }
 
+type DataAttributes =
+  | '[data-selected]'
+  | '[data-highlighted]'
+  | '[data-hover]'
+  | '[data-active]'
+  | '[data-checked]'
+  | '[data-disabled]'
+  | '[data-readonly]'
+  | '[data-focus]'
+  | '[data-focus-visible]'
+  | '[data-invalid]'
+  | '[data-pressed]'
+  | '[data-expanded]'
+  | '[data-grabbed]'
+  | '[data-dragged]'
+  | '[data-orientation=horizontal]'
+  | '[data-orientation=vertical]'
+  | '[data-in-range]'
+  | '[data-out-of-range]'
+  | '[data-placeholder-shown]'
+  | `[data-part=${string}']`
+  | `[data-attr=${string}']`
+  | `[data-placement=${string}']`
+  | `[data-theme=${string}']`
+  | `[data-size=${string}']`
+  | `[data-state=${string}']`
+  | '[data-empty]'
+  | '[data-loading]'
+  | '[data-loaded]'
+  | '[data-enter]'
+  | '[data-entering]'
+  | '[data-exited]'
+  | '[data-exiting]'
+
+type Selectors = `&${CSS.SimplePseudos | DataAttributes}` | `${DataAttributes} &`
+
 /**
  * We currently allow group css properties for better maintainability.
  */
 type Grouped<T> = {
   selectors?: {
-    [key in Pseudo | Loose]?: T
+    [key in Selectors | Loose]?: T
   }
   '@media'?: {
     [query: string]: T
@@ -21,7 +57,7 @@ type Grouped<T> = {
 }
 
 export type Nested<T> = T & {
-  [key in Pseudo | Loose]?: Nested<T> | Loose<string | number | boolean>
+  [key in Selectors | Loose]?: Nested<T> | Loose<string | number | boolean>
 }
 
 /* -----------------------------------------------------------------------------
@@ -37,8 +73,6 @@ type ContainerProperties = {
 export type NativeCssProperties = CSS.PropertiesFallback<Loose<string | number>> & ContainerProperties
 
 export type NativeCssProperty = keyof NativeCssProperties
-
-type Pseudo = `&${CSS.SimplePseudos}`
 
 export type CssProperties = NativeCssProperties & {
   [property: string]: string | number | boolean | Record<string, any> | undefined
