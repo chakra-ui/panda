@@ -1,10 +1,10 @@
 import type { LayerStyles, TextStyles } from './composition'
 import type { Conditions as TConditions } from './conditions'
-import type { Keyframes, GlobalCss } from './panda-csstype'
+import type { CssKeyframes, GlobalStyleObject } from './system-types'
 import type { PatternConfig } from './pattern'
 import type { RecipeConfig } from './recipe'
-import type { Dict, RequiredBy } from './shared'
-import type { PartialTokens, SemanticTokens } from './tokens'
+import type { Dict, RequiredBy, StringKeyOf } from './shared'
+import type { SemanticTokens, Tokens as PartialTokens } from './tokens'
 import type { UtilityConfig } from './utility'
 import type { ClassGeneratorOptions } from './generator'
 
@@ -88,11 +88,11 @@ export type Config<
   /**
    * The css animation keyframes definitions.
    */
-  keyframes?: Keyframes
+  keyframes?: CssKeyframes
   /**
    * The global styles for your project.
    */
-  globalCss?: GlobalCss
+  globalCss?: GlobalStyleObject
   /**
    * The design tokens for your project.
    */
@@ -100,7 +100,7 @@ export type Config<
   /**
    * The semantic design tokens for your project.
    */
-  semanticTokens?: SemanticTokens<keyof Conditions | keyof Breakpoints | 'base' | '_'>
+  semanticTokens?: SemanticTokens<StringKeyOf<Conditions> | StringKeyOf<Breakpoints> | 'base' | '_'>
   /**
    * The typography styles for your project.
    */

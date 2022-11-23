@@ -1,7 +1,9 @@
+import type { Recursive } from './shared'
+
 export type TokenStatus = 'deprecated' | 'experimental' | 'new'
 
-export type Token<V = any> = {
-  value: V
+export type Token<Value = any> = {
+  value: Value
   description?: string
   type?: string
   extensions?: {
@@ -10,14 +12,11 @@ export type Token<V = any> = {
   }
 }
 
-export type SemanticToken<V = string, C extends string = string> = {
-  description?: string
-  type?: string
-  value: V | Record<C, V>
-  extensions?: {
-    [key: string]: any
-  }
-}
+export type SemanticToken<Value = string, Condition extends string = string> = Token<Value | Record<Condition, Value>>
+
+/* -----------------------------------------------------------------------------
+ * Token data types
+ * -----------------------------------------------------------------------------*/
 
 type Border = {
   color: string
@@ -43,9 +42,7 @@ type Gradient = {
   }>
 }
 
-type Nested<T> = { [key: string]: T | Nested<T> }
-
-export type TokenValues = {
+export type TokenDataTypes = {
   zIndex: number
   opacity: number
   colors: string
@@ -68,11 +65,11 @@ export type TokenValues = {
 }
 
 export type Tokens = {
-  [key in keyof TokenValues]?: Nested<Token<TokenValues[key]>>
+  [key in keyof TokenDataTypes]?: Recursive<Token<TokenDataTypes[key]>>
 }
 
-export type SemanticTokens<C extends string = string> = {
-  [key in keyof TokenValues]?: Nested<SemanticToken<TokenValues[key], C>>
+export type SemanticTokens<ConditionKey extends string = string> = {
+  [key in keyof TokenDataTypes]?: Recursive<SemanticToken<TokenDataTypes[key], ConditionKey>>
 }
 
-export type TokenCategory = keyof TokenValues
+export type TokenCategory = keyof TokenDataTypes

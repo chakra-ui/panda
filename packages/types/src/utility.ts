@@ -1,27 +1,18 @@
-import type { Properties } from './panda-csstype'
-
-type ClassNameFn = (value: string, prop: string) => string
-
-export type PropertyClassName = string | ClassNameFn
+import type { LiteralUnion } from './shared'
+import type { NativeCssProperty, NestedCssProperties } from './system-types'
 
 type Getter = (path: string) => any
 
 type ThemeFn = (token: Getter) => Record<string, string>
 
-type CssObject =
-  | Properties
-  | {
-      [selector: string]: string | number | null | undefined | Properties
-    }
-
 export type PropertyValues = string | string[] | { type: string } | Record<string, string> | ThemeFn
 
-export type PropertyTransform<T = CssObject> = (value: any, token: Getter) => T
+export type PropertyTransform = (value: any, token: Getter) => NestedCssProperties
 
 export type PropertyConfig = {
   /**
    * @internal
-   * The cascade layer to which the property  belongs
+   * The cascade layer to which the property belongs
    */
   layer?: string
   /**
@@ -39,7 +30,7 @@ export type PropertyConfig = {
   /**
    * The css property this utility maps to.
    */
-  property?: keyof Properties
+  property?: NativeCssProperty
   /**
    * The shorthand of the property.
    */
@@ -47,7 +38,5 @@ export type PropertyConfig = {
 }
 
 export type UtilityConfig = {
-  [property in keyof Properties]?: PropertyConfig
-} & {
-  [key: string]: PropertyConfig
+  [property in LiteralUnion<NativeCssProperty>]?: PropertyConfig
 }
