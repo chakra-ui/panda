@@ -156,11 +156,13 @@ importers:
 
   packages/logger:
     specifiers:
+      boxen: ^7.0.0
       kleur: ^4.1.5
       matcher: 5.0.0
     dependencies:
       kleur: 4.1.5
     devDependencies:
+      boxen: 7.0.0
       matcher: 5.0.0
 
   packages/node:
@@ -180,7 +182,6 @@ importers:
       '@types/is-glob': ^4.0.2
       '@types/lodash.merge': 4.6.7
       '@types/pluralize': 0.0.29
-      boxen: ^7.0.0
       chokidar: ^3.5.3
       fast-glob: ^3.2.11
       fs-extra: 10.1.0
@@ -230,7 +231,6 @@ importers:
       '@types/is-glob': 4.0.2
       '@types/lodash.merge': 4.6.7
       '@types/pluralize': 0.0.29
-      boxen: 7.0.0
 
   packages/parser:
     specifiers:
