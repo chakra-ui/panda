@@ -1,10 +1,10 @@
 import { logger } from '@pandacss/logger'
-import type { BaseConditionType, Dict, RawCondition } from '@pandacss/types'
+import type { ConditionType, Dict, RawCondition } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
 import { ConditionalRule } from './conditional-rule'
 import { parseCondition } from './parse-condition'
 
-const order: BaseConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-nesting', 'at-rule']
+const order: ConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-nesting', 'at-rule']
 
 type Options = {
   conditions: Dict<string>

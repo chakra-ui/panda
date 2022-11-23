@@ -73,7 +73,7 @@ function setupTypes(ctx: PandaContext): Output {
     dir: ctx.paths.types,
     files: [
       { file: 'csstype.d.ts', code: code.cssType },
-      { file: 'panda-csstype.d.ts', code: code.pandaCssType },
+      { file: 'system-types.d.ts', code: code.pandaCssType },
       { file: 'index.d.ts', code: code.publicType },
       { file: 'token.d.ts', code: generateTokenDts(ctx.tokens) },
       { file: 'prop-type.d.ts', code: generatePropTypes(ctx.utility) },

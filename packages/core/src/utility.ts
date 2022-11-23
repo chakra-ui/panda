@@ -47,7 +47,7 @@ export class Utility {
   /**
    * The map of property names to their transform functions
    */
-  private transforms: Map<string, PropertyTransform<any>> = new Map()
+  private transforms: Map<string, PropertyTransform> = new Map()
 
   /**
    * The map of property names to their config
@@ -179,6 +179,7 @@ export class Utility {
 
   private assignProperties() {
     for (const [property, propertyConfig] of Object.entries(this.config)) {
+      if (!propertyConfig) continue
       this.assignProperty(property, propertyConfig)
     }
   }
@@ -208,6 +209,7 @@ export class Utility {
 
   private assignPropertyTypes() {
     for (const [property, propertyConfig] of Object.entries(this.config)) {
+      if (!propertyConfig) continue
       this.assignPropertyType(property, propertyConfig)
     }
   }

@@ -1,15 +1,16 @@
-import type { PandaConditionalValue, Properties } from './panda-csstype'
+import type { Conditional, NativeCssProperties, Nested } from './system-types'
+import type { LiteralUnion, Primitive, Recursive } from './shared'
 
-export type Composition<V = any> = {
-  value: V
+export type Composition<Value = any> = {
+  value: Value
   description?: string
 }
 
-type Nested<T> = {
-  [key: string]: T | Nested<T>
-}
+/* -----------------------------------------------------------------------------
+ * Text styles
+ * -----------------------------------------------------------------------------*/
 
-type TextStyleProperty =
+type TextStyleProperty = LiteralUnion<
   | 'fontSize'
   | 'fontSizeAdjust'
   | 'fontVariationSettings'
@@ -38,13 +39,19 @@ type TextStyleProperty =
   | 'textOrientation'
   | 'textOverflow'
   | 'textRendering'
-  | (string & {})
+>
 
 type TCondition = Record<string, string>
 
-type TextStyle<Conditions extends TCondition = TCondition> = {
-  [K in TextStyleProperty]?: PandaConditionalValue<Conditions, Properties[K] | (string & {})>
-}
+export type TextStyle<T extends TCondition = TCondition> = Nested<{
+  [K in TextStyleProperty]?: Conditional<T, K extends keyof NativeCssProperties ? NativeCssProperties[K] : Primitive>
+}>
+
+export type TextStyles<T extends TCondition = TCondition> = Recursive<Composition<TextStyle<T>>>
+
+/* -----------------------------------------------------------------------------
+ * Layer styles
+ * -----------------------------------------------------------------------------*/
 
 type Placement =
   | 'Top'
@@ -64,7 +71,7 @@ type Radius =
   | `Start${'Start' | 'End'}`
   | `End${'Start' | 'End'}`
 
-type LayerStyleProperty =
+type LayerStyleProperty = LiteralUnion<
   | 'background'
   | 'backgroundColor'
   | 'backgroundImage'
@@ -93,14 +100,13 @@ type LayerStyleProperty =
   | `border${Placement}Style`
   | 'padding'
   | `padding${Placement}`
-  | 'margin'
-  | `margin${Placement}`
-  | (string & {})
+>
 
-type LayerStyle<Conditions extends TCondition = TCondition> = {
-  [K in LayerStyleProperty]?: PandaConditionalValue<Conditions, Properties[K]>
-}
+export type LayerStyle<Conditions extends TCondition = TCondition> = Nested<{
+  [K in LayerStyleProperty]?: Conditional<
+    Conditions,
+    K extends keyof NativeCssProperties ? NativeCssProperties[K] : Primitive
+  >
+}>
 
-export type TextStyles<Conditions extends TCondition = TCondition> = Nested<Composition<TextStyle<Conditions>>>
-
-export type LayerStyles<Conditions extends TCondition = TCondition> = Nested<Composition<LayerStyle<Conditions>>>
+export type LayerStyles<Conditions extends TCondition = TCondition> = Recursive<Composition<LayerStyle<Conditions>>>

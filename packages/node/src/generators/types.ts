@@ -12,21 +12,18 @@ export function generateCssType(ctx: PandaContext) {
   const strict = ctx.strictTokens
   return {
     cssType: getType('csstype.d.ts'),
-    pandaCssType: getType('panda-csstype.d.ts'),
+    pandaCssType: getType('system-types.d.ts'),
     publicType: outdent`
-    import { PandaCssObject, PandaConditionalValue, ConditionCssProperties } from './panda-csstype'
+    import * as System from './system-types'
     import { PropTypes } from './prop-type'
     import { Conditions } from './conditions'
     
-    export type CssObject = ${
-      strict ? 'PandaCssObject<Conditions, PropTypes, true>' : 'PandaCssObject<Conditions, PropTypes>'
-    } 
+    export type SystemStyleObject = System.StyleObject<Conditions, PropTypes${strict ? ', true' : ''}>
+    export type GlobalStyleObject = System.GlobalStyleObject<Conditions, PropTypes${strict ? ', true' : ''}>
+    export type JSXStyleProperties = System.JSXStyleProperties<Conditions, PropTypes${strict ? ', true' : ''}>
 
-    export type ConditionalValue<Value> = PandaConditionalValue<Conditions, Value>
-    
-    export type CssProperties = ${
-      strict ? 'ConditionCssProperties<Conditions, PropTypes, true>' : 'ConditionCssProperties<Conditions, PropTypes>'
-    }
+    export type ConditionalValue<T> = System.Conditional<Conditions, T>
+    export type Assign<T, U> = Omit<T, keyof U> & U
     `,
   }
 }

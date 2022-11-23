@@ -2,10 +2,13 @@
   "name": "@pandacss/types",
   "version": "0.0.1",
   "description": "The types for css panda",
-  "main": "src/index.d.ts",
+  "main": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "scripts": {
-    "prepare": "tsx scripts/polyfill.ts"
+    "prepare": "cp node_modules/csstype/index.d.ts src/csstype.d.ts",
+    "build": "tsx scripts/build.ts",
+    "build-fast": "tsx scripts/build.ts",
+    "dev": "chokidar -c 'pnpm build' src"
   },
   "sideEffects": false,
   "publishConfig": {
@@ -15,6 +18,7 @@
     "src"
   ],
   "devDependencies": {
-    "csstype": "3.1.1"
+    "csstype": "3.1.1",
+    "chokidar-cli": "^3.0.0"
   }
 }

@@ -1,10 +1,12 @@
-import type { CssProperties, WithNesting } from './panda-csstype'
+import type { StyleObject } from './system-types'
 
-export type RecipeVariant = Record<string, WithNesting<CssProperties>>
+export type RecipeVariant = {
+  [variant: string]: StyleObject
+}
 
-type TRecipe = Record<string, RecipeVariant>
+type TVariants = Record<string, RecipeVariant>
 
-export type RecipeConfig<Variants extends TRecipe = TRecipe> = {
+export type RecipeConfig<Variants extends TVariants = TVariants> = {
   /**
    * The name of the recipe.
    */
@@ -12,7 +14,7 @@ export type RecipeConfig<Variants extends TRecipe = TRecipe> = {
   /**
    * The base styles of the recipe.
    */
-  base?: WithNesting<CssProperties>
+  base?: StyleObject
   /**
    * The multi-variant styles of the recipe.
    */

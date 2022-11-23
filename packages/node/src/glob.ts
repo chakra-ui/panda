@@ -1,5 +1,3 @@
-// Credit: https://github.com/tailwindlabs/tailwindcss/blob/4fed060b7c/src/util/parseDependency.js
-
 import globParent from 'glob-parent'
 import isGlob from 'is-glob'
 import { resolve } from 'path'

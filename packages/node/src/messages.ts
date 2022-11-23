@@ -1,6 +1,5 @@
-import { colors, quote } from '@pandacss/logger'
+import { colors, logger, quote } from '@pandacss/logger'
 import { outdent } from 'outdent'
-import { cliBox } from './cli-box'
 import type { PandaContext } from './context'
 
 const tick = colors.green().bold('✔️')
@@ -56,7 +55,7 @@ const randomWords = ['Sweet', 'Divine', 'Pandalicious', 'Super']
 const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
 
 export function scaffoldCompleteMessage() {
-  return cliBox(
+  return logger.box(
     outdent`
 
   ${colors.bold().cyan('Next steps:')}

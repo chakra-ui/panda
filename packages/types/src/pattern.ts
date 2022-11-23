@@ -1,16 +1,14 @@
-import type { CssProperty, ConditionCssProperties } from './panda-csstype'
+import type { NativeCssProperty, StyleObject } from './system-types'
 import type { TokenCategory } from './tokens'
 
 export type PatternProperty =
-  | { type: 'property'; value: CssProperty }
+  | { type: 'property'; value: NativeCssProperty }
   | { type: 'enum'; value: string[] }
-  | { type: 'token'; value: TokenCategory; property?: CssProperty }
+  | { type: 'token'; value: TokenCategory; property?: NativeCssProperty }
   | { type: 'string' | 'boolean' | 'number' }
 
-type Value = string | { [key: string]: Value }
-
 export type TransformHelpers = {
-  map: (value: Value, fn: (value: string) => string | undefined) => any
+  map: (value: any, fn: (value: string) => string | undefined) => any
 }
 
 export type PatternConfig = {
@@ -25,7 +23,7 @@ export type PatternConfig = {
   /**
    * The css object this pattern will generate.
    */
-  transform?: (props: Record<string, Value>, helpers: TransformHelpers) => ConditionCssProperties
+  transform?: (props: Record<string, any>, helpers: TransformHelpers) => StyleObject
   /**
    * The jsx element name this pattern will generate.
    */

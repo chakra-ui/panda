@@ -25,16 +25,14 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     dts: outdent`
     import { ComponentProps, ElementType, PropsWithChildren } from 'react'
     import { ${upperName}Options } from '../patterns/${dashCase(name)}'
-    import { CssObject } from '../types'
+    import { JSXStyleProperties, Assign } from '../types'
     
-    type Merge<T, U> = Omit<T, keyof U> & U
     type PropsOf<C extends ElementType> = ComponentProps<C>
-    type StyleProps = CssObject & { css?: CssObject }
     
-    type Polymorphic<C extends ElementType = 'div', P = {}> = StyleProps &
-      Merge<PropsWithChildren<PropsOf<C>>, P & { as?: C; color?: string }>
+    type Polymorphic<C extends ElementType = 'div', P = {}> = JSXStyleProperties &
+      Assign<Omit<PropsOf<C>, 'color'>, P & { as?: C }>
 
-    type ${jsxName}Props<C extends ElementType> = Polymorphic<C, ${upperName}Options>
+    export type ${jsxName}Props<C extends ElementType> = Polymorphic<C, ${upperName}Options>
     
     export declare function ${jsxName}<V extends ElementType>(props: ${jsxName}Props<V>): JSX.Element    
     `,

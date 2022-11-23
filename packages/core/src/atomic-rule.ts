@@ -7,10 +7,11 @@ import {
   withoutImportant,
   withoutSpace,
 } from '@pandacss/shared'
+import type { Dict } from '@pandacss/types'
 import type { Root } from 'postcss'
 import postcss from 'postcss'
 import { toCss } from './to-css'
-import type { Dict, StylesheetContext } from './types'
+import type { StylesheetContext } from './types'
 
 export type ProcessOptions = {
   scope?: string[]

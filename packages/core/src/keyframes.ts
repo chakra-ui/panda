@@ -1,6 +1,6 @@
+import type { CssKeyframes, Dict } from '@pandacss/types'
 import postcss from 'postcss'
 import { toCss } from './to-css'
-import type { Dict } from './types'
 
 function toString(name: string, definition: Dict) {
   return postcss.atRule({
@@ -10,7 +10,7 @@ function toString(name: string, definition: Dict) {
   })
 }
 
-export function toKeyframeCss(values: Dict) {
+export function toKeyframeCss(values: CssKeyframes) {
   const root = postcss.root()
 
   for (const [name, definition] of Object.entries(values)) {

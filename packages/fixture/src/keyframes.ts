@@ -1,6 +1,6 @@
-import type { Keyframes } from '@pandacss/types'
+import type { CssKeyframes } from '@pandacss/types'
 
-export const keyframes: Keyframes = {
+export const keyframes: CssKeyframes = {
   spin: {
     to: {
       transform: 'rotate(360deg)',

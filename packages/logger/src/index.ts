@@ -1,5 +1,6 @@
-import { isMatch } from 'matcher'
+import boxen from 'boxen'
 import colors from 'kleur'
+import { isMatch } from 'matcher'
 import util from 'util'
 
 const omitKeys = ['level', 'type', 'time', 'pid']
@@ -179,6 +180,16 @@ class Logger {
       info: (msg: string, ...args: any[]) => base('info', msg, ...args),
       debug: (msg: string, ...args: any[]) => base('debug', msg, ...args),
     }
+  }
+
+  box(content: string, title?: string) {
+    return boxen(content, {
+      padding: { left: 3, right: 3, top: 1, bottom: 1 },
+      borderColor: 'magenta',
+      borderStyle: 'round',
+      title,
+      titleAlignment: 'center',
+    })
   }
 }
 

@@ -11,7 +11,7 @@ function generate(name: string, pattern: PatternConfig) {
   return {
     name: dashCase(name),
     dts: outdent`
-    import { CssObject, ConditionalValue } from "../types"
+    import { SystemStyleObject, ConditionalValue } from "../types"
     import { Properties } from "../types/csstype"
     import { Tokens } from "../types/token"
 
@@ -21,7 +21,7 @@ function generate(name: string, pattern: PatternConfig) {
            const value = properties![key]
            return match(value)
              .with({ type: 'property' }, (value) => {
-               return `${key}?: CssObject["${value.value}"]`
+               return `${key}?: SystemStyleObject["${value.value}"]`
              })
              .with({ type: 'token' }, (value) => {
                if (value.property) {
@@ -43,7 +43,7 @@ function generate(name: string, pattern: PatternConfig) {
       strict
         ? outdent`export declare function ${name}(options: ${capitalize(name)}Options): string`
         : outdent`
-        type Merge<T> = Omit<CssObject, keyof T> & T
+        type Merge<T> = Omit<SystemStyleObject, keyof T> & T
         export declare function ${name}(options: Merge<${capitalize(name)}Options>): string
         `
     }
