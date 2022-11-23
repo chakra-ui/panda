@@ -2,6 +2,20 @@ import type * as CSS from './csstype'
 
 type Loose<T = string> = T & { __type?: never }
 
+// list of aria states selectors
+type AriaAttributes =
+  | '[aria-disabled]'
+  | '[aria-hidden]'
+  | '[aria-invalid]'
+  | '[aria-readonly]'
+  | '[aria-required]'
+  | '[aria-selected]'
+  | '[aria-checked]'
+  | '[aria-expanded]'
+  | '[aria-pressed]'
+  | `[aria-current=${'page' | 'step' | 'location' | 'date' | 'time'}]`
+  | '[aria-invalid]'
+
 type DataAttributes =
   | '[data-selected]'
   | '[data-highlighted]'
@@ -36,7 +50,7 @@ type DataAttributes =
   | '[data-exited]'
   | '[data-exiting]'
 
-type Selectors = `&${CSS.SimplePseudos | DataAttributes}` | `${DataAttributes} &`
+type Selectors = `&${CSS.Pseudos | DataAttributes | AriaAttributes}` | `${DataAttributes} &` | `${AriaAttributes} &`
 
 /**
  * We currently allow group css properties for better maintainability.
