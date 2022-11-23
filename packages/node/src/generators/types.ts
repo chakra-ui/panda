@@ -12,7 +12,7 @@ export function generateCssType(ctx: PandaContext) {
   const strict = ctx.strictTokens
   return {
     cssType: getType('csstype.d.ts'),
-    pandaCssType: getType('panda-csstype.d.ts'),
+    pandaCssType: getType('system-types.d.ts'),
     publicType: outdent`
     import { StyleObject, Conditional, ConditionCssProperties } from './system-types'
     import { PropTypes } from './prop-type'
