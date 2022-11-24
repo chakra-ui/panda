@@ -1,8 +1,7 @@
-import { config } from '@pandacss/fixture'
 import { defineConfig } from 'css-panda'
 
 export default defineConfig({
-  ...config,
+  presets: ['css-panda/presets'],
   outdir: 'styled-system',
   include: ['pages/**/*.jsx'],
 })
