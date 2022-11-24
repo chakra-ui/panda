@@ -15,7 +15,7 @@
     "access": "public"
   },
   "files": [
-    "src"
+    "dist"
   ],
   "devDependencies": {
     "csstype": "3.1.1",
