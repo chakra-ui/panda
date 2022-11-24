@@ -12,7 +12,7 @@ import { NotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { capitalize, compact, mapObject, uncapitalize } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import type { RecipeConfig } from '@pandacss/types'
+import type { PatternConfig, RecipeConfig } from '@pandacss/types'
 import glob from 'fast-glob'
 import { readdirSync } from 'fs'
 import { emptyDir, ensureDir, existsSync } from 'fs-extra'
@@ -128,9 +128,12 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * Patterns
    * -----------------------------------------------------------------------------*/
 
-  function getPattern(name: string) {
+  // layout grid is a custom component we generate. Not a pattern so we ignore
+  const patternExclude = ['layoutGrid']
+
+  function getPattern(name: string): PatternConfig | undefined {
     const pattern = patterns[name]
-    if (!pattern) {
+    if (!pattern && !patternExclude.includes(name)) {
       throw new NotFoundError({ type: 'pattern', name })
     }
     return pattern
@@ -138,7 +141,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
   function execPattern(name: string, data: Record<string, any>) {
     const pattern = getPattern(name)
-    return pattern.transform?.(data, helpers) ?? {}
+    return pattern?.transform?.(data, helpers) ?? {}
   }
 
   const patternNodes = Object.entries(patterns).map(([name, pattern]) => ({
