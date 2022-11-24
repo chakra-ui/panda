@@ -1,6 +1,6 @@
-# CSS panda
+# Panda
 
-The universal design system solution for enterprise team.
+The universal design system solution for the web
 
 ## Features
 
