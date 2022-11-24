@@ -53,7 +53,7 @@ export class Stylesheet {
 
   processAtomic = (styleObject: Dict) => {
     const ruleset = new AtomicRule(this.context)
-    return walkStyles(styleObject, (styles: any, scope?: string[]) => {
+    walkStyles(styleObject, (styles: any, scope?: string[]) => {
       ruleset.process({ scope, styles })
     })
   }
