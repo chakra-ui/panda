@@ -5,7 +5,7 @@ export function walkStyles(mixedStyles: Dict, fn: (style: Dict, scope?: string[]
     selectors = {},
     '@media': mediaQueries = {},
     '@container': containerQueries = {},
-    '@supports': supportQueries,
+    '@supports': supportQueries = {},
     ...baseStyles
   } = mixedStyles
 
