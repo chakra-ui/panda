@@ -1,0 +1,121 @@
+# Utilities
+
+> This API is an advanced feature and should only be used if you want a custom system for your project. In our default
+> preset, we've done most of the heavy lifting for you.
+
+The utilities API is a way to create your own CSS properties, map existing properties to a set of values or tokens. It's
+like building your own typesafe version of Chakra UI, Tailwind (in JS), Styled System, etc.
+
+This provides an interface to:
+
+- Map css properties to custom classNames
+- Map css properties to a specific set of values or tokens
+- Make your own css properties and transform them to css objects
+- Mark custom shorthands for css properties
+
+## Creating a custom utility
+
+The utilities API provides a way to define the property configuration for your system. It includes the following keys:
+
+- `className` : The className the property maps to in the DOM
+- `shorthand`: The shorthand version of the property
+- `values`: The token group the property references.
+- `transform`: A transform function that takes the passed value, and returns a valid css object
+
+**Basic Example**
+
+```js
+const config = {
+  utilities: {
+    backgroundColor: {
+      className: 'bg', // css({ backgroundColor: "red200" }) => bg-pink500,
+      shorthand: 'bgColor', // bgColor is now alias for backgroundColor
+      values: 'colors', // connect
+    },
+  },
+}
+```
+
+**Custom properties - Tokens**
+
+```js
+const config = {
+  utilities: {
+    bdt: {
+      values: 'borders',
+      transform(value) {
+        return {
+          borderTop: value,
+        }
+      },
+    },
+  },
+}
+
+// usage: <div className={css({ bdt: "2px solid red" })} />
+```
+
+**Custom properties - custom values**
+
+```js
+const config = {
+  utilities: {
+    bdt: {
+      values: ['1px', '2px', '4px'],
+      transform(value, token) {
+        return {
+          borderTopWidth: value,
+          borderColor: token('colors.red.200'),
+        }
+      },
+    },
+  },
+}
+
+// usage: <div className={css({ bdt: "2px solid red" })} />
+```
+
+**Custom properties - custom mapped values**
+
+```js
+const config = {
+  utilities: {
+    bdt: {
+      values: {
+        small: '2px',
+        medium: '5px',
+      },
+      transform(value, token) {
+        return {
+          borderTopWidth: value,
+          borderTopColor: token('colors', 'gray.400'),
+        }
+      },
+    },
+  },
+}
+
+// usage: <div className={css({ bdt: "2px solid red" })} />
+```
+
+**Technical notes**
+
+- When no className is specified, the property key will be used as the fallback.
+- By default the transform function receives the "raw value". When tokens references a token name ("colors"), the
+  transform function receives the css variable NOT the raw value.
+
+```js
+
+const config = {
+	backgroundColor: {
+		className: "bg",
+		values: { sm: "indigo.500", md: "red.200" },
+		shorthand: "bgColor",
+		transform(value, token) {},
+	      return {
+	         backgroundColor: token("colors", value)
+	      }
+		},
+};
+
+```

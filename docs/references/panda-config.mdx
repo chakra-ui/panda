@@ -1,0 +1,50 @@
+# Configuring Panda
+
+Customize how Panda works via the `panda.config.ts` file in your project.
+
+```js
+import { defineConfig } from '@pandacss/cli'
+
+export default defineConfig({
+  // your configuration options here...
+})
+```
+
+## Output css options
+
+### presets
+
+**Type**: `string[]`
+
+**Default**: `['@pandacss/cli/presets']`
+
+The set of reusable and shareable configuration presets.
+
+By default, any preset you add will be smartly merged with the default configuration, with your own configuration acting
+as a set of overrides and extensions.
+
+```json
+{
+  "presets": ["@pandacss/cli/presets"]
+}
+```
+
+### preflight
+
+**Type**: `boolean`
+
+**Default**: `true`
+
+Whether to enable css reset styles.
+
+```json
+{
+  "preflight": true
+}
+```
+
+## File system options
+
+## Design token options
+
+## Documentation options
