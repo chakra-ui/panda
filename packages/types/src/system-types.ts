@@ -2,6 +2,8 @@ import type * as CSS from './csstype'
 
 type Loose<T = string> = T & { __type?: never }
 
+type NeverType = { __type?: 'never' }
+
 // list of aria states selectors
 type AriaAttributes =
   | '[aria-disabled]'
@@ -114,7 +116,9 @@ type NestedConditional<C extends TCondition, V> = {
   [K in keyof V]?: Conditional<C, V[K]>
 }
 
-type NeverType = { __type?: 'never' }
+/* -----------------------------------------------------------------------------
+ * Mixed css properties (native + conditional + custom properties)
+ * -----------------------------------------------------------------------------*/
 
 type UnionOf<Key extends string, Native extends Record<Key, any>, Custom> = Custom extends NeverType
   ? Native[Key]
@@ -144,6 +148,10 @@ type MixedCssProperties<
   NestedConditional<C, CustomCssProperties<P>> & {
     [Key in keyof C]?: MixedCssProperties<Omit<C, Key>, P, S>
   }
+
+/* -----------------------------------------------------------------------------
+ * Exported types
+ * -----------------------------------------------------------------------------*/
 
 export type NestedCssProperties = Nested<CssProperties>
 
