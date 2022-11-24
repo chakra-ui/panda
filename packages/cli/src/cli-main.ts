@@ -21,7 +21,7 @@ export async function main() {
     .command('init', "Initialize the panda's config file")
     .option('-f, --force', 'Force overwrite existing config file')
     .option('-p, --postcss', 'Emit postcss config file')
-    .option('--silent', "Don't print any logs")
+    .option('--silent', 'Suppress all messages except errors')
     .action(async (flags) => {
       const { force, postcss, silent } = flags
 
@@ -68,7 +68,7 @@ export async function main() {
     .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--preflight', 'Enable css reset')
-    .option('--silent', "Don't print any logs")
+    .option('--silent', 'Suppress all messages except errors')
     .option('-e, --exclude <files>', 'Exclude files', { default: [] })
     .option('--clean', 'Clean output directory')
     .option('--hash', 'Hash the generated classnames to make them shorter')

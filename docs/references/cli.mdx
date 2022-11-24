@@ -1,0 +1,85 @@
+# CLI Reference
+
+You can use the Command-Line Interface (CLI) provided by Astro to develop, build, and preview your project from a
+terminal window.
+
+## `panda init`
+
+Initialize panda in a project. This process will:
+
+- Create a `panda.config.ts` file in your project with the default settings and presets.
+- Emit css utilities for your project in the specified `output` directory.
+
+### Flags
+
+#### `--postcss, -p`
+
+Whether to emit a postcss config file
+
+#### `--force, -f`
+
+Whether to overwrite existing files
+
+#### `--silent`
+
+Whether to suppress all output
+
+---
+
+## `panda`
+
+Run the extract process to generate static css from your project.
+
+### Flags
+
+#### `--outdir`
+
+The output directory for the generated css utilities
+
+#### `--minify`
+
+Whether to minify the generated css
+
+#### `--cwd`
+
+The current working directory
+
+#### `--watch, -w`
+
+Whether to watch for changes in the project
+
+#### `--poll`
+
+Whether to poll for file changes.
+
+#### `--config`
+
+The path to the config file
+
+#### `--preflight`
+
+Whether to emit the preflight or reset css
+
+#### `--clean`
+
+Whether to clean the output directory before emitting
+
+#### `--hash`
+
+Whether to hash the output classnames
+
+---
+
+## `panda gen`
+
+Generate a new css utilities for your project based on the configuraion file.
+
+### Flags
+
+#### `--clean`
+
+Whether to clean the output directory before emitting
+
+#### `--silent`
+
+Whether to suppress all output
