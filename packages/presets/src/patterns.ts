@@ -1,5 +1,12 @@
 import type { PatternConfig } from '@pandacss/types'
 
+const box: PatternConfig = {
+  properties: {},
+  transform(props) {
+    return props
+  },
+}
+
 const stack: PatternConfig = {
   properties: {
     align: { type: 'property', value: 'alignItems' },
@@ -193,6 +200,7 @@ const container: PatternConfig = {
 }
 
 export const patterns = {
+  box,
   stack,
   vstack,
   hstack,

@@ -1,6 +1,7 @@
 import { capitalize, dashCase } from '@pandacss/shared'
 import type { PatternConfig } from '@pandacss/types'
 import { outdent } from 'outdent'
+import { match } from 'ts-pattern'
 import type { PandaContext } from '../../context'
 
 function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
@@ -16,9 +17,20 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     import { config } from '../patterns/${dashCase(name)}'
 
     export function ${jsxName}(props) {
-      const [patternProps, restProps] = splitProps(props, [${keys.map((v) => JSON.stringify(v)).join(', ')}]);
-      const styleProps = config.transform(patternProps)
-      return <${jsxFactory}.div {...styleProps} {...restProps} />
+      ${match(keys.length)
+        .with(
+          0,
+          () => `
+          return <${jsxFactory}.div {...props} />
+        `,
+        )
+        .otherwise(
+          () => `
+          const [patternProps, restProps] = splitProps(props, [${keys.map((v) => JSON.stringify(v)).join(', ')}]);
+          const styleProps = config.transform(patternProps)
+          return <${jsxFactory}.div {...styleProps} {...restProps} />
+        `,
+        )}
     }
     `,
 
