@@ -10,7 +10,9 @@ export function Layout(props: LayoutProps) {
   return (
     <main>
       <aside>
-        <span className="title">🐼 Panda</span>
+        <NavLink to="/" className="title">
+          🐼 Panda
+        </NavLink>
         <div>
           <span>TOKENS</span>
           <ul>

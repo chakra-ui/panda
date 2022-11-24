@@ -2,21 +2,26 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 import { Suspense } from 'react'
-import { BrowserRouter as Router, useRoutes } from 'react-router-dom'
+import { BrowserRouter as Router, useLocation, useRoutes } from 'react-router-dom'
 
-import routes from '~react-pages'
+import pages from '~react-pages'
 import { Layout } from './components/layout'
 
 const App = () => {
-  return <Suspense fallback={<p>Loading...</p>}>{useRoutes(routes)}</Suspense>
+  const routes = useRoutes(pages)
+  const location = useLocation()
+  const Wrapper = location.pathname === '/' ? React.Fragment : Layout
+  return (
+    <Wrapper>
+      <Suspense fallback={<p>Loading...</p>}>{routes}</Suspense>{' '}
+    </Wrapper>
+  )
 }
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <Router>
-      <Layout>
-        <App />
-      </Layout>
+      <App />
     </Router>
   </React.StrictMode>,
 )
