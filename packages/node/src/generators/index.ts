@@ -10,7 +10,7 @@ import { generateCx } from './cx'
 import { getEntrypoint } from './get-entrypoint'
 import { generateGlobalCss } from './global-css'
 import { generateisValidProp } from './is-valid-prop'
-import { generateJsxFactory, generateJsxPatterns } from './jsx'
+import { generateJsxFactory, generateJsxPatterns, generateLayoutGrid } from './jsx'
 import { generatePattern } from './pattern'
 import { generatePropTypes } from './prop-types'
 import { generateRecipes } from './recipe'
@@ -156,9 +156,11 @@ function setupJsx(ctx: PandaContext): Output {
   const isValidProp = generateisValidProp(ctx)
   const factory = generateJsxFactory(ctx)
   const patterns = generateJsxPatterns(ctx)
+  const layoutGrid = generateLayoutGrid(ctx)
 
   const indexCode = outdent`
   export * from './factory'
+  export * from './layout-grid'
   ${outdent.string(patterns.map((file) => `export * from './${file.name}'`).join('\n'))}
 `
 
@@ -167,6 +169,8 @@ function setupJsx(ctx: PandaContext): Output {
     files: [
       ...patterns.map((file) => ({ file: `${file.name}.jsx`, code: file.js })),
       ...patterns.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
+      { file: 'layout-grid.jsx', code: layoutGrid.js },
+      { file: 'layout-grid.d.ts', code: layoutGrid.dts },
       { file: 'is-valid-prop.js', code: isValidProp.js },
       { file: 'factory.d.ts', code: factory.dts },
       { file: 'factory.jsx', code: factory.js },
