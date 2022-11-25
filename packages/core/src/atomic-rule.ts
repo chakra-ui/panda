@@ -35,7 +35,7 @@ export class AtomicRule {
 
   process = (options: ProcessOptions) => {
     const { scope, styles } = options
-    const { utility } = this.context
+    const { utility, conditions: cond } = this.context
 
     const styleObject = utility.hasShorthand
       ? walkObject(styles, (v) => v, {
@@ -52,7 +52,7 @@ export class AtomicRule {
       if (value == null) return
 
       // conditions.shift was done to support condition groups
-      const [prop, ...allConditions] = this.context.conditions.shift(paths)
+      const [prop, ...allConditions] = cond.shift(paths)
 
       // remove default condition
       const conditions = filterBaseConditions(allConditions)
@@ -66,7 +66,7 @@ export class AtomicRule {
       rule.nodes = cssRoot.root.nodes
 
       // get the base class name
-      const baseArray = [...conditions, transformed.className]
+      const baseArray = [...cond.finalize(conditions), transformed.className]
 
       if (scope && scope.length > 0) {
         baseArray.unshift(`[${withoutSpace(scope.join('__'))}]`)

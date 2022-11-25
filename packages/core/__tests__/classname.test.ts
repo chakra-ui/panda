@@ -59,4 +59,22 @@ describe('generate classnames', () => {
       }),
     ).toMatchInlineSnapshot('"text_red! fs_30px!"')
   })
+
+  test('should omit spaces in nested selectors', () => {
+    const css = createCss(createContext())
+    expect(
+      css({
+        '& span': {
+          fontSize: '20px',
+        },
+        '.bold &': {
+          fontWeight: 'bold',
+        },
+        fontSize: { sm: '50px' },
+        '@media print': {
+          fontSize: '40px',
+        },
+      }),
+    ).toMatchInlineSnapshot('"[&_span]:fs_20px [.bold_&]:fw_bold sm:fs_50px [@media_print]:fs_40px"')
+  })
 })

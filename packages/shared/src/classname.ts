@@ -9,11 +9,20 @@ type Context = {
   resolveShorthand: (prop: string) => string
   transform: (prop: string, value: any) => { className: string }
   hash?: boolean
-  conditions?: { shift: (paths: string[]) => string[] }
+  conditions?: {
+    shift: (paths: string[]) => string[]
+    finalize: (paths: string[]) => string[]
+  }
 }
 
 export function createCss(context: Context) {
-  const { transform, hash, conditions: conds = { shift: (v) => v }, resolveShorthand, hasShorthand } = context
+  const {
+    transform,
+    hash,
+    conditions: conds = { shift: (v) => v, finalize: (v) => v },
+    resolveShorthand,
+    hasShorthand,
+  } = context
 
   return (styleObject: Record<string, any>) => {
     const normalizedObject = hasShorthand
@@ -39,7 +48,7 @@ export function createCss(context: Context) {
         }
 
         // get the base class name
-        const baseArray = [...conditions, transformedClassName]
+        const baseArray = [...conds.finalize(conditions), transformedClassName]
 
         if (scope && scope.length > 0) {
           baseArray.unshift(`[${withoutSpace(scope.join('__'))}]`)

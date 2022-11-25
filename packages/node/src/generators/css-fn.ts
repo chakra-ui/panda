@@ -14,7 +14,7 @@ export function generateCssFn(ctx: PandaContext) {
     `,
     js: outdent`
     import { createCss, withoutSpace } from "../helpers"
-    import { sortConditions } from "./conditions"
+    import { sortConditions, finalizeConditions } from "./conditions"
 
     const classNameMap = ${stringify(utility.entries())}
     const shorthands = ${stringify(utility.shorthands)}
@@ -32,7 +32,7 @@ export function generateCssFn(ctx: PandaContext) {
 
     const context = {
       transform,
-      conditions: { shift: sortConditions },
+      conditions: { shift: sortConditions, finalize: finalizeConditions },
       hash: ${hash ? 'true' : 'false'},
       hasShorthand,
       resolveShorthand,

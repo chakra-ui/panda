@@ -1,4 +1,5 @@
 import { logger } from '@pandacss/logger'
+import { withoutSpace } from '@pandacss/shared'
 import type { ConditionType, Dict, RawCondition } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
 import { ConditionalRule } from './conditional-rule'
@@ -24,6 +25,14 @@ export class Conditions {
       ...Object.fromEntries(entries),
       ...instance.conditions,
     }
+  }
+
+  finalize = (paths: string[]) => {
+    return paths.map((path) => {
+      if (this.has(path)) return path
+      if (/&|@/.test(path)) return `[${withoutSpace(path.trim())}]`
+      return path
+    })
   }
 
   shift = (paths: string[]) => {

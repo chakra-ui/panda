@@ -419,19 +419,19 @@ describe('atomic / with direct nesting', () => {
           .cursor_pointer {
               cursor: pointer
           }
-          .\\\\&\\\\ \\\\+\\\\ span\\\\:ml_\\\\$2 + span {
+          .\\\\[\\\\&_\\\\+_span\\\\]\\\\:ml_\\\\$2 + span {
               margin-left: $2
           }
-          .\\\\&\\\\:focus\\\\,\\\\ \\\\&\\\\:hover\\\\:shadow_none:focus, .\\\\&\\\\:focus\\\\,\\\\ \\\\&\\\\:hover\\\\:shadow_none:hover {
+          .\\\\[\\\\&\\\\:focus\\\\,_\\\\&\\\\:hover\\\\]\\\\:shadow_none:focus, .\\\\[\\\\&\\\\:focus\\\\,_\\\\&\\\\:hover\\\\]\\\\:shadow_none:hover {
               box-shadow: none
           }
-          .test .\\\\.test\\\\ \\\\&\\\\:bg_blue {
+          .test .\\\\[\\\\.test_\\\\&\\\\]\\\\:bg_blue {
               background-color: blue
           }
-          .\\\\&\\\\ \\\\.my-class\\\\:text_red .my-class {
+          .\\\\[\\\\&_\\\\.my-class\\\\]\\\\:text_red .my-class {
               color: red
           }
-          :focus > .\\\\:focus\\\\ \\\\>\\\\ \\\\&\\\\:text_white {
+          :focus > .\\\\[\\\\:focus_\\\\>_\\\\&\\\\]\\\\:text_white {
               color: white
           }
           @media (min-width: 768px) {
@@ -445,11 +445,29 @@ describe('atomic / with direct nesting', () => {
               }
           }
           @media (min-width: 768px) {
-              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:\\\\&\\\\:hover\\\\:bg_yellow:hover {
+              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:\\\\[\\\\&\\\\:hover\\\\]\\\\:bg_yellow:hover {
                   background-color: yellow
               }
           }
-          .\\\\&\\\\ span\\\\:text_red span {
+          .\\\\[\\\\&_span\\\\]\\\\:text_red span {
+              color: red
+          }
+      }"
+    `)
+  })
+
+  test('simple nesting', () => {
+    expect(
+      css({
+        styles: {
+          '& kbd': {
+            color: 'red',
+          },
+        },
+      }),
+    ).toMatchInlineSnapshot(`
+      "@layer utilities {
+          .\\\\[\\\\&_kbd\\\\]\\\\:text_red kbd {
               color: red
           }
       }"
