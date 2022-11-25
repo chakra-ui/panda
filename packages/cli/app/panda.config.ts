@@ -1,7 +1,7 @@
-import { defineConfig } from '../src/index'
+// import { defineConfig } from '../src/index'
 import { config } from '../src/presets'
 
-export default defineConfig({
+export default {
   preflight: true,
   ...config,
   include: ['./src/**/*.{tsx,jsx}'],
@@ -30,4 +30,4 @@ export default defineConfig({
       },
     },
   },
-})
+}
