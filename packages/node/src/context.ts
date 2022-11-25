@@ -89,6 +89,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     prefix: cssVarPrefix,
   })
 
+  logger.debug({ type: 'ctx:token', msg: tokens.allNames })
+
   const utility = new Utility({
     tokens: tokens,
     config: utilities,
@@ -99,6 +101,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     conditions: conditionsProp,
     breakpoints,
   })
+
+  logger.debug({ type: 'ctx:conditions', msg: conditions })
 
   assignCompositions(
     { conditions, utility },
@@ -263,6 +267,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   }
 
   const files = getFiles()
+
+  logger.debug({ type: 'ctx:files', msg: files })
 
   /* -----------------------------------------------------------------------------
    * Collect extracted styles
