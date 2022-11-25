@@ -36,9 +36,14 @@ export class AtomicRule {
   private normalizeStyleObject = (styles: ProcessOptions['styles']) => {
     const { utility, breakpoints } = this.context
 
-    const breakpointEntries = Object.entries(breakpoints).sort(function sortByBreakpointValue(a, b) {
-      return parseInt(a[1], 10) > parseInt(b[1], 10) ? 1 : -1
-    })
+    const breakpointKeys = Object.entries(breakpoints)
+      .sort(function sortByBreakpointValue(a, b) {
+        return parseInt(a[1], 10) > parseInt(b[1], 10) ? 1 : -1
+      })
+      .map(([key]) => key)
+
+    // add base breakpoint
+    breakpointKeys.unshift('base')
 
     return walkObject(
       styles,
@@ -46,7 +51,7 @@ export class AtomicRule {
         if (Array.isArray(value)) {
           // convert responsive array notation to object notation
           return value.reduce((prevValue, currentValue, index) => {
-            const [key] = breakpointEntries[index]
+            const key = breakpointKeys[index]
             if (currentValue != null) {
               prevValue[key] = currentValue
             }
