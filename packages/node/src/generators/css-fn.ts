@@ -4,7 +4,7 @@ import type { PandaContext } from '../context'
 const stringify = (v: any) => JSON.stringify(Object.fromEntries(v), null, 2)
 
 export function generateCssFn(ctx: PandaContext) {
-  const { utility, hash } = ctx
+  const { utility, hash, breakpoints = {} } = ctx
   const { separator } = utility
 
   return {
@@ -18,6 +18,7 @@ export function generateCssFn(ctx: PandaContext) {
 
     const classNameMap = ${stringify(utility.entries())}
     const shorthands = ${stringify(utility.shorthands)}
+    const breakpoints = ${JSON.stringify(breakpoints)}
 
     const hasShorthand = ${utility.hasShorthand ? 'true' : 'false'}
 
@@ -36,6 +37,7 @@ export function generateCssFn(ctx: PandaContext) {
       hash: ${hash ? 'true' : 'false'},
       hasShorthand,
       resolveShorthand,
+      breakpoints,
     }
 
     export const css = createCss(context)

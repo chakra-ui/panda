@@ -3,31 +3,25 @@ import { filterBaseConditions } from './condition'
 import { toHash } from './hash'
 import { walkObject } from './walk-object'
 import { walkStyles } from './walk-styles'
+import { normalizeStyleObject } from './normalize-style-object'
 
-type Context = {
+export type CreateCssContext = {
   hasShorthand: boolean
   resolveShorthand: (prop: string) => string
   transform: (prop: string, value: any) => { className: string }
   hash?: boolean
+  breakpoints: Record<string, string>
   conditions?: {
     shift: (paths: string[]) => string[]
     finalize: (paths: string[]) => string[]
   }
 }
 
-export function createCss(context: Context) {
-  const {
-    transform,
-    hash,
-    conditions: conds = { shift: (v) => v, finalize: (v) => v },
-    resolveShorthand,
-    hasShorthand,
-  } = context
+export function createCss(context: CreateCssContext) {
+  const { transform, hash, conditions: conds = { shift: (v) => v, finalize: (v) => v } } = context
 
   return (styleObject: Record<string, any>) => {
-    const normalizedObject = hasShorthand
-      ? walkObject(styleObject, (v) => v, { getKey: resolveShorthand })
-      : styleObject
+    const normalizedObject = normalizeStyleObject(styleObject, context)
 
     const classNames = new Set<string>()
 
