@@ -1,4 +1,4 @@
-import '../App.css'
+// import '../App.css'
 import { navItems } from '../utils/constants'
 import { NavLink } from 'react-router-dom'
 
