@@ -75,6 +75,7 @@ export class Utility {
   register(property: string, config: PropertyConfig) {
     this.assignProperty(property, config)
     this.assignPropertyType(property, config)
+    this.config[property] = config
   }
 
   private assignShorthands() {
