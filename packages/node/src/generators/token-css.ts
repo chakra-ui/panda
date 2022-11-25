@@ -41,7 +41,7 @@ export function generateTokenCss(ctx: PandaContext, varRoot?: string) {
           return `${selector} {\n ${css}; \n }`
         })
         .with({ type: 'at-rule' }, (cond) => {
-          const selector = cond.rawValue
+          const selector = cond.rawValue ?? cond.raw
           const { css } = toCss(varsObj)
           return `${selector} { \n ${root} { \n ${css}; \n } \n }`
         })
