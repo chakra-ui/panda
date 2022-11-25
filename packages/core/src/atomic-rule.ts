@@ -12,6 +12,7 @@ import type { Root } from 'postcss'
 import postcss from 'postcss'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
+import { normalizeStyleObject } from '@pandacss/shared'
 
 export type ProcessOptions = {
   scope?: string[]
@@ -33,50 +34,11 @@ export class AtomicRule {
     return this.context.conditions.rule()
   }
 
-  private normalizeStyleObject = (styles: ProcessOptions['styles']) => {
-    const { utility, breakpoints } = this.context
-
-    const breakpointKeys = Object.entries(breakpoints)
-      .sort(function sortByBreakpointValue(a, b) {
-        return parseInt(a[1], 10) > parseInt(b[1], 10) ? 1 : -1
-      })
-      .map(([key]) => key)
-
-    // add base breakpoint
-    breakpointKeys.unshift('base')
-
-    return walkObject(
-      styles,
-      (value) => {
-        if (Array.isArray(value)) {
-          // convert responsive array notation to object notation
-          return value.reduce((prevValue, currentValue, index) => {
-            const key = breakpointKeys[index]
-            if (currentValue != null) {
-              prevValue[key] = currentValue
-            }
-            return prevValue
-          }, {})
-        }
-        return value
-      },
-      {
-        stop: (value) => Array.isArray(value),
-        getKey: (prop) => {
-          if (utility.hasShorthand) {
-            return utility.resolveShorthand(prop)
-          }
-          return prop
-        },
-      },
-    )
-  }
-
   process = (options: ProcessOptions) => {
     const { scope, styles } = options
     const { conditions: cond } = this.context
 
-    const styleObject = this.normalizeStyleObject(styles)
+    const styleObject = normalizeStyleObject(styles, this.context)
 
     const rule = this.rule
 
