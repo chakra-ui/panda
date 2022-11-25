@@ -57,7 +57,7 @@ export class ConditionalRule {
         .with({ type: 'at-rule' }, (data) => {
           this.rule = this.wrap({
             type: 'at-rule',
-            name: data.name,
+            name: data.name!,
             params: data.value,
           })
         })
