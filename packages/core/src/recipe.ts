@@ -95,7 +95,7 @@ export class Recipe {
   }
 
   process = (options: ProcessOptions) => {
-    const { styles } = options
+    const { styles: variants } = options
 
     const { name, defaultVariants = {} } = this.config
 
@@ -110,7 +110,7 @@ export class Recipe {
       styles: {
         [name]: '__ignore__',
         ...defaultVariants,
-        ...styles,
+        ...variants,
       },
     })
   }

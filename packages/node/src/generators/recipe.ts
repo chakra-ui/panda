@@ -12,8 +12,8 @@ export function generateRecipes(ctx: PandaContext) {
     outdent`
    import { createCss, withoutSpace } from "../helpers"
 
-   const createRecipe = (name) => {
-     return (styles) => {
+   const createRecipe = (name, defaultVariants) => {
+     return (variants) => {
       const transform = (prop, value) => {
          if (value === '__ignore__') {
            return { className: name }
@@ -32,7 +32,11 @@ export function generateRecipes(ctx: PandaContext) {
       
       const css = createCss(context)
       
-      return css({ [name]: '__ignore__' , ...styles })
+      return css({
+        [name]: '__ignore__',
+        ...defaultVariants,
+        ...variants
+      })
      }
    }
   `,
@@ -42,7 +46,7 @@ export function generateRecipes(ctx: PandaContext) {
 
   Object.values(recipes).forEach((recipe) => {
     js.push(outdent`
-    export const ${recipe.name} = createRecipe('${recipe.name}')
+    export const ${recipe.name} = createRecipe('${recipe.name}', ${JSON.stringify(recipe.defaultVariants ?? {})})
     `)
 
     dts.push(outdent`
