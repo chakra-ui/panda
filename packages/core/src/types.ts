@@ -13,7 +13,6 @@ export type StylesheetContext = {
   root: Root
   utility: Utility
   conditions: Conditions
-  breakpoints: Record<string, string>
   helpers: TransformHelpers
   hasShorthand: boolean
   resolveShorthand: (prop: string) => string

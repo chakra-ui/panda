@@ -13,6 +13,10 @@ export class Breakpoints {
     return Object.fromEntries(this.sorted)
   }
 
+  get keys() {
+    return ['base', ...Object.keys(this.values)]
+  }
+
   get = (name: string) => {
     return this.values[name]
   }

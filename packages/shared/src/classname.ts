@@ -10,15 +10,24 @@ export type CreateCssContext = {
   resolveShorthand: (prop: string) => string
   transform: (prop: string, value: any) => { className: string }
   hash?: boolean
-  breakpoints: Record<string, string>
+  /**
+   * Partial properties from the Condition class
+   */
   conditions?: {
+    breakpoints: { keys: string[] }
     shift: (paths: string[]) => string[]
     finalize: (paths: string[]) => string[]
   }
 }
 
+const fallbackCondition: NonNullable<CreateCssContext['conditions']> = {
+  shift: (v) => v,
+  finalize: (v) => v,
+  breakpoints: { keys: [] },
+}
+
 export function createCss(context: CreateCssContext) {
-  const { transform, hash, conditions: conds = { shift: (v) => v, finalize: (v) => v } } = context
+  const { transform, hash, conditions: conds = fallbackCondition } = context
 
   return (styleObject: Record<string, any>) => {
     const normalizedObject = normalizeStyleObject(styleObject, context)

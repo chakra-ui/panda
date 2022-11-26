@@ -114,7 +114,6 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
   const context = (): StylesheetContext => ({
     root: postcss.root(),
-    breakpoints,
     conditions,
     hash,
     helpers,

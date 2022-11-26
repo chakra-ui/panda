@@ -5,14 +5,6 @@ import { Conditions, Utility } from '../src'
 import { Recipe } from '../src/recipe'
 import type { StylesheetContext } from '../src/types'
 
-const propMap = {
-  display: 'd',
-  height: 'h',
-  width: 'w',
-  minHeight: 'min-h',
-  textAlign: 'ta',
-}
-
 const conditions = new Conditions({
   conditions: mocks.conditions,
   breakpoints: mocks.breakpoints,
@@ -31,14 +23,13 @@ const utility = new Utility({
 export const createContext = (): StylesheetContext => ({
   root: postcss.root(),
   conditions: conditions,
-  breakpoints: mocks.breakpoints,
   utility: utility,
   helpers: {
     map: () => '',
   },
   hasShorthand: true,
   resolveShorthand(prop) {
-    return propMap[prop] || prop
+    return utility.resolveShorthand(prop)
   },
   transform: (prop, value) => {
     return utility.resolve(prop, value)
