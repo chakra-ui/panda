@@ -62,4 +62,7 @@ export const conditions: Conditions = {
 
   ltr: '[dir=ltr] &',
   rtl: '[dir=rtl] &',
+
+  materialTheme: '[data-color=material] &',
+  pastelTheme: '[data-color=pastel] &',
 }

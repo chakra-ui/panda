@@ -12,7 +12,13 @@ export type Token<Value = any> = {
   }
 }
 
-export type SemanticToken<Value = string, Condition extends string = string> = Token<Value | Record<Condition, Value>>
+type RecursiveToken<C extends string, V> =
+  | V
+  | {
+      [K in C]: RecursiveToken<C, V>
+    }
+
+export type SemanticToken<Value = string, Condition extends string = string> = Token<RecursiveToken<Condition, Value>>
 
 /* -----------------------------------------------------------------------------
  * Token data types

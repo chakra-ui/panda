@@ -1,4 +1,4 @@
-import { isObject } from '@pandacss/shared'
+import { isBaseCondition, isObject, walkObject } from '@pandacss/shared'
 import { getReferences, hasReference } from './utils'
 
 /**
@@ -157,17 +157,19 @@ export class Token {
     if (!this.isConditional) return
     const conditions = this.extensions.conditions ?? {}
 
-    const conditionalTokens = Object.entries(conditions)
-      .filter(([key]) => key !== 'base')
-      .map(([key, value]) => {
-        const token = this.clone()
+    const conditionalTokens: Token[] = []
 
-        token.value = value
-        token.extensions.condition = key
+    walkObject(conditions, (value, path) => {
+      const newPath = path.filter((v) => !isBaseCondition(v))
+      if (!newPath.length) return
 
-        return token
-      })
+      const token = this.clone()
 
+      token.value = value
+      token.extensions.condition = newPath.join(':')
+
+      conditionalTokens.push(token)
+    })
     return conditionalTokens
   }
 

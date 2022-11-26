@@ -25,7 +25,7 @@ test('[css] should generate css', () => {
 
   expect(css).toMatchInlineSnapshot(`
     "@layer tokens {
-        :root {
+      :root {
         --fonts-heading: -apple-system, BlinkMacSystemFont;
         --fonts-body: Helvetica, Arial, sans-serif;
         --fonts-mono: SFMono-Regular, Menlo, Monaco;
@@ -133,6 +133,7 @@ test('[css] should generate css', () => {
         --durations-150: 150ms;
         --colors-primary: #EF4444;
         --colors-secondary: #991B1B;
+        --colors-complex: #991B1B;
         --spacing-gutter: 1rem;
         --colors-palette-50: var(--colors-palette-50);
         --colors-palette-100: var(--colors-palette-100);
@@ -144,21 +145,51 @@ test('[css] should generate css', () => {
         --colors-palette-700: var(--colors-palette-700);
         --colors-palette-800: var(--colors-palette-800);
         --colors-palette-900: var(--colors-palette-900)
-    }
-
-    [data-theme=dark] {
-     --colors-primary: #F87171;
-    --colors-secondary: #B91C1C; 
-     }
-
-    @media screen and (min-width: 62em) { 
-     :root { 
-     --spacing-gutter: 1.25rem; 
-     } 
-     }
-
 
       }
+
+      [data-theme=dark] {
+        --colors-primary: #F87171;
+        --colors-secondary: #B91C1C 
+     
+      }
+
+      @media (forced-colors: active) {
+        [data-theme=dark] {
+          --colors-complex: #B91C1C 
+     
+        }
+      }
+
+      [data-color=material] {
+        --colors-surface: #m-b 
+     
+      }
+
+      [data-theme=dark][data-color=material] {
+        --colors-surface: #m-d 
+     
+      }
+
+      [data-color=pastel] {
+        --colors-surface: #p-b 
+     
+      }
+
+      @media screen and (min-width: 48em) {
+        [data-theme=dark][data-color=pastel] {
+          --colors-surface: #p-d 
+     
+        }
+      }
+
+      @media screen and (min-width: 62em) {
+        :root {
+          --spacing-gutter: 1.25rem  
+
+        }
+      }
+    }
       "
   `)
 })

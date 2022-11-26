@@ -435,17 +435,17 @@ describe('atomic / with direct nesting', () => {
               color: white
           }
           @media (min-width: 768px) {
-              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:bg_green {
+              .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:bg_green {
                   background-color: green
               }
           }
           @media (min-width: 768px) {
-              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:fs_\\\\$small {
+              .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:fs_\\\\$small {
                   font-size: $small
               }
           }
           @media (min-width: 768px) {
-              .\\\\@media\\\\ \\\\(min-width\\\\:\\\\ 768px\\\\)\\\\:\\\\[\\\\&\\\\:hover\\\\]\\\\:bg_yellow:hover {
+              .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:\\\\[\\\\&\\\\:hover\\\\]\\\\:bg_yellow:hover {
                   background-color: yellow
               }
           }

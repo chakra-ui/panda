@@ -10,10 +10,16 @@ export type TokenEntry<V = any> = {
   }
 }
 
+type Conditional<C extends string, V> =
+  | V
+  | {
+      [K in C]?: Conditional<C, V>
+    }
+
 export type SemanticTokenEntry<V = string, C extends string = string> = {
   description?: string
   type?: string
-  value: V | Record<C, V>
+  value: Conditional<C, V>
   extensions?: {
     [key: string]: any
   }

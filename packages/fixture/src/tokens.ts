@@ -4,6 +4,13 @@ export const semanticTokens: SemanticTokens = {
   colors: {
     primary: { value: { base: '{colors.red.500}', dark: '{colors.red.400}' } },
     secondary: { value: { base: '{colors.red.800}', dark: '{colors.red.700}' } },
+    complex: { value: { base: '{colors.red.800}', dark: { hiConstrast: '{colors.red.700}' } } },
+    surface: {
+      value: {
+        materialTheme: { base: '#m-b', dark: '#m-d' },
+        pastelTheme: { base: '#p-b', dark: { md: '#p-d' } },
+      },
+    },
   },
   spacing: {
     gutter: { value: { base: '{spacing.4}', lg: '{spacing.5}' } },
