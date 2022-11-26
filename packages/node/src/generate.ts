@@ -1,12 +1,15 @@
+import { logger } from '@pandacss/logger'
 import type { Config } from '@pandacss/types'
 import { emitAndExtract } from './artifacts'
 import { bundleChunks, writeFileChunk } from './chunks'
 import { loadConfigAndCreateContext } from './config'
+import { buildCompleteMessage, watchMessage } from './messages'
 import { watch } from './watch'
 
 export async function generate(config: Config, configPath?: string) {
   const ctx = await loadConfigAndCreateContext({ config, configPath })
   await emitAndExtract(ctx)
+  logger.info(buildCompleteMessage(ctx))
 
   if (ctx.watch) {
     process.stdin.on('end', () => process.exit())
@@ -22,5 +25,7 @@ export async function generate(config: Config, configPath?: string) {
         return writeFileChunk(ctx, file)
       },
     })
+
+    logger.info(watchMessage())
   }
 }
