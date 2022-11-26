@@ -57,6 +57,36 @@ describe('atomic / with basic style object', () => {
     `)
   })
 
+  test('should resolve responsive array', () => {
+    expect(css({ styles: { width: ['50px', '60px'] } })).toMatchInlineSnapshot(`
+      "@layer utilities {
+          .w_50px {
+              width: 50px
+          }
+          @screen sm {
+              .sm\\\\:w_60px {
+                  width: 60px
+              }
+          }
+      }"
+    `)
+  })
+
+  test('should resolve responsive array with gaps', () => {
+    expect(css({ styles: { width: ['50px', null, '60px'] } })).toMatchInlineSnapshot(`
+      "@layer utilities {
+          .w_50px {
+              width: 50px
+          }
+          @screen md {
+              .md\\\\:w_60px {
+                  width: 60px
+              }
+          }
+      }"
+    `)
+  })
+
   test('should work with inner responsive', () => {
     expect(
       css({

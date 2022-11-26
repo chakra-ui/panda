@@ -15,15 +15,18 @@ type Options = {
 export class Conditions {
   values: Record<string, RawCondition>
 
+  breakpoints: Breakpoints
+
   constructor(private options: Options) {
-    const { breakpoints = {}, conditions } = this.options
-    const instance = new Breakpoints(breakpoints)
+    const { breakpoints: breakpointValues = {}, conditions } = this.options
+    const breakpoints = new Breakpoints(breakpointValues)
+    this.breakpoints = breakpoints
 
     const entries = Object.entries(conditions).map(([key, value]) => [key, parseCondition(value)])
 
     this.values = {
       ...Object.fromEntries(entries),
-      ...instance.conditions,
+      ...breakpoints.conditions,
     }
   }
 

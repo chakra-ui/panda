@@ -108,6 +108,7 @@ type TCondition = Record<string, string>
 
 export type Conditional<C extends TCondition, V> =
   | V
+  | V[] // responsive array
   | {
       [K in keyof C]?: Conditional<C, V>
     }

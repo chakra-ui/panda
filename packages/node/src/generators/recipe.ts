@@ -23,7 +23,13 @@ export function generateRecipes(ctx: PandaContext) {
          return { className: \`\${name}--\${prop}${separator}\${value}\` }
       }
       
-      const context = ${hash ? '{ transform, hash: true }' : '{ transform }'}
+      const context = {
+        hash: ${hash ? 'true' : 'false'},
+        utility: {
+          transform,
+        }
+      }
+      
       const css = createCss(context)
       
       return css({ [name]: '__ignore__' , ...styles })

@@ -72,13 +72,13 @@ export class Utility {
     this.assignPropertyTypes()
   }
 
-  register(property: string, config: PropertyConfig) {
+  register = (property: string, config: PropertyConfig) => {
     this.assignProperty(property, config)
     this.assignPropertyType(property, config)
     this.config[property] = config
   }
 
-  private assignShorthands() {
+  private assignShorthands = () => {
     for (const [property, config] of Object.entries(this.config)) {
       const { shorthand } = this.normalize(config) ?? {}
       if (!shorthand) continue
@@ -86,7 +86,7 @@ export class Utility {
     }
   }
 
-  private assignPaletteProperty() {
+  private assignPaletteProperty = () => {
     const values = this.tokens.palettes
     this.config.palette = {
       values: Object.keys(values),
@@ -108,7 +108,7 @@ export class Utility {
     return Object.keys(this.config).length === 0
   }
 
-  public entries() {
+  public entries = () => {
     const value = Object.entries(this.config)
       .filter(([, value]) => !!value?.className)
       .map(([key, value]) => [key, value!.className])
@@ -116,11 +116,11 @@ export class Utility {
     return value as [string, string][]
   }
 
-  private getPropKey(prop: string, value: string) {
+  private getPropKey = (prop: string, value: string) => {
     return `(${prop} = ${value})`
   }
 
-  private hash(prop: string, value: string) {
+  private hash = (prop: string, value: string) => {
     // mb_40px, or mb=50px
     return `${prop}${this.separator}${value}`
   }
@@ -128,7 +128,7 @@ export class Utility {
   /**
    * Get all the possible values for the defined property
    */
-  private getPropertyValues(config: PropertyConfig) {
+  private getPropertyValues = (config: PropertyConfig) => {
     const { values } = config
 
     if (isString(values)) {
@@ -149,18 +149,18 @@ export class Utility {
     return values
   }
 
-  getToken(path: string) {
+  getToken = (path: string) => {
     return this.tokens.get(path)
   }
 
   /**
    * Normalize the property config
    */
-  normalize(value: PropertyConfig | undefined): PropertyConfig | undefined {
+  normalize = (value: PropertyConfig | undefined): PropertyConfig | undefined => {
     return value
   }
 
-  private assignProperty(property: string, propertyConfig: PropertyConfig) {
+  private assignProperty = (property: string, propertyConfig: PropertyConfig) => {
     const config = this.normalize(propertyConfig)
     this.setTransform(property, config?.transform)
 
@@ -178,14 +178,14 @@ export class Utility {
     }
   }
 
-  private assignProperties() {
+  private assignProperties = () => {
     for (const [property, propertyConfig] of Object.entries(this.config)) {
       if (!propertyConfig) continue
       this.assignProperty(property, propertyConfig)
     }
   }
 
-  private assignPropertyType(property: string, propertyConfig: PropertyConfig) {
+  private assignPropertyType = (property: string, propertyConfig: PropertyConfig) => {
     const config = this.normalize(propertyConfig)
 
     if (!config) return
@@ -208,7 +208,7 @@ export class Utility {
     }
   }
 
-  private assignPropertyTypes() {
+  private assignPropertyTypes = () => {
     for (const [property, propertyConfig] of Object.entries(this.config)) {
       if (!propertyConfig) continue
       this.assignPropertyType(property, propertyConfig)
@@ -218,7 +218,7 @@ export class Utility {
   /**
    * Returns the Typescript type for the define properties
    */
-  getTypes() {
+  getTypes = () => {
     const map = new Map<string, string[]>()
 
     for (const [prop, tokens] of this.types.entries()) {
@@ -251,7 +251,7 @@ export class Utility {
     return { [prop]: value }
   }
 
-  private setTransform(property: string, transform?: AnyFunction) {
+  private setTransform = (property: string, transform?: AnyFunction) => {
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
 
     const transformFn = transform ?? defaultTransform
@@ -260,7 +260,7 @@ export class Utility {
     return this
   }
 
-  private setStyles(property: string, raw: string, propKey?: string) {
+  private setStyles = (property: string, raw: string, propKey?: string) => {
     propKey = propKey ?? this.getPropKey(property, raw)
 
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
@@ -271,7 +271,7 @@ export class Utility {
     return this
   }
 
-  private setClassName(property: string, raw: string) {
+  private setClassName = (property: string, raw: string) => {
     const propKey = this.getPropKey(property, raw)
     const config = this.configs.get(property)
 
@@ -291,14 +291,14 @@ export class Utility {
   /**
    * Whether a given property exists in the config
    */
-  private isProperty(prop: string) {
+  private isProperty = (prop: string) => {
     return this.configs.has(prop)
   }
 
   /**
    * Returns the resolved className for a given property and value
    */
-  private getOrCreateClassName(prop: string, value: string) {
+  private getOrCreateClassName = (prop: string, value: string) => {
     const inner = (prop: string, value: string) => {
       const propKey = this.getPropKey(prop, value)
 
@@ -320,7 +320,7 @@ export class Utility {
   /**
    * Get or create the resolved styles for a given property and value
    */
-  private getOrCreateStyle(prop: string, value: string) {
+  private getOrCreateStyle = (prop: string, value: string) => {
     const propKey = this.getPropKey(prop, value)
     this.styles.get(propKey) ?? this.setStyles(prop, value, propKey)
     return this.styles.get(propKey)!
@@ -329,7 +329,7 @@ export class Utility {
   /**
    * Returns the resolved className and styles for a given property and value
    */
-  resolve(prop: string, value: string | undefined): TransformResult {
+  transform = (prop: string, value: string | undefined): TransformResult => {
     if (value == null) {
       return { className: '', styles: {} }
     }
@@ -344,7 +344,7 @@ export class Utility {
   /**
    * All keys including shorthand keys
    */
-  keys() {
+  keys = () => {
     const shorthands = Array.from(this.shorthands.keys())
     const properties = Object.keys(this.config)
     return [...shorthands, ...properties]
