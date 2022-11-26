@@ -24,16 +24,7 @@ export const createContext = (): StylesheetContext => ({
   root: postcss.root(),
   conditions: conditions,
   utility: utility,
-  helpers: {
-    map: () => '',
-  },
-  hasShorthand: true,
-  resolveShorthand(prop) {
-    return utility.resolveShorthand(prop)
-  },
-  transform: (prop, value) => {
-    return utility.resolve(prop, value)
-  },
+  helpers: { map: () => '' },
 })
 
 export function getRecipe(key: 'buttonStyle' | 'textStyle') {

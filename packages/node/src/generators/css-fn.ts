@@ -34,15 +34,17 @@ export function generateCssFn(ctx: PandaContext) {
     }
 
     const context = {
-      transform,
+      hash: ${hash ? 'true' : 'false'},
       conditions: {
         shift: sortConditions,
         finalize: finalizeConditions,
         breakpoints: { keys: breakpointKeys }
       },
-      hash: ${hash ? 'true' : 'false'},
-      hasShorthand,
-      resolveShorthand,
+      utility: {
+        transform,
+        hasShorthand,
+        resolveShorthand,
+      }
     }
 
     export const css = createCss(context)

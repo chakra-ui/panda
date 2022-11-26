@@ -14,8 +14,6 @@ export type StylesheetContext = {
   utility: Utility
   conditions: Conditions
   helpers: TransformHelpers
-  hasShorthand: boolean
-  resolveShorthand: (prop: string) => string
-  transform: (prop: string, value: string) => TransformResult
   hash?: boolean
+  transform?: (prop: string, value: any) => TransformResult
 }

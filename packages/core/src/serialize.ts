@@ -24,7 +24,7 @@ export function serializeStyle(styleObj: Dict, context: SerializeContext) {
     const conds = filterBaseConditions(allConditions)
     const hasConditions = conds.length > 0
 
-    let { styles } = utility.resolve(prop, withoutImportant(value))
+    let { styles } = utility.transform(prop, withoutImportant(value))
 
     const cssResult = toCss(styles, { important })
 
@@ -44,13 +44,7 @@ export function serializeStyle(styleObj: Dict, context: SerializeContext) {
   return result
 }
 
-export function serializeStyles(
-  groupedObject: Dict,
-  context: {
-    conditions: Conditions
-    utility: Utility
-  },
-) {
+export function serializeStyles(groupedObject: Dict, context: SerializeContext) {
   const result: Dict = {}
   for (const [scope, styles] of Object.entries(groupedObject)) {
     result[scope] ||= {}

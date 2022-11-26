@@ -6,10 +6,15 @@ import { walkStyles } from './walk-styles'
 import { normalizeStyleObject } from './normalize-style-object'
 
 export type CreateCssContext = {
-  hasShorthand: boolean
-  resolveShorthand: (prop: string) => string
-  transform: (prop: string, value: any) => { className: string }
   hash?: boolean
+  /**
+   * Partial properties from the Utility class
+   */
+  utility: {
+    hasShorthand: boolean
+    resolveShorthand: (prop: string) => string
+    transform: (prop: string, value: any) => { className: string }
+  }
   /**
    * Partial properties from the Condition class
    */
@@ -27,7 +32,7 @@ const fallbackCondition: NonNullable<CreateCssContext['conditions']> = {
 }
 
 export function createCss(context: CreateCssContext) {
-  const { transform, hash, conditions: conds = fallbackCondition } = context
+  const { utility, hash, conditions: conds = fallbackCondition } = context
 
   return (styleObject: Record<string, any>) => {
     const normalizedObject = normalizeStyleObject(styleObject, context)
@@ -43,7 +48,7 @@ export function createCss(context: CreateCssContext) {
         const [prop, ...allConditions] = conds.shift(paths)
 
         const conditions = filterBaseConditions(allConditions)
-        const transformed = transform(prop, withoutImportant(value))
+        const transformed = utility.transform(prop, withoutImportant(value))
         let transformedClassName = transformed.className
 
         if (important) {

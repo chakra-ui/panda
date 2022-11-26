@@ -118,13 +118,6 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     hash,
     helpers,
     utility,
-    hasShorthand: utility.hasShorthand,
-    resolveShorthand(prop) {
-      return utility.resolveShorthand(prop)
-    },
-    transform(prop, value) {
-      return utility.resolve(prop, value)
-    },
   })
 
   /* -----------------------------------------------------------------------------

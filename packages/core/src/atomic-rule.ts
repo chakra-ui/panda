@@ -34,6 +34,10 @@ export class AtomicRule {
     return this.context.conditions.rule()
   }
 
+  get transform() {
+    return this.context?.transform ?? this.context.utility.transform
+  }
+
   process = (options: ProcessOptions) => {
     const { scope, styles } = options
     const { conditions: cond } = this.context
@@ -55,7 +59,7 @@ export class AtomicRule {
       const conditions = filterBaseConditions(allConditions)
 
       // allow users transform the generated class and styles
-      const transformed = this.context.transform(prop, withoutImportant(value))
+      const transformed = this.transform(prop, withoutImportant(value))
 
       // convert css-in-js to css rule
       const cssRoot = toCss(transformed.styles, { important })

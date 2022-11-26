@@ -1,7 +1,7 @@
 import { walkObject } from './walk-object'
 import type { CreateCssContext } from './classname'
 
-type NormalizeContext = Pick<CreateCssContext, 'hasShorthand' | 'resolveShorthand' | 'conditions'>
+type NormalizeContext = Pick<CreateCssContext, 'utility' | 'conditions'>
 
 function toResponsiveObject(values: string[], breakpoints: string[]) {
   return values.reduce((acc, current, index) => {
@@ -14,7 +14,8 @@ function toResponsiveObject(values: string[], breakpoints: string[]) {
 }
 
 export function normalizeStyleObject(styles: Record<string, any>, context: NormalizeContext) {
-  const { hasShorthand, resolveShorthand, conditions } = context
+  const { utility, conditions } = context
+  const { hasShorthand, resolveShorthand } = utility
 
   return walkObject(
     styles,

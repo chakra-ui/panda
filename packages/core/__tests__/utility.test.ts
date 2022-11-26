@@ -463,7 +463,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(utility.resolve('bt', '4px')).toMatchInlineSnapshot(`
+    expect(utility.transform('bt', '4px')).toMatchInlineSnapshot(`
       {
         "className": "bt_4px",
         "styles": {
@@ -570,7 +570,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(utility.resolve('marginLeft', 'sm')).toMatchInlineSnapshot(`
+    expect(utility.transform('marginLeft', 'sm')).toMatchInlineSnapshot(`
       {
         "className": "ml_sm",
         "styles": {
@@ -579,7 +579,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(utility.resolve('marginLeft', '40px')).toMatchInlineSnapshot(`
+    expect(utility.transform('marginLeft', '40px')).toMatchInlineSnapshot(`
       {
         "className": "ml_40px",
         "styles": {
