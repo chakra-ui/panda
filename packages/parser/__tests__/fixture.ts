@@ -58,7 +58,21 @@ export function jsxPatternParser(code: string) {
   const parser = createParser({
     importMap,
     jsx: {
-      nodes: [{ name: 'Stack', props: ['align', 'gap', 'direction'] }],
+      nodes: [{ name: 'Stack', type: 'pattern', props: ['align', 'gap', 'direction'] }],
+      factory: 'panda',
+      isStyleProp(prop) {
+        return isCssProperty(prop) || prop === 'css'
+      },
+    },
+  })
+  return parser(toSourceFile(code))?.jsx
+}
+
+export function jsxRecipeParser(code: string) {
+  const parser = createParser({
+    importMap,
+    jsx: {
+      nodes: [{ name: 'Button', type: 'recipe', props: ['size', 'variant'] }],
       factory: 'panda',
       isStyleProp(prop) {
         return isCssProperty(prop) || prop === 'css'

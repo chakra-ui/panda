@@ -20,10 +20,24 @@ export default defineConfig({
         fontSize: 'lg',
       },
       variants: {
+        size: {
+          sm: {
+            padding: '2',
+            borderRadius: 'sm',
+          },
+          md: {
+            padding: '4',
+            borderRadius: 'md',
+          },
+        },
         variant: {
           primary: {
             color: 'white',
             backgroundColor: 'blue.500',
+          },
+          danger: {
+            color: 'white',
+            backgroundColor: 'red.500',
           },
         },
       },

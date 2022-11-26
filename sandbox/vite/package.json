@@ -8,7 +8,7 @@
     "build": "pnpm css && vite build",
     "preview": "vite preview",
     "css:clean": "rm -rf design-system/chunks design-system/styles.css",
-    "css": "PANDA_DEBUG=* panda",
+    "css": "PANDA_DEBUG=ast:* panda",
     "css:gen": "PANDA_DEBUG=* panda gen",
     "css:dev": "PANDA_DEBUG=file:* panda --watch"
   },

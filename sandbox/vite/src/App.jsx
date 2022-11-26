@@ -2,6 +2,7 @@ import { css, cx, globalCss } from '../design-system/css'
 import { circle, vstack } from '../design-system/patterns'
 import { Stack, panda, Circle, HStack } from '../design-system/jsx'
 import { button } from '../design-system/recipes'
+import { Button } from './Button'
 
 globalCss({
   '*': {
@@ -13,6 +14,14 @@ globalCss({
 function App() {
   return (
     <div className={css({ paddingY: '40px', debug: true })}>
+      <Button
+        aria-label="Hello World"
+        variant="danger"
+        size={{ base: 'sm', md: 'md' }}
+        css={{ color: 'yellow', transform: 'auto', scale: '1.1', x: '40px' }}
+      >
+        Hello
+      </Button>
       <button className={cx(button({ variant: 'primary' }), css({ color: 'yellow' }))}>Click me</button>
       <Stack align="center" padding="20px" marginBottom="30px" bg="green.100" gap={{ base: '4', md: '10' }}>
         <Circle size="40px" bg="red.300" fontSize="1.2em" fontWeight="bold">

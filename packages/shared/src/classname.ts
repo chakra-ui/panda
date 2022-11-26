@@ -34,7 +34,7 @@ const fallbackCondition: NonNullable<CreateCssContext['conditions']> = {
 export function createCss(context: CreateCssContext) {
   const { utility, hash, conditions: conds = fallbackCondition } = context
 
-  return (styleObject: Record<string, any>) => {
+  return (styleObject: Record<string, any> = {}) => {
     const normalizedObject = normalizeStyleObject(styleObject, context)
 
     const classNames = new Set<string>()
