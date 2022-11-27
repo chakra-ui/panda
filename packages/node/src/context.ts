@@ -1,4 +1,3 @@
-import { Collector, createParser, createProject } from '@pandacss/parser'
 import type { LoadConfigResult } from '@pandacss/config'
 import {
   assignCompositions,
@@ -10,9 +9,10 @@ import {
 } from '@pandacss/core'
 import { NotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
+import { Collector, createParser, createProject } from '@pandacss/parser'
 import { capitalize, compact, mapObject, uncapitalize } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import type { PatternConfig, RecipeConfig } from '@pandacss/types'
+import type { Dict, PatternConfig, RecipeConfig } from '@pandacss/types'
 import glob from 'fast-glob'
 import { readdirSync } from 'fs'
 import { emptyDir, ensureDir, existsSync } from 'fs-extra'
@@ -20,6 +20,7 @@ import { readFile, unlink, writeFile } from 'fs/promises'
 import { extname, isAbsolute, join, relative, resolve, sep } from 'path'
 import postcss from 'postcss'
 import type { Project } from 'ts-morph'
+import { match, P } from 'ts-pattern'
 
 type IO = {
   read(id: string): Promise<string>
@@ -49,6 +50,19 @@ const fileSystem: IO = {
   rm: (path: string) => {
     return unlink(path)
   },
+}
+
+function splitProps(obj: Dict, keys: string[]) {
+  const omitted = {} as Dict
+  const picked = {} as Dict
+  for (const [key, value] of Object.entries(obj)) {
+    if (keys.includes(key)) {
+      picked[key] = value
+    } else {
+      omitted[key] = value
+    }
+  }
+  return [picked, omitted]
 }
 
 export function createContext(conf: LoadConfigResult, io = fileSystem) {
@@ -141,6 +155,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   }
 
   const patternNodes = Object.entries(patterns).map(([name, pattern]) => ({
+    type: 'pattern' as const,
     name: pattern.jsx ?? capitalize(name),
     props: Object.keys(pattern.properties),
     baseName: name,
@@ -160,6 +175,23 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       throw new NotFoundError({ type: 'recipe', name })
     }
     return recipe
+  }
+
+  const recipeNodes = Object.entries(recipes).map(([name, recipe]) => ({
+    type: 'recipe' as const,
+    name: recipe.jsx ?? capitalize(name),
+    props: Object.keys(recipe.variants ?? {}),
+    baseName: name,
+  }))
+
+  function getRecipeFnName(jsx: string) {
+    return recipeNodes.find((node) => node.name === jsx)?.baseName ?? uncapitalize(jsx)
+  }
+
+  function splitRecipeProps(name: string, props: Dict) {
+    const recipe = recipeNodes.find((node) => node.name === name)
+    if (!recipe) return [{}, props]
+    return splitProps(props, recipe.props)
   }
 
   /* -----------------------------------------------------------------------------
@@ -281,7 +313,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     jsx: {
       factory: jsxFactory,
       isStyleProp: isProperty,
-      nodes: patternNodes,
+      nodes: [...patternNodes, ...recipeNodes],
     },
   })
 
@@ -312,12 +344,21 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
       const styles = { ...css, ...rest }
 
-      // treat pattern jsx like regular pattern
-      if (name && type === 'pattern') {
-        collector.setPattern(getPatternFnName(name), { data: styles })
-      } else {
-        sheet.processAtomic(styles)
-      }
+      match([name, type])
+        // treat pattern jsx like regular pattern
+        .with([P.string, 'pattern'], ([name]) => {
+          collector.setPattern(getPatternFnName(name), { data: styles })
+        })
+        // treat recipe jsx like regular recipe + atomic
+        .with([P.string, 'recipe'], ([name]) => {
+          const [recipeProps, atomicProps] = splitRecipeProps(name, styles)
+          collector.setRecipe(getRecipeFnName(name), { data: recipeProps })
+          sheet.processAtomic(atomicProps)
+        })
+        // read and process style props
+        .otherwise(() => {
+          sheet.processAtomic(styles)
+        })
     })
 
     collector.recipe.forEach((result, name) => {

@@ -27,6 +27,7 @@ type ParserOptions = {
     factory: string
     nodes: Array<{
       name: string
+      type: 'pattern' | 'recipe'
       props?: string[]
     }>
     isStyleProp: (prop: string) => boolean
@@ -110,7 +111,8 @@ export function createParser(options: ParserOptions) {
     })
 
     const jsxFactoryAlias = jsx ? imports.getAlias(jsx.factory) : 'panda'
-    const jsxPatternNodes = new RegExp(`(${jsx?.nodes.map((node) => node.name).join('|')})$`)
+    const jsxPatternNodes = new RegExp(`(${jsx?.nodes.map((node) => node.type === 'pattern' && node.name).join('|')})$`)
+    const jsxRecipeNodes = new RegExp(`(${jsx?.nodes.map((node) => node.type === 'recipe' && node.name).join('|')})$`)
 
     visitJsxElement(sourceFile, {
       match: {
@@ -124,13 +126,19 @@ export function createParser(options: ParserOptions) {
       },
       fn({ name, data }) {
         let type: string
+
+        logger.debug({ type: `ast:jsx:${name}`, fileName, result: data })
+
         if (jsx && name.startsWith(jsxFactoryAlias)) {
           type = 'jsx-factory'
         } else if (jsxPatternNodes.test(name)) {
           type = 'pattern'
+        } else if (jsxRecipeNodes.test(name)) {
+          type = 'recipe'
         } else {
           type = 'jsx'
         }
+
         collector.jsx.add({ type, name, data })
       },
     })
