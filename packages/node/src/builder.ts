@@ -6,7 +6,7 @@ import { existsSync, readFileSync } from 'fs'
 import { statSync } from 'fs-extra'
 import { resolve } from 'path'
 import type { Message, Root } from 'postcss'
-import { getBaseCss } from './artifacts'
+import { emitArtifacts, getBaseCss } from './artifacts'
 import { findConfig, loadConfigAndCreateContext } from './config'
 import type { PandaContext } from './context'
 import { extractFile } from './extract'
@@ -56,6 +56,7 @@ export class Builder {
       //
 
       this.context = await loadConfigAndCreateContext()
+      emitArtifacts(this.context) //no need to await this
 
       this.fileMap = new Map([['base.css', getBaseCss(this.context)]])
       this.fileModifiedMap = new Map()
