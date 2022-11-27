@@ -54,7 +54,7 @@ export function generateRecipes(ctx: PandaContext) {
     dts.push(outdent`
     import { ConditionalValue } from "../types"
 
-    export type ${capitalize(name)}Value = {
+    export type ${capitalize(name)}Variants = {
       ${Object.keys(variants ?? {})
         .map((key) => {
           const value = variants![key]
