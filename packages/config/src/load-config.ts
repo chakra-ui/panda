@@ -32,7 +32,7 @@ export async function loadConfigFile(options: ConfigFileOptions) {
   for (const preset of presets) {
     const presetResult = await bundleAndRequire(preset, cwd)
     // TODO: create custom mergeConfig
-    result.config = merge({}, result.config, presetResult.config) as any
+    result.config = merge({}, presetResult.config, result.config) as any
   }
 
   delete result.config.presets
