@@ -45,24 +45,27 @@ export function generateRecipes(ctx: PandaContext) {
   const dts = ['']
 
   Object.values(recipes).forEach((recipe) => {
+    const { name, description, defaultVariants, variants } = recipe
+
     js.push(outdent`
-    export const ${recipe.name} = createRecipe('${recipe.name}', ${JSON.stringify(recipe.defaultVariants ?? {})})
+    export const ${name} = createRecipe('${name}', ${JSON.stringify(defaultVariants ?? {})})
     `)
 
     dts.push(outdent`
     import { ConditionalValue } from "../types"
 
-    export type ${capitalize(recipe.name)}Value = {
-      ${Object.keys(recipe.variants ?? {})
+    export type ${capitalize(name)}Value = {
+      ${Object.keys(variants ?? {})
         .map((key) => {
-          const value = recipe.variants![key]
+          const value = variants![key]
           const keys = Object.keys(value)
           return `${key}?: ConditionalValue<${unionType(keys)}>`
         })
         .join('\n')}
     }
 
-    export declare function ${recipe.name}(value: ${capitalize(recipe.name)}Value): string
+    ${description ? `/** ${description} */` : ''}
+    export declare function ${name}(value: ${capitalize(name)}Value): string
     `)
   })
 

@@ -6,7 +6,7 @@ import { match } from 'ts-pattern'
 import type { PandaContext } from '../context'
 
 function generate(name: string, pattern: PatternConfig) {
-  const { properties, transform, strict } = pattern
+  const { properties, transform, strict, description } = pattern
 
   return {
     name: dashCase(name),
@@ -44,6 +44,7 @@ function generate(name: string, pattern: PatternConfig) {
         ? outdent`export declare function ${name}(options: ${capitalize(name)}Options): string`
         : outdent`
         type Merge<T> = Omit<SystemStyleObject, keyof T> & T
+        ${description ? `/** ${description} */` : ''}
         export declare function ${name}(options: Merge<${capitalize(name)}Options>): string
         `
     }
