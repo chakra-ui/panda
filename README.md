@@ -29,23 +29,23 @@ yarn install css-panda
 To scaffold the panda config and postcss
 
 ```sh
-yarn panda init
+pnpm panda init
 # or
-yarn panda init --postcss
+pnpm panda init --postcss
 ```
 
 To run the extract styles, run
 
 ```sh
-yarn panda
+pnpm panda
 # or
-yarn panda --watch
+pnpm panda --watch
 ```
 
 When you change the config, you may need to regenerate the system
 
 ```sh
-yarn panda gen
+pnpm panda codegen
 ```
 
 ## Usage
