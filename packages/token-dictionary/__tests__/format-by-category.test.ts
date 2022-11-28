@@ -24,8 +24,8 @@ test('format / by category', () => {
           "description": undefined,
           "extensions": {
             "category": "colors",
+            "colorPalette": "",
             "condition": "base",
-            "palette": "",
             "prop": "red",
             "var": "--colors-red",
             "varRef": "var(--colors-red)",
@@ -43,8 +43,8 @@ test('format / by category', () => {
           "description": undefined,
           "extensions": {
             "category": "colors",
+            "colorPalette": "",
             "condition": "base",
-            "palette": "",
             "prop": "blue",
             "var": "--colors-blue",
             "varRef": "var(--colors-blue)",
@@ -62,8 +62,8 @@ test('format / by category', () => {
           "description": undefined,
           "extensions": {
             "category": "colors",
+            "colorPalette": "",
             "condition": "base",
-            "palette": "",
             "prop": "green",
             "var": "--colors-green",
             "varRef": "var(--colors-green)",

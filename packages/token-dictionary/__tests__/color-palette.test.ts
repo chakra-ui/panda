@@ -32,8 +32,8 @@ test('should generate virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
+          "colorPalette": "",
           "condition": "base",
-          "palette": "",
           "prop": "primary",
           "var": "--colors-primary",
           "varRef": "var(--colors-primary)",
@@ -51,8 +51,8 @@ test('should generate virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
+          "colorPalette": "red",
           "condition": "base",
-          "palette": "red",
           "prop": "red.300",
           "var": "--colors-red-300",
           "varRef": "var(--colors-red-300)",
@@ -71,8 +71,8 @@ test('should generate virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
+          "colorPalette": "red",
           "condition": "base",
-          "palette": "red",
           "prop": "red.500",
           "var": "--colors-red-500",
           "varRef": "var(--colors-red-500)",
@@ -91,8 +91,8 @@ test('should generate virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
+          "colorPalette": "blue",
           "condition": "base",
-          "palette": "blue",
           "prop": "blue.500",
           "var": "--colors-blue-500",
           "varRef": "var(--colors-blue-500)",
@@ -111,8 +111,8 @@ test('should generate virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
+          "colorPalette": "blue",
           "condition": "base",
-          "palette": "blue",
           "prop": "blue.700",
           "var": "--colors-blue-700",
           "varRef": "var(--colors-blue-700)",
@@ -131,77 +131,77 @@ test('should generate virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
+          "colorPalette": "",
           "condition": "base",
           "isVirtual": true,
-          "palette": "palette",
-          "prop": "palette.300",
-          "var": "--colors-palette-300",
-          "varRef": "var(--colors-palette-300)",
+          "prop": "colorPalette.300",
+          "var": "--colors-color-palette-300",
+          "varRef": "var(--colors-color-palette-300)",
         },
-        "name": "colors.palette.300",
-        "originalValue": "{colors.palette.300}",
+        "name": "colors.colorPalette.300",
+        "originalValue": "{colors.colorPalette.300}",
         "path": [
           "colors",
-          "palette",
+          "colorPalette",
           "300",
         ],
         "type": "color",
-        "value": "var(--colors-palette-300)",
+        "value": "var(--colors-color-palette-300)",
       },
       Token {
         "description": undefined,
         "extensions": {
           "category": "colors",
+          "colorPalette": "",
           "condition": "base",
           "isVirtual": true,
-          "palette": "palette",
-          "prop": "palette.500",
-          "var": "--colors-palette-500",
-          "varRef": "var(--colors-palette-500)",
+          "prop": "colorPalette.500",
+          "var": "--colors-color-palette-500",
+          "varRef": "var(--colors-color-palette-500)",
         },
-        "name": "colors.palette.500",
-        "originalValue": "{colors.palette.500}",
+        "name": "colors.colorPalette.500",
+        "originalValue": "{colors.colorPalette.500}",
         "path": [
           "colors",
-          "palette",
+          "colorPalette",
           "500",
         ],
         "type": "color",
-        "value": "var(--colors-palette-500)",
+        "value": "var(--colors-color-palette-500)",
       },
       Token {
         "description": undefined,
         "extensions": {
           "category": "colors",
+          "colorPalette": "",
           "condition": "base",
           "isVirtual": true,
-          "palette": "palette",
-          "prop": "palette.700",
-          "var": "--colors-palette-700",
-          "varRef": "var(--colors-palette-700)",
+          "prop": "colorPalette.700",
+          "var": "--colors-color-palette-700",
+          "varRef": "var(--colors-color-palette-700)",
         },
-        "name": "colors.palette.700",
-        "originalValue": "{colors.palette.700}",
+        "name": "colors.colorPalette.700",
+        "originalValue": "{colors.colorPalette.700}",
         "path": [
           "colors",
-          "palette",
+          "colorPalette",
           "700",
         ],
         "type": "color",
-        "value": "var(--colors-palette-700)",
+        "value": "var(--colors-color-palette-700)",
       },
     ]
   `)
 
-  expect(formats.groupByPalette(dictionary)).toMatchInlineSnapshot(`
+  expect(formats.groupByColorPalette(dictionary)).toMatchInlineSnapshot(`
     Map {
       "red" => Map {
-        "--colors-palette-300" => "var(--colors-red-300)",
-        "--colors-palette-500" => "var(--colors-red-500)",
+        "--colors-color-palette-300" => "var(--colors-red-300)",
+        "--colors-color-palette-500" => "var(--colors-red-500)",
       },
       "blue" => Map {
-        "--colors-palette-500" => "var(--colors-blue-500)",
-        "--colors-palette-700" => "var(--colors-blue-700)",
+        "--colors-color-palette-500" => "var(--colors-blue-500)",
+        "--colors-color-palette-700" => "var(--colors-blue-700)",
       },
     }
   `)
@@ -214,17 +214,17 @@ test('should generate virtual palette', () => {
         "red.500" => "var(--colors-red-500)",
         "blue.500" => "var(--colors-blue-500)",
         "blue.700" => "var(--colors-blue-700)",
-        "palette.300" => "var(--colors-palette-300)",
-        "palette.500" => "var(--colors-palette-500)",
-        "palette.700" => "var(--colors-palette-700)",
+        "colorPalette.300" => "var(--colors-color-palette-300)",
+        "colorPalette.500" => "var(--colors-color-palette-500)",
+        "colorPalette.700" => "var(--colors-color-palette-700)",
       },
     }
   `)
 
   const getVar = formats.createVarGetter(dictionary)
-  expect(getVar('colors.palette.300')).toMatchInlineSnapshot('"var(--colors-palette-300)"')
+  expect(getVar('colors.colorPalette.300')).toMatchInlineSnapshot('"var(--colors-color-palette-300)"')
 
-  expect(formats.getPaletteValues(dictionary)).toMatchInlineSnapshot(`
+  expect(formats.getColorPaletteValues(dictionary)).toMatchInlineSnapshot(`
     Set {
       "red",
       "blue",

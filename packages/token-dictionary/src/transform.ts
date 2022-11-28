@@ -155,7 +155,7 @@ export const addConditionalCssVariables: TokenTransformer = {
   },
 }
 
-function getPaletteName(path: string[]) {
+function getColorPaletteName(path: string[]) {
   if (path.includes('colorPalette')) return ''
   const clone = [...path]
   clone.pop()
@@ -163,14 +163,14 @@ function getPaletteName(path: string[]) {
   return clone.join('.')
 }
 
-export const addPalette: TokenTransformer = {
+export const addColorPalette: TokenTransformer = {
   type: 'extensions',
-  name: 'tokens/colors/palette',
+  name: 'tokens/colors/colorPalette',
   match(token) {
     return token.extensions.category === 'colors'
   },
   transform(token) {
-    return { palette: getPaletteName(token.path) }
+    return { colorPalette: getColorPaletteName(token.path) }
   },
 }
 
@@ -182,5 +182,5 @@ export const transforms = [
   transformBorders,
   addCssVariables,
   addConditionalCssVariables,
-  addPalette,
+  addColorPalette,
 ]

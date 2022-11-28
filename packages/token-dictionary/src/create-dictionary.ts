@@ -28,8 +28,8 @@ export class TokenDictionary extends Base {
     return formats.getFlattenedValues(this)
   }
 
-  get palettes() {
-    return mapToJson(formats.groupByPalette(this))
+  get colorPalettes() {
+    return mapToJson(formats.groupByColorPalette(this))
   }
 
   get vars() {
