@@ -12,7 +12,7 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
     
     type Element = keyof JSX.IntrinsicElements
     
-    export type HTML${upperName}Props<T extends Element> = Assign<JSX.IntrinsicElements[T], JSXStyleProperties>
+    export type HTML${upperName}Props<T extends Element> = Omit<JSX.IntrinsicElements[T], 'color'> | JSXStyleProperties
 
     type JSXFactory = {
       [K in Element]: (props: HTML${upperName}Props<K>) => JSX.Element
@@ -21,8 +21,8 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
     export declare const ${name}: JSXFactory
     `,
     js: outdent`
-    import { Dynamic } from 'solid-js/web';
-    import { mergeProps, splitProps } from 'solid-js';
+    import { Dynamic } from 'solid-js/web'
+    import { mergeProps, splitProps } from 'solid-js'
     import { allCssProperties } from './is-valid-prop'
     import { css } from '../css'
 
@@ -51,19 +51,19 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
     }
     
     function createFactory() {
-      const cache = new Map();
+      const cache = new Map()
     
       return new Proxy(Object.create(null), {
         get(_, el) {
           if (!cache.has(el)) {
-            cache.set(el, styled(el));
+            cache.set(el, styled(el))
           }
-          return cache.get(el);
+          return cache.get(el)
         },
       })
     }
       
-    export const ${name} = createFactory();
+    export const ${name} = createFactory()
     `,
   }
 }

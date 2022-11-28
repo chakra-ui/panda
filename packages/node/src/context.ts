@@ -14,12 +14,12 @@ import { capitalize, compact, mapObject, uncapitalize } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type { Dict, PatternConfig, RecipeConfig } from '@pandacss/types'
 import glob from 'fast-glob'
-import { readdirSync } from 'fs'
+import { readdirSync, readFileSync } from 'fs'
 import { emptyDir, ensureDir, existsSync } from 'fs-extra'
 import { readFile, unlink, writeFile } from 'fs/promises'
 import { extname, isAbsolute, join, relative, resolve, sep } from 'path'
 import postcss from 'postcss'
-import type { Project } from 'ts-morph'
+import { Project, ScriptKind } from 'ts-morph'
 import { match, P } from 'ts-pattern'
 
 type IO = {
@@ -165,6 +165,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     return patternNodes.find((node) => node.name === jsx)?.baseName ?? uncapitalize(jsx)
   }
 
+  const hasPatterns = Object.keys(patterns).length > 0
+
   /* -----------------------------------------------------------------------------
    * Recipes
    * -----------------------------------------------------------------------------*/
@@ -193,6 +195,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     if (!recipe) return [{}, props]
     return splitProps(props, recipe.props)
   }
+
+  const hasRecipes = Object.keys(recipes).length > 0
 
   /* -----------------------------------------------------------------------------
    * User defined utilities or properties
@@ -286,6 +290,10 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     glob: [`${paths.chunk}/**/*.css`],
   }
 
+  /* -----------------------------------------------------------------------------
+   * Setup the typescript tsx program and source files
+   * -----------------------------------------------------------------------------*/
+
   function getFiles() {
     return glob.sync(config.include, { cwd, ignore: config.exclude, absolute: true })
   }
@@ -293,6 +301,47 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   const files = getFiles()
 
   logger.debug({ type: 'ctx:files', msg: files })
+
+  const tsProject: Project = createProject()
+
+  function addSourceFile(file: string) {
+    tsProject.createSourceFile(file, readFileSync(file, 'utf8'), {
+      overwrite: true,
+      scriptKind: ScriptKind.TSX,
+    })
+  }
+
+  function reloadSourceFile(file: string) {
+    const sourceFile = tsProject.getSourceFile(file)
+    sourceFile?.refreshFromFileSystemSync()
+  }
+
+  function reloadSourceFiles() {
+    const files = getFiles()
+    for (const file of files) {
+      const source = tsProject.getSourceFile(file)
+      if (source) {
+        source.refreshFromFileSystemSync()
+      } else {
+        tsProject.addSourceFileAtPath(file)
+      }
+    }
+  }
+
+  function getSourceFile(file: string) {
+    return tsProject.getSourceFile(absPath(file))
+  }
+
+  function removeSourceFile(file: string) {
+    const sourceFile = tsProject.getSourceFile(absPath(file))
+    if (sourceFile) {
+      return tsProject.removeSourceFile(sourceFile)
+    }
+  }
+
+  files.forEach((file) => {
+    addSourceFile(file)
+  })
 
   /* -----------------------------------------------------------------------------
    * Collect extracted styles
@@ -304,9 +353,6 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     pattern: `${outdir}/patterns`,
     jsx: `${outdir}/jsx`,
   }
-
-  const tsProject: Project = createProject()
-  tsProject.addSourceFilesAtPaths(files)
 
   const parseSourceFile = createParser({
     importMap,
@@ -412,29 +458,11 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     conditions,
 
     importMap,
-    reloadSourceFiles() {
-      const files = getFiles()
-      for (const file of files) {
-        const source = tsProject.getSourceFile(file)
-        if (source) {
-          source.refreshFromFileSystemSync()
-        } else {
-          tsProject.addSourceFileAtPath(file)
-        }
-      }
-    },
-    getSourceFile(file: string) {
-      return tsProject.getSourceFile(absPath(file))
-    },
-    addSourceFile(file: string) {
-      return tsProject.addSourceFileAtPath(absPath(file))
-    },
-    removeSourceFile(file: string) {
-      const sourceFile = tsProject.getSourceFile(absPath(file))
-      if (sourceFile) {
-        return tsProject.removeSourceFile(sourceFile)
-      }
-    },
+    reloadSourceFiles,
+    getSourceFile,
+    addSourceFile,
+    reloadSourceFile,
+    removeSourceFile,
     parseSourceFile,
 
     getPath,
@@ -450,7 +478,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     collectStyles,
 
     patterns,
-    hasPattern: Object.keys(patterns).length > 0,
+    hasPatterns,
     getPattern,
     execPattern,
     patternNodes,
@@ -458,7 +486,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
     recipes,
     getRecipe,
-    hasRecipes: Object.keys(recipes).length > 0,
+    hasRecipes,
 
     jsxFramework,
     jsxFactory,

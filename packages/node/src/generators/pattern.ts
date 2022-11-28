@@ -67,6 +67,6 @@ function generate(name: string, pattern: PatternConfig) {
 }
 
 export function generatePattern(ctx: PandaContext) {
-  if (!ctx.hasPattern) return
+  if (!ctx.hasPatterns) return
   return Object.entries(ctx.patterns).map(([name, pattern]) => generate(name, pattern))
 }

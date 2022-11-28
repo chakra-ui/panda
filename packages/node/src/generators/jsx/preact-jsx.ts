@@ -12,10 +12,9 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
     import type { JSXStyleProperties } from '../types'
     
     type Element = keyof JSX.IntrinsicElements
-
-    type Merge<P, T> = Omit<P, 'color'> & T;
     
-    export type HTML${upperName}Props<T extends Element> = Merge<ComponentProps<T>, JSXStyleProperties>
+    export type HTML${upperName}Props<T extends Element> = Omit<ComponentProps<T>, 'color'> | JSXStyleProperties
+    
 
     type JSXFactory = {
       [K in Element]: (props: HTML${upperName}Props<K>) => JSX.Element
@@ -24,8 +23,8 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
     export declare const ${name}: JSXFactory
     `,
     js: outdent`
-    import { h } from 'preact';
-    import { forwardRef } from 'preact/compat';
+    import { h } from 'preact'
+    import { forwardRef } from 'preact/compat'
     import { isCssProperty } from './is-valid-prop'
     import { css } from '../css'
     
@@ -60,7 +59,7 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
           return cx(atomicClass, elementProps.className)
         }
     
-        return h(Element, { ...elementProps, ref, className: classes() });
+        return h(Element, { ...elementProps, ref, className: classes() })
       })
       
       ${upperName}Component.displayName = \`${name}.\${Dynamic}\`
@@ -80,7 +79,7 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
       })
     }
 
-    export const ${name} = createFactory();
+    export const ${name} = createFactory()
     `,
   }
 }

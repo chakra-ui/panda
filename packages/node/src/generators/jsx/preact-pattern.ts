@@ -40,21 +40,18 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     import { JSXStyleProperties, Assign } from '../types'
     
     type ElementType = keyof JSX.IntrinsicElements
-    
-    type PropsWithChildren<T> = T & { children?: ComponentChildren }
-    type PropsOf<C extends ElementType> = ComponentProps<C>
-    
-    type Polymorphic<C extends ElementType = 'div', P = {}> = JSXStyleProperties &
-      Assign<Omit<PropsOf<C>, 'color'>, P & { as?: C }>
+        
+    type Polymorphic<C extends ElementType = 'div', P = {}> = JSXStyleProperties |
+      Assign<Omit<ComponentProps<C>, 'color'>, P & { as?: C }>
 
     type ${jsxName}Props<C extends ElementType = 'div'> = Polymorphic<C, ${upperName}Properties>
     
-    export declare function ${jsxName}<V extends ElementType>(props: ${jsxName}Props<V>): JSX.Element    
+    ${pattern.description ? `/** ${pattern.description} */` : ''}
+    export declare function ${jsxName}<V extends ElementType = 'div'>(props: ${jsxName}Props<V>): JSX.Element    
     `,
   }
 }
 
 export function generatePreactJsxPattern(ctx: PandaContext) {
-  if (!ctx.hasPattern) return []
   return Object.entries(ctx.patterns).map(([name, pattern]) => generate(name, pattern, ctx.jsxFactory))
 }
