@@ -8,7 +8,7 @@ export function generateCx() {
         i = 0,
         arg
     
-      while (i < arguments.length) {
+      for (; i < arguments.length; ) {
         if ((arg = arguments[i++]) && typeof arg === 'string') {
           str && (str += ' ')
           str += arg
@@ -21,6 +21,8 @@ export function generateCx() {
   `,
     dts: outdent`
        type Argument = string | boolean | null | undefined
+
+       /** Conditionally join classNames into a single string */
        export declare function cx(...args: Argument[]): string
       `,
   }
