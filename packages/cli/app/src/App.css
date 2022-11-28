@@ -3,214 +3,24 @@
   width: 100%;
 }
 
-@media (prefers-color-scheme: light) {
-  aside {
-    color: white;
-  }
-}
-
-main {
-  display: flex;
-  height: 100%;
-}
-
-main > * {
-  padding: 2rem 1rem;
-  overflow: auto;
-}
-
-aside {
-  min-width: 15rem;
-  background-color: var(--aside-bg);
-}
-
-aside .title {
-  font-weight: 700;
-  font-size: 1.4rem;
-}
-
-aside > div {
-  margin-top: 2rem;
-}
-
-aside > div > span {
-  font-weight: 700;
-  font-size: small;
-  opacity: 0.7;
-}
-
-aside ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0.5rem 0;
-}
-
-aside > div ul:first-of-type {
-  margin-bottom: 2rem;
-}
-
-aside ul li {
-  padding: 0.3rem 0;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-aside ul li[data-active],
-aside ul li:hover {
-  color: #9499ff;
-}
-
-.content {
-  width: 100%;
-}
-
 hr {
   width: 100%;
   opacity: 0.2;
 }
 
-.token-group {
+/* .token-group {
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
   margin-top: 20px;
-}
+} */
 
-.token-content {
+/* .token-content {
   display: flex;
   flex-direction: column;
   gap: 48px;
-}
-
-.color-wrapper .title {
-  font-weight: 500;
-  text-transform: capitalize;
-  font-size: 1.2em;
-}
-
-.color-wrapper .shades {
-  display: grid;
-  grid-gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-  margin: 20px 0 40px 0;
-}
-
-.color-wrapper .shade {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.color-wrapper .shade-label {
-  font-weight: 500;
-}
-
-.color-wrapper .shade-value {
-  opacity: 0.7;
-}
-
-.color-box {
-  width: 100%;
-  height: 5rem;
-  border-radius: 4px;
-  position: relative;
-  overflow: hidden;
-}
-
-.color-box::before {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: url(data:image/svg+xml;utf8,%3Csvg%20width%3D%226%22%20height%3D%226%22%20viewBox%3D%220%200%206%206%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200H3V3H0V0Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M3%200H6V3H3V0Z%22%20fill%3D%22white%22/%3E%3Cpath%20d%3D%22M3%203H6V6H3V3Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M0%203H3V6H0V3Z%22%20fill%3D%22white%22/%3E%3C/svg%3E%0A);
-  background-size: 12px;
-  z-index: -1;
-}
-
-.semantic-wrapper,
-.semantic-wrapper .condition {
-  border-radius: 14px;
-  height: 10rem;
-  position: relative;
-}
-
-.semantic-wrapper .condition {
-  width: 80%;
-}
-
-.semantic-wrapper span {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  text-transform: uppercase;
-  font-weight: 600;
-  font-size: medium;
-  writing-mode: vertical-lr;
-  transform: rotate(180deg);
-  min-width: 20px;
-}
-
-.semantic-title {
-  text-transform: capitalize;
-  font-weight: 600;
-}
-
-.alias {
-  font-size: small;
-  border-radius: 24px;
-  padding: 3px 8px;
-  margin-left: 12px;
-  background-color: #1a1a1a;
-  color: white;
-}
-
-.font-token-input-wrapper {
-  margin-bottom: 14px;
-  position: sticky;
-  top: 0;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  background-color: var(--bg);
-}
-.font-token-input {
-  width: 100%;
-  resize: vertical;
-  padding: 4px;
-}
-
-.font-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.font-wrapper .label {
-  text-transform: capitalize;
-  opacity: 0.4;
-}
-
-.font-wrapper .render {
-  font-size: 2em;
-  line-height: 1em;
-}
-
-.font-tokens .title {
-  text-transform: capitalize;
-}
-
-.font-tokens .token-content {
-  gap: 12px;
-}
-
-.fontSize-token .font-wrapper .label {
-  text-transform: unset;
-}
-
-.lineHeight-token .font-wrapper .render {
-  font-size: unset;
-}
+} */
 
 .text-styles .token-content,
 .layer-styles .token-content {
@@ -291,28 +101,6 @@ hr {
   white-space: nowrap;
   width: 200px;
   text-transform: capitalize;
-}
-
-.sizes-tokens .token-content {
-  display: grid;
-  gap: 10px 40px;
-  grid-template-columns: repeat(5, minmax(0px, 1fr));
-}
-
-.sizes-tokens .token-content hr {
-  grid-column: span 5 / span 5;
-}
-
-.sizes-tokens .token-content > span:nth-child(1),
-.sizes-tokens .token-content > span:nth-child(2),
-.sizes-tokens .token-content > span:nth-child(3) {
-  font-weight: 600;
-}
-
-.sizes-tokens .token-content .size-box {
-  height: 20px;
-  background: rgba(255, 192, 203, 0.5);
-  grid-column: span 2 / span 2;
 }
 
 .spacing-playground .token-content .stack-v {

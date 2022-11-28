@@ -3,6 +3,8 @@ import { useState } from 'react'
 
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
+import { panda } from 'design-system/jsx'
+import { css } from 'design-system/css'
 
 type Color = {
   isConditional?: boolean
@@ -121,15 +123,78 @@ export default function Colors() {
   const renderSemanticTokens = () => {
     return semanticTokens.map(([name, colors], i) => {
       return (
-        <div className="shade" key={i}>
-          <div className="color-box semantic-wrapper" style={{ background: colors[colors.extensions.condition].value }}>
-            <span>{colors.extensions.condition}</span>
-            <div className="color-box condition" style={{ background: colors.base.value }}>
-              <span>Base</span>
-            </div>
-          </div>
+        <panda.div display="flex" flexDir="column" gap="4px" key={i}>
+          <panda.div
+            width="full"
+            height="10rem"
+            borderRadius="14px"
+            position="relative"
+            overflow="hidden"
+            before={{
+              content: "''",
+              position: 'absolute',
+              borderRadius: '14px',
+              width: 'full',
+              height: 'full',
+              backgroundSize: '12px',
+              zIndex: '-1',
+              background:
+                'url(data:image/svg+xml;utf8,%3Csvg%20width%3D%226%22%20height%3D%226%22%20viewBox%3D%220%200%206%206%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200H3V3H0V0Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M3%200H6V3H3V0Z%22%20fill%3D%22white%22/%3E%3Cpath%20d%3D%22M3%203H6V6H3V3Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M0%203H3V6H0V3Z%22%20fill%3D%22white%22/%3E%3C/svg%3E%0A)',
+            }}
+            style={{ background: colors[colors.extensions.condition].value }}
+          >
+            <panda.span
+              position="absolute"
+              top="50%"
+              right="8px"
+              textTransform="uppercase"
+              fontWeight={600}
+              fontSize="medium"
+              writingMode="vertical-lr"
+              transform="rotate(100deg)"
+              minW="20px"
+            >
+              {colors.extensions.condition}
+            </panda.span>
+            <panda.div
+              height="10rem"
+              width="80%"
+              borderRadius="14px"
+              position="relative"
+              overflow="hidden"
+              before={{
+                content: "''",
+                position: 'absolute',
+                borderRadius: '14px',
+                width: 'full',
+                height: 'full',
+                backgroundSize: '12px',
+                zIndex: '-1',
+                background:
+                  'url(data:image/svg+xml;utf8,%3Csvg%20width%3D%226%22%20height%3D%226%22%20viewBox%3D%220%200%206%206%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200H3V3H0V0Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M3%200H6V3H3V0Z%22%20fill%3D%22white%22/%3E%3Cpath%20d%3D%22M3%203H6V6H3V3Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M0%203H3V6H0V3Z%22%20fill%3D%22white%22/%3E%3C/svg%3E%0A)',
+              }}
+              className=" condition"
+              style={{ background: colors.base.value }}
+            >
+              <panda.span
+                position="absolute"
+                top="50%"
+                right="8px"
+                textTransform="uppercase"
+                fontWeight={600}
+                fontSize="medium"
+                writingMode="vertical-lr"
+                transform="rotate(100deg)"
+                minW="20px"
+              >
+                Base
+              </panda.span>
+            </panda.div>
+          </panda.div>
           <span>
-            <span className="semantic-title">{name}</span>
+            <panda.span textTransform="capitalize" fontWeight={600}>
+              {name}
+            </panda.span>
           </span>
           {Object.entries<string>(colors.extensions.conditions).map(([cond, val]) => {
             const isLinked = colors[cond].isReference
@@ -137,64 +202,143 @@ export default function Colors() {
               <div key={cond}>
                 <span>
                   <span>{`${cond}: ${extractColor(val)}`}</span>
-                  {isLinked && <span className="alias">🔗 alias</span>}
+                  {isLinked && (
+                    <panda.span
+                      fontSize="small"
+                      borderRadius="24px"
+                      padding="3px 8px"
+                      marginLeft="12px"
+                      background="#1a1a1a"
+                      color="white"
+                    >
+                      🔗 alias
+                    </panda.span>
+                  )}
                 </span>
               </div>
             )
           })}
-        </div>
+        </panda.div>
       )
     })
   }
   const renderColors = (values: any[]) => {
     return values?.map((color, i) => {
       return (
-        <div className="shade" key={i}>
-          <div className="color-box" style={{ background: color.value }} />
-          <div className="shade-value">{color.value}</div>
-          <div className="shade-value">{color.extensions.prop}</div>
-          <div className="shade-value">{color.extensions.varRef}</div>
-        </div>
+        <panda.div display="flex" flexDir="column" gap="4px" key={i}>
+          <panda.div
+            width="full"
+            height="5rem"
+            borderRadius="4px"
+            position="relative"
+            overflow="hidden"
+            before={{
+              content: "''",
+              position: 'absolute',
+              borderRadius: '4px',
+              width: 'full',
+              height: 'full',
+              backgroundSize: '12px',
+              zIndex: '-1',
+              background:
+                'url(data:image/svg+xml;utf8,%3Csvg%20width%3D%226%22%20height%3D%226%22%20viewBox%3D%220%200%206%206%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200H3V3H0V0Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M3%200H6V3H3V0Z%22%20fill%3D%22white%22/%3E%3Cpath%20d%3D%22M3%203H6V6H3V3Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M0%203H3V6H0V3Z%22%20fill%3D%22white%22/%3E%3C/svg%3E%0A)',
+            }}
+            style={{
+              background: color.value,
+            }}
+          />
+          <panda.div opacity="0.7">{color.value}</panda.div>
+          <panda.div opacity="0.7">{color.extensions.prop}</panda.div>
+          <panda.div opacity="0.7">{color.extensions.varRef}</panda.div>
+        </panda.div>
       )
     })
   }
 
   return (
-    <div className="token-group">
-      <div className="font-token-input-wrapper">
+    <panda.div className={css({ layerStyle: 'token-group' })}>
+      <panda.div
+        marginBottom="14px"
+        position="sticky"
+        top="0"
+        boxShadow="0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+        background="var(--bg)"
+      >
         <input
+          className={css({
+            width: 'full',
+            resize: 'vertical',
+            padding: '4px',
+          })}
           value={filterQuery}
           onChange={(e) => setFilterQuery(e.target.value)}
-          className="font-token-input"
           placeholder="Filter tokens by text, property or value"
         />
-      </div>
-      <div className="token-content">
-        <div className="color-wrapper">
+      </panda.div>
+      <panda.div layerStyle="token-content">
+        <div>
           {!!categorizedColors.length &&
             categorizedColors.map(([category, colors]) => (
               <div key={category}>
-                <span className="title">{category}</span>
-                <div className="shades" key={category}>
+                <panda.span fontWeight={500} textTransform="capitalize" fontSize="1.2em">
+                  {category}
+                </panda.span>
+                <panda.div
+                  display="grid"
+                  //TODO use jsx after fix
+                  // gridGap="16px"
+                  className={css({
+                    gridGap: '16px',
+                  })}
+                  gridTemplateColumns="repeat(auto-fit, minmax(13rem, 1fr))"
+                  margin="20px 0 40px 0"
+                  key={category}
+                >
                   {renderColors(colors)}
-                </div>
+                </panda.div>
               </div>
             ))}
           {!!uncategorizedColors?.length && (
             <div>
-              <span className="title">{UNCATEGORIZED_ID}</span>
-              <div className="shades">{renderColors(uncategorizedColors)}</div>
+              <panda.span fontWeight={500} textTransform="capitalize" fontSize="1.2em">
+                {UNCATEGORIZED_ID}
+              </panda.span>
+              <panda.div
+                display="grid"
+                //TODO remove `style` after fix
+                // gridGap="16px"
+                style={{
+                  gridGap: '16px',
+                }}
+                gridTemplateColumns="repeat(auto-fit, minmax(13rem, 1fr))"
+                margin="20px 0 40px 0"
+              >
+                {renderColors(uncategorizedColors)}
+              </panda.div>
             </div>
           )}
           {!!semanticTokens.length && (
             <div>
-              <span className="title">Semantic tokens</span>
-              <div className="shades">{renderSemanticTokens()}</div>
+              <panda.span fontWeight={500} textTransform="capitalize" fontSize="1.2em">
+                Semantic tokens
+              </panda.span>
+              <panda.div
+                display="grid"
+                //TODO remove `style` after fix
+                // gridGap="16px"
+                style={{
+                  gridGap: '16px',
+                }}
+                gridTemplateColumns="repeat(auto-fit, minmax(13rem, 1fr))"
+                margin="20px 0 40px 0"
+              >
+                {renderSemanticTokens()}
+              </panda.div>
             </div>
           )}
           {!hasResults && <div>No pandas found! Try a different breed. 🐼</div>}
         </div>
-      </div>
-    </div>
+      </panda.div>
+    </panda.div>
   )
 }

@@ -6,5 +6,15 @@ export default function Page() {
   const tokenDictionary = new TokenDictionary(config)
   const tokens = Object.fromEntries(tokenDictionary.categoryMap)
 
-  return <FontTokens fontTokens={tokens.fontSizes} token="fontSize" />
+  return (
+    <FontTokens
+      fontTokens={tokens.fontSizes}
+      token="fontSize"
+      css={{
+        '& .font-wrapper .label': {
+          textTransform: 'unset',
+        },
+      }}
+    />
+  )
 }

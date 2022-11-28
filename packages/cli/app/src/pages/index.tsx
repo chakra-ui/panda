@@ -3,6 +3,46 @@ import { NavLink } from 'react-router-dom'
 import { panda } from 'design-system/jsx'
 import { css } from 'design-system/css'
 
+function Item(props: typeof navItems[number]) {
+  return (
+    <NavLink key={props.id} to={`/${props.id}`}>
+      <panda.li
+        width="220px"
+        background="var(--aside-bg)"
+        borderRadius="8px"
+        padding="18px"
+        transition="all 0.2s ease"
+        display="flex"
+        flexDir="column"
+        hover={{
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        }}
+        osLight={{ color: '#3b3b3b', background: '#bababa3d' }}
+      >
+        <panda.span
+          className={css({
+            '& svg': {
+              fontWeight: 400,
+              fontSize: 'xx-large',
+              marginBottom: '24px',
+              height: '24px',
+              width: '24px',
+            },
+          })}
+        >
+          <props.icon />
+        </panda.span>
+        <panda.span display="block" fontWeight={600} fontSize="small">
+          {props.label}
+        </panda.span>
+        <panda.span display="block" marginTop="12px">
+          {props.description}
+        </panda.span>
+      </panda.li>
+    </NavLink>
+  )
+}
+
 function Index() {
   return (
     <panda.div display="flex" flexDir="column">
@@ -16,6 +56,9 @@ function Index() {
         className={css({
           '& span': { display: 'block' },
         })}
+        osLight={{
+          background: '#bababa3d',
+        }}
       >
         <panda.span fontSize="1.7em" fontWeight={600} marginBottom="24px">
           Design System
@@ -59,41 +102,39 @@ function Index() {
       >
         <div>
           <span>TOKENS</span>
-          <ul>
+          <ul
+            className={css({
+              listStyleType: 'none',
+              padding: 0,
+              gap: '24px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              margin: '0.5rem 0',
+            })}
+          >
             {navItems
               .filter((k) => k.type === 'token')
               .map((themeKey) => (
-                <NavLink key={themeKey.id} to={`/${themeKey.id}`}>
-                  {({ isActive }) => (
-                    <li className="item" data-active={isActive ? '' : undefined}>
-                      <span className="icon">
-                        <themeKey.icon />
-                      </span>
-                      <span className="title"> {themeKey.label} </span>
-                      <span className="description"> {themeKey.description} </span>
-                    </li>
-                  )}
-                </NavLink>
+                <Item key={themeKey.id} {...themeKey} />
               ))}
           </ul>
         </div>
         <div>
           <span>PLAYGROUND</span>
-          <ul>
+          <ul
+            className={css({
+              listStyleType: 'none',
+              padding: 0,
+              gap: '24px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              margin: '0.5rem 0',
+            })}
+          >
             {navItems
               .filter((k) => k.type === 'playground')
               .map((themeKey) => (
-                <NavLink key={themeKey.id} to={`/${themeKey.id}`}>
-                  {({ isActive }) => (
-                    <li className="item" data-active={isActive ? '' : undefined}>
-                      <span className="icon">
-                        <themeKey.icon />
-                      </span>
-                      <span className="title"> {themeKey.label} </span>
-                      <span className="description"> {themeKey.description} </span>
-                    </li>
-                  )}
-                </NavLink>
+                <Item key={themeKey.id} {...themeKey} />
               ))}
           </ul>
         </div>

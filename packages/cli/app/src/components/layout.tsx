@@ -1,43 +1,105 @@
-// import '../App.css'
 import { navItems } from '../utils/constants'
 import { NavLink } from 'react-router-dom'
+import { panda } from 'design-system/jsx'
+import { css } from 'design-system/css'
 
 type LayoutProps = { children: React.ReactNode }
+
+function Item(props: typeof navItems[number]) {
+  return (
+    <NavLink key={props.id} to={`/${props.id}`}>
+      {({ isActive }) => (
+        <panda.li
+          padding="0.3rem 0"
+          cursor="pointer"
+          fontSize="0.9rem"
+          fontWeight={600}
+          transition="all 0.2s ease"
+          data-active={isActive ? '' : undefined}
+          className={css({
+            '&:hover, &[data-active]': {
+              color: '#9499ff',
+            },
+          })}
+        >
+          {props.label}
+        </panda.li>
+      )}
+    </NavLink>
+  )
+}
 
 export function Layout(props: LayoutProps) {
   const { children } = props
 
   return (
-    <main>
-      <aside>
-        <NavLink to="/" className="title">
+    <panda.main
+      display="flex"
+      height="full"
+      className={css({
+        '&>*': {
+          padding: '2rem 1rem',
+          overflow: 'auto',
+        },
+      })}
+    >
+      <panda.aside
+        minW="15rem"
+        background="var(--aside-bg)"
+        osLight={{
+          color: 'white',
+        }}
+      >
+        <NavLink to="/" className={css({ fontWeight: 700, fontSize: '1.4rem' })}>
           🐼 Panda
         </NavLink>
-        <div>
+        <panda.div
+          marginTop="2rem"
+          className={css({
+            '&>span': {
+              fontWeight: 700,
+              fontSize: 'small',
+              opacity: 0.7,
+            },
+            '&>ul': {
+              listStyleType: 'none',
+              padding: 0,
+              margin: '0.5rem 0',
+            },
+          })}
+        >
           <span>TOKENS</span>
-          <ul>
+          <panda.ul marginBottom="2rem">
             {navItems
               .filter((k) => k.type === 'token')
               .map((themeKey) => (
-                <NavLink key={themeKey.id} to={`/${themeKey.id}`}>
-                  {({ isActive }) => <li data-active={isActive ? '' : undefined}>{themeKey.label}</li>}
-                </NavLink>
+                <Item key={themeKey.id} {...themeKey} />
               ))}
-          </ul>
+          </panda.ul>
           <span>PLAYGROUND</span>
           <ul>
             {navItems
               .filter((k) => k.type === 'playground')
               .map((themeKey) => (
-                <NavLink key={themeKey.id} to={`/${themeKey.id}`}>
-                  {({ isActive }) => <li data-active={isActive ? '' : undefined}>{themeKey.label}</li>}
-                </NavLink>
+                <Item key={themeKey.id} {...themeKey} />
               ))}
           </ul>
-        </div>
-      </aside>
-      <div className="content">{children}</div>
-      <div className="badge">🐼 Made with Panda</div>
-    </main>
+        </panda.div>
+      </panda.aside>
+      <panda.div width="full">{children}</panda.div>
+      <panda.div
+        position="fixed"
+        right="2rem"
+        fontSize="0.8rem"
+        bottom="calc(env(safe-area-inset-bottom) + 1rem)"
+        background="#000"
+        borderRadius="8px"
+        padding="4px 10px"
+        pointerEvents="none"
+        color="white"
+      >
+        🐼 Made with Panda
+      </panda.div>
+    </panda.main>
   )
 }
