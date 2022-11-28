@@ -40,14 +40,14 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     import { Assign, JSXStyleProperties } from '../types'
     
     type ElementType = keyof JSX.IntrinsicElements
-    type PropsOf<C extends ElementType> = ComponentProps<C>
     
-    type Polymorphic<C extends ElementType = 'div', P = {}> = JSXStyleProperties &
-      Assign<Omit<PropsOf<C>, 'color'>, P & { as?: C }>
+    type Polymorphic<C extends ElementType = 'div', P = {}> = JSXStyleProperties |
+      Assign<Omit<ComponentProps<C>, 'color'>, P & { as?: C }>
 
     export type ${jsxName}Props<C extends ElementType = 'div'> = Polymorphic<C, ${upperName}Properties>
     
-    export declare function ${jsxName}<V extends ElementType>(props: ${jsxName}Props<V>): JSX.Element    
+    ${pattern.description ? `/** ${pattern.description} */` : ''}
+    export declare function ${jsxName}<V extends ElementType = 'div'>(props: ${jsxName}Props<V>): JSX.Element    
     `,
   }
 }
