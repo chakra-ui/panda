@@ -24,15 +24,15 @@ const extractColor = (col: string) => {
   return `colors.${result?.[1]}`
 }
 
-const groupByPalette = (colors: Map<string, any>, filterMethod?: (token: ColorToken) => boolean) => {
+const groupByColorPalette = (colors: Map<string, any>, filterMethod?: (token: ColorToken) => boolean) => {
   const values = Array.from(colors.values()).filter((color) => !color.isConditional && !color.extensions.isVirtual)
   return values.reduce((acc, nxt) => {
     if (!filterMethod?.(nxt)) return acc
 
-    const palette = nxt.extensions.palette || UNCATEGORIZED_ID
-    if (!(palette in acc)) acc[palette] = []
-    const exists = (acc[palette] as any[]).find((tok) => tok.name === nxt.name)
-    if (!exists) acc[palette].push(nxt)
+    const colorPalette = nxt.extensions.colorPalette || UNCATEGORIZED_ID
+    if (!(colorPalette in acc)) acc[colorPalette] = []
+    const exists = (acc[colorPalette] as any[]).find((tok) => tok.name === nxt.name)
+    if (!exists) acc[colorPalette].push(nxt)
     return acc
   }, {})
 }
@@ -95,7 +95,7 @@ const useColorDocs = () => {
       .some((prop) => prop.includes(filterQuery))
   }
 
-  const colorsInCategories = groupByPalette(colors, filterMethod)
+  const colorsInCategories = groupByColorPalette(colors, filterMethod)
   const uncategorizedColors = colorsInCategories[UNCATEGORIZED_ID]
 
   const categorizedColors = Object.entries<any[]>(colorsInCategories).filter(

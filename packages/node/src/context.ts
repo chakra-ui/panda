@@ -8,6 +8,7 @@ import {
   Utility,
 } from '@pandacss/core'
 import { NotFoundError } from '@pandacss/error'
+import { isCssProperty } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
 import { Collector, createParser, createProject } from '@pandacss/parser'
 import { capitalize, compact, mapObject, uncapitalize } from '@pandacss/shared'
@@ -102,6 +103,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     semanticTokens,
     prefix: cssVarPrefix,
   })
+
+  const hasTokens = !tokens.isEmpty
 
   logger.debug({ type: 'ctx:token', msg: tokens.allNames })
 
@@ -203,9 +206,14 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * -----------------------------------------------------------------------------*/
 
   const properties = Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()]))
-  function isProperty(prop: string) {
+
+  function isCustomCssProperty(prop: string) {
     const regex = new RegExp('^(?:' + properties.join('|') + ')$')
     return regex.test(prop)
+  }
+
+  function isStyleProp(prop: string) {
+    return isCssProperty(prop) || isCustomCssProperty(prop)
   }
 
   /* -----------------------------------------------------------------------------
@@ -358,7 +366,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     importMap,
     jsx: {
       factory: jsxFactory,
-      isStyleProp: isProperty,
+      isStyleProp,
       nodes: [...patternNodes, ...recipeNodes],
     },
   })
@@ -472,7 +480,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     cleanOutdir,
 
     tokens,
-    hasTokens: !tokens.isEmpty,
+    hasTokens,
 
     utility,
     collectStyles,
@@ -493,8 +501,6 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     cssVarRoot,
 
     properties,
-    isProperty,
-
     extract,
   }
 }

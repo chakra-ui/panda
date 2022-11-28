@@ -203,11 +203,13 @@ const spacing: UtilityConfig = {
     values: 'spacing',
   },
   paddingInlineEnd: {
-    className: 'pr',
+    className: 'pe',
+    shorthand: 'pe',
     values: 'spacing',
   },
   paddingInlineStart: {
-    className: 'pl',
+    className: 'ps',
+    shorthand: 'ps',
     values: 'spacing',
   },
   paddingX: {
@@ -297,11 +299,13 @@ const spacing: UtilityConfig = {
     values: 'spacing',
   },
   marginInlineEnd: {
-    className: 'mr',
+    className: 'me',
+    shorthand: 'me',
     values: 'spacing',
   },
   marginInlineStart: {
-    className: 'ml',
+    className: 'ms',
+    shorthand: 'ms',
     values: 'spacing',
   },
 
@@ -482,6 +486,18 @@ const flexGrid: UtilityConfig = {
   },
   gap: {
     className: 'gap',
+    values: 'spacing',
+  },
+  gridGap: {
+    className: 'gap',
+    values: 'spacing',
+  },
+  gridRowGap: {
+    className: 'gap-x',
+    values: 'spacing',
+  },
+  gridColumnGap: {
+    className: 'gap-y',
     values: 'spacing',
   },
   rowGap: {

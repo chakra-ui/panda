@@ -83,6 +83,7 @@ export const conditions = {
   portrait: '@media (orientation: portrait)',
 
   dark: '.dark &',
+  light: '.light &',
   osDark: '@media (prefers-color-scheme: dark)',
   osLight: '@media (prefers-color-scheme: light)',
 
