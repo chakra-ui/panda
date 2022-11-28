@@ -37,6 +37,7 @@ const patternMap = {
 }
 
 export function generateJsxPatterns(ctx: PandaContext) {
+  if (!ctx.hasPatterns) return []
   return patternMap[ctx.jsxFramework!](ctx)
 }
 

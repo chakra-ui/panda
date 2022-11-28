@@ -2,6 +2,7 @@ import type { LoadConfigResult } from '@pandacss/config'
 import { logger } from '@pandacss/logger'
 import chokidar from 'chokidar'
 import { join } from 'path'
+import { match } from 'ts-pattern'
 import type { PandaContext } from './context'
 
 type WatcherOptions = {
@@ -57,14 +58,23 @@ async function createContentWatcher(ctx: PandaContext, callback: (file: string) 
 
   watcher.on('all', async (event, file) => {
     logger.debug({ type: `file:${event}`, file })
-    ctx.removeSourceFile(file)
 
-    if (event === 'unlink') {
-      ctx.chunks.rm(file)
-    } else {
-      ctx.addSourceFile(file)
-      await callback(file)
-    }
+    match(event)
+      .with('unlink', () => {
+        ctx.removeSourceFile(file)
+        ctx.chunks.rm(file)
+      })
+      .with('change', async () => {
+        ctx.reloadSourceFile(file)
+        await callback(file)
+      })
+      .with('add', async () => {
+        ctx.addSourceFile(file)
+        await callback(file)
+      })
+      .otherwise(() => {
+        // noop
+      })
   })
 
   return watcher

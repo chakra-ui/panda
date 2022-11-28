@@ -53,6 +53,5 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
 }
 
 export function generateReactJsxPattern(ctx: PandaContext) {
-  if (!ctx.hasPattern) return []
   return Object.entries(ctx.patterns).map(([name, pattern]) => generate(name, pattern, ctx.jsxFactory))
 }
