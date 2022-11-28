@@ -18,18 +18,25 @@ export function visitJsxElement(
 
   for (const node of elements) {
     const tag = node.getTagNameNode().getText()
-    if (!matchProp.tag(tag)) continue
+
+    if (!tag || !matchProp.tag(tag)) {
+      continue
+    }
 
     const props = node.getAttributes()
     const data: Record<string, any> = {}
 
     for (const prop of props) {
-      if (!Node.isJsxAttribute(prop)) continue
+      if (!Node.isJsxAttribute(prop)) {
+        continue
+      }
 
       const name = prop.getName()
       const value = prop.getInitializer()
 
-      if (!matchProp.prop({ tag, name })) continue
+      if (!tag || !matchProp.prop({ tag, name })) {
+        continue
+      }
 
       match(value)
         .when(Node.isStringLiteral, (value) => {
