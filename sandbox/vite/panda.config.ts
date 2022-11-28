@@ -8,7 +8,7 @@ export default defineConfig({
   outdir: 'design-system',
   semanticTokens: {
     colors: {
-      text: { value: { base: 'gray.600', dark: 'gray.400' } },
+      text: { value: { base: '{colors.gray.600}', osDark: '{colors.gray.400}' } },
     },
   },
   jsxFramework: 'react',
@@ -20,10 +20,24 @@ export default defineConfig({
         fontSize: 'lg',
       },
       variants: {
+        size: {
+          sm: {
+            padding: '2',
+            borderRadius: 'sm',
+          },
+          md: {
+            padding: '4',
+            borderRadius: 'md',
+          },
+        },
         variant: {
           primary: {
             color: 'white',
             backgroundColor: 'blue.500',
+          },
+          danger: {
+            color: 'white',
+            backgroundColor: 'red.500',
           },
         },
       },

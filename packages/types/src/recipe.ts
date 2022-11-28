@@ -12,6 +12,10 @@ export type RecipeConfig<Variants extends TVariants = TVariants> = {
    */
   name: string
   /**
+   * The jsx elements to track for this recipe.
+   */
+  jsx?: string
+  /**
    * The base styles of the recipe.
    */
   base?: StyleObject

@@ -1,0 +1,95 @@
+# Recipes
+
+Panda allows you create multi-variant styles for your design system.
+
+When added to the panda config file, it generates utilities to consume them in a type-safe manner.
+
+> All recipe styles are generated at build time.
+
+## Creating a recipe
+
+A recipes contains the following properties:
+
+- `name`: The name of the recipe
+- `description`: A description of the recipe. Used in the JSDoc comments.
+- `base`: The base style object for the recipe
+- `variants`: The variant styles for the recipe
+- `defaultVariants`: The default variants for the recipe
+
+Here's an example button recipe
+
+```js
+// recipes/button.ts
+import { defineRecipe } from '@pandacss/cli'
+
+const button = defineRecipe({
+  name: 'button',
+  description: 'A button',
+  base: {
+    backgroundColor: 'blue',
+    color: 'white',
+    padding: '1rem',
+    borderRadius: '0.25rem',
+  },
+  variants: {
+    size: {
+      small: {
+        padding: '0.5rem',
+      },
+      large: {
+        padding: '1.5rem',
+      },
+    },
+    variant: {
+      primary: {
+        backgroundColor: 'green',
+      },
+      secondary: {
+        backgroundColor: 'red',
+      },
+    },
+    rounded: {
+      true: {
+        borderRadius: '999px',
+      },
+    },
+  },
+  defaultVariants: {
+    size: 'small',
+    variant: 'primary',
+  },
+})
+
+// panda.config.ts
+export default {
+  recipes: { button },
+}
+```
+
+With the recipe defined, you can now use it in your application.
+
+```js
+import { button } from './design-system/recipes'
+
+document.write(`
+  <button class="${button({
+    variant: 'primary',
+    size: 'large',
+    rounded: true,
+  })}">
+    Hello world
+  </button>
+`)
+```
+
+## TypeScript guide
+
+Every recipe ships a type interface for its accepted variants.
+
+```ts
+import { ButtonVariants } from '../design-system/recipes'
+
+type ButtonProps = ButtonVariants & {
+  children: React.ReactNode
+}
+```

@@ -6,11 +6,19 @@ export function generateConditions(ctx: PandaContext) {
   const keys = Object.keys(ctx.conditions.values).concat('_', 'base')
   return {
     js: outdent`
+     import { withoutSpace } from '../helpers'
      const conditions = new Set([${keys.map((key) => JSON.stringify(key))}])
      
      export function isCondition(value){
       return conditions.has(value) || /^@|&|&$/.test(value)
      }
+
+     export function finalizeConditions(paths){
+      return paths.map((path) => {
+        if (conditions.has(path)) return path
+        if (/&|@/.test(path)) return \`[\${withoutSpace(path.trim())}]\`
+        return path
+      })}
 
      export function sortConditions(paths){
         return paths.sort((a, b) => {

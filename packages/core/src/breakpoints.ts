@@ -13,11 +13,16 @@ export class Breakpoints {
     return Object.fromEntries(this.sorted)
   }
 
+  get keys() {
+    return ['base', ...Object.keys(this.values)]
+  }
+
   get = (name: string) => {
     return this.values[name]
   }
 
   build = ({ min, max }: { min?: string | null; max?: string | null }) => {
+    if (min == null && max == null) return ''
     return ['screen', min && `(min-width: ${min})`, max && `(max-width: ${max})`].filter(Boolean).join(' and ')
   }
 
@@ -49,10 +54,12 @@ export class Breakpoints {
     const values = breakpoints
       .flatMap((_name, index) => {
         const min = breakpoints[index]
-        const up = [min, this.up(min)] as [string, string]
-        const only = [`${min}Only`, this.only(min)] as [string, string]
-        return [up, only]
+        const down: [string, string] = [`${min}Down`, this.down(min)]
+        const up: [string, string] = [min, this.up(min)]
+        const only: [string, string] = [`${min}Only`, this.only(min)]
+        return [up, only, down]
       })
+      .filter(([_, value]) => value !== '')
       .concat(permuations.map(([min, max]) => [`${min}To${capitalize(max)}`, this.between(min, max)]))
 
     return Object.fromEntries(values)

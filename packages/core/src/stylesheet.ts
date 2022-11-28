@@ -2,7 +2,6 @@ import { walkStyles } from '@pandacss/shared'
 import type { Dict, RecipeConfig } from '@pandacss/types'
 import postcss from 'postcss'
 import { AtomicRule } from './atomic-rule'
-import { Breakpoints } from './breakpoints'
 import { optimizeCss } from './optimize'
 import { Recipe } from './recipe'
 import { serializeStyles } from './serialize'
@@ -64,8 +63,11 @@ export class Stylesheet {
   }
 
   toCss = ({ optimize = true, minify }: { optimize?: boolean; minify?: boolean } = {}) => {
-    const breakpoint = new Breakpoints(this.context.breakpoints)
-    breakpoint.expandScreenAtRule(this.context.root)
+    const {
+      conditions: { breakpoints },
+    } = this.context
+
+    breakpoints.expandScreenAtRule(this.context.root)
 
     let css = this.context.root.toString()
 

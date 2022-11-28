@@ -12,6 +12,7 @@ import type { Root } from 'postcss'
 import postcss from 'postcss'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
+import { normalizeStyleObject } from '@pandacss/shared'
 
 export type ProcessOptions = {
   scope?: string[]
@@ -33,15 +34,15 @@ export class AtomicRule {
     return this.context.conditions.rule()
   }
 
+  get transform() {
+    return this.context?.transform ?? this.context.utility.transform
+  }
+
   process = (options: ProcessOptions) => {
     const { scope, styles } = options
-    const { utility } = this.context
+    const { conditions: cond } = this.context
 
-    const styleObject = utility.hasShorthand
-      ? walkObject(styles, (v) => v, {
-          getKey: (prop) => utility.resolveShorthand(prop),
-        })
-      : styles
+    const styleObject = normalizeStyleObject(styles, this.context)
 
     const rule = this.rule
 
@@ -52,13 +53,13 @@ export class AtomicRule {
       if (value == null) return
 
       // conditions.shift was done to support condition groups
-      const [prop, ...allConditions] = this.context.conditions.shift(paths)
+      const [prop, ...allConditions] = cond.shift(paths)
 
       // remove default condition
       const conditions = filterBaseConditions(allConditions)
 
       // allow users transform the generated class and styles
-      const transformed = this.context.transform(prop, withoutImportant(value))
+      const transformed = this.transform(prop, withoutImportant(value))
 
       // convert css-in-js to css rule
       const cssRoot = toCss(transformed.styles, { important })
@@ -66,7 +67,7 @@ export class AtomicRule {
       rule.nodes = cssRoot.root.nodes
 
       // get the base class name
-      const baseArray = [...conditions, transformed.className]
+      const baseArray = [...cond.finalize(conditions), transformed.className]
 
       if (scope && scope.length > 0) {
         baseArray.unshift(`[${withoutSpace(scope.join('__'))}]`)

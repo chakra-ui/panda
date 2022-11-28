@@ -43,7 +43,7 @@ export async function main() {
     })
 
   cli
-    .command('gen', 'Generate the panda system')
+    .command('codegen', 'Generate the panda system')
     .option('--silent', "Don't print any logs")
     .option('--clean', 'Clean the output directory before generating')
     .action(async (flags) => {

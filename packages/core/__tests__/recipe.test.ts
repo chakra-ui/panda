@@ -53,6 +53,7 @@ describe('recipe ruleset', () => {
           "variant": "solid",
         },
         "description": "",
+        "jsx": "ButtonStyle",
         "name": "buttonStyle",
         "variants": {
           "size": {

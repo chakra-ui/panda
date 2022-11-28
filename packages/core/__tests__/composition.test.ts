@@ -15,7 +15,7 @@ describe('compositions', () => {
   test('should assign composition', () => {
     const ctx = createContext()
     assignCompositions(ctx, compositions)
-    const result = ctx.utility.resolve('textStyle', 'headline.h2')
+    const result = ctx.utility.transform('textStyle', 'headline.h2')
     expect(result).toMatchInlineSnapshot(`
       {
         "className": "textStyle_headline.h2",
@@ -32,7 +32,7 @@ describe('compositions', () => {
       }
     `)
 
-    expect(ctx.utility.resolve('textStyle', 'headline.h5')).toMatchInlineSnapshot(`
+    expect(ctx.utility.transform('textStyle', 'headline.h5')).toMatchInlineSnapshot(`
     {
       "className": "textStyle_headline.h5",
       "layer": "compositions",

@@ -75,6 +75,8 @@ describe('Utility', () => {
           "red.900",
           "primary",
           "secondary",
+          "complex",
+          "surface",
           "palette.50",
           "palette.100",
           "palette.200",
@@ -161,6 +163,8 @@ describe('Utility', () => {
         "(backgroundColor = red.900)" => "bg_red.900",
         "(backgroundColor = primary)" => "bg_primary",
         "(backgroundColor = secondary)" => "bg_secondary",
+        "(backgroundColor = complex)" => "bg_complex",
+        "(backgroundColor = surface)" => "bg_surface",
         "(backgroundColor = palette.50)" => "bg_palette.50",
         "(backgroundColor = palette.100)" => "bg_palette.100",
         "(backgroundColor = palette.200)" => "bg_palette.200",
@@ -303,6 +307,12 @@ describe('Utility', () => {
         },
         "(backgroundColor = secondary)" => {
           "backgroundColor": "var(--colors-secondary)",
+        },
+        "(backgroundColor = complex)" => {
+          "backgroundColor": "var(--colors-complex)",
+        },
+        "(backgroundColor = surface)" => {
+          "backgroundColor": "var(--colors-surface)",
         },
         "(backgroundColor = palette.50)" => {
           "backgroundColor": "var(--colors-palette-50)",
@@ -453,7 +463,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(utility.resolve('bt', '4px')).toMatchInlineSnapshot(`
+    expect(utility.transform('bt', '4px')).toMatchInlineSnapshot(`
       {
         "className": "bt_4px",
         "styles": {
@@ -560,7 +570,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(utility.resolve('marginLeft', 'sm')).toMatchInlineSnapshot(`
+    expect(utility.transform('marginLeft', 'sm')).toMatchInlineSnapshot(`
       {
         "className": "ml_sm",
         "styles": {
@@ -569,7 +579,7 @@ describe('Utility', () => {
       }
     `)
 
-    expect(utility.resolve('marginLeft', '40px')).toMatchInlineSnapshot(`
+    expect(utility.transform('marginLeft', '40px')).toMatchInlineSnapshot(`
       {
         "className": "ml_40px",
         "styles": {

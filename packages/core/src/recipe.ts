@@ -1,4 +1,4 @@
-import { walkStyles } from '@pandacss/shared'
+import { capitalize, walkStyles } from '@pandacss/shared'
 import type { RecipeConfig } from '@pandacss/types'
 import merge from 'lodash.merge'
 import { AtomicRule, ProcessOptions } from './atomic-rule'
@@ -9,15 +9,18 @@ type StyleObject = Record<string, any>
 
 export class Recipe {
   config: RecipeConfig
+
   name: string
+
   values = new Map<string, Set<{ className: string; value: string }>>()
 
   constructor(config: RecipeConfig, private context: StylesheetContext) {
-    const { name, base = {}, variants = {}, defaultVariants = {}, description = '' } = config
+    const { name, jsx = capitalize(name), base = {}, variants = {}, defaultVariants = {}, description = '' } = config
 
     this.name = name
 
     const recipe: Required<RecipeConfig> = {
+      jsx,
       name,
       description,
       base: {},
@@ -95,18 +98,22 @@ export class Recipe {
   }
 
   process = (options: ProcessOptions) => {
-    const { styles } = options
+    const { styles: variants } = options
 
     const { name, defaultVariants = {} } = this.config
-    const ctx = { ...this.context, transform: this.transform }
-    const rule = new AtomicRule(ctx)
+
+    const rule = new AtomicRule({
+      ...this.context,
+      transform: this.transform,
+    })
+
     rule.layer = 'recipes'
 
     rule.process({
       styles: {
         [name]: '__ignore__',
         ...defaultVariants,
-        ...styles,
+        ...variants,
       },
     })
   }

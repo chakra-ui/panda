@@ -12,8 +12,8 @@ export function generateRecipes(ctx: PandaContext) {
     outdent`
    import { createCss, withoutSpace } from "../helpers"
 
-   const createRecipe = (name) => {
-     return (styles) => {
+   const createRecipe = (name, defaultVariants) => {
+     return (variants) => {
       const transform = (prop, value) => {
          if (value === '__ignore__') {
            return { className: name }
@@ -23,10 +23,20 @@ export function generateRecipes(ctx: PandaContext) {
          return { className: \`\${name}--\${prop}${separator}\${value}\` }
       }
       
-      const context = ${hash ? '{ transform, hash: true }' : '{ transform }'}
+      const context = {
+        hash: ${hash ? 'true' : 'false'},
+        utility: {
+          transform,
+        }
+      }
+      
       const css = createCss(context)
       
-      return css({ [name]: '__ignore__' , ...styles })
+      return css({
+        [name]: '__ignore__',
+        ...defaultVariants,
+        ...variants
+      })
      }
    }
   `,
@@ -35,24 +45,27 @@ export function generateRecipes(ctx: PandaContext) {
   const dts = ['']
 
   Object.values(recipes).forEach((recipe) => {
+    const { name, description, defaultVariants, variants } = recipe
+
     js.push(outdent`
-    export const ${recipe.name} = createRecipe('${recipe.name}')
+    export const ${name} = createRecipe('${name}', ${JSON.stringify(defaultVariants ?? {})})
     `)
 
     dts.push(outdent`
     import { ConditionalValue } from "../types"
 
-    export type ${capitalize(recipe.name)}Value = {
-      ${Object.keys(recipe.variants ?? {})
+    export type ${capitalize(name)}Variants = {
+      ${Object.keys(variants ?? {})
         .map((key) => {
-          const value = recipe.variants![key]
+          const value = variants![key]
           const keys = Object.keys(value)
           return `${key}?: ConditionalValue<${unionType(keys)}>`
         })
         .join('\n')}
     }
 
-    export declare function ${recipe.name}(value: ${capitalize(recipe.name)}Value): string
+    ${description ? `/** ${description} */` : ''}
+    export declare function ${name}(value: ${capitalize(name)}Value): string
     `)
   })
 

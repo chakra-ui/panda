@@ -1,4 +1,5 @@
 import { logger } from '@pandacss/logger'
+import { withoutSpace } from '@pandacss/shared'
 import type { ConditionType, Dict, RawCondition } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
 import { ConditionalRule } from './conditional-rule'
@@ -14,16 +15,27 @@ type Options = {
 export class Conditions {
   values: Record<string, RawCondition>
 
+  breakpoints: Breakpoints
+
   constructor(private options: Options) {
-    const { breakpoints = {}, conditions } = this.options
-    const instance = new Breakpoints(breakpoints)
+    const { breakpoints: breakpointValues = {}, conditions } = this.options
+    const breakpoints = new Breakpoints(breakpointValues)
+    this.breakpoints = breakpoints
 
     const entries = Object.entries(conditions).map(([key, value]) => [key, parseCondition(value)])
 
     this.values = {
       ...Object.fromEntries(entries),
-      ...instance.conditions,
+      ...breakpoints.conditions,
     }
+  }
+
+  finalize = (paths: string[]) => {
+    return paths.map((path) => {
+      if (this.has(path)) return path
+      if (/&|@/.test(path)) return `[${withoutSpace(path.trim())}]`
+      return path
+    })
   }
 
   shift = (paths: string[]) => {

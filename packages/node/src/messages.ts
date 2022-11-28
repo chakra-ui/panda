@@ -78,3 +78,15 @@ export function noExtractMesssage() {
   If this is unexpected, double-check the \`include\` options in your Panda config\n
 `
 }
+
+export function watchMessage() {
+  return outdent`
+  Watching for file changes...
+  `
+}
+
+export function buildCompleteMessage(ctx: PandaContext) {
+  return outdent`
+  Successfully extracted CSS from ${ctx.files.length} file(s) ✨
+  `
+}

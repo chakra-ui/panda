@@ -5,7 +5,8 @@ export type ConditionType = 'at-rule' | 'parent-nesting' | 'self-nesting' | 'com
 export type ConditionDetails = {
   type: ConditionType
   value: string
-  [key: string]: string
+  name?: string
+  rawValue?: string
 }
 
 export type RawCondition = ConditionDetails & { raw: string }

@@ -1,5 +1,5 @@
 import postcss, { AtRule, ChildNode, Rule } from 'postcss'
-import { match } from 'ts-pattern'
+import { match, P } from 'ts-pattern'
 import type { StylesheetContext } from './types'
 
 export type WrapOptions =
@@ -54,7 +54,7 @@ export class ConditionalRule {
       if (!cond) continue
 
       match(cond)
-        .with({ type: 'at-rule' }, (data) => {
+        .with({ type: 'at-rule', name: P.string }, (data) => {
           this.rule = this.wrap({
             type: 'at-rule',
             name: data.name,

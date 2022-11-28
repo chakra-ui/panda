@@ -22,3 +22,8 @@ export function discardDuplicate(code: string) {
   const { css } = postcss([mergeCascadeLayers(), dedupe()]).process(code)
   return css
 }
+
+export function prettifyCss(code: string) {
+  const { css } = postcss([prettify()]).process(code)
+  return css
+}
