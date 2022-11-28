@@ -13,7 +13,7 @@ export function artifactsGeneratedMessage(ctx: PandaContext) {
       outdent`
       ${tick} ${quote(ctx.outdir, '/tokens')}: the css variables and js function to query your tokens
     `,
-    ctx.hasPattern &&
+    ctx.hasPatterns &&
       outdent`
       ${tick} ${quote(ctx.outdir, '/patterns')}: functions to implement common css patterns
     `,
