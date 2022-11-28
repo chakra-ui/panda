@@ -195,7 +195,7 @@ importers:
       pluralize: 8.0.0
       postcss: 8.4.19
       preferred-pm: ^3.0.3
-      telejson: 7.0.0
+      telejson: 7.0.3
       ts-morph: 17.0.1
       ts-pattern: 4.0.6
     dependencies:
@@ -221,7 +221,7 @@ importers:
       pluralize: 8.0.0
       postcss: 8.4.19
       preferred-pm: 3.0.3
-      telejson: 7.0.0
+      telejson: 7.0.3
       ts-morph: 17.0.1
       ts-pattern: 4.0.6
     devDependencies:
@@ -5153,6 +5153,10 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /map-or-similar/1.5.0:
+    resolution: {integrity: sha512-0aF7ZmVon1igznGI4VS30yugpduQW3y3GkcgGJOp7d8x8QrizhigUxjI/m2UojsXXto+jLAH3KSz+xOJTiORjg==}
+    dev: false
+
   /markdown-table/3.0.2:
     resolution: {integrity: sha512-y8j3a5/DkJCmS5x4dMCQL+OR0+2EAq3DOtio1COSHsmW2BGXnNCK3v12hJt1LrUz5iZH5g0LmuYOjDdI+czghA==}
     dev: false
@@ -5318,6 +5322,12 @@ packages:
 
   /mdurl/1.0.1:
     resolution: {integrity: sha512-/sKlQJCBYVY9Ers9hqzKou4H6V5UWc/M59TH2dvkt+84itfnq7uFOMLpOiOS4ujvHP4etln18fmIxA5R5fll0g==}
+    dev: false
+
+  /memoizerific/1.11.3:
+    resolution: {integrity: sha512-/EuHYwAPdLtXwAwSZkh/Gutery6pD2KYd44oQLhAvQp/50mpyduZh8Q7PYHXTCJ+wuXxt7oij2LXyIJOOYFPog==}
+    dependencies:
+      map-or-similar: 1.5.0
     dev: false
 
   /meow/6.1.1:
@@ -7218,8 +7228,10 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /telejson/7.0.0:
-    resolution: {integrity: sha512-G8DJUr7rSk22UiFmU23E3t2W23fGFylB4xcy57aW1N3MgU3vdn0l1+FljVOCzPLBncM2SpwkhTqG2awjuDBvOA==}
+  /telejson/7.0.3:
+    resolution: {integrity: sha512-Oj9M8IYGRiJVUY6jarU8EImAqys4hCDYoeNP4r6muMZKGukbsArbv1Z9lxKQtP7eLdRJCKvwI8TNCwjZxD0ryw==}
+    dependencies:
+      memoizerific: 1.11.3
     dev: false
 
   /term-size/2.2.1:
