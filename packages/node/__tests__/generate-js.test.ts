@@ -492,45 +492,45 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"var(--spacing-gutter)\\",
         \\"variable\\": \\"var(--spacing-gutter)\\"
       },
-      \\"colors.palette.50\\": {
-        \\"value\\": \\"var(--colors-palette-50)\\",
-        \\"variable\\": \\"var(--colors-palette-50)\\"
+      \\"colors.colorPalette.50\\": {
+        \\"value\\": \\"var(--colors-color-palette-50)\\",
+        \\"variable\\": \\"var(--colors-color-palette-50)\\"
       },
-      \\"colors.palette.100\\": {
-        \\"value\\": \\"var(--colors-palette-100)\\",
-        \\"variable\\": \\"var(--colors-palette-100)\\"
+      \\"colors.colorPalette.100\\": {
+        \\"value\\": \\"var(--colors-color-palette-100)\\",
+        \\"variable\\": \\"var(--colors-color-palette-100)\\"
       },
-      \\"colors.palette.200\\": {
-        \\"value\\": \\"var(--colors-palette-200)\\",
-        \\"variable\\": \\"var(--colors-palette-200)\\"
+      \\"colors.colorPalette.200\\": {
+        \\"value\\": \\"var(--colors-color-palette-200)\\",
+        \\"variable\\": \\"var(--colors-color-palette-200)\\"
       },
-      \\"colors.palette.300\\": {
-        \\"value\\": \\"var(--colors-palette-300)\\",
-        \\"variable\\": \\"var(--colors-palette-300)\\"
+      \\"colors.colorPalette.300\\": {
+        \\"value\\": \\"var(--colors-color-palette-300)\\",
+        \\"variable\\": \\"var(--colors-color-palette-300)\\"
       },
-      \\"colors.palette.400\\": {
-        \\"value\\": \\"var(--colors-palette-400)\\",
-        \\"variable\\": \\"var(--colors-palette-400)\\"
+      \\"colors.colorPalette.400\\": {
+        \\"value\\": \\"var(--colors-color-palette-400)\\",
+        \\"variable\\": \\"var(--colors-color-palette-400)\\"
       },
-      \\"colors.palette.500\\": {
-        \\"value\\": \\"var(--colors-palette-500)\\",
-        \\"variable\\": \\"var(--colors-palette-500)\\"
+      \\"colors.colorPalette.500\\": {
+        \\"value\\": \\"var(--colors-color-palette-500)\\",
+        \\"variable\\": \\"var(--colors-color-palette-500)\\"
       },
-      \\"colors.palette.600\\": {
-        \\"value\\": \\"var(--colors-palette-600)\\",
-        \\"variable\\": \\"var(--colors-palette-600)\\"
+      \\"colors.colorPalette.600\\": {
+        \\"value\\": \\"var(--colors-color-palette-600)\\",
+        \\"variable\\": \\"var(--colors-color-palette-600)\\"
       },
-      \\"colors.palette.700\\": {
-        \\"value\\": \\"var(--colors-palette-700)\\",
-        \\"variable\\": \\"var(--colors-palette-700)\\"
+      \\"colors.colorPalette.700\\": {
+        \\"value\\": \\"var(--colors-color-palette-700)\\",
+        \\"variable\\": \\"var(--colors-color-palette-700)\\"
       },
-      \\"colors.palette.800\\": {
-        \\"value\\": \\"var(--colors-palette-800)\\",
-        \\"variable\\": \\"var(--colors-palette-800)\\"
+      \\"colors.colorPalette.800\\": {
+        \\"value\\": \\"var(--colors-color-palette-800)\\",
+        \\"variable\\": \\"var(--colors-color-palette-800)\\"
       },
-      \\"colors.palette.900\\": {
-        \\"value\\": \\"var(--colors-palette-900)\\",
-        \\"variable\\": \\"var(--colors-palette-900)\\"
+      \\"colors.colorPalette.900\\": {
+        \\"value\\": \\"var(--colors-color-palette-900)\\",
+        \\"variable\\": \\"var(--colors-color-palette-900)\\"
       }
     }
 

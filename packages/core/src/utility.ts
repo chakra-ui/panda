@@ -66,7 +66,7 @@ export class Utility {
     }
 
     this.assignShorthands()
-    this.assignPaletteProperty()
+    this.assignColorPaletteProperty()
 
     this.assignProperties()
     this.assignPropertyTypes()
@@ -86,9 +86,9 @@ export class Utility {
     }
   }
 
-  private assignPaletteProperty = () => {
-    const values = this.tokens.palettes
-    this.config.palette = {
+  private assignColorPaletteProperty = () => {
+    const values = this.tokens.colorPalettes
+    this.config.colorPalette = {
       values: Object.keys(values),
       transform(value) {
         return values[value]

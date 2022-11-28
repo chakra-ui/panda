@@ -15,20 +15,20 @@ export const formats = {
     return grouped
   },
 
-  groupByPalette(dictionary: TokenDictionary) {
+  groupByColorPalette(dictionary: TokenDictionary) {
     const grouped: Map<string, Map<string, string>> = new Map()
 
     dictionary.allTokens.forEach((token) => {
-      const { palette } = token.extensions
-      if (!palette || token.extensions.isVirtual) return
-      grouped.get(palette) || grouped.set(palette, new Map())
+      const { colorPalette } = token.extensions
+      if (!colorPalette || token.extensions.isVirtual) return
+      grouped.get(colorPalette) || grouped.set(colorPalette, new Map())
 
-      const virtualName = token.name.replace(palette, 'palette')
+      const virtualName = token.name.replace(colorPalette, 'colorPalette')
       const virtualToken = dictionary.getByName(virtualName)
       if (!virtualToken) return
 
       const virtualVar = virtualToken.extensions.var
-      grouped.get(palette)!.set(virtualVar, token.extensions.varRef)
+      grouped.get(colorPalette)!.set(virtualVar, token.extensions.varRef)
     })
 
     return grouped
@@ -79,12 +79,12 @@ export const formats = {
     }
   },
 
-  getPaletteValues(dictionary: TokenDictionary) {
+  getColorPaletteValues(dictionary: TokenDictionary) {
     const values = new Set<string>()
     dictionary.allTokens.forEach((token) => {
-      const { palette } = token.extensions
-      if (!palette || token.extensions.isVirtual) return
-      values.add(palette)
+      const { colorPalette } = token.extensions
+      if (!colorPalette || token.extensions.isVirtual) return
+      values.add(colorPalette)
     })
     return values
   },

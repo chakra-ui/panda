@@ -45,27 +45,27 @@ export const addVirtualPalette: TokenMiddleware = {
     })
 
     const keys = new Set<string>()
-    const palettes = new Map<string, Token[]>()
+    const colorPalettes = new Map<string, Token[]>()
 
     tokens.forEach((token) => {
-      const palette = token.extensions.palette
-      if (!palette) return
-      const list = palettes.get(palette) || []
+      const { colorPalette } = token.extensions
+      if (!colorPalette) return
+      const list = colorPalettes.get(colorPalette) || []
       keys.add(token.path.at(-1) as string)
       list.push(token)
-      palettes.set(palette, list)
+      colorPalettes.set(colorPalette, list)
     })
 
     keys.forEach((key) => {
       const node = new Token({
-        name: `colors.palette.${key}`,
-        value: `{colors.palette.${key}}`,
-        path: ['colors', 'palette', key],
+        name: `colors.colorPalette.${key}`,
+        value: `{colors.colorPalette.${key}}`,
+        path: ['colors', 'colorPalette', key],
       })
 
       node.setExtensions({
         category: 'colors',
-        prop: `palette.${key}`,
+        prop: `colorPalette.${key}`,
         isVirtual: true,
       })
 

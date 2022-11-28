@@ -135,16 +135,16 @@ test('[css] should generate css', () => {
         --colors-secondary: #991B1B;
         --colors-complex: #991B1B;
         --spacing-gutter: 1rem;
-        --colors-palette-50: var(--colors-palette-50);
-        --colors-palette-100: var(--colors-palette-100);
-        --colors-palette-200: var(--colors-palette-200);
-        --colors-palette-300: var(--colors-palette-300);
-        --colors-palette-400: var(--colors-palette-400);
-        --colors-palette-500: var(--colors-palette-500);
-        --colors-palette-600: var(--colors-palette-600);
-        --colors-palette-700: var(--colors-palette-700);
-        --colors-palette-800: var(--colors-palette-800);
-        --colors-palette-900: var(--colors-palette-900)
+        --colors-color-palette-50: var(--colors-color-palette-50);
+        --colors-color-palette-100: var(--colors-color-palette-100);
+        --colors-color-palette-200: var(--colors-color-palette-200);
+        --colors-color-palette-300: var(--colors-color-palette-300);
+        --colors-color-palette-400: var(--colors-color-palette-400);
+        --colors-color-palette-500: var(--colors-color-palette-500);
+        --colors-color-palette-600: var(--colors-color-palette-600);
+        --colors-color-palette-700: var(--colors-color-palette-700);
+        --colors-color-palette-800: var(--colors-color-palette-800);
+        --colors-color-palette-900: var(--colors-color-palette-900)
 
       }
 
