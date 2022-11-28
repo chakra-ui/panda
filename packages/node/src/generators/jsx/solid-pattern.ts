@@ -36,7 +36,7 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
 
     dts: outdent`
     import { ComponentProps, JSX } from 'solid-js'
-    import { ${upperName}Options } from '../patterns/${dashCase(name)}'
+    import { ${upperName}Properties } from '../patterns/${dashCase(name)}'
     import { Assign, JSXStyleProperties } from '../types'
     
     type ElementType = keyof JSX.IntrinsicElements
@@ -45,7 +45,7 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     type Polymorphic<C extends ElementType = 'div', P = {}> = JSXStyleProperties &
       Assign<Omit<PropsOf<C>, 'color'>, P & { as?: C }>
 
-    export type ${jsxName}Props<C extends ElementType = 'div'> = Polymorphic<C, ${upperName}Options>
+    export type ${jsxName}Props<C extends ElementType = 'div'> = Polymorphic<C, ${upperName}Properties>
     
     export declare function ${jsxName}<V extends ElementType>(props: ${jsxName}Props<V>): JSX.Element    
     `,

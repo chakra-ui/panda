@@ -15,7 +15,7 @@ function generate(name: string, pattern: PatternConfig) {
     import { Properties } from "../types/csstype"
     import { Tokens } from "../types/token"
 
-    export type ${capitalize(name)}Options = {
+    export type ${capitalize(name)}Properties = {
        ${Object.keys(properties ?? {})
          .map((key) => {
            const value = properties![key]
@@ -41,11 +41,12 @@ function generate(name: string, pattern: PatternConfig) {
 
     ${
       strict
-        ? outdent`export declare function ${name}(options: ${capitalize(name)}Options): string`
+        ? outdent`export declare function ${name}(options: ${capitalize(name)}Properties): string`
         : outdent`
         type Merge<T> = Omit<SystemStyleObject, keyof T> & T
+
         ${description ? `/** ${description} */` : ''}
-        export declare function ${name}(options: Merge<${capitalize(name)}Options>): string
+        export declare function ${name}(options: Merge<${capitalize(name)}Properties>): string
         `
     }
 
