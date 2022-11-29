@@ -184,7 +184,7 @@ importers:
       '@types/pluralize': 0.0.29
       chokidar: ^3.5.3
       fast-glob: ^3.2.11
-      fs-extra: 10.1.0
+      fs-extra: 11.0.0
       glob-parent: ^6.0.2
       hookable: 5.4.2
       is-glob: ^4.0.3
@@ -210,7 +210,7 @@ importers:
       '@pandacss/types': link:../types
       chokidar: 3.5.3
       fast-glob: 3.2.11
-      fs-extra: 10.1.0
+      fs-extra: 11.0.0
       glob-parent: 6.0.2
       hookable: 5.4.2
       is-glob: 4.0.3
@@ -4121,9 +4121,9 @@ packages:
     resolution: {integrity: sha512-MhLuK+2gUcnZe8ZHlaaINnQLl0xRIGRfcGk2yl8xoQAfHrSsL3rYu6FCmBdkdbhc9EPlwyGHewaRsvwRMJtAlA==}
     dev: false
 
-  /fs-extra/10.1.0:
-    resolution: {integrity: sha512-oRXApq54ETRj4eMiFzGnHWGy+zo5raudjuxN0b8H7s/RU2oW0Wvsx9O0ACRN/kRq9E8Vu/ReskGB5o3ji+FzHQ==}
-    engines: {node: '>=12'}
+  /fs-extra/11.0.0:
+    resolution: {integrity: sha512-4YxRvMi4P5C3WQTvdRfrv5UVqbISpqjORFQAW5QPiKAauaxNCwrEdIi6pG3tDFhKKpMen+enEhHIzB/tvIO+/w==}
+    engines: {node: '>=14.14'}
     dependencies:
       graceful-fs: 4.2.10
       jsonfile: 6.1.0
