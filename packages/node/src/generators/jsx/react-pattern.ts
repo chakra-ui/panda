@@ -6,6 +6,8 @@ import type { PandaContext } from '../../context'
 
 function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
   const upperName = capitalize(name)
+  const upperFn = `get${upperName}Style`
+
   const jsxName = pattern.jsx ?? upperName
 
   const keys = Object.keys(pattern.properties ?? {})
@@ -14,20 +16,20 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     js: outdent`
     import { forwardRef } from 'react'
     import { ${jsxFactory} } from './factory'
-    import { config } from '../patterns/${dashCase(name)}'
+    import { ${upperFn} } from '../patterns/${dashCase(name)}'
 
     export const ${jsxName} = forwardRef(function ${jsxName}(props, ref) {
       ${match(keys.length)
         .with(
           0,
-          () => `
+          () => outdent`
           return <${jsxFactory}.div ref={ref} {...props} />
         `,
         )
         .otherwise(
-          () => `
+          () => outdent`
         const { ${keys.join(', ')}, ...restProps } = props
-        const styleProps = config.transform({${keys.join(', ')}})
+        const styleProps = ${upperFn}({${keys.join(', ')}})
         return <${jsxFactory}.div ref={ref} {...styleProps} {...restProps} />
         `,
         )}
@@ -36,7 +38,7 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     `,
 
     dts: outdent`
-    import { ComponentProps, ElementType, PropsWithChildren } from 'react'
+    import { ComponentProps, ElementType } from 'react'
     import { ${upperName}Properties } from '../patterns/${dashCase(name)}'
     import { JSXStyleProperties, Assign } from '../types'
     

@@ -7,6 +7,8 @@ import type { PandaContext } from '../context'
 
 function generate(name: string, pattern: PatternConfig) {
   const { properties, transform, strict, description } = pattern
+  const upperName = capitalize(name)
+  const upperFn = `get${upperName}Style`
 
   return {
     name: dashCase(name),
@@ -41,12 +43,12 @@ function generate(name: string, pattern: PatternConfig) {
 
     ${
       strict
-        ? outdent`export declare function ${name}(options: ${capitalize(name)}Properties): string`
+        ? outdent`export declare function ${name}(options: ${upperName}Properties): string`
         : outdent`
         type Merge<T> = Omit<SystemStyleObject, keyof T> & T
 
         ${description ? `/** ${description} */` : ''}
-        export declare function ${name}(options: Merge<${capitalize(name)}Properties>): string
+        export declare function ${name}(options: Merge<${upperName}Properties>): string
         `
     }
 
@@ -55,9 +57,11 @@ function generate(name: string, pattern: PatternConfig) {
   import { mapObject } from "../helpers"
   import { css } from "../css"
 
-  export const config = ${stringify({ transform })}
+  const config = ${stringify({ transform })}
 
-  export const ${name} = (styles) => css(config.transform(styles, { map: mapObject }))
+  export const ${upperFn} = (styles) => config.transform(styles, { map: mapObject })
+
+  export const ${name} = (styles) => css(${upperFn}(styles))
   `
       .replace(/"_function_([^|]*)\|(.*)"/, '$2')
       .replace(/\\"/g, '"')
