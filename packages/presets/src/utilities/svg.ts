@@ -1,4 +1,4 @@
-import { UtilityConfig } from '@pandacss/types'
+import type { UtilityConfig } from '@pandacss/types'
 
 export const svg: UtilityConfig = {
   fill: {
