@@ -6,6 +6,8 @@ import type { PandaContext } from '../../context'
 
 function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
   const upperName = capitalize(name)
+  const upperFn = `get${upperName}Style`
+
   const jsxName = pattern.jsx ?? upperName
 
   const keys = Object.keys(pattern.properties ?? {})
@@ -14,7 +16,7 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     js: outdent`
     import { splitProps } from 'solid-js'
     import { ${jsxFactory} } from './factory'
-    import { ${name} } from '../patterns/${dashCase(name)}'
+    import { ${upperFn} } from '../patterns/${dashCase(name)}'
 
     export function ${jsxName}(props) {
       ${match(keys.length)
@@ -27,7 +29,7 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
         .otherwise(
           () => outdent`
           const [patternProps, restProps] = splitProps(props, [${keys.map((v) => JSON.stringify(v)).join(', ')}]);
-          const styleProps = ${name}(patternProps)
+          const styleProps = ${upperFn}(patternProps)
           return <${jsxFactory}.div {...styleProps} {...restProps} />
         `,
         )}

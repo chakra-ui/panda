@@ -6,6 +6,8 @@ import type { PandaContext } from '../../context'
 
 function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
   const upperName = capitalize(name)
+  const upperFn = `get${upperName}Style`
+
   const jsxName = pattern.jsx ?? upperName
 
   const keys = Object.keys(pattern.properties ?? {})
@@ -14,7 +16,7 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     js: outdent`
     import { forwardRef } from 'preact/compat'
     import { ${jsxFactory} } from './factory'
-    import { ${name} } from '../patterns/${dashCase(name)}'
+    import { ${upperFn} } from '../patterns/${dashCase(name)}'
 
     export const ${jsxName} = forwardRef(function ${jsxName}(props, ref) {
       ${match(keys.length)
@@ -27,7 +29,7 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
         .otherwise(
           () => outdent`
         const { ${keys.join(', ')}, ...restProps } = props
-        const styleProps = ${name}({${keys.join(', ')}})
+        const styleProps = ${upperFn}({${keys.join(', ')}})
         return <${jsxFactory}.div ref={ref} {...styleProps} {...restProps} />
         `,
         )}
