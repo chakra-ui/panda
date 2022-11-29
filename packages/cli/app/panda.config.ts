@@ -4,7 +4,6 @@ import { config } from '../src/presets'
 export default defineConfig({
   preflight: true,
   ...config,
-  // presets: ['../src/presets'],
   include: ['./src/**/*.{tsx,jsx}'],
   exclude: [],
   outdir: 'design-system',
@@ -133,22 +132,4 @@ export default defineConfig({
     },
   },
   jsxFramework: 'react',
-
-  recipes: {
-    button: {
-      name: 'button',
-      description: 'A button styles',
-      base: {
-        fontSize: 'lg',
-      },
-      variants: {
-        variant: {
-          primary: {
-            color: 'white',
-            backgroundColor: 'blue.500',
-          },
-        },
-      },
-    },
-  },
 })
