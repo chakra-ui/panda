@@ -14,20 +14,20 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     js: outdent`
     import { forwardRef } from 'preact/compat'
     import { ${jsxFactory} } from './factory'
-    import { config } from '../patterns/${dashCase(name)}'
+    import { ${name} } from '../patterns/${dashCase(name)}'
 
     export const ${jsxName} = forwardRef(function ${jsxName}(props, ref) {
       ${match(keys.length)
         .with(
           0,
-          () => `
+          () => outdent`
           return <${jsxFactory}.div ref={ref} {...props} />
         `,
         )
         .otherwise(
-          () => `
+          () => outdent`
         const { ${keys.join(', ')}, ...restProps } = props
-        const styleProps = config.transform({${keys.join(', ')}})
+        const styleProps = ${name}({${keys.join(', ')}})
         return <${jsxFactory}.div ref={ref} {...styleProps} {...restProps} />
         `,
         )}

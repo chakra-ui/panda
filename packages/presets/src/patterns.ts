@@ -104,7 +104,7 @@ const absoluteCenter: PatternConfig = {
     axis: { type: 'enum', value: ['x', 'y', 'both'] },
   },
   transform(props, { map }) {
-    const { axis, ...rest } = props
+    const { axis = 'both', ...rest } = props
     return {
       ...rest,
       position: 'absolute',
@@ -126,12 +126,15 @@ const grid: PatternConfig = {
   transform(props, { map }) {
     const { gap, columns, minChildWidth, ...rest } = props
     return {
+      gridTemplateColumns:
+        columns != null
+          ? map(columns, (v) => `repeat(${v}, minmax(0, 1fr))`)
+          : minChildWidth != null
+          ? map(minChildWidth, (v) => `repeat(auto-fit, minmax(${v}, 1fr))`)
+          : undefined,
       ...rest,
       display: 'grid',
       gridGap: gap,
-      gridTemplateColumns: columns
-        ? map(columns, (v) => `repeat(${v}, minmax(0, 1fr))`)
-        : map(minChildWidth, (v) => `repeat(auto-fit, minmax(${v}, 1fr))`),
     }
   },
 }
@@ -148,9 +151,9 @@ const gridItem: PatternConfig = {
   transform(props, { map }) {
     const { colSpan, rowSpan, colStart, rowStart, colEnd, rowEnd, ...rest } = props
     return {
+      gridColumn: colSpan != null ? map(colSpan, (v) => (v === 'auto' ? v : `span ${v}`)) : undefined,
+      gridRow: rowSpan != null ? map(rowSpan, (v) => (v === 'auto' ? v : `span ${v}`)) : undefined,
       ...rest,
-      gridColumn: map(colSpan, (v) => (v === 'auto' ? v : `span ${v}`)),
-      gridRow: map(rowSpan, (v) => (v === 'auto' ? v : `span ${v}`)),
       gridColumnEnd: colEnd,
       gridRowEnd: rowEnd,
     }

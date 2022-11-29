@@ -14,20 +14,20 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     js: outdent`
     import { splitProps } from 'solid-js'
     import { ${jsxFactory} } from './factory'
-    import { config } from '../patterns/${dashCase(name)}'
+    import { ${name} } from '../patterns/${dashCase(name)}'
 
     export function ${jsxName}(props) {
       ${match(keys.length)
         .with(
           0,
-          () => `
+          () => outdent`
           return <${jsxFactory}.div {...props} />
         `,
         )
         .otherwise(
-          () => `
+          () => outdent`
           const [patternProps, restProps] = splitProps(props, [${keys.map((v) => JSON.stringify(v)).join(', ')}]);
-          const styleProps = config.transform(patternProps)
+          const styleProps = ${name}(patternProps)
           return <${jsxFactory}.div {...styleProps} {...restProps} />
         `,
         )}

@@ -7,7 +7,7 @@ export type PatternProperty =
   | { type: 'token'; value: TokenCategory; property?: NativeCssProperty }
   | { type: 'string' | 'boolean' | 'number' }
 
-export type TransformHelpers = {
+type PatternHelpers = {
   map: (value: any, fn: (value: string) => string | undefined) => any
 }
 
@@ -23,7 +23,7 @@ export type PatternConfig = {
   /**
    * The css object this pattern will generate.
    */
-  transform?: (props: Record<string, any>, helpers: TransformHelpers) => StyleObject
+  transform?: (props: Record<string, any>, helpers: PatternHelpers) => StyleObject
   /**
    * The jsx element name this pattern will generate.
    */

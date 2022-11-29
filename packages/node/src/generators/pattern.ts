@@ -55,7 +55,7 @@ function generate(name: string, pattern: PatternConfig) {
   import { mapObject } from "../helpers"
   import { css } from "../css"
 
-  export const config = ${stringify({ transform })}
+  const config = ${stringify({ transform })}
 
   export const ${name} = (styles) => css(config.transform(styles, { map: mapObject }))
   `
