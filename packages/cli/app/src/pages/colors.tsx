@@ -256,7 +256,7 @@ export default function Colors() {
   }
 
   return (
-    <panda.div className={css({ layerStyle: 'token-group' })}>
+    <panda.div layerStyle="token-group">
       <panda.div
         marginBottom="14px"
         position="sticky"
@@ -285,11 +285,7 @@ export default function Colors() {
                 </panda.span>
                 <panda.div
                   display="grid"
-                  //TODO use jsx after fix
-                  // gridGap="16px"
-                  className={css({
-                    gridGap: '16px',
-                  })}
+                  gridGap="16px"
                   gridTemplateColumns="repeat(auto-fit, minmax(13rem, 1fr))"
                   margin="20px 0 40px 0"
                   key={category}
@@ -305,11 +301,7 @@ export default function Colors() {
               </panda.span>
               <panda.div
                 display="grid"
-                //TODO remove `style` after fix
-                // gridGap="16px"
-                style={{
-                  gridGap: '16px',
-                }}
+                gridGap="16px"
                 gridTemplateColumns="repeat(auto-fit, minmax(13rem, 1fr))"
                 margin="20px 0 40px 0"
               >
@@ -324,11 +316,7 @@ export default function Colors() {
               </panda.span>
               <panda.div
                 display="grid"
-                //TODO remove `style` after fix
-                // gridGap="16px"
-                style={{
-                  gridGap: '16px',
-                }}
+                gridGap="16px"
                 gridTemplateColumns="repeat(auto-fit, minmax(13rem, 1fr))"
                 margin="20px 0 40px 0"
               >

@@ -3,6 +3,8 @@ import { getContrastPairs, getContrastRatio } from '../utils/color'
 import { ErrorIcon, SuccessIcon } from '../components/icons'
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
+import { panda } from 'design-system/jsx'
+import { css } from 'design-system/css'
 
 export default function ContrastChecker() {
   const tokenDictionary = new TokenDictionary(config)
@@ -49,10 +51,17 @@ export default function ContrastChecker() {
   }
 
   return (
-    <div className="token-group contrast-checker">
-      <div className="token-content ">
-        <div className="color-container">
-          <div style={{ background: activeForeground }}>
+    <panda.div layerStyle="token-group">
+      <panda.div layerStyle="token-content ">
+        <panda.div display="flex" alignItems="center" gap="12px" padding="8px" className="color-container">
+          <panda.div
+            display="flex"
+            flexDirection="column"
+            border="solid 1px rgba(182, 180, 180, 0.1)"
+            flex="1"
+            paddingTop="60px"
+            style={{ background: activeForeground }}
+          >
             <select value={foreground} onChange={(e: any) => setForeGround(e.currentTarget.value)}>
               {colors.map((color) => (
                 <option key={color.label} value={color.label}>
@@ -60,8 +69,15 @@ export default function ContrastChecker() {
                 </option>
               ))}
             </select>
-          </div>
-          <div style={{ background: activeBackground }}>
+          </panda.div>
+          <panda.div
+            display="flex"
+            flexDirection="column"
+            border="solid 1px rgba(182, 180, 180, 0.1)"
+            flex="1"
+            paddingTop="60px"
+            style={{ background: activeBackground }}
+          >
             <select value={background} onChange={(e: any) => setBackground(e.currentTarget.value)}>
               {colors.map((color) => (
                 <option key={color.label} value={color.label}>
@@ -69,25 +85,65 @@ export default function ContrastChecker() {
                 </option>
               ))}
             </select>
-          </div>
-        </div>
+          </panda.div>
+        </panda.div>
 
-        <div
-          className="preview"
+        <panda.div
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          fontWeight={500}
+          fontSize="1.4em"
+          padding="8px"
+          outline="none"
+          border="solid 1px rgba(182, 180, 180, 0.2)"
           suppressContentEditableWarning
           contentEditable
           style={{ background: activeBackground, color: activeForeground }}
         >
           example text showing contrast
-        </div>
+        </panda.div>
 
         <div className="result">
-          <div className="contrast-ratio">
-            <span>{constrastRatio ? `${constrastRatio?.toFixed(2).replace(/[.,]00$/, '')}:1` : ':'}</span>
-            <span>Contrast ratio</span>
-          </div>
+          <panda.div display="flex" flexDirection="column" textAlign="center" gap="10px" className="contrast-ratio">
+            <panda.span fontWeight={700} fontSize="2.5em">
+              {constrastRatio ? `${constrastRatio?.toFixed(2).replace(/[.,]00$/, '')}:1` : ':'}
+            </panda.span>
+            <panda.span fontWeight={600} opacity={0.5}>
+              Contrast ratio
+            </panda.span>
+          </panda.div>
           {wcag && (
-            <div className="test-scores">
+            <panda.div
+              className={css({
+                '& > div': {
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 4,
+                },
+
+                '& > div > span': {
+                  fontWeight: 600,
+                },
+
+                '& > div > div': {
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontWeight: 500,
+                },
+
+                '& > div > div > div': {
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                },
+              })}
+              display="flex"
+              gap="20px"
+              marginTop="40px"
+            >
               <div>
                 <span>Normal Text</span>
                 {renderTestScore(wcag[0], 'regular')}
@@ -96,10 +152,10 @@ export default function ContrastChecker() {
                 <span>Large Text</span>
                 {renderTestScore(wcag[1], 'large')}
               </div>
-            </div>
+            </panda.div>
           )}
         </div>
-      </div>
-    </div>
+      </panda.div>
+    </panda.div>
   )
 }

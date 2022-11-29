@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { config as configP } from 'virtual:panda'
+import { panda } from 'design-system/jsx'
 
 export default function TypographyPlayground() {
   const tokenMap = new TokenDictionary(configP)
@@ -50,22 +51,34 @@ export default function TypographyPlayground() {
   }
 
   return (
-    <div className="token-group">
-      <div className="token-content">
+    <panda.div layerStyle="token-group">
+      <panda.div layerStyle="token-content">
         <div className="typography-playground">
-          <div contentEditable="true" suppressContentEditableWarning={true} style={configValues}>
+          <panda.div
+            contentEditable="true"
+            outline="0px solid transparent"
+            paddingTop="100px"
+            paddingBottom="100px"
+            marginInlineStart="auto"
+            marginInlineEnd="auto"
+            suppressContentEditableWarning={true}
+            width="fit-content"
+            style={configValues}
+          >
             Panda
-          </div>
-          <div className="controls">
+          </panda.div>
+          <panda.div display="flex" flexDirection="column" gap="12px">
             {Object.keys(config).map((tokenKey) => (
-              <div className="control" key={tokenKey}>
-                <span>{tokenKey.replace(/([a-z0-9])([A-Z])/g, '$1 $2')}</span>
+              <panda.div diaplay="flex" alignItems="center" gap="6px" key={tokenKey}>
+                <panda.span whiteSpace="nowrap" width="200px" textTransform="capitalize" marginRight="2">
+                  {tokenKey.replace(/([a-z0-9])([A-Z])/g, '$1 $2')}
+                </panda.span>
                 {renderTokenSwitch(tokenKey as keyof typeof defaultConfig)}
-              </div>
+              </panda.div>
             ))}
-          </div>
+          </panda.div>
         </div>
-      </div>
-    </div>
+      </panda.div>
+    </panda.div>
   )
 }
