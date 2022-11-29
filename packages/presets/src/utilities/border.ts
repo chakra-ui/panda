@@ -61,6 +61,44 @@ export const border: UtilityConfig = {
       }
     },
   },
+
+  borderStartStartRadius: {
+    className: 'rounded-start-start',
+    values: 'radii',
+  },
+  borderStartEndRadius: {
+    className: 'rounded-start-end',
+    values: 'radii',
+  },
+  borderStartRadius: {
+    className: 'rounded-start',
+    values: 'radii',
+    transform(value) {
+      return {
+        borderStartStartRadius: value,
+        borderStartEndRadius: value,
+      }
+    },
+  },
+  borderEndStartRadius: {
+    className: 'rounded-end-start',
+    values: 'radii',
+  },
+  borderEndEndRadius: {
+    className: 'rounded-end-end',
+    values: 'radii',
+  },
+  borderEndRadius: {
+    className: 'rounded-end',
+    values: 'radii',
+    transform(value) {
+      return {
+        borderEndStartRadius: value,
+        borderEndEndRadius: value,
+      }
+    },
+  },
+
   border: {
     className: 'border',
     values: 'borders',
