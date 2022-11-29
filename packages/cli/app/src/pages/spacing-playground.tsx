@@ -4,7 +4,6 @@ import { renderPixels } from './sizes'
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { panda } from 'design-system/jsx'
-import { css } from 'design-system/css'
 
 const NUMBER_OF_ITEMS = 3
 
@@ -82,13 +81,13 @@ export default function SpacingPlayground() {
                 )"
                 backgroundSize="7.07px 7.07px"
                 width="fit-content"
-                className={css({
+                css={{
                   '& div': {
                     background: 'rgb(217 70 239)',
                     width: '56px',
                     height: '56px',
                   },
-                })}
+                }}
                 style={{ gap }}
               >
                 {spacingItems}

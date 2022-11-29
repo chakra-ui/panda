@@ -4,7 +4,6 @@ import { ErrorIcon, SuccessIcon } from '../components/icons'
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { panda } from 'design-system/jsx'
-import { css } from 'design-system/css'
 
 export default function ContrastChecker() {
   const tokenDictionary = new TokenDictionary(config)
@@ -32,27 +31,27 @@ export default function ContrastChecker() {
   const renderTestScore = (score: { WCAG_AA: boolean; WCAG_AAA: boolean }, size: 'regular' | 'large') => {
     return (
       <>
-        <div>
-          <div>
+        <panda.div display="flex" justifyContent="space-between" alignItems="center" fontWeight="500">
+          <panda.div display="flex" alignItems="center" gap="8px">
             <span>{score.WCAG_AA ? <SuccessIcon /> : <ErrorIcon />}</span>
             <span>AA</span>
-          </div>
+          </panda.div>
           <span>{size === 'regular' ? '4.5:1' : '3:1'}</span>
-        </div>
-        <div>
-          <div>
+        </panda.div>
+        <panda.div display="flex" justifyContent="space-between" alignItems="center" fontWeight="500">
+          <panda.div display="flex" alignItems="center" gap="8px">
             <span>{score.WCAG_AAA ? <SuccessIcon /> : <ErrorIcon />}</span>
             <span>AAA</span>
-          </div>
+          </panda.div>
           <span>{size === 'regular' ? '7:1' : '4.5:1'}</span>
-        </div>
+        </panda.div>
       </>
     )
   }
 
   return (
     <panda.div layerStyle="token-group">
-      <panda.div layerStyle="token-content ">
+      <panda.div layerStyle="token-content">
         <panda.div display="flex" alignItems="center" gap="12px" padding="8px" className="color-container">
           <panda.div
             display="flex"
@@ -114,44 +113,15 @@ export default function ContrastChecker() {
             </panda.span>
           </panda.div>
           {wcag && (
-            <panda.div
-              className={css({
-                '& > div': {
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 4,
-                },
-
-                '& > div > span': {
-                  fontWeight: 600,
-                },
-
-                '& > div > div': {
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontWeight: 500,
-                },
-
-                '& > div > div > div': {
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                },
-              })}
-              display="flex"
-              gap="20px"
-              marginTop="40px"
-            >
-              <div>
-                <span>Normal Text</span>
+            <panda.div display="flex" gap="20px" marginTop="40px">
+              <panda.div flex="1" display="flex" flexDirection="column" gap="4">
+                <panda.span fontWeight="600">Normal Text</panda.span>
                 {renderTestScore(wcag[0], 'regular')}
-              </div>
-              <div>
-                <span>Large Text</span>
+              </panda.div>
+              <panda.div flex="1" display="flex" flexDirection="column" gap="4">
+                <panda.span fontWeight="600">Large Text</panda.span>
                 {renderTestScore(wcag[1], 'large')}
-              </div>
+              </panda.div>
             </panda.div>
           )}
         </div>

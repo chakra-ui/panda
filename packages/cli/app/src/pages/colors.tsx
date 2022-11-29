@@ -37,11 +37,7 @@ const groupByColorPalette = (colors: Map<string, any>, filterMethod?: (token: Co
   }, {})
 }
 
-const getSemanticTokens = (
-  allTokens: ColorToken[],
-  filterMethod?: (token: ColorToken) => boolean,
-  // filterMethod: (token: ColorToken) => boolean = () => true,
-) => {
+const getSemanticTokens = (allTokens: ColorToken[], filterMethod?: (token: ColorToken) => boolean) => {
   const semanticTokens = allTokens.filter(
     (token) => token.type === 'color' && token.isConditional && !token.extensions?.isVirtual,
   )
@@ -263,8 +259,10 @@ export default function Colors() {
         top="0"
         boxShadow="0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
         background="var(--bg)"
+        zIndex="1"
       >
-        <input
+        <panda.input
+          width="full"
           className={css({
             width: 'full',
             resize: 'vertical',

@@ -30,11 +30,11 @@ export function FontTokens(props: FontTokensProps) {
   const values = Array.from(fontTokens.values())
 
   return (
-    <div
-      className={css({
+    <panda.div
+      css={{
         layerStyle: 'token-group',
         ...cssProp,
-      })}
+      }}
     >
       <panda.div
         marginBottom="14px"
@@ -64,6 +64,6 @@ export function FontTokens(props: FontTokensProps) {
           </Fragment>
         ))}
       </panda.div>
-    </div>
+    </panda.div>
   )
 }

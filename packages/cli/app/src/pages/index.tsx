@@ -1,7 +1,6 @@
 import { navItems } from '../utils/constants'
 import { NavLink } from 'react-router-dom'
 import { panda } from 'design-system/jsx'
-import { css } from 'design-system/css'
 
 function Item(props: typeof navItems[number]) {
   return (
@@ -20,7 +19,7 @@ function Item(props: typeof navItems[number]) {
         osLight={{ color: '#3b3b3b', background: '#bababa3d' }}
       >
         <panda.span
-          className={css({
+          css={{
             '& svg': {
               fontWeight: 400,
               fontSize: 'xx-large',
@@ -28,7 +27,7 @@ function Item(props: typeof navItems[number]) {
               height: '24px',
               width: '24px',
             },
-          })}
+          }}
         >
           <props.icon />
         </panda.span>
@@ -53,9 +52,9 @@ function Index() {
         padding="6em 2rem"
         marginBottom="40px"
         background="#1a1a1a"
-        className={css({
+        css={{
           '& span': { display: 'block' },
-        })}
+        }}
         osLight={{
           background: '#bababa3d',
         }}
@@ -66,7 +65,7 @@ function Index() {
         <span>Build great products, faster.</span>
         <NavLink
           to="/colors"
-          className={css({
+          css={{
             background: '#646cff',
             color: 'white',
             width: 'fit-content',
@@ -81,7 +80,7 @@ function Index() {
               background: '#4049f0',
               boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
             },
-          })}
+          }}
         >
           Explore
         </NavLink>
@@ -91,52 +90,52 @@ function Index() {
         flexDir="column"
         gap="24px"
         padding="2rem"
-        className={css({
+        css={{
           listStyleType: 'none',
           padding: '0',
           margin: '0.5rem 0',
           display: 'flex',
           flexWrap: 'wrap',
           gap: '24px',
-        })}
+        }}
       >
         <div>
           <span>TOKENS</span>
-          <ul
-            className={css({
+          <panda.ul
+            css={{
               listStyleType: 'none',
               padding: 0,
               gap: '24px',
               display: 'flex',
               flexWrap: 'wrap',
               margin: '0.5rem 0',
-            })}
+            }}
           >
             {navItems
               .filter((k) => k.type === 'token')
               .map((themeKey) => (
                 <Item key={themeKey.id} {...themeKey} />
               ))}
-          </ul>
+          </panda.ul>
         </div>
         <div>
           <span>PLAYGROUND</span>
-          <ul
-            className={css({
+          <panda.ul
+            css={{
               listStyleType: 'none',
               padding: 0,
               gap: '24px',
               display: 'flex',
               flexWrap: 'wrap',
               margin: '0.5rem 0',
-            })}
+            }}
           >
             {navItems
               .filter((k) => k.type === 'playground')
               .map((themeKey) => (
                 <Item key={themeKey.id} {...themeKey} />
               ))}
-          </ul>
+          </panda.ul>
         </div>
       </panda.div>
     </panda.div>

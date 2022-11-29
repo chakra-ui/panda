@@ -53,7 +53,7 @@ export default function TypographyPlayground() {
   return (
     <panda.div layerStyle="token-group">
       <panda.div layerStyle="token-content">
-        <div className="typography-playground">
+        <div>
           <panda.div
             contentEditable="true"
             outline="0px solid transparent"

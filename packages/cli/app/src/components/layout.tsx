@@ -16,11 +16,11 @@ function Item(props: typeof navItems[number]) {
           fontWeight={600}
           transition="all 0.2s ease"
           data-active={isActive ? '' : undefined}
-          className={css({
+          css={{
             '&:hover, &[data-active]': {
               color: '#9499ff',
             },
-          })}
+          }}
         >
           {props.label}
         </panda.li>
@@ -35,15 +35,18 @@ export function Layout(props: LayoutProps) {
   return (
     <panda.main
       display="flex"
-      height="full"
-      className={css({
+      height="calc(100vh - env(safe-area-inset-bottom))"
+      css={{
         '&>*': {
           padding: '2rem 1rem',
           overflow: 'auto',
         },
-      })}
+      }}
     >
       <panda.aside
+        display="flex"
+        flexDirection="column"
+        height="full"
         minW="15rem"
         background="var(--aside-bg)"
         osLight={{
@@ -55,7 +58,7 @@ export function Layout(props: LayoutProps) {
         </NavLink>
         <panda.div
           marginTop="2rem"
-          className={css({
+          css={{
             '&>span': {
               fontWeight: 700,
               fontSize: 'small',
@@ -66,7 +69,7 @@ export function Layout(props: LayoutProps) {
               padding: 0,
               margin: '0.5rem 0',
             },
-          })}
+          }}
         >
           <span>TOKENS</span>
           <panda.ul marginBottom="2rem">

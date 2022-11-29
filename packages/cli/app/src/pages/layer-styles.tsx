@@ -4,7 +4,6 @@ import { config } from 'virtual:panda'
 import { EmptyState } from '../components/empty-state'
 import { LayerStylesIcon } from '../components/icons'
 import { panda } from 'design-system/jsx'
-import { css } from 'design-system/css'
 
 export default function LayerStyles() {
   const textStyles = flattenLayerStyles(config.layerStyles)
@@ -18,12 +17,12 @@ export default function LayerStyles() {
               borderTop="solid 1px"
               borderColor="rgba(128, 128, 128, 0.671)"
               padding="10px 4px"
-              className={css({
+              css={{
                 '&:last-of-type': {
                   borderBottomWidth: '1px',
                   borderBottomStyle: 'solid',
                 },
-              })}
+              }}
               key={name}
             >
               <panda.div
