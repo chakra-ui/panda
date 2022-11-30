@@ -28,12 +28,8 @@ export default function LayerStyles() {
               }}
               key={name}
             >
-              <panda.div
-                osLight={{
-                  borderColor: 'card',
-                }}
-              >
-                <panda.span fontWeight='medium'>{name}</panda.span>
+              <panda.div borderColor="card">
+                <panda.span fontWeight="medium">{name}</panda.span>
                 <panda.div fontSize="small" flex="auto" marginTop="1.5">
                   {Object.entries(styles).map(([attr, value], i, arr) => (
                     <span key={attr}>{`${attr}: ${value}${i === arr.length - 1 ? '' : ', '}`}</span>
@@ -47,7 +43,6 @@ export default function LayerStyles() {
                 borderColor="rgba(128, 128, 128, 0.671)"
                 background="#1d1d1e1a"
                 marginTop="5"
-                className="preview-wrapper"
               >
                 <panda.div flex="auto" marginY="3" height="20" style={styles} />
               </panda.div>

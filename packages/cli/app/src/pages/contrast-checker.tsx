@@ -59,7 +59,7 @@ export default function ContrastChecker() {
             display="flex"
             flexDirection="column"
             borderStyle="solid"
-            borderWidth="2.5"
+            borderWidth="1px"
             borderColor="rgba(182, 180, 180, 0.1)"
             flex="1"
             paddingTop="16"
@@ -77,7 +77,7 @@ export default function ContrastChecker() {
             display="flex"
             flexDirection="column"
             borderStyle="solid"
-            borderWidth="2.5"
+            borderWidth="1px"
             borderColor="rgba(182, 180, 180, 0.1)"
             flex="1"
             paddingTop="16"
@@ -100,7 +100,7 @@ export default function ContrastChecker() {
           padding="2"
           outline="none"
           borderStyle="solid"
-          borderWidth="2.5"
+          borderWidth="1px"
           borderColor="rgba(182, 180, 180, 0.2)"
           suppressContentEditableWarning
           contentEditable

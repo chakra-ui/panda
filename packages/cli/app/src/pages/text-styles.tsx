@@ -16,7 +16,8 @@ export default function TextStyles() {
         {textStyles ? (
           textStyles.map(([name, styles]) => (
             <panda.div
-              borderTop="solid 1px"
+              borderStyle="solid"
+              borderWidth="1px"
               borderColor="rgba(128, 128, 128, 0.671)"
               paddingX="1"
               paddingY="2.5"
@@ -28,11 +29,7 @@ export default function TextStyles() {
               }}
               key={name}
             >
-              <panda.div
-                osLight={{
-                  borderColor: 'card',
-                }}
-              >
+              <panda.div borderColor="card">
                 <panda.span fontWeight="medium">{name}</panda.span>
                 <panda.div fontSize="small" flex="auto" marginTop="1.5">
                   {Object.entries(styles).map(([attr, value], i, arr) => (

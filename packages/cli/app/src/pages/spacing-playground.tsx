@@ -68,7 +68,6 @@ export default function SpacingPlayground() {
                 onChange={(e) => {
                   setGapSize(e.currentTarget.value)
                 }}
-                className="token-switch"
               >
                 {sizes.map((size) => (
                   <option key={size.value} value={size.extensions.prop}>
@@ -95,7 +94,7 @@ export default function SpacingPlayground() {
                   transparent 0,
                   transparent
                 )"
-                backgroundSize="7.07px 7.07px"
+                backgroundSize="8px 8px"
                 width="fit-content"
                 css={{
                   '& div': {
@@ -127,8 +126,7 @@ export default function SpacingPlayground() {
                   transparent 0,
                   transparent
                 )"
-                backgroundSize="7.07px 7.07px"
-                className="stack-h"
+                backgroundSize="8px 8px"
                 style={{ gap }}
               >
                 {spacingItems}
@@ -143,7 +141,7 @@ export default function SpacingPlayground() {
           Padding
         </panda.h3>
         <div id="padding-view">
-          <panda.div layerStyle="token-content ">
+          <panda.div layerStyle="token-content">
             <panda.div
               display="flex"
               alignItems="center"
@@ -162,7 +160,6 @@ export default function SpacingPlayground() {
                 onChange={(e) => {
                   setPaddingSize(e.currentTarget.value)
                 }}
-                className="token-switch"
               >
                 {sizes.map((size) => (
                   <option key={size.value} value={size.extensions.prop}>
@@ -210,7 +207,7 @@ function Section(props: SectionProps) {
         marginTop="3"
         width="fit-content"
         borderRadius="lg"
-        backgroundSize="7.07px 7.07px"
+        backgroundSize="8px 8px"
         style={{ ...style, backgroundColor: itemBackground }}
         backgroundImage="linear-gradient(
           135deg,
@@ -225,7 +222,6 @@ function Section(props: SectionProps) {
         {...rest}
       >
         <HStack
-          className="item"
           style={{
             background: itemBackground || 'rgb(99 102 241)',
           }}

@@ -31,7 +31,6 @@ function NavItem(props: typeof navItems[number]) {
 
 export function Layout(props: LayoutProps) {
   const { children } = props
-
   return (
     <panda.main display="flex" height="calc(100vh - env(safe-area-inset-bottom))">
       <Stack height="full" minW="60" background="card" overflow="auto" paddingX="4" paddingY="8">

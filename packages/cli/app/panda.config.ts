@@ -14,5 +14,20 @@ export default defineConfig({
       card: { value: { base: '{colors.slate.800}', osLight: '{colors.slate.200}' } },
     },
   },
+  utilities: {
+    ...config.utilities,
+
+    borderSlim: {
+      className: 'border-slim',
+      values: 'colors',
+      transform(value) {
+        return {
+          borderWidth: '1px',
+          borderStyle: 'solid',
+          borderColor: value,
+        }
+      },
+    },
+  },
   jsxFramework: 'react',
 })

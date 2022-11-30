@@ -38,7 +38,6 @@ export default function Page() {
               <panda.span
                 height="5"
                 background="rgba(255, 192, 203, 0.5)"
-                className="size-box"
                 gridColumn="span 2 / span 2"
                 style={{ width: size.value }}
               />
