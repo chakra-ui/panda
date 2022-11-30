@@ -69,9 +69,10 @@ export function Layout(props: LayoutProps) {
         right="8"
         fontSize="sm"
         bottom="calc(env(safe-area-inset-bottom) + 1rem)"
-        background="#000"
-        borderRadius="8px"
-        padding="4px 10px"
+        background="black"
+        borderRadius="md"
+        paddingX="2.5"
+        paddingY="1"
         pointerEvents="none"
         color="white"
       >
