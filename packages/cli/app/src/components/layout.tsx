@@ -36,7 +36,7 @@ export function Layout(props: LayoutProps) {
     <panda.main display="flex" height="calc(100vh - env(safe-area-inset-bottom))">
       <Stack
         height="full"
-        minW="15rem"
+        minW="60"
         background="var(--aside-bg)"
         overflow="auto"
         paddingX="4"
@@ -48,11 +48,11 @@ export function Layout(props: LayoutProps) {
         <NavLink to="/" className={css({ fontWeight: 700, fontSize: '2xl' })}>
           🐼 Panda
         </NavLink>
-        <panda.div marginTop="2rem">
-          <panda.span fontWeight="700" fontSize="small" opacity="0.7">
+        <panda.div marginTop="8">
+          <panda.span fontWeight="bold" fontSize="small" opacity="0.7">
             TOKENS
           </panda.span>
-          <panda.ul marginBottom="2rem" listStyleType="none" padding="0" marginY="2" marginX="0">
+          <panda.ul marginBottom="8" listStyleType="none" padding="0" marginY="2" marginX="0">
             {navItems
               .filter((k) => k.type === 'token')
               .map((themeKey) => (
@@ -76,8 +76,8 @@ export function Layout(props: LayoutProps) {
       </panda.div>
       <panda.div
         position="fixed"
-        right="2rem"
-        fontSize="0.8rem"
+        right="8"
+        fontSize="sm"
         bottom="calc(env(safe-area-inset-bottom) + 1rem)"
         background="#000"
         borderRadius="8px"
