@@ -447,7 +447,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   }
 
   function extract(fn: (file: string) => Promise<{ css: string; file: string } | undefined>) {
-    return Promise.all(files.map(fn))
+    return Promise.all(getFiles().map(fn))
   }
 
   return {
