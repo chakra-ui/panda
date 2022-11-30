@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { config as configP } from 'virtual:panda'
 import { panda } from 'design-system/jsx'
+import { TokenGroup } from '../components/token-group'
+import { TokenContent } from '../components/token-content'
 
 export default function TypographyPlayground() {
   const tokenMap = new TokenDictionary(configP)
@@ -51,8 +53,8 @@ export default function TypographyPlayground() {
   }
 
   return (
-    <panda.div layerStyle="token-group">
-      <panda.div layerStyle="token-content">
+    <TokenGroup>
+      <TokenContent>
         <div>
           <panda.div
             contentEditable="true"
@@ -78,7 +80,7 @@ export default function TypographyPlayground() {
             ))}
           </panda.div>
         </div>
-      </panda.div>
-    </panda.div>
+      </TokenContent>
+    </TokenGroup>
   )
 }

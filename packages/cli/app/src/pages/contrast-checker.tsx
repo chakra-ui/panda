@@ -4,6 +4,8 @@ import { ErrorIcon, SuccessIcon } from '../components/icons'
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { panda, HStack, VStack, Stack } from 'design-system/jsx'
+import { TokenGroup } from '../components/token-group'
+import { TokenContent } from '../components/token-content'
 
 export default function ContrastChecker() {
   const tokenDictionary = new TokenDictionary(config)
@@ -50,8 +52,8 @@ export default function ContrastChecker() {
   }
 
   return (
-    <panda.div layerStyle="token-group">
-      <panda.div layerStyle="token-content">
+    <TokenGroup>
+      <TokenContent>
         <HStack gap="3" padding="2">
           <panda.div
             display="flex"
@@ -129,7 +131,7 @@ export default function ContrastChecker() {
             </panda.div>
           )}
         </div>
-      </panda.div>
-    </panda.div>
+      </TokenContent>
+    </TokenGroup>
   )
 }

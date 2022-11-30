@@ -1,5 +1,7 @@
 import { Fragment, InputHTMLAttributes, useState } from 'react'
 import { panda, Stack } from 'design-system/jsx'
+import { TokenGroup } from '../components/token-group'
+import { TokenContent } from '../components/token-content'
 
 type FontTokensProps = {
   text?: string
@@ -29,16 +31,15 @@ export function FontTokens(props: FontTokensProps) {
   const values = Array.from(fontTokens.values())
 
   return (
-    <panda.div
+    <TokenGroup
       css={{
-        layerStyle: 'token-group',
         ...cssProp,
       }}
     >
       <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" background="var(--bg)">
         {largeText ? <panda.textarea rows={5} {...inputProps} /> : <panda.input {...inputProps} />}
       </panda.div>
-      <panda.div layerStyle="token-content">
+      <TokenContent>
         <hr />
         {values.map((fontToken) => (
           <Fragment key={fontToken.extensions.prop}>
@@ -56,7 +57,7 @@ export function FontTokens(props: FontTokensProps) {
             <hr />
           </Fragment>
         ))}
-      </panda.div>
-    </panda.div>
+      </TokenContent>
+    </TokenGroup>
   )
 }

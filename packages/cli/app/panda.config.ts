@@ -14,25 +14,5 @@ export default defineConfig({
       card: { value: { base: '{colors.slate.800}', osLight: '{colors.slate.200}' } },
     },
   },
-  layerStyles: {
-    'token-group': {
-      value: {
-        display: 'flex',
-        flexDir: 'column',
-        gap: '3',
-        width: 'full',
-        marginTop: '5',
-      },
-    },
-
-    'token-content': {
-      value: {
-        display: 'flex',
-        flexDir: 'column',
-        gap: '5',
-        lineHeight: '3.75',
-      },
-    },
-  },
   jsxFramework: 'react',
 })

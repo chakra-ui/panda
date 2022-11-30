@@ -4,6 +4,8 @@ import { renderPixels } from './sizes'
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { panda, HStack } from 'design-system/jsx'
+import { TokenGroup } from '../components/token-group'
+import { TokenContent } from '../components/token-content'
 
 const NUMBER_OF_ITEMS = 3
 
@@ -41,13 +43,13 @@ export default function SpacingPlayground() {
   ))
 
   return (
-    <panda.div layerStyle="token-group">
+    <TokenGroup>
       <div>
         <panda.h3 marginBottom="8" id="gap">
           Gap
         </panda.h3>
         <div id="gap-view">
-          <panda.div layerStyle="token-content ">
+          <TokenContent>
             <panda.div
               display="flex"
               alignItems="center"
@@ -132,7 +134,7 @@ export default function SpacingPlayground() {
                 {spacingItems}
               </panda.div>
             </panda.div>
-          </panda.div>
+          </TokenContent>
         </div>
 
         <hr />
@@ -188,7 +190,7 @@ export default function SpacingPlayground() {
           </panda.div>
         </div>
       </div>
-    </panda.div>
+    </TokenGroup>
   )
 }
 

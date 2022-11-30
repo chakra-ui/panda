@@ -4,13 +4,15 @@ import { config } from 'virtual:panda'
 import { EmptyState } from '../components/empty-state'
 import { TextStylesIcon } from '../components/icons'
 import { panda } from 'design-system/jsx'
+import { TokenGroup } from '../components/token-group'
+import { TokenContent } from '../components/token-content'
 
 export default function TextStyles() {
   const textStyles = flattenTextStyles(config.textStyles)
 
   return (
-    <panda.div layerStyle="token-group">
-      <panda.div gap="0" layerStyle="token-content">
+    <TokenGroup>
+      <TokenContent>
         {textStyles ? (
           textStyles.map(([name, styles]) => (
             <panda.div
@@ -48,8 +50,8 @@ export default function TextStyles() {
             The config does not contain any Text Styles
           </EmptyState>
         )}
-      </panda.div>
-    </panda.div>
+      </TokenContent>
+    </TokenGroup>
   )
 }
 

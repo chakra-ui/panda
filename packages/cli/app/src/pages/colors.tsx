@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { panda, Stack, Grid } from 'design-system/jsx'
+import { TokenGroup } from '../components/token-group'
+import { TokenContent } from '../components/token-content'
 
 type Color = {
   isConditional?: boolean
@@ -252,7 +254,7 @@ export default function Colors() {
   }
 
   return (
-    <panda.div layerStyle="token-group">
+    <TokenGroup>
       <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" background="var(--bg)" zIndex="1">
         <panda.input
           width="full"
@@ -262,7 +264,7 @@ export default function Colors() {
           placeholder="Filter tokens by text, property or value"
         />
       </panda.div>
-      <panda.div layerStyle="token-content">
+      <TokenContent>
         <div>
           {!!categorizedColors.length &&
             categorizedColors.map(([category, colors]) => (
@@ -298,7 +300,7 @@ export default function Colors() {
           )}
           {!hasResults && <div>No pandas found! Try a different breed. 🐼</div>}
         </div>
-      </panda.div>
-    </panda.div>
+      </TokenContent>
+    </TokenGroup>
   )
 }

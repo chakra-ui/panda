@@ -3,6 +3,8 @@ import { config } from 'virtual:panda'
 import { remToPixels } from '../utils/rem-to-pixels'
 import { getSortedSizes } from '../utils/sizes-sort'
 import { panda, Grid } from 'design-system/jsx'
+import { TokenGroup } from '../components/token-group'
+import { TokenContent } from '../components/token-content'
 
 export type SizesProps = { sizes: Map<string, any> }
 
@@ -19,7 +21,7 @@ export default function Page() {
   const sizes = getSortedSizes(values)
 
   return (
-    <panda.div layerStyle="token-group">
+    <TokenGroup>
       <Grid display="grid" colGap="10" rowGap="2.5" columns={5} layerStyle="token-content ">
         <panda.span fontWeight="semibold">Name</panda.span>
         <panda.span fontWeight="semibold">Size</panda.span>
@@ -44,6 +46,6 @@ export default function Page() {
             </>
           ))}
       </Grid>
-    </panda.div>
+    </TokenGroup>
   )
 }
