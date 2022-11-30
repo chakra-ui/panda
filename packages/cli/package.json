@@ -21,7 +21,10 @@
       "types": "./dist/presets.d.ts"
     },
     "./postcss": "./postcss.js",
-    "./astro": "./astro.mjs",
+    "./astro": {
+      "import": "./astro.mjs",
+      "types": "./astro.d.ts"
+    },
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -44,8 +47,9 @@
     "dist",
     "bin",
     "app",
-    "postcss.js",
-    "astro.mjs"
+    "*.d.ts",
+    "*.js",
+    "*.mjs"
   ],
   "dependencies": {
     "@pandacss/config": "workspace:*",
