@@ -30,9 +30,6 @@ globalCss({
     osLight: {
       color: '#213547',
     },
-
-    // height: '100vh',
-    // width: 'full',
   },
 
   a: {
