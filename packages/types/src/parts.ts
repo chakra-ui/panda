@@ -1,4 +1,4 @@
-export interface Part {
+export type Part = {
   selector: string
 }
 
