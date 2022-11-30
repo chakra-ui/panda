@@ -16,7 +16,7 @@ globalCss({
     fontWeight: 'normal',
 
     colorScheme: 'light dark',
-    color: 'slate.200',
+    color: 'text',
     background: 'bg',
 
     fontSynthesis: 'none',
@@ -24,10 +24,6 @@ globalCss({
     WebkitFontSmoothing: 'antialiased',
     MozOsxFontSmoothing: 'grayscale',
     WebkitTextSizeAdjust: '100%',
-
-    osLight: {
-      color: '#213547',
-    },
   },
 
   a: {

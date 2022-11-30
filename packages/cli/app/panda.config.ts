@@ -9,7 +9,7 @@ export default defineConfig({
   outdir: 'design-system',
   semanticTokens: {
     colors: {
-      text: { value: { base: '{colors.gray.600}', dark: '{colors.gray.400}' } },
+      text: { value: { base: '{colors.slate.200}', dark: '{colors.black}' } },
       bg: { value: { base: '{colors.slate.900}', osLight: '{colors.white}' } },
       card: { value: { base: '{colors.slate.800}', osLight: '{colors.slate.200}' } },
     },
