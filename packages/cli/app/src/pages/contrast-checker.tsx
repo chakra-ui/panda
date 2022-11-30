@@ -111,7 +111,7 @@ export default function ContrastChecker() {
 
         <div>
           <VStack textAlign="center" gap="2.5">
-            <panda.span fontWeight="700" fontSize="4xl">
+            <panda.span fontWeight="bold" fontSize="4xl">
               {constrastRatio ? `${constrastRatio?.toFixed(2).replace(/[.,]00$/, '')}:1` : ':'}
             </panda.span>
             <panda.span fontWeight="semibold" opacity="0.5">

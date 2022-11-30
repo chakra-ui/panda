@@ -33,7 +33,7 @@ export default function LayerStyles() {
                   borderColor: 'card',
                 }}
               >
-                <panda.span fontWeight={500}>{name}</panda.span>
+                <panda.span fontWeight='medium'>{name}</panda.span>
                 <panda.div fontSize="small" flex="auto" marginTop="1.5">
                   {Object.entries(styles).map(([attr, value], i, arr) => (
                     <span key={attr}>{`${attr}: ${value}${i === arr.length - 1 ? '' : ', '}`}</span>

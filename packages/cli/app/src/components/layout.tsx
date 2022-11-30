@@ -35,7 +35,7 @@ export function Layout(props: LayoutProps) {
   return (
     <panda.main display="flex" height="calc(100vh - env(safe-area-inset-bottom))">
       <Stack height="full" minW="60" background="card" overflow="auto" paddingX="4" paddingY="8">
-        <NavLink to="/" className={css({ fontWeight: 700, fontSize: '2xl' })}>
+        <NavLink to="/" className={css({ fontWeight: 'bold', fontSize: '2xl' })}>
           🐼 Panda
         </NavLink>
         <panda.div marginTop="8">
@@ -49,7 +49,7 @@ export function Layout(props: LayoutProps) {
                 <NavItem key={themeKey.id} {...themeKey} />
               ))}
           </panda.ul>
-          <panda.span fontWeight="700" fontSize="small" opacity="0.7">
+          <panda.span fontWeight="bold" fontSize="small" opacity="0.7">
             PLAYGROUND
           </panda.span>
           <panda.ul listStyleType="none" padding="0" marginY="2" marginX="0">

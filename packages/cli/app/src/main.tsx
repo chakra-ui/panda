@@ -14,7 +14,7 @@ globalCss({
     fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif',
     fontSize: '16px',
     lineHeight: '24px',
-    fontWeight: 400,
+    fontWeight: 'normal',
 
     colorScheme: 'light dark',
     color: 'rgba(255, 255, 255, 0.87)',
