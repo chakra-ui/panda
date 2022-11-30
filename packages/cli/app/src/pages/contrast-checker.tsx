@@ -31,14 +31,14 @@ export default function ContrastChecker() {
   const renderTestScore = (score: { WCAG_AA: boolean; WCAG_AAA: boolean }, size: 'regular' | 'large') => {
     return (
       <>
-        <HStack justify="space-between" fontWeight="500">
+        <HStack justify="space-between" fontWeight="medium">
           <HStack gap="2">
             <span>{score.WCAG_AA ? <SuccessIcon /> : <ErrorIcon />}</span>
             <span>AA</span>
           </HStack>
           <span>{size === 'regular' ? '4.5:1' : '3:1'}</span>
         </HStack>
-        <HStack justify="space-between" fontWeight="500">
+        <HStack justify="space-between" fontWeight="medium">
           <HStack gap="2">
             <span>{score.WCAG_AAA ? <SuccessIcon /> : <ErrorIcon />}</span>
             <span>AAA</span>
@@ -93,7 +93,7 @@ export default function ContrastChecker() {
 
         <HStack
           justify="center"
-          fontWeight="600"
+          fontWeight="semibold"
           fontSize="2xl"
           padding="2"
           outline="none"
@@ -112,18 +112,18 @@ export default function ContrastChecker() {
             <panda.span fontWeight="700" fontSize="4xl">
               {constrastRatio ? `${constrastRatio?.toFixed(2).replace(/[.,]00$/, '')}:1` : ':'}
             </panda.span>
-            <panda.span fontWeight="600" opacity="0.5">
+            <panda.span fontWeight="semibold" opacity="0.5">
               Contrast ratio
             </panda.span>
           </VStack>
           {wcag && (
             <panda.div display="flex" gap="5" marginTop="10">
               <Stack flex="1" gap="4">
-                <panda.span fontWeight="600">Normal Text</panda.span>
+                <panda.span fontWeight="semibold">Normal Text</panda.span>
                 {renderTestScore(wcag[0], 'regular')}
               </Stack>
               <Stack flex="1" gap="4">
-                <panda.span fontWeight="600">Large Text</panda.span>
+                <panda.span fontWeight="semibold">Large Text</panda.span>
                 {renderTestScore(wcag[1], 'large')}
               </Stack>
             </panda.div>
