@@ -17,6 +17,9 @@ export function isPrimitiveLiteral(node: any): node is StringLiteral | NumericLi
 
 export function extractValue(value: any): any {
   return match(value)
+    .when(Node.isStringLiteral, (value) => {
+      return value.getLiteralValue().replaceAll(/[\n\s]+/g, ' ')
+    })
     .when(isPrimitiveLiteral, (value) => {
       return value.getLiteralValue()
     })
