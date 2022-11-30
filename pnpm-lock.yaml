@@ -195,7 +195,7 @@ importers:
       pluralize: 8.0.0
       postcss: 8.4.19
       preferred-pm: ^3.0.3
-      telejson: 7.0.3
+      telejson: 7.0.4
       ts-morph: 17.0.1
       ts-pattern: 4.0.6
     dependencies:
@@ -221,7 +221,7 @@ importers:
       pluralize: 8.0.0
       postcss: 8.4.19
       preferred-pm: 3.0.3
-      telejson: 7.0.3
+      telejson: 7.0.4
       ts-morph: 17.0.1
       ts-pattern: 4.0.6
     devDependencies:
@@ -7232,8 +7232,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /telejson/7.0.3:
-    resolution: {integrity: sha512-Oj9M8IYGRiJVUY6jarU8EImAqys4hCDYoeNP4r6muMZKGukbsArbv1Z9lxKQtP7eLdRJCKvwI8TNCwjZxD0ryw==}
+  /telejson/7.0.4:
+    resolution: {integrity: sha512-J4QEuCnYGXAI9KSN7RXK0a0cOW2ONpjc4IQbInGZ6c3stvplLAYyZjTnScrRd8deXVjNCFV1wXcLC7SObDuQYA==}
     dependencies:
       memoizerific: 1.11.3
     dev: false

@@ -41,7 +41,7 @@
     "postcss": "8.4.19",
     "pkg-types": "1.0.1",
     "pluralize": "8.0.0",
-    "telejson": "7.0.3",
+    "telejson": "7.0.4",
     "ts-pattern": "4.0.6",
     "ts-morph": "17.0.1"
   },
