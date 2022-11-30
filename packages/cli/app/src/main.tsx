@@ -11,8 +11,8 @@ import { globalCss } from 'design-system/css'
 globalCss({
   ':root': {
     fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif',
-    fontSize: '16px',
-    lineHeight: '24px',
+    fontSize: 'md',
+    lineHeight: 'normal',
     fontWeight: 'normal',
 
     colorScheme: 'light dark',
@@ -33,13 +33,7 @@ globalCss({
 
   body: {
     margin: 0,
-    minW: '320px',
     minHeight: '100vh',
-  },
-
-  h1: {
-    fontSize: '3.2em',
-    lineHeight: '1.1',
   },
 })
 
