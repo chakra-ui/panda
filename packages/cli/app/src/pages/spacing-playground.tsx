@@ -3,7 +3,7 @@ import { getSortedSizes } from '../utils/sizes-sort'
 import { renderPixels } from './sizes'
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import { panda } from 'design-system/jsx'
+import { panda, HStack } from 'design-system/jsx'
 
 const NUMBER_OF_ITEMS = 3
 
@@ -26,9 +26,9 @@ export default function SpacingPlayground() {
   const spacingItems = Array.from({ length: NUMBER_OF_ITEMS }).map((_, i) => (
     <panda.div
       width="full"
-      height="40px"
+      height="10"
       background="rgb(99 102 241)"
-      borderRadius="0.5rem"
+      borderRadius="sm"
       display="flex"
       alignItems="center"
       justifyContent="center"
@@ -46,8 +46,17 @@ export default function SpacingPlayground() {
         <h3 id="gap">Gap</h3>
         <div id="gap-view">
           <panda.div layerStyle="token-content ">
-            <panda.div layerStyle="spacing.switch">
-              <span>Spacing</span>
+            <panda.div
+              display="flex"
+              alignItems="center"
+              gap="1"
+              whiteSpace="nowrap"
+              position="sticky"
+              top="0"
+              boxShadow="lg"
+              background="var(--bg)"
+            >
+              <panda.span fontWeight="bold">Spacing</panda.span>
               <select
                 value={gapSize}
                 onChange={(e) => {
@@ -84,8 +93,8 @@ export default function SpacingPlayground() {
                 css={{
                   '& div': {
                     background: 'rgb(217 70 239)',
-                    width: '56px',
-                    height: '56px',
+                    width: '14',
+                    height: '14',
                   },
                 }}
                 style={{ gap }}
@@ -125,8 +134,17 @@ export default function SpacingPlayground() {
         <h3 id="padding">Padding</h3>
         <div id="padding-view">
           <panda.div layerStyle="token-content ">
-            <panda.div layerStyle="spacing.switch">
-              <span>Spacing</span>
+            <panda.div
+              display="flex"
+              alignItems="center"
+              gap="1"
+              whiteSpace="nowrap"
+              position="sticky"
+              top="0"
+              boxShadow="lg"
+              background="var(--bg)"
+            >
+              <panda.span fontWeight="bold">Spacing</panda.span>
               <select
                 value={paddingSize}
                 onChange={(e) => {
