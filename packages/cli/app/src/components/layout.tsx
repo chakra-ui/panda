@@ -10,10 +10,10 @@ function Item(props: typeof navItems[number]) {
     <NavLink key={props.id} to={`/${props.id}`}>
       {({ isActive }) => (
         <panda.li
-          padding="0.3rem 0"
+          paddingY="1.5"
           cursor="pointer"
-          fontSize="0.9rem"
-          fontWeight={600}
+          fontSize="md"
+          fontWeight="semibold"
           transition="all 0.2s ease"
           data-active={isActive ? '' : undefined}
           css={{
