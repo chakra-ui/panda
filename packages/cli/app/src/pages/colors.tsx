@@ -3,8 +3,7 @@ import { useState } from 'react'
 
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import { panda } from 'design-system/jsx'
-import { css } from 'design-system/css'
+import { panda, Stack, Grid } from 'design-system/jsx'
 
 type Color = {
   isConditional?: boolean
@@ -119,20 +118,20 @@ export default function Colors() {
   const renderSemanticTokens = () => {
     return semanticTokens.map(([name, colors], i) => {
       return (
-        <panda.div display="flex" flexDir="column" gap="4px" key={i}>
+        <Stack gap="1" key={i}>
           <panda.div
             width="full"
-            height="10rem"
-            borderRadius="14px"
+            height="40"
+            borderRadius="xl"
             position="relative"
             overflow="hidden"
             before={{
               content: "''",
               position: 'absolute',
-              borderRadius: '14px',
+              borderRadius: 'xl',
               width: 'full',
               height: 'full',
-              backgroundSize: '12px',
+              backgroundSize: '3',
               zIndex: '-1',
               background:
                 'url(data:image/svg+xml;utf8,%3Csvg%20width%3D%226%22%20height%3D%226%22%20viewBox%3D%220%200%206%206%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200H3V3H0V0Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M3%200H6V3H3V0Z%22%20fill%3D%22white%22/%3E%3Cpath%20d%3D%22M3%203H6V6H3V3Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M0%203H3V6H0V3Z%22%20fill%3D%22white%22/%3E%3C/svg%3E%0A)',
@@ -142,29 +141,29 @@ export default function Colors() {
             <panda.span
               position="absolute"
               top="50%"
-              right="8px"
+              right="2"
               textTransform="uppercase"
-              fontWeight={600}
+              fontWeight="semibold"
               fontSize="medium"
               writingMode="vertical-lr"
               transform="rotate(100deg)"
-              minW="20px"
+              minW="5"
             >
               {colors.extensions.condition}
             </panda.span>
             <panda.div
-              height="10rem"
+              height="40"
               width="80%"
-              borderRadius="14px"
+              borderRadius="sm"
               position="relative"
               overflow="hidden"
               before={{
                 content: "''",
                 position: 'absolute',
-                borderRadius: '14px',
+                borderRadius: 'sm',
                 width: 'full',
                 height: 'full',
-                backgroundSize: '12px',
+                backgroundSize: '3',
                 zIndex: '-1',
                 background:
                   'url(data:image/svg+xml;utf8,%3Csvg%20width%3D%226%22%20height%3D%226%22%20viewBox%3D%220%200%206%206%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200H3V3H0V0Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M3%200H6V3H3V0Z%22%20fill%3D%22white%22/%3E%3Cpath%20d%3D%22M3%203H6V6H3V3Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M0%203H3V6H0V3Z%22%20fill%3D%22white%22/%3E%3C/svg%3E%0A)',
@@ -175,20 +174,20 @@ export default function Colors() {
               <panda.span
                 position="absolute"
                 top="50%"
-                right="8px"
+                right="2"
                 textTransform="uppercase"
-                fontWeight={600}
+                fontWeight="semibold"
                 fontSize="medium"
                 writingMode="vertical-lr"
                 transform="rotate(100deg)"
-                minW="20px"
+                minW="5"
               >
                 Base
               </panda.span>
             </panda.div>
           </panda.div>
           <span>
-            <panda.span textTransform="capitalize" fontWeight={600}>
+            <panda.span textTransform="capitalize" fontWeight="semibold">
               {name}
             </panda.span>
           </span>
@@ -201,9 +200,10 @@ export default function Colors() {
                   {isLinked && (
                     <panda.span
                       fontSize="small"
-                      borderRadius="24px"
-                      padding="3px 8px"
-                      marginLeft="12px"
+                      borderRadius="lg"
+                      paddingX="2"
+                      paddingY="0.5"
+                      marginLeft="3"
                       background="#1a1a1a"
                       color="white"
                     >
@@ -214,27 +214,27 @@ export default function Colors() {
               </div>
             )
           })}
-        </panda.div>
+        </Stack>
       )
     })
   }
   const renderColors = (values: any[]) => {
     return values?.map((color, i) => {
       return (
-        <panda.div display="flex" flexDir="column" gap="4px" key={i}>
+        <Stack gap="1" key={i}>
           <panda.div
             width="full"
-            height="5rem"
-            borderRadius="4px"
+            height="20"
+            borderRadius="sm"
             position="relative"
             overflow="hidden"
             before={{
               content: "''",
               position: 'absolute',
-              borderRadius: '4px',
+              borderRadius: 'sm',
               width: 'full',
               height: 'full',
-              backgroundSize: '12px',
+              backgroundSize: '3',
               zIndex: '-1',
               background:
                 'url(data:image/svg+xml;utf8,%3Csvg%20width%3D%226%22%20height%3D%226%22%20viewBox%3D%220%200%206%206%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200H3V3H0V0Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M3%200H6V3H3V0Z%22%20fill%3D%22white%22/%3E%3Cpath%20d%3D%22M3%203H6V6H3V3Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M0%203H3V6H0V3Z%22%20fill%3D%22white%22/%3E%3C/svg%3E%0A)',
@@ -246,28 +246,17 @@ export default function Colors() {
           <panda.div opacity="0.7">{color.value}</panda.div>
           <panda.div opacity="0.7">{color.extensions.prop}</panda.div>
           <panda.div opacity="0.7">{color.extensions.varRef}</panda.div>
-        </panda.div>
+        </Stack>
       )
     })
   }
 
   return (
     <panda.div layerStyle="token-group">
-      <panda.div
-        marginBottom="14px"
-        position="sticky"
-        top="0"
-        boxShadow="0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
-        background="var(--bg)"
-        zIndex="1"
-      >
+      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" background="var(--bg)" zIndex="1">
         <panda.input
           width="full"
-          className={css({
-            width: 'full',
-            resize: 'vertical',
-            padding: '4px',
-          })}
+          padding="1"
           value={filterQuery}
           onChange={(e) => setFilterQuery(e.target.value)}
           placeholder="Filter tokens by text, property or value"
@@ -278,48 +267,33 @@ export default function Colors() {
           {!!categorizedColors.length &&
             categorizedColors.map(([category, colors]) => (
               <div key={category}>
-                <panda.span fontWeight={500} textTransform="capitalize" fontSize="1.2em">
+                <panda.span fontWeight="medium" textTransform="capitalize" fontSize="xl">
                   {category}
                 </panda.span>
-                <panda.div
-                  display="grid"
-                  gridGap="16px"
-                  gridTemplateColumns="repeat(auto-fit, minmax(13rem, 1fr))"
-                  margin="20px 0 40px 0"
-                  key={category}
-                >
+
+                <Grid gap="4" minChildWidth="13rem" marginY="5" marginX="0" key={category}>
                   {renderColors(colors)}
-                </panda.div>
+                </Grid>
               </div>
             ))}
           {!!uncategorizedColors?.length && (
             <div>
-              <panda.span fontWeight={500} textTransform="capitalize" fontSize="1.2em">
+              <panda.span fontWeight="medium" textTransform="capitalize" fontSize="xl">
                 {UNCATEGORIZED_ID}
               </panda.span>
-              <panda.div
-                display="grid"
-                gridGap="16px"
-                gridTemplateColumns="repeat(auto-fit, minmax(13rem, 1fr))"
-                margin="20px 0 40px 0"
-              >
+              <Grid gap="4" minChildWidth="13rem" marginY="5" marginX="0">
                 {renderColors(uncategorizedColors)}
-              </panda.div>
+              </Grid>
             </div>
           )}
           {!!semanticTokens.length && (
             <div>
-              <panda.span fontWeight={500} textTransform="capitalize" fontSize="1.2em">
+              <panda.span fontWeight="medium" textTransform="capitalize" fontSize="xl">
                 Semantic tokens
               </panda.span>
-              <panda.div
-                display="grid"
-                gridGap="16px"
-                gridTemplateColumns="repeat(auto-fit, minmax(13rem, 1fr))"
-                margin="20px 0 40px 0"
-              >
+              <Grid gap="4" minChildWidth="13rem" marginY="5" marginX="0">
                 {renderSemanticTokens()}
-              </panda.div>
+              </Grid>
             </div>
           )}
           {!hasResults && <div>No pandas found! Try a different breed. 🐼</div>}

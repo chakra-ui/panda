@@ -3,7 +3,7 @@ import { getContrastPairs, getContrastRatio } from '../utils/color'
 import { ErrorIcon, SuccessIcon } from '../components/icons'
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import { panda } from 'design-system/jsx'
+import { panda, HStack, VStack, Stack } from 'design-system/jsx'
 
 export default function ContrastChecker() {
   const tokenDictionary = new TokenDictionary(config)
@@ -31,20 +31,20 @@ export default function ContrastChecker() {
   const renderTestScore = (score: { WCAG_AA: boolean; WCAG_AAA: boolean }, size: 'regular' | 'large') => {
     return (
       <>
-        <panda.div display="flex" justifyContent="space-between" alignItems="center" fontWeight="500">
-          <panda.div display="flex" alignItems="center" gap="8px">
+        <HStack justify="space-between" fontWeight="500">
+          <HStack gap="2">
             <span>{score.WCAG_AA ? <SuccessIcon /> : <ErrorIcon />}</span>
             <span>AA</span>
-          </panda.div>
+          </HStack>
           <span>{size === 'regular' ? '4.5:1' : '3:1'}</span>
-        </panda.div>
-        <panda.div display="flex" justifyContent="space-between" alignItems="center" fontWeight="500">
-          <panda.div display="flex" alignItems="center" gap="8px">
+        </HStack>
+        <HStack justify="space-between" fontWeight="500">
+          <HStack gap="2">
             <span>{score.WCAG_AAA ? <SuccessIcon /> : <ErrorIcon />}</span>
             <span>AAA</span>
-          </panda.div>
+          </HStack>
           <span>{size === 'regular' ? '7:1' : '4.5:1'}</span>
-        </panda.div>
+        </HStack>
       </>
     )
   }
@@ -52,13 +52,15 @@ export default function ContrastChecker() {
   return (
     <panda.div layerStyle="token-group">
       <panda.div layerStyle="token-content">
-        <panda.div display="flex" alignItems="center" gap="12px" padding="8px" className="color-container">
+        <HStack gap="3" padding="2">
           <panda.div
             display="flex"
             flexDirection="column"
-            border="solid 1px rgba(182, 180, 180, 0.1)"
+            borderStyle="solid"
+            borderWidth="2.5"
+            borderColor="rgba(182, 180, 180, 0.1)"
             flex="1"
-            paddingTop="60px"
+            paddingTop="16"
             style={{ background: activeForeground }}
           >
             <select value={foreground} onChange={(e: any) => setForeGround(e.currentTarget.value)}>
@@ -72,9 +74,11 @@ export default function ContrastChecker() {
           <panda.div
             display="flex"
             flexDirection="column"
-            border="solid 1px rgba(182, 180, 180, 0.1)"
+            borderStyle="solid"
+            borderWidth="2.5"
+            borderColor="rgba(182, 180, 180, 0.1)"
             flex="1"
-            paddingTop="60px"
+            paddingTop="16"
             style={{ background: activeBackground }}
           >
             <select value={background} onChange={(e: any) => setBackground(e.currentTarget.value)}>
@@ -85,43 +89,43 @@ export default function ContrastChecker() {
               ))}
             </select>
           </panda.div>
-        </panda.div>
+        </HStack>
 
-        <panda.div
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          fontWeight={500}
-          fontSize="1.4em"
-          padding="8px"
+        <HStack
+          justify="center"
+          fontWeight="600"
+          fontSize="2xl"
+          padding="2"
           outline="none"
-          border="solid 1px rgba(182, 180, 180, 0.2)"
+          borderStyle="solid"
+          borderWidth="2.5"
+          borderColor="rgba(182, 180, 180, 0.2)"
           suppressContentEditableWarning
           contentEditable
           style={{ background: activeBackground, color: activeForeground }}
         >
           example text showing contrast
-        </panda.div>
+        </HStack>
 
-        <div className="result">
-          <panda.div display="flex" flexDirection="column" textAlign="center" gap="10px" className="contrast-ratio">
-            <panda.span fontWeight={700} fontSize="2.5em">
+        <div>
+          <VStack textAlign="center" gap="2.5">
+            <panda.span fontWeight="700" fontSize="4xl">
               {constrastRatio ? `${constrastRatio?.toFixed(2).replace(/[.,]00$/, '')}:1` : ':'}
             </panda.span>
-            <panda.span fontWeight={600} opacity={0.5}>
+            <panda.span fontWeight="600" opacity="0.5">
               Contrast ratio
             </panda.span>
-          </panda.div>
+          </VStack>
           {wcag && (
-            <panda.div display="flex" gap="20px" marginTop="40px">
-              <panda.div flex="1" display="flex" flexDirection="column" gap="4">
+            <panda.div display="flex" gap="5" marginTop="10">
+              <Stack flex="1" gap="4">
                 <panda.span fontWeight="600">Normal Text</panda.span>
                 {renderTestScore(wcag[0], 'regular')}
-              </panda.div>
-              <panda.div flex="1" display="flex" flexDirection="column" gap="4">
+              </Stack>
+              <Stack flex="1" gap="4">
                 <panda.span fontWeight="600">Large Text</panda.span>
                 {renderTestScore(wcag[1], 'large')}
-              </panda.div>
+              </Stack>
             </panda.div>
           )}
         </div>

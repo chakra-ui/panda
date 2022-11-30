@@ -1,43 +1,43 @@
 import { navItems } from '../utils/constants'
 import { NavLink } from 'react-router-dom'
-import { panda } from 'design-system/jsx'
+import { panda, Stack, Wrap } from 'design-system/jsx'
+import { css } from 'design-system/css'
 
 function Item(props: typeof navItems[number]) {
   return (
     <NavLink key={props.id} to={`/${props.id}`}>
-      <panda.li
-        width="220px"
+      <Stack
+        gap="0"
+        width="60"
         background="var(--aside-bg)"
-        borderRadius="8px"
-        padding="18px"
+        borderRadius="sm"
+        padding="4"
         transition="all 0.2s ease"
-        display="flex"
-        flexDir="column"
         hover={{
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          boxShadow: 'lg',
         }}
         osLight={{ color: '#3b3b3b', background: '#bababa3d' }}
       >
         <panda.span
           css={{
             '& svg': {
-              fontWeight: 400,
+              fontWeight: 'normal',
               fontSize: 'xx-large',
-              marginBottom: '24px',
-              height: '24px',
-              width: '24px',
+              marginBottom: '6',
+              height: '6',
+              width: '6',
             },
           }}
         >
           <props.icon />
         </panda.span>
-        <panda.span display="block" fontWeight={600} fontSize="small">
+        <panda.span display="block" fontWeight="semibold" fontSize="small">
           {props.label}
         </panda.span>
-        <panda.span display="block" marginTop="12px">
+        <panda.span display="block" marginTop="3">
           {props.description}
         </panda.span>
-      </panda.li>
+      </Stack>
     </NavLink>
   )
 }
@@ -45,99 +45,67 @@ function Item(props: typeof navItems[number]) {
 function Index() {
   return (
     <panda.div display="flex" flexDir="column">
-      <panda.span fontWeight={700} fontSize="1.4rem" padding="1em 2rem">
+      <panda.span fontWeight="bold" fontSize="2xl" paddingX="8" paddingY="4">
         🐼 Panda
       </panda.span>
       <panda.div
-        padding="6em 2rem"
-        marginBottom="40px"
+        paddingX="8"
+        paddingY="24"
+        marginBottom="10"
         background="#1a1a1a"
-        css={{
-          '& span': { display: 'block' },
-        }}
         osLight={{
           background: '#bababa3d',
         }}
       >
-        <panda.span fontSize="1.7em" fontWeight={600} marginBottom="24px">
+        <panda.span display="block" fontSize="3xl" fontWeight="semibold" marginBottom="6">
           Design System
         </panda.span>
-        <span>Build great products, faster.</span>
+        <panda.span display="block">Build great products, faster.</panda.span>
         <NavLink
           to="/colors"
-          css={{
+          className={css({
             background: '#646cff',
             color: 'white',
             width: 'fit-content',
             fontSize: 'small',
-            fontWeight: '600',
-            padding: '4px 24px',
-            borderRadius: '4px',
-            marginTop: '24px',
+            fontWeight: 'semibold',
+            paddingX: '6',
+            paddingY: '1',
+            borderRadius: 'sm',
+            marginTop: '6',
             transition: 'all 0.2s ease',
             display: 'block',
             '&:hover': {
               background: '#4049f0',
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+              boxShadow: 'lg',
             },
-          }}
+          })}
         >
           Explore
         </NavLink>
       </panda.div>
-      <panda.div
-        display="flex"
-        flexDir="column"
-        gap="24px"
-        padding="2rem"
-        css={{
-          listStyleType: 'none',
-          padding: '0',
-          margin: '0.5rem 0',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '24px',
-        }}
-      >
+      <Wrap gap="6" padding="8" marginY="2">
         <div>
-          <span>TOKENS</span>
-          <panda.ul
-            css={{
-              listStyleType: 'none',
-              padding: 0,
-              gap: '24px',
-              display: 'flex',
-              flexWrap: 'wrap',
-              margin: '0.5rem 0',
-            }}
-          >
+          <panda.span display="block">TOKENS</panda.span>
+          <Wrap marginY="2" padding="0" gap="6">
             {navItems
               .filter((k) => k.type === 'token')
               .map((themeKey) => (
                 <Item key={themeKey.id} {...themeKey} />
               ))}
-          </panda.ul>
+          </Wrap>
         </div>
         <div>
-          <span>PLAYGROUND</span>
-          <panda.ul
-            css={{
-              listStyleType: 'none',
-              padding: 0,
-              gap: '24px',
-              display: 'flex',
-              flexWrap: 'wrap',
-              margin: '0.5rem 0',
-            }}
-          >
+          <panda.span display="block">PLAYGROUND</panda.span>
+          <Wrap marginY="2" padding="0" gap="6">
             {navItems
               .filter((k) => k.type === 'playground')
               .map((themeKey) => (
                 <Item key={themeKey.id} {...themeKey} />
               ))}
-          </panda.ul>
+          </Wrap>
         </div>
-      </panda.div>
+      </Wrap>
     </panda.div>
   )
 }

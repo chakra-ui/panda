@@ -2,7 +2,7 @@ import { TokenDictionary } from '@pandacss/token-dictionary'
 import { config } from 'virtual:panda'
 import { remToPixels } from '../utils/rem-to-pixels'
 import { getSortedSizes } from '../utils/sizes-sort'
-import { panda } from 'design-system/jsx'
+import { panda, Grid } from 'design-system/jsx'
 
 export type SizesProps = { sizes: Map<string, any> }
 
@@ -20,15 +20,10 @@ export default function Page() {
 
   return (
     <panda.div layerStyle="token-group">
-      <panda.div
-        display="grid"
-        gap="10px 40px"
-        gridTemplateColumns="repeat(5, minmax(0px, 1fr))"
-        className="token-content "
-      >
-        <panda.span fontWeight={600}>Name</panda.span>
-        <panda.span fontWeight={600}>Size</panda.span>
-        <panda.span fontWeight={600} gridColumn="span 3 / span 3">
+      <Grid display="grid" colGap="10" rowGap="2.5" columns={5} layerStyle="token-content ">
+        <panda.span fontWeight="semibold">Name</panda.span>
+        <panda.span fontWeight="semibold">Size</panda.span>
+        <panda.span fontWeight="semibold" gridColumn="span 3 / span 3">
           Pixels
         </panda.span>
         <panda.hr gridColumn="span 5 / span 5" />
@@ -40,7 +35,7 @@ export default function Page() {
               <span>{size.value}</span>
               <span>{renderPixels(size.value as string)}</span>
               <panda.span
-                height="20px"
+                height="5"
                 background="rgba(255, 192, 203, 0.5)"
                 className="size-box"
                 gridColumn="span 2 / span 2"
@@ -48,7 +43,7 @@ export default function Page() {
               />
             </>
           ))}
-      </panda.div>
+      </Grid>
     </panda.div>
   )
 }

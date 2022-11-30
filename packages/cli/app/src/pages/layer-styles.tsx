@@ -16,7 +16,8 @@ export default function LayerStyles() {
             <panda.div
               borderTop="solid 1px"
               borderColor="rgba(128, 128, 128, 0.671)"
-              padding="10px 4px"
+              paddingX="1"
+              paddingY="2.5"
               css={{
                 '&:last-of-type': {
                   borderBottomWidth: '1px',
@@ -31,21 +32,22 @@ export default function LayerStyles() {
                 }}
               >
                 <panda.span fontWeight={500}>{name}</panda.span>
-                <panda.div fontSize="small" flex="auto" marginTop="6px">
+                <panda.div fontSize="small" flex="auto" marginTop="1.5">
                   {Object.entries(styles).map(([attr, value], i, arr) => (
                     <span key={attr}>{`${attr}: ${value}${i === arr.length - 1 ? '' : ', '}`}</span>
                   ))}
                 </panda.div>
               </panda.div>
               <panda.div
-                padding="8px 16px"
+                paddingX="4"
+                paddingY="2"
                 border="solid 1px"
                 borderColor="rgba(128, 128, 128, 0.671)"
                 background="#1d1d1e1a"
-                marginTop="20px"
+                marginTop="5"
                 className="preview-wrapper"
               >
-                <panda.div flex="auto" margin="12px 0" height="5em" style={styles} />
+                <panda.div flex="auto" marginY="3" height="20" style={styles} />
               </panda.div>
             </panda.div>
           ))

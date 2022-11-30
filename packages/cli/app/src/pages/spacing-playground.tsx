@@ -43,7 +43,9 @@ export default function SpacingPlayground() {
   return (
     <panda.div layerStyle="token-group">
       <div>
-        <h3 id="gap">Gap</h3>
+        <panda.h3 marginBottom="8" id="gap">
+          Gap
+        </panda.h3>
         <div id="gap-view">
           <panda.div layerStyle="token-content ">
             <panda.div
@@ -56,7 +58,9 @@ export default function SpacingPlayground() {
               boxShadow="lg"
               background="var(--bg)"
             >
-              <panda.span fontWeight="bold">Spacing</panda.span>
+              <panda.span fontWeight="bold" marginY="4">
+                Spacing
+              </panda.span>
               <select
                 value={gapSize}
                 onChange={(e) => {
@@ -73,9 +77,10 @@ export default function SpacingPlayground() {
               </select>
             </panda.div>
 
-            <panda.div layerStyle="spacing.section">
-              <span>Horizontal</span>
+            <panda.div>
+              <panda.span fontWeight="bold">Horizontal</panda.span>
               <panda.div
+                marginTop="3"
                 display="flex"
                 background="#e879f91a"
                 backgroundImage="linear-gradient(
@@ -103,9 +108,10 @@ export default function SpacingPlayground() {
               </panda.div>
             </panda.div>
 
-            <panda.div layerStyle="spacing.section">
-              <span>Vertical</span>
+            <panda.div>
+              <panda.span fontWeight="bold">Vertical</panda.span>
               <panda.div
+                marginTop="3"
                 display="flex"
                 flexDir="column"
                 background="#e879f91a"
@@ -131,7 +137,9 @@ export default function SpacingPlayground() {
 
         <hr />
 
-        <h3 id="padding">Padding</h3>
+        <panda.h3 marginY="8" id="padding">
+          Padding
+        </panda.h3>
         <div id="padding-view">
           <panda.div layerStyle="token-content ">
             <panda.div
@@ -144,7 +152,9 @@ export default function SpacingPlayground() {
               boxShadow="lg"
               background="var(--bg)"
             >
-              <panda.span fontWeight="bold">Spacing</panda.span>
+              <panda.span fontWeight="bold" marginY="4">
+                Spacing
+              </panda.span>
               <select
                 value={paddingSize}
                 onChange={(e) => {
@@ -161,35 +171,70 @@ export default function SpacingPlayground() {
               </select>
             </panda.div>
 
-            <panda.div layerStyle="spacing.section">
-              <span>Horizontal</span>
-              <div className="pad-h pad" style={{ paddingInline: padding }}>
-                <panda.div className="padding-item" layerStyle="spacing.paddingItem">
-                  {padding}
-                </panda.div>
-              </div>
-            </panda.div>
+            <Section
+              title="Horizontal"
+              style={{ paddingInline: padding }}
+              padding={padding}
+              itemBackground="rgb(139 100 246)"
+            />
 
-            <panda.div layerStyle="spacing.section">
-              <span>Vertical</span>
-              <div className="pad-v pad" style={{ padding: `${padding} 0` }}>
-                <panda.div className="padding-item" layerStyle="spacing.paddingItem">
-                  {padding}
-                </panda.div>
-              </div>
-            </panda.div>
-
-            <panda.div layerStyle="spacing.section">
-              <span>All sides</span>
-              <div className="pad-all pad" style={{ padding }}>
-                <panda.div className="padding-item" layerStyle="spacing.paddingItem">
-                  {padding}
-                </panda.div>
-              </div>
-            </panda.div>
+            <Section
+              title="Vertical"
+              style={{ padding: `${padding} 0` }}
+              padding={padding}
+              itemBackground="rgb(236 72 153)"
+            />
+            <Section title="All sides" style={{ padding }} padding={padding} itemBackground="rgb(139 92 246)" />
           </panda.div>
         </div>
       </div>
+    </panda.div>
+  )
+}
+
+type SectionProps = {
+  title: string
+  style: Record<string, any>
+  padding: string
+  itemBackground: string
+}
+
+function Section(props: SectionProps) {
+  const { title, style, padding, itemBackground, ...rest } = props
+  return (
+    <panda.div>
+      <panda.span fontWeight="bold">{title}</panda.span>
+      <panda.div
+        marginTop="3"
+        width="fit-content"
+        borderRadius="lg"
+        backgroundSize="7.07px 7.07px"
+        style={{ ...style, backgroundColor: itemBackground }}
+        backgroundImage="linear-gradient(
+          135deg,
+          hsla(0, 0%, 100%, 0.75) 10%,
+          transparent 0,
+          transparent 50%,
+          hsla(0, 0%, 100%, 0.75) 0,
+          hsla(0, 0%, 100%, 0.75) 60%,
+          transparent 0,
+          transparent
+        )"
+        {...rest}
+      >
+        <HStack
+          className="item"
+          style={{
+            background: itemBackground || 'rgb(99 102 241)',
+          }}
+          paddingInline="4"
+          justify="center"
+          fontWeight="bold"
+          height="14"
+        >
+          {padding}
+        </HStack>
+      </panda.div>
     </panda.div>
   )
 }

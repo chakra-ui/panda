@@ -57,8 +57,8 @@ export default function TypographyPlayground() {
           <panda.div
             contentEditable="true"
             outline="0px solid transparent"
-            paddingTop="100px"
-            paddingBottom="100px"
+            paddingTop="28"
+            paddingBottom="28"
             marginInlineStart="auto"
             marginInlineEnd="auto"
             suppressContentEditableWarning={true}
@@ -67,10 +67,10 @@ export default function TypographyPlayground() {
           >
             Panda
           </panda.div>
-          <panda.div display="flex" flexDirection="column" gap="12px">
+          <panda.div display="flex" flexDirection="column" gap="4">
             {Object.keys(config).map((tokenKey) => (
-              <panda.div diaplay="flex" alignItems="center" gap="6px" key={tokenKey}>
-                <panda.span whiteSpace="nowrap" width="200px" textTransform="capitalize" marginRight="2">
+              <panda.div diaplay="flex" alignItems="center" gap="1.5" key={tokenKey}>
+                <panda.span whiteSpace="nowrap" width="48" textTransform="capitalize" marginRight="2">
                   {tokenKey.replace(/([a-z0-9])([A-Z])/g, '$1 $2')}
                 </panda.span>
                 {renderTokenSwitch(tokenKey as keyof typeof defaultConfig)}

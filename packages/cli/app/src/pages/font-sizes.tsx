@@ -11,7 +11,7 @@ export default function Page() {
       fontTokens={tokens.fontSizes}
       token="fontSize"
       css={{
-        '& .font-wrapper .label': {
+        '& .label': {
           textTransform: 'unset',
         },
       }}

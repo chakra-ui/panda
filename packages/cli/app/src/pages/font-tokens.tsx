@@ -1,6 +1,5 @@
 import { Fragment, InputHTMLAttributes, useState } from 'react'
-import { panda } from 'design-system/jsx'
-import { css } from 'design-system/css'
+import { panda, Stack } from 'design-system/jsx'
 
 type FontTokensProps = {
   text?: string
@@ -20,11 +19,11 @@ export function FontTokens(props: FontTokensProps) {
       setText(event.currentTarget.value)
     },
     placeholder: 'Preview Text',
-    className: css({
+    css: {
       width: 'full',
       resize: 'vertical',
-      padding: '4px',
-    }),
+      padding: '1',
+    },
   }
 
   const values = Array.from(fontTokens.values())
@@ -36,30 +35,24 @@ export function FontTokens(props: FontTokensProps) {
         ...cssProp,
       }}
     >
-      <panda.div
-        marginBottom="14px"
-        position="sticky"
-        top="0"
-        boxShadow="0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
-        background="var(--bg)"
-      >
+      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" background="var(--bg)">
         {largeText ? <panda.textarea rows={5} {...inputProps} /> : <panda.input {...inputProps} />}
       </panda.div>
       <panda.div layerStyle="token-content">
         <hr />
         {values.map((fontToken) => (
           <Fragment key={fontToken.extensions.prop}>
-            <panda.div display="flex" flexDir="column" gap="14px" className="font-wrapper">
+            <Stack gap="3.5">
               <div>
-                <panda.span textTransform="capitalize" opacity="0.4" className="label">
+                <panda.span textTransform="capitalize" opacity="0.4" className="label" marginRight="1">
                   {fontToken.extensions.prop}
                 </panda.span>
                 <span>({fontToken.value})</span>
               </div>
-              <panda.span fontSize="2em" lineHeight="1em" className="render" style={{ [token]: fontToken.value }}>
+              <panda.span fontSize="4xl" lineHeight="normal" className="render" style={{ [token]: fontToken.value }}>
                 {text}
               </panda.span>
-            </panda.div>
+            </Stack>
             <hr />
           </Fragment>
         ))}

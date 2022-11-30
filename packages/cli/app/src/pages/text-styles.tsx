@@ -16,7 +16,8 @@ export default function TextStyles() {
             <panda.div
               borderTop="solid 1px"
               borderColor="rgba(128, 128, 128, 0.671)"
-              padding="10px 4px"
+              paddingX="1"
+              paddingY="2.5"
               css={{
                 '&:last-of-type': {
                   borderBottomWidth: '1px',
@@ -31,13 +32,13 @@ export default function TextStyles() {
                 }}
               >
                 <panda.span fontWeight={500}>{name}</panda.span>
-                <panda.div fontSize="small" flex="auto" marginTop="6px">
+                <panda.div fontSize="small" flex="auto" marginTop="1.5">
                   {Object.entries(styles).map(([attr, value], i, arr) => (
                     <span key={attr}>{`${attr}: ${value}${i === arr.length - 1 ? '' : ', '}`}</span>
                   ))}
                 </panda.div>
               </panda.div>
-              <panda.div flex="auto" margin="12px 0" style={styles}>
+              <panda.div flex="auto" marginY="3" style={styles}>
                 Panda CSS textStyles are time saving
               </panda.div>
             </panda.div>
