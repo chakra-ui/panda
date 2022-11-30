@@ -9,7 +9,7 @@ export default defineConfig({
   outdir: 'design-system',
   semanticTokens: {
     colors: {
-      text: { value: { base: '{colors.gray.600}', dark: '{colors.green.400}' } },
+      text: { value: { base: '{colors.gray.600}', dark: '{colors.gray.400}' } },
       bg: { value: { base: '#242424', osLight: '#ffffff' } },
     },
   },
@@ -18,9 +18,9 @@ export default defineConfig({
       value: {
         display: 'flex',
         flexDir: 'column',
-        gap: '12px',
+        gap: '3',
         width: 'full',
-        marginTop: '20px',
+        marginTop: '5',
       },
     },
 
@@ -28,8 +28,8 @@ export default defineConfig({
       value: {
         display: 'flex',
         flexDir: 'column',
-        gap: '20px',
-        lineHeight: '15px',
+        gap: '5',
+        lineHeight: '3.75',
       },
     },
   },
