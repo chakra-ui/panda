@@ -7,7 +7,7 @@ export type PatternProperty =
   | { type: 'token'; value: TokenCategory; property?: NativeCssProperty }
   | { type: 'string' | 'boolean' | 'number' }
 
-type PatternHelpers = {
+export type PatternHelpers = {
   map: (value: any, fn: (value: string) => string | undefined) => any
 }
 
