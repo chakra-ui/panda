@@ -24,7 +24,7 @@
   "dependencies": {
     "@changesets/changelog-github": "0.4.7",
     "@changesets/cli": "2.25.2",
-    "@types/node": "18.11.9",
+    "@types/node": "18.11.10",
     "@typescript-eslint/eslint-plugin": "5.45.0",
     "@typescript-eslint/parser": "5.45.0",
     "concurrently": "^7.4.0",
