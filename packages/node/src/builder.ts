@@ -1,4 +1,4 @@
-import { discardDuplicate } from '@pandacss/core'
+import { discardDuplicate, Stylesheet } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { toHash } from '@pandacss/shared'
@@ -111,7 +111,11 @@ export class Builder {
   }
 
   toString() {
-    return Array.from(this.fileCssMap.values()).join('')
+    const ctx = this.ensure()
+    const sheet = new Stylesheet(ctx.context())
+    const css = Array.from(this.fileCssMap.values()).join('\n\n')
+    sheet.append(css)
+    return sheet.toCss({ minify: ctx.minify })
   }
 
   write(root: Root) {
