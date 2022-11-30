@@ -16,7 +16,7 @@ globalCss({
     fontWeight: 'normal',
 
     colorScheme: 'light dark',
-    color: 'rgba(255, 255, 255, 0.87)',
+    color: 'slate.200',
     background: 'bg',
 
     fontSynthesis: 'none',
