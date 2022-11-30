@@ -2,13 +2,13 @@ import type { Tokens, SemanticTokens } from '@pandacss/types'
 
 export const semanticTokens: SemanticTokens = {
   colors: {
-    primary: { value: { base: '{colors.red.500}', dark: '{colors.red.400}' } },
-    secondary: { value: { base: '{colors.red.800}', dark: '{colors.red.700}' } },
-    complex: { value: { base: '{colors.red.800}', dark: { hiConstrast: '{colors.red.700}' } } },
+    primary: { value: { base: '{colors.red.500}', _dark: '{colors.red.400}' } },
+    secondary: { value: { base: '{colors.red.800}', _dark: '{colors.red.700}' } },
+    complex: { value: { base: '{colors.red.800}', _dark: { _hiConstrast: '{colors.red.700}' } } },
     surface: {
       value: {
-        materialTheme: { base: '#m-b', dark: '#m-d' },
-        pastelTheme: { base: '#p-b', dark: { md: '#p-d' } },
+        _materialTheme: { base: '#m-b', _dark: '#m-d' },
+        _pastelTheme: { base: '#p-b', _dark: { md: '#p-d' } },
       },
     },
   },

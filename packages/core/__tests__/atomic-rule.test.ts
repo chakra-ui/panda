@@ -48,7 +48,7 @@ describe('atomic / with basic style object', () => {
       }"
     `)
 
-    expect(css({ styles: { width: { _: '50px', md: '60px' }, w: '70px' } })).toMatchInlineSnapshot(`
+    expect(css({ styles: { width: { base: '50px', md: '60px' }, w: '70px' } })).toMatchInlineSnapshot(`
       "@layer utilities {
           .w_70px {
               width: 70px
@@ -91,7 +91,7 @@ describe('atomic / with basic style object', () => {
     expect(
       css({
         styles: {
-          ml: { ltr: { sm: '4' }, rtl: '-4' },
+          ml: { _ltr: { sm: '4' }, _rtl: '-4' },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -112,8 +112,8 @@ describe('atomic / with basic style object', () => {
     expect(
       css({
         styles: {
-          color: { light: 'red', dark: 'green' },
-          opacity: { dark: 'slate400' },
+          color: { _light: 'red', _dark: 'green' },
+          opacity: { _dark: 'slate400' },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -135,7 +135,7 @@ describe('atomic / with basic style object', () => {
     expect(
       css({
         styles: {
-          top: { sm: { rtl: '20px', hover: '50px' }, lg: '120px' },
+          top: { sm: { _rtl: '20px', _hover: '50px' }, lg: '120px' },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -163,7 +163,7 @@ describe('atomic / with basic style object', () => {
     expect(
       css({
         styles: {
-          left: { _: '20px', md: '40px' },
+          left: { base: '20px', md: '40px' },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -187,9 +187,9 @@ describe('atomic / with nesting scope', () => {
       css({
         scope: ['& > p'],
         styles: {
-          left: { _: '20px', md: '40px' },
-          bg: { light: 'red400', dark: 'green500' },
-          font: { rtl: 'sans', ltr: { dark: { sm: { hover: 'serif' } } } },
+          left: { base: '20px', md: '40px' },
+          bg: { _light: 'red400', _dark: 'green500' },
+          font: { _rtl: 'sans', _ltr: { _dark: { sm: { _hover: 'serif' } } } },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -308,7 +308,7 @@ describe('atomic / with grouped conditions styles', () => {
     expect(
       css({
         styles: {
-          hover: { bg: 'pink.400' },
+          _hover: { bg: 'pink.400' },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -324,7 +324,7 @@ describe('atomic / with grouped conditions styles', () => {
     expect(
       css({
         styles: {
-          hover: { bg: { sm: { dark: 'red.300' } }, color: 'pink.400' },
+          _hover: { bg: { sm: { _dark: 'red.300' } }, color: 'pink.400' },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -345,7 +345,7 @@ describe('atomic / with grouped conditions styles', () => {
     expect(
       css({
         styles: {
-          hover: { disabled: { bg: { sm: 'red.300' } } },
+          _hover: { _disabled: { bg: { sm: 'red.300' } } },
         },
       }),
     ).toMatchInlineSnapshot(`

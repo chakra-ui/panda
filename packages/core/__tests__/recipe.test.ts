@@ -27,7 +27,7 @@ describe('recipe ruleset', () => {
       }"
     `)
 
-    expect(processRecipe('textStyle', { variant: { _: 'h1', md: 'h2' } })).toMatchInlineSnapshot(`
+    expect(processRecipe('textStyle', { variant: { base: 'h1', md: 'h2' } })).toMatchInlineSnapshot(`
       "@layer recipes {
           .textStyle {
               font-family: var(--fonts-mono);
@@ -125,7 +125,7 @@ describe('recipe ruleset', () => {
       }"
     `)
 
-    expect(processRecipe('buttonStyle', { variant: { _: 'solid', lg: 'outline' } })).toMatchInlineSnapshot(`
+    expect(processRecipe('buttonStyle', { variant: { base: 'solid', lg: 'outline' } })).toMatchInlineSnapshot(`
       "@layer recipes {
           .buttonStyle {
               display: inline-flex;

@@ -15,8 +15,14 @@ export function generateConditions(ctx: PandaContext) {
 
      export function finalizeConditions(paths){
       return paths.map((path) => {
-        if (conditions.has(path)) return path
-        if (/&|@/.test(path)) return \`[\${withoutSpace(path.trim())}]\`
+        if (conditions.has(path)){
+          return path.replace(/^_/, '')
+        }
+        
+        if (/&|@/.test(path)){
+          return \`[\${withoutSpace(path.trim())}]\`
+        }
+
         return path
       })}
 
