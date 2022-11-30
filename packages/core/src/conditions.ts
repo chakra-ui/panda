@@ -22,7 +22,7 @@ export class Conditions {
     const breakpoints = new Breakpoints(breakpointValues)
     this.breakpoints = breakpoints
 
-    const entries = Object.entries(conditions).map(([key, value]) => [key, parseCondition(value)])
+    const entries = Object.entries(conditions).map(([key, value]) => [`_${key}`, parseCondition(value)])
 
     this.values = {
       ...Object.fromEntries(entries),
@@ -32,8 +32,14 @@ export class Conditions {
 
   finalize = (paths: string[]) => {
     return paths.map((path) => {
-      if (this.has(path)) return path
-      if (/&|@/.test(path)) return `[${withoutSpace(path.trim())}]`
+      if (this.has(path)) {
+        return path.replace(/^_/, '')
+      }
+
+      if (/&|@/.test(path)) {
+        return `[${withoutSpace(path.trim())}]`
+      }
+
       return path
     })
   }

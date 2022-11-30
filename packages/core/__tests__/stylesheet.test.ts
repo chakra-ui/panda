@@ -21,9 +21,9 @@ describe('Global styles', () => {
             color: 'pink',
           },
         },
-        focus: {
+        _focus: {
           color: 'red.200',
-          hover: {
+          _hover: {
             backgroundColor: 'red.400',
           },
         },
@@ -82,7 +82,7 @@ describe('Global styles', () => {
           '& *': {
             cursor: 'ew-resize !important',
           },
-          hover: {
+          _hover: {
             color: 'red',
           },
         },
