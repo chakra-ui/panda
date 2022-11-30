@@ -30,7 +30,7 @@ export default function TextStyles() {
             >
               <panda.div
                 osLight={{
-                  borderColor: 'var(--aside-bg)',
+                  borderColor: 'card',
                 }}
               >
                 <panda.span fontWeight={500}>{name}</panda.span>

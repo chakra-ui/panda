@@ -5,7 +5,7 @@ import { css } from 'design-system/css'
 
 type LayoutProps = { children: React.ReactNode }
 
-function Item(props: typeof navItems[number]) {
+function NavItem(props: typeof navItems[number]) {
   return (
     <NavLink key={props.id} to={`/${props.id}`}>
       {({ isActive }) => (
@@ -18,7 +18,7 @@ function Item(props: typeof navItems[number]) {
           data-active={isActive ? '' : undefined}
           css={{
             '&:hover, &[data-active]': {
-              color: '#9499ff',
+              color: 'blue.500',
             },
           }}
         >
@@ -34,17 +34,7 @@ export function Layout(props: LayoutProps) {
 
   return (
     <panda.main display="flex" height="calc(100vh - env(safe-area-inset-bottom))">
-      <Stack
-        height="full"
-        minW="60"
-        background="var(--aside-bg)"
-        overflow="auto"
-        paddingX="4"
-        paddingY="8"
-        osLight={{
-          color: 'white',
-        }}
-      >
+      <Stack height="full" minW="60" background="card" overflow="auto" paddingX="4" paddingY="8">
         <NavLink to="/" className={css({ fontWeight: 700, fontSize: '2xl' })}>
           🐼 Panda
         </NavLink>
@@ -56,7 +46,7 @@ export function Layout(props: LayoutProps) {
             {navItems
               .filter((k) => k.type === 'token')
               .map((themeKey) => (
-                <Item key={themeKey.id} {...themeKey} />
+                <NavItem key={themeKey.id} {...themeKey} />
               ))}
           </panda.ul>
           <panda.span fontWeight="700" fontSize="small" opacity="0.7">
@@ -66,7 +56,7 @@ export function Layout(props: LayoutProps) {
             {navItems
               .filter((k) => k.type === 'playground')
               .map((themeKey) => (
-                <Item key={themeKey.id} {...themeKey} />
+                <NavItem key={themeKey.id} {...themeKey} />
               ))}
           </panda.ul>
         </panda.div>
