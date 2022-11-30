@@ -122,12 +122,10 @@ export class Builder {
     const rootCssContent = root.toString()
     root.removeAll()
 
-    const css = discardDuplicate(`
+    root.append(`
     ${rootCssContent}
     ${this.toString()}
     `)
-
-    root.append(css)
   }
 
   registerDependency(fn: (dep: Message) => void) {
