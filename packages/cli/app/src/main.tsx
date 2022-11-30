@@ -11,7 +11,7 @@ import { globalCss } from 'design-system/css'
 globalCss({
   ':root': {
     '--bg': 'colors.bg',
-    '--aside-bg': '#1a1a1a',
+    '--aside-bg': 'colors.slate.800',
     fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif',
     fontSize: '16px',
     lineHeight: '24px',

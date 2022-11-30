@@ -10,7 +10,8 @@ export default defineConfig({
   semanticTokens: {
     colors: {
       text: { value: { base: '{colors.gray.600}', dark: '{colors.gray.400}' } },
-      bg: { value: { base: '#242424', osLight: '#ffffff' } },
+      bg: { value: { base: '{colors.slate.900}', osLight: '{colors.white}' } },
+      card: { value: { base: '{colors.slate.800}', osLight: '{colors.slate.200}' } },
     },
   },
   layerStyles: {

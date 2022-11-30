@@ -9,14 +9,13 @@ function Item(props: typeof navItems[number]) {
       <Stack
         gap="0"
         width="60"
-        background="var(--aside-bg)"
+        background="card"
         borderRadius="sm"
         padding="4"
         transition="all 0.2s ease"
         hover={{
           boxShadow: 'lg',
         }}
-        osLight={{ color: '#3b3b3b', background: '#bababa3d' }}
       >
         <panda.span
           css={{
@@ -48,15 +47,7 @@ function Index() {
       <panda.span fontWeight="bold" fontSize="2xl" paddingX="8" paddingY="4">
         🐼 Panda
       </panda.span>
-      <panda.div
-        paddingX="8"
-        paddingY="24"
-        marginBottom="10"
-        background="#1a1a1a"
-        osLight={{
-          background: '#bababa3d',
-        }}
-      >
+      <panda.div paddingX="8" paddingY="24" marginBottom="10" background="card">
         <panda.span display="block" fontSize="3xl" fontWeight="semibold" marginBottom="6">
           Design System
         </panda.span>
