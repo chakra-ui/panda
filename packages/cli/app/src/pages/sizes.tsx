@@ -4,7 +4,6 @@ import { remToPixels } from '../utils/rem-to-pixels'
 import { getSortedSizes } from '../utils/sizes-sort'
 import { panda, Grid } from 'design-system/jsx'
 import { TokenGroup } from '../components/token-group'
-import { TokenContent } from '../components/token-content'
 
 export type SizesProps = { sizes: Map<string, any> }
 
