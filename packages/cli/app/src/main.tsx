@@ -10,7 +10,6 @@ import { globalCss } from 'design-system/css'
 
 globalCss({
   ':root': {
-    '--bg': 'colors.bg',
     fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif',
     fontSize: '16px',
     lineHeight: '24px',
@@ -18,7 +17,7 @@ globalCss({
 
     colorScheme: 'light dark',
     color: 'rgba(255, 255, 255, 0.87)',
-    background: 'var(--bg)',
+    background: 'bg',
 
     fontSynthesis: 'none',
     textRendering: 'optimizeLegibility',

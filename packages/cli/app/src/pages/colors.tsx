@@ -255,7 +255,7 @@ export default function Colors() {
 
   return (
     <TokenGroup>
-      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" background="var(--bg)" zIndex="1">
+      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" background="bg" zIndex="1">
         <panda.input
           width="full"
           padding="1"

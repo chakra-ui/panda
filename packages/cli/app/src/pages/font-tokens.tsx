@@ -36,7 +36,7 @@ export function FontTokens(props: FontTokensProps) {
         ...cssProp,
       }}
     >
-      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" background="var(--bg)">
+      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" background="bg">
         {largeText ? <panda.textarea rows={5} {...inputProps} /> : <panda.input {...inputProps} />}
       </panda.div>
       <TokenContent>

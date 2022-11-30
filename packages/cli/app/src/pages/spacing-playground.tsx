@@ -58,7 +58,7 @@ export default function SpacingPlayground() {
               position="sticky"
               top="0"
               boxShadow="lg"
-              background="var(--bg)"
+              background="bg"
             >
               <panda.span fontWeight="bold" marginY="4">
                 Spacing
@@ -152,7 +152,7 @@ export default function SpacingPlayground() {
               position="sticky"
               top="0"
               boxShadow="lg"
-              background="var(--bg)"
+              background="bg"
             >
               <panda.span fontWeight="bold" marginY="4">
                 Spacing
