@@ -2,7 +2,7 @@ export type { ConditionDetails, ConditionType, Conditions, RawCondition, Recursi
 export type { Config, UserConfig } from './config'
 export type { PropertyConfig, PropertyTransform, PropertyValues, UtilityConfig } from './utility'
 export type { StyleObject, CssKeyframes } from './system-types'
-export type { PatternConfig, PatternProperty } from './pattern'
+export type { PatternConfig, PatternProperty, PatternHelpers } from './pattern'
 export type { RecipeConfig, RecipeVariant } from './recipe'
 export type { Composition, TextStyles, LayerStyles } from './composition'
 export type { Token, TokenCategory, TokenDataTypes, Tokens, SemanticToken, SemanticTokens } from './tokens'

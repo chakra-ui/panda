@@ -21,7 +21,10 @@
       "types": "./dist/presets.d.ts"
     },
     "./postcss": "./postcss.js",
-    "./astro": "./astro.mjs",
+    "./astro": {
+      "import": "./astro.mjs",
+      "types": "./astro.d.ts"
+    },
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -47,8 +50,9 @@
     "dist",
     "bin",
     "app",
-    "postcss.js",
-    "astro.mjs"
+    "*.d.ts",
+    "*.js",
+    "*.mjs"
   ],
   "dependencies": {
     "@pandacss/config": "workspace:*",
@@ -64,7 +68,8 @@
     "react-dom": "^18.2.0",
     "react-router": "^6.4.3",
     "react-router-dom": "^6.4.3",
-    "vite": "^3.2.0"
+    "vite": "^3.2.0",
+    "vite-plugin-pages": "^0.27.1"
   },
   "devDependencies": {
     "@pandacss/presets": "workspace:*",
@@ -73,7 +78,6 @@
     "@types/update-notifier": "^6.0.1",
     "@vitejs/plugin-react": "^2.2.0",
     "kleur": "^4.1.5",
-    "update-notifier": "^6.0.2",
-    "vite-plugin-pages": "^0.27.1"
+    "update-notifier": "^6.0.2"
   }
 }

@@ -1,4 +1,4 @@
-import { discardDuplicate } from '@pandacss/core'
+import { discardDuplicate, Stylesheet } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { toHash } from '@pandacss/shared'
@@ -13,7 +13,7 @@ import { extractFile } from './extract'
 import { parseDependency } from './glob'
 
 type CachedData = {
-  fileMap: Map<string, string>
+  fileCssMap: Map<string, string>
   fileModifiedMap: Map<string, number>
 }
 
@@ -28,16 +28,27 @@ function getConfigHash() {
   return toHash(readFileSync(file, 'utf-8'))
 }
 
+let setupCount = 0
+
 export class Builder {
+  /**
+   * Map of file path to modified time
+   */
   fileModifiedMap: Map<string, number> = new Map()
-  fileMap: Map<string, string> = new Map()
+
+  /**
+   * Map of file path to css
+   */
+  fileCssMap: Map<string, string> = new Map()
+
   context: PandaContext | undefined
+
   configChanged = true
 
   updateFile(file: string, css: string) {
-    const oldCss = this.fileMap?.get(file) ?? ''
+    const oldCss = this.fileCssMap?.get(file) ?? ''
     const newCss = discardDuplicate(oldCss + css)
-    this.fileMap?.set(file, newCss)
+    this.fileCssMap?.set(file, newCss)
   }
 
   async setup() {
@@ -48,22 +59,27 @@ export class Builder {
       cachedContext.reloadSourceFiles()
       this.context = cachedContext
 
-      this.fileMap = builderCache.get(cachedContext)!.fileMap
+      this.fileCssMap = builderCache.get(cachedContext)!.fileCssMap
       this.fileModifiedMap = builderCache.get(cachedContext)!.fileModifiedMap
-
       //
     } else {
       //
 
       this.context = await loadConfigAndCreateContext()
-      emitArtifacts(this.context) //no need to await this
 
-      this.fileMap = new Map([['base.css', getBaseCss(this.context)]])
+      // don't emit artifacts on first setup
+      if (setupCount > 0) {
+        emitArtifacts(this.context) //no need to await this
+      }
+
+      this.fileCssMap = new Map([['base.css', getBaseCss(this.context)]])
       this.fileModifiedMap = new Map()
 
       contextCache.set(configHash, this.context)
-      builderCache.set(this.context, { fileMap: this.fileMap, fileModifiedMap: this.fileModifiedMap })
+      builderCache.set(this.context, { fileCssMap: this.fileCssMap, fileModifiedMap: this.fileModifiedMap })
     }
+
+    setupCount++
   }
 
   ensure() {
@@ -87,6 +103,7 @@ export class Builder {
 
       this.fileModifiedMap.set(file, mtime)
       this.updateFile(file, result.css)
+
       return result
     })
 
@@ -94,13 +111,22 @@ export class Builder {
   }
 
   toString() {
-    return Array.from(this.fileMap.values()).join('')
+    const ctx = this.ensure()
+    const sheet = new Stylesheet(ctx.context())
+    const css = Array.from(this.fileCssMap.values()).join('\n\n')
+    sheet.append(css)
+    return sheet.toCss({ minify: ctx.minify })
   }
 
   write(root: Root) {
-    const prev = root.toString()
+    const rootCssContent = root.toString()
     root.removeAll()
-    const css = discardDuplicate(prev + this.toString())
+
+    const css = discardDuplicate(`
+    ${rootCssContent}
+    ${this.toString()}
+    `)
+
     root.append(css)
   }
 

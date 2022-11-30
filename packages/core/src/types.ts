@@ -1,4 +1,4 @@
-import type { Dict, TransformHelpers } from '@pandacss/types'
+import type { Dict, PatternHelpers } from '@pandacss/types'
 import type { Root } from 'postcss'
 import type { Conditions } from './conditions'
 import type { Utility } from './utility'
@@ -13,7 +13,7 @@ export type StylesheetContext = {
   root: Root
   utility: Utility
   conditions: Conditions
-  helpers: TransformHelpers
+  helpers: PatternHelpers
   hash?: boolean
   transform?: (prop: string, value: any) => TransformResult
 }
