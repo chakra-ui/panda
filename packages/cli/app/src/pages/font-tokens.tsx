@@ -25,6 +25,7 @@ export function FontTokens(props: FontTokensProps) {
       width: 'full',
       resize: 'vertical',
       padding: '1',
+      background: 'card',
     },
   }
 
@@ -36,7 +37,7 @@ export function FontTokens(props: FontTokensProps) {
         ...cssProp,
       }}
     >
-      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" background="bg">
+      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg">
         {largeText ? <panda.textarea rows={5} {...inputProps} /> : <panda.input {...inputProps} />}
       </panda.div>
       <TokenContent>

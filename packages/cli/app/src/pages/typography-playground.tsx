@@ -42,13 +42,13 @@ export default function TypographyPlayground() {
   const renderTokenSwitch = (token: keyof typeof defaultConfig) => {
     const values = Array.from(tokens[`${token}s`].values())
     return (
-      <select value={config[token]} onChange={(e) => onChangeConfig(e, token)}>
+      <panda.select background="card" value={config[token]} onChange={(e) => onChangeConfig(e, token)}>
         {values.map((token) => (
           <option key={token.value} value={token.extensions.prop}>
             {`${token.extensions.prop} (${token.value})`}
           </option>
         ))}
-      </select>
+      </panda.select>
     )
   }
 

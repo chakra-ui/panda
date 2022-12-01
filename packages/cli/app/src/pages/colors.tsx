@@ -101,8 +101,9 @@ export default function Colors() {
 
   return (
     <TokenGroup>
-      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" background="bg" zIndex="1">
+      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" zIndex="1">
         <panda.input
+          background="card"
           width="full"
           padding="1"
           value={filterQuery}

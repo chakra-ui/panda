@@ -13,7 +13,7 @@ function Item(props: typeof navItems[number]) {
         borderRadius="sm"
         padding="4"
         transition="all 0.2s ease"
-        hover={{
+        _hover={{
           boxShadow: 'lg',
         }}
       >
