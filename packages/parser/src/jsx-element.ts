@@ -40,7 +40,7 @@ export function visitJsxElement(
 
       match(value)
         .when(Node.isStringLiteral, (value) => {
-          data[name] = value.getLiteralValue()
+          data[name] = value.getLiteralValue().replaceAll(/[\n\s]+/g, ' ')
         })
         .when(Node.isJsxExpression, (value) => {
           const expr = value.getExpression()

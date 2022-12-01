@@ -57,7 +57,7 @@ function App() {
                 color: 'red.500',
                 borderRadius: '8px',
                 paddingX: '24px',
-                translate: { active: '0 3px' },
+                translate: { _active: '0 3px' },
               })}
             >
               Get Started

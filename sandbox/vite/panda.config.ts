@@ -8,7 +8,7 @@ export default defineConfig({
   outdir: 'design-system',
   semanticTokens: {
     colors: {
-      text: { value: { base: '{colors.gray.600}', osDark: '{colors.gray.400}' } },
+      text: { value: { base: '{colors.gray.600}', _osDark: '{colors.gray.400}' } },
     },
   },
   jsxFramework: 'react',

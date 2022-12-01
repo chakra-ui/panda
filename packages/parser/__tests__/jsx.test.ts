@@ -162,4 +162,42 @@ describe('jsx', () => {
       }
     `)
   })
+
+  test('should omit new line characters', () => {
+    const code = `
+       import { panda } from ".panda/jsx"
+
+       function Button() {
+        const disabled = true
+         return (
+            <div marginTop="55555px">
+            <panda.div
+              backgroundImage="linear-gradient(
+                135deg,
+                hsla(0, 0%, 100%, 0.75) 10%,
+                transparent 0,
+                transparent 50%,
+                hsla(0, 0%, 100%, 0.75) 0,
+                hsla(0, 0%, 100%, 0.75) 60%,
+                transparent 0,
+                transparent
+              )"
+          />
+            </div>
+        )
+       }
+     `
+
+    expect(jsxParser(code)).toMatchInlineSnapshot(`
+      Set {
+        {
+          "data": {
+            "backgroundImage": "linear-gradient( 135deg, hsla(0, 0%, 100%, 0.75) 10%, transparent 0, transparent 50%, hsla(0, 0%, 100%, 0.75) 0, hsla(0, 0%, 100%, 0.75) 60%, transparent 0, transparent )",
+          },
+          "name": "panda.div",
+          "type": "jsx-factory",
+        },
+      }
+    `)
+  })
 })

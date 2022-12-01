@@ -7,20 +7,20 @@ describe('generate classnames', () => {
     const css = createCss(createContext())
     expect(
       css({
-        color: { light: 'red', dark: 'green' },
-        opacity: { dark: 'slate400' },
+        color: { _light: 'red', _dark: 'green' },
+        opacity: { _dark: 'slate400' },
       }),
     ).toMatchInlineSnapshot('"light:text_red dark:text_green dark:opacity_slate400"')
 
     expect(
       css({
-        top: { sm: { rtl: '20px', hover: '50px' }, lg: '120px' },
+        top: { sm: { _rtl: '20px', _hover: '50px' }, lg: '120px' },
       }),
     ).toMatchInlineSnapshot('"sm:rtl:t_20px sm:hover:t_50px lg:t_120px"')
 
     expect(
       css({
-        left: { _: '20px', md: '40px' },
+        left: { base: '20px', md: '40px' },
       }),
     ).toMatchInlineSnapshot('"l_20px md:l_40px"')
   })
@@ -37,7 +37,7 @@ describe('generate classnames', () => {
     // override even responsive values
     expect(
       css({
-        width: { _: '50px', md: '60px' },
+        width: { base: '50px', md: '60px' },
         w: '70px',
       }),
     ).toMatchInlineSnapshot('"w_70px"')
@@ -45,7 +45,7 @@ describe('generate classnames', () => {
     // override in nested condition
     expect(
       css({
-        hover: { width: '40px', w: '90px' },
+        _hover: { width: '40px', w: '90px' },
       }),
     ).toMatchInlineSnapshot('"hover:w_90px"')
   })

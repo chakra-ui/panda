@@ -1,1 +1,1 @@
-export declare function pandacss(): { name: string; hooks: any }
+export default function pandacss(): { name: string; hooks: any }

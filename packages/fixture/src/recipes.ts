@@ -47,7 +47,7 @@ export const recipes: Record<string, RecipeConfig> = {
         solid: {
           backgroundColor: 'blue',
           color: 'white',
-          hover: {
+          _hover: {
             backgroundColor: 'darkblue',
           },
           selectors: {
@@ -61,7 +61,7 @@ export const recipes: Record<string, RecipeConfig> = {
           backgroundColor: 'transparent',
           border: '1px solid blue',
           color: 'blue',
-          hover: {
+          _hover: {
             backgroundColor: 'blue',
             color: 'white',
           },
