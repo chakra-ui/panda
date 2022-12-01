@@ -87,6 +87,6 @@ export function watchMessage() {
 
 export function buildCompleteMessage(ctx: PandaContext) {
   return outdent`
-  Successfully extracted CSS from ${ctx.files.length} file(s) ✨
+  Successfully extracted css from ${ctx.files.length} file(s) ✨
   `
 }
