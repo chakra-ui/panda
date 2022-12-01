@@ -10,7 +10,7 @@ export function ColorWrapper(props: PropsWithChildren<JSXStyleProperties>) {
       borderRadius="sm"
       position="relative"
       overflow="hidden"
-      before={{
+      _before={{
         content: "''",
         position: 'absolute',
         borderRadius: 'sm',
