@@ -1,3 +1,5 @@
+import { panda, Stack } from 'design-system/jsx'
+
 type EmptyStateProps = {
   title: string
   children: React.ReactNode
@@ -6,23 +8,12 @@ type EmptyStateProps = {
 
 export function EmptyState({ title, children, icon }: EmptyStateProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        placeItems: 'center',
-        justifyContent: 'center',
-        height: '100%',
-        textAlign: 'center',
-        gap: '20px',
-        minHeight: '40vh',
-      }}
-    >
-      <span style={{ fontSize: '3em' }}>{icon}</span>
-      <div style={{ display: 'flex', flexDirection: 'column', opacity: 0.8 }}>
-        <div style={{ fontWeight: '600' }}>{title}</div>
+    <Stack align="center" gap="5" justify="center" height="full" minHeight="40vh">
+      <panda.span fontSize="5xl">{icon}</panda.span>
+      <Stack opacity="0.8" align="center">
+        <panda.span fontWeight="semibold">{title}</panda.span>
         <p>{children}</p>
-      </div>
-    </div>
+      </Stack>
+    </Stack>
   )
 }

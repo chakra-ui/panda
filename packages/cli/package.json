@@ -41,15 +41,17 @@
   "scripts": {
     "build": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --dts --no-splitting --shims",
     "build-fast": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --no-dts --no-splitting --shims",
-    "dev": "pnpm build-fast --watch"
+    "dev": "pnpm build-fast --watch",
+    "css": "dist/cli-default.js",
+    "app": "cd app && ../dist/cli-default.js --watch",
+    "gen": "cd app && ../dist/cli-default.js codegen"
   },
   "files": [
     "dist",
     "bin",
     "app",
-    "*.d.ts",
-    "*.js",
-    "*.mjs"
+    "postcss.js",
+    "astro.mjs"
   ],
   "dependencies": {
     "@pandacss/config": "workspace:*",
@@ -65,8 +67,8 @@
     "react-dom": "^18.2.0",
     "react-router": "^6.4.3",
     "react-router-dom": "^6.4.3",
-    "vite": "^3.2.0",
-    "vite-plugin-pages": "^0.27.1"
+    "vite-plugin-pages": "^0.27.1",
+    "vite": "^3.2.0"
   },
   "devDependencies": {
     "@pandacss/presets": "workspace:*",

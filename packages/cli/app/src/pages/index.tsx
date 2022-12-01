@@ -1,60 +1,103 @@
 import { navItems } from '../utils/constants'
 import { NavLink } from 'react-router-dom'
+import { panda, Stack, Wrap } from 'design-system/jsx'
+import { css } from 'design-system/css'
+
+function Item(props: typeof navItems[number]) {
+  return (
+    <NavLink key={props.id} to={`/${props.id}`}>
+      <Stack
+        gap="0"
+        width="60"
+        background="card"
+        borderRadius="sm"
+        padding="4"
+        transition="all 0.2s ease"
+        _hover={{
+          boxShadow: 'lg',
+        }}
+      >
+        <panda.span
+          css={{
+            '& svg': {
+              fontWeight: 'normal',
+              fontSize: 'xx-large',
+              marginBottom: '6',
+              height: '6',
+              width: '6',
+            },
+          }}
+        >
+          <props.icon />
+        </panda.span>
+        <panda.span display="block" fontWeight="semibold" fontSize="small">
+          {props.label}
+        </panda.span>
+        <panda.span display="block" marginTop="3">
+          {props.description}
+        </panda.span>
+      </Stack>
+    </NavLink>
+  )
+}
 
 function Index() {
   return (
-    <div className="home">
-      <span className="title">🐼 Panda</span>
-      <div className="banner">
-        <span className="intro">Design System</span>
-        <span>Build great products, faster.</span>
-        <NavLink to="/colors" className="cta">
+    <panda.div display="flex" flexDir="column">
+      <panda.span fontWeight="bold" fontSize="2xl" paddingX="8" paddingY="4">
+        🐼 Panda
+      </panda.span>
+      <panda.div paddingX="8" paddingY="24" marginBottom="10" background="card">
+        <panda.span display="block" fontSize="3xl" fontWeight="semibold" marginBottom="6">
+          Design System
+        </panda.span>
+        <panda.span display="block">Build great products, faster.</panda.span>
+        <NavLink
+          to="/colors"
+          className={css({
+            background: '#646cff',
+            color: 'white',
+            width: 'fit-content',
+            fontSize: 'small',
+            fontWeight: 'semibold',
+            paddingX: '6',
+            paddingY: '1',
+            borderRadius: 'sm',
+            marginTop: '6',
+            transition: 'all 0.2s ease',
+            display: 'block',
+            '&:hover': {
+              background: '#4049f0',
+              boxShadow: 'lg',
+            },
+          })}
+        >
           Explore
         </NavLink>
-      </div>
-      <div className="content">
+      </panda.div>
+      <Wrap gap="6" padding="8" marginY="2">
         <div>
-          <span>TOKENS</span>
-          <ul>
+          <panda.span display="block">TOKENS</panda.span>
+          <Wrap marginY="2" padding="0" gap="6">
             {navItems
               .filter((k) => k.type === 'token')
               .map((themeKey) => (
-                <NavLink key={themeKey.id} to={`/${themeKey.id}`}>
-                  {({ isActive }) => (
-                    <li className="item" data-active={isActive ? '' : undefined}>
-                      <span className="icon">
-                        <themeKey.icon />
-                      </span>
-                      <span className="title"> {themeKey.label} </span>
-                      <span className="description"> {themeKey.description} </span>
-                    </li>
-                  )}
-                </NavLink>
+                <Item key={themeKey.id} {...themeKey} />
               ))}
-          </ul>
+          </Wrap>
         </div>
         <div>
-          <span>PLAYGROUND</span>
-          <ul>
+          <panda.span display="block">PLAYGROUND</panda.span>
+          <Wrap marginY="2" padding="0" gap="6">
             {navItems
               .filter((k) => k.type === 'playground')
               .map((themeKey) => (
-                <NavLink key={themeKey.id} to={`/${themeKey.id}`}>
-                  {({ isActive }) => (
-                    <li className="item" data-active={isActive ? '' : undefined}>
-                      <span className="icon">
-                        <themeKey.icon />
-                      </span>
-                      <span className="title"> {themeKey.label} </span>
-                      <span className="description"> {themeKey.description} </span>
-                    </li>
-                  )}
-                </NavLink>
+                <Item key={themeKey.id} {...themeKey} />
               ))}
-          </ul>
+          </Wrap>
         </div>
-      </div>
-    </div>
+      </Wrap>
+    </panda.div>
   )
 }
 

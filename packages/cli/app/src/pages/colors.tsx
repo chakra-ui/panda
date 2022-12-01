@@ -1,18 +1,8 @@
-import type { Token } from '@pandacss/types'
-import { useState } from 'react'
-
-import { config } from 'virtual:panda'
-import { TokenDictionary } from '@pandacss/token-dictionary'
-
-type Color = {
-  isConditional?: boolean
-  isReference?: boolean
-  name: string
-  originalValue: string
-  path: string[]
-}
-
-type ColorToken = Token & Color
+import { panda, Stack, Grid } from 'design-system/jsx'
+import { TokenGroup } from '../components/token-group'
+import { TokenContent } from '../components/token-content'
+import { ColorWrapper } from '../components/color-wrapper'
+import { useColorDocs } from '../hooks/use-color-docs'
 
 const UNCATEGORIZED_ID = 'uncategorized' as const
 
@@ -22,98 +12,6 @@ const extractColor = (col: string) => {
   return `colors.${result?.[1]}`
 }
 
-const groupByColorPalette = (colors: Map<string, any>, filterMethod?: (token: ColorToken) => boolean) => {
-  const values = Array.from(colors.values()).filter((color) => !color.isConditional && !color.extensions.isVirtual)
-  return values.reduce((acc, nxt) => {
-    if (!filterMethod?.(nxt)) return acc
-
-    const colorPalette = nxt.extensions.colorPalette || UNCATEGORIZED_ID
-    if (!(colorPalette in acc)) acc[colorPalette] = []
-    const exists = (acc[colorPalette] as any[]).find((tok) => tok.name === nxt.name)
-    if (!exists) acc[colorPalette].push(nxt)
-    return acc
-  }, {})
-}
-
-const getSemanticTokens = (
-  allTokens: ColorToken[],
-  filterMethod?: (token: ColorToken) => boolean,
-  // filterMethod: (token: ColorToken) => boolean = () => true,
-) => {
-  const semanticTokens = allTokens.filter(
-    (token) => token.type === 'color' && token.isConditional && !token.extensions?.isVirtual,
-  )
-  return semanticTokens
-    .reduce((acc, nxt) => {
-      if (!filterMethod) {
-        acc.push(nxt)
-      } else {
-        const rawQualified = semanticTokens.filter(filterMethod)
-
-        if (filterMethod(nxt) || rawQualified.some((tok) => tok.name === nxt.name)) {
-          acc.push(nxt)
-        }
-      }
-      return acc
-    }, [] as ColorToken[])
-    .reduce(
-      (acc, nxt) => ({
-        ...acc,
-        [nxt.extensions?.prop]: {
-          ...acc[nxt.extensions?.prop],
-          [nxt.extensions?.condition]: { value: nxt.value, isReference: nxt.isReference },
-          extensions: nxt.extensions,
-        },
-      }),
-      {},
-    )
-}
-
-const useColorDocs = () => {
-  const tokenDictionary = new TokenDictionary(config)
-  const tokens = Object.fromEntries(tokenDictionary.categoryMap)
-  const allTokens = tokenDictionary.allTokens
-
-  const { colors } = tokens
-
-  const [filterQuery, setFilterQuery] = useState('')
-
-  const filterMethod = (token: ColorToken) => {
-    return [
-      ...token.path,
-      token.originalValue,
-      token.description,
-      token.value,
-      token.name,
-      token.extensions?.var,
-      token.extensions?.prop,
-      ...Object.values(token.extensions?.conditions || {}),
-    ]
-      .filter(Boolean)
-      .some((prop) => prop.includes(filterQuery))
-  }
-
-  const colorsInCategories = groupByColorPalette(colors, filterMethod)
-  const uncategorizedColors = colorsInCategories[UNCATEGORIZED_ID]
-
-  const categorizedColors = Object.entries<any[]>(colorsInCategories).filter(
-    ([category]) => category !== UNCATEGORIZED_ID,
-  )
-
-  const semanticTokens = Object.entries<Record<string, any>>(getSemanticTokens(allTokens, filterMethod))
-  const hasResults =
-    !!categorizedColors.length || !!uncategorizedColors?.length || !!Object.values(semanticTokens).length
-
-  return {
-    filterQuery,
-    setFilterQuery,
-    uncategorizedColors,
-    categorizedColors,
-    semanticTokens,
-    hasResults,
-  }
-}
-
 export default function Colors() {
   const { filterQuery, setFilterQuery, semanticTokens, hasResults, uncategorizedColors, categorizedColors } =
     useColorDocs()
@@ -121,15 +19,41 @@ export default function Colors() {
   const renderSemanticTokens = () => {
     return semanticTokens.map(([name, colors], i) => {
       return (
-        <div className="shade" key={i}>
-          <div className="color-box semantic-wrapper" style={{ background: colors[colors.extensions.condition].value }}>
-            <span>{colors.extensions.condition}</span>
-            <div className="color-box condition" style={{ background: colors.base.value }}>
-              <span>Base</span>
-            </div>
-          </div>
+        <Stack gap="1" key={i}>
+          <ColorWrapper height="40" borderRadius="xl" style={{ background: colors[colors.extensions.condition].value }}>
+            <panda.span
+              position="absolute"
+              top="50%"
+              right="2"
+              textTransform="uppercase"
+              fontWeight="semibold"
+              fontSize="medium"
+              writingMode="vertical-lr"
+              transform="rotate(100deg)"
+              minW="5"
+            >
+              {colors.extensions.condition}
+            </panda.span>
+            <ColorWrapper height="40" width="80%" borderRadius="lg" style={{ background: colors.base.value }}>
+              <panda.span
+                position="absolute"
+                top="50%"
+                right="2"
+                textTransform="uppercase"
+                fontWeight="semibold"
+                fontSize="medium"
+                writingMode="vertical-lr"
+                transform="rotate(100deg)"
+                minW="5"
+              >
+                Base
+              </panda.span>
+            </ColorWrapper>
+          </ColorWrapper>
           <span>
-            <span className="semantic-title">{name}</span>
+            <panda.span textTransform="capitalize" fontWeight="semibold">
+              {name}
+            </panda.span>
           </span>
           {Object.entries<string>(colors.extensions.conditions).map(([cond, val]) => {
             const isLinked = colors[cond].isReference
@@ -137,64 +61,93 @@ export default function Colors() {
               <div key={cond}>
                 <span>
                   <span>{`${cond}: ${extractColor(val)}`}</span>
-                  {isLinked && <span className="alias">🔗 alias</span>}
+                  {isLinked && (
+                    <panda.span
+                      fontSize="small"
+                      borderRadius="lg"
+                      paddingX="2"
+                      paddingY="0.5"
+                      marginLeft="3"
+                      background="card"
+                      color="white"
+                    >
+                      🔗 alias
+                    </panda.span>
+                  )}
                 </span>
               </div>
             )
           })}
-        </div>
+        </Stack>
       )
     })
   }
   const renderColors = (values: any[]) => {
     return values?.map((color, i) => {
       return (
-        <div className="shade" key={i}>
-          <div className="color-box" style={{ background: color.value }} />
-          <div className="shade-value">{color.value}</div>
-          <div className="shade-value">{color.extensions.prop}</div>
-          <div className="shade-value">{color.extensions.varRef}</div>
-        </div>
+        <Stack gap="1" key={i}>
+          <ColorWrapper
+            style={{
+              background: color.value,
+            }}
+          />
+          <panda.div opacity="0.7">{color.value}</panda.div>
+          <panda.div opacity="0.7">{color.extensions.prop}</panda.div>
+          <panda.div opacity="0.7">{color.extensions.varRef}</panda.div>
+        </Stack>
       )
     })
   }
 
   return (
-    <div className="token-group">
-      <div className="font-token-input-wrapper">
-        <input
+    <TokenGroup>
+      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" zIndex="1">
+        <panda.input
+          background="card"
+          width="full"
+          padding="1"
           value={filterQuery}
           onChange={(e) => setFilterQuery(e.target.value)}
-          className="font-token-input"
           placeholder="Filter tokens by text, property or value"
         />
-      </div>
-      <div className="token-content">
-        <div className="color-wrapper">
+      </panda.div>
+      <TokenContent>
+        <div>
           {!!categorizedColors.length &&
             categorizedColors.map(([category, colors]) => (
               <div key={category}>
-                <span className="title">{category}</span>
-                <div className="shades" key={category}>
+                <panda.span fontWeight="medium" textTransform="capitalize" fontSize="xl">
+                  {category}
+                </panda.span>
+
+                <Grid gap="4" minChildWidth="13rem" marginY="5" marginX="0" key={category}>
                   {renderColors(colors)}
-                </div>
+                </Grid>
               </div>
             ))}
           {!!uncategorizedColors?.length && (
             <div>
-              <span className="title">{UNCATEGORIZED_ID}</span>
-              <div className="shades">{renderColors(uncategorizedColors)}</div>
+              <panda.span fontWeight="medium" textTransform="capitalize" fontSize="xl">
+                {UNCATEGORIZED_ID}
+              </panda.span>
+              <Grid gap="4" minChildWidth="13rem" marginY="5" marginX="0">
+                {renderColors(uncategorizedColors)}
+              </Grid>
             </div>
           )}
           {!!semanticTokens.length && (
             <div>
-              <span className="title">Semantic tokens</span>
-              <div className="shades">{renderSemanticTokens()}</div>
+              <panda.span fontWeight="medium" textTransform="capitalize" fontSize="xl">
+                Semantic tokens
+              </panda.span>
+              <Grid gap="4" minChildWidth="13rem" marginY="5" marginX="0">
+                {renderSemanticTokens()}
+              </Grid>
             </div>
           )}
           {!hasResults && <div>No pandas found! Try a different breed. 🐼</div>}
         </div>
-      </div>
-    </div>
+      </TokenContent>
+    </TokenGroup>
   )
 }

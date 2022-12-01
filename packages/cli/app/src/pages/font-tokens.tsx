@@ -1,13 +1,18 @@
 import { Fragment, InputHTMLAttributes, useState } from 'react'
+import { panda, Stack } from 'design-system/jsx'
+import { TokenGroup } from '../components/token-group'
+import { TokenContent } from '../components/token-content'
+
 type FontTokensProps = {
   text?: string
   largeText?: boolean
   token: string
   fontTokens: Map<string, any>
+  css?: any
 }
 
 export function FontTokens(props: FontTokensProps) {
-  const { text: textProp = 'Panda', largeText = false, token, fontTokens } = props
+  const { text: textProp = 'Panda', largeText = false, token, fontTokens, css: cssProp } = props
   const [text, setText] = useState(textProp)
 
   const inputProps: InputHTMLAttributes<any> = {
@@ -16,33 +21,44 @@ export function FontTokens(props: FontTokensProps) {
       setText(event.currentTarget.value)
     },
     placeholder: 'Preview Text',
-    className: 'font-token-input',
+    css: {
+      width: 'full',
+      resize: 'vertical',
+      padding: '1',
+      background: 'card',
+    },
   }
 
   const values = Array.from(fontTokens.values())
 
   return (
-    <div className={`token-group font-tokens ${token}-token`}>
-      <div className="font-token-input-wrapper">
-        {largeText ? <textarea rows={5} {...inputProps} /> : <input {...inputProps} />}
-      </div>
-      <div className="token-content">
+    <TokenGroup
+      css={{
+        ...cssProp,
+      }}
+    >
+      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg">
+        {largeText ? <panda.textarea rows={5} {...inputProps} /> : <panda.input {...inputProps} />}
+      </panda.div>
+      <TokenContent>
         <hr />
         {values.map((fontToken) => (
           <Fragment key={fontToken.extensions.prop}>
-            <div className="font-wrapper">
+            <Stack gap="3.5">
               <div>
-                <span className="label">{fontToken.extensions.prop} </span>
+                <panda.span textTransform="capitalize" opacity="0.4" className="label" marginRight="1">
+                  {fontToken.extensions.prop}
+                </panda.span>
                 <span>({fontToken.value})</span>
               </div>
-              <span className="render" style={{ [token]: fontToken.value }}>
+              <panda.span fontSize="4xl" lineHeight="normal" className="render" style={{ [token]: fontToken.value }}>
                 {text}
-              </span>
-            </div>
+              </panda.span>
+            </Stack>
             <hr />
           </Fragment>
         ))}
-      </div>
-    </div>
+      </TokenContent>
+    </TokenGroup>
   )
 }

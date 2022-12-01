@@ -183,4 +183,16 @@ export const colors = {
     800: { value: '#1f2937' },
     900: { value: '#111827' },
   },
+  slate: {
+    50: { value: '#F8FAFC' },
+    100: { value: '#F1F5F9' },
+    200: { value: '#E2E8F0' },
+    300: { value: '#CBD5E1' },
+    400: { value: '#94A3B8' },
+    500: { value: '#64748B' },
+    600: { value: '#475569' },
+    700: { value: '#334155' },
+    800: { value: '#1E293B' },
+    900: { value: '#0F172A' },
+  },
 }
