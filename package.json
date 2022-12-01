@@ -16,7 +16,11 @@
     "prettier": "prettier --check packages",
     "prettier-fix": "prettier --write packages",
     "typecheck": "tsc --noEmit",
-    "release-dev": "changeset version --snapshot dev && changeset publish --tag dev"
+    "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
+    "prepare-docs": "pnpm --filter=./packages/cli app",
+    "build-docs": "pnpm --filter=./sandbox/vite exec pnpm panda docs --build",
+    "deploy-docs": "pnpm prepare-docs && pnpm build-docs",
+    "serve-docs": "npx serve ./sandbox/vite/panda-static"
   },
   "keywords": [],
   "author": "Segun Adebayo <joseshegs@gmail.com>",
