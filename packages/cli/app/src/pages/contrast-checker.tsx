@@ -58,9 +58,7 @@ export default function ContrastChecker() {
           <panda.div
             display="flex"
             flexDirection="column"
-            borderStyle="solid"
-            borderWidth="1px"
-            borderColor="rgba(182, 180, 180, 0.1)"
+            borderSlim="card"
             flex="1"
             paddingTop="16"
             style={{ background: activeForeground }}
@@ -76,9 +74,7 @@ export default function ContrastChecker() {
           <panda.div
             display="flex"
             flexDirection="column"
-            borderStyle="solid"
-            borderWidth="1px"
-            borderColor="rgba(182, 180, 180, 0.1)"
+            borderSlim="card"
             flex="1"
             paddingTop="16"
             style={{ background: activeBackground }}
@@ -99,9 +95,7 @@ export default function ContrastChecker() {
           fontSize="2xl"
           padding="2"
           outline="none"
-          borderStyle="solid"
-          borderWidth="1px"
-          borderColor="rgba(182, 180, 180, 0.2)"
+          borderSlim="card"
           suppressContentEditableWarning
           contentEditable
           style={{ background: activeBackground, color: activeForeground }}

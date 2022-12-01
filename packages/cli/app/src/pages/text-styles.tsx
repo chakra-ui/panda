@@ -12,23 +12,10 @@ export default function TextStyles() {
 
   return (
     <TokenGroup>
-      <TokenContent>
+      <TokenContent divideY="1px" divideColor="card">
         {textStyles ? (
           textStyles.map(([name, styles]) => (
-            <panda.div
-              borderStyle="solid"
-              borderWidth="1px"
-              borderColor="rgba(128, 128, 128, 0.671)"
-              paddingX="1"
-              paddingY="2.5"
-              css={{
-                '&:last-of-type': {
-                  borderBottomWidth: '1px',
-                  borderBottomStyle: 'solid',
-                },
-              }}
-              key={name}
-            >
+            <panda.div paddingX="1" paddingY="2.5" key={name}>
               <panda.div borderColor="card">
                 <panda.span fontWeight="medium">{name}</panda.span>
                 <panda.div fontSize="small" flex="auto" marginTop="1.5">
