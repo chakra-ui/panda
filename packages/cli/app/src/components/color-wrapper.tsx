@@ -1,5 +1,5 @@
 import { panda } from 'design-system/jsx'
-import { JSXStyleProperties } from 'design-system/types'
+import type { JSXStyleProperties } from 'design-system/types'
 import type { PropsWithChildren } from 'react'
 
 export function ColorWrapper(props: PropsWithChildren<JSXStyleProperties>) {

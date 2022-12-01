@@ -2,7 +2,6 @@ import type { Token } from '@pandacss/types'
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { useState } from 'react'
-const UNCATEGORIZED_ID = 'uncategorized' as const
 
 type Color = {
   isConditional?: boolean
@@ -13,6 +12,8 @@ type Color = {
 }
 
 type ColorToken = Token & Color
+
+const UNCATEGORIZED_ID = 'uncategorized' as const
 
 const groupByColorPalette = (colors: Map<string, any>, filterMethod?: (token: ColorToken) => boolean) => {
   const values = Array.from(colors.values()).filter((color) => !color.isConditional && !color.extensions.isVirtual)

@@ -3,7 +3,8 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "design-system": ["./design-system"]
+      "design-system": ["./design-system"],
+      "components": ["./components"]
     }
   }
 }
