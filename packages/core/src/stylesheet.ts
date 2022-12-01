@@ -2,7 +2,7 @@ import { walkStyles } from '@pandacss/shared'
 import type { Dict, RecipeConfig } from '@pandacss/types'
 import postcss from 'postcss'
 import { AtomicRule } from './atomic-rule'
-import { optimizeCss } from './optimize'
+import { discardDuplicate, optimizeCss } from './optimize'
 import { Recipe } from './recipe'
 import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
@@ -79,7 +79,7 @@ export class Stylesheet {
       css = `${this.options.content}\n\n${css}`
     }
 
-    return css
+    return discardDuplicate(css)
   }
 
   append = (css: string) => {
