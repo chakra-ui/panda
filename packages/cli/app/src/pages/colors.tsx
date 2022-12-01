@@ -1,11 +1,8 @@
-
 import { panda, Stack, Grid } from 'design-system/jsx'
 import { TokenGroup } from '../components/token-group'
 import { TokenContent } from '../components/token-content'
 import { ColorWrapper } from '../components/color-wrapper'
 import { useColorDocs } from '../hooks/use-color-docs'
-
-
 
 const UNCATEGORIZED_ID = 'uncategorized' as const
 
