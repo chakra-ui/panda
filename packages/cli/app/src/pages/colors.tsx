@@ -29,7 +29,7 @@ export default function Colors() {
               fontWeight="semibold"
               fontSize="medium"
               writingMode="vertical-lr"
-              transform="rotate(100deg)"
+              transform="rotate(180deg)"
               minW="5"
             >
               {colors.extensions.condition}
@@ -43,7 +43,7 @@ export default function Colors() {
                 fontWeight="semibold"
                 fontSize="medium"
                 writingMode="vertical-lr"
-                transform="rotate(100deg)"
+                transform="rotate(180deg)"
                 minW="5"
               >
                 Base
