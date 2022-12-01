@@ -1,6 +1,6 @@
 import path from 'path'
 import { build } from 'vite'
-import { pandaPreviewPlugin } from './vite-dev'
+import { pandaPlugin } from './vite-plugin'
 
 export type BuildOpts = {
   outDir: string
@@ -17,6 +17,6 @@ export const viteBuild = async ({ outDir }: BuildOpts) => {
       outDir,
       emptyOutDir: true,
     },
-    plugins: [pandaPreviewPlugin()],
+    plugins: [pandaPlugin()],
   })
 }

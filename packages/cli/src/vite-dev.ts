@@ -1,6 +1,6 @@
-import { loadConfigFile } from '@pandacss/config'
 import path from 'path'
-import { createServer, PluginOption } from 'vite'
+import { createServer } from 'vite'
+import { pandaPlugin } from './vite-plugin'
 
 export const viteBundler = async () => {
   const mode = 'development'
@@ -22,44 +22,10 @@ export const viteBundler = async () => {
       },
       middlewareMode: false,
     },
-    plugins: [pandaPreviewPlugin()],
+    plugins: [pandaPlugin()],
   })
 
   await server.listen()
 
   server.printUrls()
-}
-
-const virtualModuleId = 'virtual:panda'
-const resolvedVirtualModuleId = '\0' + virtualModuleId
-
-export const pandaPreviewPlugin = (): PluginOption => {
-  return {
-    name: 'panda:preview',
-
-    async configureServer(viteServer) {
-      const config = await loadConfigFile({ cwd: process.cwd() })
-      const file = config.path
-      viteServer.watcher.add(file).on('change', async () => {
-        const module = viteServer.moduleGraph.getModuleById(resolvedVirtualModuleId)
-        if (module) {
-          await viteServer.reloadModule(module)
-        }
-      })
-    },
-    resolveId(id) {
-      if (id === virtualModuleId) {
-        return resolvedVirtualModuleId
-      }
-      return null
-    },
-    async load(id) {
-      if (id === resolvedVirtualModuleId) {
-        const config = await loadConfigFile({ cwd: process.cwd() })
-        return {
-          code: `export const config = ${JSON.stringify(config.config)}`,
-        }
-      }
-    },
-  }
 }

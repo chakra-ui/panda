@@ -1,7 +1,7 @@
 import { colors, logger } from '@pandacss/logger'
 import { preview } from 'vite'
 import type { BuildOpts } from './vite-build.js'
-import { pandaPreviewPlugin } from './vite-dev.js'
+import { pandaPlugin } from './vite-plugin.js'
 
 export const vitePreview = async ({ outDir }: BuildOpts) => {
   const previewPort = 51000
@@ -16,7 +16,7 @@ export const vitePreview = async ({ outDir }: BuildOpts) => {
         port: previewPort,
         open: true,
       },
-      plugins: [pandaPreviewPlugin()],
+      plugins: [pandaPlugin()],
     })
     const serverUrl = `${previewServer.config.preview.https ? 'https' : 'http'}://${
       previewServer.config.preview.host || 'localhost'
