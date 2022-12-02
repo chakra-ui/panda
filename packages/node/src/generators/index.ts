@@ -206,6 +206,7 @@ function setupReset(ctx: PandaContext): Output {
 function setupGitIgnore(ctx: PandaContext): Output {
   const txt = outdent`## CSS Panda
   ${ctx.outdir}
+  ${ctx.outdir}-static
   `
 
   const file = lookItUpSync('.gitignore')
