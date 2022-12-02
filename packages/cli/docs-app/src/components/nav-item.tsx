@@ -1,7 +1,7 @@
-import { navItems } from '../utils/constants'
+import type { NavItemData } from '../utils/constants'
 import { panda, Stack } from '../../design-system/jsx'
 
-export function NavItem(props: typeof navItems[number]) {
+export function NavItem(props: NavItemData) {
   return (
     <panda.a key={props.id} href={`/${props.id}`}>
       <Stack

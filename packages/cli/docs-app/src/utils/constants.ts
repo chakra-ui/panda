@@ -26,7 +26,15 @@ export enum NavKeys {
   CONTRAST_CHECKER = 'contrast-checker',
 }
 
-export const navItems = [
+export type NavItemData = {
+  label: string
+  id: NavKeys
+  description: string
+  icon: React.ElementType
+  type: string
+}
+
+export const navItems: NavItemData[] = [
   {
     label: 'Colors',
     id: NavKeys.COLORS,

@@ -1,11 +1,11 @@
 ---
-import { panda, Wrap } from '../../design-system/jsx'
-import Layout from '../layouts/Layout.astro'
 import { Colors } from '../components/colors'
-
-const UNCATEGORIZED_ID = 'uncategorized' as const
+import Layout from '../layouts/Layout.astro'
+import Sidebar from '../layouts/Sidebar.astro'
 ---
 
 <Layout title="Panda docs">
-  <Colors />
+  <Sidebar>
+    <Colors client:load />
+  </Sidebar>
 </Layout>
