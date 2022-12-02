@@ -1,4 +1,4 @@
-import { panda } from 'design-system/jsx'
+import { panda } from '../../design-system/jsx'
 import type { PropsWithChildren } from 'react'
 import type { JSXStyleProperties } from '../../design-system/types'
 
