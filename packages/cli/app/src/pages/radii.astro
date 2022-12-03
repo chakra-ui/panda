@@ -1,0 +1,11 @@
+---
+import { Radii } from '../components/radii'
+import Layout from '../layouts/Layout.astro'
+import Sidebar from '../layouts/Sidebar.astro'
+---
+
+<Layout title="Panda docs">
+  <Sidebar>
+    <Radii client:load />
+  </Sidebar>
+</Layout>

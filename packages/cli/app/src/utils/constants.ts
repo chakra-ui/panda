@@ -13,6 +13,7 @@ import {
 } from '../components/icons'
 
 export enum NavKeys {
+  RADII = 'radii',
   COLORS = 'colors',
   LETTER_SPACINGS = 'letter-spacings',
   LINE_HEIGHTS = 'line-heights',
@@ -74,6 +75,13 @@ export const navItems: NavItemData[] = [
     label: 'Sizes',
     id: NavKeys.SIZES,
     description: 'Preview your pre configured sizes.',
+    icon: SizesIcon,
+    type: 'token',
+  },
+  {
+    label: 'Border Radius',
+    id: NavKeys.RADII,
+    description: 'Preview your pre configured radii.',
     icon: SizesIcon,
     type: 'token',
   },
