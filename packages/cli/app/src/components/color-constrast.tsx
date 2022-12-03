@@ -1,13 +1,35 @@
 import { useState } from 'react'
 import { getContrastPairs, getContrastRatio } from '../utils/color'
-import { ErrorIcon, SuccessIcon } from '../components/icons'
+import { ErrorIcon, SuccessIcon } from './icons'
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import { panda, HStack, VStack, Stack } from 'design-system/jsx'
-import { TokenGroup } from '../components/token-group'
-import { TokenContent } from '../components/token-content'
+import { panda, HStack, VStack, Stack } from '../../design-system/jsx'
+import { TokenGroup } from './token-group'
+import { TokenContent } from './token-content'
 
-export default function ContrastChecker() {
+function TestScore(props: { score: { WCAG_AA: boolean; WCAG_AAA: boolean }; size: 'regular' | 'large' }) {
+  const { score, size } = props
+  return (
+    <>
+      <HStack justify="space-between" fontWeight="medium">
+        <HStack gap="2">
+          <span>{score.WCAG_AA ? <SuccessIcon /> : <ErrorIcon />}</span>
+          <span>AA</span>
+        </HStack>
+        <span>{size === 'regular' ? '4.5:1' : '3:1'}</span>
+      </HStack>
+      <HStack justify="space-between" fontWeight="medium">
+        <HStack gap="2">
+          <span>{score.WCAG_AAA ? <SuccessIcon /> : <ErrorIcon />}</span>
+          <span>AAA</span>
+        </HStack>
+        <span>{size === 'regular' ? '7:1' : '4.5:1'}</span>
+      </HStack>
+    </>
+  )
+}
+
+export function ColorContrastChecker() {
   const tokenDictionary = new TokenDictionary(config)
   const tokens = Object.fromEntries(tokenDictionary.categoryMap)
 
@@ -29,27 +51,6 @@ export default function ContrastChecker() {
 
   const wcag = getContrastPairs(activeForeground, activeBackground)
   const constrastRatio = getContrastRatio(activeForeground, activeBackground)
-
-  const renderTestScore = (score: { WCAG_AA: boolean; WCAG_AAA: boolean }, size: 'regular' | 'large') => {
-    return (
-      <>
-        <HStack justify="space-between" fontWeight="medium">
-          <HStack gap="2">
-            <span>{score.WCAG_AA ? <SuccessIcon /> : <ErrorIcon />}</span>
-            <span>AA</span>
-          </HStack>
-          <span>{size === 'regular' ? '4.5:1' : '3:1'}</span>
-        </HStack>
-        <HStack justify="space-between" fontWeight="medium">
-          <HStack gap="2">
-            <span>{score.WCAG_AAA ? <SuccessIcon /> : <ErrorIcon />}</span>
-            <span>AAA</span>
-          </HStack>
-          <span>{size === 'regular' ? '7:1' : '4.5:1'}</span>
-        </HStack>
-      </>
-    )
-  }
 
   return (
     <TokenGroup>
@@ -116,11 +117,11 @@ export default function ContrastChecker() {
             <panda.div display="flex" gap="5" marginTop="10">
               <Stack flex="1" gap="4">
                 <panda.span fontWeight="semibold">Normal Text</panda.span>
-                {renderTestScore(wcag[0], 'regular')}
+                <TestScore score={wcag[0]} size="regular" />
               </Stack>
               <Stack flex="1" gap="4">
                 <panda.span fontWeight="semibold">Large Text</panda.span>
-                {renderTestScore(wcag[1], 'large')}
+                <TestScore score={wcag[1]} size="large" />
               </Stack>
             </panda.div>
           )}

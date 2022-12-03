@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { config as configP } from 'virtual:panda'
-import { panda } from 'design-system/jsx'
-import { TokenGroup } from '../components/token-group'
-import { TokenContent } from '../components/token-content'
+import { panda } from '../../design-system/jsx'
+import { TokenGroup } from './token-group'
+import { TokenContent } from './token-content'
 
-export default function TypographyPlayground() {
+export function TypographyPlayground() {
   const tokenMap = new TokenDictionary(configP)
   const tokens = Object.fromEntries(tokenMap.categoryMap)
 

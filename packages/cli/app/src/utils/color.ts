@@ -1,6 +1,6 @@
-import ColorContrastChecker from 'color-contrast-checker'
+import { ColorContrastChecker } from './color-contrast-checker'
 
-export const getContrastPairs = (colorA?: string, colorB?: string) => {
+export const getContrastPairs = (colorA: string, colorB: string) => {
   const contrastChecker = new ColorContrastChecker()
   let res
   try {
@@ -23,7 +23,7 @@ export const getContrastPairs = (colorA?: string, colorB?: string) => {
   return res
 }
 
-export const getContrastRatio = (colorA?: string, colorB?: string) => {
+export const getContrastRatio = (colorA: string, colorB: string) => {
   const contrastChecker = new ColorContrastChecker()
   let luminanceA, luminanceB
   let ratio: number | undefined

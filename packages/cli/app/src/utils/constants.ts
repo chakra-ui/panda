@@ -21,12 +21,20 @@ export enum NavKeys {
   SIZES = 'sizes',
   TEXT_STYLES = 'text-styles',
   LAYER_STYLES = 'layer-styles',
-  TYPOGRAPHY_PLAYGROUND = 'typography-playground',
-  SPACING_PLAYGROUND = 'spacing-playground',
-  CONTRAST_CHECKER = 'contrast-checker',
+  TYPOGRAPHY_PLAYGROUND = 'playground/typography',
+  SPACING_PLAYGROUND = 'playground/spacing',
+  CONTRAST_CHECKER = 'playground/contrast-checker',
 }
 
-export const navItems = [
+export type NavItemData = {
+  label: string
+  id: NavKeys
+  description: string
+  icon: React.ElementType
+  type: string
+}
+
+export const navItems: NavItemData[] = [
   {
     label: 'Colors',
     id: NavKeys.COLORS,

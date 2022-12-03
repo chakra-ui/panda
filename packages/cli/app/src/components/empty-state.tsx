@@ -1,4 +1,4 @@
-import { panda, Stack } from 'design-system/jsx'
+import { panda, Stack } from '../../design-system/jsx'
 
 type EmptyStateProps = {
   title: string

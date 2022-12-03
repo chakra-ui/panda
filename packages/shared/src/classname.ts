@@ -31,6 +31,8 @@ const fallbackCondition: NonNullable<CreateCssContext['conditions']> = {
   breakpoints: { keys: [] },
 }
 
+const sanitize = (value: any) => (typeof value === 'string' ? value.replaceAll(/[\n\s]+/g, ' ') : value)
+
 export function createCss(context: CreateCssContext) {
   const { utility, hash, conditions: conds = fallbackCondition } = context
 
@@ -48,7 +50,7 @@ export function createCss(context: CreateCssContext) {
         const [prop, ...allConditions] = conds.shift(paths)
 
         const conditions = filterBaseConditions(allConditions)
-        const transformed = utility.transform(prop, withoutImportant(value))
+        const transformed = utility.transform(prop, withoutImportant(sanitize(value)))
         let transformedClassName = transformed.className
 
         if (important) {

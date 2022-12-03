@@ -43,9 +43,9 @@
     "build-fast": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --no-dts --no-splitting --shims",
     "dev": "pnpm build-fast --watch",
     "css": "dist/cli-default.js",
-    "app": "cd docs-app && ../dist/cli-default.js",
-    "app:dev": "cd docs-app && ../dist/cli-default.js --watch",
-    "app:gen": "cd docs-app && ../dist/cli-default.js codegen"
+    "app": "cd app && ../dist/cli-default.js",
+    "app:dev": "cd app && ../dist/cli-default.js --watch",
+    "app:gen": "cd app && ../dist/cli-default.js codegen"
   },
   "files": [
     "dist",
@@ -65,12 +65,9 @@
     "@pandacss/types": "workspace:*",
     "astro": "^1.6.12",
     "cac": "6.7.14",
-    "color-contrast-checker": "^2.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^6.4.3",
-    "react-router-dom": "^6.4.3",
-    "vite-plugin-pages": "^0.27.1",
     "vite": "^3.2.0"
   },
   "devDependencies": {
