@@ -47,7 +47,7 @@ export class Builder {
 
   updateFile(file: string, css: string) {
     const oldCss = this.fileCssMap?.get(file) ?? ''
-    const newCss = discardDuplicate(oldCss + css)
+    const newCss = discardDuplicate([css, oldCss].join('\n\n'))
     this.fileCssMap?.set(file, newCss)
   }
 
