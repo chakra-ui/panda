@@ -45,7 +45,7 @@
     "css": "dist/cli-default.js",
     "app": "cd app && ../dist/cli-default.js",
     "app:dev": "cd app && ../dist/cli-default.js --watch",
-    "gen": "cd app && ../dist/cli-default.js codegen"
+    "app:gen": "cd app && ../dist/cli-default.js codegen"
   },
   "files": [
     "dist",
@@ -55,6 +55,7 @@
     "astro.mjs"
   ],
   "dependencies": {
+    "@astrojs/react": "^1.2.2",
     "@pandacss/config": "workspace:*",
     "@pandacss/error": "workspace:*",
     "@pandacss/logger": "workspace:*",
@@ -62,13 +63,11 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
+    "astro": "^1.6.12",
     "cac": "6.7.14",
-    "color-contrast-checker": "^2.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^6.4.3",
-    "react-router-dom": "^6.4.3",
-    "vite-plugin-pages": "^0.27.1",
     "vite": "^3.2.0"
   },
   "devDependencies": {
@@ -77,6 +76,7 @@
     "@types/react-dom": "^18.0.7",
     "@types/update-notifier": "^6.0.1",
     "@vitejs/plugin-react": "^2.2.0",
+    "execa": "^6.1.0",
     "kleur": "^4.1.5",
     "update-notifier": "^6.0.2"
   }

@@ -1,13 +1,13 @@
 import { walkObject } from '@pandacss/shared'
 import type { Dict, TextStyles as TextStylesType } from '@pandacss/types'
 import { config } from 'virtual:panda'
-import { EmptyState } from '../components/empty-state'
-import { TextStylesIcon } from '../components/icons'
-import { panda } from 'design-system/jsx'
-import { TokenGroup } from '../components/token-group'
-import { TokenContent } from '../components/token-content'
+import { EmptyState } from './empty-state'
+import { TextStylesIcon } from './icons'
+import { panda } from '../../design-system/jsx'
+import { TokenGroup } from './token-group'
+import { TokenContent } from './token-content'
 
-export default function TextStyles() {
+export function TextStyles() {
   const textStyles = flattenTextStyles(config.textStyles)
 
   return (
@@ -24,7 +24,7 @@ export default function TextStyles() {
                   ))}
                 </panda.div>
               </panda.div>
-              <panda.div flex="auto" marginY="3" style={styles}>
+              <panda.div flex="auto" marginY="3" style={styles} truncate>
                 Panda CSS textStyles are time saving
               </panda.div>
             </panda.div>

@@ -1,13 +1,13 @@
 import { walkObject } from '@pandacss/shared'
 import type { Dict, LayerStyles as LayerStylesType } from '@pandacss/types'
 import { config } from 'virtual:panda'
-import { EmptyState } from '../components/empty-state'
-import { LayerStylesIcon } from '../components/icons'
-import { panda } from 'design-system/jsx'
-import { TokenGroup } from '../components/token-group'
-import { TokenContent } from '../components/token-content'
+import { EmptyState } from './empty-state'
+import { LayerStylesIcon } from './icons'
+import { panda } from '../../design-system/jsx'
+import { TokenGroup } from './token-group'
+import { TokenContent } from './token-content'
 
-export default function LayerStyles() {
+export function LayerStyles() {
   const textStyles = flattenLayerStyles(config.layerStyles)
 
   return (

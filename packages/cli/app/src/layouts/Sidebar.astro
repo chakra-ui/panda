@@ -1,0 +1,19 @@
+---
+import { panda, Stack } from '../../design-system/jsx'
+import '../../design-system/styles.css'
+import { MadeWithBadge } from '../components/made-with-badge'
+import SideNav from '../components/side-nav.astro'
+---
+
+<panda.main display="flex" height="calc(100vh - env(safe-area-inset-bottom))">
+  <Stack height="full" minW="60" background="card" overflow="auto" paddingX="4" paddingY="8">
+    <panda.a fontWeight="bold" fontSize="2xl" href="/">🐼 Panda</panda.a>
+    <SideNav />
+  </Stack>
+
+  <panda.div width="full" overflow="auto" paddingX="4" paddingY="8">
+    <slot />
+  </panda.div>
+
+  <MadeWithBadge />
+</panda.main>

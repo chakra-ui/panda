@@ -1,0 +1,22 @@
+---
+import { TokenDictionary } from '@pandacss/token-dictionary'
+import { config } from 'virtual:panda'
+import { FontTokens } from '../components/font-tokens'
+import Layout from '../layouts/Layout.astro'
+import Sidebar from '../layouts/Sidebar.astro'
+
+const tokenDictionary = new TokenDictionary(config)
+const tokens = Object.fromEntries(tokenDictionary.categoryMap)
+---
+
+<Layout title="Panda docs">
+  <Sidebar>
+    <FontTokens
+      client:load
+      fontTokens={tokens.lineHeights}
+      token="lineHeight"
+      largeText
+      text="Panda is a CSS Framework for building ambitious products on the web. Brought to you by Chakra."
+    />
+  </Sidebar>
+</Layout>

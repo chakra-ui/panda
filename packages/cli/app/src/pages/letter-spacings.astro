@@ -1,0 +1,21 @@
+---
+import { TokenDictionary } from '@pandacss/token-dictionary'
+import { config } from 'virtual:panda'
+import { FontTokens } from '../components/font-tokens'
+import Layout from '../layouts/Layout.astro'
+import Sidebar from '../layouts/Sidebar.astro'
+
+const tokenDictionary = new TokenDictionary(config)
+const tokens = Object.fromEntries(tokenDictionary.categoryMap)
+---
+
+<Layout title="Panda docs">
+  <Sidebar>
+    <FontTokens
+      client:load
+      fontTokens={tokens.letterSpacings}
+      token="letterSpacing"
+      text="The quick brown fox jumps over the lazy dog."
+    />
+  </Sidebar>
+</Layout>

@@ -4,7 +4,7 @@ import { config } from '../src/presets'
 export default defineConfig({
   preflight: true,
   ...config,
-  include: ['./src/**/*.{tsx,jsx}'],
+  include: ['./src/**/*.{tsx,jsx,astro}'],
   exclude: [],
   outdir: 'design-system',
   semanticTokens: {
@@ -30,4 +30,33 @@ export default defineConfig({
     },
   },
   jsxFramework: 'react',
+
+  globalCss: {
+    ':root': {
+      fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif',
+      fontSize: 'md',
+      lineHeight: 'normal',
+      fontWeight: 'normal',
+
+      colorScheme: 'light dark',
+      color: 'text',
+      background: 'bg',
+
+      fontSynthesis: 'none',
+      textRendering: 'optimizeLegibility',
+      WebkitFontSmoothing: 'antialiased',
+      MozOsxFontSmoothing: 'grayscale',
+      WebkitTextSizeAdjust: '100%',
+    },
+
+    a: {
+      color: 'unset',
+      textDecoration: 'none',
+    },
+
+    body: {
+      margin: 0,
+      minHeight: '100vh',
+    },
+  },
 })

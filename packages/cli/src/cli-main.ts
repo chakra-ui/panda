@@ -6,9 +6,7 @@ import { readFileSync } from 'fs'
 import path, { join } from 'path'
 import updateNotifier from 'update-notifier'
 import packageJson from '../package.json' assert { type: 'json' }
-import { viteBuild } from './vite-build'
-import { viteBundler } from './vite-dev'
-import { vitePreview } from './vite-preview'
+import { serveDocs, buildDocs, previewDocs } from './docs'
 
 export async function main() {
   const cli = cac('panda')
@@ -91,11 +89,11 @@ export async function main() {
       const outDir = outdir || path.join(process.cwd(), 'panda-static')
 
       if (preview) {
-        await vitePreview({ outDir })
+        await previewDocs({ outDir })
       } else if (build) {
-        await viteBuild({ outDir })
+        await buildDocs({ outDir })
       } else {
-        await viteBundler()
+        await serveDocs()
 
         const note = `use ${colors.reset(colors.bold('--build'))} to build`
         logger.log(colors.dim(`  ${colors.green('➜')}  ${colors.bold('Build')}: ${note}`))

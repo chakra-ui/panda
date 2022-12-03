@@ -1,0 +1,11 @@
+---
+import { TextStyles } from '../components/text-styles'
+import Layout from '../layouts/Layout.astro'
+import Sidebar from '../layouts/Sidebar.astro'
+---
+
+<Layout title="Panda docs">
+  <Sidebar>
+    <TextStyles client:load />
+  </Sidebar>
+</Layout>

@@ -1,18 +1,13 @@
+import { toPx } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { config } from 'virtual:panda'
-import { remToPixels } from '../utils/rem-to-pixels'
+import { Grid, panda } from '../../design-system/jsx'
 import { getSortedSizes } from '../utils/sizes-sort'
-import { panda, Grid } from 'design-system/jsx'
-import { TokenGroup } from '../components/token-group'
+import { TokenGroup } from './token-group'
 
 export type SizesProps = { sizes: Map<string, any> }
 
-export const renderPixels = (size: string) => {
-  if (size.endsWith('px')) return size
-  else return remToPixels(size)
-}
-
-export default function Page() {
+export function Sizes() {
   const tokenDictionary = new TokenDictionary(config)
   const tokens = Object.fromEntries(tokenDictionary.categoryMap)
   const values = Array.from(tokens.sizes.values())
@@ -21,7 +16,7 @@ export default function Page() {
 
   return (
     <TokenGroup>
-      <Grid display="grid" colGap="10" rowGap="2.5" columns={5} layerStyle="token-content ">
+      <Grid display="grid" colGap="10" rowGap="2.5" columns={5}>
         <panda.span fontWeight="semibold">Name</panda.span>
         <panda.span fontWeight="semibold">Size</panda.span>
         <panda.span fontWeight="semibold" gridColumn="span 3 / span 3">
@@ -34,7 +29,7 @@ export default function Page() {
             <>
               <b>{size.extensions.prop}</b>
               <span>{size.value}</span>
-              <span>{renderPixels(size.value as string)}</span>
+              <span>{toPx(size.value as string)}</span>
               <panda.span
                 height="5"
                 background="rgba(255, 192, 203, 0.5)"

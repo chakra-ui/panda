@@ -1,12 +1,11 @@
 import { loadConfigFile } from '@pandacss/config'
-import type { PluginOption } from 'vite'
 
 const virtualModuleId = 'virtual:panda'
 const resolvedVirtualModuleId = '\0' + virtualModuleId
 
-export const pandaPlugin = (): PluginOption => {
+function vitePlugin() {
   return {
-    name: 'panda-plugin',
+    name: 'vite:panda',
     async configureServer(viteServer) {
       const config = await loadConfigFile({ cwd: process.cwd() })
       const file = config.path
@@ -33,3 +32,15 @@ export const pandaPlugin = (): PluginOption => {
     },
   }
 }
+
+const virtualPanda = () => ({
+  name: 'virtual:panda',
+  hooks: {
+    'astro:config:setup': async ({ config }) => {
+      config.vite.plugins ||= []
+      config.vite.plugins.push(vitePlugin())
+    },
+  },
+})
+
+export default virtualPanda

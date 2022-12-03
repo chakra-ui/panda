@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { getSortedSizes } from '../utils/sizes-sort'
-import { renderPixels } from './sizes'
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import { panda, HStack } from 'design-system/jsx'
-import { TokenGroup } from '../components/token-group'
-import { TokenContent } from '../components/token-content'
+import { panda, HStack } from '../../design-system/jsx'
+import { TokenGroup } from './token-group'
+import { TokenContent } from './token-content'
+import { toPx } from '@pandacss/shared'
 
 const NUMBER_OF_ITEMS = 3
 
-export default function SpacingPlayground() {
+export function SpacingPlayground() {
   const tokenDictionary = new TokenDictionary(config)
   const tokens = Object.fromEntries(tokenDictionary.categoryMap)
 
@@ -72,7 +72,7 @@ export default function SpacingPlayground() {
                 {sizes.map((size) => (
                   <option key={size.value} value={size.extensions.prop}>
                     {size.extensions.prop}
-                    {size.value.endsWith('px') ? '' : ` - ${renderPixels(size.value)}`}
+                    {size.value.endsWith('px') ? '' : ` - ${toPx(size.value)}`}
                   </option>
                 ))}
               </select>
@@ -84,18 +84,21 @@ export default function SpacingPlayground() {
                 marginTop="3"
                 display="flex"
                 background="#e879f91a"
-                backgroundImage="linear-gradient(
-                  135deg,
-                  #d946ef80 10%,
-                  transparent 0,
-                  transparent 50%,
-                  #d946ef80 0,
-                  #d946ef80 60%,
-                  transparent 0,
-                  transparent
-                )"
                 backgroundSize="8px 8px"
                 width="fit-content"
+                style={{
+                  gap,
+                  backgroundImage: `linear-gradient(
+                    135deg,
+                    #d946ef80 10%,
+                    transparent 0,
+                    transparent 50%,
+                    #d946ef80 0,
+                    #d946ef80 60%,
+                    transparent 0,
+                    transparent
+                  )`,
+                }}
                 css={{
                   '& div': {
                     background: 'rgb(217 70 239)',
@@ -103,7 +106,6 @@ export default function SpacingPlayground() {
                     height: '14',
                   },
                 }}
-                style={{ gap }}
               >
                 {spacingItems}
               </panda.div>
@@ -116,18 +118,20 @@ export default function SpacingPlayground() {
                 display="flex"
                 flexDir="column"
                 background="#e879f91a"
-                backgroundImage="linear-gradient(
-                  135deg,
-                  #d946ef80 10%,
-                  transparent 0,
-                  transparent 50%,
-                  #d946ef80 0,
-                  #d946ef80 60%,
-                  transparent 0,
-                  transparent
-                )"
                 backgroundSize="8px 8px"
-                style={{ gap }}
+                style={{
+                  gap,
+                  backgroundImage: `linear-gradient(
+                    135deg,
+                    #d946ef80 10%,
+                    transparent 0,
+                    transparent 50%,
+                    #d946ef80 0,
+                    #d946ef80 60%,
+                    transparent 0,
+                    transparent
+                  )`,
+                }}
               >
                 {spacingItems}
               </panda.div>
@@ -141,7 +145,7 @@ export default function SpacingPlayground() {
           Padding
         </panda.h3>
         <div id="padding-view">
-          <panda.div layerStyle="token-content">
+          <panda.div>
             <panda.div
               display="flex"
               alignItems="center"
@@ -164,7 +168,7 @@ export default function SpacingPlayground() {
                 {sizes.map((size) => (
                   <option key={size.value} value={size.extensions.prop}>
                     {size.extensions.prop}
-                    {size.value.endsWith('px') ? '' : ` - ${renderPixels(size.value)}`}
+                    {size.value.endsWith('px') ? '' : ` - ${toPx(size.value)}`}
                   </option>
                 ))}
               </select>

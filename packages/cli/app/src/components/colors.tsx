@@ -1,4 +1,4 @@
-import { panda, Stack, Grid } from 'design-system/jsx'
+import { panda, Stack, Grid } from '../../design-system/jsx'
 import { TokenGroup } from '../components/token-group'
 import { TokenContent } from '../components/token-content'
 import { ColorWrapper } from '../components/color-wrapper'
@@ -12,7 +12,7 @@ const extractColor = (col: string) => {
   return `colors.${result?.[1]}`
 }
 
-export default function Colors() {
+export function Colors() {
   const { filterQuery, setFilterQuery, semanticTokens, hasResults, uncategorizedColors, categorizedColors } =
     useColorDocs()
 
@@ -145,7 +145,7 @@ export default function Colors() {
               </Grid>
             </div>
           )}
-          {!hasResults && <div>No pandas found! Try a different breed. 🐼</div>}
+          {!hasResults && <div>No result found! 🐼</div>}
         </div>
       </TokenContent>
     </TokenGroup>

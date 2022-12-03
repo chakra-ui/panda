@@ -1,47 +1,9 @@
+import { css } from '../../design-system/css'
+import { panda, Wrap } from '../../design-system/jsx'
+import { NavItem } from './nav-item'
 import { navItems } from '../utils/constants'
-import { NavLink } from 'react-router-dom'
-import { panda, Stack, Wrap } from 'design-system/jsx'
-import { css } from 'design-system/css'
 
-function Item(props: typeof navItems[number]) {
-  return (
-    <NavLink key={props.id} to={`/${props.id}`}>
-      <Stack
-        gap="0"
-        width="60"
-        background="card"
-        borderRadius="sm"
-        padding="4"
-        transition="all 0.2s ease"
-        _hover={{
-          boxShadow: 'lg',
-        }}
-      >
-        <panda.span
-          css={{
-            '& svg': {
-              fontWeight: 'normal',
-              fontSize: 'xx-large',
-              marginBottom: '6',
-              height: '6',
-              width: '6',
-            },
-          }}
-        >
-          <props.icon />
-        </panda.span>
-        <panda.span display="block" fontWeight="semibold" fontSize="small">
-          {props.label}
-        </panda.span>
-        <panda.span display="block" marginTop="3">
-          {props.description}
-        </panda.span>
-      </Stack>
-    </NavLink>
-  )
-}
-
-function Index() {
+export function Overview() {
   return (
     <panda.div display="flex" flexDir="column">
       <panda.span fontWeight="bold" fontSize="2xl" paddingX="8" paddingY="4">
@@ -52,8 +14,8 @@ function Index() {
           Design System
         </panda.span>
         <panda.span display="block">Build great products, faster.</panda.span>
-        <NavLink
-          to="/colors"
+        <panda.a
+          href="/colors"
           className={css({
             background: '#646cff',
             color: 'white',
@@ -73,7 +35,7 @@ function Index() {
           })}
         >
           Explore
-        </NavLink>
+        </panda.a>
       </panda.div>
       <Wrap gap="6" padding="8" marginY="2">
         <div>
@@ -82,7 +44,7 @@ function Index() {
             {navItems
               .filter((k) => k.type === 'token')
               .map((themeKey) => (
-                <Item key={themeKey.id} {...themeKey} />
+                <NavItem {...themeKey} />
               ))}
           </Wrap>
         </div>
@@ -92,7 +54,7 @@ function Index() {
             {navItems
               .filter((k) => k.type === 'playground')
               .map((themeKey) => (
-                <Item key={themeKey.id} {...themeKey} />
+                <NavItem {...themeKey} />
               ))}
           </Wrap>
         </div>
@@ -100,5 +62,3 @@ function Index() {
     </panda.div>
   )
 }
-
-export default Index
