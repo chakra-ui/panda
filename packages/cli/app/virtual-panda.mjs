@@ -33,7 +33,7 @@ function vitePlugin() {
   }
 }
 
-export const panda = {
+const virtualPanda = () => ({
   name: 'virtual:panda',
   hooks: {
     'astro:config:setup': async ({ config }) => {
@@ -41,4 +41,6 @@ export const panda = {
       config.vite.plugins.push(vitePlugin())
     },
   },
-}
+})
+
+export default virtualPanda
