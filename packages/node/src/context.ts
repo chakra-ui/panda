@@ -285,7 +285,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       const fileName = chunks.format(file)
 
       const oldCss = await chunks.readFile(file)
-      const newCss = discardDuplicate([css.trim(), oldCss.trim()].filter(Boolean).join('\n\n'))
+      const newCss = discardDuplicate([oldCss.trim(), css.trim()].filter(Boolean).join('\n\n'))
 
       logger.debug({ type: 'chunk:write', file, path: fileName })
 
