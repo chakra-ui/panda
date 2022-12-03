@@ -145,7 +145,7 @@ export function Colors() {
               </Grid>
             </div>
           )}
-          {!hasResults && <div>No pandas found! Try a different breed. 🐼</div>}
+          {!hasResults && <div>No result found! 🐼</div>}
         </div>
       </TokenContent>
     </TokenGroup>

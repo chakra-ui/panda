@@ -1,0 +1,26 @@
+---
+import { panda } from '../../design-system/jsx'
+
+interface Props {
+  href: string
+}
+
+const { href } = Astro.props
+const isActive = Astro.url.pathname === href
+---
+
+<panda.li>
+  <panda.a
+    display="block"
+    href={href}
+    paddingY="1.5"
+    cursor="pointer"
+    fontSize="md"
+    fontWeight="semibold"
+    transition="all 0.2s ease"
+    aria-current={isActive ? 'page' : undefined}
+    color={{ _hover: 'blue.600', _currentPage: 'blue.600' }}
+  >
+    <slot />
+  </panda.a>
+</panda.li>

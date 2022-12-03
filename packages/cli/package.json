@@ -45,7 +45,7 @@
     "css": "dist/cli-default.js",
     "app": "cd docs-app && ../dist/cli-default.js",
     "app:dev": "cd docs-app && ../dist/cli-default.js --watch",
-    "gen": "cd docs-app && ../dist/cli-default.js codegen"
+    "app:gen": "cd docs-app && ../dist/cli-default.js codegen"
   },
   "files": [
     "dist",

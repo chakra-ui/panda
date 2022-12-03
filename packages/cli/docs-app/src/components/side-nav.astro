@@ -1,0 +1,26 @@
+---
+import { navItems } from '../utils/constants'
+import { panda, Stack } from '../../design-system/jsx'
+import NavItem from './side-nav-item.astro'
+---
+
+<Stack height="full" minW="60" background="card" overflow="auto" paddingX="4" paddingY="8">
+  <panda.div marginTop="8">
+    <panda.span fontWeight="bold" fontSize="small" opacity="0.7">TOKENS</panda.span>
+    <panda.ul marginBottom="8" listStyleType="none" padding="0" marginY="2" marginX="0">
+      {
+        navItems
+          .filter((item) => item.type === 'token')
+          .map((item) => <NavItem href={`/${item.id}`}>{item.label}</NavItem>)
+      }
+    </panda.ul>
+    <panda.span fontWeight="bold" fontSize="small" opacity="0.7">PLAYGROUND</panda.span>
+    <panda.ul listStyleType="none" padding="0" marginY="2" marginX="0">
+      {
+        navItems
+          .filter((item) => item.type === 'playground')
+          .map((item) => <NavItem href={`/${item.id}`}>{item.label}</NavItem>)
+      }
+    </panda.ul>
+  </panda.div>
+</Stack>

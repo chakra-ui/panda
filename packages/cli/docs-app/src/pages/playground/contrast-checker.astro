@@ -1,0 +1,11 @@
+---
+import { ColorContrastChecker } from '../../components/color-constrast'
+import Layout from '../layouts/Layout.astro'
+import Sidebar from '../layouts/Sidebar.astro'
+---
+
+<Layout title="Panda docs">
+  <Sidebar>
+    <ColorContrastChecker client:load />
+  </Sidebar>
+</Layout>
