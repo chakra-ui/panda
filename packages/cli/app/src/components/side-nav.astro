@@ -1,24 +1,30 @@
 ---
 import { navItems } from '../utils/constants'
-import { panda } from '../../design-system/jsx'
+import { panda, Stack } from '../../design-system/jsx'
 import NavItem from './side-nav-item.astro'
 ---
 
-<panda.div marginTop="8">
-  <panda.span fontWeight="bold" fontSize="small" opacity="0.7">TOKENS</panda.span>
-  <panda.ul marginBottom="8" listStyleType="none" padding="0" marginY="2" marginX="0">
-    {
-      navItems
-        .filter((item) => item.type === 'token')
-        .map((item) => <NavItem href={`/${item.id}`}>{item.label}</NavItem>)
-    }
-  </panda.ul>
-  <panda.span fontWeight="bold" fontSize="small" opacity="0.7">PLAYGROUND</panda.span>
-  <panda.ul listStyleType="none" padding="0" marginY="2" marginX="0">
-    {
-      navItems
-        .filter((item) => item.type === 'playground')
-        .map((item) => <NavItem href={`/${item.id}`}>{item.label}</NavItem>)
-    }
-  </panda.ul>
-</panda.div>
+<panda.nav marginTop="8">
+  <Stack gap="10">
+    <div>
+      <panda.span fontWeight="bold" fontSize="small" opacity="0.7">TOKENS</panda.span>
+      <panda.ul marginBottom="8" listStyleType="none" padding="0" marginY="2" marginX="0">
+        {
+          navItems
+            .filter((item) => item.type === 'token')
+            .map((item) => <NavItem href={`/${item.id}`}>{item.label}</NavItem>)
+        }
+      </panda.ul>
+    </div>
+    <div>
+      <panda.span fontWeight="bold" fontSize="small" opacity="0.7">PLAYGROUND</panda.span>
+      <panda.ul listStyleType="none" padding="0" marginY="2" marginX="0">
+        {
+          navItems
+            .filter((item) => item.type === 'playground')
+            .map((item) => <NavItem href={`/${item.id}`}>{item.label}</NavItem>)
+        }
+      </panda.ul>
+    </div>
+  </Stack>
+</panda.nav>
