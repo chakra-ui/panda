@@ -4,7 +4,6 @@ import virtualPanda from './virtual-panda.mjs'
 
 // https://astro.build/config
 export default defineConfig({
-  output: 'server',
   outDir: process.env.ASTRO_OUT_DIR,
   integrations: [react(), virtualPanda()],
 })
