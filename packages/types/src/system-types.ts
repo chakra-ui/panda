@@ -1,6 +1,7 @@
 import type * as CSS from './csstype'
 
-type Loose<T = string> = T & { __type?: never }
+// type Loose<T = string> = T & { __type?: never }
+type LooseAutocomplete<T> = T extends string ? T | Omit<string, T> : T
 
 type NeverType = { __type?: 'never' }
 
@@ -54,14 +55,45 @@ type DataAttributes =
   | '[data-exited]'
   | '[data-exiting]'
 
-type Selectors = `&${CSS.Pseudos | DataAttributes | AriaAttributes}` | `${DataAttributes} &` | `${AriaAttributes} &`
+type AttributeSelector = `&${CSS.Pseudos | DataAttributes | AriaAttributes}`
+type ParentSelector = `${DataAttributes} &` | `${AriaAttributes} &`
+
+type Selectors = AttributeSelector | ParentSelector
+
+type ContainerProperties = {
+  container?: string
+  containerType?: LooseAutocomplete<'size' | 'inline-size'>
+  containerName?: string
+}
+
+/* -----------------------------------------------------------------------------
+ * Native css properties
+ * -----------------------------------------------------------------------------*/
+
+type CssVarProperties = {
+  [key in `--${string}`]?: string | number
+}
+
+export type NativeCssProperties = CSS.Properties & ContainerProperties & CssVarProperties
+
+export type NativeCssProperty = keyof NativeCssProperties
+
+export type CssKeyframes = {
+  [time: string]: CssProperties
+}
+
+export type CssProperties = NativeCssProperties | Record<string, any>
+
+/* -----------------------------------------------------------------------------
+ * Groupings and Conditions
+ * -----------------------------------------------------------------------------*/
 
 /**
  * We currently allow group css properties for better maintainability.
  */
 type Grouped<T> = {
   selectors?: {
-    [key in Selectors | Loose]?: T
+    [key in Selectors]?: T
   }
   '@media'?: {
     [query: string]: T
@@ -75,29 +107,7 @@ type Grouped<T> = {
 }
 
 export type Nested<T> = T & {
-  [key in Selectors | Loose]?: Nested<T> | Loose<string | number | boolean>
-}
-
-/* -----------------------------------------------------------------------------
- * Native css properties
- * -----------------------------------------------------------------------------*/
-
-type ContainerProperties = {
-  container?: string
-  containerType?: 'size' | 'inline-size' | Loose
-  containerName?: string
-}
-
-export type NativeCssProperties = CSS.PropertiesFallback<Loose<string | number>> & ContainerProperties
-
-export type NativeCssProperty = keyof NativeCssProperties
-
-export type CssProperties = NativeCssProperties & {
-  [property: string]: string | number | boolean | Record<string, any> | undefined
-}
-
-export type CssKeyframes = {
-  [time: string]: CssProperties
+  [key in Selectors]?: Nested<T>
 }
 
 /* -----------------------------------------------------------------------------
@@ -113,42 +123,86 @@ export type Conditional<C extends TCondition, V> =
       [K in keyof C]?: Conditional<C, V>
     }
 
-type NestedConditional<C extends TCondition, V> = {
-  [K in keyof V]?: Conditional<C, V[K]>
-}
+// type NestedConditional<C extends TCondition, V> = {
+//   [K in keyof V]?: Conditional<C, V[K]>
+// }
 
 /* -----------------------------------------------------------------------------
  * Mixed css properties (native + conditional + custom properties)
  * -----------------------------------------------------------------------------*/
 
-type UnionOf<Key extends string, Native extends Record<Key, any>, Custom> = Custom extends NeverType
-  ? Native[Key]
-  : Key extends keyof Custom
-  ? Native[Key] | Custom[Key]
-  : Native[Key]
+// type UnionOf<Key extends string, Native extends Record<Key, any>, Custom> = Custom extends NeverType
+//   ? Native[Key]
+//   : Key extends keyof Custom
+//   ? Native[Key] | Custom[Key]
+//   : Native[Key]
 
-type EitherOf<Key extends string, Native extends Record<Key, any>, Custom> = Key extends keyof Custom
-  ? Custom[Key]
-  : Native[Key]
+// type EitherOf<Key extends string, Native extends Record<Key, any>, Custom> = Key extends keyof Custom
+//   ? Custom[Key]
+//   : Native[Key]
 
-type StrictCssProperties<P extends Record<string, any> = NeverType, Strict extends boolean = false> = {
-  [Key in NativeCssProperty]?: true extends Strict
-    ? EitherOf<Key, NativeCssProperties, P>
-    : UnionOf<Key, NativeCssProperties, P>
+// type StrictCssProperties<P extends Record<string, any> = NeverType, Strict extends boolean = false> = {
+//   [Key in NativeCssProperty]?: true extends Strict
+//     ? EitherOf<Key, NativeCssProperties, P>
+//     : UnionOf<Key, NativeCssProperties, P>
+// }
+
+// const tt: CustomCssProperties<{ bg: 'red' | 'blue'; background: 'tim-color' }> = {
+//   bg: 'blue',
+// }
+
+// type CustomCssProperties<P extends Record<string, any> = NeverType> = {
+//   [Key in keyof Omit<P, NativeCssProperty>]?: P[Key]
+// }
+
+type MaybeStrictCssProperties<
+  Conditions extends TCondition,
+  Properties extends Record<string, unknown>,
+  StrictMode extends boolean = false,
+> = {
+  [Key in NativeCssProperty]?: Conditional<
+    Conditions,
+    true extends StrictMode ? NativeCssProperties[Key] : LooseAutocomplete<NativeCssProperties[Key]>
+  >
+} & {
+  [Key in keyof Properties]?: Conditional<
+    Conditions,
+    true extends StrictMode ? Properties[Key] : LooseAutocomplete<Properties[Key]>
+  >
 }
 
-type CustomCssProperties<P extends Record<string, any> = NeverType> = {
-  [Key in keyof Omit<P, NativeCssProperty>]?: P[Key]
-}
-
+// C - condition record
+// P - properties (utilities) background: { token: "colors" } token || tokens + native css + any
+// S - strict mode? true or false
 type MixedCssProperties<
-  C extends TCondition = TCondition,
-  P extends Record<string, any> = NeverType,
-  S extends boolean = false,
-> = NestedConditional<C, StrictCssProperties<P, S>> &
-  NestedConditional<C, CustomCssProperties<P>> & {
+  Conditions extends TCondition,
+  Properties extends Record<string, unknown>,
+  StrictMode extends boolean = false,
+> = WithConditionalProperties<Conditions, MaybeStrictCssProperties<Conditions, Properties, StrictMode>>
+
+type WithConditionalProperties<
+  Conditions extends TCondition,
+  Properties extends Record<string, unknown>,
+> = Properties & {
+  [Key in keyof Conditions]?: WithConditionalProperties<Omit<Conditions, Key>, Properties>
+}
+
+// type CustomCssProperties<Conditions extends TCondition, PropertyTypes extends Record<string, unknown>> = {
+//   [Key in NativeCssProperty | keyof PropertyTypes]?: Conditional<Conditions, LooseAutocomplete<PropertyTypes[Key]>>
+// }
+
+/**
+* {
     [Key in keyof C]?: MixedCssProperties<Omit<C, Key>, P, S>
   }
+*/
+
+// const tt: CustomCssProperties<
+//   { light: string; dark: string },
+//   { backgroundColor: 'red.200' | 'red.100'; bg: 'red.200' | 'red.100' }
+// > = {
+//   bg: { light: 'red.200', dark: '50px' },
+// }
 
 /* -----------------------------------------------------------------------------
  * Exported types
@@ -158,13 +212,17 @@ export type NestedCssProperties = Nested<CssProperties>
 
 export type StyleObject<
   C extends TCondition = TCondition,
-  P extends Record<string, any> = NeverType,
+  P extends Record<string, unknown> = Record<never, never>,
   S extends boolean = false,
 > = Nested<MixedCssProperties<C, P, S>> | Grouped<MixedCssProperties<C, P, S>>
 
+export const tt: MixedCssProperties<{ sm: string; md: string; light: string }, { color: 'red.400' | 'pink.500' }> = {
+  color: 'pink.500',
+}
+
 export type JSXStyleProperties<
   C extends TCondition = TCondition,
-  P extends Record<string, any> = NeverType,
+  P extends Record<string, unknown> = Record<never, never>,
   S extends boolean = false,
 > = Nested<MixedCssProperties<C, P, S>> & {
   css?: JSXStyleProperties<C, P, S>
@@ -172,8 +230,10 @@ export type JSXStyleProperties<
 
 export type GlobalStyleObject<
   C extends TCondition = TCondition,
-  P extends Record<string, any> = NeverType,
+  P extends Record<string, string> = Record<never, never>,
   S extends boolean = false,
 > = {
   [selector: string]: Nested<MixedCssProperties<C, P, S>>
 }
+
+// import { SystemStyleObject, GlobalStyleObject, JSXStyleProps } from ".panda/types"
