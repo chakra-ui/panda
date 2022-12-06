@@ -11,6 +11,19 @@ export const semanticTokens: SemanticTokens = {
         _pastelTheme: { base: '#p-b', _dark: { md: '#p-d' } },
       },
     },
+    button: {
+      thick: {
+        value: { base: '#fff', _dark: '#000' },
+      },
+      card: {
+        body: {
+          value: { base: '#fff', _dark: '#000' },
+        },
+        heading: {
+          value: { base: '#fff', _dark: '#000' },
+        },
+      },
+    },
   },
   spacing: {
     gutter: { value: { base: '{spacing.4}', lg: '{spacing.5}' } },
@@ -36,6 +49,21 @@ export const tokens: Tokens = {
       '700': { value: '#333333' },
       '800': { value: '#121212' },
       '900': { value: '#0A0A0A' },
+      deep: {
+        test: {
+          yam: {
+            value: '%555',
+          },
+          pool: {
+            poller: {
+              value: '#fff',
+            },
+            tall: {
+              value: '$dfdf',
+            },
+          },
+        },
+      },
     },
     green: {
       '50': { value: '#F0FFF4' },
