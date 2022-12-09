@@ -7,7 +7,7 @@ export function getTokenDocs(tokens: Token[]) {
     const { path } = token
     const { category } = token.extensions
 
-    if (token.extensions.isVirtual || token.extensions.category !== 'colors' || !category) return
+    if (token.extensions.isVirtual || !category) return
 
     const newPath = path.slice(1, -1)
     const newPathStr = newPath.join('.') || 'uncategorized'
