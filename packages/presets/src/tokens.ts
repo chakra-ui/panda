@@ -2,7 +2,7 @@ import type { Tokens } from '@pandacss/types'
 import { colors } from './colors'
 import { animations } from './keyframes'
 import { shadows } from './shadows'
-import { largeSizes, sizes } from './sizes'
+import { sizes } from './sizes'
 import { spacing } from './spacing'
 import { fonts, fontSizes, fontWeights, letterSpacings, lineHeights } from './typography'
 
@@ -48,6 +48,5 @@ export const tokens: Tokens = {
   },
   spacing,
   sizes,
-  largeSizes,
   animations,
 }

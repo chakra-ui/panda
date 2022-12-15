@@ -164,8 +164,6 @@ export const tokens: Tokens = {
     4: { value: '1rem' },
     5: { value: '1.25rem' },
     6: { value: '1.5rem' },
-  },
-  largeSizes: {
     xs: { value: '20rem' },
     sm: { value: '24rem' },
     md: { value: '28rem' },
@@ -179,13 +177,6 @@ export const tokens: Tokens = {
     pulse: { value: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
     bounce: { value: 'bounce 1s infinite' },
   },
-  // opacity: {
-  //   0: { value: '0' },
-  //   25: { value: '0.25' },
-  //   50: { value: '0.5' },
-  //   75: { value: '0.75' },
-  //   100: { value: '1' },
-  // },
   easings: {
     'ease-in': { value: [0.4, 0, 1, 1] },
     'ease-out': { value: [0, 0, 0.2, 1] },

@@ -61,7 +61,6 @@ export type TokenValues = {
   lineHeights: string | number
   letterSpacings: string
   sizes: string
-  largeSizes: string
   shadows: Shadow | Shadow[] | string | string[]
   spacing: string | number
   radii: string

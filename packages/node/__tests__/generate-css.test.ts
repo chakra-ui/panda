@@ -40,6 +40,9 @@ test('[css] should generate css', () => {
         --colors-gray-700: #333333;
         --colors-gray-800: #121212;
         --colors-gray-900: #0A0A0A;
+        --colors-gray-deep-test-yam: %555;
+        --colors-gray-deep-test-pool-poller: #fff;
+        --colors-gray-deep-test-pool-tall: $dfdf;
         --colors-green-50: #F0FFF4;
         --colors-green-100: #C6F6D5;
         --colors-green-200: #9AE6B4;
@@ -115,11 +118,11 @@ test('[css] should generate css', () => {
         --sizes-1\\\\.5: 0.375rem;
         --sizes-2\\\\.5: 0.625rem;
         --sizes-3\\\\.5: 0.875rem;
-        --large-sizes-xs: 20rem;
-        --large-sizes-sm: 24rem;
-        --large-sizes-md: 28rem;
-        --large-sizes-lg: 32rem;
-        --large-sizes-xl: 36rem;
+        --sizes-xs: 20rem;
+        --sizes-sm: 24rem;
+        --sizes-md: 28rem;
+        --sizes-lg: 32rem;
+        --sizes-xl: 36rem;
         --animations-none: none;
         --animations-spin: spin 1s linear infinite;
         --animations-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
@@ -134,6 +137,9 @@ test('[css] should generate css', () => {
         --colors-primary: #EF4444;
         --colors-secondary: #991B1B;
         --colors-complex: #991B1B;
+        --colors-button-thick: #fff;
+        --colors-button-card-body: #fff;
+        --colors-button-card-heading: #fff;
         --spacing-gutter: 1rem;
         --colors-color-palette-50: var(--colors-color-palette-50);
         --colors-color-palette-100: var(--colors-color-palette-100);
@@ -144,13 +150,22 @@ test('[css] should generate css', () => {
         --colors-color-palette-600: var(--colors-color-palette-600);
         --colors-color-palette-700: var(--colors-color-palette-700);
         --colors-color-palette-800: var(--colors-color-palette-800);
-        --colors-color-palette-900: var(--colors-color-palette-900)
+        --colors-color-palette-900: var(--colors-color-palette-900);
+        --colors-color-palette-yam: var(--colors-color-palette-yam);
+        --colors-color-palette-poller: var(--colors-color-palette-poller);
+        --colors-color-palette-tall: var(--colors-color-palette-tall);
+        --colors-color-palette-thick: var(--colors-color-palette-thick);
+        --colors-color-palette-body: var(--colors-color-palette-body);
+        --colors-color-palette-heading: var(--colors-color-palette-heading)
 
       }
 
       [data-theme=dark] {
         --colors-primary: #F87171;
-        --colors-secondary: #B91C1C 
+        --colors-secondary: #B91C1C;
+        --colors-button-thick: #000;
+        --colors-button-card-body: #000;
+        --colors-button-card-heading: #000 
      
       }
 

@@ -1,14 +1,6 @@
 import { spacing } from './spacing'
 
-export const sizes = {
-  ...spacing,
-  full: { value: '100%' },
-  min: { value: 'min-content' },
-  max: { value: 'max-content' },
-  fit: { value: 'fit-content' },
-}
-
-export const largeSizes = {
+const largeSizes = {
   xs: { value: '20rem' },
   sm: { value: '24rem' },
   md: { value: '28rem' },
@@ -22,6 +14,12 @@ export const largeSizes = {
   '7xl': { value: '80rem' },
   '8xl': { value: '90rem' },
   prose: { value: '65ch' },
+}
+
+export const sizes = {
+  ...spacing,
+  ...largeSizes,
+  full: { value: '100%' },
   min: { value: 'min-content' },
   max: { value: 'max-content' },
   fit: { value: 'fit-content' },

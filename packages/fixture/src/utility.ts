@@ -455,7 +455,7 @@ export const utilities: UtilityConfig = {
   maxWidth: {
     shorthand: 'maxW',
     className: 'max-w',
-    values: 'largeSizes',
+    values: 'sizes',
   },
 
   // Margin properties

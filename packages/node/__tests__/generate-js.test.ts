@@ -64,6 +64,18 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"#0A0A0A\\",
         \\"variable\\": \\"var(--colors-gray-900)\\"
       },
+      \\"colors.gray.deep.test.yam\\": {
+        \\"value\\": \\"%555\\",
+        \\"variable\\": \\"var(--colors-gray-deep-test-yam)\\"
+      },
+      \\"colors.gray.deep.test.pool.poller\\": {
+        \\"value\\": \\"#fff\\",
+        \\"variable\\": \\"var(--colors-gray-deep-test-pool-poller)\\"
+      },
+      \\"colors.gray.deep.test.pool.tall\\": {
+        \\"value\\": \\"$dfdf\\",
+        \\"variable\\": \\"var(--colors-gray-deep-test-pool-tall)\\"
+      },
       \\"colors.green.50\\": {
         \\"value\\": \\"#F0FFF4\\",
         \\"variable\\": \\"var(--colors-green-50)\\"
@@ -364,25 +376,25 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"0.875rem\\",
         \\"variable\\": \\"var(--sizes-3\\\\\\\\.5)\\"
       },
-      \\"largeSizes.xs\\": {
+      \\"sizes.xs\\": {
         \\"value\\": \\"20rem\\",
-        \\"variable\\": \\"var(--large-sizes-xs)\\"
+        \\"variable\\": \\"var(--sizes-xs)\\"
       },
-      \\"largeSizes.sm\\": {
+      \\"sizes.sm\\": {
         \\"value\\": \\"24rem\\",
-        \\"variable\\": \\"var(--large-sizes-sm)\\"
+        \\"variable\\": \\"var(--sizes-sm)\\"
       },
-      \\"largeSizes.md\\": {
+      \\"sizes.md\\": {
         \\"value\\": \\"28rem\\",
-        \\"variable\\": \\"var(--large-sizes-md)\\"
+        \\"variable\\": \\"var(--sizes-md)\\"
       },
-      \\"largeSizes.lg\\": {
+      \\"sizes.lg\\": {
         \\"value\\": \\"32rem\\",
-        \\"variable\\": \\"var(--large-sizes-lg)\\"
+        \\"variable\\": \\"var(--sizes-lg)\\"
       },
-      \\"largeSizes.xl\\": {
+      \\"sizes.xl\\": {
         \\"value\\": \\"36rem\\",
-        \\"variable\\": \\"var(--large-sizes-xl)\\"
+        \\"variable\\": \\"var(--sizes-xl)\\"
       },
       \\"animations.none\\": {
         \\"value\\": \\"none\\",
@@ -443,6 +455,18 @@ test('[dts] should generate package', () => {
       \\"colors.surface\\": {
         \\"value\\": \\"var(--colors-surface)\\",
         \\"variable\\": \\"var(--colors-surface)\\"
+      },
+      \\"colors.button.thick\\": {
+        \\"value\\": \\"var(--colors-button-thick)\\",
+        \\"variable\\": \\"var(--colors-button-thick)\\"
+      },
+      \\"colors.button.card.body\\": {
+        \\"value\\": \\"var(--colors-button-card-body)\\",
+        \\"variable\\": \\"var(--colors-button-card-body)\\"
+      },
+      \\"colors.button.card.heading\\": {
+        \\"value\\": \\"var(--colors-button-card-heading)\\",
+        \\"variable\\": \\"var(--colors-button-card-heading)\\"
       },
       \\"spacing.gutter\\": {
         \\"value\\": \\"var(--spacing-gutter)\\",
@@ -531,6 +555,30 @@ test('[dts] should generate package', () => {
       \\"colors.colorPalette.900\\": {
         \\"value\\": \\"var(--colors-color-palette-900)\\",
         \\"variable\\": \\"var(--colors-color-palette-900)\\"
+      },
+      \\"colors.colorPalette.yam\\": {
+        \\"value\\": \\"var(--colors-color-palette-yam)\\",
+        \\"variable\\": \\"var(--colors-color-palette-yam)\\"
+      },
+      \\"colors.colorPalette.poller\\": {
+        \\"value\\": \\"var(--colors-color-palette-poller)\\",
+        \\"variable\\": \\"var(--colors-color-palette-poller)\\"
+      },
+      \\"colors.colorPalette.tall\\": {
+        \\"value\\": \\"var(--colors-color-palette-tall)\\",
+        \\"variable\\": \\"var(--colors-color-palette-tall)\\"
+      },
+      \\"colors.colorPalette.thick\\": {
+        \\"value\\": \\"var(--colors-color-palette-thick)\\",
+        \\"variable\\": \\"var(--colors-color-palette-thick)\\"
+      },
+      \\"colors.colorPalette.body\\": {
+        \\"value\\": \\"var(--colors-color-palette-body)\\",
+        \\"variable\\": \\"var(--colors-color-palette-body)\\"
+      },
+      \\"colors.colorPalette.heading\\": {
+        \\"value\\": \\"var(--colors-color-palette-heading)\\",
+        \\"variable\\": \\"var(--colors-color-palette-heading)\\"
       }
     }
 

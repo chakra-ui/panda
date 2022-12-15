@@ -80,6 +80,6 @@ export const sizing: UtilityConfig = {
   maxWidth: {
     shorthand: 'maxW',
     className: 'max-w',
-    values: 'largeSizes',
+    values: 'sizes',
   },
 }
