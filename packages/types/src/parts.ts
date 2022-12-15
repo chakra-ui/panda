@@ -2,4 +2,4 @@ export type Part = {
   selector: string
 }
 
-export type Parts = Part[]
+export type Parts = Record<string, Part>
