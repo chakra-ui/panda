@@ -13,7 +13,7 @@ importers:
       '@typescript-eslint/eslint-plugin': 5.45.1
       '@typescript-eslint/parser': 5.45.1
       concurrently: ^7.4.0
-      prettier: 2.8.0
+      prettier: 2.8.1
       tsup: 6.5.0
       tsx: 3.12.1
       typescript: 4.9.3
@@ -25,7 +25,7 @@ importers:
       '@typescript-eslint/eslint-plugin': 5.45.1_u5iksfcmkfmnndmb5jl3ll2o2a
       '@typescript-eslint/parser': 5.45.1_typescript@4.9.3
       concurrently: 7.4.0
-      prettier: 2.8.0
+      prettier: 2.8.1
       tsup: 6.5.0_typescript@4.9.3
       tsx: 3.12.1
       typescript: 4.9.3
@@ -379,7 +379,7 @@ packages:
     hasBin: true
     dependencies:
       '@vscode/emmet-helper': 2.8.4
-      prettier: 2.8.0
+      prettier: 2.8.1
       prettier-plugin-astro: 0.5.4
       source-map: 0.7.4
       typescript: 4.6.4
@@ -398,7 +398,7 @@ packages:
     dependencies:
       '@vscode/emmet-helper': 2.8.4
       events: 3.3.0
-      prettier: 2.8.0
+      prettier: 2.8.1
       prettier-plugin-astro: 0.7.0
       source-map: 0.7.4
       vscode-css-languageservice: 6.1.1
@@ -1035,7 +1035,7 @@ packages:
       fs-extra: 7.0.1
       lodash.startcase: 4.4.0
       outdent: 0.5.0
-      prettier: 2.8.0
+      prettier: 2.8.1
       resolve-from: 5.0.0
       semver: 5.7.1
     dev: false
@@ -1221,7 +1221,7 @@ packages:
       '@changesets/types': 5.2.0
       fs-extra: 7.0.1
       human-id: 1.0.2
-      prettier: 2.8.0
+      prettier: 2.8.1
     dev: false
 
   /@emmetio/abbreviation/2.2.3:
@@ -6428,7 +6428,7 @@ packages:
     engines: {node: ^14.15.0 || >=16.0.0, npm: '>=6.14.0'}
     dependencies:
       '@astrojs/compiler': 0.23.5
-      prettier: 2.8.0
+      prettier: 2.8.1
       sass-formatter: 0.7.5
       synckit: 0.7.3
     dev: false
@@ -6438,13 +6438,13 @@ packages:
     engines: {node: ^14.15.0 || >=16.0.0, npm: '>=6.14.0'}
     dependencies:
       '@astrojs/compiler': 0.29.17
-      prettier: 2.8.0
+      prettier: 2.8.1
       sass-formatter: 0.7.5
       synckit: 0.8.4
     dev: false
 
-  /prettier/2.8.0:
-    resolution: {integrity: sha512-9Lmg8hTFZKG0Asr/kW9Bp8tJjRVluO8EJQVfY2T7FMw9T5jy4I/Uvx0Rca/XWf50QQ1/SS48+6IJWnrb+2yemA==}
+  /prettier/2.8.1:
+    resolution: {integrity: sha512-lqGoSJBQNJidqCHE80vqZJHWHRFoNYsSpP9AjFhlhi9ODCJA541svILes/+/1GM3VaL/abZi7cpFzOpdR9UPKg==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     dev: false
