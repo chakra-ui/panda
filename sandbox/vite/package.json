@@ -21,7 +21,7 @@
     "@types/react-dom": "18.0.9",
     "@pandacss/fixture": "workspace:*",
     "css-panda": "workspace:*",
-    "@vitejs/plugin-react": "2.2.0",
+    "@vitejs/plugin-react": "3.0.0",
     "postcss": "8.4.20",
     "vite": "4.0.1"
   }
