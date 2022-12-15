@@ -1,5 +1,12 @@
 import { colors, logger } from '@pandacss/logger'
-import { emitArtifacts, generate, loadConfigAndCreateContext, setupConfig, setupPostcss } from '@pandacss/node'
+import {
+  emitArtifacts,
+  generate,
+  loadConfigAndCreateContext,
+  setupConfig,
+  setupGitIgnore,
+  setupPostcss,
+} from '@pandacss/node'
 import { compact } from '@pandacss/shared'
 import { cac } from 'cac'
 import { readFileSync } from 'fs'
@@ -20,10 +27,13 @@ export async function main() {
     .option('-f, --force', 'Force overwrite existing config file')
     .option('-p, --postcss', 'Emit postcss config file')
     .option('--silent', 'Suppress all messages except errors')
+    .option('--no-gitignore', "Don't update the .gitignore")
     .action(async (flags) => {
-      const { force, postcss, silent } = flags
+      const { force, postcss, silent, gitignore } = flags
 
-      if (silent) logger.level = 'silent'
+      if (silent) {
+        logger.level = 'silent'
+      }
 
       logger.info(`Panda v${pkgJson.version}\n`)
 
@@ -34,6 +44,10 @@ export async function main() {
 
       const ctx = await loadConfigAndCreateContext()
       const msg = await emitArtifacts(ctx)
+
+      if (gitignore) {
+        setupGitIgnore(ctx)
+      }
 
       logger.log(msg)
 
