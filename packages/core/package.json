@@ -25,7 +25,7 @@
     "@pandacss/logger": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "camelcase-css": "^2.0.1",
-    "postcss": "8.4.19",
+    "postcss": "8.4.20",
     "postcss-nested": "6.0.0",
     "sort-css-media-queries": "^2.1.0",
     "postcss-normalize-whitespace": "^5.1.1",
