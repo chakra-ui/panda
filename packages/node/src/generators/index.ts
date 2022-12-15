@@ -1,7 +1,5 @@
 import { readFileSync } from 'fs'
-import { lookItUpSync } from 'look-it-up'
 import outdent from 'outdent'
-import { dirname } from 'path'
 import type { Output, PandaContext } from '../context'
 import { generateConditions } from './conditions'
 import { generateCssFn } from './css-fn'
@@ -25,7 +23,7 @@ function setupHelpers(ctx: PandaContext): Output {
   const code = readFileSync(sharedMjs, 'utf-8')
   return {
     dir: ctx.outdir,
-    files: [{ file: 'helpers.js', code }],
+    files: [{ file: 'helpers.mjs', code }],
   }
 }
 
@@ -50,7 +48,7 @@ function setupDesignTokens(ctx: PandaContext): Output {
     files: [
       { file: 'index.css', code: css },
       { file: 'index.d.ts', code: code.dts },
-      { file: 'index.js', code: code.js },
+      { file: 'index.mjs', code: code.js },
     ],
   }
 }
@@ -60,7 +58,7 @@ function setupGlobalCss(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.css,
     files: [
-      { file: 'global-css.js', code: code.js },
+      { file: 'global-css.mjs', code: code.js },
       { file: 'global-css.d.ts', code: code.dts },
     ],
   }
@@ -88,8 +86,8 @@ function setupCss(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.css,
     files: [
-      { file: 'conditions.js', code: conditions.js },
-      { file: 'css.js', code: code.js },
+      { file: 'conditions.mjs', code: conditions.js },
+      { file: 'css.mjs', code: code.js },
       { file: 'css.d.ts', code: code.dts },
     ],
   }
@@ -100,7 +98,7 @@ function setupCssMap(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.css,
     files: [
-      { file: 'css-map.js', code: code.js },
+      { file: 'css-map.mjs', code: code.js },
       { file: 'css-map.d.ts', code: code.dts },
     ],
   }
@@ -111,7 +109,7 @@ function setupCx(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.css,
     files: [
-      { file: 'cx.js', code: code.js },
+      { file: 'cx.mjs', code: code.js },
       { file: 'cx.d.ts', code: code.dts },
     ],
   }
@@ -125,7 +123,7 @@ function setupRecipes(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.recipe,
     files: [
-      { file: 'index.js', code: code.js },
+      { file: 'index.mjs', code: code.js },
       { file: 'index.d.ts', code: code.dts },
     ],
   }
@@ -144,7 +142,7 @@ function setupPatterns(ctx: PandaContext): Output {
     files: [
       ...files.map((file) => ({ file: `${file.name}.js`, code: file.js })),
       ...files.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
-      { file: 'index.js', code: indexCode },
+      { file: 'index.mjs', code: indexCode },
       { file: 'index.d.ts', code: indexCode },
     ],
   }
@@ -171,7 +169,7 @@ function setupJsx(ctx: PandaContext): Output {
       ...patterns.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
       { file: 'layout-grid.jsx', code: layoutGrid.js },
       { file: 'layout-grid.d.ts', code: layoutGrid.dts },
-      { file: 'is-valid-prop.js', code: isValidProp.js },
+      { file: 'is-valid-prop.mjs', code: isValidProp.js },
       { file: 'factory.d.ts', code: factory.dts },
       { file: 'factory.jsx', code: factory.js },
       { file: 'index.d.ts', code: indexCode },
@@ -191,7 +189,7 @@ function setupCssIndex(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.css,
     files: [
-      { file: 'index.js', code },
+      { file: 'index.mjs', code },
       { file: 'index.d.ts', code },
     ],
   }
@@ -201,32 +199,6 @@ function setupReset(ctx: PandaContext): Output {
   if (!ctx.preflight) return { files: [] }
   const code = generateReset()
   return { files: [{ file: 'reset.css', code }] }
-}
-
-function setupGitIgnore(ctx: PandaContext): Output {
-  const txt = outdent`## CSS Panda
-  ${ctx.outdir}
-  ${ctx.outdir}-static
-  `
-
-  const file = lookItUpSync('.gitignore')
-
-  if (!file)
-    return {
-      dir: ctx.cwd,
-      files: [{ file: '.gitignore', code: txt }],
-    }
-
-  let content = readFileSync(file, 'utf-8')
-
-  if (!content.includes(ctx.outdir)) {
-    content += txt
-  }
-
-  return {
-    dir: dirname(file),
-    files: [{ file: '.gitignore', code: content }],
-  }
 }
 
 export function generateSystem(ctx: PandaContext): Output[] {
@@ -244,6 +216,5 @@ export function generateSystem(ctx: PandaContext): Output[] {
     setupCssIndex(ctx),
     setupJsx(ctx),
     setupReset(ctx),
-    setupGitIgnore(ctx),
   ]
 }
