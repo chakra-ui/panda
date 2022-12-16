@@ -264,6 +264,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       return io.read(fileName)
     },
     getFiles() {
+      if (!existsSync(chunks.dir)) return []
       return readdirSync(chunks.dir)
     },
     format(file: string) {
