@@ -7,7 +7,6 @@ import {
   StylesheetContext,
   Utility,
 } from '@pandacss/core'
-import { NotFoundError } from '@pandacss/error'
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
 import { Collector, createParser, createProject } from '@pandacss/parser'
@@ -141,15 +140,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * Patterns
    * -----------------------------------------------------------------------------*/
 
-  // layout grid is a custom component we generate. Not a pattern so we ignore
-  const patternExclude = ['layoutGrid']
-
   function getPattern(name: string): PatternConfig | undefined {
-    const pattern = patterns[name]
-    if (!pattern && !patternExclude.includes(name)) {
-      throw new NotFoundError({ type: 'pattern', name })
-    }
-    return pattern
+    return patterns[name]
   }
 
   function execPattern(name: string, data: Record<string, any>) {
@@ -174,12 +166,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * Recipes
    * -----------------------------------------------------------------------------*/
 
-  function getRecipe(name: string): RecipeConfig {
-    const recipe = recipes[name]
-    if (!recipe) {
-      throw new NotFoundError({ type: 'recipe', name })
-    }
-    return recipe
+  function getRecipe(name: string): RecipeConfig | undefined {
+    return recipes[name]
   }
 
   const recipeNodes = Object.entries(recipes).map(([name, recipe]) => ({
@@ -418,7 +406,9 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     collector.recipe.forEach((result, name) => {
       try {
         for (const item of result) {
-          sheet.processRecipe(getRecipe(name), item.data)
+          const recipe = getRecipe(name)
+          if (!recipe) continue
+          sheet.processRecipe(recipe, item.data)
         }
       } catch (error) {
         logger.error({ err: error })
