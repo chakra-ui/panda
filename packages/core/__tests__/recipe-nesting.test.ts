@@ -55,23 +55,23 @@ test('[recipe] direct nesting / recipe ruleset', () => {
             margin-top: auto;
             margin-bottom: 0;
             padding-top: 0;
-            object-position: center
+            object-position: center;
         }
         .text--variant_sm {
             &:first-child {
-                margin-right: var(--spacing-4)
+                margin-right: var(--spacing-4);
             }
             &:first-child:hover {
-                color: var(--colors-red-200)
+                color: var(--colors-red-200);
             }
-            @screen md {
+            @media screen and (min-width: 48em) {
                 &:first-child:hover {
-                    color: var(--colors-gray-300)
+                    color: var(--colors-gray-300);
                 }
             }
             &:disabled {
                 margin-right: 40px;
-                filter: unset
+                filter: unset;
             }
         }
     }"
@@ -88,7 +88,7 @@ test('[recipe] direct nesting / recipe ruleset', () => {
         .text--variant_md {
             &:before {
                 --mb: var(--colors-gray-300)
-    ;
+        ;
                 left: var(--spacing-5);
                 border-bottom-right-radius: sm
             }

@@ -23,6 +23,14 @@ export const recipes: Record<string, RecipeConfig> = {
       },
     },
   },
+  tooltipStyle: {
+    name: 'tooltipStyle',
+    base: {
+      '&[data-tooltip], & [data-tooltip]': {
+        color: { _dark: 'red' },
+      },
+    },
+  },
   buttonStyle: {
     name: 'buttonStyle',
     base: {

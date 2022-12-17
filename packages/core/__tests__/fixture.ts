@@ -27,12 +27,12 @@ export const createContext = (): StylesheetContext => ({
   helpers: { map: () => '' },
 })
 
-export function getRecipe(key: 'buttonStyle' | 'textStyle') {
+export function getRecipe(key: 'buttonStyle' | 'textStyle' | 'tooltipStyle') {
   const recipe = new Recipe(mocks.recipes[key], createContext())
   return recipe.config
 }
 
-export function processRecipe(key: 'buttonStyle' | 'textStyle', value: Record<string, any>) {
+export function processRecipe(key: 'buttonStyle' | 'textStyle' | 'tooltipStyle', value: Record<string, any>) {
   const recipe = new Recipe(mocks.recipes[key], createContext())
   recipe.process({ styles: value })
   return recipe.toCss()

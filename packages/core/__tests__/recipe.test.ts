@@ -40,6 +40,18 @@ describe('recipe ruleset', () => {
     `)
   })
 
+  test('should work with complex selectors', () => {
+    expect(processRecipe('tooltipStyle', {})).toMatchInlineSnapshot(`
+      "@layer recipes {
+          .tooltipStyle {
+              [data-theme=dark] &[data-tooltip], [data-theme=dark] & [data-tooltip] {
+                  color: red
+              }
+          }
+      }"
+    `)
+  })
+
   test('should process recipe with conditions', () => {
     expect(getRecipe('buttonStyle')).toMatchInlineSnapshot(`
       {
@@ -70,9 +82,11 @@ describe('recipe ruleset', () => {
           },
           "variant": {
             "outline": {
-              "&:hover": {
-                "backgroundColor": "blue",
-                "color": "white",
+              "&": {
+                "&:hover": {
+                  "backgroundColor": "blue",
+                  "color": "white",
+                },
               },
               "&[data-disabled]": {
                 "backgroundColor": "transparent",
@@ -84,8 +98,10 @@ describe('recipe ruleset', () => {
               "color": "blue",
             },
             "solid": {
-              "&:hover": {
-                "backgroundColor": "darkblue",
+              "&": {
+                "&:hover": {
+                  "backgroundColor": "darkblue",
+                },
               },
               "&[data-disabled]": {
                 "backgroundColor": "gray",
@@ -148,8 +164,8 @@ describe('recipe ruleset', () => {
                   color: black
               }
           }
-          @screen lg {
-              .lg\\\\:buttonStyle--variant_outline {
+          .lg\\\\:buttonStyle--variant_outline {
+              @media screen and (min-width: 62em) {
                   background-color: transparent;
                   border: 1px solid blue;
                   color: blue;

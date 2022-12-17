@@ -1,5 +1,4 @@
-import postcss, { AtRule, ChildNode, Rule } from 'postcss'
-import { match, P } from 'ts-pattern'
+import postcss, { AtRule, ChildNode, Container, Rule } from 'postcss'
 import type { StylesheetContext } from './types'
 
 export type WrapOptions =
@@ -14,30 +13,11 @@ export type WrapOptions =
     }
 
 export class ConditionalRule {
-  rule: Rule | AtRule | undefined
+  rule: Container | undefined
   selector = ''
   nodes: ChildNode[] = []
 
   constructor(private conditionsMap: StylesheetContext['conditions']) {}
-
-  private wrap = (options: WrapOptions) => {
-    if (!this.rule) return
-    const parent = match(options)
-      .with({ type: 'at-rule' }, ({ name, params }) => postcss.atRule({ name, params }))
-      .with({ type: 'selector' }, ({ name }) => postcss.rule({ selector: name }))
-      .exhaustive()
-
-    const cloned = this.rule.clone()
-
-    parent.append(cloned)
-    this.rule.remove()
-
-    return parent
-  }
-
-  private expandNesting = (scope: string) => {
-    return scope.replace(RegExp('&', 'g'), this.selector)
-  }
 
   get isEmpty() {
     return this.nodes.length === 0
@@ -49,26 +29,30 @@ export class ConditionalRule {
 
   applyConditions = (conditions: string[]) => {
     const sorted = this.conditionsMap.sort(conditions)
+    const rule = postcss.rule({ selector: this.selector })
 
-    for (const cond of sorted) {
-      if (!cond) continue
+    sorted.forEach((cond) => {
+      if (!cond) return
+      const selector = cond.rawValue ?? cond.value
+      const last = getDeepestNode(rule)
+      const node = last ?? rule
+      node.append(postcss.rule({ selector }))
+    })
 
-      match(cond)
-        .with({ type: 'at-rule', name: P.string }, (data) => {
-          this.rule = this.wrap({
-            type: 'at-rule',
-            name: data.name,
-            params: data.value,
-          })
-        })
-        .otherwise(() => {
-          this.selector = this.expandNesting(cond.raw)
-          this.update()
-        })
-    }
+    getDeepestNode(rule)?.append(this.nodes)
+
+    this.rule = rule
   }
 
   toString() {
     return this.rule!.toString()
   }
+}
+
+// recursive function to get the last descendant of a node (deepest child)
+function getDeepestNode(node: AtRule | Rule): Rule | AtRule | undefined {
+  if (node.nodes && node.nodes.length) {
+    return getDeepestNode(node.nodes[node.nodes.length - 1] as AtRule | Rule)
+  }
+  return node
 }

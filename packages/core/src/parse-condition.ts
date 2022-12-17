@@ -9,6 +9,7 @@ function parseAtRule(value: string): RawCondition {
     name: rule.name,
     value: rule.params,
     raw: value,
+    rawValue: value,
   }
 }
 
