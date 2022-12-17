@@ -9,6 +9,7 @@ describe('Conditions', () => {
       {
         "name": "media",
         "raw": "@media (min-width: 768px)",
+        "rawValue": "@media (min-width: 768px)",
         "type": "at-rule",
         "value": "(min-width: 768px)",
       }
