@@ -8,10 +8,10 @@ import prettify from './plugins/prettify'
 
 export function optimizeCss(code: string, { minify = false }: { minify?: boolean } = {}) {
   const { css } = postcss([
+    nested(),
     mergeCascadeLayers(),
     sortMediaQueries(),
     dedupe(),
-    nested(),
     minify ? normalizeWhiteSpace() : prettify(),
   ]).process(code)
 

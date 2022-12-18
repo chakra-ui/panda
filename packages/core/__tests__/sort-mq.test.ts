@@ -38,22 +38,24 @@ test('should sort media queries', () => {
         .bg {
           background-color: red;
         }
-    @media (min-width: 640px) {
+
+        @media (min-width: 640px) {
           .bg {
             background-color: blue;
           }
-    }
-    @media (min-width: 990px) {
+        }
+
+        @media (min-width: 990px) {
           .bg {
             background-color: yellow;
           }
-    }
-    @media (max-width: 1290px) {
+        }
+
+        @media (max-width: 1290px) {
           .bg {
             background-color: yellow;
           }
-    }
-      
+        }
       "
   `)
 })
@@ -114,6 +116,7 @@ test('should sort within @layer', () => {
             }
           }
         }
+
         @layer base {
 
           .py-2 {
@@ -125,14 +128,12 @@ test('should sort within @layer', () => {
               padding-top: 1rem;
             }
           }
-
           @media (min-width: 1240px) {
             .py-2 {
               padding-top: 5rem;
             }
           }
         }
-      
       "
   `)
 })
@@ -178,10 +179,6 @@ test('should sort within nested @layer', () => {
           padding-top: 0.5rem;
         }
 
-        .bg-red-500 {
-          background-color: red;
-        }
-
         @layer recipes {
           .Button {
             font-size: 1rem;
@@ -197,16 +194,18 @@ test('should sort within nested @layer', () => {
               .Button {
                 font-size: 1.25rem;
               }
-                }
-
+            }
             @media (min-width: 640px) {
               .Button {
                 font-size: 1.25rem;
               }
-                }
+            }
           }
         }
-      
+
+        .bg-red-500 {
+          background-color: red;
+        }
       "
   `)
 })
