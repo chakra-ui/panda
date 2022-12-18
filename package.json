@@ -26,7 +26,7 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@changesets/changelog-github": "0.4.7",
+    "@changesets/changelog-github": "0.4.8",
     "@changesets/cli": "2.25.2",
     "@types/node": "18.11.17",
     "@typescript-eslint/eslint-plugin": "5.46.1",
