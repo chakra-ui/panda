@@ -35,6 +35,7 @@ test('should sort media queries', () => {
 
   expect(result.css).toMatchInlineSnapshot(`
     "
+
         .bg {
           background-color: red;
         }
@@ -44,7 +45,6 @@ test('should sort media queries', () => {
             background-color: blue;
           }
         }
-
         @media (min-width: 990px) {
           .bg {
             background-color: yellow;

@@ -1,27 +1,36 @@
-import type { AtRule, Container, TransformCallback } from 'postcss'
+import type { Container, TransformCallback } from 'postcss'
 import sortAtRules from 'sort-css-media-queries'
+import { match, P } from 'ts-pattern'
 
 export default function sortMediaQueries(): TransformCallback {
   const inner = (root: Container) => {
-    const parentMap = new Map<Container, AtRule[]>()
-
-    root.walkAtRules('media', (atRule) => {
-      const clone = atRule.clone()
-
-      const parent = atRule.parent || root
-
-      parentMap.get(parent) || parentMap.set(parent, [])
-      parentMap.get(parent)!.push(clone)
-
-      atRule.remove()
+    root.nodes.sort((a, b) => {
+      return match({ a, b })
+        .with(
+          {
+            a: { type: 'atrule', name: 'media' },
+            b: { type: 'atrule', name: 'media' },
+          },
+          ({ a, b }) => {
+            return sortAtRules(a.params, b.params)
+          },
+        )
+        .with({ a: { type: 'atrule', name: 'media' }, b: P.any }, () => {
+          return 1
+        })
+        .with({ a: P.any, b: { type: 'atrule', name: 'media' } }, () => {
+          return -1
+        })
+        .otherwise(() => {
+          return 0
+        })
     })
 
-    parentMap.forEach((atRules, parent) => {
-      atRules
-        .sort((a, b) => sortAtRules(a.params, b.params))
-        .forEach((atRule) => {
-          parent.append(atRule)
-        })
+    // recursive sort
+    root.nodes.forEach((node) => {
+      if ('nodes' in node) {
+        inner(node)
+      }
     })
   }
 
