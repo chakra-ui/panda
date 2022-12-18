@@ -53,96 +53,96 @@ const getStyles = getStaticCss({
 describe('static-css', () => {
   test('works', () => {
     expect(getStyles(ctx)).toMatchInlineSnapshot(`
+      {
+        "css": [
           {
-            "css": [
-              {
-                "margin": {
-                  "base": "20px",
-                  "md": "20px",
-                  "sm": "20px",
-                },
+            "margin": {
+              "base": "20px",
+              "md": "20px",
+              "sm": "20px",
+            },
+          },
+          {
+            "margin": {
+              "base": "40px",
+              "md": "40px",
+              "sm": "40px",
+            },
+          },
+          {
+            "padding": {
+              "base": "20px",
+              "md": "20px",
+              "sm": "20px",
+            },
+          },
+          {
+            "padding": {
+              "base": "40px",
+              "md": "40px",
+              "sm": "40px",
+            },
+          },
+          {
+            "padding": {
+              "base": "60px",
+              "md": "60px",
+              "sm": "60px",
+            },
+          },
+          {
+            "color": {
+              "_dark": "red.200",
+              "_light": "red.200",
+              "base": "red.200",
+            },
+          },
+          {
+            "color": {
+              "_dark": "blue.200",
+              "_light": "blue.200",
+              "base": "blue.200",
+            },
+          },
+          {
+            "color": {
+              "_dark": "green.200",
+              "_light": "green.200",
+              "base": "green.200",
+            },
+          },
+        ],
+        "recipes": [
+          {
+            "buttonStyle": {
+              "size": {
+                "base": "sm",
+                "md": "sm",
+                "sm": "sm",
               },
-              {
-                "margin": {
-                  "base": "40px",
-                  "md": "40px",
-                  "sm": "40px",
-                },
+            },
+          },
+          {
+            "buttonStyle": {
+              "size": {
+                "base": "md",
+                "md": "md",
+                "sm": "md",
               },
-              {
-                "padding": {
-                  "base": "20px",
-                  "md": "20px",
-                  "sm": "20px",
-                },
-              },
-              {
-                "padding": {
-                  "base": "40px",
-                  "md": "40px",
-                  "sm": "40px",
-                },
-              },
-              {
-                "padding": {
-                  "base": "60px",
-                  "md": "60px",
-                  "sm": "60px",
-                },
-              },
-              {
-                "color": {
-                  "base": "red.200",
-                  "dark": "red.200",
-                  "light": "red.200",
-                },
-              },
-              {
-                "color": {
-                  "base": "blue.200",
-                  "dark": "blue.200",
-                  "light": "blue.200",
-                },
-              },
-              {
-                "color": {
-                  "base": "green.200",
-                  "dark": "green.200",
-                  "light": "green.200",
-                },
-              },
-            ],
-            "recipes": [
-              {
-                "buttonStyle": {
-                  "size": {
-                    "base": "sm",
-                    "md": "sm",
-                    "sm": "sm",
-                  },
-                },
-              },
-              {
-                "buttonStyle": {
-                  "size": {
-                    "base": "md",
-                    "md": "md",
-                    "sm": "md",
-                  },
-                },
-              },
-              {
-                "buttonStyle": {
-                  "variant": "primary",
-                },
-              },
-              {
-                "buttonStyle": {
-                  "variant": "secondary",
-                },
-              },
-            ],
-          }
-        `)
+            },
+          },
+          {
+            "buttonStyle": {
+              "variant": "primary",
+            },
+          },
+          {
+            "buttonStyle": {
+              "variant": "secondary",
+            },
+          },
+        ],
+      }
+    `)
   })
 })
