@@ -6,7 +6,7 @@ import type { RecipeConfig } from './recipe'
 import type { Dict, RequiredBy, StringKeyOf } from './shared'
 import type { SemanticTokens, Tokens as PartialTokens } from './tokens'
 import type { UtilityConfig } from './utility'
-import type { ClassGeneratorOptions } from './generator'
+import type { StaticCssOptions } from './static-css'
 
 export type Config<
   Conditions extends TConditions = TConditions,
@@ -145,7 +145,7 @@ export type Config<
    * @experimental
    * Used to generate css utility classes for your project.
    */
-  generator?: ClassGeneratorOptions
+  static?: StaticCssOptions
 }
 
 export type TConfig = Config<TConditions, Dict, Dict>
