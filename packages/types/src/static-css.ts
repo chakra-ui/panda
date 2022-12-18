@@ -1,9 +1,11 @@
-interface CssRule {
+type CssRule = {
   /**
    * The css properties to generate utilities for.
    * @example ['margin', 'padding']
    */
-  properties: string[]
+  properties: {
+    [property: string]: string[] | boolean
+  }
   /**
    * The css conditions to generate utilities for.
    * @example ['hover', 'focus']
@@ -13,18 +15,12 @@ interface CssRule {
    * Whether to generate responsive utilities.
    */
   responsive?: boolean
-  /**
-   * The values to generate utilities for.
-   * @example ['2', '40px']
-   * @example "colors"
-   */
-  values?: string | string[]
 }
 
-interface RecipeProperties {
-  conditions: string[]
-  [variant: string]: string[]
-}
+type RecipeRule = {
+  conditions?: string[]
+  responsive?: boolean
+} & { [variant: string]: string[] }
 
 export type StaticCssOptions = {
   /**
@@ -35,6 +31,6 @@ export type StaticCssOptions = {
    * The css recipes to generate.
    */
   recipes?: {
-    [recipe: string]: RecipeProperties[]
+    [recipe: string]: RecipeRule[]
   }
 }

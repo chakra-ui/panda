@@ -34,6 +34,7 @@ export class Utility {
    * The map of possible values for each property
    */
   types: Map<string, Set<string>> = new Map()
+  propertyKeys: Map<string, Set<string>> = new Map()
   /**
    * The utility config
    */
@@ -185,6 +186,10 @@ export class Utility {
     }
   }
 
+  getPropertyKeys = (property: string) => {
+    return this.propertyKeys.get(property) ?? []
+  }
+
   private assignPropertyType = (property: string, propertyConfig: PropertyConfig) => {
     const config = this.normalize(propertyConfig)
 
@@ -198,7 +203,9 @@ export class Utility {
     }
 
     if (values) {
-      this.types.set(property, new Set(Object.keys(values)))
+      const keys = new Set(Object.keys(values))
+      this.types.set(property, keys)
+      this.propertyKeys.set(property, keys)
     }
 
     const set = this.types.get(property) ?? new Set()
