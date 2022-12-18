@@ -11,7 +11,7 @@ import type { StylesheetContext } from './types'
 export class Stylesheet {
   constructor(private context: StylesheetContext, private options?: { content: string }) {}
 
-  addGlobalCss = (styleObject: Dict) => {
+  processGlobalCss = (styleObject: Dict) => {
     const { conditions, utility } = this.context
     const css = serializeStyles(styleObject, { conditions, utility })
 
@@ -23,10 +23,6 @@ export class Stylesheet {
     })
 
     this.context.root.append(layer)
-  }
-
-  processGlobalCss = (styleObject: Dict) => {
-    this.addGlobalCss(styleObject)
   }
 
   processSelectorObject(selector: string, styleObject: Dict) {

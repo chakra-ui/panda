@@ -18,7 +18,7 @@ export function extractFile(ctx: PandaContext, file: string) {
   }
 
   if (data) {
-    result = ctx.collectStyles(data, file)
+    result = ctx.getCss(data, file)
   }
 
   if (result) {
@@ -36,4 +36,10 @@ export function extractFiles(ctx: PandaContext) {
       return result
     }
   })
+}
+
+export function extractGlobalCss(ctx: PandaContext) {
+  const css = ctx.getGlobalCss()
+  if (!css) return
+  return ctx.chunks.write('globals.css', css)
 }

@@ -12,6 +12,17 @@ export default defineConfig({
     },
   },
   jsxFramework: 'react',
+  globalCss: {
+    'html, body': {
+      margin: '0',
+      padding: '0',
+      fontFamily: 'sans',
+    },
+    a: {
+      color: 'inherit',
+      textDecoration: 'none',
+    },
+  },
   recipes: {
     button: {
       name: 'button',

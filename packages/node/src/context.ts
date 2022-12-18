@@ -208,8 +208,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * Paths
    * -----------------------------------------------------------------------------*/
 
-  function getPath(str: string) {
-    return join(cwd, outdir, str)
+  function getPath(...str: string[]) {
+    return join(cwd, outdir, ...str)
   }
 
   function absPath(str: string) {
@@ -360,12 +360,15 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     },
   })
 
-  function collectStyles(collector: Collector, file: string) {
+  function getGlobalCss() {
+    if (!globalCss) return
     const sheet = new Stylesheet(context())
+    sheet.processGlobalCss(globalCss)
+    return sheet.toCss()
+  }
 
-    if (globalCss) {
-      sheet.addGlobalCss(globalCss)
-    }
+  function getCss(collector: Collector, file: string) {
+    const sheet = new Stylesheet(context())
 
     collector.globalCss.forEach((result) => {
       sheet.processGlobalCss(result.data)
@@ -474,7 +477,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     hasTokens,
 
     utility,
-    collectStyles,
+    getCss,
+    getGlobalCss,
 
     patterns,
     hasPatterns,
