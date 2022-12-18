@@ -1,6 +1,6 @@
 import { bundleChunks } from './chunks'
 import type { PandaContext } from './context'
-import { extractFiles, extractGlobalCss } from './extract'
+import { extractFiles, extractGlobalCss, extractStaticCss } from './extract'
 import { generateSystem } from './generators'
 import { generateTokenCss, generateKeyframes } from './generators/token-css'
 import { generateReset } from './generators/reset'
@@ -16,6 +16,7 @@ export async function emitArtifacts(ctx: PandaContext) {
 export async function emitAndExtract(ctx: PandaContext) {
   await emitArtifacts(ctx)
   await extractGlobalCss(ctx)
+  await extractStaticCss(ctx)
   await extractFiles(ctx)
   await bundleChunks(ctx)
 }

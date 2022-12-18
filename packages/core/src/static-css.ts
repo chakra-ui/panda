@@ -8,10 +8,12 @@ type StaticContext = {
   }
 }
 
+const formatCondition = (ctx: StaticContext, value: string) => (ctx.breakpoints.includes(value) ? value : `_${value}`)
+
 export function getStaticCss(options: StaticCssOptions) {
   const { css = [], recipes = {} } = options
 
-  const results: { css: any[]; recipes: any[] } = { css: [], recipes: [] }
+  const results: { css: Record<string, any>[]; recipes: Record<string, any>[] } = { css: [], recipes: [] }
 
   return (ctx: StaticContext) => {
     css.forEach((rule) => {
@@ -28,7 +30,7 @@ export function getStaticCss(options: StaticCssOptions) {
             (acc, condition) => ({
               base: value,
               ...acc,
-              [condition]: value,
+              [formatCondition(ctx, condition)]: value,
             }),
             {},
           )
@@ -49,12 +51,14 @@ export function getStaticCss(options: StaticCssOptions) {
         }
 
         Object.entries(variants).forEach(([variant, values]) => {
+          if (!Array.isArray(values)) return
+
           values.forEach((value) => {
             const conditionalValues = conditions.reduce(
               (acc, condition) => ({
                 base: value,
                 ...acc,
-                [condition]: value,
+                [formatCondition(ctx, condition)]: value,
               }),
               {},
             )

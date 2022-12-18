@@ -187,7 +187,8 @@ export class Utility {
   }
 
   getPropertyKeys = (property: string) => {
-    return this.propertyKeys.get(property) ?? []
+    const keys = this.propertyKeys.get(property)
+    return keys ? Array.from(keys) : []
   }
 
   private assignPropertyType = (property: string, propertyConfig: PropertyConfig) => {

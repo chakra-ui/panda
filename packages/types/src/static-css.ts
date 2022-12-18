@@ -20,7 +20,7 @@ type CssRule = {
 type RecipeRule = {
   conditions?: string[]
   responsive?: boolean
-} & { [variant: string]: string[] }
+} & { [variant: string]: boolean | string[] }
 
 export type StaticCssOptions = {
   /**

@@ -41,5 +41,11 @@ export function extractFiles(ctx: PandaContext) {
 export function extractGlobalCss(ctx: PandaContext) {
   const css = ctx.getGlobalCss()
   if (!css) return
-  return ctx.chunks.write('globals.css', css)
+  return ctx.chunks.write('system/global.css', css)
+}
+
+export function extractStaticCss(ctx: PandaContext) {
+  const css = ctx.getStaticCss()
+  if (!css) return
+  return ctx.chunks.write('system/static.css', css)
 }

@@ -3,6 +3,7 @@ import {
   assignCompositions,
   Conditions,
   discardDuplicate,
+  getStaticCss as getStaticCssCore,
   Stylesheet,
   StylesheetContext,
   Utility,
@@ -88,6 +89,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     jsxFramework,
     globalCss,
     separator,
+    static: staticCss,
   } = config
 
   const cwd = resolve(cwdProp)
@@ -185,6 +187,14 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     const recipe = recipeNodes.find((node) => node.name === name)
     if (!recipe) return [{}, props]
     return splitProps(props, recipe.props)
+  }
+
+  function getRecipeDetails() {
+    return Object.entries(recipes).map(([name, recipe]) => ({
+      [name]: Object.entries(recipe.variants ?? {}).map(([key, value]) => ({
+        [key]: Object.keys(value),
+      })),
+    }))
   }
 
   const hasRecipes = Object.keys(recipes).length > 0
@@ -367,6 +377,36 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     return sheet.toCss()
   }
 
+  function getStaticCss() {
+    if (!staticCss) return
+
+    const sheet = new Stylesheet(context())
+    const recipes = getRecipeDetails()
+
+    const getResults = getStaticCssCore(staticCss)
+    const results = getResults({
+      breakpoints: Object.keys(breakpoints ?? {}),
+      getPropertyKeys: utility.getPropertyKeys,
+      getRecipeKeys(recipe) {
+        return recipes[recipe]
+      },
+    })
+
+    results.css.forEach((css) => {
+      sheet.processAtomic(css)
+    })
+
+    results.recipes.forEach((result) => {
+      Object.entries(result).forEach(([key, value]) => {
+        const recipe = getRecipe(key)
+        if (!recipe) return
+        sheet.processRecipe(recipe, value)
+      })
+    })
+
+    return sheet.toCss()
+  }
+
   function getCss(collector: Collector, file: string) {
     const sheet = new Stylesheet(context())
 
@@ -479,6 +519,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     utility,
     getCss,
     getGlobalCss,
+    getStaticCss,
 
     patterns,
     hasPatterns,
@@ -490,6 +531,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     recipes,
     getRecipe,
     hasRecipes,
+    getRecipeDetails,
 
     jsxFramework,
     jsxFactory,
