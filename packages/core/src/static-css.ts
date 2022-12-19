@@ -23,7 +23,7 @@ export function getStaticCss(options: StaticCssOptions) {
       }
 
       Object.entries(rule.properties).forEach(([property, values]) => {
-        const computedValues = typeof values === 'boolean' ? ctx.getPropertyKeys(property) : values
+        const computedValues = values.flatMap((value) => (value === '*' ? ctx.getPropertyKeys(property) : value))
 
         computedValues.forEach((value) => {
           const conditionalValues = conditions.reduce(
@@ -53,7 +53,9 @@ export function getStaticCss(options: StaticCssOptions) {
         Object.entries(variants).forEach(([variant, values]) => {
           if (!Array.isArray(values)) return
 
-          values.forEach((value) => {
+          const computedValues = values.flatMap((value) => (value === '*' ? ctx.getRecipeKeys(recipe)[variant] : value))
+
+          computedValues.forEach((value) => {
             const conditionalValues = conditions.reduce(
               (acc, condition) => ({
                 base: value,

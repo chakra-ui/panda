@@ -4,7 +4,7 @@ type CssRule = {
    * @example ['margin', 'padding']
    */
   properties: {
-    [property: string]: string[] | boolean
+    [property: string]: string[]
   }
   /**
    * The css conditions to generate utilities for.
