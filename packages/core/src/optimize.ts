@@ -1,10 +1,12 @@
 import postcss from 'postcss'
 import dedupe from 'postcss-discard-duplicates'
+import discardEmpty from 'postcss-discard-empty'
+import mergeRules from 'postcss-merge-rules'
 import nested from 'postcss-nested'
 import normalizeWhiteSpace from 'postcss-normalize-whitespace'
 import mergeCascadeLayers from './plugins/merge-layers'
-import sortMediaQueries from './plugins/sort-mq'
 import prettify from './plugins/prettify'
+import sortMediaQueries from './plugins/sort-mq'
 
 export function optimizeCss(code: string, { minify = false }: { minify?: boolean } = {}) {
   const { css } = postcss([
@@ -12,6 +14,8 @@ export function optimizeCss(code: string, { minify = false }: { minify?: boolean
     mergeCascadeLayers(),
     sortMediaQueries(),
     dedupe(),
+    mergeRules(),
+    discardEmpty(),
     minify ? normalizeWhiteSpace() : prettify(),
   ]).process(code)
 
