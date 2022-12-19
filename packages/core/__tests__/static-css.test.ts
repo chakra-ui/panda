@@ -35,7 +35,7 @@ const getStyles = getStaticCss({
     {
       conditions: ['light', 'dark'],
       properties: {
-        color: true,
+        color: ['*'],
       },
     },
   ],
