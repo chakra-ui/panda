@@ -22,6 +22,12 @@ export async function emitAndExtract(ctx: PandaContext) {
 }
 
 export function getBaseCss(ctx: PandaContext) {
-  const css = [generateReset(), generateTokenCss(ctx), generateKeyframes(ctx.keyframes), ctx.getGlobalCss()]
+  const css = [
+    generateReset(),
+    generateTokenCss(ctx),
+    generateKeyframes(ctx.keyframes),
+    ctx.getGlobalCss(),
+    ctx.getStaticCss(),
+  ]
   return css.filter(Boolean).join('\n\n')
 }
