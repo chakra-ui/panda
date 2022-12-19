@@ -302,6 +302,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * -----------------------------------------------------------------------------*/
 
   function getFiles() {
+    if (!config.include) return []
     return glob.sync(config.include, { cwd, ignore: config.exclude, absolute: true })
   }
 
