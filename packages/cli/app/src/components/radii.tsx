@@ -5,7 +5,7 @@ import { Grid, panda, Stack } from '../../design-system/jsx'
 import { getSortedSizes } from '../utils/sizes-sort'
 import { TokenGroup } from './token-group'
 
-const radii = new TokenDictionary(config).categoryMap.get('radii')
+const radii = new TokenDictionary(config.theme!).categoryMap.get('radii')
 
 export function Radii() {
   return (

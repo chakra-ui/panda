@@ -5,7 +5,7 @@ import { FontTokens } from '../components/font-tokens'
 import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
 
-const tokenDictionary = new TokenDictionary(config)
+const tokenDictionary = new TokenDictionary(config.theme)
 const tokens = Object.fromEntries(tokenDictionary.categoryMap)
 ---
 

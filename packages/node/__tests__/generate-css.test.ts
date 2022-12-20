@@ -9,11 +9,13 @@ const conf: LoadConfigResult = {
   config: {
     cwd: '',
     include: [],
-    tokens,
-    semanticTokens,
-    breakpoints,
+    theme: {
+      tokens,
+      semanticTokens,
+      breakpoints,
+      keyframes,
+    },
     conditions,
-    keyframes,
     outdir: '',
   },
   path: '',

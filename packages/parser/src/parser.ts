@@ -21,15 +21,17 @@ export function createProject(compilerOptions: Partial<CompilerOptions> = {}) {
   })
 }
 
+type ParserNodeOptions = {
+  name: string
+  type: 'pattern' | 'recipe'
+  props?: string[]
+}
+
 type ParserOptions = {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string>
   jsx?: {
     factory: string
-    nodes: Array<{
-      name: string
-      type: 'pattern' | 'recipe'
-      props?: string[]
-    }>
+    nodes: ParserNodeOptions[]
     isStyleProp: (prop: string) => boolean
   }
 }

@@ -9,7 +9,7 @@ export async function extractChunks(ctx: PandaContext) {
       '@layer reset, base, tokens, recipes, utilities;',
       ctx.preflight && "@import './reset.css';",
       !ctx.tokens.isEmpty && "@import './tokens/index.css';",
-      ctx.keyframes && "@import './tokens/keyframes.css';",
+      ctx.theme.keyframes && "@import './tokens/keyframes.css';",
     ]
       .filter(Boolean)
       .join('\n\n'),

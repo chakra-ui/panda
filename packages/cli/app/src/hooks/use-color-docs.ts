@@ -59,7 +59,7 @@ const getSemanticTokens = (allTokens: ColorToken[], filterMethod?: (token: Color
 }
 
 export const useColorDocs = () => {
-  const tokenDictionary = new TokenDictionary(config)
+  const tokenDictionary = new TokenDictionary(config.theme!)
   const tokens = Object.fromEntries(tokenDictionary.categoryMap)
   const allTokens = tokenDictionary.allTokens
 

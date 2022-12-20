@@ -15,3 +15,9 @@ export type AnyFunction<T = any> = (...args: T[]) => any
 export type StringKeyOf<T> = Extract<keyof T, string>
 
 export type Extendable<T> = T & { extend?: T }
+
+type Nullable<T> = T | null | undefined
+
+export type UnwrapExtend<T extends Record<string, unknown>> = {
+  [K in keyof T]: T[K] extends Nullable<Extendable<infer U>> ? U : T[K]
+}
