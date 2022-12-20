@@ -491,6 +491,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
   return {
     ...config,
+    theme,
     config,
     configPath: conf.path,
     cwd,

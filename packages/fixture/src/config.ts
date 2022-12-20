@@ -8,13 +8,15 @@ import { recipes } from './recipes'
 import { semanticTokens, tokens } from './tokens'
 
 export const config: Config = {
-  breakpoints,
   cssVarPrefix: 'pd',
-  keyframes,
-  tokens,
-  semanticTokens,
+  theme: {
+    tokens,
+    breakpoints,
+    keyframes,
+    semanticTokens,
+    recipes,
+  },
   conditions,
   utilities,
-  recipes,
   patterns,
 }

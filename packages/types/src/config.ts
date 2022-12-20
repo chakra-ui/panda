@@ -88,7 +88,7 @@ export type Config<
   /**
    * The theme configuration for your project.
    */
-  theme: Extendable<{
+  theme?: Extendable<{
     /**
      * The breakpoints for your project.
      */

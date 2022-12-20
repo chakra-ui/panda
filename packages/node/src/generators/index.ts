@@ -28,7 +28,7 @@ function setupHelpers(ctx: PandaContext): Output {
 }
 
 function setupKeyframes(ctx: PandaContext): Output {
-  const code = generateKeyframes(ctx.keyframes)
+  const code = generateKeyframes(ctx.theme.keyframes)
   return {
     dir: ctx.paths.token,
     files: [{ file: 'keyframes.css', code }],

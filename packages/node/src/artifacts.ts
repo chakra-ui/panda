@@ -25,7 +25,7 @@ export function getBaseCss(ctx: PandaContext) {
   const css = [
     generateReset(),
     generateTokenCss(ctx),
-    generateKeyframes(ctx.keyframes),
+    generateKeyframes(ctx.theme.keyframes),
     ctx.getGlobalCss(),
     ctx.getStaticCss(),
   ]
