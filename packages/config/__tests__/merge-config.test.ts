@@ -143,13 +143,13 @@ describe('mergeConfigs / utilities', () => {
 describe('mergeConfigs / recipes', () => {
   test('should merge utilities', () => {
     const userConfig = {
-      recipes: {
-        extend: {
-          button: {
-            variants: {
-              size: {
-                large: {
-                  fontSize: 'lg',
+      theme: {
+        recipes: {
+          extend: {
+            button: {
+              variants: {
+                size: {
+                  large: { fontSize: 'lg' },
                 },
               },
             },
@@ -159,13 +159,15 @@ describe('mergeConfigs / recipes', () => {
     }
 
     const defaultConfig = {
-      recipes: {
-        button: {
-          name: 'button',
-          variants: {
-            size: {
-              small: {
-                fontSize: 'sm',
+      theme: {
+        recipes: {
+          button: {
+            name: 'button',
+            variants: {
+              size: {
+                small: {
+                  fontSize: 'sm',
+                },
               },
             },
           },
@@ -175,7 +177,7 @@ describe('mergeConfigs / recipes', () => {
 
     const result = mergeConfigs([userConfig, defaultConfig])
 
-    expect(result.recipes).toMatchInlineSnapshot(`
+    expect(result.theme.recipes).toMatchInlineSnapshot(`
       {
         "button": {
           "name": "button",
