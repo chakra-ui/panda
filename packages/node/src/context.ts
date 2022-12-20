@@ -71,19 +71,14 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
   const {
     cwd: cwdProp = process.cwd(),
-    breakpoints = {},
     conditions: conditionsProp = {},
-    tokens: tokensProp = {},
-    semanticTokens = {},
     cssVarPrefix,
     cssVarRoot = ':where(:root, :host)',
     outdir,
     exclude: excludeProp = [],
     patterns = {},
-    recipes = {},
+    theme = {},
     utilities = {},
-    textStyles,
-    layerStyles,
     hash,
     jsxFactory = 'panda',
     jsxFramework,
@@ -91,6 +86,15 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     separator,
     static: staticCss,
   } = config
+
+  const {
+    breakpoints = {},
+    tokens: tokensProp = {},
+    semanticTokens = {},
+    recipes = {},
+    textStyles,
+    layerStyles,
+  } = theme
 
   const cwd = resolve(cwdProp)
   const exclude = ['.git', 'node_modules', 'test-results'].concat(excludeProp)

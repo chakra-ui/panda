@@ -1,9 +1,9 @@
-import { ConfigNotFoundError, ConfigError } from '@pandacss/error'
+import { ConfigError, ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import type { UserConfig } from '@pandacss/types'
-import { merge } from 'merge-anything'
 import { bundleAndRequire } from './bundle-require'
 import { findConfigFile } from './find-config'
+import { getResolvedConfig } from './merge-config'
 
 type ConfigFileOptions = {
   cwd: string
@@ -27,18 +27,14 @@ export async function loadConfigFile(options: ConfigFileOptions) {
     throw new ConfigError(`💥 Config must export or return an object.`)
   }
 
-  const presets = result.config.presets ?? []
+  // set default presets
+  result.config.presets ||= ['css-panda/presets']
 
-  for (const preset of presets) {
-    const presetResult = await bundleAndRequire(preset, cwd)
-    // TODO: create custom mergeConfig
-    result.config = merge({}, presetResult.config, result.config) as any
-  }
-
-  delete result.config.presets
+  const mergedConfig = await getResolvedConfig(result.config, cwd)
 
   return {
     ...result,
+    config: mergedConfig,
     path: filePath,
   }
 }
