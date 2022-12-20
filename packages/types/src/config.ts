@@ -3,7 +3,7 @@ import type { Conditions as TConditions } from './conditions'
 import type { CssKeyframes, GlobalStyleObject } from './system-types'
 import type { PatternConfig } from './pattern'
 import type { RecipeConfig } from './recipe'
-import type { Dict, RequiredBy, StringKeyOf } from './shared'
+import type { Dict, Extendable, RequiredBy, StringKeyOf, UnwrapExtend } from './shared'
 import type { SemanticTokens, Tokens as PartialTokens } from './tokens'
 import type { UtilityConfig } from './utility'
 import type { StaticCssOptions } from './static-css'
@@ -80,48 +80,53 @@ export type Config<
    * The css selectors or media queries shortcuts.
    * @example `{ hover: "&:hover" }`
    */
-  conditions?: TConditions
-  /**
-   * The breakpoints for your project.
-   */
-  breakpoints?: Breakpoints
-  /**
-   * The css animation keyframes definitions.
-   */
-  keyframes?: CssKeyframes
+  conditions?: Extendable<TConditions>
   /**
    * The global styles for your project.
    */
   globalCss?: GlobalStyleObject
   /**
-   * The design tokens for your project.
+   * The theme configuration for your project.
    */
-  tokens?: Tokens
-  /**
-   * The semantic design tokens for your project.
-   */
-  semanticTokens?: SemanticTokens<StringKeyOf<Conditions> | StringKeyOf<Breakpoints> | 'base' | '_'>
-  /**
-   * The typography styles for your project.
-   */
-  textStyles?: TextStyles
-  /**
-   * The layer styles for your project.
-   */
-  layerStyles?: LayerStyles
+  theme: Extendable<{
+    /**
+     * The breakpoints for your project.
+     */
+    breakpoints?: Breakpoints
+    /**
+     * The css animation keyframes definitions.
+     */
+    keyframes?: CssKeyframes
+    /**
+     * The design tokens for your project.
+     */
+    tokens?: Tokens
+    /**
+     * The semantic design tokens for your project.
+     */
+    semanticTokens?: SemanticTokens<StringKeyOf<Conditions> | StringKeyOf<Breakpoints> | 'base' | '_'>
+    /**
+     * The typography styles for your project.
+     */
+    textStyles?: TextStyles
+    /**
+     * The layer styles for your project.
+     */
+    layerStyles?: LayerStyles
+    /**
+     * Multi-variant style definitions for your project.
+     * Useful for defining component styles.
+     */
+    recipes?: Record<string, RecipeConfig>
+  }>
   /**
    * The css utility definitions.
    */
-  utilities?: UtilityConfig
-  /**
-   * Multi-variant style definitions for your project.
-   * Useful for defining component styles.
-   */
-  recipes?: Record<string, RecipeConfig>
+  utilities?: Extendable<UtilityConfig>
   /**
    * Common styling or layout patterns for your project.
    */
-  patterns?: Record<string, PatternConfig>
+  patterns?: Extendable<Record<string, PatternConfig>>
   /**
    * The framework to use for generating supercharged elements.
    * @default 'react'
@@ -150,4 +155,4 @@ export type Config<
 
 export type TConfig = Config<TConditions, Dict, Dict>
 
-export type UserConfig = RequiredBy<Config, 'outdir' | 'cwd' | 'include'>
+export type UserConfig = UnwrapExtend<RequiredBy<Config, 'outdir' | 'cwd' | 'include'>>
