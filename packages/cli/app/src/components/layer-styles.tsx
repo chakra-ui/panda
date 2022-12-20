@@ -8,7 +8,7 @@ import { TokenGroup } from './token-group'
 import { TokenContent } from './token-content'
 
 export function LayerStyles() {
-  const textStyles = flattenLayerStyles(config.layerStyles)
+  const textStyles = flattenLayerStyles(config.theme?.layerStyles ?? {})
 
   return (
     <TokenGroup>
