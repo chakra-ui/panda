@@ -1,8 +1,8 @@
-import { defineConfig } from '../src/index'
 import { config } from '../src/presets'
 
-export default defineConfig({
+export default {
   preflight: true,
+  presets: [],
   ...config,
   include: ['./src/**/*.{tsx,jsx,astro}'],
   exclude: [],
@@ -20,7 +20,7 @@ export default defineConfig({
     borderSlim: {
       className: 'border-slim',
       values: 'colors',
-      transform(value) {
+      transform(value: any) {
         return {
           borderWidth: '1px',
           borderStyle: 'solid',
@@ -59,4 +59,4 @@ export default defineConfig({
       minHeight: '100vh',
     },
   },
-})
+}
