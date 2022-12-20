@@ -10,7 +10,7 @@ import { toPx } from '@pandacss/shared'
 const NUMBER_OF_ITEMS = 3
 
 export function SpacingPlayground() {
-  const tokenDictionary = new TokenDictionary(config)
+  const tokenDictionary = new TokenDictionary(config.theme!)
   const tokens = Object.fromEntries(tokenDictionary.categoryMap)
 
   const { sizes: sizesProp } = tokens

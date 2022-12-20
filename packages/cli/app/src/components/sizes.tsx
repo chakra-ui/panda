@@ -8,7 +8,7 @@ import { TokenGroup } from './token-group'
 export type SizesProps = { sizes: Map<string, any> }
 
 export function Sizes() {
-  const tokenDictionary = new TokenDictionary(config)
+  const tokenDictionary = new TokenDictionary(config.theme!)
   const tokens = Object.fromEntries(tokenDictionary.categoryMap)
   const values = Array.from(tokens.sizes.values())
 
