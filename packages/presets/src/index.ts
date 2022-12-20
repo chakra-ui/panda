@@ -8,12 +8,14 @@ import { patterns } from './patterns'
 import { textStyles } from './typography'
 
 export const config: Config = {
-  breakpoints,
-  tokens,
+  theme: {
+    keyframes,
+    breakpoints,
+    tokens,
+    textStyles,
+  },
   conditions,
-  keyframes,
   utilities,
-  textStyles,
   patterns,
 }
 
