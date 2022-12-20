@@ -1,4 +1,4 @@
-import { config } from '../src/presets'
+import config from '../src/presets'
 
 export default {
   preflight: true,

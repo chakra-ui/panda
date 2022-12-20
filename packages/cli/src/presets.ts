@@ -1,1 +1,2 @@
-export * from '@pandacss/presets'
+import { config } from '@pandacss/presets'
+export default config

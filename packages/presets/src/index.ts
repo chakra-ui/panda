@@ -7,18 +7,18 @@ import { utilities } from './utilities'
 import { patterns } from './patterns'
 import { textStyles } from './typography'
 
+const theme = {
+  keyframes,
+  breakpoints,
+  tokens,
+  textStyles,
+}
+
 export const config: Config = {
-  theme: {
-    keyframes,
-    breakpoints,
-    tokens,
-    textStyles,
-  },
+  theme,
   conditions,
   utilities,
   patterns,
 }
-
-export { tokens, breakpoints, conditions, utilities, keyframes, textStyles, patterns }
 
 export default config
