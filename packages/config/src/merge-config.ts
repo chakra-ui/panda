@@ -70,7 +70,7 @@ export async function getResolvedConfig(config: ExtendableRecord, cwd: string) {
     presets
       .slice()
       .reverse()
-      .flatMap(async (preset: any) => {
+      .map(async (preset: any) => {
         const presetModule = await bundleAndRequire(preset, cwd)
         return getResolvedConfig(presetModule.config, cwd)
       }),

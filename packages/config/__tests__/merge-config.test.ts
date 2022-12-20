@@ -104,6 +104,39 @@ describe('mergeConfigs / theme', () => {
       },
     })
   })
+
+  test('non-existing keys', () => {
+    const userConfig = {
+      theme: {
+        extend: {
+          colors: {
+            blue: 'blue',
+          },
+        },
+      },
+    }
+
+    const defaultConfig = {
+      theme: {
+        fonts: {
+          sans: 'Lato, sans-serif',
+        },
+      },
+    }
+
+    const result = mergeConfigs([userConfig, defaultConfig])
+
+    expect(result).toMatchObject({
+      theme: {
+        fonts: {
+          sans: 'Lato, sans-serif',
+        },
+        colors: {
+          blue: 'blue',
+        },
+      },
+    })
+  })
 })
 
 describe('mergeConfigs / utilities', () => {
@@ -179,15 +212,13 @@ describe('mergeConfigs / recipes', () => {
 
     expect(result.theme.recipes).toMatchInlineSnapshot(`
       {
-        "button": {
-          "name": "button",
-          "variants": {
-            "size": {
-              "large": {
-                "fontSize": "lg",
-              },
-              "small": {
-                "fontSize": "sm",
+        "extend": {
+          "button": {
+            "variants": {
+              "size": {
+                "large": {
+                  "fontSize": "lg",
+                },
               },
             },
           },
