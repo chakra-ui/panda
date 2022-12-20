@@ -53,7 +53,6 @@ export function mergeConfigs(configs: ExtendableRecord[]) {
     {
       conditions: mergeExtensions(configs.map((config) => config.conditions ?? {})),
       theme: mergeExtensions(configs.map((config) => config.theme ?? {})),
-      recipes: mergeExtensions(configs.map((config) => config.recipes ?? {})),
       patterns: mergeExtensions(configs.map((config) => config.patterns ?? {})),
       utilities: mergeExtensions(configs.map((config) => config.utilities ?? {})),
     },
