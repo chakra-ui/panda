@@ -344,7 +344,7 @@ importers:
       postcss: 8.4.20
       react: 18.2.0
       react-dom: 18.2.0
-      vite: 4.0.2
+      vite: 4.0.3
     dependencies:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
@@ -352,10 +352,10 @@ importers:
       '@pandacss/fixture': link:../../packages/fixture
       '@types/react': 18.0.17
       '@types/react-dom': 18.0.9
-      '@vitejs/plugin-react': 3.0.0_vite@4.0.2
+      '@vitejs/plugin-react': 3.0.0_vite@4.0.3
       css-panda: link:../../packages/cli
       postcss: 8.4.20
-      vite: 4.0.2
+      vite: 4.0.3
 
 packages:
 
@@ -2431,7 +2431,7 @@ packages:
       - supports-color
     dev: true
 
-  /@vitejs/plugin-react/3.0.0_vite@4.0.2:
+  /@vitejs/plugin-react/3.0.0_vite@4.0.3:
     resolution: {integrity: sha512-1mvyPc0xYW5G8CHQvJIJXLoMjl5Ct3q2g5Y2s6Ccfgwm45y48LBvsla7az+GkkAtYikWQ4Lxqcsq5RHLcZgtNQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -2442,7 +2442,7 @@ packages:
       '@babel/plugin-transform-react-jsx-source': 7.19.6_@babel+core@7.20.5
       magic-string: 0.27.0
       react-refresh: 0.14.0
-      vite: 4.0.2
+      vite: 4.0.3
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -8327,8 +8327,8 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vite/4.0.2:
-    resolution: {integrity: sha512-QJaY3R+tFlTagH0exVqbgkkw45B+/bXVBzF2ZD1KB5Z8RiAoiKo60vSUf6/r4c2Vh9jfGBKM4oBI9b4/1ZJYng==}
+  /vite/4.0.3:
+    resolution: {integrity: sha512-HvuNv1RdE7deIfQb8mPk51UKjqptO/4RXZ5yXSAvurd5xOckwS/gg8h9Tky3uSbnjYTgUm0hVCet1cyhKd73ZA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -8360,8 +8360,8 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /vite/4.0.2_@types+node@18.11.17:
-    resolution: {integrity: sha512-QJaY3R+tFlTagH0exVqbgkkw45B+/bXVBzF2ZD1KB5Z8RiAoiKo60vSUf6/r4c2Vh9jfGBKM4oBI9b4/1ZJYng==}
+  /vite/4.0.3_@types+node@18.11.17:
+    resolution: {integrity: sha512-HvuNv1RdE7deIfQb8mPk51UKjqptO/4RXZ5yXSAvurd5xOckwS/gg8h9Tky3uSbnjYTgUm0hVCet1cyhKd73ZA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -8440,7 +8440,7 @@ packages:
       tinybench: 2.3.1
       tinypool: 0.3.0
       tinyspy: 1.0.2
-      vite: 4.0.2_@types+node@18.11.17
+      vite: 4.0.3_@types+node@18.11.17
     transitivePeerDependencies:
       - less
       - sass
