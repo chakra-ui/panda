@@ -103,9 +103,9 @@ async function createAssetWatcher(ctx: PandaContext, callback: () => Promise<voi
 process.setMaxListeners(Infinity)
 
 type Options = {
-  onConfigChange: () => Promise<void>
-  onContentChange: (file: string) => Promise<void>
-  onAssetChange: () => Promise<void>
+  onConfigChange: () => Promise<any>
+  onContentChange: (file: string) => Promise<any>
+  onAssetChange: () => Promise<any>
 }
 
 export async function watch(ctx: PandaContext, options: Options) {
@@ -114,7 +114,6 @@ export async function watch(ctx: PandaContext, options: Options) {
   const configWatcher = await createConfigWatcher(ctx.conf)
 
   async function close() {
-    await configWatcher.close()
     await chunkDirWatcher.close()
     await contentWatcher.close()
   }
