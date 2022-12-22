@@ -109,17 +109,11 @@ type Options = {
 }
 
 export async function watch(ctx: PandaContext, options: Options) {
-  const chunkDirWatcher = await createAssetWatcher(ctx, options.onAssetChange)
-  const contentWatcher = await createContentWatcher(ctx, options.onContentChange)
+  await createAssetWatcher(ctx, options.onAssetChange)
+  await createContentWatcher(ctx, options.onContentChange)
   const configWatcher = await createConfigWatcher(ctx.conf)
 
-  async function close() {
-    await chunkDirWatcher.close()
-    await contentWatcher.close()
-  }
-
   configWatcher.on('change', async () => {
-    await close()
     logger.info('Config changed, restarting...')
     await options.onConfigChange()
   })
