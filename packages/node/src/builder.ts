@@ -1,4 +1,4 @@
-import { discardDuplicate, Stylesheet } from '@pandacss/core'
+import { discardDuplicate, mergeCss, Stylesheet } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { toHash } from '@pandacss/shared'
@@ -47,7 +47,7 @@ export class Builder {
 
   updateFile(file: string, css: string) {
     const oldCss = this.fileCssMap?.get(file) ?? ''
-    const newCss = discardDuplicate([oldCss, css].join('\n\n'))
+    const newCss = mergeCss(oldCss, css)
     this.fileCssMap?.set(file, newCss)
   }
 

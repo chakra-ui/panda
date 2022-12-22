@@ -1,4 +1,4 @@
-import postcss from 'postcss'
+import postcss, { Root } from 'postcss'
 import dedupe from 'postcss-discard-duplicates'
 import discardEmpty from 'postcss-discard-empty'
 import mergeRules from 'postcss-merge-rules'
@@ -22,7 +22,7 @@ export function optimizeCss(code: string, { minify = false }: { minify?: boolean
   return css
 }
 
-export function discardDuplicate(code: string) {
+export function discardDuplicate(code: string | Root) {
   const { css } = postcss([mergeCascadeLayers(), dedupe()]).process(code)
   return css
 }

@@ -2,8 +2,8 @@ import type { LoadConfigResult } from '@pandacss/config'
 import {
   assignCompositions,
   Conditions,
-  discardDuplicate,
   getStaticCss as getStaticCssCore,
+  mergeCss,
   Stylesheet,
   StylesheetContext,
   Utility,
@@ -288,7 +288,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       const fileName = chunks.format(file)
 
       const oldCss = await chunks.readFile(file)
-      const newCss = discardDuplicate([oldCss.trim(), css.trim()].filter(Boolean).join('\n\n'))
+      const newCss = mergeCss(oldCss, css)
 
       logger.debug({ type: 'chunk:write', file, path: fileName })
 

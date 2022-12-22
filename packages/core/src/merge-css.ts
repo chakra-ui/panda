@@ -1,6 +1,7 @@
 import type { AtRule } from 'postcss'
 import postcss from 'postcss'
 import { isMatching } from 'ts-pattern'
+import { discardDuplicate } from './optimize'
 
 // write postcss plugin to merge two css strings
 // merge layer (utilities) at-rules and override other layers
@@ -25,5 +26,5 @@ export function mergeCss(oldCss: string, newCss: string) {
     })
   })
 
-  return newRoot.toString()
+  return discardDuplicate(newRoot)
 }
