@@ -21,7 +21,7 @@
   ],
   "devDependencies": {
     "outdent": " ^0.8.0",
-    "mdn-data": "^2.0.29",
+    "mdn-data": "^2.0.30",
     "css-in-js-utils": "^3.1.0"
   }
 }

@@ -23,6 +23,6 @@
   },
   "devDependencies": {
     "matcher": "5.0.0",
-    "boxen": "^7.0.0"
+    "boxen": "^7.0.1"
   }
 }

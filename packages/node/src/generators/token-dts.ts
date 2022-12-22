@@ -1,7 +1,7 @@
 import type { TokenDictionary } from '@pandacss/token-dictionary'
 import { unionType, capitalize } from '@pandacss/shared'
 import { outdent } from 'outdent'
-import { singular } from 'pluralize'
+import pluralize from 'pluralize'
 
 export function generateTokenDts(dict: TokenDictionary) {
   const set = new Set<string>()
@@ -14,7 +14,7 @@ export function generateTokenDts(dict: TokenDictionary) {
     interfaceSet.add('[token: string]: string')
   } else {
     for (const [key, value] of dict.categoryMap.entries()) {
-      const typeName = capitalize(singular(key))
+      const typeName = capitalize(pluralize.singular(key))
       set.add(`export type ${typeName} = ${unionType(value.keys())}`)
       set.add(`export type ColorPalette = ${unionType(Object.keys(dict.colorPalettes))}`)
       interfaceSet.add(`\t\t${key}: ${typeName}`)
