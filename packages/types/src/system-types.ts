@@ -134,6 +134,10 @@ type Nested<C extends Cond, P> = P & {
 
 /* -----------------------------------------------------------------------------
  * Mixed css properties (native + conditional + custom properties)
+
+   C - condition record
+   P - custom properties or utilities
+   S - strict mode? true or false
  * -----------------------------------------------------------------------------*/
 
 type NativeCssValue<T> = T extends NativeCssProperty ? NativeCssProperties[T] : never
