@@ -39,11 +39,11 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     dts: outdent`
     import { ComponentProps, JSX, ComponentChildren } from 'preact';
     import { ${upperName}Properties } from '../patterns/${dashCase(name)}'
-    import { JSXStyleProperties, Assign } from '../types'
+    import { JsxStyleProps, Assign } from '../types'
     
     type ElementType = keyof JSX.IntrinsicElements
         
-    type Polymorphic<C extends ElementType = 'div', P = {}> = JSXStyleProperties |
+    type Polymorphic<C extends ElementType = 'div', P = {}> = JsxStyleProps |
       Assign<Omit<ComponentProps<C>, 'color'>, P & { as?: C }>
 
     type ${jsxName}Props<C extends ElementType = 'div'> = Polymorphic<C, ${upperName}Properties>

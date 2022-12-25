@@ -140,7 +140,7 @@ function setupPatterns(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.pattern,
     files: [
-      ...files.map((file) => ({ file: `${file.name}.js`, code: file.js })),
+      ...files.map((file) => ({ file: `${file.name}.mjs`, code: file.js })),
       ...files.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
       { file: 'index.mjs', code: indexCode },
       { file: 'index.d.ts', code: indexCode },

@@ -302,6 +302,8 @@ importers:
     specifiers:
       '@pandacss/fixture': workspace:*
       '@pandacss/node': workspace:*
+      '@types/react': 18.0.17
+      '@types/react-dom': ^18.0.10
       css-panda: workspace:*
       eslint: 8.30.0
       eslint-config-next: 13.1.1
@@ -315,6 +317,8 @@ importers:
     devDependencies:
       '@pandacss/fixture': link:../../packages/fixture
       '@pandacss/node': link:../../packages/node
+      '@types/react': 18.0.17
+      '@types/react-dom': 18.0.10
       css-panda: link:../../packages/cli
       eslint: 8.30.0
       eslint-config-next: 13.1.1_eslint@8.30.0
@@ -2248,7 +2252,7 @@ packages:
     dependencies:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.2
-      csstype: 3.1.0
+      csstype: 3.1.1
 
   /@types/resolve/1.20.2:
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
@@ -3304,9 +3308,6 @@ packages:
     dependencies:
       postcss: 8.4.20
     dev: false
-
-  /csstype/3.1.0:
-    resolution: {integrity: sha512-uX1KG+x9h5hIJsaKR9xHUeUraxf8IODOwq9JLNPq6BwB04a/xgpq3rcx47l5BZu5zBPlgD342tdke3Hom/nJRA==}
 
   /csstype/3.1.1:
     resolution: {integrity: sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw==}

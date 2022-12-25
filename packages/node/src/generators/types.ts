@@ -20,7 +20,7 @@ export function generateCssType(ctx: PandaContext) {
     
     export type SystemStyleObject = System.StyleObject<Conditions, PropTypes${strict ? ', true' : ''}>
     export type GlobalStyleObject = System.GlobalStyleObject<Conditions, PropTypes${strict ? ', true' : ''}>
-    export type JSXStyleProperties = System.JSXStyleProperties<Conditions, PropTypes${strict ? ', true' : ''}>
+    export type JsxStyleProps = System.JsxStyleProps<Conditions, PropTypes${strict ? ', true' : ''}>
 
     export type ConditionalValue<T> = System.Conditional<Conditions, T>
     export type Assign<T, U> = Omit<T, keyof U> & U

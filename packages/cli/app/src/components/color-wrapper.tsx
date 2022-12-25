@@ -1,8 +1,8 @@
 import { panda } from '../../design-system/jsx'
-import type { JSXStyleProperties } from '../../design-system/types'
+import type { JsxStyleProps } from '../../design-system/types'
 import type { PropsWithChildren } from 'react'
 
-export function ColorWrapper(props: PropsWithChildren<JSXStyleProperties>) {
+export function ColorWrapper(props: PropsWithChildren<JsxStyleProps>) {
   return (
     <panda.div
       width="full"

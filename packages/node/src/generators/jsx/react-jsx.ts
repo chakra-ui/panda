@@ -9,11 +9,11 @@ export function generateReactJsxFactory(ctx: PandaContext) {
   return {
     dts: outdent`
     import type { ComponentProps } from "react"
-    import type { JSXStyleProperties } from "../types"
+    import type { JsxStyleProps } from "../types"
     
     type Element = keyof JSX.IntrinsicElements
 
-    export type HTML${upperName}Props<T extends Element> = Omit<ComponentProps<T>, 'color'> | JSXStyleProperties;
+    export type HTML${upperName}Props<T extends Element> = Omit<ComponentProps<T>, 'color'> & JsxStyleProps;
 
     type JSXFactory = {
       [K in Element]: (props: HTML${upperName}Props<K>) => JSX.Element
