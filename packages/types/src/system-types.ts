@@ -128,7 +128,7 @@ export type Nested<T> =
       [key in Selectors]?: Nested<T>
     }
   | {
-      [key: string]: Nested<T>
+      [property: string]: T | Nested<T> | string | number | boolean | null | undefined
     }
 
 /* -----------------------------------------------------------------------------
@@ -152,7 +152,7 @@ type Css<C extends Cond, P extends Dict, S extends boolean> =
       [K in keyof P]?: Conditional<C, true extends S ? P[K] : P[K] | NativeCssValue<K>>
     })
   | {
-      [K in '']?: Conditional<C, string | number | boolean | undefined>
+      [key: string]: Conditional<C, string | number | boolean | undefined> | undefined
     }
 
 type RecursiveCss<C extends Cond, P extends Dict, S extends boolean> = Recursive<C, Css<C, P, S>>
