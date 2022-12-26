@@ -7,21 +7,6 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
   const upperName = capitalize(name)
 
   return {
-    dts: outdent`
-    import type { ComponentProps, JSX } from 'preact'
-    import type { JsxStyleProps } from '../types'
-    
-    type Element = keyof JSX.IntrinsicElements
-    
-    export type HTML${upperName}Props<T extends Element> = Omit<ComponentProps<T>, 'color'> & JsxStyleProps
-    
-
-    type JSXFactory = {
-      [K in Element]: (props: HTML${upperName}Props<K>) => JSX.Element
-    }
-
-    export declare const ${name}: JSXFactory
-    `,
     js: outdent`
     import { h } from 'preact'
     import { forwardRef } from 'preact/compat'

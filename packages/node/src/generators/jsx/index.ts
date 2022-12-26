@@ -3,14 +3,31 @@ import type { PandaContext } from '../../context'
 import { generatePreactJsxFactory } from './preact-jsx'
 import { generatePreactLayoutGrid } from './preact-layout-grid'
 import { generatePreactJsxPattern } from './preact-pattern'
+import { generatePreactJsxTypes } from './preact-types'
 
 import { generateReactJsxFactory } from './react-jsx'
 import { generateReactLayoutGrid } from './react-layout-grid'
 import { generateReactJsxPattern } from './react-pattern'
+import { generateReactJsxTypes } from './react-types'
 
 import { generateSolidJsxFactory } from './solid-jsx'
 import { generateSolidLayoutGrid } from './solid-layout-grid'
 import { generateSolidJsxPattern } from './solid-pattern'
+import { generateSolidJsxTypes } from './solid-types'
+
+/* -----------------------------------------------------------------------------
+ * JSX Types
+ * -----------------------------------------------------------------------------*/
+
+const typesMap = {
+  react: generateReactJsxTypes,
+  preact: generatePreactJsxTypes,
+  solid: generateSolidJsxTypes,
+}
+
+export function generateJsxTypes(ctx: PandaContext) {
+  return typesMap[ctx.jsxFramework!](ctx)
+}
 
 /* -----------------------------------------------------------------------------
  * Factory JSX

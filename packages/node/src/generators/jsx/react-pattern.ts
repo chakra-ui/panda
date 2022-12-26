@@ -38,18 +38,11 @@ function generate(name: string, pattern: PatternConfig, jsxFactory: string) {
     `,
 
     dts: outdent`
-    import { ComponentProps, ElementType } from 'react'
     import { ${upperName}Properties } from '../patterns/${dashCase(name)}'
-    import { JsxStyleProps, Assign } from '../types'
-    
-    type Polymorphic<C extends ElementType = "div", P = {}> =
-      & JsxStyleProps
-      | Assign<Omit<ComponentProps<C>, "color">, P & { as?: C }>
+    import { PolymorphicComponent } from '../types/jsx'
 
-    export type ${jsxName}Props<C extends ElementType = 'div'> = Polymorphic<C, ${upperName}Properties>
-    
     ${pattern.description ? `/** ${pattern.description} */` : ''}
-    export declare function ${jsxName}<V extends ElementType = 'div'>(props: ${jsxName}Props<V>): JSX.Element    
+    export declare const ${jsxName}: PolymorphicComponent<"div", ${upperName}Properties>
     `,
   }
 }
