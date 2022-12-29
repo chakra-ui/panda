@@ -25,7 +25,7 @@ export const typography: UtilityConfig = {
     },
     transform(value) {
       return {
-        '-webkit-font-smoothing': value,
+        WebkitFontSmoothing: value,
       }
     },
   },
@@ -113,15 +113,15 @@ export const typography: UtilityConfig = {
     transform(value) {
       if (value === 'none') {
         return {
-          '-webkit-line-clamp': 'unset',
+          WebkitLineClamp: 'unset',
         }
       }
 
       return {
         overflow: 'hidden',
         display: '-webkit-box',
-        '-webkit-line-clamp': value,
-        '-webkit-box-orient': 'vertical',
+        WebkitLineClamp: value,
+        WebkitBoxOrient: 'vertical',
       }
     },
   },

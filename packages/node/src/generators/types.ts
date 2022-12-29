@@ -10,6 +10,7 @@ function getType(file: string) {
 
 export function generateCssType(ctx: PandaContext) {
   const strict = ctx.strictTokens
+  const strictArg = strict ? 'true' : 'false'
   return {
     cssType: getType('csstype.d.ts'),
     pandaCssType: getType('system-types.d.ts'),
@@ -18,12 +19,13 @@ export function generateCssType(ctx: PandaContext) {
     import { PropTypes } from './prop-type'
     import { Conditions } from './conditions'
     
-    export type SystemStyleObject = System.StyleObject<Conditions, PropTypes${strict ? ', true' : ''}>
-    export type GlobalStyleObject = System.GlobalStyleObject<Conditions, PropTypes${strict ? ', true' : ''}>
-    export type JSXStyleProperties = System.JSXStyleProperties<Conditions, PropTypes${strict ? ', true' : ''}>
+    export type SystemStyleObject<Overrides = {}> = System.StyleObject<Conditions, PropTypes, ${strictArg}, Overrides>
+    export type GlobalStyleObject<Overrides = {}> = System.GlobalStyleObject<Conditions, PropTypes, ${strictArg}, Overrides>
+    export type JsxStyleProps<Overrides = {}> = System.JsxStyleProps<Conditions, PropTypes, ${strictArg}, Overrides>
+    export type ConditionalValue<Value> = System.Conditional<Conditions, Value>
 
-    export type ConditionalValue<T> = System.Conditional<Conditions, T>
-    export type Assign<T, U> = Omit<T, keyof U> & U
+    type DistributiveOmit<T, U> = T extends any ? Pick<T, Exclude<keyof T, U>> : never
+    export type Assign<Target, Override> = DistributiveOmit<Target, keyof Override> & Override
     `,
   }
 }

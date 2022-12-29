@@ -4,7 +4,7 @@ export type { PropertyConfig, PropertyTransform, PropertyValues, UtilityConfig }
 export type { StyleObject, CssKeyframes } from './system-types'
 export type { PatternConfig, PatternProperty, PatternHelpers } from './pattern'
 export type { RecipeConfig, RecipeVariant } from './recipe'
-export type { Composition, TextStyles, LayerStyles } from './composition'
+export type { TextStyles, LayerStyles } from './composition'
 export type { Token, TokenCategory, TokenDataTypes, Tokens, SemanticToken, SemanticTokens } from './tokens'
 export type { Dict, RequiredBy, AnyFunction } from './shared'
 export type { Parts, Part } from './parts'

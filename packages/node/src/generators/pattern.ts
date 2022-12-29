@@ -45,10 +45,9 @@ function generate(name: string, pattern: PatternConfig) {
       strict
         ? outdent`export declare function ${name}(options: ${upperName}Properties): string`
         : outdent`
-        type Merge<T extends Record<string, any>> = SystemStyleObject | T
-
+        
         ${description ? `/** ${description} */` : ''}
-        export declare function ${name}(options: Merge<${upperName}Properties>): string
+        export declare function ${name}(options: SystemStyleObject<${upperName}Properties>): string
         `
     }
 

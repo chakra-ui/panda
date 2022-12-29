@@ -6,20 +6,6 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
   const name = ctx.jsxFactory
   const upperName = capitalize(name)
   return {
-    dts: outdent`
-    import type { JSX } from 'solid-js'
-    import type { JSXStyleProperties, Assign} from '../types'
-    
-    type Element = keyof JSX.IntrinsicElements
-    
-    export type HTML${upperName}Props<T extends Element> = Omit<JSX.IntrinsicElements[T], 'color'> | JSXStyleProperties
-
-    type JSXFactory = {
-      [K in Element]: (props: HTML${upperName}Props<K>) => JSX.Element
-    }
-
-    export declare const ${name}: JSXFactory
-    `,
     js: outdent`
     import { Dynamic } from 'solid-js/web'
     import { mergeProps, splitProps } from 'solid-js'

@@ -8,7 +8,7 @@ import { generateCx } from './cx'
 import { getEntrypoint } from './get-entrypoint'
 import { generateGlobalCss } from './global-css'
 import { generateisValidProp } from './is-valid-prop'
-import { generateJsxFactory, generateJsxPatterns, generateLayoutGrid } from './jsx'
+import { generateJsxFactory, generateJsxPatterns, generateJsxTypes, generateLayoutGrid } from './jsx'
 import { generatePattern } from './pattern'
 import { generatePropTypes } from './prop-types'
 import { generateRecipes } from './recipe'
@@ -67,17 +67,19 @@ function setupGlobalCss(ctx: PandaContext): Output {
 function setupTypes(ctx: PandaContext): Output {
   const code = generateCssType(ctx)
   const conditions = generateConditions(ctx)
+  const jsx = generateJsxTypes(ctx)
   return {
     dir: ctx.paths.types,
     files: [
+      jsx ? { file: 'jsx.d.ts', code: jsx.jsxType } : null,
       { file: 'csstype.d.ts', code: code.cssType },
       { file: 'system-types.d.ts', code: code.pandaCssType },
       { file: 'index.d.ts', code: code.publicType },
       { file: 'token.d.ts', code: generateTokenDts(ctx.tokens) },
       { file: 'prop-type.d.ts', code: generatePropTypes(ctx.utility) },
       { file: 'conditions.d.ts', code: conditions.dts },
-    ],
-  }
+    ].filter(Boolean),
+  } as Output
 }
 
 function setupCss(ctx: PandaContext): Output {
@@ -140,7 +142,7 @@ function setupPatterns(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.pattern,
     files: [
-      ...files.map((file) => ({ file: `${file.name}.js`, code: file.js })),
+      ...files.map((file) => ({ file: `${file.name}.mjs`, code: file.js })),
       ...files.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
       { file: 'index.mjs', code: indexCode },
       { file: 'index.d.ts', code: indexCode },
@@ -152,6 +154,7 @@ function setupJsx(ctx: PandaContext): Output {
   if (!ctx.jsxFramework) return { files: [] }
 
   const isValidProp = generateisValidProp(ctx)
+  const types = generateJsxTypes(ctx)!
   const factory = generateJsxFactory(ctx)
   const patterns = generateJsxPatterns(ctx)
   const layoutGrid = generateLayoutGrid(ctx)
@@ -170,7 +173,7 @@ function setupJsx(ctx: PandaContext): Output {
       { file: 'layout-grid.jsx', code: layoutGrid.js },
       { file: 'layout-grid.d.ts', code: layoutGrid.dts },
       { file: 'is-valid-prop.mjs', code: isValidProp.js },
-      { file: 'factory.d.ts', code: factory.dts },
+      { file: 'factory.d.ts', code: types.jsxFactory },
       { file: 'factory.jsx', code: factory.js },
       { file: 'index.d.ts', code: indexCode },
       { file: 'index.jsx', code: indexCode },

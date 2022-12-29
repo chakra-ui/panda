@@ -7,20 +7,6 @@ export function generateReactJsxFactory(ctx: PandaContext) {
   const upperName = capitalize(name)
 
   return {
-    dts: outdent`
-    import type { ComponentProps } from "react"
-    import type { JSXStyleProperties } from "../types"
-    
-    type Element = keyof JSX.IntrinsicElements
-
-    export type HTML${upperName}Props<T extends Element> = Omit<ComponentProps<T>, 'color'> | JSXStyleProperties;
-
-    type JSXFactory = {
-      [K in Element]: (props: HTML${upperName}Props<K>) => JSX.Element
-    }
-
-    export declare const ${name}: JSXFactory
-    `,
     js: outdent`
     import { forwardRef } from 'react'
     import { isCssProperty } from './is-valid-prop'

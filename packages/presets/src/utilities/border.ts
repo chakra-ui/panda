@@ -191,6 +191,7 @@ export const border: UtilityConfig = {
   },
   outlineColor: {
     className: 'outline',
+    values: 'colors',
   },
   outline: {
     className: 'outline',
