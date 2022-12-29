@@ -207,7 +207,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * User defined utilities or properties
    * -----------------------------------------------------------------------------*/
 
-  const properties = Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()]))
+  const properties = Array.from(new Set(['css', 'sx', ...utility.keys(), ...conditions.keys()]))
 
   function isCustomCssProperty(prop: string) {
     const regex = new RegExp('^(?:' + properties.join('|') + ')$')

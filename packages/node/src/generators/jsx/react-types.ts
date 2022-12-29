@@ -24,15 +24,15 @@ type Clean<T> = Omit<T, 'transition' | 'as' | 'color'>
 type PolymorphicProps<
   ComponentProps extends Dict,
   AsProps extends Dict,
-  AdditionalProps extends Dict = Dict,
+  AdditionalProps extends Dict = {},
   AsComponent extends As = As,
 > = Assign<Clean<ComponentProps>, AdditionalProps> &
   Assign<Clean<AsProps>, AdditionalProps> & {
     as?: AsComponent
   }
 
-export type PolymorphicComponent<C extends As, P extends Dict = Dict> = {
-  <E extends As = C>(props: PolymorphicProps<ComponentProps<C>, ComponentProps<E>, P, E> & JsxStyleProps): JSX.Element
+export type PolymorphicComponent<C extends As, P extends Dict = {}> = {
+  <E extends As = C>(props: PolymorphicProps<ComponentProps<C>, ComponentProps<E>, P, E> & JsxStyleProps<P>): JSX.Element
   displayName?: string
 }
 

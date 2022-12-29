@@ -1,7 +1,9 @@
-import type { Conditional, NativeCssProperties, Nested } from './system-types'
-import type { LiteralUnion, Primitive, Recursive } from './shared'
+import type { CompositionStyleObject } from './system-types'
+import type { LiteralUnion, Recursive } from './shared'
 
-export type Composition<Value = any> = {
+type Cond = Record<string, string>
+
+export type Token<Value = any> = {
   value: Value
   description?: string
 }
@@ -41,13 +43,9 @@ type TextStyleProperty = LiteralUnion<
   | 'textRendering'
 >
 
-type TCondition = Record<string, string>
+export type TextStyle<Conditions extends Cond = {}> = CompositionStyleObject<Conditions, TextStyleProperty>
 
-export type TextStyle<T extends TCondition = TCondition> = Nested<{
-  [K in TextStyleProperty]?: Conditional<T, K extends keyof NativeCssProperties ? NativeCssProperties[K] : Primitive>
-}>
-
-export type TextStyles<T extends TCondition = TCondition> = Recursive<Composition<TextStyle<T>>>
+export type TextStyles<T extends Cond = {}> = Recursive<Token<TextStyle<T>>>
 
 /* -----------------------------------------------------------------------------
  * Layer styles
@@ -102,11 +100,5 @@ type LayerStyleProperty = LiteralUnion<
   | `padding${Placement}`
 >
 
-export type LayerStyle<Conditions extends TCondition = TCondition> = Nested<{
-  [K in LayerStyleProperty]?: Conditional<
-    Conditions,
-    K extends keyof NativeCssProperties ? NativeCssProperties[K] : Primitive
-  >
-}>
-
-export type LayerStyles<Conditions extends TCondition = TCondition> = Recursive<Composition<LayerStyle<Conditions>>>
+export type LayerStyle<Conditions extends Cond = {}> = CompositionStyleObject<Conditions, LayerStyleProperty>
+export type LayerStyles<Conditions extends Cond = {}> = Recursive<Token<LayerStyle<Conditions>>>
