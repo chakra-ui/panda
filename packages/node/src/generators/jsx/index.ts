@@ -26,7 +26,8 @@ const typesMap = {
 }
 
 export function generateJsxTypes(ctx: PandaContext) {
-  return typesMap[ctx.jsxFramework!](ctx)
+  if (!ctx.jsxFramework) return
+  return typesMap[ctx.jsxFramework](ctx)
 }
 
 /* -----------------------------------------------------------------------------

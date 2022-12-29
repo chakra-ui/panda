@@ -71,15 +71,15 @@ function setupTypes(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.types,
     files: [
-      { file: 'jsx.d.ts', code: jsx.jsxType },
+      jsx ? { file: 'jsx.d.ts', code: jsx.jsxType } : null,
       { file: 'csstype.d.ts', code: code.cssType },
       { file: 'system-types.d.ts', code: code.pandaCssType },
       { file: 'index.d.ts', code: code.publicType },
       { file: 'token.d.ts', code: generateTokenDts(ctx.tokens) },
       { file: 'prop-type.d.ts', code: generatePropTypes(ctx.utility) },
       { file: 'conditions.d.ts', code: conditions.dts },
-    ],
-  }
+    ].filter(Boolean),
+  } as Output
 }
 
 function setupCss(ctx: PandaContext): Output {
@@ -154,7 +154,7 @@ function setupJsx(ctx: PandaContext): Output {
   if (!ctx.jsxFramework) return { files: [] }
 
   const isValidProp = generateisValidProp(ctx)
-  const types = generateJsxTypes(ctx)
+  const types = generateJsxTypes(ctx)!
   const factory = generateJsxFactory(ctx)
   const patterns = generateJsxPatterns(ctx)
   const layoutGrid = generateLayoutGrid(ctx)
