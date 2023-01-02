@@ -2,9 +2,10 @@
 import { LayerStyles } from '../components/layer-styles'
 import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
+import { customDocs } from '../utils/custom-docs'
 ---
 
-<Layout title="Panda docs">
+<Layout title={customDocs.pageTitle}>
   <Sidebar>
     <LayerStyles client:load />
   </Sidebar>

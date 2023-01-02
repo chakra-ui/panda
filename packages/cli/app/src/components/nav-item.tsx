@@ -3,7 +3,7 @@ import { panda, Stack } from '../../design-system/jsx'
 
 export function NavItem(props: NavItemData) {
   return (
-    <panda.a key={props.id} href={`/${props.id}`}>
+    <panda.a  href={`/${props.id}`}>
       <Stack
         gap="0"
         width="60"

@@ -6,6 +6,7 @@ import { TextStylesIcon } from './icons'
 import { panda } from '../../design-system/jsx'
 import { TokenGroup } from './token-group'
 import { TokenContent } from './token-content'
+import { customDocs } from '../utils/custom-docs'
 
 export function TextStyles() {
   const textStyles = flattenTextStyles(config.theme?.textStyles ?? {})
@@ -13,7 +14,7 @@ export function TextStyles() {
   return (
     <TokenGroup>
       <TokenContent divideY="1px" divideColor="card">
-        {textStyles ? (
+        {textStyles && textStyles?.length !== 0 ? (
           textStyles.map(([name, styles]) => (
             <panda.div paddingX="1" paddingY="2.5" key={name}>
               <panda.div borderColor="card">
@@ -25,7 +26,7 @@ export function TextStyles() {
                 </panda.div>
               </panda.div>
               <panda.div flex="auto" marginY="3" style={styles} truncate>
-                Panda CSS textStyles are time saving
+                {customDocs.title} textStyles are time saving
               </panda.div>
             </panda.div>
           ))
