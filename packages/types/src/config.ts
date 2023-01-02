@@ -9,8 +9,8 @@ import type { UtilityConfig } from './utility'
 import type { StaticCssOptions } from './static-css'
 
 type Docs = {
-  title:string
-  logo:string
+  title: string
+  logo: string
 }
 
 export type Config<
@@ -23,10 +23,10 @@ export type Config<
    * @default '_'
    */
   separator?: '_' | '=' | '-'
-   /**
+  /**
    * Used to customize the design system docs
    */
-   docs?: Partial<Docs>
+  docs?: Partial<Docs>
   /**
    * The log level for the built-in logger.
    */
