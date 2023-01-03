@@ -1,0 +1,31 @@
+@layer utilities {
+  .d_block {
+    display: block
+  }
+
+  .py_1\.5 {
+    padding-block: var(--spacing-1\.5)
+  }
+
+  .cursor_pointer {
+    cursor: pointer
+  }
+
+  .fs_md {
+    font-size: var(--font-sizes-md)
+  }
+
+  .font_semibold {
+    font-weight: var(--font-weights-semibold)
+  }
+
+  .transition_all_0\.2s_ease {
+    transition: all 0.2s ease
+  }
+    .hover\:text_blue\.400:where(:hover, [data-hover]) {
+      color: var(--colors-blue-400)
+    }
+    .currentPage\:text_blue\.400[aria-current=page] {
+      color: var(--colors-blue-400)
+    }
+}

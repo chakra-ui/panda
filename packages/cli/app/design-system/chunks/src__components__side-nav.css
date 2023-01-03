@@ -1,0 +1,53 @@
+@layer utilities {
+  .mt_8 {
+    margin-top: var(--spacing-8)
+  }
+
+  .mb_8 {
+    margin-bottom: var(--spacing-8)
+  }
+
+  .font_bold {
+    font-weight: var(--font-weights-bold)
+  }
+
+  .fs_small {
+    font-size: small
+  }
+
+  .opacity_0\.7 {
+    opacity: 0.7
+  }
+
+  .list_none {
+    list-style-type: none
+  }
+
+  .p_0 {
+    padding: 0
+  }
+
+  .my_2 {
+    margin-block: var(--spacing-2)
+  }
+
+  .mx_0 {
+    margin-inline: 0
+  }
+
+  .d_flex {
+    display: flex
+  }
+
+  .flex_column {
+    flex-direction: column
+  }
+
+  .items_flex-start {
+    align-items: flex-start
+  }
+
+  .gap_10 {
+    gap: var(--spacing-10)
+  }
+}

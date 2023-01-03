@@ -14,6 +14,10 @@ export type Config<
   Tokens extends PartialTokens = PartialTokens,
 > = {
   /**
+   * Whether to update the .gitignore file.
+   */
+  gitignore?: boolean
+  /**
    * The value separator used in the generated class names.
    * @default '_'
    */
