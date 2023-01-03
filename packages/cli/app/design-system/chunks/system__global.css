@@ -1,0 +1,26 @@
+@layer base {
+  :root {
+    font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+    font-size: var(--font-sizes-md);
+    line-height: var(--line-heights-normal);
+    font-weight: var(--font-weights-normal);
+    color-scheme: light dark;
+    color: var(--colors-text);
+    background: var(--colors-bg);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%
+  }
+
+  a {
+    color: unset;
+    text-decoration: none
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh
+  }
+}

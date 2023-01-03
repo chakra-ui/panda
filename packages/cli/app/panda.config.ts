@@ -1,6 +1,7 @@
 import config from '../src/presets'
 
 export default {
+  gitignore: false,
   preflight: true,
   presets: [],
   ...config,

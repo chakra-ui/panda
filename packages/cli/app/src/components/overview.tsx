@@ -45,8 +45,8 @@ export function Overview() {
           <Wrap marginY="2" padding="0" gap="6">
             {navItems
               .filter((k) => k.type === 'token')
-              .map((themeKey) => (
-                <NavItem key={themeKey.id} {...themeKey} />
+              .map((data, index) => (
+                <NavItem key={index} {...data} />
               ))}
           </Wrap>
         </div>
@@ -55,8 +55,8 @@ export function Overview() {
           <Wrap marginY="2" padding="0" gap="6">
             {navItems
               .filter((k) => k.type === 'playground')
-              .map((themeKey) => (
-                <NavItem key={themeKey.id} {...themeKey} />
+              .map((data, index) => (
+                <NavItem key={index} {...data} />
               ))}
           </Wrap>
         </div>
