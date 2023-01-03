@@ -23,6 +23,6 @@
     "css-panda": "workspace:*",
     "@vitejs/plugin-react": "3.0.0",
     "postcss": "8.4.20",
-    "vite": "4.0.3"
+    "vite": "4.0.4"
   }
 }
