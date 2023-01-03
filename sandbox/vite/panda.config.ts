@@ -1,6 +1,10 @@
 import { defineConfig } from 'css-panda'
 
 export default defineConfig({
+  docs:{
+    title:"Chakra UI",
+    logo: 'https://place-hold.it/36x24',
+  },
   preflight: true,
   include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
   exclude: [],

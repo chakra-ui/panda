@@ -4,6 +4,7 @@ import { config as pandaConfig } from 'virtual:panda'
 import { panda } from '../../design-system/jsx'
 import { TokenGroup } from './token-group'
 import { TokenContent } from './token-content'
+import { customDocs } from '../utils/custom-docs'
 
 export function TypographyPlayground() {
   const tokenMap = new TokenDictionary(pandaConfig.theme!)
@@ -67,7 +68,7 @@ export function TypographyPlayground() {
             width="fit-content"
             style={configValues}
           >
-            Panda
+            {customDocs.title}
           </panda.div>
           <panda.div display="flex" flexDirection="column" gap="4">
             {Object.keys(config).map((tokenKey) => (

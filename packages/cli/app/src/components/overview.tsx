@@ -2,12 +2,14 @@ import { css } from '../../design-system/css'
 import { panda, Wrap } from '../../design-system/jsx'
 import { NavItem } from './nav-item'
 import { navItems } from '../utils/constants'
+import { customDocs } from '../utils/custom-docs'
 
 export function Overview() {
   return (
     <panda.div display="flex" flexDir="column">
-      <panda.span fontWeight="bold" fontSize="2xl" paddingX="8" paddingY="4">
-        🐼 Panda
+      <panda.span fontWeight="bold" fontSize="2xl" paddingX="8" paddingY="4" display="flex" gap="2">
+        <customDocs.logo />
+        {customDocs.title}
       </panda.span>
       <panda.div paddingX="8" paddingY="24" marginBottom="10" background="card">
         <panda.span display="block" fontSize="3xl" fontWeight="semibold" marginBottom="6">

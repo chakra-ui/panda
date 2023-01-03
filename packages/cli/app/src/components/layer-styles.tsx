@@ -8,13 +8,13 @@ import { TokenGroup } from './token-group'
 import { TokenContent } from './token-content'
 
 export function LayerStyles() {
-  const textStyles = flattenLayerStyles(config.theme?.layerStyles ?? {})
+  const layerStyles = flattenLayerStyles(config.theme?.layerStyles ?? {})
 
   return (
     <TokenGroup>
       <TokenContent divideY="1px" divideColor="card">
-        {textStyles ? (
-          textStyles.map(([name, styles]) => (
+        {layerStyles && layerStyles?.length !== 0 ? (
+          layerStyles.map(([name, styles]) => (
             <panda.div paddingX="1" paddingY="2.5" key={name}>
               <panda.div borderColor="card">
                 <panda.span fontWeight="medium">{name}</panda.span>
