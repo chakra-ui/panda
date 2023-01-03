@@ -5,3 +5,4 @@ coverage
 build
 *.hbs
 *.d.ts
+packages/cli/app/design-system
