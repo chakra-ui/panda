@@ -10,7 +10,7 @@ export function generateRecipes(ctx: PandaContext) {
 
   const js = [
     outdent`
-   import { createCss, withoutSpace } from "../helpers"
+   import { createCss, withoutSpace, compact } from "../helpers"
 
    const createRecipe = (name, defaultVariants) => {
      return (variants) => {
@@ -35,7 +35,7 @@ export function generateRecipes(ctx: PandaContext) {
       return css({
         [name]: '__ignore__',
         ...defaultVariants,
-        ...variants
+        ...compact(variants)
       })
      }
    }
