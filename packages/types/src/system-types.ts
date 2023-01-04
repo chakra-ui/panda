@@ -123,13 +123,14 @@ type Grouped<T> = T & {
   }
 }
 
-/**
- * Support arbitrary nesting of selectors
- */
 type Nested<C extends Cond, P> = P & {
   [K in Selectors | keyof C]?: Nested<C, P>
 } & {
   [K in AnySelector]?: Nested<C, P>
+}
+
+type MinimalNested<C extends Cond, P> = P & {
+  [K in keyof C]?: Nested<C, P>
 }
 
 /* -----------------------------------------------------------------------------
@@ -162,10 +163,13 @@ type GenericProperties<Conditions extends Cond> = {
   [key: string]: Conditional<Conditions, boolean | String | Number | undefined>
 }
 
-type Css<Conditions extends Cond, PropTypes extends Dict, StrictMode extends boolean, Overrides extends Dict> =
-  | (Partial<Overrides> &
+type MinimalCss<Conditions extends Cond, PropTypes extends Dict, StrictMode extends boolean, Overrides extends Dict> =
+  | Partial<Overrides> &
       NativeProperties<Conditions, PropTypes, Overrides> &
-      CustomProperties<Conditions, PropTypes, StrictMode, Overrides>)
+      CustomProperties<Conditions, PropTypes, StrictMode, Overrides>
+
+type Css<Conditions extends Cond, PropTypes extends Dict, StrictMode extends boolean, Overrides extends Dict> =
+  | MinimalCss<Conditions, PropTypes, StrictMode, Overrides>
   | GenericProperties<Conditions>
 
 /* -----------------------------------------------------------------------------
@@ -181,17 +185,15 @@ export type StyleObject<
   Overrides extends Dict = {},
 > = Grouped<Nested<Conditions, Css<Conditions, PropTypes, StrictMode, Overrides>>>
 
-type WithJsxStyleProps<P> = P & {
-  css?: P
-  sx?: P
-}
-
 export type JsxStyleProps<
   Conditions extends Cond = {},
   PropTypes extends Dict = {},
   StrictMode extends boolean = false,
   Overrides extends Dict = {},
-> = WithJsxStyleProps<StyleObject<Conditions, PropTypes, StrictMode, Overrides>>
+> = MinimalNested<Conditions, MinimalCss<Conditions, PropTypes, StrictMode, Overrides>> & {
+  css?: StyleObject<Conditions, PropTypes, StrictMode, Overrides>
+  sx?: StyleObject<Conditions, PropTypes, StrictMode, Overrides>
+}
 
 export type GlobalStyleObject<
   Conditions extends Cond = {},

@@ -1,9 +1,19 @@
 import { describe, expect, test } from 'vitest'
-import type { StyleObject } from '../src'
+import type { JsxStyleProps, StyleObject } from '../src/system-types'
 import type { Conditions } from './conditions'
 import type { PropTypes } from './prop-types'
 
 type SystemStyleObject = StyleObject<Conditions, PropTypes, false, {}>
+type JsxStyle = JsxStyleProps<Conditions, PropTypes, false, {}>
+
+export const tt: JsxStyle = {
+  background: 'red.200',
+  bg: 'red.300',
+  margin: '6',
+  outlineColor: 'rose.100',
+  padding: '6',
+  truncate: true,
+}
 
 describe('csstype', () => {
   test('should have no type error', () => {
