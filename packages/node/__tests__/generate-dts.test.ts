@@ -36,7 +36,7 @@ test('[dts] should generate package', () => {
 
     export type Duration = \\"75\\" | \\"100\\" | \\"150\\"
 
-    export interface Tokens {
+    export type Tokens = {
     		fonts: Font
     		colors: Color
     		fontSizes: FontSize
@@ -50,6 +50,6 @@ test('[dts] should generate package', () => {
     		animations: Animation
     		easings: Easing
     		durations: Duration
-    }"
+    } & { [token: string]: never }"
   `)
 })
