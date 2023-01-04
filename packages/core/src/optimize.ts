@@ -23,7 +23,7 @@ export function optimizeCss(code: string, { minify = false }: { minify?: boolean
 }
 
 export function discardDuplicate(code: string | Root) {
-  const { css } = postcss([mergeCascadeLayers(), dedupe()]).process(code)
+  const { css } = postcss([mergeCascadeLayers(), dedupe(), sortMediaQueries()]).process(code)
   return css
 }
 
