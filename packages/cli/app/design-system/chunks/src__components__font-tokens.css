@@ -1,4 +1,8 @@
 @layer utilities {
+
+  .z_1 {
+    z-index: 1
+  }
   .w_full {
     width: var(--sizes-full)
   }

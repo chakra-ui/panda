@@ -1,4 +1,8 @@
 @layer utilities {
+
+  .gap_2 {
+    gap: var(--spacing-2)
+  }
   .bg_\#646cff {
     background: #646cff
   }

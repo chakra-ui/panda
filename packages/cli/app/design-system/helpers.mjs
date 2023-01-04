@@ -153,7 +153,13 @@ function createCss(context) {
     return Array.from(classNames).join(" ");
   };
 }
+
+// src/compact.ts
+function compact(value) {
+  return Object.fromEntries(Object.entries(value).filter(([_, value2]) => value2 !== void 0));
+}
 export {
+  compact,
   createCss,
   filterBaseConditions,
   isBaseCondition,
