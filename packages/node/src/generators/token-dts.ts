@@ -8,22 +8,22 @@ export function generateTokenDts(dict: TokenDictionary) {
 
   set.add(`export type Token = ${dict.isEmpty ? 'string' : unionType(dict.allNames)}`)
 
-  const interfaceSet = new Set<string>(['export interface Tokens {'])
+  const result = new Set<string>(['export type Tokens = {'])
 
   if (dict.isEmpty) {
-    interfaceSet.add('[token: string]: string')
+    result.add('[token: string]: string')
   } else {
     for (const [key, value] of dict.categoryMap.entries()) {
       const typeName = capitalize(pluralize.singular(key))
       set.add(`export type ${typeName} = ${unionType(value.keys())}`)
       set.add(`export type ColorPalette = ${unionType(Object.keys(dict.colorPalettes))}`)
-      interfaceSet.add(`\t\t${key}: ${typeName}`)
+      result.add(`\t\t${key}: ${typeName}`)
     }
   }
 
-  interfaceSet.add('}')
+  result.add('} & { [token: string]: never }')
 
-  set.add(Array.from(interfaceSet).join('\n'))
+  set.add(Array.from(result).join('\n'))
 
   return outdent.string(Array.from(set).join('\n\n'))
 }

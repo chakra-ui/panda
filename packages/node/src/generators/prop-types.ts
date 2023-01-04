@@ -2,10 +2,10 @@ import type { Utility } from '@pandacss/core'
 import { outdent } from 'outdent'
 
 export function generatePropTypes(utility: Utility) {
-  // prettier-ignore
   const result: string[] = [
     outdent`
-    import { Properties as CSSProperties } from "./csstype"
+    import { Properties as CSSProperties } from './csstype'
+    import { Tokens } from './token'
 
     type BasePropTypes  = {`,
   ]
@@ -18,9 +18,9 @@ export function generatePropTypes(utility: Utility) {
   result.push('}', '\n')
 
   result.push(`
-  type CssProp<T> = T extends keyof CSSProperties ? CSSProperties[T] : (string & {})
+  type CssProp<T> = T extends keyof CSSProperties ? CSSProperties[T] : never
   
-  type BaseProp<T> = T extends keyof BasePropTypes ? BasePropTypes[T] : (string & {})
+  type BaseProp<T> = T extends keyof BasePropTypes ? BasePropTypes[T] : never
   
   type Shorthand<T> = CssProp<T> | BaseProp<T>
    

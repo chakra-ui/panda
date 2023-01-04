@@ -34,7 +34,12 @@ export class Utility {
    * The map of possible values for each property
    */
   types: Map<string, Set<string>> = new Map()
+
+  /**
+   * The map of the property keys
+   */
   propertyKeys: Map<string, Set<string>> = new Map()
+
   /**
    * The utility config
    */
@@ -129,11 +134,17 @@ export class Utility {
   /**
    * Get all the possible values for the defined property
    */
-  private getPropertyValues = (config: PropertyConfig) => {
+  private getPropertyValues = (config: PropertyConfig, resolveFn?: (key: string) => string) => {
     const { values } = config
 
+    // convert `theme('spacing') => Tokens["spacing"]` to avoid too much type values
+    const fn = (key: string) => {
+      const value = resolveFn?.(key)
+      return value ? { [value]: value } : undefined
+    }
+
     if (isString(values)) {
-      return this.tokens.getValue(values) ?? {}
+      return fn?.(values) ?? this.tokens.getValue(values) ?? {}
     }
 
     if (Array.isArray(values)) {
@@ -144,7 +155,7 @@ export class Utility {
     }
 
     if (isFunction(values)) {
-      return values(this.getToken.bind(this))
+      return values(fn ?? this.getToken.bind(this))
     }
 
     return values
@@ -196,7 +207,7 @@ export class Utility {
 
     if (!config) return
 
-    const values = this.getPropertyValues(config)
+    const values = this.getPropertyValues(config, (key) => `type:Tokens["${key}"]`)
 
     if (typeof values === 'object' && values.type) {
       this.types.set(property, new Set([`type:${values.type}`]))
