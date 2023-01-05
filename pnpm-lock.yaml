@@ -118,6 +118,7 @@ importers:
       postcss-merge-rules: ^5.1.3
       postcss-nested: 6.0.0
       postcss-normalize-whitespace: ^5.1.1
+      postcss-selector-parser: ^6.0.11
       sort-css-media-queries: ^2.1.0
       ts-pattern: 4.0.6
     dependencies:
@@ -135,6 +136,7 @@ importers:
       postcss-merge-rules: 5.1.3_postcss@8.4.20
       postcss-nested: 6.0.0_postcss@8.4.20
       postcss-normalize-whitespace: 5.1.1_postcss@8.4.20
+      postcss-selector-parser: 6.0.11
       sort-css-media-queries: 2.1.0
       ts-pattern: 4.0.6
     devDependencies:
@@ -6879,7 +6881,7 @@ packages:
       caniuse-api: 3.0.0
       cssnano-utils: 3.1.0_postcss@8.4.20
       postcss: 8.4.20
-      postcss-selector-parser: 6.0.10
+      postcss-selector-parser: 6.0.11
     dev: false
 
   /postcss-nested/6.0.0_postcss@8.4.20:
@@ -6889,7 +6891,7 @@ packages:
       postcss: ^8.2.14
     dependencies:
       postcss: 8.4.20
-      postcss-selector-parser: 6.0.10
+      postcss-selector-parser: 6.0.11
     dev: false
 
   /postcss-normalize-whitespace/5.1.1_postcss@8.4.20:
@@ -6902,8 +6904,8 @@ packages:
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-selector-parser/6.0.10:
-    resolution: {integrity: sha512-IQ7TZdoaqbT+LCpShg46jnZVlhWD2w6iQYAcYXfHARZ7X1t/UGhhceQDs5X0cGqKvYlHNOuv7Oa1xmb0oQuA3w==}
+  /postcss-selector-parser/6.0.11:
+    resolution: {integrity: sha512-zbARubNdogI9j7WY4nQJBiNqQf3sLS3wCP4WfOidu+p28LofJqDH1tcXypGrcmMHhDk2t9wGhCsYe/+szLTy1g==}
     engines: {node: '>=4'}
     dependencies:
       cssesc: 3.0.0

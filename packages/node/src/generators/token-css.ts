@@ -1,21 +1,11 @@
-import { prettifyCss, toCss, toKeyframeCss } from '@pandacss/core'
-import { outdent } from 'outdent'
-import { match } from 'ts-pattern'
+import { expandNestedCss, extractParentSelectors, prettifyCss, toCss, toKeyframeCss } from '@pandacss/core'
+import postcss, { AtRule, Rule } from 'postcss'
 import type { PandaContext } from '../context'
 
 export function generateKeyframes(keyframes: Record<string, any> | undefined) {
   if (!keyframes) return
   return toKeyframeCss(keyframes)
 }
-
-const getConditionMessage = (value: string) => outdent`
-It seems you provided an invalid condition for semantic tokens.
-
-- You provided: \`${value}\`
-
-Valid conditions are those that reference a parent selectors or at-rules.
-@media (min-width: 768px), or .dark &
-`
 
 export function generateTokenCss(ctx: PandaContext, varRoot?: string) {
   const root = varRoot ?? ctx.cssVarRoot
@@ -35,47 +25,70 @@ export function generateTokenCss(ctx: PandaContext, varRoot?: string) {
       const keys = key.split(':')
       const { css } = toCss(varsObj)
 
-      // sort the conditions so they are applied in the correct order
-      // (parent selectors first, then at-rules)
-      const sorted = conditions.sort(keys)
-      const allAtRules = sorted.every(({ type }) => type === 'at-rule')
+      const mapped = keys
+        .map((key) => conditions.get(key))
+        .filter(Boolean)
+        .map((condition) => {
+          const parent = extractParentSelectors(condition)
+          // ASSUMPTION: the nature of parent selectors with tokens is that they're merged
+          // [data-color-mode=dark][data-theme=pastel]
+          // If we really want it nested, we remove the `&`
+          return parent ? `&${parent}` : condition
+        })
 
-      const result = sorted.reduce(
-        (acc, cond, index, conds) => {
-          let selector: string | undefined
+      const rule = getDeepestRule(root, mapped)
+      if (!rule) continue
 
-          return match(cond)
-            .with({ type: 'parent-nesting' }, (cond) => {
-              selector = cond.value.replace(/\s&/g, '')
-              const merge = conds[index - 1]?.type === 'parent-nesting'
-              // ASSUMPTION: the nature of parent selectors with tokens is that they're merged
-              // [data-color-mode=dark][data-theme=pastel]
-              return merge ? `${selector}${acc}` : `${selector} { \n ${acc} \n }`
-            })
-            .with({ type: 'at-rule' }, (cond) => {
-              selector = cond?.rawValue ?? cond?.raw
-              return `${selector} { \n ${acc} \n }`
-            })
-            .otherwise((cond) => {
-              if (!cond) return acc
-              throw new Error(getConditionMessage(cond.raw))
-            })
-        },
-        // at rules need to be wrapped in a selector (root)
-        allAtRules ? `${root} { \n ${css}  \n}` : css,
-      )
-
-      if (result) {
-        results.push(result)
-      }
+      getDeepestNode(rule)?.append(css)
+      results.push(expandNestedCss(rule.toString()))
     }
   }
 
-  const css = results.join('\n\n') + '\n\n'
+  const css = results.join('\n\n')
 
-  // all tokens live in the tokens cascade layer
-  return prettifyCss(`@layer tokens {
-    ${css}
+  return `@layer tokens {
+    ${prettifyCss(cleanupSelectors(css, root))}
   }
-  `)
+  `
+}
+
+function getDeepestRule(root: string, selectors: string[]) {
+  const rule = postcss.rule({ selector: '' })
+
+  for (const selector of selectors) {
+    const last = getDeepestNode(rule)
+    const node = last ?? rule
+    if (selector.startsWith('@')) {
+      // ASSUMPTION: the nature of parent selectors with tokens is that they're merged
+      // [data-color-mode=dark][data-theme=pastel]
+      // If we really want it nested, we remove the `&`
+      const atRule = postcss.rule({ selector, nodes: [postcss.rule({ selector: `${root}&` })] })
+      node.append(atRule)
+    } else {
+      node.append(postcss.rule({ selector }))
+    }
+  }
+
+  return rule
+}
+
+function getDeepestNode(node: AtRule | Rule): Rule | AtRule | undefined {
+  if (node.nodes && node.nodes.length) {
+    return getDeepestNode(node.nodes[node.nodes.length - 1] as AtRule | Rule)
+  }
+  return node
+}
+
+function cleanupSelectors(css: string, varSelector: string) {
+  const root = postcss.parse(css)
+
+  root.walkRules((rule) => {
+    rule.selectors.forEach((selector) => {
+      const res = selector.split(varSelector).filter(Boolean)
+      if (res.length === 0) return
+      rule.selector = res.join(varSelector)
+    })
+  })
+
+  return root.toString()
 }

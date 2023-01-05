@@ -27,6 +27,11 @@ export function discardDuplicate(code: string | Root) {
   return css
 }
 
+export function expandNestedCss(code: string) {
+  const { css } = postcss([nested(), prettify()]).process(code)
+  return css
+}
+
 export function prettifyCss(code: string) {
   const { css } = postcss([prettify()]).process(code)
   return css
