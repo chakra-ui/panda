@@ -155,7 +155,7 @@ export class Utility {
     }
 
     if (isFunction(values)) {
-      return values(fn ?? this.getToken.bind(this))
+      return values(resolveFn ? fn : this.getToken.bind(this))
     }
 
     return values
@@ -285,7 +285,8 @@ export class Utility {
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
     const getStyles = this.transforms.get(property) ?? defaultTransform
 
-    this.styles.set(propKey, getStyles(raw, this.getToken.bind(this)))
+    const styles = getStyles(raw, this.getToken.bind(this))
+    this.styles.set(propKey, styles)
 
     return this
   }

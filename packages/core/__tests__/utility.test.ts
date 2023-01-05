@@ -128,6 +128,28 @@ describe('Utility', () => {
         "(backgroundColor = colorPalette.heading)" => "bg_colorPalette.heading",
         "(display = flex)" => "d_flex",
         "(display = inline-flex)" => "d_inline-flex",
+        "(margin = 1)" => "m_1",
+        "(margin = 2)" => "m_2",
+        "(margin = 3)" => "m_3",
+        "(margin = 4)" => "m_4",
+        "(margin = 5)" => "m_5",
+        "(margin = 6)" => "m_6",
+        "(margin = 0.5)" => "m_0.5",
+        "(margin = 1.5)" => "m_1.5",
+        "(margin = 2.5)" => "m_2.5",
+        "(margin = 3.5)" => "m_3.5",
+        "(margin = gutter)" => "m_gutter",
+        "(margin = -1)" => "m_-1",
+        "(margin = -2)" => "m_-2",
+        "(margin = -3)" => "m_-3",
+        "(margin = -4)" => "m_-4",
+        "(margin = -5)" => "m_-5",
+        "(margin = -6)" => "m_-6",
+        "(margin = -0.5)" => "m_-0.5",
+        "(margin = -1.5)" => "m_-1.5",
+        "(margin = -2.5)" => "m_-2.5",
+        "(margin = -3.5)" => "m_-3.5",
+        "(margin = -gutter)" => "m_-gutter",
         "(marginX = sm)" => "mx_sm",
         "(marginX = md)" => "mx_md",
         "(colorPalette = gray)" => "colorPalette_gray",
@@ -318,6 +340,72 @@ describe('Utility', () => {
         },
         "(display = inline-flex)" => {
           "display": "inline-flex",
+        },
+        "(margin = 1)" => {
+          "margin": "var(--spacing-1)",
+        },
+        "(margin = 2)" => {
+          "margin": "var(--spacing-2)",
+        },
+        "(margin = 3)" => {
+          "margin": "var(--spacing-3)",
+        },
+        "(margin = 4)" => {
+          "margin": "var(--spacing-4)",
+        },
+        "(margin = 5)" => {
+          "margin": "var(--spacing-5)",
+        },
+        "(margin = 6)" => {
+          "margin": "var(--spacing-6)",
+        },
+        "(margin = 0.5)" => {
+          "margin": "var(--spacing-0\\\\.5)",
+        },
+        "(margin = 1.5)" => {
+          "margin": "var(--spacing-1\\\\.5)",
+        },
+        "(margin = 2.5)" => {
+          "margin": "var(--spacing-2\\\\.5)",
+        },
+        "(margin = 3.5)" => {
+          "margin": "var(--spacing-3\\\\.5)",
+        },
+        "(margin = gutter)" => {
+          "margin": "var(--spacing-gutter)",
+        },
+        "(margin = -1)" => {
+          "margin": "calc(var(--spacing-1) * -1)",
+        },
+        "(margin = -2)" => {
+          "margin": "calc(var(--spacing-2) * -1)",
+        },
+        "(margin = -3)" => {
+          "margin": "calc(var(--spacing-3) * -1)",
+        },
+        "(margin = -4)" => {
+          "margin": "calc(var(--spacing-4) * -1)",
+        },
+        "(margin = -5)" => {
+          "margin": "calc(var(--spacing-5) * -1)",
+        },
+        "(margin = -6)" => {
+          "margin": "calc(var(--spacing-6) * -1)",
+        },
+        "(margin = -0.5)" => {
+          "margin": "calc(var(--spacing-0\\\\.5) * -1)",
+        },
+        "(margin = -1.5)" => {
+          "margin": "calc(var(--spacing-1\\\\.5) * -1)",
+        },
+        "(margin = -2.5)" => {
+          "margin": "calc(var(--spacing-2\\\\.5) * -1)",
+        },
+        "(margin = -3.5)" => {
+          "margin": "calc(var(--spacing-3\\\\.5) * -1)",
+        },
+        "(margin = -gutter)" => {
+          "margin": "calc(var(--spacing-gutter) * -1)",
         },
         "(marginX = sm)" => {
           "marginBottom": "20px",
