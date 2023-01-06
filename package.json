@@ -4,7 +4,7 @@
   "private": true,
   "description": "The repository of css panda",
   "scripts": {
-    "prepare": "pnpm build-fast",
+    "prepare": "husky install && pnpm build-fast",
     "dev": "pnpm -r --parallel --filter=./packages/** dev",
     "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
     "build": "pnpm -r --parallel --filter=./packages/** build",
@@ -32,6 +32,7 @@
     "@typescript-eslint/eslint-plugin": "5.48.0",
     "@typescript-eslint/parser": "5.48.0",
     "concurrently": "^7.6.0",
+    "husky": "8.0.2",
     "lint-staged": "13.1.0",
     "prettier": "2.8.1",
     "tsup": "6.5.0",

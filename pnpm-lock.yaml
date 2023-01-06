@@ -13,6 +13,7 @@ importers:
       '@typescript-eslint/eslint-plugin': 5.48.0
       '@typescript-eslint/parser': 5.48.0
       concurrently: ^7.6.0
+      husky: 8.0.2
       lint-staged: 13.1.0
       prettier: 2.8.1
       tsup: 6.5.0
@@ -26,6 +27,7 @@ importers:
       '@typescript-eslint/eslint-plugin': 5.48.0_pztxdmiyjrarwygpoci73rl4sq
       '@typescript-eslint/parser': 5.48.0_typescript@4.9.4
       concurrently: 7.6.0
+      husky: 8.0.2
       lint-staged: 13.1.0
       prettier: 2.8.1
       tsup: 6.5.0_typescript@4.9.4
@@ -5335,6 +5337,12 @@ packages:
   /human-signals/3.0.1:
     resolution: {integrity: sha512-rQLskxnM/5OCldHo+wNXbpVgDn5A17CUoKX+7Sokwaknlq7CdSnphy0W39GU8dw59XiCXmFXDg4fRuckQRKewQ==}
     engines: {node: '>=12.20.0'}
+
+  /husky/8.0.2:
+    resolution: {integrity: sha512-Tkv80jtvbnkK3mYWxPZePGFpQ/tT3HNSs/sasF9P2YfkMezDl3ON37YN6jUUI4eTg5LcyVynlb6r4eyvOmspvg==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dev: false
 
   /hyphenate-style-name/1.0.4:
     resolution: {integrity: sha512-ygGZLjmXfPHj+ZWh6LwbC37l43MhfztxetbFCoYTM2VjkIUpeHgSNn7QIyVFj7YQ1Wl9Cbw5sholVJPzWvC2MQ==}
