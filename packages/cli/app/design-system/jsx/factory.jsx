@@ -1,9 +1,11 @@
-import { forwardRef } from 'react'
+import { forwardRef, useMemo } from 'react'
 import { isCssProperty } from './is-valid-prop'
-import { css } from '../css'
+import { css, cx } from '../css'
 
-function cx(...args) {
-  return args.filter(Boolean).join(' ')
+const htmlProps = ['htmlSize', 'htmlTranslate', 'htmlWidth', 'htmlHeight']
+
+function normalizeHtmlProp(key) {
+  return htmlProps.includes(key) ? key.replace('html', '').toLowerCase() : key
 }
 
 function splitProps(props) {
@@ -14,7 +16,7 @@ function splitProps(props) {
     if (isCssProperty(key)) {
       styleProps[key] = value
     } else {
-      elementProps[key] = value
+      elementProps[normalizeHtmlProp(key)] = value
     }
   }
 
@@ -22,12 +24,12 @@ function splitProps(props) {
 }
 
 function styled(Dynamic) {
-  const PandaComponent = forwardRef((props, ref) => {
+  const PandaComponent = forwardRef(function PandaComponent(props, ref) {
     const { as: Element = Dynamic, ...restProps } = props
 
-    const [styleProps, elementProps] = splitProps(restProps)
+    const [styleProps, elementProps] = useMemo(() => splitProps(restProps), [restProps])
 
-    const classes = () => {
+    function classes(){
       const { css: cssStyles, ...otherStyles } = styleProps
       const atomicClass = css({ ...otherStyles, ...cssStyles })
       return cx(atomicClass, elementProps.className)
@@ -40,10 +42,13 @@ function styled(Dynamic) {
   return PandaComponent
 }
 
-function createFactory() {
+function createJsxFactory() {
   const cache = new Map()
 
   return new Proxy(Object.create(null), {
+    apply(_, __, args) {
+      return styled(...args)
+    },
     get(_, el) {
       if (!cache.has(el)) {
         cache.set(el, styled(el))
@@ -53,4 +58,4 @@ function createFactory() {
   })
 }
 
-export const panda = createFactory();
+export const panda = createJsxFactory()

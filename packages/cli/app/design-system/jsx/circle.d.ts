@@ -1,5 +1,5 @@
 import { CircleProperties } from '../patterns/circle'
-import { PolymorphicComponent } from '../types/jsx'
+import { PandaComponent } from '../types/jsx'
 
 
-export declare const Circle: PolymorphicComponent<"div", CircleProperties>
+export declare const Circle: PandaComponent<'div', CircleProperties>

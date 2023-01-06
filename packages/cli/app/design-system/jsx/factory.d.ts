@@ -1,2 +1,2 @@
-import { PolymorphicComponents } from '../types/jsx'
-export declare const panda: PolymorphicComponents
+import { Panda } from '../types/jsx'
+export declare const panda: Panda

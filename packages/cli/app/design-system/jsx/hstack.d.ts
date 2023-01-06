@@ -1,5 +1,5 @@
 import { HstackProperties } from '../patterns/hstack'
-import { PolymorphicComponent } from '../types/jsx'
+import { PandaComponent } from '../types/jsx'
 
 
-export declare const HStack: PolymorphicComponent<"div", HstackProperties>
+export declare const HStack: PandaComponent<'div', HstackProperties>

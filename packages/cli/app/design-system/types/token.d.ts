@@ -30,7 +30,7 @@ export type Size = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | 
 
 export type Animation = "spin" | "ping" | "pulse" | "bounce"
 
-export interface Tokens {
+export type Tokens = {
 		easings: Easing
 		durations: Duration
 		radii: Radius
@@ -45,4 +45,4 @@ export interface Tokens {
 		spacing: Spacing
 		sizes: Size
 		animations: Animation
-}
+} & { [token: string]: never }

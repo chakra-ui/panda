@@ -1,9 +1,3 @@
-// src/condition.ts
-var isBaseCondition = (c) => /^(base|_)$/.test(c);
-function filterBaseConditions(c) {
-  return c.slice().filter((v) => !isBaseCondition(v));
-}
-
 // src/css-important.ts
 function isImportant(value) {
   return typeof value === "string" ? /!(important)?$/.test(value) : false;
@@ -13,6 +7,12 @@ function withoutImportant(value) {
 }
 function withoutSpace(str) {
   return typeof str === "string" ? str.replaceAll(" ", "_") : str;
+}
+
+// src/condition.ts
+var isBaseCondition = (c) => /^(base|_)$/.test(c);
+function filterBaseConditions(c) {
+  return c.slice().filter((v) => !isBaseCondition(v));
 }
 
 // src/hash.ts
@@ -156,7 +156,7 @@ function createCss(context) {
 
 // src/compact.ts
 function compact(value) {
-  return Object.fromEntries(Object.entries(value).filter(([_, value2]) => value2 !== void 0));
+  return Object.fromEntries(Object.entries(value ?? {}).filter(([_, value2]) => value2 !== void 0));
 }
 export {
   compact,

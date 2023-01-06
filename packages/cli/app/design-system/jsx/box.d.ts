@@ -1,5 +1,5 @@
 import { BoxProperties } from '../patterns/box'
-import { PolymorphicComponent } from '../types/jsx'
+import { PandaComponent } from '../types/jsx'
 
 
-export declare const Box: PolymorphicComponent<"div", BoxProperties>
+export declare const Box: PandaComponent<'div', BoxProperties>

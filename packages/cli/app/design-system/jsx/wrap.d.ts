@@ -1,5 +1,5 @@
 import { WrapProperties } from '../patterns/wrap'
-import { PolymorphicComponent } from '../types/jsx'
+import { PandaComponent } from '../types/jsx'
 
 
-export declare const Wrap: PolymorphicComponent<"div", WrapProperties>
+export declare const Wrap: PandaComponent<'div', WrapProperties>

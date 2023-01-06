@@ -1461,12 +1461,12 @@ const tokens = {
   }
 }
 
-function getToken(path) {
+export function getToken(path) {
   const { value } = tokens[path] || {}
   return value
 }
 
-function getTokenVar(path) {
+export function getTokenVar(path) {
   const { variable } = tokens[path] || {}
   return variable
 }

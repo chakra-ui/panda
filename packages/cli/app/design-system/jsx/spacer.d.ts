@@ -1,5 +1,5 @@
 import { SpacerProperties } from '../patterns/spacer'
-import { PolymorphicComponent } from '../types/jsx'
+import { PandaComponent } from '../types/jsx'
 
 
-export declare const Spacer: PolymorphicComponent<"div", SpacerProperties>
+export declare const Spacer: PandaComponent<'div', SpacerProperties>

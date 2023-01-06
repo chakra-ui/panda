@@ -1,5 +1,5 @@
 import { GridProperties } from '../patterns/grid'
-import { PolymorphicComponent } from '../types/jsx'
+import { PandaComponent } from '../types/jsx'
 
 
-export declare const Grid: PolymorphicComponent<"div", GridProperties>
+export declare const Grid: PandaComponent<'div', GridProperties>
