@@ -18,7 +18,7 @@ import type { JsxStyleProps, Assign } from '.'
 type Element = keyof JSX.IntrinsicElements
 type Dict<T = unknown> = Record<string, T>
 
-type Clean<T> = Omit<T, 'color'>
+type Clean<T> = Omit<T, 'color' | 'translate' | 'transition'>
 
 type PolymorphicProps<
   ComponentProps extends Dict,
@@ -34,7 +34,7 @@ export type PolymorphicComponents = {
   [K in Element]: PolymorphicComponent<K, {}>
 }
 
-export type HTML${upperName}Props<T extends ElementType> = Assign<Clean<ComponentProps<T>>, JsxStyleProps>
+export type HTML${upperName}Props<T extends ElementType> = Clean<ComponentProps<T>> & JsxStyleProps
   `,
   }
 }
