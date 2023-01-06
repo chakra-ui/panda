@@ -1,115 +1,8 @@
-function memo<V>(fn: (args: string) => V): (args: string) => V {
-  const cache = Object.create(null)
-  return (arg: string) => {
-    if (cache[arg] === undefined) cache[arg] = fn(arg)
-    return cache[arg]
-  }
-}
-
 const userGenerated: string[] = []
 
 const uniq = (arr: string[]) => Array.from(new Set(arr))
 
 const allCssProperties = uniq([
-  'msAccelerator',
-  'msBlockProgression',
-  'msContentZoomChaining',
-  'msContentZooming',
-  'msContentZoomLimit',
-  'msContentZoomLimitMax',
-  'msContentZoomLimitMin',
-  'msContentZoomSnap',
-  'msContentZoomSnapPoints',
-  'msContentZoomSnapType',
-  'msFilter',
-  'msFlowFrom',
-  'msFlowInto',
-  'msGridColumns',
-  'msGridRows',
-  'msHighContrastAdjust',
-  'msHyphenateLimitChars',
-  'msHyphenateLimitLines',
-  'msHyphenateLimitZone',
-  'msImeAlign',
-  'msOverflowStyle',
-  'msScrollbar-3dlightColor',
-  'msScrollbarArrowColor',
-  'msScrollbarBaseColor',
-  'msScrollbarDarkshadowColor',
-  'msScrollbarFaceColor',
-  'msScrollbarHighlightColor',
-  'msScrollbarShadowColor',
-  'msScrollbarTrackColor',
-  'msScrollChaining',
-  'msScrollLimit',
-  'msScrollLimitXMax',
-  'msScrollLimitXMin',
-  'msScrollLimitYMax',
-  'msScrollLimitYMin',
-  'msScrollRails',
-  'msScrollSnapPointsX',
-  'msScrollSnapPointsY',
-  'msScrollSnapType',
-  'msScrollSnapX',
-  'msScrollSnapY',
-  'msScrollTranslation',
-  'msTextAutospace',
-  'msTouchSelect',
-  'msUserSelect',
-  'msWrapFlow',
-  'msWrapMargin',
-  'msWrapThrough',
-  'MozAppearance',
-  'MozBinding',
-  'MozBorderBottomColors',
-  'MozBorderLeftColors',
-  'MozBorderRightColors',
-  'MozBorderTopColors',
-  'MozContextProperties',
-  'MozFloatEdge',
-  'MozForceBrokenImageIcon',
-  'MozImageRegion',
-  'MozOrient',
-  'MozOutlineRadius',
-  'MozOutlineRadiusBottomleft',
-  'MozOutlineRadiusBottomright',
-  'MozOutlineRadiusTopleft',
-  'MozOutlineRadiusTopright',
-  'MozStackSizing',
-  'MozTextBlink',
-  'MozUserFocus',
-  'MozUserInput',
-  'MozUserModify',
-  'MozWindowDragging',
-  'MozWindowShadow',
-  'WebkitAppearance',
-  'WebkitBorderBefore',
-  'WebkitBorderBeforeColor',
-  'WebkitBorderBeforeStyle',
-  'WebkitBorderBeforeWidth',
-  'WebkitBoxReflect',
-  'WebkitLineClamp',
-  'WebkitMask',
-  'WebkitMaskAttachment',
-  'WebkitMaskClip',
-  'WebkitMaskComposite',
-  'WebkitMaskImage',
-  'WebkitMaskOrigin',
-  'WebkitMaskPosition',
-  'WebkitMaskPositionX',
-  'WebkitMaskPositionY',
-  'WebkitMaskRepeat',
-  'WebkitMaskRepeatX',
-  'WebkitMaskRepeatY',
-  'WebkitMaskSize',
-  'WebkitOverflowScrolling',
-  'WebkitTapHighlightColor',
-  'WebkitTextFillColor',
-  'WebkitTextStroke',
-  'WebkitTextStrokeColor',
-  'WebkitTextStrokeWidth',
-  'WebkitTouchCallout',
-  'WebkitUserModify',
   'accentColor',
   'alignContent',
   'alignItems',
@@ -117,6 +10,7 @@ const allCssProperties = uniq([
   'alignTracks',
   'all',
   'animation',
+  'animationComposition',
   'animationDelay',
   'animationDirection',
   'animationDuration',
@@ -222,7 +116,9 @@ const allCssProperties = uniq([
   'breakBefore',
   'breakInside',
   'captionSide',
+  'caret',
   'caretColor',
+  'caretShape',
   'clear',
   'clip',
   'clipPath',
@@ -240,6 +136,11 @@ const allCssProperties = uniq([
   'columnWidth',
   'columns',
   'contain',
+  'containIntrinsicSize',
+  'containIntrinsicBlockSize',
+  'containIntrinsicHeight',
+  'containIntrinsicInlineSize',
+  'containIntrinsicWidth',
   'content',
   'contentVisibility',
   'counterIncrement',
@@ -363,6 +264,8 @@ const allCssProperties = uniq([
   'maskSize',
   'maskType',
   'masonryAutoFlow',
+  'mathDepth',
+  'mathShift',
   'mathStyle',
   'maxBlockSize',
   'maxHeight',
@@ -470,6 +373,9 @@ const allCssProperties = uniq([
   'scrollSnapType',
   'scrollSnapTypeX',
   'scrollSnapTypeY',
+  'scrollTimeline',
+  'scrollTimelineAxis',
+  'scrollTimelineName',
   'shapeImageThreshold',
   'shapeMargin',
   'shapeOutside',
@@ -528,9 +434,17 @@ const allCssProperties = uniq([
   ...userGenerated,
 ])
 
-const regex = new RegExp('^(?:' + allCssProperties.join('|') + ')$')
+const regex = new RegExp('^(?:' + Array.from(allCssProperties).join('|') + ')$')
 
-const isCssProperty = memo((prop) => {
+function memo<T>(fn: (value: string) => T): (value: string) => T {
+  const cache = Object.create(null)
+  return (arg: string) => {
+    if (cache[arg] === undefined) cache[arg] = fn(arg)
+    return cache[arg]
+  }
+}
+
+const isCssProperty = memo((prop: string) => {
   return regex.test(prop)
 })
 
