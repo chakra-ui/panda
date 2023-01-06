@@ -1,40 +1,53 @@
-import { capitalize } from '@pandacss/shared'
 import { outdent } from 'outdent'
 import type { PandaContext } from '../../context'
 
 export function generateReactJsxTypes(ctx: PandaContext) {
-  const name = ctx.jsxFactory
-  const upperName = capitalize(name)
+  const { name, componentName, upperName, typeName } = ctx.jsxFactoryDetails
 
   return {
     jsxFactory: outdent`
-import { PolymorphicComponents } from '../types/jsx'
-export declare const ${name}: PolymorphicComponents
+import { ${upperName} } from '../types/jsx'
+export declare const ${name}: ${upperName}
     `,
     jsxType: outdent`
 import type { ElementType, ComponentProps } from 'react'
 import type { JsxStyleProps, Assign } from '.'
 
-type Element = keyof JSX.IntrinsicElements
-type Dict<T = unknown> = Record<string, T>
+type Dict = Record<string, unknown>
 
-type Clean<T> = Omit<T, 'color' | 'translate' | 'transition'>
+type AdditionalHtmlProps = {
+  htmlSize?: string | number
+  htmlWidth?: string | number
+  htmlHeight?: string | number
+  htmlTranslate?: 'yes' | 'no' | undefined
+}
 
-type PolymorphicProps<
-  ComponentProps extends Dict,
-  AdditionalProps extends Dict = {},
-> = Assign<Clean<ComponentProps>, AdditionalProps>
+type Polyfill<ComponentProps> = Omit<
+  ComponentProps,
+  'color' | 'translate' | 'transition' | 'width' | 'height' | 'size'
+> &
+  AdditionalHtmlProps
 
-export type PolymorphicComponent<C extends ElementType, P extends Dict = {}> = {
-  (props: PolymorphicProps<ComponentProps<C>, P> & JsxStyleProps<P>): JSX.Element
+type Props<ComponentProps extends Dict, AdditionalProps extends Dict = {}> = Assign<
+  Polyfill<ComponentProps>,
+  AdditionalProps
+>
+
+export type ${componentName}<ComponentType extends ElementType, AdditionalProps extends Dict = {}> = {
+  (
+    props: Props<ComponentProps<ComponentType>, AdditionalProps> & JsxStyleProps<AdditionalProps>,
+  ): JSX.Element
   displayName?: string
 }
 
-export type PolymorphicComponents = {
-  [K in Element]: PolymorphicComponent<K, {}>
-}
+export type ${upperName} = {
+  <Component extends ElementType, AdditionalProps extends Dict = {}>(component: Component): ${componentName}<
+    Component,
+    AdditionalProps
+  >
+} & { [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}> }
 
-export type HTML${upperName}Props<T extends ElementType> = Clean<ComponentProps<T>> & JsxStyleProps
+export type ${typeName}<ComponentType extends ElementType> = Polyfill<ComponentProps<ComponentType>> & JsxStyleProps
   `,
   }
 }

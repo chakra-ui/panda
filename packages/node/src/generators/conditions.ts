@@ -38,6 +38,7 @@ export function generateConditions(ctx: PandaContext) {
     `,
     dts: outdent`
   export type Condition = ${unionType(keys)}
+
   export type Conditions = Record<Condition, string>
   `,
   }

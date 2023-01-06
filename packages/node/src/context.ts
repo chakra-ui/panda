@@ -11,7 +11,7 @@ import {
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
 import { Collector, createParser, createProject } from '@pandacss/parser'
-import { capitalize, compact, mapObject, uncapitalize } from '@pandacss/shared'
+import { capitalize, compact, mapObject, uncapitalize, splitObject, dashCase } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type { Dict, PatternConfig, RecipeConfig } from '@pandacss/types'
 import glob from 'fast-glob'
@@ -22,6 +22,10 @@ import { extname, isAbsolute, join, relative, resolve, sep } from 'path'
 import postcss from 'postcss'
 import { Project, ScriptKind } from 'ts-morph'
 import { match, P } from 'ts-pattern'
+
+/* -----------------------------------------------------------------------------
+ * Input - Output
+ * -----------------------------------------------------------------------------*/
 
 type IO = {
   read(id: string): Promise<string>
@@ -53,18 +57,9 @@ const fileSystem: IO = {
   },
 }
 
-function splitProps(obj: Dict, keys: string[]) {
-  const omitted = {} as Dict
-  const picked = {} as Dict
-  for (const [key, value] of Object.entries(obj)) {
-    if (keys.includes(key)) {
-      picked[key] = value
-    } else {
-      omitted[key] = value
-    }
-  }
-  return [picked, omitted]
-}
+/* -----------------------------------------------------------------------------
+ * CLI Context
+ * -----------------------------------------------------------------------------*/
 
 export function createContext(conf: LoadConfigResult, io = fileSystem) {
   const { config } = conf
@@ -96,7 +91,17 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     layerStyles,
   } = theme
 
-  const jsxFactoryName = capitalize(jsxFactory)
+  /* -----------------------------------------------------------------------------
+   * Jsx factory details
+   * -----------------------------------------------------------------------------*/
+
+  const jsxFactoryDetails = {
+    name: jsxFactory,
+    upperName: capitalize(jsxFactory),
+    typeName: `HTML${capitalize(jsxFactory)}Props`,
+    componentName: `${capitalize(jsxFactory)}Component`,
+    framework: jsxFramework,
+  }
 
   const cwd = resolve(cwdProp)
   const exclude = ['.git', 'node_modules', 'test-results'].concat(excludeProp)
@@ -157,6 +162,18 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     return pattern?.transform?.(data, helpers) ?? {}
   }
 
+  function getPatternDetails(name: string, pattern: PatternConfig | undefined) {
+    const upperName = capitalize(name)
+    return {
+      name,
+      props: Object.keys(pattern?.properties ?? {}),
+      dashName: dashCase(name),
+      upperName: upperName,
+      styleFn: `get${upperName}Style`,
+      jsxName: pattern?.jsx ?? upperName,
+    }
+  }
+
   const patternNodes = Object.entries(patterns).map(([name, pattern]) => ({
     type: 'pattern' as const,
     name: pattern.jsx ?? capitalize(name),
@@ -192,7 +209,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   function splitRecipeProps(name: string, props: Dict) {
     const recipe = recipeNodes.find((node) => node.name === name)
     if (!recipe) return [{}, props]
-    return splitProps(props, recipe.props)
+    return splitObject(props, (key) => recipe.props.includes(key))
   }
 
   function getRecipeDetails() {
@@ -521,6 +538,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     writeOutput,
     cleanOutdir,
 
+    cssVarRoot,
     tokens,
     hasTokens,
 
@@ -535,16 +553,15 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     execPattern,
     patternNodes,
     getPatternFnName,
+    getPatternDetails,
 
     recipes,
     getRecipe,
     hasRecipes,
     getRecipeDetails,
 
-    jsxFramework,
-    jsxFactoryName,
     jsxFactory,
-    cssVarRoot,
+    jsxFactoryDetails,
 
     properties,
     extract,
