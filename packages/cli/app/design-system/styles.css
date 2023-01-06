@@ -7,49 +7,6 @@
 @import './tokens/keyframes.css';
 
 @layer utilities {
-  .pt_16 {
-    padding-top: var(--spacing-16)
-  }
-
-  .opacity_0\.5 {
-    opacity: 0.5
-  }
-
-  .mt_10 {
-    margin-top: var(--spacing-10)
-  }
-
-  .justify_space-between {
-    justify-content: space-between
-  }
-
-  .p_2 {
-    padding: var(--spacing-2)
-  }
-
-  .outline_none {
-    outline: 2px solid transparent;
-    outline-offset: 2px
-  }
-
-  .border-slim_card {
-    border-width: 1px;
-    border-style: solid;
-    border-color: var(--colors-card)
-  }
-
-  .gap_2\.5 {
-    gap: var(--spacing-2\.5)
-  }
-
-  .text_center {
-    text-align: center
-  }
-
-  .flex_1 {
-    flex: 1 1 0%
-  }
-
   .rounded_xl {
     border-radius: var(--radii-xl)
   }
@@ -122,6 +79,49 @@
     grid-gap: var(--spacing-4)
   }
 
+  .pt_16 {
+    padding-top: var(--spacing-16)
+  }
+
+  .opacity_0\.5 {
+    opacity: 0.5
+  }
+
+  .mt_10 {
+    margin-top: var(--spacing-10)
+  }
+
+  .justify_space-between {
+    justify-content: space-between
+  }
+
+  .p_2 {
+    padding: var(--spacing-2)
+  }
+
+  .outline_none {
+    outline: 2px solid transparent;
+    outline-offset: 2px
+  }
+
+  .border-slim_card {
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--colors-card)
+  }
+
+  .gap_2\.5 {
+    gap: var(--spacing-2\.5)
+  }
+
+  .text_center {
+    text-align: center
+  }
+
+  .flex_1 {
+    flex: 1 1 0%
+  }
+
   .pos_relative {
     position: relative
   }
@@ -174,6 +174,14 @@
     opacity: 0.8
   }
 
+  .py_2 {
+    padding-block: var(--spacing-2)
+  }
+
+  .h_20 {
+    height: var(--sizes-20)
+  }
+
   .z_1 {
     z-index: 1
   }
@@ -210,14 +218,6 @@
     gap: var(--spacing-3\.5)
   }
 
-  .py_2 {
-    padding-block: var(--spacing-2)
-  }
-
-  .h_20 {
-    height: var(--sizes-20)
-  }
-
   .pos_fixed {
     position: fixed
   }
@@ -248,26 +248,6 @@
 
   .pointerEvents_none {
     pointer-events: none
-  }
-
-  .py_1\.5 {
-    padding-block: var(--spacing-1\.5)
-  }
-
-  .cursor_pointer {
-    cursor: pointer
-  }
-
-  .fs_md {
-    font-size: var(--font-sizes-md)
-  }
-
-  .hover\:text_blue\.400:where(:hover, [data-hover]) {
-    color: var(--colors-blue-400)
-  }
-
-  .currentPage\:text_blue\.400[aria-current=page] {
-    color: var(--colors-blue-400)
   }
 
   .w_80px {
@@ -342,10 +322,6 @@
     margin-top: var(--spacing-6)
   }
 
-  .transition_all_0\.2s_ease {
-    transition: all 0.2s ease
-  }
-
   .\[\&\:hover\]\:bg_\#4049f0:hover {
     background: #4049f0
   }
@@ -378,10 +354,6 @@
     margin-bottom: var(--spacing-6)
   }
 
-  .d_block {
-    display: block
-  }
-
   .p_8 {
     padding: var(--spacing-8)
   }
@@ -392,6 +364,34 @@
 
   .gap_6 {
     gap: var(--spacing-6)
+  }
+
+  .d_block {
+    display: block
+  }
+
+  .py_1\.5 {
+    padding-block: var(--spacing-1\.5)
+  }
+
+  .cursor_pointer {
+    cursor: pointer
+  }
+
+  .fs_md {
+    font-size: var(--font-sizes-md)
+  }
+
+  .transition_all_0\.2s_ease {
+    transition: all 0.2s ease
+  }
+
+  .hover\:text_blue\.400:where(:hover, [data-hover]) {
+    color: var(--colors-blue-400)
+  }
+
+  .currentPage\:text_blue\.400[aria-current=page] {
+    color: var(--colors-blue-400)
   }
 
   .mt_8 {

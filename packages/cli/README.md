@@ -26,7 +26,7 @@ function App() {
 import { buttonStyle } from './generated/recipes'
 
 function App() {
-  return <button className={buttonStyle({ size: { _: 'lg', md: 'sm' }, variant: 'solid' })}>Click me</button>
+  return <button className={buttonStyle({ size: { base: 'lg', md: 'sm' }, variant: 'solid' })}>Click me</button>
 }
 ```
 

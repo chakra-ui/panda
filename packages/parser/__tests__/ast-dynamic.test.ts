@@ -15,7 +15,7 @@ describe('[dynamic] ast parser', () => {
         })
 
         textStyle({
-          variant: { _:"h4", md: "h5" }
+          variant: { base:"h4", md: "h5" }
       })
 
       textStyle()
@@ -36,7 +36,7 @@ describe('[dynamic] ast parser', () => {
           {
             "data": {
               "variant": {
-                "_": "h4",
+                "base": "h4",
                 "md": "h5",
               },
             },
