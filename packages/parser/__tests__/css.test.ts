@@ -4,13 +4,7 @@ import { cssParser } from './fixture'
 describe('ast parser', () => {
   test('[without import] should not parse', () => {
     const code = `
-    import {css, globalCss} from ".panda/css"
-
-    globalCss({
-        html: {
-            fontSize: '12px',
-        }
-    })
+    import {css} from ".panda/css"
 
         const baseStyle = css({
             color: 'red',
@@ -47,17 +41,6 @@ describe('ast parser', () => {
           },
         },
         "cssMap": Set {},
-        "globalCss": Set {
-          {
-            "data": {
-              "html": {
-                "fontSize": "12px",
-              },
-            },
-            "name": "globalCss",
-            "type": "object",
-          },
-        },
       }
     `)
   })

@@ -6,7 +6,6 @@ type Result = {
 export class Collector {
   jsx = new Set<Result>()
   css = new Set<Result>()
-  globalCss = new Set<Result>()
   cssMap = new Set<Result>()
   recipe = new Map<string, Set<Result>>()
   pattern = new Map<string, Set<Result>>()
@@ -28,7 +27,6 @@ export class Collector {
   get isEmpty() {
     return (
       this.css.size === 0 &&
-      this.globalCss.size === 0 &&
       this.cssMap.size === 0 &&
       this.recipe.size === 0 &&
       this.pattern.size === 0 &&

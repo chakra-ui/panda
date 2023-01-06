@@ -6,7 +6,6 @@ import { generateCssFn } from './css-fn'
 import { generateCssMap } from './css-map'
 import { generateCx } from './cx'
 import { getEntrypoint } from './get-entrypoint'
-import { generateGlobalCss } from './global-css'
 import { generateisValidProp } from './is-valid-prop'
 import { generateJsxFactory, generateJsxPatterns, generateJsxTypes, generateLayoutGrid } from './jsx'
 import { generatePattern } from './pattern'
@@ -49,17 +48,6 @@ function setupDesignTokens(ctx: PandaContext): Output {
       { file: 'index.css', code: css },
       { file: 'index.d.ts', code: code.dts },
       { file: 'index.mjs', code: code.js },
-    ],
-  }
-}
-
-function setupGlobalCss(ctx: PandaContext): Output {
-  const code = generateGlobalCss()
-  return {
-    dir: ctx.paths.css,
-    files: [
-      { file: 'global-css.mjs', code: code.js },
-      { file: 'global-css.d.ts', code: code.dts },
     ],
   }
 }
@@ -219,7 +207,6 @@ export function generateSystem(ctx: PandaContext): Output[] {
     setupCssMap(ctx),
     setupCx(ctx),
     setupCss(ctx),
-    setupGlobalCss(ctx),
     setupRecipes(ctx),
     setupPatterns(ctx),
     setupCssIndex(ctx),

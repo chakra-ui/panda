@@ -1,15 +1,8 @@
-import { css, cx, globalCss } from '../design-system/css'
+import { css, cx } from '../design-system/css'
 import { circle, vstack } from '../design-system/patterns'
 import { Stack, panda, Circle, HStack } from '../design-system/jsx'
 import { button } from '../design-system/recipes'
 import { Button } from './Button'
-
-globalCss({
-  '*': {
-    fontFamily: 'Inter',
-    margin: '0',
-  },
-})
 
 function App() {
   return (

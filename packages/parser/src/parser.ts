@@ -59,7 +59,7 @@ export function createParser(options: ParserOptions) {
 
     // Create regex for each import map
     const importRegex = [
-      createImportMatcher(importMap.css, ['css', 'cssMap', 'globalCss']),
+      createImportMatcher(importMap.css, ['css', 'cssMap']),
       createImportMatcher(importMap.recipe),
       createImportMatcher(importMap.pattern),
     ]
@@ -85,7 +85,7 @@ export function createParser(options: ParserOptions) {
     const isValidPattern = imports.createMatch(importMap.pattern)
     const isValidRecipe = imports.createMatch(importMap.recipe)
 
-    // Get all call expressions (css, cssMap, globalCss, etc)
+    // Get all call expressions (css, cssMap, etc)
     visitCallExpressions(sourceFile, {
       match: memo((name) => imports.match(name)),
       fn({ name: _name, data }) {

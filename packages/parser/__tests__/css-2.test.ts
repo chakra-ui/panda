@@ -20,7 +20,6 @@ describe('ast parser', () => {
       {
         "css": Set {},
         "cssMap": Set {},
-        "globalCss": Set {},
       }
     `)
   })
@@ -68,7 +67,6 @@ describe('ast parser', () => {
           },
         },
         "cssMap": Set {},
-        "globalCss": Set {},
       }
     `)
   })
@@ -116,7 +114,6 @@ describe('ast parser', () => {
           },
         },
         "cssMap": Set {},
-        "globalCss": Set {},
       }
     `)
   })
@@ -154,7 +151,6 @@ console.log(
           },
         },
         "cssMap": Set {},
-        "globalCss": Set {},
       }
     `)
   })
@@ -185,7 +181,6 @@ export function Card({ className }) {
           },
         },
         "cssMap": Set {},
-        "globalCss": Set {},
       }
     `)
   })

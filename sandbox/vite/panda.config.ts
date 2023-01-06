@@ -1,8 +1,8 @@
 import { defineConfig } from 'css-panda'
 
 export default defineConfig({
-  docs:{
-    title:"Chakra UI",
+  docs: {
+    title: 'Chakra UI',
     logo: 'https://place-hold.it/36x24',
   },
   preflight: true,
@@ -49,10 +49,9 @@ export default defineConfig({
   },
   jsxFramework: 'react',
   globalCss: {
-    'html, body': {
+    '*': {
+      fontFamily: 'Inter',
       margin: '0',
-      padding: '0',
-      fontFamily: 'sans',
     },
     a: {
       color: 'inherit',

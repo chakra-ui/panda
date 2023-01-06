@@ -30,7 +30,6 @@ export function cssParser(code: string) {
   const data = parser(toSourceFile(code))!
   return {
     css: data.css,
-    globalCss: data.globalCss,
     cssMap: data.cssMap,
   }
 }

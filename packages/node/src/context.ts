@@ -434,10 +434,6 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   function getCss(collector: Collector, file: string) {
     const sheet = new Stylesheet(context())
 
-    collector.globalCss.forEach((result) => {
-      sheet.processGlobalCss(result.data)
-    })
-
     collector.css.forEach((result) => {
       sheet.processAtomic(result.data)
     })
