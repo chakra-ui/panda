@@ -1,12 +1,9 @@
 import type * as CSS from './csstype'
 
-type Dict<T = unknown> = Record<string, T>
-
+type Dict = Record<string, unknown>
 type String = string & {}
-
 type Number = number & {}
 
-// list of aria states selectors
 type AriaAttributes =
   | '[aria-disabled]'
   | '[aria-hidden]'
