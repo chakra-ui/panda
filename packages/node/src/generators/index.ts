@@ -163,7 +163,6 @@ function setupJsx(ctx: PandaContext): Output {
   export * from './factory'
   export * from './layout-grid'
   ${outdent.string(patterns.map((file) => `export * from './${file.name}'`).join('\n'))}
-  export type { HTML${ctx.jsxFactoryName}Props } from '../types/jsx'
 `
 
   return {
@@ -176,7 +175,13 @@ function setupJsx(ctx: PandaContext): Output {
       { file: 'is-valid-prop.mjs', code: isValidProp.js },
       { file: 'factory.d.ts', code: types.jsxFactory },
       { file: 'factory.jsx', code: factory.js },
-      { file: 'index.d.ts', code: indexCode },
+      {
+        file: 'index.d.ts',
+        code: outdent`
+        ${indexCode}
+        export type { HTML${ctx.jsxFactoryName}Props } from '../types/jsx'
+      `,
+      },
       { file: 'index.jsx', code: indexCode },
     ],
   }
