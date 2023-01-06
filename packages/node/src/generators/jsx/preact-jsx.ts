@@ -1,20 +1,21 @@
-import { capitalize } from '@pandacss/shared'
 import { outdent } from 'outdent'
 import type { PandaContext } from '../../context'
 
 export function generatePreactJsxFactory(ctx: PandaContext) {
-  const name = ctx.jsxFactory
-  const upperName = capitalize(name)
+  const { name, componentName } = ctx.jsxFactoryDetails
 
   return {
     js: outdent`
     import { h } from 'preact'
     import { forwardRef } from 'preact/compat'
+    import { useMemo } from 'preact/hooks'
     import { isCssProperty } from './is-valid-prop'
-    import { css } from '../css'
-    
-    function cx(...args) {
-      return args.filter(Boolean).join(' ')
+    import { css, cx } from '../css'
+  
+    const htmlProps = ['htmlSize', 'htmlTranslate', 'htmlWidth', 'htmlHeight']
+
+    function normalizeHtmlProp(key) {
+      return htmlProps.includes(key) ? key.replace('html', '').toLowerCase() : key
     }
     
     function splitProps(props) {
@@ -25,7 +26,7 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
         if (isCssProperty(key)) {
           styleProps[key] = value
         } else {
-          elementProps[key] = value
+          elementProps[normalizeHtmlProp(key)] = value
         }
       }
     
@@ -33,12 +34,12 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
     }
     
     function styled(Dynamic) {
-      const ${upperName}Component = forwardRef((props, ref) => {
+      const ${componentName} = forwardRef(function ${componentName}(props, ref) {
         const { as: Element = Dynamic, ...restProps } = props
 
-        const [styleProps, elementProps] = splitProps(restProps)
+        const [styleProps, elementProps] = useMemo(() => splitProps(restProps), [restProps])
     
-        const classes = () => {
+        function classes(){
           const { css: cssStyles, ...otherStyles } = styleProps
           const atomicClass = css({ ...otherStyles, ...cssStyles })
           return cx(atomicClass, elementProps.className)
@@ -47,14 +48,17 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
         return h(Element, { ...elementProps, ref, className: classes() })
       })
       
-      ${upperName}Component.displayName = \`${name}.\${Dynamic}\`
-      return ${upperName}Component
+      ${componentName}.displayName = \`${name}.\${Dynamic}\`
+      return ${componentName}
     }
     
-    function createFactory() {
+    function createJsxFactory() {
       const cache = new Map()
     
       return new Proxy(Object.create(null), {
+        apply(_, __, args) {
+          return styled(...args)
+        },
         get(_, el) {
           if (!cache.has(el)) {
             cache.set(el, styled(el))
@@ -64,7 +68,7 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
       })
     }
 
-    export const ${name} = createFactory()
+    export const ${name} = createJsxFactory()
     `,
   }
 }

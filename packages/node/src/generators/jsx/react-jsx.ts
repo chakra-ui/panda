@@ -37,13 +37,13 @@ export function generateReactJsxFactory(ctx: PandaContext) {
     
         const [styleProps, elementProps] = useMemo(() => splitProps(restProps), [restProps])
     
-        function getClassName(){
+        function classes(){
           const { css: cssStyles, ...otherStyles } = styleProps
           const atomicClass = css({ ...otherStyles, ...cssStyles })
           return cx(atomicClass, elementProps.className)
         }
     
-        return <Element ref={ref} {...elementProps} className={getClassName()} />
+        return <Element ref={ref} {...elementProps} className={classes()} />
       })
       
       ${componentName}.displayName = \`${name}.\${Dynamic}\`
