@@ -156,11 +156,9 @@ importers:
     specifiers:
       css-in-js-utils: ^3.1.0
       mdn-data: ^2.0.30
-      outdent: ' ^0.8.0'
     devDependencies:
       css-in-js-utils: 3.1.0
       mdn-data: 2.0.30
-      outdent: 0.8.0
 
   packages/logger:
     specifiers:
@@ -6763,6 +6761,7 @@ packages:
 
   /outdent/0.8.0:
     resolution: {integrity: sha512-KiOAIsdpUTcAXuykya5fnVVT+/5uS0Q1mrkRHcF89tpieSmY33O/tmc54CqwA+bfhbtEfZUNLHaPUiB9X3jt1A==}
+    dev: false
 
   /p-cancelable/3.0.0:
     resolution: {integrity: sha512-mlVgR3PGuzlo0MmTdk4cXqXWlwQDLnONTAg6sm62XkMJEiRxN3GL3SffkYvqwonbkJBcrI7Uvv5Zh9yjvn2iUw==}
