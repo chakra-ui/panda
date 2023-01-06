@@ -2,20 +2,18 @@ import {
   esc,
   filterBaseConditions,
   isImportant,
+  normalizeStyleObject,
   toHash,
   walkObject,
   withoutImportant,
-  withoutSpace,
 } from '@pandacss/shared'
 import type { Dict } from '@pandacss/types'
 import type { Root } from 'postcss'
 import postcss from 'postcss'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
-import { normalizeStyleObject } from '@pandacss/shared'
 
 export type ProcessOptions = {
-  scope?: string[]
   styles: Dict
 }
 
@@ -39,7 +37,7 @@ export class AtomicRule {
   }
 
   process = (options: ProcessOptions) => {
-    const { scope, styles } = options
+    const { styles } = options
     const { conditions: cond } = this.context
 
     const styleObject = normalizeStyleObject(styles, this.context)
@@ -68,11 +66,6 @@ export class AtomicRule {
 
       // get the base class name
       const baseArray = [...cond.finalize(conditions), transformed.className]
-
-      if (scope && scope.length > 0) {
-        baseArray.unshift(`[${withoutSpace(scope.join('__'))}]`)
-        conditions.push(...scope)
-      }
 
       const selector = this.hash(baseArray.join(':'))
 

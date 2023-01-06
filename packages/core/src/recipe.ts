@@ -1,4 +1,4 @@
-import { capitalize, walkStyles } from '@pandacss/shared'
+import { capitalize } from '@pandacss/shared'
 import type { RecipeConfig } from '@pandacss/types'
 import merge from 'lodash.merge'
 import { AtomicRule, ProcessOptions } from './atomic-rule'
@@ -60,23 +60,12 @@ export class Recipe {
 
     const transformed: StyleObject = {}
 
-    walkStyles(styleObject, (styles, scopes) => {
-      // recipe can only have one scope (for now)
-      const [selector] = scopes || []
+    const result: StyleObject = {}
 
-      const result: StyleObject = {}
+    const currentStyles = serializeStyle(styleObject, { utility, conditions })
+    merge(result, currentStyles)
 
-      const currentStyles = serializeStyle(styles, { utility, conditions })
-
-      if (selector) {
-        result[selector] ||= {}
-        merge(result[selector], currentStyles)
-      } else {
-        merge(result, currentStyles)
-      }
-
-      merge(transformed, result)
-    })
+    merge(transformed, result)
 
     return transformed
   }

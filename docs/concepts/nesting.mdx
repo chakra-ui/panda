@@ -4,35 +4,7 @@ Panda provides different ways of nesting style declarations.
 
 > Regardless of the approach you use, we require that you use the "&" selector to create nested styles.
 
-## Approach 1: Style Grouping
-
-This is the recommended way of defining styles.
-
-Grouping all selectors in a single object makes it easier to maintain and organize styles within your team.
-
-Supported groups: `selectors`, `@media`, `@container`
-
-```jsx
-<div
-  className={css({
-    // write base styles here
-    bg: 'red.400',
-    // group all selectors here
-    selectors: {
-      '&:hover': {
-        bg: 'orange.400',
-      },
-      '@media': {
-        '(min-width: 300px)': {
-          fontSize: '40px',
-        },
-      },
-    },
-  })}
-/>
-```
-
-## Approach 2: Nesting Styles
+## Approach 1: Nesting Styles
 
 For simple scenarios, you might find the grouped "selectors" object too verbose, you can apply simple pseudo or
 attribute selectors directly in the css object.
@@ -48,7 +20,7 @@ attribute selectors directly in the css object.
 />
 ```
 
-## Approach 3: Condition grouping
+## Approach 2: Condition grouping
 
 CSS styles can be nested using the css conditions in the panda config.
 

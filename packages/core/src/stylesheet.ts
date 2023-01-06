@@ -1,4 +1,3 @@
-import { walkStyles } from '@pandacss/shared'
 import type { Dict, RecipeConfig } from '@pandacss/types'
 import postcss from 'postcss'
 import { AtomicRule } from './atomic-rule'
@@ -48,9 +47,7 @@ export class Stylesheet {
 
   processAtomic = (styleObject: Dict) => {
     const ruleset = new AtomicRule(this.context)
-    walkStyles(styleObject, (styles: any, scope?: string[]) => {
-      ruleset.process({ scope, styles })
-    })
+    ruleset.process({ styles: styleObject })
   }
 
   processRecipe = (config: RecipeConfig, styles: Record<string, any>) => {

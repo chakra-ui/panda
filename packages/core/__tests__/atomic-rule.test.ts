@@ -199,11 +199,12 @@ describe('atomic / with nesting scope', () => {
   test('[pseudo] should work with nested selector', () => {
     expect(
       css({
-        scope: ['& > p'],
         styles: {
-          left: { base: '20px', md: '40px' },
-          bg: { _light: 'red400', _dark: 'green500' },
-          font: { _rtl: 'sans', _ltr: { _dark: { sm: { _hover: 'serif' } } } },
+          '& > p': {
+            left: { base: '20px', md: '40px' },
+            bg: { _light: 'red400', _dark: 'green500' },
+            font: { _rtl: 'sans', _ltr: { _dark: { sm: { _hover: 'serif' } } } },
+          },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -242,8 +243,8 @@ describe('atomic / with nesting scope', () => {
               }
           }
           .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif {
-              &:hover {
-                  & > p {
+              & > p {
+                  &:hover {
                       [dir=ltr] & {
                           [data-theme=dark] & {
                               @media screen and (min-width: 30em) {
@@ -261,10 +262,11 @@ describe('atomic / with nesting scope', () => {
   test('[parent selector] should work with nested selector', () => {
     expect(
       css({
-        scope: ['input:hover &'],
         styles: {
-          bg: 'red400',
-          fontSize: { sm: '14px', lg: '18px' },
+          'input:hover &': {
+            bg: 'red400',
+            fontSize: { sm: '14px', lg: '18px' },
+          },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -295,11 +297,12 @@ describe('atomic / with nesting scope', () => {
   test('[selector] should work with nested selector', () => {
     expect(
       css({
-        scope: ['&::placeholder'],
         styles: {
-          left: '40px',
-          bg: 'red400',
-          textAlign: { sm: 'left' },
+          '&::placeholder': {
+            left: '40px',
+            bg: 'red400',
+            textAlign: { sm: 'left' },
+          },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -328,10 +331,11 @@ describe('atomic / with nesting scope', () => {
   test('[@media] should work with nested selector', () => {
     expect(
       css({
-        scope: ['@media base'],
         styles: {
-          left: '40px',
-          textAlign: { sm: 'left' },
+          '@media base': {
+            left: '40px',
+            textAlign: { sm: 'left' },
+          },
         },
       }),
     ).toMatchInlineSnapshot(`
@@ -342,8 +346,8 @@ describe('atomic / with nesting scope', () => {
               }
           }
           .\\\\[\\\\@media_base\\\\]\\\\:sm\\\\:text_left {
-              @media screen and (min-width: 30em) {
-                  @media base {
+              @media base {
+                  @media screen and (min-width: 30em) {
                       text-align: left
                   }
               }
@@ -424,25 +428,28 @@ describe('atomic / with grouped conditions styles', () => {
   test('multiple scopes', () => {
     expect(
       css({
-        scope: ['@media base', '&:hover'],
         styles: {
-          left: '40px',
-          textAlign: { sm: 'left' },
+          '@media base': {
+            '&:hover': {
+              left: '40px',
+              textAlign: { sm: 'left' },
+            },
+          },
         },
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[\\\\@media_base__\\\\&\\\\:hover\\\\]\\\\:l_40px {
+          .\\\\[\\\\@media_base\\\\]\\\\:\\\\[\\\\&\\\\:hover\\\\]\\\\:l_40px {
               &:hover {
                   @media base {
                       left: 40px
                   }
               }
           }
-          .\\\\[\\\\@media_base__\\\\&\\\\:hover\\\\]\\\\:sm\\\\:text_left {
+          .\\\\[\\\\@media_base\\\\]\\\\:\\\\[\\\\&\\\\:hover\\\\]\\\\:sm\\\\:text_left {
               &:hover {
-                  @media screen and (min-width: 30em) {
-                      @media base {
+                  @media base {
+                      @media screen and (min-width: 30em) {
                           text-align: left
                       }
                   }

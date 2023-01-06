@@ -1,9 +1,8 @@
-import { isImportant, withoutImportant, withoutSpace } from './css-important'
 import { filterBaseConditions } from './condition'
+import { isImportant, withoutImportant } from './css-important'
 import { toHash } from './hash'
-import { walkObject } from './walk-object'
-import { walkStyles } from './walk-styles'
 import { normalizeStyleObject } from './normalize-style-object'
+import { walkObject } from './walk-object'
 
 export type CreateCssContext = {
   hash?: boolean
@@ -41,32 +40,26 @@ export function createCss(context: CreateCssContext) {
 
     const classNames = new Set<string>()
 
-    walkStyles(normalizedObject, (props: Record<string, any>, scope?: string[]) => {
-      walkObject(props, (value, paths) => {
-        const important = isImportant(value)
+    walkObject(normalizedObject, (value, paths) => {
+      const important = isImportant(value)
 
-        if (value == null) return
+      if (value == null) return
 
-        const [prop, ...allConditions] = conds.shift(paths)
+      const [prop, ...allConditions] = conds.shift(paths)
 
-        const conditions = filterBaseConditions(allConditions)
-        const transformed = utility.transform(prop, withoutImportant(sanitize(value)))
-        let transformedClassName = transformed.className
+      const conditions = filterBaseConditions(allConditions)
+      const transformed = utility.transform(prop, withoutImportant(sanitize(value)))
+      let transformedClassName = transformed.className
 
-        if (important) {
-          transformedClassName = `${transformedClassName}!`
-        }
+      if (important) {
+        transformedClassName = `${transformedClassName}!`
+      }
 
-        // get the base class name
-        const baseArray = [...conds.finalize(conditions), transformedClassName]
+      // get the base class name
+      const baseArray = [...conds.finalize(conditions), transformedClassName]
 
-        if (scope && scope.length > 0) {
-          baseArray.unshift(`[${withoutSpace(scope.join('__'))}]`)
-        }
-
-        const className = hash ? toHash(baseArray.join(':')) : baseArray.join(':')
-        classNames.add(className)
-      })
+      const className = hash ? toHash(baseArray.join(':')) : baseArray.join(':')
+      classNames.add(className)
     })
 
     return Array.from(classNames).join(' ')

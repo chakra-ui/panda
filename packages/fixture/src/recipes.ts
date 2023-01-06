@@ -58,11 +58,9 @@ export const recipes: Record<string, RecipeConfig> = {
           _hover: {
             backgroundColor: 'darkblue',
           },
-          selectors: {
-            '&[data-disabled]': {
-              backgroundColor: 'gray',
-              color: 'black',
-            },
+          '&[data-disabled]': {
+            backgroundColor: 'gray',
+            color: 'black',
           },
         },
         outline: {
@@ -73,12 +71,10 @@ export const recipes: Record<string, RecipeConfig> = {
             backgroundColor: 'blue',
             color: 'white',
           },
-          selectors: {
-            '&[data-disabled]': {
-              backgroundColor: 'transparent',
-              border: '1px solid gray',
-              color: 'gray',
-            },
+          '&[data-disabled]': {
+            backgroundColor: 'transparent',
+            border: '1px solid gray',
+            color: 'gray',
           },
         },
       },

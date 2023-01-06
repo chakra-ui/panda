@@ -87,11 +87,11 @@ describe('recipe ruleset', () => {
                   "backgroundColor": "blue",
                   "color": "white",
                 },
-              },
-              "&[data-disabled]": {
-                "backgroundColor": "transparent",
-                "border": "1px solid gray",
-                "color": "gray",
+                "&[data-disabled]": {
+                  "backgroundColor": "transparent",
+                  "border": "1px solid gray",
+                  "color": "gray",
+                },
               },
               "backgroundColor": "transparent",
               "border": "1px solid blue",
@@ -102,10 +102,10 @@ describe('recipe ruleset', () => {
                 "&:hover": {
                   "backgroundColor": "darkblue",
                 },
-              },
-              "&[data-disabled]": {
-                "backgroundColor": "gray",
-                "color": "black",
+                "&[data-disabled]": {
+                  "backgroundColor": "gray",
+                  "color": "black",
+                },
               },
               "backgroundColor": "blue",
               "color": "white",

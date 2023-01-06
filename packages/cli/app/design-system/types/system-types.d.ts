@@ -98,28 +98,6 @@ export type Conditional<C extends Cond, V> =
       [K in keyof C]?: Conditional<C, V>
     }
 
-/* -----------------------------------------------------------------------------
- * Groupings and Conditions
- * -----------------------------------------------------------------------------*/
-
-/**
- * Group properties for better maintainability
- */
-type Grouped<T> = T & {
-  selectors?: {
-    [key in Selectors]?: T
-  }
-  '@media'?: {
-    [query: string]: T
-  }
-  '@container'?: {
-    [query: string]: T
-  }
-  '@supports'?: {
-    [query: string]: T
-  }
-}
-
 type Nested<C extends Cond, P> = P & {
   [K in Selectors | keyof C]?: Nested<C, P>
 } & {
@@ -180,7 +158,7 @@ export type StyleObject<
   PropTypes extends Dict = {},
   StrictMode extends boolean = false,
   Overrides extends Dict = {},
-> = Grouped<Nested<Conditions, Css<Conditions, PropTypes, StrictMode, Overrides>>>
+> = Nested<Conditions, Css<Conditions, PropTypes, StrictMode, Overrides>>
 
 export type JsxStyleProps<
   Conditions extends Cond = {},
