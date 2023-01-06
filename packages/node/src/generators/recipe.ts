@@ -10,7 +10,7 @@ export function generateRecipes(ctx: PandaContext) {
 
   const js = [
     outdent`
-   import { createCss, withoutSpace, compact } from "../helpers"
+   import { createCss, withoutSpace, compact } from '../helpers'
 
    const createRecipe = (name, defaultVariants) => {
      return (variants) => {
@@ -42,7 +42,11 @@ export function generateRecipes(ctx: PandaContext) {
   `,
   ]
 
-  const dts = ['']
+  const dts = [
+    outdent`
+  import { ConditionalValue } from '../types'
+  `,
+  ]
 
   Object.values(recipes).forEach((recipe) => {
     const { name, description, defaultVariants, variants } = recipe
@@ -52,8 +56,6 @@ export function generateRecipes(ctx: PandaContext) {
     `)
 
     dts.push(outdent`
-    import { ConditionalValue } from "../types"
-
     export type ${capitalize(name)}Variants = {
       ${Object.keys(variants ?? {})
         .map((key) => {
