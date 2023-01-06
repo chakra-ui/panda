@@ -163,6 +163,7 @@ function setupJsx(ctx: PandaContext): Output {
   export * from './factory'
   export * from './layout-grid'
   ${outdent.string(patterns.map((file) => `export * from './${file.name}'`).join('\n'))}
+  export type { HTML${ctx.jsxFactoryName}Props } from '../types/jsx'
 `
 
   return {

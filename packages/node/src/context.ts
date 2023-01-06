@@ -96,6 +96,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     layerStyles,
   } = theme
 
+  const jsxFactoryName = capitalize(jsxFactory)
+
   const cwd = resolve(cwdProp)
   const exclude = ['.git', 'node_modules', 'test-results'].concat(excludeProp)
 
@@ -540,6 +542,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     getRecipeDetails,
 
     jsxFramework,
+    jsxFactoryName,
     jsxFactory,
     cssVarRoot,
 
