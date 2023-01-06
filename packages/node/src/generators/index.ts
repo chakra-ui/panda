@@ -179,7 +179,7 @@ function setupJsx(ctx: PandaContext): Output {
         file: 'index.d.ts',
         code: outdent`
         ${indexCode}
-        export type { HTML${ctx.jsxFactoryName}Props } from '../types/jsx'
+        export type { ${ctx.jsxFactoryDetails.typeName} } from '../types/jsx'
       `,
       },
       { file: 'index.jsx', code: indexCode },

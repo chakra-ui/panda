@@ -3,6 +3,8 @@ import { outdent } from 'outdent'
 export function generateSolidLayoutGrid() {
   return {
     dts: outdent`
+    import { ParentProps } from 'solid-js'
+    
     export type LayoutGridProps = {
         count?: number
         gutter?: string
@@ -10,7 +12,7 @@ export function generateSolidLayoutGrid() {
         margin?: string
     }
 
-    export declare const LayoutGrid: React.FC<LayoutGridProps>
+    export declare const LayoutGrid: ParentProps<LayoutGridProps>
     `,
     js: outdent`
     export function LayoutGrid(props) {

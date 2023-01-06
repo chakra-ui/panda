@@ -1,28 +1,37 @@
-import { capitalize } from '@pandacss/shared'
 import { outdent } from 'outdent'
 import type { PandaContext } from '../../context'
 
 export function generateSolidJsxFactory(ctx: PandaContext) {
-  const name = ctx.jsxFactory
-  const upperName = capitalize(name)
+  const { componentName, name } = ctx.jsxFactoryDetails
   return {
     js: outdent`
     import { Dynamic } from 'solid-js/web'
     import { mergeProps, splitProps } from 'solid-js'
     import { allCssProperties } from './is-valid-prop'
-    import { css } from '../css'
+    import { css, cx } from '../css'
 
-    function cx(...args) {
-      return args.filter(Boolean).join(' ')
+    const htmlProps = ['htmlSize', 'htmlTranslate', 'htmlWidth', 'htmlHeight']
+
+    function normalizeHtmlProp(key) {
+      return htmlProps.includes(key) ? key.replace('html', '').toLowerCase() : key
+    }
+
+    function normalizeHtmlProps(props) {
+      const result = {}
+      for (const [key, value] of Object.entries(props)) {
+        result[normalizeHtmlProp(key)] = value
+      }
+      return result
     }
     
     function styled(element) {
-      return function ${upperName}Component(props) {
+      return function ${componentName}(props) {
         const mergedProps = mergeProps({ as: element }, props)
     
-        const [localProps, styleProps, elementProps] = splitProps(
+        const [localProps, localHtmlProps, styleProps, elementProps] = splitProps(
           mergedProps,
           ['as', 'class', 'className'],
+          htmlProps,
           allCssProperties
         )
     
@@ -32,14 +41,17 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
           return cx(atomicClass, localProps.class, localProps.className)
         }
     
-        return <Dynamic component={localProps.as} {...elementProps} class={classes()} />
+        return <Dynamic component={localProps.as} {...normalizeHtmlProps(localHtmlProps)} {...elementProps} class={classes()} />
       }
     }
     
-    function createFactory() {
+    function createJsxFactory() {
       const cache = new Map()
     
       return new Proxy(Object.create(null), {
+        apply(_, __, args) {
+          return styled(...args)
+        },
         get(_, el) {
           if (!cache.has(el)) {
             cache.set(el, styled(el))
@@ -49,7 +61,7 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
       })
     }
       
-    export const ${name} = createFactory()
+    export const ${name} = createJsxFactory()
     `,
   }
 }
