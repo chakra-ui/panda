@@ -1,5 +1,5 @@
 // src/condition.ts
-var isBaseCondition = (c) => /^(base|_)$/.test(c);
+var isBaseCondition = (v) => v === "base";
 function filterBaseConditions(c) {
   return c.slice().filter((v) => !isBaseCondition(v));
 }

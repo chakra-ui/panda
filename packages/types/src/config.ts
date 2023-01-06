@@ -117,7 +117,7 @@ export type Config<
     /**
      * The semantic design tokens for your project.
      */
-    semanticTokens?: SemanticTokens<StringKeyOf<Conditions> | StringKeyOf<Breakpoints> | 'base' | '_'>
+    semanticTokens?: SemanticTokens<StringKeyOf<Conditions> | StringKeyOf<Breakpoints> | 'base'>
     /**
      * The typography styles for your project.
      */

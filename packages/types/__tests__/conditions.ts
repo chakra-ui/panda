@@ -108,7 +108,6 @@ export type Condition =
   | 'lgToXl'
   | 'lgTo2xl'
   | 'xlTo2xl'
-  | '_'
   | 'base'
 
 export type Conditions = Record<Condition, string>

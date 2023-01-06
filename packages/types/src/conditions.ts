@@ -23,4 +23,3 @@ export type ExtractConditions<Conditions extends Dict, Breakpoints extends Dict>
   | StringKeyOf<Breakpoints>
   | StringKeyOf<Conditions>
   | 'base'
-  | '_'

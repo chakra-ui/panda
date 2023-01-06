@@ -3,7 +3,7 @@ import outdent from 'outdent'
 import type { PandaContext } from '../context'
 
 export function generateConditions(ctx: PandaContext) {
-  const keys = Object.keys(ctx.conditions.values).concat('_', 'base')
+  const keys = Object.keys(ctx.conditions.values).concat('base')
   return {
     js: outdent`
      import { withoutSpace } from '../helpers'
