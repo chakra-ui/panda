@@ -1,9 +1,5 @@
 @layer utilities {
 
-  .gap_2 {
-    gap: var(--spacing-2)
-  }
-
   .h_calc\(100vh_-_env\(safe-area-inset-bottom\)\) {
     height: calc(100vh - env(safe-area-inset-bottom))
   }
@@ -14,6 +10,10 @@
 
   .fs_2xl {
     font-size: var(--font-sizes-2xl)
+  }
+
+  .gap_2 {
+    gap: var(--spacing-2)
   }
 
   .w_full {

@@ -1,8 +1,4 @@
 @layer utilities {
-
-  .z_1 {
-    z-index: 1
-  }
   .w_full {
     width: var(--sizes-full)
   }
@@ -33,6 +29,10 @@
 
   .shadow_lg {
     box-shadow: var(--shadows-lg)
+  }
+
+  .z_1 {
+    z-index: 1
   }
 
   .opacity_0\.4 {

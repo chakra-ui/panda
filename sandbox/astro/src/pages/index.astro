@@ -2,15 +2,8 @@
 import Layout from '../layouts/Layout.astro'
 import { Button } from '../components/button.jsx'
 import '../index.css'
-import { css, globalCss } from '../../panda/css'
+import { css } from '../../panda/css'
 import { circle, hstack } from '../../panda/patterns'
-
-globalCss({
-  '*': {
-    fontSize: '16px',
-    fontFamily: 'sans-serif',
-  },
-})
 ---
 
 <Layout title="Welcome to Astro.">
