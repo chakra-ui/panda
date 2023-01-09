@@ -14,7 +14,11 @@ export type AnyFunction<T = any> = (...args: T[]) => any
 
 export type StringKeyOf<T> = Extract<keyof T, string>
 
-export type Extendable<T> = T & { extend?: T }
+type DeepPartial<T> = {
+  [P in keyof T]+?: DeepPartial<T[P]>
+}
+
+export type Extendable<T> = T | { extend?: T | DeepPartial<T> }
 
 type Nullable<T> = T | null | undefined
 
