@@ -20,7 +20,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "ts-pattern": "4.0.6",
+    "ts-pattern": "4.1.1",
     "ts-morph": "17.0.1"
   },
   "devDependencies": {

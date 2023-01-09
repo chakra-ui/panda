@@ -122,7 +122,7 @@ importers:
       postcss-normalize-whitespace: ^5.1.1
       postcss-selector-parser: ^6.0.11
       sort-css-media-queries: ^2.1.0
-      ts-pattern: 4.0.6
+      ts-pattern: 4.1.1
     dependencies:
       '@pandacss/error': link:../error
       '@pandacss/logger': link:../logger
@@ -140,7 +140,7 @@ importers:
       postcss-normalize-whitespace: 5.1.1_postcss@8.4.21
       postcss-selector-parser: 6.0.11
       sort-css-media-queries: 2.1.0
-      ts-pattern: 4.0.6
+      ts-pattern: 4.1.1
     devDependencies:
       '@pandacss/fixture': link:../fixture
       '@types/lodash.merge': 4.6.7
@@ -205,7 +205,7 @@ importers:
       preferred-pm: ^3.0.3
       telejson: 7.0.4
       ts-morph: 17.0.1
-      ts-pattern: 4.0.6
+      ts-pattern: 4.1.1
     dependencies:
       '@pandacss/config': link:../config
       '@pandacss/core': link:../core
@@ -231,7 +231,7 @@ importers:
       preferred-pm: 3.0.3
       telejson: 7.0.4
       ts-morph: 17.0.1
-      ts-pattern: 4.0.6
+      ts-pattern: 4.1.1
     devDependencies:
       '@pandacss/fixture': link:../fixture
       '@types/fs-extra': 9.0.13
@@ -248,14 +248,14 @@ importers:
       '@pandacss/shared': workspace:*
       '@pandacss/types': workspace:*
       ts-morph: 17.0.1
-      ts-pattern: 4.0.6
+      ts-pattern: 4.1.1
     dependencies:
       '@pandacss/is-valid-prop': link:../is-valid-prop
       '@pandacss/logger': link:../logger
       '@pandacss/shared': link:../shared
       '@pandacss/types': link:../types
       ts-morph: 17.0.1
-      ts-pattern: 4.0.6
+      ts-pattern: 4.1.1
     devDependencies:
       '@pandacss/fixture': link:../fixture
 
@@ -272,10 +272,10 @@ importers:
     specifiers:
       '@pandacss/fixture': workspace:*
       '@pandacss/shared': workspace:*
-      ts-pattern: 4.0.6
+      ts-pattern: 4.1.1
     dependencies:
       '@pandacss/shared': link:../shared
-      ts-pattern: 4.0.6
+      ts-pattern: 4.1.1
     devDependencies:
       '@pandacss/fixture': link:../fixture
 
@@ -8327,8 +8327,8 @@ packages:
       code-block-writer: 11.0.3
     dev: false
 
-  /ts-pattern/4.0.6:
-    resolution: {integrity: sha512-sFHQYD4KoysBi7e7a2mzDPvRBeqA4w+vEyRE+P5MU9VLq8eEYxgKCgD9RNEAT+itGRWUTYN+hry94GDPLb1/Yw==}
+  /ts-pattern/4.1.1:
+    resolution: {integrity: sha512-fLMhPEixNmQieJ0BeWUy4eg90Vn4ECRQxl0LGuU7NE1LUVCsZlb0IFWcBWwAw6WA/YeY5RShY82bZCLbI+Zf3w==}
     dev: false
 
   /tsconfig-paths/3.14.1:
