@@ -185,19 +185,17 @@ const wrap: PatternConfig = {
 
 const container: PatternConfig = {
   properties: {
-    size: { type: 'token', value: 'sizes' },
     centerContent: { type: 'boolean' },
   },
   transform(props) {
-    const { size, centerContent, ...rest } = props
+    const { centerContent, ...rest } = props
     return {
-      ...rest,
       position: 'relative',
       width: '100%',
-      maxWidth: size,
+      maxWidth: '60ch',
       marginX: 'auto',
-      paddingX: centerContent ? '1rem' : undefined,
       ...(centerContent && { display: 'flex', alignItems: 'center', justifyContent: 'center' }),
+      ...rest,
     }
   },
 }

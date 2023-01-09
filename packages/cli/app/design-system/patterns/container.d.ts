@@ -3,8 +3,7 @@ import { Properties } from "../types/csstype"
 import { Tokens } from "../types/token"
 
 export type ContainerProperties = {
-   size?: ConditionalValue<Tokens["sizes"]>
-	centerContent?: ConditionalValue<boolean>
+   centerContent?: ConditionalValue<boolean>
 }
 
 

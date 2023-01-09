@@ -1,7 +1,7 @@
 import { mapObject } from "../helpers"
 import { css } from "../css"
 
-const config = {"transform":function(props) {const { size, centerContent, ...rest } = props; return {...rest,position: "relative",width: "100%",maxWidth: size,marginX: "auto",paddingX: centerContent ? "1rem" : void 0,...centerContent && { display: "flex", alignItems: "center", justifyContent: "center" }};}}
+const config = {"transform":function(props) {const { centerContent, ...rest } = props; return {position: "relative",width: "100%",maxWidth: "60ch",marginX: "auto",...centerContent && { display: "flex", alignItems: "center", justifyContent: "center" },...rest};}}
 
 export const getContainerStyle = (styles) => config.transform(styles, { map: mapObject })
 
