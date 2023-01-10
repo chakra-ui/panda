@@ -1,7 +1,6 @@
 import { FunctionComponent } from 'react'
 import { BoxProperties } from '../patterns/box'
-import { PandaComponent, HTMLPandaProps } from '../types/jsx'
-import { Assign } from '../types'
+import { HTMLPandaProps } from '../types/jsx'
 
 export type BoxProps = BoxProperties & Omit<HTMLPandaProps<'div'>, keyof BoxProperties >
 

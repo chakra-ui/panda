@@ -1,7 +1,6 @@
 import { FunctionComponent } from 'react'
 import { HstackProperties } from '../patterns/hstack'
-import { PandaComponent, HTMLPandaProps } from '../types/jsx'
-import { Assign } from '../types'
+import { HTMLPandaProps } from '../types/jsx'
 
 export type HstackProps = HstackProperties & Omit<HTMLPandaProps<'div'>, keyof HstackProperties >
 

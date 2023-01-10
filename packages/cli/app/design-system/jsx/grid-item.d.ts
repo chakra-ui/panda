@@ -1,7 +1,6 @@
 import { FunctionComponent } from 'react'
 import { GridItemProperties } from '../patterns/grid-item'
-import { PandaComponent, HTMLPandaProps } from '../types/jsx'
-import { Assign } from '../types'
+import { HTMLPandaProps } from '../types/jsx'
 
 export type GridItemProps = GridItemProperties & Omit<HTMLPandaProps<'div'>, keyof GridItemProperties >
 

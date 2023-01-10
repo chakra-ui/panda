@@ -5,7 +5,7 @@ import type { PandaContext } from '../../context'
 
 function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
   const { upperName, styleFn, dashName, jsxName, props, blocklistType } = ctx.getPatternDetails(name, pattern)
-  const { componentName, typeName } = ctx.jsxFactoryDetails
+  const { typeName } = ctx.jsxFactoryDetails
 
   return {
     name: dashName,
@@ -36,8 +36,7 @@ function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
     dts: outdent`
     import { FunctionComponent } from 'react'
     import { ${upperName}Properties } from '../patterns/${dashName}'
-    import { ${componentName}, ${typeName} } from '../types/jsx'
-    import { Assign } from '../types'
+    import { ${typeName} } from '../types/jsx'
 
     export type ${upperName}Props = ${upperName}Properties & Omit<${typeName}<'div'>, keyof ${upperName}Properties ${blocklistType}>
 

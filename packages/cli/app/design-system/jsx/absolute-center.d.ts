@@ -1,7 +1,6 @@
 import { FunctionComponent } from 'react'
 import { AbsoluteCenterProperties } from '../patterns/absolute-center'
-import { PandaComponent, HTMLPandaProps } from '../types/jsx'
-import { Assign } from '../types'
+import { HTMLPandaProps } from '../types/jsx'
 
 export type AbsoluteCenterProps = AbsoluteCenterProperties & Omit<HTMLPandaProps<'div'>, keyof AbsoluteCenterProperties >
 

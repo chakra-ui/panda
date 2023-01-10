@@ -1,7 +1,6 @@
 import { FunctionComponent } from 'react'
 import { VstackProperties } from '../patterns/vstack'
-import { PandaComponent, HTMLPandaProps } from '../types/jsx'
-import { Assign } from '../types'
+import { HTMLPandaProps } from '../types/jsx'
 
 export type VstackProps = VstackProperties & Omit<HTMLPandaProps<'div'>, keyof VstackProperties >
 
