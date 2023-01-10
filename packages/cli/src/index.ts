@@ -6,7 +6,7 @@ import type {
   Config,
   PatternConfig,
   Parts,
-  StyleObject,
+  SystemStyleObject,
 } from '@pandacss/types'
 
 export function defineConfig<C extends Conditions, B extends Dict, T extends Dict>(config: Config<C, B, T>): any {
@@ -22,7 +22,7 @@ export function definePattern(config: PatternConfig): any {
 }
 
 export function defineParts<T extends Parts>(parts: T) {
-  return function (config: Partial<Record<keyof T, StyleObject>>): Partial<Record<keyof T, StyleObject>> {
+  return function (config: Partial<Record<keyof T, SystemStyleObject>>): Partial<Record<keyof T, SystemStyleObject>> {
     return Object.fromEntries(Object.entries(config).map(([key, value]) => [parts[key].selector, value])) as any
   }
 }

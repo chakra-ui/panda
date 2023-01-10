@@ -19,7 +19,7 @@ type CssVarProperties = {
   [key in `--${string}`]?: string | number
 }
 
-export type NativeCssProperties = PropertiesFallback<String | Number> & ContainerProperties & CssVarProperties
+export type NativeCssProperties = PropertiesFallback<String | Number> & ContainerProperties
 
 export type NativeCssProperty = keyof NativeCssProperties
 
