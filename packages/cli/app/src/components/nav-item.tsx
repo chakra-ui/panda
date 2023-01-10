@@ -1,11 +1,10 @@
+import { panda } from '../../design-system/jsx'
 import type { NavItemData } from '../utils/constants'
-import { panda, Stack } from '../../design-system/jsx'
 
 export function NavItem(props: NavItemData) {
   return (
     <panda.a href={`/${props.id}`}>
-      <Stack
-        gap="0"
+      <panda.div
         width="60"
         background="card"
         borderRadius="sm"
@@ -34,7 +33,7 @@ export function NavItem(props: NavItemData) {
         <panda.span display="block" marginTop="3">
           {props.description}
         </panda.span>
-      </Stack>
+      </panda.div>
     </panda.a>
   )
 }

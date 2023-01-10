@@ -49,6 +49,7 @@ const getSemanticTokens = (allTokens: ColorToken[], filterMethod?: (token: Color
       (acc, nxt) => ({
         ...acc,
         [nxt.extensions?.prop]: {
+          //@ts-expect-error
           ...acc[nxt.extensions?.prop],
           [nxt.extensions?.condition]: { value: nxt.value, isReference: nxt.isReference },
           extensions: nxt.extensions,
@@ -59,6 +60,7 @@ const getSemanticTokens = (allTokens: ColorToken[], filterMethod?: (token: Color
 }
 
 export const useColorDocs = () => {
+  //@ts-expect-error
   const tokenDictionary = new TokenDictionary(config.theme!)
   const tokens = Object.fromEntries(tokenDictionary.categoryMap)
   const allTokens = tokenDictionary.allTokens

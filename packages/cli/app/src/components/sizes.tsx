@@ -8,6 +8,7 @@ import { TokenGroup } from './token-group'
 export type SizesProps = { sizes: Map<string, any> }
 
 export function Sizes() {
+  //@ts-expect-error
   const tokenDictionary = new TokenDictionary(config.theme!)
   const tokens = Object.fromEntries(tokenDictionary.categoryMap)
   const values = Array.from(tokens.sizes.values())
@@ -16,7 +17,7 @@ export function Sizes() {
 
   return (
     <TokenGroup>
-      <Grid display="grid" colGap="10" rowGap="2.5" columns={5}>
+      <Grid display="grid" columnGap="10" rowGap="2.5" columns={5}>
         <panda.span fontWeight="semibold">Name</panda.span>
         <panda.span fontWeight="semibold">Size</panda.span>
         <panda.span fontWeight="semibold" gridColumn="span 3 / span 3">

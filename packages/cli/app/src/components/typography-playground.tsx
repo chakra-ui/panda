@@ -7,6 +7,7 @@ import { TokenContent } from './token-content'
 import { customDocs } from '../utils/custom-docs'
 
 export function TypographyPlayground() {
+  //@ts-expect-error
   const tokenMap = new TokenDictionary(pandaConfig.theme!)
   const tokens = Object.fromEntries(tokenMap.categoryMap)
 
@@ -72,7 +73,7 @@ export function TypographyPlayground() {
           </panda.div>
           <panda.div display="flex" flexDirection="column" gap="4">
             {Object.keys(config).map((tokenKey) => (
-              <panda.div diaplay="flex" alignItems="center" gap="1.5" key={tokenKey}>
+              <panda.div display="flex" alignItems="center" gap="1.5" key={tokenKey}>
                 <panda.span whiteSpace="nowrap" width="48" textTransform="capitalize" marginRight="2">
                   {tokenKey.replace(/([a-z0-9])([A-Z])/g, '$1 $2')}
                 </panda.span>

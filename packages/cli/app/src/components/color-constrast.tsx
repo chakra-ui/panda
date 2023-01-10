@@ -30,6 +30,7 @@ function TestScore(props: { score: { WCAG_AA: boolean; WCAG_AAA: boolean }; size
 }
 
 export function ColorContrastChecker() {
+  //@ts-expect-error
   const tokenDictionary = new TokenDictionary(config.theme!)
   const tokens = Object.fromEntries(tokenDictionary.categoryMap)
 

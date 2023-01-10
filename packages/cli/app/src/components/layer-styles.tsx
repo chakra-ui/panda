@@ -8,6 +8,7 @@ import { TokenGroup } from './token-group'
 import { TokenContent } from './token-content'
 
 export function LayerStyles() {
+  //@ts-expect-error
   const layerStyles = flattenLayerStyles(config.theme?.layerStyles ?? {})
 
   return (

@@ -9,6 +9,7 @@ import { TokenContent } from './token-content'
 import { customDocs } from '../utils/custom-docs'
 
 export function TextStyles() {
+  //@ts-expect-error
   const textStyles = flattenTextStyles(config.theme?.textStyles ?? {})
 
   return (

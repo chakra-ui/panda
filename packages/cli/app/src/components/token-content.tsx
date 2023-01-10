@@ -1,7 +1,5 @@
-import { panda } from '../../design-system/jsx'
-import type { PropsWithChildren } from 'react'
-import type { JsxStyleProps } from '../../design-system/types'
+import { HTMLPandaProps, panda } from '../../design-system/jsx'
 
-export function TokenContent(props: PropsWithChildren<JsxStyleProps>) {
+export function TokenContent(props: HTMLPandaProps<'div'>) {
   return <panda.div display="flex" flexDir="column" gap="5" {...props} />
 }
