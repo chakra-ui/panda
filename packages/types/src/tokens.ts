@@ -24,10 +24,22 @@ export type SemanticToken<Value = string, Condition extends string = string> = T
  * Token data types
  * -----------------------------------------------------------------------------*/
 
+type BorderStyle =
+  | 'dashed'
+  | 'dotted'
+  | 'double'
+  | 'groove'
+  | 'hidden'
+  | 'inset'
+  | 'none'
+  | 'outset'
+  | 'ridge'
+  | 'solid'
+
 type Border = {
   color: string
   width: string | number
-  style: string
+  style: BorderStyle
 }
 
 type Shadow = {

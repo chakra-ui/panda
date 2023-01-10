@@ -99,3 +99,8 @@ type LayerStyleProperty =
 export type LayerStyle = CompositionStyleObject<LayerStyleProperty>
 
 export type LayerStyles = Recursive<Token<LayerStyle>>
+
+export type CompositionStyles = {
+  textStyles: TextStyles
+  layerStyles: LayerStyles
+}
