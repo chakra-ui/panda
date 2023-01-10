@@ -10,9 +10,7 @@ export type GridProperties = {
 }
 
         
-type GridOptions = GridProperties & {
-  [K in keyof Omit<SystemStyleObject, keyof GridProperties >]?: SystemStyleObject[K]
-}
+type GridOptions = GridProperties & Omit<SystemStyleObject, keyof GridProperties >
 
 
 export declare function grid(options: GridOptions): string

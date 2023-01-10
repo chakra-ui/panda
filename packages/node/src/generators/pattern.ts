@@ -46,9 +46,7 @@ function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
         ? outdent`export declare function ${name}(options: ${upperName}Properties): string`
         : outdent`
                 
-        type ${upperName}Options = ${upperName}Properties & {
-          [K in keyof Omit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}>]?: SystemStyleObject[K]
-        }
+        type ${upperName}Options = ${upperName}Properties & Omit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}>
 
         ${description ? `/** ${description} */` : ''}
         export declare function ${name}(options: ${upperName}Options): string
@@ -69,7 +67,8 @@ function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
       .replace(/"_function_([^|]*)\|(.*)"/, '$2')
       .replace(/\\"/g, '"')
       .replace('return', '; return')
-      .replace(';;', ';'),
+      .replace(';;', ';')
+      .replace('{;', '{'),
   }
 }
 

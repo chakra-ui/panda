@@ -8,9 +8,7 @@ export type SpacerProperties = {
 }
 
         
-type SpacerOptions = SpacerProperties & {
-  [K in keyof Omit<SystemStyleObject, keyof SpacerProperties >]?: SystemStyleObject[K]
-}
+type SpacerOptions = SpacerProperties & Omit<SystemStyleObject, keyof SpacerProperties >
 
 
 export declare function spacer(options: SpacerOptions): string

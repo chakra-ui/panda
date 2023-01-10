@@ -18,21 +18,8 @@ const App: Component = () => {
       onClick={() => {
         setValue(value() + 1)
       }}
-      css={{
-        selectors: {
-          '&.red': {
-            fontWeight: 'bold',
-          },
-          '&:hover': {
-            color: 'yellow',
-            background: 'red',
-          },
-        },
-      }}
     >
-      <p>
-        {value()} Edit <code>src/App.tsx</code> and save to reload.
-      </p>
+      {value()} Edit <code>src/App.tsx</code> and save to reload.
     </panda.div>
   )
 }

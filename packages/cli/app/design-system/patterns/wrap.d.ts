@@ -12,9 +12,7 @@ export type WrapProperties = {
 }
 
         
-type WrapOptions = WrapProperties & {
-  [K in keyof Omit<SystemStyleObject, keyof WrapProperties >]?: SystemStyleObject[K]
-}
+type WrapOptions = WrapProperties & Omit<SystemStyleObject, keyof WrapProperties >
 
 
 export declare function wrap(options: WrapOptions): string

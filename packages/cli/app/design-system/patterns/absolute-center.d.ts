@@ -8,9 +8,7 @@ export type AbsoluteCenterProperties = {
 }
 
         
-type AbsoluteCenterOptions = AbsoluteCenterProperties & {
-  [K in keyof Omit<SystemStyleObject, keyof AbsoluteCenterProperties >]?: SystemStyleObject[K]
-}
+type AbsoluteCenterOptions = AbsoluteCenterProperties & Omit<SystemStyleObject, keyof AbsoluteCenterProperties >
 
 
 export declare function absoluteCenter(options: AbsoluteCenterOptions): string

@@ -9,9 +9,7 @@ export type VstackProperties = {
 }
 
         
-type VstackOptions = VstackProperties & {
-  [K in keyof Omit<SystemStyleObject, keyof VstackProperties >]?: SystemStyleObject[K]
-}
+type VstackOptions = VstackProperties & Omit<SystemStyleObject, keyof VstackProperties >
 
 
 export declare function vstack(options: VstackOptions): string

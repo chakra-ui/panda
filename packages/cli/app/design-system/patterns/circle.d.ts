@@ -8,9 +8,7 @@ export type CircleProperties = {
 }
 
         
-type CircleOptions = CircleProperties & {
-  [K in keyof Omit<SystemStyleObject, keyof CircleProperties >]?: SystemStyleObject[K]
-}
+type CircleOptions = CircleProperties & Omit<SystemStyleObject, keyof CircleProperties >
 
 
 export declare function circle(options: CircleOptions): string

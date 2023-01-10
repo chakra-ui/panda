@@ -8,9 +8,7 @@ export type BoxProperties = {
 }
 
         
-type BoxOptions = BoxProperties & {
-  [K in keyof Omit<SystemStyleObject, keyof BoxProperties >]?: SystemStyleObject[K]
-}
+type BoxOptions = BoxProperties & Omit<SystemStyleObject, keyof BoxProperties >
 
 
 export declare function box(options: BoxOptions): string

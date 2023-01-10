@@ -1,7 +1,7 @@
 import { mapObject } from '../helpers'
 import { css } from '../css'
 
-const config = {"transform":function(props) {; return props;}}
+const config = {"transform":function(props) { return props;}}
 
 export const getBoxStyle = (styles) => config.transform(styles, { map: mapObject })
 

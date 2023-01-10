@@ -11,9 +11,7 @@ export type StackProperties = {
 }
 
         
-type StackOptions = StackProperties & {
-  [K in keyof Omit<SystemStyleObject, keyof StackProperties >]?: SystemStyleObject[K]
-}
+type StackOptions = StackProperties & Omit<SystemStyleObject, keyof StackProperties >
 
 
 export declare function stack(options: StackOptions): string

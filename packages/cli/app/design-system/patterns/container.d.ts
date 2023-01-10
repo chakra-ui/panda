@@ -8,9 +8,7 @@ export type ContainerProperties = {
 }
 
         
-type ContainerOptions = ContainerProperties & {
-  [K in keyof Omit<SystemStyleObject, keyof ContainerProperties >]?: SystemStyleObject[K]
-}
+type ContainerOptions = ContainerProperties & Omit<SystemStyleObject, keyof ContainerProperties >
 
 
 export declare function container(options: ContainerOptions): string
