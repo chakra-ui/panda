@@ -14,10 +14,11 @@ describe('generate property types', () => {
         }),
       ),
     ).toMatchInlineSnapshot(`
-      "import { Properties as CSSProperties } from './csstype'
+      "import { ConditionalValue } from './conditions';
+      import { Properties as CSSProperties } from './csstype'
       import { Tokens } from './token'
 
-      type BasePropTypes  = {
+      type PropertyValueTypes  = {
       	divideX: string;
       	divideY: string;
       	divideColor: Tokens[\\"colors\\"];
@@ -103,13 +104,11 @@ describe('generate property types', () => {
 
 
 
-        type CssProp<T> = T extends keyof CSSProperties ? CSSProperties[T] : never
-        
-        type BaseProp<T> = T extends keyof BasePropTypes ? BasePropTypes[T] : never
-        
-        type Shorthand<T> = CssProp<T> | BaseProp<T>
+        type NativeValue<T> = T extends keyof CSSProperties ? CSSProperties[T] : never
+          
+        type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] | NativeValue<T> : NativeValue<T>
          
-        export type PropertyTypes = BasePropTypes & {
+        export type PropertyTypes = PropertyValueTypes & {
         
       	z: Shorthand<\\"zIndex\\">;
       	objectPos: Shorthand<\\"objectPosition\\">;
@@ -147,7 +146,13 @@ describe('generate property types', () => {
       	bgBlend: Shorthand<\\"backgroundBlendMode\\">;
       	bgGradient: Shorthand<\\"backgroundGradient\\">;
       	shadow: Shorthand<\\"boxShadow\\">;
-      }"
+      }
+
+      export type PropertyValue<T extends string> = T extends keyof PropertyTypes
+        ? ConditionalValue<PropertyTypes[T] | NativeValue<T>>
+        : T extends keyof CSSProperties
+        ? ConditionalValue<CSSProperties[T]>
+        : never"
     `)
   })
 })
