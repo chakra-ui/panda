@@ -53,7 +53,7 @@ export function generateReactJsxFactory(ctx: PandaContext) {
     function createJsxFactory() {
       const cache = new Map()
     
-      return new Proxy(Object.create(null), {
+      return new Proxy(styled, {
         apply(_, __, args) {
           return styled(...args)
         },
