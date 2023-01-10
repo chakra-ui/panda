@@ -22,15 +22,12 @@ type AdditionalHtmlProps = {
   htmlTranslate?: 'yes' | 'no' | undefined
 }
 
-type Polyfill<T> = Omit<T, 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size'> &
-  AdditionalHtmlProps
+type Polyfill<T> = Omit<T, 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size'> & AdditionalHtmlProps
 
 type Props<T extends Dict, P extends Dict = {}> = Assign<Polyfill<T>, P>
 
 export type ${componentName}<T extends ElementType, P extends Dict = {}> = {
-  (
-    props: Props<ComponentProps<T>, P> & JsxStyleProps
-  ): JSX.Element
+  (props: Props<ComponentProps<T>, P> & JsxStyleProps): JSX.Element
   displayName?: string
 }
 
