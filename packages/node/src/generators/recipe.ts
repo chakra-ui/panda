@@ -67,7 +67,7 @@ export function generateRecipes(ctx: PandaContext) {
     }
 
     ${description ? `/** ${description} */` : ''}
-    export declare function ${name}(value?: ${capitalize(name)}Variants): string
+    export declare function ${name}(variants?: ${capitalize(name)}Variants): string
     `)
   })
 
