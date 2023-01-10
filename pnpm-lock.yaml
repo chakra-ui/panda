@@ -156,10 +156,8 @@ importers:
 
   packages/is-valid-prop:
     specifiers:
-      css-in-js-utils: ^3.1.0
       mdn-data: ^2.0.30
     devDependencies:
-      css-in-js-utils: 3.1.0
       mdn-data: 2.0.30
 
   packages/logger:
@@ -357,27 +355,27 @@ importers:
       vite: 4.0.1
       vite-plugin-solid: 2.3.1_solid-js@1.5.5+vite@4.0.1
 
-  sandbox/vite:
+  sandbox/vite-ts:
     specifiers:
-      '@pandacss/fixture': workspace:*
       '@types/react': 18.0.17
-      '@types/react-dom': 18.0.10
-      '@vitejs/plugin-react': 3.0.1
+      '@types/react-dom': ^18.0.9
+      '@vitejs/plugin-react': ^3.0.0
       css-panda: workspace:*
       postcss: 8.4.21
-      react: 18.2.0
-      react-dom: 18.2.0
-      vite: 4.0.4
+      react: ^18.2.0
+      react-dom: ^18.2.0
+      typescript: ^4.9.3
+      vite: ^4.0.0
     dependencies:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
-      '@pandacss/fixture': link:../../packages/fixture
       '@types/react': 18.0.17
       '@types/react-dom': 18.0.10
       '@vitejs/plugin-react': 3.0.1_vite@4.0.4
       css-panda: link:../../packages/cli
       postcss: 8.4.21
+      typescript: 4.9.4
       vite: 4.0.4
 
 packages:
@@ -3612,12 +3610,6 @@ packages:
       type-fest: 1.4.0
     dev: true
 
-  /css-in-js-utils/3.1.0:
-    resolution: {integrity: sha512-fJAcud6B3rRu+KHYk+Bwf+WFL2MDCJJ1XG9x137tJQ0xYxor7XziQtuGFbWNdqrvF4Tk26O3H73nfVqXt/fW1A==}
-    dependencies:
-      hyphenate-style-name: 1.0.4
-    dev: true
-
   /cssesc/3.0.0:
     resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
     engines: {node: '>=4'}
@@ -5350,10 +5342,6 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
     dev: false
-
-  /hyphenate-style-name/1.0.4:
-    resolution: {integrity: sha512-ygGZLjmXfPHj+ZWh6LwbC37l43MhfztxetbFCoYTM2VjkIUpeHgSNn7QIyVFj7YQ1Wl9Cbw5sholVJPzWvC2MQ==}
-    dev: true
 
   /iconv-lite/0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
