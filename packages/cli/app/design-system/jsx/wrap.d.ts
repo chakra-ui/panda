@@ -1,5 +1,9 @@
+import { FunctionComponent } from 'react'
 import { WrapProperties } from '../patterns/wrap'
-import { PandaComponent } from '../types/jsx'
+import { PandaComponent, HTMLPandaProps } from '../types/jsx'
+import { Assign } from '../types'
+
+export type WrapProps = WrapProperties & Omit<HTMLPandaProps<'div'>, keyof WrapProperties >
 
 
-export declare const Wrap: PandaComponent<'div', WrapProperties>
+export declare const Wrap: FunctionComponent<WrapProps>

@@ -1,6 +1,6 @@
-import { SystemStyleObject, ConditionalValue } from "../types"
-import { Properties } from "../types/csstype"
-import { Tokens } from "../types/token"
+import { SystemStyleObject, ConditionalValue } from '../types'
+import { Properties } from '../types/csstype'
+import { Tokens } from '../types/token'
 
 export type WrapProperties = {
    gap?: ConditionalValue<Tokens["spacing"]>
@@ -11,5 +11,7 @@ export type WrapProperties = {
 }
 
 
+type WrapOptions = WrapProperties & Omit<SystemStyleObject, keyof WrapProperties >
 
-export declare function wrap(options: SystemStyleObject<WrapProperties>): string
+
+export declare function wrap(options: WrapOptions): string

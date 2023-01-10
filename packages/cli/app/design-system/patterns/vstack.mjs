@@ -1,5 +1,5 @@
-import { mapObject } from "../helpers"
-import { css } from "../css"
+import { mapObject } from '../helpers'
+import { css } from '../css'
 
 const config = {"transform":function(props) {const { justify, gap = "10px", ...rest } = props; return {display: "flex",alignItems: "center",justifyContent: justify,gap,...rest,flexDirection: "column"};}}
 

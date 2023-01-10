@@ -1,8 +1,11 @@
-import { camelCaseProperty } from 'css-in-js-utils'
 import { writeFileSync } from 'fs'
 import json from 'mdn-data/css/properties.json'
 
-const omitRegex = /^(?:--\*|-ms|-moz|-webkit)/
+function camelCaseProperty(str: string): string {
+  return str.replace(/-+(.)/g, (_, p1) => p1.toUpperCase())
+}
+
+const omitRegex = /^(?:--\*)/
 
 const properties = Object.keys(json)
   .filter((v) => !omitRegex.test(v))

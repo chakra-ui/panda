@@ -1,6 +1,6 @@
-import { SystemStyleObject, ConditionalValue } from "../types"
-import { Properties } from "../types/csstype"
-import { Tokens } from "../types/token"
+import { SystemStyleObject, ConditionalValue } from '../types'
+import { Properties } from '../types/csstype'
+import { Tokens } from '../types/token'
 
 export type GridItemProperties = {
    colSpan?: ConditionalValue<number>
@@ -12,5 +12,7 @@ export type GridItemProperties = {
 }
 
 
+type GridItemOptions = GridItemProperties & Omit<SystemStyleObject, keyof GridItemProperties >
 
-export declare function gridItem(options: SystemStyleObject<GridItemProperties>): string
+
+export declare function gridItem(options: GridItemOptions): string

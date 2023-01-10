@@ -1,6 +1,6 @@
-import { SystemStyleObject, ConditionalValue } from "../types"
-import { Properties } from "../types/csstype"
-import { Tokens } from "../types/token"
+import { SystemStyleObject, ConditionalValue } from '../types'
+import { Properties } from '../types/csstype'
+import { Tokens } from '../types/token'
 
 export type GridProperties = {
    gap?: ConditionalValue<Tokens["spacing"]>
@@ -9,5 +9,7 @@ export type GridProperties = {
 }
 
 
+type GridOptions = GridProperties & Omit<SystemStyleObject, keyof GridProperties >
 
-export declare function grid(options: SystemStyleObject<GridProperties>): string
+
+export declare function grid(options: GridOptions): string

@@ -1,6 +1,6 @@
-import { SystemStyleObject, ConditionalValue } from "../types"
-import { Properties } from "../types/csstype"
-import { Tokens } from "../types/token"
+import { SystemStyleObject, ConditionalValue } from '../types'
+import { Properties } from '../types/csstype'
+import { Tokens } from '../types/token'
 
 export type VstackProperties = {
    justify?: SystemStyleObject["justifyContent"]
@@ -8,5 +8,7 @@ export type VstackProperties = {
 }
 
 
+type VstackOptions = VstackProperties & Omit<SystemStyleObject, keyof VstackProperties >
 
-export declare function vstack(options: SystemStyleObject<VstackProperties>): string
+
+export declare function vstack(options: VstackOptions): string

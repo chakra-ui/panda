@@ -1,6 +1,6 @@
-import { SystemStyleObject, ConditionalValue } from "../types"
-import { Properties } from "../types/csstype"
-import { Tokens } from "../types/token"
+import { SystemStyleObject, ConditionalValue } from '../types'
+import { Properties } from '../types/csstype'
+import { Tokens } from '../types/token'
 
 export type StackProperties = {
    align?: SystemStyleObject["alignItems"]
@@ -10,5 +10,7 @@ export type StackProperties = {
 }
 
 
+type StackOptions = StackProperties & Omit<SystemStyleObject, keyof StackProperties >
 
-export declare function stack(options: SystemStyleObject<StackProperties>): string
+
+export declare function stack(options: StackOptions): string
