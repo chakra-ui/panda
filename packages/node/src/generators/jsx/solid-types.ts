@@ -37,7 +37,7 @@ type Props<ComponentProps extends Dict, AdditionalProps extends Dict = {}> = Ass
 
 export type ${componentName}<ComponentType extends ElementType, AdditionalProps extends Dict = {}> = {
   (
-    props: Props<ComponentProps<ComponentType>, AdditionalProps> & JsxStyleProps<AdditionalProps>,
+    props: Props<ComponentProps<ComponentType>, AdditionalProps> & JsxStyleProps
   ): JSX.Element
   displayName?: string
 }

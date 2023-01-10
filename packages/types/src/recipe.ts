@@ -1,7 +1,7 @@
-import type { StyleObject } from './system-types'
+import type { SystemStyleObject } from './system-types'
 
 export type RecipeVariant = {
-  [variant: string]: StyleObject
+  [variant: string]: SystemStyleObject
 }
 
 type TVariants = Record<string, RecipeVariant>
@@ -18,7 +18,7 @@ export type RecipeConfig<Variants extends TVariants = TVariants> = {
   /**
    * The base styles of the recipe.
    */
-  base?: StyleObject
+  base?: SystemStyleObject
   /**
    * The multi-variant styles of the recipe.
    */

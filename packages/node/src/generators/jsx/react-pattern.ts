@@ -4,8 +4,8 @@ import { match } from 'ts-pattern'
 import type { PandaContext } from '../../context'
 
 function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
-  const { upperName, styleFn, dashName, jsxName, props } = ctx.getPatternDetails(name, pattern)
-  const { componentName } = ctx.jsxFactoryDetails
+  const { upperName, styleFn, dashName, jsxName, props, blocklistType } = ctx.getPatternDetails(name, pattern)
+  const { componentName, typeName } = ctx.jsxFactoryDetails
 
   return {
     name: dashName,
@@ -34,11 +34,15 @@ function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
     `,
 
     dts: outdent`
+    import { FunctionComponent } from 'react'
     import { ${upperName}Properties } from '../patterns/${dashName}'
-    import { ${componentName} } from '../types/jsx'
+    import { ${componentName}, ${typeName} } from '../types/jsx'
+    import { Assign } from '../types'
+
+    export type ${upperName}Props = ${upperName}Properties & Omit<${typeName}<'div'>, keyof ${upperName}Properties ${blocklistType}>
 
     ${pattern.description ? `/** ${pattern.description} */` : ''}
-    export declare const ${jsxName}: ${componentName}<'div', ${upperName}Properties>
+    export declare const ${jsxName}: FunctionComponent<${upperName}Props>
     `,
   }
 }

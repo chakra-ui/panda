@@ -37,7 +37,7 @@ function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
     import { ${componentName} } from '../types/jsx'
 
     ${pattern.description ? `/** ${pattern.description} */` : ''}
-    export declare const ${jsxName}: ${componentName}<"div", ${upperName}Properties>
+    export declare const ${jsxName}: ${componentName}<'div', ${upperName}Properties>
     `,
   }
 }

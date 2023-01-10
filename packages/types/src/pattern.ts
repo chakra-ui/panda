@@ -1,4 +1,4 @@
-import type { NativeCssProperty, StyleObject } from './system-types'
+import type { NativeCssProperty, SystemStyleObject } from './system-types'
 import type { TokenCategory } from './tokens'
 
 export type PatternProperty =
@@ -23,7 +23,7 @@ export type PatternConfig = {
   /**
    * The css object this pattern will generate.
    */
-  transform?: (props: Record<string, any>, helpers: PatternHelpers) => StyleObject
+  transform?: (props: Record<string, any>, helpers: PatternHelpers) => SystemStyleObject
   /**
    * The jsx element name this pattern will generate.
    */
@@ -33,4 +33,9 @@ export type PatternConfig = {
    * This will disallow css properties
    */
   strict?: boolean
+  /**
+   * @experimental
+   * Disallow certain css properties for this pattern
+   */
+  blocklist?: NativeCssProperty[]
 }

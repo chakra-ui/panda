@@ -171,6 +171,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       upperName: upperName,
       styleFn: `get${upperName}Style`,
       jsxName: pattern?.jsx ?? upperName,
+      blocklistType: pattern?.blocklist ? `| '${pattern.blocklist.join("' | '")}'` : '',
     }
   }
 

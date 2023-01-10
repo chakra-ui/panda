@@ -44,7 +44,7 @@
     "packages/**/*.{ts,tsx}": [
       "pnpm prepare-docs",
       "pnpm prettier-fix",
-      "git add ."
+      "git add --all packages/cli/app/"
     ]
   },
   "pnpm": {

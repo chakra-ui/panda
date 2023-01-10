@@ -5,17 +5,16 @@ import { stringify } from 'telejson'
 import { match } from 'ts-pattern'
 import type { PandaContext } from '../context'
 
-function generate(name: string, pattern: PatternConfig) {
+function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
   const { properties, transform, strict, description } = pattern
-  const upperName = capitalize(name)
-  const upperFn = `get${upperName}Style`
+  const { upperName, styleFn, blocklistType } = ctx.getPatternDetails(name, pattern)
 
   return {
     name: dashCase(name),
     dts: outdent`
-    import { SystemStyleObject, ConditionalValue } from "../types"
-    import { Properties } from "../types/csstype"
-    import { Tokens } from "../types/token"
+    import { SystemStyleObject, ConditionalValue } from '../types'
+    import { Properties } from '../types/csstype'
+    import { Tokens } from '../types/token'
 
     export type ${capitalize(name)}Properties = {
        ${Object.keys(properties ?? {})
@@ -46,21 +45,23 @@ function generate(name: string, pattern: PatternConfig) {
         ? outdent`export declare function ${name}(options: ${upperName}Properties): string`
         : outdent`
         
+        type ${upperName}Options = ${upperName}Properties & Omit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}>
+
         ${description ? `/** ${description} */` : ''}
-        export declare function ${name}(options: SystemStyleObject<${upperName}Properties>): string
+        export declare function ${name}(options: ${upperName}Options): string
         `
     }
 
    `,
     js: outdent`
-  import { mapObject } from "../helpers"
-  import { css } from "../css"
+  import { mapObject } from '../helpers'
+  import { css } from '../css'
 
   const config = ${stringify({ transform })}
 
-  export const ${upperFn} = (styles) => config.transform(styles, { map: mapObject })
+  export const ${styleFn} = (styles) => config.transform(styles, { map: mapObject })
 
-  export const ${name} = (styles) => css(${upperFn}(styles))
+  export const ${name} = (styles) => css(${styleFn}(styles))
   `
       .replace(/"_function_([^|]*)\|(.*)"/, '$2')
       .replace(/\\"/g, '"')
@@ -71,5 +72,5 @@ function generate(name: string, pattern: PatternConfig) {
 
 export function generatePattern(ctx: PandaContext) {
   if (!ctx.hasPatterns) return
-  return Object.entries(ctx.patterns).map(([name, pattern]) => generate(name, pattern))
+  return Object.entries(ctx.patterns).map(([name, pattern]) => generate(ctx, name, pattern))
 }

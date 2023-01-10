@@ -1,7 +1,5 @@
+import type { Recursive } from './shared'
 import type { CompositionStyleObject } from './system-types'
-import type { LiteralUnion, Recursive } from './shared'
-
-type Cond = Record<string, string>
 
 export type Token<Value = any> = {
   value: Value
@@ -12,7 +10,7 @@ export type Token<Value = any> = {
  * Text styles
  * -----------------------------------------------------------------------------*/
 
-type TextStyleProperty = LiteralUnion<
+type TextStyleProperty =
   | 'fontSize'
   | 'fontSizeAdjust'
   | 'fontVariationSettings'
@@ -41,11 +39,10 @@ type TextStyleProperty = LiteralUnion<
   | 'textOrientation'
   | 'textOverflow'
   | 'textRendering'
->
 
-export type TextStyle<Conditions extends Cond = {}> = CompositionStyleObject<Conditions, TextStyleProperty>
+export type TextStyle = CompositionStyleObject<TextStyleProperty>
 
-export type TextStyles<T extends Cond = {}> = Recursive<Token<TextStyle<T>>>
+export type TextStyles = Recursive<Token<TextStyle>>
 
 /* -----------------------------------------------------------------------------
  * Layer styles
@@ -69,7 +66,7 @@ type Radius =
   | `Start${'Start' | 'End'}`
   | `End${'Start' | 'End'}`
 
-type LayerStyleProperty = LiteralUnion<
+type LayerStyleProperty =
   | 'background'
   | 'backgroundColor'
   | 'backgroundImage'
@@ -98,7 +95,7 @@ type LayerStyleProperty = LiteralUnion<
   | `border${Placement}Style`
   | 'padding'
   | `padding${Placement}`
->
 
-export type LayerStyle<Conditions extends Cond = {}> = CompositionStyleObject<Conditions, LayerStyleProperty>
-export type LayerStyles<Conditions extends Cond = {}> = Recursive<Token<LayerStyle<Conditions>>>
+export type LayerStyle = CompositionStyleObject<LayerStyleProperty>
+
+export type LayerStyles = Recursive<Token<LayerStyle>>

@@ -56,15 +56,18 @@ function setupTypes(ctx: PandaContext): Output {
   const code = generateCssType(ctx)
   const conditions = generateConditions(ctx)
   const jsx = generateJsxTypes(ctx)
+
   return {
     dir: ctx.paths.types,
     files: [
       jsx ? { file: 'jsx.d.ts', code: jsx.jsxType } : null,
       { file: 'csstype.d.ts', code: code.cssType },
       { file: 'system-types.d.ts', code: code.pandaCssType },
+      { file: 'selectors.d.ts', code: code.selectorType },
       { file: 'index.d.ts', code: code.publicType },
       { file: 'token.d.ts', code: generateTokenDts(ctx.tokens) },
       { file: 'prop-type.d.ts', code: generatePropTypes(ctx.utility) },
+      { file: 'style-props.d.ts', code: code.styleProps },
       { file: 'conditions.d.ts', code: conditions.dts },
     ].filter(Boolean),
   } as Output
