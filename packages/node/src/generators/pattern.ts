@@ -13,6 +13,7 @@ function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
     name: dashCase(name),
     dts: outdent`
     import { SystemStyleObject, ConditionalValue } from '../types'
+    import { PropertyValue } from '../types/prop-type'
     import { Properties } from '../types/csstype'
     import { Tokens } from '../types/token'
 
@@ -22,7 +23,7 @@ function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
            const value = properties![key]
            return match(value)
              .with({ type: 'property' }, (value) => {
-               return `${key}?: SystemStyleObject["${value.value}"]`
+               return `${key}?: PropertyValue<'${value.value}'>`
              })
              .with({ type: 'token' }, (value) => {
                if (value.property) {
@@ -44,8 +45,10 @@ function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
       strict
         ? outdent`export declare function ${name}(options: ${upperName}Properties): string`
         : outdent`
-        
-        type ${upperName}Options = ${upperName}Properties & Omit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}>
+                
+        type ${upperName}Options = ${upperName}Properties & {
+          [K in keyof Omit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}>]?: SystemStyleObject[K]
+        }
 
         ${description ? `/** ${description} */` : ''}
         export declare function ${name}(options: ${upperName}Options): string

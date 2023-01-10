@@ -1,6 +1,6 @@
 import type { Conditional, ConditionalValue, Conditions, Nested } from './conditions'
 import type { PropertiesFallback } from './csstype'
-import type { StyleProps } from './style-props'
+import type { SystemProperties } from './style-props'
 
 type String = string & {}
 type Number = number & {}
@@ -40,7 +40,7 @@ type MinimalNested<P> = {
 }
 
 type GenericProperties = {
-  [key: string]: ConditionalValue<unknown>
+  [key: string]: ConditionalValue<String | Number | boolean>
 }
 
 /* -----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ type GenericProperties = {
 
 export type NestedCssProperties = Nested<CssProperties>
 
-export type SystemStyleObject = Nested<StyleProps | GenericProperties>
+export type SystemStyleObject = Nested<SystemProperties | GenericProperties>
 
 export type GlobalStyleObject = {
   [selector: string]: SystemStyleObject
@@ -63,7 +63,7 @@ export type CompositionStyleObject<Property extends string> = Nested<{
  * Jsx style props
  * -----------------------------------------------------------------------------*/
 
-export type JsxStyleProps = StyleProps &
+export type JsxStyleProps = SystemProperties &
   MinimalNested<SystemStyleObject> & {
     css?: SystemStyleObject
     sx?: SystemStyleObject

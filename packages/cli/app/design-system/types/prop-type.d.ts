@@ -2,7 +2,7 @@ import { ConditionalValue } from './conditions';
 import { Properties as CSSProperties } from './csstype'
 import { Tokens } from './token'
 
-type PropValueTypes  = {
+type PropertyValueTypes  = {
 	aspectRatio: "square" | "landscape" | "portrait" | "wide" | "ultrawide" | "golden";
 	top: Tokens["spacing"];
 	left: Tokens["spacing"];
@@ -188,9 +188,9 @@ type PropValueTypes  = {
 
   type NativeValue<T> = T extends keyof CSSProperties ? CSSProperties[T] : never
     
-  type Shorthand<T> = T extends keyof PropValueTypes ? PropValueTypes[T] : NativeValue<T>
+  type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] | NativeValue<T> : NativeValue<T>
    
-  export type PropTypes = PropValueTypes & {
+  export type PropertyTypes = PropertyValueTypes & {
   
 	pos: Shorthand<"position">;
 	flexDir: Shorthand<"flexDirection">;
@@ -235,8 +235,8 @@ type PropValueTypes  = {
 	y: Shorthand<"translateY">;
 }
 
-export type PropValue<K extends string> = K extends keyof PropTypes
-  ? ConditionalValue<PropTypes[K] | NativeValue<K>>
-  : K extends keyof CSSProperties
-  ? ConditionalValue<CSSProperties[K]>
+export type PropertyValue<T extends string> = T extends keyof PropertyTypes
+  ? ConditionalValue<PropertyTypes[T] | NativeValue<T>>
+  : T extends keyof CSSProperties
+  ? ConditionalValue<CSSProperties[T]>
   : never

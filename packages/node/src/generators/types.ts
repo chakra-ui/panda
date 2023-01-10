@@ -22,11 +22,11 @@ export function generateCssType(ctx: PandaContext) {
     export type Assign<Target, Override> = Omit<Target, keyof Override> & Override
     `,
     styleProps: outdent`
-    import { PropValue } from './prop-type'
+    import { PropertyValue } from './prop-type'
   
-    export type StyleProps = {
+    export type SystemProperties = {
       ${Array.from(propList)
-        .map((v) => `\t${v}?: PropValue<'${v}'>`)
+        .map((v) => `\t${v}?: PropertyValue<'${v}'>`)
         .join('\n')}
     }
     `,

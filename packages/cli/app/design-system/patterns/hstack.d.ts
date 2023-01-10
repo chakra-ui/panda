@@ -1,14 +1,17 @@
 import { SystemStyleObject, ConditionalValue } from '../types'
+import { PropertyValue } from '../types/prop-type'
 import { Properties } from '../types/csstype'
 import { Tokens } from '../types/token'
 
 export type HstackProperties = {
-   justify?: SystemStyleObject["justifyContent"]
+   justify?: PropertyValue<'justifyContent'>
 	gap?: ConditionalValue<Tokens["spacing"]>
 }
 
-
-type HstackOptions = HstackProperties & Omit<SystemStyleObject, keyof HstackProperties >
+        
+type HstackOptions = HstackProperties & {
+  [K in keyof Omit<SystemStyleObject, keyof HstackProperties >]?: SystemStyleObject[K]
+}
 
 
 export declare function hstack(options: HstackOptions): string

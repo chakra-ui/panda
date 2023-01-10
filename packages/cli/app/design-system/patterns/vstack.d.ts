@@ -1,14 +1,17 @@
 import { SystemStyleObject, ConditionalValue } from '../types'
+import { PropertyValue } from '../types/prop-type'
 import { Properties } from '../types/csstype'
 import { Tokens } from '../types/token'
 
 export type VstackProperties = {
-   justify?: SystemStyleObject["justifyContent"]
+   justify?: PropertyValue<'justifyContent'>
 	gap?: ConditionalValue<Tokens["spacing"]>
 }
 
-
-type VstackOptions = VstackProperties & Omit<SystemStyleObject, keyof VstackProperties >
+        
+type VstackOptions = VstackProperties & {
+  [K in keyof Omit<SystemStyleObject, keyof VstackProperties >]?: SystemStyleObject[K]
+}
 
 
 export declare function vstack(options: VstackOptions): string

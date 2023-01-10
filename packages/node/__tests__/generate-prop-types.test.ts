@@ -109,7 +109,7 @@ describe('generate property types', () => {
         
         type Shorthand<T> = CssProp<T> | BaseProp<T>
          
-        export type PropTypes = BasePropTypes & {
+        export type PropertyTypes = BasePropTypes & {
         
       	z: Shorthand<\\"zIndex\\">;
       	objectPos: Shorthand<\\"objectPosition\\">;

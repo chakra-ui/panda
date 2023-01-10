@@ -22,32 +22,23 @@ type AdditionalHtmlProps = {
   htmlTranslate?: 'yes' | 'no' | undefined
 }
 
-type Polyfill<ComponentProps> = Omit<
-  ComponentProps,
-  'color' | 'translate' | 'transition' | 'width' | 'height' | 'size'
-> &
+type Polyfill<T> = Omit<T, 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size'> &
   AdditionalHtmlProps
 
-type Props<ComponentProps extends Dict, AdditionalProps extends Dict = {}> = Assign<
-  Polyfill<ComponentProps>,
-  AdditionalProps
->
+type Props<T extends Dict, P extends Dict = {}> = Assign<Polyfill<T>, P>
 
-export type ${componentName}<ComponentType extends ElementType, AdditionalProps extends Dict = {}> = {
+export type ${componentName}<T extends ElementType, P extends Dict = {}> = {
   (
-    props: Props<ComponentProps<ComponentType>, AdditionalProps> & JsxStyleProps
+    props: Props<ComponentProps<T>, P> & JsxStyleProps
   ): JSX.Element
   displayName?: string
 }
 
 export type ${upperName} = {
-  <Component extends ElementType, AdditionalProps extends Dict = {}>(component: Component): ${componentName}<
-    Component,
-    AdditionalProps
-  >
+  <T extends ElementType, P extends Dict = {}>(component: T): ${componentName}<T, P>
 } & { [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}> }
 
-export type ${typeName}<ComponentType extends ElementType> = Polyfill<ComponentProps<ComponentType>> & JsxStyleProps
+export type ${typeName}<T extends ElementType> = Polyfill<ComponentProps<T>> & JsxStyleProps
   `,
   }
 }

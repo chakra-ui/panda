@@ -1,5 +1,5 @@
 import type { PropertiesFallback } from './csstype'
-import type { PropValue } from './prop-type'
+import type { PropertyValue } from './prop-type'
 
 type String = string & {}
 type Number = number & {}
@@ -10,6 +10,6 @@ type Number = number & {}
 
 type CssProperties = PropertiesFallback<String | Number>
 
-export type StyleProps = {
-  [K in keyof CssProperties]?: PropValue<K>
+export type SystemProperties = {
+  [K in keyof CssProperties]?: PropertyValue<K>
 }

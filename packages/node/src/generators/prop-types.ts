@@ -2,13 +2,14 @@ import type { Utility } from '@pandacss/core'
 import { outdent } from 'outdent'
 
 export function generatePropTypes(utility: Utility, strict?: boolean) {
+  const strictText = `${strict ? '' : ' | NativeValue<T>'}`
   const result: string[] = [
     outdent`
     import { ConditionalValue } from './conditions';
     import { Properties as CSSProperties } from './csstype'
     import { Tokens } from './token'
 
-    type PropValueTypes  = {`,
+    type PropertyValueTypes  = {`,
   ]
 
   const types = utility.getTypes()
@@ -21,9 +22,9 @@ export function generatePropTypes(utility: Utility, strict?: boolean) {
   result.push(`
   type NativeValue<T> = T extends keyof CSSProperties ? CSSProperties[T] : never
     
-  type Shorthand<T> = T extends keyof PropValueTypes ? PropValueTypes[T] : NativeValue<T>
+  type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T]${strictText} : NativeValue<T>
    
-  export type PropTypes = PropValueTypes & {
+  export type PropertyTypes = PropertyValueTypes & {
   `)
 
   utility.shorthands.forEach((value, key) => {
@@ -35,10 +36,10 @@ export function generatePropTypes(utility: Utility, strict?: boolean) {
   return outdent`
   ${result.join('\n')}
 
-  export type PropValue<K extends string> = K extends keyof PropTypes
-    ? ConditionalValue<PropTypes[K]${strict ? '' : ' | NativeValue<K>'}>
-    : K extends keyof CSSProperties
-    ? ConditionalValue<CSSProperties[K]>
+  export type PropertyValue<T extends string> = T extends keyof PropertyTypes
+    ? ConditionalValue<PropertyTypes[T]${strictText}>
+    : T extends keyof CSSProperties
+    ? ConditionalValue<CSSProperties[T]>
     : never
   `
 }
