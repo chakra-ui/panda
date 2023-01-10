@@ -1,18 +1,15 @@
 import { Stack, panda } from '../design-system/jsx'
 
+const Mark = panda('mark')
+
 export function App() {
   return (
     <>
-      <Stack
-        shadow="2xl"
-        shadowColor="blue.200"
-        direction="column"
-        gap="-1"
-        _hover={{ bg: 'red.200', color: 'red.200', '&:hover': { color: 'red.100' } }}
-      >
-        <panda.h1 color="red.100" margin="10">
-          Vite + Preact
-        </panda.h1>
+      <Stack padding="5" bg="red.200" fontFamily="Inter">
+        <panda.h1 color="red.800">Vite + Preact</panda.h1>
+        <Mark bg="transparent" px="3" borderWidth="1px" borderColor="red" borderRadius="md">
+          Welcome
+        </Mark>
       </Stack>
     </>
   )
