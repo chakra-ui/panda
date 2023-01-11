@@ -1,4 +1,5 @@
 export * from './box'
+export * from './flex'
 export * from './stack'
 export * from './vstack'
 export * from './hstack'

@@ -10,10 +10,11 @@ import { ${upperName} } from '../types/jsx'
 export declare const ${name}: ${upperName}
     `,
     jsxType: outdent`
-import type { JSX, ElementType, ComponentProps } from 'preact'
+import type { JSX, ComponentProps } from 'preact'
 import type { JsxStyleProps, Assign } from '.'
 
 type Dict = Record<string, unknown>
+type ElementType = keyof JSX.IntrinsicElements
 
 type AdditionalHtmlProps = {
   htmlSize?: string | number

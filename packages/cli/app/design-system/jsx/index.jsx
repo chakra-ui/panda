@@ -1,6 +1,7 @@
 export * from './factory'
 export * from './layout-grid'
 export * from './box'
+export * from './flex'
 export * from './stack'
 export * from './vstack'
 export * from './hstack'
