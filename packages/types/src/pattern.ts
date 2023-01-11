@@ -1,3 +1,4 @@
+import type { LiteralUnion } from './shared'
 import type { NativeCssProperty, SystemStyleObject } from './system-types'
 import type { TokenCategory } from './tokens'
 
@@ -37,5 +38,5 @@ export type PatternConfig = {
    * @experimental
    * Disallow certain css properties for this pattern
    */
-  blocklist?: NativeCssProperty[]
+  blocklist?: LiteralUnion<NativeCssProperty>[]
 }
