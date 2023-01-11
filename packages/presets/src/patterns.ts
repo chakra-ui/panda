@@ -7,6 +7,43 @@ const box: PatternConfig = {
   },
 }
 
+const flex: PatternConfig = {
+  properties: {
+    align: { type: 'property', value: 'alignItems' },
+    justify: { type: 'property', value: 'justifyContent' },
+    direction: { type: 'property', value: 'flexDirection' },
+    wrap: { type: 'property', value: 'flexWrap' },
+    basis: { type: 'property', value: 'flexBasis' },
+    grow: { type: 'property', value: 'flexGrow' },
+    shrink: { type: 'property', value: 'flexShrink' },
+  },
+  blocklist: [
+    'alignItems',
+    'justifyContent',
+    'flexDirection',
+    'flexDir',
+    'flexWrap',
+    'flexShrink',
+    'flexBasis',
+    'flexGrow',
+    'flexFlow',
+  ],
+  transform(props) {
+    const { direction, align, justify, wrap, basis, grow, shrink, ...rest } = props
+    return {
+      display: 'flex',
+      ...rest,
+      flexDirection: direction,
+      alignItems: align,
+      justifyContent: justify,
+      flexWrap: wrap,
+      flexBasis: basis,
+      flexGrow: grow,
+      flexShrink: shrink,
+    }
+  },
+}
+
 const stack: PatternConfig = {
   properties: {
     align: { type: 'property', value: 'alignItems' },
@@ -150,9 +187,10 @@ const gridItem: PatternConfig = {
   },
   transform(props, { map }) {
     const { colSpan, rowSpan, colStart, rowStart, colEnd, rowEnd, ...rest } = props
+    const spanFn = (v: string) => (v === 'auto' ? v : `span ${v}`)
     return {
-      gridColumn: colSpan != null ? map(colSpan, (v) => (v === 'auto' ? v : `span ${v}`)) : undefined,
-      gridRow: rowSpan != null ? map(rowSpan, (v) => (v === 'auto' ? v : `span ${v}`)) : undefined,
+      gridColumn: colSpan != null ? map(colSpan, spanFn) : undefined,
+      gridRow: rowSpan != null ? map(rowSpan, spanFn) : undefined,
       ...rest,
       gridColumnEnd: colEnd,
       gridRowEnd: rowEnd,
@@ -202,6 +240,7 @@ const container: PatternConfig = {
 
 export const patterns = {
   box,
+  flex,
   stack,
   vstack,
   hstack,
