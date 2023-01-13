@@ -7,7 +7,7 @@ type ThemeFn = (token: Getter) => Record<string, string>
 
 export type PropertyValues = string | string[] | { type: string } | Record<string, string> | ThemeFn
 
-export type PropertyTransform = (value: any, token: Getter) => NestedCssProperties
+export type PropertyTransform = (value: any, token: Getter) => NestedCssProperties | undefined
 
 export type PropertyConfig = {
   /**
