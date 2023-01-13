@@ -1,7 +1,7 @@
 export type { ConditionDetails, ConditionType, Conditions, RawCondition } from './conditions'
 export type { Config, UserConfig } from './config'
 export type { PropertyConfig, PropertyTransform, PropertyValues, UtilityConfig } from './utility'
-export type { SystemStyleObject, CssKeyframes } from './system-types'
+export type { SystemStyleObject, CssKeyframes, GlobalStyleObject } from './system-types'
 export type { PatternConfig, PatternProperty, PatternHelpers } from './pattern'
 export type { RecipeConfig, RecipeVariant } from './recipe'
 export type { TextStyles, LayerStyles, CompositionStyles } from './composition'
