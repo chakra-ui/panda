@@ -12,6 +12,30 @@ export const interactivity: UtilityConfig = {
   scrollBehavior: {
     className: 'scroll',
   },
+  scrollbar: {
+    className: 'scrollbar',
+    values: ['visible', 'hidden'],
+    transform(value) {
+      if (value === 'visible') {
+        return {
+          msOverflowStyle: 'auto',
+          scrollbarWidth: 'auto',
+          '&::-webkit-scrollbar': {
+            display: 'block',
+          },
+        }
+      }
+      if (value === 'hidden') {
+        return {
+          msOverflowStyle: 'none',
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+        }
+      }
+    },
+  },
   scrollMargin: {
     className: 'scroll-m',
     values: 'spacing',
