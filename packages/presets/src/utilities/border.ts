@@ -195,6 +195,7 @@ export const border: UtilityConfig = {
   },
   outline: {
     className: 'outline',
+    values: 'borders',
     transform(value) {
       if (value === 'none') {
         return {
