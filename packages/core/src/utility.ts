@@ -286,7 +286,8 @@ export class Utility {
     const getStyles = this.transforms.get(property) ?? defaultTransform
 
     const styles = getStyles(raw, this.getToken.bind(this))
-    this.styles.set(propKey, styles)
+
+    this.styles.set(propKey, styles ?? {})
 
     return this
   }
