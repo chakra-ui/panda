@@ -3,6 +3,7 @@ import type {
   Conditions,
   Config,
   Dict,
+  GlobalStyleObject,
   Parts,
   PatternConfig,
   RecipeConfig,
@@ -59,5 +60,13 @@ export function defineTextStyles(definition: CompositionStyles['textStyles']) {
 }
 
 export function defineLayerStyles(definition: CompositionStyles['layerStyles']) {
+  return definition
+}
+
+/* -----------------------------------------------------------------------------
+ * Global styles
+ * -----------------------------------------------------------------------------*/
+
+export function defineGlobalStyles(definition: GlobalStyleObject) {
   return definition
 }
