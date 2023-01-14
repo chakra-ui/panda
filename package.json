@@ -17,10 +17,10 @@
     "prettier-fix": "prettier --write packages",
     "typecheck": "tsc --noEmit",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
-    "prepare-docs": "pnpm --filter=./packages/cli app",
-    "build-docs": "pnpm --filter=./sandbox/vite-ts exec pnpm panda docs --build",
-    "deploy-docs": "pnpm prepare-docs && pnpm build-docs",
-    "serve-docs": "npx serve ./sandbox/vite-ts/panda-static"
+    "prepare-studio": "pnpm --filter=./packages/cli app",
+    "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
+    "deploy-studio": "pnpm prepare-studio && pnpm build-studio",
+    "serve-studio": "npx serve ./sandbox/vite-ts/panda-static"
   },
   "keywords": [],
   "author": "Segun Adebayo <joseshegs@gmail.com>",
@@ -42,7 +42,7 @@
   },
   "lint-staged": {
     "packages/**/*.{ts,tsx}": [
-      "pnpm prepare-docs",
+      "pnpm prepare-studio",
       "pnpm prettier-fix",
       "git add --all packages/cli/app/"
     ]

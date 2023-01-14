@@ -8,7 +8,7 @@ import type { SemanticTokens, Tokens as PartialTokens } from './tokens'
 import type { UtilityConfig } from './utility'
 import type { StaticCssOptions } from './static-css'
 
-type Docs = {
+type Studio = {
   title: string
   logo: string
 }
@@ -28,9 +28,9 @@ export type Config<
    */
   separator?: '_' | '=' | '-'
   /**
-   * Used to customize the design system docs
+   * Used to customize the design system studio
    */
-  docs?: Partial<Docs>
+  studio?: Partial<Studio>
   /**
    * The log level for the built-in logger.
    */

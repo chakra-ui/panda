@@ -9,13 +9,13 @@ export type BuildOpts = {
 const astroBin = join(__dirname, '../node_modules/.bin/astro')
 const appPath = join(__dirname, '../app')
 
-export async function buildDocs({ outDir }: BuildOpts) {
+export async function buildStudio({ outDir }: BuildOpts) {
   process.env.ASTRO_OUT_DIR = outDir
   const { stdout } = await execa(astroBin, ['build', '--root', appPath])
   logger.log(stdout)
 }
 
-export async function serveDocs() {
+export async function serveStudio() {
   const result = execa(astroBin, ['dev', '--root', appPath], {
     stdio: 'inherit',
   })
@@ -23,7 +23,7 @@ export async function serveDocs() {
   result.stderr?.pipe(process.stderr)
 }
 
-export async function previewDocs({ outDir }: BuildOpts) {
+export async function previewStudio({ outDir }: BuildOpts) {
   process.env.ASTRO_OUT_DIR = outDir
   const result = execa(astroBin, ['preview', '--root', appPath], {
     stdio: 'inherit',
