@@ -1,7 +1,7 @@
 import { defineConfig } from 'css-panda'
 
 export default defineConfig({
-  docs: {
+  studio: {
     title: 'Chakra UI',
     logo: 'https://place-hold.it/36x24',
   },

@@ -69,7 +69,7 @@ https://nordhealth.design/
 - Playground
 
 ```sh
-panda docs
+panda studio
 ```
 
 Command
@@ -79,7 +79,7 @@ Command
 Flag (for serve)
 
 - `--port`: port number
-- `--watch`: watch config and rebuild docs
+- `--watch`: watch config and rebuild studio
 - `--outdir`: output directory for build
 
 ## Report

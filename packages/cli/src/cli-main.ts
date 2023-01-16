@@ -13,7 +13,7 @@ import { readFileSync } from 'fs'
 import path, { join } from 'path'
 import updateNotifier from 'update-notifier'
 import packageJson from '../package.json' assert { type: 'json' }
-import { serveDocs, buildDocs, previewDocs } from './docs'
+import { serveStudio, buildStudio, previewStudio } from './studio'
 
 export async function main() {
   const cli = cac('panda')
@@ -94,7 +94,7 @@ export async function main() {
     })
 
   cli
-    .command('docs', 'Realtime documentation for your design tokens')
+    .command('studio', 'Realtime documentation for your design tokens')
     .option('--build', 'Build')
     .option('--preview', 'Preview')
     .option('--outdir', 'Output directory for static files')
@@ -103,11 +103,11 @@ export async function main() {
       const outDir = outdir || path.join(process.cwd(), 'panda-static')
 
       if (preview) {
-        await previewDocs({ outDir })
+        await previewStudio({ outDir })
       } else if (build) {
-        await buildDocs({ outDir })
+        await buildStudio({ outDir })
       } else {
-        await serveDocs()
+        await serveStudio()
 
         const note = `use ${colors.reset(colors.bold('--build'))} to build`
         logger.log(colors.dim(`  ${colors.green('➜')}  ${colors.bold('Build')}: ${note}`))
