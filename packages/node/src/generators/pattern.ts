@@ -1,7 +1,7 @@
 import { capitalize, dashCase, unionType } from '@pandacss/shared'
 import type { PatternConfig } from '@pandacss/types'
 import { outdent } from 'outdent'
-import { stringify } from 'telejson'
+import { stringify } from 'javascript-stringify'
 import { match } from 'ts-pattern'
 import type { PandaContext } from '../context'
 
@@ -63,12 +63,7 @@ function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
   export const ${styleFn} = (styles) => config.transform(styles, { map: mapObject })
 
   export const ${name} = (styles) => css(${styleFn}(styles))
-  `
-      .replace(/"_function_([^|]*)\|(.*)"/, '$2')
-      .replace(/\\"/g, '"')
-      .replace('return', '; return')
-      .replace(';;', ';')
-      .replace('{;', '{'),
+  `,
   }
 }
 
