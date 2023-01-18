@@ -152,7 +152,7 @@ describe('generate property types', () => {
         ? ConditionalValue<PropertyTypes[T] | NativeValue<T>>
         : T extends keyof CSSProperties
         ? ConditionalValue<CSSProperties[T]>
-        : never"
+        : ConditionalValue<string | number>"
     `)
   })
 })
