@@ -14,6 +14,10 @@ export class Collector {
     this[name].add({ type: 'object', ...result })
   }
 
+  setCva(result: { data: Record<string, any> }) {
+    this.cva.add({ type: 'cva', ...result })
+  }
+
   setPattern(name: string, result: { data: Record<string, any> }) {
     this.pattern.get(name) ?? this.pattern.set(name, new Set())
     this.pattern.get(name)?.add({ type: 'pattern', name, ...result })

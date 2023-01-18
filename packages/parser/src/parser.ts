@@ -84,6 +84,7 @@ export function createParser(options: ParserOptions) {
 
     const isValidPattern = imports.createMatch(importMap.pattern)
     const isValidRecipe = imports.createMatch(importMap.recipe)
+    const isValidStyleFn = (name: string) => name === jsx?.factory
 
     // Get all call expressions (css, cssMap, etc)
     visitCallExpressions(sourceFile, {
@@ -105,6 +106,9 @@ export function createParser(options: ParserOptions) {
           })
           .when(isValidRecipe, (name) => {
             collector.setRecipe(name, result)
+          })
+          .when(isValidStyleFn, () => {
+            collector.setCva(result)
           })
           .otherwise(() => {
             //

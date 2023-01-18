@@ -42,6 +42,24 @@ export function cvaParser(code: string) {
   }
 }
 
+export function styledParser(code: string) {
+  const parser = createParser({
+    importMap,
+    jsx: {
+      nodes: [],
+      factory: 'panda',
+      isStyleProp(prop) {
+        return isCssProperty(prop) || prop === 'css'
+      },
+    },
+  })
+  const data = parser(toSourceFile(code))!
+  console.log(data)
+  return {
+    cva: data.cva,
+  }
+}
+
 export function recipeParser(code: string) {
   const parser = createParser({ importMap })
   return parser(toSourceFile(code))?.recipe
