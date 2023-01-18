@@ -7,8 +7,9 @@ export function generateReactJsxFactory(ctx: PandaContext) {
   return {
     js: outdent`
     import { forwardRef, useMemo } from 'react'
-    import { isCssProperty } from './is-valid-prop'
     import { css, cx } from '../css'
+    import { deepMerge } from '../helpers'
+    import { isCssProperty } from './is-valid-prop'
 
     const htmlProps = ['htmlSize', 'htmlTranslate', 'htmlWidth', 'htmlHeight']
 
@@ -38,8 +39,8 @@ export function generateReactJsxFactory(ctx: PandaContext) {
         const [styleProps, elementProps] = useMemo(() => splitProps(restProps), [restProps])
     
         function classes(){
-          const { css: cssStyles, ...otherStyles } = styleProps
-          const atomicClass = css({ ...otherStyles, ...cssStyles })
+          const { css: cssStyles, sx: sxStyles, ...otherStyles } = styleProps
+          const atomicClass = css(deepMerge(otherStyles, cssStyles, sxStyles))
           return cx(atomicClass, elementProps.className)
         }
     

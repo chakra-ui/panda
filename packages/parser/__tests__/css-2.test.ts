@@ -19,7 +19,6 @@ describe('ast parser', () => {
     expect(cssParser(code)).toMatchInlineSnapshot(`
       {
         "css": Set {},
-        "cssMap": Set {},
       }
     `)
   })
@@ -66,7 +65,6 @@ describe('ast parser', () => {
             "type": "object",
           },
         },
-        "cssMap": Set {},
       }
     `)
   })
@@ -113,7 +111,6 @@ describe('ast parser', () => {
             "type": "object",
           },
         },
-        "cssMap": Set {},
       }
     `)
   })
@@ -150,7 +147,6 @@ console.log(
             "type": "object",
           },
         },
-        "cssMap": Set {},
       }
     `)
   })
@@ -180,7 +176,6 @@ export function Card({ className }) {
             "type": "object",
           },
         },
-        "cssMap": Set {},
       }
     `)
   })

@@ -10,7 +10,7 @@ function globalCss(values: Dict) {
   return sheet.toCss()
 }
 
-describe('Global styles', () => {
+describe('Global css', () => {
   test('with direct nesting + conditional value', () => {
     const sheet = globalCss({
       '.btn': {

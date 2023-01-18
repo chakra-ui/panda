@@ -7,8 +7,9 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
     js: outdent`
     import { Dynamic } from 'solid-js/web'
     import { mergeProps, splitProps } from 'solid-js'
-    import { allCssProperties } from './is-valid-prop'
     import { css, cx } from '../css'
+    import { deepMerge } from '../helpers'
+    import { allCssProperties } from './is-valid-prop'
 
     const htmlProps = ['htmlSize', 'htmlTranslate', 'htmlWidth', 'htmlHeight']
 
@@ -36,8 +37,8 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
         )
     
         const classes = () => {
-          const { css: cssStyles, ...otherStyles } = styleProps
-          const atomicClass = css({ ...otherStyles, ...cssStyles })
+          const { css: cssStyles, sx: sxStyles, ...otherStyles } = styleProps
+          const atomicClass = css(deepMerge(otherStyles, cssStyles, sxStyles))
           return cx(atomicClass, localProps.class, localProps.className)
         }
     

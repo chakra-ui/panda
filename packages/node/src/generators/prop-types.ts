@@ -40,6 +40,6 @@ export function generatePropTypes(utility: Utility, strict?: boolean) {
     ? ConditionalValue<PropertyTypes[T]${strictText}>
     : T extends keyof CSSProperties
     ? ConditionalValue<CSSProperties[T]>
-    : never
+    : ConditionalValue<string | number>
   `
 }

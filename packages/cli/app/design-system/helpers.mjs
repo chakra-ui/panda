@@ -1,3 +1,8 @@
+// src/assert.ts
+function isObject(value) {
+  return typeof value === "object" && value != null && !Array.isArray(value);
+}
+
 // src/condition.ts
 var isBaseCondition = (v) => v === "base";
 function filterBaseConditions(c) {
@@ -34,11 +39,6 @@ function toPhash(h, x) {
 }
 function toHash(value) {
   return toName(toPhash(5381, value) >>> 0);
-}
-
-// src/assert.ts
-function isObject(value) {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 // src/walk-object.ts
@@ -129,11 +129,32 @@ function createCss(context) {
 function compact(value) {
   return Object.fromEntries(Object.entries(value ?? {}).filter(([_, value2]) => value2 !== void 0));
 }
+
+// src/merge.ts
+function deepMerge(...sources) {
+  const allSources = sources.filter(isObject);
+  if (allSources.length === 1) {
+    return allSources[0];
+  }
+  const result = {};
+  for (const source of allSources) {
+    for (const [key, value] of Object.entries(source)) {
+      if (isObject(value)) {
+        result[key] = deepMerge(result[key] || {}, value);
+      } else {
+        result[key] = value;
+      }
+    }
+  }
+  return result;
+}
 export {
   compact,
   createCss,
+  deepMerge,
   filterBaseConditions,
   isBaseCondition,
+  isObject,
   mapObject,
   toHash,
   walkObject,

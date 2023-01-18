@@ -59,7 +59,7 @@ export function createParser(options: ParserOptions) {
 
     // Create regex for each import map
     const importRegex = [
-      createImportMatcher(importMap.css, ['css', 'cssMap']),
+      createImportMatcher(importMap.css, ['css', 'cva']),
       createImportMatcher(importMap.recipe),
       createImportMatcher(importMap.pattern),
     ]

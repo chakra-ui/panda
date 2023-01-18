@@ -55,6 +55,16 @@ export class Stylesheet {
     recipe.process({ styles })
   }
 
+  processAtomicRecipe = (recipe: Pick<RecipeConfig, 'base' | 'variants'>) => {
+    const { base = {}, variants = {} } = recipe
+    this.processAtomic(base)
+    for (const variant of Object.values(variants)) {
+      for (const styles of Object.values(variant)) {
+        this.processAtomic(styles)
+      }
+    }
+  }
+
   toCss = ({ optimize = true, minify }: { optimize?: boolean; minify?: boolean } = {}) => {
     const {
       conditions: { breakpoints },

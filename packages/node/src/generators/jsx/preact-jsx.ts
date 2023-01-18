@@ -9,8 +9,9 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
     import { h } from 'preact'
     import { forwardRef } from 'preact/compat'
     import { useMemo } from 'preact/hooks'
-    import { isCssProperty } from './is-valid-prop'
     import { css, cx } from '../css'
+    import { deepMerge } from '../helpers'
+    import { isCssProperty } from './is-valid-prop'
   
     const htmlProps = ['htmlSize', 'htmlTranslate', 'htmlWidth', 'htmlHeight']
 
@@ -40,8 +41,8 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
         const [styleProps, elementProps] = useMemo(() => splitProps(restProps), [restProps])
     
         function classes(){
-          const { css: cssStyles, ...otherStyles } = styleProps
-          const atomicClass = css({ ...otherStyles, ...cssStyles })
+          const { css: cssStyles, sx: sxStyles, ...otherStyles } = styleProps
+          const atomicClass = css(deepMerge(otherStyles, cssStyles, sxStyles))
           return cx(atomicClass, elementProps.className)
         }
     

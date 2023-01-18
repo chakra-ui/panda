@@ -4,7 +4,9 @@ import { Properties } from '../types/csstype'
 import { Tokens } from '../types/token'
 
 export type GridProperties = {
-   gap?: ConditionalValue<Tokens["spacing"]>
+   gap?: PropertyValue<'gap'>
+	gapX?: PropertyValue<'gap'>
+	gapY?: PropertyValue<'gap'>
 	columns?: ConditionalValue<number>
 	minChildWidth?: ConditionalValue<Tokens["sizes"] | Properties["width"]>
 }

@@ -13,8 +13,8 @@ export function generateCssFn(ctx: PandaContext) {
     export declare function css(styles: SystemStyleObject): string
     `,
     js: outdent`
-    import { createCss, withoutSpace } from "../helpers"
-    import { sortConditions, finalizeConditions } from "./conditions"
+    import { createCss, withoutSpace } from '../helpers'
+    import { sortConditions, finalizeConditions } from './conditions'
 
     const classNameMap = ${stringify(utility.entries())}
     
@@ -27,9 +27,9 @@ export function generateCssFn(ctx: PandaContext) {
     const resolveShorthand = (prop) => shorthands[prop] || prop
 
     function transform(prop, value) {
-      let key = resolveShorthand(prop)
-      let propKey = classNameMap[key] || prop
-      let className = \`$\{propKey}${separator}$\{withoutSpace(value)}\`
+      const key = resolveShorthand(prop)
+      const propKey = classNameMap[key] || prop
+      const className = \`$\{propKey}${separator}$\{withoutSpace(value)}\`
       return { className }
     }
 

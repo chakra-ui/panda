@@ -7,7 +7,7 @@ export type StackProperties = {
    align?: PropertyValue<'alignItems'>
 	justify?: PropertyValue<'justifyContent'>
 	direction?: PropertyValue<'flexDirection'>
-	gap?: ConditionalValue<Tokens["spacing"]>
+	gap?: PropertyValue<'gap'>
 }
 
         

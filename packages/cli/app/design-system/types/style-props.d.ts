@@ -1,6 +1,11 @@
 import { PropertyValue } from './prop-type'
+import { Token } from './token'
 
-export type SystemProperties = {
+type CssVarProperties = {
+  [key in `--${string}`]?: Token | (string & {}) | (number & {})
+}
+
+export type SystemProperties = CssVarProperties & {
   	MsAccelerator?: PropertyValue<'MsAccelerator'>
 	MsBlockProgression?: PropertyValue<'MsBlockProgression'>
 	MsContentZoomChaining?: PropertyValue<'MsContentZoomChaining'>
@@ -627,6 +632,7 @@ export type SystemProperties = {
 	translateY?: PropertyValue<'translateY'>
 	skewX?: PropertyValue<'skewX'>
 	skewY?: PropertyValue<'skewY'>
+	scrollbar?: PropertyValue<'scrollbar'>
 	scrollMarginX?: PropertyValue<'scrollMarginX'>
 	scrollMarginY?: PropertyValue<'scrollMarginY'>
 	scrollPaddingX?: PropertyValue<'scrollPaddingX'>

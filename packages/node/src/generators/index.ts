@@ -3,7 +3,7 @@ import outdent from 'outdent'
 import type { Output, PandaContext } from '../context'
 import { generateConditions } from './conditions'
 import { generateCssFn } from './css-fn'
-import { generateCssMap } from './css-map'
+import { generateCvaFn } from './cva'
 import { generateCx } from './cx'
 import { getEntrypoint } from './get-entrypoint'
 import { generateisValidProp } from './is-valid-prop'
@@ -86,13 +86,13 @@ function setupCss(ctx: PandaContext): Output {
   }
 }
 
-function setupCssMap(ctx: PandaContext): Output {
-  const code = generateCssMap()
+function setupCva(ctx: PandaContext): Output {
+  const code = generateCvaFn()
   return {
     dir: ctx.paths.css,
     files: [
-      { file: 'css-map.mjs', code: code.js },
-      { file: 'css-map.d.ts', code: code.dts },
+      { file: 'cva.mjs', code: code.js },
+      { file: 'cva.d.ts', code: code.dts },
     ],
   }
 }
@@ -182,7 +182,7 @@ function setupCssIndex(ctx: PandaContext): Output {
   const code = outdent`
   export * from './css'
   export * from './cx'
-  export * from './css-map'
+  export * from './cva'
  `
 
   return {
@@ -206,7 +206,7 @@ export function generateSystem(ctx: PandaContext): Output[] {
     setupDesignTokens(ctx),
     setupKeyframes(ctx),
     setupTypes(ctx),
-    setupCssMap(ctx),
+    setupCva(ctx),
     setupCx(ctx),
     setupCss(ctx),
     setupRecipes(ctx),

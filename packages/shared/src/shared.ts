@@ -2,9 +2,11 @@
  * This code is shared between the runtime and cli
  */
 
-export * from './classname'
-export * from './compact'
-export * from './condition'
+export { isObject } from './assert'
+export { createCss } from './classname'
+export { compact } from './compact'
+export { filterBaseConditions, isBaseCondition } from './condition'
 export { withoutSpace } from './css-important'
-export * from './hash'
-export * from './walk-object'
+export { toHash } from './hash'
+export { deepMerge } from './merge'
+export { walkObject, mapObject } from './walk-object'

@@ -118,6 +118,7 @@ type PropertyValueTypes  = {
 	borderX: Tokens["borders"] | CSSProperties["border"];
 	borderY: Tokens["borders"] | CSSProperties["border"];
 	outlineColor: Tokens["colors"];
+	outline: Tokens["borders"];
 	divideX: string;
 	divideY: string;
 	divideColor: Tokens["colors"];
@@ -142,6 +143,7 @@ type PropertyValueTypes  = {
 	translateY: Tokens["spacing"] | "1/2" | "1/3" | "2/3" | "1/4" | "2/4" | "3/4" | "full";
 	accentColor: Tokens["colors"];
 	caretColor: Tokens["colors"];
+	scrollbar: "visible" | "hidden";
 	scrollMargin: Tokens["spacing"];
 	scrollMarginX: Tokens["spacing"] | CSSProperties["scrollMarginInline"];
 	scrollMarginY: Tokens["spacing"] | CSSProperties["scrollMarginBlock"];
@@ -239,4 +241,4 @@ export type PropertyValue<T extends string> = T extends keyof PropertyTypes
   ? ConditionalValue<PropertyTypes[T] | NativeValue<T>>
   : T extends keyof CSSProperties
   ? ConditionalValue<CSSProperties[T]>
-  : never
+  : ConditionalValue<string | number>

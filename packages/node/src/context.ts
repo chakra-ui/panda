@@ -439,10 +439,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       sheet.processAtomic(result.data)
     })
 
-    collector.cssMap.forEach((result) => {
-      for (const data of Object.values(result.data)) {
-        sheet.processAtomic(data)
-      }
+    collector.cva.forEach((result) => {
+      sheet.processAtomicRecipe(result.data)
     })
 
     collector.jsx.forEach((result) => {

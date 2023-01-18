@@ -23,8 +23,13 @@ export function generateCssType(ctx: PandaContext) {
     `,
     styleProps: outdent`
     import { PropertyValue } from './prop-type'
+    import { Token } from './token'
+
+    type CssVarProperties = {
+      [key in \`--\${string}\`]?: Token | (string & {}) | (number & {})
+    }
   
-    export type SystemProperties = {
+    export type SystemProperties = CssVarProperties & {
       ${Array.from(propList)
         .map((v) => `\t${v}?: PropertyValue<'${v}'>`)
         .join('\n')}

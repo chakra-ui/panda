@@ -40,7 +40,6 @@ describe('ast parser', () => {
             "type": "object",
           },
         },
-        "cssMap": Set {},
       }
     `)
   })

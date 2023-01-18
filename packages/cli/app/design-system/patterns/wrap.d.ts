@@ -4,9 +4,9 @@ import { Properties } from '../types/csstype'
 import { Tokens } from '../types/token'
 
 export type WrapProperties = {
-   gap?: ConditionalValue<Tokens["spacing"]>
-	gapX?: ConditionalValue<Tokens["spacing"]>
-	gapY?: ConditionalValue<Tokens["spacing"]>
+   gap?: PropertyValue<'gap'>
+	gapX?: PropertyValue<'gap'>
+	gapY?: PropertyValue<'gap'>
 	align?: PropertyValue<'alignItems'>
 	justify?: PropertyValue<'justifyContent'>
 }

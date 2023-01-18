@@ -32,7 +32,6 @@ const flex: PatternConfig = {
     const { direction, align, justify, wrap, basis, grow, shrink, ...rest } = props
     return {
       display: 'flex',
-      ...rest,
       flexDirection: direction,
       alignItems: align,
       justifyContent: justify,
@@ -40,6 +39,7 @@ const flex: PatternConfig = {
       flexBasis: basis,
       flexGrow: grow,
       flexShrink: shrink,
+      ...rest,
     }
   },
 }
@@ -49,7 +49,7 @@ const stack: PatternConfig = {
     align: { type: 'property', value: 'alignItems' },
     justify: { type: 'property', value: 'justifyContent' },
     direction: { type: 'property', value: 'flexDirection' },
-    gap: { type: 'token', value: 'spacing' },
+    gap: { type: 'property', value: 'gap' },
   },
   transform(props) {
     const { align = 'flex-start', justify, direction = 'column', gap = '10px', ...rest } = props
@@ -68,7 +68,7 @@ const vstack: PatternConfig = {
   jsx: 'VStack',
   properties: {
     justify: { type: 'property', value: 'justifyContent' },
-    gap: { type: 'token', value: 'spacing' },
+    gap: { type: 'property', value: 'gap' },
   },
   transform(props) {
     const { justify, gap = '10px', ...rest } = props
@@ -77,8 +77,8 @@ const vstack: PatternConfig = {
       alignItems: 'center',
       justifyContent: justify,
       gap,
-      ...rest,
       flexDirection: 'column',
+      ...rest,
     }
   },
 }
@@ -87,7 +87,7 @@ const hstack: PatternConfig = {
   jsx: 'HStack',
   properties: {
     justify: { type: 'property', value: 'justifyContent' },
-    gap: { type: 'token', value: 'spacing' },
+    gap: { type: 'property', value: 'gap' },
   },
   transform(props) {
     const { justify, gap = '10px', ...rest } = props
@@ -96,8 +96,8 @@ const hstack: PatternConfig = {
       alignItems: 'center',
       justifyContent: justify,
       gap,
-      ...rest,
       flexDirection: 'row',
+      ...rest,
     }
   },
 }
@@ -109,22 +109,21 @@ const spacer: PatternConfig = {
   transform(props, { map }) {
     const { axis, size, ...rest } = props
     return {
-      ...rest,
       alignSelf: 'stretch',
       justifySelf: 'stretch',
       flex: map(size, (v) => (v == null ? '1' : `0 0 ${v}`)),
+      ...rest,
     }
   },
 }
 
 const circle: PatternConfig = {
   properties: {
-    size: { type: 'token', value: 'sizes' },
+    size: { type: 'property', value: 'width' },
   },
   transform(props) {
     const { size, ...rest } = props
     return {
-      ...rest,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -132,6 +131,7 @@ const circle: PatternConfig = {
       height: size,
       borderRadius: '9999px',
       flex: '0 0 auto',
+      ...rest,
     }
   },
 }
@@ -143,25 +143,27 @@ const absoluteCenter: PatternConfig = {
   transform(props, { map }) {
     const { axis = 'both', ...rest } = props
     return {
-      ...rest,
       position: 'absolute',
       top: map(axis, (v) => (v === 'x' ? 'auto' : '50%')),
       left: map(axis, (v) => (v === 'y' ? 'auto' : '50%')),
       transform: map(axis, (v) =>
         v === 'both' ? 'translate(-50%, -50%)' : v === 'x' ? 'translateX(-50%)' : 'translateY(-50%)',
       ),
+      ...rest,
     }
   },
 }
 
 const grid: PatternConfig = {
   properties: {
-    gap: { type: 'token', value: 'spacing' },
+    gap: { type: 'property', value: 'gap' },
+    gapX: { type: 'property', value: 'gap' },
+    gapY: { type: 'property', value: 'gap' },
     columns: { type: 'number' },
     minChildWidth: { type: 'token', value: 'sizes', property: 'width' },
   },
   transform(props, { map }) {
-    const { gap, columns, minChildWidth, ...rest } = props
+    const { gapX, gapY, gap = gapX || gapY ? undefined : '10px', columns, minChildWidth, ...rest } = props
     return {
       gridTemplateColumns:
         columns != null
@@ -169,9 +171,11 @@ const grid: PatternConfig = {
           : minChildWidth != null
           ? map(minChildWidth, (v) => `repeat(auto-fit, minmax(${v}, 1fr))`)
           : undefined,
-      ...rest,
       display: 'grid',
-      gridGap: gap,
+      gap,
+      columnGap: gapX,
+      rowGap: gapY,
+      ...rest,
     }
   },
 }
@@ -191,25 +195,24 @@ const gridItem: PatternConfig = {
     return {
       gridColumn: colSpan != null ? map(colSpan, spanFn) : undefined,
       gridRow: rowSpan != null ? map(rowSpan, spanFn) : undefined,
-      ...rest,
       gridColumnEnd: colEnd,
       gridRowEnd: rowEnd,
+      ...rest,
     }
   },
 }
 
 const wrap: PatternConfig = {
   properties: {
-    gap: { type: 'token', value: 'spacing' },
-    gapX: { type: 'token', value: 'spacing' },
-    gapY: { type: 'token', value: 'spacing' },
+    gap: { type: 'property', value: 'gap' },
+    gapX: { type: 'property', value: 'gap' },
+    gapY: { type: 'property', value: 'gap' },
     align: { type: 'property', value: 'alignItems' },
     justify: { type: 'property', value: 'justifyContent' },
   },
   transform(props) {
     const { gapX, gapY, gap = gapX || gapY ? undefined : '10px', align, justify, ...rest } = props
     return {
-      ...rest,
       display: 'flex',
       flexWrap: 'wrap',
       alignItems: align,
@@ -217,6 +220,7 @@ const wrap: PatternConfig = {
       gap,
       columnGap: gapX,
       rowGap: gapY,
+      ...rest,
     }
   },
 }

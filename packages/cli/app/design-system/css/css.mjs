@@ -1,5 +1,5 @@
-import { createCss, withoutSpace } from "../helpers"
-import { sortConditions, finalizeConditions } from "./conditions"
+import { createCss, withoutSpace } from '../helpers'
+import { sortConditions, finalizeConditions } from './conditions'
 
 const classNameMap = {
   "aspectRatio": "aspect",
@@ -211,6 +211,7 @@ const classNameMap = {
   "accentColor": "accent",
   "caretColor": "caret",
   "scrollBehavior": "scroll",
+  "scrollbar": "scrollbar",
   "scrollMargin": "scroll-m",
   "scrollMarginX": "scroll-mx",
   "scrollMarginY": "scroll-my",
@@ -307,9 +308,9 @@ const hasShorthand = true
 const resolveShorthand = (prop) => shorthands[prop] || prop
 
 function transform(prop, value) {
-  let key = resolveShorthand(prop)
-  let propKey = classNameMap[key] || prop
-  let className = `${propKey}_${withoutSpace(value)}`
+  const key = resolveShorthand(prop)
+  const propKey = classNameMap[key] || prop
+  const className = `${propKey}_${withoutSpace(value)}`
   return { className }
 }
 

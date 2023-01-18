@@ -5,6 +5,7 @@ import { getImportDeclarations } from '../src/import'
 
 const importMap = {
   css: '.panda/css',
+  cva: '.panda/css',
   recipe: '.panda/recipe',
   pattern: '.panda/pattern',
   jsx: '.panda/jsx',
@@ -30,7 +31,14 @@ export function cssParser(code: string) {
   const data = parser(toSourceFile(code))!
   return {
     css: data.css,
-    cssMap: data.cssMap,
+  }
+}
+
+export function cvaParser(code: string) {
+  const parser = createParser({ importMap })
+  const data = parser(toSourceFile(code))!
+  return {
+    cva: data.cva,
   }
 }
 

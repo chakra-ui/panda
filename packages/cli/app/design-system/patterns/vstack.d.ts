@@ -5,7 +5,7 @@ import { Tokens } from '../types/token'
 
 export type VstackProperties = {
    justify?: PropertyValue<'justifyContent'>
-	gap?: ConditionalValue<Tokens["spacing"]>
+	gap?: PropertyValue<'gap'>
 }
 
         
