@@ -54,7 +54,6 @@ export function styledParser(code: string) {
     },
   })
   const data = parser(toSourceFile(code))!
-  console.log(data)
   return {
     cva: data.cva,
   }
