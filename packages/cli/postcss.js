@@ -8,26 +8,33 @@ function postcssPlugin() {
 
   return {
     postcssPlugin: PLUGIN_NAME,
-    async Once(root, { result }) {
-      await builder.setup()
-      await builder.extract()
-
-      builder.registerDependency((dep) => {
-        result.messages.push({
-          ...dep,
-          plugin: PLUGIN_NAME,
-          parent: result.opts.from,
-        })
-      })
-
-      builder.write(root)
-
-      root.walk((node) => {
-        if (!node.source) {
-          node.source = { input: { file: result.opts.from } }
+    plugins: [
+      async function (root, result) {
+        // ignore non-panda file
+        if (!builder.isValidRoot(root)) {
+          return
         }
-      })
-    },
+
+        await builder.setup()
+        await builder.extract()
+
+        builder.registerDependency((dep) => {
+          result.messages.push({
+            ...dep,
+            plugin: PLUGIN_NAME,
+            parent: result.opts.from,
+          })
+        })
+
+        builder.write(root)
+
+        root.walk((node) => {
+          if (!node.source) {
+            node.source = { input: { file: result.opts.from } }
+          }
+        })
+      },
+    ],
   }
 }
 

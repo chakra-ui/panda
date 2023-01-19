@@ -118,6 +118,21 @@ export class Builder {
     return sheet.toCss({ minify: ctx.minify })
   }
 
+  // ASSUMPTION: Layer structure is an exact match (no extra layers)
+  isValidRoot(root: Root) {
+    const params = 'reset, base, tokens, recipes, utilities'
+
+    let found = false
+
+    root.walkAtRules('layer', (rule) => {
+      if (rule.params === params) {
+        found = true
+      }
+    })
+
+    return found
+  }
+
   write(root: Root) {
     const rootCssContent = root.toString()
     root.removeAll()
