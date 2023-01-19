@@ -1,5 +1,7 @@
 @layer base {
   :root {
+    --made-with-panda: '🐼'
+    ;
     font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
     font-size: var(--font-sizes-md);
     line-height: var(--line-heights-normal);

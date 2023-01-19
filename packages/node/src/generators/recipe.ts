@@ -53,6 +53,7 @@ export function generateRecipes(ctx: PandaContext) {
 
     js.push(outdent`
     export const ${name} = createRecipe('${name}', ${JSON.stringify(defaultVariants ?? {})})
+    ${name}.variants = ${JSON.stringify(Object.keys(variants ?? {}))}
     `)
 
     dts.push(outdent`
@@ -67,7 +68,7 @@ export function generateRecipes(ctx: PandaContext) {
     }
 
     ${description ? `/** ${description} */` : ''}
-    export declare function ${name}(variants?: ${capitalize(name)}Variants): string
+    export declare function ${name}(variants?: ${capitalize(name)}Variants): string & { variants: string[] }
     `)
   })
 

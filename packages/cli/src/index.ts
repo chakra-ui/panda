@@ -7,7 +7,7 @@ import type {
   Parts,
   PatternConfig,
   RecipeConfig,
-  RecipeVariant,
+  RecipeVariantRecord,
   SemanticTokens,
   SystemStyleObject,
   Tokens,
@@ -21,7 +21,7 @@ export function defineConfig<C extends Conditions, B extends Dict, T extends Dic
   return config
 }
 
-export function defineRecipe<V extends Record<string, RecipeVariant>>(config: RecipeConfig<V>): any {
+export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): any {
   return config
 }
 

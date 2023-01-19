@@ -3,6 +3,11 @@ function isObject(value) {
   return typeof value === "object" && value != null && !Array.isArray(value);
 }
 
+// src/compact.ts
+function compact(value) {
+  return Object.fromEntries(Object.entries(value ?? {}).filter(([_, value2]) => value2 !== void 0));
+}
+
 // src/condition.ts
 var isBaseCondition = (v) => v === "base";
 function filterBaseConditions(c) {
@@ -27,6 +32,21 @@ function toHash(str) {
   while (len--)
     value = value * 33 ^ str.charCodeAt(len);
   return (value >>> 0).toString(36);
+}
+
+// src/merge-props.ts
+function mergeProps(...sources) {
+  const result = {};
+  for (const source of sources) {
+    for (const [key, value] of Object.entries(source)) {
+      if (isObject(value)) {
+        result[key] = mergeProps(result[key] || {}, value);
+      } else {
+        result[key] = value;
+      }
+    }
+  }
+  return result;
 }
 
 // src/walk-object.ts
@@ -64,6 +84,14 @@ function toResponsiveObject(values, breakpoints) {
     }
     return acc;
   }, {});
+}
+function normalizeShorthand(styles, context) {
+  const { hasShorthand, resolveShorthand } = context.utility;
+  return walkObject(styles, (v) => v, {
+    getKey: (prop) => {
+      return hasShorthand ? resolveShorthand(prop) : prop;
+    }
+  });
 }
 function normalizeStyleObject(styles, context) {
   const { utility, conditions } = context;
@@ -112,38 +140,64 @@ function createCss(context) {
     return Array.from(classNames).join(" ");
   };
 }
-
-// src/compact.ts
-function compact(value) {
-  return Object.fromEntries(Object.entries(value ?? {}).filter(([_, value2]) => value2 !== void 0));
+function compactStyles(...styles) {
+  return styles.filter((style) => isObject(style) && Object.keys(compact(style)).length > 0);
+}
+function createMergeCss(context) {
+  function resolve(styles) {
+    const allStyles = compactStyles(...styles);
+    if (allStyles.length === 1)
+      return allStyles;
+    return allStyles.map((style) => normalizeShorthand(style, context));
+  }
+  function mergeCss(...styles) {
+    return mergeProps(...resolve(styles));
+  }
+  function assignCss(...styles) {
+    return Object.assign({}, ...resolve(styles));
+  }
+  return { mergeCss, assignCss };
 }
 
-// src/merge.ts
-function deepMerge(...sources) {
-  const allSources = sources.filter(isObject);
-  if (allSources.length === 1) {
-    return allSources[0];
-  }
-  const result = {};
-  for (const source of allSources) {
-    for (const [key, value] of Object.entries(source)) {
-      if (isObject(value)) {
-        result[key] = deepMerge(result[key] || {}, value);
-      } else {
-        result[key] = value;
+// src/normalize-html.ts
+var htmlProps = ["htmlSize", "htmlTranslate", "htmlWidth", "htmlHeight"];
+function convert(key) {
+  return htmlProps.includes(key) ? key.replace("html", "").toLowerCase() : key;
+}
+function normalizeHTMLProps(props) {
+  return Object.fromEntries(Object.entries(props).map(([key, value]) => [convert(key), value]));
+}
+normalizeHTMLProps.keys = htmlProps;
+
+// src/split-props.ts
+function splitProps(props, ...keys) {
+  const descriptors = Object.getOwnPropertyDescriptors(props);
+  const dKeys = Object.keys(descriptors);
+  const split = (k) => {
+    const clone = {};
+    for (let i = 0; i < k.length; i++) {
+      const key = k[i];
+      if (descriptors[key]) {
+        Object.defineProperty(clone, key, descriptors[key]);
+        delete descriptors[key];
       }
     }
-  }
-  return result;
+    return clone;
+  };
+  const fn = (key) => split(Array.isArray(key) ? key : dKeys.filter(key));
+  return keys.map(fn).concat(split(dKeys));
 }
 export {
   compact,
   createCss,
-  deepMerge,
+  createMergeCss,
   filterBaseConditions,
   isBaseCondition,
   isObject,
   mapObject,
+  mergeProps,
+  normalizeHTMLProps,
+  splitProps,
   toHash,
   walkObject,
   withoutSpace

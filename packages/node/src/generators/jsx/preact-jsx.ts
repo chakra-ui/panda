@@ -9,44 +9,33 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
     import { h } from 'preact'
     import { forwardRef } from 'preact/compat'
     import { useMemo } from 'preact/hooks'
-    import { css, cx } from '../css'
-    import { deepMerge } from '../helpers'
+    import { css, cx, assignCss } from '../css'
+    import { splitProps, normalizeHTMLProps } from '../helpers'
     import { isCssProperty } from './is-valid-prop'
-  
-    const htmlProps = ['htmlSize', 'htmlTranslate', 'htmlWidth', 'htmlHeight']
-
-    function normalizeHtmlProp(key) {
-      return htmlProps.includes(key) ? key.replace('html', '').toLowerCase() : key
-    }
     
-    function splitProps(props) {
-      const styleProps = {}
-      const elementProps = {}
-    
-      for (const [key, value] of Object.entries(props)) {
-        if (isCssProperty(key)) {
-          styleProps[key] = value
-        } else {
-          elementProps[normalizeHtmlProp(key)] = value
-        }
-      }
-    
-      return [styleProps, elementProps]
-    }
-    
-    function styled(Dynamic) {
+    function styled(Dynamic, configOrCva = {}) {
+      const cvaFn = configOrCva.__cva__ ? configOrCva : cva(configOrCva)
+      
       const ${componentName} = forwardRef(function ${componentName}(props, ref) {
         const { as: Element = Dynamic, ...restProps } = props
 
-        const [styleProps, elementProps] = useMemo(() => splitProps(restProps), [restProps])
+        const [styleProps, variantProps, htmlProps, elementProps] = useMemo(() => {
+          return splitProps(restProps, isCssProperty, cvaFn.variants, normalizeHTMLProps.keys)
+        }, [restProps])
     
         function classes(){
-          const { css: cssStyles, sx: sxStyles, ...otherStyles } = styleProps
-          const atomicClass = css(deepMerge(otherStyles, cssStyles, sxStyles))
-          return cx(atomicClass, elementProps.className)
+          const { css: cssStyles, ...propStyles } = styleProps
+          const cvaStyles = cvaFn.resolve(variantProps)
+          const styles = assignCss(cvaStyles, propStyles, cssStyles)
+          return cx(css(styles), elementProps.className)
         }
     
-        return h(Element, { ...elementProps, ref, className: classes() })
+        return h(Element, {
+          ...elementProps,
+          ...normalizeHTMLProps(htmlProps),
+          ref,
+          className: classes()
+        })
       })
       
       ${componentName}.displayName = \`${name}.\${Dynamic}\`

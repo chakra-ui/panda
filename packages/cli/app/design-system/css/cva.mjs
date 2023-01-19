@@ -1,16 +1,28 @@
-import { compact, deepMerge } from '../helpers'
-import { css } from './css'
+import { compact } from '../helpers'
+import { css, mergeCss } from './css'
 
 export function cva(config) {
   const { base = {}, variants = {}, defaultVariants = {} } = config
-  return (props) => {
+  
+  function resolve(props) {
     const computedVariants = { ...defaultVariants, ...compact(props) }
     let result = { ...base }
     for (const [key, value] of Object.entries(computedVariants)) {
       if (variants[key]?.[value]) {
-        result = deepMerge(result, variants[key][value])
+        result = mergeCss(result, variants[key][value])
       }
     }
-    return css(result)
+    return result
   }
+
+  function cvaFn(props) {
+    return css(resolve(props))
+  }
+
+  return Object.assign(cvaFn, {
+    __cva__: true,
+    variants: Object.keys(variants),
+    resolve,
+    config,
+  })
 }

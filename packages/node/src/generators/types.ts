@@ -12,10 +12,11 @@ function getType(file: string) {
 export function generateCssType(ctx: PandaContext) {
   const propList = new Set(allCssProperties.concat(ctx.utility.keys()))
   return {
-    cssType: getType('csstype.d.ts'),
-    pandaCssType: getType('system-types.d.ts'),
-    selectorType: getType('selectors.d.ts'),
-    publicType: outdent`
+    css: getType('csstype.d.ts'),
+    system: getType('system-types.d.ts'),
+    selectors: getType('selectors.d.ts'),
+    recipe: getType('recipe.d.ts'),
+    exported: outdent`
     export { ConditionalValue } from './conditions'
     export { GlobalStyleObject, JsxStyleProps, SystemStyleObject } from './system-types'
     

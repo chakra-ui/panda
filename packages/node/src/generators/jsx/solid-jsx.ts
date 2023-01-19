@@ -7,42 +7,38 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
     js: outdent`
     import { Dynamic } from 'solid-js/web'
     import { mergeProps, splitProps } from 'solid-js'
-    import { css, cx } from '../css'
-    import { deepMerge } from '../helpers'
+    import { css, cx, assignCss } from '../css'
+    import { splitProps, normalizeHTMLProps } from '../helpers'
     import { allCssProperties } from './is-valid-prop'
-
-    const htmlProps = ['htmlSize', 'htmlTranslate', 'htmlWidth', 'htmlHeight']
-
-    function normalizeHtmlProp(key) {
-      return htmlProps.includes(key) ? key.replace('html', '').toLowerCase() : key
-    }
-
-    function normalizeHtmlProps(props) {
-      const result = {}
-      for (const [key, value] of Object.entries(props)) {
-        result[normalizeHtmlProp(key)] = value
-      }
-      return result
-    }
     
-    function styled(element) {
+    function styled(element, configOrCva = {}) {
+      const cvaFn = configOrCva.__cva__ ? configOrCva : cva(configOrCva)
+      
       return function ${componentName}(props) {
         const mergedProps = mergeProps({ as: element }, props)
     
-        const [localProps, localHtmlProps, styleProps, elementProps] = splitProps(
+        const [localProps, styleProps, htmlProps, elementProps] = splitProps(
           mergedProps,
-          ['as', 'class', 'className'],
-          htmlProps,
-          allCssProperties
+          ['as', 'class'],
+          allCssProperties,
+          normalizeHTMLProps.keys
         )
     
         const classes = () => {
-          const { css: cssStyles, sx: sxStyles, ...otherStyles } = styleProps
-          const atomicClass = css(deepMerge(otherStyles, cssStyles, sxStyles))
-          return cx(atomicClass, localProps.class, localProps.className)
+          const { css: cssStyles, ...propStyles } = styleProps
+          const cvaStyles = cvaFn.resolve(variantProps)
+          const styles = assignCss(cvaStyles, propStyles, cssStyles)
+          return cx(css(styles), localProps.class)
         }
     
-        return <Dynamic component={localProps.as} {...normalizeHtmlProps(localHtmlProps)} {...elementProps} class={classes()} />
+        return (
+          <Dynamic
+            component={localProps.as}
+            {...elementProps}
+            {...normalizeHtmlProps(htmlProps)}
+            class={classes()}
+          />
+        )
       }
     }
     

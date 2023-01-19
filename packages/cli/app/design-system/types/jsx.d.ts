@@ -1,5 +1,6 @@
-import type { ElementType, ComponentProps } from 'react'
-import type { JsxStyleProps, Assign } from '.'
+import { ElementType, ComponentProps } from 'react'
+import { JsxStyleProps, Assign } from '.'
+import { RecipeDefinition, RecipeSelection, RecipeVariantRecord, RecipeRuntimeFn } from './recipe'
 
 type Dict = Record<string, unknown>
 
@@ -20,7 +21,7 @@ export type PandaComponent<T extends ElementType, P extends Dict = {}> = {
 }
 
 export type Panda = {
-  <T extends ElementType, P extends Dict = {}>(component: T): PandaComponent<T, P>
+  <T extends ElementType, P extends RecipeVariantRecord = {}>(component: T, recipe?: RecipeDefinition<P> | RecipeRuntimeFn<P>): PandaComponent<T, RecipeSelection<P>>
 } & { [K in keyof JSX.IntrinsicElements]: PandaComponent<K, {}> }
 
 export type HTMLPandaProps<T extends ElementType> = Polyfill<ComponentProps<T>> & JsxStyleProps

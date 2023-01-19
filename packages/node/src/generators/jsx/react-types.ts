@@ -10,8 +10,9 @@ import { ${upperName} } from '../types/jsx'
 export declare const ${name}: ${upperName}
     `,
     jsxType: outdent`
-import type { ElementType, ComponentProps } from 'react'
-import type { JsxStyleProps, Assign } from '.'
+import { ElementType, ComponentProps } from 'react'
+import { JsxStyleProps, Assign } from '.'
+import { RecipeDefinition, RecipeSelection, RecipeVariantRecord, RecipeRuntimeFn } from './recipe'
 
 type Dict = Record<string, unknown>
 
@@ -32,7 +33,7 @@ export type ${componentName}<T extends ElementType, P extends Dict = {}> = {
 }
 
 export type ${upperName} = {
-  <T extends ElementType, P extends Dict = {}>(component: T): ${componentName}<T, P>
+  <T extends ElementType, P extends RecipeVariantRecord = {}>(component: T, recipe?: RecipeDefinition<P> | RecipeRuntimeFn<P>): ${componentName}<T, RecipeSelection<P>>
 } & { [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}> }
 
 export type ${typeName}<T extends ElementType> = Polyfill<ComponentProps<T>> & JsxStyleProps

@@ -3,6 +3,7 @@ import { circle, vstack } from '../design-system/patterns'
 import { Stack, panda, Circle, HStack } from '../design-system/jsx'
 import { button } from '../design-system/recipes'
 import { Button } from './Button'
+import { badge, Badge } from './Badge'
 
 function App() {
   return (
@@ -55,6 +56,10 @@ function App() {
             >
               Get Started
             </button>
+            <Badge status="success" background="pink.800">
+              Welcome
+            </Badge>
+            <div className={badge({ status: 'warning' })}>Warning</div>
             <button
               className={css({
                 height: '40px',

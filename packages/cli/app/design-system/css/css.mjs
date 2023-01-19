@@ -1,4 +1,4 @@
-import { createCss, withoutSpace } from '../helpers'
+import { createCss, createMergeCss, withoutSpace } from '../helpers'
 import { sortConditions, finalizeConditions } from './conditions'
 
 const classNameMap = {
@@ -329,3 +329,5 @@ const context = {
 }
 
 export const css = createCss(context)
+
+export const { mergeCss, assignCss } = createMergeCss(context)

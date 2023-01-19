@@ -66,5 +66,4 @@ export type CompositionStyleObject<Property extends string> = Nested<{
 export type JsxStyleProps = SystemProperties &
   MinimalNested<SystemStyleObject> & {
     css?: SystemStyleObject
-    sx?: SystemStyleObject
   }

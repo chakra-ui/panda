@@ -11,7 +11,7 @@ import {
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
 import { Collector, createParser, createProject } from '@pandacss/parser'
-import { capitalize, compact, mapObject, uncapitalize, splitObject, dashCase } from '@pandacss/shared'
+import { capitalize, compact, dashCase, mapObject, splitProps, uncapitalize } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type { Dict, PatternConfig, RecipeConfig } from '@pandacss/types'
 import glob from 'fast-glob'
@@ -210,7 +210,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   function splitRecipeProps(name: string, props: Dict) {
     const recipe = recipeNodes.find((node) => node.name === name)
     if (!recipe) return [{}, props]
-    return splitObject(props, (key) => recipe.props.includes(key))
+    return splitProps(props, recipe.props)
   }
 
   function getRecipeDetails() {
@@ -227,7 +227,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * User defined utilities or properties
    * -----------------------------------------------------------------------------*/
 
-  const properties = Array.from(new Set(['css', 'sx', ...utility.keys(), ...conditions.keys()]))
+  const properties = Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()]))
 
   function isCustomCssProperty(prop: string) {
     const regex = new RegExp('^(?:' + properties.join('|') + ')$')
@@ -396,9 +396,18 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   })
 
   function getGlobalCss() {
-    if (!globalCss) return
     const sheet = new Stylesheet(context())
-    sheet.processGlobalCss(globalCss)
+
+    sheet.processGlobalCss({
+      ':root': {
+        '--made-with-panda': `'🐼'`,
+      },
+    })
+
+    if (globalCss) {
+      sheet.processGlobalCss(globalCss)
+    }
+
     return sheet.toCss()
   }
 

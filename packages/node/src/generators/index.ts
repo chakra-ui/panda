@@ -53,7 +53,7 @@ function setupDesignTokens(ctx: PandaContext): Output {
 }
 
 function setupTypes(ctx: PandaContext): Output {
-  const code = generateCssType(ctx)
+  const types = generateCssType(ctx)
   const conditions = generateConditions(ctx)
   const jsx = generateJsxTypes(ctx)
 
@@ -61,13 +61,14 @@ function setupTypes(ctx: PandaContext): Output {
     dir: ctx.paths.types,
     files: [
       jsx ? { file: 'jsx.d.ts', code: jsx.jsxType } : null,
-      { file: 'csstype.d.ts', code: code.cssType },
-      { file: 'system-types.d.ts', code: code.pandaCssType },
-      { file: 'selectors.d.ts', code: code.selectorType },
-      { file: 'index.d.ts', code: code.publicType },
+      { file: 'csstype.d.ts', code: types.css },
+      { file: 'system-types.d.ts', code: types.system },
+      { file: 'selectors.d.ts', code: types.selectors },
+      { file: 'recipe.d.ts', code: types.recipe },
+      { file: 'index.d.ts', code: types.exported },
       { file: 'token.d.ts', code: generateTokenDts(ctx.tokens) },
       { file: 'prop-type.d.ts', code: generatePropTypes(ctx.utility) },
-      { file: 'style-props.d.ts', code: code.styleProps },
+      { file: 'style-props.d.ts', code: types.styleProps },
       { file: 'conditions.d.ts', code: conditions.dts },
     ].filter(Boolean),
   } as Output

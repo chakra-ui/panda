@@ -13,7 +13,7 @@ export function generateCssFn(ctx: PandaContext) {
     export declare function css(styles: SystemStyleObject): string
     `,
     js: outdent`
-    import { createCss, withoutSpace } from '../helpers'
+    import { createCss, createMergeCss, withoutSpace } from '../helpers'
     import { sortConditions, finalizeConditions } from './conditions'
 
     const classNameMap = ${stringify(utility.entries())}
@@ -48,6 +48,8 @@ export function generateCssFn(ctx: PandaContext) {
     }
 
     export const css = createCss(context)
+
+    export const { mergeCss, assignCss } = createMergeCss(context)
     `,
   }
 }

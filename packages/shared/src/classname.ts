@@ -1,7 +1,10 @@
+import { isObject } from './assert'
+import { compact } from './compact'
 import { filterBaseConditions } from './condition'
 import { isImportant, withoutImportant } from './css-important'
 import { toHash } from './hash'
-import { normalizeStyleObject } from './normalize-style-object'
+import { mergeProps } from './merge-props'
+import { normalizeShorthand, normalizeStyleObject } from './normalize-style-object'
 import { walkObject } from './walk-object'
 
 export type CreateCssContext = {
@@ -37,7 +40,6 @@ export function createCss(context: CreateCssContext) {
 
   return (styleObject: Record<string, any> = {}) => {
     const normalizedObject = normalizeStyleObject(styleObject, context)
-
     const classNames = new Set<string>()
 
     walkObject(normalizedObject, (value, paths) => {
@@ -46,8 +48,8 @@ export function createCss(context: CreateCssContext) {
       if (value == null) return
 
       const [prop, ...allConditions] = conds.shift(paths)
-
       const conditions = filterBaseConditions(allConditions)
+
       const transformed = utility.transform(prop, withoutImportant(sanitize(value)))
       let transformedClassName = transformed.className
 
@@ -64,4 +66,28 @@ export function createCss(context: CreateCssContext) {
 
     return Array.from(classNames).join(' ')
   }
+}
+
+type StyleObject = Record<string, any>
+
+function compactStyles(...styles: StyleObject[]) {
+  return styles.filter((style) => isObject(style) && Object.keys(compact(style)).length > 0)
+}
+
+export function createMergeCss(context: CreateCssContext) {
+  function resolve(styles: StyleObject[]) {
+    const allStyles = compactStyles(...styles)
+    if (allStyles.length === 1) return allStyles
+    return allStyles.map((style) => normalizeShorthand(style, context))
+  }
+
+  function mergeCss(...styles: StyleObject[]) {
+    return mergeProps(...resolve(styles))
+  }
+
+  function assignCss(...styles: StyleObject[]) {
+    return Object.assign({}, ...resolve(styles))
+  }
+
+  return { mergeCss, assignCss }
 }
