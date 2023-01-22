@@ -79,6 +79,7 @@ export type TokenDataTypes = {
   animations: string
   blurs: string
   gradients: string | Gradient
+  screens: string
 }
 
 export type Tokens = {

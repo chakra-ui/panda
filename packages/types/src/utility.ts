@@ -1,11 +1,17 @@
 import type { LiteralUnion } from './shared'
 import type { NativeCssProperty, NestedCssProperties } from './system-types'
+import type { TokenCategory } from './tokens'
 
 type Getter = (path: string) => any
 
 type ThemeFn = (token: Getter) => Record<string, string>
 
-export type PropertyValues = string | string[] | { type: string } | Record<string, string> | ThemeFn
+export type PropertyValues =
+  | LiteralUnion<TokenCategory>
+  | string[]
+  | { type: string }
+  | Record<string, string>
+  | ThemeFn
 
 export type PropertyTransform = (value: any, token: Getter) => NestedCssProperties | undefined
 

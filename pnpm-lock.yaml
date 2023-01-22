@@ -270,9 +270,11 @@ importers:
     specifiers:
       '@pandacss/fixture': workspace:*
       '@pandacss/shared': workspace:*
+      '@pandacss/types': workspace:*
       ts-pattern: 4.1.3
     dependencies:
       '@pandacss/shared': link:../shared
+      '@pandacss/types': link:../types
       ts-pattern: 4.1.3
     devDependencies:
       '@pandacss/fixture': link:../fixture
