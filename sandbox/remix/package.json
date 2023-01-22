@@ -1,0 +1,33 @@
+{
+  "private": true,
+  "sideEffects": false,
+  "scripts": {
+    "build": "remix build",
+    "dev": "remix dev",
+    "css": "PANDA_DEBUG=ast:* panda",
+    "css:gen": "PANDA_DEBUG=* panda codegen",
+    "css:dev": "PANDA_DEBUG=file:* panda --watch",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@remix-run/node": "^1.11.1",
+    "@remix-run/react": "^1.11.1",
+    "@remix-run/vercel": "^1.11.1",
+    "@vercel/node": "^2.6.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@remix-run/dev": "^1.11.1",
+    "@remix-run/eslint-config": "^1.11.1",
+    "@remix-run/serve": "^1.11.1",
+    "@types/react": "^18.0.25",
+    "@types/react-dom": "^18.0.8",
+    "css-panda": "workspace:*",
+    "eslint": "^8.27.0",
+    "typescript": "^4.8.4"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}

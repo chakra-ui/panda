@@ -1,0 +1,35 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependency directory
+**/node_modules/**
+node_modules
+
+lib
+dist
+dist-ssr
+out
+build
+**/buil
+tsconfig.tsbuildinfo
+.DS_Store
+__generated__
+*.env
+.idea
+*.vsix
+
+## Remix
+.cache
+.env
+.vercel
+.output
+
+/build/
+/public/build
+/api/index.js
+/api/index.js.map
+
+## CSS Panda
+design-system
