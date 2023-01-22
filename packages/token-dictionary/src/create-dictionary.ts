@@ -1,10 +1,10 @@
 import { getDotPath, mapToJson } from '@pandacss/shared'
-import { TokenDictionary as Base, TokenDictionaryOptions } from './dictionary'
+import { TokenDictionary as BaseDictionary, TokenDictionaryOptions } from './dictionary'
 import { formats } from './format'
 import { middlewares } from './middleware'
 import { transforms } from './transform'
 
-export class TokenDictionary extends Base {
+export class TokenDictionary extends BaseDictionary {
   constructor(options: TokenDictionaryOptions) {
     super(options)
     this.registerTransform(...transforms)

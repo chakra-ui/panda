@@ -1,7 +1,7 @@
-import { isString, memo, walkObject } from '@pandacss/shared'
+import { isString, mapObject, memo, walkObject } from '@pandacss/shared'
+import type { SemanticTokens, Tokens } from '@pandacss/types'
 import { isMatching, match } from 'ts-pattern'
 import { Token } from './token'
-import type { SemanticTokens, Tokens } from './token.types'
 import { assertTokenFormat, getReferences, isToken } from './utils'
 
 type EnforcePhase = 'pre' | 'post'
@@ -21,6 +21,7 @@ export type TokenTransformer = {
 export type TokenDictionaryOptions = {
   tokens?: Tokens
   semanticTokens?: SemanticTokens
+  breakpoints?: Record<string, string>
   prefix?: string
 }
 
@@ -38,12 +39,17 @@ export class TokenDictionary {
   }
 
   constructor(options: TokenDictionaryOptions) {
-    const { tokens = {}, semanticTokens = {}, prefix } = options
+    const { tokens = {}, semanticTokens = {}, breakpoints, prefix } = options
+
+    const computedTokens = {
+      ...tokens,
+      screens: mapObject(breakpoints, (value) => ({ value })),
+    }
 
     this.prefix = prefix
 
     walkObject(
-      tokens,
+      computedTokens,
       (token, path) => {
         assertTokenFormat(token)
 

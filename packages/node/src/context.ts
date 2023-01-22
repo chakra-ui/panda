@@ -113,6 +113,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
   const tokens = new TokenDictionary({
     tokens: tokensProp,
+    breakpoints,
     semanticTokens,
     prefix: cssVarPrefix,
   })

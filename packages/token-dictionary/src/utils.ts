@@ -1,5 +1,5 @@
 import { isObject } from '@pandacss/shared'
-import type { TokenEntry } from './token.types'
+import type { Token } from '@pandacss/types'
 
 /* -----------------------------------------------------------------------------
  * Token references
@@ -51,11 +51,11 @@ export function mapToJson(map: Map<string, any>) {
  * Token assertions
  * -----------------------------------------------------------------------------*/
 
-export const isToken = (value: any): value is TokenEntry => {
+export const isToken = (value: any): value is Token => {
   return isObject(value) && 'value' in value
 }
 
-export function assertTokenFormat(token: any): asserts token is TokenEntry {
+export function assertTokenFormat(token: any): asserts token is Token {
   if (!isToken(token)) {
     throw new Error(`Invalid token format: ${JSON.stringify(token)}`)
   }
