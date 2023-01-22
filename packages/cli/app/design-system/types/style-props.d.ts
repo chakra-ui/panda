@@ -570,6 +570,10 @@ export type SystemProperties = CssVarProperties & {
 	bgBlend?: PropertyValue<'bgBlend'>
 	bgSize?: PropertyValue<'bgSize'>
 	bgGradient?: PropertyValue<'bgGradient'>
+	ringWidth?: PropertyValue<'ringWidth'>
+	ringColor?: PropertyValue<'ringColor'>
+	ring?: PropertyValue<'ring'>
+	ringOffset?: PropertyValue<'ringOffset'>
 	shadow?: PropertyValue<'shadow'>
 	shadowColor?: PropertyValue<'shadowColor'>
 	x?: PropertyValue<'x'>
@@ -578,6 +582,8 @@ export type SystemProperties = CssVarProperties & {
 	end?: PropertyValue<'end'>
 	insetX?: PropertyValue<'insetX'>
 	insetY?: PropertyValue<'insetY'>
+	hideFrom?: PropertyValue<'hideFrom'>
+	showFrom?: PropertyValue<'showFrom'>
 	paddingX?: PropertyValue<'paddingX'>
 	paddingY?: PropertyValue<'paddingY'>
 	marginX?: PropertyValue<'marginX'>
