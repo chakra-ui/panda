@@ -31,7 +31,7 @@ const classNameMap = {
   "visibility": "vis",
   "display": "d",
   "hideFrom": "hide",
-  "showFrom": "show",
+  "hideBelow": "show",
   "flexBasis": "basis",
   "flex": "flex",
   "flexDirection": "flex",

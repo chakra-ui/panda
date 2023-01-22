@@ -21,7 +21,7 @@ type PropertyValueTypes  = {
 	insetY: Tokens["spacing"] | CSSProperties["insetBlock"];
 	float: "left" | "right" | "start" | "end";
 	hideFrom: Tokens["screens"];
-	showFrom: Tokens["screens"];
+	hideBelow: Tokens["screens"];
 	flexBasis: Tokens["spacing"] | "1/2" | "1/3" | "2/3" | "1/4" | "2/4" | "3/4" | "1/5" | "2/5" | "3/5" | "4/5" | "1/6" | "2/6" | "3/6" | "4/6" | "5/6" | "1/12" | "2/12" | "3/12" | "4/12" | "5/12" | "6/12" | "7/12" | "8/12" | "9/12" | "10/12" | "11/12" | "full";
 	flex: "1" | "auto" | "initial" | "none";
 	gridTemplateColumns: "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12";

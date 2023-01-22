@@ -583,7 +583,7 @@ export type SystemProperties = CssVarProperties & {
 	insetX?: PropertyValue<'insetX'>
 	insetY?: PropertyValue<'insetY'>
 	hideFrom?: PropertyValue<'hideFrom'>
-	showFrom?: PropertyValue<'showFrom'>
+	hideBelow?: PropertyValue<'hideBelow'>
 	paddingX?: PropertyValue<'paddingX'>
 	paddingY?: PropertyValue<'paddingY'>
 	marginX?: PropertyValue<'marginX'>

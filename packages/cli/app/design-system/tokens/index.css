@@ -319,6 +319,11 @@
   --animations-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
   --animations-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animations-bounce: bounce 1s infinite;
+  --screens-sm: 640px;
+  --screens-md: 768px;
+  --screens-lg: 1024px;
+  --screens-xl: 1280px;
+  --screens-2xl: 1536px;
   --colors-text: #E2E8F0;
   --colors-bg: #0F172A;
   --colors-card: #1E293B;

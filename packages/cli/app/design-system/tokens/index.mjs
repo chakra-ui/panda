@@ -1275,6 +1275,26 @@ const tokens = {
     "value": "bounce 1s infinite",
     "variable": "var(--animations-bounce)"
   },
+  "screens.sm": {
+    "value": "640px",
+    "variable": "var(--screens-sm)"
+  },
+  "screens.md": {
+    "value": "768px",
+    "variable": "var(--screens-md)"
+  },
+  "screens.lg": {
+    "value": "1024px",
+    "variable": "var(--screens-lg)"
+  },
+  "screens.xl": {
+    "value": "1280px",
+    "variable": "var(--screens-xl)"
+  },
+  "screens.2xl": {
+    "value": "1536px",
+    "variable": "var(--screens-2xl)"
+  },
   "colors.text": {
     "value": "var(--colors-text)",
     "variable": "var(--colors-text)"
