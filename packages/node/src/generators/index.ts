@@ -22,7 +22,7 @@ function setupHelpers(ctx: PandaContext): Output {
   const code = readFileSync(sharedMjs, 'utf-8')
   return {
     dir: ctx.outdir,
-    files: [{ file: 'helpers.mjs', code }],
+    files: [{ file: ctx.getJsFile('helpers'), code }],
   }
 }
 
@@ -47,7 +47,7 @@ function setupDesignTokens(ctx: PandaContext): Output {
     files: [
       { file: 'index.css', code: css },
       { file: 'index.d.ts', code: code.dts },
-      { file: 'index.mjs', code: code.js },
+      { file: ctx.getJsFile('index'), code: code.js },
     ],
   }
 }
@@ -80,8 +80,8 @@ function setupCss(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.css,
     files: [
-      { file: 'conditions.mjs', code: conditions.js },
-      { file: 'css.mjs', code: code.js },
+      { file: ctx.getJsFile('conditions'), code: conditions.js },
+      { file: ctx.getJsFile('css'), code: code.js },
       { file: 'css.d.ts', code: code.dts },
     ],
   }
@@ -92,7 +92,7 @@ function setupCva(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.css,
     files: [
-      { file: 'cva.mjs', code: code.js },
+      { file: ctx.getJsFile('cva'), code: code.js },
       { file: 'cva.d.ts', code: code.dts },
     ],
   }
@@ -103,7 +103,7 @@ function setupCx(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.css,
     files: [
-      { file: 'cx.mjs', code: code.js },
+      { file: ctx.getJsFile('cx'), code: code.js },
       { file: 'cx.d.ts', code: code.dts },
     ],
   }
@@ -117,7 +117,7 @@ function setupRecipes(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.recipe,
     files: [
-      { file: 'index.mjs', code: code.js },
+      { file: ctx.getJsFile('index'), code: code.js },
       { file: 'index.d.ts', code: code.dts },
     ],
   }
@@ -134,9 +134,9 @@ function setupPatterns(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.pattern,
     files: [
-      ...files.map((file) => ({ file: `${file.name}.mjs`, code: file.js })),
+      ...files.map((file) => ({ file: ctx.getJsFile(file.name), code: file.js })),
       ...files.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
-      { file: 'index.mjs', code: indexCode },
+      { file: ctx.getJsFile('index'), code: indexCode },
       { file: 'index.d.ts', code: indexCode },
     ],
   }
@@ -164,7 +164,7 @@ function setupJsx(ctx: PandaContext): Output {
       ...patterns.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
       { file: 'layout-grid.jsx', code: layoutGrid.js },
       { file: 'layout-grid.d.ts', code: layoutGrid.dts },
-      { file: 'is-valid-prop.mjs', code: isValidProp.js },
+      { file: ctx.getJsFile('is-valid-prop'), code: isValidProp.js },
       { file: 'factory.d.ts', code: types.jsxFactory },
       { file: 'factory.jsx', code: factory.js },
       {
@@ -189,7 +189,7 @@ function setupCssIndex(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.css,
     files: [
-      { file: 'index.mjs', code },
+      { file: ctx.getJsFile('index'), code },
       { file: 'index.d.ts', code },
     ],
   }

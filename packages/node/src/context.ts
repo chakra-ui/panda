@@ -80,6 +80,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     globalCss,
     separator,
     static: staticCss,
+    outExtension = 'mjs',
   } = config
 
   const {
@@ -281,6 +282,10 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   function writeOutput(output: Output) {
     const { dir = outdir, files } = output
     return write(dir, files)
+  }
+
+  function getJsFile(file: string) {
+    return `${file}.${outExtension}`
   }
 
   /* -----------------------------------------------------------------------------
@@ -541,6 +546,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     write,
     writeOutput,
     cleanOutdir,
+    getJsFile,
 
     cssVarRoot,
     tokens,
