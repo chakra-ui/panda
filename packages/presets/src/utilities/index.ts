@@ -1,6 +1,7 @@
 import type { UtilityConfig } from '@pandacss/types'
 import { background } from './background'
 import { border } from './border'
+import { display } from './display'
 import { effects } from './effects'
 import { flexGrid } from './flex-and-grid'
 import { helpers } from './helpers'
@@ -18,6 +19,7 @@ import { typography } from './typography'
 export const utilities: UtilityConfig = Object.assign(
   {},
   layout,
+  display,
   flexGrid,
   spacing,
   sizing,

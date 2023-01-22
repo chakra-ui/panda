@@ -187,26 +187,23 @@ export const border: UtilityConfig = {
 
   // Outline
   outlineWidth: {
-    className: 'outline',
+    className: 'ring',
+    shorthand: 'ringWidth',
   },
   outlineColor: {
-    className: 'outline',
+    className: 'ring',
     values: 'colors',
+    shorthand: 'ringColor',
   },
   outline: {
-    className: 'outline',
+    className: 'ring',
+    shorthand: 'ring',
     values: 'borders',
-    transform(value) {
-      if (value === 'none') {
-        return {
-          outline: '2px solid transparent',
-          outlineOffset: '2px',
-        }
-      }
-      return {
-        outline: value,
-      }
-    },
+  },
+  outlineOffset: {
+    className: 'ring',
+    shorthand: 'ringOffset',
+    values: 'spacing',
   },
 
   // Divider

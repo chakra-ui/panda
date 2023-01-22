@@ -15,9 +15,6 @@ export const layout: UtilityConfig = {
   boxDecorationBreak: {
     className: 'box-decoration',
   },
-  display: {
-    className: 'd',
-  },
   zIndex: {
     className: 'z',
   },

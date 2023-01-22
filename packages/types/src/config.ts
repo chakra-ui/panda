@@ -164,6 +164,10 @@ export type Config<
    * Used to generate css utility classes for your project.
    */
   static?: StaticCssOptions
+  /**
+   * File extension for generated javascript files.
+   */
+  outExtension?: 'mjs' | 'js'
 }
 
 export type TConfig = Config<TConditions, Dict, Dict>
