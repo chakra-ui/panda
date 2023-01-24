@@ -5,9 +5,13 @@
   --easings-in: cubic-bezier(0.4, 0, 1, 1);
   --easings-out: cubic-bezier(0, 0, 0.2, 1);
   --easings-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --durations-75: 75ms;
-  --durations-100: 100ms;
-  --durations-150: 150ms;
+  --durations-fastest: 50ms;
+  --durations-faster: 100ms;
+  --durations-fast: 150ms;
+  --durations-normal: 200ms;
+  --durations-slow: 300ms;
+  --durations-slower: 400ms;
+  --durations-slowest: 500ms;
   --radii-xs: 0.125rem;
   --radii-sm: 0.25rem;
   --radii-md: 0.375rem;

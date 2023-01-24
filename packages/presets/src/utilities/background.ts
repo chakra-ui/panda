@@ -1,6 +1,19 @@
 import type { UtilityConfig } from '@pandacss/types'
 
 export const background: UtilityConfig = {
+  backgroundPosition: {
+    shorthand: 'bgPosition',
+    className: 'bg',
+  },
+  backgroundPositionX: {
+    shorthand: 'bgPositionX',
+    className: 'bg-x',
+  },
+  backgroundPositionY: {
+    shorthand: 'bgPositionY',
+    className: 'bg-y',
+  },
+
   backgroundAttachment: {
     shorthand: 'bgAttachment',
     className: 'bg',
@@ -19,10 +32,7 @@ export const background: UtilityConfig = {
     className: 'bg',
     values: 'colors',
   },
-  backgroundPosition: {
-    shorthand: 'bgPos',
-    className: 'bg',
-  },
+
   backgroundOrigin: {
     shorthand: 'bgOrigin',
     className: 'bg-origin',
@@ -36,7 +46,7 @@ export const background: UtilityConfig = {
     className: 'bg-repeat',
   },
   backgroundBlendMode: {
-    shorthand: 'bgBlend',
+    shorthand: 'bgBlendMode',
     className: 'bg-blend',
   },
   backgroundSize: {

@@ -2,12 +2,14 @@ import type { UtilityConfig } from '@pandacss/types'
 import { background } from './background'
 import { border } from './border'
 import { display } from './display'
+import { divide } from './divide'
 import { effects } from './effects'
 import { flexGrid } from './flex-and-grid'
 import { helpers } from './helpers'
 import { interactivity } from './interactivity'
 import { layout } from './layout'
 import { list } from './list'
+import { outline } from './outline'
 import { sizing } from './sizing'
 import { spacing } from './spacing'
 import { svg } from './svg'
@@ -22,6 +24,8 @@ export const utilities: UtilityConfig = Object.assign(
   display,
   flexGrid,
   spacing,
+  outline,
+  divide,
   sizing,
   typography,
   list,

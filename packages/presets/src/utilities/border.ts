@@ -61,7 +61,6 @@ export const border: UtilityConfig = {
       }
     },
   },
-
   borderStartStartRadius: {
     className: 'rounded-start-start',
     values: 'radii',
@@ -98,7 +97,6 @@ export const border: UtilityConfig = {
       }
     },
   },
-
   border: {
     className: 'border',
     values: 'borders',
@@ -107,27 +105,24 @@ export const border: UtilityConfig = {
     className: 'border',
     values: 'colors',
   },
-  borderXColor: {
+  borderInline: {
+    className: 'border-x',
+    values: 'borders',
+    shorthand: 'borderX',
+  },
+  borderInlineColor: {
     className: 'border-x',
     values: 'colors',
-    property: 'borderColor',
-    transform(value) {
-      return {
-        borderLeftColor: value,
-        borderRightColor: value,
-      }
-    },
+    shorthand: 'borderXColor',
   },
-  borderYColor: {
+  borderBlock: {
+    className: 'border-y',
+    values: 'borders',
+  },
+  borderBlockColor: {
     className: 'border-y',
     values: 'colors',
-    property: 'borderColor',
-    transform(value) {
-      return {
-        borderTopColor: value,
-        borderBottomColor: value,
-      }
-    },
+    shorthand: 'borderYColor',
   },
   borderLeft: {
     className: 'border-l',
@@ -137,12 +132,27 @@ export const border: UtilityConfig = {
     className: 'border-l',
     values: 'colors',
   },
+  borderInlineStart: {
+    className: 'border-s',
+    values: 'borders',
+  },
+  borderInlineStartColor: {
+    className: 'border-s',
+  },
   borderRight: {
     className: 'border-r',
     values: 'borders',
   },
   borderRightColor: {
     className: 'border-r',
+    values: 'colors',
+  },
+  borderInlineEnd: {
+    className: 'border-end',
+    values: 'borders',
+  },
+  borderInlineEndColor: {
+    className: 'border-end',
     values: 'colors',
   },
   borderTop: {
@@ -161,96 +171,20 @@ export const border: UtilityConfig = {
     className: 'border-b',
     values: 'colors',
   },
-  borderX: {
-    className: 'border-x',
-    property: 'border',
+  borderBlockEnd: {
+    className: 'border-be',
     values: 'borders',
-    transform(value) {
-      return {
-        borderInline: value,
-      }
-    },
   },
-  borderY: {
-    className: 'border-y',
-    property: 'border',
-    values: 'borders',
-    transform(value) {
-      return {
-        borderBlock: value,
-      }
-    },
-  },
-  borderStyle: {
-    className: 'border',
-  },
-
-  // Outline
-  outlineWidth: {
-    className: 'ring',
-    shorthand: 'ringWidth',
-  },
-  outlineColor: {
-    className: 'ring',
+  borderBlockEndColor: {
+    className: 'border-be',
     values: 'colors',
-    shorthand: 'ringColor',
   },
-  outline: {
-    className: 'ring',
-    shorthand: 'ring',
+  borderBlockStart: {
+    className: 'border-bs',
     values: 'borders',
   },
-  outlineOffset: {
-    className: 'ring',
-    shorthand: 'ringOffset',
-    values: 'spacing',
-  },
-
-  // Divider
-  divideX: {
-    className: 'divide-x',
-    values: { type: 'string' },
-    transform(value) {
-      return {
-        '& > :not([hidden]) ~ :not([hidden])': {
-          borderLeftWidth: value,
-          borderRightWidth: '0px',
-        },
-      }
-    },
-  },
-  divideY: {
-    className: 'divide-y',
-    values: { type: 'string' },
-    transform(value) {
-      return {
-        '& > :not([hidden]) ~ :not([hidden])': {
-          borderTopWidth: value,
-          borderBottomWidth: '0px',
-        },
-      }
-    },
-  },
-  divideColor: {
-    className: 'divide',
+  borderBlockStartColor: {
+    className: 'border-bs',
     values: 'colors',
-    transform(value) {
-      return {
-        '& > :not([hidden]) ~ :not([hidden])': {
-          borderColor: value,
-        },
-      }
-    },
-  },
-  divideStyle: {
-    className: 'divide',
-    property: 'borderStyle',
-    transform(value) {
-      return {
-        '& > :not([hidden]) ~ :not([hidden])': {
-          borderStyle: value,
-        },
-      }
-    },
   },
 }

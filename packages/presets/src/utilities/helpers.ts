@@ -27,7 +27,7 @@ const srMapping = {
 export const helpers: UtilityConfig = {
   srOnly: {
     className: 'sr',
-    values: ['true', 'false'],
+    values: { type: 'boolean' },
     transform(value) {
       return srMapping[value] || {}
     },

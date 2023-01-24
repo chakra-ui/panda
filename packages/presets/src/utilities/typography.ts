@@ -44,14 +44,14 @@ export const typography: UtilityConfig = {
     className: 'text',
   },
   textDecoration: {
-    className: 'decor',
+    className: 'text-decor',
   },
   textDecorationColor: {
-    className: 'decoration',
+    className: 'text-decor',
     values: 'colors',
   },
   textEmphasisColor: {
-    className: 'emphasis',
+    className: 'text-emphasis',
     values: 'colors',
   },
   textDecorationStyle: {
@@ -76,19 +76,6 @@ export const typography: UtilityConfig = {
   },
   textOverflow: {
     className: 'text',
-    values: ['ellipsis', 'clip', 'truncate'],
-    transform(value) {
-      if (value === 'truncate') {
-        return {
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }
-      }
-      return {
-        textOverflow: value,
-      }
-    },
   },
   verticalAlign: {
     className: 'align',
@@ -116,7 +103,6 @@ export const typography: UtilityConfig = {
           WebkitLineClamp: 'unset',
         }
       }
-
       return {
         overflow: 'hidden',
         display: '-webkit-box',

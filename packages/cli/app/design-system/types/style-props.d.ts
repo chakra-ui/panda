@@ -555,29 +555,32 @@ export type SystemProperties = CssVarProperties & {
 	my?: PropertyValue<'my'>
 	me?: PropertyValue<'me'>
 	ms?: PropertyValue<'ms'>
+	ringWidth?: PropertyValue<'ringWidth'>
+	ringColor?: PropertyValue<'ringColor'>
+	ring?: PropertyValue<'ring'>
+	ringOffset?: PropertyValue<'ringOffset'>
 	w?: PropertyValue<'w'>
 	h?: PropertyValue<'h'>
 	minH?: PropertyValue<'minH'>
 	maxH?: PropertyValue<'maxH'>
 	minW?: PropertyValue<'minW'>
 	maxW?: PropertyValue<'maxW'>
+	bgPosition?: PropertyValue<'bgPosition'>
+	bgPositionX?: PropertyValue<'bgPositionX'>
+	bgPositionY?: PropertyValue<'bgPositionY'>
 	bgAttachment?: PropertyValue<'bgAttachment'>
 	bgClip?: PropertyValue<'bgClip'>
 	bg?: PropertyValue<'bg'>
 	bgColor?: PropertyValue<'bgColor'>
-	bgPos?: PropertyValue<'bgPos'>
 	bgOrigin?: PropertyValue<'bgOrigin'>
 	bgImage?: PropertyValue<'bgImage'>
 	bgRepeat?: PropertyValue<'bgRepeat'>
-	bgBlend?: PropertyValue<'bgBlend'>
+	bgBlendMode?: PropertyValue<'bgBlendMode'>
 	bgSize?: PropertyValue<'bgSize'>
 	bgGradient?: PropertyValue<'bgGradient'>
+	borderX?: PropertyValue<'borderX'>
 	borderXColor?: PropertyValue<'borderXColor'>
 	borderYColor?: PropertyValue<'borderYColor'>
-	ringWidth?: PropertyValue<'ringWidth'>
-	ringColor?: PropertyValue<'ringColor'>
-	ring?: PropertyValue<'ring'>
-	ringOffset?: PropertyValue<'ringOffset'>
 	shadow?: PropertyValue<'shadow'>
 	shadowColor?: PropertyValue<'shadowColor'>
 	x?: PropertyValue<'x'>
@@ -594,6 +597,10 @@ export type SystemProperties = CssVarProperties & {
 	marginY?: PropertyValue<'marginY'>
 	spaceX?: PropertyValue<'spaceX'>
 	spaceY?: PropertyValue<'spaceY'>
+	divideX?: PropertyValue<'divideX'>
+	divideY?: PropertyValue<'divideY'>
+	divideColor?: PropertyValue<'divideColor'>
+	divideStyle?: PropertyValue<'divideStyle'>
 	fontSmoothing?: PropertyValue<'fontSmoothing'>
 	truncate?: PropertyValue<'truncate'>
 	backgroundGradient?: PropertyValue<'backgroundGradient'>
@@ -607,12 +614,6 @@ export type SystemProperties = CssVarProperties & {
 	borderLeftRadius?: PropertyValue<'borderLeftRadius'>
 	borderStartRadius?: PropertyValue<'borderStartRadius'>
 	borderEndRadius?: PropertyValue<'borderEndRadius'>
-	borderX?: PropertyValue<'borderX'>
-	borderY?: PropertyValue<'borderY'>
-	divideX?: PropertyValue<'divideX'>
-	divideY?: PropertyValue<'divideY'>
-	divideColor?: PropertyValue<'divideColor'>
-	divideStyle?: PropertyValue<'divideStyle'>
 	boxShadowColor?: PropertyValue<'boxShadowColor'>
 	brightness?: PropertyValue<'brightness'>
 	contrast?: PropertyValue<'contrast'>
