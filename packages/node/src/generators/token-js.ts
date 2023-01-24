@@ -16,20 +16,21 @@ export function generateTokenJs(dict: TokenDictionary) {
     js: outdent`
   const tokens = ${JSON.stringify(obj, null, 2)}
   
-  export function getToken(path) {
+  export function token(path) {
     const { value } = tokens[path] || {}
     return value
   }
   
-  export function getTokenVar(path) {
+  function tokenVar(path) {
     const { variable } = tokens[path] || {}
     return variable
   }
+
+  token.var = tokenVar
   `,
     dts: outdent`
-  import { Token } from "../types/token"
-  export declare function getToken(path: Token): string
-  export declare function getTokenVar(path: Token): string
+  import type { Token } from '../types/token'
+  export declare function token(path: Token): string & { var: (path: Token) => string }
   `,
   }
 }

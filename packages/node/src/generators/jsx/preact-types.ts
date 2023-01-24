@@ -6,25 +6,25 @@ export function generatePreactJsxTypes(ctx: PandaContext) {
 
   return {
     jsxFactory: outdent`
-import { ${upperName} } from '../types/jsx'
+import type { ${upperName} } from '../types/jsx'
 export declare const ${name}: ${upperName}
     `,
     jsxType: outdent`
-import { JSX, ComponentProps } from 'preact'
-import { JsxStyleProps, Assign } from '.'
-import { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
+import type { JSX, ComponentProps } from 'preact'
+import type { JsxStyleProps, Assign } from '.'
+import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
 
 type Dict = Record<string, unknown>
 type ElementType = keyof JSX.IntrinsicElements
 
-type AdditionalHtmlProps = {
+type HTMLProps = {
   htmlSize?: string | number
   htmlWidth?: string | number
   htmlHeight?: string | number
   htmlTranslate?: 'yes' | 'no' | undefined
 }
 
-type Polyfill<T> = Omit<T, 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size'> & AdditionalHtmlProps
+type Polyfill<T> = Omit<T, 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size'> & HTMLProps
 
 type Props<T extends Dict, P extends Dict = {}> = Assign<Polyfill<T>, P>
 

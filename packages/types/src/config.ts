@@ -19,6 +19,10 @@ export type Config<
   Tokens extends PartialTokens = PartialTokens,
 > = {
   /**
+   * Whether to emit the artifacts to `node_modules` as a package.
+   */
+  emitPackage?: boolean
+  /**
    * Whether to update the .gitignore file.
    */
   gitignore?: boolean

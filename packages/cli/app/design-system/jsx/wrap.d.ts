@@ -1,6 +1,6 @@
-import { FunctionComponent } from 'react'
-import { WrapProperties } from '../patterns/wrap'
-import { HTMLPandaProps } from '../types/jsx'
+import type { FunctionComponent } from 'react'
+import type { WrapProperties } from '../patterns/wrap'
+import type { HTMLPandaProps } from '../types/jsx'
 
 export type WrapProps = WrapProperties & Omit<HTMLPandaProps<'div'>, keyof WrapProperties >
 

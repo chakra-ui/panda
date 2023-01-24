@@ -7,9 +7,10 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
     js: outdent`
     import { Dynamic } from 'solid-js/web'
     import { mergeProps, splitProps } from 'solid-js'
-    import { css, cx, assignCss } from '../css'
-    import { splitProps, normalizeHTMLProps } from '../helpers'
-    import { allCssProperties } from './is-valid-prop'
+    import { createComponent } from 'solid-js/web'
+    ${ctx.getImport('css, cx, cva, assignCss', '../css/index')}
+    ${ctx.getImport('normalizeHTMLProps', '../helpers')}
+    ${ctx.getImport('allCssProperties', './is-valid-prop')}
     
     function styled(element, configOrCva = {}) {
       const cvaFn = configOrCva.__cva__ ? configOrCva : cva(configOrCva)
@@ -17,10 +18,11 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
       return function ${componentName}(props) {
         const mergedProps = mergeProps({ as: element }, props)
     
-        const [localProps, styleProps, htmlProps, elementProps] = splitProps(
+        const [localProps, styleProps, variantProps, htmlProps, elementProps] = splitProps(
           mergedProps,
           ['as', 'class'],
           allCssProperties,
+          cvaFn.variants,
           normalizeHTMLProps.keys
         )
     
@@ -31,13 +33,20 @@ export function generateSolidJsxFactory(ctx: PandaContext) {
           return cx(css(styles), localProps.class)
         }
     
-        return (
-          <Dynamic
-            component={localProps.as}
-            {...elementProps}
-            {...normalizeHtmlProps(htmlProps)}
-            class={classes()}
-          />
+        return createComponent(
+          Dynamic,
+          mergeProps(
+            {
+              get component() {
+                return localProps.as
+              },
+              get class() {
+                return classes()
+              }
+            },
+            elementProps,
+            normalizeHTMLProps(htmlProps)
+          )
         )
       }
     }

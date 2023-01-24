@@ -16,7 +16,21 @@ export function generateCssType(ctx: PandaContext) {
     system: getType('system-types.d.ts'),
     selectors: getType('selectors.d.ts'),
     recipe: getType('recipe.d.ts'),
+    composition: getType('composition.d.ts'),
+    global: outdent`
+    import { RecipeVariantRecord, RecipeConfig } from './recipe'
+    import { GlobalStyleObject } from './system-types'
+    import { CompositionStyles } from './composition'
+    
+    declare module 'css-panda' {
+      export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): RecipeConfig<V>
+      export function defineGlobalStyles(definition: GlobalStyleObject): GlobalStyleObject
+      export function defineTextStyles(definition: CompositionStyles['textStyles']): CompositionStyles['textStyles']
+      export function defineLayerStyles(definition: CompositionStyles['layerStyles']): CompositionStyles['layerStyles']
+    }
+    `,
     exported: outdent`
+    import './global'
     export { ConditionalValue } from './conditions'
     export { GlobalStyleObject, JsxStyleProps, SystemStyleObject } from './system-types'
     

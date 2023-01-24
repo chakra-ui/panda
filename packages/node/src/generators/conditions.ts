@@ -5,7 +5,8 @@ export function generateConditions(ctx: PandaContext) {
   const keys = Object.keys(ctx.conditions.values).concat('base')
   return {
     js: outdent`
-    import { withoutSpace } from '../helpers'
+    ${ctx.getImport('withoutSpace', '../helpers')}
+    
     const conditions = new Set([${keys.map((key) => JSON.stringify(key))}])
     
     export function isCondition(value){

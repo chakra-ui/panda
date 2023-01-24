@@ -1,6 +1,6 @@
-import { FunctionComponent } from 'react'
-import { GridProperties } from '../patterns/grid'
-import { HTMLPandaProps } from '../types/jsx'
+import type { FunctionComponent } from 'react'
+import type { GridProperties } from '../patterns/grid'
+import type { HTMLPandaProps } from '../types/jsx'
 
 export type GridProps = GridProperties & Omit<HTMLPandaProps<'div'>, keyof GridProperties >
 

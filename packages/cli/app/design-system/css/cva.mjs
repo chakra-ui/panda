@@ -1,5 +1,5 @@
-import { compact } from '../helpers'
-import { css, mergeCss } from './css'
+import { compact } from '../helpers.mjs';
+import { css, mergeCss } from './css.mjs';
 
 export function cva(config) {
   const { base = {}, variants = {}, defaultVariants = {} } = config

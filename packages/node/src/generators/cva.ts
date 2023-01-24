@@ -1,10 +1,11 @@
 import { outdent } from 'outdent'
+import type { PandaContext } from '../context'
 
-export function generateCvaFn() {
+export function generateCvaFn(ctx: PandaContext) {
   return {
     js: outdent`
-    import { compact } from '../helpers'
-    import { css, mergeCss } from './css'
+    ${ctx.getImport('compact', '../helpers')}
+    ${ctx.getImport('css, mergeCss', './css')}
     
     export function cva(config) {
       const { base = {}, variants = {}, defaultVariants = {} } = config
@@ -33,7 +34,7 @@ export function generateCvaFn() {
     }
     `,
     dts: outdent`
-    import { RecipeCreatorFn } from '../types/recipe'
+    import type { RecipeCreatorFn } from '../types/recipe'
 
     export declare const cva: RecipeCreatorFn
 

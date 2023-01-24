@@ -1,6 +1,6 @@
-import { FunctionComponent } from 'react'
-import { SpacerProperties } from '../patterns/spacer'
-import { HTMLPandaProps } from '../types/jsx'
+import type { FunctionComponent } from 'react'
+import type { SpacerProperties } from '../patterns/spacer'
+import type { HTMLPandaProps } from '../types/jsx'
 
 export type SpacerProps = SpacerProperties & Omit<HTMLPandaProps<'div'>, keyof SpacerProperties >
 

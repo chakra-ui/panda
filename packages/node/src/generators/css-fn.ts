@@ -9,12 +9,12 @@ export function generateCssFn(ctx: PandaContext) {
 
   return {
     dts: outdent`
-    import { SystemStyleObject } from '../types'
+    import type { SystemStyleObject } from '../types'
     export declare function css(styles: SystemStyleObject): string
     `,
     js: outdent`
-    import { createCss, createMergeCss, withoutSpace } from '../helpers'
-    import { sortConditions, finalizeConditions } from './conditions'
+    ${ctx.getImport('createCss, createMergeCss, withoutSpace', '../helpers')}
+    ${ctx.getImport('sortConditions, finalizeConditions', './conditions')}
 
     const classNameMap = ${stringify(utility.entries())}
     

@@ -33,13 +33,15 @@ type IO = {
   rm(id: string): Promise<void>
 }
 
-export type Output = {
+type Nullable<T> = T | null | undefined
+
+export type Output = Nullable<{
   dir?: string
   files: Array<{
     file: string
     code: string | undefined
   }>
-}
+}>
 
 const helpers = {
   map: mapObject,
@@ -81,6 +83,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     separator,
     static: staticCss,
     outExtension = 'mjs',
+    emitPackage,
   } = config
 
   const {
@@ -105,7 +108,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   }
 
   const cwd = resolve(cwdProp)
-  const exclude = ['.git', 'node_modules', 'test-results'].concat(excludeProp)
+  // const nodeModulesExclude = emitPackage ? `**/node_modules/!(${outdir})/**/*` : 'node_modules'
+  const exclude = ['.git', '.yarn', 'node_modules', 'test-results'].concat(excludeProp)
 
   /* -----------------------------------------------------------------------------
    * Core utilities
@@ -244,16 +248,29 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
    * Paths
    * -----------------------------------------------------------------------------*/
 
-  function getPath(...str: string[]) {
-    return join(cwd, outdir, ...str)
+  function getPath(pathLike?: string) {
+    const paths = [cwd, emitPackage ? 'node_modules' : undefined, outdir, pathLike].filter(Boolean) as string[]
+    return join(...paths)
   }
 
   function absPath(str: string) {
     return isAbsolute(str) ? str : join(cwd, str)
   }
 
+  function getExt(file: string) {
+    return `${file}.${outExtension}`
+  }
+
+  function getImport(items: string, mod: string) {
+    return `import { ${items} } from '${getExt(mod)}';`
+  }
+
+  function getExport(mod: string) {
+    return `export * from '${getExt(mod)}';`
+  }
+
   const paths = {
-    config: getPath('config.js'),
+    root: getPath(),
     css: getPath('css'),
     token: getPath('tokens'),
     types: getPath('types'),
@@ -277,16 +294,13 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   }
 
   function cleanOutdir() {
-    return emptyDir(outdir)
+    return emptyDir(paths.root)
   }
 
   function writeOutput(output: Output) {
-    const { dir = outdir, files } = output
+    if (!output) return
+    const { dir = paths.root, files } = output
     return write(dir, files)
-  }
-
-  function getJsFile(file: string) {
-    return `${file}.${outExtension}`
   }
 
   /* -----------------------------------------------------------------------------
@@ -547,7 +561,10 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     write,
     writeOutput,
     cleanOutdir,
-    getJsFile,
+
+    getExt,
+    getImport,
+    getExport,
 
     cssVarRoot,
     tokens,

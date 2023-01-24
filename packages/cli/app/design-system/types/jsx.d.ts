@@ -1,17 +1,17 @@
-import { ElementType, ComponentProps } from 'react'
-import { JsxStyleProps, Assign } from '.'
-import { RecipeDefinition, RecipeSelection, RecipeVariantRecord, RecipeRuntimeFn } from './recipe'
+import type { ElementType, ComponentProps } from 'react'
+import type { JsxStyleProps, Assign } from '.'
+import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord, RecipeRuntimeFn } from './recipe'
 
 type Dict = Record<string, unknown>
 
-type AdditionalHtmlProps = {
+type HTMLProps = {
   htmlSize?: string | number
   htmlWidth?: string | number
   htmlHeight?: string | number
   htmlTranslate?: 'yes' | 'no' | undefined
 }
 
-type Polyfill<T> = Omit<T, 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size'> & AdditionalHtmlProps
+type Polyfill<T> = Omit<T, 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size'> & HTMLProps
 
 type Props<T extends Dict, P extends Dict = {}> = Assign<Polyfill<T>, P>
 

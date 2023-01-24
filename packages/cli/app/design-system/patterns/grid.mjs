@@ -1,5 +1,5 @@
-import { mapObject } from '../helpers'
-import { css } from '../css'
+import { mapObject } from '../helpers.mjs';
+import { css } from '../css/index.mjs';
 
 const config = {transform(props, { map }) {
   const { gapX, gapY, gap = gapX || gapY ? void 0 : "10px", columns, minChildWidth, ...rest } = props;

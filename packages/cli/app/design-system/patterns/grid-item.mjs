@@ -1,5 +1,5 @@
-import { mapObject } from '../helpers'
-import { css } from '../css'
+import { mapObject } from '../helpers.mjs';
+import { css } from '../css/index.mjs';
 
 const config = {transform(props, { map }) {
   const { colSpan, rowSpan, colStart, rowStart, colEnd, rowEnd, ...rest } = props;

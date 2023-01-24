@@ -29,7 +29,7 @@ export async function extractChunks(ctx: PandaContext) {
 
 export async function bundleChunks(ctx: PandaContext) {
   const css = await extractChunks(ctx)
-  await ctx.write(ctx.outdir, [{ file: 'styles.css', code: css }])
+  await ctx.write(ctx.paths.root, [{ file: 'styles.css', code: css }])
 }
 
 export async function writeFileChunk(ctx: PandaContext, file: string) {

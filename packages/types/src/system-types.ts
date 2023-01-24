@@ -1,4 +1,4 @@
-import type { Conditional, ConditionalValue, Conditions, Nested } from './conditions'
+import type { ConditionalValue, Conditions, Nested } from './conditions'
 import type { PropertiesFallback } from './csstype'
 import type { SystemProperties } from './style-props'
 
@@ -56,7 +56,7 @@ export type GlobalStyleObject = {
 }
 
 export type CompositionStyleObject<Property extends string> = Nested<{
-  [K in Property]?: Conditional<K extends NativeCssProperty ? NativeCssProperties[K] : unknown>
+  [K in Property]?: K extends keyof SystemStyleObject ? SystemStyleObject[K] : unknown
 }>
 
 /* -----------------------------------------------------------------------------

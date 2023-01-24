@@ -10,7 +10,7 @@ export function generateRecipes(ctx: PandaContext) {
 
   const js = [
     outdent`
-   import { createCss, withoutSpace, compact } from '../helpers'
+   ${ctx.getImport('createCss, withoutSpace, compact', '../helpers')}
 
    const createRecipe = (name, defaultVariants) => {
      return (variants) => {
@@ -44,7 +44,7 @@ export function generateRecipes(ctx: PandaContext) {
 
   const dts = [
     outdent`
-  import { ConditionalValue } from '../types'
+  import type { ConditionalValue } from '../types'
   `,
   ]
 

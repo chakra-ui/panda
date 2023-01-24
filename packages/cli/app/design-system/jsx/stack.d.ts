@@ -1,6 +1,6 @@
-import { FunctionComponent } from 'react'
-import { StackProperties } from '../patterns/stack'
-import { HTMLPandaProps } from '../types/jsx'
+import type { FunctionComponent } from 'react'
+import type { StackProperties } from '../patterns/stack'
+import type { HTMLPandaProps } from '../types/jsx'
 
 export type StackProps = StackProperties & Omit<HTMLPandaProps<'div'>, keyof StackProperties >
 

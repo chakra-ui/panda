@@ -1,6 +1,6 @@
-import { ConditionalValue } from './conditions';
-import { Properties as CSSProperties } from './csstype'
-import { Tokens } from './token'
+import type { ConditionalValue } from './conditions';
+import type { Properties as CSSProperties } from './csstype'
+import type { Tokens } from './token'
 
 type PropertyValueTypes  = {
 	aspectRatio: "square" | "landscape" | "portrait" | "wide" | "ultrawide" | "golden";

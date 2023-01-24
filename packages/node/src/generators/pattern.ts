@@ -12,10 +12,10 @@ function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
   return {
     name: dashCase(name),
     dts: outdent`
-    import { SystemStyleObject, ConditionalValue } from '../types'
-    import { PropertyValue } from '../types/prop-type'
-    import { Properties } from '../types/csstype'
-    import { Tokens } from '../types/token'
+    import type { SystemStyleObject, ConditionalValue } from '../types'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { Properties } from '../types/csstype'
+    import type { Tokens } from '../types/token'
 
     export type ${capitalize(name)}Properties = {
        ${Object.keys(properties ?? {})
@@ -55,8 +55,8 @@ function generate(ctx: PandaContext, name: string, pattern: PatternConfig) {
 
    `,
     js: outdent`
-  import { mapObject } from '../helpers'
-  import { css } from '../css'
+  ${ctx.getImport('mapObject', '../helpers')}
+  ${ctx.getImport('css', '../css/index')}
 
   const config = ${stringify({ transform })}
 

@@ -1,6 +1,6 @@
-import { FunctionComponent } from 'react'
-import { AbsoluteCenterProperties } from '../patterns/absolute-center'
-import { HTMLPandaProps } from '../types/jsx'
+import type { FunctionComponent } from 'react'
+import type { AbsoluteCenterProperties } from '../patterns/absolute-center'
+import type { HTMLPandaProps } from '../types/jsx'
 
 export type AbsoluteCenterProps = AbsoluteCenterProperties & Omit<HTMLPandaProps<'div'>, keyof AbsoluteCenterProperties >
 

@@ -1,3 +1,2 @@
-import { Token } from "../types/token"
-export declare function getToken(path: Token): string
-export declare function getTokenVar(path: Token): string
+import type { Token } from '../types/token'
+export declare function token(path: Token): string & { var: (path: Token) => string }

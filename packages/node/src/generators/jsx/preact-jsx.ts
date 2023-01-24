@@ -9,9 +9,9 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
     import { h } from 'preact'
     import { forwardRef } from 'preact/compat'
     import { useMemo } from 'preact/hooks'
-    import { css, cx, assignCss } from '../css'
-    import { splitProps, normalizeHTMLProps } from '../helpers'
-    import { isCssProperty } from './is-valid-prop'
+    ${ctx.getImport('css, cx, assignCss', '../css/index')}
+    ${ctx.getImport('splitProps, normalizeHTMLProps', '../helpers')}
+    ${ctx.getImport('isCssProperty', './is-valid-prop')}
     
     function styled(Dynamic, configOrCva = {}) {
       const cvaFn = configOrCva.__cva__ ? configOrCva : cva(configOrCva)
@@ -23,7 +23,7 @@ export function generatePreactJsxFactory(ctx: PandaContext) {
           return splitProps(restProps, isCssProperty, cvaFn.variants, normalizeHTMLProps.keys)
         }, [restProps])
     
-        function classes(){
+        function classes() {
           const { css: cssStyles, ...propStyles } = styleProps
           const cvaStyles = cvaFn.resolve(variantProps)
           const styles = assignCss(cvaStyles, propStyles, cssStyles)

@@ -1,6 +1,6 @@
-import { FunctionComponent } from 'react'
-import { FlexProperties } from '../patterns/flex'
-import { HTMLPandaProps } from '../types/jsx'
+import type { FunctionComponent } from 'react'
+import type { FlexProperties } from '../patterns/flex'
+import type { HTMLPandaProps } from '../types/jsx'
 
 export type FlexProps = FlexProperties & Omit<HTMLPandaProps<'div'>, keyof FlexProperties | 'alignItems' | 'justifyContent' | 'flexDirection' | 'flexDir' | 'flexWrap' | 'flexShrink' | 'flexBasis' | 'flexGrow' | 'flexFlow'>
 

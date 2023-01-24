@@ -1,5 +1,5 @@
-import { createCss, createMergeCss, withoutSpace } from '../helpers'
-import { sortConditions, finalizeConditions } from './conditions'
+import { createCss, createMergeCss, withoutSpace } from '../helpers.mjs';
+import { sortConditions, finalizeConditions } from './conditions.mjs';
 
 const classNameMap = {
   "aspectRatio": "aspect",
