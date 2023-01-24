@@ -359,8 +359,6 @@ const context = {
   }
 }
 
-console.log(context)
-
 export const css = createCss(context)
 
 export const { mergeCss, assignCss } = createMergeCss(context)

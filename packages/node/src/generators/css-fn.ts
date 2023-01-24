@@ -48,8 +48,6 @@ export function generateCssFn(ctx: PandaContext) {
       }
     }
 
-    console.log(context)
-
     export const css = createCss(context)
 
     export const { mergeCss, assignCss } = createMergeCss(context)
