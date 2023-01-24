@@ -1,4 +1,4 @@
-import { createCss, createMergeCss, withoutSpace } from '../helpers.mjs';
+import { createCss, createMergeCss, hypenateProperty, withoutSpace } from '../helpers.mjs';
 import { sortConditions, finalizeConditions } from './conditions.mjs';
 
 const classNameMap = {
@@ -339,7 +339,7 @@ const resolveShorthand = (prop) => shorthands[prop] || prop
 
 function transform(prop, value) {
   const key = resolveShorthand(prop)
-  const propKey = classNameMap[key] || prop
+  const propKey = classNameMap[key] || hypenateProperty(key)
   const className = `${propKey}_${withoutSpace(value)}`
   return { className }
 }
@@ -352,11 +352,14 @@ const context = {
     breakpoints: { keys: breakpointKeys }
   },
   utility: {
+    prefix: 'undefined',
     transform,
     hasShorthand,
     resolveShorthand,
   }
 }
+
+console.log(context)
 
 export const css = createCss(context)
 
