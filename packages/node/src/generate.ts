@@ -3,13 +3,13 @@ import type { Config } from '@pandacss/types'
 import { emitAndExtract } from './artifacts'
 import { bundleChunks, writeFileChunk } from './chunks'
 import { loadConfigAndCreateContext } from './config'
-import { buildCompleteMessage, watchMessage } from './messages'
+import { watchMessage } from './messages'
 import { watch } from './watch'
 
 async function build(config: Config, configPath?: string) {
   const ctx = await loadConfigAndCreateContext({ config, configPath })
-  await emitAndExtract(ctx)
-  logger.info(buildCompleteMessage(ctx))
+  const msg = await emitAndExtract(ctx)
+  logger.info(msg)
   return ctx
 }
 

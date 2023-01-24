@@ -1,6 +1,7 @@
 import { colors, logger } from '@pandacss/logger'
 import {
   emitArtifacts,
+  extractCss,
   generate,
   loadConfigAndCreateContext,
   setupConfig,
@@ -66,7 +67,21 @@ export async function main() {
       const ctx = await loadConfigAndCreateContext({ config: { clean } })
       const msg = await emitArtifacts(ctx)
 
-      logger.log(msg)
+      logger.info(msg)
+    })
+
+  cli
+    .command('cssgen', 'Generate the css from files')
+    .option('--silent', "Don't print any logs")
+    .action(async (flags) => {
+      const { silent } = flags
+
+      if (silent) logger.level = 'silent'
+
+      const ctx = await loadConfigAndCreateContext()
+      const msg = await extractCss(ctx)
+
+      logger.info(msg)
     })
 
   cli

@@ -1,5 +1,5 @@
 export { discardDuplicate } from '@pandacss/core'
-export { emitAndExtract, emitArtifacts } from './artifacts'
+export { emitAndExtract, emitArtifacts, extractCss } from './artifacts'
 export { Builder } from './builder'
 export { loadConfigAndCreateContext } from './config'
 export { createContext } from './context'

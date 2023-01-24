@@ -4,7 +4,7 @@ import { extractFiles, extractGlobalCss, extractStaticCss } from './extract'
 import { generateSystem } from './generators'
 import { generateTokenCss, generateKeyframes } from './generators/token-css'
 import { generateReset } from './generators/reset'
-import { artifactsGeneratedMessage, scaffoldCompleteMessage } from './messages'
+import { artifactsGeneratedMessage, buildCompleteMessage, scaffoldCompleteMessage } from './messages'
 
 export async function emitArtifacts(ctx: PandaContext) {
   if (ctx.clean) await ctx.cleanOutdir()
@@ -15,10 +15,15 @@ export async function emitArtifacts(ctx: PandaContext) {
 
 export async function emitAndExtract(ctx: PandaContext) {
   await emitArtifacts(ctx)
+  return extractCss(ctx)
+}
+
+export async function extractCss(ctx: PandaContext) {
   await extractGlobalCss(ctx)
   await extractStaticCss(ctx)
   await extractFiles(ctx)
   await bundleChunks(ctx)
+  return buildCompleteMessage(ctx)
 }
 
 export function getBaseCss(ctx: PandaContext) {
