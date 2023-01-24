@@ -8,7 +8,7 @@ import { recipes } from './recipes'
 import { semanticTokens, tokens } from './tokens'
 
 export const config: Config = {
-  cssVarPrefix: 'pd',
+  prefix: 'pd',
   theme: {
     tokens,
     breakpoints,

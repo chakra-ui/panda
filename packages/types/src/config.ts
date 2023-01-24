@@ -23,6 +23,10 @@ export type Config<
    */
   emitPackage?: boolean
   /**
+   * The namespace prefix for the generated css classes and css variables.
+   */
+  prefix?: string
+  /**
    * Whether to update the .gitignore file.
    */
   gitignore?: boolean
@@ -68,10 +72,6 @@ export type Config<
    * The output directory.
    */
   outdir?: string
-  /**
-   * The prefix for the css variables.
-   */
-  cssVarPrefix?: string
   /**
    * The root selector for the css variables.
    * @default ':where(:host, :root)'

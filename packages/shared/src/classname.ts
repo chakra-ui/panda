@@ -13,6 +13,7 @@ export type CreateCssContext = {
    * Partial properties from the Utility class
    */
   utility: {
+    prefix: string
     hasShorthand: boolean
     resolveShorthand: (prop: string) => string
     transform: (prop: string, value: any) => { className: string }
@@ -38,6 +39,20 @@ const sanitize = (value: any) => (typeof value === 'string' ? value.replaceAll(/
 export function createCss(context: CreateCssContext) {
   const { utility, hash, conditions: conds = fallbackCondition } = context
 
+  const formatClassName = (str: string) => [utility.prefix, str].filter(Boolean).join('-')
+
+  const hashFn = (conditions: string[], className: string) => {
+    let result: string
+    if (hash) {
+      const baseArray = [...conds.finalize(conditions), className]
+      result = formatClassName(toHash(baseArray.join(':')))
+    } else {
+      const baseArray = [...conds.finalize(conditions), formatClassName(className)]
+      result = baseArray.join(':')
+    }
+    return result
+  }
+
   return (styleObject: Record<string, any> = {}) => {
     const normalizedObject = normalizeStyleObject(styleObject, context)
     const classNames = new Set<string>()
@@ -51,16 +66,10 @@ export function createCss(context: CreateCssContext) {
       const conditions = filterBaseConditions(allConditions)
 
       const transformed = utility.transform(prop, withoutImportant(sanitize(value)))
-      let transformedClassName = transformed.className
 
-      if (important) {
-        transformedClassName = `${transformedClassName}!`
-      }
+      let className = hashFn(conditions, transformed.className)
+      if (important) className = `${className}!`
 
-      // get the base class name
-      const baseArray = [...conds.finalize(conditions), transformedClassName]
-
-      const className = hash ? toHash(baseArray.join(':')) : baseArray.join(':')
       classNames.add(className)
     })
 

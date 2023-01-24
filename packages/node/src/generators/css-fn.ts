@@ -13,7 +13,7 @@ export function generateCssFn(ctx: PandaContext) {
     export declare function css(styles: SystemStyleObject): string
     `,
     js: outdent`
-    ${ctx.getImport('createCss, createMergeCss, withoutSpace', '../helpers')}
+    ${ctx.getImport('createCss, createMergeCss, hypenateProperty, withoutSpace', '../helpers')}
     ${ctx.getImport('sortConditions, finalizeConditions', './conditions')}
 
     const classNameMap = ${stringify(utility.entries())}
@@ -28,7 +28,7 @@ export function generateCssFn(ctx: PandaContext) {
 
     function transform(prop, value) {
       const key = resolveShorthand(prop)
-      const propKey = classNameMap[key] || prop
+      const propKey = classNameMap[key] || hypenateProperty(key)
       const className = \`$\{propKey}${separator}$\{withoutSpace(value)}\`
       return { className }
     }
@@ -41,11 +41,14 @@ export function generateCssFn(ctx: PandaContext) {
         breakpoints: { keys: breakpointKeys }
       },
       utility: {
+        prefix: '${ctx.prefix}',
         transform,
         hasShorthand,
         resolveShorthand,
       }
     }
+
+    console.log(context)
 
     export const css = createCss(context)
 

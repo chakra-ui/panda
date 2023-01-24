@@ -5,27 +5,32 @@ import { Conditions, Utility } from '../src'
 import { Recipe } from '../src/recipe'
 import type { StylesheetContext } from '../src/types'
 
-const conditions = new Conditions({
-  conditions: mocks.conditions,
-  breakpoints: mocks.breakpoints,
-})
+export const createContext = ({ hash, prefix }: { hash?: boolean; prefix?: string } = {}): StylesheetContext => {
+  const conditions = new Conditions({
+    conditions: mocks.conditions,
+    breakpoints: mocks.breakpoints,
+  })
 
-const tokens = new TokenDictionary({
-  tokens: mocks.tokens,
-  semanticTokens: mocks.semanticTokens,
-})
+  const tokens = new TokenDictionary({
+    tokens: mocks.tokens,
+    semanticTokens: mocks.semanticTokens,
+    prefix,
+  })
 
-const utility = new Utility({
-  config: mocks.utilities,
-  tokens,
-})
+  const utility = new Utility({
+    config: mocks.utilities,
+    tokens,
+    prefix,
+  })
 
-export const createContext = (): StylesheetContext => ({
-  root: postcss.root(),
-  conditions: conditions,
-  utility: utility,
-  helpers: { map: () => '' },
-})
+  return {
+    hash,
+    root: postcss.root(),
+    conditions: conditions,
+    utility: utility,
+    helpers: { map: () => '' },
+  }
+}
 
 export function getRecipe(key: 'buttonStyle' | 'textStyle' | 'tooltipStyle') {
   const recipe = new Recipe(mocks.recipes[key], createContext())

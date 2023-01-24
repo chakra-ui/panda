@@ -152,13 +152,13 @@ describe('Utility', () => {
         "(margin = -gutter)" => "m_-gutter",
         "(marginX = sm)" => "mx_sm",
         "(marginX = md)" => "mx_md",
-        "(colorPalette = gray)" => "colorPalette_gray",
-        "(colorPalette = gray.deep.test)" => "colorPalette_gray.deep.test",
-        "(colorPalette = gray.deep.test.pool)" => "colorPalette_gray.deep.test.pool",
-        "(colorPalette = green)" => "colorPalette_green",
-        "(colorPalette = red)" => "colorPalette_red",
-        "(colorPalette = button)" => "colorPalette_button",
-        "(colorPalette = button.card)" => "colorPalette_button.card",
+        "(colorPalette = gray)" => "color-palette_gray",
+        "(colorPalette = gray.deep.test)" => "color-palette_gray.deep.test",
+        "(colorPalette = gray.deep.test.pool)" => "color-palette_gray.deep.test.pool",
+        "(colorPalette = green)" => "color-palette_green",
+        "(colorPalette = red)" => "color-palette_red",
+        "(colorPalette = button)" => "color-palette_button",
+        "(colorPalette = button.card)" => "color-palette_button.card",
       }
     `)
 
@@ -583,13 +583,13 @@ describe('Utility', () => {
         "(marginRight = auto)" => "mr_auto",
         "(marginRight = sm)" => "mr_sm",
         "(marginRight = md)" => "mr_md",
-        "(colorPalette = gray)" => "colorPalette_gray",
-        "(colorPalette = gray.deep.test)" => "colorPalette_gray.deep.test",
-        "(colorPalette = gray.deep.test.pool)" => "colorPalette_gray.deep.test.pool",
-        "(colorPalette = green)" => "colorPalette_green",
-        "(colorPalette = red)" => "colorPalette_red",
-        "(colorPalette = button)" => "colorPalette_button",
-        "(colorPalette = button.card)" => "colorPalette_button.card",
+        "(colorPalette = gray)" => "color-palette_gray",
+        "(colorPalette = gray.deep.test)" => "color-palette_gray.deep.test",
+        "(colorPalette = gray.deep.test.pool)" => "color-palette_gray.deep.test.pool",
+        "(colorPalette = green)" => "color-palette_green",
+        "(colorPalette = red)" => "color-palette_red",
+        "(colorPalette = button)" => "color-palette_button",
+        "(colorPalette = button.card)" => "color-palette_button.card",
       }
     `)
 
