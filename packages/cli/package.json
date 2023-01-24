@@ -55,7 +55,7 @@
     "astro.mjs"
   ],
   "dependencies": {
-    "@astrojs/react": "^1.2.2",
+    "@astrojs/react": "^2.0.0",
     "@pandacss/config": "workspace:*",
     "@pandacss/error": "workspace:*",
     "@pandacss/logger": "workspace:*",
