@@ -21,9 +21,9 @@ export const transitions: UtilityConfig = {
       opacity: 'opacity',
       shadow: 'box-shadow',
       transform: 'transform',
-      base: 'color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter',
+      base: 'color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter',
       background: 'background, background-color',
-      colors: 'color, background-color, border-color, text-decoration-color, fill, stroke',
+      colors: 'color, background-color, border-color, outline-color, text-decoration-color, fill, stroke',
     },
   },
   animation: {
