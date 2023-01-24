@@ -26,7 +26,7 @@ export function generateRecipes(ctx: PandaContext) {
       const context = {
         hash: ${hash ? 'true' : 'false'},
         utility: {
-          prefix: '${ctx.prefix}',
+          prefix: ${ctx.prefix ? JSON.stringify(ctx.prefix) : undefined},
           transform,
         }
       }

@@ -41,7 +41,7 @@ export function generateCssFn(ctx: PandaContext) {
         breakpoints: { keys: breakpointKeys }
       },
       utility: {
-        prefix: '${ctx.prefix}',
+        prefix: ${ctx.prefix ? JSON.stringify(ctx.prefix) : undefined},
         transform,
         hasShorthand,
         resolveShorthand,
