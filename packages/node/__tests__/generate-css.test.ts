@@ -140,6 +140,11 @@ test('[css] should generate css', () => {
       --durations-75: 75ms;
       --durations-100: 100ms;
       --durations-150: 150ms;
+      --screens-sm: 30em;
+      --screens-md: 48em;
+      --screens-lg: 62em;
+      --screens-xl: 80em;
+      --screens-2xl: 96em;
       --colors-primary: #EF4444;
       --colors-secondary: #991B1B;
       --colors-complex: #991B1B;

@@ -1,4 +1,4 @@
-import { isString, mapObject, memo, walkObject } from '@pandacss/shared'
+import { compact, isString, mapObject, memo, walkObject } from '@pandacss/shared'
 import type { SemanticTokens, Tokens } from '@pandacss/types'
 import { isMatching, match } from 'ts-pattern'
 import { Token } from './token'
@@ -41,10 +41,10 @@ export class TokenDictionary {
   constructor(options: TokenDictionaryOptions) {
     const { tokens = {}, semanticTokens = {}, breakpoints, prefix } = options
 
-    const computedTokens = {
+    const computedTokens = compact({
       ...tokens,
-      screens: mapObject(breakpoints, (value) => ({ value })),
-    }
+      screens: breakpoints ? mapObject(breakpoints, (value) => ({ value })) : undefined,
+    })
 
     this.prefix = prefix
 

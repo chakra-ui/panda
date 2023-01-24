@@ -582,15 +582,17 @@ test('[dts] should generate package', () => {
       }
     }
 
-    export function getToken(path) {
+    export function token(path) {
       const { value } = tokens[path] || {}
       return value
     }
 
-    export function getTokenVar(path) {
+    function tokenVar(path) {
       const { variable } = tokens[path] || {}
       return variable
-    }"
+    }
+
+    token.var = tokenVar"
   `,
   )
 })
