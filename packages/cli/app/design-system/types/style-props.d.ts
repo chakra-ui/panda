@@ -534,6 +534,8 @@ export type SystemProperties = CssVarProperties & {
 	zIndex?: PropertyValue<'zIndex'>
 	zoom?: PropertyValue<'zoom'>
 	pos?: PropertyValue<'pos'>
+	insetEnd?: PropertyValue<'insetEnd'>
+	insetStart?: PropertyValue<'insetStart'>
 	flexDir?: PropertyValue<'flexDir'>
 	p?: PropertyValue<'p'>
 	pl?: PropertyValue<'pl'>
@@ -570,6 +572,8 @@ export type SystemProperties = CssVarProperties & {
 	bgBlend?: PropertyValue<'bgBlend'>
 	bgSize?: PropertyValue<'bgSize'>
 	bgGradient?: PropertyValue<'bgGradient'>
+	borderXColor?: PropertyValue<'borderXColor'>
+	borderYColor?: PropertyValue<'borderYColor'>
 	ringWidth?: PropertyValue<'ringWidth'>
 	ringColor?: PropertyValue<'ringColor'>
 	ring?: PropertyValue<'ring'>
@@ -603,8 +607,6 @@ export type SystemProperties = CssVarProperties & {
 	borderLeftRadius?: PropertyValue<'borderLeftRadius'>
 	borderStartRadius?: PropertyValue<'borderStartRadius'>
 	borderEndRadius?: PropertyValue<'borderEndRadius'>
-	borderXColor?: PropertyValue<'borderXColor'>
-	borderYColor?: PropertyValue<'borderYColor'>
 	borderX?: PropertyValue<'borderX'>
 	borderY?: PropertyValue<'borderY'>
 	divideX?: PropertyValue<'divideX'>

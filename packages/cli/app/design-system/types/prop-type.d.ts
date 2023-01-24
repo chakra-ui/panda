@@ -106,13 +106,18 @@ type PropertyValueTypes  = {
 	borderEndEndRadius: Tokens["radii"];
 	borderEndRadius: Tokens["radii"];
 	border: Tokens["borders"];
+	borderInline: Tokens["borders"];
+	borderBlock: Tokens["borders"];
 	borderColor: Tokens["colors"];
-	borderXColor: Tokens["colors"] | CSSProperties["borderColor"];
-	borderYColor: Tokens["colors"] | CSSProperties["borderColor"];
+	borderInlineColor: Tokens["colors"];
+	borderBlockColor: Tokens["colors"];
 	borderLeft: Tokens["borders"];
 	borderLeftColor: Tokens["colors"];
+	borderInlineStart: Tokens["borders"];
 	borderRight: Tokens["borders"];
 	borderRightColor: Tokens["colors"];
+	borderInlineEnd: Tokens["borders"];
+	borderInlineEndColor: Tokens["colors"];
 	borderTop: Tokens["borders"];
 	borderTopColor: Tokens["colors"];
 	borderBottom: Tokens["borders"];
@@ -198,6 +203,8 @@ type PropertyValueTypes  = {
   export type PropertyTypes = PropertyValueTypes & {
   
 	pos: Shorthand<"position">;
+	insetEnd: Shorthand<"insetInlineEnd">;
+	insetStart: Shorthand<"insetInlineStart">;
 	flexDir: Shorthand<"flexDirection">;
 	p: Shorthand<"padding">;
 	pl: Shorthand<"paddingLeft">;
@@ -234,6 +241,8 @@ type PropertyValueTypes  = {
 	bgBlend: Shorthand<"backgroundBlendMode">;
 	bgSize: Shorthand<"backgroundSize">;
 	bgGradient: Shorthand<"backgroundGradient">;
+	borderXColor: Shorthand<"borderInlineColor">;
+	borderYColor: Shorthand<"borderBlockColor">;
 	ringWidth: Shorthand<"outlineWidth">;
 	ringColor: Shorthand<"outlineColor">;
 	ring: Shorthand<"outline">;
