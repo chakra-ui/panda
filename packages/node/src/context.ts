@@ -422,6 +422,30 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       ':root': {
         '--made-with-panda': `'🐼'`,
       },
+      '.panda-layout-grid': {
+        display: 'grid',
+        gap: 'var(--gutter)',
+        gridTemplateColumns: 'repeat(var(--count), 1fr)',
+        height: '100%',
+        width: '100%',
+        position: 'absolute',
+        inset: '0',
+        pointerEvents: 'none',
+        maxWidth: 'var(--max-width)',
+        marginInline: 'var(--margin-x)',
+        paddingInline: 'var(--padding-x)',
+      },
+      '.panda-layout-grid__item': {
+        display: 'flex',
+        '--color': 'rgba(255, 0, 0, 0.1)',
+        height: '100%',
+        '&[data-variant=bg]': {
+          background: 'var(--color)',
+        },
+        '&[data-variant=outline]': {
+          borderInline: '1px solid var(--color)',
+        },
+      },
     })
 
     if (globalCss) {

@@ -67,7 +67,7 @@ export async function main() {
       const ctx = await loadConfigAndCreateContext({ config: { clean } })
       const msg = await emitArtifacts(ctx)
 
-      logger.info(msg)
+      logger.log(msg)
     })
 
   cli
@@ -81,7 +81,7 @@ export async function main() {
       const ctx = await loadConfigAndCreateContext()
       const msg = await extractCss(ctx)
 
-      logger.info(msg)
+      logger.log(msg)
     })
 
   cli
