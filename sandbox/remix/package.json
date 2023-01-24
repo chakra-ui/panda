@@ -1,4 +1,5 @@
 {
+  "name": "remix-ts",
   "private": true,
   "sideEffects": false,
   "scripts": {
