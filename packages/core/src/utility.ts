@@ -1,4 +1,4 @@
-import { compact, isFunction, isString, withoutSpace } from '@pandacss/shared'
+import { compact, hypenateProperty, isFunction, isString, withoutSpace } from '@pandacss/shared'
 import type { TokenDictionary } from '@pandacss/token-dictionary'
 import type { AnyFunction, Dict, PropertyConfig, PropertyTransform, UtilityConfig } from '@pandacss/types'
 import type { TransformResult } from './types'
@@ -7,6 +7,7 @@ export type UtilityOptions = {
   config?: UtilityConfig
   tokens: TokenDictionary
   separator?: string
+  prefix?: string
 }
 
 export class Utility {
@@ -62,14 +63,15 @@ export class Utility {
 
   separator = '_'
 
+  prefix = ''
+
   constructor(options: UtilityOptions) {
-    const { tokens, config = {}, separator } = options
+    const { tokens, config = {}, separator, prefix } = options
 
     this.tokens = tokens
     this.config = config
-    if (separator) {
-      this.separator = separator
-    }
+    if (separator) this.separator = separator
+    if (prefix) this.prefix = prefix
 
     this.assignShorthands()
     this.assignColorPaletteProperty()
@@ -292,6 +294,10 @@ export class Utility {
     return this
   }
 
+  formatClassName = (className: string) => {
+    return [this.prefix, className].filter(Boolean).join('-')
+  }
+
   private setClassName = (property: string, raw: string) => {
     const propKey = this.getPropKey(property, raw)
     const config = this.configs.get(property)
@@ -299,7 +305,7 @@ export class Utility {
     let className: string
 
     if (!config || !config.className) {
-      className = this.hash(property, raw)
+      className = this.hash(hypenateProperty(property), raw)
     } else {
       className = this.hash(config.className, raw)
     }

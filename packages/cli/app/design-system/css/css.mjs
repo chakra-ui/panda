@@ -352,14 +352,12 @@ const context = {
     breakpoints: { keys: breakpointKeys }
   },
   utility: {
-    prefix: 'undefined',
+    prefix: undefined,
     transform,
     hasShorthand,
     resolveShorthand,
   }
 }
-
-console.log(context)
 
 export const css = createCss(context)
 

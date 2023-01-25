@@ -24,8 +24,17 @@ export class AtomicRule {
     this.root = postcss.root()
   }
 
-  hash = (name: string) => {
-    return this.context.hash ? esc(toHash(name)) : esc(name)
+  hashFn = (conditions: string[], className: string) => {
+    const { conditions: cond, hash, utility } = this.context
+    let result: string
+    if (hash) {
+      const baseArray = [...cond.finalize(conditions), className]
+      result = utility.formatClassName(toHash(baseArray.join(':')))
+    } else {
+      const baseArray = [...cond.finalize(conditions), utility.formatClassName(className)]
+      result = baseArray.join(':')
+    }
+    return esc(result)
   }
 
   get rule() {
@@ -64,10 +73,7 @@ export class AtomicRule {
 
       rule.nodes = cssRoot.root.nodes
 
-      // get the base class name
-      const baseArray = [...cond.finalize(conditions), transformed.className]
-
-      const selector = this.hash(baseArray.join(':'))
+      const selector = this.hashFn(conditions, transformed.className)
 
       rule.selector = important ? `.${selector}\\!` : `.${selector}`
 

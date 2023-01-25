@@ -69,7 +69,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   const {
     cwd: cwdProp = process.cwd(),
     conditions: conditionsProp = {},
-    cssVarPrefix,
+    prefix,
     cssVarRoot = ':where(:root, :host)',
     outdir,
     exclude: excludeProp = [],
@@ -119,7 +119,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     tokens: tokensProp,
     breakpoints,
     semanticTokens,
-    prefix: cssVarPrefix,
+    prefix,
   })
 
   const hasTokens = !tokens.isEmpty
@@ -127,6 +127,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
   logger.debug({ type: 'ctx:token', msg: tokens.allNames })
 
   const utility = new Utility({
+    prefix,
     tokens: tokens,
     config: utilities,
     separator,
@@ -337,6 +338,9 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     rm(file: string) {
       const fileName = chunks.format(file)
       return io.rm(join(paths.chunk, fileName))
+    },
+    empty() {
+      return emptyDir(paths.chunk)
     },
     glob: [`${paths.chunk}/**/*.css`],
   }
