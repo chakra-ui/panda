@@ -6,6 +6,7 @@ import type {
   GlobalStyleObject,
   Parts,
   PatternConfig,
+  Preset,
   RecipeConfig,
   RecipeVariantRecord,
   SemanticTokens,
@@ -33,6 +34,10 @@ export function defineParts<T extends Parts>(parts: T) {
   return function (config: Partial<Record<keyof T, SystemStyleObject>>): Partial<Record<keyof T, SystemStyleObject>> {
     return Object.fromEntries(Object.entries(config).map(([key, value]) => [parts[key].selector, value])) as any
   }
+}
+
+export function definePreset(preset: Preset): Preset {
+  return preset
 }
 
 /* -----------------------------------------------------------------------------
