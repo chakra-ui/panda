@@ -16,7 +16,10 @@ export type Preset<
   Conditions extends TConditions = TConditions,
   Breakpoints extends Dict = Dict,
   Tokens extends PartialTokens = PartialTokens,
-> = Pick<Extended<Config<Conditions, Breakpoints, Tokens>>, 'utilities' | 'theme' | 'patterns' | 'presets'>
+> = Pick<
+  Extended<Config<Conditions, Breakpoints, Tokens>>,
+  'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions'
+>
 
 type Studio = {
   title: string
