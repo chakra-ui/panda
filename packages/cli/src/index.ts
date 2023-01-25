@@ -36,7 +36,7 @@ export function defineParts<T extends Parts>(parts: T) {
   }
 }
 
-export function definePreset(preset: Preset): any {
+export function definePreset(preset: Preset): Preset {
   return preset
 }
 
