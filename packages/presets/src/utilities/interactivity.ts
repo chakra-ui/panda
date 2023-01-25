@@ -93,11 +93,11 @@ export const interactivity: UtilityConfig = {
     values: 'spacing',
   },
   scrollMarginInlineEnd: {
-    className: 'scroll-mr',
+    className: 'scroll-me',
     values: 'spacing',
   },
   scrollMarginInlineStart: {
-    className: 'scroll-ml',
+    className: 'scroll-ms',
     values: 'spacing',
   },
   scrollPadding: {
@@ -121,11 +121,11 @@ export const interactivity: UtilityConfig = {
     values: 'spacing',
   },
   scrollPaddingInlineEnd: {
-    className: 'scroll-pr',
+    className: 'scroll-pe',
     values: 'spacing',
   },
   scrollPaddingInlineStart: {
-    className: 'scroll-pl',
+    className: 'scroll-ps',
     values: 'spacing',
   },
   scrollPaddingX: {

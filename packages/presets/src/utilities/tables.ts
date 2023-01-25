@@ -7,11 +7,6 @@ export const tables: UtilityConfig = {
   borderSpacing: {
     className: 'border-spacing',
     values: 'spacing',
-    transform(value) {
-      return {
-        borderSpacing: `${value} ${value}`,
-      }
-    },
   },
   borderSpacingX: {
     className: 'border-spacing-x',

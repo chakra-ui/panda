@@ -13,7 +13,7 @@ export const layout: UtilityConfig = {
     },
   },
   boxDecorationBreak: {
-    className: 'box-decoration',
+    className: 'decoration',
   },
   zIndex: {
     className: 'z',
@@ -72,12 +72,14 @@ export const layout: UtilityConfig = {
     values: 'spacing',
   },
   insetInlineEnd: {
-    className: 'inset-r',
+    className: 'end',
     values: 'spacing',
+    shorthand: 'insetEnd',
   },
   insetInlineStart: {
-    className: 'inset-l',
+    className: 'start',
     values: 'spacing',
+    shorthand: 'insetStart',
   },
   start: {
     className: 's',

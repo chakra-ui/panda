@@ -119,6 +119,18 @@ var fallbackCondition = {
 var sanitize = (value) => typeof value === "string" ? value.replaceAll(/[\n\s]+/g, " ") : value;
 function createCss(context) {
   const { utility, hash, conditions: conds = fallbackCondition } = context;
+  const formatClassName = (str) => [utility.prefix, str].filter(Boolean).join("-");
+  const hashFn = (conditions, className) => {
+    let result;
+    if (hash) {
+      const baseArray = [...conds.finalize(conditions), className];
+      result = formatClassName(toHash(baseArray.join(":")));
+    } else {
+      const baseArray = [...conds.finalize(conditions), formatClassName(className)];
+      result = baseArray.join(":");
+    }
+    return result;
+  };
   return (styleObject = {}) => {
     const normalizedObject = normalizeStyleObject(styleObject, context);
     const classNames = /* @__PURE__ */ new Set();
@@ -129,12 +141,9 @@ function createCss(context) {
       const [prop, ...allConditions] = conds.shift(paths);
       const conditions = filterBaseConditions(allConditions);
       const transformed = utility.transform(prop, withoutImportant(sanitize(value)));
-      let transformedClassName = transformed.className;
-      if (important) {
-        transformedClassName = `${transformedClassName}!`;
-      }
-      const baseArray = [...conds.finalize(conditions), transformedClassName];
-      const className = hash ? toHash(baseArray.join(":")) : baseArray.join(":");
+      let className = hashFn(conditions, transformed.className);
+      if (important)
+        className = `${className}!`;
       classNames.add(className);
     });
     return Array.from(classNames).join(" ");
@@ -187,11 +196,34 @@ function splitProps(props, ...keys) {
   const fn = (key) => split(Array.isArray(key) ? key : dKeys.filter(key));
   return keys.map(fn).concat(split(dKeys));
 }
+
+// src/memo.ts
+var memo = (fn) => {
+  const cache = /* @__PURE__ */ new Map();
+  const get = (...args) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+  return get;
+};
+
+// src/hypenate.ts
+var hypenateProperty = memo((property) => {
+  if (property.startsWith("--"))
+    return property;
+  return property.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
+});
 export {
   compact,
   createCss,
   createMergeCss,
   filterBaseConditions,
+  hypenateProperty,
   isBaseCondition,
   isObject,
   mapObject,

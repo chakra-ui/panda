@@ -19,17 +19,33 @@ const tokens = {
     "value": "cubic-bezier(0.4, 0, 0.2, 1)",
     "variable": "var(--easings-in-out)"
   },
-  "durations.75": {
-    "value": "75ms",
-    "variable": "var(--durations-75)"
+  "durations.fastest": {
+    "value": "50ms",
+    "variable": "var(--durations-fastest)"
   },
-  "durations.100": {
+  "durations.faster": {
     "value": "100ms",
-    "variable": "var(--durations-100)"
+    "variable": "var(--durations-faster)"
   },
-  "durations.150": {
+  "durations.fast": {
     "value": "150ms",
-    "variable": "var(--durations-150)"
+    "variable": "var(--durations-fast)"
+  },
+  "durations.normal": {
+    "value": "200ms",
+    "variable": "var(--durations-normal)"
+  },
+  "durations.slow": {
+    "value": "300ms",
+    "variable": "var(--durations-slow)"
+  },
+  "durations.slower": {
+    "value": "400ms",
+    "variable": "var(--durations-slower)"
+  },
+  "durations.slowest": {
+    "value": "500ms",
+    "variable": "var(--durations-slowest)"
   },
   "radii.xs": {
     "value": "0.125rem",
@@ -1481,14 +1497,12 @@ const tokens = {
   }
 }
 
-export function token(path) {
-  const { value } = tokens[path] || {}
-  return value
+export function token(path, fallback) {
+  return tokens[path]?.value || fallback
 }
 
-function tokenVar(path) {
-  const { variable } = tokens[path] || {}
-  return variable
+function tokenVar(path, fallback) {
+  return tokens[path]?.variable || fallback
 }
 
 token.var = tokenVar

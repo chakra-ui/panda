@@ -60,6 +60,13 @@ type Gradient = {
   }>
 }
 
+type Asset =
+  | {
+      type: 'url' | 'data'
+      value: string
+    }
+  | { type: 'svg'; path: string }
+
 export type TokenDataTypes = {
   zIndex: number
   opacity: number
@@ -80,6 +87,7 @@ export type TokenDataTypes = {
   blurs: string
   gradients: string | Gradient
   screens: string
+  assets: string | Asset
 }
 
 export type Tokens = {

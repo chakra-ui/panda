@@ -73,12 +73,14 @@ export async function main() {
   cli
     .command('cssgen', 'Generate the css from files')
     .option('--silent', "Don't print any logs")
+    .option('--clean', 'Clean the chunks before generating')
     .action(async (flags) => {
-      const { silent } = flags
-
+      const { silent, clean } = flags
       if (silent) logger.level = 'silent'
 
       const ctx = await loadConfigAndCreateContext()
+      if (clean) await ctx.chunks.empty()
+
       const msg = await extractCss(ctx)
 
       logger.log(msg)
