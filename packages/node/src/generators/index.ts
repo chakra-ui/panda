@@ -167,15 +167,15 @@ function setupJsx(ctx: PandaContext): Output {
   return {
     dir: ctx.paths.jsx,
     files: [
-      ...patterns.map((file) => ({ file: `${file.name}.mjs`, code: file.js })),
+      ...patterns.map((file) => ({ file: ctx.getExt(file.name), code: file.js })),
       ...patterns.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
-      { file: 'layout-grid.mjs', code: layoutGrid.js },
+      { file: ctx.getExt('layout-grid'), code: layoutGrid.js },
       { file: 'layout-grid.d.ts', code: layoutGrid.dts },
       { file: ctx.getExt('is-valid-prop'), code: isValidProp.js },
       { file: 'factory.d.ts', code: types.jsxFactory },
-      { file: 'factory.mjs', code: factory.js },
+      { file: ctx.getExt('factory'), code: factory.js },
       { file: 'index.d.ts', code: index.dts },
-      { file: 'index.mjs', code: index.js },
+      { file: ctx.getExt('index'), code: index.js },
     ],
   }
 }
