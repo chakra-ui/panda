@@ -127,7 +127,7 @@ function setupPatterns(ctx: PandaContext): Output {
 
   const index = {
     js: outdent.string(files.map((file) => ctx.getExport(`./${file.name}`)).join('\n')),
-    dts: outdent.string(files.map((file) => `export { ${file.name} } from './${file.name}'`).join('\n')),
+    dts: outdent.string(files.map((file) => `export * from './${file.name}'`).join('\n')),
   }
 
   return {
