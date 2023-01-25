@@ -8,7 +8,7 @@ import type { SemanticTokens, Tokens as PartialTokens } from './tokens'
 import type { UtilityConfig } from './utility'
 import type { StaticCssOptions } from './static-css'
 
-type Preset = Pick<Config, 'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions'>
+export type Preset = Pick<Config, 'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions'>
 
 type Studio = {
   title: string
