@@ -8,6 +8,8 @@ import type { SemanticTokens, Tokens as PartialTokens } from './tokens'
 import type { UtilityConfig } from './utility'
 import type { StaticCssOptions } from './static-css'
 
+export type Preset = Pick<Config, 'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions'>
+
 type Studio = {
   title: string
   logo: string
@@ -46,7 +48,7 @@ export type Config<
   /**
    * Used to create reusable config presets for your project or team.
    */
-  presets?: string[]
+  presets?: (string | Preset)[]
   /**
    * Whether to include css reset styles in the generated css.
    */

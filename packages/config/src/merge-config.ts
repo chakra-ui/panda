@@ -71,8 +71,10 @@ export async function getResolvedConfig(config: ExtendableRecord, cwd: string) {
       .slice()
       .reverse()
       .map(async (preset: any) => {
-        const presetModule = await bundleAndRequire(preset, cwd)
-        return getResolvedConfig(presetModule.config, cwd)
+        if (typeof preset === 'string') {
+          const presetModule = await bundleAndRequire(preset, cwd)
+          return getResolvedConfig(presetModule.config, cwd)
+        } else return getResolvedConfig(preset, cwd)
       }),
   )
 
