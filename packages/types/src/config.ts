@@ -3,23 +3,12 @@ import type { Conditions as TConditions } from './conditions'
 import type { CssKeyframes, GlobalStyleObject } from './system-types'
 import type { PatternConfig } from './pattern'
 import type { RecipeConfig } from './recipe'
-import type { Dict, Extend, Extendable, RequiredBy, StringKeyOf, UnwrapExtend } from './shared'
+import type { Dict, Extendable, RequiredBy, StringKeyOf, UnwrapExtend } from './shared'
 import type { SemanticTokens, Tokens as PartialTokens } from './tokens'
 import type { UtilityConfig } from './utility'
 import type { StaticCssOptions } from './static-css'
 
-type Extended<A> = {
-  [K in keyof A]: A[K] extends Extendable<infer E> | undefined ? Extend<E> : 2
-}
-
-export type Preset<
-  Conditions extends TConditions = TConditions,
-  Breakpoints extends Dict = Dict,
-  Tokens extends PartialTokens = PartialTokens,
-> = Pick<
-  Extended<Config<Conditions, Breakpoints, Tokens>>,
-  'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions'
->
+export type Preset = Pick<Config, 'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions'>
 
 type Studio = {
   title: string

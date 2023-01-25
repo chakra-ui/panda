@@ -20,8 +20,6 @@ type DeepPartial<T> = {
 
 export type Extendable<T> = T | { extend?: T | DeepPartial<T> }
 
-export type Extend<T> = { extend: T | DeepPartial<T> }
-
 type Nullable<T> = T | null | undefined
 
 export type UnwrapExtend<T extends Record<string, unknown>> = {

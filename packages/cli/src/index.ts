@@ -36,8 +36,8 @@ export function defineParts<T extends Parts>(parts: T) {
   }
 }
 
-export function definePreset<C extends Conditions, B extends Dict, T extends Dict>(config: Preset<C, B, T>): any {
-  return config
+export function definePreset(preset: Preset): any {
+  return preset
 }
 
 /* -----------------------------------------------------------------------------
