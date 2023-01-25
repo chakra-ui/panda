@@ -1,0 +1,34 @@
+---
+title: Presets
+description: Creating your own reusable preset for utilities and theme
+---
+
+By default, any configuration you add in your own `panda.config.js` file is smartly merged with the
+[default configuration](#), allowing your override or extend specific parts of the configuration.
+
+You can specify a preset in your `panda.config.js` file by using the `presets` option:
+
+```js
+import { defineConfig } from 'css-panda'
+
+export default defineConfig({
+  presets: ['@acmecorp/panda-preset'],
+})
+```
+
+# Creating a preset
+
+```js
+import { defineConfig } from 'css-panda'
+
+export default defineConfig({
+  utilities: {
+    extend: {
+      colCount: {
+        className: 'col-count',
+        values: ['2', '3', '4', '5', '6'],
+      },
+    },
+  },
+})
+```
