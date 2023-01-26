@@ -1,6 +1,54 @@
 import { describe, expect, test } from 'vitest'
 import { mergeConfigs } from '../src/merge-config'
 
+describe('mergeConfigs / globalCSS', () => {
+  test.only('should merge globalCSS', () => {
+    const defaultConfig = {
+      globalCss: {
+        select: { background: 'darkred' },
+        '*': { fontFamily: 'Inter', margin: '0' },
+        a: { color: 'inherit', textDecoration: 'none' },
+      },
+    }
+
+    const userConfig = {
+      globalCss: {
+        extend: {
+          button: { background: 'red' },
+          select: { appearance: 'none', color: 'white' },
+        },
+      },
+    }
+
+    const presetWithoutGlobalCSS = {
+      globalCss: {},
+    }
+
+    const result = mergeConfigs([defaultConfig, userConfig, presetWithoutGlobalCSS])
+
+    expect(result.globalCss).toMatchInlineSnapshot(`
+      {
+        "*": {
+          "fontFamily": "Inter",
+          "margin": "0",
+        },
+        "a": {
+          "color": "inherit",
+          "textDecoration": "none",
+        },
+        "button": {
+          "background": "red",
+        },
+        "select": {
+          "appearance": "none",
+          "background": "darkred",
+          "color": "white",
+        },
+      }
+    `)
+  })
+})
+
 describe('mergeConfigs / theme', () => {
   test('should merge configs', () => {
     const result = mergeConfigs([

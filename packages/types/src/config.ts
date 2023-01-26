@@ -8,7 +8,7 @@ import type { SemanticTokens, Tokens as PartialTokens } from './tokens'
 import type { UtilityConfig } from './utility'
 import type { StaticCssOptions } from './static-css'
 
-export type Preset = Pick<Config, 'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions'>
+export type Preset = Pick<Config, 'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions' | 'globalCss'>
 
 type Studio = {
   title: string
@@ -103,7 +103,7 @@ export type Config<
   /**
    * The global styles for your project.
    */
-  globalCss?: GlobalStyleObject
+  globalCss?: Extendable<GlobalStyleObject>
   /**
    * The theme configuration for your project.
    */
