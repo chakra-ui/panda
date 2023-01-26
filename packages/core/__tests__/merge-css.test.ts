@@ -32,20 +32,26 @@ test('merge two css strings', () => {
   const mergedCss = mergeCss(oldCss, newCss)
 
   expect(mergedCss).toMatchInlineSnapshot(`
-    "
-            @layer recipe {
-                .button--small {
-                    font-size: 40px;
-                    padding: 20rem 1rem;
-                }
-            }
+    ".p-4 {
+      padding: 2rem
+    }
 
-            @layer utilities {
-                .p-2 { padding: 0.5rem }
-            .p-4 { padding: 1rem }
-            }
+    @layer recipe {
+      .button--small {
+        font-size: 40px;
+        padding: 20rem 1rem;
+      }
+    }
 
-            .p-4 { padding: 2rem }
+    @layer utilities {
+      .p-2 {
+        padding: 0.5rem
+      }
+
+      .p-4 {
+        padding: 1rem
+      }
+    }
         "
   `)
 })

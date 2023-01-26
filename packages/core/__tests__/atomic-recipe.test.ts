@@ -76,9 +76,10 @@ describe('Atomic recipe', () => {
         .bg_red\\\\.500 {
           background-color: var(--colors-red-500)
         }
-          .hover\\\\:text_green:hover {
-            color: green
-          }
+
+        .hover\\\\:text_green:hover {
+          color: green
+        }
       }"
     `)
   })

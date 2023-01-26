@@ -39,6 +39,14 @@ describe('Global css', () => {
           width: 40px;
         }
 
+        .btn:focus {
+          color: var(--colors-red-200);
+        }
+
+        .btn:focus:hover {
+          background-color: var(--colors-red-400);
+        }
+
         .btn:hover > * ~ * {
           border-left-width: 40px;
           border-right-width: 0px;
@@ -46,14 +54,6 @@ describe('Global css', () => {
 
         .btn:hover > span {
           color: pink;
-        }
-
-        .btn:focus {
-          color: var(--colors-red-200);
-        }
-
-        .btn:focus:hover {
-          background-color: var(--colors-red-400);
         }
 
         @media screen and (min-width: 30em) {
@@ -116,10 +116,6 @@ describe('Global css', () => {
           cursor: ew-resize !important;
         }
 
-        html.dragging-ew:hover {
-          color: red;
-        }
-
         .content-dark::-webkit-scrollbar-thumb {
           background-color: var(--colors-bg, #000) !important;
           border-color: var(--colors-fg, #333) !important;
@@ -136,6 +132,10 @@ describe('Global css', () => {
 
         .color-picker .react-colorful {
           width: 100%;
+        }
+
+        html.dragging-ew:hover {
+          color: red;
         }
       }"
     `)
