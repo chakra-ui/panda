@@ -1,8 +1,6 @@
 import type {
   CompositionStyles,
-  Conditions,
   Config,
-  Dict,
   GlobalStyleObject,
   Parts,
   PatternConfig,
@@ -18,15 +16,15 @@ import type {
  * Config creators
  * -----------------------------------------------------------------------------*/
 
-export function defineConfig<C extends Conditions, B extends Dict, T extends Dict>(config: Config<C, B, T>): any {
+export function defineConfig(config: Config): Config {
   return config
 }
 
-export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): any {
+export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): RecipeConfig<V> {
   return config
 }
 
-export function definePattern(config: PatternConfig): any {
+export function definePattern(config: PatternConfig): PatternConfig {
   return config
 }
 

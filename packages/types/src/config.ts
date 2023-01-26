@@ -1,12 +1,12 @@
 import type { LayerStyles, TextStyles } from './composition'
 import type { Conditions as TConditions } from './conditions'
-import type { CssKeyframes, GlobalStyleObject } from './system-types'
 import type { PatternConfig } from './pattern'
 import type { RecipeConfig } from './recipe'
-import type { Dict, Extendable, RequiredBy, StringKeyOf, UnwrapExtend } from './shared'
-import type { SemanticTokens, Tokens as PartialTokens } from './tokens'
-import type { UtilityConfig } from './utility'
+import type { Extendable, RequiredBy, UnwrapExtend } from './shared'
 import type { StaticCssOptions } from './static-css'
+import type { CssKeyframes, GlobalStyleObject } from './system-types'
+import type { SemanticTokens, Tokens } from './tokens'
+import type { UtilityConfig } from './utility'
 
 export type Preset = Pick<Config, 'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions'>
 
@@ -15,11 +15,7 @@ type Studio = {
   logo: string
 }
 
-export type Config<
-  Conditions extends TConditions = TConditions,
-  Breakpoints extends Dict = Dict,
-  Tokens extends PartialTokens = PartialTokens,
-> = {
+export type Config = {
   /**
    * Whether to emit the artifacts to `node_modules` as a package.
    */
@@ -111,7 +107,7 @@ export type Config<
     /**
      * The breakpoints for your project.
      */
-    breakpoints?: Breakpoints
+    breakpoints?: Record<string, string>
     /**
      * The css animation keyframes definitions.
      */
@@ -123,7 +119,7 @@ export type Config<
     /**
      * The semantic design tokens for your project.
      */
-    semanticTokens?: SemanticTokens<StringKeyOf<Conditions> | StringKeyOf<Breakpoints> | 'base'>
+    semanticTokens?: SemanticTokens
     /**
      * The typography styles for your project.
      */
@@ -175,7 +171,5 @@ export type Config<
    */
   outExtension?: 'mjs' | 'js'
 }
-
-export type TConfig = Config<TConditions, Dict, Dict>
 
 export type UserConfig = UnwrapExtend<RequiredBy<Config, 'outdir' | 'cwd' | 'include'>>
