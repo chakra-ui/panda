@@ -129,6 +129,11 @@ test('[css] should generate css', () => {
       --sizes-md: 28rem;
       --sizes-lg: 32rem;
       --sizes-xl: 36rem;
+      --sizes-screen-sm: 30em;
+      --sizes-screen-md: 48em;
+      --sizes-screen-lg: 62em;
+      --sizes-screen-xl: 80em;
+      --sizes-screen-2xl: 96em;
       --animations-none: none;
       --animations-spin: spin 1s linear infinite;
       --animations-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;

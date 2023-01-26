@@ -1275,6 +1275,26 @@ const tokens = {
     "value": "fit-content",
     "variable": "var(--sizes-fit)"
   },
+  "sizes.screen-sm": {
+    "value": "640px",
+    "variable": "var(--sizes-screen-sm)"
+  },
+  "sizes.screen-md": {
+    "value": "768px",
+    "variable": "var(--sizes-screen-md)"
+  },
+  "sizes.screen-lg": {
+    "value": "1024px",
+    "variable": "var(--sizes-screen-lg)"
+  },
+  "sizes.screen-xl": {
+    "value": "1280px",
+    "variable": "var(--sizes-screen-xl)"
+  },
+  "sizes.screen-2xl": {
+    "value": "1536px",
+    "variable": "var(--sizes-screen-2xl)"
+  },
   "animations.spin": {
     "value": "spin 1s linear infinite",
     "variable": "var(--animations-spin)"

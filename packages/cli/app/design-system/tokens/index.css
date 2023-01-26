@@ -319,6 +319,11 @@
   --sizes-min: min-content;
   --sizes-max: max-content;
   --sizes-fit: fit-content;
+  --sizes-screen-sm: 640px;
+  --sizes-screen-md: 768px;
+  --sizes-screen-lg: 1024px;
+  --sizes-screen-xl: 1280px;
+  --sizes-screen-2xl: 1536px;
   --animations-spin: spin 1s linear infinite;
   --animations-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
   --animations-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;

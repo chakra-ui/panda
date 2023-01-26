@@ -30,6 +30,14 @@ export type TokenMiddleware = {
   transform: (dict: TokenDictionary, options: Options) => void
 }
 
+function expandBreakpoints(breakpoints?: Record<string, string>) {
+  if (!breakpoints) return { screens: {}, sizes: {} }
+  return {
+    screens: mapObject(breakpoints, (value) => ({ value })),
+    sizes: Object.fromEntries(Object.entries(breakpoints).map(([key, value]) => [`screen-${key}`, { value }])),
+  }
+}
+
 export class TokenDictionary {
   allTokens: Token[] = []
   prefix: string | undefined
@@ -41,9 +49,15 @@ export class TokenDictionary {
   constructor(options: TokenDictionaryOptions) {
     const { tokens = {}, semanticTokens = {}, breakpoints, prefix } = options
 
+    const breakpointTokens = expandBreakpoints(breakpoints)
+
     const computedTokens = compact({
       ...tokens,
-      screens: breakpoints ? mapObject(breakpoints, (value) => ({ value })) : undefined,
+      screens: breakpointTokens.screens,
+      sizes: {
+        ...tokens.sizes,
+        ...breakpointTokens.sizes,
+      },
     })
 
     this.prefix = prefix
