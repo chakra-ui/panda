@@ -60,12 +60,7 @@ type Gradient = {
   }>
 }
 
-type Asset =
-  | {
-      type: 'url' | 'data'
-      value: string
-    }
-  | { type: 'svg'; path: string }
+type Asset = { type: 'url' | 'svg'; value: string }
 
 export type TokenDataTypes = {
   zIndex: number

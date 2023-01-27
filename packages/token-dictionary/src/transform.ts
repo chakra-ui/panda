@@ -1,5 +1,9 @@
 import { cssVar, isString } from '@pandacss/shared'
-import { isMatching, P } from 'ts-pattern'
+import type { TokenDataTypes } from '@pandacss/types'
+import { readFileSync } from 'fs'
+import svgToDataUri from 'mini-svg-data-uri'
+import { extname } from 'path'
+import { isMatching, match, P } from 'ts-pattern'
 import type { TokenTransformer } from './dictionary'
 import type { Token } from './token'
 import { getReferences } from './utils'
@@ -119,6 +123,27 @@ export const transformBorders: TokenTransformer = {
   },
 }
 
+const isPathLike = (value: string) => extname(value) !== ''
+
+export const transformAssets: TokenTransformer = {
+  name: 'tokens/assets',
+  match: (token) => token.extensions.category === 'assets',
+  transform(token) {
+    const raw = token.value as TokenDataTypes['assets']
+    return match(raw)
+      .with(P.string, (value) => value)
+      .with({ type: 'url' }, ({ value }) => `url(${value})`)
+      .with({ type: 'svg', value: P.when(isPathLike) }, ({ value }) => {
+        const fileContent = readFileSync(value, 'utf8')
+        return `url(${svgToDataUri(fileContent)}`
+      })
+      .with({ type: 'svg', value: P.string }, ({ value }) => {
+        return `url(${svgToDataUri(value)})`
+      })
+      .exhaustive()
+  },
+}
+
 /* -----------------------------------------------------------------------------
  * Add css variables
  * -----------------------------------------------------------------------------*/
@@ -180,6 +205,7 @@ export const transforms = [
   transformFonts,
   transformEasings,
   transformBorders,
+  transformAssets,
   addCssVariables,
   addConditionalCssVariables,
   addColorPalette,

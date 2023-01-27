@@ -222,4 +222,5 @@ const TokenTypes = {
   easings: 'cubicBezier',
   borders: 'border',
   components: 'cti',
+  assets: 'asset',
 }
