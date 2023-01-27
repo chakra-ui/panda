@@ -4,12 +4,18 @@ import discardEmpty from 'postcss-discard-empty'
 import mergeRules from 'postcss-merge-rules'
 import nested from 'postcss-nested'
 import normalizeWhiteSpace from 'postcss-normalize-whitespace'
+import expandTokenFn from './plugins/expand-token-fn'
 import mergeCascadeLayers from './plugins/merge-layers'
 import prettify from './plugins/prettify'
 import sortCss from './plugins/sort-css'
 import sortMediaQueries from './plugins/sort-mq'
 
-export function optimizeCss(code: string, { minify = false }: { minify?: boolean } = {}) {
+type OptimizeOptions = {
+  minify?: boolean
+}
+
+export function optimizeCss(code: string, options: OptimizeOptions = {}) {
+  const { minify = false } = options
   const { css } = postcss([
     nested(),
     mergeCascadeLayers(),
@@ -20,7 +26,12 @@ export function optimizeCss(code: string, { minify = false }: { minify?: boolean
     discardEmpty(),
     minify ? normalizeWhiteSpace() : prettify(),
   ]).process(code)
+  return css
+}
 
+export function expandCssFunctions(code: string | Root, options: { token?: (key: string) => string } = {}) {
+  const { token } = options
+  const { css } = postcss([expandTokenFn(token)]).process(code)
   return css
 }
 

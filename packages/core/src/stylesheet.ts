@@ -1,7 +1,7 @@
 import type { Dict, RecipeConfig } from '@pandacss/types'
 import postcss from 'postcss'
 import { AtomicRule } from './atomic-rule'
-import { discardDuplicate, optimizeCss } from './optimize'
+import { discardDuplicate, expandCssFunctions, optimizeCss } from './optimize'
 import { Recipe } from './recipe'
 import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
@@ -68,9 +68,11 @@ export class Stylesheet {
   toCss = ({ optimize = true, minify }: { optimize?: boolean; minify?: boolean } = {}) => {
     const {
       conditions: { breakpoints },
+      utility,
     } = this.context
 
     breakpoints.expandScreenAtRule(this.context.root)
+    expandCssFunctions(this.context.root, { token: utility.getToken })
 
     let css = this.context.root.toString()
 
