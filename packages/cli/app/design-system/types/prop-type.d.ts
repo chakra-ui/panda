@@ -95,8 +95,10 @@ type PropertyValueTypes  = {
 	textIndent: Tokens["spacing"];
 	textShadow: Tokens["shadows"];
 	truncate: boolean;
+	listStyleImage: Tokens["assets"];
 	background: Tokens["colors"];
 	backgroundColor: Tokens["colors"];
+	backgroundImage: Tokens["assets"];
 	backgroundGradient: Tokens["gradients"] | "to-t" | "to-tr" | "to-r" | "to-br" | "to-b" | "to-bl" | "to-l" | "to-tl";
 	textGradient: Tokens["gradients"] | "to-t" | "to-tr" | "to-r" | "to-br" | "to-b" | "to-bl" | "to-l" | "to-tl";
 	gradientFrom: Tokens["colors"];

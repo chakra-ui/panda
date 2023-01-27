@@ -40,6 +40,7 @@ export const background: UtilityConfig = {
   backgroundImage: {
     shorthand: 'bgImage',
     className: 'bg-img',
+    values: 'assets',
   },
   backgroundRepeat: {
     shorthand: 'bgRepeat',

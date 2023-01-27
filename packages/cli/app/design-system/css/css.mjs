@@ -129,6 +129,7 @@ const classNameMap = {
   "lineClamp": "clamp",
   "listStyleType": "list",
   "listStylePosition": "list",
+  "listStyleImage": "list-img",
   "backgroundPosition": "bg",
   "backgroundPositionX": "bg-x",
   "backgroundPositionY": "bg-y",

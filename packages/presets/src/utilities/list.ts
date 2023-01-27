@@ -7,4 +7,8 @@ export const list: UtilityConfig = {
   listStylePosition: {
     className: 'list',
   },
+  listStyleImage: {
+    className: 'list-img',
+    values: 'assets',
+  },
 }
