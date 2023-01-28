@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs'
 import { describe, expect, test } from 'vitest'
 import { TokenDictionary } from '../src/dictionary'
 import { transformAssets } from '../src/transform'
@@ -43,12 +44,14 @@ describe('transform / assets', () => {
   })
 
   test('file path', () => {
+    const read = (file: string) => readFileSync(require.resolve(file), 'utf8')
+
     const dictionary = new TokenDictionary({
       tokens: {
         assets: {
           checkbox: {
             description: 'checkbox icon',
-            value: { type: 'svg', value: require.resolve('./checkbox.svg') },
+            value: { type: 'svg', value: read('./checkbox.svg') },
           },
         },
       },
@@ -67,13 +70,13 @@ describe('transform / assets', () => {
             "prop": "checkbox",
           },
           "name": "assets.checkbox",
-          "originalValue": "url(data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e",
+          "originalValue": "url(data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e)",
           "path": [
             "assets",
             "checkbox",
           ],
           "type": "asset",
-          "value": "url(data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e",
+          "value": "url(data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e)",
         },
       ]
     `)
