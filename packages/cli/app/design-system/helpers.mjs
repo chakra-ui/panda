@@ -26,12 +26,24 @@ function withoutSpace(str) {
 }
 
 // src/hash.ts
-function toHash(str) {
-  let value = 5381;
-  let len = str.length;
-  while (len--)
-    value = value * 33 ^ str.charCodeAt(len);
-  return (value >>> 0).toString(36);
+function toChar(code) {
+  return String.fromCharCode(code + (code > 25 ? 39 : 97));
+}
+function toName(code) {
+  let name = "";
+  let x;
+  for (x = Math.abs(code); x > 52; x = x / 52 | 0)
+    name = toChar(x % 52) + name;
+  return toChar(x % 52) + name;
+}
+function toPhash(h, x) {
+  let i = x.length;
+  while (i)
+    h = h * 33 ^ x.charCodeAt(--i);
+  return h;
+}
+function toHash(value) {
+  return toName(toPhash(5381, value) >>> 0);
 }
 
 // src/merge-props.ts
