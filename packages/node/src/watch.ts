@@ -1,7 +1,6 @@
 import type { LoadConfigResult } from '@pandacss/config'
 import { logger } from '@pandacss/logger'
 import chokidar from 'chokidar'
-import { join } from 'path'
 import { match } from 'ts-pattern'
 import type { PandaContext } from './context'
 
@@ -81,22 +80,6 @@ async function createContentWatcher(ctx: PandaContext, callback: (file: string) 
 }
 
 /* -----------------------------------------------------------------------------
- * Watcher for asset files
- * -----------------------------------------------------------------------------*/
-
-async function createAssetWatcher(ctx: PandaContext, callback: () => Promise<void>) {
-  const { cwd } = ctx
-  const watcher = createWatcher([join(ctx.paths.chunk, '**/*.css')], { cwd })
-
-  watcher.on('all', async (event, file) => {
-    logger.debug({ type: `asset:${event}`, file })
-    await callback()
-  })
-
-  return watcher
-}
-
-/* -----------------------------------------------------------------------------
  * General watcher
  * -----------------------------------------------------------------------------*/
 
@@ -105,11 +88,10 @@ process.setMaxListeners(Infinity)
 type Options = {
   onConfigChange: () => Promise<any>
   onContentChange: (file: string) => Promise<any>
-  onAssetChange: () => Promise<any>
 }
 
 export async function watch(ctx: PandaContext, options: Options) {
-  await createAssetWatcher(ctx, options.onAssetChange)
+  // await createAssetWatcher(ctx, options.onAssetChange)
   await createContentWatcher(ctx, options.onContentChange)
   const configWatcher = await createConfigWatcher(ctx.conf)
 
