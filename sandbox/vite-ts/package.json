@@ -21,7 +21,7 @@
     "@vitejs/plugin-react": "3.0.1",
     "css-panda": "workspace:*",
     "postcss": "8.4.21",
-    "typescript": "4.9.4",
+    "typescript": "4.9.5",
     "vite": "4.0.4"
   }
 }
