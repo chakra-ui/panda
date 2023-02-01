@@ -12,7 +12,7 @@ export declare const ${name}: ${upperName}
     jsxType: outdent`
 import type { JSX, ComponentProps } from 'preact'
 import type { JsxStyleProps, Assign } from '.'
-import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
+import type { RecipeDefinition, RecipeRuntimeFn, RecipeSelection, RecipeVariantRecord } from './recipe'
 
 type Dict = Record<string, unknown>
 type ElementType = keyof JSX.IntrinsicElements

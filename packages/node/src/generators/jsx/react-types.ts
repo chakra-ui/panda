@@ -12,7 +12,7 @@ export declare const ${name}: ${upperName}
     jsxType: outdent`
 import type { ElementType, ComponentProps } from 'react'
 import type { JsxStyleProps, Assign } from '.'
-import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord, RecipeRuntimeFn } from './recipe'
+import type { RecipeDefinition, RecipeRuntimeFn, RecipeSelection, RecipeVariantRecord } from './recipe'
 
 type Dict = Record<string, unknown>
 
