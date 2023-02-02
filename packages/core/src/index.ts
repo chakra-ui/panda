@@ -11,3 +11,8 @@ export { Stylesheet, type StylesheetOptions } from './stylesheet'
 export { toCss } from './to-css'
 export type { StylesheetContext } from './types'
 export { Utility } from './utility'
+import postcss from 'postcss'
+
+export function createRoot() {
+  return postcss.root()
+}
