@@ -1,22 +1,23 @@
 import { logger } from '@pandacss/logger'
 import { memo } from '@pandacss/shared'
-import { CompilerOptions, Project, SourceFile } from 'ts-morph'
+import { Project, ProjectOptions, SourceFile } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { visitCallExpressions } from './call-expression'
 import { Collector } from './collector'
 import { getImportDeclarations } from './import'
 import { visitJsxElement } from './jsx-element'
 
-export function createProject(compilerOptions: Partial<CompilerOptions> = {}) {
+export function createProject(options: Partial<ProjectOptions> = {}) {
   return new Project({
     skipAddingFilesFromTsConfig: true,
     skipFileDependencyResolution: true,
     skipLoadingLibFiles: true,
+    ...options,
     compilerOptions: {
       allowJs: true,
       strictNullChecks: false,
       skipLibCheck: true,
-      ...compilerOptions,
+      ...options.compilerOptions,
     },
   })
 }
