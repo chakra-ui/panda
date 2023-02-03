@@ -162,11 +162,11 @@ importers:
     specifiers:
       boxen: ^7.0.1
       kleur: ^4.1.5
-      lil-fp: 1.0.6
+      lil-fp: 1.1.1
       matcher: 5.0.0
     dependencies:
       kleur: 4.1.5
-      lil-fp: 1.0.6
+      lil-fp: 1.1.1
     devDependencies:
       boxen: 7.0.1
       matcher: 5.0.0
@@ -262,6 +262,26 @@ importers:
       '@pandacss/types': workspace:*
     dependencies:
       '@pandacss/types': link:../types
+
+  packages/serializer:
+    specifiers:
+      '@pandacss/core': workspace:*
+      '@pandacss/is-valid-prop': workspace:*
+      '@pandacss/logger': workspace:*
+      '@pandacss/shared': workspace:*
+      '@pandacss/token-dictionary': workspace:*
+      '@pandacss/types': workspace:*
+      lil-fp: 1.1.1
+      postcss: 8.4.21
+    dependencies:
+      '@pandacss/core': link:../core
+      '@pandacss/is-valid-prop': link:../is-valid-prop
+      '@pandacss/logger': link:../logger
+      '@pandacss/shared': link:../shared
+      '@pandacss/token-dictionary': link:../token-dictionary
+      '@pandacss/types': link:../types
+      lil-fp: 1.1.1
+      postcss: 8.4.21
 
   packages/shared:
     specifiers: {}
@@ -8884,8 +8904,8 @@ packages:
       type-check: 0.4.0
     dev: true
 
-  /lil-fp/1.0.6:
-    resolution: {integrity: sha512-tr+lpKl0xN4YN5sCevtVpPSYN19YHiLd84pn229rsZTdV1T2rAd1mXtSv65yJ0UFi+WNja1z4Xqt/27yW1CY4g==}
+  /lil-fp/1.1.1:
+    resolution: {integrity: sha512-RG9VKJgcf0Unz7jzehYuvdkzBQdRUyU8/5CEJpzaUNSXNiKhi9oo6/uj7kKoLS7V1sC7L2vhybxs2maLdNO7wg==}
     dev: false
 
   /lilconfig/2.0.6:

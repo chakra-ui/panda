@@ -1,4 +1,4 @@
-import type { LoadConfigResult } from '@pandacss/config'
+import type { LoadConfigResult } from '@pandacss/types'
 import { breakpoints, conditions, keyframes, semanticTokens, tokens } from '@pandacss/fixture'
 import { expect, test } from 'vitest'
 import { createContext } from '../src/context'

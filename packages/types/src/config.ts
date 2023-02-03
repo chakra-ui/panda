@@ -173,3 +173,9 @@ export type Config = {
 }
 
 export type UserConfig = UnwrapExtend<RequiredBy<Config, 'outdir' | 'cwd' | 'include'>>
+
+export type LoadConfigResult = {
+  path: string
+  config: UserConfig
+  dependencies: string[]
+}

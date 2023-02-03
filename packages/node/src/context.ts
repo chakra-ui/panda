@@ -1,4 +1,4 @@
-import type { LoadConfigResult } from '@pandacss/config'
+import type { LoadConfigResult } from '@pandacss/types'
 import {
   assignCompositions,
   Conditions,

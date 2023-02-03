@@ -8,7 +8,7 @@ import { parseCondition } from './parse-condition'
 const order: ConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-nesting', 'at-rule']
 
 type Options = {
-  conditions: Dict<string>
+  conditions?: Dict<string>
   breakpoints?: Record<string, string>
 }
 
@@ -18,7 +18,7 @@ export class Conditions {
   breakpoints: Breakpoints
 
   constructor(private options: Options) {
-    const { breakpoints: breakpointValues = {}, conditions } = this.options
+    const { breakpoints: breakpointValues = {}, conditions = {} } = this.options
     const breakpoints = new Breakpoints(breakpointValues)
     this.breakpoints = breakpoints
 

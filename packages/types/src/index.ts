@@ -1,5 +1,5 @@
 export type { ConditionDetails, ConditionType, Conditions, RawCondition } from './conditions'
-export type { Config, Preset, UserConfig } from './config'
+export type { Config, Preset, UserConfig, LoadConfigResult } from './config'
 export type { PropertyConfig, PropertyTransform, PropertyValues, UtilityConfig } from './utility'
 export type { SystemStyleObject, CssKeyframes, GlobalStyleObject } from './system-types'
 export type { PatternConfig, PatternProperty, PatternHelpers } from './pattern'

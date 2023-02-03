@@ -1,6 +1,5 @@
 import { ConfigError, ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
-import type { UserConfig } from '@pandacss/types'
 import { bundleAndRequire } from './bundle-require'
 import { findConfigFile } from './find-config'
 import { getResolvedConfig } from './merge-config'
@@ -37,10 +36,4 @@ export async function loadConfigFile(options: ConfigFileOptions) {
     config: mergedConfig,
     path: filePath,
   }
-}
-
-export type LoadConfigResult = {
-  path: string
-  config: UserConfig
-  dependencies: string[]
 }
