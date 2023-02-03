@@ -3,18 +3,18 @@ import { logger, quote } from '@pandacss/logger'
 import type { PandaContext } from './context'
 
 export function extractFile(ctx: PandaContext, file: string) {
-  logger.debug({ type: 'file:extract', file })
+  logger.debug('file:extract', file)
 
   let data: Collector | undefined
   let result: { css: string; file: string } | undefined
 
-  const done = logger.time.debug('Extracted', quote(file))
+  const done = logger.time.debug(`Extracted ${quote(file)}`)
 
   try {
     const source = ctx.getSourceFile(file)
     data = ctx.parseSourceFile(source)
   } catch (error) {
-    logger.error({ err: error })
+    logger.error('file:parse', error)
   }
 
   if (data) {

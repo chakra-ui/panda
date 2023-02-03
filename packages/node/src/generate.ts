@@ -9,7 +9,7 @@ import { watch } from './watch'
 
 async function build(ctx: PandaContext) {
   const msg = await emitAndExtract(ctx)
-  logger.info(msg)
+  logger.info('css:emit', msg)
 }
 
 type RefObject<T> = {
@@ -44,6 +44,6 @@ export async function generate(config: Config, configPath?: string) {
       },
     })
 
-    logger.info(watchMessage())
+    logger.info('ctx:watch', watchMessage())
   }
 }

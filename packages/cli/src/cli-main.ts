@@ -36,7 +36,7 @@ export async function main() {
         logger.level = 'silent'
       }
 
-      logger.info(`Panda v${pkgJson.version}\n`)
+      logger.info('cli', `Panda v${pkgJson.version}\n`)
 
       const done = logger.time.info('✨ Panda initialized')
 
@@ -106,7 +106,7 @@ export async function main() {
       if (silent) logger.level = 'silent'
 
       const options = compact({ include: files, ...rest })
-      logger.debug({ type: 'cli', msg: options })
+      logger.debug('cli', options)
       await generate(options, configPath)
     })
 

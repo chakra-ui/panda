@@ -17,10 +17,10 @@ export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
   const isTs = lookItUpSync('tsconfig.json', cwd)
   const file = isTs ? 'panda.config.ts' : 'panda.config.mjs'
 
-  logger.info({ type: 'init', msg: `creating panda config file: ${quote(file)}` })
+  logger.info('init:config', `creating panda config file: ${quote(file)}`)
 
   if (!force && configFile) {
-    logger.warn('config exists', configExistsMessage(cmd))
+    logger.warn('init:config', configExistsMessage(cmd))
   } else {
     const content = outdent`
        import { defineConfig } from "css-panda"
@@ -49,7 +49,7 @@ export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
 }
 
 export async function setupPostcss(cwd: string) {
-  logger.info({ type: 'init', msg: `creating postcss config file: ${quote('postcss.config.cjs')}` })
+  logger.info('init:postcss', `creating postcss config file: ${quote('postcss.config.cjs')}`)
 
   const content = outdent`
   module.exports = {

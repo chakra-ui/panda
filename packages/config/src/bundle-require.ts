@@ -11,7 +11,7 @@ export async function bundleAndRequire(filepath: string, cwd: string) {
   let config: UserConfig
   let dependencies: string[]
 
-  const end = logger.time.debug(`Bundling config file ${quote(relative(cwd, filePath))}`)
+  const done = logger.time.debug(`Bundling config file ${quote(relative(cwd, filePath))}`)
 
   try {
     const realFileName = realpathSync(filePath)
@@ -34,7 +34,7 @@ export async function bundleAndRequire(filepath: string, cwd: string) {
     }
   }
 
-  end()
+  done()
 
   return {
     config,

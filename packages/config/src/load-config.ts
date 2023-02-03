@@ -18,7 +18,7 @@ export async function loadConfigFile(options: ConfigFileOptions) {
     throw new ConfigNotFoundError()
   }
 
-  logger.debug({ type: 'config', path: filePath })
+  logger.debug('config:path', filePath)
 
   const result = await bundleAndRequire(filePath, cwd)
 

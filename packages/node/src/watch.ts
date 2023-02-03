@@ -27,10 +27,7 @@ export function createWatcher(files: string[], options: WatcherOptions = {}) {
     awaitWriteFinish: coalesce ? { stabilityThreshold: 50, pollInterval: 10 } : false,
   })
 
-  logger.debug({
-    type: 'file:watcher',
-    msg: `watching [${files}]`,
-  })
+  logger.debug('watch:file', `watching [${files}]`)
 
   process.once('SIGINT', async () => {
     await watcher.close()
@@ -56,7 +53,7 @@ async function createContentWatcher(ctx: PandaContext, callback: (file: string) 
   })
 
   watcher.on('all', async (event, file) => {
-    logger.debug({ type: `file:${event}`, file })
+    logger.debug(`file:${event}`, file)
 
     match(event)
       .with('unlink', () => {
@@ -91,19 +88,19 @@ type Options = {
 }
 
 export async function watch(ctx: PandaContext, options: Options) {
-  // await createAssetWatcher(ctx, options.onAssetChange)
   await createContentWatcher(ctx, options.onContentChange)
   const configWatcher = await createConfigWatcher(ctx.conf)
 
   configWatcher.on('change', async () => {
-    logger.info('Config changed, restarting...')
+    logger.info('watch:config', 'Config changed, restarting...')
     await options.onConfigChange()
   })
 }
 
 process.on('unhandledRejection', (reason) => {
-  logger.error({ err: reason })
+  logger.error('watch:unhandledRejection', reason)
 })
-process.on('uncaughtException', (err) => {
-  logger.error({ err: err })
+
+process.on('uncaughtException', (reason) => {
+  logger.error('watch:uncaughtException', reason)
 })

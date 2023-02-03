@@ -124,7 +124,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
   const hasTokens = !tokens.isEmpty
 
-  logger.debug({ type: 'ctx:token', msg: tokens.allNames })
+  logger.debug('ctx:token', tokens.allNames)
 
   const utility = new Utility({
     prefix,
@@ -138,7 +138,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     breakpoints,
   })
 
-  logger.debug({ type: 'ctx:conditions', msg: conditions })
+  logger.debug('ctx:conditions', conditions)
 
   assignCompositions(
     { conditions, utility },
@@ -331,7 +331,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       const oldCss = await chunks.readFile(file)
       const newCss = mergeCss(oldCss, css)
 
-      logger.debug({ type: 'chunk:write', file, path: fileName })
+      logger.debug('chunk:write', { file, path: fileName })
 
       return write(paths.chunk, [{ file: fileName, code: newCss }])
     },
@@ -356,7 +356,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
   const files = getFiles()
 
-  logger.debug({ type: 'ctx:files', msg: files })
+  logger.debug('ctx:files', files)
 
   const tsProject: Project = createProject()
 
@@ -531,7 +531,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
           sheet.processRecipe(recipe, item.data)
         }
       } catch (error) {
-        logger.error({ err: error })
+        logger.error('recipe', error)
       }
     })
 
@@ -542,7 +542,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
           sheet.processAtomic(styles)
         }
       } catch (error) {
-        logger.error({ err: error })
+        logger.error('pattern', error)
       }
     })
 

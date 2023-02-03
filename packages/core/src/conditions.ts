@@ -75,7 +75,7 @@ export class Conditions {
     try {
       return this.values[condition] ?? parseCondition(condition)
     } catch (error) {
-      logger.error({ err: error })
+      logger.error('core:condition', error)
     }
   }
 

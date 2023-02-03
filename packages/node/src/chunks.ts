@@ -33,7 +33,7 @@ export async function bundleChunks(ctx: PandaContext) {
 }
 
 export async function writeFileChunk(ctx: PandaContext, file: string) {
-  logger.info(`File changed: ${file}`)
+  logger.info('chunk:change', `File changed: ${file}`)
   const result = extractFile(ctx, file)
   if (result) {
     await ctx.chunks.write(result.file, result.css)

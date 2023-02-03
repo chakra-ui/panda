@@ -162,9 +162,11 @@ importers:
     specifiers:
       boxen: ^7.0.1
       kleur: ^4.1.5
+      lil-fp: 1.0.6
       matcher: 5.0.0
     dependencies:
       kleur: 4.1.5
+      lil-fp: 1.0.6
     devDependencies:
       boxen: 7.0.1
       matcher: 5.0.0
@@ -8881,6 +8883,10 @@ packages:
       prelude-ls: 1.2.1
       type-check: 0.4.0
     dev: true
+
+  /lil-fp/1.0.6:
+    resolution: {integrity: sha512-tr+lpKl0xN4YN5sCevtVpPSYN19YHiLd84pn229rsZTdV1T2rAd1mXtSv65yJ0UFi+WNja1z4Xqt/27yW1CY4g==}
+    dev: false
 
   /lilconfig/2.0.6:
     resolution: {integrity: sha512-9JROoBW7pobfsx+Sq2JsASvCo6Pfo6WWoUW79HuB1BCoBXD4PLWJPqDF6fNj67pqBYTbAHkE57M1kS/+L1neOg==}
