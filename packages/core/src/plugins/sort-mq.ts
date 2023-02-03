@@ -1,5 +1,5 @@
 import type { Container, TransformCallback } from 'postcss'
-import sortAtRules from 'sort-css-media-queries'
+import { sortAtRules } from './sort-at-rules'
 import { match, P } from 'ts-pattern'
 
 export default function sortMediaQueries(): TransformCallback {
