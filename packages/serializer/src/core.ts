@@ -3,12 +3,11 @@ import { isCssProperty } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
 import { mapObject } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import type { LoadConfigResult } from '@pandacss/types'
+import type { UserConfig } from '@pandacss/types'
 import { Obj, pipe, tap } from 'lil-fp'
 import postcss from 'postcss'
 
-export const core = (conf: LoadConfigResult) => {
-  const { config } = conf
+export const getCoreEngine = (config: UserConfig) => {
   return pipe(
     { config },
 
@@ -57,7 +56,7 @@ export const core = (conf: LoadConfigResult) => {
       helpers: { map: mapObject },
     })),
 
-    Obj.bind('createSheet', ({ createContext }) => {
+    Obj.bind('createSheet', ({ createContext }) => () => {
       return new Stylesheet(createContext())
     }),
 

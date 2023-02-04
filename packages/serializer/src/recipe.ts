@@ -1,13 +1,13 @@
-import { capitalize, dashCase, splitProps } from '@pandacss/shared'
-import type { LoadConfigResult } from '@pandacss/types'
+import { capitalize, dashCase, splitProps, uncapitalize } from '@pandacss/shared'
+import type { RecipeConfig, UserConfig } from '@pandacss/types'
 import { Obj, pipe } from 'lil-fp'
 
-export const recipe = ({ config }: LoadConfigResult) => {
+export const getRecipeEngine = (config: UserConfig) => {
   return pipe(
     { recipes: config.theme?.recipes ?? {} },
 
     Obj.bind('getConfig', ({ recipes }) => {
-      return (name: string) => recipes[name]
+      return (name: string): RecipeConfig | undefined => recipes[name]
     }),
 
     Obj.bind('getNames', ({ getConfig }) => {
@@ -27,7 +27,11 @@ export const recipe = ({ config }: LoadConfigResult) => {
       }))
     }),
 
-    Obj.bind('exec', ({ nodes }) => {
+    Obj.bind('getFnName', ({ nodes }) => (jsx: string) => {
+      return nodes.find((node) => node.name === jsx)?.baseName ?? uncapitalize(jsx)
+    }),
+
+    Obj.bind('splitProps', ({ nodes }) => {
       return (name: string, props: Record<string, any>) => {
         const recipe = nodes.find((node) => node.name === name)
         if (!recipe) return [{}, props]

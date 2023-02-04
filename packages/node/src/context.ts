@@ -79,7 +79,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     jsxFramework,
     globalCss,
     separator,
-    static: staticCss,
+    staticCss,
     outExtension = 'mjs',
     emitPackage,
   } = config

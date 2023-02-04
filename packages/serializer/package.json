@@ -21,6 +21,7 @@
   "dependencies": {
     "lil-fp": "1.2.1",
     "postcss": "8.4.21",
+    "ts-pattern": "4.1.3",
     "@pandacss/core": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/is-valid-prop": "workspace:*",

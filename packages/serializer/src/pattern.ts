@@ -1,18 +1,20 @@
-import { capitalize, dashCase, mapObject } from '@pandacss/shared'
-import type { LoadConfigResult } from '@pandacss/types'
+import { capitalize, dashCase, mapObject, uncapitalize } from '@pandacss/shared'
+import type { UserConfig } from '@pandacss/types'
 import { Obj, pipe } from 'lil-fp'
 
-export const pattern = ({ config }: LoadConfigResult) => {
+const helpers = { map: mapObject }
+
+export const getPatternEngine = (config: UserConfig) => {
   return pipe(
-    { patterns: config.patterns ?? {}, helpers: { map: mapObject } },
+    { patterns: config.patterns ?? {} },
 
     Obj.bind('getConfig', ({ patterns }) => {
       return (name: string) => patterns[name]
     }),
 
-    Obj.bind('exec', ({ getConfig, helpers }) => {
+    Obj.bind('transform', ({ getConfig }) => {
       return (name: string, data: Record<string, any>) => {
-        return getConfig(name)?.transform?.(data, helpers)
+        return getConfig(name)?.transform?.(data, helpers) ?? {}
       }
     }),
 
@@ -43,6 +45,10 @@ export const pattern = ({ config }: LoadConfigResult) => {
         props: Object.keys(pattern.properties),
         baseName: name,
       }))
+    }),
+
+    Obj.bind('getFnName', ({ nodes }) => (jsx: string) => {
+      return nodes.find((node) => node.name === jsx)?.baseName ?? uncapitalize(jsx)
     }),
 
     Obj.bind('isEmpty', ({ patterns }) => Object.keys(patterns).length > 0),
