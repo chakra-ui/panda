@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Using SQLite for local development
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.db"
+}
+
+model Session {
+  id        String   @id
+  code      String
+  config    String
+  view      String   @default("code")
+  createdAt DateTime @default(now())
+}
