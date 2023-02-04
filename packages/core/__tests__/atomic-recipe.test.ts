@@ -47,39 +47,39 @@ describe('Atomic recipe', () => {
       "@layer utilities {
         .fs_lg {
           font-size: var(--font-sizes-lg)
-        }
+          }
 
         .p_2 {
           padding: var(--spacing-2)
-        }
+          }
 
         .rounded_sm {
           border-radius: var(--radii-sm)
-        }
+          }
 
         .p_4 {
           padding: var(--spacing-4)
-        }
+          }
 
         .rounded_md {
           border-radius: var(--radii-md)
-        }
+          }
 
         .bg_blue\\\\.500 {
           background-color: blue.500
-        }
+          }
 
         .text_white {
           color: white
-        }
+          }
 
         .bg_red\\\\.500 {
           background-color: var(--colors-red-500)
-        }
+          }
 
         .hover\\\\:text_green:hover {
           color: green
-        }
+              }
       }"
     `)
   })

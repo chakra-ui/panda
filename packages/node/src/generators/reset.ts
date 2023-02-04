@@ -95,7 +95,7 @@ const reset = css`
   }
 `
 
-export function generateReset() {
+export function generateResetCss() {
   return `@layer reset {
     ${reset}
   }`

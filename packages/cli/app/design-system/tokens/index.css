@@ -346,7 +346,6 @@
   --colors-color-palette-700: var(--colors-color-palette-700);
   --colors-color-palette-800: var(--colors-color-palette-800);
   --colors-color-palette-900: var(--colors-color-palette-900)
-
 }
 
 @media (prefers-color-scheme: light) {
@@ -354,9 +353,7 @@
     --colors-text: #000;
     --colors-bg: #fff;
     --colors-card: #E2E8F0
-        
-    
-  }
-}
+        }
+    }
   }
   

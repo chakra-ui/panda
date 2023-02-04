@@ -7,6 +7,7 @@ export async function extractChunks(ctx: PandaContext) {
   const sheet = new Stylesheet(ctx.context(), {
     content: [
       '@layer reset, base, tokens, recipes, utilities;',
+      "@import './layout-grid.css';",
       ctx.preflight && "@import './reset.css';",
       !ctx.tokens.isEmpty && "@import './tokens/index.css';",
       ctx.theme.keyframes && "@import './tokens/keyframes.css';",

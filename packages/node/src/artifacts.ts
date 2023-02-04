@@ -2,8 +2,6 @@ import { bundleChunks } from './chunks'
 import type { PandaContext } from './context'
 import { extractFiles, extractGlobalCss, extractStaticCss } from './extract'
 import { generateSystem } from './generators'
-import { generateTokenCss, generateKeyframes } from './generators/token-css'
-import { generateReset } from './generators/reset'
 import { artifactsGeneratedMessage, buildCompleteMessage, scaffoldCompleteMessage } from './messages'
 
 export async function emitArtifacts(ctx: PandaContext) {
@@ -24,15 +22,4 @@ export async function extractCss(ctx: PandaContext) {
   await extractFiles(ctx)
   await bundleChunks(ctx)
   return buildCompleteMessage(ctx)
-}
-
-export function getBaseCss(ctx: PandaContext) {
-  const css = [
-    generateReset(),
-    generateTokenCss(ctx),
-    generateKeyframes(ctx.theme.keyframes),
-    ctx.getGlobalCss(),
-    ctx.getStaticCss(),
-  ]
-  return css.filter(Boolean).join('\n\n')
 }

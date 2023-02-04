@@ -6,7 +6,6 @@ function prettifyNode(node: Container, indent = 0) {
       if (!child.raws.before || !child.raws.before.trim() || child.raws.before.includes('\n')) {
         child.raws.before = `\n${node.type !== 'rule' && i > 0 ? '\n' : ''}${'  '.repeat(indent)}`
       }
-      child.raws.after = `\n${'  '.repeat(indent)}`
       prettifyNode(child as any, indent + 1)
     })
 }

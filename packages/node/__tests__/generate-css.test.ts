@@ -173,7 +173,6 @@ test('[css] should generate css', () => {
       --colors-color-palette-thick: var(--colors-color-palette-thick);
       --colors-color-palette-body: var(--colors-color-palette-body);
       --colors-color-palette-heading: var(--colors-color-palette-heading)
-
     }
 
     :where([data-theme=dark], .dark) {
@@ -182,51 +181,37 @@ test('[css] should generate css', () => {
       --colors-button-thick: #000;
       --colors-button-card-body: #000;
       --colors-button-card-heading: #000
-
-      
     }
 
     @media (forced-colors: active) {
       :where([data-theme=dark], .dark) {
         --colors-complex: #B91C1C
-                
-          
-      }
-    }
+                }
+            }
 
     [data-color=material] {
       --colors-surface: #m-b
-
-      
     }
 
     [data-color=material]:where([data-theme=dark], .dark) {
       --colors-surface: #m-d
-            
-        
-    }
+            }
 
     [data-color=pastel] {
       --colors-surface: #p-b
-
-      
     }
 
     @media screen and (min-width: 48em) {
       [data-color=pastel]:where([data-theme=dark], .dark) {
         --colors-surface: #p-d
-                    
-            
-      }
-    }
+                    }
+                }
 
     @media screen and (min-width: 62em) {
       :where(html) {
         --spacing-gutter: 1.25rem
-            
-        
-      }
-    }
+            }
+        }
       }
       "
   `)

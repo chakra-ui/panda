@@ -33,25 +33,22 @@ test('merge two css strings', () => {
 
   expect(mergedCss).toMatchInlineSnapshot(`
     ".p-4 {
-      padding: 2rem
-    }
+      padding: 2rem }
 
     @layer recipe {
       .button--small {
         font-size: 40px;
         padding: 20rem 1rem;
-      }
-    }
+                }
+            }
 
     @layer utilities {
       .p-2 {
-        padding: 0.5rem
-      }
+        padding: 0.5rem }
 
       .p-4 {
-        padding: 1rem
-      }
-    }
+        padding: 1rem }
+            }
         "
   `)
 })

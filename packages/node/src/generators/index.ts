@@ -8,11 +8,12 @@ import { generateCx } from './cx'
 import { getEntrypoint } from './get-entrypoint'
 import { generateisValidProp } from './is-valid-prop'
 import { generateJsxFactory, generateJsxPatterns, generateJsxTypes, generateLayoutGrid } from './jsx'
+import { generateLayoutGridCss } from './layout-grid'
 import { generatePattern } from './pattern'
 import { generatePackageJSON } from './pkg-json'
 import { generatePropTypes } from './prop-types'
 import { generateRecipes } from './recipe'
-import { generateReset } from './reset'
+import { generateResetCss } from './reset'
 import { generateKeyframes, generateTokenCss } from './token-css'
 import { generateTokenDts } from './token-dts'
 import { generateTokenJs } from './token-js'
@@ -203,10 +204,15 @@ function setupCssIndex(ctx: PandaContext): Output {
   }
 }
 
-function setupReset(ctx: PandaContext): Output {
+function setupResetCss(ctx: PandaContext): Output {
   if (!ctx.preflight) return
-  const code = generateReset()
+  const code = generateResetCss()
   return { files: [{ file: 'reset.css', code }] }
+}
+
+function setupLayoutGridCss(): Output {
+  const code = generateLayoutGridCss()
+  return { files: [{ file: 'layout-grid.css', code }] }
 }
 
 function setupPackageJson(ctx: PandaContext): Output {
@@ -229,7 +235,8 @@ export function generateSystem(ctx: PandaContext): Output[] {
     setupPatterns(ctx),
     setupCssIndex(ctx),
     setupJsx(ctx),
-    setupReset(ctx),
+    setupResetCss(ctx),
+    setupLayoutGridCss(),
     setupPackageJson(ctx),
   ].filter(Boolean)
 }
