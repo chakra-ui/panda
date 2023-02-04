@@ -25,3 +25,11 @@ type Nullable<T> = T | null | undefined
 export type UnwrapExtend<T extends Record<string, unknown>> = {
   [K in keyof T]: T[K] extends Nullable<Extendable<infer U>> ? U : T[K]
 }
+
+export type Artifact = Nullable<{
+  dir?: string
+  files: Array<{
+    file: string
+    code: string | undefined
+  }>
+}>

@@ -7,8 +7,10 @@ import type { UserConfig } from '@pandacss/types'
 import { Obj, pipe, tap } from 'lil-fp'
 import postcss from 'postcss'
 
-export const getCoreEngine = (config: UserConfig) => {
-  return pipe(
+const helpers = { map: mapObject }
+
+export const getBaseEngine = (config: UserConfig) =>
+  pipe(
     { config },
 
     Obj.bind('tokens', ({ config: { theme, prefix } }) => {
@@ -48,27 +50,24 @@ export const getCoreEngine = (config: UserConfig) => {
       assignCompositions({ conditions, utility }, compositions)
     }),
 
-    Obj.bind('createContext', ({ utility, conditions, config: { hash } }) => () => ({
-      root: postcss.root(),
-      conditions,
-      utility,
-      hash,
-      helpers: { map: mapObject },
-    })),
-
-    Obj.bind('createSheet', ({ createContext }) => () => {
-      return new Stylesheet(createContext())
+    Obj.bind('createSheet', ({ conditions, utility, config }) => () => {
+      return new Stylesheet({
+        root: postcss.root(),
+        conditions,
+        utility,
+        hash: config.hash,
+        helpers,
+      })
     }),
 
-    Obj.bind('properties', ({ utility, conditions }) => {
-      return Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()]))
-    }),
+    Obj.bind('properties', ({ utility, conditions }) =>
+      Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()])),
+    ),
 
     Obj.bind('isValidProperty', ({ properties }) => {
-      return (prop: string) => {
+      return (key: string) => {
         const regex = new RegExp('^(?:' + properties.join('|') + ')$')
-        return regex.test(prop) || isCssProperty(prop)
+        return regex.test(key) || isCssProperty(key)
       }
     }),
   )
-}

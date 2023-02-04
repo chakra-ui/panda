@@ -24,7 +24,7 @@ export const getPatternEngine = (config: UserConfig) => {
         name,
         upperName,
         dashName: dashCase(name),
-        styleFn: `get${upperName}Style`,
+        styleFnName: `get${upperName}Style`,
         jsxName: getConfig(name)?.jsx ?? upperName,
       }
     }),
@@ -51,6 +51,8 @@ export const getPatternEngine = (config: UserConfig) => {
       return nodes.find((node) => node.name === jsx)?.baseName ?? uncapitalize(jsx)
     }),
 
-    Obj.bind('isEmpty', ({ patterns }) => Object.keys(patterns).length > 0),
+    Obj.bind('isEmpty', ({ patterns }) => {
+      return () => Object.keys(patterns).length > 0
+    }),
   )
 }

@@ -39,7 +39,14 @@ export const getRecipeEngine = (config: UserConfig) => {
       }
     }),
 
-    Obj.bind('details', ({ recipes }) => {
+    Obj.bind('details', ({ getNames, recipes }) => {
+      return Object.entries(recipes).map(([name, recipe]) => ({
+        ...getNames(name),
+        config: recipe,
+      }))
+    }),
+
+    Obj.bind('variantKeys', ({ recipes }) => {
       return Object.entries(recipes).map(([name, recipe]) => ({
         [name]: Object.entries(recipe.variants ?? {}).map(([key, value]) => ({
           [key]: Object.keys(value),
@@ -47,6 +54,8 @@ export const getRecipeEngine = (config: UserConfig) => {
       }))
     }),
 
-    Obj.bind('isEmpty', ({ recipes }) => Object.keys(recipes).length > 0),
+    Obj.bind('isEmpty', ({ recipes }) => {
+      return () => Object.keys(recipes).length > 0
+    }),
   )
 }

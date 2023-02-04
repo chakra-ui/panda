@@ -29,9 +29,6 @@ export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
         // Whether to use css reset
         preflight: true,
         
-        // Default preset to use
-        presets: ["css-panda/presets"],
-        
         // Where to look for your css declarations
         include: ["./src/**/*.{tsx,jsx}", "./pages/**/*.{jsx,tsx}"],
         
