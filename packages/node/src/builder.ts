@@ -82,7 +82,7 @@ export class Builder {
     setupCount++
   }
 
-  ensure() {
+  ensure(): PandaContext {
     if (!this.context) throw new Error('context not loaded')
     return this.context
   }
