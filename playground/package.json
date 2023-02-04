@@ -13,6 +13,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@ark-ui/react": "0.0.0-rc-20230204220121",
     "@next/font": "13.1.6",
     "@prisma/client": "4.9.0",
     "@types/node": "18.11.18",

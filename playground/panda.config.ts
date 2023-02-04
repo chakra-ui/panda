@@ -25,5 +25,9 @@ export default defineConfig({
         colorScheme: 'dark',
       },
     },
+    '*, *::before, *::after': {
+      borderColor: 'gray.300',
+      borderStyle: 'solid',
+    },
   },
 })
