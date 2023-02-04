@@ -19,7 +19,7 @@
     "dist"
   ],
   "dependencies": {
-    "lil-fp": "1.1.8",
+    "lil-fp": "1.1.9",
     "postcss": "8.4.21",
     "@pandacss/core": "workspace:*",
     "@pandacss/logger": "workspace:*",
