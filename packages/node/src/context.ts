@@ -1,4 +1,3 @@
-import type { LoadConfigResult } from '@pandacss/types'
 import {
   assignCompositions,
   Conditions,
@@ -13,7 +12,7 @@ import { logger } from '@pandacss/logger'
 import { createProject, ParserResult } from '@pandacss/parser'
 import { capitalize, compact, dashCase, mapObject, splitProps, uncapitalize } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import type { Dict, PatternConfig, RecipeConfig } from '@pandacss/types'
+import type { Dict, LoadConfigResult, PatternConfig, RecipeConfig } from '@pandacss/types'
 import glob from 'fast-glob'
 import { readdirSync, readFileSync } from 'fs'
 import { emptyDir, ensureDir, existsSync } from 'fs-extra'
@@ -364,7 +363,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     jsx: `${outdir}/jsx`,
   }
 
-  const project = createProject({
+  const project: any = createProject({
     getFiles,
     readFile(filePath) {
       return readFileSync(filePath, 'utf8')

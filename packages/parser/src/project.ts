@@ -1,15 +1,15 @@
 import { Obj, pipe, tap } from 'lil-fp'
-import { Project, ProjectOptions as TsProjectOptions, ScriptKind } from 'ts-morph'
+import { Project as TsProject, ProjectOptions as TsProjectOptions, ScriptKind } from 'ts-morph'
 import { createParser, ParserOptions } from './parser'
 
-type ProjectOptions = Partial<TsProjectOptions> & {
+export type ProjectOptions = Partial<TsProjectOptions> & {
   readFile: (filePath: string) => string
   getFiles: () => string[]
   parserOptions: ParserOptions
 }
 
 const createTsProject = (options: Partial<TsProjectOptions>) =>
-  new Project({
+  new TsProject({
     skipAddingFilesFromTsConfig: true,
     skipFileDependencyResolution: true,
     skipLoadingLibFiles: true,
@@ -65,3 +65,5 @@ export const createProject = ({ getFiles, readFile, parserOptions, ...projectOpt
 
     Obj.omit(['project', 'parser']),
   )
+
+export type Project = ReturnType<typeof createProject>
