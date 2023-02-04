@@ -1,6 +1,6 @@
 'use client'
 import { css } from '@/design-system/css'
-import { container } from '@/design-system/patterns'
+import { Flex } from '@/design-system/jsx'
 import { useRouter } from 'next/navigation'
 import { ChangeEvent, useState } from 'react'
 
@@ -10,7 +10,7 @@ type Session = {
   view: string
 }
 
-type EditorProps = {
+export type EditorProps = {
   session?: Session | null
 }
 
@@ -47,7 +47,7 @@ export const Editor = (props: EditorProps) => {
       .then((data) => router.push(`/${data.id}`))
 
   return (
-    <div className={container({})}>
+    <Flex flex="1" direction="column" align="flex-start" px="6" py="4">
       <section>
         <label htmlFor="code" className={css({ display: 'block' })}>
           Code
@@ -76,6 +76,6 @@ export const Editor = (props: EditorProps) => {
       </section>
 
       <button onClick={share}>Share</button>
-    </div>
+    </Flex>
   )
 }

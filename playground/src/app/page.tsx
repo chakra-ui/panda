@@ -1,5 +1,5 @@
-import { Editor } from '../components/Editor'
+import { Playground } from '../components/Playground'
 
-const Page = () => <Editor />
+const Page = () => <Playground />
 
 export default Page

@@ -11,9 +11,7 @@ const RootLayout = (props: PropsWithChildren) => (
       <meta charSet="utf-8" />
       <meta content="width=device-width, initial-scale=1" name="viewport" />
     </head>
-    <body>
-      <main>{props.children}</main>
-    </body>
+    <body>{props.children}</body>
   </html>
 )
 
