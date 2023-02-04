@@ -57,15 +57,15 @@ async function createContentWatcher(ctx: PandaContext, callback: (file: string) 
 
     match(event)
       .with('unlink', () => {
-        ctx.removeSourceFile(file)
+        ctx.project.removeSourceFile(ctx.absPath(file))
         ctx.chunks.rm(file)
       })
       .with('change', async () => {
-        ctx.reloadSourceFile(file)
+        ctx.project.reloadSourceFile(file)
         await callback(file)
       })
       .with('add', async () => {
-        ctx.addSourceFile(file)
+        ctx.project.createSourceFile(file)
         await callback(file)
       })
       .otherwise(() => {

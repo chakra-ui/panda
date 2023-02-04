@@ -1,18 +1,17 @@
-import type { Collector } from '@pandacss/parser'
+import type { ParserResult } from '@pandacss/parser'
 import { logger, quote } from '@pandacss/logger'
 import type { PandaContext } from './context'
 
 export function extractFile(ctx: PandaContext, file: string) {
   logger.debug('file:extract', file)
 
-  let data: Collector | undefined
+  let data: ParserResult | undefined
   let result: { css: string; file: string } | undefined
 
   const done = logger.time.debug(`Extracted ${quote(file)}`)
 
   try {
-    const source = ctx.getSourceFile(file)
-    data = ctx.parseSourceFile(source)
+    data = ctx.project.parseSourceFile(ctx.absPath(file))
   } catch (error) {
     logger.error('file:parse', error)
   }

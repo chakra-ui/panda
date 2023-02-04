@@ -1,2 +1,2 @@
-export type { Collector } from './collector'
-export * from './parser'
+export type { ParserResult } from './parser-result'
+export * from './project'

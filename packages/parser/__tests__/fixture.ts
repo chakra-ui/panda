@@ -1,23 +1,35 @@
 import { isCssProperty } from '@pandacss/is-valid-prop'
-import { ScriptKind } from 'ts-morph'
-import { createParser, createProject } from '../src'
+import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
 
-const importMap = {
-  css: '.panda/css',
-  cva: '.panda/css',
-  recipe: '.panda/recipe',
-  pattern: '.panda/pattern',
-  jsx: '.panda/jsx',
-}
+const staticFilePath = 'test.tsx'
 
-const project = createProject()
-function toSourceFile(code: string) {
-  return project.createSourceFile('test.tsx', code, { overwrite: true, scriptKind: ScriptKind.TSX })
+function getProject(code: string, options: { nodes?: any[] } = {}) {
+  return createProject({
+    useInMemoryFileSystem: true,
+    getFiles: () => [staticFilePath],
+    readFile: () => code,
+    parserOptions: {
+      importMap: {
+        css: '.panda/css',
+        recipe: '.panda/recipe',
+        pattern: '.panda/pattern',
+        jsx: '.panda/jsx',
+      },
+      jsx: {
+        nodes: options.nodes ?? [],
+        factory: 'panda',
+        isStyleProp(prop) {
+          return isCssProperty(prop) || prop === 'css'
+        },
+      },
+    },
+  })
 }
 
 export function importParser(code: string, option: { name: string; module: string }) {
-  const sourceFile = toSourceFile(code)
+  const project = getProject(code)
+  const sourceFile = project.getSourceFile(staticFilePath)!
   const imports = getImportDeclarations(sourceFile, {
     match({ id, mod }) {
       return id === option.name && mod === option.module
@@ -27,81 +39,53 @@ export function importParser(code: string, option: { name: string; module: strin
 }
 
 export function cssParser(code: string) {
-  const parser = createParser({ importMap })
-  const data = parser(toSourceFile(code))!
+  const project = getProject(code)
+  const data = project.parseSourceFile(staticFilePath)!
   return {
     css: data.css,
   }
 }
 
 export function cvaParser(code: string) {
-  const parser = createParser({ importMap })
-  const data = parser(toSourceFile(code))!
+  const project = getProject(code)
+  const data = project.parseSourceFile(staticFilePath)!
   return {
     cva: data.cva,
   }
 }
 
 export function styledParser(code: string) {
-  const parser = createParser({
-    importMap,
-    jsx: {
-      nodes: [],
-      factory: 'panda',
-      isStyleProp(prop) {
-        return isCssProperty(prop) || prop === 'css'
-      },
-    },
-  })
-  const data = parser(toSourceFile(code))!
+  const project = getProject(code)
+  const data = project.parseSourceFile(staticFilePath)!
   return {
     cva: data.cva,
   }
 }
 
 export function recipeParser(code: string) {
-  const parser = createParser({ importMap })
-  return parser(toSourceFile(code))?.recipe
+  const project = getProject(code)
+  const data = project.parseSourceFile(staticFilePath)!
+  return data.recipe
 }
 
 export function jsxParser(code: string) {
-  const parser = createParser({
-    importMap,
-    jsx: {
-      nodes: [],
-      factory: 'panda',
-      isStyleProp(prop) {
-        return isCssProperty(prop) || prop === 'css'
-      },
-    },
-  })
-  return parser(toSourceFile(code))?.jsx
+  const project = getProject(code)
+  const data = project.parseSourceFile(staticFilePath)!
+  return data.jsx
 }
 
 export function jsxPatternParser(code: string) {
-  const parser = createParser({
-    importMap,
-    jsx: {
-      nodes: [{ name: 'Stack', type: 'pattern', props: ['align', 'gap', 'direction'] }],
-      factory: 'panda',
-      isStyleProp(prop) {
-        return isCssProperty(prop) || prop === 'css'
-      },
-    },
+  const project = getProject(code, {
+    nodes: [{ name: 'Stack', type: 'pattern', props: ['align', 'gap', 'direction'] }],
   })
-  return parser(toSourceFile(code))?.jsx
+  const data = project.parseSourceFile(staticFilePath)!
+  return data.jsx
 }
 
 export function jsxRecipeParser(code: string) {
-  const parser = createParser({
-    importMap,
-    jsx: {
-      nodes: [{ name: 'Button', type: 'recipe', props: ['size', 'variant'] }],
-      factory: 'panda',
-      isStyleProp(prop) {
-        return isCssProperty(prop) || prop === 'css'
-      },
-    },
+  const project = getProject(code, {
+    nodes: [{ name: 'Button', type: 'recipe', props: ['size', 'variant'] }],
   })
-  return parser(toSourceFile(code))?.jsx
+  const data = project.parseSourceFile(staticFilePath)!
+  return data.jsx
 }

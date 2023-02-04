@@ -1,26 +1,11 @@
 import { logger } from '@pandacss/logger'
 import { memo } from '@pandacss/shared'
-import { Project, ProjectOptions, SourceFile } from 'ts-morph'
+import type { SourceFile } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { visitCallExpressions } from './call-expression'
-import { Collector } from './collector'
 import { getImportDeclarations } from './import'
 import { visitJsxElement } from './jsx-element'
-
-export function createProject(options: Partial<ProjectOptions> = {}) {
-  return new Project({
-    skipAddingFilesFromTsConfig: true,
-    skipFileDependencyResolution: true,
-    skipLoadingLibFiles: true,
-    ...options,
-    compilerOptions: {
-      allowJs: true,
-      strictNullChecks: false,
-      skipLibCheck: true,
-      ...options.compilerOptions,
-    },
-  })
-}
+import { createParserResult } from './parser-result'
 
 type ParserNodeOptions = {
   name: string
@@ -28,7 +13,7 @@ type ParserNodeOptions = {
   props?: string[]
 }
 
-type ParserOptions = {
+export type ParserOptions = {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string>
   jsx?: {
     factory: string
@@ -54,7 +39,7 @@ export function createParser(options: ParserOptions) {
     if (!sourceFile) return
 
     const fileName = sourceFile.getFilePath()
-    const collector = new Collector()
+    const collector = createParserResult()
 
     const { jsx, importMap } = options
 
@@ -96,7 +81,7 @@ export function createParser(options: ParserOptions) {
         logger.debug(`ast:${name}`, { fileName, result })
 
         match(name)
-          .when(css.match, (name) => {
+          .when(css.match, (name: 'css' | 'cva') => {
             collector.set(name, result)
           })
           .when(isValidPattern, (name) => {

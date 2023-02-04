@@ -10,7 +10,7 @@ import {
 } from '@pandacss/core'
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
-import { Collector, createParser, createProject } from '@pandacss/parser'
+import { createProject, ParserResult } from '@pandacss/parser'
 import { capitalize, compact, dashCase, mapObject, splitProps, uncapitalize } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type { Dict, PatternConfig, RecipeConfig } from '@pandacss/types'
@@ -20,7 +20,6 @@ import { emptyDir, ensureDir, existsSync } from 'fs-extra'
 import { readFile, unlink, writeFile } from 'fs/promises'
 import { extname, isAbsolute, join, relative, resolve, sep } from 'path'
 import postcss from 'postcss'
-import { Project, ScriptKind } from 'ts-morph'
 import { match, P } from 'ts-pattern'
 
 /* -----------------------------------------------------------------------------
@@ -358,51 +357,6 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
 
   logger.debug('ctx:files', files)
 
-  const tsProject: Project = createProject()
-
-  function addSourceFile(file: string) {
-    tsProject.createSourceFile(file, readFileSync(file, 'utf8'), {
-      overwrite: true,
-      scriptKind: ScriptKind.TSX,
-    })
-  }
-
-  function reloadSourceFile(file: string) {
-    const sourceFile = tsProject.getSourceFile(file)
-    sourceFile?.refreshFromFileSystemSync()
-  }
-
-  function reloadSourceFiles() {
-    const files = getFiles()
-    for (const file of files) {
-      const source = tsProject.getSourceFile(file)
-      if (source) {
-        source.refreshFromFileSystemSync()
-      } else {
-        tsProject.addSourceFileAtPath(file)
-      }
-    }
-  }
-
-  function getSourceFile(file: string) {
-    return tsProject.getSourceFile(absPath(file))
-  }
-
-  function removeSourceFile(file: string) {
-    const sourceFile = tsProject.getSourceFile(absPath(file))
-    if (sourceFile) {
-      return tsProject.removeSourceFile(sourceFile)
-    }
-  }
-
-  files.forEach((file) => {
-    addSourceFile(file)
-  })
-
-  /* -----------------------------------------------------------------------------
-   * Collect extracted styles
-   * -----------------------------------------------------------------------------*/
-
   const importMap = {
     css: `${outdir}/css`,
     recipe: `${outdir}/recipes`,
@@ -410,14 +364,24 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     jsx: `${outdir}/jsx`,
   }
 
-  const parseSourceFile = createParser({
-    importMap,
-    jsx: {
-      factory: jsxFactory,
-      isStyleProp,
-      nodes: [...patternNodes, ...recipeNodes],
+  const project = createProject({
+    getFiles,
+    readFile(filePath) {
+      return readFileSync(filePath, 'utf8')
+    },
+    parserOptions: {
+      importMap,
+      jsx: {
+        factory: jsxFactory,
+        isStyleProp,
+        nodes: [...patternNodes, ...recipeNodes],
+      },
     },
   })
+
+  /* -----------------------------------------------------------------------------
+   * Collect extracted styles
+   * -----------------------------------------------------------------------------*/
 
   function getGlobalCss() {
     const sheet = new Stylesheet(context())
@@ -489,7 +453,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     return sheet.toCss()
   }
 
-  function getCss(collector: Collector, file: string) {
+  function getCss(collector: ParserResult, file: string) {
     const sheet = new Stylesheet(context())
 
     collector.css.forEach((result) => {
@@ -546,7 +510,7 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
       }
     })
 
-    if (collector.isEmpty) {
+    if (collector.isEmpty()) {
       return
     }
 
@@ -577,12 +541,8 @@ export function createContext(conf: LoadConfigResult, io = fileSystem) {
     conditions,
 
     importMap,
-    reloadSourceFiles,
-    getSourceFile,
-    addSourceFile,
-    reloadSourceFile,
-    removeSourceFile,
-    parseSourceFile,
+    absPath,
+    project,
 
     getPath,
     paths,
