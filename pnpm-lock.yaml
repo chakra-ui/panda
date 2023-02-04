@@ -160,11 +160,11 @@ importers:
     specifiers:
       boxen: ^7.0.1
       kleur: ^4.1.5
-      lil-fp: 1.1.2
+      lil-fp: 1.1.7
       matcher: 5.0.0
     dependencies:
       kleur: 4.1.5
-      lil-fp: 1.1.2
+      lil-fp: 1.1.7
     devDependencies:
       boxen: 7.0.1
       matcher: 5.0.0
@@ -269,7 +269,7 @@ importers:
       '@pandacss/shared': workspace:*
       '@pandacss/token-dictionary': workspace:*
       '@pandacss/types': workspace:*
-      lil-fp: 1.1.2
+      lil-fp: 1.1.7
       postcss: 8.4.21
     dependencies:
       '@pandacss/core': link:../core
@@ -278,7 +278,7 @@ importers:
       '@pandacss/shared': link:../shared
       '@pandacss/token-dictionary': link:../token-dictionary
       '@pandacss/types': link:../types
-      lil-fp: 1.1.2
+      lil-fp: 1.1.7
       postcss: 8.4.21
 
   packages/shared:
@@ -8902,8 +8902,8 @@ packages:
       type-check: 0.4.0
     dev: true
 
-  /lil-fp/1.1.2:
-    resolution: {integrity: sha512-44husfM88yEAPXPDaHhjYm7s5oYGa7Zfe/TizXf5Uq1kgtVQv9EK6YVcq2fYbR+B3WCJ9+I2r/2zoy4YotSTYA==}
+  /lil-fp/1.1.7:
+    resolution: {integrity: sha512-HdiQiWDoCj95VclM0yHX/lc52nviczUxjkQFES84RkbwMLluOhc4TGsFZGCUaGqJiIf8PT1IC3OvEhzHJaZC1Q==}
     dev: false
 
   /lilconfig/2.0.6:
