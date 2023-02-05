@@ -1,11 +1,8 @@
+import { useMemo } from 'react'
 import { createParser, createProject } from '@pandacss/parser'
 import { Conditions, Stylesheet, Utility, createRoot } from '@pandacss/core'
 import { config } from '@pandacss/presets'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import { useMemo, useState } from 'react'
-import { css } from '../design-system/css'
-import { LiveProvider, LiveEditor, LiveError, LivePreview } from 'react-live'
-import dracula from 'prism-react-renderer/themes/dracula'
 
 const outdir = '.'
 const importMap = {
@@ -14,7 +11,6 @@ const importMap = {
   pattern: `${outdir}/patterns`,
   jsx: `${outdir}/jsx`,
 }
-
 const parseSourceFile = createParser({
   importMap,
   jsx: {
@@ -24,29 +20,17 @@ const parseSourceFile = createParser({
   },
 })
 
-export const TsPlayground = () => {
-  const [source, setSource] = useState(
-    //language=tsx
-    `
-import { css } from './css'
-
-function SomeComponent() {
-  return (
-      <div
-          className={css({
-            textTransform: 'uppercase',
-          })}
-      >
-        Hello
-      </div>
-  )
-}     
-    `,
-  )
-
-  const result = useMemo(() => {
-    const project = createProject({ useInMemoryFileSystem: true })
-    const sourceFile = project.createSourceFile('test.tsx', source)
+export function useTransformedSource(source: string) {
+  return useMemo(() => {
+    const project = createProject({
+      getFiles: () => ['test.tsx'],
+      readFile: (file) => (file === 'test.tsx' ? source : ''),
+      parserOptions: {
+        importMap,
+      },
+      useInMemoryFileSystem: true,
+    })
+    const sourceFile = project.createSourceFile('test.tsx')
     const parseResult = parseSourceFile(sourceFile)
 
     const breakpoints = {
@@ -88,28 +72,10 @@ function SomeComponent() {
       utility,
     })
 
-    console.log(parseResult)
-    parseResult.css.forEach((css) => {
+    parseResult?.css.forEach((css) => {
       sheet.processAtomic(css.data)
     })
 
-    console.log(sheet.toCss())
     return sheet.toCss()
   }, [source])
-
-  return (
-    <>
-      <style style={{ display: 'block', whiteSpace: 'pre' }}>{result}</style>
-      <LiveProvider transformCode={(origCode) => origCode.replaceAll(/import.*/g, '')} code={source} scope={{ css }}>
-        <LiveEditor
-          code={source}
-          onChange={setSource}
-          theme={dracula}
-          className={css({ background: 'black', '& *': { fontFamily: 'mono' } })}
-        />
-        <LiveError />
-        <LivePreview className={css({ p: '4', border: '1px solid' })} />
-      </LiveProvider>
-    </>
-  )
 }
