@@ -1,4 +1,4 @@
-import { assignCompositions, Conditions, Stylesheet, Utility } from '@pandacss/core'
+import { assignCompositions, Conditions, Stylesheet, StylesheetOptions, Utility } from '@pandacss/core'
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
 import { mapObject } from '@pandacss/shared'
@@ -50,14 +50,17 @@ export const getBaseEngine = (config: UserConfig) =>
       assignCompositions({ conditions, utility }, compositions)
     }),
 
-    Obj.bind('createSheet', ({ conditions, utility, config }) => () => {
-      return new Stylesheet({
-        root: postcss.root(),
-        conditions,
-        utility,
-        hash: config.hash,
-        helpers,
-      })
+    Obj.bind('createSheet', ({ conditions, utility, config }) => (options?: StylesheetOptions) => {
+      return new Stylesheet(
+        {
+          root: postcss.root(),
+          conditions,
+          utility,
+          hash: config.hash,
+          helpers,
+        },
+        options,
+      )
     }),
 
     Obj.bind('properties', ({ utility, conditions }) =>

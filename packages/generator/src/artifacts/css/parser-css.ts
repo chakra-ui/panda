@@ -1,9 +1,9 @@
 import { logger } from '@pandacss/logger'
 import type { ParserResult } from '@pandacss/types'
 import { match, P } from 'ts-pattern'
-import type { Context } from './engines'
+import type { Context } from '../../engines'
 
-export const getParserCss = (ctx: Context, result: ParserResult) => {
+export const generateParserCss = (ctx: Context) => (result: ParserResult) => {
   const {
     createSheet,
     patterns,

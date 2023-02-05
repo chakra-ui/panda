@@ -1,6 +1,6 @@
-import type { Context } from './engines'
+import type { Context } from '../../engines'
 
-export const getGlobalCss = (ctx: Context) => {
+export const generateGlobalCss = (ctx: Context) => {
   const { globalCss = {} } = ctx.config
   const sheet = ctx.createSheet()
   sheet.processGlobalCss({

@@ -21,6 +21,8 @@ import { generatePropTypes } from './types/prop-types'
 import { generateStyleProps } from './types/style-props'
 import { generateTokenTypes } from './types/token-types'
 import type { Context } from '../engines'
+import { generateGlobalCss } from './css/global-css'
+import { generateStaticCss } from './css/static-css'
 
 function setupHelpers(ctx: Context): Artifact {
   const code = generateIsValidProp()
@@ -218,6 +220,16 @@ function setupLayoutGridCss(): Artifact {
   return { files: [{ file: 'layout-grid.css', code }] }
 }
 
+function setupGlobalCss(ctx: Context): Artifact {
+  const code = generateGlobalCss(ctx)
+  return { files: [{ file: 'system__global.css', code }] }
+}
+
+function setupStaticCss(ctx: Context): Artifact {
+  const code = generateStaticCss(ctx)
+  return { files: [{ file: 'system__static.css', code }] }
+}
+
 function setupPackageJson(ctx: Context): Artifact {
   if (!ctx.config.emitPackage) return
   return {
@@ -225,8 +237,8 @@ function setupPackageJson(ctx: Context): Artifact {
   }
 }
 
-export function generateArtifacts(ctx: Context): Artifact[] {
-  return [
+export const generateArtifacts = (ctx: Context) => (): Artifact[] =>
+  [
     setupHelpers(ctx),
     setupDesignTokens(ctx),
     setupKeyframes(ctx),
@@ -238,8 +250,9 @@ export function generateArtifacts(ctx: Context): Artifact[] {
     setupPatterns(ctx),
     setupCssIndex(ctx),
     setupJsx(ctx),
+    setupGlobalCss(ctx),
+    setupStaticCss(ctx),
     setupResetCss(ctx),
     setupLayoutGridCss(),
     setupPackageJson(ctx),
   ].filter(Boolean)
-}

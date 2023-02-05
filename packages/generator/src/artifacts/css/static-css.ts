@@ -1,7 +1,7 @@
-import type { Context } from './engines'
+import type { Context } from '../../engines'
 import { getStaticCss as _getStaticCss } from '@pandacss/core'
 
-export const getStaticCss = (ctx: Context) => {
+export const generateStaticCss = (ctx: Context) => {
   const { config, createSheet, utility, recipes } = ctx
   const { staticCss = {}, theme = {} } = config
 
