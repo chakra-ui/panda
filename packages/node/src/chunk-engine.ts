@@ -1,6 +1,5 @@
 import { mergeCss } from '@pandacss/core'
 import type { Generator } from '@pandacss/generator'
-import { logger } from '@pandacss/logger'
 import type { Artifact } from '@pandacss/types'
 import type { Runtime } from '@pandacss/types/src/runtime'
 
@@ -11,7 +10,8 @@ export const getChunkEngine = ({ paths, config, runtime: { path, fs } }: Generat
     return fs.existsSync(fileName) ? fs.readFileSync(fileName) : ''
   },
   getFiles() {
-    return fs.existsSync(this.dir) ? fs.readDirSync(this.dir) : []
+    const files = fs.existsSync(this.dir) ? fs.readDirSync(this.dir) : []
+    return files.map((file) => fs.readFileSync(path.join(this.dir, file)))
   },
   format(file: string) {
     return path.relative(config.cwd, file).replaceAll(path.sep, '__').replace(path.extname(file), '.css')
@@ -19,7 +19,6 @@ export const getChunkEngine = ({ paths, config, runtime: { path, fs } }: Generat
   getArtifact(file: string, css: string): Artifact {
     const fileName = this.format(file)
     const newCss = mergeCss(this.readFile(file), css)
-    logger.debug('chunk:write', { file, path: fileName })
     return {
       dir: paths.chunk,
       files: [{ file: fileName, code: newCss }],

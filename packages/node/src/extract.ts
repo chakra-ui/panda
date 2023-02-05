@@ -11,7 +11,7 @@ export async function bundleChunks(ctx: PandaContext) {
 }
 
 export async function writeFileChunk(ctx: PandaContext, file: string) {
-  logger.info('chunk:change', `File changed: ${file}`)
+  logger.info('chunk:write', `File: ${file}`)
   const css = extractFile(ctx, file)
   if (!css) return
   const artifact = ctx.chunks.getArtifact(file, css)
@@ -40,8 +40,7 @@ export function extractFiles(ctx: PandaContext) {
 
 export async function emitArtifacts(ctx: PandaContext) {
   if (ctx.config.clean) ctx.output.empty()
-  const tasks = ctx.getArtifacts().map(ctx.output.write)
-  await Promise.all(tasks)
+  await Promise.all(ctx.getArtifacts().map(ctx.output.write))
   return ctx.messages.artifactsGenerated() + ctx.messages.codegenComplete()
 }
 
