@@ -6,6 +6,7 @@ import { LayoutControl } from './LayoutControl'
 import { Preview } from './Preview'
 import { Toolbar } from './Toolbar'
 import { usePlayground, UsePlayGroundProps } from './usePlayground'
+import config from '@pandacss/presets'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const { layout, setLayout, isPristine, state, setState, share } = usePlayground(props)
@@ -33,7 +34,11 @@ export const Playground = (props: UsePlayGroundProps) => {
           <div className={css({ background: 'gray.300', minWidth: '1px', minHeight: '1px' })} />
         </SplitterResizeTrigger>
         <SplitterPanel id="preview">
-          <Preview />
+          <Preview
+            source={state.code}
+            // @ts-expect-error Config vs. UserConfig
+            config={config}
+          />
         </SplitterPanel>
       </Splitter>
     </>
