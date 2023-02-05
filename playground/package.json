@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@ark-ui/react": "0.0.0-rc-20230204220121",
+    "@monaco-editor/react": "4.4.6",
     "@next/font": "13.1.6",
     "@prisma/client": "4.9.0",
     "@types/node": "18.11.19",
@@ -22,6 +23,7 @@
     "css-panda": "workspace:*",
     "eslint": "8.33.0",
     "eslint-config-next": "13.1.6",
+    "monaco-editor": "0.34.1",
     "nanoid": "4.0.0",
     "next": "13.1.6",
     "prisma": "4.9.0",
