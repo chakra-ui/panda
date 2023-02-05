@@ -15,12 +15,7 @@ export const getBaseEngine = (conf: LoadConfigResult) =>
 
     Obj.bind('tokens', ({ config: { theme = {}, prefix } }) => {
       const { breakpoints, tokens, semanticTokens } = theme
-      return new TokenDictionary({
-        breakpoints,
-        tokens,
-        semanticTokens,
-        prefix,
-      })
+      return new TokenDictionary({ breakpoints, tokens, semanticTokens, prefix })
     }),
 
     tap(({ tokens }) => {
@@ -28,12 +23,7 @@ export const getBaseEngine = (conf: LoadConfigResult) =>
     }),
 
     Obj.bind('utility', ({ config: { prefix, utilities, separator }, tokens }) => {
-      return new Utility({
-        prefix,
-        tokens,
-        config: utilities,
-        separator,
-      })
+      return new Utility({ prefix, tokens, config: utilities, separator })
     }),
 
     Obj.bind('conditions', ({ config: { conditions, theme } }) => {
@@ -49,17 +39,9 @@ export const getBaseEngine = (conf: LoadConfigResult) =>
       assignCompositions({ conditions, utility }, compositions)
     }),
 
-    Obj.bind('createSheet', ({ conditions, utility, config }) => (options?: StylesheetOptions) => {
-      return new Stylesheet(
-        {
-          root: postcss.root(),
-          conditions,
-          utility,
-          hash: config.hash,
-          helpers,
-        },
-        options,
-      )
+    Obj.bind('createSheet', ({ conditions, utility, config: { hash } }) => (options?: StylesheetOptions) => {
+      const context = { root: postcss.root(), conditions, utility, hash, helpers }
+      return new Stylesheet(context, options)
     }),
 
     Obj.bind('properties', ({ utility, conditions }) =>
