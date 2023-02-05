@@ -7,13 +7,6 @@ import { getChunkEngine } from './chunk-engine'
 import { nodeRuntime } from './node-runtime'
 import { getOutputEngine } from './output-engine'
 
-const getImportMap = (outdir: string) => ({
-  css: `${outdir}/css`,
-  recipe: `${outdir}/recipes`,
-  pattern: `${outdir}/patterns`,
-  jsx: `${outdir}/jsx`,
-})
-
 export const createContext = (conf: LoadConfigResult) =>
   pipe(
     conf,
@@ -30,23 +23,13 @@ export const createContext = (conf: LoadConfigResult) =>
       return fs.glob({ include, exclude, cwd })
     }),
 
-    Obj.bind(
-      'project',
-      ({ getFiles, config: { outdir }, runtime: { fs }, jsx, patterns, recipes, isValidProperty }) => {
-        return createProject({
-          getFiles,
-          readFile: fs.readFileSync,
-          parserOptions: {
-            importMap: getImportMap(outdir),
-            jsx: {
-              factory: jsx.factoryName,
-              isStyleProp: isValidProperty,
-              nodes: [...patterns.nodes, ...recipes.nodes],
-            },
-          },
-        })
-      },
-    ),
+    Obj.bind('project', ({ getFiles, runtime: { fs }, parserOptions }) => {
+      return createProject({
+        getFiles,
+        readFile: fs.readFileSync,
+        parserOptions,
+      })
+    }),
 
     Obj.bind('chunks', getChunkEngine),
 

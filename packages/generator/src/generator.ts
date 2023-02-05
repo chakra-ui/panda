@@ -16,6 +16,13 @@ const defaults = (conf: LoadConfigResult): LoadConfigResult => ({
   },
 })
 
+const getImportMap = (outdir: string) => ({
+  css: `${outdir}/css`,
+  recipe: `${outdir}/recipes`,
+  pattern: `${outdir}/patterns`,
+  jsx: `${outdir}/jsx`,
+})
+
 export const createGenerator = (conf: LoadConfigResult) =>
   pipe(
     getEngine(defaults(conf)),
@@ -24,6 +31,14 @@ export const createGenerator = (conf: LoadConfigResult) =>
       getCss: generateFlattenedCss(ctx),
       getParserCss: generateParserCss(ctx),
       messages: getMessages(ctx),
+    })),
+    Obj.bind('parserOptions', ({ config: { outdir }, jsx, isValidProperty, patterns, recipes }) => ({
+      importMap: getImportMap(outdir),
+      jsx: {
+        factory: jsx.factoryName,
+        isStyleProp: isValidProperty,
+        nodes: [...patterns.nodes, ...recipes.nodes],
+      },
     })),
   )
 
