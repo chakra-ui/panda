@@ -324,7 +324,7 @@ importers:
       eslint: 8.33.0
       eslint-config-next: 13.1.6
       monaco-editor: 0.34.1
-      nanoid: 4.0.0
+      nanoid: 4.0.1
       next: 13.1.6
       prisma: 4.9.0
       react: 18.2.0
@@ -344,7 +344,7 @@ importers:
       eslint: 8.33.0
       eslint-config-next: 13.1.6_4vsywjlpuriuw3tl5oq6zy5a64
       monaco-editor: 0.34.1
-      nanoid: 4.0.0
+      nanoid: 4.0.1
       next: 13.1.6_biqbaboplfbrettd7655fr4n2y
       prisma: 4.9.0
       react: 18.2.0
@@ -10449,8 +10449,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  /nanoid/4.0.0:
-    resolution: {integrity: sha512-IgBP8piMxe/gf73RTQx7hmnhwz0aaEXYakvqZyE302IXW3HyVNhdNGC+O2MwMAVhLEnvXlvKtGbtJf6wvHihCg==}
+  /nanoid/4.0.1:
+    resolution: {integrity: sha512-udKGtCCUafD3nQtJg9wBhRP3KMbPglUsgV5JVsXhvyBs/oefqb4sqMEhKBBgqZncYowu58p1prsZQBYvAj/Gww==}
     engines: {node: ^14 || ^16 || >=18}
     hasBin: true
     dev: false
