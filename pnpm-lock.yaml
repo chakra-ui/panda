@@ -9374,10 +9374,6 @@ packages:
     resolution: {integrity: sha512-ezjglFeFifcaSRwAbib5MbUFYQ7T/mE4wQzhwEMS7yRiVx/btgnteN4FEaK01zwVfAvLaU0uH8KCJylCaMImWA==}
     dev: false
 
-  /lil-fp/1.2.1:
-    resolution: {integrity: sha512-ezjglFeFifcaSRwAbib5MbUFYQ7T/mE4wQzhwEMS7yRiVx/btgnteN4FEaK01zwVfAvLaU0uH8KCJylCaMImWA==}
-    dev: false
-
   /lilconfig/2.0.6:
     resolution: {integrity: sha512-9JROoBW7pobfsx+Sq2JsASvCo6Pfo6WWoUW79HuB1BCoBXD4PLWJPqDF6fNj67pqBYTbAHkE57M1kS/+L1neOg==}
     engines: {node: '>=10'}
