@@ -658,5 +658,5 @@ export type SystemProperties = CssVarProperties & {
 	debug?: PropertyValue<'debug'>
 	borderSlim?: PropertyValue<'borderSlim'>
 	colorPalette?: PropertyValue<'colorPalette'>
-	textStyles?: PropertyValue<'textStyles'>
+	textStyle?: PropertyValue<'textStyle'>
 }

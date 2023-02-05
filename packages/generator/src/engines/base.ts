@@ -35,7 +35,7 @@ export const getBaseEngine = (conf: LoadConfigResult) =>
       logger.debug('generator:conditions', conditions)
 
       const { textStyles, layerStyles } = theme ?? {}
-      const compositions = compact({ textStyles, layerStyles })
+      const compositions = compact({ textStyle: textStyles, layerStyle: layerStyles })
       assignCompositions({ conditions, utility }, compositions)
     }),
 
