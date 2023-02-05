@@ -24,7 +24,7 @@ export const getBaseEngine = (conf: LoadConfigResult) =>
     }),
 
     tap(({ tokens }) => {
-      logger.debug('serialize:tokens', tokens.allNames)
+      logger.debug('generator:tokens', tokens.allNames)
     }),
 
     Obj.bind('utility', ({ config: { prefix, utilities, separator }, tokens }) => {
@@ -38,13 +38,12 @@ export const getBaseEngine = (conf: LoadConfigResult) =>
 
     Obj.bind('conditions', ({ config: { conditions, theme } }) => {
       const { breakpoints } = theme ?? {}
-      return new Conditions({
-        conditions,
-        breakpoints,
-      })
+      return new Conditions({ conditions, breakpoints })
     }),
 
     tap(({ conditions, utility, config: { theme } }) => {
+      logger.debug('generator:conditions', conditions)
+
       const { textStyles, layerStyles } = theme ?? {}
       const compositions = { textStyles, layerStyles }
       assignCompositions({ conditions, utility }, compositions)
