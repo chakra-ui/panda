@@ -16,7 +16,7 @@
     "@ark-ui/react": "0.0.0-rc-20230204220121",
     "@next/font": "13.1.6",
     "@prisma/client": "4.9.0",
-    "@types/node": "18.11.18",
+    "@types/node": "18.11.19",
     "@types/react": "18.0.27",
     "@types/react-dom": "18.0.10",
     "css-panda": "workspace:*",
