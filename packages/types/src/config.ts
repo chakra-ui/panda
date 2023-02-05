@@ -165,7 +165,7 @@ export type Config = {
    * @experimental
    * Used to generate css utility classes for your project.
    */
-  static?: StaticCssOptions
+  staticCss?: StaticCssOptions
   /**
    * File extension for generated javascript files.
    */

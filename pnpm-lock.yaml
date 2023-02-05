@@ -150,6 +150,39 @@ importers:
     dependencies:
       '@pandacss/types': link:../types
 
+  packages/generator:
+    specifiers:
+      '@pandacss/core': workspace:*
+      '@pandacss/fixture': workspace:*
+      '@pandacss/is-valid-prop': workspace:*
+      '@pandacss/logger': workspace:*
+      '@pandacss/shared': workspace:*
+      '@pandacss/token-dictionary': workspace:*
+      '@pandacss/types': workspace:*
+      '@types/pluralize': 0.0.29
+      javascript-stringify: 2.1.0
+      lil-fp: 1.2.1
+      outdent: ' ^0.8.0'
+      pluralize: 8.0.0
+      postcss: 8.4.21
+      ts-pattern: 4.1.3
+    dependencies:
+      '@pandacss/core': link:../core
+      '@pandacss/is-valid-prop': link:../is-valid-prop
+      '@pandacss/logger': link:../logger
+      '@pandacss/shared': link:../shared
+      '@pandacss/token-dictionary': link:../token-dictionary
+      '@pandacss/types': link:../types
+      javascript-stringify: 2.1.0
+      lil-fp: 1.2.1
+      outdent: 0.8.0
+      pluralize: 8.0.0
+      postcss: 8.4.21
+      ts-pattern: 4.1.3
+    devDependencies:
+      '@pandacss/fixture': link:../fixture
+      '@types/pluralize': 0.0.29
+
   packages/is-valid-prop:
     specifiers:
       mdn-data: ^2.0.30
@@ -175,6 +208,7 @@ importers:
       '@pandacss/core': workspace:*
       '@pandacss/error': workspace:*
       '@pandacss/fixture': workspace:*
+      '@pandacss/generator': workspace:*
       '@pandacss/is-valid-prop': workspace:*
       '@pandacss/logger': workspace:*
       '@pandacss/parser': workspace:*
@@ -207,6 +241,7 @@ importers:
       '@pandacss/config': link:../config
       '@pandacss/core': link:../core
       '@pandacss/error': link:../error
+      '@pandacss/generator': link:../generator
       '@pandacss/is-valid-prop': link:../is-valid-prop
       '@pandacss/logger': link:../logger
       '@pandacss/parser': link:../parser
@@ -264,26 +299,6 @@ importers:
       '@pandacss/types': workspace:*
     dependencies:
       '@pandacss/types': link:../types
-
-  packages/serializer:
-    specifiers:
-      '@pandacss/core': workspace:*
-      '@pandacss/is-valid-prop': workspace:*
-      '@pandacss/logger': workspace:*
-      '@pandacss/shared': workspace:*
-      '@pandacss/token-dictionary': workspace:*
-      '@pandacss/types': workspace:*
-      lil-fp: 1.2.1
-      postcss: 8.4.21
-    dependencies:
-      '@pandacss/core': link:../core
-      '@pandacss/is-valid-prop': link:../is-valid-prop
-      '@pandacss/logger': link:../logger
-      '@pandacss/shared': link:../shared
-      '@pandacss/token-dictionary': link:../token-dictionary
-      '@pandacss/types': link:../types
-      lil-fp: 1.2.1
-      postcss: 8.4.21
 
   packages/shared:
     specifiers: {}

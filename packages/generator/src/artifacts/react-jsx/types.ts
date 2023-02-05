@@ -1,0 +1,42 @@
+import { outdent } from 'outdent'
+import type { Context } from '../../engines'
+
+export function generateReactJsxTypes(ctx: Context) {
+  const { factoryName, componentName, upperName, typeName } = ctx.jsx
+
+  return {
+    jsxFactory: outdent`
+import { ${upperName} } from '../types/jsx'
+export declare const ${factoryName}: ${upperName}
+    `,
+    jsxType: outdent`
+import type { ElementType, ComponentProps } from 'react'
+import type { JsxStyleProps, Assign } from '.'
+import type { RecipeDefinition, RecipeRuntimeFn, RecipeSelection, RecipeVariantRecord } from './recipe'
+
+type Dict = Record<string, unknown>
+
+type HTMLProps = {
+  htmlSize?: string | number
+  htmlWidth?: string | number
+  htmlHeight?: string | number
+  htmlTranslate?: 'yes' | 'no' | undefined
+}
+
+type Polyfill<T> = Omit<T, 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size'> & HTMLProps
+
+type Props<T extends Dict, P extends Dict = {}> = Assign<Polyfill<T>, P>
+
+export type ${componentName}<T extends ElementType, P extends Dict = {}> = {
+  (props: Props<ComponentProps<T>, P> & JsxStyleProps): JSX.Element
+  displayName?: string
+}
+
+export type ${upperName} = {
+  <T extends ElementType, P extends RecipeVariantRecord = {}>(component: T, recipe?: RecipeDefinition<P> | RecipeRuntimeFn<P>): ${componentName}<T, RecipeSelection<P>>
+} & { [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}> }
+
+export type ${typeName}<T extends ElementType> = Polyfill<ComponentProps<T>> & JsxStyleProps
+  `,
+  }
+}

@@ -7,7 +7,7 @@ export { discardDuplicate, expandCssFunctions, expandNestedCss, optimizeCss, pre
 export { Recipe } from './recipe'
 export { extractParentSelectors } from './selector'
 export { getStaticCss } from './static-css'
-export { Stylesheet } from './stylesheet'
+export { Stylesheet, type StylesheetOptions } from './stylesheet'
 export { toCss } from './to-css'
 export type { StylesheetContext } from './types'
 export { Utility } from './utility'

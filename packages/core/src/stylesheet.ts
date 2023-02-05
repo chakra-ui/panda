@@ -7,8 +7,12 @@ import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
 
+export type StylesheetOptions = {
+  content: string
+}
+
 export class Stylesheet {
-  constructor(private context: StylesheetContext, private options?: { content: string }) {}
+  constructor(private context: StylesheetContext, private options?: StylesheetOptions) {}
 
   processGlobalCss = (styleObject: Dict) => {
     const { conditions, utility } = this.context
@@ -87,11 +91,11 @@ export class Stylesheet {
     return discardDuplicate(css)
   }
 
-  append = (css: string) => {
-    this.context.root.append(css)
+  append = (...css: string[]) => {
+    this.context.root.append(...css)
   }
 
-  prepend = (css: string) => {
-    this.context.root.prepend(css)
+  prepend = (...css: string[]) => {
+    this.context.root.prepend(...css)
   }
 }

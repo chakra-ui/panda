@@ -79,7 +79,7 @@ export async function main() {
       if (silent) logger.level = 'silent'
 
       const ctx = await loadConfigAndCreateContext()
-      if (clean) await ctx.chunks.empty()
+      if (clean) ctx.chunks.empty()
 
       const msg = await extractCss(ctx)
 

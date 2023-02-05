@@ -1,4 +1,4 @@
-import { discardDuplicate, mergeCss, Stylesheet } from '@pandacss/core'
+import { discardDuplicate, mergeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { toHash } from '@pandacss/shared'
@@ -6,12 +6,10 @@ import { existsSync, readFileSync } from 'fs'
 import { statSync } from 'fs-extra'
 import { resolve } from 'path'
 import type { Message, Root } from 'postcss'
-import { emitArtifacts } from './artifacts'
-import { getBaseCss } from './get-base-css'
 import { findConfig, loadConfigAndCreateContext } from './config'
-import type { PandaContext } from './context'
-import { extractFile } from './extract'
-import { parseDependency } from './glob'
+import type { PandaContext } from './create-context'
+import { emitArtifacts, extractFile } from './extract'
+import { parseDependency } from './parse-dependency'
 
 type CachedData = {
   fileCssMap: Map<string, string>
@@ -46,7 +44,7 @@ export class Builder {
 
   configChanged = true
 
-  updateFile(file: string, css: string) {
+  writeFile(file: string, css: string) {
     const oldCss = this.fileCssMap?.get(file) ?? ''
     const newCss = mergeCss(oldCss, css)
     this.fileCssMap?.set(file, newCss)
@@ -73,7 +71,7 @@ export class Builder {
         emitArtifacts(this.context) //no need to await this
       }
 
-      this.fileCssMap = new Map([['base.css', getBaseCss(this.context)]])
+      this.fileCssMap = new Map()
       this.fileModifiedMap = new Map()
 
       contextCache.set(configHash, this.context)
@@ -93,30 +91,32 @@ export class Builder {
 
     const done = logger.time.info('Extracted in')
 
-    await ctx.extract(async (file) => {
-      const mtime = existsSync(file) ? statSync(file).mtimeMs : -Infinity
+    await Promise.all(
+      ctx.getFiles().map(async (file) => {
+        const mtime = existsSync(file) ? statSync(file).mtimeMs : -Infinity
 
-      const isUnchanged = this.fileModifiedMap.has(file) && mtime === this.fileModifiedMap.get(file)
-      if (isUnchanged) return
+        const isUnchanged = this.fileModifiedMap.has(file) && mtime === this.fileModifiedMap.get(file)
+        if (isUnchanged) return
 
-      const result = extractFile(ctx, file)
-      if (!result) return
+        const css = extractFile(ctx, file)
+        if (!css) return
 
-      this.fileModifiedMap.set(file, mtime)
-      this.updateFile(file, result.css)
+        this.fileModifiedMap.set(file, mtime)
+        this.writeFile(file, css)
 
-      return result
-    })
+        return css
+      }),
+    )
 
     done()
   }
 
   toString() {
     const ctx = this.ensure()
-    const sheet = new Stylesheet(ctx.context())
-    const css = Array.from(this.fileCssMap.values()).join('\n\n')
-    sheet.append(css)
-    return sheet.toCss({ minify: ctx.minify })
+    return ctx.getCss({
+      files: Array.from(this.fileCssMap.values()),
+      resolve: true,
+    })
   }
 
   // ASSUMPTION: Layer structure is an exact match (no extra layers)
@@ -156,7 +156,7 @@ export class Builder {
       }
     }
 
-    for (const file of ctx.conf.dependencies) {
+    for (const file of ctx.dependencies) {
       fn({ type: 'dependency', file: resolve(file) })
     }
   }

@@ -1,3 +1,5 @@
+import type { ParserResult } from '@pandacss/types'
+
 type Result = {
   name?: string
   data: Record<string, any>
@@ -8,7 +10,7 @@ type PartialResult = {
   data: Record<string, any>
 }
 
-export const createParserResult = () => ({
+export const createParserResult = (): ParserResult => ({
   jsx: new Set<Result>(),
   css: new Set<Result>(),
   cva: new Set<Result>(),
@@ -38,5 +40,3 @@ export const createParserResult = () => ({
     )
   },
 })
-
-export type ParserResult = ReturnType<typeof createParserResult>

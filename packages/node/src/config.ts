@@ -1,7 +1,7 @@
 import { loadConfigFile } from '@pandacss/config'
 import type { Config } from '@pandacss/types'
 import { lookItUpSync } from 'look-it-up'
-import { createContext } from './context'
+import { createContext } from './create-context'
 
 const configs = ['.ts', '.js', '.mjs', '.cjs']
 
