@@ -2,13 +2,18 @@ import { expandNestedCss, extractParentSelectors, prettifyCss, toCss } from '@pa
 import postcss, { AtRule, Rule } from 'postcss'
 import type { Context } from '../../engines'
 
-export function generateTokenCss(ctx: Context, varRoot?: string) {
-  const root = varRoot ?? ctx.config.cssVarRoot!
-  const conditions = ctx.conditions
+export function generateTokenCss(ctx: Context) {
+  const {
+    config: { cssVarRoot },
+    conditions,
+    tokens,
+  } = ctx
+
+  const root = cssVarRoot!
 
   const results: string[] = []
 
-  for (const [key, values] of ctx.tokens.vars.entries()) {
+  for (const [key, values] of tokens.vars.entries()) {
     const varsObj = Object.fromEntries(values)
     if (Object.keys(varsObj).length === 0) continue
 

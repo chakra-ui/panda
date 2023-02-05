@@ -1,19 +1,12 @@
-import { Utility } from '@pandacss/core'
-import { TokenDictionary } from '@pandacss/token-dictionary'
-import { semanticTokens, tokens, utilities } from '@pandacss/fixture'
 import { describe, expect, test } from 'vitest'
-import { generatePropTypes } from '../src/generators/prop-types'
+import { createGenerator } from '../src'
+import { generatePropTypes } from '../src/artifacts/types/prop-types'
+import { loadConfigResult } from './fixture'
 
 describe('generate property types', () => {
+  const ctx = createGenerator(loadConfigResult)
   test('should ', () => {
-    expect(
-      generatePropTypes(
-        new Utility({
-          tokens: new TokenDictionary({ tokens, semanticTokens }),
-          config: utilities,
-        }),
-      ),
-    ).toMatchInlineSnapshot(`
+    expect(generatePropTypes(ctx)).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { Properties as CSSProperties } from './csstype'
       import type { Tokens } from './token'

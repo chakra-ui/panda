@@ -153,6 +153,7 @@ importers:
   packages/generator:
     specifiers:
       '@pandacss/core': workspace:*
+      '@pandacss/fixture': workspace:*
       '@pandacss/is-valid-prop': workspace:*
       '@pandacss/logger': workspace:*
       '@pandacss/shared': workspace:*
@@ -179,6 +180,7 @@ importers:
       postcss: 8.4.21
       ts-pattern: 4.1.3
     devDependencies:
+      '@pandacss/fixture': link:../fixture
       '@types/pluralize': 0.0.29
 
   packages/is-valid-prop:

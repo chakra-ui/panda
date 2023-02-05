@@ -1,11 +1,11 @@
-import { TokenDictionary } from '@pandacss/token-dictionary'
-import { semanticTokens, tokens } from '@pandacss/fixture'
 import { expect, test } from 'vitest'
-import { generateTokenJs } from '../../node/src/generators/token-js'
+import { createGenerator } from '../src'
+import { generateTokenJs } from '../src/artifacts/js/token'
+import { loadConfigResult } from './fixture'
 
 test('[dts] should generate package', () => {
-  const dict = new TokenDictionary({ tokens, semanticTokens })
-  expect(generateTokenJs(dict).js).toMatchInlineSnapshot(
+  const ctx = createGenerator(loadConfigResult)
+  expect(generateTokenJs(ctx).js).toMatchInlineSnapshot(
     `
     "const tokens = {
       \\"fonts.heading\\": {

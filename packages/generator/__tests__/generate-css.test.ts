@@ -1,35 +1,14 @@
-import type { LoadConfigResult } from '@pandacss/types'
-import { breakpoints, conditions, keyframes, semanticTokens, tokens } from '@pandacss/fixture'
-import { expect, test } from 'vitest'
-import { createContext } from '../src/context'
-import { generateTokenCss } from '../src/generators/token-css'
+import { describe, expect, test } from 'vitest'
+import { createGenerator } from '../src'
+import { generateTokenCss } from '../src/artifacts/css/token-css'
+import { loadConfigResult } from './fixture'
 
-const conf: LoadConfigResult = {
-  dependencies: [],
-  config: {
-    cwd: '',
-    include: [],
-    theme: {
-      tokens,
-      semanticTokens,
-      breakpoints,
-      keyframes,
-    },
-    conditions: {
-      ...conditions,
-      dark: '[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]',
-      light: '[data-theme=light] &, .light &, &.light, &[data-theme=light]',
-    },
-    outdir: '',
-  },
-  path: '',
-}
+describe('generator', () => {
+  test('[css] should generate css', () => {
+    const ctx = createGenerator(loadConfigResult)
+    const css = generateTokenCss(ctx)
 
-test('[css] should generate css', () => {
-  const ctx = createContext(conf)
-  const css = generateTokenCss(ctx, ':where(html)')
-
-  expect(css).toMatchInlineSnapshot(`
+    expect(css).toMatchInlineSnapshot(`
     "@layer tokens {
         :where(html) {
       --fonts-heading: -apple-system, BlinkMacSystemFont;
@@ -215,4 +194,5 @@ test('[css] should generate css', () => {
       }
       "
   `)
+  })
 })
