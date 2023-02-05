@@ -2,7 +2,6 @@
 import { css } from '@/design-system/css'
 import { Flex } from '@/design-system/jsx'
 import { TabContent, TabIndicator, TabList, Tabs, TabTrigger } from '@ark-ui/react'
-import { useRouter } from 'next/navigation'
 import { ChangeEvent, useState } from 'react'
 
 type Session = {
@@ -27,7 +26,6 @@ export const Editor = (props: EditorProps) => {
           view: 'code',
         },
   )
-  const router = useRouter()
 
   const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setForm({
@@ -45,7 +43,7 @@ export const Editor = (props: EditorProps) => {
       body: JSON.stringify(form),
     })
       .then((response) => response.json())
-      .then((data) => router.push(`/${data.id}`))
+      .then((data) => history.pushState({ id: data.id }, '', data.id))
 
   return (
     <Flex flex="1" direction="column" align="flex-start">
