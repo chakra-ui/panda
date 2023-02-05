@@ -4,7 +4,7 @@ import type { PandaContext } from './create-context'
 
 export async function bundleChunks(ctx: PandaContext) {
   const files = ctx.chunks.getFiles()
-  await ctx.output.write({
+  return ctx.output.write({
     dir: ctx.paths.root,
     files: [{ file: 'styles.css', code: ctx.getCss({ files }) }],
   })
@@ -16,7 +16,7 @@ export async function writeFileChunk(ctx: PandaContext, file: string) {
   const css = extractFile(ctx, file)
   if (!css) return
   const artifact = ctx.chunks.getArtifact(file, css)
-  await ctx.output.write(artifact)
+  return ctx.output.write(artifact)
 }
 
 export function extractFile(ctx: PandaContext, file: string) {

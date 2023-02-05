@@ -44,7 +44,7 @@ export class Builder {
 
   configChanged = true
 
-  updateFile(file: string, css: string) {
+  writeFile(file: string, css: string) {
     const oldCss = this.fileCssMap?.get(file) ?? ''
     const newCss = mergeCss(oldCss, css)
     this.fileCssMap?.set(file, newCss)
@@ -102,7 +102,7 @@ export class Builder {
         if (!css) return
 
         this.fileModifiedMap.set(file, mtime)
-        this.updateFile(file, css)
+        this.writeFile(file, css)
 
         return css
       }),

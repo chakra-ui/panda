@@ -23,13 +23,12 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
     .join('\n\n')
 
   const resolved = [
-    '@layer reset, base, tokens, recipes, utilities;',
     generateLayoutGridCss(),
+    generateGlobalCss(ctx),
+    generateStaticCss(ctx),
     generateResetCss(),
     generateTokenCss(ctx),
     generateKeyframeCss(ctx),
-    generateGlobalCss(ctx),
-    generateStaticCss(ctx),
   ]
     .filter(Boolean)
     .join('\n\n')
