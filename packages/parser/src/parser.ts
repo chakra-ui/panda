@@ -1,4 +1,4 @@
-import { logger } from '@pandacss/logger'
+// import { logger } from '@pandacss/logger'
 import { memo } from '@pandacss/shared'
 import type { SourceFile } from 'ts-morph'
 import { match } from 'ts-pattern'
@@ -38,7 +38,7 @@ export function createParser(options: ParserOptions) {
   return function parse(sourceFile: SourceFile | undefined) {
     if (!sourceFile) return
 
-    const fileName = sourceFile.getFilePath()
+    // const fileName = sourceFile.getFilePath()
     const collector = createParserResult()
 
     const { jsx, importMap } = options

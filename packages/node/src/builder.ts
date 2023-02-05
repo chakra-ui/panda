@@ -1,6 +1,6 @@
 import { discardDuplicate, mergeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
-import { logger } from '@pandacss/logger'
+// import { logger } from '@pandacss/logger'
 import { toHash } from '@pandacss/shared'
 import { existsSync, readFileSync } from 'fs'
 import { statSync } from 'fs-extra'
@@ -89,10 +89,10 @@ export class Builder {
   async extract() {
     const ctx = this.ensure()
 
-    const done = logger.time.info('Extracted in')
+    // const done = logger.time.info('Extracted in')
 
     await Promise.all(
-      ctx.getFiles().map(async (file) => {
+      ctx.getFiles().map(async (file: string) => {
         const mtime = existsSync(file) ? statSync(file).mtimeMs : -Infinity
 
         const isUnchanged = this.fileModifiedMap.has(file) && mtime === this.fileModifiedMap.get(file)
@@ -108,7 +108,7 @@ export class Builder {
       }),
     )
 
-    done()
+    // done()
   }
 
   toString() {
