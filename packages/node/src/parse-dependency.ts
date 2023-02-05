@@ -1,28 +1,7 @@
-import globParent from 'glob-parent'
 import isGlob from 'is-glob'
 import { resolve } from 'path'
 import type { Message } from 'postcss'
-
-export function parseGlob(pattern: string) {
-  let glob = pattern
-  const base = globParent(pattern)
-
-  if (base !== '.') {
-    glob = pattern.substring(base.length)
-    if (glob.charAt(0) === '/') {
-      glob = glob.substring(1)
-    }
-  }
-
-  if (glob.substring(0, 2) === './') {
-    glob = glob.substring(2)
-  }
-  if (glob.charAt(0) === '/') {
-    glob = glob.substring(1)
-  }
-
-  return { base, glob }
-}
+import { parseGlob } from './parse-glob'
 
 export function parseDependency(fileOrGlob: string) {
   if (fileOrGlob.startsWith('!')) {

@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src", "index.ts"],
+  "include": ["src", "index.ts", "../generator/src/messages.ts", "../generator/src/messages.ts", "../types/src/runtime.ts", "../types/src/runtime.ts"],
   "compilerOptions": {
     "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo"
   }

@@ -206,6 +206,7 @@ importers:
       '@pandacss/core': workspace:*
       '@pandacss/error': workspace:*
       '@pandacss/fixture': workspace:*
+      '@pandacss/generator': workspace:*
       '@pandacss/is-valid-prop': workspace:*
       '@pandacss/logger': workspace:*
       '@pandacss/parser': workspace:*
@@ -238,6 +239,7 @@ importers:
       '@pandacss/config': link:../config
       '@pandacss/core': link:../core
       '@pandacss/error': link:../error
+      '@pandacss/generator': link:../generator
       '@pandacss/is-valid-prop': link:../is-valid-prop
       '@pandacss/logger': link:../logger
       '@pandacss/parser': link:../parser

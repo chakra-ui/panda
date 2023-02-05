@@ -3,15 +3,15 @@ import { isCssProperty } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
 import { mapObject } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import type { UserConfig } from '@pandacss/types'
+import type { LoadConfigResult } from '@pandacss/types'
 import { Obj, pipe, tap } from 'lil-fp'
 import postcss from 'postcss'
 
 const helpers = { map: mapObject }
 
-export const getBaseEngine = (config: UserConfig) =>
+export const getBaseEngine = (conf: LoadConfigResult) =>
   pipe(
-    { config },
+    conf,
 
     Obj.bind('tokens', ({ config: { theme, prefix } }) => {
       const { breakpoints, tokens, semanticTokens } = theme ?? {}

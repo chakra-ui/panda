@@ -1,7 +1,7 @@
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { semanticTokens, tokens } from '@pandacss/fixture'
 import { expect, test } from 'vitest'
-import { generateTokenJs } from '../src/generators/token-js'
+import { generateTokenJs } from '../../node/src/generators/token-js'
 
 test('[dts] should generate package', () => {
   const dict = new TokenDictionary({ tokens, semanticTokens })

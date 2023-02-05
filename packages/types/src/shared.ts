@@ -27,7 +27,7 @@ export type UnwrapExtend<T extends Record<string, unknown>> = {
 }
 
 export type Artifact = Nullable<{
-  dir?: string
+  dir?: string[]
   files: Array<{
     file: string
     code: string | undefined

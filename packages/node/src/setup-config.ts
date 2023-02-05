@@ -1,11 +1,11 @@
 import { logger, quote } from '@pandacss/logger'
+import { messages } from '@pandacss/generator'
 import { writeFile } from 'fs-extra'
 import { lookItUpSync } from 'look-it-up'
 import { outdent } from 'outdent'
 import { join } from 'path'
 import getPackageManager from 'preferred-pm'
 import { findConfig } from './config'
-import { configExistsMessage, thankYouMessage } from './messages'
 
 export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
   const configFile = findConfig()
@@ -20,7 +20,7 @@ export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
   logger.info('init:config', `creating panda config file: ${quote(file)}`)
 
   if (!force && configFile) {
-    logger.warn('init:config', configExistsMessage(cmd))
+    logger.warn('init:config', messages.configExists(cmd))
   } else {
     const content = outdent`
        import { defineConfig } from "css-panda"
@@ -41,7 +41,7 @@ export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
     `
 
     await writeFile(join(cwd, file), content)
-    logger.log(thankYouMessage())
+    logger.log(messages.thankYou())
   }
 }
 

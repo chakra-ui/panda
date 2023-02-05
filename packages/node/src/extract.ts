@@ -1,50 +1,57 @@
-import type { ParserResult } from '@pandacss/parser'
-import { logger, quote } from '@pandacss/logger'
-import type { PandaContext } from './context'
+import { logger } from '@pandacss/logger'
+import { Obj, pipe, tap } from 'lil-fp'
+import type { PandaContext } from './create-context'
 
-export function extractFile(ctx: PandaContext, file: string) {
-  logger.debug('file:extract', file)
-
-  let data: ParserResult | undefined
-  let result: { css: string; file: string } | undefined
-
-  const done = logger.time.debug(`Extracted ${quote(file)}`)
-
-  try {
-    data = ctx.project.parseSourceFile(ctx.absPath(file))
-  } catch (error) {
-    logger.error('file:parse', error)
-  }
-
-  if (data) {
-    result = ctx.getCss(data, file)
-  }
-
-  if (result) {
-    done()
-  }
-
-  return result
-}
-
-export function extractFiles(ctx: PandaContext) {
-  return ctx.extract(async (file) => {
-    const result = extractFile(ctx, file)
-    if (result) {
-      await ctx.chunks.write(file, result.css)
-      return result
-    }
+export async function bundleChunks(ctx: PandaContext) {
+  const files = ctx.chunks.getFiles()
+  await ctx.output.write({
+    dir: ctx.paths.root,
+    files: [{ file: 'styles.css', code: ctx.getCss({ files }) }],
   })
 }
 
-export function extractGlobalCss(ctx: PandaContext) {
-  const css = ctx.getGlobalCss()
+export async function writeFileChunk(ctx: PandaContext, file: string) {
+  logger.info('chunk:change', `File changed: ${file}`)
+  const css = extractFile(ctx, file)
   if (!css) return
-  return ctx.chunks.write('system/global.css', css)
+  const artifact = ctx.chunks.getArtifact(file, css)
+  await ctx.output.write(artifact)
 }
 
-export function extractStaticCss(ctx: PandaContext) {
-  const css = ctx.getStaticCss()
-  if (!css) return
-  return ctx.chunks.write('system/static.css', css)
+export function extractFile(ctx: PandaContext, file: string) {
+  const {
+    runtime: { path },
+    config: { cwd },
+  } = ctx
+  return pipe(
+    { file: path.abs(cwd, file) },
+    tap(() => logger.debug('file:extract', file)),
+    Obj.bind('measure', () => logger.time.debug(`Extracted ${file}`)),
+    Obj.bind('result', ({ file }) => ctx.project.parseSourceFile(file)),
+    Obj.bind('css', ({ result }) => (result ? ctx.getParserCss(result) : undefined)),
+    tap(({ measure }) => measure()),
+    ({ css }) => css,
+  )
+}
+
+export function extractFiles(ctx: PandaContext) {
+  return Promise.all(ctx.getFiles().map((file) => writeFileChunk(ctx, file)))
+}
+
+export async function emitArtifacts(ctx: PandaContext) {
+  if (ctx.config.clean) ctx.output.empty()
+  const tasks = ctx.getArtifacts().map(ctx.output.write)
+  await Promise.all(tasks)
+  return ctx.messages.artifactsGenerated() + ctx.messages.codegenComplete()
+}
+
+export async function emitAndExtract(ctx: PandaContext) {
+  await emitArtifacts(ctx)
+  return extractCss(ctx)
+}
+
+export async function extractCss(ctx: PandaContext) {
+  await extractFiles(ctx)
+  await bundleChunks(ctx)
+  return ctx.messages.buildComplete(ctx.getFiles().length)
 }

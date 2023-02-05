@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@pandacss/config": "workspace:*",
+    "@pandacss/generator": "workspace:*",
     "@pandacss/core": "workspace:*",
     "@pandacss/error": "workspace:*",
     "@pandacss/is-valid-prop": "workspace:*",

@@ -1,19 +1,19 @@
-import type { UserConfig } from '@pandacss/types'
+import type { LoadConfigResult } from '@pandacss/types'
 import { getBaseEngine } from './base'
 import { getJsxEngine } from './jsx'
 import { getPathEngine } from './path'
 import { getPatternEngine } from './pattern'
 import { getRecipeEngine } from './recipe'
 
-export const getEngine = (config: UserConfig) => ({
-  ...getBaseEngine(config),
-  patterns: getPatternEngine(config),
-  recipes: getRecipeEngine(config),
-  jsx: getJsxEngine(config),
-  paths: getPathEngine(config),
+export const getEngine = (conf: LoadConfigResult) => ({
+  ...getBaseEngine(conf),
+  patterns: getPatternEngine(conf.config),
+  recipes: getRecipeEngine(conf.config),
+  jsx: getJsxEngine(conf.config),
+  paths: getPathEngine(conf.config),
   file: {
     ext(file: string) {
-      return `${file}.${config.outExtension}`
+      return `${file}.${conf.config.outExtension}`
     },
     import(mod: string, file: string) {
       return `import { ${mod} } from '${this.ext(file)}';`

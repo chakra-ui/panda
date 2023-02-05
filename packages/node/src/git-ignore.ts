@@ -1,12 +1,12 @@
 import { appendFileSync, readFileSync, writeFileSync } from 'fs'
 import { lookItUpSync } from 'look-it-up'
 import outdent from 'outdent'
-import type { PandaContext } from './context'
+import type { PandaContext } from './create-context'
 
-export function setupGitIgnore(ctx: PandaContext) {
+export function setupGitIgnore({ config: { outdir } }: PandaContext) {
   const txt = outdent`## CSS Panda
-  ${ctx.outdir}
-  ${ctx.outdir}-static
+  ${outdir}
+  ${outdir}-static
   `
 
   const file = lookItUpSync('.gitignore')
@@ -17,7 +17,7 @@ export function setupGitIgnore(ctx: PandaContext) {
 
   const content = readFileSync(file, 'utf-8')
 
-  if (!content.includes(ctx.outdir)) {
+  if (!content.includes(outdir)) {
     appendFileSync(file, txt)
   }
 }
