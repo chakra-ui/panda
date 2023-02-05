@@ -1,53 +1,27 @@
-'use client'
 import { css } from '@/design-system/css'
 import { Flex } from '@/design-system/jsx'
 import { TabContent, TabIndicator, TabList, Tabs, TabTrigger } from '@ark-ui/react'
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent } from 'react'
+import { State } from './usePlayground'
 
-type Session = {
-  code: string
-  config: string
-  view: string
-}
-
-export type EditorProps = {
-  session?: Session | null
+type EditorProps = {
+  value: State
+  onChange: (state: State) => void
 }
 
 export const Editor = (props: EditorProps) => {
-  const { session } = props
-
-  const [form, setForm] = useState(
-    session
-      ? session
-      : {
-          code: 'default code',
-          config: 'default config',
-          view: 'code',
-        },
-  )
+  const { onChange, value } = props
 
   const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setForm({
-      ...form,
+    onChange({
+      ...value,
       [event.target.id]: event.target.value,
     })
   }
 
-  const share = async () =>
-    fetch('/api/share', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(form),
-    })
-      .then((response) => response.json())
-      .then((data) => history.pushState({ id: data.id }, '', data.id))
-
   return (
     <Flex flex="1" direction="column" align="flex-start">
-      <Tabs defaultValue={form.view} className={css({ width: 'full' })}>
+      <Tabs defaultValue={value.view} className={css({ width: 'full' })}>
         <TabList
           className={css({
             px: '6',
@@ -72,7 +46,7 @@ export const Editor = (props: EditorProps) => {
           </label>
           <textarea
             id="code"
-            value={form.code}
+            value={value.code}
             onChange={handleChange}
             rows={5}
             cols={30}
@@ -85,7 +59,7 @@ export const Editor = (props: EditorProps) => {
           </label>
           <textarea
             id="config"
-            value={form.config}
+            value={value.config}
             onChange={handleChange}
             rows={5}
             cols={30}
@@ -93,8 +67,6 @@ export const Editor = (props: EditorProps) => {
           />
         </TabContent>
       </Tabs>
-
-      <button onClick={share}>Share</button>
     </Flex>
   )
 }

@@ -5,9 +5,13 @@ const Page = async (props: any) => {
   const {
     params: { id },
   } = props
-  const session = await prisma?.session.findFirst({ where: { id }, select: { code: true, config: true, view: true } })
 
-  return <Playground session={session} />
+  const initialState = await prisma?.session.findFirst({
+    where: { id },
+    select: { code: true, config: true, view: true },
+  })
+
+  return <Playground intialState={initialState} />
 }
 
 export default Page
