@@ -396,6 +396,26 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"36rem\\",
         \\"variable\\": \\"var(--sizes-xl)\\"
       },
+      \\"sizes.screen-sm\\": {
+        \\"value\\": \\"30em\\",
+        \\"variable\\": \\"var(--sizes-screen-sm)\\"
+      },
+      \\"sizes.screen-md\\": {
+        \\"value\\": \\"48em\\",
+        \\"variable\\": \\"var(--sizes-screen-md)\\"
+      },
+      \\"sizes.screen-lg\\": {
+        \\"value\\": \\"62em\\",
+        \\"variable\\": \\"var(--sizes-screen-lg)\\"
+      },
+      \\"sizes.screen-xl\\": {
+        \\"value\\": \\"80em\\",
+        \\"variable\\": \\"var(--sizes-screen-xl)\\"
+      },
+      \\"sizes.screen-2xl\\": {
+        \\"value\\": \\"96em\\",
+        \\"variable\\": \\"var(--sizes-screen-2xl)\\"
+      },
       \\"animations.none\\": {
         \\"value\\": \\"none\\",
         \\"variable\\": \\"var(--animations-none)\\"
@@ -439,6 +459,26 @@ test('[dts] should generate package', () => {
       \\"durations.150\\": {
         \\"value\\": \\"150ms\\",
         \\"variable\\": \\"var(--durations-150)\\"
+      },
+      \\"screens.sm\\": {
+        \\"value\\": \\"30em\\",
+        \\"variable\\": \\"var(--screens-sm)\\"
+      },
+      \\"screens.md\\": {
+        \\"value\\": \\"48em\\",
+        \\"variable\\": \\"var(--screens-md)\\"
+      },
+      \\"screens.lg\\": {
+        \\"value\\": \\"62em\\",
+        \\"variable\\": \\"var(--screens-lg)\\"
+      },
+      \\"screens.xl\\": {
+        \\"value\\": \\"80em\\",
+        \\"variable\\": \\"var(--screens-xl)\\"
+      },
+      \\"screens.2xl\\": {
+        \\"value\\": \\"96em\\",
+        \\"variable\\": \\"var(--screens-2xl)\\"
       },
       \\"colors.primary\\": {
         \\"value\\": \\"var(--colors-primary)\\",

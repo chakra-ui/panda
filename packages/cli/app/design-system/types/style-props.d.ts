@@ -659,5 +659,4 @@ export type SystemProperties = CssVarProperties & {
 	borderSlim?: PropertyValue<'borderSlim'>
 	colorPalette?: PropertyValue<'colorPalette'>
 	textStyles?: PropertyValue<'textStyles'>
-	layerStyles?: PropertyValue<'layerStyles'>
 }

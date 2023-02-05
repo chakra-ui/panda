@@ -1,4 +1,4 @@
-import { breakpoints, keyframes, semanticTokens, tokens } from '@pandacss/fixture'
+import { breakpoints, keyframes, semanticTokens, tokens, utilities } from '@pandacss/fixture'
 import { conditions } from '@pandacss/fixture'
 import type { LoadConfigResult } from '@pandacss/types'
 
@@ -7,6 +7,7 @@ export const loadConfigResult: LoadConfigResult = {
   config: {
     cwd: '',
     include: [],
+    utilities,
     theme: {
       tokens,
       semanticTokens,

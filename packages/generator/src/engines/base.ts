@@ -1,7 +1,7 @@
 import { assignCompositions, Conditions, Stylesheet, StylesheetOptions, Utility } from '@pandacss/core'
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
-import { mapObject } from '@pandacss/shared'
+import { compact, mapObject } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type { LoadConfigResult } from '@pandacss/types'
 import { Obj, pipe, tap } from 'lil-fp'
@@ -45,7 +45,7 @@ export const getBaseEngine = (conf: LoadConfigResult) =>
       logger.debug('generator:conditions', conditions)
 
       const { textStyles, layerStyles } = theme ?? {}
-      const compositions = { textStyles, layerStyles }
+      const compositions = compact({ textStyles, layerStyles })
       assignCompositions({ conditions, utility }, compositions)
     }),
 
