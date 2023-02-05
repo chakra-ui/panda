@@ -201,7 +201,8 @@ type PropertyValueTypes  = {
 	debug: boolean;
 	borderSlim: Tokens["colors"];
 	colorPalette: "rose" | "pink" | "fuchsia" | "purple" | "indigo" | "blue" | "sky" | "cyan" | "teal" | "green" | "lime" | "yellow" | "orange" | "red" | "gray" | "slate";
-	textStyle: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "8xl" | "9xl";
+	textStyles: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "8xl" | "9xl";
+	layerStyles: string;
 }
 
 

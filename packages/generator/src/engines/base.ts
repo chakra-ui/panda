@@ -13,8 +13,8 @@ export const getBaseEngine = (conf: LoadConfigResult) =>
   pipe(
     conf,
 
-    Obj.bind('tokens', ({ config: { theme, prefix } }) => {
-      const { breakpoints, tokens, semanticTokens } = theme ?? {}
+    Obj.bind('tokens', ({ config: { theme = {}, prefix } }) => {
+      const { breakpoints, tokens, semanticTokens } = theme
       return new TokenDictionary({
         breakpoints,
         tokens,

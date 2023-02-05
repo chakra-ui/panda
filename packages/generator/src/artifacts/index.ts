@@ -212,22 +212,22 @@ function setupCssIndex(ctx: Context): Artifact {
 function setupResetCss(ctx: Context): Artifact {
   if (!ctx.config.preflight) return
   const code = generateResetCss()
-  return { files: [{ file: 'system/reset.css', code }] }
+  return { files: [{ file: 'reset.css', code }] }
 }
 
 function setupLayoutGridCss(): Artifact {
   const code = generateLayoutGridCss()
-  return { files: [{ file: 'system/layout-grid.css', code }] }
+  return { files: [{ file: 'layout-grid.css', code }] }
 }
 
 function setupGlobalCss(ctx: Context): Artifact {
   const code = generateGlobalCss(ctx)
-  return { files: [{ file: 'system/global.css', code }] }
+  return { files: [{ file: 'global.css', code }] }
 }
 
 function setupStaticCss(ctx: Context): Artifact {
   const code = generateStaticCss(ctx)
-  return { files: [{ file: 'system/static.css', code }] }
+  return { files: [{ file: 'static.css', code }] }
 }
 
 function setupPackageJson(ctx: Context): Artifact {

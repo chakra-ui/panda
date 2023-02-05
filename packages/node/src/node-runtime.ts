@@ -75,9 +75,9 @@ export const nodeRuntime: Runtime = {
 process.setMaxListeners(Infinity)
 
 process.on('unhandledRejection', (reason) => {
-  logger.error('watch:unhandledRejection', reason)
+  logger.error('unhandled-rejection', reason)
 })
 
 process.on('uncaughtException', (reason) => {
-  logger.error('watch:uncaughtException', reason)
+  logger.error('uncaught-exception', reason)
 })

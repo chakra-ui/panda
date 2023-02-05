@@ -160,7 +160,7 @@ importers:
       '@pandacss/types': workspace:*
       '@types/pluralize': 0.0.29
       javascript-stringify: 2.1.0
-      lil-fp: 1.1.9
+      lil-fp: 1.2.1
       outdent: ' ^0.8.0'
       pluralize: 8.0.0
       postcss: 8.4.21
@@ -173,7 +173,7 @@ importers:
       '@pandacss/token-dictionary': link:../token-dictionary
       '@pandacss/types': link:../types
       javascript-stringify: 2.1.0
-      lil-fp: 1.1.9
+      lil-fp: 1.2.1
       outdent: 0.8.0
       pluralize: 8.0.0
       postcss: 8.4.21
@@ -9368,8 +9368,8 @@ packages:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  /lil-fp/1.1.9:
-    resolution: {integrity: sha512-pA8c9DVKm8FStCxvT0rcZ7UF7xpbbVld1LjtVO2RL8pYJn8ZS+thJS2e9F7o4NtE6OLJBx7kzTFmB3+UR42uOA==}
+  /lil-fp/1.2.1:
+    resolution: {integrity: sha512-ezjglFeFifcaSRwAbib5MbUFYQ7T/mE4wQzhwEMS7yRiVx/btgnteN4FEaK01zwVfAvLaU0uH8KCJylCaMImWA==}
     dev: false
 
   /lil-fp/1.2.1:
