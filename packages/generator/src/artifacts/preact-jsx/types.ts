@@ -2,12 +2,12 @@ import { outdent } from 'outdent'
 import type { Context } from '../../engines'
 
 export function generatePreactJsxTypes(ctx: Context) {
-  const { name, componentName, upperName, typeName } = ctx.jsx
+  const { factoryName, componentName, upperName, typeName } = ctx.jsx
 
   return {
     jsxFactory: outdent`
 import type { ${upperName} } from '../types/jsx'
-export declare const ${name}: ${upperName}
+export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
 import type { JSX, ComponentProps } from 'preact'

@@ -15,16 +15,18 @@ function getEntrypoint(pkg: string, file: string) {
 }
 
 const fileMap = [
-  ['@pandacss/types', ['csstype.d.ts', 'system-types.d.ts', 'selectors.d.ts', 'recipe.d.ts', 'composition.d.ts']],
+  [
+    '@pandacss/types',
+    [['csstype.d.ts'], ['system-types.d.ts'], ['selectors.d.ts'], ['recipe.d.ts'], ['composition.d.ts']],
+  ],
   ['@pandacss/is-valid-prop', [['index.mjs', 'is-valid-prop.mjs']]],
   ['@pandacss/shared', [['shared.mjs', 'helpers.mjs']]],
 ] as const
 
 async function main() {
   fileMap.forEach(([pkg, files]) => {
-    //@ts-expect-error
-    files.forEach((file: string | string[]) => {
-      const [input, output = input] = Array.isArray(file) ? file : [file, file]
+    files.forEach((file: any) => {
+      const [input, output = input] = file
       const filepath = getEntrypoint(pkg, input)
       const content = readFileSync(filepath, 'utf8')
       const outPath = join(__dirname, '..', 'src', 'artifacts', 'generated', basename(output) + '.json')

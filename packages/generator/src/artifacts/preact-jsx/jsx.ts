@@ -2,7 +2,7 @@ import { outdent } from 'outdent'
 import type { Context } from '../../engines'
 
 export function generatePreactJsxFactory(ctx: Context) {
-  const { name, componentName } = ctx.jsx
+  const { factoryName, componentName } = ctx.jsx
 
   return {
     js: outdent`
@@ -38,7 +38,7 @@ export function generatePreactJsxFactory(ctx: Context) {
         })
       })
       
-      ${componentName}.displayName = \`${name}.\${Dynamic}\`
+      ${componentName}.displayName = \`${factoryName}.\${Dynamic}\`
       return ${componentName}
     }
     
@@ -58,7 +58,7 @@ export function generatePreactJsxFactory(ctx: Context) {
       })
     }
 
-    export const ${name} = createJsxFactory()
+    export const ${factoryName} = createJsxFactory()
     `,
   }
 }

@@ -1,6 +1,6 @@
 import { breakpoints, keyframes, semanticTokens, tokens } from '@pandacss/fixture'
 import { conditions } from '@pandacss/fixture'
-import { LoadConfigResult } from '@pandacss/types'
+import type { LoadConfigResult } from '@pandacss/types'
 
 export const loadConfigResult: LoadConfigResult = {
   dependencies: [],
