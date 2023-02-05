@@ -13,8 +13,8 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
   const unresolved = [
     '@layer reset, base, tokens, recipes, utilities;',
     "@import './layout-grid.css';",
-    globalCss && "@import './system__global.css';",
-    staticCss && "@import './system__static.css';",
+    globalCss && "@import './global.css';",
+    staticCss && "@import './static.css';",
     preflight && "@import './reset.css';",
     !ctx.tokens.isEmpty && "@import './tokens/index.css';",
     keyframes && "@import './tokens/keyframes.css';",

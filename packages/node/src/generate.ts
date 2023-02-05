@@ -25,14 +25,14 @@ export async function generate(config: Config, configPath?: string) {
   if (ctx.config.watch) {
     const configWatcher = fs.watch({ include: dependencies })
     configWatcher.on('change', async () => {
-      logger.info('watch:config', 'Config changed, restarting...')
+      logger.info('config:change', 'Config changed, restarting...')
       await loadCtx()
       return build(ctxRef.current)
     })
 
     const contentWatcher = fs.watch(ctx.config)
     contentWatcher.on('all', async (event, file) => {
-      logger.debug(`file:${event}`, file)
+      logger.info(`file:${event}`, file)
       match(event)
         .with('unlink', () => {
           ctx.project.removeSourceFile(path.abs(cwd, file))

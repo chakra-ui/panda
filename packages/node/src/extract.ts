@@ -11,7 +11,8 @@ export async function bundleChunks(ctx: PandaContext) {
 }
 
 export async function writeFileChunk(ctx: PandaContext, file: string) {
-  logger.info('chunk:write', `File: ${file}`)
+  const { path } = ctx.runtime
+  logger.debug('chunk:write', `File: ${path.relative(ctx.config.cwd, file)}`)
   const css = extractFile(ctx, file)
   if (!css) return
   const artifact = ctx.chunks.getArtifact(file, css)
