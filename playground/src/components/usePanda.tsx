@@ -1,10 +1,10 @@
 import { createGenerator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
 import { config } from '@pandacss/presets'
-import type { UserConfig } from '@pandacss/types'
+import type { Config } from '@pandacss/types'
 import { useMemo } from 'react'
 
-export function usePanda(source: string, userConfig: UserConfig) {
+export function usePanda(source: string, userConfig: Config) {
   const generator = useMemo(
     () =>
       createGenerator({

@@ -1,13 +1,13 @@
-import { Box } from '@/design-system/jsx'
 import { css, cva, cx } from '@/design-system/css'
-import { UserConfig } from '@pandacss/types'
+import { Box } from '@/design-system/jsx'
 import { usePanda } from '@/src/components/usePanda'
+import { Config } from '@pandacss/types'
 import { LiveError, LivePreview, LiveProvider } from 'react-live'
 import { formatCode } from '../lib/formatCode'
 
 export type PreviewProps = {
   source: string
-  config: UserConfig
+  config: Config
 }
 export const Preview = ({ source, config }: PreviewProps) => {
   const previewCss = usePanda(source, config)
