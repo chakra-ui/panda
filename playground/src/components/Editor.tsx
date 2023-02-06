@@ -24,6 +24,14 @@ export const Editor = (props: EditorProps) => {
 
   const onMount: OnMount = useCallback(
     async (editor, monaco) => {
+      editor.updateOptions({
+        quickSuggestions: {
+          strings: true,
+          other: true,
+          comments: true,
+        },
+      })
+
       monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
         target: monaco.languages.typescript.ScriptTarget.Latest,
         allowNonTsExtensions: true,
