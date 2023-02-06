@@ -3,6 +3,7 @@ import { css, cva, cx } from '@/design-system/css'
 import { UserConfig } from '@pandacss/types'
 import { usePanda } from '@/src/components/usePanda'
 import { LiveError, LivePreview, LiveProvider } from 'react-live'
+import { formatCode } from '../lib/formatCode'
 
 export type PreviewProps = {
   source: string
@@ -30,7 +31,7 @@ export const Preview = ({ source, config }: PreviewProps) => {
           fontSize: 'sm',
         })}
       >
-        {previewCss}
+        {formatCode(previewCss)}
       </style>
     </Box>
   )

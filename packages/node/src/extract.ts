@@ -1,5 +1,6 @@
 import { logger } from '@pandacss/logger'
 import { Obj, pipe, tap } from 'lil-fp'
+import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
 
 export async function bundleChunks(ctx: PandaContext) {
@@ -39,10 +40,19 @@ export function extractFiles(ctx: PandaContext) {
   return Promise.all(ctx.getFiles().map((file) => writeFileChunk(ctx, file)))
 }
 
+const randomWords = ['Sweet', 'Divine', 'Pandalicious', 'Super']
+const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
+
 export async function emitArtifacts(ctx: PandaContext) {
   if (ctx.config.clean) ctx.output.empty()
   await Promise.all(ctx.getArtifacts().map(ctx.output.write))
-  return ctx.messages.artifactsGenerated() + ctx.messages.codegenComplete()
+  return (
+    ctx.messages.artifactsGenerated() +
+    createBox({
+      content: ctx.messages.codegenComplete(),
+      title: `🐼 ${pickRandom(randomWords)}! ✨`,
+    })
+  )
 }
 
 export async function emitAndExtract(ctx: PandaContext) {
