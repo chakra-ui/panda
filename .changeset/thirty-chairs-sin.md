@@ -6,7 +6,7 @@
 '@pandacss/presets': patch
 '@pandacss/is-valid-prop': patch
 '@pandacss/error': patch
-'@pandacss/serializer': patch
+'@pandacss/generator': patch
 '@pandacss/fixture': patch
 '@pandacss/logger': patch
 '@pandacss/node': patch
