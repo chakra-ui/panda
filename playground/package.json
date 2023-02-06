@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prepare": "pnpm db:generate",
+    "css:codegen": "pnpm panda codegen --silent",
+    "prepare": "pnpm db:generate && pnpm css:codegen",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
