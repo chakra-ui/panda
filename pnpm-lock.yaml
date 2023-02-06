@@ -17,7 +17,7 @@ importers:
       lint-staged: 13.1.0
       prettier: 2.8.3
       tsup: 6.5.0
-      tsx: 3.12.2
+      tsx: 3.12.3
       typescript: 4.9.5
       vitest: 0.28.4
     dependencies:
@@ -31,7 +31,7 @@ importers:
       lint-staged: 13.1.0
       prettier: 2.8.3
       tsup: 6.5.0_typescript@4.9.5
-      tsx: 3.12.2
+      tsx: 3.12.3
       typescript: 4.9.5
       vitest: 0.28.4
 
@@ -2258,11 +2258,11 @@ packages:
     resolution: {integrity: sha512-14FtKiHhy2QoPIzdTcvh//8OyBlknNs2nXRwIhG904opCby3l+9Xaf/wuPvICBF0rc1ZCNBd3nKe9cd2mecVkQ==}
     dev: true
 
-  /@esbuild-kit/cjs-loader/2.4.1:
-    resolution: {integrity: sha512-lhc/XLith28QdW0HpHZvZKkorWgmCNT7sVelMHDj3HFdTfdqkwEKvT+aXVQtNAmCC39VJhunDkWhONWB7335mg==}
+  /@esbuild-kit/cjs-loader/2.4.2:
+    resolution: {integrity: sha512-BDXFbYOJzT/NBEtp71cvsrGPwGAMGRB/349rwKuoxNSiKjPraNNnlK6MIIabViCjqZugu6j+xeMDlEkWdHHJSg==}
     dependencies:
       '@esbuild-kit/core-utils': 3.0.0
-      get-tsconfig: 4.2.0
+      get-tsconfig: 4.4.0
     dev: false
 
   /@esbuild-kit/core-utils/3.0.0:
@@ -2272,11 +2272,11 @@ packages:
       source-map-support: 0.5.21
     dev: false
 
-  /@esbuild-kit/esm-loader/2.5.4:
-    resolution: {integrity: sha512-afmtLf6uqxD5IgwCzomtqCYIgz/sjHzCWZFvfS5+FzeYxOURPUo4QcHtqJxbxWOMOogKriZanN/1bJQE/ZL93A==}
+  /@esbuild-kit/esm-loader/2.5.5:
+    resolution: {integrity: sha512-Qwfvj/qoPbClxCRNuac1Du01r9gvNOT+pMYtJDapfB1eoGN1YlJ1BixLyL9WVENRx5RXgNLdfYdx/CuswlGhMw==}
     dependencies:
       '@esbuild-kit/core-utils': 3.0.0
-      get-tsconfig: 4.2.0
+      get-tsconfig: 4.4.0
     dev: false
 
   /@esbuild-plugins/node-modules-polyfill/0.1.4_esbuild@0.16.3:
@@ -7102,7 +7102,7 @@ packages:
       enhanced-resolve: 5.10.0
       eslint: 8.33.0
       eslint-plugin-import: 2.26.0_atd4tuvk3nzyf54l6f4adxyssu
-      get-tsconfig: 4.2.0
+      get-tsconfig: 4.4.0
       globby: 13.1.2
       is-core-module: 2.11.0
       is-glob: 4.0.3
@@ -7121,7 +7121,7 @@ packages:
       enhanced-resolve: 5.10.0
       eslint: 8.32.0
       eslint-plugin-import: 2.26.0_anoc6aiadrrjoh5wuzips7vvmq
-      get-tsconfig: 4.2.0
+      get-tsconfig: 4.4.0
       globby: 13.1.2
       is-core-module: 2.11.0
       is-glob: 4.0.3
@@ -8144,8 +8144,8 @@ packages:
       call-bind: 1.0.2
       get-intrinsic: 1.1.3
 
-  /get-tsconfig/4.2.0:
-    resolution: {integrity: sha512-X8u8fREiYOE6S8hLbq99PeykTDoLVnxvF4DjWKJmz9xy2nNRdUcV8ZN9tniJFeKyTU3qnC9lL8n4Chd6LmVKHg==}
+  /get-tsconfig/4.4.0:
+    resolution: {integrity: sha512-0Gdjo/9+FzsYhXCEFueo2aY1z1tpXrxWZzP7k8ul9qt1U5o8rYJwTJYmaeHdrVosYIVYkOy2iwCJ9FdpocJhPQ==}
 
   /get-uri/3.0.2:
     resolution: {integrity: sha512-+5s0SJbGoyiJTZZ2JTpFPLMPSch72KEqGOTvQsBqg0RBWvwhWUSYZFAtz3TPW0GXJuLBJPts1E241iHg+VRfhg==}
@@ -13061,13 +13061,13 @@ packages:
       tslib: 1.14.1
       typescript: 4.9.5
 
-  /tsx/3.12.2:
-    resolution: {integrity: sha512-ykAEkoBg30RXxeOMVeZwar+JH632dZn9EUJVyJwhfag62k6UO/dIyJEV58YuLF6e5BTdV/qmbQrpkWqjq9cUnQ==}
+  /tsx/3.12.3:
+    resolution: {integrity: sha512-Wc5BFH1xccYTXaQob+lEcimkcb/Pq+0en2s+ruiX0VEIC80nV7/0s7XRahx8NnsoCnpCVUPz8wrqVSPi760LkA==}
     hasBin: true
     dependencies:
-      '@esbuild-kit/cjs-loader': 2.4.1
+      '@esbuild-kit/cjs-loader': 2.4.2
       '@esbuild-kit/core-utils': 3.0.0
-      '@esbuild-kit/esm-loader': 2.5.4
+      '@esbuild-kit/esm-loader': 2.5.5
     optionalDependencies:
       fsevents: 2.3.2
     dev: false
