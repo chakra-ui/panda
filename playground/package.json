@@ -16,21 +16,30 @@
     "@ark-ui/react": "0.0.0-rc-20230204220121",
     "@monaco-editor/react": "4.4.6",
     "@next/font": "13.1.6",
+    "@pandacss/parser": "workspace:*",
+    "@pandacss/presets": "workspace:*",
+    "@pandacss/generator": "workspace:*",
     "@prisma/client": "4.9.0",
     "@types/node": "18.11.19",
     "@types/react": "18.0.27",
     "@types/react-dom": "18.0.10",
-    "css-panda": "workspace:*",
-    "eslint": "8.33.0",
-    "eslint-config-next": "13.1.6",
     "monaco-editor": "0.34.1",
     "nanoid": "4.0.1",
     "next": "13.1.6",
+    "prettier": "2.8.3",
     "prisma": "4.9.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-live": "^3.1.1",
     "ts-pattern": "4.1.3",
     "typescript": "4.9.5",
     "zod": "3.20.2"
+  },
+  "devDependencies": {
+    "@pandacss/types": "workspace:*",
+    "@types/prettier": "2.7.2",
+    "eslint": "8.33.0",
+    "eslint-config-next": "13.1.6",
+    "css-panda": "workspace:*"
   }
 }

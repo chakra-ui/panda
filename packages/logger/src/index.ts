@@ -1,4 +1,3 @@
-import boxen from 'boxen'
 import colors from 'kleur'
 import { match, Obj, otherwise, pipe, when } from 'lil-fp'
 import { isMatch } from 'matcher'
@@ -40,15 +39,6 @@ const formatEntry = (entry: Record<string, any>) =>
       }),
     ),
   )
-
-const box = (content: string, title?: string) =>
-  boxen(content, {
-    padding: { left: 3, right: 3, top: 1, bottom: 1 },
-    borderColor: 'magenta',
-    borderStyle: 'round',
-    title,
-    titleAlignment: 'center',
-  })
 
 export const quote = (...str: string[]) => colors.cyan(`\`${str.join('')}\``)
 
@@ -119,7 +109,6 @@ export const createLogger = (conf: Config = {}) => {
     set level(newLevel: LogLevel) {
       level = newLevel
     },
-    box,
     warn: stdout('warn'),
     info: stdout('info'),
     debug: stdout('debug'),

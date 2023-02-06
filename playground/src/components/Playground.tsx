@@ -1,6 +1,7 @@
 'use client'
 import { css } from '@/design-system/css'
 import { Splitter, SplitterPanel, SplitterResizeTrigger } from '@ark-ui/react'
+import { config } from '@pandacss/presets'
 import { Editor } from './Editor'
 import { LayoutControl } from './LayoutControl'
 import { Preview } from './Preview'
@@ -33,7 +34,7 @@ export const Playground = (props: UsePlayGroundProps) => {
           <div className={css({ background: 'gray.300', minWidth: '1px', minHeight: '1px' })} />
         </SplitterResizeTrigger>
         <SplitterPanel id="preview">
-          <Preview />
+          <Preview source={state.code} config={config} />
         </SplitterPanel>
       </Splitter>
     </>

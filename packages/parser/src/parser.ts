@@ -38,7 +38,7 @@ export function createParser(options: ParserOptions) {
   return function parse(sourceFile: SourceFile | undefined) {
     if (!sourceFile) return
 
-    const fileName = sourceFile.getFilePath()
+    const filePath = sourceFile.getFilePath()
     const collector = createParserResult()
 
     const { jsx, importMap } = options
@@ -62,7 +62,7 @@ export function createParser(options: ParserOptions) {
     })
 
     if (imports.value.length) {
-      logger.debug('ast:import', `Found import { ${imports} } in ${fileName}`)
+      logger.debug('ast:import', `Found import { ${imports} } in ${filePath}`)
     }
 
     const isValidPattern = imports.createMatch(importMap.pattern)
@@ -78,7 +78,7 @@ export function createParser(options: ParserOptions) {
         const [css] = importRegex
         const result = { name, data }
 
-        logger.debug(`ast:${name}`, { fileName, result })
+        logger.debug(`ast:${name}`, { filePath, result })
 
         match(name)
           .when(css.match, (name: 'css' | 'cva') => {
@@ -116,7 +116,7 @@ export function createParser(options: ParserOptions) {
       fn({ name, data }) {
         let type: string
 
-        logger.debug(`ast:jsx:${name}`, { fileName, result: data })
+        logger.debug(`ast:jsx:${name}`, { filePath, result: data })
 
         if (jsx && name.startsWith(jsxFactoryAlias)) {
           type = 'jsx-factory'

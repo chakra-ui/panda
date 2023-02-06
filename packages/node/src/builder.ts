@@ -92,7 +92,7 @@ export class Builder {
     const done = logger.time.info('Extracted in')
 
     await Promise.all(
-      ctx.getFiles().map(async (file) => {
+      ctx.getFiles().map(async (file: string) => {
         const mtime = existsSync(file) ? statSync(file).mtimeMs : -Infinity
 
         const isUnchanged = this.fileModifiedMap.has(file) && mtime === this.fileModifiedMap.get(file)

@@ -20,7 +20,15 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     intialState
       ? intialState
       : {
-          code: '<button>Hello world</button>',
+          code: `import { css } from './css'
+
+<button className={css({
+    color: 'red',
+  })}
+>
+  Hello world
+</button>
+`,
           config: 'export const config = {}',
           view: 'code',
         },

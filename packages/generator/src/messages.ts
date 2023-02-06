@@ -1,4 +1,4 @@
-import { colors, logger, quote } from '@pandacss/logger'
+import { colors, quote } from '@pandacss/logger'
 import { outdent } from 'outdent'
 import type { Context } from './engines'
 
@@ -56,12 +56,8 @@ export const thankYou = () => outdent`
 
   `
 
-const randomWords = ['Sweet', 'Divine', 'Pandalicious', 'Super']
-const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
-
 export const codegenComplete = () =>
-  logger.box(
-    outdent`
+  outdent`
 
   ${colors.bold().cyan('Next steps:')}
   
@@ -72,9 +68,7 @@ export const codegenComplete = () =>
 
   [2] Import the ${quote('index.css')} file at the root of your project.
 
-  `,
-    `🐼 ${pickRandom(randomWords)}! ✨`,
-  )
+  `
 
 export const noExtract = () =>
   outdent`

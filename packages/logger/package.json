@@ -23,7 +23,6 @@
     "lil-fp": "1.2.3"
   },
   "devDependencies": {
-    "matcher": "5.0.0",
-    "boxen": "^7.0.1"
+    "matcher": "5.0.0"
   }
 }
