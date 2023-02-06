@@ -17,9 +17,9 @@
     "@ark-ui/react": "0.0.0-rc-20230204220121",
     "@monaco-editor/react": "4.4.6",
     "@next/font": "13.1.6",
+    "@pandacss/generator": "workspace:*",
     "@pandacss/parser": "workspace:*",
     "@pandacss/presets": "workspace:*",
-    "@pandacss/generator": "workspace:*",
     "@prisma/client": "4.9.0",
     "@types/node": "18.11.19",
     "@types/react": "18.0.27",
@@ -39,8 +39,8 @@
   "devDependencies": {
     "@pandacss/types": "workspace:*",
     "@types/prettier": "2.7.2",
+    "css-panda": "workspace:*",
     "eslint": "8.33.0",
-    "eslint-config-next": "13.1.6",
-    "css-panda": "workspace:*"
+    "eslint-config-next": "13.1.6"
   }
 }

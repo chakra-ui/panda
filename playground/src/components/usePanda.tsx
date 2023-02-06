@@ -14,7 +14,7 @@ export function usePanda(source: string, userConfig: Config) {
         config: {
           ...config,
           ...userConfig,
-          outdir: '.',
+          outdir: 'design-system',
         },
       }),
     [userConfig],
@@ -28,7 +28,9 @@ export function usePanda(source: string, userConfig: Config) {
       readFile: (file) => (file === 'code.tsx' ? source : ''),
     })
     const result = project.parseSourceFile('code.tsx')
-    if (!result) return ''
-    return generator.getParserCss(result) ?? ''
+    return {
+      previewCss: result ? generator.getParserCss(result) ?? '' : '',
+      artifacts: generator.getArtifacts() ?? [],
+    }
   }, [source, generator])
 }

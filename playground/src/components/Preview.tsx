@@ -1,17 +1,13 @@
 import { css, cva, cx } from '@/design-system/css'
 import { Box } from '@/design-system/jsx'
-import { usePanda } from '@/src/components/usePanda'
-import { Config } from '@pandacss/types'
 import { LiveError, LivePreview, LiveProvider } from 'react-live'
 import { formatCode } from '../lib/formatCode'
 
 export type PreviewProps = {
+  previewCss?: string
   source: string
-  config: Config
 }
-export const Preview = ({ source, config }: PreviewProps) => {
-  const previewCss = usePanda(source, config)
-
+export const Preview = ({ previewCss, source }: PreviewProps) => {
   return (
     // TODO refactor to iframe
     <Box px="6" py="4" flex="1">
@@ -31,7 +27,7 @@ export const Preview = ({ source, config }: PreviewProps) => {
           fontSize: 'sm',
         })}
       >
-        {formatCode(previewCss)}
+        {formatCode(previewCss ?? '')}
       </style>
     </Box>
   )

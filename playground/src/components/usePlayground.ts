@@ -20,7 +20,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     intialState
       ? intialState
       : {
-          code: `import { css } from './css'
+          code: `import { css } from 'design-system/css'
 
 <button className={css({
     color: 'red',
