@@ -1,3 +1,4 @@
+import { logger } from '@pandacss/logger'
 import { withoutSpace } from '@pandacss/shared'
 import type { ConditionType, Dict, RawCondition } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
@@ -74,7 +75,7 @@ export class Conditions {
     try {
       return this.values[condition] ?? parseCondition(condition)
     } catch (error) {
-      // logger.error('core:condition', error)
+      logger.error('core:condition', error)
     }
   }
 
