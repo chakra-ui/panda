@@ -22,13 +22,17 @@ export const usePlayground = (props: UsePlayGroundProps) => {
       : {
           code: `import { css } from 'design-system/css'
 
-<button className={css({
-    color: 'red',
-  })}
->
-  Hello world
-</button>
-`,
+function App() {
+  return (
+    <button
+      className={css({
+        color: 'red.400',
+      })}
+    >
+      Hello world
+    </button>
+  )
+}`,
           config: 'export const config = {}',
           view: 'code',
         },
