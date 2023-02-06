@@ -45,13 +45,10 @@ export const Editor = (props: EditorProps) => {
         typeRoots: ['node_modules/@types'],
       })
 
-      const libs = artifacts.flatMap((a) => {
-        if (!a) {
-          return []
-        }
-
-        return a.files.map((file) => ({
-          filePath: `file:///node_modules/${a.dir ? a.dir.join('/') + '/' : ''}${file.file}`,
+      const libs = artifacts.flatMap((artifact) => {
+        if (!artifact) return []
+        return artifact.files.map((file) => ({
+          filePath: `file:///node_modules/${artifact.dir ? artifact.dir.join('/') + '/' : ''}${file.file}`,
           content: file.code ?? '',
         }))
       })
