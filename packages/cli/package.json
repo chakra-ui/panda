@@ -7,7 +7,7 @@
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "bin": {
-    "panda": "dist/cli-default.js"
+    "panda": "bin.js"
   },
   "exports": {
     ".": {
@@ -51,6 +51,7 @@
     "dist",
     "bin",
     "app",
+    "bin.js",
     "postcss.js",
     "astro.mjs"
   ],
