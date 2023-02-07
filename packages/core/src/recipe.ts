@@ -57,17 +57,7 @@ export class Recipe {
 
   private walk = (styleObject: StyleObject) => {
     const { utility, conditions } = this.context
-
-    const transformed: StyleObject = {}
-
-    const result: StyleObject = {}
-
-    const currentStyles = serializeStyle(styleObject, { utility, conditions })
-    merge(result, currentStyles)
-
-    merge(transformed, result)
-
-    return transformed
+    return serializeStyle(styleObject, { utility, conditions })
   }
 
   private transform = (prop: string, value: string) => {
@@ -75,6 +65,7 @@ export class Recipe {
 
     if (value === '__ignore__') {
       return {
+        layer: 'base',
         className: name,
         styles: base,
       }
