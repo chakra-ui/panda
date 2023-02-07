@@ -86,7 +86,10 @@ export const Editor = (props: EditorProps) => {
 
   return (
     <Flex flex="1" direction="column" align="flex-start">
-      <Tabs defaultValue={value.view} className={css({ width: 'full' })}>
+      <Tabs
+        defaultValue={value.view}
+        className={css({ flex: '1', width: 'full', display: 'flex', flexDirection: 'column' })}
+      >
         <TabList
           className={css({
             px: '6',
@@ -105,9 +108,8 @@ export const Editor = (props: EditorProps) => {
           </TabTrigger>
           <TabIndicator className={css({ background: 'blue.500', height: '2px', mb: '-1px' })} />
         </TabList>
-        <TabContent value="code">
+        <TabContent value="code" className={css({ flex: '1' })}>
           <MonacoEditor
-            height="100vh"
             value={value.code}
             onChange={(e) => handleChange(e, 'code')}
             language="typescript"
@@ -116,13 +118,13 @@ export const Editor = (props: EditorProps) => {
             onMount={onMount}
           />
         </TabContent>
-        <TabContent value="config">
+        <TabContent value="config" className={css({ flex: '1' })}>
           <MonacoEditor
             value={value.config}
-            height="100vh"
             onChange={(e) => handleChange(e, 'config')}
-            defaultLanguage="javascript"
-            defaultValue="// some comment"
+            language="typescript"
+            path="config.ts"
+            options={{ minimap: { enabled: false } }}
           />
         </TabContent>
       </Tabs>
