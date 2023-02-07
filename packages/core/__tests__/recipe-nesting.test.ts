@@ -51,11 +51,13 @@ function run(value: Record<string, any> = {}) {
 test('[recipe] direct nesting / recipe ruleset', () => {
   expect(run({ variant: 'sm' })).toMatchInlineSnapshot(`
     "@layer recipes {
-        .text {
-            margin-top: auto;
-            margin-bottom: 0;
-            padding-top: 0;
-            object-position: center;
+        @layer base {
+            .text {
+                margin-top: auto;
+                margin-bottom: 0;
+                padding-top: 0;
+                object-position: center;
+            }
         }
         .text--variant_sm {
             &:first-child {
@@ -79,11 +81,13 @@ test('[recipe] direct nesting / recipe ruleset', () => {
 
   expect(run({ variant: 'md' })).toMatchInlineSnapshot(`
     "@layer recipes {
-        .text {
-            margin-top: auto;
-            margin-bottom: 0;
-            padding-top: 0;
-            object-position: center
+        @layer base {
+            .text {
+                margin-top: auto;
+                margin-bottom: 0;
+                padding-top: 0;
+                object-position: center
+            }
         }
         .text--variant_md {
             &:before {

@@ -5,11 +5,13 @@ describe('recipe ruleset', () => {
   test('should work with basic', () => {
     expect(processRecipe('textStyle', { variant: 'h1' })).toMatchInlineSnapshot(`
       "@layer recipes {
-          .textStyle {
-              font-family: var(--fonts-mono);
-              & > * ~ * {
-                  border-left-width: 20px;
-                  border-right-width: 0px
+          @layer base {
+              .textStyle {
+                  font-family: var(--fonts-mono);
+                  & > * ~ * {
+                      border-left-width: 20px;
+                      border-right-width: 0px
+                  }
               }
           }
       }"
@@ -17,11 +19,13 @@ describe('recipe ruleset', () => {
 
     expect(processRecipe('textStyle', {})).toMatchInlineSnapshot(`
       "@layer recipes {
-          .textStyle {
-              font-family: var(--fonts-mono);
-              & > * ~ * {
-                  border-left-width: 20px;
-                  border-right-width: 0px
+          @layer base {
+              .textStyle {
+                  font-family: var(--fonts-mono);
+                  & > * ~ * {
+                      border-left-width: 20px;
+                      border-right-width: 0px
+                  }
               }
           }
       }"
@@ -29,11 +33,13 @@ describe('recipe ruleset', () => {
 
     expect(processRecipe('textStyle', { variant: { base: 'h1', md: 'h2' } })).toMatchInlineSnapshot(`
       "@layer recipes {
-          .textStyle {
-              font-family: var(--fonts-mono);
-              & > * ~ * {
-                  border-left-width: 20px;
-                  border-right-width: 0px
+          @layer base {
+              .textStyle {
+                  font-family: var(--fonts-mono);
+                  & > * ~ * {
+                      border-left-width: 20px;
+                      border-right-width: 0px
+                  }
               }
           }
       }"
@@ -43,9 +49,11 @@ describe('recipe ruleset', () => {
   test('should work with complex selectors', () => {
     expect(processRecipe('tooltipStyle', {})).toMatchInlineSnapshot(`
       "@layer recipes {
-          .tooltipStyle {
-              [data-theme=dark] &[data-tooltip], [data-theme=dark] & [data-tooltip] {
-                  color: red
+          @layer base {
+              .tooltipStyle {
+                  [data-theme=dark] &[data-tooltip], [data-theme=dark] & [data-tooltip] {
+                      color: red
+                  }
               }
           }
       }"
@@ -117,10 +125,12 @@ describe('recipe ruleset', () => {
 
     expect(processRecipe('buttonStyle', { variant: 'solid' })).toMatchInlineSnapshot(`
       "@layer recipes {
-          .buttonStyle {
-              display: inline-flex;
-              align-items: center;
-              justify-content: center
+          @layer base {
+              .buttonStyle {
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center
+              }
           }
           .buttonStyle--size_md {
               height: 3rem;
@@ -143,10 +153,12 @@ describe('recipe ruleset', () => {
 
     expect(processRecipe('buttonStyle', { variant: { base: 'solid', lg: 'outline' } })).toMatchInlineSnapshot(`
       "@layer recipes {
-          .buttonStyle {
-              display: inline-flex;
-              align-items: center;
-              justify-content: center
+          @layer base {
+              .buttonStyle {
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center
+              }
           }
           .buttonStyle--size_md {
               height: 3rem;
