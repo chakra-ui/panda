@@ -35,7 +35,7 @@
     "@typescript-eslint/parser": "5.51.0",
     "concurrently": "^7.6.0",
     "husky": "8.0.3",
-    "lint-staged": "13.1.0",
+    "lint-staged": "13.1.1",
     "prettier": "2.8.3",
     "tsup": "6.5.0",
     "tsx": "3.12.3",
