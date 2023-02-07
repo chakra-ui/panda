@@ -350,6 +350,7 @@ importers:
       prisma: 4.9.0
       react: 18.2.0
       react-dom: 18.2.0
+      react-frame-component: ^5.2.6
       react-live: ^3.1.1
       ts-pattern: 4.1.4
       typescript: 4.9.5
@@ -372,6 +373,7 @@ importers:
       prisma: 4.9.0
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
+      react-frame-component: 5.2.6_biqbaboplfbrettd7655fr4n2y
       react-live: 3.1.1_biqbaboplfbrettd7655fr4n2y
       ts-pattern: 4.1.4
       typescript: 4.9.5
@@ -11642,6 +11644,17 @@ packages:
       react: 18.2.0
       scheduler: 0.23.0
 
+  /react-frame-component/5.2.6_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-CwkEM5VSt6nFwZ1Op8hi3JB5rPseZlmnp5CGiismVTauE6S4Jsc4TNMlT0O7Cts4WgIC3ZBAQ2p1Mm9XgLbj+w==}
+    peerDependencies:
+      prop-types: ^15.5.9
+      react: '>= 16.3'
+      react-dom: '>= 16.3'
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    dev: false
+
   /react-is/16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
@@ -12560,6 +12573,7 @@ packages:
 
   /sourcemap-codec/1.4.8:
     resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
+    deprecated: Please use @jridgewell/sourcemap-codec instead
     dev: true
 
   /space-separated-tokens/2.0.1:

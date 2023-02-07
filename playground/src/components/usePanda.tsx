@@ -14,7 +14,7 @@ export function usePanda(source: string, userConfig: Config) {
         config: {
           ...config,
           ...userConfig,
-          outdir: '.',
+          outdir: 'design-system',
         },
       }),
     [userConfig],
@@ -28,7 +28,16 @@ export function usePanda(source: string, userConfig: Config) {
       readFile: (file) => (file === 'code.tsx' ? source : ''),
     })
     const result = project.parseSourceFile('code.tsx')
-    if (!result) return ''
-    return generator.getParserCss(result) ?? ''
+    const parsedCss = result ? generator.getParserCss(result) ?? '' : ''
+    const artifacts = generator.getArtifacts() ?? []
+
+    const cssFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.css')) ?? [])
+    const presetCss = cssFiles.map((f) => f.code).join('\n')
+    // TODO add reset styles
+    const previewCss = ['@layer reset, base, tokens, recipes, utilities;', parsedCss, presetCss].join('\n')
+    return {
+      previewCss,
+      artifacts,
+    }
   }, [source, generator])
 }
