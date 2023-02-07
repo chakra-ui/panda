@@ -119,7 +119,7 @@ importers:
       postcss-nested: 6.0.0
       postcss-normalize-whitespace: ^5.1.1
       postcss-selector-parser: ^6.0.11
-      ts-pattern: 4.1.3
+      ts-pattern: 4.1.4
     dependencies:
       '@pandacss/error': link:../error
       '@pandacss/logger': link:../logger
@@ -136,7 +136,7 @@ importers:
       postcss-nested: 6.0.0_postcss@8.4.21
       postcss-normalize-whitespace: 5.1.1_postcss@8.4.21
       postcss-selector-parser: 6.0.11
-      ts-pattern: 4.1.3
+      ts-pattern: 4.1.4
     devDependencies:
       '@pandacss/fixture': link:../fixture
       '@types/lodash.merge': 4.6.7
@@ -165,7 +165,7 @@ importers:
       outdent: ' ^0.8.0'
       pluralize: 8.0.0
       postcss: 8.4.21
-      ts-pattern: 4.1.3
+      ts-pattern: 4.1.4
     dependencies:
       '@pandacss/core': link:../core
       '@pandacss/is-valid-prop': link:../is-valid-prop
@@ -178,7 +178,7 @@ importers:
       outdent: 0.8.0
       pluralize: 8.0.0
       postcss: 8.4.21
-      ts-pattern: 4.1.3
+      ts-pattern: 4.1.4
     devDependencies:
       '@pandacss/fixture': link:../fixture
       '@types/pluralize': 0.0.29
@@ -235,7 +235,7 @@ importers:
       postcss: 8.4.21
       preferred-pm: ^3.0.3
       ts-morph: 17.0.1
-      ts-pattern: 4.1.3
+      ts-pattern: 4.1.4
     dependencies:
       '@pandacss/config': link:../config
       '@pandacss/core': link:../core
@@ -263,7 +263,7 @@ importers:
       postcss: 8.4.21
       preferred-pm: 3.0.3
       ts-morph: 17.0.1
-      ts-pattern: 4.1.3
+      ts-pattern: 4.1.4
     devDependencies:
       '@pandacss/fixture': link:../fixture
       '@types/fs-extra': 11.0.1
@@ -282,7 +282,7 @@ importers:
       '@pandacss/types': workspace:*
       lil-fp: 1.2.3
       ts-morph: 17.0.1
-      ts-pattern: 4.1.3
+      ts-pattern: 4.1.4
     dependencies:
       '@pandacss/is-valid-prop': link:../is-valid-prop
       '@pandacss/logger': link:../logger
@@ -290,7 +290,7 @@ importers:
       '@pandacss/types': link:../types
       lil-fp: 1.2.3
       ts-morph: 17.0.1
-      ts-pattern: 4.1.3
+      ts-pattern: 4.1.4
     devDependencies:
       '@pandacss/fixture': link:../fixture
 
@@ -309,12 +309,12 @@ importers:
       '@pandacss/shared': workspace:*
       '@pandacss/types': workspace:*
       mini-svg-data-uri: ^1.4.4
-      ts-pattern: 4.1.3
+      ts-pattern: 4.1.4
     dependencies:
       '@pandacss/shared': link:../shared
       '@pandacss/types': link:../types
       mini-svg-data-uri: 1.4.4
-      ts-pattern: 4.1.3
+      ts-pattern: 4.1.4
     devDependencies:
       '@pandacss/fixture': link:../fixture
 
@@ -351,7 +351,7 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0
       react-live: ^3.1.1
-      ts-pattern: 4.1.3
+      ts-pattern: 4.1.4
       typescript: 4.9.5
       zod: 3.20.2
     dependencies:
@@ -373,7 +373,7 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-live: 3.1.1_biqbaboplfbrettd7655fr4n2y
-      ts-pattern: 4.1.3
+      ts-pattern: 4.1.4
       typescript: 4.9.5
       zod: 3.20.2
     devDependencies:
@@ -13122,8 +13122,8 @@ packages:
       yn: 3.1.1
     dev: false
 
-  /ts-pattern/4.1.3:
-    resolution: {integrity: sha512-8beXMWTGEv1JfDjSxfNhe4uT5jKYdhmEUKzt4gZW9dmHlquq3b+IbEyA7vX9LjBfzHmvKnM4HiomAUCyaW2Pew==}
+  /ts-pattern/4.1.4:
+    resolution: {integrity: sha512-Mcw65oUd1w5ktKi5BRwrnz16Otwk9iv7P0dKgvbi+A1albCDgnixohSqNLuFwIp5dzxPmTPm0iDQ6p1ZJr9uGw==}
     dev: false
 
   /ts-toolbelt/6.15.5:
