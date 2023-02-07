@@ -1,12 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { createGenerator } from '../src'
 import { generateTokenCss } from '../src/artifacts/css/token-css'
-import { loadConfigResult } from './fixture'
+import { generator } from './fixture'
 
 describe('generator', () => {
   test('[css] should generate css', () => {
-    const ctx = createGenerator(loadConfigResult)
-    const css = generateTokenCss(ctx)
+    const css = generateTokenCss(generator)
 
     expect(css).toMatchInlineSnapshot(`
     "@layer tokens {

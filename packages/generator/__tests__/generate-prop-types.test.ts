@@ -1,12 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { createGenerator } from '../src'
 import { generatePropTypes } from '../src/artifacts/types/prop-types'
-import { loadConfigResult } from './fixture'
+import { generator } from './fixture'
 
 describe('generate property types', () => {
-  const ctx = createGenerator(loadConfigResult)
   test('should ', () => {
-    expect(generatePropTypes(ctx)).toMatchInlineSnapshot(`
+    expect(generatePropTypes(generator)).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { Properties as CSSProperties } from './csstype'
       import type { Tokens } from './token'

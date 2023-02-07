@@ -1,18 +1,28 @@
-import { breakpoints, keyframes, semanticTokens, tokens, utilities } from '@pandacss/fixture'
-import { conditions } from '@pandacss/fixture'
-import type { LoadConfigResult } from '@pandacss/types'
+import {
+  breakpoints,
+  conditions,
+  keyframes,
+  semanticTokens,
+  tokens,
+  utilities,
+  recipes,
+  patterns,
+} from '@pandacss/fixture'
+import { createGenerator } from '../src'
 
-export const loadConfigResult: LoadConfigResult = {
+export const generator = createGenerator({
   dependencies: [],
   config: {
     cwd: '',
     include: [],
     utilities,
+    patterns,
     theme: {
       tokens,
       semanticTokens,
       breakpoints,
       keyframes,
+      recipes,
     },
     cssVarRoot: ':where(html)',
     conditions: {
@@ -23,4 +33,4 @@ export const loadConfigResult: LoadConfigResult = {
     outdir: '',
   },
   path: '',
-}
+})

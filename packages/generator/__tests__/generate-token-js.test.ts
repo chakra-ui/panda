@@ -1,11 +1,9 @@
 import { expect, test } from 'vitest'
-import { createGenerator } from '../src'
 import { generateTokenJs } from '../src/artifacts/js/token'
-import { loadConfigResult } from './fixture'
+import { generator } from './fixture'
 
 test('[dts] should generate package', () => {
-  const ctx = createGenerator(loadConfigResult)
-  expect(generateTokenJs(ctx).js).toMatchInlineSnapshot(
+  expect(generateTokenJs(generator).js).toMatchInlineSnapshot(
     `
     "const tokens = {
       \\"fonts.heading\\": {
