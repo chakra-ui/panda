@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import { Obj, pipe, tap } from 'lil-fp'
+import { Obj, pipe, tap, tryCatch } from 'lil-fp'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
 
@@ -29,7 +29,13 @@ export function extractFile(ctx: PandaContext, file: string) {
     { file: path.abs(cwd, file) },
     tap(() => logger.debug('file:extract', file)),
     Obj.bind('measure', () => logger.time.debug(`Extracted ${file}`)),
-    Obj.bind('result', ({ file }) => ctx.project.parseSourceFile(file)),
+    Obj.bind(
+      'result',
+      tryCatch(
+        ({ file }) => ctx.project.parseSourceFile(file),
+        (error) => logger.error('file:parse', error),
+      ),
+    ),
     Obj.bind('css', ({ result }) => (result ? ctx.getParserCss(result) : undefined)),
     tap(({ measure }) => measure()),
     ({ css }) => css,
