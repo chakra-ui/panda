@@ -13,6 +13,7 @@ export function usePanda(source: string, userConfig: Config) {
         //@ts-expect-error - fix types
         config: {
           ...config,
+          preflight: true,
           ...userConfig,
           outdir: 'design-system',
         },
@@ -33,7 +34,6 @@ export function usePanda(source: string, userConfig: Config) {
 
     const cssFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.css')) ?? [])
     const presetCss = cssFiles.map((f) => f.code).join('\n')
-    // TODO add reset styles
     const previewCss = ['@layer reset, base, tokens, recipes, utilities;', parsedCss, presetCss].join('\n')
     return {
       previewCss,
