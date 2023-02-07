@@ -38,7 +38,7 @@ export function extractFile(ctx: PandaContext, file: string) {
     ),
     Obj.bind('css', ({ result }) => (result ? ctx.getParserCss(result) : undefined)),
     tap(({ measure }) => measure()),
-    ({ css }) => css,
+    Obj.get('css'),
   )
 }
 

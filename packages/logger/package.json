@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "kleur": "^4.1.5",
-    "lil-fp": "1.2.4"
+    "lil-fp": "1.2.5"
   },
   "devDependencies": {
     "matcher": "5.0.0"
