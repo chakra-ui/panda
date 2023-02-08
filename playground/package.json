@@ -24,7 +24,7 @@
     "@types/node": "18.13.0",
     "@types/react": "18.0.27",
     "@types/react-dom": "18.0.10",
-    "monaco-editor": "0.34.1",
+    "monaco-editor": "0.35.0",
     "nanoid": "4.0.1",
     "next": "13.1.6",
     "prettier": "2.8.4",
