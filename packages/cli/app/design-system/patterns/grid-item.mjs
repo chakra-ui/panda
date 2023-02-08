@@ -1,7 +1,7 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const config = {transform(props, { map }) {
+const gridItemConfig = {transform(props, { map }) {
   const { colSpan, rowSpan, colStart, rowStart, colEnd, rowEnd, ...rest } = props;
   const spanFn = (v) => v === "auto" ? v : `span ${v}`;
   return {
@@ -13,6 +13,6 @@ const config = {transform(props, { map }) {
   };
 }}
 
-export const getGridItemStyle = (styles) => config.transform(styles, { map: mapObject })
+export const getGridItemStyle = (styles) => gridItemConfig.transform(styles, { map: mapObject })
 
 export const gridItem = (styles) => css(getGridItemStyle(styles))

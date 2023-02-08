@@ -1,7 +1,7 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const config = {transform(props) {
+const flexConfig = {transform(props) {
   const { direction, align, justify, wrap: wrap2, basis, grow, shrink, ...rest } = props;
   return {
     display: "flex",
@@ -16,6 +16,6 @@ const config = {transform(props) {
   };
 }}
 
-export const getFlexStyle = (styles) => config.transform(styles, { map: mapObject })
+export const getFlexStyle = (styles) => flexConfig.transform(styles, { map: mapObject })
 
 export const flex = (styles) => css(getFlexStyle(styles))

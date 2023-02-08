@@ -1,7 +1,7 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const config = {transform(props, { map }) {
+const gridConfig = {transform(props, { map }) {
   const { gapX, gapY, gap = gapX || gapY ? void 0 : "10px", columns, minChildWidth, ...rest } = props;
   return {
     gridTemplateColumns: columns != null ? map(columns, (v) => `repeat(${v}, minmax(0, 1fr))`) : minChildWidth != null ? map(minChildWidth, (v) => `repeat(auto-fit, minmax(${v}, 1fr))`) : void 0,
@@ -13,6 +13,6 @@ const config = {transform(props, { map }) {
   };
 }}
 
-export const getGridStyle = (styles) => config.transform(styles, { map: mapObject })
+export const getGridStyle = (styles) => gridConfig.transform(styles, { map: mapObject })
 
 export const grid = (styles) => css(getGridStyle(styles))
