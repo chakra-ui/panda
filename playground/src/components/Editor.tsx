@@ -23,16 +23,16 @@ export const Editor = (props: EditorProps) => {
   }
 
   const configureEditor: OnMount = useCallback((editor, monaco) => {
-    editor.updateOptions({
-      quickSuggestions: {
-        strings: true,
-        other: true,
-        comments: true,
-      },
-    })
+    function registerKeybindings() {
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+        editor.trigger('editor', 'editor.action.formatDocument', undefined)
+      })
+    }
 
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-      editor.trigger('editor', 'editor.action.formatDocument', undefined)
+    editor.onDidFocusEditorText(() => {
+      // workaround for using multiple monaco editors on the same page
+      // see https://github.com/microsoft/monaco-editor/issues/2947
+      registerKeybindings()
     })
 
     monaco.languages.registerDocumentFormattingEditProvider('typescript', {
@@ -111,6 +111,16 @@ export const Editor = (props: EditorProps) => {
     [artifacts, configureEditor],
   )
 
+  const editorOptions = {
+    minimap: { enabled: false },
+    fontSize: 14,
+    quickSuggestions: {
+      strings: true,
+      other: true,
+      comments: true,
+    },
+  }
+
   return (
     <Flex flex="1" direction="column" align="flex-start">
       <Tabs
@@ -149,7 +159,7 @@ export const Editor = (props: EditorProps) => {
             onChange={(e) => handleChange(e, 'code')}
             language="typescript"
             path="code.tsx"
-            options={{ minimap: { enabled: false }, fontSize: 14 }}
+            options={editorOptions}
             onMount={onCodeEditorMount}
           />
         </TabContent>
@@ -159,7 +169,7 @@ export const Editor = (props: EditorProps) => {
             onChange={(e) => handleChange(e, 'theme')}
             language="typescript"
             path="config.ts"
-            options={{ minimap: { enabled: false }, fontSize: 14 }}
+            options={editorOptions}
             onMount={configureEditor}
           />
         </TabContent>
