@@ -58,9 +58,9 @@ export function generatePattern(ctx: Context) {
     ${ctx.file.import('mapObject', '../helpers')}
     ${ctx.file.import('css', '../css/index')}
   
-    const config = ${stringify({ transform })}
+    const ${name}Config = ${stringify({ transform })}
   
-    export const ${styleFnName} = (styles) => config.transform(styles, { map: mapObject })
+    export const ${styleFnName} = (styles) => ${name}Config.transform(styles, { map: mapObject })
   
     export const ${name} = (styles) => css(${styleFnName}(styles))
     `,

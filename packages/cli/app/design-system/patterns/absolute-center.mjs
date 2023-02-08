@@ -1,7 +1,7 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const config = {transform(props, { map }) {
+const absoluteCenterConfig = {transform(props, { map }) {
   const { axis = "both", ...rest } = props;
   return {
     position: "absolute",
@@ -15,6 +15,6 @@ const config = {transform(props, { map }) {
   };
 }}
 
-export const getAbsoluteCenterStyle = (styles) => config.transform(styles, { map: mapObject })
+export const getAbsoluteCenterStyle = (styles) => absoluteCenterConfig.transform(styles, { map: mapObject })
 
 export const absoluteCenter = (styles) => css(getAbsoluteCenterStyle(styles))

@@ -11,7 +11,7 @@ import { usePanda } from '@/src/components/usePanda'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const { layout, setLayout, isPristine, state, setState, share } = usePlayground(props)
-  const { previewCss, previewJs, artifacts } = usePanda(state.code, config)
+  const { previewCss, previewJs, artifacts, patternNames } = usePanda(state.code, config)
 
   return (
     <>
@@ -49,7 +49,7 @@ export const Playground = (props: UsePlayGroundProps) => {
           <div className={css({ background: 'gray.300', minWidth: '1px', minHeight: '1px' })} />
         </SplitterResizeTrigger>
         <SplitterPanel id="preview" className={css({ display: 'flex', alignItems: 'stretch' })}>
-          <Preview source={state.code} previewCss={previewCss} previewJs={previewJs} />
+          <Preview source={state.code} previewCss={previewCss} previewJs={previewJs} patternNames={patternNames} />
         </SplitterPanel>
       </Splitter>
     </>

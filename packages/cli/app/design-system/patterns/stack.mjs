@@ -1,7 +1,7 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const config = {transform(props) {
+const stackConfig = {transform(props) {
   const { align = "flex-start", justify, direction = "column", gap = "10px", ...rest } = props;
   return {
     display: "flex",
@@ -13,6 +13,6 @@ const config = {transform(props) {
   };
 }}
 
-export const getStackStyle = (styles) => config.transform(styles, { map: mapObject })
+export const getStackStyle = (styles) => stackConfig.transform(styles, { map: mapObject })
 
 export const stack = (styles) => css(getStackStyle(styles))

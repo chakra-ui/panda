@@ -27,7 +27,7 @@ test('should generate pattern', () => {
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
-    const config = {transform(props) {
+    const stackConfig = {transform(props) {
       const { align = \\"flex-start\\", justify, direction = \\"column\\", gap = \\"10px\\" } = props;
       return {
         display: \\"flex\\",
@@ -39,7 +39,7 @@ test('should generate pattern', () => {
       };
     }}
 
-    export const getStackStyle = (styles) => config.transform(styles, { map: mapObject })
+    export const getStackStyle = (styles) => stackConfig.transform(styles, { map: mapObject })
 
     export const stack = (styles) => css(getStackStyle(styles))",
         "name": "stack",
@@ -63,7 +63,7 @@ test('should generate pattern', () => {
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
-    const config = {transform(props, { map }) {
+    const absoluteCenterConfig = {transform(props, { map }) {
       const { axis } = props;
       return {
         position: \\"absolute\\",
@@ -76,7 +76,7 @@ test('should generate pattern', () => {
       };
     }}
 
-    export const getAbsoluteCenterStyle = (styles) => config.transform(styles, { map: mapObject })
+    export const getAbsoluteCenterStyle = (styles) => absoluteCenterConfig.transform(styles, { map: mapObject })
 
     export const absoluteCenter = (styles) => css(getAbsoluteCenterStyle(styles))",
         "name": "absolute-center",
@@ -102,7 +102,7 @@ test('should generate pattern', () => {
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
-    const config = {transform(props, { map }) {
+    const simpleGridConfig = {transform(props, { map }) {
       const { gap, columns, minChildWidth } = props;
       return {
         display: \\"grid\\",
@@ -111,7 +111,7 @@ test('should generate pattern', () => {
       };
     }}
 
-    export const getSimpleGridStyle = (styles) => config.transform(styles, { map: mapObject })
+    export const getSimpleGridStyle = (styles) => simpleGridConfig.transform(styles, { map: mapObject })
 
     export const simpleGrid = (styles) => css(getSimpleGridStyle(styles))",
         "name": "simple-grid",
@@ -135,14 +135,14 @@ test('should generate pattern', () => {
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
-    const config = {transform(props, { map }) {
+    const gridItemConfig = {transform(props, { map }) {
       const { colSpan } = props;
       return {
         gridColumn: map(colSpan, (v) => v ? \`span \${v}\` : \\"auto\\")
       };
     }}
 
-    export const getGridItemStyle = (styles) => config.transform(styles, { map: mapObject })
+    export const getGridItemStyle = (styles) => gridItemConfig.transform(styles, { map: mapObject })
 
     export const gridItem = (styles) => css(getGridItemStyle(styles))",
         "name": "grid-item",

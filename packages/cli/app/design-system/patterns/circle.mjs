@@ -1,7 +1,7 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const config = {transform(props) {
+const circleConfig = {transform(props) {
   const { size, ...rest } = props;
   return {
     display: "flex",
@@ -15,6 +15,6 @@ const config = {transform(props) {
   };
 }}
 
-export const getCircleStyle = (styles) => config.transform(styles, { map: mapObject })
+export const getCircleStyle = (styles) => circleConfig.transform(styles, { map: mapObject })
 
 export const circle = (styles) => css(getCircleStyle(styles))

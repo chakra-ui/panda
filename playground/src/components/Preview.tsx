@@ -7,8 +7,9 @@ export type PreviewProps = {
   previewCss?: string
   previewJs?: string
   source: string
+  patternNames: string[]
 }
-export const Preview = ({ previewCss = '', previewJs = '', source }: PreviewProps) => {
+export const Preview = ({ previewCss = '', previewJs = '', patternNames, source }: PreviewProps) => {
   const isClient = useIsClient()
   // prevent false positive for server-side rendering
   if (!isClient) {
@@ -22,7 +23,12 @@ export const Preview = ({ previewCss = '', previewJs = '', source }: PreviewProp
   <div></div>
   <script type="module">
     ${previewJs}
-    ;window.panda = { css: (...args) => { console.log("generated css function inside the iframe was called with ", args[0]); return css(...args) }, cva, cx };
+    ;window.panda = { 
+      css, 
+      cva, 
+      cx,
+      ${patternNames.map((name) => `${name},`).join('\n')} 
+    };
   </script>
 </body>
 </html>`

@@ -1,7 +1,7 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const config = {transform(props) {
+const hstackConfig = {transform(props) {
   const { justify, gap = "10px", ...rest } = props;
   return {
     display: "flex",
@@ -13,6 +13,6 @@ const config = {transform(props) {
   };
 }}
 
-export const getHstackStyle = (styles) => config.transform(styles, { map: mapObject })
+export const getHstackStyle = (styles) => hstackConfig.transform(styles, { map: mapObject })
 
 export const hstack = (styles) => css(getHstackStyle(styles))

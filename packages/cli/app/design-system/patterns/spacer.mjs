@@ -1,7 +1,7 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const config = {transform(props, { map }) {
+const spacerConfig = {transform(props, { map }) {
   const { axis, size, ...rest } = props;
   return {
     alignSelf: "stretch",
@@ -11,6 +11,6 @@ const config = {transform(props, { map }) {
   };
 }}
 
-export const getSpacerStyle = (styles) => config.transform(styles, { map: mapObject })
+export const getSpacerStyle = (styles) => spacerConfig.transform(styles, { map: mapObject })
 
 export const spacer = (styles) => css(getSpacerStyle(styles))
