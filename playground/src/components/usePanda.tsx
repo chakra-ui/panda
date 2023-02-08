@@ -42,6 +42,7 @@ export function usePanda(source: string, userConfig: Config) {
     const presetCss = cssFiles.map((f) => f.code).join('\n')
     const previewCss = ['@layer reset, base, tokens, recipes, utilities;', presetCss, parsedCss].join('\n')
     return {
+      parsedCss,
       previewCss,
       previewJs,
       artifacts,
