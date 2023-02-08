@@ -1,7 +1,6 @@
 'use client'
 import { css } from '@/design-system/css'
 import { Splitter, SplitterPanel, SplitterResizeTrigger } from '@ark-ui/react'
-import { config } from '@pandacss/presets'
 import { Editor } from './Editor'
 import { LayoutControl } from './LayoutControl'
 import { Preview } from './Preview'
@@ -11,7 +10,7 @@ import { usePanda } from '@/src/components/usePanda'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const { layout, setLayout, isPristine, state, setState, share } = usePlayground(props)
-  const { previewCss, previewJs, artifacts, patternNames } = usePanda(state.code, config)
+  const { previewCss, previewJs, artifacts, patternNames } = usePanda(state.code, state.theme)
 
   return (
     <>

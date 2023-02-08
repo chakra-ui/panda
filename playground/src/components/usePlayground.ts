@@ -3,7 +3,7 @@ import { Layout } from './LayoutControl'
 
 export type State = {
   code: string
-  config: string
+  theme: string
   view: string
 }
 
@@ -32,7 +32,9 @@ export const App = () => (
   </button>
 )
 `,
-          config: 'export const config = {}',
+          theme: `export const theme = {
+  extend: {},
+}`,
           view: 'code',
         },
   )

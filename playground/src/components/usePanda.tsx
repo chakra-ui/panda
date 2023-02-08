@@ -1,25 +1,44 @@
 import { createGenerator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
+import { merge } from 'merge-anything'
 import { config } from '@pandacss/presets'
-import type { Config } from '@pandacss/types'
 import { useMemo } from 'react'
+const evalCode = (code: string, scope: Record<string, unknown>) => {
+  const scopeKeys = Object.keys(scope)
+  const scopeValues = scopeKeys.map((key) => scope[key])
+  return new Function(...scopeKeys, code)(...scopeValues)
+}
 
-export function usePanda(source: string, userConfig: Config) {
-  const generator = useMemo(
-    () =>
-      createGenerator({
-        dependencies: [],
-        path: '',
-        //@ts-expect-error - fix types
-        config: {
-          ...config,
-          preflight: true,
-          ...userConfig,
-          outdir: 'design-system',
-        },
-      }),
-    [userConfig],
-  )
+export function usePanda(source: string, theme: string) {
+  const userTheme = useMemo(() => {
+    const codeTrimmed = theme
+      .replaceAll(/export const theme = /g, '')
+      .trim()
+      .replace(/;$/, '')
+
+    try {
+      return evalCode(`return (${codeTrimmed})`, {})
+    } catch (e) {
+      return null
+    }
+  }, [theme])
+
+  const generator = useMemo(() => {
+    const { extend, ...restTheme } = userTheme ?? {}
+    const theme = Object.assign(merge({}, config.theme, extend) || {}, restTheme || {})
+
+    return createGenerator({
+      dependencies: [],
+      path: '',
+      //@ts-expect-error - fix types
+      config: {
+        ...config,
+        preflight: true,
+        theme,
+        outdir: 'design-system',
+      },
+    })
+  }, [userTheme])
 
   return useMemo(() => {
     const project = createProject({

@@ -15,35 +15,62 @@ type EditorProps = {
 export const Editor = (props: EditorProps) => {
   const { onChange, value, artifacts } = props
 
-  const handleChange = (content = '', id: 'code' | 'config') => {
+  const handleChange = (content = '', id: 'code' | 'theme') => {
     onChange({
       ...value,
       [id]: content,
     })
   }
 
-  const onMount: OnMount = useCallback(
-    async (editor, monaco) => {
-      editor.updateOptions({
-        quickSuggestions: {
-          strings: true,
-          other: true,
-          comments: true,
-        },
-      })
+  const configureEditor: OnMount = useCallback((editor, monaco) => {
+    editor.updateOptions({
+      quickSuggestions: {
+        strings: true,
+        other: true,
+        comments: true,
+      },
+    })
 
-      monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-        target: monaco.languages.typescript.ScriptTarget.Latest,
-        allowNonTsExtensions: true,
-        moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-        module: monaco.languages.typescript.ModuleKind.CommonJS,
-        noEmit: true,
-        esModuleInterop: true,
-        jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
-        reactNamespace: 'React',
-        allowJs: true,
-        typeRoots: ['node_modules/@types'],
-      })
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+      editor.trigger('editor', 'editor.action.formatDocument', undefined)
+    })
+
+    monaco.languages.registerDocumentFormattingEditProvider('typescript', {
+      async provideDocumentFormattingEdits(model) {
+        const prettier = await import('prettier/standalone')
+        const typescript = await import('prettier/parser-typescript')
+        const text = prettier.format(model.getValue(), {
+          parser: 'typescript',
+          plugins: [typescript],
+          singleQuote: true,
+        })
+
+        return [
+          {
+            range: model.getFullModelRange(),
+            text,
+          },
+        ]
+      },
+    })
+
+    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+      target: monaco.languages.typescript.ScriptTarget.Latest,
+      allowNonTsExtensions: true,
+      moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+      module: monaco.languages.typescript.ModuleKind.CommonJS,
+      noEmit: true,
+      esModuleInterop: true,
+      jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+      reactNamespace: 'React',
+      allowJs: true,
+      typeRoots: ['node_modules/@types'],
+    })
+  }, [])
+
+  const onCodeEditorMount: OnMount = useCallback(
+    async (editor, monaco) => {
+      await configureEditor(editor, monaco)
 
       const libs = artifacts.flatMap((artifact) => {
         if (!artifact) return []
@@ -81,7 +108,7 @@ export const Editor = (props: EditorProps) => {
         }),
       )
     },
-    [artifacts],
+    [artifacts, configureEditor],
   )
 
   return (
@@ -111,8 +138,8 @@ export const Editor = (props: EditorProps) => {
           <TabTrigger value="code">
             <button>Code</button>
           </TabTrigger>
-          <TabTrigger value="config">
-            <button>Config</button>
+          <TabTrigger value="theme">
+            <button>Theme</button>
           </TabTrigger>
           <TabIndicator className={css({ background: 'yellow.400', height: '2px', mb: '-1px' })} />
         </TabList>
@@ -123,16 +150,17 @@ export const Editor = (props: EditorProps) => {
             language="typescript"
             path="code.tsx"
             options={{ minimap: { enabled: false }, fontSize: 14 }}
-            onMount={onMount}
+            onMount={onCodeEditorMount}
           />
         </TabContent>
-        <TabContent value="config" className={css({ flex: '1' })}>
+        <TabContent value="theme" className={css({ flex: '1' })}>
           <MonacoEditor
-            value={value.config}
-            onChange={(e) => handleChange(e, 'config')}
+            value={value.theme}
+            onChange={(e) => handleChange(e, 'theme')}
             language="typescript"
             path="config.ts"
             options={{ minimap: { enabled: false }, fontSize: 14 }}
+            onMount={configureEditor}
           />
         </TabContent>
       </Tabs>
