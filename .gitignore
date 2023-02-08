@@ -20,5 +20,5 @@ __generated__
 *.vsix
 
 ## CSS Panda
-panda
-panda-static
+styled-system
+styled-system-static
