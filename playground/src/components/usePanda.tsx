@@ -12,12 +12,12 @@ const evalCode = (code: string, scope: Record<string, unknown>) => {
 export function usePanda(source: string, theme: string) {
   const userTheme = useMemo(() => {
     const codeTrimmed = theme
-      .replaceAll(/export const theme = /g, '')
+      .replaceAll(/export /g, '')
       .trim()
       .replace(/;$/, '')
 
     try {
-      return evalCode(`return (${codeTrimmed})`, {})
+      return evalCode(`return (() => {${codeTrimmed}; return theme})()`, {})
     } catch (e) {
       return null
     }
