@@ -59,7 +59,7 @@ const patternMap = {
 }
 
 export function generateJsxPatterns(ctx: Context) {
-  if (!ctx.patterns.isEmpty() && !ctx.jsx.framework) return []
+  if (ctx.patterns.isEmpty() && !ctx.jsx.framework) return []
   return patternMap[ctx.jsx.framework!](ctx)
 }
 
