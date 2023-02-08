@@ -11,7 +11,7 @@ datasource db {
 model Session {
   id        String   @id
   code      String
-  config    String
+  theme     String   @default("")
   view      String   @default("code")
   createdAt DateTime @default(now())
 }

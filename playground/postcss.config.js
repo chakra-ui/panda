@@ -1,3 +1,3 @@
 module.exports = {
-  plugins: ['css-panda/postcss'],
+  plugins: { 'css-panda/postcss': {} },
 }
