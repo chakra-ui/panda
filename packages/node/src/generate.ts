@@ -41,6 +41,7 @@ export async function generate(config: Config, configPath?: string) {
         .with('change', async () => {
           ctx.project.reloadSourceFile(file)
           await writeFileChunk(ctxRef.current, file)
+          return bundleChunks(ctxRef.current)
         })
         .with('add', async () => {
           ctx.project.createSourceFile(file)
