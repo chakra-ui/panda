@@ -16,7 +16,20 @@ export const Playground = (props: UsePlayGroundProps) => {
   return (
     <>
       <Toolbar>
-        <button onClick={share} disabled={isPristine}>
+        <button
+          className={css({
+            py: '2',
+            px: '4',
+            borderRadius: 'lg',
+            fontWeight: 'semibold',
+            bg: 'yellow.300',
+            _disabled: {
+              bg: 'yellow.100',
+            },
+          })}
+          onClick={share}
+          disabled={isPristine}
+        >
           Share
         </button>
         <LayoutControl value={layout} onChange={setLayout} />

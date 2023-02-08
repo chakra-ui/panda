@@ -93,11 +93,19 @@ export const Editor = (props: EditorProps) => {
         <TabList
           className={css({
             px: '6',
-            height: '12',
             borderBottomWidth: '1px',
             display: 'flex',
             alignItems: 'flex-end',
             gap: '3',
+            '& button': {
+              py: '3',
+              bg: 'transparent',
+              fontWeight: 'medium',
+              color: 'gray.500',
+              _selected: {
+                color: 'gray.900',
+              },
+            },
           })}
         >
           <TabTrigger value="code">
@@ -106,15 +114,15 @@ export const Editor = (props: EditorProps) => {
           <TabTrigger value="config">
             <button>Config</button>
           </TabTrigger>
-          <TabIndicator className={css({ background: 'blue.500', height: '2px', mb: '-1px' })} />
+          <TabIndicator className={css({ background: 'yellow.400', height: '2px', mb: '-1px' })} />
         </TabList>
-        <TabContent value="code" className={css({ flex: '1' })}>
+        <TabContent value="code" className={css({ flex: '1', pt: '4' })}>
           <MonacoEditor
             value={value.code}
             onChange={(e) => handleChange(e, 'code')}
             language="typescript"
             path="code.tsx"
-            options={{ minimap: { enabled: false } }}
+            options={{ minimap: { enabled: false }, fontSize: 14 }}
             onMount={onMount}
           />
         </TabContent>
@@ -124,7 +132,7 @@ export const Editor = (props: EditorProps) => {
             onChange={(e) => handleChange(e, 'config')}
             language="typescript"
             path="config.ts"
-            options={{ minimap: { enabled: false } }}
+            options={{ minimap: { enabled: false }, fontSize: 14 }}
           />
         </TabContent>
       </Tabs>
