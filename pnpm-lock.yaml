@@ -389,12 +389,12 @@ importers:
     specifiers:
       '@astrojs/solid-js': 2.0.2
       '@pandacss/fixture': workspace:*
-      astro: 2.0.7
+      astro: 2.0.8
       css-panda: workspace:*
       solid-js: 1.6.10
     dependencies:
       '@astrojs/solid-js': 2.0.2_solid-js@1.6.10
-      astro: 2.0.7
+      astro: 2.0.8
       solid-js: 1.6.10
     devDependencies:
       '@pandacss/fixture': link:../../packages/fixture
@@ -609,13 +609,13 @@ packages:
       - supports-color
     dev: false
 
-  /@astrojs/markdown-remark/2.0.1_astro@2.0.7:
+  /@astrojs/markdown-remark/2.0.1_astro@2.0.8:
     resolution: {integrity: sha512-xQF1rXGJN18m+zZucwRRtmNehuhPMMhZhi6HWKrtpEAKnHSPk8lqf1GXgKH7/Sypglu8ivdECZ+EGs6kOYVasQ==}
     peerDependencies:
       astro: ^2.0.2
     dependencies:
       '@astrojs/prism': 2.0.0
-      astro: 2.0.7
+      astro: 2.0.8
       github-slugger: 1.4.0
       import-meta-resolve: 2.2.0
       rehype-raw: 6.1.1
@@ -5150,14 +5150,14 @@ packages:
       - terser
     dev: false
 
-  /astro/2.0.7:
-    resolution: {integrity: sha512-MEjJKKexUOuBJqkZb2F3so5hhw7sOJedXbqBH0UGK+ab3Rwq+3FWsVgLl6s3rkUYSP4DoreOTpj9GBn/gTFWvg==}
+  /astro/2.0.8:
+    resolution: {integrity: sha512-Rbp/6MfxzSVp8qJXjWWja555ZxdqS7Nk/IYg90VKvLNbDsnnBobZZ6vJp21T2e/my4sqJ6PZIOPVnxXr7OeQLQ==}
     engines: {node: '>=16.12.0', npm: '>=6.14.0'}
     hasBin: true
     dependencies:
       '@astrojs/compiler': 1.1.0
       '@astrojs/language-server': 0.28.3
-      '@astrojs/markdown-remark': 2.0.1_astro@2.0.7
+      '@astrojs/markdown-remark': 2.0.1_astro@2.0.8
       '@astrojs/telemetry': 2.0.0
       '@astrojs/webapi': 2.0.0
       '@babel/core': 7.20.12
