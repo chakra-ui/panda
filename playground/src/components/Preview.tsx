@@ -1,23 +1,57 @@
-import Frame from 'react-frame-component'
+import Frame, { FrameContextConsumer } from 'react-frame-component'
 import { LiveError, LivePreview, LiveProvider } from 'react-live'
-import { css, cva, cx } from '@/design-system/css'
-import { Box } from '@/design-system/jsx'
-import { formatCode } from '../lib/formatCode'
+import { useIsClient } from 'usehooks-ts'
+import { Flex } from '@/design-system/jsx'
 
 export type PreviewProps = {
   previewCss?: string
+  previewJs?: string
   source: string
 }
-export const Preview = ({ previewCss = '', source }: PreviewProps) => {
-  if (typeof document === 'undefined') return null
+export const Preview = ({ previewCss = '', previewJs = '', source }: PreviewProps) => {
+  const isClient = useIsClient()
+  // prevent false positive for server-side rendering
+  if (!isClient) {
+    return null
+  }
+
+  const initialContent = `<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+  <div></div>
+  <script type="module">
+    ${previewJs}
+    ;window.panda = { css: (...args) => { console.log("generated css function inside the iframe was called with ", args[0]); return css(...args) }, cva, cx };
+  </script>
+</body>
+</html>`
+
   return (
-    <Box px="6" py="4" flex="1">
-      <Frame head={<style>{formatCode(previewCss)}</style>}>
-        <LiveProvider code={source.replaceAll(/import.*/g, '')} scope={{ css, cva, cx }}>
-          <LiveError />
-          <LivePreview />
-        </LiveProvider>
+    <Flex px="6" py="4" flex="1" align="stretch">
+      <Frame
+        key={initialContent}
+        initialContent={initialContent}
+        head={<style>{previewCss}</style>}
+        width="100%"
+        allow="none"
+      >
+        <FrameContextConsumer>
+          {({ window }) => (
+            <LiveProvider
+              code={source
+                .replaceAll(/import.*/g, '')
+                .replaceAll(/export /g, '')
+                .concat('\nrender(<App />)')}
+              scope={(window as any)?.panda}
+              noInline
+            >
+              <LiveError />
+              <LivePreview />
+            </LiveProvider>
+          )}
+        </FrameContextConsumer>
       </Frame>
-    </Box>
+    </Flex>
   )
 }

@@ -13,6 +13,7 @@ export function usePanda(source: string, userConfig: Config) {
         //@ts-expect-error - fix types
         config: {
           ...config,
+          preflight: true,
           ...userConfig,
           outdir: 'design-system',
         },
@@ -32,11 +33,17 @@ export function usePanda(source: string, userConfig: Config) {
     const artifacts = generator.getArtifacts() ?? []
 
     const cssFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.css')) ?? [])
+    const allJsFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.mjs')) ?? [])
+    const jsFiles = allJsFiles.filter((f) =>
+      // need to filter by file name, because "patterns" define all a "const config" which clashes. "
+      ['helpers.mjs', 'cva.mjs', 'css.mjs', 'cx.mjs', 'conditions.mjs'].includes(f.file),
+    )
+    const previewJs = jsFiles.map((f) => f.code?.replaceAll(/import .*/g, '')).join('\n')
     const presetCss = cssFiles.map((f) => f.code).join('\n')
-    // TODO add reset styles
-    const previewCss = ['@layer reset, base, tokens, recipes, utilities;', parsedCss, presetCss].join('\n')
+    const previewCss = ['@layer reset, base, tokens, recipes, utilities;', presetCss, parsedCss].join('\n')
     return {
       previewCss,
+      previewJs,
       artifacts,
     }
   }, [source, generator])
