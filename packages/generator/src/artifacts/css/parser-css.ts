@@ -1,5 +1,6 @@
 import { logger } from '@pandacss/logger'
 import type { ParserResult } from '@pandacss/types'
+import { tryCatch } from 'lil-fp/func'
 import { match, P } from 'ts-pattern'
 import type { Context } from '../../engines'
 
@@ -69,5 +70,8 @@ export const generateParserCss = (ctx: Context) => (result: ParserResult) => {
     return
   }
 
-  return sheet.toCss({ minify })
+  return tryCatch(
+    () => sheet.toCss({ minify }),
+    () => '',
+  )
 }
