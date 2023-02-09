@@ -1,80 +1,72 @@
 import { logger } from '@pandacss/logger'
 import type { ParserResult } from '@pandacss/types'
-import { tryCatch } from 'lil-fp/func'
+import { pipe, tap, tryCatch } from 'lil-fp/func'
 import { match, P } from 'ts-pattern'
 import type { Context } from '../../engines'
 
-export const generateParserCss = (ctx: Context) => (result: ParserResult) => {
-  const {
-    createSheet,
-    patterns,
-    recipes,
-    config: { minify },
-  } = ctx
-
-  const sheet = createSheet()
-
-  result.css.forEach((css) => {
-    sheet.processAtomic(css.data)
-  })
-
-  result.cva.forEach((cva) => {
-    sheet.processAtomicRecipe(cva.data)
-  })
-
-  result.jsx.forEach((jsx) => {
-    const { css = {}, ...rest } = jsx.data
-    const styles = { ...rest, ...css }
-
-    match(jsx)
-      // treat pattern jsx like regular pattern
-      .with({ type: 'pattern', name: P.string }, ({ name }) => {
-        result.setPattern(patterns.getFnName(name), { data: styles })
+export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
+  pipe(
+    { ...ctx, sheet: ctx.createSheet(), result },
+    tap(({ sheet, result, patterns, recipes }) => {
+      result.css.forEach((css) => {
+        sheet.processAtomic(css.data)
       })
-      // treat recipe jsx like regular recipe + atomic
-      .with({ type: 'recipe', name: P.string }, ({ name }) => {
-        const [recipeProps, styleProps] = recipes.splitProps(name, styles)
-        result.setRecipe(recipes.getFnName(name), { data: recipeProps })
-        sheet.processAtomic(styleProps)
+
+      result.cva.forEach((cva) => {
+        sheet.processAtomicRecipe(cva.data)
       })
-      // read and process style props
-      .otherwise(() => {
-        sheet.processAtomic(styles)
+
+      result.jsx.forEach((jsx) => {
+        const { css = {}, ...rest } = jsx.data
+        const styles = { ...rest, ...css }
+
+        match(jsx)
+          // treat pattern jsx like regular pattern
+          .with({ type: 'pattern', name: P.string }, ({ name }) => {
+            result.setPattern(patterns.getFnName(name), { data: styles })
+          })
+          // treat recipe jsx like regular recipe + atomic
+          .with({ type: 'recipe', name: P.string }, ({ name }) => {
+            const [recipeProps, styleProps] = recipes.splitProps(name, styles)
+            result.setRecipe(recipes.getFnName(name), { data: recipeProps })
+            sheet.processAtomic(styleProps)
+          })
+          // read and process style props
+          .otherwise(() => {
+            sheet.processAtomic(styles)
+          })
       })
-  })
 
-  result.recipe.forEach((recipeSet, name) => {
-    try {
-      for (const recipe of recipeSet) {
-        const recipeConfig = recipes.getConfig(name)
-        if (!recipeConfig) continue
-        sheet.processRecipe(recipeConfig, recipe.data)
-      }
-    } catch (error) {
-      logger.error('serializer:recipe', error)
-    }
-  })
+      result.recipe.forEach((recipeSet, name) => {
+        try {
+          for (const recipe of recipeSet) {
+            const recipeConfig = recipes.getConfig(name)
+            if (!recipeConfig) continue
+            sheet.processRecipe(recipeConfig, recipe.data)
+          }
+        } catch (error) {
+          logger.error('serializer:recipe', error)
+        }
+      })
 
-  result.pattern.forEach((patternSet, name) => {
-    try {
-      for (const pattern of patternSet) {
-        const styleProps = patterns.transform(name, pattern.data)
-        sheet.processAtomic(styleProps)
-      }
-    } catch (error) {
-      logger.error('serializer:pattern', error)
-    }
-  })
+      result.pattern.forEach((patternSet, name) => {
+        try {
+          for (const pattern of patternSet) {
+            const styleProps = patterns.transform(name, pattern.data)
+            sheet.processAtomic(styleProps)
+          }
+        } catch (error) {
+          logger.error('serializer:pattern', error)
+        }
+      })
+    }),
 
-  if (result.isEmpty()) {
-    return
-  }
-
-  return tryCatch(
-    () => sheet.toCss({ minify }),
-    () => {
-      logger.error('serializer:css', 'Failed to serialize CSS')
-      return ''
-    },
+    tryCatch(
+      ({ sheet, result, config: { minify } }) => {
+        return !result.isEmpty() ? sheet.toCss({ minify }) : undefined
+      },
+      () => {
+        logger.error('serializer:css', 'Failed to serialize CSS')
+      },
+    ),
   )
-}
