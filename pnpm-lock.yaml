@@ -335,7 +335,7 @@ importers:
       '@pandacss/parser': workspace:*
       '@pandacss/presets': workspace:*
       '@pandacss/types': workspace:*
-      '@prisma/client': 4.10.0
+      '@prisma/client': 4.10.1
       '@types/node': 18.13.0
       '@types/prettier': 2.7.2
       '@types/react': 18.0.17
@@ -348,7 +348,7 @@ importers:
       nanoid: 4.0.1
       next: 13.1.6
       prettier: 2.8.4
-      prisma: 4.10.0
+      prisma: 4.10.1
       react: 18.2.0
       react-dom: 18.2.0
       react-frame-component: ^5.2.6
@@ -364,7 +364,7 @@ importers:
       '@pandacss/generator': link:../packages/generator
       '@pandacss/parser': link:../packages/parser
       '@pandacss/presets': link:../packages/presets
-      '@prisma/client': 4.10.0_prisma@4.10.0
+      '@prisma/client': 4.10.1_prisma@4.10.1
       '@types/node': 18.13.0
       '@types/react': 18.0.17
       '@types/react-dom': 18.0.10
@@ -373,7 +373,7 @@ importers:
       nanoid: 4.0.1
       next: 13.1.6_biqbaboplfbrettd7655fr4n2y
       prettier: 2.8.4
-      prisma: 4.10.0
+      prisma: 4.10.1
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-frame-component: 5.2.6_biqbaboplfbrettd7655fr4n2y
@@ -3514,8 +3514,8 @@ packages:
       - supports-color
     dev: true
 
-  /@prisma/client/4.10.0_prisma@4.10.0:
-    resolution: {integrity: sha512-sBmYb1S6SMKFIESaLMfKqWSalv3pH73cMCsFt9HslJvYjIIcKQCA6PDL2O4SZGWvc4JBef9cg5Gd7d9x3AtKjw==}
+  /@prisma/client/4.10.1_prisma@4.10.1:
+    resolution: {integrity: sha512-VonXLJZybdt8e5XZH5vnIGCRNnIh6OMX1FS3H/yzMGLT3STj5TJ/OkMcednrvELgk8PK89Vo3aSh51MWNO0axA==}
     engines: {node: '>=14.17'}
     requiresBuild: true
     peerDependencies:
@@ -3524,16 +3524,16 @@ packages:
       prisma:
         optional: true
     dependencies:
-      '@prisma/engines-version': 4.10.0-84.ca7fcef713137fa11029d519a9780db130cca91d
-      prisma: 4.10.0
+      '@prisma/engines-version': 4.10.1-2.aead147aa326ccb985dcfed5b065b4fdabd44b19
+      prisma: 4.10.1
     dev: false
 
-  /@prisma/engines-version/4.10.0-84.ca7fcef713137fa11029d519a9780db130cca91d:
-    resolution: {integrity: sha512-UVpmVlvSaGfY4ue+hh8CTkIesbuXCFUfrr8zk//+u85WwkKfWMtt6nLB2tNSzR1YO8eAA8+HqNf8LM7mnXIq5w==}
+  /@prisma/engines-version/4.10.1-2.aead147aa326ccb985dcfed5b065b4fdabd44b19:
+    resolution: {integrity: sha512-tsjTho7laDhf9EJ9EnDxAPEf7yrigSMDhniXeU4YoWc7azHAs4GPxRi2P9LTFonmHkJLMOLjR77J1oIP8Ife1w==}
     dev: false
 
-  /@prisma/engines/4.10.0:
-    resolution: {integrity: sha512-ZPPo7q+nQZdTlPFedS7mFXPE3oZ2kWtTh3GO4sku0XQ8ikLqEyinuTPJbQCw/8qel2xglIEQicsK6yI4Jgh20A==}
+  /@prisma/engines/4.10.1:
+    resolution: {integrity: sha512-B3tcTxjx196nuAu1GOTKO9cGPUgTFHYRdkPkTS4m5ptb2cejyBlH9X7GOfSt3xlI7p4zAJDshJP4JJivCg9ouA==}
     requiresBuild: true
     dev: false
 
@@ -14229,13 +14229,13 @@ packages:
       react: 18.2.0
     dev: false
 
-  /prisma/4.10.0:
-    resolution: {integrity: sha512-xUHcF3Glc8QGgW8x0rfPITvyyTo04fskUdG7pI4kQbvDX/rhzDP4046x/FvazYqYHXMLR5/KTIi2p2Gth5vKOQ==}
+  /prisma/4.10.1:
+    resolution: {integrity: sha512-0jDxgg+DruB1kHVNlcspXQB9au62IFfVg9drkhzXudszHNUAQn0lVuu+T8np0uC2z1nKD5S3qPeCyR8u5YFLnA==}
     engines: {node: '>=14.17'}
     hasBin: true
     requiresBuild: true
     dependencies:
-      '@prisma/engines': 4.10.0
+      '@prisma/engines': 4.10.1
     dev: false
 
   /prismjs/1.29.0:
