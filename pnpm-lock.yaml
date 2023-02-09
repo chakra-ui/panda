@@ -502,7 +502,7 @@ importers:
       '@storybook/addon-postcss': ^2.0.0
       '@storybook/react': ^7.0.0-beta.19
       '@storybook/react-webpack5': ^7.0.0-beta.19
-      babel-loader: ^8.3.0
+      babel-loader: ^9.0.0
       css-panda: workspace:*
       postcss: 8.4.21
       react: ^18.2.0
@@ -520,7 +520,7 @@ importers:
       '@storybook/addon-postcss': 2.0.0
       '@storybook/react': 7.0.0-beta.45_biqbaboplfbrettd7655fr4n2y
       '@storybook/react-webpack5': 7.0.0-beta.45_pjwopsidmaokadturxaafygjp4
-      babel-loader: 8.3.0_@babel+core@7.20.12
+      babel-loader: 9.1.2_@babel+core@7.20.12
       css-panda: link:../../packages/cli
       postcss: 8.4.21
       storybook: 7.0.0-beta.45
@@ -6898,18 +6898,16 @@ packages:
       '@babel/core': 7.20.12
     dev: true
 
-  /babel-loader/8.3.0_@babel+core@7.20.12:
-    resolution: {integrity: sha512-H8SvsMF+m9t15HNLMipppzkC+Y2Yq+v3SonZyU70RBL/h1gxPkH08Ot8pEE9Z4Kd+czyWJClmFS8qzIP9OZ04Q==}
-    engines: {node: '>= 8.9'}
+  /babel-loader/9.1.2_@babel+core@7.20.12:
+    resolution: {integrity: sha512-mN14niXW43tddohGl8HPu5yfQq70iUThvFL/4QzESA7GcZoC0eVOhvWdQ8+3UlSjaDE9MVtsW9mxDY07W7VpVA==}
+    engines: {node: '>= 14.15.0'}
     peerDependencies:
-      '@babel/core': ^7.0.0
-      webpack: '>=2'
+      '@babel/core': ^7.12.0
+      webpack: '>=5'
     dependencies:
       '@babel/core': 7.20.12
       find-cache-dir: 3.3.2
-      loader-utils: 2.0.4
-      make-dir: 3.1.0
-      schema-utils: 2.7.1
+      schema-utils: 4.0.0
     dev: true
 
   /babel-loader/9.1.2_la66t7xldg4uecmyawueag5wkm:
