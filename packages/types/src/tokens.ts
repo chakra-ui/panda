@@ -54,10 +54,12 @@ type Shadow = {
 type Gradient = {
   type: 'linear' | 'radial'
   placement: string | number
-  stops: Array<{
-    color: string
-    position: number
-  }>
+  stops:
+    | Array<{
+        color: string
+        position: number
+      }>
+    | Array<string>
 }
 
 type Asset = { type: 'url' | 'svg'; value: string }

@@ -7,21 +7,55 @@ key-value pair.
 
 > Design tokens in Panda are largely influenced by the [W3C Token Format](https://tr.designtokens.org/format/).
 
-Tokens are defined in the `panda.config.(ts|mjs)` file, and can contain the following categories: colors, fonts, sizes,
-shadows, borders, gradients, and spacings.
+Tokens are defined in the `panda.config.(ts|mjs)` file, and can contain the following categories: `colors`, `fonts`,
+`sizes`, `shadows`, `borders`, `gradients`, and `spacing`.
 
-## Raw Tokens
+```js
+// panda.config.ts
+export default defineConfig({
+  theme: {
+    // 👇🏻 Define your tokens here
+    tokens: {},
+  },
+})
+```
+
+Here's an example of a basic token definition:
+
+```js
+const theme = {
+  tokens: {
+    colors: {
+      primary: { $value: '#0FEE0F' },
+      secondary: { $value: '#EE0F0F' },
+    },
+    fonts: {
+      body: { $value: 'system-ui, sans-serif' },
+    },
+    sizes: {
+      small: { $value: '12px' },
+      medium: { $value: '16px' },
+      large: { $value: '24px' },
+    },
+  },
+}
+```
+
+> **Good to know:** The extra dollar sign `$value` might seem inconvenient at first, but it's reserved property by the
+> [W3C specification](https://tr.designtokens.org/format/#name-and-value) to define the value of a token.
+
+## Simple Tokens
 
 A raw token consist of the following properties:
 
-- `value`: The value of the token. This can be any valid CSS value.
-- `description`: An optional description of the token.
+- `$value`: The value of the token. This can be any valid CSS value.
+- `$description`: An optional description of the token.
 
 ```js
 export default {
   tokens: {
     colors: {
-      danger: { value: '#EE0F0F' },
+      danger: { $value: '#EE0F0F' },
     },
   },
 }
@@ -30,7 +64,9 @@ export default {
 Now you can use this color when writing styles.
 
 ```js
-css({ color: 'danger' })
+import { css } from '../styled-system/css'
+
+const className = css({ color: 'danger' })
 ```
 
 ## Semantic or Alias Tokens
@@ -64,7 +100,66 @@ export default {
 }
 ```
 
-### Using conditions
+### Composite Tokens
+
+Composite tokens that combines multiple values that follow a pre-defined structure. Take "Shadow" as an example, it
+comprises of a color, a blur radius, and an x/y offset. We can define it as a composite token like so:
+
+```js
+const theme = {
+  tokens: {
+    shadows: {
+      basic: {
+        $value: { color: '{colors.shadow}', blur: '2px', offsetX: '2px', offsetY: '4px' },
+      },
+    },
+  },
+}
+```
+
+The following token type support composite tokens:
+
+#### Border Tokens
+
+You can define the border width, style, and color of a border as separate values.
+
+```js
+const theme = {
+  tokens: {
+    borders: {
+      basic: {
+        $value: { width: '1px', style: 'solid', color: '{colors.gray.200}' },
+      },
+    },
+  },
+}
+```
+
+#### Gradient Tokens
+
+You can define the gradient direction, color stops, and the color mode of a gradient as separate values.
+
+```js
+const theme = {
+  tokens: {
+    gradients: {
+      basic: {
+        $value: {
+          type: 'linear',
+          placement: 'to right',
+          stops: ['{colors.red}', '{colors.blue}'],
+        },
+      },
+    },
+  },
+}
+```
+
+#### Asset Tokens
+
+TODO
+
+### Conditional Tokens
 
 Semantic tokens can also be changed based on the [conditions](./conditional-styles). For example, if you want to a color
 to change based on light or dark mode automatically.
@@ -129,7 +224,7 @@ scheme.
 </html>
 ```
 
-## Automatic Documentation
+## Token Documentation
 
 Panda provide automatic documentation for tokens defined in your project.
 

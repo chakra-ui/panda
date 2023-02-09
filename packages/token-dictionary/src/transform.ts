@@ -47,10 +47,13 @@ export const transformShadow: TokenTransformer = {
 const isCompositeGradient = isMatching({
   type: P.string,
   placement: P.string,
-  stops: P.array({
-    color: P.string,
-    position: P.number,
-  }),
+  stops: P.union(
+    P.array(P.string),
+    P.array({
+      color: P.string,
+      position: P.number,
+    }),
+  ),
 })
 
 export const transformGradient: TokenTransformer = {
@@ -64,6 +67,7 @@ export const transformGradient: TokenTransformer = {
     if (isCompositeGradient(token.value)) {
       const { type, stops, placement } = token.value
       const rawStops = stops.map((stop) => {
+        if (isString(stop)) return stop
         const { color, position } = stop
         return `${color} ${position}px`
       })
