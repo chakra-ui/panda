@@ -326,7 +326,7 @@ importers:
 
   playground:
     specifiers:
-      '@ark-ui/react': 0.0.0-rc-20230208155426
+      '@ark-ui/react': 0.0.0-rc-20230210073600
       '@monaco-editor/react': 4.4.6
       '@next/font': 13.1.6
       '@pandacss/generator': workspace:*
@@ -356,7 +356,7 @@ importers:
       usehooks-ts: 2.9.1
       zod: 3.20.6
     dependencies:
-      '@ark-ui/react': 0.0.0-rc-20230208155426_biqbaboplfbrettd7655fr4n2y
+      '@ark-ui/react': 0.0.0-rc-20230210073600_biqbaboplfbrettd7655fr4n2y
       '@monaco-editor/react': 4.4.6_3vguicescx7w3divwtpzvtv5wy
       '@next/font': 13.1.6
       '@pandacss/generator': link:../packages/generator
@@ -555,8 +555,8 @@ packages:
       '@jridgewell/gen-mapping': 0.1.1
       '@jridgewell/trace-mapping': 0.3.14
 
-  /@ark-ui/react/0.0.0-rc-20230208155426_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-O/90K1WKucAmYiXXAMiYUqpQdNPkmDop6p0TZJCQ6DepR2RtuJW3Ad5MWP4dUM78yuXcFtEHpnq7uubDaaGv9Q==}
+  /@ark-ui/react/0.0.0-rc-20230210073600_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-SP+v94dy7WX4w0zL7msJQNpaNRYv8VoZV/WxQqGY3wbbnUUzBgf+/1ivN6Yv9VnJoHlHUBnkP2ueWAm6ADEk9g==}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
@@ -586,6 +586,7 @@ packages:
       '@zag-js/tags-input': 0.3.12
       '@zag-js/toast': 0.2.12
       '@zag-js/tooltip': 0.2.11
+      '@zag-js/transition': 0.1.2
       '@zag-js/types': 0.3.4
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
@@ -6312,6 +6313,13 @@ packages:
       '@zag-js/anatomy': 0.1.4
       '@zag-js/core': 0.2.9
       '@zag-js/popper': 0.2.3
+      '@zag-js/types': 0.3.4
+    dev: false
+
+  /@zag-js/transition/0.1.2:
+    resolution: {integrity: sha512-GL8yH9RHSuMA11PqcE1qyevRFY4PyCVp8OgouG41TpSC/qVDYhod3+0O+F69wHx4f0BfQq82jqn6CPwjlVnijQ==}
+    dependencies:
+      '@zag-js/core': 0.2.9
       '@zag-js/types': 0.3.4
     dev: false
 
