@@ -42,7 +42,7 @@ const theme = {
 ```
 
 > **Good to know:** The extra dollar sign `$value` might seem inconvenient at first, but it's reserved property by the
-> [W3C specification](https://tr.designtokens.org/format/#name-and-value) to define the value of a token.
+> [W3C Token Format](https://tr.designtokens.org/format/#name-and-value) to define the value of a token.
 
 ## Defining a Token
 
@@ -156,7 +156,24 @@ const theme = {
 
 #### Asset Tokens
 
-TODO
+You can define image, svg, gif, and video assets as tokens.
+
+```js
+const theme = {
+  tokens: {
+    assets: {
+      logo: {
+        $value: { type: 'url', url: '/static/logo.png' },
+      },
+      checkmark: {
+        $value: { type: 'svg', svg: '<svg>...</svg>' },
+      },
+    },
+  },
+}
+```
+
+> Good to know: To use asset tokens, apply them to the `background-image` or `list-style-image` CSS properties.
 
 ### Conditional Tokens
 
