@@ -1,0 +1,47 @@
+# Atomic Recipe
+
+This is when you write the recipe in a file and use it directly in your required component.
+
+The inline recipe takes the following properties:
+
+- `base`: The base style object for the recipe
+- `variants`: The variant styles for the recipe
+- `defaultVariants`: The default variants for the recipe
+
+To define an inline recipe, you’d need to use the `recipe` function like this.
+
+```jsx
+import { recipe } from '../panda/css'
+
+const button = recipe({
+  base: {
+    display: 'flex',
+  },
+  variants: {
+    visual: {
+      funky: { bg: 'red.200', color: 'white' },
+      edgy: { border: '1px solid token(colors.red.500)' },
+    },
+    size: {
+      sm: { padding: '4', fontSize: '12px' },
+      lg: { padding: '8', fontSize: '40px' },
+    },
+    shape: {
+      square: { borderRadius: '0' },
+      circle: { borderRadius: 'full' },
+    },
+  },
+  defaultVariants: {
+    visual: 'funky',
+    size: 'sm',
+    shape: 'circle',
+  },
+})
+
+// lets use the button recipe
+function Button() {
+  return <button class={button()}>Click me</button>
+}
+```
+
+With the recipe defined, you can now use it in your application.

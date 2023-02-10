@@ -1,0 +1,135 @@
+# Config Recipe
+
+A config recipe optimizes the CSS output by emitting only the CSS for the recipe used in your application and also
+allows you to share as many recipes across your project.
+
+It is generally useful to share design system recipes between projects.
+
+The config recipe takes the following properties:
+
+- `name`: The name of the recipe
+- `description`: A description of the recipe (used in the js-doc comments)
+- `base`: The base style object for the recipe
+- `variants`: The variant styles for the recipe
+- `defaultVariants`: The default variants for the recipe
+
+## Creating a recipe
+
+To define a config recipe, import the `defineRecipe` helper function
+
+```jsx
+import { defineRecipe } from 'css-panda'
+
+export const buttonRecipe = defineRecipe({
+  name: 'button',
+  description: 'The styles for the Button component',
+  base: {
+    display: 'flex',
+  },
+  variants: {
+    visual: {
+      funky: { bg: 'red.200', color: 'white' },
+      edgy: { border: '1px solid {colors.red.500}' },
+    },
+    size: {
+      sm: { padding: '4', fontSize: '12px' },
+      lg: { padding: '8', fontSize: '40px' },
+    },
+    shape: {
+      square: { borderRadius: '0' },
+      circle: { borderRadius: 'full' },
+    },
+  },
+  defaultVariants: {
+    visual: 'funky',
+    size: 'sm',
+    shape: 'circle',
+  },
+})
+```
+
+## Adding recipe to config
+
+To add the recipe to the config, you’d need to add it to the `theme.recipes` object.
+
+```jsx
+import { defineConfig } from 'css-panda'
+import { buttonRecipe } from './recipes/button'
+
+export default defineConfig({
+  include: ['src/**/*.tsx'],
+  outdir: 'panda',
+  presets: ['css-panda/presets'],
+  jsxFramework: 'solid',
+  theme: {
+    recipes: {
+      button: buttonRecipe,
+    },
+  },
+})
+```
+
+This generates a recipes folder the specified `outdir` which is `styled-system` by default. If Panda doesn’t
+automatically generate your CSS file, you can run the `panda codegen` command.
+
+You only need to import the recipes into the component files where you need to use them.
+
+## Using the recipe
+
+To use the recipe, you can import the recipe from the `<outdir>/recipes` entrypoint and use it in your component. Panda
+tracks the usage of the recipe and only generates CSS of the variants used in your application.
+
+```js
+import { button } from '../styled-system/recipes'
+
+function Button() {
+  // the default variants are applied
+  return <button class={button()}>Click me</button>
+}
+
+function Button2() {
+  // the default variants are applied
+  return <button class={button({ shape: 'circle' })}>Click me</button>
+}
+```
+
+## Technical Notes
+
+- The generated css is registered under the `recipe` cascade layer.
+- The generated styles are grouped under a single class name that matches the recipe/variant name.
+- Only the recipe and variants used in your application are generated. Not more!
+
+```css
+@layer recipes {
+  @layer base {
+    .button {
+      font-size: var(--font-sizes-lg);
+    }
+  }
+
+  .button--visual-funky {
+    background-color: var(--colors-red-200);
+    color: var(--colors-white);
+  }
+
+  .button--size-lg {
+    padding: var(--space-8);
+    font-size: var(--font-sizes-40px);
+  }
+}
+```
+
+## TypeScript guide
+
+Every recipe ships a type interface for its accepted variants. You can import them from the `<outdir>/recipes`
+entrypoint.
+
+For the button recipe, we can import the `ButtonVariants` type like so:
+
+```ts
+import tyoe { ButtonVariants } from '../styled-system/recipes'
+
+type ButtonProps = ButtonVariants & {
+  children: React.ReactNode
+}
+```
