@@ -36,7 +36,7 @@ export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
         exclude: [],
         
         // The output directory for your css system
-        outdir: "design-system",
+        outdir: "styled-system",
        })
     `
 
