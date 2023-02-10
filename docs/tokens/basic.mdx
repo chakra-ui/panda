@@ -44,15 +44,15 @@ const theme = {
 > **Good to know:** The extra dollar sign `$value` might seem inconvenient at first, but it's reserved property by the
 > [W3C specification](https://tr.designtokens.org/format/#name-and-value) to define the value of a token.
 
-## Simple Tokens
+## Defining a Token
 
-A raw token consist of the following properties:
+A design token consist of the following properties:
 
 - `$value`: The value of the token. This can be any valid CSS value.
-- `$description`: An optional description of the token.
+- `$description`: An optional description of what the token can be used for.
 
 ```js
-export default {
+const theme = {
   tokens: {
     colors: {
       danger: { $value: '#EE0F0F' },
@@ -61,7 +61,7 @@ export default {
 }
 ```
 
-Now you can use this color when writing styles.
+Now you can use the defined color when writing styles.
 
 ```js
 import { css } from '../styled-system/css'
@@ -72,19 +72,17 @@ const className = css({ color: 'danger' })
 ## Semantic or Alias Tokens
 
 An alias token is a token that reference to another token or defines a more specific context. It is often used to
-communicate the intended purpose of a token independent of the actual/primitive value of the token.
+communicate the intended purpose of a token independent of its raw value.
 
-Semantic tokens are defined using the `{}` syntax
+Semantic tokens can reference existing tokens using the `{}` syntax.
 
-### Basic example
-
-A quick example:
+Let's take a quick example, assuming we've defined the following tokens:
 
 - `red` and `green` are raw tokens that define the color red and blue.
 - `danger` and `success` are semantic tokens that reference to the `red` and `blue` tokens.
 
 ```js
-export default {
+const theme = {
   tokens: {
     colors: {
       red: { value: '#EE0F0F' },
@@ -168,7 +166,7 @@ to change based on light or dark mode automatically.
 > conditions, see [Conditional Styles](./conditional-styles).
 
 ```js
-export default {
+const theme = {
   // ...
   semanticTokens: {
     colors: {
@@ -177,59 +175,4 @@ export default {
     },
   },
 }
-```
-
-### Designing multiple themes
-
-With semantic tokens, you can add support for multiple themes in your application.
-
-Let's say your panda configuration includes the following conditions:
-
-```js
-export default {
-  conditions: {
-    light: '@media (prefers-color-scheme: light)',
-    dark: '@media (prefers-color-scheme: dark)',
-    pinkTheme: '[data-theme=pink] &',
-    blueTheme: '[data-theme=blue] &',
-  },
-}
-```
-
-You can defined semantic tokens for each theme, like so:
-
-```js
-export default {
-  // ...
-  semanticTokens: {
-    colors: {
-      text: {
-        pinkTheme: { _light: '{colors.pink}', _dark: '{colors.darkpink}' },
-        blueTheme: { _light: '{colors.blue}', _dark: '{colors.darkblue}' },
-      },
-    },
-  },
-}
-```
-
-Now, you can use the `text` token in your styles, and it will automatically change based on the theme and the color
-scheme.
-
-```jsx
-// use pink theme
-<html data-theme="pink">
-  <body>
-    <h1 css={{ color: 'text' }}>Hello World</h1>
-  </body>
-</html>
-```
-
-## Token Documentation
-
-Panda provide automatic documentation for tokens defined in your project.
-
-You can see the documentation by running `panda studio` in your project directory.
-
-```bash
-pnpm panda studio
 ```
