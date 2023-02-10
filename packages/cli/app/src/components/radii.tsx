@@ -15,8 +15,8 @@ export function Radii() {
         <Grid display="grid" minChildWidth="10rem" gap="10">
           {getSortedSizes([...radii.values()])
             .sort((a, b) => parseFloat(toPx(a.value)!) - parseFloat(toPx(b.value)!))
-            .map((size) => (
-              <Stack direction="column" align="center">
+            .map((size, index) => (
+              <Stack direction="column" align="center" key={index}>
                 <panda.div
                   width="80px"
                   height="80px"

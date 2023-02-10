@@ -40,6 +40,7 @@
   },
   "scripts": {
     "build": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --dts --no-splitting --shims",
+    "postbuild": "pnpm app:gen",
     "build-fast": "tsup src/cli-*.ts src/presets.ts src/index.ts --format=esm,cjs --no-dts --no-splitting --shims",
     "dev": "pnpm build-fast --watch",
     "css": "dist/cli-default.js",

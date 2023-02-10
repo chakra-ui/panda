@@ -21,7 +21,6 @@
   "dependencies": {
     "@pandacss/types": "workspace:*",
     "@pandacss/shared": "workspace:*",
-    "mini-svg-data-uri": "^1.4.4",
     "ts-pattern": "4.1.4"
   },
   "devDependencies": {

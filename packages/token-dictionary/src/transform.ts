@@ -1,8 +1,8 @@
 import { cssVar, isString } from '@pandacss/shared'
 import type { TokenDataTypes } from '@pandacss/types'
-import svgToDataUri from 'mini-svg-data-uri'
 import { isMatching, match, P } from 'ts-pattern'
 import type { TokenTransformer } from './dictionary'
+import { svgToDataUri } from './mini-svg-uri'
 import type { Token } from './token'
 import { getReferences } from './utils'
 
