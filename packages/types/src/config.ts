@@ -146,7 +146,7 @@ export type Config = {
    * The framework to use for generating supercharged elements.
    * @default 'react'
    */
-  jsxFramework?: 'react' | 'solid' | 'preact'
+  jsxFramework?: 'react' | 'solid' | 'preact' | 'vue'
   /**
    * The factory name of the element
    * @default 'panda'

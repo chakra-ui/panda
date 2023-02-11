@@ -17,6 +17,8 @@ import {
   generateSolidJsxPattern,
   generateSolidJsxTypes,
 } from './solid-jsx'
+import { generateVueJsxFactory } from './vue-jsx/jsx'
+import { generateVueJsxTypes } from './vue-jsx/types'
 
 /* -----------------------------------------------------------------------------
  * JSX Types
@@ -26,6 +28,7 @@ const typesMap = {
   react: generateReactJsxTypes,
   preact: generatePreactJsxTypes,
   solid: generateSolidJsxTypes,
+  vue: generateVueJsxTypes,
 }
 
 export function generateJsxTypes(ctx: Context) {
@@ -41,6 +44,7 @@ const factoryMap = {
   react: generateReactJsxFactory,
   solid: generateSolidJsxFactory,
   preact: generatePreactJsxFactory,
+  vue: generateVueJsxFactory,
 }
 
 export function generateJsxFactory(ctx: Context) {
@@ -56,6 +60,7 @@ const patternMap = {
   react: generateReactJsxPattern,
   solid: generateSolidJsxPattern,
   preact: generatePreactJsxPattern,
+  // TODO: Vue
 }
 
 export function generateJsxPatterns(ctx: Context) {
@@ -71,6 +76,7 @@ const layoutGridMap = {
   react: generateReactLayoutGrid,
   preact: generatePreactLayoutGrid,
   solid: generateSolidLayoutGrid,
+  // TODO: Vue
 }
 
 export function generateLayoutGrid(ctx: Context) {
