@@ -19,6 +19,7 @@
     "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
+    "eslint": "^8.34.0",
     "ts-pattern": "4.1.4",
     "vue-eslint-parser": "^9.1.0"
   },
