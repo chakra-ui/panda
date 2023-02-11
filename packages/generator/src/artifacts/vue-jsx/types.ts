@@ -133,12 +133,12 @@ type IntrinsicElement =
   | 'video'
   | 'wbr'
 
-  type ElementType = IntrinsicElement | Vue.Component
+  type ElementType = IntrinsicElement | Component
 
-  type ComponentProps<T extends ElementType> = T extends Vue.Component<infer Props>
-    ? Props
-    : T extends keyof JSX.IntrinsicElements
+  type ComponentProps<T extends ElementType> = T extends keyof JSX.IntrinsicElements
     ? JSX.IntrinsicElements[T]
+    : T extends Component<infer Props>
+    ? Props
     : never
 
     type HTMLProps = {
