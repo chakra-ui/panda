@@ -1,0 +1,31 @@
+{
+  "name": "@pandacss/parser-vue",
+  "version": "0.0.1",
+  "description": "The Vue.js static parser for panda css",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format=esm,cjs --dts",
+    "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
+    "dev": "pnpm build-fast --watch"
+  },
+  "dependencies": {
+    "@pandacss/is-valid-prop": "workspace:*",
+    "@pandacss/shared": "workspace:*",
+    "@pandacss/types": "workspace:*",
+    "ts-pattern": "4.1.4",
+    "vue-eslint-parser": "^9.1.0"
+  },
+  "devDependencies": {
+    "@pandacss/fixture": "workspace:*"
+  },
+  "files": [
+    "dist"
+  ]
+}
