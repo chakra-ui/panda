@@ -60,7 +60,7 @@ const patternMap = {
   react: generateReactJsxPattern,
   solid: generateSolidJsxPattern,
   preact: generatePreactJsxPattern,
-  vue: () => [],
+  vue: () => [{ name: '', js: '', dts: '' }],
 }
 
 export function generateJsxPatterns(ctx: Context) {
@@ -76,7 +76,7 @@ const layoutGridMap = {
   react: generateReactLayoutGrid,
   preact: generatePreactLayoutGrid,
   solid: generateSolidLayoutGrid,
-  vue: () => [],
+  vue: () => ({ js: '', dts: '' }),
 }
 
 export function generateLayoutGrid(ctx: Context) {
