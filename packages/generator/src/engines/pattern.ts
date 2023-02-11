@@ -52,7 +52,7 @@ export const getPatternEngine = (config: UserConfig) => {
     }),
 
     Obj.bind('isEmpty', ({ patterns }) => {
-      return () => Object.keys(patterns).length > 0
+      return () => Object.keys(patterns).length === 0
     }),
   )
 }

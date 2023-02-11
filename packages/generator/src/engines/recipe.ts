@@ -55,7 +55,7 @@ export const getRecipeEngine = (config: UserConfig) => {
     }),
 
     Obj.bind('isEmpty', ({ recipes }) => {
-      return () => Object.keys(recipes).length > 0
+      return () => Object.keys(recipes).length === 0
     }),
   )
 }

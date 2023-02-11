@@ -24,7 +24,7 @@ export const artifactsGenerated = (ctx: Context) => {
     `,
       !patterns.isEmpty() &&
         outdent`
-    ${tick} ${quote(outdir, '/patterns')}: functions to implement common css patterns
+    ${tick} ${quote(outdir, '/patterns')}: functions to implement apply common layout patterns
     `,
       !recipes.isEmpty() &&
         outdent`
