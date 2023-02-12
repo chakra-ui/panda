@@ -61,7 +61,7 @@ const patternMap = {
   react: generateReactJsxPattern,
   solid: generateSolidJsxPattern,
   preact: generatePreactJsxPattern,
-  vue: () => [{ name: '', js: '', dts: '' }],
+  vue: () => [],
 }
 
 export function generateJsxPatterns(ctx: Context) {

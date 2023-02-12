@@ -16,7 +16,7 @@ export function generateVueLayoutGrid() {
     export declare const LayoutGrid: FunctionalComponent<LayoutGridProps>
     `,
     js: outdent`
-    import { h, computed } from 'vue'
+    import { h, computed, defineComponent } from 'vue'
 
     export const LayoutGrid = defineComponent({
         name: 'LayoutGrid',
