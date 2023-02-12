@@ -3,26 +3,32 @@ import type { UtilityConfig } from '@pandacss/types'
 export const border: UtilityConfig = {
   borderRadius: {
     className: 'rounded',
+    shorthand: 'rounded',
     values: 'radii',
   },
   borderTopLeftRadius: {
     className: 'rounded-tl',
+    shorthand: 'roundedTopLeft',
     values: 'radii',
   },
   borderTopRightRadius: {
     className: 'rounded-tr',
+    shorthand: 'roundedTopRight',
     values: 'radii',
   },
   borderBottomRightRadius: {
     className: 'rounded-br',
+    shorthand: 'roundedBottomRight',
     values: 'radii',
   },
   borderBottomLeftRadius: {
     className: 'rounded-bl',
+    shorthand: 'roundedBottomLeft',
     values: 'radii',
   },
   borderTopRadius: {
     className: 'rounded-t',
+    shorthand: 'roundedTop',
     values: 'radii',
     transform(value) {
       return {
@@ -33,6 +39,7 @@ export const border: UtilityConfig = {
   },
   borderRightRadius: {
     className: 'rounded-r',
+    shorthand: 'roundedRight',
     values: 'radii',
     transform(value) {
       return {
@@ -43,6 +50,7 @@ export const border: UtilityConfig = {
   },
   borderBottomRadius: {
     className: 'rounded-b',
+    shorthand: 'roundedBottom',
     values: 'radii',
     transform(value) {
       return {
@@ -53,6 +61,7 @@ export const border: UtilityConfig = {
   },
   borderLeftRadius: {
     className: 'rounded-l',
+    shorthand: 'roundedLeft',
     values: 'radii',
     transform(value) {
       return {
@@ -63,15 +72,18 @@ export const border: UtilityConfig = {
   },
   borderStartStartRadius: {
     className: 'rounded-start-start',
+    shorthand: 'roundedStartStart',
     values: 'radii',
   },
   borderStartEndRadius: {
     className: 'rounded-start-end',
+    shorthand: 'roundedStartEnd',
     values: 'radii',
   },
   borderStartRadius: {
     className: 'rounded-start',
     values: 'radii',
+    shorthand: 'roundedStart',
     transform(value) {
       return {
         borderStartStartRadius: value,
@@ -81,14 +93,17 @@ export const border: UtilityConfig = {
   },
   borderEndStartRadius: {
     className: 'rounded-end-start',
+    shorthand: 'roundedEndStart',
     values: 'radii',
   },
   borderEndEndRadius: {
     className: 'rounded-end-end',
+    shorthand: 'roundedEndEnd',
     values: 'radii',
   },
   borderEndRadius: {
     className: 'rounded-end',
+    shorthand: 'roundedEnd',
     values: 'radii',
     transform(value) {
       return {

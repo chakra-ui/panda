@@ -578,6 +578,21 @@ export type SystemProperties = CssVarProperties & {
 	bgBlendMode?: PropertyValue<'bgBlendMode'>
 	bgSize?: PropertyValue<'bgSize'>
 	bgGradient?: PropertyValue<'bgGradient'>
+	rounded?: PropertyValue<'rounded'>
+	roundedTopLeft?: PropertyValue<'roundedTopLeft'>
+	roundedTopRight?: PropertyValue<'roundedTopRight'>
+	roundedBottomRight?: PropertyValue<'roundedBottomRight'>
+	roundedBottomLeft?: PropertyValue<'roundedBottomLeft'>
+	roundedTop?: PropertyValue<'roundedTop'>
+	roundedRight?: PropertyValue<'roundedRight'>
+	roundedBottom?: PropertyValue<'roundedBottom'>
+	roundedLeft?: PropertyValue<'roundedLeft'>
+	roundedStartStart?: PropertyValue<'roundedStartStart'>
+	roundedStartEnd?: PropertyValue<'roundedStartEnd'>
+	roundedStart?: PropertyValue<'roundedStart'>
+	roundedEndStart?: PropertyValue<'roundedEndStart'>
+	roundedEndEnd?: PropertyValue<'roundedEndEnd'>
+	roundedEnd?: PropertyValue<'roundedEnd'>
 	borderX?: PropertyValue<'borderX'>
 	borderXColor?: PropertyValue<'borderXColor'>
 	borderYColor?: PropertyValue<'borderYColor'>
