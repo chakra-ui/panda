@@ -55,6 +55,7 @@ export function mergeConfigs(configs: ExtendableRecord[]) {
       theme: mergeExtensions(configs.map((config) => config.theme ?? {})),
       patterns: mergeExtensions(configs.map((config) => config.patterns ?? {})),
       utilities: mergeExtensions(configs.map((config) => config.utilities ?? {})),
+      globalCss: mergeExtensions(configs.map((config) => config.globalCss ?? {})),
     },
     ...configs,
   )
@@ -74,7 +75,9 @@ export async function getResolvedConfig(config: ExtendableRecord, cwd: string) {
         if (typeof preset === 'string') {
           const presetModule = await bundleAndRequire(preset, cwd)
           return getResolvedConfig(presetModule.config, cwd)
-        } else return getResolvedConfig(preset, cwd)
+        } else {
+          return getResolvedConfig(preset, cwd)
+        }
       }),
   )
 

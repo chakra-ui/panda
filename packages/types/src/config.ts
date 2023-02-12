@@ -8,7 +8,7 @@ import type { CssKeyframes, GlobalStyleObject } from './system-types'
 import type { SemanticTokens, Tokens } from './tokens'
 import type { UtilityConfig } from './utility'
 
-export type Preset = Pick<Config, 'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions'>
+export type Preset = Pick<Config, 'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions' | 'globalCss'>
 
 type Studio = {
   title: string
@@ -99,7 +99,7 @@ export type Config = {
   /**
    * The global styles for your project.
    */
-  globalCss?: GlobalStyleObject
+  globalCss?: Extendable<GlobalStyleObject>
   /**
    * The theme configuration for your project.
    */
