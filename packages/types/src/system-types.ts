@@ -67,3 +67,19 @@ export type JsxStyleProps = SystemProperties &
   MinimalNested<SystemStyleObject> & {
     css?: SystemStyleObject
   }
+
+type Assign<T, U> = Omit<T, keyof U> & U
+
+type HTMLProps = {
+  htmlSize?: string | number
+  htmlWidth?: string | number
+  htmlHeight?: string | number
+  htmlTranslate?: 'yes' | 'no' | undefined
+}
+
+type WithHTMLProps<T> = Omit<T, 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size'> & HTMLProps
+
+export type JsxHTMLProps<T extends Record<string, any>, P extends Record<string, any> = {}> = Assign<
+  WithHTMLProps<T>,
+  P
+>
