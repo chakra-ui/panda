@@ -1,4 +1,4 @@
-import { capitalize, unionType } from '@pandacss/shared'
+import { unionType } from '@pandacss/shared'
 import { stringify } from 'javascript-stringify'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
@@ -17,7 +17,7 @@ export function generatePattern(ctx: Context) {
       import type { Properties } from '../types/csstype'
       import type { Tokens } from '../types/token'
   
-      export type ${capitalize(name)}Properties = {
+      export type ${upperName}Properties = {
          ${Object.keys(properties ?? {})
            .map((key) => {
              const value = properties![key]
