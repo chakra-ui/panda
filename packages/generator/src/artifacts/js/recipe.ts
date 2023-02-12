@@ -9,7 +9,7 @@ export function generateRecipes(ctx: Context) {
     config: { prefix, hash },
   } = ctx
 
-  if (!recipes.isEmpty()) return
+  if (recipes.isEmpty()) return
 
   const js = [
     outdent`

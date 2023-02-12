@@ -5,7 +5,7 @@ import { match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
 export function generatePattern(ctx: Context) {
-  if (!ctx.patterns.isEmpty()) return
+  if (ctx.patterns.isEmpty()) return
   return ctx.patterns.details.map((pattern) => {
     const { name, config, dashName, upperName, styleFnName, blocklistType } = pattern
     const { properties, transform, strict, description } = config
