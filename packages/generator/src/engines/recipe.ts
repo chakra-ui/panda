@@ -43,14 +43,9 @@ export const getRecipeEngine = (config: UserConfig) => {
       return Object.entries(recipes).map(([name, recipe]) => ({
         ...getNames(name),
         config: recipe,
-      }))
-    }),
-
-    Obj.bind('variantKeys', ({ recipes }) => {
-      return Object.entries(recipes).map(([name, recipe]) => ({
-        [name]: Object.entries(recipe.variants ?? {}).map(([key, value]) => ({
-          [key]: Object.keys(value),
-        })),
+        variantKeyMap: Object.fromEntries(
+          Object.entries(recipe.variants ?? {}).map(([key, value]) => [key, Object.keys(value)]),
+        ),
       }))
     }),
 

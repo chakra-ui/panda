@@ -8,27 +8,57 @@ describe('generate recipes', () => {
       {
         "dts": "import type { ConditionalValue } from '../types'
 
+      type TextStyleVariant = {
+        size: \\"h1\\" | \\"h2\\"
+      }
+
+      type TextStyleVariantMap = {
+        [key in keyof TextStyleVariant]: Array<TextStyleVariant[key]>
+      }
+
       export type TextStyleVariants = {
-        size?: ConditionalValue<\\"h1\\" | \\"h2\\">
+        [key in keyof TextStyleVariant]?: ConditionalValue<TextStyleVariantMap[key]>
       }
 
 
-      export declare function textStyle(variants?: TextStyleVariants): string & { variants: string[] }
+      export declare function textStyle(variants?: TextStyleVariants): string & {
+        variants: TextStyleVariantMap
+      }
 
-      export type TooltipStyleVariants = {
+      type TooltipStyleVariant = {
         
       }
 
+      type TooltipStyleVariantMap = {
+        [key in keyof TooltipStyleVariant]: Array<TooltipStyleVariant[key]>
+      }
 
-      export declare function tooltipStyle(variants?: TooltipStyleVariants): string & { variants: string[] }
-
-      export type ButtonStyleVariants = {
-        size?: ConditionalValue<\\"sm\\" | \\"md\\">
-      variant?: ConditionalValue<\\"solid\\" | \\"outline\\">
+      export type TooltipStyleVariants = {
+        [key in keyof TooltipStyleVariant]?: ConditionalValue<TooltipStyleVariantMap[key]>
       }
 
 
-      export declare function buttonStyle(variants?: ButtonStyleVariants): string & { variants: string[] }",
+      export declare function tooltipStyle(variants?: TooltipStyleVariants): string & {
+        variants: TooltipStyleVariantMap
+      }
+
+      type ButtonStyleVariant = {
+        size: \\"sm\\" | \\"md\\"
+      variant: \\"solid\\" | \\"outline\\"
+      }
+
+      type ButtonStyleVariantMap = {
+        [key in keyof ButtonStyleVariant]: Array<ButtonStyleVariant[key]>
+      }
+
+      export type ButtonStyleVariants = {
+        [key in keyof ButtonStyleVariant]?: ConditionalValue<ButtonStyleVariantMap[key]>
+      }
+
+
+      export declare function buttonStyle(variants?: ButtonStyleVariants): string & {
+        variants: ButtonStyleVariantMap
+      }",
         "js": "import { createCss, withoutSpace, compact } from '../helpers.mjs';
 
       const createRecipe = (name, defaultVariants) => {
@@ -61,13 +91,13 @@ describe('generate recipes', () => {
       }
 
       export const textStyle = createRecipe('textStyle', {})
-      textStyle.variants = [\\"size\\"]
+      textStyle.variants = {\\"size\\":[\\"h1\\",\\"h2\\"]}
 
       export const tooltipStyle = createRecipe('tooltipStyle', {})
-      tooltipStyle.variants = []
+      tooltipStyle.variants = {}
 
       export const buttonStyle = createRecipe('buttonStyle', {\\"size\\":\\"md\\",\\"variant\\":\\"solid\\"})
-      buttonStyle.variants = [\\"size\\",\\"variant\\"]",
+      buttonStyle.variants = {\\"size\\":[\\"sm\\",\\"md\\"],\\"variant\\":[\\"solid\\",\\"outline\\"]}",
       }
     `)
   })

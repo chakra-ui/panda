@@ -52,27 +52,33 @@ export function generateRecipes(ctx: Context) {
   `,
   ]
 
-  recipes.details.forEach(({ config, upperName }) => {
-    const { name, description, defaultVariants, variants } = config
+  recipes.details.forEach(({ config, upperName, variantKeyMap }) => {
+    const { name, description, defaultVariants } = config
 
     js.push(outdent`
     export const ${name} = createRecipe('${name}', ${JSON.stringify(defaultVariants ?? {})})
-    ${name}.variants = ${JSON.stringify(Object.keys(variants ?? {}))}
+    ${name}.variants = ${JSON.stringify(variantKeyMap)}
     `)
 
     dts.push(outdent`
-    export type ${upperName}Variants = {
-      ${Object.keys(variants ?? {})
-        .map((key) => {
-          const value = variants![key]
-          const keys = Object.keys(value)
-          return `${key}?: ConditionalValue<${unionType(keys)}>`
-        })
+    type ${upperName}Variant = {
+      ${Object.keys(variantKeyMap)
+        .map((key) => `${key}: ${unionType(variantKeyMap[key])}`)
         .join('\n')}
     }
 
+    type ${upperName}VariantMap = {
+      [key in keyof ${upperName}Variant]: Array<${upperName}Variant[key]>
+    }
+
+    export type ${upperName}Variants = {
+      [key in keyof ${upperName}Variant]?: ConditionalValue<${upperName}VariantMap[key]>
+    }
+
     ${description ? `/** ${description} */` : ''}
-    export declare function ${name}(variants?: ${upperName}Variants): string & { variants: string[] }
+    export declare function ${name}(variants?: ${upperName}Variants): string & {
+      variants: ${upperName}VariantMap
+    }
     `)
   })
 
