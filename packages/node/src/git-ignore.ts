@@ -4,7 +4,7 @@ import outdent from 'outdent'
 import type { PandaContext } from './create-context'
 
 export function setupGitIgnore({ config: { outdir } }: PandaContext) {
-  const txt = outdent`## CSS Panda
+  const txt = outdent`## Panda
   ${outdir}
   ${outdir}-static
   `
