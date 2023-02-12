@@ -31,10 +31,10 @@ export type TokenMiddleware = {
 }
 
 function expandBreakpoints(breakpoints?: Record<string, string>) {
-  if (!breakpoints) return { screens: {}, sizes: {} }
+  if (!breakpoints) return { breakpoints: {}, sizes: {} }
   return {
-    screens: mapObject(breakpoints, (value) => ({ value })),
-    sizes: Object.fromEntries(Object.entries(breakpoints).map(([key, value]) => [`screen-${key}`, { value }])),
+    breakpoints: mapObject(breakpoints, (value) => ({ value })),
+    sizes: Object.fromEntries(Object.entries(breakpoints).map(([key, value]) => [`breakpoint-${key}`, { value }])),
   }
 }
 
@@ -53,7 +53,7 @@ export class TokenDictionary {
 
     const computedTokens = compact({
       ...tokens,
-      screens: breakpointTokens.screens,
+      breakpoints: breakpointTokens.breakpoints,
       sizes: {
         ...tokens.sizes,
         ...breakpointTokens.sizes,

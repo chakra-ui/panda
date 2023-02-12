@@ -1275,25 +1275,25 @@ const tokens = {
     "value": "fit-content",
     "variable": "var(--sizes-fit)"
   },
-  "sizes.screen-sm": {
+  "sizes.breakpoint-sm": {
     "value": "640px",
-    "variable": "var(--sizes-screen-sm)"
+    "variable": "var(--sizes-breakpoint-sm)"
   },
-  "sizes.screen-md": {
+  "sizes.breakpoint-md": {
     "value": "768px",
-    "variable": "var(--sizes-screen-md)"
+    "variable": "var(--sizes-breakpoint-md)"
   },
-  "sizes.screen-lg": {
+  "sizes.breakpoint-lg": {
     "value": "1024px",
-    "variable": "var(--sizes-screen-lg)"
+    "variable": "var(--sizes-breakpoint-lg)"
   },
-  "sizes.screen-xl": {
+  "sizes.breakpoint-xl": {
     "value": "1280px",
-    "variable": "var(--sizes-screen-xl)"
+    "variable": "var(--sizes-breakpoint-xl)"
   },
-  "sizes.screen-2xl": {
+  "sizes.breakpoint-2xl": {
     "value": "1536px",
-    "variable": "var(--sizes-screen-2xl)"
+    "variable": "var(--sizes-breakpoint-2xl)"
   },
   "animations.spin": {
     "value": "spin 1s linear infinite",
@@ -1311,25 +1311,25 @@ const tokens = {
     "value": "bounce 1s infinite",
     "variable": "var(--animations-bounce)"
   },
-  "screens.sm": {
+  "breakpoints.sm": {
     "value": "640px",
-    "variable": "var(--screens-sm)"
+    "variable": "var(--breakpoints-sm)"
   },
-  "screens.md": {
+  "breakpoints.md": {
     "value": "768px",
-    "variable": "var(--screens-md)"
+    "variable": "var(--breakpoints-md)"
   },
-  "screens.lg": {
+  "breakpoints.lg": {
     "value": "1024px",
-    "variable": "var(--screens-lg)"
+    "variable": "var(--breakpoints-lg)"
   },
-  "screens.xl": {
+  "breakpoints.xl": {
     "value": "1280px",
-    "variable": "var(--screens-xl)"
+    "variable": "var(--breakpoints-xl)"
   },
-  "screens.2xl": {
+  "breakpoints.2xl": {
     "value": "1536px",
-    "variable": "var(--screens-2xl)"
+    "variable": "var(--breakpoints-2xl)"
   },
   "colors.text": {
     "value": "var(--colors-text)",

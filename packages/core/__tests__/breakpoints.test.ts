@@ -113,7 +113,7 @@ describe('Breakpoints', () => {
 
   test('should expand screen', () => {
     const root = postcss.parse(`
-    @screen md{
+    @breakpoint md{
         .foo{
             color: red;
         }

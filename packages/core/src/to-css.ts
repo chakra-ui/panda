@@ -6,7 +6,7 @@ import { postCssJs } from './vendor'
 export function toCss(styles: Dict, { important }: { important?: boolean } = {}) {
   const result = postcss([
     postcssNested({
-      bubble: ['screen'],
+      bubble: ['breakpoint'],
     }),
   ]).process(styles, {
     parser: postCssJs.parser,

@@ -78,10 +78,10 @@ export class Breakpoints {
   }
 
   expandScreenAtRule = (root: Root) => {
-    root.walkAtRules('screen', (rule) => {
+    root.walkAtRules('breakpoint', (rule) => {
       const value = this.getCondition(rule.params)
       if (!value) {
-        throw rule.error(`No \`${screen}\` screen found.`)
+        throw rule.error(`No \`${rule.params}\` screen found.`)
       }
       rule.name = 'media'
       rule.params = value.params
@@ -116,7 +116,7 @@ type Cond = RawCondition & { params: string }
 
 const toCondition = (key: string, value: string): Cond => ({
   type: 'at-rule',
-  name: 'screen',
+  name: 'breakpoint',
   value: key,
   raw: key,
   rawValue: `@media ${value}`,

@@ -394,25 +394,25 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"36rem\\",
         \\"variable\\": \\"var(--sizes-xl)\\"
       },
-      \\"sizes.screen-sm\\": {
+      \\"sizes.breakpoint-sm\\": {
         \\"value\\": \\"30em\\",
-        \\"variable\\": \\"var(--sizes-screen-sm)\\"
+        \\"variable\\": \\"var(--sizes-breakpoint-sm)\\"
       },
-      \\"sizes.screen-md\\": {
+      \\"sizes.breakpoint-md\\": {
         \\"value\\": \\"48em\\",
-        \\"variable\\": \\"var(--sizes-screen-md)\\"
+        \\"variable\\": \\"var(--sizes-breakpoint-md)\\"
       },
-      \\"sizes.screen-lg\\": {
+      \\"sizes.breakpoint-lg\\": {
         \\"value\\": \\"62em\\",
-        \\"variable\\": \\"var(--sizes-screen-lg)\\"
+        \\"variable\\": \\"var(--sizes-breakpoint-lg)\\"
       },
-      \\"sizes.screen-xl\\": {
+      \\"sizes.breakpoint-xl\\": {
         \\"value\\": \\"80em\\",
-        \\"variable\\": \\"var(--sizes-screen-xl)\\"
+        \\"variable\\": \\"var(--sizes-breakpoint-xl)\\"
       },
-      \\"sizes.screen-2xl\\": {
+      \\"sizes.breakpoint-2xl\\": {
         \\"value\\": \\"96em\\",
-        \\"variable\\": \\"var(--sizes-screen-2xl)\\"
+        \\"variable\\": \\"var(--sizes-breakpoint-2xl)\\"
       },
       \\"animations.none\\": {
         \\"value\\": \\"none\\",
@@ -458,25 +458,25 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"150ms\\",
         \\"variable\\": \\"var(--durations-150)\\"
       },
-      \\"screens.sm\\": {
+      \\"breakpoints.sm\\": {
         \\"value\\": \\"30em\\",
-        \\"variable\\": \\"var(--screens-sm)\\"
+        \\"variable\\": \\"var(--breakpoints-sm)\\"
       },
-      \\"screens.md\\": {
+      \\"breakpoints.md\\": {
         \\"value\\": \\"48em\\",
-        \\"variable\\": \\"var(--screens-md)\\"
+        \\"variable\\": \\"var(--breakpoints-md)\\"
       },
-      \\"screens.lg\\": {
+      \\"breakpoints.lg\\": {
         \\"value\\": \\"62em\\",
-        \\"variable\\": \\"var(--screens-lg)\\"
+        \\"variable\\": \\"var(--breakpoints-lg)\\"
       },
-      \\"screens.xl\\": {
+      \\"breakpoints.xl\\": {
         \\"value\\": \\"80em\\",
-        \\"variable\\": \\"var(--screens-xl)\\"
+        \\"variable\\": \\"var(--breakpoints-xl)\\"
       },
-      \\"screens.2xl\\": {
+      \\"breakpoints.2xl\\": {
         \\"value\\": \\"96em\\",
-        \\"variable\\": \\"var(--screens-2xl)\\"
+        \\"variable\\": \\"var(--breakpoints-2xl)\\"
       },
       \\"colors.primary\\": {
         \\"value\\": \\"var(--colors-primary)\\",
