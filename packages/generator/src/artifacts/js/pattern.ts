@@ -1,11 +1,11 @@
-import { capitalize, unionType } from '@pandacss/shared'
+import { unionType } from '@pandacss/shared'
 import { stringify } from 'javascript-stringify'
 import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
 export function generatePattern(ctx: Context) {
-  if (!ctx.patterns.isEmpty()) return
+  if (ctx.patterns.isEmpty()) return
   return ctx.patterns.details.map((pattern) => {
     const { name, config, dashName, upperName, styleFnName, blocklistType } = pattern
     const { properties, transform, strict, description } = config
@@ -17,7 +17,7 @@ export function generatePattern(ctx: Context) {
       import type { Properties } from '../types/csstype'
       import type { Tokens } from '../types/token'
   
-      export type ${capitalize(name)}Properties = {
+      export type ${upperName}Properties = {
          ${Object.keys(properties ?? {})
            .map((key) => {
              const value = properties![key]

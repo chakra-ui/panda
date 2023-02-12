@@ -8,12 +8,12 @@ import type { Context } from '../../engines'
 
 export const generateFlattenedCss = (ctx: Context) => (options: { files: string[]; resolve?: boolean }) => {
   const { files, resolve } = options
-  const { theme: { keyframes } = {}, preflight, minify, globalCss, staticCss } = ctx.config
+  const { theme: { keyframes } = {}, preflight, minify, staticCss } = ctx.config
 
   const unresolved = [
     '@layer reset, base, tokens, recipes, utilities;',
     "@import './layout-grid.css';",
-    globalCss && "@import './global.css';",
+    "@import './global.css';",
     staticCss && "@import './static.css';",
     preflight && "@import './reset.css';",
     !ctx.tokens.isEmpty && "@import './tokens/index.css';",

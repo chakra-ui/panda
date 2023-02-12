@@ -1,21 +1,21 @@
 import type { UtilityConfig } from '@pandacss/types'
 
 const transformTemplate = [
-  'rotate(var(--rotate, 0))',
-  'scaleX(var(--scale-x, 1))',
-  'scaleY(var(--scale-y, 1))',
-  'skewX(var(--skew-x, 0))',
-  'skewY(var(--skew-y, 0))',
+  'rotate(var(--rotate))',
+  'scaleX(var(--scale-x))',
+  'scaleY(var(--scale-y))',
+  'skewX(var(--skew-x))',
+  'skewY(var(--skew-y))',
 ]
 
 export const baseTransformTemplate = [
-  'translateX(var(--translate-x, 0))',
-  'translateY(var(--translate-y, 0))',
+  'translateX(var(--translate-x))',
+  'translateY(var(--translate-y))',
   ...transformTemplate,
 ].join(' ')
 
 export const gpuTransformTemplate = [
-  'translate3d(var(--translate-x, 0), var(--translate-y, 0), 0)',
+  'translate3d(var(--translate-x), var(--translate-y), 0)',
   ...transformTemplate,
 ].join(' ')
 

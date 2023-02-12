@@ -18,6 +18,7 @@ import {
   generateSolidJsxTypes,
 } from './solid-jsx'
 import { generateVueJsxFactory } from './vue-jsx/jsx'
+import { generateVueLayoutGrid } from './vue-jsx/layout-grid'
 import { generateVueJsxTypes } from './vue-jsx/types'
 
 /* -----------------------------------------------------------------------------
@@ -60,7 +61,7 @@ const patternMap = {
   react: generateReactJsxPattern,
   solid: generateSolidJsxPattern,
   preact: generatePreactJsxPattern,
-  vue: () => [{ name: '', js: '', dts: '' }],
+  vue: () => [],
 }
 
 export function generateJsxPatterns(ctx: Context) {
@@ -76,7 +77,7 @@ const layoutGridMap = {
   react: generateReactLayoutGrid,
   preact: generatePreactLayoutGrid,
   solid: generateSolidLayoutGrid,
-  vue: () => ({ js: '', dts: '' }),
+  vue: generateVueLayoutGrid,
 }
 
 export function generateLayoutGrid(ctx: Context) {

@@ -116,13 +116,23 @@ function setupCx(ctx: Context): Artifact {
 }
 
 function setupRecipes(ctx: Context): Artifact {
-  const code = generateRecipes(ctx)
-  if (!code) return
+  const files = generateRecipes(ctx)
+  if (!files) return
+
+  const indexFiles = files.filter((file) => !file.name.includes('create-recipe'))
+
+  const index = {
+    js: outdent.string(indexFiles.map((file) => ctx.file.export(`./${file.name}`)).join('\n')),
+    dts: outdent.string(indexFiles.map((file) => `export * from './${file.name}'`).join('\n')),
+  }
+
   return {
     dir: ctx.paths.recipe,
     files: [
-      { file: ctx.file.ext('index'), code: code.js },
-      { file: 'index.d.ts', code: code.dts },
+      ...files.map((file) => ({ file: ctx.file.ext(file.name), code: file.js })),
+      ...files.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
+      { file: ctx.file.ext('index'), code: index.js },
+      { file: 'index.d.ts', code: index.dts },
     ],
   }
 }

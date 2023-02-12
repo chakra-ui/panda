@@ -16,7 +16,7 @@ importers:
       husky: 8.0.3
       lint-staged: 13.1.1
       prettier: 2.8.4
-      tsup: 6.6.0
+      tsup: 6.6.2
       tsx: 3.12.3
       typescript: 4.9.5
       vitest: 0.28.4
@@ -30,7 +30,7 @@ importers:
       husky: 8.0.3
       lint-staged: 13.1.1
       prettier: 2.8.4
-      tsup: 6.6.0_typescript@4.9.5
+      tsup: 6.6.2_typescript@4.9.5
       tsx: 3.12.3
       typescript: 4.9.5
       vitest: 0.28.4
@@ -345,7 +345,7 @@ importers:
 
   playground:
     specifiers:
-      '@ark-ui/react': 0.0.0-rc-20230211031947
+      '@ark-ui/react': 0.0.0-rc-20230212114208
       '@monaco-editor/react': 4.4.6
       '@next/font': 13.1.6
       '@pandacss/generator': workspace:*
@@ -375,7 +375,7 @@ importers:
       usehooks-ts: 2.9.1
       zod: 3.20.6
     dependencies:
-      '@ark-ui/react': 0.0.0-rc-20230211031947_biqbaboplfbrettd7655fr4n2y
+      '@ark-ui/react': 0.0.0-rc-20230212114208_biqbaboplfbrettd7655fr4n2y
       '@monaco-editor/react': 4.4.6_3vguicescx7w3divwtpzvtv5wy
       '@next/font': 13.1.6
       '@pandacss/generator': link:../packages/generator
@@ -584,8 +584,8 @@ packages:
       '@jridgewell/gen-mapping': 0.1.1
       '@jridgewell/trace-mapping': 0.3.14
 
-  /@ark-ui/react/0.0.0-rc-20230211031947_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-1dNh2ZP87otIM1BR/XwNA94auHBMqiKYEX+9Lifol3JfraR5ebB+wZ9xmK0rbbeer4Bp1o0HDVJCr8QfK96BqA==}
+  /@ark-ui/react/0.0.0-rc-20230212114208_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-YNe6ZO7FQiS/bep26hD9djNEYE5uNhhqpBHUQiFzSsmKgCjehFzxQPwBt/ndr2f0Ad+3gSE9pXeNZPctSurp5g==}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
@@ -16802,7 +16802,6 @@ packages:
     hasBin: true
     optionalDependencies:
       fsevents: 2.3.2
-    dev: true
 
   /rollup/3.7.4:
     resolution: {integrity: sha512-jN9rx3k5pfg9H9al0r0y1EYKSeiRANZRYX32SuNXAnKzh6cVyf4LZVto1KAuDnbHT03E1CpsgqDKaqQ8FZtgxw==}
@@ -18065,8 +18064,8 @@ packages:
   /tslib/2.4.0:
     resolution: {integrity: sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==}
 
-  /tsup/6.6.0_typescript@4.9.5:
-    resolution: {integrity: sha512-HxZE7Hj5yNxLFftCXdcJ+Jsax8dI4oKb0bt8fIvd1g/W0FZ46sU1pFBVo15WpOERFcEMH7Hykey/Q+hKO4s9RQ==}
+  /tsup/6.6.2_typescript@4.9.5:
+    resolution: {integrity: sha512-+yQ6SI4rVtp1+YpcYOePumJLEVQ896CDNRt9dJ2L/DeMnLf1+FTOCVw5eioLBH0xLdHgogO9NQ6vPNF5MfkSJw==}
     engines: {node: '>=14'}
     hasBin: true
     peerDependencies:
@@ -18091,7 +18090,7 @@ packages:
       joycon: 3.1.1
       postcss-load-config: 3.1.4
       resolve-from: 5.0.0
-      rollup: 3.12.1
+      rollup: 3.15.0
       source-map: 0.8.0-beta.0
       sucrase: 3.24.0
       tree-kill: 1.2.2
