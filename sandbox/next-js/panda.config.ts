@@ -1,7 +1,7 @@
-import { defineConfig } from 'css-panda'
+import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
-  presets: ['css-panda/presets'],
+  presets: ['@pandacss/dev/presets'],
   outdir: 'styled-system',
   include: ['pages/**/*.jsx'],
   jsxFramework: 'react',

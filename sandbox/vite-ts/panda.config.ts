@@ -1,4 +1,4 @@
-import { defineConfig } from 'css-panda'
+import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   studio: {

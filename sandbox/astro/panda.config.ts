@@ -1,8 +1,8 @@
-import { defineConfig } from 'css-panda'
+import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   preflight: true,
   include: ['./src/**/*.{astro,tsx}'],
-  presets: ['css-panda/presets'],
+  presets: ['@pandacss/dev/presets'],
   outdir: 'panda',
 })

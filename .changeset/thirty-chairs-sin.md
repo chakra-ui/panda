@@ -1,6 +1,6 @@
 ---
 '@pandacss/parser': patch
-'css-panda': patch
+'@pandacss/dev': patch
 '@pandacss/config': patch
 '@pandacss/core': patch
 '@pandacss/presets': patch

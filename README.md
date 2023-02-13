@@ -23,7 +23,7 @@ The universal design system solution for the web
 ## Getting Started
 
 ```sh
-yarn install css-panda
+yarn install @pandacss/dev
 ```
 
 To scaffold the panda config and postcss

@@ -42,7 +42,7 @@
   "devDependencies": {
     "@pandacss/types": "workspace:*",
     "@types/prettier": "2.7.2",
-    "css-panda": "workspace:*",
+    "@pandacss/dev": "workspace:*",
     "eslint": "8.34.0",
     "eslint-config-next": "13.1.6"
   }

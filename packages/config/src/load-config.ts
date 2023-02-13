@@ -27,7 +27,7 @@ export async function loadConfigFile(options: ConfigFileOptions) {
   }
 
   // set default presets
-  result.config.presets ||= ['css-panda/presets']
+  result.config.presets ||= ['@pandacss/dev/presets']
 
   const mergedConfig = await getResolvedConfig(result.config, cwd)
 

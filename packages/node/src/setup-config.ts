@@ -23,7 +23,7 @@ export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
     logger.warn('init:config', messages.configExists(cmd))
   } else {
     const content = outdent`
-       import { defineConfig } from "css-panda"
+       import { defineConfig } from "@pandacss/dev"
 
        export default defineConfig({
         // Whether to use css reset
@@ -51,7 +51,7 @@ export async function setupPostcss(cwd: string) {
   const content = outdent`
   module.exports = {
     plugins: {
-      'css-panda/postcss': {},
+      '@pandacss/dev/postcss': {},
     },
   }
   `

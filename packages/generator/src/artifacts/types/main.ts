@@ -6,7 +6,7 @@ export const generateTypesEntry = () => ({
     import { GlobalStyleObject } from './system-types'
     import { CompositionStyles } from './composition'
     
-    declare module 'css-panda' {
+    declare module '@pandacss/dev' {
       export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): RecipeConfig<V>
       export function defineGlobalStyles(definition: GlobalStyleObject): GlobalStyleObject
       export function defineTextStyles(definition: CompositionStyles['textStyles']): CompositionStyles['textStyles']

@@ -80,7 +80,7 @@ updateTsConfig({
   },
 })
 
-updateGitIgnore({ comment: '# Panda', path: '.css-panda' })
+updateGitIgnore({ comment: '# Panda', path: '.@pandacss/dev' })
 ```
 
 ```ts

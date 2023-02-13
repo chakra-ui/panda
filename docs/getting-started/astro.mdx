@@ -8,7 +8,7 @@ Vite, and Parcel.
 Install panda and create your `panda.config.ts` file.
 
 ```bash
-npm install -g @panda-css/cli
+npm install -g @pandacss/dev
 npx panda init
 ```
 
@@ -18,7 +18,7 @@ Add panda integration to your `astro.config.mjs` file.
 
 ```js
 import { defineConfig } from 'astro/config'
-import pandacss from '@pandacss/cli/astro'
+import pandacss from '@pandacss/dev/astro'
 
 export default defineConfig({
   // ...
@@ -29,15 +29,15 @@ export default defineConfig({
 ## Configure the content
 
 ```js {3}
-import { defineConfig } from 'css-panda'
+import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   preflight: true,
-  presets: ['css-panda/presets'],
+  presets: ['@pandacss/dev/presets'],
   // define the content to scan 👇🏻
   include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
   exclude: [],
-  outdir: 'design-system',
+  outdir: 'styled-system',
 })
 ```
 
@@ -60,7 +60,7 @@ npm run dev
 Use the generated style utilities in your code and panda will extract them to the generated CSS file.
 
 ```jsx
-import { css } from './design-system/css'
+import { css } from './styled-system/css'
 
 export function App() {
   return <div className={css({ bg: 'red.400' })} />

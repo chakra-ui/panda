@@ -1,7 +1,7 @@
 ---
 '@pandacss/config': patch
 '@pandacss/types': patch
-'css-panda': patch
+'@pandacss/dev': patch
 ---
 
 Add `definePreset` method

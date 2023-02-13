@@ -1,8 +1,8 @@
-import { defineConfig } from 'css-panda'
+import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   include: ['src/**/*.tsx'],
   outdir: 'panda',
-  presets: ['css-panda/presets'],
+  presets: ['@pandacss/dev/presets'],
   jsxFramework: 'solid',
 })

@@ -348,6 +348,7 @@ importers:
       '@ark-ui/react': 0.0.0-rc-20230212155624
       '@monaco-editor/react': 4.4.6
       '@next/font': 13.1.6
+      '@pandacss/dev': workspace:*
       '@pandacss/generator': workspace:*
       '@pandacss/parser': workspace:*
       '@pandacss/presets': workspace:*
@@ -357,7 +358,6 @@ importers:
       '@types/prettier': 2.7.2
       '@types/react': 18.0.17
       '@types/react-dom': 18.0.10
-      css-panda: workspace:*
       eslint: 8.34.0
       eslint-config-next: 13.1.6
       merge-anything: ^5.1.4
@@ -400,34 +400,34 @@ importers:
       usehooks-ts: 2.9.1_biqbaboplfbrettd7655fr4n2y
       zod: 3.20.6
     devDependencies:
+      '@pandacss/dev': link:../packages/cli
       '@pandacss/types': link:../packages/types
       '@types/prettier': 2.7.2
-      css-panda: link:../packages/cli
       eslint: 8.34.0
       eslint-config-next: 13.1.6_7kw3g6rralp5ps6mg3uyzz6azm
 
   sandbox/astro:
     specifiers:
       '@astrojs/solid-js': 2.0.2
+      '@pandacss/dev': workspace:*
       '@pandacss/fixture': workspace:*
       astro: 2.0.10
-      css-panda: workspace:*
       solid-js: 1.6.10
     dependencies:
       '@astrojs/solid-js': 2.0.2_solid-js@1.6.10
       astro: 2.0.10
       solid-js: 1.6.10
     devDependencies:
+      '@pandacss/dev': link:../../packages/cli
       '@pandacss/fixture': link:../../packages/fixture
-      css-panda: link:../../packages/cli
 
   sandbox/next-js:
     specifiers:
+      '@pandacss/dev': workspace:*
       '@pandacss/fixture': workspace:*
       '@pandacss/node': workspace:*
       '@types/react': 18.0.17
       '@types/react-dom': ^18.0.10
-      css-panda: workspace:*
       eslint: 8.34.0
       eslint-config-next: 13.1.6
       next: 13.1.6
@@ -438,41 +438,42 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
+      '@pandacss/dev': link:../../packages/cli
       '@pandacss/fixture': link:../../packages/fixture
       '@pandacss/node': link:../../packages/node
       '@types/react': 18.0.17
       '@types/react-dom': 18.0.10
-      css-panda: link:../../packages/cli
       eslint: 8.34.0
       eslint-config-next: 13.1.6_eslint@8.34.0
 
   sandbox/nuxt:
     specifiers:
-      css-panda: workspace:*
+      '@pandacss/dev': workspace:*
       nuxt: ^3.1.2
       postcss: 8.4.21
     devDependencies:
-      css-panda: link:../../packages/cli
+      '@pandacss/dev': link:../../packages/cli
       nuxt: 3.2.0
       postcss: 8.4.21
 
   sandbox/preact-ts:
     specifiers:
+      '@pandacss/dev': workspace:*
       '@preact/preset-vite': 2.5.0
-      css-panda: workspace:*
       preact: ^10.11.3
       typescript: 4.9.5
       vite: 4.1.1
     dependencies:
       preact: 10.11.3
     devDependencies:
+      '@pandacss/dev': link:../../packages/cli
       '@preact/preset-vite': 2.5.0_preact@10.11.3+vite@4.1.1
-      css-panda: link:../../packages/cli
       typescript: 4.9.5
       vite: 4.1.1
 
   sandbox/remix:
     specifiers:
+      '@pandacss/dev': workspace:*
       '@remix-run/dev': ^1.11.1
       '@remix-run/eslint-config': ^1.11.1
       '@remix-run/node': ^1.11.1
@@ -482,7 +483,6 @@ importers:
       '@types/react': 18.0.17
       '@types/react-dom': ^18.0.10
       '@vercel/node': ^2.8.15
-      css-panda: workspace:*
       eslint: ^8.32.0
       react: ^18.2.0
       react-dom: ^18.2.0
@@ -495,18 +495,18 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
+      '@pandacss/dev': link:../../packages/cli
       '@remix-run/dev': 1.11.1_kbsvfewv4jwrmiyw4esgzjg2te
       '@remix-run/eslint-config': 1.11.1_wvykjhgtukofhefoe5m2qcm46i
       '@remix-run/serve': 1.11.1_biqbaboplfbrettd7655fr4n2y
       '@types/react': 18.0.17
       '@types/react-dom': 18.0.10
-      css-panda: link:../../packages/cli
       eslint: 8.32.0
       typescript: 4.9.4
 
   sandbox/solid-ts:
     specifiers:
-      css-panda: workspace:*
+      '@pandacss/dev': workspace:*
       solid-js: ^1.6.9
       typescript: ^4.9.4
       vite: ^4.0.4
@@ -514,7 +514,7 @@ importers:
     dependencies:
       solid-js: 1.6.9
     devDependencies:
-      css-panda: link:../../packages/cli
+      '@pandacss/dev': link:../../packages/cli
       typescript: 4.9.4
       vite: 4.0.4
       vite-plugin-solid: 2.5.0_solid-js@1.6.9+vite@4.0.4
@@ -522,6 +522,7 @@ importers:
   sandbox/storybook:
     specifiers:
       '@babel/core': ^7.20.5
+      '@pandacss/dev': workspace:*
       '@storybook/addon-actions': ^7.0.0-beta.19
       '@storybook/addon-essentials': ^7.0.0-beta.19
       '@storybook/addon-interactions': ^7.0.0-beta.19
@@ -530,7 +531,6 @@ importers:
       '@storybook/react': ^7.0.0-beta.19
       '@storybook/react-webpack5': ^7.0.0-beta.19
       babel-loader: ^9.0.0
-      css-panda: workspace:*
       postcss: 8.4.21
       react: ^18.2.0
       react-dom: ^18.2.0
@@ -540,6 +540,7 @@ importers:
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
       '@babel/core': 7.20.12
+      '@pandacss/dev': link:../../packages/cli
       '@storybook/addon-actions': 7.0.0-beta.45_biqbaboplfbrettd7655fr4n2y
       '@storybook/addon-essentials': 7.0.0-beta.45_biqbaboplfbrettd7655fr4n2y
       '@storybook/addon-interactions': 7.0.0-beta.45_biqbaboplfbrettd7655fr4n2y
@@ -548,16 +549,15 @@ importers:
       '@storybook/react': 7.0.0-beta.45_biqbaboplfbrettd7655fr4n2y
       '@storybook/react-webpack5': 7.0.0-beta.45_pjwopsidmaokadturxaafygjp4
       babel-loader: 9.1.2_@babel+core@7.20.12
-      css-panda: link:../../packages/cli
       postcss: 8.4.21
       storybook: 7.0.0-beta.45
 
   sandbox/vite-ts:
     specifiers:
+      '@pandacss/dev': workspace:*
       '@types/react': 18.0.17
       '@types/react-dom': 18.0.10
       '@vitejs/plugin-react': 3.1.0
-      css-panda: workspace:*
       postcss: 8.4.21
       react: ^18.2.0
       react-dom: ^18.2.0
@@ -567,10 +567,10 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
+      '@pandacss/dev': link:../../packages/cli
       '@types/react': 18.0.17
       '@types/react-dom': 18.0.10
       '@vitejs/plugin-react': 3.1.0_vite@4.1.1
-      css-panda: link:../../packages/cli
       postcss: 8.4.21
       typescript: 4.9.5
       vite: 4.1.1

@@ -1,3 +1,3 @@
 module.exports = {
-  plugins: [require('./node_modules/css-panda/postcss.js')],
+  plugins: [require('./node_modules/@pandacss/dev/postcss.js')],
 }

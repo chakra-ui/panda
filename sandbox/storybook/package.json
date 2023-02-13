@@ -22,7 +22,7 @@
     "@storybook/react": "^7.0.0-beta.19",
     "@storybook/react-webpack5": "^7.0.0-beta.19",
     "babel-loader": "^9.0.0",
-    "css-panda": "workspace:*",
+    "@pandacss/dev": "workspace:*",
     "postcss": "8.4.21",
     "storybook": "^7.0.0-beta.19"
   },

@@ -18,7 +18,7 @@ The config recipe takes the following properties:
 To define a config recipe, import the `defineRecipe` helper function
 
 ```jsx
-import { defineRecipe } from 'css-panda'
+import { defineRecipe } from '@pandacss/dev'
 
 export const buttonRecipe = defineRecipe({
   name: 'button',
@@ -53,13 +53,13 @@ export const buttonRecipe = defineRecipe({
 To add the recipe to the config, you’d need to add it to the `theme.recipes` object.
 
 ```jsx
-import { defineConfig } from 'css-panda'
+import { defineConfig } from '@pandacss/dev'
 import { buttonRecipe } from './recipes/button'
 
 export default defineConfig({
   include: ['src/**/*.tsx'],
   outdir: 'panda',
-  presets: ['css-panda/presets'],
+  presets: ['@pandacss/dev/presets'],
   jsxFramework: 'solid',
   theme: {
     recipes: {
