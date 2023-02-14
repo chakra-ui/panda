@@ -8,7 +8,7 @@ import { generateConditions } from './js/conditions'
 import { generateCssFn } from './js/css-fn'
 import { generateCvaFn } from './js/cva'
 import { generateCx } from './js/cx'
-import { generateIsValidProp } from './js/helpers'
+import { generateHelpers } from './js/helpers'
 import { generateisValidProp } from './js/is-valid-prop'
 import { generatePattern } from './js/pattern'
 import { generateRecipes } from './js/recipe'
@@ -25,7 +25,7 @@ import { generateGlobalCss } from './css/global-css'
 import { generateStaticCss } from './css/static-css'
 
 function setupHelpers(ctx: Context): Artifact {
-  const code = generateIsValidProp()
+  const code = generateHelpers()
   return {
     files: [{ file: ctx.file.ext('helpers'), code: code.js }],
   }

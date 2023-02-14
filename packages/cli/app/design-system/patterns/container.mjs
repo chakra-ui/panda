@@ -1,7 +1,8 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const containerConfig = {transform(props) {
+const containerConfig = {
+transform(props) {
   const { centerContent, ...rest } = props;
   return {
     position: "relative",

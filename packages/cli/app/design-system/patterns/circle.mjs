@@ -1,7 +1,8 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const circleConfig = {transform(props) {
+const circleConfig = {
+transform(props) {
   const { size, ...rest } = props;
   return {
     display: "flex",

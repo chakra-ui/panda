@@ -9,6 +9,16 @@ export function generatePattern(ctx: Context) {
   return ctx.patterns.details.map((pattern) => {
     const { name, config, dashName, upperName, styleFnName, blocklistType } = pattern
     const { properties, transform, strict, description } = config
+
+    const transformFn = stringify({ transform }) ?? ''
+    const helperImports = ['mapObject']
+    if (transformFn.includes('__spreadValues')) {
+      helperImports.push('__spreadValues')
+    }
+    if (transformFn.includes('__objRest')) {
+      helperImports.push('__objRest')
+    }
+
     return {
       name: dashName,
       dts: outdent`
@@ -55,10 +65,10 @@ export function generatePattern(ctx: Context) {
   
      `,
       js: outdent`
-    ${ctx.file.import('mapObject', '../helpers')}
+    ${ctx.file.import(helperImports.join(', '), '../helpers')}
     ${ctx.file.import('css', '../css/index')}
   
-    const ${name}Config = ${stringify({ transform })}
+    const ${name}Config = ${transformFn.replace(`{transform`, `{\ntransform`)}
   
     export const ${styleFnName} = (styles) => ${name}Config.transform(styles, { map: mapObject })
   

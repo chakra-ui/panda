@@ -1,7 +1,8 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const hstackConfig = {transform(props) {
+const hstackConfig = {
+transform(props) {
   const { justify, gap = "10px", ...rest } = props;
   return {
     display: "flex",

@@ -1,7 +1,8 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const wrapConfig = {transform(props) {
+const wrapConfig = {
+transform(props) {
   const { gapX, gapY, gap = gapX || gapY ? void 0 : "10px", align, justify, ...rest } = props;
   return {
     display: "flex",

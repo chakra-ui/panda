@@ -1,7 +1,8 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const gridItemConfig = {transform(props, { map }) {
+const gridItemConfig = {
+transform(props, { map }) {
   const { colSpan, rowSpan, colStart, rowStart, colEnd, rowEnd, ...rest } = props;
   const spanFn = (v) => v === "auto" ? v : `span ${v}`;
   return {

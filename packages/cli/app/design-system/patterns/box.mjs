@@ -1,7 +1,8 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const boxConfig = {transform(props) {
+const boxConfig = {
+transform(props) {
   return props;
 }}
 

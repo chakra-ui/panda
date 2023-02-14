@@ -1,7 +1,8 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const stackConfig = {transform(props) {
+const stackConfig = {
+transform(props) {
   const { align = "flex-start", justify, direction = "column", gap = "10px", ...rest } = props;
   return {
     display: "flex",
