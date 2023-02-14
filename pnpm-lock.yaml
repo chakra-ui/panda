@@ -412,11 +412,11 @@ importers:
       '@pandacss/dev': workspace:*
       '@pandacss/fixture': workspace:*
       astro: 2.0.11
-      solid-js: 1.6.10
+      solid-js: 1.6.11
     dependencies:
-      '@astrojs/solid-js': 2.0.2_solid-js@1.6.10
+      '@astrojs/solid-js': 2.0.2_solid-js@1.6.11
       astro: 2.0.11
-      solid-js: 1.6.10
+      solid-js: 1.6.11
     devDependencies:
       '@pandacss/dev': link:../../packages/cli
       '@pandacss/fixture': link:../../packages/fixture
@@ -723,14 +723,14 @@ packages:
       - supports-color
     dev: false
 
-  /@astrojs/solid-js/2.0.2_solid-js@1.6.10:
+  /@astrojs/solid-js/2.0.2_solid-js@1.6.11:
     resolution: {integrity: sha512-fQMOfBcmvYHXJg8vR0LgoeBgrlLHrxnlzxxmPkDKrGPBRh9y3si2d/ChpMyMRL3ibAOqWTs7Xs5gOYqrFZbw3g==}
     engines: {node: '>=16.12.0'}
     peerDependencies:
       solid-js: ^1.4.3
     dependencies:
       babel-preset-solid: 1.6.9
-      solid-js: 1.6.10
+      solid-js: 1.6.11
       vitefu: 0.2.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -17196,8 +17196,8 @@ packages:
       smart-buffer: 4.2.0
     dev: true
 
-  /solid-js/1.6.10:
-    resolution: {integrity: sha512-Sf0e6PQCEFkFtbPq0L+93Ua81YQOefBEbvDJ0YXT92b6Lzw0k7UvzSd2l1BbYM+yzE3UmepU1tyMDc/3nIByjA==}
+  /solid-js/1.6.11:
+    resolution: {integrity: sha512-JquQQHPArGq+i2PLURxJ99Pcz2/1docpbycSio/cKSA0SeI3z5zRjy0TNcH4NRYvbOLrcini+iovXwnexKabyw==}
     dependencies:
       csstype: 3.1.1
     dev: false
