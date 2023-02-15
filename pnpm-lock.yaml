@@ -16,7 +16,7 @@ importers:
       husky: 8.0.3
       lint-staged: 13.1.2
       prettier: 2.8.4
-      tsup: 6.6.2
+      tsup: 6.6.3
       tsx: 3.12.3
       typescript: 4.9.5
       vitest: 0.28.5
@@ -30,7 +30,7 @@ importers:
       husky: 8.0.3
       lint-staged: 13.1.2
       prettier: 2.8.4
-      tsup: 6.6.2_typescript@4.9.5
+      tsup: 6.6.3_typescript@4.9.5
       tsx: 3.12.3
       typescript: 4.9.5
       vitest: 0.28.5
@@ -17365,9 +17365,9 @@ packages:
   /tslib/2.4.0:
     resolution: {integrity: sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==}
 
-  /tsup/6.6.2_typescript@4.9.5:
-    resolution: {integrity: sha512-+yQ6SI4rVtp1+YpcYOePumJLEVQ896CDNRt9dJ2L/DeMnLf1+FTOCVw5eioLBH0xLdHgogO9NQ6vPNF5MfkSJw==}
-    engines: {node: '>=14'}
+  /tsup/6.6.3_typescript@4.9.5:
+    resolution: {integrity: sha512-OLx/jFllYlVeZQ7sCHBuRVEQBBa1tFbouoc/gbYakyipjVQdWy/iQOvmExUA/ewap9iQ7tbJf9pW0PgcEFfJcQ==}
+    engines: {node: '>=14.18'}
     hasBin: true
     peerDependencies:
       '@swc/core': ^1
