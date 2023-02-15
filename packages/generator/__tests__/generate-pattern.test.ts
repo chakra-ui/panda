@@ -27,7 +27,8 @@ test('should generate pattern', () => {
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
-    const stackConfig = {transform(props) {
+    const stackConfig = {
+    transform(props) {
       const { align = \\"flex-start\\", justify, direction = \\"column\\", gap = \\"10px\\" } = props;
       return {
         display: \\"flex\\",
@@ -63,7 +64,8 @@ test('should generate pattern', () => {
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
-    const absoluteCenterConfig = {transform(props, { map }) {
+    const absoluteCenterConfig = {
+    transform(props, { map }) {
       const { axis } = props;
       return {
         position: \\"absolute\\",
@@ -102,7 +104,8 @@ test('should generate pattern', () => {
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
-    const simpleGridConfig = {transform(props, { map }) {
+    const simpleGridConfig = {
+    transform(props, { map }) {
       const { gap, columns, minChildWidth } = props;
       return {
         display: \\"grid\\",
@@ -135,7 +138,8 @@ test('should generate pattern', () => {
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
-    const gridItemConfig = {transform(props, { map }) {
+    const gridItemConfig = {
+    transform(props, { map }) {
       const { colSpan } = props;
       return {
         gridColumn: map(colSpan, (v) => v ? \`span \${v}\` : \\"auto\\")
