@@ -79,8 +79,8 @@ Semantic tokens can reference existing tokens using the `{}` syntax.
 
 Let's take a quick example, assuming we've defined the following tokens:
 
-- `red` and `green` are raw tokens that define the color red and blue.
-- `danger` and `success` are semantic tokens that reference to the `red` and `blue` tokens.
+- `red` and `green` are raw tokens that define the color red and green.
+- `danger` and `success` are semantic tokens that reference to the `red` and `green` tokens.
 
 ```js
 const theme = {
@@ -101,8 +101,8 @@ const theme = {
 
 ### Composite Tokens
 
-Composite tokens that combines multiple values that follow a pre-defined structure. Take "Shadow" as an example, it
-comprises of a color, a blur radius, and an x/y offset. We can define it as a composite token like so:
+Composite tokens combine multiple values that follow a pre-defined structure. Take "Shadow" as an example, it comprises
+of a color, a blur radius, and an x/y offset. We can define it as a composite token like so:
 
 ```js
 const theme = {
@@ -193,4 +193,23 @@ const theme = {
     },
   },
 }
+```
+
+### Composite Values
+
+In CSS, composite values are values that combine two or more individual values into a single value. We can't tokenize
+this values, so we provide a way to reference your design system tokens within these.
+
+```js
+import { css } from '../styled-system/css'
+
+const className = css({ border: 'solid 1px token(colors.red.400)' })
+```
+
+You can also provide a fallback value.
+
+```js
+import { css } from '../styled-system/css'
+
+const className = css({ border: 'solid 1px token(colors.red.400, red)' })
 ```
