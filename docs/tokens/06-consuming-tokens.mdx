@@ -1,0 +1,28 @@
+# Consuming tokens
+
+Consuming tokens
+
+## Usage in CSS function
+
+## Usage in Composite values
+
+In CSS, composite values are values that combine two or more individual values into a single value. We can't tokenize
+this values, so we provide a way to reference your design system tokens within these.
+
+```js
+import { css } from '../styled-system/css'
+
+const className = css({ border: 'solid 1px token(colors.red.400)' })
+```
+
+You can also provide a fallback value.
+
+```js
+import { css } from '../styled-system/css'
+
+const className = css({ border: 'solid 1px token(colors.red.400, red)' })
+```
+
+## Incremntal adoption
+
+via the style  attribute or in existing styled-components  or emotion  project
