@@ -22,6 +22,6 @@
     "@pandacss/dev": "workspace:*",
     "postcss": "8.4.21",
     "typescript": "4.9.5",
-    "vite": "4.1.2"
+    "vite": "4.1.3"
   }
 }
