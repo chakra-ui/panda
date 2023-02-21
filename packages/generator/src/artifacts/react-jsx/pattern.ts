@@ -6,7 +6,7 @@ export function generateReactJsxPattern(ctx: Context) {
   const { typeName, factoryName } = ctx.jsx
   return ctx.patterns.details.map((pattern) => {
     const { upperName, styleFnName, dashName, jsxName, props, blocklistType } = pattern
-    const { description } = pattern.config
+    const { description, jsxElement = 'div' } = pattern.config
 
     return {
       name: dashName,
@@ -20,14 +20,14 @@ export function generateReactJsxPattern(ctx: Context) {
           .with(
             0,
             () => outdent`
-        return createElement(${factoryName}.div, { ref, ...props })
+        return createElement(${factoryName}.${jsxElement}, { ref, ...props })
           `,
           )
           .otherwise(
             () => outdent`
         const { ${props.join(', ')}, ...restProps } = props
         const styleProps = ${styleFnName}({${props.join(', ')}})
-        return createElement(${factoryName}.div, { ref, ...styleProps, ...restProps })
+        return createElement(${factoryName}.${jsxElement}, { ref, ...styleProps, ...restProps })
           `,
           )}
       })    

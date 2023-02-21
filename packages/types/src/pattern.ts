@@ -18,6 +18,10 @@ export type PatternConfig = {
    */
   description?: string
   /**
+   * The JSX element rendered by the pattern
+   */
+  jsxElement?: string
+  /**
    * The properties of the pattern.
    */
   properties: Record<string, PatternProperty>
