@@ -345,7 +345,7 @@ importers:
 
   playground:
     specifiers:
-      '@ark-ui/react': 0.0.0-rc-20230220225158
+      '@ark-ui/react': 0.0.0-rc-20230221094754
       '@monaco-editor/react': 4.4.6
       '@next/font': 13.1.6
       '@pandacss/dev': workspace:*
@@ -375,7 +375,7 @@ importers:
       usehooks-ts: 2.9.1
       zod: 3.20.6
     dependencies:
-      '@ark-ui/react': 0.0.0-rc-20230220225158_biqbaboplfbrettd7655fr4n2y
+      '@ark-ui/react': 0.0.0-rc-20230221094754_biqbaboplfbrettd7655fr4n2y
       '@monaco-editor/react': 4.4.6_3vguicescx7w3divwtpzvtv5wy
       '@next/font': 13.1.6
       '@pandacss/generator': link:../packages/generator
@@ -584,8 +584,8 @@ packages:
       '@jridgewell/gen-mapping': 0.1.1
       '@jridgewell/trace-mapping': 0.3.17
 
-  /@ark-ui/react/0.0.0-rc-20230220225158_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-gV9BHeq9V5ywBscip/7Rf27a3vB924ZCgDY1rS9l0X9KzAi5qisBcSeCkpXJsog8O81ano0S0+prAIc6rnNhYA==}
+  /@ark-ui/react/0.0.0-rc-20230221094754_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-jeuYVUsJ+WeEvxiMY6BNKysP7psqF0FffmrNL8u8egzTr+G5BK8jAFbEh/+XO2fzB1gZsn70+FaM/dQ1M6gCng==}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
