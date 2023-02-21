@@ -484,6 +484,7 @@ importers:
       '@types/react-dom': ^18.0.11
       '@vercel/node': ^2.9.5
       eslint: ^8.34.0
+      postcss: ^8.4.12
       react: ^18.2.0
       react-dom: ^18.2.0
       typescript: ^4.9.5
@@ -502,6 +503,7 @@ importers:
       '@types/react': 18.0.17
       '@types/react-dom': 18.0.11
       eslint: 8.34.0
+      postcss: 8.4.21
       typescript: 4.9.5
 
   sandbox/solid-ts:
