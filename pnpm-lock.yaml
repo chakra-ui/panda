@@ -411,11 +411,11 @@ importers:
       '@astrojs/solid-js': 2.0.2
       '@pandacss/dev': workspace:*
       '@pandacss/fixture': workspace:*
-      astro: 2.0.14
+      astro: 2.0.15
       solid-js: 1.6.11
     dependencies:
       '@astrojs/solid-js': 2.0.2_solid-js@1.6.11
-      astro: 2.0.14
+      astro: 2.0.15
       solid-js: 1.6.11
     devDependencies:
       '@pandacss/dev': link:../../packages/cli
@@ -672,13 +672,13 @@ packages:
       - supports-color
     dev: false
 
-  /@astrojs/markdown-remark/2.0.1_astro@2.0.14:
+  /@astrojs/markdown-remark/2.0.1_astro@2.0.15:
     resolution: {integrity: sha512-xQF1rXGJN18m+zZucwRRtmNehuhPMMhZhi6HWKrtpEAKnHSPk8lqf1GXgKH7/Sypglu8ivdECZ+EGs6kOYVasQ==}
     peerDependencies:
       astro: ^2.0.2
     dependencies:
       '@astrojs/prism': 2.0.0
-      astro: 2.0.14
+      astro: 2.0.15
       github-slugger: 1.4.0
       import-meta-resolve: 2.2.0
       rehype-raw: 6.1.1
@@ -7305,14 +7305,14 @@ packages:
       - terser
     dev: false
 
-  /astro/2.0.14:
-    resolution: {integrity: sha512-BiXnHyK3rj5Uz45V5p9jRi0xtJc/zxhCxnXYAekHHF1bVvvoa3aXMwl0GZ3Bc0mxP6vPLmbRcjNKdqfyZn1B3Q==}
+  /astro/2.0.15:
+    resolution: {integrity: sha512-CUJNrcdgcSjASValRNEesTgXSefgQ8Z9GHrZXckmTivatoBlVkYb8G8tmk7dgRt6JF+bwfOsA6cGdv7+G7hCbA==}
     engines: {node: '>=16.12.0', npm: '>=6.14.0'}
     hasBin: true
     dependencies:
       '@astrojs/compiler': 1.1.0
       '@astrojs/language-server': 0.28.3
-      '@astrojs/markdown-remark': 2.0.1_astro@2.0.14
+      '@astrojs/markdown-remark': 2.0.1_astro@2.0.15
       '@astrojs/telemetry': 2.0.0
       '@astrojs/webapi': 2.0.1
       '@babel/core': 7.20.12
@@ -7358,8 +7358,8 @@ packages:
       typescript: 4.9.5
       unist-util-visit: 4.1.1
       vfile: 5.3.5
-      vite: 4.1.2
-      vitefu: 0.2.4_vite@4.1.2
+      vite: 4.1.4
+      vitefu: 0.2.4_vite@4.1.4
       yargs-parser: 21.1.0
       zod: 3.20.6
     transitivePeerDependencies:
@@ -17971,39 +17971,6 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vite/4.1.2:
-    resolution: {integrity: sha512-MWDb9Rfy3DI8omDQySbMK93nQqStwbsQWejXRY2EBzEWKmLAXWb1mkI9Yw2IJrc+oCvPCI1Os5xSSIBYY6DEAw==}
-    engines: {node: ^14.18.0 || >=16.0.0}
-    hasBin: true
-    peerDependencies:
-      '@types/node': '>= 14'
-      less: '*'
-      sass: '*'
-      stylus: '*'
-      sugarss: '*'
-      terser: ^5.4.0
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-      less:
-        optional: true
-      sass:
-        optional: true
-      stylus:
-        optional: true
-      sugarss:
-        optional: true
-      terser:
-        optional: true
-    dependencies:
-      esbuild: 0.16.17
-      postcss: 8.4.21
-      resolve: 1.22.1
-      rollup: 3.15.0
-    optionalDependencies:
-      fsevents: 2.3.2
-    dev: false
-
   /vite/4.1.4:
     resolution: {integrity: sha512-3knk/HsbSTKEin43zHu7jTwYWv81f8kgAL99G5NWBcA1LKvtvcVAC4JjBH1arBunO9kQka+1oGbrMKOjk4ZrBg==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -18035,7 +18002,6 @@ packages:
       rollup: 3.15.0
     optionalDependencies:
       fsevents: 2.3.2
-    dev: true
 
   /vite/4.1.4_@types+node@18.14.1:
     resolution: {integrity: sha512-3knk/HsbSTKEin43zHu7jTwYWv81f8kgAL99G5NWBcA1LKvtvcVAC4JjBH1arBunO9kQka+1oGbrMKOjk4ZrBg==}
@@ -18090,7 +18056,7 @@ packages:
     dependencies:
       vite: 4.1.1
 
-  /vitefu/0.2.4_vite@4.1.2:
+  /vitefu/0.2.4_vite@4.1.4:
     resolution: {integrity: sha512-fanAXjSaf9xXtOOeno8wZXIhgia+CZury481LsDaV++lSvcU2R9Ch2bPh3PYFyoHW+w9LqAeYRISVQjUIew14g==}
     peerDependencies:
       vite: ^3.0.0 || ^4.0.0
@@ -18098,7 +18064,7 @@ packages:
       vite:
         optional: true
     dependencies:
-      vite: 4.1.2
+      vite: 4.1.4
     dev: false
 
   /vitest/0.28.5:
