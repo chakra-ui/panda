@@ -4,6 +4,8 @@ import { jsxRecipeParser } from './fixture'
 describe('pattern jsx', () => {
   test('should extract', () => {
     const code = `
+    import { Button } from ".panda/jsx"
+
        function ActionButton() {
          return (
             <div>

@@ -1,6 +1,6 @@
 import { Obj, pipe, tap } from 'lil-fp'
 import { Project as TsProject, type ProjectOptions as TsProjectOptions, ScriptKind } from 'ts-morph'
-import { createParser, type ParserOptions } from './parser'
+import { createParser, ParserMode, type ParserOptions } from './parser'
 
 export type ProjectOptions = Partial<TsProjectOptions> & {
   readFile: (filePath: string) => string
@@ -40,8 +40,8 @@ export const createProject = ({ getFiles, readFile, parserOptions, ...projectOpt
           overwrite: true,
           scriptKind: ScriptKind.TSX,
         }),
-      parseSourceFile: (filePath: string) => {
-        return parser(project.getSourceFile(filePath))
+      parseSourceFile: (filePath: string, mode: ParserMode = 'internal') => {
+        return parser(project.getSourceFile(filePath), mode)
       },
     })),
 

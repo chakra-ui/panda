@@ -1,11 +1,15 @@
 import { css, cx } from '../design-system/css'
-import { circle, vstack } from '../design-system/patterns'
+import { circle as circleLike, vstack } from '../design-system/patterns'
 import { Stack, panda, Circle, HStack } from '../design-system/jsx'
 import { button } from '../design-system/recipes'
 import { Button } from './Button'
 import { badge, Badge } from './Badge'
 
 function App() {
+  const paddingY = '25px'
+  const className = css({ padding: paddingY, fontSize: paddingY ? '2xl' : '4xl' })
+  console.log({ className })
+
   return (
     <div className={css({ paddingY: '40px', debug: true })}>
       <Button
@@ -22,7 +26,7 @@ function App() {
           S
         </Circle>
         <HStack gap="40px" debug>
-          <div>Element 1</div>
+          <div className={className}>Element 1</div>
           <panda.div color="red" fontWeight="bold" fontSize="50px">
             Element 2
           </panda.div>
@@ -33,7 +37,7 @@ function App() {
           <div className={vstack({ justify: 'center', bg: 'red.200', py: '2', mb: '30px', debug: true })}>
             <button>Button 1</button>
             <button>Button 2</button>
-            <div className={circle({ size: '10', bg: 'purple', color: 'white' })}>3</div>
+            <div className={circleLike({ size: '10', bg: 'purple', color: 'white' })}>3</div>
           </div>
           <h1 className={css({ color: 'black', fontSize: '56px', lineHeight: '1.1em' })}>
             Create accessible React apps <span className={css({ color: 'teal' })}>with speed</span>

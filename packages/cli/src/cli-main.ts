@@ -1,5 +1,7 @@
+import { findConfigFile } from '@pandacss/config'
 import { colors, logger } from '@pandacss/logger'
 import {
+  analyzeTokens,
   emitArtifacts,
   extractCss,
   generate,
@@ -14,7 +16,7 @@ import { readFileSync } from 'fs'
 import path, { join } from 'path'
 import updateNotifier from 'update-notifier'
 import packageJson from '../package.json' assert { type: 'json' }
-import { serveStudio, buildStudio, previewStudio } from './studio'
+import { buildStudio, previewStudio, serveStudio } from './studio'
 
 export async function main() {
   const cli = cac('panda')
@@ -131,6 +133,43 @@ export async function main() {
       }
     })
 
+  cli
+    .command('analyze [path]', 'Anaylyze design token usage in path')
+    .option('--json [filepath]', 'Output analyze report in JSON')
+    .option('--html [dir]', 'Output analyze report in interactive web page')
+    .option('--silent', "Don't print any logs")
+    .option('--only', "Only analyze given filepath, skip config's include/exclude")
+    .option('--mode [mode]', 'box-extractor || internal')
+    .action(
+      async (
+        maybePath?: string,
+        flags?: { silent?: boolean; json?: string; html?: string; mode?: ParserMode; only?: boolean },
+      ) => {
+        const { silent, mode = 'internal', only } = flags ?? {}
+        if (silent) logger.level = 'silent'
+
+        const configPath = (maybePath && findConfigFile({ cwd: maybePath })) ?? undefined
+        const cwd = configPath ? path.dirname(configPath) : maybePath ?? process.cwd()
+
+        const ctx = await loadConfigAndCreateContext({
+          cwd,
+          configPath,
+          config: only ? { include: [maybePath] } : (undefined as any),
+        })
+        logger.info('cli', `Found config at ${colors.bold(ctx.path)}, using mode=[${colors.bold(mode)}]`)
+
+        analyzeTokens(
+          ctx,
+          (file) => {
+            logger.info('cli', `Analyzed ${colors.bold(file)}`)
+          },
+          mode,
+        )
+
+        // TODO output CLI text/json/html
+      },
+    )
+
   cli.help()
 
   cli.version(pkgJson.version)
@@ -140,3 +179,5 @@ export async function main() {
 
   updateNotifier({ pkg: packageJson, distTag: 'dev' }).notify()
 }
+
+type ParserMode = Parameters<typeof analyzeTokens>[2]

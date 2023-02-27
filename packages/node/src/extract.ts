@@ -1,4 +1,6 @@
 import { logger } from '@pandacss/logger'
+import type { ParserMode } from '@pandacss/parser'
+import type { ParserResult } from '@pandacss/types'
 import { Obj, pipe, tap, tryCatch } from 'lil-fp'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
@@ -36,8 +38,9 @@ export function extractFile(ctx: PandaContext, file: string) {
         (error) => logger.error('file:parse', error),
       ),
     ),
+    Obj.bind('measureCss', () => logger.time.debug(`Parsed ${file}`)),
     Obj.bind('css', ({ result }) => (result ? ctx.getParserCss(result) : undefined)),
-    tap(({ measure }) => measure()),
+    tap(({ measure, measureCss }) => [measureCss(), measure()]),
     Obj.get('css'),
   )
 }
@@ -70,4 +73,33 @@ export async function extractCss(ctx: PandaContext) {
   await extractFiles(ctx)
   await bundleChunks(ctx)
   return ctx.messages.buildComplete(ctx.getFiles().length)
+}
+
+export function analyzeTokens(
+  ctx: PandaContext,
+  onResult?: (file: string, result: ParserResult) => void,
+  mode: ParserMode = 'internal',
+) {
+  const done = logger.time.debug(`Analyzed ${ctx.getFiles().length} files`)
+
+  const resultMap = new Map<string, ParserResult>()
+  ctx
+    .getFiles()
+    .map((file) => {
+      const measure = logger.time.debug(`Extracted ${file}`)
+      const result = ctx.project.parseSourceFile(file, mode)
+      measure()
+
+      if (result) {
+        resultMap.set(file, result)
+        onResult?.(file, result)
+      }
+
+      return [file, result] as [string, ParserResult]
+    })
+    .filter(([, result]) => result)
+
+  done()
+
+  return resultMap
 }
