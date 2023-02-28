@@ -25,7 +25,7 @@
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.11",
     "merge-anything": "^5.1.4",
-    "monaco-editor": "0.36.0",
+    "monaco-editor": "0.36.1",
     "nanoid": "4.0.1",
     "next": "13.2.1",
     "prettier": "2.8.4",
