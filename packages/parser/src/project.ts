@@ -40,8 +40,8 @@ export const createProject = ({ getFiles, readFile, parserOptions, ...projectOpt
           overwrite: true,
           scriptKind: ScriptKind.TSX,
         }),
-      parseSourceFile: (filePath: string, mode: ParserMode = 'internal') => {
-        return parser(project.getSourceFile(filePath), mode)
+      parseSourceFile: (filePath: string, properties: string[], mode: ParserMode = 'box-extractor') => {
+        return parser(project.getSourceFile(filePath), properties, mode)
       },
     })),
 

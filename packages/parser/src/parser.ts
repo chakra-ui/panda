@@ -1,10 +1,10 @@
-import { extract, ExtractableMap, unbox } from '@box-extractor/core'
+import { extract, unbox } from '@box-extractor/core'
 import { logger } from '@pandacss/logger'
 import { memo } from '@pandacss/shared'
 import type { ResultItem } from '@pandacss/types'
 import type { SourceFile } from 'ts-morph'
+import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
-import { allCssProperties } from '../../is-valid-prop'
 import { visitCallExpressions } from './call-expression'
 import { getImportDeclarations } from './import'
 import { visitJsxElement } from './jsx-element'
@@ -42,7 +42,7 @@ function createImportMatcher(mod: string, values?: string[]) {
 
 export type ParserMode = 'box-extractor' | 'internal'
 export function createParser(options: ParserOptions) {
-  return function parse(sourceFile: SourceFile | undefined, mode: ParserMode = 'internal') {
+  return function parse(sourceFile: SourceFile | undefined, confProperties: string[], mode: ParserMode = 'internal') {
     if (!sourceFile) return
 
     const filePath = sourceFile.getFilePath()
@@ -85,26 +85,73 @@ export function createParser(options: ParserOptions) {
     const jsxRecipeNodes = new RegExp(`(${jsx?.nodes.map((node) => node.type === 'recipe' && node.name).join('|')})$`)
 
     if (mode === 'box-extractor') {
-      const functions = { css: { properties: allCssProperties }, cva: { properties: 'all' } } as ExtractableMap
-      let components
-      if (options.jsx) {
-        functions[options.jsx.factory] = { properties: 'all' }
-
-        components = {
-          [`${options.jsx.factory}.*`]: { properties: allCssProperties },
-          ...options.jsx.nodes.reduce((acc, node) => {
-            const properties = (node.props || []).concat(allCssProperties)
-
-            functions[node.name] = { properties }
-            acc[imports.getAlias(node.name)] = { properties }
-
-            return acc
-          }, {}),
+      const recipes = new Map<string, boolean>()
+      imports.value.forEach((importDeclaration) => {
+        const { name, alias } = importDeclaration
+        const isRecipe = isValidRecipe(name)
+        if (isRecipe) {
+          recipes.set(alias, true)
         }
+      })
+
+      const functions = new Map<string, Map<string, boolean>>()
+      const components = new Map<string, Map<string, boolean>>()
+
+      const propertiesMap = new Map<string, boolean>(confProperties.map((prop) => [prop, true]))
+
+      const cvaAlias = imports.getAlias('cva')
+      const cssAlias = imports.getAlias('css')
+
+      if (options.jsx) {
+        options.jsx.nodes.forEach((node) => {
+          const properties = node.props ? new Map(propertiesMap) : propertiesMap
+          const alias = imports.getAlias(node.name)
+          node.props?.forEach((prop) => properties.set(prop, true))
+
+          functions.set(alias, properties)
+          components.set(alias, properties)
+        })
       }
 
+      const matchTag = memo((tagName: string) => {
+        return components.has(tagName) || isUpperCase(tagName) || tagName.startsWith(jsxFactoryAlias)
+      })
+      const matchTagProp = memo((tagName: string, propName: string) => {
+        return Boolean(components.get(tagName)?.get(propName)) || propertiesMap.has(propName)
+      })
+
+      const matchFn = memo((fnName: string) => {
+        if (recipes.has(fnName)) return true
+        if (fnName === cvaAlias || fnName === cssAlias || fnName.startsWith(jsxFactoryAlias)) return true
+        return Boolean(functions.get(fnName))
+      })
+      const matchFnProp = memo((fnName: string, propName: string) => {
+        if (recipes.has(fnName)) return true
+        if (fnName === cvaAlias) return true
+        if (fnName.startsWith(jsxFactoryAlias)) return true
+        if (fnName === cssAlias) return Boolean(propertiesMap.get(propName) || propName === 'selectors')
+        return Boolean(functions.get(fnName)?.get(propName))
+      })
+
       const measure = logger.time.debug(`Tokens extracted from ${filePath}`)
-      const extractResultByName = extract({ ast: sourceFile, components, functions })
+      const extractResultByName = extract({
+        ast: sourceFile,
+        components: {
+          matchTag: (prop) => matchTag(prop.tagName),
+          matchProp: (prop) => matchTagProp(prop.tagName, prop.propName),
+        },
+        functions: {
+          matchFn: (prop) => matchFn(prop.fnName),
+          matchProp: (prop) => matchFnProp(prop.fnName, prop.propName),
+          matchArg: (prop) => {
+            // skip resolving `badge` here: `panda("span", badge)`
+            if (prop.fnName === jsxFactoryAlias && prop.index === 1 && Node.isIdentifier(prop.argNode)) return false
+            return true
+          },
+        },
+        flags: { skipTraverseFiles: true },
+      })
+
       measure()
 
       extractResultByName.forEach((result, alias) => {
@@ -115,17 +162,17 @@ export function createParser(options: ParserOptions) {
           match(name)
             .when(css.match, (name: 'css' | 'cva') => {
               result.queryList.forEach((query) => {
-                collector.set(name, { name, box: query.box, data: unbox(query.box) as ResultData })
+                collector.set(name, { name, box: query.box, data: unbox(query.box.value[0]) as ResultData })
               })
             })
             .when(isValidPattern, (name) => {
               result.queryList.forEach((query) => {
-                collector.setPattern(name, { name, box: query.box, data: unbox(query.box) as ResultData })
+                collector.setPattern(name, { name, box: query.box, data: unbox(query.box.value[0]) as ResultData })
               })
             })
             .when(isValidRecipe, (name) => {
               result.queryList.forEach((query) => {
-                collector.setRecipe(name, { name, box: query.box, data: unbox(query.box) as ResultData })
+                collector.setRecipe(name, { name, box: query.box, data: unbox(query.box.value[0]) as ResultData })
               })
             })
             .when(isValidStyleFn, () => {
@@ -153,7 +200,13 @@ export function createParser(options: ParserOptions) {
               type = 'jsx'
             }
 
-            collector.jsx.add({ name, box: query.box, type, data })
+            collector.jsx.add({
+              // from "panda.*" -> "panda.button"
+              name,
+              box: query.box,
+              type,
+              data,
+            })
           })
         }
       })

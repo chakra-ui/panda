@@ -25,19 +25,149 @@ describe('ast parser / styled', () => {
       {
         "cva": Set {
           {
-            "data": {
-              "base": {
-                "color": "red",
-                "fontSize": "12px",
-              },
-              "variants": {
-                "color": {
-                  "red": {
-                    "background": "red",
+            "box": BoxNodeList {
+              "node": CallExpression,
+              "stack": [],
+              "type": "list",
+              "value": [
+                BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    CallExpression,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "div",
+                },
+                BoxNodeMap {
+                  "node": CallExpression,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "base" => BoxNodeMap {
+                      "node": ObjectLiteralExpression,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                      ],
+                      "type": "map",
+                      "value": Map {
+                        "color" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": "red",
+                        },
+                        "fontSize" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": "12px",
+                        },
+                      },
+                    },
+                    "variants" => BoxNodeMap {
+                      "node": ObjectLiteralExpression,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                      ],
+                      "type": "map",
+                      "value": Map {
+                        "color" => BoxNodeMap {
+                          "node": ObjectLiteralExpression,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                          ],
+                          "type": "map",
+                          "value": Map {
+                            "red" => BoxNodeMap {
+                              "node": ObjectLiteralExpression,
+                              "stack": [
+                                CallExpression,
+                                ObjectLiteralExpression,
+                                PropertyAssignment,
+                                ObjectLiteralExpression,
+                                PropertyAssignment,
+                                ObjectLiteralExpression,
+                                PropertyAssignment,
+                                ObjectLiteralExpression,
+                              ],
+                              "type": "map",
+                              "value": Map {
+                                "background" => BoxNodeLiteral {
+                                  "kind": "string",
+                                  "node": StringLiteral,
+                                  "stack": [
+                                    CallExpression,
+                                    ObjectLiteralExpression,
+                                    PropertyAssignment,
+                                    ObjectLiteralExpression,
+                                    PropertyAssignment,
+                                    ObjectLiteralExpression,
+                                    PropertyAssignment,
+                                    ObjectLiteralExpression,
+                                    PropertyAssignment,
+                                    StringLiteral,
+                                  ],
+                                  "type": "literal",
+                                  "value": "red",
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            "data": [
+              "div",
+              {
+                "base": {
+                  "color": "red",
+                  "fontSize": "12px",
+                },
+                "variants": {
+                  "color": {
+                    "red": {
+                      "background": "red",
+                    },
                   },
                 },
               },
-            },
+            ],
             "name": "panda",
             "type": "cva",
           },

@@ -1,15 +1,13 @@
 import { conditions, utilities } from '@pandacss/fixture'
 import { allCssProperties } from '@pandacss/is-valid-prop'
 import path from 'path'
-import { bench, describe } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { loadConfigAndCreateContext } from '../../node'
 
 const cwd = process.cwd()
 const configPath = path.join(cwd, 'packages/cli/app/panda.config.ts')
 
-describe('internal parser vs box-extractor', async () => {
-  const ctx = await loadConfigAndCreateContext({ cwd, configPath })
-
+describe('snapshots', () => {
   const properties = Array.from(
     new Set([
       'css',
@@ -25,11 +23,15 @@ describe('internal parser vs box-extractor', async () => {
     ]),
   )
 
-  bench('internal', () => {
-    ctx.getFiles().map((file) => ctx.project.parseSourceFile(file, properties, 'internal'))
+  test('internal result', async () => {
+    const ctx = await loadConfigAndCreateContext({ cwd, configPath })
+    const result = ctx.getFiles().map((file) => ctx.project.parseSourceFile(file, properties, 'internal'))
+    expect(result).toMatchInlineSnapshot('[]')
   })
 
-  bench('box-extractor', () => {
-    ctx.getFiles().map((file) => ctx.project.parseSourceFile(file, properties, 'box-extractor'))
+  test('box-extractor result', async () => {
+    const ctx = await loadConfigAndCreateContext({ cwd, configPath })
+    const result = ctx.getFiles().map((file) => ctx.project.parseSourceFile(file, properties, 'box-extractor'))
+    expect(result).toMatchInlineSnapshot('[]')
   })
 })

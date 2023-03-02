@@ -16,7 +16,7 @@
     "dev": "pnpm build-fast --watch"
   },
   "dependencies": {
-    "@box-extractor/core": "^0.7.2",
+    "@box-extractor/core": "^0.8.1",
     "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",

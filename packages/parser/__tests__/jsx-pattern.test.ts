@@ -18,6 +18,43 @@ describe('pattern jsx', () => {
     expect(jsxPatternParser(code)).toMatchInlineSnapshot(`
       Set {
         {
+          "box": BoxNodeMap {
+            "node": JsxOpeningElement,
+            "stack": [],
+            "type": "map",
+            "value": Map {
+              "align" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "center",
+              },
+              "marginTop" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "40px",
+              },
+              "marginBottom" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "42px",
+              },
+            },
+          },
           "data": {
             "align": "center",
             "marginBottom": "42px",

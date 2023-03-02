@@ -34,7 +34,7 @@ export function extractFile(ctx: PandaContext, file: string) {
     Obj.bind(
       'result',
       tryCatch(
-        ({ file }) => ctx.project.parseSourceFile(file),
+        ({ file }) => ctx.project.parseSourceFile(file, ctx.properties),
         (error) => logger.error('file:parse', error),
       ),
     ),
@@ -87,7 +87,7 @@ export function analyzeTokens(
     .getFiles()
     .map((file) => {
       const measure = logger.time.debug(`Extracted ${file}`)
-      const result = ctx.project.parseSourceFile(file, mode)
+      const result = ctx.project.parseSourceFile(file, ctx.properties, mode)
       measure()
 
       if (result) {

@@ -21,13 +21,95 @@ describe('pattern jsx', () => {
     expect(jsxRecipeParser(code)).toMatchInlineSnapshot(`
       Set {
         {
+          "box": BoxNodeMap {
+            "node": JsxOpeningElement,
+            "stack": [],
+            "type": "map",
+            "value": Map {
+              "size" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "sm",
+              },
+              "mt" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "40px",
+              },
+            },
+          },
           "data": {
+            "mt": "40px",
             "size": "sm",
           },
           "name": "Button",
           "type": "recipe",
         },
         {
+          "box": BoxNodeMap {
+            "node": JsxOpeningElement,
+            "stack": [],
+            "type": "map",
+            "value": Map {
+              "size" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "sm",
+              },
+              "variant" => BoxNodeMap {
+                "node": ObjectLiteralExpression,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ObjectLiteralExpression,
+                ],
+                "type": "map",
+                "value": Map {
+                  "base" => BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ObjectLiteralExpression,
+                      PropertyAssignment,
+                      StringLiteral,
+                    ],
+                    "type": "literal",
+                    "value": "outline",
+                  },
+                  "md" => BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ObjectLiteralExpression,
+                      PropertyAssignment,
+                      StringLiteral,
+                    ],
+                    "type": "literal",
+                    "value": "solid",
+                  },
+                },
+              },
+            },
+          },
           "data": {
             "size": "sm",
             "variant": {
@@ -37,11 +119,6 @@ describe('pattern jsx', () => {
           },
           "name": "Button",
           "type": "recipe",
-        },
-        {
-          "data": {},
-          "name": "Random",
-          "type": "jsx",
         },
       }
     `)
