@@ -36,8 +36,8 @@ const createReportMaps = () => {
 type ReportMaps = ReturnType<typeof createReportMaps>
 
 export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<string, ParserResult>) => {
-  const byFilepath = new Map<string, Set<ReportItem>>()
-  const byInstanceInFilepath = new Map<string, Set<ReportInstanceItem>>()
+  const byFilepath = new Map<string, Set<ReportItem['id']>>()
+  const byInstanceInFilepath = new Map<string, Set<ReportInstanceItem['instanceId']>>()
 
   const globalMaps = createReportMaps()
   const mapsByFilePath = new Map<string, ReportMaps>()
@@ -152,7 +152,6 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
       if (item.box.isList()) {
         addTo(byInstanceInFilepath, filepath, reportInstanceItem.instanceId)
 
-        // console.log(item)
         return reportInstanceItem
       }
 

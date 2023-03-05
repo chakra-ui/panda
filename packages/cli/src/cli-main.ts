@@ -5,18 +5,16 @@ import {
   emitArtifacts,
   extractCss,
   generate,
-  getNodeRange,
   loadConfigAndCreateContext,
   setupConfig,
   setupGitIgnore,
   setupPostcss,
+  writeAnalyzeJSON,
 } from '@pandacss/node'
 import { compact } from '@pandacss/shared'
 import { cac } from 'cac'
 import { readFileSync } from 'fs'
-import { writeFile } from 'fs/promises'
 import path, { join } from 'path'
-import { Node } from 'ts-morph'
 import updateNotifier from 'update-notifier'
 import packageJson from '../package.json' assert { type: 'json' }
 import { buildStudio, previewStudio, serveStudio } from './studio'
@@ -176,30 +174,7 @@ export async function main() {
         console.log(result.stats)
 
         if (flags?.json && typeof flags.json === 'string') {
-          await writeFile(
-            flags.json,
-            JSON.stringify(
-              result.details.byInstanceInFilepath,
-              (key, value) => {
-                if (value instanceof Set) {
-                  return Array.from(value)
-                }
-
-                if (value instanceof Map) {
-                  return Object.fromEntries(value)
-                }
-
-                if (Node.isNode(value)) {
-                  // if (Number.isInteger(Number(key))) return value.getKindName()
-                  if (key !== 'node') return value.getKindName()
-                  return { kind: value.getKindName(), range: getNodeRange(value) }
-                }
-
-                return value
-              },
-              4,
-            ),
-          )
+          await writeAnalyzeJSON(flags.json, result)
 
           console.log(`JSON report saved to ${flags.json}`)
           return

@@ -1,8 +1,5 @@
 import { logger } from '@pandacss/logger'
-import type { ParserMode } from '@pandacss/parser'
-import type { ParserResult } from '@pandacss/types'
 import { Obj, pipe, tap, tryCatch } from 'lil-fp'
-import { classifyTokens } from './classify'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
 
@@ -74,33 +71,4 @@ export async function extractCss(ctx: PandaContext) {
   await extractFiles(ctx)
   await bundleChunks(ctx)
   return ctx.messages.buildComplete(ctx.getFiles().length)
-}
-
-export function analyzeTokens(
-  ctx: PandaContext,
-  onResult?: (file: string, result: ParserResult) => void,
-  mode: ParserMode = 'internal',
-) {
-  const done = logger.time.debug(`Analyzed ${ctx.getFiles().length} files`)
-
-  const parserResultByFilepath = new Map<string, ParserResult>()
-  ctx
-    .getFiles()
-    .map((file) => {
-      const measure = logger.time.debug(`Extracted ${file}`)
-      const result = ctx.project.parseSourceFile(file, ctx.properties, mode)
-      measure()
-
-      if (result) {
-        parserResultByFilepath.set(file, result)
-        onResult?.(file, result)
-      }
-
-      return [file, result] as [string, ParserResult]
-    })
-    .filter(([, result]) => result)
-
-  done()
-
-  return classifyTokens(ctx, parserResultByFilepath)
 }
