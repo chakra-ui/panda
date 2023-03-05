@@ -1,4 +1,4 @@
-import { extract, unbox } from '@box-extractor/core'
+import { BoxNodeMap, extract, unbox } from '@box-extractor/core'
 import { logger } from '@pandacss/logger'
 import { memo } from '@pandacss/shared'
 import type { ResultItem } from '@pandacss/types'
@@ -162,19 +162,34 @@ export function createParser(options: ParserOptions) {
           match(name)
             .when(css.match, (name: 'css' | 'cva') => {
               result.queryList.forEach((query) => {
-                collector.set(name, { name, box: query.box, data: unbox(query.box.value[0]) as ResultData })
+                collector.set(name, {
+                  name,
+                  box: query.box.value[0] as BoxNodeMap,
+                  data: unbox(query.box.value[0]) as ResultData,
+                })
               })
             })
+            // stack({ ... })
             .when(isValidPattern, (name) => {
               result.queryList.forEach((query) => {
-                collector.setPattern(name, { name, box: query.box, data: unbox(query.box.value[0]) as ResultData })
+                collector.setPattern(name, {
+                  name,
+                  box: query.box.value[0] as BoxNodeMap,
+                  data: unbox(query.box.value[0]) as ResultData,
+                })
               })
             })
+            // button({ ... })
             .when(isValidRecipe, (name) => {
               result.queryList.forEach((query) => {
-                collector.setRecipe(name, { name, box: query.box, data: unbox(query.box.value[0]) as ResultData })
+                collector.setRecipe(name, {
+                  name,
+                  box: query.box.value[0] as BoxNodeMap,
+                  data: unbox(query.box.value[0]) as ResultData,
+                })
               })
             })
+            // panda("span", { ... }) or panda("div", badge)
             .when(isValidStyleFn, () => {
               result.queryList.forEach((query) => {
                 collector.setCva({ name, box: query.box, data: unbox(query.box) as ResultData })
