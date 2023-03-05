@@ -117,6 +117,8 @@ export function createParser(options: ParserOptions) {
         return components.has(tagName) || isUpperCase(tagName) || tagName.startsWith(jsxFactoryAlias)
       })
       const matchTagProp = memo((tagName: string, propName: string) => {
+        if (propertiesMap.size === 0) return true // = allow all
+
         return Boolean(components.get(tagName)?.get(propName)) || propertiesMap.has(propName)
       })
 
@@ -126,6 +128,8 @@ export function createParser(options: ParserOptions) {
         return Boolean(functions.get(fnName))
       })
       const matchFnProp = memo((fnName: string, propName: string) => {
+        if (propertiesMap.size === 0) return true // = allow all
+
         if (recipes.has(fnName)) return true
         if (fnName === cvaAlias) return true
         if (fnName.startsWith(jsxFactoryAlias)) return true
