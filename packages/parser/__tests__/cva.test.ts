@@ -25,70 +25,77 @@ describe('ast parser / cva', () => {
       {
         "cva": Set {
           {
-            "box": BoxNodeList {
+            "box": BoxNodeMap {
               "node": CallExpression,
-              "stack": [],
-              "type": "list",
-              "value": [
-                BoxNodeMap {
-                  "node": CallExpression,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "base" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
                   "stack": [
                     CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
                     ObjectLiteralExpression,
                   ],
                   "type": "map",
                   "value": Map {
-                    "base" => BoxNodeMap {
-                      "node": ObjectLiteralExpression,
+                    "color" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
                       "stack": [
                         CallExpression,
                         ObjectLiteralExpression,
                         PropertyAssignment,
                         ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
                       ],
-                      "type": "map",
-                      "value": Map {
-                        "color" => BoxNodeLiteral {
-                          "kind": "string",
-                          "node": StringLiteral,
-                          "stack": [
-                            CallExpression,
-                            ObjectLiteralExpression,
-                            PropertyAssignment,
-                            ObjectLiteralExpression,
-                            PropertyAssignment,
-                            StringLiteral,
-                          ],
-                          "type": "literal",
-                          "value": "red",
-                        },
-                        "fontSize" => BoxNodeLiteral {
-                          "kind": "string",
-                          "node": StringLiteral,
-                          "stack": [
-                            CallExpression,
-                            ObjectLiteralExpression,
-                            PropertyAssignment,
-                            ObjectLiteralExpression,
-                            PropertyAssignment,
-                            StringLiteral,
-                          ],
-                          "type": "literal",
-                          "value": "12px",
-                        },
-                      },
+                      "type": "literal",
+                      "value": "red",
                     },
-                    "variants" => BoxNodeMap {
+                    "fontSize" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "12px",
+                    },
+                  },
+                },
+                "variants" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "color" => BoxNodeMap {
                       "node": ObjectLiteralExpression,
                       "stack": [
                         CallExpression,
                         ObjectLiteralExpression,
                         PropertyAssignment,
                         ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
                       ],
                       "type": "map",
                       "value": Map {
-                        "color" => BoxNodeMap {
+                        "red" => BoxNodeMap {
                           "node": ObjectLiteralExpression,
                           "stack": [
                             CallExpression,
@@ -97,11 +104,14 @@ describe('ast parser / cva', () => {
                             ObjectLiteralExpression,
                             PropertyAssignment,
                             ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
                           ],
                           "type": "map",
                           "value": Map {
-                            "red" => BoxNodeMap {
-                              "node": ObjectLiteralExpression,
+                            "background" => BoxNodeLiteral {
+                              "kind": "string",
+                              "node": StringLiteral,
                               "stack": [
                                 CallExpression,
                                 ObjectLiteralExpression,
@@ -111,28 +121,11 @@ describe('ast parser / cva', () => {
                                 ObjectLiteralExpression,
                                 PropertyAssignment,
                                 ObjectLiteralExpression,
+                                PropertyAssignment,
+                                StringLiteral,
                               ],
-                              "type": "map",
-                              "value": Map {
-                                "background" => BoxNodeLiteral {
-                                  "kind": "string",
-                                  "node": StringLiteral,
-                                  "stack": [
-                                    CallExpression,
-                                    ObjectLiteralExpression,
-                                    PropertyAssignment,
-                                    ObjectLiteralExpression,
-                                    PropertyAssignment,
-                                    ObjectLiteralExpression,
-                                    PropertyAssignment,
-                                    ObjectLiteralExpression,
-                                    PropertyAssignment,
-                                    StringLiteral,
-                                  ],
-                                  "type": "literal",
-                                  "value": "red",
-                                },
-                              },
+                              "type": "literal",
+                              "value": "red",
                             },
                           },
                         },
@@ -140,7 +133,7 @@ describe('ast parser / cva', () => {
                     },
                   },
                 },
-              ],
+              },
             },
             "data": {
               "base": {
