@@ -1,3 +1,4 @@
+export type { ReportInstanceItem, ReportItem, ReportItemType } from './analyze-report'
 export type { CompositionStyles, LayerStyles, TextStyles } from './composition'
 export type { ConditionDetails, Conditions, ConditionType, RawCondition } from './conditions'
 export type { Config, LoadConfigResult, Preset, UserConfig } from './config'

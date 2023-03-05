@@ -2,6 +2,7 @@ import { logger } from '@pandacss/logger'
 import type { ParserMode } from '@pandacss/parser'
 import type { ParserResult } from '@pandacss/types'
 import { Obj, pipe, tap, tryCatch } from 'lil-fp'
+import { classifyTokens } from './classify'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
 
@@ -82,7 +83,7 @@ export function analyzeTokens(
 ) {
   const done = logger.time.debug(`Analyzed ${ctx.getFiles().length} files`)
 
-  const resultMap = new Map<string, ParserResult>()
+  const parserResultByFilepath = new Map<string, ParserResult>()
   ctx
     .getFiles()
     .map((file) => {
@@ -91,7 +92,7 @@ export function analyzeTokens(
       measure()
 
       if (result) {
-        resultMap.set(file, result)
+        parserResultByFilepath.set(file, result)
         onResult?.(file, result)
       }
 
@@ -101,5 +102,5 @@ export function analyzeTokens(
 
   done()
 
-  return resultMap
+  return classifyTokens(ctx, parserResultByFilepath)
 }
