@@ -158,7 +158,6 @@ export async function main() {
           config: only ? { include: [maybePath] } : (undefined as any),
         })
         logger.info('cli', `Found config at ${colors.bold(ctx.path)}, using mode=[${colors.bold(mode)}]`)
-        // console.log(ctx.jsx, ctx.isValidProperty, ctx.properties, ctx.properties.includes('selectors'))
 
         const result = analyzeTokens(
           ctx,
@@ -167,8 +166,6 @@ export async function main() {
           },
           mode,
         )
-
-        // const properties = new Map<string, boolean>(ctx.properties.map((prop) => [prop, true]))
 
         console.log(result.counts)
         const { mostUseds, ...stats } = result.stats
@@ -187,7 +184,7 @@ export async function main() {
           return
         }
 
-        console.log(`Found ${result.details.byId.size} token used in ${result.details.mapsByFilePath.size} files`)
+        console.log(`Found ${result.details.byId.size} token used in ${result.details.byFilePathMaps.size} files`)
       },
     )
 

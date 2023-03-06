@@ -44,7 +44,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
   const byInstanceInFilepath = new Map<string, Set<ReportInstanceItem['instanceId']>>()
 
   const globalMaps = createReportMaps()
-  const mapsByFilePath = new Map<string, ReportMaps>()
+  const byFilePathMaps = new Map<string, ReportMaps>()
 
   const conditions = new Map(Object.entries(ctx.conditions.values))
   let id = 0,
@@ -216,7 +216,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
       itemList.forEach(processFunctionResultItem)
     })
 
-    mapsByFilePath.set(filepath, localMaps)
+    byFilePathMaps.set(filepath, localMaps)
   })
 
   const pickCount = 10
@@ -260,7 +260,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
       byFilepath,
       byInstanceInFilepath,
       globalMaps,
-      mapsByFilePath,
+      byFilePathMaps,
     },
   }
 }

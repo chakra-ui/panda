@@ -1,25 +1,24 @@
-import { ReportItem } from '@pandacss/types'
-import { PropsWithChildren, ReactNode } from 'react'
-import { css } from '../design-system/css'
-import { Grid, panda, Stack, Wrap } from '../design-system/jsx'
-import { analysisData, tokenDictionary } from './analysis-data'
+import type { ReportItem } from '@pandacss/types'
+import type { PropsWithChildren, ReactNode } from 'react'
+import { css } from '../../design-system/css'
+import { Grid, panda, Stack, Wrap } from '../../design-system/jsx'
+import { analysisData, tokenDictionary } from '../utils/analysis-data'
 import { ColorWrapper } from './color-wrapper'
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@ark-ui/react'
-import { gridItem } from '../design-system/patterns/grid-item'
-import { stack } from '../design-system/patterns/stack'
-import { JsxStyleProps } from '../design-system/types'
+import { gridItem } from '../../design-system/patterns/grid-item'
+import { stack } from '../../design-system/patterns/stack'
+import type { JsxStyleProps } from '../../design-system/types'
 
 import { TabContent, TabList, Tabs, TabTrigger } from '@ark-ui/react'
 
-function App() {
+export function TokenAnalyzer() {
   console.log(tokenDictionary)
   console.log(analysisData)
 
   return (
     <div className={css({ width: '100%', paddingY: '20px', debug: false })}>
       <panda.div px="24" w="100%">
-        <panda.h1 color="blue.300">Panda Token Analyzer</panda.h1>
         <HeadlineSummary />
         <MostUsedList />
         <ColorPalette />
@@ -340,7 +339,13 @@ const ColorItem = ({ tokenName, children }: PropsWithChildren<{ tokenName: strin
 
   return (
     <Stack key={tokenName}>
-      <ColorWrapper w="auto" minW="80px" h="40px" mb="2" style={{ background: value }} />
+      <ColorWrapper
+        w="auto"
+        minW="80px"
+        h="40px"
+        mb="2"
+        style={{ background: value, border: '1px solid rgba(0,0,0,0.1)' }}
+      />
       {children}
 
       {tokenName !== value && (
@@ -351,5 +356,3 @@ const ColorItem = ({ tokenName, children }: PropsWithChildren<{ tokenName: strin
     </Stack>
   )
 }
-
-export default App

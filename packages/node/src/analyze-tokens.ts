@@ -7,6 +7,9 @@ import { classifyTokens } from './classify'
 import type { PandaContext } from './create-context'
 import { getNodeRange } from './get-node-range'
 
+import gzipSize from 'gzip-size'
+import { filesize } from 'filesize'
+
 export function analyzeTokens(
   ctx: PandaContext,
   onResult?: (file: string, result: ParserResult) => void,
@@ -15,6 +18,7 @@ export function analyzeTokens(
   const done = logger.time.debug(`Analyzed ${ctx.getFiles().length} files`)
 
   const parserResultByFilepath = new Map<string, ParserResult>()
+
   ctx
     .getFiles()
     .map((file) => {
@@ -33,7 +37,28 @@ export function analyzeTokens(
 
   done()
 
-  return classifyTokens(ctx, parserResultByFilepath)
+  const minify = ctx.config.minify
+  const files = ctx.chunks.getFiles()
+
+  ctx.config.minify = false
+  const css = ctx.getCss({ files })
+
+  ctx.config.minify = true
+  const minifiedCss = ctx.getCss({ files })
+
+  // restore minify config
+  ctx.config.minify = minify
+
+  return Object.assign(classifyTokens(ctx, parserResultByFilepath), {
+    sizes: {
+      normal: filesize(Buffer.byteLength(css, 'utf-8')),
+      minified: filesize(Buffer.byteLength(minifiedCss, 'utf-8')),
+      gzip: {
+        normal: filesize(gzipSize.sync(css)),
+        minified: filesize(gzipSize.sync(minifiedCss)),
+      },
+    },
+  })
 }
 
 const analyzeResultSerializer = (_key: string, value: any) => {

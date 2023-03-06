@@ -9425,7 +9425,6 @@ packages:
 
   /duplexer/0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
-    dev: true
 
   /duplexify/3.7.1:
     resolution: {integrity: sha512-07z8uv2wMyS51kKhD1KsdXJg5WQ6t93RneqRxUHnskXVtlYYkLqM0gqStQZ3pj073g687jPCHrqNfCzawLYh5g==}
@@ -10968,6 +10967,10 @@ packages:
     dependencies:
       flat-cache: 3.0.4
 
+  /file-size/1.0.0:
+    resolution: {integrity: sha512-tLIdonWTpABkU6Axg2yGChYdrOsy4V8xcm0IcyAP8fSsu6jiXLm5pgs083e4sq5fzNRZuAYolUbZyYmPvCKfwQ==}
+    dev: false
+
   /file-system-cache/2.0.2:
     resolution: {integrity: sha512-lp4BHO4CWqvRyx88Tt3quZic9ZMf4cJyquYq7UI8sH42Bm2ArlBBjKQAalZOo+UfaBassb7X123Lik5qZ/tSAA==}
     dependencies:
@@ -10989,6 +10992,11 @@ packages:
     dependencies:
       minimatch: 5.1.0
     dev: true
+
+  /filesize/10.0.6:
+    resolution: {integrity: sha512-rzpOZ4C9vMFDqOa6dNpog92CoLYjD79dnjLk2TYDDtImRIyLTOzqojCb05Opd1WuiWjs+fshhCgTd8cl7y5t+g==}
+    engines: {node: '>= 10.4.0'}
+    dev: false
 
   /fill-range/7.0.1:
     resolution: {integrity: sha512-qOo9F+dMUmC2Lcb4BbVvnKJxTPjCm+RRpe4gDuGrzkL7mEVl/djYSu2OdQ2Pa302N4oqkSg9ir6jaLWJ2USVpQ==}
@@ -11595,6 +11603,13 @@ packages:
       pumpify: 1.5.1
       through2: 2.0.5
     dev: true
+
+  /gzip-size/6.0.0:
+    resolution: {integrity: sha512-ax7ZYomf6jqPTQ4+XCpUGyXKHk5WweS+e05MBO4/y3WJ5RkmPXNKvX+bx1behVILVwr6JSQvZAku021CHPXG3Q==}
+    engines: {node: '>=10'}
+    dependencies:
+      duplexer: 0.1.2
+    dev: false
 
   /gzip-size/7.0.0:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}

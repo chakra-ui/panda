@@ -1,0 +1,181 @@
+@layer utilities {
+  .py_20px {
+    padding-block: 20px
+    }
+
+  .px_24 {
+    padding-inline: var(--spacing-24)
+    }
+
+  .fs_md {
+    font-size: var(--font-sizes-md)
+    }
+
+  .ml_auto {
+    margin-left: auto
+    }
+
+  .mt_8 {
+    margin-top: var(--spacing-8)
+    }
+
+  .py_2 {
+    padding-block: var(--spacing-2)
+    }
+
+  .px_4 {
+    padding-inline: var(--spacing-4)
+    }
+
+  .rounded_md {
+    border-radius: var(--radii-md)
+    }
+
+  .fs_xl {
+    font-size: var(--font-sizes-xl)
+    }
+
+  .font_bold {
+    font-weight: var(--font-weights-bold)
+    }
+
+  .ml_2 {
+    margin-left: var(--spacing-2)
+    }
+
+  .d_inline-block {
+    display: inline-block
+    }
+
+  .bg_gray\.50 {
+    background: var(--colors-gray-50)
+    }
+
+  .p_0 {
+    padding: 0
+    }
+
+  .bg_none {
+    background: none
+    }
+
+  .w_full {
+    width: var(--sizes-full)
+    }
+
+  .p_2 {
+    padding: var(--spacing-2)
+    }
+
+  .fs_75\% {
+    font-size: 75%
+    }
+
+  .leading_0 {
+    line-height: 0
+    }
+
+  .pos_relative {
+    position: relative
+    }
+
+  .t_-0\.35em {
+    top: -0.35em
+    }
+
+  .ml_1 {
+    margin-left: var(--spacing-1)
+    }
+
+  .w_auto {
+    width: auto
+    }
+
+  .min-w_80px {
+    min-width: 80px
+    }
+
+  .h_40px {
+    height: 40px
+    }
+
+  .mb_2 {
+    margin-bottom: var(--spacing-2)
+    }
+
+  .items_center {
+    align-items: center
+    }
+
+  .gap_10px {
+    gap: 10px
+    }
+
+  .mb_4 {
+    margin-bottom: var(--spacing-4)
+    }
+
+  .p_20px {
+    padding: 20px
+    }
+
+  .fs_lg {
+    font-size: var(--font-sizes-lg)
+    }
+
+  .flex_column {
+    flex-direction: column
+    }
+
+  .items_flex-start {
+    align-items: flex-start
+    }
+
+  .p_4 {
+    padding: var(--spacing-4)
+    }
+
+  .w_100\% {
+    width: 100%
+    }
+
+  .fs_sm {
+    font-size: var(--font-sizes-sm)
+    }
+
+  .d_flex {
+    display: flex
+    }
+
+  .flex-wrap_wrap {
+    flex-wrap: wrap
+    }
+
+  .gap_2 {
+    gap: var(--spacing-2)
+    }
+
+  .mt_4 {
+    margin-top: var(--spacing-4)
+    }
+
+  .grid-cols_repeat\(2\,_minmax\(0\,_1fr\)\) {
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+    }
+
+  .d_grid {
+    display: grid
+    }
+
+  .gap_4 {
+    gap: var(--spacing-4)
+    }
+
+  .hover\:bg_gray\.50:where(:hover, [data-hover]) {
+    background-color: var(--colors-gray-50)
+        }
+
+  .hover\:bg_gray\.100:where(:hover, [data-hover]) {
+    background-color: var(--colors-gray-100)
+        }
+}
