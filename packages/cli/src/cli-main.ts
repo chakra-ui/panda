@@ -171,10 +171,12 @@ export async function main() {
         // const properties = new Map<string, boolean>(ctx.properties.map((prop) => [prop, true]))
 
         console.log(result.counts)
-        console.log(result.stats)
+        const { mostUseds, ...stats } = result.stats
+        console.log(stats)
+        console.log(mostUseds)
 
         if (flags?.json && typeof flags.json === 'string') {
-          await writeAnalyzeJSON(flags.json, result)
+          await writeAnalyzeJSON(flags.json, result, ctx)
 
           console.log(`JSON report saved to ${flags.json}`)
           return
@@ -185,9 +187,7 @@ export async function main() {
           return
         }
 
-        console.log(
-          `Found ${result.details.globalMaps.byId.size} token used in ${result.details.mapsByFilePath.size} files`,
-        )
+        console.log(`Found ${result.details.byId.size} token used in ${result.details.mapsByFilePath.size} files`)
       },
     )
 

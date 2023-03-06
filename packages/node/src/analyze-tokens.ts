@@ -36,7 +36,7 @@ export function analyzeTokens(
   return classifyTokens(ctx, parserResultByFilepath)
 }
 
-const analyzeResultSerializer = (key: string, value: any) => {
+const analyzeResultSerializer = (_key: string, value: any) => {
   if (value instanceof Set) {
     return Array.from(value)
   }
@@ -46,25 +46,31 @@ const analyzeResultSerializer = (key: string, value: any) => {
   }
 
   if (Node.isNode(value)) {
-    if (key !== 'node') return value.getKindName()
     return { kind: value.getKindName(), range: getNodeRange(value) }
   }
 
   return value
 }
 
-export const writeAnalyzeJSON = (fileName: string, result: ReturnType<typeof analyzeTokens>) => {
+export const writeAnalyzeJSON = (fileName: string, result: ReturnType<typeof analyzeTokens>, ctx: PandaContext) => {
+  // prevent writing twice the same BoxNode in the output (already serialized in the `byId` map)
+  result.details.byInstanceId.forEach((item) => {
+    item.box = { type: item.box.type, node: item.box.getNode(), stack: item.box.getStack() } as any
+  })
+
   return writeFile(
     fileName,
     JSON.stringify(
-      {
-        counts: result.counts,
-        stats: result.stats,
-        byId: result.details.globalMaps.byId,
-        byInstanceId: result.details.globalMaps.byInstanceId,
-      },
+      Object.assign(result, {
+        cwd: ctx.config.cwd,
+        theme: ctx.config.theme,
+        utilities: ctx.config.utilities,
+        conditions: ctx.config.conditions,
+        shorthands: ctx.utility.shorthands,
+        parserOptions: ctx.parserOptions,
+      }),
       analyzeResultSerializer,
-      4,
+      2,
     ),
   )
 }

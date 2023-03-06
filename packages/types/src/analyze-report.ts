@@ -8,12 +8,16 @@ export type ReportItem = {
   filepath: string
   kind: 'function' | 'component'
   path: string[]
+  attrName: string
+  propName: string
   value: string | number | true
+  category: string
   box: BoxNodeLiteral | BoxNodeEmptyInitializer
 }
 
-export type ReportInstanceItem = Pick<ReportItem, 'from' | 'type' | 'filepath'> & {
+export type ReportInstanceItem = Pick<ReportItem, 'from' | 'type' | 'kind' | 'filepath'> & {
   instanceId: number
+  contains: Array<ReportItem['id']>
   value: Record<string, any>
   box: BoxNodeMap
 }

@@ -5,11 +5,9 @@ import type { ResultItem } from '@pandacss/types'
 type BoxNodeMap = ReportInstanceItem['box']
 
 const createReportMaps = () => {
-  const byId = new Map<ReportItem['id'], ReportItem>()
-  const byInstanceId = new Map<ReportInstanceItem['instanceId'], ReportInstanceItem>()
-
   const byInstanceOfKind = new Map<'function' | 'component', Set<ReportInstanceItem['instanceId']>>()
   const byPropertyName = new Map<string, Set<ReportItem['id']>>()
+  const byCategory = new Map<string, Set<ReportItem['id']>>()
   const byConditionName = new Map<string, Set<ReportItem['id']>>()
   const byShorthand = new Map<string, Set<ReportItem['id']>>()
   const byTokenName = new Map<string, Set<ReportItem['id']>>()
@@ -17,12 +15,12 @@ const createReportMaps = () => {
   const fromKind = new Map<'function' | 'component', Set<ReportItem['id']>>()
   const byType = new Map<string, Set<ReportItem['id']>>()
   const byInstanceName = new Map<string, Set<ReportItem['id']>>()
+  const colorsUsed = new Map<string, Set<ReportItem['id']>>()
 
   return {
-    byId,
-    byInstanceId,
     byInstanceOfKind,
     byPropertyName,
+    byCategory,
     byConditionName,
     byShorthand,
     byTokenName,
@@ -30,12 +28,18 @@ const createReportMaps = () => {
     fromKind,
     byType,
     byInstanceName,
+    colorsUsed,
   }
 }
+
+const colorPropNames = new Set(['background', 'outline', 'border'])
 
 type ReportMaps = ReturnType<typeof createReportMaps>
 
 export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<string, ParserResult>) => {
+  const byId = new Map<ReportItem['id'], ReportItem>()
+  const byInstanceId = new Map<ReportInstanceItem['instanceId'], ReportInstanceItem>()
+
   const byFilepath = new Map<string, Set<ReportItem['id']>>()
   const byInstanceInFilepath = new Map<string, Set<ReportInstanceItem['instanceId']>>()
 
@@ -57,33 +61,50 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
       map.set(key, set)
     }
 
-    const processMap = (
-      map: BoxNodeMap,
-      current: string[],
-      { from, type, kind }: { from: ReportItem['from']; type: ReportItem['type']; kind: ReportItem['kind'] },
-    ) => {
+    const processMap = (map: BoxNodeMap, current: string[], reportInstanceItem: ReportInstanceItem) => {
+      const { from, type, kind } = reportInstanceItem
+
       map.value.forEach((attrNode, attrName) => {
         if (attrNode.isLiteral() || attrNode.isEmptyInitializer()) {
           const value = attrNode.isLiteral() ? (attrNode.value as string) : true
           const reportItem = {
             id: id++,
+            instanceId,
+            category: 'unknown',
+            propName: attrName,
             from,
             type,
             kind,
             filepath,
             path: current,
+            attrName,
             value,
             box: attrNode,
           } as ReportItem // TODO satisfies
+          reportInstanceItem.contains.push(reportItem.id)
 
           if (conditions.has(attrName)) {
             addTo(globalMaps.byConditionName, attrName, reportItem.id)
             addTo(localMaps.byConditionName, attrName, reportItem.id)
           } else {
             const propName = ctx.utility.shorthands.get(attrName) ?? attrName
+            reportItem.propName = propName
+
+            const utility = ctx.config.utilities?.[propName]
+
+            const category = typeof utility?.values === 'string' ? utility?.values : 'unknown'
+            reportItem.category = category
 
             addTo(globalMaps.byPropertyName, propName, reportItem.id)
             addTo(localMaps.byPropertyName, propName, reportItem.id)
+
+            addTo(globalMaps.byCategory, category, reportItem.id)
+            addTo(localMaps.byCategory, category, reportItem.id)
+
+            if (propName.toLowerCase().includes('color') || colorPropNames.has(propName)) {
+              addTo(globalMaps.colorsUsed, value as string, reportItem.id)
+              addTo(localMaps.colorsUsed, value as string, reportItem.id)
+            }
 
             if (ctx.utility.shorthands.has(attrName)) {
               addTo(globalMaps.byShorthand, attrName, reportItem.id)
@@ -114,14 +135,13 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
 
           //
           addTo(byFilepath, filepath, reportItem.id)
-          globalMaps.byId.set(reportItem.id, reportItem)
-          localMaps.byId.set(reportItem.id, reportItem)
+          byId.set(reportItem.id, reportItem)
 
           return
         }
 
         if (attrNode.isMap() && attrNode.value.size) {
-          return processMap(attrNode, current.concat(attrName), { from, type, kind })
+          return processMap(attrNode, current.concat(attrName), reportInstanceItem)
         }
       })
     }
@@ -147,6 +167,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
         filepath,
         value: item.data,
         box: item.box,
+        contains: [],
       } as ReportInstanceItem // TODO satisfies
 
       if (item.box.isList()) {
@@ -158,7 +179,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
       if (item.box.isMap() && item.box.value.size) {
         addTo(byInstanceInFilepath, filepath, reportInstanceItem.instanceId)
 
-        processMap(item.box, [], { from, type, kind })
+        processMap(item.box, [], reportInstanceItem)
         return reportInstanceItem
       }
     }
@@ -170,8 +191,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
       addTo(globalMaps.byInstanceOfKind, 'component', reportInstanceItem.instanceId)
       addTo(localMaps.byInstanceOfKind, 'component', reportInstanceItem.instanceId)
 
-      globalMaps.byInstanceId.set(reportInstanceItem.instanceId, reportInstanceItem)
-      localMaps.byInstanceId.set(reportInstanceItem.instanceId, reportInstanceItem)
+      byInstanceId.set(reportInstanceItem.instanceId, reportInstanceItem)
     }
 
     const processFunctionResultItem = (item: ResultItem) => {
@@ -181,8 +201,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
       addTo(globalMaps.byInstanceOfKind, 'function', reportInstanceItem.instanceId)
       addTo(localMaps.byInstanceOfKind, 'function', reportInstanceItem.instanceId)
 
-      globalMaps.byInstanceId.set(reportInstanceItem.instanceId, reportInstanceItem)
-      localMaps.byInstanceId.set(reportInstanceItem.instanceId, reportInstanceItem)
+      byInstanceId.set(reportInstanceItem.instanceId, reportInstanceItem)
     }
 
     parserResult.jsx.forEach(processComponentResultItem)
@@ -200,55 +219,20 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
     mapsByFilePath.set(filepath, localMaps)
   })
 
-  const pickCount = 3
-  const filesWithMostInstance = Array.from(byInstanceInFilepath.entries())
-    .map(([filepath, list]) => [filepath, list.size] as const)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, pickCount)
+  const pickCount = 10
+  const filesWithMostInstance = Object.fromEntries(
+    Array.from(byInstanceInFilepath.entries())
+      .map(([filepath, list]) => [filepath, list.size] as const)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, pickCount),
+  )
 
-  const filesWithMostPropValueCombinations = Array.from(byFilepath.entries())
-    .map(([token, list]) => [token, list.size] as const)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, pickCount)
-
-  const mostUsedPropNames = Array.from(globalMaps.byPropertyName.entries())
-    .map(([propName, list]) => [propName, list.size] as const)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, pickCount)
-  const mostUsedTokens = Array.from(globalMaps.byTokenName.entries())
-    .map(([token, list]) => [token, list.size] as const)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, pickCount)
-
-  const mostUsedShorthands = Array.from(globalMaps.byShorthand.entries())
-    .map(([shorthand, list]) => [shorthand, list.size] as const)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, pickCount)
-
-  const mostUsedPropertyPaths = Array.from(globalMaps.byPropertyPath.entries())
-    .map(([propertyPath, list]) => [propertyPath, list.size] as const)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, pickCount)
-
-  const mostUsedTypes = Array.from(globalMaps.byType.entries())
-    .map(([type, list]) => [type, list.size] as const)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, pickCount)
-
-  const mostUsedInstanceNames = Array.from(globalMaps.byInstanceName.entries())
-    .map(([componentName, list]) => [componentName, list.size] as const)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, pickCount)
-
-  const mostUsedFromKinds = Array.from(globalMaps.fromKind.entries())
-    .map(([kind, list]) => [kind, list.size] as const)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, pickCount)
-
-  const mostUsedInstanceOfKinds = Array.from(globalMaps.byInstanceOfKind.entries())
-    .map(([kind, list]) => [kind, list.size] as const)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, pickCount)
+  const filesWithMostPropValueCombinations = Object.fromEntries(
+    Array.from(byFilepath.entries())
+      .map(([token, list]) => [token, list.size] as const)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, pickCount),
+  )
 
   return {
     counts: {
@@ -261,26 +245,44 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
       instanceNameUsed: globalMaps.byInstanceName.size,
       kindUsed: globalMaps.fromKind.size,
       instanceOfKindUsed: globalMaps.byInstanceOfKind.size,
+      colorsUsed: globalMaps.colorsUsed.size,
     },
     stats: {
       //
       filesWithMostInstance,
       filesWithMostPropValueCombinations,
       //
-      mostUsedPropNames,
-      mostUsedTokens,
-      mostUsedShorthands,
-      mostUsedPropertyPaths,
-      mostUsedTypes,
-      mostUsedInstanceNames,
-      mostUsedFromKinds,
-      mostUsedInstanceOfKinds,
+      mostUseds: getXMostUseds(globalMaps, 10),
     },
     details: {
-      globalMaps,
-      mapsByFilePath,
+      byId,
+      byInstanceId,
       byFilepath,
       byInstanceInFilepath,
+      globalMaps,
+      mapsByFilePath,
     },
   }
+}
+
+const getXMostUseds = (globalMaps: ReportMaps, pickCount: number) => {
+  return {
+    propNames: getMostUsedInMap(globalMaps.byPropertyName, pickCount),
+    tokens: getMostUsedInMap(globalMaps.byTokenName, pickCount),
+    shorthands: getMostUsedInMap(globalMaps.byShorthand, pickCount),
+    propertyPaths: getMostUsedInMap(globalMaps.byPropertyPath, pickCount),
+    types: getMostUsedInMap(globalMaps.byType, pickCount),
+    instanceNames: getMostUsedInMap(globalMaps.byInstanceName, pickCount),
+    fromKinds: getMostUsedInMap(globalMaps.fromKind, pickCount),
+    instanceOfKinds: getMostUsedInMap(globalMaps.byInstanceOfKind, pickCount),
+    colors: getMostUsedInMap(globalMaps.colorsUsed, pickCount),
+  }
+}
+
+const getMostUsedInMap = (map: Map<string, Set<any>>, pickCount: number) => {
+  return Array.from(map.entries())
+    .map(([key, list]) => [key, list.size] as const)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, pickCount)
+    .map(([key, count]) => ({ key, count }))
 }
