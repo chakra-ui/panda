@@ -137,7 +137,7 @@ export async function main() {
   cli
     .command('analyze [path]', 'Anaylyze design token usage in path')
     .option('--json [filepath]', 'Output analyze report in JSON')
-    .option('--html [dir]', 'Output analyze report in interactive web page')
+    // .option('--html [dir]', 'Output analyze report in interactive web page')
     .option('--silent', "Don't print any logs")
     .option('--only', "Only analyze given filepath, skip config's include/exclude")
     .option('--mode [mode]', 'box-extractor || internal')
@@ -179,10 +179,10 @@ export async function main() {
           return
         }
 
-        if (flags?.html && typeof flags.html === 'string') {
-          // TODO codegen analyzer app
-          return
-        }
+        // single file bundle is not supported yet
+        // if (flags?.html && typeof flags.html === 'string') {
+        //   return
+        // }
 
         console.log(`Found ${result.details.byId.size} token used in ${result.details.byFilePathMaps.size} files`)
       },
