@@ -373,7 +373,7 @@ importers:
       ts-pattern: 4.2.1
       typescript: 4.9.5
       usehooks-ts: 2.9.1
-      zod: 3.21.2
+      zod: 3.21.4
     dependencies:
       '@ark-ui/react': 0.0.0-rc-20230304191834_biqbaboplfbrettd7655fr4n2y
       '@monaco-editor/react': 4.4.6_waewrrayshn643ztij6zbniufy
@@ -398,7 +398,7 @@ importers:
       ts-pattern: 4.2.1
       typescript: 4.9.5
       usehooks-ts: 2.9.1_biqbaboplfbrettd7655fr4n2y
-      zod: 3.21.2
+      zod: 3.21.4
     devDependencies:
       '@pandacss/dev': link:../packages/cli
       '@pandacss/types': link:../packages/types
@@ -7604,7 +7604,7 @@ packages:
       vite: 4.1.4
       vitefu: 0.2.4_vite@4.1.4
       yargs-parser: 21.1.0
-      zod: 3.21.2
+      zod: 3.21.4
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -19177,8 +19177,8 @@ packages:
     resolution: {integrity: sha512-oyu0m54SGCtzh6EClBVqDDlAYRz4jrVtKwQ7ZnsEmMI9HnzuZFj8QFwAY1M5uniIYACdGvv0PBWPF2kO0aNofA==}
     dev: false
 
-  /zod/3.21.2:
-    resolution: {integrity: sha512-0Ygy2/IZNIxHterZdHjE5Vb8hp1fUHJD/BGvSHj8QJx+UipEVNvo9WLchoyBpz5JIaN6KmdGDGYdloGzpFK98g==}
+  /zod/3.21.4:
+    resolution: {integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==}
     dev: false
 
   /zwitch/2.0.2:
