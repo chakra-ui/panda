@@ -50,7 +50,7 @@ export function analyzeTokens(
   ctx.config.minify = minify
 
   return Object.assign(classifyTokens(ctx, parserResultByFilepath), {
-    sizes: {
+    fileSizes: {
       normal: filesize(Buffer.byteLength(css, 'utf-8')),
       minified: filesize(Buffer.byteLength(minifiedCss, 'utf-8')),
       gzip: {

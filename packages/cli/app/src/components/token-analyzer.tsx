@@ -48,6 +48,13 @@ const HeadlineSummary = () => {
         </panda.span>{' '}
         files
       </div>
+      <div>
+        with{' '}
+        <panda.span fontSize="xl" fontWeight="bold">
+          {analysisData.fileSizes.gzip.minified}
+        </panda.span>{' '}
+        KB corresponding CSS generated (min+gzip)
+      </div>
       <panda.div fontSize="md">
         <span>Mostly </span>
         <TextWithCount display="inline-block" count={topKind.count}>
@@ -58,8 +65,6 @@ const HeadlineSummary = () => {
           {secondKind.key === 'function' ? 'using functions' : 'using style props'}.
         </TextWithCount>
       </panda.div>
-      {/* TODO */}
-      {/* <div>with 2.2 KB corresponding CSS generated (min+gzip)</div> */}
     </Stack>
   )
 }
