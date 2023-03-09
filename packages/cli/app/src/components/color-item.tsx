@@ -15,7 +15,7 @@ export const ColorItem = ({
   const reportItem = getReportItemFromTokenName(tokenName)
 
   return (
-    <panda.a href={getReportItemLink(reportItem)} key={tokenName} {...props}>
+    <panda.a href={getReportItemLink({ value: reportItem.value })} key={tokenName} {...props}>
       <ColorWrapper
         w="auto"
         minW="80px"

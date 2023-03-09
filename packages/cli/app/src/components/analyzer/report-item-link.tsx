@@ -12,7 +12,7 @@ import {
 } from '../../utils/get-report-item'
 import { TextWithCount } from './text-with-count'
 
-export const ReportItemLink = (reportItem: ReportItemJSON) => {
+export const ReportItemLink = (reportItem: Partial<ReportItemJSON>) => {
   const value = String(reportItem.value)
   const withTokenName = analysisData.details.globalMaps.byTokenName[value] ?? []
   const count = withTokenName?.filter((id) => getReportItem(id)?.propName === reportItem.propName)?.length

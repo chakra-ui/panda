@@ -11,7 +11,7 @@ export type SearchableReportItemAttributes = Partial<
 
 export const getReportItemLink = (reportItem: SearchableReportItemAttributes) => {
   const searchParams = new URLSearchParams(
-    pick(reportItem, ['id', 'value', 'category', 'propName', 'from', 'filepath']) as any,
+    pick(reportItem, ['value', 'category', 'propName', 'from', 'filepath']) as any,
   )
   return `/token-analyzer/utility?${searchParams.toString()}`
 }

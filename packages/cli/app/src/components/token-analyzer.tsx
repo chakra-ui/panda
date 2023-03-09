@@ -28,6 +28,7 @@ import { TextWithCount } from './analyzer/text-with-count'
 import { Section } from './analyzer/section'
 import { styledLink } from '../../design-system/patterns'
 import { DataCombobox } from './analyzer/data-combobox'
+import { pick } from '../utils/pick'
 
 export function TokenAnalyzer() {
   console.log(tokenDictionary)
@@ -337,7 +338,10 @@ const FilesList = () => {
                       <panda.h5>Utilities</panda.h5>
                       <Wrap gap="2" mt="4">
                         {values.map((reportItem) => (
-                          <ReportItemLink key={reportItem.id} {...reportItem} />
+                          <ReportItemLink
+                            key={reportItem.id}
+                            {...pick(reportItem, ['value', 'propName', 'filepath'])}
+                          />
                         ))}
                       </Wrap>
                     </panda.div>
