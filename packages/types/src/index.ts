@@ -4,6 +4,8 @@ export type {
   ReportItemType,
   AnalysisReport,
   AnalysisReportJSON,
+  ReportInstanceItemJSON,
+  ReportItemJSON,
 } from './analyze-report'
 export type { CompositionStyles, LayerStyles, TextStyles } from './composition'
 export type { ConditionDetails, Conditions, ConditionType, RawCondition } from './conditions'

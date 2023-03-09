@@ -1,3 +1,4 @@
+import type { PatternConfig } from '@pandacss/types'
 import config from '../src/presets'
 
 export default {
@@ -17,6 +18,22 @@ export default {
         card: { value: { base: '{colors.slate.800}', _osLight: '{colors.slate.200}' } },
       },
     },
+  },
+  patterns: {
+    ...config.patterns,
+    styledLink: {
+      properties: {},
+      transform: (props) => ({
+        display: 'inline-flex',
+        alignItems: 'center',
+        fontSize: 'sm',
+        opacity: '0.5',
+        borderBottom: '1px solid transparent',
+        cursor: 'pointer',
+        _hover: { opacity: 1, borderBottomColor: 'black' },
+        ...props,
+      }),
+    } as PatternConfig,
   },
   utilities: {
     ...config.utilities,

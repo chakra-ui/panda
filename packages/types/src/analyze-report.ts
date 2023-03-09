@@ -107,14 +107,54 @@ type ReportMapsJSON = {
   colorsUsed: Record<string, Array<ReportItem['id']>>
 }
 
+type NodeRange = {
+  startPosition: number
+  startLineNumber: number
+  startColumn: number
+  endPosition: number
+  endLineNumber: number
+  endColumn: number
+}
+
+type MorphNodeJSON = {
+  kind: string
+  range: NodeRange
+}
+
+export type ReportItemJSON = {
+  id: number
+  from: string
+  type: ReportItemType
+  filepath: string
+  kind: 'function' | 'component'
+  path: string[]
+  attrName: string
+  propName: string
+  value: string | number | true
+  category: string
+  box: {
+    type: 'literal' | 'empty-initializer'
+    value: string | number | boolean | undefined | null
+    node: MorphNodeJSON
+    stack: MorphNodeJSON[]
+  }
+}
+
+export type ReportInstanceItemJSON = Pick<ReportItem, 'from' | 'type' | 'kind' | 'filepath'> & {
+  instanceId: number
+  contains: Array<ReportItem['id']>
+  value: Record<string, any>
+  box: { type: 'map'; value: Record<string, any>; node: MorphNodeJSON; stack: MorphNodeJSON[] }
+}
+
 export type AnalysisReportJSON = {
   counts: ReportCounts
   stats: ReportStats
   details: {
-    byId: Record<ReportItem['id'], ReportItem>
-    byInstanceId: Record<ReportInstanceItem['instanceId'], ReportInstanceItem>
-    byFilepath: Record<string, Array<ReportItem['id']>>
-    byInstanceInFilepath: Record<string, Array<ReportInstanceItem['instanceId']>>
+    byId: Record<ReportItemJSON['id'], ReportItemJSON>
+    byInstanceId: Record<ReportInstanceItemJSON['instanceId'], ReportInstanceItemJSON>
+    byFilepath: Record<string, Array<ReportItemJSON['id']>>
+    byInstanceInFilepath: Record<string, Array<ReportInstanceItemJSON['instanceId']>>
     globalMaps: ReportMapsJSON
     byFilePathMaps: Record<string, ReportMapsJSON>
   }
