@@ -82,31 +82,6 @@ importers:
       kleur: 4.1.5
       update-notifier: 6.0.2
 
-  packages/cli/token-analyzer:
-    specifiers:
-      '@ark-ui/react': 0.0.0-rc-20230304191834
-      '@pandacss/dev': workspace:*
-      '@types/react': 18.0.17
-      '@types/react-dom': 18.0.11
-      '@vitejs/plugin-react': 3.1.0
-      postcss: 8.4.21
-      react: ^18.2.0
-      react-dom: ^18.2.0
-      typescript: 4.9.5
-      vite: 4.1.4
-    dependencies:
-      '@ark-ui/react': 0.0.0-rc-20230304191834_biqbaboplfbrettd7655fr4n2y
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-    devDependencies:
-      '@pandacss/dev': link:..
-      '@types/react': 18.0.17
-      '@types/react-dom': 18.0.11
-      '@vitejs/plugin-react': 3.1.0_vite@4.1.4
-      postcss: 8.4.21
-      typescript: 4.9.5
-      vite: 4.1.4
-
   packages/config:
     specifiers:
       '@pandacss/error': workspace:*
@@ -402,6 +377,7 @@ importers:
       ts-pattern: 4.2.1
       typescript: 5.0.2
       usehooks-ts: 2.9.1
+      util: ^0.12.5
       zod: 3.21.4
     dependencies:
       '@ark-ui/react': 0.0.0-rc-20230323110837_biqbaboplfbrettd7655fr4n2y
@@ -427,6 +403,7 @@ importers:
       ts-pattern: 4.2.1
       typescript: 5.0.2
       usehooks-ts: 2.9.1_biqbaboplfbrettd7655fr4n2y
+      util: 0.12.5
       zod: 3.21.4
     devDependencies:
       '@pandacss/dev': link:../packages/cli
@@ -684,7 +661,7 @@ packages:
     peerDependencies:
       astro: ^2.1.4
     dependencies:
-      '@astrojs/prism': 2.1.0
+      '@astrojs/prism': 2.0.0
       astro: 2.0.12
       github-slugger: 1.4.0
       import-meta-resolve: 2.2.0
@@ -723,6 +700,13 @@ packages:
       vfile: 5.3.5
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  /@astrojs/prism/2.0.0:
+    resolution: {integrity: sha512-YgeoeEPqsxaEpg0rwe/bUq3653LqSQnMjrLlpYwrbQQMQQqz6Y5yXN+RX3SfLJ6ppNb4+Fu2+Z49EXjk48Ihjw==}
+    engines: {node: '>=16.12.0'}
+    dependencies:
+      prismjs: 1.29.0
     dev: false
 
   /@astrojs/prism/2.1.0:
@@ -7824,7 +7808,7 @@ packages:
     dependencies:
       '@babel/helper-module-imports': 7.18.6
       '@babel/plugin-syntax-jsx': 7.18.6
-      '@babel/types': 7.20.7
+      '@babel/types': 7.21.2
       html-entities: 2.3.3
       validate-html-nesting: 1.2.0
     dev: false
