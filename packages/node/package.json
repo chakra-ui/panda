@@ -33,7 +33,7 @@
     "fast-glob": "^3.2.12",
     "fs-extra": "11.1.0",
     "glob-parent": "^6.0.2",
-    "hookable": "5.4.2",
+    "hookable": "5.5.1",
     "is-glob": "^4.0.3",
     "javascript-stringify": "2.1.0",
     "lil-fp": "1.2.5",
