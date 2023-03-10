@@ -54,7 +54,9 @@ export const UtilityLink = (search: SearchableReportItemAttributes) => {
 
   return (
     <panda.a className={styledLink({})} href={getReportItemLink(search)}>
-      <TextWithCount count={(list ?? []).length}>{value}</TextWithCount>
+      <TextWithCount count={(list ?? []).length}>
+        <TruncatedText text={String(value)} />
+      </TextWithCount>
     </panda.a>
   )
 }

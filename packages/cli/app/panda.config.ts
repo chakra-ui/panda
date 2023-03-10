@@ -1,4 +1,4 @@
-import type { PatternConfig } from '@pandacss/types'
+import type { PatternConfig, Config } from '@pandacss/types'
 import config from '../src/presets'
 
 export default {
@@ -50,7 +50,6 @@ export default {
     },
   },
   jsxFramework: 'react',
-
   globalCss: {
     ':root': {
       fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif',
@@ -79,4 +78,4 @@ export default {
       minHeight: '100vh',
     },
   },
-}
+} as Config

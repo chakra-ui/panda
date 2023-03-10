@@ -1,6 +1,6 @@
 import { css, cx } from '../../design-system/css'
 import { Grid, panda, Stack, Wrap } from '../../design-system/jsx'
-import { analysisData, tokenDictionary } from '../utils/analysis-data'
+import { analysisData } from '../utils/analysis-data'
 
 import {
   Portal,
@@ -32,8 +32,8 @@ import { pick } from '../utils/pick'
 import { TokenSearchCombobox } from './token-search-combobox'
 
 export function TokenAnalyzer() {
-  console.log(tokenDictionary)
-  console.log(analysisData)
+  // console.log(tokenDictionary)
+  // console.log(analysisData)
 
   return (
     <div className={css({ width: '100%', paddingY: '20px', debug: false })}>
@@ -49,9 +49,17 @@ export function TokenAnalyzer() {
   )
 }
 
-const HeadlineSummary = () => {
-  const [topKind, secondKind] = analysisData.stats.mostUseds.instanceOfKinds
+const [topKind, secondKind] = analysisData.stats.mostUseds.instanceOfKinds
+const values = Object.values(analysisData.details.byId)
+const knownValues = values.filter((v) => v.isKnown)
+const unknownValuesCount = values.length - knownValues.length
+const formater = new Intl.NumberFormat('en-US', {
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2,
+  style: 'percent',
+})
 
+const HeadlineSummary = () => {
   return (
     <Stack mb="4" direction="column" align="center" padding="20px" fontSize="lg">
       <div>
@@ -102,6 +110,19 @@ const HeadlineSummary = () => {
         <TextWithCount display="inline-block" count={secondKind.count}>
           {secondKind.key === 'function' ? 'using functions' : 'using style props'}.
         </TextWithCount>
+      </panda.div>
+      <panda.div fontSize="sm">
+        <span>
+          With{' '}
+          <panda.span fontSize="md" fontWeight="bold">
+            {unknownValuesCount}
+          </panda.span>{' '}
+          unknown token values (
+          <panda.span fontSize="md" fontWeight="bold">
+            {formater.format(unknownValuesCount / values.length)}
+          </panda.span>
+          )
+        </span>
       </panda.div>
     </Stack>
   )

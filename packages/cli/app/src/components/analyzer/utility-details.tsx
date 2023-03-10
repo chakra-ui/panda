@@ -109,7 +109,7 @@ const UtilityFilters = () => {
   const filepath = filteredFilepath.length > 0 ? filteredFilepath : allFilepath
 
   return (
-    <panda.div>
+    <panda.div mb="4">
       <panda.h3>Filters</panda.h3>
       <Wrap key={resetKey}>
         <DataCombobox
@@ -157,45 +157,38 @@ const UtilityFilters = () => {
           }}
           defaultValue={String(infos.params.filepath ?? '')}
         />
+        {infos.hasParam && (
+          <panda.span
+            display="block"
+            alignSelf="flex-end"
+            mt="2"
+            cursor="pointer"
+            userSelect="none"
+            fontSize="lg"
+            fontWeight="bold"
+            onClick={() => {
+              updateSearchParam('value', undefined)
+              updateSearchParam('category', undefined)
+              updateSearchParam('propName', undefined)
+              updateSearchParam('from', undefined)
+              updateSearchParam('filepath', undefined)
+              setParams({})
+              setResetKey((k) => k + 1)
+            }}
+          >
+            [X] Clear filters
+          </panda.span>
+        )}
       </Wrap>
-      {infos.hasParam && (
-        <panda.span
-          display="block"
-          mt="2"
-          cursor="pointer"
-          userSelect="none"
-          fontSize="lg"
-          fontWeight="bold"
-          onClick={() => {
-            updateSearchParam('value', undefined)
-            updateSearchParam('category', undefined)
-            updateSearchParam('propName', undefined)
-            updateSearchParam('from', undefined)
-            updateSearchParam('filepath', undefined)
-            setParams({})
-            setResetKey((k) => k + 1)
-          }}
-        >
-          [X] Clear filters
-        </panda.span>
-      )}
     </panda.div>
   )
 }
 
 const UtilityDetailsContent = () => {
   const [infos] = useDetails()
-  // const reportItem = infos.reportItem!
 
   return (
     <>
-      {/* <panda.div my="4">
-        <panda.h4>Found {infos.reportItemList.length} matches</panda.h4>
-        <panda.h4>Used in {'X'} files</panda.h4>
-      </panda.div> */}
-      {/* <panda.h4>Category : {reportItem.category}</panda.h4> */}
-      {/* {reportItem.category === 'color' ? <ColorItem tokenName={String(reportItem.value)} /> : null} */}
-
       <ReportItemMatchingFiltersTable {...infos} />
       <UsedInFiles />
     </>
@@ -235,6 +228,7 @@ const selectOptionClass = css({ padding: '4px 8px', backgroundColor: 'white' })
 const ReportItemMatchingFiltersTable = (infos: Infos) => {
   const tokenName = infos.params.value
   const defaultOption = { label: `matching search filters`, value: 'reportItemList' }
+  const columns = allColumns.filter((col) => (infos.params as any)[col.accessor] === undefined)
 
   return (
     <>
@@ -260,7 +254,7 @@ const ReportItemMatchingFiltersTable = (infos: Infos) => {
               }
               bg="gray.50"
             >
-              <ByFiltersTable list={infos[value]} columns={allColumns} />
+              <ByFiltersTable list={infos[value]} columns={columns} />
               <>
                 <Portal>
                   <SelectPositioner>
@@ -332,6 +326,11 @@ const allColumns = [
   },
   { header: 'token name', accessor: 'value', cell: (item: ReportItemJSON) => <UtilityLink value={item.value} /> },
   {
+    header: 'known',
+    accessor: 'isKnown',
+    cell: (item: ReportItemJSON) => <panda.span userSelect="none">{item.isKnown ? '✅' : '❌'}</panda.span>,
+  },
+  {
     header: 'filepath',
     accessor: 'filepath',
     cell: (item: ReportItemJSON) => <ReportItemOpenInEditorLink withRange {...item} />,
@@ -344,15 +343,27 @@ type Column = { header: string; accessor: string; cell?: (item: ReportItemJSON) 
 const ByFiltersTable = ({ list, columns }: { list: ReportItemJSON[]; columns: ReadonlyArray<Column> }) => {
   return (
     <panda.div>
-      <Grid columns={6} w="full" fontWeight="bold" fontSize="lg" mb="2">
-        {allColumns.map((column) => {
+      <Grid
+        style={{ gridTemplateColumns: `repeat(auto-fit, minmax(30px, 1fr))` }}
+        // gridTemplateColumns="repeat(auto-fit, minmax(30px, 1fr))"
+        w="full"
+        fontWeight="bold"
+        fontSize="lg"
+        mb="2"
+      >
+        {columns.map((column) => {
           return <panda.div key={column.header}>{column.header}</panda.div>
         })}
       </Grid>
       <panda.div className={flex({ direction: 'column', gap: '2' })}>
         {list.map((item) => {
           return (
-            <Grid columns={6} w="full" key={item.id}>
+            <Grid
+              style={{ gridTemplateColumns: `repeat(auto-fit, minmax(30px, 1fr))` }}
+              // gridTemplateColumns="repeat(auto-fit, minmax(30px, 1fr))"
+              w="full"
+              key={item.id}
+            >
               {columns.map((column) => {
                 return (
                   <panda.div key={column.accessor}>{column.cell?.(item) ?? (item as any)[column.accessor]}</panda.div>

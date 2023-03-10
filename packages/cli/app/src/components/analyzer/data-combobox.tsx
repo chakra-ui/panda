@@ -55,7 +55,6 @@ export const DataCombobox = ({ options: allOptions, label, ...props }: DataCombo
                     className={css({ width: 'full' })}
                     onChange={(e) => {
                       const value = e.target.value
-                      console.log({ value })
                       if (!value) {
                         props?.onSelect?.({ relatedTarget: null })
                         setOptions(allOptions)
