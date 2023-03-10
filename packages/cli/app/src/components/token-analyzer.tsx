@@ -24,11 +24,12 @@ import { groupIn } from '../utils/group-in'
 import { getReportItemLink, getReportItem, getReportRelativeFilePath } from '../utils/get-report-item'
 import { ColorItem } from './color-item'
 import { ReportItemLink } from './analyzer/report-item-link'
-import { TextWithCount, TruncatedText } from './analyzer/text-with-count'
+import { TextWithCount } from './analyzer/text-with-count'
+import { TruncatedText } from './analyzer/truncated-text'
 import { Section } from './analyzer/section'
 import { styledLink } from '../../design-system/patterns'
-import { DataCombobox } from './analyzer/data-combobox'
 import { pick } from '../utils/pick'
+import { TokenSearchCombobox } from './token-search-combobox'
 
 export function TokenAnalyzer() {
   console.log(tokenDictionary)
@@ -38,7 +39,7 @@ export function TokenAnalyzer() {
     <div className={css({ width: '100%', paddingY: '20px', debug: false })}>
       <panda.div px="24" w="100%">
         <HeadlineSummary />
-        <TokenSearch />
+        <TokenSearchCombobox />
         <MostUsedList />
         <ColorPalette />
         <ByCategory />
@@ -103,43 +104,6 @@ const HeadlineSummary = () => {
         </TextWithCount>
       </panda.div>
     </Stack>
-  )
-}
-
-const searchList = new Map<string, string>()
-const tokenNames = Object.keys(analysisData.details.globalMaps.byTokenName)
-const propertyNames = Object.keys(analysisData.details.globalMaps.byPropertyName)
-const categories = Object.keys(analysisData.details.globalMaps.byCategory)
-const filepaths = Object.keys(analysisData.details.byFilepath)
-
-tokenNames.sort().forEach((key) => {
-  searchList.set(key, 'value')
-})
-propertyNames.sort().forEach((key) => {
-  searchList.set(key, 'propName')
-})
-categories.sort().forEach((key) => {
-  searchList.set(key, 'category')
-})
-filepaths.sort().forEach((key) => {
-  searchList.set(key, 'filepath')
-})
-
-const TokenSearch = () => {
-  return (
-    <DataCombobox
-      options={Array.from(searchList.entries()).map(([key, value]) => ({ label: `[${value}]: ${key}`, value: key }))}
-      placeholder={`Search for a token name (${tokenNames.length}), property name (${propertyNames.length}), category (${categories.length}), file path (${filepaths.length})...`}
-      onSelect={(option) => {
-        if (!option.value) return
-
-        const type = searchList.get(option.value)
-        if (!type) return
-
-        console.log(option, { type, value: option.value }, getReportItemLink({ [type]: option.value }))
-        window.location.href = getReportItemLink({ [type]: option.value })
-      }}
-    />
   )
 }
 

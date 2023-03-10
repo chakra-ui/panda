@@ -10,7 +10,8 @@ import {
   openReportItemInEditor,
   SearchableReportItemAttributes,
 } from '../../utils/get-report-item'
-import { TextWithCount, TruncatedText } from './text-with-count'
+import { TextWithCount } from './text-with-count'
+import { TruncatedText } from './truncated-text'
 
 export const ReportItemLink = (reportItem: Partial<ReportItemJSON>) => {
   const value = String(reportItem.value)

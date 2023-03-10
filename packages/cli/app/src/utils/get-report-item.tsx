@@ -26,11 +26,6 @@ export const getReportRange = (reportItem: ReportItemJSON) =>
   `:${reportItem.box.node.range.startLineNumber}:${reportItem.box.node.range.startColumn}`
 
 const openInEditor = (filepath: string, line: number, column: number) => {
-  // const url = new URL('vscode://file' + filepath)
-  // url.searchParams.set('line', line.toString())
-  // window.open(url.toString())
-
-  // return fetch(`/__open-in-editor?file=${encodeURIComponent(`${filepath}:${line}:${column}`)}`)
   return fetch(`/__open-in-editor?file=${encodeURIComponent(`${filepath}:${line}:${column}`)}`)
 }
 

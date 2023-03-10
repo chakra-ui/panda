@@ -14,23 +14,18 @@ import {
 } from '@ark-ui/react'
 import { useState, useEffect, ReactNode } from 'react'
 
-type Option = { value: string; label: string }
-
-export const DataCombobox = ({
-  options: allOptions,
-  label,
-  ...props
-}: {
-  options: Array<Option>
+export type DataComboboxOption = { value: string; label: string }
+export type DataComboboxProps = {
+  options: Array<DataComboboxOption>
   label?: ReactNode
-  filterFn?: (value: string) => Option[]
-} & ComboboxProps) => {
+  filterFn?: (value: string) => DataComboboxOption[]
+} & ComboboxProps
+
+export const DataCombobox = ({ options: allOptions, label, ...props }: DataComboboxProps) => {
   const [options, setOptions] = useState(allOptions)
   const filterFn =
     props.filterFn ||
     ((value: string) => allOptions.filter((item) => item.label.toLowerCase().includes(value.toLowerCase())))
-
-  console.log({ options })
 
   // sync available options from parent
   useEffect(() => {

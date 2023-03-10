@@ -20,8 +20,9 @@ import { createContext } from '../../hooks/create-context'
 import { ReportItemOpenInEditorLink, UtilityLink } from './report-item-link'
 
 import { Dispatch, ReactNode, SetStateAction, useState } from 'react'
-import { DataCombobox } from './data-combobox'
+import { DataCombobox, DataComboboxOption } from './data-combobox'
 import { TextWithCount } from './text-with-count'
+import { TokenSearchCombobox } from '../token-search-combobox'
 
 export const UtilityDetails = () => {
   const search = new URLSearchParams(window.location.search)
@@ -34,9 +35,14 @@ export const UtilityDetails = () => {
 
   return (
     <panda.div>
-      <panda.a href="/token-analyzer">
-        <panda.span fontWeight="bold">{'<'} </panda.span>Back
-      </panda.a>
+      <panda.div display="flex">
+        <panda.a href="/token-analyzer">
+          <panda.span fontWeight="bold">{'<'} </panda.span>Back
+        </panda.a>
+        <panda.div ml="auto">
+          <TokenSearchCombobox placeholder="Global search" />
+        </panda.div>
+      </panda.div>
       <panda.div p="4" mt="4">
         <DetailsProvider value={[infos, setParams]}>
           <UtilityFilters />
@@ -74,7 +80,9 @@ const updateSearchParam = (key: string, value: string | undefined) => {
 }
 
 const uniq = (arr: string[]) => Array.from(new Set(arr))
-const toOption = (value: string) => ({ value, label: value })
+const toOption = (value: string | object) =>
+  (typeof value === 'string' ? { value, label: value } : value) as DataComboboxOption
+const toFilepathOption = (filepath: string) => ({ value: filepath, label: getReportRelativeFilePath(filepath) })
 
 const UtilityFilters = () => {
   const [infos, setParams] = useDetails()
@@ -96,17 +104,9 @@ const UtilityFilters = () => {
   const filteredFrom = uniq(infos.reportItemList.map((item) => item.from))
   const from = filteredFrom.length > 0 ? filteredFrom : allFrom
 
-  // console.log({
-  //   tokenNames,
-  //   categories,
-  //   propertyNames,
-  //   filteredTokenNames,
-  //   filteredCategories,
-  //   filteredPropertyNames,
-  //   allTokenNames,
-  //   allCategories,
-  //   allPropertyNames,
-  // })
+  const allFilepath = Object.keys(analysisData.details.byFilepath).map(toFilepathOption)
+  const filteredFilepath = uniq(infos.reportItemList.map((item) => item.filepath)).map(toFilepathOption)
+  const filepath = filteredFilepath.length > 0 ? filteredFilepath : allFilepath
 
   return (
     <panda.div>
@@ -114,8 +114,6 @@ const UtilityFilters = () => {
       <Wrap key={resetKey}>
         <DataCombobox
           label="Token name"
-          // options={uniq(infos.byTokenName.map((item) => String(item.value)))}
-          // options={Object.keys(analysisData.details.globalMaps.byTokenName)}
           options={tokenNames.map(toOption)}
           onSelect={(e) => {
             updateSearchParam('value', e.value)
@@ -125,8 +123,6 @@ const UtilityFilters = () => {
         />
         <DataCombobox
           label="Property name"
-          // options={uniq(infos.byPropName.map((item) => item.propName))}
-          // options={Object.keys(analysisData.details.globalMaps.byPropertyName)}
           options={propertyNames.map(toOption)}
           onSelect={(e) => {
             updateSearchParam('propName', e.value)
@@ -136,8 +132,6 @@ const UtilityFilters = () => {
         />
         <DataCombobox
           label="Category"
-          // options={uniq(infos.byCategory.map((item) => item.category))}
-          // options={Object.keys(analysisData.details.globalMaps.byCategory)}
           options={categories.map(toOption)}
           onSelect={(e) => {
             updateSearchParam('category', e.value)
@@ -147,14 +141,21 @@ const UtilityFilters = () => {
         />
         <DataCombobox
           label="Instance name (from)"
-          // options={uniq(infos.byCategory.map((item) => item.category))}
-          // options={Object.keys(analysisData.details.globalMaps.byCategory)}
           options={from.map(toOption)}
           onSelect={(e) => {
             updateSearchParam('from', e.value)
             return setParams((params) => ({ ...params, ['from']: e.value }))
           }}
           defaultValue={String(infos.params.from ?? '')}
+        />
+        <DataCombobox
+          label="Filepath"
+          options={filepath.map(toOption)}
+          onSelect={(e) => {
+            updateSearchParam('filepath', e.value)
+            return setParams((params) => ({ ...params, ['filepath']: e.value }))
+          }}
+          defaultValue={String(infos.params.filepath ?? '')}
         />
       </Wrap>
       {infos.hasParam && (
@@ -170,6 +171,7 @@ const UtilityFilters = () => {
             updateSearchParam('category', undefined)
             updateSearchParam('propName', undefined)
             updateSearchParam('from', undefined)
+            updateSearchParam('filepath', undefined)
             setParams({})
             setResetKey((k) => k + 1)
           }}
@@ -296,6 +298,13 @@ const ReportItemMatchingFiltersTable = (infos: Infos) => {
                           label={`from (${infos.params.from})`}
                         />
                       )}
+                      {infos.params.filepath && (
+                        <SelectOption
+                          className={selectOptionClass}
+                          value="byFilepath"
+                          label={`filepath (${getReportRelativeFilePath(infos.params.filepath)})`}
+                        />
+                      )}
                     </SelectContent>
                   </SelectPositioner>
                 </Portal>
@@ -362,6 +371,7 @@ const getReportInfosFrom = (params: SearchableReportItemAttributes) => {
   let byCategory: Array<ReportItemJSON['id']> = []
   let byPropName: Array<ReportItemJSON['id']> = []
   let byInstanceName: Array<ReportItemJSON['id']> = []
+  let byFilepath: Array<ReportItemJSON['id']> = []
   let hasParam = false
 
   if (params.value) {
@@ -396,6 +406,11 @@ const getReportInfosFrom = (params: SearchableReportItemAttributes) => {
     hasParam = true
   }
 
+  if (params.filepath) {
+    byFilepath = analysisData.details.byFilepath[params.filepath as keyof typeof analysisData.details.byFilepath] ?? []
+    hasParam = true
+  }
+
   return {
     params,
     hasParam,
@@ -403,7 +418,10 @@ const getReportInfosFrom = (params: SearchableReportItemAttributes) => {
     byCategory: byCategory.map(getReportItem),
     byPropName: byPropName.map(getReportItem),
     byInstanceName: byInstanceName.map(getReportItem),
-    reportItemList: combineIntersections(byTokenName, byCategory, byPropName, byInstanceName).map(getReportItem),
+    byFilepath: byFilepath.map(getReportItem),
+    reportItemList: combineIntersections(byTokenName, byCategory, byPropName, byInstanceName, byFilepath).map(
+      getReportItem,
+    ),
   }
 }
 
