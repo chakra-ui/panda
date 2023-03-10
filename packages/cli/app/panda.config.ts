@@ -26,7 +26,6 @@ export default {
       transform: (props) => ({
         display: 'inline-flex',
         alignItems: 'center',
-        fontSize: 'sm',
         opacity: '0.5',
         borderBottom: '1px solid transparent',
         cursor: 'pointer',
@@ -50,6 +49,15 @@ export default {
     },
   },
   jsxFramework: 'react',
+  staticCss: {
+    css: [
+      {
+        properties: {
+          color: ['red.400'],
+        },
+      },
+    ],
+  },
   globalCss: {
     ':root': {
       fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif',

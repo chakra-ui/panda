@@ -50,8 +50,11 @@ export function TokenAnalyzer() {
 }
 
 const [topKind, secondKind] = analysisData.stats.mostUseds.instanceOfKinds
+
 const values = Object.values(analysisData.details.byId)
-const knownValues = values.filter((v) => v.isKnown)
+const withImportant = values.filter((reportItem) => String(reportItem.value).endsWith('!'))
+
+const knownValues = values.filter((reportItem) => reportItem.isKnown)
 const unknownValuesCount = values.length - knownValues.length
 const formater = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 2,
@@ -68,7 +71,9 @@ const HeadlineSummary = () => {
         </panda.span>{' '}
         token usage including{' '}
         <panda.span fontSize="xl" fontWeight="bold">
-          {analysisData.counts.colorsUsed}
+          <panda.a className={styledLink({})} href={getReportItemLink({ category: 'colors' })}>
+            {analysisData.counts.colorsUsed}
+          </panda.a>
         </panda.span>{' '}
         colors found in{' '}
         <panda.span fontSize="xl" fontWeight="bold">
@@ -120,6 +125,14 @@ const HeadlineSummary = () => {
           unknown token values (
           <panda.span fontSize="md" fontWeight="bold">
             {formater.format(unknownValuesCount / values.length)}
+          </panda.span>
+          ) and{' '}
+          <panda.span fontSize="md" fontWeight="bold">
+            {withImportant.length}
+          </panda.span>{' '}
+          values marked as important (
+          <panda.span fontSize="md" fontWeight="bold">
+            {formater.format(withImportant.length / values.length)}
           </panda.span>
           )
         </span>

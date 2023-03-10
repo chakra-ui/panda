@@ -23,6 +23,7 @@ import { Dispatch, ReactNode, SetStateAction, useState } from 'react'
 import { DataCombobox, DataComboboxOption } from './data-combobox'
 import { TextWithCount } from './text-with-count'
 import { TokenSearchCombobox } from '../token-search-combobox'
+import { QuickTooltip } from './quick-tooltip'
 
 export const UtilityDetails = () => {
   const search = new URLSearchParams(window.location.search)
@@ -312,7 +313,11 @@ const ReportItemMatchingFiltersTable = (infos: Infos) => {
 }
 
 const allColumns = [
-  { header: '#', accessor: 'id' },
+  {
+    header: '#',
+    accessor: 'id',
+    cell: (item: ReportItemJSON) => <panda.span onClick={() => console.log(item)}>{item.id}</panda.span>,
+  },
   { header: 'from', accessor: 'from', cell: (item: ReportItemJSON) => <UtilityLink from={item.from} /> },
   {
     header: 'category',
@@ -324,11 +329,29 @@ const allColumns = [
     accessor: 'propName',
     cell: (item: ReportItemJSON) => <UtilityLink propName={item.propName} />,
   },
-  { header: 'token name', accessor: 'value', cell: (item: ReportItemJSON) => <UtilityLink value={item.value} /> },
   {
-    header: 'known',
-    accessor: 'isKnown',
-    cell: (item: ReportItemJSON) => <panda.span userSelect="none">{item.isKnown ? '✅' : '❌'}</panda.span>,
+    header: 'token name',
+    accessor: 'value',
+    cell: (item: ReportItemJSON) => {
+      return (
+        <panda.div display="flex" alignItems="center">
+          {!item.isKnown && (
+            <QuickTooltip
+              tooltip={
+                <panda.span p="2" bgColor="white" border="1px solid rgba(0, 0, 0, 0.1)">
+                  unknown token
+                </panda.span>
+              }
+            >
+              <panda.span mr="2" userSelect="none">
+                {'❌'}
+              </panda.span>
+            </QuickTooltip>
+          )}
+          <UtilityLink value={item.value} />
+        </panda.div>
+      )
+    },
   },
   {
     header: 'filepath',

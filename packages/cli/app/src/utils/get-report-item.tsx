@@ -6,12 +6,14 @@ export const getReportItem = (id: ReportItemJSON['id']) =>
   (analysisData.details.byId as Record<string, any>)[id] as ReportItemJSON
 
 export type SearchableReportItemAttributes = Partial<
-  Pick<ReportItemJSON, 'value' | 'category' | 'propName' | 'filepath' | 'from'>
+  Pick<ReportItemJSON, 'value' | 'category' | 'propName' | 'filepath' | 'from' | 'isKnown'> & {
+    important?: boolean
+  }
 >
 
 export const getReportItemLink = (reportItem: SearchableReportItemAttributes) => {
   const searchParams = new URLSearchParams(
-    pick(reportItem, ['value', 'category', 'propName', 'from', 'filepath']) as any,
+    pick(reportItem, ['value', 'category', 'propName', 'from', 'filepath', 'isKnown', 'important']) as any,
   )
   return `/token-analyzer/utility?${searchParams.toString()}`
 }

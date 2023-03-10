@@ -53,9 +53,14 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
 
   const isKnownUtility = (reportItem: ReportItem) => {
     const { propName, type, value, from } = reportItem
+
     const utility = ctx.config.utilities?.[propName]
     if (utility) {
-      return true
+      if (!utility.shorthand) {
+        return Boolean(ctx.tokens.get(`${utility.values}.${value}`))
+      }
+
+      return Boolean(ctx.tokens.get(`${utility.values}.${value}`))
     }
 
     if (type === 'pattern') {
