@@ -47,8 +47,44 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
   const byFilePathMaps = new Map<string, ReportMaps>()
 
   const conditions = new Map(Object.entries(ctx.conditions.values))
+
   let id = 0,
     instanceId = 0
+
+  const isKnownUtility = (reportItem: ReportItem) => {
+    const { propName, type, value, from } = reportItem
+    const utility = ctx.config.utilities?.[propName]
+    if (utility) {
+      return true
+    }
+
+    if (type === 'pattern') {
+      const pattern = ctx.patterns.getConfig(from.toLowerCase())
+      const patternProp = pattern.properties[propName]
+      if (!patternProp) return false
+
+      if (patternProp.type === 'boolean' || patternProp.type === 'number') {
+        return true
+      }
+
+      if (patternProp.type === 'property') {
+        return Boolean(ctx.config.utilities?.[patternProp.value])
+      }
+
+      if (patternProp.type === 'enum') {
+        return Boolean(patternProp.value.includes(String(value)))
+      }
+
+      if (patternProp.type === 'token') {
+        return Boolean(ctx.tokens.get(`${patternProp.value}.${value}`))
+      }
+
+      return false
+    }
+
+    // console.log(reportItem)
+    return false
+  }
 
   parserResultByFilepath.forEach((parserResult, filepath) => {
     if (parserResult.isEmpty()) return
@@ -76,21 +112,35 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
             type,
             kind,
             filepath,
-            path: current,
-            attrName,
+            path: current.concat(attrName),
             value,
             box: attrNode,
+            isKnown: false,
           } as ReportItem // TODO satisfies
           reportInstanceItem.contains.push(reportItem.id)
 
           if (conditions.has(attrName)) {
             addTo(globalMaps.byConditionName, attrName, reportItem.id)
             addTo(localMaps.byConditionName, attrName, reportItem.id)
+            reportItem.propName = current[0] ?? attrName
+            reportItem.isKnown = isKnownUtility(reportItem)
+            reportItem.conditionName = attrName
           } else {
+            if (current.length && conditions.has(current[0])) {
+              reportItem.conditionName = current[0]
+
+              // TODO: when using nested conditions
+              // should we add the reportItem.id for each of them or just the first one?
+              // (currently just the first one)
+              addTo(globalMaps.byConditionName, current[0], reportItem.id)
+              addTo(localMaps.byConditionName, current[0], reportItem.id)
+            }
+
             const propName = ctx.utility.shorthands.get(attrName) ?? attrName
             reportItem.propName = propName
 
             const utility = ctx.config.utilities?.[propName]
+            reportItem.isKnown = isKnownUtility(reportItem)
 
             const category = typeof utility?.values === 'string' ? utility?.values : 'unknown'
             reportItem.category = category
@@ -113,8 +163,8 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
           }
 
           if (current.length) {
-            addTo(globalMaps.byPropertyPath, current.concat(attrName).join('.'), reportItem.id)
-            addTo(localMaps.byPropertyPath, current.concat(attrName).join('.'), reportItem.id)
+            addTo(globalMaps.byPropertyPath, reportItem.path.join('.'), reportItem.id)
+            addTo(localMaps.byPropertyPath, reportItem.path.join('.'), reportItem.id)
           }
 
           //

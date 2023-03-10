@@ -167,15 +167,15 @@ export async function main() {
           mode,
         )
 
-        console.log(result.counts)
+        logger.info('cli', result.counts)
         const { mostUseds, ...stats } = result.stats
-        console.log(stats)
-        console.log(mostUseds)
+        logger.info('cli', stats)
+        logger.info('cli', mostUseds)
 
         if (flags?.json && typeof flags.json === 'string') {
           await writeAnalyzeJSON(flags.json, result, ctx)
 
-          console.log(`JSON report saved to ${flags.json}`)
+          logger.info('cli', `JSON report saved to ${flags.json}`)
           return
         }
 
@@ -184,7 +184,10 @@ export async function main() {
         //   return
         // }
 
-        console.log(`Found ${result.details.byId.size} token used in ${result.details.byFilePathMaps.size} files`)
+        logger.info(
+          'cli',
+          `Found ${result.details.byId.size} token used in ${result.details.byFilePathMaps.size} files`,
+        )
       },
     )
 

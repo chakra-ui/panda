@@ -9,10 +9,11 @@ export type ReportItem = {
   filepath: string
   kind: 'function' | 'component'
   path: string[]
-  attrName: string
   propName: string
+  conditionName?: string | undefined
   value: string | number | true
   category: string
+  isKnown: boolean
   box: BoxNodeLiteral | BoxNodeEmptyInitializer
 }
 
@@ -128,10 +129,11 @@ export type ReportItemJSON = {
   filepath: string
   kind: 'function' | 'component'
   path: string[]
-  attrName: string
   propName: string
+  conditionName?: string | undefined
   value: string | number | true
   category: string
+  isKnown: boolean
   box: {
     type: 'literal' | 'empty-initializer'
     value: string | number | boolean | undefined | null

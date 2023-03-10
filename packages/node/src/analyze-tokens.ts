@@ -15,16 +15,18 @@ export function analyzeTokens(
   onResult?: (file: string, result: ParserResult) => void,
   mode: ParserMode = 'internal',
 ) {
-  const done = logger.time.debug(`Analyzed ${ctx.getFiles().length} files`)
-
   const parserResultByFilepath = new Map<string, ParserResult>()
+  const extractTimeByFilepath = new Map<string, number>()
 
   ctx
     .getFiles()
     .map((file) => {
-      const measure = logger.time.debug(`Extracted ${file}`)
+      const start = performance.now()
       const result = ctx.project.parseSourceFile(file, ctx.properties, mode)
-      measure()
+
+      const extractMs = performance.now() - start
+      extractTimeByFilepath.set(file, extractMs)
+      logger.debug('analyze', `Extracted ${file} in ${extractMs}ms`)
 
       if (result) {
         parserResultByFilepath.set(file, result)
@@ -35,7 +37,8 @@ export function analyzeTokens(
     })
     .filter(([, result]) => result)
 
-  done()
+  const totalMs = Array.from(extractTimeByFilepath.values()).reduce((a, b) => a + b, 0)
+  logger.debug('analyze', `Analyzed ${ctx.getFiles().length} files in ${totalMs.toFixed(2)}ms`)
 
   const minify = ctx.config.minify
   const files = ctx.chunks.getFiles()
@@ -49,16 +52,30 @@ export function analyzeTokens(
   // restore minify config
   ctx.config.minify = minify
 
-  return Object.assign(classifyTokens(ctx, parserResultByFilepath), {
-    fileSizes: {
-      normal: filesize(Buffer.byteLength(css, 'utf-8')),
-      minified: filesize(Buffer.byteLength(minifiedCss, 'utf-8')),
-      gzip: {
-        normal: filesize(gzipSize.sync(css)),
-        minified: filesize(gzipSize.sync(minifiedCss)),
+  const start = performance.now()
+  const analysis = classifyTokens(ctx, parserResultByFilepath)
+  const classifyMs = performance.now() - start
+
+  return Object.assign(
+    {
+      duration: {
+        extractTimeByFiles: Object.fromEntries(extractTimeByFilepath.entries()),
+        extractTotal: totalMs,
+        classify: classifyMs,
+      },
+      fileSizes: {
+        lineCount: css.split('\n').length,
+        // rulesCount: css.split('{').length - 1, ?
+        normal: filesize(Buffer.byteLength(css, 'utf-8')),
+        minified: filesize(Buffer.byteLength(minifiedCss, 'utf-8')),
+        gzip: {
+          normal: filesize(gzipSize.sync(css)),
+          minified: filesize(gzipSize.sync(minifiedCss)),
+        },
       },
     },
-  })
+    analysis,
+  )
 }
 
 const analyzeResultSerializer = (_key: string, value: any) => {
