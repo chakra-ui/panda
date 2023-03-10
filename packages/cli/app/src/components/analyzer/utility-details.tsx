@@ -1,10 +1,10 @@
 import type { ReportItemJSON } from '@pandacss/types'
 import { css, cx } from '../../../design-system/css'
 import { Grid, panda, Wrap } from '../../../design-system/jsx'
-import { flex } from '../../../design-system/patterns'
+import { flex, styledLink } from '../../../design-system/patterns'
 import { analysisData } from '../../utils/analysis-data'
 
-import { getReportItem, SearchableReportItemAttributes } from '../../utils/get-report-item'
+import { getReportItem, getReportRelativeFilePath, SearchableReportItemAttributes } from '../../utils/get-report-item'
 import { Section } from './section'
 
 import {
@@ -21,6 +21,7 @@ import { ReportItemOpenInEditorLink, UtilityLink } from './report-item-link'
 
 import { Dispatch, ReactNode, SetStateAction, useState } from 'react'
 import { DataCombobox } from './data-combobox'
+import { TextWithCount } from './text-with-count'
 
 export const UtilityDetails = () => {
   const search = new URLSearchParams(window.location.search)
@@ -194,7 +195,36 @@ const UtilityDetailsContent = () => {
       {/* {reportItem.category === 'color' ? <ColorItem tokenName={String(reportItem.value)} /> : null} */}
 
       <ReportItemMatchingFiltersTable {...infos} />
+      <UsedInFiles />
     </>
+  )
+}
+
+const UsedInFiles = () => {
+  const [infos] = useDetails()
+  const files = uniq(infos.reportItemList.map((item) => item.filepath))
+
+  return (
+    <panda.div>
+      <panda.h3>
+        <TextWithCount count={files.length}>Used in files</TextWithCount>
+      </panda.h3>
+      <panda.div display="flex" flexDirection="column">
+        {files.map((filePath) => (
+          <panda.a
+            mt="1"
+            key={filePath}
+            className={styledLink({})}
+            href={`/token-analyzer/file?path=${filePath}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <TextWithCount count={infos.reportItemList.filter((item) => item.filepath === filePath).length}>
+              {getReportRelativeFilePath(filePath)}
+            </TextWithCount>
+          </panda.a>
+        ))}
+      </panda.div>
+    </panda.div>
   )
 }
 

@@ -10,3 +10,15 @@ export function pick<T, K extends keyof T>(obj: T, paths: K[]): Pick<T, K> {
 
   return result as Pick<T, K>
 }
+
+/** Omit given properties from object */
+export function omit<T extends Record<string, any>, K extends keyof T>(object: T, keys: K[]) {
+  const result: Record<string, any> = {}
+
+  Object.keys(object).forEach((key) => {
+    if (keys.includes(key as K)) return
+    result[key] = object[key]
+  })
+
+  return result as Omit<T, K>
+}

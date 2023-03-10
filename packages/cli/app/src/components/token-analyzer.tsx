@@ -24,7 +24,7 @@ import { groupIn } from '../utils/group-in'
 import { getReportItemLink, getReportItem, getReportRelativeFilePath } from '../utils/get-report-item'
 import { ColorItem } from './color-item'
 import { ReportItemLink } from './analyzer/report-item-link'
-import { TextWithCount } from './analyzer/text-with-count'
+import { TextWithCount, TruncatedText } from './analyzer/text-with-count'
 import { Section } from './analyzer/section'
 import { styledLink } from '../../design-system/patterns'
 import { DataCombobox } from './analyzer/data-combobox'
@@ -227,7 +227,9 @@ const ColorPalette = () => {
             transition="all 0.2s ease"
             _hover={{ bgColor: 'gray.100' }}
           >
-            <TextWithCount count={count}>{key}</TextWithCount>
+            <TextWithCount count={count}>
+              <TruncatedText text={key} />
+            </TextWithCount>
           </ColorItem>
         ))}
       </Wrap>
@@ -278,7 +280,7 @@ const CategoryUtilities = ({ category, className }: { category: string; classNam
               href={`/token-analyzer/utility?name=${reportItem.value}&category=${reportItem.category}&propName=${reportItem.propName}`}
             >
               <TextWithCount count={count}>
-                {reportItem.propName}.{value}
+                {reportItem.propName}.<TruncatedText text={value} />
               </TextWithCount>
             </panda.a>
           )
@@ -298,6 +300,7 @@ const FilesList = () => {
           const values = reportItemIdList.map(getReportItem)
           const localMaps =
             analysisData.details.byFilePathMaps[filePath as keyof typeof analysisData.details.byFilePathMaps]
+          const colors = Object.entries(localMaps.colorsUsed)
           // console.log(localMaps, values)
 
           return (
@@ -346,25 +349,27 @@ const FilesList = () => {
                       </Wrap>
                     </panda.div>
 
-                    <panda.div mt="8">
-                      <panda.h5>Color palette</panda.h5>
-                      <Wrap gap="2" mt="4">
-                        {Object.entries(localMaps.colorsUsed).map(([key]) => {
-                          return (
-                            <ColorItem
-                              tokenName={key}
-                              key={key}
-                              py="2"
-                              px="4"
-                              transition="all 0.2s ease"
-                              _hover={{ bgColor: 'gray.100' }}
-                            >
-                              {key}
-                            </ColorItem>
-                          )
-                        })}
-                      </Wrap>
-                    </panda.div>
+                    {colors.length ? (
+                      <panda.div mt="8">
+                        <panda.h5>Color palette</panda.h5>
+                        <Wrap gap="2" mt="4">
+                          {colors.map(([key]) => {
+                            return (
+                              <ColorItem
+                                tokenName={key}
+                                key={key}
+                                py="2"
+                                px="4"
+                                transition="all 0.2s ease"
+                                _hover={{ bgColor: 'gray.100' }}
+                              >
+                                <TruncatedText text={key} />
+                              </ColorItem>
+                            )
+                          })}
+                        </Wrap>
+                      </panda.div>
+                    ) : null}
                   </AccordionContent>
                 </>
               )}

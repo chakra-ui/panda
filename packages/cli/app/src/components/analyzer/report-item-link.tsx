@@ -10,7 +10,7 @@ import {
   openReportItemInEditor,
   SearchableReportItemAttributes,
 } from '../../utils/get-report-item'
-import { TextWithCount } from './text-with-count'
+import { TextWithCount, TruncatedText } from './text-with-count'
 
 export const ReportItemLink = (reportItem: Partial<ReportItemJSON>) => {
   const value = String(reportItem.value)
@@ -20,7 +20,7 @@ export const ReportItemLink = (reportItem: Partial<ReportItemJSON>) => {
   return (
     <panda.a className={styledLink({})} href={getReportItemLink(reportItem)}>
       <TextWithCount count={count}>
-        {reportItem.propName}.{value}
+        {reportItem.propName}.<TruncatedText text={value} />
       </TextWithCount>
     </panda.a>
   )
