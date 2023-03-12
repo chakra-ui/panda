@@ -1,10 +1,9 @@
-import type { ReportItemJSON } from '@pandacss/types'
 import { css, cx } from '../../../design-system/css'
-import { Grid, panda, Wrap } from '../../../design-system/jsx'
-import { flex, styledLink } from '../../../design-system/patterns'
+import { panda, Wrap } from '../../../design-system/jsx'
+import { styledLink } from '../../../design-system/patterns'
 import { analysisData } from '../../utils/analysis-data'
 
-import { getReportItem, getReportRelativeFilePath, SearchableReportItemAttributes } from '../../utils/get-report-item'
+import { getFileLink, getReportRelativeFilePath, SearchableReportItemAttributes } from '../../utils/get-report-item'
 import { Section } from './section'
 
 import {
@@ -17,13 +16,14 @@ import {
   SelectTrigger,
 } from '@ark-ui/react'
 import { createContext } from '../../hooks/create-context'
-import { ReportItemOpenInEditorLink, UtilityLink } from './report-item-link'
 
-import { Dispatch, ReactNode, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useState } from 'react'
 import { DataCombobox, DataComboboxOption } from './data-combobox'
 import { TextWithCount } from './text-with-count'
 import { TokenSearchCombobox } from '../token-search-combobox'
-import { QuickTooltip } from './quick-tooltip'
+import { DataTable } from './data-table'
+import { getReportInfosFrom } from './get-report-infos-from'
+import { reportItemColumns } from './report-item-columns'
 
 export const UtilityDetails = () => {
   const search = new URLSearchParams(window.location.search)
@@ -206,16 +206,16 @@ const UsedInFiles = () => {
         <TextWithCount count={files.length}>Used in files</TextWithCount>
       </panda.h3>
       <panda.div display="flex" flexDirection="column">
-        {files.map((filePath) => (
+        {files.map((filepath) => (
           <panda.a
             mt="1"
-            key={filePath}
+            key={filepath}
             className={styledLink({})}
-            href={`/token-analyzer/file?path=${filePath}`}
+            href={getFileLink({ filepath })}
             onClick={(e) => e.stopPropagation()}
           >
-            <TextWithCount count={infos.reportItemList.filter((item) => item.filepath === filePath).length}>
-              {getReportRelativeFilePath(filePath)}
+            <TextWithCount count={infos.reportItemList.filter((item) => item.filepath === filepath).length}>
+              {getReportRelativeFilePath(filepath)}
             </TextWithCount>
           </panda.a>
         ))}
@@ -229,7 +229,7 @@ const selectOptionClass = css({ padding: '4px 8px', backgroundColor: 'white' })
 const ReportItemMatchingFiltersTable = (infos: Infos) => {
   const tokenName = infos.params.value
   const defaultOption = { label: `matching search filters`, value: 'reportItemList' }
-  const columns = allColumns.filter((col) => (infos.params as any)[col.accessor] === undefined)
+  const columns = reportItemColumns.filter((col) => (infos.params as any)[col.accessor] === undefined)
 
   return (
     <>
@@ -255,7 +255,7 @@ const ReportItemMatchingFiltersTable = (infos: Infos) => {
               }
               bg="gray.50"
             >
-              <ByFiltersTable list={infos[value]} columns={columns} />
+              <DataTable list={infos[value]} columns={columns} />
               <>
                 <Portal>
                   <SelectPositioner>
@@ -310,171 +310,4 @@ const ReportItemMatchingFiltersTable = (infos: Infos) => {
       </Select>
     </>
   )
-}
-
-const allColumns = [
-  {
-    header: '#',
-    accessor: 'id',
-    cell: (item: ReportItemJSON) => <panda.span onClick={() => console.log(item)}>{item.id}</panda.span>,
-  },
-  { header: 'from', accessor: 'from', cell: (item: ReportItemJSON) => <UtilityLink from={item.from} /> },
-  {
-    header: 'category',
-    accessor: 'category',
-    cell: (item: ReportItemJSON) => <UtilityLink category={item.category} />,
-  },
-  {
-    header: 'property name',
-    accessor: 'propName',
-    cell: (item: ReportItemJSON) => <UtilityLink propName={item.propName} />,
-  },
-  {
-    header: 'token name',
-    accessor: 'value',
-    cell: (item: ReportItemJSON) => {
-      return (
-        <panda.div display="flex" alignItems="center">
-          {!item.isKnown && (
-            <QuickTooltip
-              tooltip={
-                <panda.span p="2" bgColor="white" border="1px solid rgba(0, 0, 0, 0.1)">
-                  unknown token
-                </panda.span>
-              }
-            >
-              <panda.span mr="2" userSelect="none">
-                {'❌'}
-              </panda.span>
-            </QuickTooltip>
-          )}
-          <UtilityLink value={item.value} />
-        </panda.div>
-      )
-    },
-  },
-  {
-    header: 'filepath',
-    accessor: 'filepath',
-    cell: (item: ReportItemJSON) => <ReportItemOpenInEditorLink withRange {...item} />,
-  },
-] as const // TODO satisifes Column[]
-
-type Column = { header: string; accessor: string; cell?: (item: ReportItemJSON) => ReactNode }
-
-// TODO tanstack/table ? hide/show columns + sort
-const ByFiltersTable = ({ list, columns }: { list: ReportItemJSON[]; columns: ReadonlyArray<Column> }) => {
-  return (
-    <panda.div>
-      <Grid
-        style={{ gridTemplateColumns: `repeat(auto-fit, minmax(30px, 1fr))` }}
-        // gridTemplateColumns="repeat(auto-fit, minmax(30px, 1fr))"
-        w="full"
-        fontWeight="bold"
-        fontSize="lg"
-        mb="2"
-      >
-        {columns.map((column) => {
-          return <panda.div key={column.header}>{column.header}</panda.div>
-        })}
-      </Grid>
-      <panda.div className={flex({ direction: 'column', gap: '2' })}>
-        {list.map((item) => {
-          return (
-            <Grid
-              style={{ gridTemplateColumns: `repeat(auto-fit, minmax(30px, 1fr))` }}
-              // gridTemplateColumns="repeat(auto-fit, minmax(30px, 1fr))"
-              w="full"
-              key={item.id}
-            >
-              {columns.map((column) => {
-                return (
-                  <panda.div key={column.accessor}>{column.cell?.(item) ?? (item as any)[column.accessor]}</panda.div>
-                )
-              })}
-            </Grid>
-          )
-        })}
-      </panda.div>
-    </panda.div>
-  )
-}
-
-const getReportInfosFrom = (params: SearchableReportItemAttributes) => {
-  let byTokenName: Array<ReportItemJSON['id']> = []
-  let byCategory: Array<ReportItemJSON['id']> = []
-  let byPropName: Array<ReportItemJSON['id']> = []
-  let byInstanceName: Array<ReportItemJSON['id']> = []
-  let byFilepath: Array<ReportItemJSON['id']> = []
-  let hasParam = false
-
-  if (params.value) {
-    byTokenName =
-      analysisData.details.globalMaps.byTokenName[
-        params.value as keyof typeof analysisData.details.globalMaps.byTokenName
-      ] ?? []
-    hasParam = true
-  }
-
-  if (params.category) {
-    byCategory =
-      analysisData.details.globalMaps.byCategory[
-        params.category as keyof typeof analysisData.details.globalMaps.byCategory
-      ] ?? []
-    hasParam = true
-  }
-
-  if (params.propName) {
-    byPropName =
-      analysisData.details.globalMaps.byPropertyName[
-        params.propName as keyof typeof analysisData.details.globalMaps.byPropertyName
-      ] ?? []
-    hasParam = true
-  }
-
-  if (params.from) {
-    byInstanceName =
-      analysisData.details.globalMaps.byInstanceName[
-        params.from as keyof typeof analysisData.details.globalMaps.byInstanceName
-      ] ?? []
-    hasParam = true
-  }
-
-  if (params.filepath) {
-    byFilepath = analysisData.details.byFilepath[params.filepath as keyof typeof analysisData.details.byFilepath] ?? []
-    hasParam = true
-  }
-
-  return {
-    params,
-    hasParam,
-    byTokenName: byTokenName.map(getReportItem),
-    byCategory: byCategory.map(getReportItem),
-    byPropName: byPropName.map(getReportItem),
-    byInstanceName: byInstanceName.map(getReportItem),
-    byFilepath: byFilepath.map(getReportItem),
-    reportItemList: combineIntersections(byTokenName, byCategory, byPropName, byInstanceName, byFilepath).map(
-      getReportItem,
-    ),
-  }
-}
-
-function combineIntersections<T>(...lists: Array<T[]>) {
-  return lists.reduce((acc, current) => {
-    if (!acc.length) return current
-
-    if (!current.length) return acc
-
-    return intersection(acc, current)
-  }, [] as T[])
-}
-
-function intersection<T = any>(left: Array<T>, right: Array<T>) {
-  const _intersection = new Set()
-  for (const elem of right) {
-    if (left.includes(elem)) {
-      _intersection.add(elem)
-    }
-  }
-  return Array.from(_intersection) as Array<T>
 }

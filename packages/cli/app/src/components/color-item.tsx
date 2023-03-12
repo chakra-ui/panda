@@ -2,7 +2,7 @@ import type { PropsWithChildren } from 'react'
 import { panda } from '../../design-system/jsx'
 import type { JsxStyleProps } from '../../design-system/types'
 import { tokenDictionary } from '../utils/analysis-data'
-import { getReportItemFromTokenName, getReportItemLink } from '../utils/get-report-item'
+import { getReportItemFromTokenName, getUtilityLink } from '../utils/get-report-item'
 import { ColorWrapper } from './color-wrapper'
 
 export const ColorItem = ({
@@ -15,7 +15,7 @@ export const ColorItem = ({
   const reportItem = getReportItemFromTokenName(tokenName)
 
   return (
-    <panda.a href={getReportItemLink({ value: reportItem.value })} key={tokenName} {...props}>
+    <panda.a href={getUtilityLink({ value: reportItem.value })} key={tokenName} {...props}>
       <ColorWrapper
         w="auto"
         minW="80px"

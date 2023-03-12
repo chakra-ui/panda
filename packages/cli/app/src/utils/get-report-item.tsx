@@ -11,11 +11,16 @@ export type SearchableReportItemAttributes = Partial<
   }
 >
 
-export const getReportItemLink = (reportItem: SearchableReportItemAttributes) => {
+export const getUtilityLink = (reportItem: SearchableReportItemAttributes) => {
   const searchParams = new URLSearchParams(
     pick(reportItem, ['value', 'category', 'propName', 'from', 'filepath', 'isKnown', 'important']) as any,
   )
   return `/token-analyzer/utility?${searchParams.toString()}`
+}
+
+export const getFileLink = (reportItem: SearchableReportItemAttributes) => {
+  const searchParams = new URLSearchParams(pick(reportItem, ['filepath']) as any)
+  return `/token-analyzer/file?${searchParams.toString()}`
 }
 
 export const getReportItemFromTokenName = (tokenName: string) => {

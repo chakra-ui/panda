@@ -4,12 +4,14 @@ import { styledLink } from '../../../design-system/patterns'
 import { analysisData } from '../../utils/analysis-data'
 import {
   getReportItem,
-  getReportItemLink,
+  getUtilityLink,
   getReportRange,
   getReportRelativeFilePath,
   openReportItemInEditor,
   SearchableReportItemAttributes,
 } from '../../utils/get-report-item'
+import { ExternalIcon } from './external-icon'
+import { QuickTooltip } from './quick-tooltip'
 import { TextWithCount } from './text-with-count'
 import { TruncatedText } from './truncated-text'
 
@@ -19,7 +21,7 @@ export const ReportItemLink = (reportItem: Partial<ReportItemJSON>) => {
   const count = withTokenName?.filter((id) => getReportItem(id)?.propName === reportItem.propName)?.length
 
   return (
-    <panda.a className={styledLink({})} href={getReportItemLink(reportItem)}>
+    <panda.a className={styledLink({})} href={getUtilityLink(reportItem)}>
       <TextWithCount count={count}>
         {reportItem.propName}.<TruncatedText text={value} />
       </TextWithCount>
@@ -55,7 +57,7 @@ export const UtilityLink = (search: SearchableReportItemAttributes) => {
   return (
     <panda.a
       className={styledLink({ color: String(value).endsWith('!') ? 'red.400' : undefined })}
-      href={getReportItemLink(search)}
+      href={getUtilityLink(search)}
     >
       <TextWithCount count={(list ?? []).length}>
         <TruncatedText text={String(value)} />
@@ -66,9 +68,31 @@ export const UtilityLink = (search: SearchableReportItemAttributes) => {
 
 export const ReportItemOpenInEditorLink = ({ withRange, ...reportItem }: ReportItemJSON & { withRange?: boolean }) => {
   return (
-    <panda.span className={styledLink({ alignSelf: 'flex-start' })} onClick={() => openReportItemInEditor(reportItem)}>
-      {getReportRelativeFilePath(reportItem.filepath)}
-      {withRange ? getReportRange(reportItem) : ''}
-    </panda.span>
+    <panda.div display="flex" alignItems="center">
+      <panda.a
+        className={styledLink({ alignSelf: 'flex-start', mr: '2' })}
+        href={getUtilityLink({ filepath: reportItem.filepath })}
+      >
+        {getReportRelativeFilePath(reportItem.filepath)}
+        {withRange ? getReportRange(reportItem) : ''}
+      </panda.a>
+      <QuickTooltip
+        tooltip={
+          <panda.span p="2" bgColor="white" border="1px solid rgba(0, 0, 0, 0.1)">
+            Click to open in editor
+          </panda.span>
+        }
+      >
+        <panda.div
+          pos="relative"
+          maxW="14px"
+          flexShrink={0}
+          cursor="pointer"
+          onClickCapture={() => openReportItemInEditor(reportItem)}
+        >
+          <ExternalIcon />
+        </panda.div>
+      </QuickTooltip>
+    </panda.div>
   )
 }

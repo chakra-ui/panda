@@ -5,7 +5,6 @@ const styledLinkConfig = {
 transform:(props) => ({
   display: "inline-flex",
   alignItems: "center",
-  fontSize: "sm",
   opacity: "0.5",
   borderBottom: "1px solid transparent",
   cursor: "pointer",

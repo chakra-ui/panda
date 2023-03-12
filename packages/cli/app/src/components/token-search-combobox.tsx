@@ -1,5 +1,5 @@
 import { analysisData } from '../utils/analysis-data'
-import { getReportItemLink, getReportRelativeFilePath } from '../utils/get-report-item'
+import { getUtilityLink, getReportRelativeFilePath } from '../utils/get-report-item'
 import { DataCombobox, DataComboboxProps } from './analyzer/data-combobox'
 
 const searchList = new Map<string, string>()
@@ -32,8 +32,7 @@ export const TokenSearchCombobox = (props: Omit<DataComboboxProps, 'options' | '
         const type = searchList.get(option.value)
         if (!type) return
 
-        console.log(option, { type, value: option.value }, getReportItemLink({ [type]: option.value }))
-        window.location.href = getReportItemLink({ [type]: option.value })
+        window.location.href = getUtilityLink({ [type]: option.value })
       }}
     />
   )

@@ -1,5 +1,5 @@
 import { css, cx } from '../../design-system/css'
-import { Grid, panda, Stack, Wrap } from '../../design-system/jsx'
+import { panda, Stack, Wrap } from '../../design-system/jsx'
 import { analysisData } from '../utils/analysis-data'
 
 import {
@@ -17,18 +17,17 @@ import {
 } from '@ark-ui/react'
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@ark-ui/react'
-import { gridItem } from '../../design-system/patterns/grid-item'
 import { stack } from '../../design-system/patterns/stack'
 
-import { groupIn } from '../utils/group-in'
-import { getReportItemLink, getReportItem, getReportRelativeFilePath } from '../utils/get-report-item'
-import { ColorItem } from './color-item'
+import { styledLink } from '../../design-system/patterns'
+import { getReportItem, getUtilityLink, getReportRelativeFilePath, getFileLink } from '../utils/get-report-item'
+import { pick } from '../utils/pick'
 import { ReportItemLink } from './analyzer/report-item-link'
+import { Section } from './analyzer/section'
 import { TextWithCount } from './analyzer/text-with-count'
 import { TruncatedText } from './analyzer/truncated-text'
-import { Section } from './analyzer/section'
-import { styledLink } from '../../design-system/patterns'
-import { pick } from '../utils/pick'
+import { ByCategory } from './CategoryUtilities'
+import { ColorItem } from './color-item'
 import { TokenSearchCombobox } from './token-search-combobox'
 
 export function TokenAnalyzer() {
@@ -42,8 +41,8 @@ export function TokenAnalyzer() {
         <TokenSearchCombobox />
         <MostUsedList />
         <ColorPalette />
-        <ByCategory />
-        <FilesList />
+        <ByCategory byCategory={analysisData.details.globalMaps.byCategory} />
+        <FilesAccordionList />
       </panda.div>
     </div>
   )
@@ -71,7 +70,7 @@ const HeadlineSummary = () => {
         </panda.span>{' '}
         token usage including{' '}
         <panda.span fontSize="xl" fontWeight="bold">
-          <panda.a className={styledLink({})} href={getReportItemLink({ category: 'colors' })}>
+          <panda.a className={styledLink({})} href={getUtilityLink({ category: 'colors' })}>
             {analysisData.counts.colorsUsed}
           </panda.a>
         </panda.span>{' '}
@@ -192,7 +191,7 @@ const MostUsedItem = ({
     <Wrap gap="4" fontSize="sm">
       {entries.map(({ key, count }) => {
         return (
-          <panda.a className={styledLink({})} key={key} href={getReportItemLink({ value: key })}>
+          <panda.a className={styledLink({})} key={key} href={getUtilityLink({ value: key })}>
             <TextWithCount count={count}>{key}</TextWithCount>
           </panda.a>
         )
@@ -235,76 +234,23 @@ const ColorPalette = () => {
   )
 }
 
-const ByCategory = () => {
-  const { unknown, ...rest } = analysisData.details.globalMaps.byCategory
-  const keys = Object.keys(rest)
-
-  return (
-    <Section p="0" title={<TextWithCount count={keys.length + 1}>Category utilities</TextWithCount>}>
-      <Grid gap="4" columns={2}>
-        {/* TODO filter out variants from recipes ? */}
-        {keys.map((category) => (
-          <CategoryUtilities key={category} category={category} />
-        ))}
-        <CategoryUtilities className={gridItem({ colSpan: 2 })} category="unknown" />
-      </Grid>
-    </Section>
-  )
-}
-
-const CategoryUtilities = ({ category, className }: { category: string; className?: string }) => {
-  const reportItemIdList =
-    analysisData.details.globalMaps.byCategory[category as keyof typeof analysisData.details.globalMaps.byCategory]
-
-  const categoryTokens = reportItemIdList.map(getReportItem)
-  const grouped = groupIn(categoryTokens, 'value')
-  const values = Object.values(grouped)
-
-  return (
-    <panda.div key={category} p="4" bg="gray.50" className={className}>
-      <TextWithCount count={values.length}>
-        <panda.h4>{category}</panda.h4>
-      </TextWithCount>
-      <Wrap gap="2">
-        {values.map((reportItem) => {
-          const value = String(reportItem.value)
-          const withTokenName = analysisData.details.globalMaps.byTokenName[value] ?? []
-          const count = withTokenName?.filter((id) => getReportItem(id)?.propName === reportItem.propName)?.length
-
-          return (
-            <panda.a
-              className={styledLink({})}
-              key={reportItem.id}
-              href={`/token-analyzer/utility?name=${reportItem.value}&category=${reportItem.category}&propName=${reportItem.propName}`}
-            >
-              <TextWithCount count={count}>
-                {reportItem.propName}.<TruncatedText text={value} />
-              </TextWithCount>
-            </panda.a>
-          )
-        })}
-      </Wrap>
-    </panda.div>
-  )
-}
-
-const FilesList = () => {
+const FilesAccordionList = () => {
   const entries = Object.entries(analysisData.details.byFilepath)
 
   return (
     <Section p="0" title={<TextWithCount count={entries.length}>Files</TextWithCount>}>
       <Accordion className={stack({ gap: '2', px: '2', fontSize: 'sm', width: 'full', debug: false })} multiple>
-        {entries.map(([filePath, reportItemIdList]) => {
+        {entries.map(([filepath, reportItemIdList]) => {
           const values = reportItemIdList.map(getReportItem)
           const localMaps =
-            analysisData.details.byFilePathMaps[filePath as keyof typeof analysisData.details.byFilePathMaps]
+            analysisData.details.byFilePathMaps[filepath as keyof typeof analysisData.details.byFilePathMaps]
           const colors = Object.entries(localMaps.colorsUsed)
           // console.log(localMaps, values)
 
           return (
             <AccordionItem
-              key={filePath}
-              value={filePath}
+              key={filepath}
+              value={filepath}
               className={css({
                 p: '4',
                 width: 'full',
@@ -319,11 +265,11 @@ const FilesList = () => {
                     <panda.button display="flex" bg="none" w="full" p="2" cursor="pointer">
                       <panda.a
                         className={styledLink({})}
-                        href={`/token-analyzer/file?path=${filePath}`}
+                        href={getFileLink({ filepath })}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <TextWithCount key={filePath} count={reportItemIdList.length}>
-                          {getReportRelativeFilePath(filePath)}
+                        <TextWithCount key={filepath} count={reportItemIdList.length}>
+                          {getReportRelativeFilePath(filepath)}
                         </TextWithCount>
                       </panda.a>
                       <panda.div ml="auto" mb="4">
@@ -349,7 +295,9 @@ const FilesList = () => {
 
                     {colors.length ? (
                       <panda.div mt="8">
-                        <panda.h5>Color palette</panda.h5>
+                        <panda.h5>
+                          <TextWithCount count={colors.length}>Color palette</TextWithCount>
+                        </panda.h5>
                         <Wrap gap="2" mt="4">
                           {colors.map(([key]) => {
                             return (
