@@ -15,7 +15,7 @@
   "dependencies": {
     "@astrojs/solid-js": "2.1.0",
     "astro": "2.1.2",
-    "solid-js": "1.6.13"
+    "solid-js": "1.6.14"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",
