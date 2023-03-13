@@ -59,6 +59,7 @@ export type ReportStats = {
     propNames: Array<MostUsedItem>
     tokens: Array<MostUsedItem>
     shorthands: Array<MostUsedItem>
+    categories: Array<MostUsedItem>
     conditions: Array<MostUsedItem>
     propertyPaths: Array<MostUsedItem>
     types: Array<MostUsedItem>

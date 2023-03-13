@@ -327,6 +327,7 @@ const getXMostUseds = (globalMaps: ReportMaps, pickCount: number) => {
     shorthands: getMostUsedInMap(globalMaps.byShorthand, pickCount),
     conditions: getMostUsedInMap(globalMaps.byConditionName, pickCount),
     propertyPaths: getMostUsedInMap(globalMaps.byPropertyPath, pickCount),
+    categories: getMostUsedInMap(globalMaps.byCategory, pickCount),
     types: getMostUsedInMap(globalMaps.byType, pickCount),
     instanceNames: getMostUsedInMap(globalMaps.byInstanceName, pickCount),
     fromKinds: getMostUsedInMap(globalMaps.fromKind, pickCount),

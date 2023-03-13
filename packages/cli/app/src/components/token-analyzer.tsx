@@ -167,6 +167,7 @@ const MostUsedList = () => {
                   <SelectContent className={cx(selectOptionClass, css({ listStyle: 'none' }))}>
                     <SelectOption className={selectOptionClass} value="tokens" label="tokens" />
                     <SelectOption className={selectOptionClass} value="properties" label="properties" />
+                    <SelectOption className={selectOptionClass} value="categories" label="categories" />
                     <SelectOption className={selectOptionClass} value="conditions" label="conditions" />
                     <SelectOption className={selectOptionClass} value="propertyPaths" label="property paths" />
                     <SelectOption className={selectOptionClass} value="shorthands" label="shorthands" />
@@ -208,6 +209,7 @@ const mostUsedByName = {
   tokens: <MostUsedItem entries={analysisData.stats.mostUseds.tokens} />,
   properties: <MostUsedItem entries={analysisData.stats.mostUseds.propNames} />,
   shorthands: <MostUsedItem entries={analysisData.stats.mostUseds.shorthands} />,
+  categories: <MostUsedItem entries={analysisData.stats.mostUseds.categories} />,
   conditions: <MostUsedItem entries={analysisData.stats.mostUseds.conditions} />,
   propertyPaths: <MostUsedItem entries={analysisData.stats.mostUseds.propertyPaths} />,
   instances: <MostUsedItem entries={analysisData.stats.mostUseds.instanceNames} />,
