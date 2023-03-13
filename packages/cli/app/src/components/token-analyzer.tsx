@@ -29,6 +29,8 @@ import { TruncatedText } from './analyzer/truncated-text'
 import { ByCategory } from './analyzer/category-utilities'
 import { ColorItem } from './color-item'
 import { TokenSearchCombobox } from './token-search-combobox'
+import { useState } from 'react'
+import { SortIcon } from './analyzer/sort-icon'
 
 export function TokenAnalyzer() {
   // console.log(tokenDictionary)
@@ -241,10 +243,53 @@ const ColorPalette = () => {
 const FilesAccordionList = () => {
   const entries = Object.entries(analysisData.details.byFilepath)
 
+  const [sortedBy, setSortedBy] = useState<'name' | 'tokens count' | 'file path'>('file path')
+  const sorted = entries.sort((a, b) => {
+    if (sortedBy === 'name') {
+      return a[0].localeCompare(b[0])
+    }
+
+    if (sortedBy === 'tokens count') {
+      return b[1].length - a[1].length
+    }
+
+    return 0
+  })
+
   return (
-    <Section p="0" title={<TextWithCount count={entries.length}>Files</TextWithCount>}>
+    <Section
+      p="0"
+      title={<TextWithCount count={sorted.length}>Files</TextWithCount>}
+      subTitle={
+        <panda.div ml="auto">
+          <Select onChange={(option) => setSortedBy((option?.value as any) ?? 'file path')}>
+            {({ selectedOption }) => (
+              <>
+                <SelectTrigger>
+                  <panda.button display="flex" alignItems="center">
+                    Sort by {selectedOption?.label}
+                    <panda.div w="26px" ml="2">
+                      <SortIcon />
+                    </panda.div>
+                  </panda.button>
+                </SelectTrigger>
+                <Portal>
+                  <SelectPositioner>
+                    <SelectContent className={cx(selectOptionClass, css({ listStyle: 'none' }))}>
+                      <SelectOption className={selectOptionClass} value="name" label="name" />
+                      <SelectOption className={selectOptionClass} value="tokens count" label="tokens count" />
+                      <SelectOption className={selectOptionClass} value="file path" label="file path" />
+                    </SelectContent>
+                  </SelectPositioner>
+                </Portal>
+              </>
+            )}
+          </Select>
+        </panda.div>
+      }
+    >
       <Accordion className={stack({ gap: '2', px: '2', fontSize: 'sm', width: 'full', debug: false })} multiple>
-        {entries.map(([filepath, reportItemIdList]) => {
+        {sorted.map(([filepath, reportItemIdList]) => {
           const values = reportItemIdList.map(getReportItem)
           const localMaps =
             analysisData.details.byFilePathMaps[filepath as keyof typeof analysisData.details.byFilePathMaps]
