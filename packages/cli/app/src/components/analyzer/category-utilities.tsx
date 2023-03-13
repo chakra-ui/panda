@@ -1,11 +1,11 @@
-import { Grid, panda, Wrap } from '../../design-system/jsx'
-import { analysisData } from '../utils/analysis-data'
-import { groupIn } from '../utils/group-in'
-import { getReportItem } from '../utils/get-report-item'
-import { TextWithCount } from './analyzer/text-with-count'
-import { TruncatedText } from './analyzer/truncated-text'
-import { gridItem, styledLink } from '../../design-system/patterns'
-import { Section } from './analyzer/section'
+import { Grid, panda, Wrap } from '../../../design-system/jsx'
+import { analysisData } from '../../utils/analysis-data'
+import { groupIn } from '../../utils/group-in'
+import { getReportItem } from '../../utils/get-report-item'
+import { TextWithCount } from './text-with-count'
+import { TruncatedText } from './truncated-text'
+import { gridItem, styledLink } from '../../../design-system/patterns'
+import { Section } from './section'
 
 export const ByCategory = ({ byCategory }: { byCategory: Record<string, number[]> }) => {
   const { unknown, ...rest } = byCategory

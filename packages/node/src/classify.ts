@@ -57,10 +57,10 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
     const utility = ctx.config.utilities?.[propName]
     if (utility) {
       if (!utility.shorthand) {
-        return Boolean(ctx.tokens.get(`${utility.values}.${value}`))
+        return Boolean(ctx.tokens.getByName(`${utility.values}.${value}`))
       }
 
-      return Boolean(ctx.tokens.get(`${utility.values}.${value}`))
+      return Boolean(ctx.tokens.getByName(`${utility.values}.${value}`))
     }
 
     if (type === 'pattern') {
@@ -81,7 +81,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
       }
 
       if (patternProp.type === 'token') {
-        return Boolean(ctx.tokens.get(`${patternProp.value}.${value}`))
+        return Boolean(ctx.tokens.getByName(`${patternProp.value}.${value}`))
       }
 
       return false

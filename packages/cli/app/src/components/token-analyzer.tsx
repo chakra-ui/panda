@@ -26,7 +26,7 @@ import { ReportItemLink } from './analyzer/report-item-link'
 import { Section } from './analyzer/section'
 import { TextWithCount } from './analyzer/text-with-count'
 import { TruncatedText } from './analyzer/truncated-text'
-import { ByCategory } from './CategoryUtilities'
+import { ByCategory } from './analyzer/category-utilities'
 import { ColorItem } from './color-item'
 import { TokenSearchCombobox } from './token-search-combobox'
 
