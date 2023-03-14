@@ -17,7 +17,7 @@ importers:
       lint-staged: 13.2.0
       prettier: 2.8.4
       tsup: 6.6.3
-      tsx: 3.12.4
+      tsx: 3.12.5
       typescript: 4.9.5
       vitest: 0.29.2
     dependencies:
@@ -31,7 +31,7 @@ importers:
       lint-staged: 13.2.0
       prettier: 2.8.4
       tsup: 6.6.3_typescript@4.9.5
-      tsx: 3.12.4
+      tsx: 3.12.5
       typescript: 4.9.5
       vitest: 0.29.2
 
@@ -17688,8 +17688,8 @@ packages:
       tslib: 1.14.1
       typescript: 4.9.5
 
-  /tsx/3.12.4:
-    resolution: {integrity: sha512-IZ0Sqm2AwB3pgE+n/g63jLNoZZXinbXfdvNWB06wdwey+/7dlOurdS1Vb5pBGa7VO9nTjAOODbQgKCgHk7JsPA==}
+  /tsx/3.12.5:
+    resolution: {integrity: sha512-/TLj30xF1zcN9JkoFCyROtIQUi8cRQG+AFchsg5YkWou3+RXxTZS/ffWB3nCxyZPoBqF2+8ohs07N815dNb1wQ==}
     hasBin: true
     dependencies:
       '@esbuild-kit/cjs-loader': 2.4.2
