@@ -345,7 +345,7 @@ importers:
 
   playground:
     specifiers:
-      '@ark-ui/react': 0.0.0-rc-20230316004436
+      '@ark-ui/react': 0.0.0-rc-20230317004640
       '@monaco-editor/react': 4.4.6
       '@next/font': 13.2.4
       '@pandacss/dev': workspace:*
@@ -375,7 +375,7 @@ importers:
       usehooks-ts: 2.9.1
       zod: 3.21.4
     dependencies:
-      '@ark-ui/react': 0.0.0-rc-20230316004436_biqbaboplfbrettd7655fr4n2y
+      '@ark-ui/react': 0.0.0-rc-20230317004640_biqbaboplfbrettd7655fr4n2y
       '@monaco-editor/react': 4.4.6_waewrrayshn643ztij6zbniufy
       '@next/font': 13.2.4
       '@pandacss/generator': link:../packages/generator
@@ -586,8 +586,8 @@ packages:
       '@jridgewell/gen-mapping': 0.1.1
       '@jridgewell/trace-mapping': 0.3.17
 
-  /@ark-ui/react/0.0.0-rc-20230316004436_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-UWJK82KRW2WGK8djd2eEp8TN35NAO4WVkELYZaBs8PObtjg9DfB9lCUXOYC3S5l66YespANr7ZX8YWJ02/VrQg==}
+  /@ark-ui/react/0.0.0-rc-20230317004640_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-bIS7zyPXyYNq3JkfOTT8jNfNJN2i4lCJEhlv9h/reGIzrX2+MUNXmUUGfhS6FwSZNzw798ZFHCmSOgC9kebj3A==}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
@@ -4351,7 +4351,7 @@ packages:
       '@storybook/csf-plugin': 7.0.0-beta.45
       '@storybook/csf-tools': 7.0.0-beta.45
       '@storybook/global': 5.0.0
-      '@storybook/mdx2-csf': 1.0.0-next.5
+      '@storybook/mdx2-csf': 1.0.0-next.6
       '@storybook/node-logger': 7.0.0-beta.45
       '@storybook/postinstall': 7.0.0-beta.45
       '@storybook/preview-api': 7.0.0-beta.45
@@ -5047,8 +5047,8 @@ packages:
     resolution: {integrity: sha512-iMaJ1Wn26OxIW4vbHx3MFXTDIkJVGmJNl/D7UgXTHKRlUzAj497SVhT/2jv+dIRC/3CZsQySGMgl6RdFRd7VPQ==}
     dev: true
 
-  /@storybook/mdx2-csf/1.0.0-next.5:
-    resolution: {integrity: sha512-02w0sgGZaK1agT050yCVhJ+o4rLHANWvLKWjQjeAsYbjneLC5ITt+3GDB4jRiWwJboZ8dHW1fGSK1Vg5fA34aQ==}
+  /@storybook/mdx2-csf/1.0.0-next.6:
+    resolution: {integrity: sha512-m6plojocU/rmrqWd26yvm8D+oHZPZ6PtSSFmZIgpNDEPVmc8s4fBD6LXOAB5MiPI5f8KLUr2HVhOMZ97o5pDTw==}
     dev: true
 
   /@storybook/node-logger/6.5.16:
