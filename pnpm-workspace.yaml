@@ -1,4 +1,5 @@
 packages:
-  - 'packages/**'
-  - 'sandbox/**'
-  - 'playground'
+  - "packages/**"
+  - "sandbox/**"
+  - "playground"
+  - "tailwind-converter"

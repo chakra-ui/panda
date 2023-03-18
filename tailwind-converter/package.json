@@ -1,0 +1,53 @@
+{
+  "name": "tailwind-converter",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "gen:react-declaration": "tsx ./get-ts-declarations.ts",
+    "prepare": "panda && pnpm gen:react-declaration"
+  },
+  "dependencies": {
+    "@astrojs/react": "^2.0.2",
+    "@box-extractor/core": "^0.8.3",
+    "@monaco-editor/react": "4.4.6",
+    "@pandacss/core": "workspace:^0.0.1",
+    "@pandacss/dev": "workspace:^0.0.1",
+    "@pandacss/presets": "workspace:^0.0.1",
+    "@types/postcss-js": "^4.0.0",
+    "@xstate/react": "^3.2.1",
+    "astro": "^2.0.18",
+    "lightningcss": "^1.19.0",
+    "magic-string": "^0.30.0",
+    "monaco-editor": "0.36.1",
+    "os-browserify": "^0.3.0",
+    "pastable": "^2.2.0",
+    "path-browserify": "^1.0.1",
+    "postcss": "^8.4.21",
+    "postcss-js": "^4.0.1",
+    "postcss-nested": "6.0.1",
+    "prettier": "2.8.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-resizable-panels": "^0.0.37",
+    "tailwindcss": "^3.2.7",
+    "ts-morph": "17.0.1",
+    "ts-pattern": "4.2.1",
+    "util": "^0.12.5",
+    "xstate": "^4.37.0"
+  },
+  "devDependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@types/prettier": "2.7.2",
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
+    "rollup": "^3.19.1",
+    "rollup-plugin-dts": "^5.3.0",
+    "type-fest": "^3.6.1",
+    "typescript": "^5.0.2"
+  }
+}
