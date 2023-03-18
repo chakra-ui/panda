@@ -1,5 +1,8 @@
 import { useState } from 'react'
+import { analysisData } from '../../utils/analysis-data'
 import type { Layout } from './LayoutControl'
+import { format } from 'prettier'
+import parserTypescript from 'prettier/parser-typescript'
 
 export type State = {
   code: string
@@ -10,6 +13,13 @@ export type State = {
 export type UsePlayGroundProps = {
   intialState?: State | null
 }
+
+const initialTheme = format(`export const theme = ${JSON.stringify(analysisData.theme)};`, {
+  parser: 'typescript',
+  plugins: [parserTypescript],
+  singleQuote: true,
+  trailingComma: 'all',
+})
 
 export const usePlayground = (props: UsePlayGroundProps) => {
   const { intialState } = props
@@ -32,9 +42,7 @@ export const App = () => (
   </button>
 )
 `,
-          theme: `export const theme = {
-  extend: {},
-}`,
+          theme: initialTheme,
           view: 'code',
         },
   )
