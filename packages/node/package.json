@@ -31,7 +31,7 @@
     "@pandacss/types": "workspace:*",
     "chokidar": "^3.5.3",
     "fast-glob": "^3.2.12",
-    "fs-extra": "11.1.0",
+    "fs-extra": "11.1.1",
     "glob-parent": "^6.0.2",
     "hookable": "5.5.1",
     "is-glob": "^4.0.3",
