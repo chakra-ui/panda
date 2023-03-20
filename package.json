@@ -36,7 +36,7 @@
     "concurrently": "^7.6.0",
     "husky": "8.0.3",
     "lint-staged": "13.2.0",
-    "prettier": "2.8.4",
+    "prettier": "2.8.5",
     "tsup": "6.7.0",
     "tsx": "3.12.5",
     "typescript": "4.9.5",
