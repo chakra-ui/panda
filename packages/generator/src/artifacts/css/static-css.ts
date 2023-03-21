@@ -1,16 +1,17 @@
+import { getStaticCss } from '@pandacss/core'
 import type { Context } from '../../engines'
-import { getStaticCss as _getStaticCss } from '@pandacss/core'
 
 export const generateStaticCss = (ctx: Context) => {
   const { config, createSheet, utility, recipes } = ctx
   const { staticCss = {}, theme = {} } = config
 
   const sheet = createSheet()
-  const fn = _getStaticCss(staticCss)
+  const fn = getStaticCss(staticCss)
 
   const results = fn({
     breakpoints: Object.keys(theme.breakpoints ?? {}),
     getPropertyKeys: utility.getPropertyKeys,
+    // @ts-ignore
     getRecipeKeys: (recipe) => recipes.details[recipe],
   })
 

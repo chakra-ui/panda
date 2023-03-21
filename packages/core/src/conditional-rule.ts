@@ -1,4 +1,4 @@
-import postcss, { AtRule, ChildNode, Container, Rule } from 'postcss'
+import postcss, { AtRule, type ChildNode, Container, Rule } from 'postcss'
 import type { StylesheetContext } from './types'
 
 export type WrapOptions =

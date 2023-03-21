@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { AtomicRule, ProcessOptions } from '../src/atomic-rule'
+import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
 import { createContext } from './fixture'
 
 function css(obj: ProcessOptions) {

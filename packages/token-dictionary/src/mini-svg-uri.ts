@@ -72,7 +72,7 @@ function dataURIPayload(string: string) {
 // `#` gets converted to `%23`, so quite a few CSS named colors are shorter than
 // their equivalent URL-encoded hex codes.
 function colorCodeToShorterNames(string: string) {
-  Object.keys(shorterNames).forEach(function (key) {
+  objectKeys(shorterNames).forEach((key) => {
     if (shorterNames[key].test(string)) {
       string = string.replace(shorterNames[key], key)
     }
@@ -110,3 +110,5 @@ export function svgToDataUri(svgString: string) {
   const body = colorCodeToShorterNames(collapseWhitespace(svgString)).replace(REGEX.quotes, "'")
   return 'data:image/svg+xml,' + dataURIPayload(body)
 }
+
+const objectKeys = <T>(obj: T): (keyof T)[] => Object.keys(obj as any) as (keyof T)[]

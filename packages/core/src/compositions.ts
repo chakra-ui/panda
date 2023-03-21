@@ -1,6 +1,6 @@
 import { flatten } from '@pandacss/shared'
 import type { Dict, PropertyConfig } from '@pandacss/types'
-import { SerializeContext, serializeStyle } from './serialize'
+import { type SerializeContext, serializeStyle } from './serialize'
 
 export function assignCompositions(ctx: SerializeContext, compositions: Dict) {
   for (const [key, values] of Object.entries(compositions)) {

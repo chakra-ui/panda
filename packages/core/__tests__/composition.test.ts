@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { assignCompositions } from '../src/compositions'
 import { compositions, createContext } from './fixture'
-import { AtomicRule, ProcessOptions } from '../src/atomic-rule'
+import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
 
 function css(obj: ProcessOptions) {
   const ctx = createContext()

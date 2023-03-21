@@ -185,7 +185,7 @@ export class Token {
   setType() {
     if (this.type) return
     if (this.extensions.category) {
-      this.type = TokenTypes[this.extensions.category]
+      this.type = TOKEN_TYPES[this.extensions.category as keyof typeof TOKEN_TYPES]
     }
   }
 }
@@ -206,7 +206,7 @@ function cloneDeep<T>(value: T): any {
   return value
 }
 
-const TokenTypes = {
+const TOKEN_TYPES = {
   colors: 'color',
   spacing: 'dimension',
   sizing: 'dimension',

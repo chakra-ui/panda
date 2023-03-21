@@ -1,7 +1,7 @@
 import { capitalize } from '@pandacss/shared'
 import type { RecipeConfig } from '@pandacss/types'
 import merge from 'lodash.merge'
-import { AtomicRule, ProcessOptions } from './atomic-rule'
+import { AtomicRule, type ProcessOptions } from './atomic-rule'
 import { serializeStyle } from './serialize'
 import type { StylesheetContext } from './types'
 

@@ -4,7 +4,7 @@ import { getStaticCss } from '../src/static-css'
 const ctx = {
   breakpoints: ['sm', 'md'],
   getRecipeKeys: (recipe: string) => {
-    const values = {
+    const values: Record<string, any> = {
       buttonStyle: {
         size: ['sm', 'md'],
         variant: ['primary', 'secondary'],
@@ -14,7 +14,7 @@ const ctx = {
     return values[recipe] ?? {}
   },
   getPropertyKeys: (property: string) => {
-    const values = {
+    const values: Record<string, any> = {
       margin: ['20px', '40px'],
       padding: ['20px', '40px', '60px'],
       color: ['red.200', 'blue.200', 'green.200'],

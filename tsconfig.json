@@ -5,7 +5,6 @@
     "declaration": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
-    "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "preserve",
     "incremental": true,
@@ -18,10 +17,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "importsNotUsedAsValues": "error"
+    "verbatimModuleSyntax": true
   },
   "include": ["packages"],
   "exclude": ["node_modules", "./packages/cli/app"]

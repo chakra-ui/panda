@@ -1,4 +1,4 @@
-import { assignCompositions, Conditions, Stylesheet, StylesheetOptions, Utility } from '@pandacss/core'
+import { assignCompositions, Conditions, Stylesheet, type StylesheetOptions, Utility } from '@pandacss/core'
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
 import { compact, mapObject } from '@pandacss/shared'

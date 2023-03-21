@@ -201,7 +201,7 @@ export class TokenDictionary {
         references: references.reduce((object, reference) => {
           object[reference.name] = reference
           return object
-        }, {}),
+        }, {} as Record<string, any>),
       })
     })
 

@@ -10,7 +10,7 @@ function toResponsiveObject(values: string[], breakpoints: string[]) {
       acc[key] = current
     }
     return acc
-  }, {})
+  }, {} as Record<string, string>)
 }
 
 export function normalizeShorthand(styles: Record<string, any>, context: NormalizeContext) {

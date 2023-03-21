@@ -1,6 +1,6 @@
 // Fork of post-css-js: https://github.com/postcss/postcss-js/blob/main/parser.js
 
-import postcss, { Container, Parser } from 'postcss'
+import postcss, { Container, type Parser } from 'postcss'
 
 const IMPORTANT = /\s*!important\s*$/i
 
@@ -45,7 +45,7 @@ function decl(parent: Container, name: string, value: any) {
   }
 
   if (typeof value === 'number') {
-    if (value === 0 || UNITLESS[name] || isCssVar) {
+    if (value === 0 || UNITLESS[name as keyof typeof UNITLESS] || isCssVar) {
       value = value.toString()
     } else {
       value = `${value}px`

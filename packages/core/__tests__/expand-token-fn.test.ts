@@ -2,13 +2,15 @@ import postcss from 'postcss'
 import { describe, expect, test } from 'vitest'
 import expandTokenFn from '../src/plugins/expand-token-fn'
 
-const getToken = {
+const tokens: Record<string, string> = {
   'colors.red': 'var(--colors-red)',
   'colors.blue': 'var(--colors-blue)',
 }
 
 function run(code: string) {
-  return postcss([expandTokenFn((token) => getToken[token])]).process(code, { from: undefined })
+  return postcss([expandTokenFn((token) => tokens[token])]).process(code, {
+    from: undefined,
+  })
 }
 
 const css = (v: TemplateStringsArray) => v[0]

@@ -1,5 +1,5 @@
 import { getDotPath, mapToJson } from '@pandacss/shared'
-import { TokenDictionary as BaseDictionary, TokenDictionaryOptions } from './dictionary'
+import { TokenDictionary as BaseDictionary, type TokenDictionaryOptions } from './dictionary'
 import { formats } from './format'
 import { middlewares } from './middleware'
 import { transforms } from './transform'

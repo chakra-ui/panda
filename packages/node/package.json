@@ -54,6 +54,6 @@
     "@types/is-glob": "^4.0.2",
     "@types/lodash.merge": "4.6.7",
     "@types/pluralize": "0.0.29",
-    "boxen": "^7.0.1"
+    "boxen": "^7.0.2"
   }
 }

@@ -1,5 +1,5 @@
-import { createGenerator, Generator } from '@pandacss/generator'
-import { createProject, Project } from '@pandacss/parser'
+import { createGenerator, type Generator } from '@pandacss/generator'
+import { createProject, type Project } from '@pandacss/parser'
 import type { LoadConfigResult } from '@pandacss/types'
 import type { Runtime } from '@pandacss/types/src/runtime'
 import { Obj, pipe, tap } from 'lil-fp'

@@ -65,7 +65,7 @@ export function objectify(node: Container) {
         name = camelcase(child.prop)
       }
       let value = child.value as string | number
-      if (!isNaN(Number(value)) && UNITLESS[name]) {
+      if (!isNaN(Number(value)) && UNITLESS[name as keyof typeof UNITLESS]) {
         value = parseFloat(child.value)
       }
       if (child.important) value += ' !important'

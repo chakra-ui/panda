@@ -1,6 +1,6 @@
 import { Obj, pipe, tap } from 'lil-fp'
-import { Project as TsProject, ProjectOptions as TsProjectOptions, ScriptKind } from 'ts-morph'
-import { createParser, ParserOptions } from './parser'
+import { Project as TsProject, type ProjectOptions as TsProjectOptions, ScriptKind } from 'ts-morph'
+import { createParser, type ParserOptions } from './parser'
 
 export type ProjectOptions = Partial<TsProjectOptions> & {
   readFile: (filePath: string) => string

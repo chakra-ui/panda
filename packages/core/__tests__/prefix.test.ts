@@ -1,6 +1,6 @@
 import { createCss } from '@pandacss/shared'
 import { describe, expect, test } from 'vitest'
-import { AtomicRule, ProcessOptions } from '../src/atomic-rule'
+import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
 import { createContext } from './fixture'
 
 function backend(obj: ProcessOptions['styles']) {

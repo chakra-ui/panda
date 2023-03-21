@@ -12,12 +12,17 @@ const logLevels = {
 
 export type LogLevel = keyof typeof logLevels
 
+type Entry = {
+  level: LogLevel | null
+  msg: string
+} & Record<string, any>
+
 const createEntry = (level: LogLevel | null, type: string, data: any) => {
   const msg = data instanceof Error ? colors.red(data.message) : data
   return { type, level, msg }
 }
 
-const formatEntry = (entry: Record<string, any>) =>
+const formatEntry = (entry: Entry) =>
   pipe(
     { entry },
     Obj.assign(({ entry }) => ({
@@ -28,7 +33,7 @@ const formatEntry = (entry: Record<string, any>) =>
         ({ entry }) => entry.level != null,
         ({ entry, uword }) => {
           const { msg, level } = entry
-          const color = logLevels[level].color
+          const color = logLevels[level!].color
           const label = colors.bold(color(`${level}`))
           return { label: [`🐼`, label, uword].filter(Boolean).join(' '), msg }
         },

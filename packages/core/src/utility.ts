@@ -95,7 +95,7 @@ export class Utility {
   }
 
   private assignColorPaletteProperty = () => {
-    const values = this.tokens.colorPalettes
+    const values = this.tokens.colorPalettes as Record<string, any>
     this.config.colorPalette = {
       values: Object.keys(values),
       transform(value) {

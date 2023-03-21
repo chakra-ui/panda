@@ -1,6 +1,6 @@
 import type { UtilityConfig } from '@pandacss/types'
 
-const srMapping = {
+const srMapping: Record<string, any> = {
   true: {
     position: 'absolute',
     width: '1px',

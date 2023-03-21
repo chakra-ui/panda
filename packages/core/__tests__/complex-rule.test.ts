@@ -3,7 +3,7 @@ import { TokenDictionary } from '@pandacss/token-dictionary'
 import postcss from 'postcss'
 import { describe, expect, test } from 'vitest'
 import { Conditions, Utility } from '../src'
-import { AtomicRule, ProcessOptions } from '../src/atomic-rule'
+import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
 import type { StylesheetContext } from '../src/types'
 
 const conditions = new Conditions({
