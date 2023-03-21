@@ -1,7 +1,7 @@
 import { match, P } from 'ts-pattern'
 import { AST } from 'vue-eslint-parser'
 import type { VElement } from 'vue-eslint-parser/ast'
-import { noop, Options } from './index'
+import { noop, type Options } from './index'
 import { extractObjectLiteral } from './literal'
 
 export function visitCallExpressions(children: VElement['children'] | undefined, options: Options) {

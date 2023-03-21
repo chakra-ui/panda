@@ -1,10 +1,10 @@
 import {
   ArrayLiteralExpression,
-  BooleanLiteral,
   Node,
   NumericLiteral,
   ObjectLiteralExpression,
   StringLiteral,
+  type BooleanLiteral,
 } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { stripQuotes } from './strip-quotes'
