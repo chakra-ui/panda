@@ -19,6 +19,7 @@ export type PatternConfig = {
   description?: string
   /**
    * The JSX element rendered by the pattern
+   * @default 'div'
    */
   jsxElement?: string
   /**
