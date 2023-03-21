@@ -36,9 +36,12 @@ function vitePlugin() {
 const virtualPanda = () => ({
   name: 'virtual:panda',
   hooks: {
-    'astro:config:setup': async ({ config }) => {
-      config.vite.plugins ||= []
-      config.vite.plugins.push(vitePlugin())
+    'astro:config:setup': ({ updateConfig }) => {
+      updateConfig({
+        vite: {
+          plugins: [vitePlugin()],
+        },
+      })
     },
   },
 })

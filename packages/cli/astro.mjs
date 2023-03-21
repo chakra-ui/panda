@@ -7,7 +7,7 @@ export default function pandacss() {
     name: '@pandacss/vite',
     hooks: {
       'astro:config:setup': async ({ config }) => {
-        config.style.postcss.plugins.push(require('css-panda/postcss'))
+        config.style.postcss.plugins.push(require('@pandacss/dev/postcss'))
       },
     },
   }
