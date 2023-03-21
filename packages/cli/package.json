@@ -65,7 +65,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "astro": "2.0.12",
+    "astro": "2.1.4",
     "cac": "6.7.14",
     "react": "18.2.0",
     "react-dom": "18.2.0",
