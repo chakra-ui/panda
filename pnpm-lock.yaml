@@ -8,7 +8,7 @@ importers:
   .:
     specifiers:
       '@changesets/changelog-github': 0.4.8
-      '@changesets/cli': 2.26.0
+      '@changesets/cli': 2.26.1
       '@types/node': 18.15.5
       '@typescript-eslint/eslint-plugin': 5.56.0
       '@typescript-eslint/parser': 5.56.0
@@ -22,7 +22,7 @@ importers:
       vitest: 0.29.7
     dependencies:
       '@changesets/changelog-github': 0.4.8
-      '@changesets/cli': 2.26.0
+      '@changesets/cli': 2.26.1
       '@types/node': 18.15.5
       '@typescript-eslint/eslint-plugin': 5.56.0_v6sdge7jt2pgshnqqxcf4d6l3e
       '@typescript-eslint/parser': 5.56.0_typescript@5.0.2
@@ -2217,8 +2217,8 @@ packages:
       - encoding
     dev: false
 
-  /@changesets/cli/2.26.0:
-    resolution: {integrity: sha512-0cbTiDms+ICTVtEwAFLNW0jBNex9f5+fFv3I771nBvdnV/mOjd1QJ4+f8KtVSOrwD9SJkk9xbDkWFb0oXd8d1Q==}
+  /@changesets/cli/2.26.1:
+    resolution: {integrity: sha512-XnTa+b51vt057fyAudvDKGB0Sh72xutQZNAdXkCqPBKO2zvs2yYZx5hFZj1u9cbtpwM6Sxtcr02/FQJfZOzemQ==}
     hasBin: true
     dependencies:
       '@babel/runtime': 7.20.6
