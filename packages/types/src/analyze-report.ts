@@ -17,6 +17,10 @@ export type ReportItem = {
   box: BoxNodeLiteral | BoxNodeEmptyInitializer
 }
 
+/**
+ * An instance is either a component usage or a function usage
+ * @example an instance name could be 'Button', 'css', 'panda.div', 'vstack', ...
+ */
 export type ReportInstanceItem = Pick<ReportItem, 'from' | 'type' | 'kind' | 'filepath'> & {
   instanceId: number
   contains: Array<ReportItem['id']>
