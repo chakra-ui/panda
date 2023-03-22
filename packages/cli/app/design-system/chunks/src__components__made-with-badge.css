@@ -31,10 +31,6 @@
     padding-block: var(--spacing-1)
     }
 
-  .pointer-events_none {
-    pointer-events: none
-    }
-
   .text_white {
     color: var(--colors-white)
     }

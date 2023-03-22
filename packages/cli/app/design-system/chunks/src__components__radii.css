@@ -1,8 +1,4 @@
 @layer utilities {
-  .opacity_0\.7 {
-    opacity: 0.7
-    }
-
   .w_80px {
     width: 80px
     }
@@ -45,4 +41,5 @@
 
   .gap_1 {
     gap: var(--spacing-1)
-    }}
+    }
+}

@@ -3,10 +3,6 @@
     width: var(--sizes-full)
     }
 
-  .resize_vertical {
-    resize: vertical
-    }
-
   .p_1 {
     padding: var(--spacing-1)
     }
@@ -33,10 +29,6 @@
 
   .z_1 {
     z-index: 1
-    }
-
-  .opacity_0\.4 {
-    opacity: 0.4
     }
 
   .mr_1 {

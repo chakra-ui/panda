@@ -1,0 +1,153 @@
+@layer utilities {
+  .py_20px {
+    padding-block: 20px
+    }
+
+  .p_4px_8px {
+    padding: 4px 8px
+    }
+
+  .bg_white {
+    background-color: var(--colors-white)
+    }
+
+  .p_4 {
+    padding: var(--spacing-4)
+    }
+
+  .px_24 {
+    padding-inline: var(--spacing-24)
+    }
+
+  .w_100\% {
+    width: 100%
+    }
+
+  .w_26px {
+    width: 26px
+    }
+
+  .ml_auto {
+    margin-left: auto
+    }
+
+  .mt_8 {
+    margin-top: var(--spacing-8)
+    }
+
+  .fs_xl {
+    font-size: var(--font-sizes-xl)
+    }
+
+  .bg_gray\.100 {
+    background-color: var(--colors-gray-100)
+    }
+
+  .border_1px_solid_rgba\(0\,_0\,_0\,_0\.1\) {
+    border: 1px solid rgba(0, 0, 0, 0.1)
+    }
+
+  .rounded_md {
+    border-radius: var(--radii-md)
+    }
+
+  .fs_md {
+    font-size: var(--font-sizes-md)
+    }
+
+  .font_bold {
+    font-weight: var(--font-weights-bold)
+    }
+
+  .ml_2 {
+    margin-left: var(--spacing-2)
+    }
+
+  .d_inline-block {
+    display: inline-block
+    }
+
+  .bg_gray\.50 {
+    background: var(--colors-gray-50)
+    }
+
+  .p_0 {
+    padding: 0
+    }
+
+  .py_2 {
+    padding-block: var(--spacing-2)
+    }
+
+  .px_4 {
+    padding-inline: var(--spacing-4)
+    }
+
+  .bg_none {
+    background: none
+    }
+
+  .w_full {
+    width: var(--sizes-full)
+    }
+
+  .p_2 {
+    padding: var(--spacing-2)
+    }
+
+  .flex_column {
+    flex-direction: column
+    }
+
+  .items_center {
+    align-items: center
+    }
+
+  .gap_10px {
+    gap: 10px
+    }
+
+  .mb_4 {
+    margin-bottom: var(--spacing-4)
+    }
+
+  .p_20px {
+    padding: 20px
+    }
+
+  .fs_lg {
+    font-size: var(--font-sizes-lg)
+    }
+
+  .gap_4 {
+    gap: var(--spacing-4)
+    }
+
+  .fs_sm {
+    font-size: var(--font-sizes-sm)
+    }
+
+  .d_flex {
+    display: flex
+    }
+
+  .flex-wrap_wrap {
+    flex-wrap: wrap
+    }
+
+  .gap_2 {
+    gap: var(--spacing-2)
+    }
+
+  .mt_4 {
+    margin-top: var(--spacing-4)
+    }
+
+  .hover\:bg_gray\.50:where(:hover, [data-hover]) {
+    background-color: var(--colors-gray-50)
+        }
+
+  .hover\:bg_gray\.100:where(:hover, [data-hover]) {
+    background-color: var(--colors-gray-100)
+        }
+}

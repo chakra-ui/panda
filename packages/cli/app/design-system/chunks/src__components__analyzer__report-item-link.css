@@ -1,0 +1,33 @@
+@layer utilities {
+  .d_flex {
+    display: flex
+    }
+
+  .items_center {
+    align-items: center
+    }
+
+  .pos_relative {
+    position: relative
+    }
+
+  .max-w_14px {
+    max-width: 14px
+    }
+
+  .shrink_0 {
+    flex-shrink: 0
+    }
+
+  .p_2 {
+    padding: var(--spacing-2)
+    }
+
+  .bg_white {
+    background-color: var(--colors-white)
+    }
+
+  .border_1px_solid_rgba\(0\,_0\,_0\,_0\.1\) {
+    border: 1px solid rgba(0, 0, 0, 0.1)
+    }
+}

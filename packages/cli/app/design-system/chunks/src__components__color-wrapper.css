@@ -15,10 +15,6 @@
     position: relative
     }
 
-  .overflow_hidden {
-    overflow: hidden
-    }
-
   .before\:content_\'\'::before {
     content: ''
         }

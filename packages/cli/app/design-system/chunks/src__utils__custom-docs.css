@@ -1,4 +1,5 @@
 @layer utilities {
   .w_16 {
     width: var(--sizes-16)
-    }}
+    }
+}

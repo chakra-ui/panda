@@ -20,10 +20,6 @@
     border-color: var(--colors-card)
     }
 
-  .font_medium {
-    font-weight: var(--font-weights-medium)
-    }
-
   .fs_small {
     font-size: small
     }
@@ -58,4 +54,9 @@
 
   .h_20 {
     height: var(--sizes-20)
-    }}
+    }
+
+  .font_medium {
+    font-weight: var(--font-weights-medium)
+    }
+}

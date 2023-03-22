@@ -7,10 +7,6 @@
     grid-column: span 3 / span 3
     }
 
-  .col-span_span_5_\/_span_5 {
-    grid-column: span 5 / span 5
-    }
-
   .h_5 {
     height: var(--sizes-5)
     }
@@ -21,6 +17,10 @@
 
   .col-span_span_2_\/_span_2 {
     grid-column: span 2 / span 2
+    }
+
+  .col-span_span_5_\/_span_5 {
+    grid-column: span 5 / span 5
     }
 
   .grid-cols_repeat\(5\,_minmax\(0\,_1fr\)\) {
@@ -41,4 +41,5 @@
 
   .gap-x_2\.5 {
     row-gap: var(--spacing-2\.5)
-    }}
+    }
+}

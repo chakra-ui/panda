@@ -47,10 +47,6 @@
     gap: var(--spacing-1\.5)
     }
 
-  .white-space_nowrap {
-    white-space: nowrap
-    }
-
   .w_48 {
     width: var(--sizes-48)
     }

@@ -31,10 +31,6 @@
     font-size: medium
     }
 
-  .writing-mode_vertical-lr {
-    writing-mode: vertical-lr
-    }
-
   .transform_rotate\(180deg\) {
     transform: rotate(180deg)
     }
@@ -71,8 +67,16 @@
     color: var(--colors-white)
     }
 
-  .opacity_0\.7 {
-    opacity: 0.7
+  .font_medium {
+    font-weight: var(--font-weights-medium)
+    }
+
+  .text_capitalize {
+    text-transform: capitalize
+    }
+
+  .fs_xl {
+    font-size: var(--font-sizes-xl)
     }
 
   .mb_3\.5 {
@@ -93,18 +97,6 @@
 
   .z_1 {
     z-index: 1
-    }
-
-  .font_medium {
-    font-weight: var(--font-weights-medium)
-    }
-
-  .text_capitalize {
-    text-transform: capitalize
-    }
-
-  .fs_xl {
-    font-size: var(--font-sizes-xl)
     }
 
   .bg_card {

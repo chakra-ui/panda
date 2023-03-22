@@ -31,32 +31,8 @@
     margin-top: var(--spacing-6)
     }
 
-  .transition_all_0\.2s_ease {
-    transition: all 0.2s ease
-    }
-
   .flex_column {
     flex-direction: column
-    }
-
-  .font_bold {
-    font-weight: var(--font-weights-bold)
-    }
-
-  .fs_2xl {
-    font-size: var(--font-sizes-2xl)
-    }
-
-  .py_4 {
-    padding-block: var(--spacing-4)
-    }
-
-  .gap_2 {
-    gap: var(--spacing-2)
-    }
-
-  .px_8 {
-    padding-inline: var(--spacing-8)
     }
 
   .py_24 {
@@ -69,6 +45,26 @@
 
   .bg_card {
     background: var(--colors-card)
+    }
+
+  .font_bold {
+    font-weight: var(--font-weights-bold)
+    }
+
+  .fs_2xl {
+    font-size: var(--font-sizes-2xl)
+    }
+
+  .px_8 {
+    padding-inline: var(--spacing-8)
+    }
+
+  .py_4 {
+    padding-block: var(--spacing-4)
+    }
+
+  .gap_2 {
+    gap: var(--spacing-2)
     }
 
   .fs_3xl {
@@ -110,12 +106,4 @@
   .p_0 {
     padding: 0
     }
-
-  .\[\&\:hover\]\:bg_\#4049f0:hover {
-    background: #4049f0
-        }
-
-  .\[\&\:hover\]\:shadow_lg:hover {
-    box-shadow: var(--shadows-lg)
-        }
 }

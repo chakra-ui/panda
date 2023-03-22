@@ -15,10 +15,6 @@
     padding: var(--spacing-4)
     }
 
-  .transition_all_0\.2s_ease {
-    transition: all 0.2s ease
-    }
-
   .\[\&_svg\]\:font_normal svg {
     font-weight: var(--font-weights-normal)
         }
@@ -57,4 +53,5 @@
 
   .hover\:shadow_lg:where(:hover, [data-hover]) {
     box-shadow: var(--shadows-lg)
-        }}
+        }
+}

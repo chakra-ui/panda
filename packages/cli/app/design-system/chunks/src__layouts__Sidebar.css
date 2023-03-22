@@ -47,10 +47,6 @@
     background: var(--colors-card)
     }
 
-  .overflow_auto {
-    overflow: auto
-    }
-
   .px_4 {
     padding-inline: var(--spacing-4)
     }

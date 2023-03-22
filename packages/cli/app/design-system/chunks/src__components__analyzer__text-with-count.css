@@ -1,0 +1,29 @@
+@layer utilities {
+  .d_inline-flex {
+    display: inline-flex
+    }
+
+  .items_center {
+    align-items: center
+    }
+
+  .fs_75\% {
+    font-size: 75%
+    }
+
+  .leading_0 {
+    line-height: 0
+    }
+
+  .pos_relative {
+    position: relative
+    }
+
+  .t_-0\.35em {
+    top: -0.35em
+    }
+
+  .ml_1 {
+    margin-left: var(--spacing-1)
+    }
+}

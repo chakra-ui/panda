@@ -3,24 +3,20 @@
     padding-top: var(--spacing-16)
     }
 
-  .font_bold {
-    font-weight: var(--font-weights-bold)
-    }
-
-  .fs_4xl {
-    font-size: var(--font-sizes-4xl)
-    }
-
-  .opacity_0\.5 {
-    opacity: 0.5
-    }
-
   .gap_5 {
     gap: var(--spacing-5)
     }
 
   .mt_10 {
     margin-top: var(--spacing-10)
+    }
+
+  .font_bold {
+    font-weight: var(--font-weights-bold)
+    }
+
+  .fs_4xl {
+    font-size: var(--font-sizes-4xl)
     }
 
   .justify_space-between {
@@ -104,4 +100,5 @@
 
   .flex_1 {
     flex: 1 1 0%
-    }}
+    }
+}

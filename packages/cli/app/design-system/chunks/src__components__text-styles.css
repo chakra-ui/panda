@@ -20,10 +20,6 @@
     border-color: var(--colors-card)
     }
 
-  .font_medium {
-    font-weight: var(--font-weights-medium)
-    }
-
   .fs_small {
     font-size: small
     }
@@ -44,4 +40,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap
-    }}
+    }
+
+  .font_medium {
+    font-weight: var(--font-weights-medium)
+    }
+}

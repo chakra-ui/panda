@@ -15,10 +15,6 @@
     border-radius: var(--radii-sm)
     }
 
-  .mb_8 {
-    margin-bottom: var(--spacing-8)
-    }
-
   .\[\&_div\]\:bg_rgb\(217_70_239\) div {
     background: rgb(217 70 239)
         }
@@ -39,16 +35,8 @@
     background: #e879f91a
     }
 
-  .my_8 {
-    margin-block: var(--spacing-8)
-    }
-
   .gap_1 {
     gap: var(--spacing-1)
-    }
-
-  .white-space_nowrap {
-    white-space: nowrap
     }
 
   .pos_sticky {
@@ -67,10 +55,6 @@
     background: var(--colors-bg)
     }
 
-  .my_4 {
-    margin-block: var(--spacing-4)
-    }
-
   .mt_3 {
     margin-top: var(--spacing-3)
     }
@@ -87,8 +71,38 @@
     background-size: 8px 8px
     }
 
-  .bg-img_linear-gradient\(_135deg\,_hsla\(0\,_0\%\,_100\%\,_0\.75\)_10\%\,_transparent_0\,_transparent_50\%\,_hsla\(0\,_0\%\,_100\%\,_0\.75\)_0\,_hsla\(0\,_0\%\,_100\%\,_0\.75\)_60\%\,_transparent_0\,_transparent_\) {
-    background-image: linear-gradient( 135deg, hsla(0, 0%, 100%, 0.75) 10%, transparent 0, transparent 50%, hsla(0, 0%, 100%, 0.75) 0, hsla(0, 0%, 100%, 0.75) 60%, transparent 0, transparent )
+  .bg-img_linear-gradient\(\
+__________135deg\,\
+__________hsla\(0\,_0\%\,_100\%\,_0\.75\)_10\%\,\
+__________transparent_0\,\
+__________transparent_50\%\,\
+__________hsla\(0\,_0\%\,_100\%\,_0\.75\)_0\,\
+__________hsla\(0\,_0\%\,_100\%\,_0\.75\)_60\%\,\
+__________transparent_0\,\
+__________transparent\
+________\) {
+    background-image: linear-gradient(
+          135deg,
+          hsla(0, 0%, 100%, 0.75) 10%,
+          transparent 0,
+          transparent 50%,
+          hsla(0, 0%, 100%, 0.75) 0,
+          hsla(0, 0%, 100%, 0.75) 60%,
+          transparent 0,
+          transparent
+        )
+    }
+
+  .mb_8 {
+    margin-bottom: var(--spacing-8)
+    }
+
+  .my_8 {
+    margin-block: var(--spacing-8)
+    }
+
+  .my_4 {
+    margin-block: var(--spacing-4)
     }
 
   .d_flex {

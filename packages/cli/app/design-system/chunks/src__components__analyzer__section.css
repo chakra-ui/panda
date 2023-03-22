@@ -1,0 +1,33 @@
+@layer utilities {
+  .w_full {
+    width: var(--sizes-full)
+    }
+
+  .rounded_md {
+    border-radius: var(--radii-md)
+    }
+
+  .d_flex {
+    display: flex
+    }
+
+  .flex_column {
+    flex-direction: column
+    }
+
+  .items_flex-start {
+    align-items: flex-start
+    }
+
+  .gap_4 {
+    gap: var(--spacing-4)
+    }
+
+  .p_4 {
+    padding: var(--spacing-4)
+    }
+
+  .w_100\% {
+    width: 100%
+    }
+}
