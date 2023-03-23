@@ -21,7 +21,7 @@
     "@pandacss/parser": "workspace:*",
     "@pandacss/presets": "workspace:*",
     "@prisma/client": "4.11.0",
-    "@types/node": "18.15.5",
+    "@types/node": "18.15.6",
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.11",
     "merge-anything": "^5.1.4",
