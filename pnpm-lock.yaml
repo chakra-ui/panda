@@ -607,6 +607,44 @@ packages:
       '@jridgewell/gen-mapping': 0.1.1
       '@jridgewell/trace-mapping': 0.3.17
 
+  /@ark-ui/react/0.0.0-rc-20230304191834_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-0e559n/2o4164hYxX0+9oTqo6D/W321Tb1f/hsaxLFTnXtx9JP+h0ldF+qgUG9BQitdk35bbiGVhISE23NQMkg==}
+    peerDependencies:
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
+    dependencies:
+      '@polymorphic-factory/react': 0.3.0_react@18.2.0
+      '@zag-js/accordion': 0.2.13
+      '@zag-js/anatomy': 0.1.4
+      '@zag-js/carousel': 0.0.0-dev-20230304172910
+      '@zag-js/checkbox': 0.2.14
+      '@zag-js/combobox': 0.2.16
+      '@zag-js/dialog': 0.2.13
+      '@zag-js/editable': 0.2.14
+      '@zag-js/hover-card': 0.2.6
+      '@zag-js/menu': 0.3.12
+      '@zag-js/number-input': 0.2.14
+      '@zag-js/pagination': 0.1.14
+      '@zag-js/pin-input': 0.2.14
+      '@zag-js/popover': 0.2.13
+      '@zag-js/pressable': 0.3.13
+      '@zag-js/radio-group': 0.2.1
+      '@zag-js/range-slider': 0.2.15
+      '@zag-js/rating-group': 0.2.14
+      '@zag-js/react': 0.3.10_biqbaboplfbrettd7655fr4n2y
+      '@zag-js/select': 0.1.14
+      '@zag-js/slider': 0.2.15
+      '@zag-js/splitter': 0.2.14
+      '@zag-js/tabs': 0.2.13
+      '@zag-js/tags-input': 0.3.14
+      '@zag-js/toast': 0.2.14
+      '@zag-js/tooltip': 0.2.13
+      '@zag-js/transition': 0.1.4
+      '@zag-js/types': 0.3.4
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    dev: false
+
   /@ark-ui/react/0.0.0-rc-20230323110837_biqbaboplfbrettd7655fr4n2y:
     resolution: {integrity: sha512-AnhrEo2ysSVmqbAnDpSUIfpuwIFLo8S0UrnHP2XFpd+KS1pCvboP1puTbuIBCO0zYTq+Lb5K7ekkCTarClLBYA==}
     peerDependencies:
