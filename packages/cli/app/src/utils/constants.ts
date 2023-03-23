@@ -26,6 +26,7 @@ export enum NavKeys {
   TYPOGRAPHY_PLAYGROUND = 'playground/typography',
   SPACING_PLAYGROUND = 'playground/spacing',
   CONTRAST_CHECKER = 'playground/contrast-checker',
+  PLAYGROUND = 'playground',
 }
 
 export type NavItemData = {
@@ -125,6 +126,13 @@ export const navItems: NavItemData[] = [
     label: 'Color Contrast',
     id: NavKeys.CONTRAST_CHECKER,
     description: 'Test contrast ratio between two colors.',
+    icon: ColorContrastIcon,
+    type: 'playground',
+  },
+  {
+    label: 'Playground',
+    id: NavKeys.PLAYGROUND,
+    description: 'Theme playground',
     icon: ColorContrastIcon,
     type: 'playground',
   },
