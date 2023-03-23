@@ -12,8 +12,9 @@ import { filesize } from 'filesize'
 
 export function analyzeTokens(
   ctx: PandaContext,
-  onResult?: (file: string, result: ParserResult) => void,
-  mode: ParserMode = 'internal',
+  options: { onResult?: (file: string, result: ParserResult) => void; mode?: ParserMode } = {
+    mode: 'box-extractor',
+  },
 ) {
   const parserResultByFilepath = new Map<string, ParserResult>()
   const extractTimeByFilepath = new Map<string, number>()
@@ -22,7 +23,7 @@ export function analyzeTokens(
     .getFiles()
     .map((file) => {
       const start = performance.now()
-      const result = ctx.project.parseSourceFile(file, ctx.properties, mode)
+      const result = ctx.project.parseSourceFile(file, ctx.properties, options.mode)
 
       const extractMs = performance.now() - start
       extractTimeByFilepath.set(file, extractMs)
@@ -30,7 +31,7 @@ export function analyzeTokens(
 
       if (result) {
         parserResultByFilepath.set(file, result)
-        onResult?.(file, result)
+        options.onResult?.(file, result)
       }
 
       return [file, result] as [string, ParserResult]

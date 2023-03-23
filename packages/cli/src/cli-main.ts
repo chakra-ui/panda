@@ -159,13 +159,12 @@ export async function main() {
         })
         logger.info('cli', `Found config at ${colors.bold(ctx.path)}, using mode=[${colors.bold(mode)}]`)
 
-        const result = analyzeTokens(
-          ctx,
-          (file) => {
+        const result = analyzeTokens(ctx, {
+          onResult: (file) => {
             logger.info('cli', `Analyzed ${colors.bold(file)}`)
           },
           mode,
-        )
+        })
 
         logger.info('cli', result.counts)
         const { mostUseds, ...stats } = result.stats
@@ -201,4 +200,4 @@ export async function main() {
   updateNotifier({ pkg: packageJson, distTag: 'dev' }).notify()
 }
 
-type ParserMode = Parameters<typeof analyzeTokens>[2]
+type ParserMode = NonNullable<Parameters<typeof analyzeTokens>[1]>['mode']
