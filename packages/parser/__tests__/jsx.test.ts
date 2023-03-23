@@ -444,30 +444,12 @@ describe('jsx', () => {
                   StringLiteral,
                 ],
                 "type": "literal",
-                "value": "linear-gradient(
-                      135deg,
-                      hsla(0, 0%, 100%, 0.75) 10%,
-                      transparent 0,
-                      transparent 50%,
-                      hsla(0, 0%, 100%, 0.75) 0,
-                      hsla(0, 0%, 100%, 0.75) 60%,
-                      transparent 0,
-                      transparent
-                    )",
+                "value": "linear-gradient( 135deg, hsla(0, 0%, 100%, 0.75) 10%, transparent 0, transparent 50%, hsla(0, 0%, 100%, 0.75) 0, hsla(0, 0%, 100%, 0.75) 60%, transparent 0, transparent )",
               },
             },
           },
           "data": {
-            "backgroundImage": "linear-gradient(
-                      135deg,
-                      hsla(0, 0%, 100%, 0.75) 10%,
-                      transparent 0,
-                      transparent 50%,
-                      hsla(0, 0%, 100%, 0.75) 0,
-                      hsla(0, 0%, 100%, 0.75) 60%,
-                      transparent 0,
-                      transparent
-                    )",
+            "backgroundImage": "linear-gradient( 135deg, hsla(0, 0%, 100%, 0.75) 10%, transparent 0, transparent 50%, hsla(0, 0%, 100%, 0.75) 0, hsla(0, 0%, 100%, 0.75) 60%, transparent 0, transparent )",
           },
           "name": "panda.div",
           "type": "jsx-factory",
