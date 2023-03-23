@@ -47,7 +47,8 @@ export function usePanda(source: string, theme: string) {
       getFiles: () => ['code.tsx'],
       readFile: (file) => (file === 'code.tsx' ? source : ''),
     })
-    const result = project.parseSourceFile('code.tsx')
+    const result = project.parseSourceFile('code.tsx', [])
+    console.log(result)
     const parsedCss = result ? generator.getParserCss(result) ?? '' : ''
     const artifacts = generator.getArtifacts() ?? []
 

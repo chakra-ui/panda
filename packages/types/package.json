@@ -18,7 +18,10 @@
     "dist"
   ],
   "devDependencies": {
-    "csstype": "3.1.1",
-    "chokidar-cli": "^3.0.0"
+    "chokidar-cli": "^3.0.0",
+    "csstype": "3.1.1"
+  },
+  "dependencies": {
+    "@box-extractor/core": "^0.8.4"
   }
 }

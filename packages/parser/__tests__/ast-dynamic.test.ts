@@ -5,7 +5,7 @@ describe('[dynamic] ast parser', () => {
   test('should parse', () => {
     const code = `
         import { textStyle, layerStyle } from ".panda/recipe"
-        
+
         textStyle({
             variant: "h1"
         })
@@ -27,6 +27,28 @@ describe('[dynamic] ast parser', () => {
       Map {
         "textStyle" => Set {
           {
+            "box": BoxNodeMap {
+              "node": CallExpression,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "variant" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "h1",
+                },
+              },
+            },
             "data": {
               "variant": "h1",
             },
@@ -34,6 +56,56 @@ describe('[dynamic] ast parser', () => {
             "type": "recipe",
           },
           {
+            "box": BoxNodeMap {
+              "node": CallExpression,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "variant" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "base" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "h4",
+                    },
+                    "md" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "h5",
+                    },
+                  },
+                },
+              },
+            },
             "data": {
               "variant": {
                 "base": "h4",
@@ -44,13 +116,36 @@ describe('[dynamic] ast parser', () => {
             "type": "recipe",
           },
           {
-            "data": {},
+            "box": undefined,
+            "data": undefined,
             "name": "textStyle",
             "type": "recipe",
           },
         },
         "layerStyle" => Set {
           {
+            "box": BoxNodeMap {
+              "node": CallExpression,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "variant" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "raised",
+                },
+              },
+            },
             "data": {
               "variant": "raised",
             },

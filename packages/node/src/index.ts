@@ -1,4 +1,5 @@
 export { discardDuplicate } from '@pandacss/core'
+export { analyzeTokens, writeAnalyzeJSON } from './analyze-tokens'
 export { Builder } from './builder'
 export { loadConfigAndCreateContext } from './config'
 export { createContext } from './create-context'

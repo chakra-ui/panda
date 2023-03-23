@@ -37,6 +37,7 @@
     "husky": "8.0.3",
     "lint-staged": "13.2.0",
     "prettier": "2.8.6",
+    "ts-morph": "17.0.1",
     "tsup": "6.7.0",
     "tsx": "3.12.6",
     "typescript": "5.0.2",

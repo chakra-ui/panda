@@ -19,6 +19,33 @@ describe('jsx', () => {
     expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
+          "box": BoxNodeMap {
+            "node": JsxOpeningElement,
+            "stack": [],
+            "type": "map",
+            "value": Map {
+              "marginTop" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "40px",
+              },
+              "marginBottom" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "42px",
+              },
+            },
+          },
           "data": {
             "marginBottom": "42px",
             "marginTop": "40px",
@@ -27,7 +54,26 @@ describe('jsx', () => {
           "type": "jsx-factory",
         },
         {
-          "data": {},
+          "box": BoxNodeMap {
+            "node": JsxOpeningElement,
+            "stack": [],
+            "type": "map",
+            "value": Map {
+              "bg" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "red.200",
+              },
+            },
+          },
+          "data": {
+            "bg": "red.200",
+          },
           "name": "panda.div",
           "type": "jsx-factory",
         },
@@ -52,6 +98,33 @@ describe('jsx', () => {
     expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
+          "box": BoxNodeMap {
+            "node": JsxOpeningElement,
+            "stack": [],
+            "type": "map",
+            "value": Map {
+              "marginTop" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "40px",
+              },
+              "marginBottom" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "42px",
+              },
+            },
+          },
           "data": {
             "marginBottom": "42px",
             "marginTop": "40px",
@@ -60,7 +133,26 @@ describe('jsx', () => {
           "type": "jsx-factory",
         },
         {
-          "data": {},
+          "box": BoxNodeMap {
+            "node": JsxOpeningElement,
+            "stack": [],
+            "type": "map",
+            "value": Map {
+              "bg" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "red.200",
+              },
+            },
+          },
+          "data": {
+            "bg": "red.200",
+          },
           "name": "styled.div",
           "type": "jsx-factory",
         },
@@ -86,6 +178,75 @@ describe('jsx', () => {
     expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
+          "box": BoxNodeMap {
+            "node": JsxOpeningElement,
+            "stack": [],
+            "type": "map",
+            "value": Map {
+              "marginTop" => BoxNodeMap {
+                "node": ObjectLiteralExpression,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ObjectLiteralExpression,
+                ],
+                "type": "map",
+                "value": Map {
+                  "sm" => BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ObjectLiteralExpression,
+                      PropertyAssignment,
+                      StringLiteral,
+                    ],
+                    "type": "literal",
+                    "value": "40px",
+                  },
+                  "md" => BoxNodeMap {
+                    "node": ObjectLiteralExpression,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ObjectLiteralExpression,
+                      PropertyAssignment,
+                      ObjectLiteralExpression,
+                    ],
+                    "type": "map",
+                    "value": Map {
+                      "rtl" => BoxNodeLiteral {
+                        "kind": "string",
+                        "node": StringLiteral,
+                        "stack": [
+                          JsxAttribute,
+                          JsxExpression,
+                          ObjectLiteralExpression,
+                          PropertyAssignment,
+                          ObjectLiteralExpression,
+                          PropertyAssignment,
+                          StringLiteral,
+                        ],
+                        "type": "literal",
+                        "value": "40px",
+                      },
+                    },
+                  },
+                },
+              },
+              "marginBottom" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "42px",
+              },
+            },
+          },
           "data": {
             "marginBottom": "42px",
             "marginTop": {
@@ -99,7 +260,26 @@ describe('jsx', () => {
           "type": "jsx-factory",
         },
         {
-          "data": {},
+          "box": BoxNodeMap {
+            "node": JsxOpeningElement,
+            "stack": [],
+            "type": "map",
+            "value": Map {
+              "bg" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "red.200",
+              },
+            },
+          },
+          "data": {
+            "bg": "red.200",
+          },
           "name": "panda.div",
           "type": "jsx-factory",
         },
@@ -124,8 +304,37 @@ describe('jsx', () => {
     expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
+          "box": BoxNodeMap {
+            "node": JsxOpeningElement,
+            "stack": [],
+            "type": "map",
+            "value": Map {
+              "marginLeft" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "literal",
+                "value": "40px",
+              },
+              "marginBottom" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "42px",
+              },
+            },
+          },
           "data": {
             "marginBottom": "42px",
+            "marginLeft": "40px",
           },
           "name": "panda.button",
           "type": "jsx-factory",
@@ -151,6 +360,37 @@ describe('jsx', () => {
     expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
+          "box": BoxNodeMap {
+            "node": JsxOpeningElement,
+            "stack": [],
+            "type": "map",
+            "value": Map {
+              "css" => BoxNodeMap {
+                "node": ObjectLiteralExpression,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ObjectLiteralExpression,
+                ],
+                "type": "map",
+                "value": Map {
+                  "bg" => BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ObjectLiteralExpression,
+                      PropertyAssignment,
+                      StringLiteral,
+                    ],
+                    "type": "literal",
+                    "value": "red.200",
+                  },
+                },
+              },
+            },
+          },
           "data": {
             "css": {
               "bg": "red.200",
@@ -191,6 +431,23 @@ describe('jsx', () => {
     expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
+          "box": BoxNodeMap {
+            "node": JsxSelfClosingElement,
+            "stack": [],
+            "type": "map",
+            "value": Map {
+              "backgroundImage" => BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "linear-gradient( 135deg, hsla(0, 0%, 100%, 0.75) 10%, transparent 0, transparent 50%, hsla(0, 0%, 100%, 0.75) 0, hsla(0, 0%, 100%, 0.75) 60%, transparent 0, transparent )",
+              },
+            },
+          },
           "data": {
             "backgroundImage": "linear-gradient( 135deg, hsla(0, 0%, 100%, 0.75) 10%, transparent 0, transparent 50%, hsla(0, 0%, 100%, 0.75) 0, hsla(0, 0%, 100%, 0.75) 60%, transparent 0, transparent )",
           },

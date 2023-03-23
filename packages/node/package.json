@@ -20,9 +20,9 @@
   },
   "dependencies": {
     "@pandacss/config": "workspace:*",
-    "@pandacss/generator": "workspace:*",
     "@pandacss/core": "workspace:*",
     "@pandacss/error": "workspace:*",
+    "@pandacss/generator": "workspace:*",
     "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/parser": "workspace:*",
@@ -31,8 +31,11 @@
     "@pandacss/types": "workspace:*",
     "chokidar": "^3.5.3",
     "fast-glob": "^3.2.12",
+    "file-size": "^1.0.0",
+    "filesize": "^10.0.6",
     "fs-extra": "11.1.1",
     "glob-parent": "^6.0.2",
+    "gzip-size": "^6.0.0",
     "hookable": "5.5.1",
     "is-glob": "^4.0.3",
     "javascript-stringify": "2.1.0",
@@ -44,8 +47,8 @@
     "pluralize": "8.0.0",
     "postcss": "8.4.21",
     "preferred-pm": "^3.0.3",
-    "ts-pattern": "4.2.1",
-    "ts-morph": "17.0.1"
+    "ts-morph": "17.0.1",
+    "ts-pattern": "4.2.1"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",

@@ -21,5 +21,9 @@ export async function loadConfigAndCreateContext(options: { cwd?: string; config
   if (config) {
     Object.assign(conf.config, config)
   }
+  if (options.cwd) {
+    conf.config.cwd = options.cwd
+  }
+
   return createContext(conf)
 }

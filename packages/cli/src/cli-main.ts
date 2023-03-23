@@ -1,5 +1,7 @@
+import { findConfigFile } from '@pandacss/config'
 import { colors, logger } from '@pandacss/logger'
 import {
+  analyzeTokens,
   emitArtifacts,
   extractCss,
   generate,
@@ -7,6 +9,7 @@ import {
   setupConfig,
   setupGitIgnore,
   setupPostcss,
+  writeAnalyzeJSON,
 } from '@pandacss/node'
 import { compact } from '@pandacss/shared'
 import { cac } from 'cac'
@@ -14,7 +17,7 @@ import { readFileSync } from 'fs'
 import path, { join } from 'path'
 import updateNotifier from 'update-notifier'
 import packageJson from '../package.json' assert { type: 'json' }
-import { serveStudio, buildStudio, previewStudio } from './studio'
+import { buildStudio, previewStudio, serveStudio } from './studio'
 
 export async function main() {
   const cli = cac('panda')
@@ -131,6 +134,62 @@ export async function main() {
       }
     })
 
+  cli
+    .command('analyze [path]', 'Anaylyze design token usage in path')
+    .option('--json [filepath]', 'Output analyze report in JSON')
+    // .option('--html [dir]', 'Output analyze report in interactive web page')
+    .option('--silent', "Don't print any logs")
+    .option('--only', "Only analyze given filepath, skip config's include/exclude")
+    .option('--mode [mode]', 'box-extractor || internal')
+    .action(
+      async (
+        maybePath?: string,
+        flags?: { silent?: boolean; json?: string; html?: string; mode?: ParserMode; only?: boolean },
+      ) => {
+        const { silent, mode = 'internal', only } = flags ?? {}
+        if (silent) logger.level = 'silent'
+
+        const configPath = (maybePath && findConfigFile({ cwd: maybePath })) ?? undefined
+        const cwd = configPath ? path.dirname(configPath) : maybePath ?? process.cwd()
+
+        const ctx = await loadConfigAndCreateContext({
+          cwd,
+          configPath,
+          config: only ? { include: [maybePath] } : (undefined as any),
+        })
+        logger.info('cli', `Found config at ${colors.bold(ctx.path)}, using mode=[${colors.bold(mode)}]`)
+
+        const result = analyzeTokens(ctx, {
+          onResult: (file) => {
+            logger.info('cli', `Analyzed ${colors.bold(file)}`)
+          },
+          mode,
+        })
+
+        logger.info('cli', result.counts)
+        const { mostUseds, ...stats } = result.stats
+        logger.info('cli', stats)
+        logger.info('cli', mostUseds)
+
+        if (flags?.json && typeof flags.json === 'string') {
+          await writeAnalyzeJSON(flags.json, result, ctx)
+
+          logger.info('cli', `JSON report saved to ${flags.json}`)
+          return
+        }
+
+        // single file bundle is not supported yet
+        // if (flags?.html && typeof flags.html === 'string') {
+        //   return
+        // }
+
+        logger.info(
+          'cli',
+          `Found ${result.details.byId.size} token used in ${result.details.byFilePathMaps.size} files`,
+        )
+      },
+    )
+
   cli.help()
 
   cli.version(pkgJson.version)
@@ -140,3 +199,5 @@ export async function main() {
 
   updateNotifier({ pkg: packageJson, distTag: 'dev' }).notify()
 }
+
+type ParserMode = NonNullable<Parameters<typeof analyzeTokens>[1]>['mode']

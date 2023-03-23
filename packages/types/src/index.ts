@@ -1,7 +1,16 @@
+export type {
+  ReportInstanceItem,
+  ReportItem,
+  ReportItemType,
+  AnalysisReport,
+  AnalysisReportJSON,
+  ReportInstanceItemJSON,
+  ReportItemJSON,
+} from './analyze-report'
 export type { CompositionStyles, LayerStyles, TextStyles } from './composition'
 export type { ConditionDetails, Conditions, ConditionType, RawCondition } from './conditions'
 export type { Config, LoadConfigResult, Preset, UserConfig } from './config'
-export type { ParserResult } from './parser'
+export type { ParserResult, ResultItem } from './parser'
 export type { Part, Parts } from './parts'
 export type { PatternConfig, PatternHelpers, PatternProperty } from './pattern'
 export type { RecipeConfig, RecipeVariantRecord } from './recipe'

@@ -32,12 +32,13 @@ export function extractFile(ctx: PandaContext, file: string) {
     Obj.bind(
       'result',
       tryCatch(
-        ({ file }) => ctx.project.parseSourceFile(file),
+        ({ file }) => ctx.project.parseSourceFile(file, ctx.properties),
         (error) => logger.error('file:parse', error),
       ),
     ),
+    Obj.bind('measureCss', () => logger.time.debug(`Parsed ${file}`)),
     Obj.bind('css', ({ result }) => (result ? ctx.getParserCss(result) : undefined)),
-    tap(({ measure }) => measure()),
+    tap(({ measure, measureCss }) => [measureCss(), measure()]),
     Obj.get('css'),
   )
 }

@@ -1,18 +1,21 @@
-type Result = {
+import type { BoxNodeMap, BoxNodeList } from '@box-extractor/core'
+
+export type ResultItem = {
   name?: string
   data: Record<string, any>
   type?: string
+  box?: BoxNodeList | BoxNodeMap
 }
 
 export type ParserResult = {
-  jsx: Set<Result>
-  css: Set<Result>
-  cva: Set<Result>
-  recipe: Map<string, Set<Result>>
-  pattern: Map<string, Set<Result>>
-  set: (name: 'cva' | 'css', result: Result) => void
-  setCva: (result: Result) => void
-  setRecipe: (name: string, result: Result) => void
-  setPattern: (name: string, result: Result) => void
+  jsx: Set<ResultItem>
+  css: Set<ResultItem>
+  cva: Set<ResultItem>
+  recipe: Map<string, Set<ResultItem>>
+  pattern: Map<string, Set<ResultItem>>
+  set: (name: 'cva' | 'css', result: ResultItem) => void
+  setCva: (result: ResultItem) => void
+  setRecipe: (name: string, result: ResultItem) => void
+  setPattern: (name: string, result: ResultItem) => void
   isEmpty: () => boolean
 }

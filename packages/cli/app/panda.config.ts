@@ -1,3 +1,4 @@
+import type { PatternConfig, Config } from '@pandacss/types'
 import config from '../src/presets'
 
 export default {
@@ -18,6 +19,21 @@ export default {
       },
     },
   },
+  patterns: {
+    ...config.patterns,
+    styledLink: {
+      properties: {},
+      transform: (props) => ({
+        display: 'inline-flex',
+        alignItems: 'center',
+        opacity: '0.5',
+        borderBottom: '1px solid transparent',
+        cursor: 'pointer',
+        _hover: { opacity: 1, borderBottomColor: 'black' },
+        ...props,
+      }),
+    } as PatternConfig,
+  },
   utilities: {
     ...config.utilities,
     borderSlim: {
@@ -33,7 +49,15 @@ export default {
     },
   },
   jsxFramework: 'react',
-
+  staticCss: {
+    css: [
+      {
+        properties: {
+          color: ['red.400'],
+        },
+      },
+    ],
+  },
   globalCss: {
     ':root': {
       fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif',
@@ -62,4 +86,4 @@ export default {
       minHeight: '100vh',
     },
   },
-}
+} as Config
