@@ -33,7 +33,7 @@
     "postcss-merge-rules": "^5.1.4",
     "postcss-selector-parser": "^6.0.11",
     "autoprefixer": "10.4.14",
-    "ts-pattern": "4.2.1",
+    "ts-pattern": "4.2.2",
     "lodash.merge": "4.6.2"
   },
   "devDependencies": {

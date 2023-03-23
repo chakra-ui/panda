@@ -21,7 +21,7 @@
   "dependencies": {
     "@pandacss/types": "workspace:*",
     "@pandacss/shared": "workspace:*",
-    "ts-pattern": "4.2.1"
+    "ts-pattern": "4.2.2"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*"
