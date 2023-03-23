@@ -32,11 +32,6 @@ function vitePlugin() {
           await viteServer.reloadModule(module)
         }
       })
-
-      viteServer.middlewares.use('/__peek', (req, res, next) => {
-        console.log('req')
-        next()
-      })
     },
     resolveId(id) {
       if (id === virtualModuleId) {

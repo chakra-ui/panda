@@ -6,4 +6,9 @@ import virtualPanda from './virtual-panda.mjs'
 export default defineConfig({
   outDir: process.env.ASTRO_OUT_DIR,
   integrations: [react(), virtualPanda()],
+  vite: {
+    ssr: {
+      noExternal: ['@ark-ui/react'],
+    },
+  },
 })
