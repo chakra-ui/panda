@@ -311,7 +311,7 @@ importers:
 
   packages/parser:
     specifiers:
-      '@box-extractor/core': ^0.8.4
+      '@box-extractor/core': ^0.9.0
       '@pandacss/fixture': workspace:*
       '@pandacss/is-valid-prop': workspace:*
       '@pandacss/logger': workspace:*
@@ -321,7 +321,7 @@ importers:
       ts-morph: 17.0.1
       ts-pattern: 4.2.1
     dependencies:
-      '@box-extractor/core': 0.8.4
+      '@box-extractor/core': 0.9.0
       '@pandacss/is-valid-prop': link:../is-valid-prop
       '@pandacss/logger': link:../logger
       '@pandacss/shared': link:../shared
@@ -375,11 +375,11 @@ importers:
 
   packages/types:
     specifiers:
-      '@box-extractor/core': ^0.8.4
+      '@box-extractor/core': ^0.9.0
       chokidar-cli: ^3.0.0
       csstype: 3.1.1
     dependencies:
-      '@box-extractor/core': 0.8.4
+      '@box-extractor/core': 0.9.0
     devDependencies:
       chokidar-cli: 3.0.0
       csstype: 3.1.1
@@ -2285,10 +2285,8 @@ packages:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
 
-  /@box-extractor/core/0.8.4:
-    resolution: {integrity: sha512-YxOUyCJTIFZ8lS759Zx2mY2/+oXaZFYWdrL7dui2Q2pTwAz2/CQCZ9CEZOGWOoqrmVrAxv7851LCyE4q4h4hPQ==}
-    peerDependencies:
-      vite: ^2.2.3 || ^3.0.0 || ^4.0.3
+  /@box-extractor/core/0.9.0:
+    resolution: {integrity: sha512-6p9M4Yd+iJlWTTDhqjPGIrSTV0FvIW56KQIgwgpn1c5s0cFSy6XeeQGCxoFaN/LfmkI/21IKEbe5pTWQlcuTpw==}
     dependencies:
       '@box-extractor/logger': 0.2.1
       '@types/debug': 4.1.7
