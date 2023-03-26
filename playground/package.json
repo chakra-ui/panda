@@ -26,7 +26,7 @@
     "@types/react-dom": "18.0.11",
     "merge-anything": "^5.1.4",
     "monaco-editor": "0.36.1",
-    "nanoid": "4.0.1",
+    "nanoid": "4.0.2",
     "next": "13.2.4",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",

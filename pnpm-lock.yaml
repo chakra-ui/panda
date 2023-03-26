@@ -377,7 +377,7 @@ importers:
       eslint-config-next: 13.2.4
       merge-anything: ^5.1.4
       monaco-editor: 0.36.1
-      nanoid: 4.0.1
+      nanoid: 4.0.2
       next: 13.2.4
       os-browserify: ^0.3.0
       path-browserify: ^1.0.1
@@ -405,7 +405,7 @@ importers:
       '@types/react-dom': 18.0.11
       merge-anything: 5.1.4
       monaco-editor: 0.36.1
-      nanoid: 4.0.1
+      nanoid: 4.0.2
       next: 13.2.4_biqbaboplfbrettd7655fr4n2y
       os-browserify: 0.3.0
       path-browserify: 1.0.1
@@ -3872,7 +3872,7 @@ packages:
       is-docker: 3.0.0
       jiti: 1.18.2
       mri: 1.2.0
-      nanoid: 4.0.1
+      nanoid: 4.0.2
       node-fetch: 3.3.0
       ofetch: 1.0.1
       parse-git-config: 3.0.0
@@ -14177,8 +14177,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  /nanoid/4.0.1:
-    resolution: {integrity: sha512-udKGtCCUafD3nQtJg9wBhRP3KMbPglUsgV5JVsXhvyBs/oefqb4sqMEhKBBgqZncYowu58p1prsZQBYvAj/Gww==}
+  /nanoid/4.0.2:
+    resolution: {integrity: sha512-7ZtY5KTCNheRGfEFxnedV5zFiORN1+Y1N6zvPTnHQd8ENUvfaDBeuJDZb2bN/oXwXxu3qkTXDzy57W5vAmDTBw==}
     engines: {node: ^14 || ^16 || >=18}
     hasBin: true
 
