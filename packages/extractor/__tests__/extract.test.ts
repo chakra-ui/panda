@@ -1,6 +1,6 @@
 import { SourceFile } from 'ts-morph'
 import { afterEach, expect, it } from 'vitest'
-import { getBoxLiteralValue } from '../src/getBoxLiteralValue'
+import { getBoxLiteralValue } from '../src/get-box-literal-value'
 import type { ComponentMatchers, ExtractedFunctionResult, ExtractOptions } from '../src/types'
 import { createProject, getTestExtract } from './createProject'
 // @ts-ignore

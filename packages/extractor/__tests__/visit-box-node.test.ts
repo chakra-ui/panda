@@ -2,7 +2,7 @@ import { expect, it, test } from 'vitest'
 import { type BoxNode, BoxNodeMap } from '../src/type-factory'
 import { type ExtractedFunctionResult } from '../src/types'
 import { unbox } from '../src/unbox'
-import { visitBoxNode } from '../src/visitBoxNode'
+import { visitBoxNode } from '../src/visit-box-node'
 import { createProject, getTestExtract, type TestExtractOptions } from './createProject'
 
 const project = createProject()

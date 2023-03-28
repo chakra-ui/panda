@@ -1,6 +1,6 @@
 import { ts } from 'ts-morph'
 import { expect, test } from 'vitest'
-import { extractAtRange, getTsNodeAtPosition } from '../src/extractAtRange'
+import { extractAtRange, getTsNodeAtPosition } from '../src/extract-at-range'
 import { createProject } from './createProject'
 
 const project = createProject()
