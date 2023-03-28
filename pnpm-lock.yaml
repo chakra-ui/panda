@@ -325,7 +325,7 @@ importers:
 
   packages/parser:
     specifiers:
-      '@box-extractor/core': ^0.9.0
+      '@pandacss/extractor': workspace:*
       '@pandacss/fixture': workspace:*
       '@pandacss/is-valid-prop': workspace:*
       '@pandacss/logger': workspace:*
@@ -335,7 +335,7 @@ importers:
       ts-morph: 17.0.1
       ts-pattern: 4.2.2
     dependencies:
-      '@box-extractor/core': 0.9.0
+      '@pandacss/extractor': link:../extractor
       '@pandacss/is-valid-prop': link:../is-valid-prop
       '@pandacss/logger': link:../logger
       '@pandacss/shared': link:../shared
@@ -389,11 +389,11 @@ importers:
 
   packages/types:
     specifiers:
-      '@box-extractor/core': ^0.9.0
+      '@pandacss/extractor': workspace:*
       chokidar-cli: ^3.0.0
       csstype: 3.1.1
     dependencies:
-      '@box-extractor/core': 0.9.0
+      '@pandacss/extractor': link:../extractor
     devDependencies:
       chokidar-cli: 3.0.0
       csstype: 3.1.1

@@ -1,4 +1,4 @@
-import type { BoxNodeMap, BoxNodeList } from '@box-extractor/core'
+import type { BoxNodeMap, BoxNodeList } from '@pandacss/extractor'
 
 export type ResultItem = {
   name?: string

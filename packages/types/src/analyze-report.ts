@@ -1,4 +1,4 @@
-import type { BoxNodeEmptyInitializer, BoxNodeLiteral, BoxNodeMap } from '@box-extractor/core'
+import type { BoxNodeEmptyInitializer, BoxNodeLiteral, BoxNodeMap } from '@pandacss/extractor'
 import type { Config } from './config'
 
 export type ReportItemType = 'object' | 'cva' | 'pattern' | 'recipe' | 'jsx' | 'jsx-factory'

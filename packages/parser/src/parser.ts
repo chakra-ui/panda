@@ -1,4 +1,4 @@
-import { BoxNodeMap, extract, unbox } from '@box-extractor/core'
+import { BoxNodeMap, extract, unbox } from '@pandacss/extractor'
 import { logger } from '@pandacss/logger'
 import { memo } from '@pandacss/shared'
 import type { ResultItem } from '@pandacss/types'
