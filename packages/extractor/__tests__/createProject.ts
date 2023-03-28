@@ -1,6 +1,6 @@
 import { Project, ts } from 'ts-morph'
 import { extract } from '../src/extract'
-import { ExtractOptions } from '../src/types'
+import { type ExtractOptions } from '../src/types'
 
 export const createProject = () => {
   return new Project({

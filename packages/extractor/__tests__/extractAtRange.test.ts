@@ -56,9 +56,7 @@ export default function Scene() {
 
 test('getTsNodeAtPosition', () => {
   const sourceFile = getSourceFile(codeSample)
-  let node
-
-  node = getTsNodeAtPosition(sourceFile, 1, 1)
+  let node = getTsNodeAtPosition(sourceFile, 1, 1)!
   expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot(`
     [
       "import",
@@ -66,7 +64,7 @@ test('getTsNodeAtPosition', () => {
     ]
   `)
 
-  node = getTsNodeAtPosition(sourceFile, 15, 19)
+  node = getTsNodeAtPosition(sourceFile, 15, 19)!
   expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot(`
     [
       "abc",
@@ -74,7 +72,7 @@ test('getTsNodeAtPosition', () => {
     ]
   `)
 
-  node = getTsNodeAtPosition(sourceFile, 19, 12)
+  node = getTsNodeAtPosition(sourceFile, 19, 12)!
   expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot(`
     [
       "factory",
@@ -82,7 +80,7 @@ test('getTsNodeAtPosition', () => {
     ]
   `)
 
-  node = getTsNodeAtPosition(sourceFile, 20, 12)
+  node = getTsNodeAtPosition(sourceFile, 20, 12)!
   expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot(`
     [
       "SceneAlt",
@@ -90,7 +88,7 @@ test('getTsNodeAtPosition', () => {
     ]
   `)
 
-  node = getTsNodeAtPosition(sourceFile, 31, 13)
+  node = getTsNodeAtPosition(sourceFile, 31, 13)!
   expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot(`
     [
       "Cylinder",
@@ -98,7 +96,7 @@ test('getTsNodeAtPosition', () => {
     ]
   `)
 
-  node = getTsNodeAtPosition(sourceFile, 37, 14)
+  node = getTsNodeAtPosition(sourceFile, 37, 14)!
   expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot(`
     [
       "position",

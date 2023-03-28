@@ -1,10 +1,10 @@
 import { SourceFile } from 'ts-morph'
 import { afterEach, expect, it } from 'vitest'
 import { getBoxLiteralValue } from '../src/getBoxLiteralValue'
-import type { ExtractedFunctionResult, ExtractOptions } from '../src/types'
+import type { ComponentMatchers, ExtractedFunctionResult, ExtractOptions } from '../src/types'
 import { createProject, getTestExtract } from './createProject'
 // @ts-ignore
-import { default as ExtractSample } from './ExtractSample?raw'
+import { default as ExtractSample } from './samples/ExtractSample?raw'
 
 const project = createProject()
 
@@ -20,7 +20,7 @@ const config: Record<string, string[]> = {
   ColorBox: ['color', 'backgroundColor', 'zIndex', 'fontSize', 'display', 'mobile', 'tablet', 'desktop', 'css'],
 }
 
-const componentsMatcher = {
+const componentsMatcher: ComponentMatchers = {
   matchTag: ({ tagName }) => Boolean(config[tagName]),
   matchProp: ({ tagName, propName }) => config[tagName].includes(propName),
 }

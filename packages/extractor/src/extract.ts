@@ -4,7 +4,14 @@ import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
 import { extractCallExpressionArguments } from './extractCallExpressionArguments'
 import { extractJsxAttribute } from './extractJsxAttribute'
 import { extractJsxSpreadAttributeValues } from './extractJsxSpreadAttributeValues'
-import { box, BoxNode, BoxNodeMap, BoxNodeObject, castObjectLikeAsMapValue, MapTypeValue } from './type-factory'
+import {
+  box,
+  type BoxNode,
+  BoxNodeMap,
+  BoxNodeObject,
+  castObjectLikeAsMapValue,
+  type MapTypeValue,
+} from './type-factory'
 import type {
   ExtractedComponentInstance,
   ExtractedComponentResult,

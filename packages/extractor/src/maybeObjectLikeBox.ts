@@ -6,7 +6,7 @@ import { evaluateNode, isEvalError } from './evaluate'
 import { maybeBoxNode, maybeExpandConditionalExpression, maybePropName } from './maybeBoxNode'
 import {
   box,
-  BoxNode,
+  type BoxNode,
   BoxNodeConditional,
   BoxNodeLiteral,
   BoxNodeMap,

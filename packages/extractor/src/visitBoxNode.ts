@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { box, BoxNode } from './type-factory'
+import { box, type BoxNode } from './type-factory'
 
 export type BoxTraversalControl = {
   /**

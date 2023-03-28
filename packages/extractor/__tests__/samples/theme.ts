@@ -151,7 +151,7 @@ const twBreakpointsToAppBreakpoints = (breakpointsMap: TwResponsiveBreakpointsMa
     ]),
   ) as Record<TwResponsiveBreakpoints, ConfigConditions[string]>
 
-const defineProperties = (props: any) => ''
+const defineProperties = (_props: any) => ''
 
 export const tw = defineProperties({
   conditions: {

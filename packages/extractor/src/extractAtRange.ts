@@ -4,7 +4,7 @@ import { JsxOpeningElement, JsxSelfClosingElement, Node, SourceFile, ts } from '
 import { extractCallExpressionArguments } from './extractCallExpressionArguments'
 import { extractJsxAttribute } from './extractJsxAttribute'
 import { extractJsxSpreadAttributeValues } from './extractJsxSpreadAttributeValues'
-import { box, BoxNode } from './type-factory'
+import { box, type BoxNode } from './type-factory'
 import type { BoxContext, ComponentMatchers, FunctionMatchers } from './types'
 
 const logger = createLogger('box-ex:extractor:extractAtRange')

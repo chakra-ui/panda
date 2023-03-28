@@ -532,6 +532,7 @@ const properties = [
 const set = new Set(properties)
 const map = new Map(properties.map((p) => [p, true]))
 const object = properties.reduce((acc, p) => {
+  // @ts-ignore
   acc[p] = true
   return acc
 }, {})
@@ -572,6 +573,7 @@ describe('forEach - prop array.includes vs set.has vs map.get vs map.has vs obje
   })
 
   bench('object bracket', () => {
+    // @ts-ignore
     const hasStyle = (propName: string) => object[propName]
     properties.forEach(hasStyle)
   })
@@ -611,6 +613,7 @@ describe('hardcoded - prop array.includes vs set.has vs map.get vs map.has vs ob
   })
 
   bench('object bracket', () => {
+    // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/dot-notation
     const hasStyle = () => object['width']
     hasStyle()

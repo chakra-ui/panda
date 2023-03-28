@@ -1,4 +1,4 @@
-import { BindingName, CallExpression, Identifier, Node, SourceFile, ts } from 'ts-morph'
+import { type BindingName, CallExpression, Identifier, Node, SourceFile, ts } from 'ts-morph'
 
 import { createLogger } from './logger'
 import { extract } from './extract'

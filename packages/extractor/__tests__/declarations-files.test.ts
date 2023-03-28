@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { createProject, getTestExtract, TestExtractOptions } from './createProject'
+import { createProject, getTestExtract, type TestExtractOptions } from './createProject'
 // @ts-ignore
 import { default as ThemeSample } from './samples/theme?raw'
 

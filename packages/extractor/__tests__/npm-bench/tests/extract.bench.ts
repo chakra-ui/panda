@@ -7,7 +7,7 @@ import { extract as extract090 } from '@box-extractor/core-0-9-0'
 import { Project, ts } from 'ts-morph'
 import { extract } from '../../../src/extract'
 // @ts-expect-error
-import { default as ExtractSample } from '../../ExtractSample?raw'
+import { default as ExtractSample } from '../../samples/ExtractSample?raw'
 import { createProject } from '../../createProject'
 
 const project: Project = createProject()

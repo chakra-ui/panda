@@ -23,7 +23,7 @@ import { Node, ts } from 'ts-morph'
 import { safeEvaluateNode } from './evaluate'
 import { findIdentifierValueDeclaration } from './findIdentifierValueDeclaration'
 import { maybeObjectLikeBox } from './maybeObjectLikeBox'
-import { box, BoxNode, ConditionalKind, isBoxNode, LiteralValue } from './type-factory'
+import { box, type BoxNode, type ConditionalKind, isBoxNode, type LiteralValue } from './type-factory'
 import type { BoxContext, EvaluatedObjectResult, PrimitiveType } from './types'
 import { isNotNullish, isObject, trimWhitespace, unwrapExpression } from './utils'
 
