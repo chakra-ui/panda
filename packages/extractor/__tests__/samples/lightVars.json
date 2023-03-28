@@ -1,0 +1,177 @@
+[
+  {
+    "name": "assignVars",
+    "box": {
+      "stack": [],
+      "type": "list",
+      "node": "CallExpression",
+      "value": [
+        {
+          "stack": ["CallExpression", "Identifier"],
+          "type": "unresolvable",
+          "node": "Identifier"
+        },
+        {
+          "stack": ["CallExpression", "ObjectLiteralExpression"],
+          "type": "map",
+          "node": "CallExpression",
+          "value": {
+            "color": {
+              "stack": ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "ObjectLiteralExpression"],
+              "type": "map",
+              "node": "ObjectLiteralExpression",
+              "value": {
+                "mainBg": {
+                  "stack": [
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ElementAccessExpression",
+                    "Identifier",
+                    "StringLiteral",
+                    "Identifier",
+                    "ImportSpecifier",
+                    "SourceFile",
+                    "VariableDeclaration",
+                    "PropertyAssignment"
+                  ],
+                  "type": "literal",
+                  "node": "StringLiteral",
+                  "value": "#95a7d8",
+                  "kind": "string"
+                },
+                "secondaryBg": {
+                  "stack": [
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ElementAccessExpression",
+                    "Identifier",
+                    "StringLiteral",
+                    "Identifier",
+                    "ImportSpecifier",
+                    "SourceFile",
+                    "VariableDeclaration",
+                    "PropertyAssignment"
+                  ],
+                  "type": "literal",
+                  "node": "StringLiteral",
+                  "value": "#8297d1",
+                  "kind": "string"
+                },
+                "text": {
+                  "stack": [
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ElementAccessExpression",
+                    "PropertyAccessExpression",
+                    "StringLiteral",
+                    "PropertyAccessExpression",
+                    "Identifier",
+                    "Identifier",
+                    "ImportSpecifier",
+                    "SourceFile",
+                    "ExportDeclaration",
+                    "SourceFile",
+                    "VariableDeclaration",
+                    "ExportDeclaration",
+                    "SourceFile",
+                    "VariableDeclaration",
+                    "VariableDeclaration"
+                  ],
+                  "type": "literal",
+                  "node": "StringLiteral",
+                  "value": "#4299e1",
+                  "kind": "string"
+                },
+                "bg": {
+                  "stack": [
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ElementAccessExpression",
+                    "Identifier",
+                    "StringLiteral",
+                    "Identifier",
+                    "ImportSpecifier",
+                    "SourceFile",
+                    "VariableDeclaration",
+                    "PropertyAssignment"
+                  ],
+                  "type": "literal",
+                  "node": "StringLiteral",
+                  "value": "#39539b",
+                  "kind": "string"
+                },
+                "bgSecondary": {
+                  "stack": [
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ElementAccessExpression",
+                    "Identifier",
+                    "StringLiteral",
+                    "Identifier",
+                    "ImportSpecifier",
+                    "SourceFile",
+                    "VariableDeclaration",
+                    "PropertyAssignment"
+                  ],
+                  "type": "literal",
+                  "node": "StringLiteral",
+                  "value": "#6f88cb",
+                  "kind": "string"
+                },
+                "bgHover": {
+                  "stack": [
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ElementAccessExpression",
+                    "Identifier",
+                    "StringLiteral",
+                    "Identifier",
+                    "ImportSpecifier",
+                    "SourceFile",
+                    "VariableDeclaration",
+                    "PropertyAssignment"
+                  ],
+                  "type": "literal",
+                  "node": "StringLiteral",
+                  "value": "#a7b6df",
+                  "kind": "string"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "unboxed": [
+      null,
+      {
+        "color": {
+          "mainBg": "#95a7d8",
+          "secondaryBg": "#8297d1",
+          "text": "#4299e1",
+          "bg": "#39539b",
+          "bgSecondary": "#6f88cb",
+          "bgHover": "#a7b6df"
+        }
+      }
+    ]
+  }
+]

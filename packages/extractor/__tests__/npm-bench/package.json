@@ -1,0 +1,14 @@
+{
+  "name": "box-extractor-npm-bench",
+  "scripts": {
+    "test": "vitest",
+    "bench": "vitest bench"
+  },
+  "dependencies": {
+    "@box-extractor/core-0-8-0": "npm:@box-extractor/core@0.8.0",
+    "@box-extractor/core-0-7-5": "npm:@box-extractor/core@0.7.5"
+  },
+  "devDependencies": {
+    "vitest": "^0.28.5"
+  }
+}

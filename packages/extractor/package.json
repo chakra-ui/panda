@@ -1,0 +1,39 @@
+{
+  "name": "@pandacss/extractor",
+  "version": "0.0.1",
+  "description": "The css extractor for css panda",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
+    "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
+    "dev": "pnpm build-fast --watch",
+    "format": "prettier --write \"./{src,tests}/**/*\"",
+    "test": "vitest",
+    "test:ci": "vitest run",
+    "lint:ts": "tsc --noEmit"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "callsites": "^4.0.0",
+    "humanize-duration": "^3.28.0",
+    "picocolors": "^1.0.0",
+    "ts-evaluator": "^1.1.0",
+    "ts-morph": "17.0.1",
+    "ts-pattern": "4.2.2"
+  },
+  "devDependencies": {
+    "@types/humanize-duration": "^3.27.1",
+    "prettier": "2.8.7",
+    "typescript": "4.9.5",
+    "vitest": "0.29.7"
+  }
+}
