@@ -21,6 +21,7 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -56,6 +57,7 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -100,6 +102,7 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -135,6 +138,7 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -180,11 +184,13 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
               "marginTop" => BoxNodeMap {
                 "node": ObjectLiteralExpression,
+                "spreadConditions": undefined,
                 "stack": [
                   JsxAttribute,
                   JsxExpression,
@@ -207,6 +213,7 @@ describe('jsx', () => {
                   },
                   "md" => BoxNodeMap {
                     "node": ObjectLiteralExpression,
+                    "spreadConditions": undefined,
                     "stack": [
                       JsxAttribute,
                       JsxExpression,
@@ -262,6 +269,7 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -306,6 +314,7 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -362,11 +371,13 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
               "css" => BoxNodeMap {
                 "node": ObjectLiteralExpression,
+                "spreadConditions": undefined,
                 "stack": [
                   JsxAttribute,
                   JsxExpression,
@@ -433,6 +444,7 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxSelfClosingElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {

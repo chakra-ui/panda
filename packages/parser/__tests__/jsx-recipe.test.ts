@@ -23,6 +23,7 @@ describe('pattern jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -58,6 +59,7 @@ describe('pattern jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -73,6 +75,7 @@ describe('pattern jsx', () => {
               },
               "variant" => BoxNodeMap {
                 "node": ObjectLiteralExpression,
+                "spreadConditions": undefined,
                 "stack": [
                   JsxAttribute,
                   JsxExpression,

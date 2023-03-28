@@ -23,6 +23,7 @@ describe('ast parser', () => {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -65,6 +66,7 @@ describe('ast parser', () => {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -85,6 +87,7 @@ describe('ast parser', () => {
                 },
                 "margin" => BoxNodeMap {
                   "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
                   "stack": [
                     CallExpression,
                     ObjectLiteralExpression,

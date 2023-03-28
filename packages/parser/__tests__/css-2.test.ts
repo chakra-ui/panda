@@ -44,6 +44,7 @@ describe('ast parser', () => {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -86,6 +87,7 @@ describe('ast parser', () => {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -106,6 +108,7 @@ describe('ast parser', () => {
                 },
                 "margin" => BoxNodeMap {
                   "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
                   "stack": [
                     CallExpression,
                     ObjectLiteralExpression,
@@ -222,6 +225,7 @@ describe('ast parser', () => {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -264,6 +268,7 @@ describe('ast parser', () => {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -284,6 +289,7 @@ describe('ast parser', () => {
                 },
                 "margin" => BoxNodeMap {
                   "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
                   "stack": [
                     CallExpression,
                     ObjectLiteralExpression,
@@ -402,6 +408,7 @@ console.log(
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -410,6 +417,7 @@ console.log(
               "value": Map {
                 "selectors" => BoxNodeMap {
                   "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
                   "stack": [
                     CallExpression,
                     ObjectLiteralExpression,
@@ -420,6 +428,7 @@ console.log(
                   "value": Map {
                     "&:hover" => BoxNodeMap {
                       "node": ObjectLiteralExpression,
+                      "spreadConditions": undefined,
                       "stack": [
                         CallExpression,
                         ObjectLiteralExpression,
@@ -487,6 +496,7 @@ export function Card({ className }) {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,

@@ -29,6 +29,7 @@ describe('[dynamic] ast parser', () => {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -58,6 +59,7 @@ describe('[dynamic] ast parser', () => {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -66,6 +68,7 @@ describe('[dynamic] ast parser', () => {
               "value": Map {
                 "variant" => BoxNodeMap {
                   "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
                   "stack": [
                     CallExpression,
                     ObjectLiteralExpression,
@@ -126,6 +129,7 @@ describe('[dynamic] ast parser', () => {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
