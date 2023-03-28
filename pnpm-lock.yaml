@@ -118,7 +118,7 @@ importers:
       lodash.merge: 4.6.2
       postcss: 8.4.21
       postcss-discard-duplicates: ^5.1.0
-      postcss-discard-empty: ^5.1.1
+      postcss-discard-empty: ^6.0.0
       postcss-merge-rules: ^5.1.4
       postcss-nested: 6.0.1
       postcss-normalize-whitespace: ^5.1.1
@@ -135,7 +135,7 @@ importers:
       lodash.merge: 4.6.2
       postcss: 8.4.21
       postcss-discard-duplicates: 5.1.0_postcss@8.4.21
-      postcss-discard-empty: 5.1.1_postcss@8.4.21
+      postcss-discard-empty: 6.0.0_postcss@8.4.21
       postcss-merge-rules: 5.1.4_postcss@8.4.21
       postcss-nested: 6.0.1_postcss@8.4.21
       postcss-normalize-whitespace: 5.1.1_postcss@8.4.21
@@ -15173,6 +15173,16 @@ packages:
       postcss: ^8.2.15
     dependencies:
       postcss: 8.4.21
+    dev: true
+
+  /postcss-discard-empty/6.0.0_postcss@8.4.21:
+    resolution: {integrity: sha512-b+h1S1VT6dNhpcg+LpyiUrdnEZfICF0my7HAKgJixJLW7BnNmpRH34+uw/etf5AhOlIhIAuXApSzzDzMI9K/gQ==}
+    engines: {node: ^14 || ^16 || >=18.0}
+    peerDependencies:
+      postcss: ^8.2.15
+    dependencies:
+      postcss: 8.4.21
+    dev: false
 
   /postcss-discard-overridden/5.1.0_postcss@8.4.21:
     resolution: {integrity: sha512-21nOL7RqWR1kasIVdKs8HNqQJhFxLsyRfAnUDm4Fe4t4mCWL9OJiHvlHPjcd8zc5Myu89b/7wZDnOSjFgeWRtw==}
