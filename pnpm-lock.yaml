@@ -150,10 +150,7 @@ importers:
 
   packages/extractor:
     specifiers:
-      '@types/humanize-duration': ^3.27.1
-      callsites: ^4.0.0
-      humanize-duration: ^3.28.0
-      picocolors: ^1.0.0
+      '@pandacss/logger': workspace:*
       prettier: 2.8.7
       ts-evaluator: ^1.1.0
       ts-morph: 17.0.1
@@ -161,14 +158,11 @@ importers:
       typescript: 4.9.5
       vitest: 0.29.7
     dependencies:
-      callsites: 4.0.0
-      humanize-duration: 3.28.0
-      picocolors: 1.0.0
+      '@pandacss/logger': link:../logger
       ts-evaluator: 1.1.0_typescript@4.9.5
       ts-morph: 17.0.1
       ts-pattern: 4.2.2
     devDependencies:
-      '@types/humanize-duration': 3.27.1
       prettier: 2.8.7
       typescript: 4.9.5
       vitest: 0.29.7
@@ -5919,10 +5913,6 @@ packages:
 
   /@types/http-cache-semantics/4.0.1:
     resolution: {integrity: sha512-SZs7ekbP8CN0txVG2xVRH6EgKmEm31BOxA07vkFaETzZz1xh+cbt8BcI0slpymvwhx5dlFnQG2rTlPVQn+iRPQ==}
-    dev: true
-
-  /@types/humanize-duration/3.27.1:
-    resolution: {integrity: sha512-K3e+NZlpCKd6Bd/EIdqjFJRFHbrq5TzPPLwREk5Iv/YoIjQrs6ljdAUCo+Lb2xFlGNOjGSE0dqsVD19cZL137w==}
     dev: true
 
   /@types/is-ci/3.0.0:

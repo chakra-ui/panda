@@ -1,12 +1,10 @@
-import { createLogger } from './logger'
+import { logger } from '@pandacss/logger'
 import { evaluate } from 'ts-evaluator'
 import type { Expression } from 'ts-morph'
 import { ts, Node } from 'ts-morph'
 import type { BoxContext } from './types'
 
 const TsEvalError = Symbol('EvalError')
-const logger = createLogger('box-ex:extractor:evaluator')
-
 const cacheMap = new WeakMap<Expression, unknown>()
 
 /**
@@ -38,12 +36,12 @@ export const evaluateNode = (node: Expression, stack: Node[], ctx: BoxContext) =
     ...ctx.getEvaluateOptions?.(node, stack),
   })
 
-  logger({ compilerNodeKind: node.getKindName() })
+  logger.debug('evaluator', { compilerNodeKind: node.getKindName() })
   if (result.success) {
-    logger.scoped('success', result.value)
+    logger.debug('evaluator:success', result.value)
   } else {
-    logger.scoped('error', result.reason.stack)
-    logger.lazyScoped('error-reason', () => ({
+    logger.debug('evaluator:error', result.reason.stack)
+    logger.debug('error-reason', () => ({
       result: {
         name: result.reason.name,
         reason: result.reason.message,
@@ -57,10 +55,10 @@ export const evaluateNode = (node: Expression, stack: Node[], ctx: BoxContext) =
       },
     }))
 
-    if (logger.isEnabled(logger.namespace + ':trace')) {
-      logger.scoped('trace')
-      console.trace()
-    }
+    // if (logger.isEnabled(logger.namespace + ':trace')) {
+    //   logger.scoped('trace')
+    //   console.trace()
+    // }
   }
 
   // TODO BoxNodeUnresolvable kind: "eval-error"

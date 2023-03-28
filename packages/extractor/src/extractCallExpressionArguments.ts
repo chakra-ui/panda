@@ -1,4 +1,3 @@
-import { createLogger } from './logger'
 import type { CallExpression, Node } from 'ts-morph'
 import { maybeBoxNode } from './maybeBoxNode'
 
@@ -6,8 +5,6 @@ import { maybeObjectLikeBox } from './maybeObjectLikeBox'
 import { box } from './type-factory'
 import type { BoxContext, MatchFnArgs, MatchFnArguments, MatchFnPropArgs } from './types'
 import { unwrapExpression } from './utils'
-
-const logger = createLogger('box-ex:extractor:call-expr')
 
 export const extractCallExpressionArguments = (
   node: CallExpression,
@@ -29,13 +26,11 @@ export const extractCallExpressionArguments = (
       const stack = [node, argNode] as Node[]
 
       const maybeValue = maybeBoxNode(argNode, stack, ctx)
-      logger({ extractCallExpression: true, maybeValue })
       if (maybeValue) {
         return maybeValue
       }
 
       const maybeObject = maybeObjectLikeBox(argNode, stack, ctx, matchProp)
-      logger({ maybeObject })
       if (maybeObject) return maybeObject
 
       return box.unresolvable(argNode, stack)

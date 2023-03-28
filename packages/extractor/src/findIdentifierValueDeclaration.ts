@@ -1,9 +1,7 @@
-import { createLogger } from './logger'
+import { logger } from '@pandacss/logger'
 import { Identifier, Node } from 'ts-morph'
 import { getExportedVarDeclarationWithName, getModuleSpecifierSourceFile } from './maybeBoxNode'
 import type { BoxContext } from './types'
-
-const logger = createLogger('box-extractor:extractor:findIdentifierValueDeclaration')
 
 // adapted from https://github.com/dsherret/ts-morph/issues/1351
 
@@ -34,20 +32,20 @@ export function getDeclarationFor(node: Identifier, stack: Node[], ctx: BoxConte
       Node.isBindingElement(parent)) &&
     parent.getNameNode() == node
   ) {
-    logger.scoped('getDeclarationFor', { isDeclarationLike: true, kind: parent.getKindName() })
+    logger.debug('extractor:getDeclarationFor', { isDeclarationLike: true, kind: parent.getKindName() })
     declarationStack.push(parent)
     declaration = parent
   } else if (Node.isImportSpecifier(parent) && parent.getNameNode() == node) {
     if (ctx.flags?.skipTraverseFiles) return
 
     const sourceFile = getModuleSpecifierSourceFile(parent.getImportDeclaration())
-    logger.scoped('getDeclarationFor', { isImportDeclaration: true, sourceFile: Boolean(sourceFile) })
+    logger.debug('extractor:getDeclarationFor', { isImportDeclaration: true, sourceFile: Boolean(sourceFile) })
 
     if (sourceFile) {
       const exportStack = [parent, sourceFile] as Node[]
       const maybeVar = getExportedVarDeclarationWithName(node.getText(), sourceFile, exportStack, ctx)
 
-      logger.scoped('getDeclarationFor', {
+      logger.debug('extractor:getDeclarationFor', {
         from: sourceFile.getFilePath(),
         hasVar: Boolean(maybeVar),
         // maybeVar: maybeVar?.getText(),
@@ -60,7 +58,7 @@ export function getDeclarationFor(node: Identifier, stack: Node[], ctx: BoxConte
     }
   }
 
-  logger.scoped('getDeclarationFor', {
+  logger.debug('extractor:getDeclarationFor', {
     node: node.getKindName(),
     parent: parent.getKindName(),
     declaration: declaration?.getKindName(),
@@ -70,7 +68,6 @@ export function getDeclarationFor(node: Identifier, stack: Node[], ctx: BoxConte
     stack.push(...declarationStack)
   }
 
-  // console.log({ found: node.getText(), parent: parent.getKindName() });
   return declaration
 }
 
@@ -78,11 +75,11 @@ export function getDeclarationFor(node: Identifier, stack: Node[], ctx: BoxConte
 const getInnermostScope = (from: Node) => {
   let scope = from.getParent()
   while (scope && !isScope(scope)) {
-    // logger.scoped("getInnermostScope", scope.getKindName());
+    // logger.debug("getInnermostScope", scope.getKindName());
     scope = scope.getParent()
   }
 
-  logger.scoped('getInnermostScope', { found: scope?.getKindName() })
+  logger.debug('extractor:getInnermostScope', { found: scope?.getKindName() })
   return scope
 }
 
@@ -100,7 +97,7 @@ export function findIdentifierValueDeclaration(
 
   do {
     scope = getInnermostScope(scope!)
-    logger.scoped('find', {
+    logger.debug('extractor:findIdentifierValueDeclaration', {
       identifier: identifier.getText(),
       scope: scope?.getKindName(),
       count: count++,
@@ -110,7 +107,7 @@ export function findIdentifierValueDeclaration(
     const refName = identifier.getText()
     // eslint-disable-next-line @typescript-eslint/no-loop-func
     scope.forEachDescendant((node, traversal) => {
-      // logger.scoped("find", node.getKindName());
+      // logger.debug("find", node.getKindName());
       if (visitedsWithStack.has(node)) {
         traversal.skip()
         innerStack.push(...visitedsWithStack.get(node)!)
@@ -148,7 +145,7 @@ export function findIdentifierValueDeclaration(
       }
     })
 
-    logger.scoped('find', {
+    logger.debug('extractor:findIdentifierValueDeclaration', {
       scope: scope.getKindName(),
       foundNode: foundNode?.getKindName(),
       isUnresolvable,
@@ -162,7 +159,7 @@ export function findIdentifierValueDeclaration(
     }
   } while (scope && !Node.isSourceFile(scope) && !foundNode && !isUnresolvable && count < 100)
 
-  logger.scoped('find', {
+  logger.debug('extractor:findIdentifierValueDeclaration', {
     end: true,
     count,
     scope: scope?.getKindName(),

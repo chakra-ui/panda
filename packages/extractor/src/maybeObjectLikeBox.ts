@@ -1,4 +1,4 @@
-import { createLogger } from './logger'
+import { logger } from '@pandacss/logger'
 import type { ObjectLiteralElementLike, ObjectLiteralExpression } from 'ts-morph'
 import { Node } from 'ts-morph'
 
@@ -16,7 +16,6 @@ import {
 import type { BoxContext, MatchFnPropArgs } from './types'
 import { isNotNullish, isObjectLiteral, unwrapExpression } from './utils'
 
-const logger = createLogger('box-ex:extractor:maybe-object')
 const cacheMap = new WeakMap<Node, MaybeObjectLikeBoxReturn>()
 
 export type MaybeObjectLikeBoxReturn = BoxNodeObject | BoxNodeMap | BoxNodeUnresolvable | BoxNodeConditional | undefined
@@ -28,9 +27,9 @@ export const maybeObjectLikeBox = (
   matchProp?: (prop: MatchFnPropArgs) => boolean,
 ): MaybeObjectLikeBoxReturn => {
   const isCached = cacheMap.has(node)
-  logger({ kind: node.getKindName(), isCached })
+  logger.debug('extractor:object-box', { kind: node.getKindName(), isCached })
   if (isCached) {
-    logger.scoped('cached', { kind: node.getKindName() })
+    logger.debug('extractor:object-box:cached', { kind: node.getKindName() })
     return cacheMap.get(node)
   }
 
@@ -119,22 +118,22 @@ const getObjectLiteralExpressionPropPairs = (
 
       const initializer = unwrapExpression(init)
       stack.push(initializer)
-      logger.scoped('prop', { propName, kind: initializer.getKindName() })
+      logger.debug('extractor:object-box:prop', { propName, kind: initializer.getKindName() })
 
       const maybeValue = maybeBoxNode(initializer, stack, ctx)
-      logger.scoped('prop-value', { propName, hasValue: !!maybeValue })
+      logger.debug('extractor:object-box:prop-value', { propName, hasValue: !!maybeValue })
 
       if (maybeValue) {
-        logger.scoped('prop-value', { propName, maybeValue })
+        logger.debug('extractor:object-box:prop-value', { propName, maybeValue })
         extractedPropValues.push([propName.toString(), maybeValue])
         return
       }
 
       const maybeObject = maybeObjectLikeBox(initializer, stack, ctx)
-      logger.scoped('prop-obj', { propName, hasObject: !!maybeObject })
+      logger.debug('extractor:object-box:prop-obj', { propName, hasObject: !!maybeObject })
       // console.log({ maybeObject });
       if (maybeObject) {
-        logger.scoped('prop-obj', { propName, maybeObject })
+        logger.debug('extractor:object-box:prop-obj', { propName, maybeObject })
         extractedPropValues.push([propName.toString(), maybeObject])
         return
       }
@@ -145,7 +144,7 @@ const getObjectLiteralExpressionPropPairs = (
       stack.push(initializer)
 
       const maybeObject = maybeObjectLikeBox(initializer, stack, ctx, matchProp)
-      logger('isSpreadAssignment', { extracted: Boolean(maybeObject) })
+      logger.debug('extractor:object-box:isSpreadAssignment', { extracted: Boolean(maybeObject) })
       if (!maybeObject) return
 
       if (maybeObject.isObject()) {

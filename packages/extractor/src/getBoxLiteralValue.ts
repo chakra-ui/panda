@@ -1,8 +1,6 @@
 import type { BoxNode, LiteralValue, SingleLiteralValue } from './type-factory'
 import { isNotNullish } from './utils'
 
-// const logger = createLogger("box-ex:extractor:get-literal");
-
 export const cacheMap = new WeakMap()
 const innerGetLiteralValue = (
   node: BoxNode | undefined,

@@ -1,4 +1,4 @@
-import { createLogger } from './logger'
+import { logger } from '@pandacss/logger'
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
 
 import { extractCallExpressionArguments } from './extractCallExpressionArguments'
@@ -24,7 +24,6 @@ import type {
 } from './types'
 import { getComponentName } from './utils'
 
-const logger = createLogger('box-ex:extractor:extract')
 type QueryComponentMap = Map<JsxOpeningElement | JsxSelfClosingElement, { name: string; props: MapTypeValue }>
 
 export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions) => {
@@ -118,7 +117,7 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
           matchProp: objLike.isObject() ? (matchProp as any) : undefined,
         })
         entries.forEach(([propName, propValue]) => {
-          logger.scoped('merge-spread', { jsx: true, propName, propValue: (propValue as any).value })
+          logger.debug('extract:merge-spread', { jsx: true, propName, propValue: (propValue as any).value })
 
           localNodes.set(propName, (localNodes.get(propName) ?? []).concat(propValue))
           componentMap.nodesByProp.set(propName, (componentMap.nodesByProp.get(propName) ?? []).concat(propValue))
@@ -191,7 +190,7 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
       const maybeBox = extractJsxAttribute(node, ctx)
       if (!maybeBox) return
 
-      logger({ propName, maybeBox })
+      logger.debug('extract', { propName })
 
       if (!localExtraction.has(componentName)) {
         localExtraction.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
@@ -262,12 +261,6 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
           })
 
           entries.forEach(([propName, propValue]) => {
-            logger.scoped('merge-spread', {
-              fn: true,
-              propName,
-              propValue: (propValue as any).value,
-            })
-
             localNodes.set(propName, (localNodes.get(propName) ?? []).concat(propValue))
             fnMap.nodesByProp.set(propName, (fnMap.nodesByProp.get(propName) ?? []).concat(propValue))
           })
@@ -323,7 +316,6 @@ function mergeSpreadEntries({ map, matchProp }: { map: MapTypeValue; matchProp?:
       foundPropList.add(propName)
       return true
     })
-  logger.scoped('merge-spread', { extracted: map, merged })
 
   // reverse again to keep the original order
   return merged.reverse()

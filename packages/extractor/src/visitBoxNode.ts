@@ -16,7 +16,6 @@ export type BoxTraversalControl = {
   up(): void
 }
 
-// const logger = createLogger("box-ex:extractor:travesal");
 /**
  *
  * @see adapted from https://github.com/dsherret/ts-morph/blob/latest/packages/ts-morph/src/compiler/ast/common/Node.ts#L692
