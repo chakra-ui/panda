@@ -1,5 +1,5 @@
 import type { Node } from 'ts-morph'
-import type { MaybeObjectLikeBoxReturn } from './maybeObjectLikeBox'
+import type { MaybeObjectLikeBoxReturn } from './maybe-object-like-box'
 import type { EvaluatedObjectResult, PrimitiveType } from './types'
 import { isNotNullish, isObject } from './utils'
 

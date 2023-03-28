@@ -1,9 +1,9 @@
 import { logger } from '@pandacss/logger'
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
 
-import { extractCallExpressionArguments } from './extractCallExpressionArguments'
-import { extractJsxAttribute } from './extractJsxAttribute'
-import { extractJsxSpreadAttributeValues } from './extractJsxSpreadAttributeValues'
+import { extractCallExpressionArguments } from './extract-call-expression-arguments'
+import { extractJsxAttribute } from './extract-jsx-attribute'
+import { extractJsxSpreadAttributeValues } from './extract-jsx-spread-attribute-values'
 import {
   box,
   type BoxNode,

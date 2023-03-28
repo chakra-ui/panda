@@ -1,6 +1,6 @@
 import { logger } from '@pandacss/logger'
 import { Identifier, Node } from 'ts-morph'
-import { getExportedVarDeclarationWithName, getModuleSpecifierSourceFile } from './maybeBoxNode'
+import { getExportedVarDeclarationWithName, getModuleSpecifierSourceFile } from './maybe-box-node'
 import type { BoxContext } from './types'
 
 // adapted from https://github.com/dsherret/ts-morph/issues/1351

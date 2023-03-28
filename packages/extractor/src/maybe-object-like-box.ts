@@ -3,7 +3,7 @@ import type { ObjectLiteralElementLike, ObjectLiteralExpression } from 'ts-morph
 import { Node } from 'ts-morph'
 
 import { evaluateNode, isEvalError } from './evaluate'
-import { maybeBoxNode, maybeExpandConditionalExpression, maybePropName } from './maybeBoxNode'
+import { maybeBoxNode, maybeExpandConditionalExpression, maybePropName } from './maybe-box-node'
 import {
   box,
   type BoxNode,

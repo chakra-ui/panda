@@ -1,8 +1,8 @@
 import type { JsxSpreadAttribute, Node } from 'ts-morph'
 
 import { logger } from '@pandacss/logger'
-import { maybeBoxNode } from './maybeBoxNode'
-import { maybeObjectLikeBox } from './maybeObjectLikeBox'
+import { maybeBoxNode } from './maybe-box-node'
+import { maybeObjectLikeBox } from './maybe-object-like-box'
 import { box } from './type-factory'
 import type { BoxContext, MatchFnPropArgs, MatchPropArgs } from './types'
 import { unwrapExpression } from './utils'
