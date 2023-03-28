@@ -39,1019 +39,1160 @@ const extractFromCode = (code: string, options?: TestExtractOptions) => {
 
 it('extract it all', () => {
   expect(extractFromCode(ExtractSample)).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
+            "color",
+            [
+              "red.200",
+              "yellow.300",
               [
-                  [
-                      "color",
-                      [
-                          "red.200",
-                          "yellow.300",
-                          ["cyan.400", "cyan.500"],
-                          "facebook.400",
-                          "gray.100",
-                          "facebook.500",
-                          ["facebook.600", "gray.200"],
-                          ["gray.200", "gray.300"],
-                          "gray.100",
-                          "facebook.900",
-                          "facebook.900",
-                          "pink.100",
-                          "pink.100",
-                          "pink.100",
-                          "pink.100",
-                          "pink.100",
-                          "facebook.900",
-                          "facebook.900",
-                          "facebook.900",
-                          "gray.100",
-                          "gray.100",
-                          "gray.100",
-                          "gray.100",
-                          "gray.100",
-                          "gray.100",
-                          "gray.100",
-                          "gray.100",
-                          "gray.100",
-                          "gray.100",
-                          "gray.100",
-                          ["gray.600", "gray.800"],
-                          ["gray.700", "gray.100"],
-                          "gray.100",
-                          "facebook.100",
-                          "blackAlpha.400",
-                          "blackAlpha.400",
-                          "facebook.200",
-                          "facebook.200",
-                          "facebook.300",
-                          "twitter.100",
-                          "orange.100",
-                          "orange.200",
-                          "orange.400",
-                          "telegram.300",
-                          {
-                              default: "red.100",
-                              hover: "green.100",
-                              focus: "blue.100",
-                          },
-                          "facebook.900",
-                          "facebook.900",
-                          "facebook.900",
-                          "red.100",
-                          "red.100",
-                          "green.100",
-                          "blue.100",
-                          "yellow.100",
-                          "orange.100",
-                          "orange.300",
-                          "red.100",
-                          "orange.400",
-                      ],
-                  ],
-                  [
-                      "backgroundColor",
-                      [
-                          "blackAlpha.100",
-                          "blackAlpha.100",
-                          "twitter.200",
-                          "twitter.200",
-                          "telegram.400",
-                          {
-                              default: "orange.800",
-                              hover: "telegram.200",
-                              focus: "yellow.700",
-                          },
-                      ],
-                  ],
+                "cyan.400",
+                "cyan.500",
               ],
+              "facebook.400",
+              "gray.100",
+              "facebook.500",
+              [
+                "facebook.600",
+                "gray.200",
+              ],
+              [
+                "gray.200",
+                "gray.300",
+              ],
+              "gray.100",
+              "facebook.900",
+              "facebook.900",
+              "pink.100",
+              "pink.100",
+              "pink.100",
+              "pink.100",
+              "pink.100",
+              "facebook.900",
+              "facebook.900",
+              "facebook.900",
+              "gray.100",
+              "gray.100",
+              "gray.100",
+              "gray.100",
+              "gray.100",
+              "gray.100",
+              "gray.100",
+              "gray.100",
+              "gray.100",
+              "gray.100",
+              "gray.100",
+              [
+                "gray.600",
+                "gray.800",
+              ],
+              [
+                "gray.700",
+                "gray.100",
+              ],
+              "gray.100",
+              "facebook.100",
+              "blackAlpha.400",
+              "blackAlpha.400",
+              "facebook.200",
+              "facebook.200",
+              "facebook.300",
+              "twitter.100",
+              "orange.100",
+              "orange.200",
+              "orange.400",
+              "telegram.300",
               {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.200",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "yellow.300",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "cyan.400",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "cyan.500",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.400",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.500",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                          ],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "facebook.600",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "StringLiteral",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.200",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                          ],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "StringLiteral",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.200",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "StringLiteral",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.300",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ObjectLiteralExpression",
-                              "StringLiteral",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ArrayLiteralExpression",
-                              "NumericLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NumericLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ArrayLiteralExpression",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NumericLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ArrayLiteralExpression",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NumericLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ArrayLiteralExpression",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NumericLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ArrayLiteralExpression",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NumericLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ArrayLiteralExpression",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ElementAccessExpression",
-                              "StringLiteral",
-                              "ArrayLiteralExpression",
-                              "NumericLiteral",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ElementAccessExpression",
-                              "StringLiteral",
-                              "ArrayLiteralExpression",
-                              "NumericLiteral",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ElementAccessExpression",
-                              "StringLiteral",
-                              "ArrayLiteralExpression",
-                              "NumericLiteral",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                          ],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ElementAccessExpression",
-                                  "Identifier",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "PropertyAssignment",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.600",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ElementAccessExpression",
-                                  "Identifier",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "ObjectLiteralExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "ShorthandPropertyAssignment",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "PropertyAccessExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "PropertyAssignment",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.800",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                          ],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "PropertyAssignment",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.700",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "StringLiteral",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.100",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blackAlpha.400",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blackAlpha.400",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.200",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.200",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["Identifier", "BindingElement", "PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.300",
-                          kind: "string",
-                      },
-                      {
-                          stack: [],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "twitter.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.200",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.400",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "telegram.300",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              default: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "red.100",
-                                  kind: "string",
-                              },
-                              hover: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "green.100",
-                                  kind: "string",
-                              },
-                              focus: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "blue.100",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "green.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "yellow.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.300",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.400",
-                          kind: "string",
-                      },
-                  ],
-                  backgroundColor: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blackAlpha.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blackAlpha.100",
-                          kind: "string",
-                      },
-                      {
-                          stack: [],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "twitter.200",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["SpreadAssignment", "CallExpression"],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "twitter.200",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "telegram.400",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              default: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "orange.800",
-                                  kind: "string",
-                              },
-                              hover: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "telegram.200",
-                                  kind: "string",
-                              },
-                              focus: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "yellow.700",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  ],
+                "default": "red.100",
+                "focus": "blue.100",
+                "hover": "green.100",
               },
+              "facebook.900",
+              "facebook.900",
+              "facebook.900",
+              "red.100",
+              "red.100",
+              "green.100",
+              "blue.100",
+              "yellow.100",
+              "orange.100",
+              "orange.300",
+              "red.100",
+              "orange.400",
+            ],
           ],
-      ]
-    `)
+          [
+            "backgroundColor",
+            [
+              "blackAlpha.100",
+              "blackAlpha.100",
+              "twitter.200",
+              "twitter.200",
+              "telegram.400",
+              {
+                "default": "orange.800",
+                "focus": "yellow.700",
+                "hover": "telegram.200",
+              },
+            ],
+          ],
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "red.200",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "yellow.300",
+            },
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "literal",
+                "value": "cyan.500",
+              },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "literal",
+                "value": "cyan.400",
+              },
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.400",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+              ],
+              "type": "literal",
+              "value": "facebook.500",
+            },
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "gray.200",
+              },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "literal",
+                "value": "facebook.600",
+              },
+            },
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  Identifier,
+                  VariableDeclaration,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "gray.300",
+              },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "gray.200",
+              },
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ObjectLiteralExpression,
+                StringLiteral,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ArrayLiteralExpression,
+                NumericLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                NumericLiteral,
+                Identifier,
+                VariableDeclaration,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": "pink.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                NumericLiteral,
+                Identifier,
+                VariableDeclaration,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": "pink.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                NumericLiteral,
+                Identifier,
+                VariableDeclaration,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": "pink.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                NumericLiteral,
+                Identifier,
+                VariableDeclaration,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": "pink.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                NumericLiteral,
+                Identifier,
+                VariableDeclaration,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": "pink.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ElementAccessExpression,
+                StringLiteral,
+                ArrayLiteralExpression,
+                NumericLiteral,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ElementAccessExpression,
+                StringLiteral,
+                ArrayLiteralExpression,
+                NumericLiteral,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ElementAccessExpression,
+                StringLiteral,
+                ArrayLiteralExpression,
+                NumericLiteral,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ElementAccessExpression,
+                  Identifier,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  ObjectLiteralExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  ShorthandPropertyAssignment,
+                  Identifier,
+                  VariableDeclaration,
+                  PropertyAccessExpression,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  PropertyAssignment,
+                ],
+                "type": "literal",
+                "value": "gray.800",
+              },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ElementAccessExpression,
+                  Identifier,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  PropertyAssignment,
+                ],
+                "type": "literal",
+                "value": "gray.600",
+              },
+            },
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "gray.100",
+              },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  Identifier,
+                  VariableDeclaration,
+                  PropertyAssignment,
+                ],
+                "type": "literal",
+                "value": "gray.700",
+              },
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "blackAlpha.400",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "blackAlpha.400",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.200",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.200",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                BindingElement,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.300",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [],
+              "type": "literal",
+              "value": "twitter.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.200",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.400",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "telegram.300",
+            },
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "default" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "red.100",
+                },
+                "hover" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "green.100",
+                },
+                "focus" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "blue.100",
+                },
+              },
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "red.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "red.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "green.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "blue.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "yellow.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.300",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "red.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.400",
+            },
+          ],
+          "backgroundColor" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "blackAlpha.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "blackAlpha.100",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [],
+              "type": "literal",
+              "value": "twitter.200",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [
+                SpreadAssignment,
+                CallExpression,
+              ],
+              "type": "literal",
+              "value": "twitter.200",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "telegram.400",
+            },
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "default" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "orange.800",
+                },
+                "hover" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "telegram.200",
+                },
+                "focus" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "yellow.700",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > StringLiteral (multiple)', () => {
   expect(extractFromCode(`<ColorBox color="red.200" backgroundColor="blackAlpha.100"></ColorBox>`))
     .toMatchInlineSnapshot(`
+      [
+        [
+          "ColorBox",
           [
-              [
-                  "ColorBox",
-                  [
-                      ["color", "red.200"],
-                      ["backgroundColor", "blackAlpha.100"],
-                  ],
-                  {
-                      color: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "red.200",
-                              kind: "string",
-                          },
-                      ],
-                      backgroundColor: [
-                          {
-                              stack: ["JsxAttribute", "StringLiteral"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "blackAlpha.100",
-                              kind: "string",
-                          },
-                      ],
-                  },
-              ],
-          ]
-        `)
+            [
+              "color",
+              "red.200",
+            ],
+            [
+              "backgroundColor",
+              "blackAlpha.100",
+            ],
+          ],
+          Map {
+            "color" => [
+              BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "red.200",
+              },
+            ],
+            "backgroundColor" => [
+              BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "blackAlpha.100",
+              },
+            ],
+          },
+        ],
+      ]
+    `)
 })
 
 it('minimal - groups extract props in parent component instance', () => {
@@ -1065,1813 +1206,2081 @@ it('minimal - groups extract props in parent component instance', () => {
     { tagNameList: ['ColorBox'] },
   )
   expect(extracted.get('ColorBox')!.queryList).toMatchInlineSnapshot(`
-      [
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.200",
-                          kind: "string",
-                      },
-                  },
-              },
+    [
+      {
+        "box": BoxNodeMap {
+          "node": JsxSelfClosingElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "red.200",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "yellow.300",
-                          kind: "string",
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxSelfClosingElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "yellow.300",
+            },
+            "backgroundColor" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "blackAlpha.100",
+            },
+            "_SPREAD_2_0" => BoxNodeMap {
+              "node": JsxSpreadAttribute,
+              "spreadConditions": [
+                BoxNodeConditional {
+                  "kind": "ternary",
+                  "node": ConditionalExpression,
+                  "stack": [
+                    SpreadAssignment,
+                    ConditionalExpression,
+                  ],
+                  "type": "conditional",
+                  "whenFalse": BoxNodeMap {
+                    "node": ObjectLiteralExpression,
+                    "spreadConditions": undefined,
+                    "stack": [
+                      SpreadAssignment,
+                      ConditionalExpression,
+                    ],
+                    "type": "map",
+                    "value": Map {
+                      "flexDirection" => BoxNodeLiteral {
+                        "kind": "string",
+                        "node": StringLiteral,
+                        "stack": [
+                          SpreadAssignment,
+                          ConditionalExpression,
+                          PropertyAssignment,
+                          StringLiteral,
+                        ],
+                        "type": "literal",
+                        "value": "column",
                       },
-                      backgroundColor: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blackAlpha.100",
-                          kind: "string",
+                      "justifyAlign" => BoxNodeLiteral {
+                        "kind": "string",
+                        "node": StringLiteral,
+                        "stack": [
+                          SpreadAssignment,
+                          ConditionalExpression,
+                          PropertyAssignment,
+                          StringLiteral,
+                        ],
+                        "type": "literal",
+                        "value": "center",
                       },
-                      _SPREAD_2_0: {
-                          stack: ["JsxSelfClosingElement"],
-                          type: "map",
-                          node: "JsxSpreadAttribute",
-                          value: {
-                              display: {
-                                  stack: ["PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "flex",
-                                  kind: "string",
-                              },
-                              color: {
-                                  stack: ["PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "blue.100",
-                                  kind: "string",
-                              },
-                          },
-                          spreadConditions: [
-                              {
-                                  stack: ["SpreadAssignment", "ConditionalExpression"],
-                                  type: "conditional",
-                                  node: "ConditionalExpression",
-                                  whenTrue: {
-                                      stack: ["SpreadAssignment", "ConditionalExpression"],
-                                      type: "map",
-                                      node: "ObjectLiteralExpression",
-                                      value: {
-                                          flexDirection: {
-                                              stack: [
-                                                  "SpreadAssignment",
-                                                  "ConditionalExpression",
-                                                  "PropertyAssignment",
-                                                  "StringLiteral",
-                                              ],
-                                              type: "literal",
-                                              node: "StringLiteral",
-                                              value: "row",
-                                              kind: "string",
-                                          },
-                                          alignItems: {
-                                              stack: [
-                                                  "SpreadAssignment",
-                                                  "ConditionalExpression",
-                                                  "PropertyAssignment",
-                                                  "StringLiteral",
-                                              ],
-                                              type: "literal",
-                                              node: "StringLiteral",
-                                              value: "flex-start",
-                                              kind: "string",
-                                          },
-                                      },
-                                  },
-                                  whenFalse: {
-                                      stack: ["SpreadAssignment", "ConditionalExpression"],
-                                      type: "map",
-                                      node: "ObjectLiteralExpression",
-                                      value: {
-                                          flexDirection: {
-                                              stack: [
-                                                  "SpreadAssignment",
-                                                  "ConditionalExpression",
-                                                  "PropertyAssignment",
-                                                  "StringLiteral",
-                                              ],
-                                              type: "literal",
-                                              node: "StringLiteral",
-                                              value: "column",
-                                              kind: "string",
-                                          },
-                                          justifyAlign: {
-                                              stack: [
-                                                  "SpreadAssignment",
-                                                  "ConditionalExpression",
-                                                  "PropertyAssignment",
-                                                  "StringLiteral",
-                                              ],
-                                              type: "literal",
-                                              node: "StringLiteral",
-                                              value: "center",
-                                              kind: "string",
-                                          },
-                                      },
-                                  },
-                                  kind: "ternary",
-                              },
-                          ],
-                      },
+                    },
                   },
+                  "whenTrue": BoxNodeMap {
+                    "node": ObjectLiteralExpression,
+                    "spreadConditions": undefined,
+                    "stack": [
+                      SpreadAssignment,
+                      ConditionalExpression,
+                    ],
+                    "type": "map",
+                    "value": Map {
+                      "flexDirection" => BoxNodeLiteral {
+                        "kind": "string",
+                        "node": StringLiteral,
+                        "stack": [
+                          SpreadAssignment,
+                          ConditionalExpression,
+                          PropertyAssignment,
+                          StringLiteral,
+                        ],
+                        "type": "literal",
+                        "value": "row",
+                      },
+                      "alignItems" => BoxNodeLiteral {
+                        "kind": "string",
+                        "node": StringLiteral,
+                        "stack": [
+                          SpreadAssignment,
+                          ConditionalExpression,
+                          PropertyAssignment,
+                          StringLiteral,
+                        ],
+                        "type": "literal",
+                        "value": "flex-start",
+                      },
+                    },
+                  },
+                },
+              ],
+              "stack": [
+                JsxSelfClosingElement,
+              ],
+              "type": "map",
+              "value": Map {
+                "display" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "flex",
+                },
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "blue.100",
+                },
               },
+            },
           },
-      ]
-    `)
+        },
+        "name": "ColorBox",
+      },
+    ]
+  `)
 })
 
 it('ExtractSample - groups extract props in parent component instance', () => {
   const extracted = getExtract(ExtractSample, { tagNameList: ['ColorBox'] })
   expect(extracted.get('ColorBox')!.queryList).toMatchInlineSnapshot(`
-      [
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.200",
-                          kind: "string",
-                      },
-                  },
-              },
+    [
+      {
+        "box": BoxNodeMap {
+          "node": JsxSelfClosingElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "red.200",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "yellow.300",
-                          kind: "string",
-                      },
-                      backgroundColor: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blackAlpha.100",
-                          kind: "string",
-                      },
-                  },
-              },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "yellow.300",
+            },
+            "backgroundColor" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "blackAlpha.100",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "cyan.400",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "cyan.500",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "literal",
+                "value": "cyan.500",
               },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "JsxExpression", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.400",
-                          kind: "string",
-                      },
-                  },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "literal",
+                "value": "cyan.400",
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.400",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+              ],
+              "type": "literal",
+              "value": "facebook.500",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "gray.200",
               },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.500",
-                          kind: "string",
-                      },
-                  },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "literal",
+                "value": "facebook.600",
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                          ],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "facebook.600",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "StringLiteral",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.200",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  Identifier,
+                  VariableDeclaration,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "gray.300",
               },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                          ],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "StringLiteral",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.200",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "StringLiteral",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.300",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                  },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "gray.200",
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ObjectLiteralExpression,
+                StringLiteral,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ArrayLiteralExpression,
+                NumericLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                NumericLiteral,
+                Identifier,
+                VariableDeclaration,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": "pink.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                NumericLiteral,
+                Identifier,
+                VariableDeclaration,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": "pink.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                NumericLiteral,
+                Identifier,
+                VariableDeclaration,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": "pink.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                NumericLiteral,
+                Identifier,
+                VariableDeclaration,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": "pink.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                NumericLiteral,
+                Identifier,
+                VariableDeclaration,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": "pink.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ElementAccessExpression,
+                StringLiteral,
+                ArrayLiteralExpression,
+                NumericLiteral,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ElementAccessExpression,
+                StringLiteral,
+                ArrayLiteralExpression,
+                NumericLiteral,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ElementAccessExpression,
+                StringLiteral,
+                ArrayLiteralExpression,
+                NumericLiteral,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ElementAccessExpression,
+                  Identifier,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  ObjectLiteralExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  ShorthandPropertyAssignment,
+                  Identifier,
+                  VariableDeclaration,
+                  PropertyAccessExpression,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  PropertyAssignment,
+                ],
+                "type": "literal",
+                "value": "gray.800",
               },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ObjectLiteralExpression",
-                              "StringLiteral",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                  },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ElementAccessExpression,
+                  Identifier,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  PropertyAssignment,
+                ],
+                "type": "literal",
+                "value": "gray.600",
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ArrayLiteralExpression",
-                              "NumericLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "gray.100",
               },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NumericLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ArrayLiteralExpression",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.100",
-                          kind: "string",
-                      },
-                  },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  Identifier,
+                  VariableDeclaration,
+                  PropertyAssignment,
+                ],
+                "type": "literal",
+                "value": "gray.700",
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NumericLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ArrayLiteralExpression",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.100",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.100",
+            },
+          },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "_SPREAD_0_0" => BoxNodeMap {
+              "node": JsxSpreadAttribute,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxOpeningElement,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "facebook.100",
+                },
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NumericLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ArrayLiteralExpression",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.100",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "_SPREAD_0_0" => BoxNodeMap {
+              "node": JsxSpreadAttribute,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxOpeningElement,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    Identifier,
+                    VariableDeclaration,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "blackAlpha.400",
+                },
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NumericLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ArrayLiteralExpression",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.100",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "_SPREAD_0_0" => BoxNodeMap {
+              "node": JsxSpreadAttribute,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxOpeningElement,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    Identifier,
+                    VariableDeclaration,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "blackAlpha.400",
+                },
               },
+            },
+            "_SPREAD_0_1" => BoxNodeLiteral {
+              "kind": "null",
+              "node": NullKeyword,
+              "stack": [
+                Identifier,
+                VariableDeclaration,
+              ],
+              "type": "literal",
+              "value": null,
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NumericLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ArrayLiteralExpression",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.100",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "_SPREAD_0_0" => BoxNodeMap {
+              "node": JsxSpreadAttribute,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxOpeningElement,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "facebook.200",
+                },
+                "backgroundColor" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "blackAlpha.100",
+                },
+                "borderColor" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    PropertyAssignment,
+                    Identifier,
+                    Identifier,
+                    VariableDeclaration,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "blackAlpha.300",
+                },
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ElementAccessExpression",
-                              "StringLiteral",
-                              "ArrayLiteralExpression",
-                              "NumericLiteral",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "_SPREAD_0_0" => BoxNodeMap {
+              "node": JsxSpreadAttribute,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxOpeningElement,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "facebook.200",
+                },
               },
+            },
+            "_SPREAD_0_1" => BoxNodeLiteral {
+              "kind": "undefined",
+              "node": Identifier,
+              "stack": [],
+              "type": "literal",
+              "value": undefined,
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ElementAccessExpression",
-                              "StringLiteral",
-                              "ArrayLiteralExpression",
-                              "NumericLiteral",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "_SPREAD_0_0" => BoxNodeMap {
+              "node": JsxSpreadAttribute,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxOpeningElement,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    Identifier,
+                    BindingElement,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "facebook.300",
+                },
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ElementAccessExpression",
-                              "StringLiteral",
-                              "ArrayLiteralExpression",
-                              "NumericLiteral",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "_SPREAD_0_0" => BoxNodeMap {
+              "node": JsxSpreadAttribute,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxOpeningElement,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": CallExpression,
+                  "stack": [],
+                  "type": "literal",
+                  "value": "twitter.100",
+                },
+                "backgroundColor" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": CallExpression,
+                  "stack": [],
+                  "type": "literal",
+                  "value": "twitter.200",
+                },
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "_SPREAD_0_0" => BoxNodeMap {
+              "node": JsxSpreadAttribute,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxOpeningElement,
+              ],
+              "type": "map",
+              "value": Map {
+                "backgroundColor" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": CallExpression,
+                  "stack": [
+                    SpreadAssignment,
+                    CallExpression,
+                  ],
+                  "type": "literal",
+                  "value": "twitter.200",
+                },
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "orange.100",
+                },
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "_SPREAD_0_0" => BoxNodeMap {
+              "node": JsxSpreadAttribute,
+              "spreadConditions": [
+                BoxNodeConditional {
+                  "kind": "ternary",
+                  "node": ConditionalExpression,
+                  "stack": [
+                    SpreadAssignment,
+                    ConditionalExpression,
+                  ],
+                  "type": "conditional",
+                  "whenFalse": BoxNodeMap {
+                    "node": ObjectLiteralExpression,
+                    "spreadConditions": undefined,
+                    "stack": [
+                      SpreadAssignment,
+                      ConditionalExpression,
+                    ],
+                    "type": "map",
+                    "value": Map {
+                      "color" => BoxNodeLiteral {
+                        "kind": "string",
+                        "node": StringLiteral,
+                        "stack": [
+                          SpreadAssignment,
+                          ConditionalExpression,
+                          PropertyAssignment,
+                          StringLiteral,
+                        ],
+                        "type": "literal",
+                        "value": "never.150",
                       },
+                    },
                   },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
+                  "whenTrue": BoxNodeObject {
+                    "isEmpty": undefined,
+                    "node": CallExpression,
+                    "stack": [
+                      SpreadAssignment,
+                      ConditionalExpression,
+                    ],
+                    "type": "object",
+                    "value": {
+                      "backgroundColor": "twitter.200",
+                      "color": "twitter.100",
+                    },
                   },
+                },
+              ],
+              "stack": [
+                JsxOpeningElement,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "orange.200",
+                },
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "_SPREAD_0_0" => BoxNodeMap {
+              "node": JsxSpreadAttribute,
+              "spreadConditions": [
+                BoxNodeConditional {
+                  "kind": "ternary",
+                  "node": ConditionalExpression,
+                  "stack": [
+                    SpreadAssignment,
+                    ConditionalExpression,
+                  ],
+                  "type": "conditional",
+                  "whenFalse": BoxNodeMap {
+                    "node": ObjectLiteralExpression,
+                    "spreadConditions": undefined,
+                    "stack": [
+                      SpreadAssignment,
+                      ConditionalExpression,
+                    ],
+                    "type": "map",
+                    "value": Map {
+                      "borderColor" => BoxNodeLiteral {
+                        "kind": "string",
+                        "node": StringLiteral,
+                        "stack": [
+                          SpreadAssignment,
+                          ConditionalExpression,
+                          PropertyAssignment,
+                          Identifier,
+                          Identifier,
+                          VariableDeclaration,
+                          StringLiteral,
+                        ],
+                        "type": "literal",
+                        "value": "orange.300",
                       },
+                    },
                   },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
+                  "whenTrue": BoxNodeObject {
+                    "isEmpty": undefined,
+                    "node": CallExpression,
+                    "stack": [
+                      SpreadAssignment,
+                      ConditionalExpression,
+                    ],
+                    "type": "object",
+                    "value": {
+                      "backgroundColor": "twitter.200",
+                      "color": "twitter.100",
+                    },
                   },
+                },
+              ],
+              "stack": [
+                JsxOpeningElement,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "orange.400",
+                },
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "_SPREAD_0_0" => BoxNodeMap {
+              "node": JsxSpreadAttribute,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxOpeningElement,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "telegram.300",
+                },
+                "backgroundColor" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "telegram.400",
+                },
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "default" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "red.100",
+                },
+                "hover" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "green.100",
+                },
+                "focus" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "blue.100",
+                },
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                  },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "backgroundColor" => BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "default" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "orange.800",
+                },
+                "hover" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "telegram.200",
+                },
+                "focus" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "yellow.700",
+                },
               },
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                  },
-              },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                  },
-              },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                  },
-              },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "facebook.900",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                          ],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ElementAccessExpression",
-                                  "Identifier",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "PropertyAssignment",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.600",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ElementAccessExpression",
-                                  "Identifier",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "ObjectLiteralExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "ShorthandPropertyAssignment",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "PropertyAccessExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "PropertyAssignment",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.800",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                  },
-              },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "red.100",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                          ],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "PropertyAssignment",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.700",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "StringLiteral",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "gray.100",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                  },
-              },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "red.100",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.100",
-                          kind: "string",
-                      },
-                  },
-              },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxSelfClosingElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "green.100",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      _SPREAD_0_0: {
-                          stack: ["JsxOpeningElement"],
-                          type: "map",
-                          node: "JsxSpreadAttribute",
-                          value: {
-                              color: {
-                                  stack: ["PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "facebook.100",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  },
-              },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxSelfClosingElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "blue.100",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      _SPREAD_0_0: {
-                          stack: ["JsxOpeningElement"],
-                          type: "map",
-                          node: "JsxSpreadAttribute",
-                          value: {
-                              color: {
-                                  stack: [
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "blackAlpha.400",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  },
-              },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxSelfClosingElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "yellow.100",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      _SPREAD_0_0: {
-                          stack: ["JsxOpeningElement"],
-                          type: "map",
-                          node: "JsxSpreadAttribute",
-                          value: {
-                              color: {
-                                  stack: [
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "blackAlpha.400",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                      _SPREAD_0_1: {
-                          stack: ["Identifier", "VariableDeclaration"],
-                          type: "literal",
-                          node: "NullKeyword",
-                          value: null,
-                          kind: "null",
-                      },
-                  },
-              },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxSelfClosingElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.100",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      _SPREAD_0_0: {
-                          stack: ["JsxOpeningElement"],
-                          type: "map",
-                          node: "JsxSpreadAttribute",
-                          value: {
-                              color: {
-                                  stack: ["PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "facebook.200",
-                                  kind: "string",
-                              },
-                              backgroundColor: {
-                                  stack: ["PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "blackAlpha.100",
-                                  kind: "string",
-                              },
-                              borderColor: {
-                                  stack: [
-                                      "PropertyAssignment",
-                                      "Identifier",
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "blackAlpha.300",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  },
-              },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxSelfClosingElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.300",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      _SPREAD_0_0: {
-                          stack: ["JsxOpeningElement"],
-                          type: "map",
-                          node: "JsxSpreadAttribute",
-                          value: {
-                              color: {
-                                  stack: ["PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "facebook.200",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                      _SPREAD_0_1: {
-                          stack: [],
-                          type: "literal",
-                          node: "Identifier",
-                          kind: "undefined",
-                      },
-                  },
-              },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxSelfClosingElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "red.100",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      _SPREAD_0_0: {
-                          stack: ["JsxOpeningElement"],
-                          type: "map",
-                          node: "JsxSpreadAttribute",
-                          value: {
-                              color: {
-                                  stack: ["Identifier", "BindingElement", "PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "facebook.300",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  },
-              },
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxSelfClosingElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.400",
+            },
           },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      _SPREAD_0_0: {
-                          stack: ["JsxOpeningElement"],
-                          type: "map",
-                          node: "JsxSpreadAttribute",
-                          value: {
-                              color: {
-                                  stack: [],
-                                  type: "literal",
-                                  node: "CallExpression",
-                                  value: "twitter.100",
-                                  kind: "string",
-                              },
-                              backgroundColor: {
-                                  stack: [],
-                                  type: "literal",
-                                  node: "CallExpression",
-                                  value: "twitter.200",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      _SPREAD_0_0: {
-                          stack: ["JsxOpeningElement"],
-                          type: "map",
-                          node: "JsxSpreadAttribute",
-                          value: {
-                              backgroundColor: {
-                                  stack: ["SpreadAssignment", "CallExpression"],
-                                  type: "literal",
-                                  node: "CallExpression",
-                                  value: "twitter.200",
-                                  kind: "string",
-                              },
-                              color: {
-                                  stack: ["PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "orange.100",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      _SPREAD_0_0: {
-                          stack: ["JsxOpeningElement"],
-                          type: "map",
-                          node: "JsxSpreadAttribute",
-                          value: {
-                              color: {
-                                  stack: ["PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "orange.200",
-                                  kind: "string",
-                              },
-                          },
-                          spreadConditions: [
-                              {
-                                  stack: ["SpreadAssignment", "ConditionalExpression"],
-                                  type: "conditional",
-                                  node: "ConditionalExpression",
-                                  whenTrue: {
-                                      stack: ["SpreadAssignment", "ConditionalExpression"],
-                                      type: "object",
-                                      node: "CallExpression",
-                                      value: {
-                                          color: "twitter.100",
-                                          backgroundColor: "twitter.200",
-                                      },
-                                  },
-                                  whenFalse: {
-                                      stack: ["SpreadAssignment", "ConditionalExpression"],
-                                      type: "map",
-                                      node: "ObjectLiteralExpression",
-                                      value: {
-                                          color: {
-                                              stack: [
-                                                  "SpreadAssignment",
-                                                  "ConditionalExpression",
-                                                  "PropertyAssignment",
-                                                  "StringLiteral",
-                                              ],
-                                              type: "literal",
-                                              node: "StringLiteral",
-                                              value: "never.150",
-                                              kind: "string",
-                                          },
-                                      },
-                                  },
-                                  kind: "ternary",
-                              },
-                          ],
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      _SPREAD_0_0: {
-                          stack: ["JsxOpeningElement"],
-                          type: "map",
-                          node: "JsxSpreadAttribute",
-                          value: {
-                              color: {
-                                  stack: ["PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "orange.400",
-                                  kind: "string",
-                              },
-                          },
-                          spreadConditions: [
-                              {
-                                  stack: ["SpreadAssignment", "ConditionalExpression"],
-                                  type: "conditional",
-                                  node: "ConditionalExpression",
-                                  whenTrue: {
-                                      stack: ["SpreadAssignment", "ConditionalExpression"],
-                                      type: "object",
-                                      node: "CallExpression",
-                                      value: {
-                                          color: "twitter.100",
-                                          backgroundColor: "twitter.200",
-                                      },
-                                  },
-                                  whenFalse: {
-                                      stack: ["SpreadAssignment", "ConditionalExpression"],
-                                      type: "map",
-                                      node: "ObjectLiteralExpression",
-                                      value: {
-                                          borderColor: {
-                                              stack: [
-                                                  "SpreadAssignment",
-                                                  "ConditionalExpression",
-                                                  "PropertyAssignment",
-                                                  "Identifier",
-                                                  "Identifier",
-                                                  "VariableDeclaration",
-                                                  "StringLiteral",
-                                              ],
-                                              type: "literal",
-                                              node: "StringLiteral",
-                                              value: "orange.300",
-                                              kind: "string",
-                                          },
-                                      },
-                                  },
-                                  kind: "ternary",
-                              },
-                          ],
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      _SPREAD_0_0: {
-                          stack: ["JsxOpeningElement"],
-                          type: "map",
-                          node: "JsxSpreadAttribute",
-                          value: {
-                              color: {
-                                  stack: ["PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "telegram.300",
-                                  kind: "string",
-                              },
-                              backgroundColor: {
-                                  stack: ["PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "telegram.400",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              default: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "red.100",
-                                  kind: "string",
-                              },
-                              hover: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "green.100",
-                                  kind: "string",
-                              },
-                              focus: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "blue.100",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      backgroundColor: {
-                          stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              default: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "orange.800",
-                                  kind: "string",
-                              },
-                              hover: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "telegram.200",
-                                  kind: "string",
-                              },
-                              focus: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "yellow.700",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "facebook.900",
-                          kind: "string",
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.100",
-                          kind: "string",
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxOpeningElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.100",
-                          kind: "string",
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "green.100",
-                          kind: "string",
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.100",
-                          kind: "string",
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "yellow.100",
-                          kind: "string",
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.100",
-                          kind: "string",
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.300",
-                          kind: "string",
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.100",
-                          kind: "string",
-                      },
-                  },
-              },
-          },
-          {
-              name: "ColorBox",
-              box: {
-                  stack: [],
-                  type: "map",
-                  node: "JsxSelfClosingElement",
-                  value: {
-                      color: {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.400",
-                          kind: "string",
-                      },
-                  },
-              },
-          },
-      ]
-    `)
+        },
+        "name": "ColorBox",
+      },
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > StringLiteral', () => {
   expect(extractFromCode(`<ColorBox color={"red.300"}></ColorBox>`)).toMatchInlineSnapshot(
     `
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "red.300"]],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.300",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "red.300",
           ],
-      ]
-    `,
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "red.300",
+            },
+          ],
+        },
+      ],
+    ]
+  `,
   )
 })
 
@@ -2882,31 +3291,36 @@ it('extract JsxAttribute > JsxExpression > Identifier', () => {
             <ColorBox color={color}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "red.400"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.400",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "red.400",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "red.400",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ConditonalExpression > Identifier|Value', () => {
@@ -2916,56 +3330,64 @@ it('extract JsxAttribute > JsxExpression > ConditonalExpression > Identifier|Val
             <ColorBox color={isDark ? darkValue : "whiteAlpha.100"}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", ["red.500", "whiteAlpha.100"]]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                          ],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "StringLiteral",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "red.500",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "whiteAlpha.100",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                  ],
-              },
+            "color",
+            [
+              "red.500",
+              "whiteAlpha.100",
+            ],
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                ],
+                "type": "literal",
+                "value": "whiteAlpha.100",
+              },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "red.500",
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression', () => {
@@ -2977,33 +3399,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression', () => {
             <ColorBox color={colorMap["red"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "red.600"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "StringLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.600",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "red.600",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                StringLiteral,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "red.600",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression without as const', () => {
@@ -3015,33 +3442,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression without as co
             <ColorBox color={colorMap["red"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "red.600"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "StringLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.600",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "red.600",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                StringLiteral,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "red.600",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression optional', () => {
@@ -3053,33 +3485,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression optional', ()
             <ColorBox color={colorMap?.["red"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "red.700"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "StringLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.700",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "red.700",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                StringLiteral,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "red.700",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression optional without as const', () => {
@@ -3091,33 +3528,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression optional with
             <ColorBox color={colorMap?.["red"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "red.700"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "StringLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.700",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "red.700",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                StringLiteral,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "red.700",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > Identifier', () => {
@@ -3130,35 +3572,40 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > Identifier'
             <ColorBox color={colorMap[propName]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "red.800"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.800",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "red.800",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "red.800",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > Identifier without as const', () => {
@@ -3171,35 +3618,40 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > Identifier 
             <ColorBox color={colorMap[propName]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "red.800"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.800",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "red.800",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "red.800",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > StringLiteral on map with ComputedProperty name', () => {
@@ -3212,33 +3664,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > StringLiter
             <ColorBox color={colorMap["red"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "red.900"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "StringLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.900",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "red.900",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                StringLiteral,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "red.900",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > StringLiteral on map with ComputedProperty name without  as const', () => {
@@ -3251,33 +3708,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > StringLiter
             <ColorBox color={colorMap["red"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "red.900"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "StringLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "red.900",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "red.900",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                StringLiteral,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "red.900",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ComputedProperty name', () => {
@@ -3290,35 +3752,40 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ComputedPro
             <ColorBox color={colorMap[propName]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "blue.100"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.100",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "blue.100",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "blue.100",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ComputedProperty name without as const', () => {
@@ -3331,35 +3798,40 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ComputedPro
             <ColorBox color={colorMap[propName]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "blue.100"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.100",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "blue.100",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "blue.100",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > PropertyAccessExpression', () => {
@@ -3371,32 +3843,37 @@ it('extract JsxAttribute > JsxExpression > PropertyAccessExpression', () => {
             <ColorBox color={colorMap.blue}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "blue.200"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "PropertyAccessExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.200",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "blue.200",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                PropertyAccessExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "blue.200",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > PropertyAccessExpression optional', () => {
@@ -3408,32 +3885,37 @@ it('extract JsxAttribute > JsxExpression > PropertyAccessExpression optional', (
             <ColorBox color={colorMap?.blue}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "blue.300"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "PropertyAccessExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.300",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "blue.300",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                PropertyAccessExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "blue.300",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > PropertyAccessExpression optional without as const', () => {
@@ -3445,32 +3927,37 @@ it('extract JsxAttribute > JsxExpression > PropertyAccessExpression optional wit
             <ColorBox color={colorMap?.blue}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "blue.300"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "PropertyAccessExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.300",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "blue.300",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                PropertyAccessExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "blue.300",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpression > StringLiteral', () => {
@@ -3482,33 +3969,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap["long" + "Prop"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "blue.400"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "BinaryExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.400",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "blue.400",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                BinaryExpression,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "blue.400",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpression > StringLiteral without as const', () => {
@@ -3520,33 +4012,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap["long" + "Prop"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "blue.400"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "BinaryExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.400",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "blue.400",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                BinaryExpression,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "blue.400",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpression > StringLiteral + Identifier without as const', () => {
@@ -3559,35 +4056,40 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap["long" + part2]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "blue.500"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "BinaryExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.500",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "blue.500",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                BinaryExpression,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "blue.500",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > NoSubstitionTemplateLiteral', () => {
@@ -3599,33 +4101,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > NoSubstitio
             <ColorBox color={colorMap[\`longProp\`]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "blue.600"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NoSubstitutionTemplateLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.600",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "blue.600",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                NoSubstitutionTemplateLiteral,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "blue.600",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > NoSubstitionTemplateLiteral without as const', () => {
@@ -3637,33 +4144,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > NoSubstitio
             <ColorBox color={colorMap[\`longProp\`]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "blue.600"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NoSubstitutionTemplateLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.600",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "blue.600",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                NoSubstitutionTemplateLiteral,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "blue.600",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateStringLiteral & Identifier', () => {
@@ -3676,35 +4188,40 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateStr
             <ColorBox color={colorMap[\`long\${part2}\`]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "blue.700"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "TemplateExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.700",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "blue.700",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                TemplateExpression,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "blue.700",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateStringLiteral > Identifier x2', () => {
@@ -3718,37 +4235,42 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateStr
             <ColorBox color={colorMap[\`$\{part1}\${part2}\`]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "blue.800"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "TemplateExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.800",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "blue.800",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                TemplateExpression,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "blue.800",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ConditonalExpression > AsExpression (StringLiteral) + Identifier', () => {
@@ -3763,33 +4285,38 @@ it('extract JsxAttribute > JsxExpression > ConditonalExpression > AsExpression (
             <ColorBox color={colorMap[isDark ? ("dark" as const) : lightRef]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "blue.900"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "blue.900",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "blue.900",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "blue.900",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateStringLiteral + Identifier (StringLiteral)', () => {
@@ -3801,33 +4328,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateStr
             <ColorBox color={colorMap["long" + \`\${"Prop"}\`]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "green.100"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "BinaryExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "green.100",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "green.100",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                BinaryExpression,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "green.100",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpression > StringLiteral + TemplateStringLiteral > ElementAccessExpression > Identifier (StringLiteral)', () => {
@@ -3842,33 +4374,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap[("long" as any) + (\`\${dynamic["part2"]}\`) as any]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "green.200"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "BinaryExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "green.200",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "green.200",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                BinaryExpression,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "green.200",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpression > PropertyAccessExpression + ElementAccessExpression > Identifier', () => {
@@ -3885,37 +4422,42 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap[dynamic.part1 + dynamic[part2ref]]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "green.300"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "BinaryExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "green.300",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "green.300",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                BinaryExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "green.300",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ObjectLiteralExpression', () => {
@@ -3924,31 +4466,36 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ObjectLiter
             <ColorBox color={{ staticColor: "green.400" }["staticColor"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "green.400"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ObjectLiteralExpression",
-                              "StringLiteral",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "green.400",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "green.400",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ObjectLiteralExpression,
+                StringLiteral,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "green.400",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression (AsExpression) > Identifier (StringLiteral) x2', () => {
@@ -3960,33 +4507,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression (AsExpression
             <ColorBox color={colorMap["long" + "Prop"] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "green.500"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "BinaryExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "green.500",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "green.500",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                BinaryExpression,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "green.500",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression (AsExpression) > Identifier (StringLiteral) x2 on ShorthandPropertyAssignment', () => {
@@ -3999,36 +4551,41 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression (AsExpression
             <ColorBox color={colorMap["long" + "Prop"] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "green.600"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "BinaryExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ShorthandPropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "green.600",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "green.600",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                BinaryExpression,
+                Identifier,
+                VariableDeclaration,
+                ShorthandPropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "green.600",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpression > StringLiteral (AsExpression) + TemplateStringLiteral > Identifier (StringLiteral) (AsExpression)', () => {
@@ -4045,36 +4602,41 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap[("long" as any) + \`\${withDynamicPart["dynamicPart2"]}\`] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "green.700"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "BinaryExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ShorthandPropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "green.700",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "green.700",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                BinaryExpression,
+                Identifier,
+                VariableDeclaration,
+                ShorthandPropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "green.700",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ElementAccessExpression > Identifier > Identifier', () => {
@@ -4092,36 +4654,41 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ElementAcce
             <ColorBox color={colorMap[wrapperMap[secondRef]]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "green.800"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ShorthandPropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "green.800",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "green.800",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                ElementAccessExpression,
+                Identifier,
+                VariableDeclaration,
+                ShorthandPropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "green.800",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLiteralExpression > NumericLiteral', () => {
@@ -4130,30 +4697,35 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLitera
             <ColorBox color={["green.900"][0]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "green.900"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ArrayLiteralExpression",
-                              "NumericLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "green.900",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "green.900",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ArrayLiteralExpression,
+                NumericLiteral,
+              ],
+              "type": "literal",
+              "value": "green.900",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLiteralExpression > StringLiteral', () => {
@@ -4162,30 +4734,35 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLitera
             <ColorBox color={["pink.100"]["0"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "pink.100"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ArrayLiteralExpression",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.100",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "pink.100",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ArrayLiteralExpression,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "pink.100",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLiteralExpression > Identifier > NumericLiteral', () => {
@@ -4195,32 +4772,37 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLitera
             <ColorBox color={["pink.100", "pink.200"][nbIndex]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "pink.200"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ArrayLiteralExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.200",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "pink.200",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ArrayLiteralExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+              ],
+              "type": "literal",
+              "value": "pink.200",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLiteralExpression > Identifier > StringLiteral', () => {
@@ -4230,32 +4812,37 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLitera
             <ColorBox color={["pink.300"][strIndex]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "pink.300"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ArrayLiteralExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.300",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "pink.300",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ArrayLiteralExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+              ],
+              "type": "literal",
+              "value": "pink.300",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ParenthesizedExpression > AsExpression > NumericLiteral', () => {
@@ -4265,33 +4852,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > Parenthesiz
             <ColorBox color={(array as any)?.[0] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "pink.400"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NumericLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ArrayLiteralExpression",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.400",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "pink.400",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                NumericLiteral,
+                Identifier,
+                VariableDeclaration,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": "pink.400",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ArrayLiteralExpression > ElementAccessExpression > NonNullExpression > ElementAccessExpression > NumericLiteral', () => {
@@ -4301,35 +4893,40 @@ it('extract JsxAttribute > JsxExpression > ArrayLiteralExpression > ElementAcces
             <ColorBox color={[array[0]]![0]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "pink.500"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ArrayLiteralExpression",
-                              "NumericLiteral",
-                              "Identifier",
-                              "NumericLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ArrayLiteralExpression",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.500",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "pink.500",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ArrayLiteralExpression,
+                NumericLiteral,
+                Identifier,
+                NumericLiteral,
+                Identifier,
+                VariableDeclaration,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": "pink.500",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ElementAccessExpression > ArrayLiteralExpression > ObjectLiteralExpresssion > PropertyAssignment > StringLiteral', () => {
@@ -4338,34 +4935,39 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ElementAcce
             <ColorBox color={[{ staticColor: "pink.600" }][0]["staticColor"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "pink.600"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ElementAccessExpression",
-                              "StringLiteral",
-                              "ArrayLiteralExpression",
-                              "NumericLiteral",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.600",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "pink.600",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ElementAccessExpression,
+                StringLiteral,
+                ArrayLiteralExpression,
+                NumericLiteral,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "pink.600",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ConditionalExpression', () => {
@@ -4384,33 +4986,38 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression', () => {
             <ColorBox color={colorMap[!isShown ? ("literalColor" as const) : deepReference] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "pink.800"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.800",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "pink.800",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "pink.800",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateExpression > Identifier > TemplateExpression', () => {
@@ -4427,38 +5034,43 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateExp
             <ColorBox color={colorMap[\`\${dynamicPartsAsTemplateString}\`] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "pink.900"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "TemplateExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ShorthandPropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.900",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "pink.900",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                TemplateExpression,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                ShorthandPropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "pink.900",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateExpression > Identifier > TemplateExpression without as const', () => {
@@ -4475,38 +5087,43 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateExp
             <ColorBox color={colorMap[\`\${dynamicPartsAsTemplateString}\`] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "pink.900"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "TemplateExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ShorthandPropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "pink.900",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "pink.900",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                TemplateExpression,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                ShorthandPropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "pink.900",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpression > PropertyAccessExpression + ElementAccessExpression', () => {
@@ -4534,40 +5151,45 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap[wrapperMap.thirdRef + wrapperMap["fourthRef"]]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "yellow.100"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "BinaryExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ShorthandPropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "yellow.100",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "yellow.100",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                BinaryExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                Identifier,
+                VariableDeclaration,
+                ShorthandPropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "yellow.100",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ConditionalExpression evaluate (first when true is right)', () => {
@@ -4588,33 +5210,38 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression evaluate (first
             <ColorBox color={colorMap[isShown ? ("literalColor" as const) : (false ? "yellow.never" : 1 === 1 ? colorMap["refToAnother"] : deepReference)] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "yellow.200"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "yellow.200",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "yellow.200",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "yellow.200",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ConditionalExpression evaluate (second when true is right)', () => {
@@ -4634,33 +5261,38 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression evaluate (secon
             <ColorBox color={colorMap[(false ? "yellow.never" : 1 === 1 ? colorMap["refToAnother"] : deepReference)] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "yellow.500"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "yellow.500",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "yellow.500",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "yellow.500",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > CallExpression > ArrowFunction > Identifier (StringLiteral)', () => {
@@ -4671,24 +5303,33 @@ it('extract JsxAttribute > JsxExpression > CallExpression > ArrowFunction > Iden
             <ColorBox color={getColor()}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "yellow.600"]],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "yellow.600",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "yellow.600",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                CallExpression,
+              ],
+              "type": "literal",
+              "value": "yellow.600",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > CallExpression > FunctionDeclaration > Identifier (StringLiteral)', () => {
@@ -4701,24 +5342,33 @@ it('extract JsxAttribute > JsxExpression > CallExpression > FunctionDeclaration 
             <ColorBox color={getColor()}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "yellow.700"]],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "yellow.700",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "yellow.700",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                CallExpression,
+              ],
+              "type": "literal",
+              "value": "yellow.700",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > CallExpression with Parameter > ElementAccessExpression > ArrayLiteralExpression > StringLiteral', () => {
@@ -4730,24 +5380,33 @@ it('extract JsxAttribute > JsxExpression > CallExpression with Parameter > Eleme
             <ColorBox color={pickSecondElement(array)}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "yellow.900"]],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "yellow.900",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "yellow.900",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                CallExpression,
+              ],
+              "type": "literal",
+              "value": "yellow.900",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > CallExpression with non-deterministic results > should return nothing', () => {
@@ -4759,22 +5418,31 @@ it('extract JsxAttribute > JsxExpression > CallExpression with non-deterministic
             <ColorBox color={pickRandom(array)}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", null]],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "unresolvable",
-                          node: "CallExpression",
-                      },
-                  ],
-              },
+            "color",
+            undefined,
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeUnresolvable {
+              "node": CallExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                CallExpression,
+              ],
+              "type": "unresolvable",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ConditionalExpression > BinaryExpression > StringLiteral', () => {
@@ -4783,24 +5451,33 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > BinaryExpress
             <ColorBox color={(1 + 1) === 2 ? "purple.100" : "purple.never2"}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "purple.100"]],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "purple.100",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "purple.100",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+              ],
+              "type": "literal",
+              "value": "purple.100",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ConditionalExpression > ParenthesizedExpression > BinaryExpression', () => {
@@ -4812,33 +5489,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > Conditional
             <ColorBox color={colorMap[(1 + 1) !== 2 ? "never" : "literalColor"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "purple.200"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "purple.200",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "purple.200",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "purple.200",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > CallExpression > ElementAccessExpression > ArrowFunction > ElementAccessExpression > ArrayLiteralExpression > Identifier > CallExpression > ConditionalExpression > BinaryExpression', () => {
@@ -4852,24 +5534,33 @@ it('extract JsxAttribute > JsxExpression > CallExpression > ElementAccessExpress
             <ColorBox color={colorMap[getter()]()}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "purple.300"]],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "purple.300",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "purple.300",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                CallExpression,
+              ],
+              "type": "literal",
+              "value": "purple.300",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > BinaryExpression > StringLiteral', () => {
@@ -4879,24 +5570,35 @@ it('extract JsxAttribute > JsxExpression > BinaryExpression > StringLiteral', ()
             <ColorBox color={"purple" + dot + "400"}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "purple.400"]],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "BinaryExpression", "Identifier", "VariableDeclaration"],
-                          type: "literal",
-                          node: "BinaryExpression",
-                          value: "purple.400",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "purple.400",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": BinaryExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                BinaryExpression,
+                Identifier,
+                VariableDeclaration,
+              ],
+              "type": "literal",
+              "value": "purple.400",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > resolvable ConditionalExpression result', () => {
@@ -4916,35 +5618,40 @@ it('extract JsxAttribute > JsxExpression > resolvable ConditionalExpression resu
             <ColorBox color={(isShown ? colorMap?.[dynamicColorName] : dynamicColor) as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "purple.500"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "purple.500",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "purple.500",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+                Identifier,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "purple.500",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it("extract JsxAttribute > JsxExpression > ConditionalExpression with Unexpected Node: 'BindingElement' cause of useState should fallback to both possible outcome", () => {
@@ -4964,71 +5671,79 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression with Unexpected
             <ColorBox color={(isShown ? colorMap?.[dynamicColorName] : dynamicColor) as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", ["purple.600", "purple.700"]]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                          ],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "PropertyAssignment",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "purple.600",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "ElementAccessExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "ShorthandPropertyAssignment",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "StringLiteral",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "purple.700",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                  ],
-              },
+            "color",
+            [
+              "purple.600",
+              "purple.700",
+            ],
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  ElementAccessExpression,
+                  Identifier,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  Identifier,
+                  VariableDeclaration,
+                  ShorthandPropertyAssignment,
+                  Identifier,
+                  VariableDeclaration,
+                  StringLiteral,
+                ],
+                "type": "literal",
+                "value": "purple.700",
+              },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  Identifier,
+                  VariableDeclaration,
+                  PropertyAssignment,
+                ],
+                "type": "literal",
+                "value": "purple.600",
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ConditionalExpression > unresolvable expression will output both outcome ', () => {
@@ -5040,37 +5755,57 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > unresolvable 
             <ColorBox color={(!knownCondition ? "purple.800" : unresolvableBoolean ? "purple.900" : "purple.950")}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", ["purple.900", "purple.950"]]],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "purple.900",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "purple.950",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                  ],
-              },
+            "color",
+            [
+              "purple.900",
+              "purple.950",
+            ],
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "literal",
+                "value": "purple.950",
+              },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "literal",
+                "value": "purple.900",
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccessExpression > nested unresolvable expression will output both outcome ', () => {
@@ -5087,70 +5822,78 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
             <ColorBox color={(!knownCondition ? "orange.100" : colorMap[unresolvableBoolean ? "staticColor" : "another"])}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", ["orange.200", "orange.300"]]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "ConditionalExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                          ],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "PropertyAssignment",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "orange.200",
-                              kind: "string",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "ObjectLiteralExpression",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "PropertyAssignment",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "orange.300",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                  ],
-              },
+            "color",
+            [
+              "orange.200",
+              "orange.300",
+            ],
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+                Identifier,
+                ConditionalExpression,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  ObjectLiteralExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  PropertyAssignment,
+                ],
+                "type": "literal",
+                "value": "orange.300",
+              },
+              "whenTrue": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  ConditionalExpression,
+                  Identifier,
+                  VariableDeclaration,
+                  PropertyAssignment,
+                ],
+                "type": "literal",
+                "value": "orange.200",
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccessExpression > with nested unresolvable expression will stop at first resolved truthy condition', () => {
@@ -5167,24 +5910,33 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
             <ColorBox color={(knownTruthy ? "orange.400" : colorMap[unresolvableBoolean ? "staticColor" : "another"])}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "orange.400"]],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.400",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "orange.400",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+              ],
+              "type": "literal",
+              "value": "orange.400",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > multiple variables with same name but different scope', () => {
@@ -5199,31 +5951,36 @@ it('extract JsxAttribute > JsxExpression > multiple variables with same name but
 
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "orange.500"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.500",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "orange.500",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.500",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > variables referencing another var in above scope', () => {
@@ -5238,34 +5995,39 @@ it('extract JsxAttribute > JsxExpression > variables referencing another var in 
 
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "orange.600"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.600",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "orange.600",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.600",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > ObjectLiteralExpression', () => {
@@ -5274,24 +6036,32 @@ it('extract JsxSpreadAttribute > ObjectLiteralExpression', () => {
             <ColorBox {...{ color: "orange.700" }}>spread</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "orange.700"]],
-              {
-                  color: [
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.700",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "orange.700",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.700",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > ObjectLiteralExpression with allowed properties list', () => {
@@ -5300,36 +6070,50 @@ it('extract JsxSpreadAttribute > ObjectLiteralExpression with allowed properties
             <ColorBox {...{ color: "orange.725", flexDirection: "flex", ...{ backgroundColor: "orange.750", justifyContent: "center" } }}>spread</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  ["color", "orange.725"],
-                  ["backgroundColor", "orange.750"],
-              ],
-              {
-                  color: [
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.725",
-                          kind: "string",
-                      },
-                  ],
-                  backgroundColor: [
-                      {
-                          stack: ["SpreadAssignment", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.750",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "orange.725",
           ],
-      ]
-    `)
+          [
+            "backgroundColor",
+            "orange.750",
+          ],
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.725",
+            },
+          ],
+          "backgroundColor" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                SpreadAssignment,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.750",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > Identifier > ObjectLiteralExpression', () => {
@@ -5339,30 +6123,35 @@ it('extract JsxSpreadAttribute > Identifier > ObjectLiteralExpression', () => {
             <ColorBox {...objectWithAttributes}>var spread</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "orange.800"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.800",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "orange.800",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.800",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 // TODO same with ts-evaluator if flag is enabled
@@ -5373,7 +6162,15 @@ it('extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword 
             const objectWithAttributes = { color: "never.400" } as any;
             <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
         `),
-  ).toMatchInlineSnapshot('[["ColorBox", [], {}]]')
+  ).toMatchInlineSnapshot(`
+    [
+      [
+        "ColorBox",
+        [],
+        Map {},
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword > truthy', () => {
@@ -5384,30 +6181,35 @@ it('extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword 
             <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "orange.900"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "orange.900",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "orange.900",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.900",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > PropertyAssignment / ComputedProperty', () => {
@@ -5426,36 +6228,51 @@ it('extract JsxSpreadAttribute > PropertyAssignment / ComputedProperty', () => {
             </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  ["color", "teal.100"],
-                  ["backgroundColor", "teal.200"],
-              ],
-              {
-                  color: [
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "teal.100",
-                          kind: "string",
-                      },
-                  ],
-                  backgroundColor: [
-                      {
-                          stack: ["PropertyAssignment", "Identifier", "Identifier", "VariableDeclaration", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "teal.200",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "teal.100",
           ],
-      ]
-    `)
+          [
+            "backgroundColor",
+            "teal.200",
+          ],
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "teal.100",
+            },
+          ],
+          "backgroundColor" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "teal.200",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > ConditionalExpression > ObjectLiteralExpression/Identifier', () => {
@@ -5464,24 +6281,32 @@ it('extract JsxSpreadAttribute > ConditionalExpression > ObjectLiteralExpression
             <ColorBox {...(true ? ({ color: "teal.400" }) as any : (undefined) as unknown)}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "teal.400"]],
-              {
-                  color: [
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "teal.400",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "teal.400",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "teal.400",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / ObjectLiteralExpression', () => {
@@ -5490,24 +6315,32 @@ it('extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / Ob
             <ColorBox {...(true && ({ color: "teal.500" }))}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "teal.500"]],
-              {
-                  color: [
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "teal.500",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "teal.500",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "teal.500",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > CallExpression', () => {
@@ -5517,36 +6350,42 @@ it('extract JsxSpreadAttribute > CallExpression', () => {
             <ColorBox {...getColorConfig()}>spread fn result</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  ["color", "teal.600"],
-                  ["backgroundColor", "teal.650"],
-              ],
-              {
-                  color: [
-                      {
-                          stack: [],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "teal.600",
-                          kind: "string",
-                      },
-                  ],
-                  backgroundColor: [
-                      {
-                          stack: [],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "teal.650",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "teal.600",
           ],
-      ]
-    `)
+          [
+            "backgroundColor",
+            "teal.650",
+          ],
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [],
+              "type": "literal",
+              "value": "teal.600",
+            },
+          ],
+          "backgroundColor" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [],
+              "type": "literal",
+              "value": "teal.650",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > CallExpression with allowed properties list', () => {
@@ -5556,36 +6395,42 @@ it('extract JsxSpreadAttribute > CallExpression with allowed properties list', (
             <ColorBox {...getColorConfig()}>spread fn result</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  ["color", "teal.625"],
-                  ["backgroundColor", "teal.699"],
-              ],
-              {
-                  color: [
-                      {
-                          stack: [],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "teal.625",
-                          kind: "string",
-                      },
-                  ],
-                  backgroundColor: [
-                      {
-                          stack: [],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "teal.699",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "teal.625",
           ],
-      ]
-    `)
+          [
+            "backgroundColor",
+            "teal.699",
+          ],
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [],
+              "type": "literal",
+              "value": "teal.625",
+            },
+          ],
+          "backgroundColor" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [],
+              "type": "literal",
+              "value": "teal.699",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > CallExpression', () => {
@@ -5595,36 +6440,48 @@ it('extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > Ca
             <ColorBox {...{ ...getColorConfig(), color: "teal.700" }}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  ["backgroundColor", "teal.800"],
-                  ["color", "teal.700"],
-              ],
-              {
-                  backgroundColor: [
-                      {
-                          stack: ["SpreadAssignment", "CallExpression"],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "teal.800",
-                          kind: "string",
-                      },
-                  ],
-                  color: [
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "teal.700",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "backgroundColor",
+            "teal.800",
           ],
-      ]
-    `)
+          [
+            "color",
+            "teal.700",
+          ],
+        ],
+        Map {
+          "backgroundColor" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [
+                SpreadAssignment,
+                CallExpression,
+              ],
+              "type": "literal",
+              "value": "teal.800",
+            },
+          ],
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "teal.700",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > ConditionalExpression > CallExpression', () => {
@@ -5642,36 +6499,48 @@ it('extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > Co
             </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  ["backgroundColor", "cyan.100"],
-                  ["color", "cyan.200"],
-              ],
-              {
-                  backgroundColor: [
-                      {
-                          stack: ["SpreadAssignment", "ConditionalExpression"],
-                          type: "literal",
-                          node: "ConditionalExpression",
-                          value: "cyan.100",
-                          kind: "string",
-                      },
-                  ],
-                  color: [
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "cyan.200",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "backgroundColor",
+            "cyan.100",
           ],
-      ]
-    `)
+          [
+            "color",
+            "cyan.200",
+          ],
+        ],
+        Map {
+          "backgroundColor" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": ConditionalExpression,
+              "stack": [
+                SpreadAssignment,
+                ConditionalExpression,
+              ],
+              "type": "literal",
+              "value": "cyan.100",
+            },
+          ],
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "cyan.200",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / ObjectLiteralExpression', () => {
@@ -5691,36 +6560,48 @@ it('extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / Ob
             </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  ["backgroundColor", "cyan.300"],
-                  ["color", "cyan.400"],
-              ],
-              {
-                  backgroundColor: [
-                      {
-                          stack: ["SpreadAssignment", "ConditionalExpression"],
-                          type: "literal",
-                          node: "ConditionalExpression",
-                          value: "cyan.300",
-                          kind: "string",
-                      },
-                  ],
-                  color: [
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "cyan.400",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "backgroundColor",
+            "cyan.300",
           ],
-      ]
-    `)
+          [
+            "color",
+            "cyan.400",
+          ],
+        ],
+        Map {
+          "backgroundColor" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": ConditionalExpression,
+              "stack": [
+                SpreadAssignment,
+                ConditionalExpression,
+              ],
+              "type": "literal",
+              "value": "cyan.300",
+            },
+          ],
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "cyan.400",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > 3 depth spread', () => {
@@ -5740,36 +6621,50 @@ it('extract JsxSpreadAttribute > 3 depth spread', () => {
             </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  ["color", "cyan.500"],
-                  ["backgroundColor", "cyan.600"],
-              ],
-              {
-                  color: [
-                      {
-                          stack: ["SpreadAssignment", "ObjectLiteralExpression", "SpreadAssignment", "CallExpression"],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "cyan.500",
-                          kind: "string",
-                      },
-                  ],
-                  backgroundColor: [
-                      {
-                          stack: ["PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "cyan.600",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "cyan.500",
           ],
-      ]
-    `)
+          [
+            "backgroundColor",
+            "cyan.600",
+          ],
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [
+                SpreadAssignment,
+                ObjectLiteralExpression,
+                SpreadAssignment,
+                CallExpression,
+              ],
+              "type": "literal",
+              "value": "cyan.500",
+            },
+          ],
+          "backgroundColor" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "cyan.600",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it("extract JsxSpreadAttribute > ConditionalExpression > unresolvable expression with Unexpected Node: 'BindingElement' cause of useState should fallback to both possible outcome ", () => {
@@ -5780,42 +6675,53 @@ it("extract JsxSpreadAttribute > ConditionalExpression > unresolvable expression
             <ColorBox {...(isShown ? objectWithAttributes : { backgroundColor: "cyan.800" })}>conditional var spread</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  ["color", "cyan.700"],
-                  ["backgroundColor", "cyan.800"],
-              ],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "cyan.700",
-                          kind: "string",
-                      },
-                  ],
-                  backgroundColor: [
-                      {
-                          stack: ["Identifier", "VariableDeclaration", "PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "cyan.800",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "cyan.700",
           ],
-      ]
-    `)
+          [
+            "backgroundColor",
+            "cyan.800",
+          ],
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "cyan.700",
+            },
+          ],
+          "backgroundColor" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "cyan.800",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > ElementAccessExpression', () => {
@@ -5828,35 +6734,40 @@ it('extract JsxSpreadAttribute > ElementAccessExpression', () => {
             <ColorBox {...themeObjectsMap[\`basic\`]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "cyan.900"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "Identifier",
-                              "NoSubstitutionTemplateLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "cyan.900",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "cyan.900",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                NoSubstitutionTemplateLiteral,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "cyan.900",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > PropertyAccessExpression', () => {
@@ -5869,34 +6780,39 @@ it('extract JsxSpreadAttribute > PropertyAccessExpression', () => {
             <ColorBox {...themeObjectsMap.basic}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "salmon.100"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "salmon.100",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "salmon.100",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "salmon.100",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > PropertyAccessExpression > nested', () => {
@@ -5911,36 +6827,41 @@ it('extract JsxSpreadAttribute > PropertyAccessExpression > nested', () => {
             <ColorBox {...themeObjectsMap.basic.nested}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "salmon.200"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "PropertyAccessExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                              "PropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "salmon.200",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "salmon.200",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAccessExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+                PropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "salmon.200",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > ElementAccessExpression + PropertyAccessExpression', () => {
@@ -5953,38 +6874,43 @@ it('extract JsxSpreadAttribute > ElementAccessExpression + PropertyAccessExpress
             <ColorBox {...themeObjectsMap[\`basic\`].nested}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "salmon.300"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "NoSubstitutionTemplateLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                              "PropertyAssignment",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "salmon.300",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "salmon.300",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                ElementAccessExpression,
+                Identifier,
+                NoSubstitutionTemplateLiteral,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+                PropertyAssignment,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "salmon.300",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > ElementAccessExpression > nested', () => {
@@ -5997,39 +6923,44 @@ it('extract JsxSpreadAttribute > ElementAccessExpression > nested', () => {
             <ColorBox {...themeObjectsMap[\`basic\`]["nested"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "salmon.400"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "ElementAccessExpression",
-                              "StringLiteral",
-                              "Identifier",
-                              "NoSubstitutionTemplateLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                              "PropertyAssignment",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "salmon.400",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "salmon.400",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                ElementAccessExpression,
+                StringLiteral,
+                Identifier,
+                NoSubstitutionTemplateLiteral,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+                PropertyAssignment,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "salmon.400",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > ElementAccessExpression > Identifier / ComputedProperty', () => {
@@ -6043,37 +6974,42 @@ it('extract JsxSpreadAttribute > ElementAccessExpression > Identifier / Computed
             <ColorBox {...themeObjectsMap[dynamicAttribute]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "salmon.500"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "Identifier",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "salmon.500",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "salmon.500",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "salmon.500",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > ElementAccessExpression > ComputedProperty / TemplateStringLiteral', () => {
@@ -6090,37 +7026,42 @@ it('extract JsxSpreadAttribute > ElementAccessExpression > ComputedProperty / Te
             <ColorBox {...(themeObjectsMap[\`\${dynamicPartsAsTemplateString}\`]) as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "salmon.600"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "Identifier",
-                              "TemplateExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "salmon.600",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "salmon.600",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                TemplateExpression,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "salmon.600",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex nested condition > truthy + truthy', () => {
@@ -6143,24 +7084,29 @@ it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
             <ColorBox {...(!knownCondition ? { color: "never.250" } : assertMap.isTrue() ? getMap.getter() : themeObjectsMap[dynamicPart1 + dynamicPart2] )}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "salmon.700"]],
-              {
-                  color: [
-                      {
-                          stack: [],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "salmon.700",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "salmon.700",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [],
+              "type": "literal",
+              "value": "salmon.700",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex nested condition > truthy + falsy', () => {
@@ -6183,36 +7129,41 @@ it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
             <ColorBox {...(!knownCondition ? { color: "never.250" } : assertMap.isFalse() ? getMap.getter() : themeObjectsMap[dynamicPart1 + dynamicPart2] )}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "salmon.800"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "Identifier",
-                              "BinaryExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "salmon.800",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "salmon.800",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                BinaryExpression,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "salmon.800",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > unresolvable expression will output both outcome ', () => {
@@ -6231,52 +7182,60 @@ it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > unresol
             <ColorBox {...(!knownCondition ? { color: "never.250" } : unresolvableBoolean ? themeObjectsMap.basic : themeObjectsMap.longProp )}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", ["salmon.850", "salmon.900"]]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "salmon.850",
-                          kind: "string",
-                      },
-                      {
-                          stack: [
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "salmon.900",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            [
+              "salmon.850",
+              "salmon.900",
+            ],
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "salmon.850",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "salmon.900",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxSpreadAttribute > ElementAccessExpression > CallExpression', () => {
@@ -6290,35 +7249,40 @@ it('extract JsxSpreadAttribute > ElementAccessExpression > CallExpression', () =
             <ColorBox {...themeObjectsMap[getDynamicAttribute()]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "white.100"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "Identifier",
-                              "CallExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "white.100",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "white.100",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                Identifier,
+                CallExpression,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "white.100",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > ElementAccessExpression > CallExpression > PropertyAccessExpression', () => {
@@ -6332,39 +7296,44 @@ it('extract JsxAttribute > ElementAccessExpression > CallExpression > PropertyAc
             <ColorBox color={themeObjectsMap[getDynamicAttribute()].color}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "white.200"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "PropertyAccessExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "CallExpression",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "StringLiteral",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "white.200",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "white.200",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                PropertyAccessExpression,
+                ElementAccessExpression,
+                Identifier,
+                CallExpression,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+                Identifier,
+                VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "white.200",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression  > NumericLiteral', () => {
@@ -6373,24 +7342,33 @@ it('extract JsxAttribute > JsxExpression  > NumericLiteral', () => {
             <ColorBox zIndex={1}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["zIndex", 1]],
-              {
-                  zIndex: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "NumericLiteral"],
-                          type: "literal",
-                          node: "NumericLiteral",
-                          value: 1,
-                          kind: "number",
-                      },
-                  ],
-              },
+            "zIndex",
+            1,
           ],
-      ]
-    `)
+        ],
+        Map {
+          "zIndex" => [
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": NumericLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                NumericLiteral,
+              ],
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > NumericLiteral > PrefixUnaryExpression', () => {
@@ -6404,77 +7382,121 @@ it('extract JsxAttribute > JsxExpression > NumericLiteral > PrefixUnaryExpressio
       { tagNameList: ['ThreeBox'] },
     ),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ThreeBox",
+        [
           [
-              "ThreeBox",
-              [
-                  ["zIndex", 1],
-                  ["position", [-1.2466866852487384, 0.3325255778835592, -0.6517939595349769]],
-                  ["scale", 1.25],
-                  ["someProp", -2],
-              ],
-              {
-                  zIndex: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "NumericLiteral"],
-                          type: "literal",
-                          node: "NumericLiteral",
-                          value: 1,
-                          kind: "number",
-                      },
-                  ],
-                  position: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
-                          type: "list",
-                          node: "ArrayLiteralExpression",
-                          value: [
-                              {
-                                  stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
-                                  type: "literal",
-                                  node: "PrefixUnaryExpression",
-                                  value: -1.2466866852487384,
-                                  kind: "number",
-                              },
-                              {
-                                  stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
-                                  type: "literal",
-                                  node: "NumericLiteral",
-                                  value: 0.3325255778835592,
-                                  kind: "number",
-                              },
-                              {
-                                  stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
-                                  type: "literal",
-                                  node: "PrefixUnaryExpression",
-                                  value: -0.6517939595349769,
-                                  kind: "number",
-                              },
-                          ],
-                      },
-                  ],
-                  scale: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "PrefixUnaryExpression"],
-                          type: "literal",
-                          node: "NumericLiteral",
-                          value: 1.25,
-                          kind: "number",
-                      },
-                  ],
-                  someProp: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "PrefixUnaryExpression"],
-                          type: "literal",
-                          node: "PrefixUnaryExpression",
-                          value: -2,
-                          kind: "number",
-                      },
-                  ],
-              },
+            "zIndex",
+            1,
           ],
-      ]
-    `)
+          [
+            "position",
+            [
+              -1.2466866852487384,
+              0.3325255778835592,
+              -0.6517939595349769,
+            ],
+          ],
+          [
+            "scale",
+            1.25,
+          ],
+          [
+            "someProp",
+            -2,
+          ],
+        ],
+        Map {
+          "zIndex" => [
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": NumericLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                NumericLiteral,
+              ],
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "position" => [
+            BoxNodeList {
+              "node": ArrayLiteralExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ArrayLiteralExpression,
+              ],
+              "type": "list",
+              "value": [
+                BoxNodeLiteral {
+                  "kind": "number",
+                  "node": PrefixUnaryExpression,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "literal",
+                  "value": -1.2466866852487384,
+                },
+                BoxNodeLiteral {
+                  "kind": "number",
+                  "node": NumericLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "literal",
+                  "value": 0.3325255778835592,
+                },
+                BoxNodeLiteral {
+                  "kind": "number",
+                  "node": PrefixUnaryExpression,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "literal",
+                  "value": -0.6517939595349769,
+                },
+              ],
+            },
+          ],
+          "scale" => [
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": NumericLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                PrefixUnaryExpression,
+              ],
+              "type": "literal",
+              "value": 1.25,
+            },
+          ],
+          "someProp" => [
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": PrefixUnaryExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                PrefixUnaryExpression,
+              ],
+              "type": "literal",
+              "value": -2,
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > Identifier > NumericLiteral', () => {
@@ -6484,31 +7506,36 @@ it('extract JsxAttribute > JsxExpression > Identifier > NumericLiteral', () => {
             <ColorBox zIndex={nbIndex}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["zIndex", 2]],
-              {
-                  zIndex: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "NumericLiteral",
-                          ],
-                          type: "literal",
-                          node: "NumericLiteral",
-                          value: 2,
-                          kind: "number",
-                      },
-                  ],
-              },
+            "zIndex",
+            2,
           ],
-      ]
-    `)
+        ],
+        Map {
+          "zIndex" => [
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": NumericLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                NumericLiteral,
+              ],
+              "type": "literal",
+              "value": 2,
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > Identifier > ConditionExpression > NumericLiteral', () => {
@@ -6519,24 +7546,33 @@ it('extract JsxAttribute > JsxExpression > Identifier > ConditionExpression > Nu
             <ColorBox zIndex={isShown ? 3 : 0}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["zIndex", 3]],
-              {
-                  zIndex: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "literal",
-                          node: "NumericLiteral",
-                          value: 3,
-                          kind: "number",
-                      },
-                  ],
-              },
+            "zIndex",
+            3,
           ],
-      ]
-    `)
+        ],
+        Map {
+          "zIndex" => [
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": NumericLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+              ],
+              "type": "literal",
+              "value": 3,
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > CallExpression > immediately invoked > NumericLiteral', () => {
@@ -6545,24 +7581,33 @@ it('extract JsxAttribute > JsxExpression > CallExpression > immediately invoked 
             <ColorBox zIndex={(() => 4)()}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["zIndex", 4]],
-              {
-                  zIndex: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: 4,
-                          kind: "number",
-                      },
-                  ],
-              },
+            "zIndex",
+            4,
           ],
-      ]
-    `)
+        ],
+        Map {
+          "zIndex" => [
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": CallExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                CallExpression,
+              ],
+              "type": "literal",
+              "value": 4,
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > CallExpression > optional + NonNullable + AsExpression > NumericLiteral', () => {
@@ -6572,24 +7617,33 @@ it('extract JsxAttribute > JsxExpression > CallExpression > optional + NonNullab
             <ColorBox zIndex={(getMap?.get()!) as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["zIndex", 5]],
-              {
-                  zIndex: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: 5,
-                          kind: "number",
-                      },
-                  ],
-              },
+            "zIndex",
+            5,
           ],
-      ]
-    `)
+        ],
+        Map {
+          "zIndex" => [
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": CallExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                CallExpression,
+              ],
+              "type": "literal",
+              "value": 5,
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > NumericLiteral', () => {
@@ -6599,33 +7653,38 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > NumericLite
             <ColorBox zIndex={map["thing"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["zIndex", 6]],
-              {
-                  zIndex: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "Identifier",
-                              "StringLiteral",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "NumericLiteral",
-                          value: 6,
-                          kind: "number",
-                      },
-                  ],
-              },
+            "zIndex",
+            6,
           ],
-      ]
-    `)
+        ],
+        Map {
+          "zIndex" => [
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": NumericLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                Identifier,
+                StringLiteral,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": 6,
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ObjectLiteralExpression > conditional sprinkles', () => {
@@ -6634,72 +7693,77 @@ it('extract JsxAttribute > JsxExpression > ObjectLiteralExpression > conditional
             <ColorBox color={{ mobile: "white.300", tablet: "white.400", desktop: "white.500" }}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  [
-                      "color",
-                      {
-                          mobile: "white.300",
-                          tablet: "white.400",
-                          desktop: "white.500",
-                      },
-                  ],
-              ],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              mobile: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "white.300",
-                                  kind: "string",
-                              },
-                              tablet: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "white.400",
-                                  kind: "string",
-                              },
-                              desktop: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "white.500",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  ],
-              },
+            "color",
+            {
+              "desktop": "white.500",
+              "mobile": "white.300",
+              "tablet": "white.400",
+            },
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "mobile" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "white.300",
+                },
+                "tablet" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "white.400",
+                },
+                "desktop" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "white.500",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > PropertyAccessExpression > ObjectLiteralExpression', () => {
@@ -6716,92 +7780,93 @@ it('extract JsxAttribute > JsxExpression > PropertyAccessExpression > ObjectLite
             <ColorBox color={(map?.responsiveColor) as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  [
-                      "color",
-                      {
-                          mobile: "white.600",
-                          tablet: "white.700",
-                          desktop: "white.800",
-                      },
-                  ],
-              ],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "PropertyAccessExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "PropertyAssignment",
-                          ],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              mobile: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "PropertyAccessExpression",
-                                      "Identifier",
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "PropertyAssignment",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "white.600",
-                                  kind: "string",
-                              },
-                              tablet: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "PropertyAccessExpression",
-                                      "Identifier",
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "PropertyAssignment",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "white.700",
-                                  kind: "string",
-                              },
-                              desktop: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "PropertyAccessExpression",
-                                      "Identifier",
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "PropertyAssignment",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "white.800",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  ],
-              },
+            "color",
+            {
+              "desktop": "white.800",
+              "mobile": "white.600",
+              "tablet": "white.700",
+            },
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                PropertyAccessExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                PropertyAssignment,
+              ],
+              "type": "map",
+              "value": Map {
+                "mobile" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    PropertyAccessExpression,
+                    Identifier,
+                    Identifier,
+                    VariableDeclaration,
+                    PropertyAssignment,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "white.600",
+                },
+                "tablet" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    PropertyAccessExpression,
+                    Identifier,
+                    Identifier,
+                    VariableDeclaration,
+                    PropertyAssignment,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "white.700",
+                },
+                "desktop" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    PropertyAccessExpression,
+                    Identifier,
+                    Identifier,
+                    VariableDeclaration,
+                    PropertyAssignment,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "white.800",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > PropertyAccessExpression > CallExpression > ObjectLiteralExpression', () => {
@@ -6818,36 +7883,41 @@ it('extract JsxAttribute > JsxExpression > PropertyAccessExpression > CallExpres
             <ColorBox color={map["responsiveColor"]!()}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  [
-                      "color",
-                      {
-                          mobile: "white.600",
-                          tablet: "white.700",
-                          desktop: "white.800",
-                      },
-                  ],
-              ],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "object",
-                          node: "CallExpression",
-                          value: {
-                              mobile: "white.600",
-                              tablet: "white.700",
-                              desktop: "white.800",
-                          },
-                      },
-                  ],
-              },
+            "color",
+            {
+              "desktop": "white.800",
+              "mobile": "white.600",
+              "tablet": "white.700",
+            },
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeObject {
+              "isEmpty": undefined,
+              "node": CallExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                CallExpression,
+              ],
+              "type": "object",
+              "value": {
+                "desktop": "white.800",
+                "mobile": "white.600",
+                "tablet": "white.700",
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression + AsExpression + QuestionMarkToken + TemplateExpression + BinaryExpression + CallExpression', () => {
@@ -6868,36 +7938,41 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression + AsExpressio
             <ColorBox color={((map as any)?.[\`responsive\` + \`\${colorRef}\`] as any)()}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  [
-                      "color",
-                      {
-                          mobile: "black.100",
-                          tablet: "black.200",
-                          desktop: "black.300",
-                      },
-                  ],
-              ],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "object",
-                          node: "CallExpression",
-                          value: {
-                              mobile: "black.100",
-                              tablet: "black.200",
-                              desktop: "black.300",
-                          },
-                      },
-                  ],
-              },
+            "color",
+            {
+              "desktop": "black.300",
+              "mobile": "black.100",
+              "tablet": "black.200",
+            },
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeObject {
+              "isEmpty": undefined,
+              "node": CallExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                CallExpression,
+              ],
+              "type": "object",
+              "value": {
+                "desktop": "black.300",
+                "mobile": "black.100",
+                "tablet": "black.200",
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral/ObjectLiteralExpression (conditional sprinkles) > truthy', () => {
@@ -6906,72 +7981,77 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
             <ColorBox color={true ? { mobile: "black.400", tablet: "black.500", desktop: "black.600" } : "black.700"}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  [
-                      "color",
-                      {
-                          mobile: "black.400",
-                          tablet: "black.500",
-                          desktop: "black.600",
-                      },
-                  ],
-              ],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              mobile: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ConditionalExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "black.400",
-                                  kind: "string",
-                              },
-                              tablet: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ConditionalExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "black.500",
-                                  kind: "string",
-                              },
-                              desktop: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ConditionalExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "black.600",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  ],
-              },
+            "color",
+            {
+              "desktop": "black.600",
+              "mobile": "black.400",
+              "tablet": "black.500",
+            },
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "mobile" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ConditionalExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "black.400",
+                },
+                "tablet" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ConditionalExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "black.500",
+                },
+                "desktop" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ConditionalExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "black.600",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral/ObjectLiteralExpression (conditional sprinkles) > falsy', () => {
@@ -6980,24 +8060,33 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
             <ColorBox color={false ? { mobile: "black.400", tablet: "black.500", desktop: "black.600" } : "black.700"}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "black.700"]],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "black.700",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "black.700",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+              ],
+              "type": "literal",
+              "value": "black.700",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral/ObjectLiteralExpression (conditional sprinkles) > unresolvable condition', () => {
@@ -7008,88 +8097,101 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
         `),
   ).toMatchInlineSnapshot(
     `
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  [
-                      "color",
-                      [
-                          {
-                              mobile: "black.400",
-                              tablet: "black.500",
-                              desktop: "black.600",
-                          },
-                          "black.700",
-                      ],
-                  ],
-              ],
+            "color",
+            [
               {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "map",
-                              node: "ObjectLiteralExpression",
-                              value: {
-                                  mobile: {
-                                      stack: [
-                                          "JsxAttribute",
-                                          "JsxExpression",
-                                          "ConditionalExpression",
-                                          "PropertyAssignment",
-                                          "StringLiteral",
-                                      ],
-                                      type: "literal",
-                                      node: "StringLiteral",
-                                      value: "black.400",
-                                      kind: "string",
-                                  },
-                                  tablet: {
-                                      stack: [
-                                          "JsxAttribute",
-                                          "JsxExpression",
-                                          "ConditionalExpression",
-                                          "PropertyAssignment",
-                                          "StringLiteral",
-                                      ],
-                                      type: "literal",
-                                      node: "StringLiteral",
-                                      value: "black.500",
-                                      kind: "string",
-                                  },
-                                  desktop: {
-                                      stack: [
-                                          "JsxAttribute",
-                                          "JsxExpression",
-                                          "ConditionalExpression",
-                                          "PropertyAssignment",
-                                          "StringLiteral",
-                                      ],
-                                      type: "literal",
-                                      node: "StringLiteral",
-                                      value: "black.600",
-                                      kind: "string",
-                                  },
-                              },
-                          },
-                          whenFalse: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "black.700",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                  ],
+                "desktop": "black.600",
+                "mobile": "black.400",
+                "tablet": "black.500",
               },
+              "black.700",
+            ],
           ],
-      ]
-    `,
+        ],
+        Map {
+          "color" => [
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "literal",
+                "value": "black.700",
+              },
+              "whenTrue": BoxNodeMap {
+                "node": ObjectLiteralExpression,
+                "spreadConditions": undefined,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "map",
+                "value": Map {
+                  "mobile" => BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ConditionalExpression,
+                      PropertyAssignment,
+                      StringLiteral,
+                    ],
+                    "type": "literal",
+                    "value": "black.400",
+                  },
+                  "tablet" => BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ConditionalExpression,
+                      PropertyAssignment,
+                      StringLiteral,
+                    ],
+                    "type": "literal",
+                    "value": "black.500",
+                  },
+                  "desktop" => BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ConditionalExpression,
+                      PropertyAssignment,
+                      StringLiteral,
+                    ],
+                    "type": "literal",
+                    "value": "black.600",
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `,
   )
 })
 
@@ -7099,72 +8201,77 @@ it('extract JsxAttribute > JsxExpression > reversed', () => {
             <ColorBox mobile={{ color: "sky.100", tablet: "sky.200", desktop: "sky.300" }} />
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  [
-                      "mobile",
-                      {
-                          color: "sky.100",
-                          tablet: "sky.200",
-                          desktop: "sky.300",
-                      },
-                  ],
-              ],
-              {
-                  mobile: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              color: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "sky.100",
-                                  kind: "string",
-                              },
-                              tablet: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "sky.200",
-                                  kind: "string",
-                              },
-                              desktop: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "sky.300",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  ],
-              },
+            "mobile",
+            {
+              "color": "sky.100",
+              "desktop": "sky.300",
+              "tablet": "sky.200",
+            },
           ],
-      ]
-    `)
+        ],
+        Map {
+          "mobile" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "sky.100",
+                },
+                "tablet" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "sky.200",
+                },
+                "desktop" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "sky.300",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > ObjectLiteralExpression > css prop', () => {
@@ -7182,136 +8289,143 @@ it('extract JsxAttribute > ObjectLiteralExpression > css prop', () => {
         </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  [
-                      "css",
-                      {
-                          backgroundColor: "sky.500",
-                          __color: "##ff0",
-                          mobile: {
-                              fontSize: "2xl",
-                              display: "flex",
-                          },
-                          zIndex: {
-                              desktop: "10",
-                          },
-                      },
-                  ],
-              ],
-              {
-                  css: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              backgroundColor: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "sky.500",
-                                  kind: "string",
-                              },
-                              __color: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "##ff0",
-                                  kind: "string",
-                              },
-                              mobile: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "map",
-                                  node: "ObjectLiteralExpression",
-                                  value: {
-                                      fontSize: {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "2xl",
-                                          kind: "string",
-                                      },
-                                      display: {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ConditionalExpression",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "flex",
-                                          kind: "string",
-                                      },
-                                  },
-                              },
-                              zIndex: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "map",
-                                  node: "ObjectLiteralExpression",
-                                  value: {
-                                      desktop: {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "10",
-                                          kind: "string",
-                                      },
-                                  },
-                              },
-                          },
-                      },
-                  ],
+            "css",
+            {
+              "__color": "##ff0",
+              "backgroundColor": "sky.500",
+              "mobile": {
+                "display": "flex",
+                "fontSize": "2xl",
               },
+              "zIndex": {
+                "desktop": "10",
+              },
+            },
           ],
-      ]
-    `)
+        ],
+        Map {
+          "css" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "backgroundColor" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "sky.500",
+                },
+                "__color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "##ff0",
+                },
+                "mobile" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "fontSize" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        JsxAttribute,
+                        JsxExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "2xl",
+                    },
+                    "display" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        JsxAttribute,
+                        JsxExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ConditionalExpression,
+                      ],
+                      "type": "literal",
+                      "value": "flex",
+                    },
+                  },
+                },
+                "zIndex" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "desktop" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        JsxAttribute,
+                        JsxExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "10",
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpression', () => {
@@ -7330,165 +8444,175 @@ it('extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
         </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  [
-                      "css",
-                      {
-                          backgroundColor: "sky.600",
-                          __color: "##ff0",
-                          mobile: {
-                              fontSize: "2xl",
-                              display: ["flex", "block"],
-                          },
-                          zIndex: {
-                              desktop: "10",
-                          },
-                      },
-                  ],
-              ],
-              {
-                  css: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              backgroundColor: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ConditionalExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "sky.600",
-                                  kind: "string",
-                              },
-                              __color: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ConditionalExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "##ff0",
-                                  kind: "string",
-                              },
-                              mobile: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ConditionalExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "map",
-                                  node: "ObjectLiteralExpression",
-                                  value: {
-                                      fontSize: {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ConditionalExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "2xl",
-                                          kind: "string",
-                                      },
-                                      display: {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ConditionalExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ConditionalExpression",
-                                          ],
-                                          type: "conditional",
-                                          node: "ConditionalExpression",
-                                          whenTrue: {
-                                              stack: [
-                                                  "JsxAttribute",
-                                                  "JsxExpression",
-                                                  "ConditionalExpression",
-                                                  "PropertyAssignment",
-                                                  "ObjectLiteralExpression",
-                                                  "PropertyAssignment",
-                                                  "ConditionalExpression",
-                                              ],
-                                              type: "literal",
-                                              node: "StringLiteral",
-                                              value: "flex",
-                                              kind: "string",
-                                          },
-                                          whenFalse: {
-                                              stack: [
-                                                  "JsxAttribute",
-                                                  "JsxExpression",
-                                                  "ConditionalExpression",
-                                                  "PropertyAssignment",
-                                                  "ObjectLiteralExpression",
-                                                  "PropertyAssignment",
-                                                  "ConditionalExpression",
-                                              ],
-                                              type: "literal",
-                                              node: "StringLiteral",
-                                              value: "block",
-                                              kind: "string",
-                                          },
-                                          kind: "ternary",
-                                      },
-                                  },
-                              },
-                              zIndex: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ConditionalExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "map",
-                                  node: "ObjectLiteralExpression",
-                                  value: {
-                                      desktop: {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ConditionalExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "10",
-                                          kind: "string",
-                                      },
-                                  },
-                              },
-                          },
-                      },
-                  ],
+            "css",
+            {
+              "__color": "##ff0",
+              "backgroundColor": "sky.600",
+              "mobile": {
+                "display": [
+                  "flex",
+                  "block",
+                ],
+                "fontSize": "2xl",
               },
+              "zIndex": {
+                "desktop": "10",
+              },
+            },
           ],
-      ]
-    `)
+        ],
+        Map {
+          "css" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "backgroundColor" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ConditionalExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "sky.600",
+                },
+                "__color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ConditionalExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "##ff0",
+                },
+                "mobile" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ConditionalExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "fontSize" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        JsxAttribute,
+                        JsxExpression,
+                        ConditionalExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "2xl",
+                    },
+                    "display" => BoxNodeConditional {
+                      "kind": "ternary",
+                      "node": ConditionalExpression,
+                      "stack": [
+                        JsxAttribute,
+                        JsxExpression,
+                        ConditionalExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ConditionalExpression,
+                      ],
+                      "type": "conditional",
+                      "whenFalse": BoxNodeLiteral {
+                        "kind": "string",
+                        "node": StringLiteral,
+                        "stack": [
+                          JsxAttribute,
+                          JsxExpression,
+                          ConditionalExpression,
+                          PropertyAssignment,
+                          ObjectLiteralExpression,
+                          PropertyAssignment,
+                          ConditionalExpression,
+                        ],
+                        "type": "literal",
+                        "value": "block",
+                      },
+                      "whenTrue": BoxNodeLiteral {
+                        "kind": "string",
+                        "node": StringLiteral,
+                        "stack": [
+                          JsxAttribute,
+                          JsxExpression,
+                          ConditionalExpression,
+                          PropertyAssignment,
+                          ObjectLiteralExpression,
+                          PropertyAssignment,
+                          ConditionalExpression,
+                        ],
+                        "type": "literal",
+                        "value": "flex",
+                      },
+                    },
+                  },
+                },
+                "zIndex" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ConditionalExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "desktop" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        JsxAttribute,
+                        JsxExpression,
+                        ConditionalExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "10",
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignment > ConditionalExpression', () => {
@@ -7507,189 +8631,199 @@ it('extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignme
         </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [
-                  [
-                      "css",
-                      {
-                          backgroundColor: ["sky.800", "sky.900"],
-                          __color: "##ff0",
-                          mobile: [
-                              {
-                                  fontSize: "2xl",
-                                  display: "flex",
-                              },
-                              "crimson.900",
-                          ],
-                          zIndex: {
-                              desktop: "10",
-                          },
-                      },
-                  ],
+            "css",
+            {
+              "__color": "##ff0",
+              "backgroundColor": [
+                "sky.800",
+                "sky.900",
               ],
-              {
-                  css: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              backgroundColor: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ConditionalExpression",
-                                  ],
-                                  type: "conditional",
-                                  node: "ConditionalExpression",
-                                  whenTrue: {
-                                      stack: [
-                                          "JsxAttribute",
-                                          "JsxExpression",
-                                          "ObjectLiteralExpression",
-                                          "PropertyAssignment",
-                                          "ConditionalExpression",
-                                      ],
-                                      type: "literal",
-                                      node: "StringLiteral",
-                                      value: "sky.800",
-                                      kind: "string",
-                                  },
-                                  whenFalse: {
-                                      stack: [
-                                          "JsxAttribute",
-                                          "JsxExpression",
-                                          "ObjectLiteralExpression",
-                                          "PropertyAssignment",
-                                          "ConditionalExpression",
-                                      ],
-                                      type: "literal",
-                                      node: "StringLiteral",
-                                      value: "sky.900",
-                                      kind: "string",
-                                  },
-                                  kind: "ternary",
-                              },
-                              __color: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "##ff0",
-                                  kind: "string",
-                              },
-                              mobile: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ConditionalExpression",
-                                  ],
-                                  type: "conditional",
-                                  node: "ConditionalExpression",
-                                  whenTrue: {
-                                      stack: [
-                                          "JsxAttribute",
-                                          "JsxExpression",
-                                          "ObjectLiteralExpression",
-                                          "PropertyAssignment",
-                                          "ConditionalExpression",
-                                      ],
-                                      type: "map",
-                                      node: "ObjectLiteralExpression",
-                                      value: {
-                                          fontSize: {
-                                              stack: [
-                                                  "JsxAttribute",
-                                                  "JsxExpression",
-                                                  "ObjectLiteralExpression",
-                                                  "PropertyAssignment",
-                                                  "ConditionalExpression",
-                                                  "PropertyAssignment",
-                                                  "StringLiteral",
-                                              ],
-                                              type: "literal",
-                                              node: "StringLiteral",
-                                              value: "2xl",
-                                              kind: "string",
-                                          },
-                                          display: {
-                                              stack: [
-                                                  "JsxAttribute",
-                                                  "JsxExpression",
-                                                  "ObjectLiteralExpression",
-                                                  "PropertyAssignment",
-                                                  "ConditionalExpression",
-                                                  "PropertyAssignment",
-                                                  "ConditionalExpression",
-                                              ],
-                                              type: "literal",
-                                              node: "StringLiteral",
-                                              value: "flex",
-                                              kind: "string",
-                                          },
-                                      },
-                                  },
-                                  whenFalse: {
-                                      stack: [
-                                          "JsxAttribute",
-                                          "JsxExpression",
-                                          "ObjectLiteralExpression",
-                                          "PropertyAssignment",
-                                          "ConditionalExpression",
-                                      ],
-                                      type: "literal",
-                                      node: "StringLiteral",
-                                      value: "crimson.900",
-                                      kind: "string",
-                                  },
-                                  kind: "ternary",
-                              },
-                              zIndex: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "map",
-                                  node: "ObjectLiteralExpression",
-                                  value: {
-                                      desktop: {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "10",
-                                          kind: "string",
-                                      },
-                                  },
-                              },
-                          },
-                      },
-                  ],
+              "mobile": [
+                {
+                  "display": "flex",
+                  "fontSize": "2xl",
+                },
+                "crimson.900",
+              ],
+              "zIndex": {
+                "desktop": "10",
               },
+            },
           ],
-      ]
-    `)
+        ],
+        Map {
+          "css" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "backgroundColor" => BoxNodeConditional {
+                  "kind": "ternary",
+                  "node": ConditionalExpression,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ConditionalExpression,
+                  ],
+                  "type": "conditional",
+                  "whenFalse": BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ObjectLiteralExpression,
+                      PropertyAssignment,
+                      ConditionalExpression,
+                    ],
+                    "type": "literal",
+                    "value": "sky.900",
+                  },
+                  "whenTrue": BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ObjectLiteralExpression,
+                      PropertyAssignment,
+                      ConditionalExpression,
+                    ],
+                    "type": "literal",
+                    "value": "sky.800",
+                  },
+                },
+                "__color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "##ff0",
+                },
+                "mobile" => BoxNodeConditional {
+                  "kind": "ternary",
+                  "node": ConditionalExpression,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ConditionalExpression,
+                  ],
+                  "type": "conditional",
+                  "whenFalse": BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ObjectLiteralExpression,
+                      PropertyAssignment,
+                      ConditionalExpression,
+                    ],
+                    "type": "literal",
+                    "value": "crimson.900",
+                  },
+                  "whenTrue": BoxNodeMap {
+                    "node": ObjectLiteralExpression,
+                    "spreadConditions": undefined,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ObjectLiteralExpression,
+                      PropertyAssignment,
+                      ConditionalExpression,
+                    ],
+                    "type": "map",
+                    "value": Map {
+                      "fontSize" => BoxNodeLiteral {
+                        "kind": "string",
+                        "node": StringLiteral,
+                        "stack": [
+                          JsxAttribute,
+                          JsxExpression,
+                          ObjectLiteralExpression,
+                          PropertyAssignment,
+                          ConditionalExpression,
+                          PropertyAssignment,
+                          StringLiteral,
+                        ],
+                        "type": "literal",
+                        "value": "2xl",
+                      },
+                      "display" => BoxNodeLiteral {
+                        "kind": "string",
+                        "node": StringLiteral,
+                        "stack": [
+                          JsxAttribute,
+                          JsxExpression,
+                          ObjectLiteralExpression,
+                          PropertyAssignment,
+                          ConditionalExpression,
+                          PropertyAssignment,
+                          ConditionalExpression,
+                        ],
+                        "type": "literal",
+                        "value": "flex",
+                      },
+                    },
+                  },
+                },
+                "zIndex" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "desktop" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        JsxAttribute,
+                        JsxExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "10",
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (PropertyAccessExpression + QuestionQuestionToken + StringLiteral)', () => {
@@ -7703,59 +8837,66 @@ it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
 
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", ["apple.100"]]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "BinaryExpression",
-                              "Identifier",
-                          ],
-                          type: "conditional",
-                          node: "BinaryExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "BinaryExpression",
-                                  "Identifier",
-                              ],
-                              type: "unresolvable",
-                              node: "Identifier",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "BinaryExpression",
-                                  "Identifier",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "apple.100",
-                              kind: "string",
-                          },
-                          kind: "nullish-coalescing",
-                      },
-                  ],
-              },
+            "color",
+            [
+              "apple.100",
+            ],
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeConditional {
+              "kind": "nullish-coalescing",
+              "node": BinaryExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                BinaryExpression,
+                Identifier,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  BinaryExpression,
+                  Identifier,
+                ],
+                "type": "literal",
+                "value": "apple.100",
+              },
+              "whenTrue": BoxNodeUnresolvable {
+                "node": Identifier,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  BinaryExpression,
+                  Identifier,
+                ],
+                "type": "unresolvable",
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (PropertyAccessExpression + AmpersandAmpersandToken + StringLiteral)', () => {
@@ -7766,59 +8907,66 @@ it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
             <ColorBox color={color}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", ["apple.200"]]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "BinaryExpression",
-                              "Identifier",
-                          ],
-                          type: "conditional",
-                          node: "BinaryExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "BinaryExpression",
-                                  "Identifier",
-                              ],
-                              type: "unresolvable",
-                              node: "Identifier",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "BinaryExpression",
-                                  "Identifier",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "apple.200",
-                              kind: "string",
-                          },
-                          kind: "and",
-                      },
-                  ],
-              },
+            "color",
+            [
+              "apple.200",
+            ],
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeConditional {
+              "kind": "and",
+              "node": BinaryExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                BinaryExpression,
+                Identifier,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  BinaryExpression,
+                  Identifier,
+                ],
+                "type": "literal",
+                "value": "apple.200",
+              },
+              "whenTrue": BoxNodeUnresolvable {
+                "node": Identifier,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  BinaryExpression,
+                  Identifier,
+                ],
+                "type": "unresolvable",
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (PropertyAccessExpression + BarBarToken + StringLiteral)', () => {
@@ -7829,59 +8977,66 @@ it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
             <ColorBox color={color}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", ["apple.300"]]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "BinaryExpression",
-                              "Identifier",
-                          ],
-                          type: "conditional",
-                          node: "BinaryExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "BinaryExpression",
-                                  "Identifier",
-                              ],
-                              type: "unresolvable",
-                              node: "Identifier",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "BinaryExpression",
-                                  "Identifier",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "apple.300",
-                              kind: "string",
-                          },
-                          kind: "or",
-                      },
-                  ],
-              },
+            "color",
+            [
+              "apple.300",
+            ],
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeConditional {
+              "kind": "or",
+              "node": BinaryExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                BinaryExpression,
+                Identifier,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  BinaryExpression,
+                  Identifier,
+                ],
+                "type": "literal",
+                "value": "apple.300",
+              },
+              "whenTrue": BoxNodeUnresolvable {
+                "node": Identifier,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  BinaryExpression,
+                  Identifier,
+                ],
+                "type": "unresolvable",
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > Identifier > ArrayLiteralExpression)', () => {
@@ -7892,59 +9047,67 @@ it('extract JsxAttribute > JsxExpression > Identifier > ArrayLiteralExpression)'
             <ColorBox color={color}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", ["apple.400", "apple.500"]]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "ArrayLiteralExpression",
-                          ],
-                          type: "list",
-                          node: "ArrayLiteralExpression",
-                          value: [
-                              {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "Identifier",
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "ArrayLiteralExpression",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "apple.400",
-                                  kind: "string",
-                              },
-                              {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "Identifier",
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "ArrayLiteralExpression",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "apple.500",
-                                  kind: "string",
-                              },
-                          ],
-                      },
-                  ],
-              },
+            "color",
+            [
+              "apple.400",
+              "apple.500",
+            ],
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeList {
+              "node": ArrayLiteralExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                ArrayLiteralExpression,
+              ],
+              "type": "list",
+              "value": [
+                BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    Identifier,
+                    Identifier,
+                    VariableDeclaration,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "literal",
+                  "value": "apple.400",
+                },
+                BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    Identifier,
+                    Identifier,
+                    VariableDeclaration,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "literal",
+                  "value": "apple.500",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ObjectLiteralExpression > PropertyAssignment > StringLiteral', () => {
@@ -7955,31 +9118,36 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ObjectLiter
             })["apple"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", "apple.600"]],
-              {
-                  color: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "ElementAccessExpression",
-                              "ObjectLiteralExpression",
-                              "StringLiteral",
-                              "PropertyAssignment",
-                          ],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "apple.600",
-                          kind: "string",
-                      },
-                  ],
-              },
+            "color",
+            "apple.600",
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ElementAccessExpression,
+                ObjectLiteralExpression,
+                StringLiteral,
+                PropertyAssignment,
+              ],
+              "type": "literal",
+              "value": "apple.600",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute + CallExpression > booleans', () => {
@@ -7991,49 +9159,73 @@ it('extract JsxAttribute + CallExpression > booleans', () => {
       { tagNameList: ['Container'], functionNameList: ['someFn'] },
     ),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "Container",
+        [
           [
-              "Container",
-              [
-                  ["className", null],
-                  ["withBorder", true],
+            "className",
+            undefined,
+          ],
+          [
+            "withBorder",
+            true,
+          ],
+        ],
+        Map {
+          "className" => [
+            BoxNodeUnresolvable {
+              "node": CallExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                CallExpression,
               ],
-              {
-                  className: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "unresolvable",
-                          node: "CallExpression",
-                      },
-                  ],
-                  withBorder: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "TrueKeyword"],
-                          type: "literal",
-                          node: "TrueKeyword",
-                          value: true,
-                          kind: "boolean",
-                      },
-                  ],
-              },
+              "type": "unresolvable",
+            },
           ],
+          "withBorder" => [
+            BoxNodeLiteral {
+              "kind": "boolean",
+              "node": TrueKeyword,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                TrueKeyword,
+              ],
+              "type": "literal",
+              "value": true,
+            },
+          ],
+        },
+      ],
+      [
+        "someFn",
+        [
           [
-              "someFn",
-              [["isFlex", false]],
-              {
-                  isFlex: [
-                      {
-                          stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "FalseKeyword"],
-                          type: "literal",
-                          node: "FalseKeyword",
-                          value: false,
-                          kind: "boolean",
-                      },
-                  ],
-              },
+            "isFlex",
+            false,
           ],
-      ]
-    `)
+        ],
+        Map {
+          "isFlex" => [
+            BoxNodeLiteral {
+              "kind": "boolean",
+              "node": FalseKeyword,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                FalseKeyword,
+              ],
+              "type": "literal",
+              "value": false,
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ArrayLiteralExpression', () => {
@@ -8045,94 +9237,120 @@ it('extract JsxAttribute > JsxExpression > ArrayLiteralExpression', () => {
       { tagNameList: ['Container'] },
     ),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "Container",
+        [
           [
-              "Container",
-              [
-                  ["classNames", ["color:main", "hover:secondary"]],
-                  [
-                      "config",
-                      {
-                          state: ["hovered", "focused"],
-                      },
-                  ],
-              ],
-              {
-                  classNames: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
-                          type: "list",
-                          node: "ArrayLiteralExpression",
-                          value: [
-                              {
-                                  stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "color:main",
-                                  kind: "string",
-                              },
-                              {
-                                  stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "hover:secondary",
-                                  kind: "string",
-                              },
-                          ],
-                      },
-                  ],
-                  config: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              state: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ArrayLiteralExpression",
-                                  ],
-                                  type: "list",
-                                  node: "ArrayLiteralExpression",
-                                  value: [
-                                      {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "hovered",
-                                          kind: "string",
-                                      },
-                                      {
-                                          stack: [
-                                              "JsxAttribute",
-                                              "JsxExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "focused",
-                                          kind: "string",
-                                      },
-                                  ],
-                              },
-                          },
-                      },
-                  ],
-              },
+            "classNames",
+            [
+              "color:main",
+              "hover:secondary",
+            ],
           ],
-      ]
-    `)
+          [
+            "config",
+            {
+              "state": [
+                "hovered",
+                "focused",
+              ],
+            },
+          ],
+        ],
+        Map {
+          "classNames" => [
+            BoxNodeList {
+              "node": ArrayLiteralExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ArrayLiteralExpression,
+              ],
+              "type": "list",
+              "value": [
+                BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "literal",
+                  "value": "color:main",
+                },
+                BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "literal",
+                  "value": "hover:secondary",
+                },
+              ],
+            },
+          ],
+          "config" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "state" => BoxNodeList {
+                  "node": ArrayLiteralExpression,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "list",
+                  "value": [
+                    BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        JsxAttribute,
+                        JsxExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "literal",
+                      "value": "hovered",
+                    },
+                    BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        JsxAttribute,
+                        JsxExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "literal",
+                      "value": "focused",
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > Identifier without initializer', () => {
@@ -8144,22 +9362,30 @@ it('extract JsxAttribute > Identifier without initializer', () => {
       { tagNameList: ['Flex'] },
     ),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "Flex",
+        [
           [
-              "Flex",
-              [["col", null]],
-              {
-                  col: [
-                      {
-                          stack: ["JsxAttribute", null],
-                          type: "empty-initializer",
-                          node: "Identifier",
-                      },
-                  ],
-              },
+            "col",
+            undefined,
           ],
-      ]
-    `)
+        ],
+        Map {
+          "col" => [
+            BoxNodeEmptyInitializer {
+              "node": Identifier,
+              "stack": [
+                JsxAttribute,
+                undefined,
+              ],
+              "type": "empty-initializer",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract CallExpression > ObjectLiteralExpression > PropertyAssignment > ObjectLiteralExpression > PropertyAssignment > ArrayLiteralExpression > StringLiteral)', () => {
@@ -8180,226 +9406,240 @@ it('extract CallExpression > ObjectLiteralExpression > PropertyAssignment > Obje
       { tagNameList: [], functionNameList: ['defineProperties'] },
     ),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "defineProperties",
+        [
           [
-              "defineProperties",
-              [
-                  [
-                      "properties",
-                      {
-                          position: ["relative", "absolute"],
-                          display: ["block", "inline-block", "flex", "inline-flex"],
-                      },
-                  ],
-                  [
-                      "shorthands",
-                      {
-                          p: ["position"],
-                          d: ["display"],
-                      },
-                  ],
+            "properties",
+            {
+              "display": [
+                "block",
+                "inline-block",
+                "flex",
+                "inline-flex",
               ],
-              {
-                  properties: [
-                      {
-                          stack: [
-                              "CallExpression",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "ObjectLiteralExpression",
-                          ],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              position: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ArrayLiteralExpression",
-                                  ],
-                                  type: "list",
-                                  node: "ArrayLiteralExpression",
-                                  value: [
-                                      {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "relative",
-                                          kind: "string",
-                                      },
-                                      {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "absolute",
-                                          kind: "string",
-                                      },
-                                  ],
-                              },
-                              display: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ArrayLiteralExpression",
-                                  ],
-                                  type: "list",
-                                  node: "ArrayLiteralExpression",
-                                  value: [
-                                      {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "block",
-                                          kind: "string",
-                                      },
-                                      {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "inline-block",
-                                          kind: "string",
-                                      },
-                                      {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "flex",
-                                          kind: "string",
-                                      },
-                                      {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "inline-flex",
-                                          kind: "string",
-                                      },
-                                  ],
-                              },
-                          },
-                      },
-                  ],
-                  shorthands: [
-                      {
-                          stack: [
-                              "CallExpression",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "ObjectLiteralExpression",
-                          ],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              p: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ArrayLiteralExpression",
-                                  ],
-                                  type: "list",
-                                  node: "ArrayLiteralExpression",
-                                  value: [
-                                      {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "position",
-                                          kind: "string",
-                                      },
-                                  ],
-                              },
-                              d: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ArrayLiteralExpression",
-                                  ],
-                                  type: "list",
-                                  node: "ArrayLiteralExpression",
-                                  value: [
-                                      {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "display",
-                                          kind: "string",
-                                      },
-                                  ],
-                              },
-                          },
-                      },
-                  ],
-              },
+              "position": [
+                "relative",
+                "absolute",
+              ],
+            },
           ],
-      ]
-    `)
+          [
+            "shorthands",
+            {
+              "d": [
+                "display",
+              ],
+              "p": [
+                "position",
+              ],
+            },
+          ],
+        ],
+        Map {
+          "properties" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "position" => BoxNodeList {
+                  "node": ArrayLiteralExpression,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "list",
+                  "value": [
+                    BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "literal",
+                      "value": "relative",
+                    },
+                    BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "literal",
+                      "value": "absolute",
+                    },
+                  ],
+                },
+                "display" => BoxNodeList {
+                  "node": ArrayLiteralExpression,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "list",
+                  "value": [
+                    BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "literal",
+                      "value": "block",
+                    },
+                    BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "literal",
+                      "value": "inline-block",
+                    },
+                    BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "literal",
+                      "value": "flex",
+                    },
+                    BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "literal",
+                      "value": "inline-flex",
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+          "shorthands" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "p" => BoxNodeList {
+                  "node": ArrayLiteralExpression,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "list",
+                  "value": [
+                    BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "literal",
+                      "value": "position",
+                    },
+                  ],
+                },
+                "d" => BoxNodeList {
+                  "node": ArrayLiteralExpression,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "list",
+                  "value": [
+                    BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "literal",
+                      "value": "display",
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract real-world Stack example ', () => {
@@ -8448,302 +9688,413 @@ it('extract real-world Stack example ', () => {
       { tagNameList: ['Box', 'Stack'] },
     ),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "Box",
+        [
           [
-              "Box",
-              [
-                  ["display", "flex"],
-                  ["flexDirection", ["column"]],
-                  ["key", null],
-                  ["pr", []],
-                  ["pb", []],
-              ],
-              {
-                  display: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "flex",
-                          kind: "string",
-                      },
-                  ],
-                  flexDirection: [
-                      {
-                          stack: [
-                              "JsxAttribute",
-                              "JsxExpression",
-                              "Identifier",
-                              "Identifier",
-                              "VariableDeclaration",
-                              "BinaryExpression",
-                              "Identifier",
-                          ],
-                          type: "conditional",
-                          node: "BinaryExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "BinaryExpression",
-                                  "Identifier",
-                              ],
-                              type: "unresolvable",
-                              node: "Identifier",
-                          },
-                          whenFalse: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "Identifier",
-                                  "Identifier",
-                                  "VariableDeclaration",
-                                  "BinaryExpression",
-                                  "Identifier",
-                              ],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "column",
-                              kind: "string",
-                          },
-                          kind: "nullish-coalescing",
-                      },
-                  ],
-                  key: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "Identifier"],
-                          type: "unresolvable",
-                          node: "Identifier",
-                      },
-                  ],
-                  pr: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression", "Identifier", "BindingElement"],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "BindingElement",
-                              ],
-                              type: "conditional",
-                              node: "ConditionalExpression",
-                              whenTrue: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ConditionalExpression",
-                                      "Identifier",
-                                      "BindingElement",
-                                  ],
-                                  type: "unresolvable",
-                                  node: "BindingElement",
-                              },
-                              whenFalse: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ConditionalExpression",
-                                      "Identifier",
-                                      "BindingElement",
-                                  ],
-                                  type: "literal",
-                                  node: "Identifier",
-                                  kind: "undefined",
-                              },
-                              kind: "ternary",
-                          },
-                          whenFalse: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "literal",
-                              node: "Identifier",
-                              kind: "undefined",
-                          },
-                          kind: "ternary",
-                      },
-                  ],
-                  pb: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression", "Identifier", "BindingElement"],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: [
-                                  "JsxAttribute",
-                                  "JsxExpression",
-                                  "ConditionalExpression",
-                                  "Identifier",
-                                  "BindingElement",
-                              ],
-                              type: "conditional",
-                              node: "ConditionalExpression",
-                              whenTrue: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ConditionalExpression",
-                                      "Identifier",
-                                      "BindingElement",
-                                  ],
-                                  type: "unresolvable",
-                                  node: "BindingElement",
-                              },
-                              whenFalse: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ConditionalExpression",
-                                      "Identifier",
-                                      "BindingElement",
-                                  ],
-                                  type: "literal",
-                                  node: "Identifier",
-                                  kind: "undefined",
-                              },
-                              kind: "ternary",
-                          },
-                          whenFalse: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "literal",
-                              node: "Identifier",
-                              kind: "undefined",
-                          },
-                          kind: "ternary",
-                      },
-                  ],
-              },
+            "display",
+            "flex",
           ],
           [
-              "Stack",
-              [
-                  ["as", "header"],
-                  ["flexWrap", "wrap"],
-                  ["alignItems", "flex-end"],
-                  ["justifyContent", "flex-end"],
-                  ["paddingRight", 2],
-                  ["paddingBottom", 2],
-                  ["borderBottomWidth", "1px"],
-                  ["borderBottomColor", "gray.400"],
-                  ["className", null],
-                  [
-                      "_tablet",
-                      {
-                          justifyContent: "space-between",
-                      },
-                  ],
-              ],
-              {
-                  as: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "header",
-                          kind: "string",
-                      },
-                  ],
-                  flexWrap: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "wrap",
-                          kind: "string",
-                      },
-                  ],
-                  alignItems: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "flex-end",
-                          kind: "string",
-                      },
-                  ],
-                  justifyContent: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "flex-end",
-                          kind: "string",
-                      },
-                  ],
-                  paddingRight: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "NumericLiteral"],
-                          type: "literal",
-                          node: "NumericLiteral",
-                          value: 2,
-                          kind: "number",
-                      },
-                  ],
-                  paddingBottom: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "NumericLiteral"],
-                          type: "literal",
-                          node: "NumericLiteral",
-                          value: 2,
-                          kind: "number",
-                      },
-                  ],
-                  borderBottomWidth: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "1px",
-                          kind: "string",
-                      },
-                  ],
-                  borderBottomColor: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "gray.400",
-                          kind: "string",
-                      },
-                  ],
-                  className: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "PropertyAccessExpression", "Identifier"],
-                          type: "unresolvable",
-                          node: "Identifier",
-                      },
-                  ],
-                  _tablet: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              justifyContent: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "StringLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "space-between",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  ],
-              },
+            "flexDirection",
+            [
+              "column",
+            ],
           ],
-      ]
-    `)
+          [
+            "key",
+            undefined,
+          ],
+          [
+            "pr",
+            [],
+          ],
+          [
+            "pb",
+            [],
+          ],
+        ],
+        Map {
+          "display" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "flex",
+            },
+          ],
+          "flexDirection" => [
+            BoxNodeConditional {
+              "kind": "nullish-coalescing",
+              "node": BinaryExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                BinaryExpression,
+                Identifier,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  BinaryExpression,
+                  Identifier,
+                ],
+                "type": "literal",
+                "value": "column",
+              },
+              "whenTrue": BoxNodeUnresolvable {
+                "node": Identifier,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  Identifier,
+                  Identifier,
+                  VariableDeclaration,
+                  BinaryExpression,
+                  Identifier,
+                ],
+                "type": "unresolvable",
+              },
+            },
+          ],
+          "key" => [
+            BoxNodeUnresolvable {
+              "node": Identifier,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+              ],
+              "type": "unresolvable",
+            },
+          ],
+          "pr" => [
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+                Identifier,
+                BindingElement,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "undefined",
+                "node": Identifier,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "literal",
+                "value": undefined,
+              },
+              "whenTrue": BoxNodeConditional {
+                "kind": "ternary",
+                "node": ConditionalExpression,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  BindingElement,
+                ],
+                "type": "conditional",
+                "whenFalse": BoxNodeLiteral {
+                  "kind": "undefined",
+                  "node": Identifier,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ConditionalExpression,
+                    Identifier,
+                    BindingElement,
+                  ],
+                  "type": "literal",
+                  "value": undefined,
+                },
+                "whenTrue": BoxNodeUnresolvable {
+                  "node": BindingElement,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ConditionalExpression,
+                    Identifier,
+                    BindingElement,
+                  ],
+                  "type": "unresolvable",
+                },
+              },
+            },
+          ],
+          "pb" => [
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+                Identifier,
+                BindingElement,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "undefined",
+                "node": Identifier,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "literal",
+                "value": undefined,
+              },
+              "whenTrue": BoxNodeConditional {
+                "kind": "ternary",
+                "node": ConditionalExpression,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                  Identifier,
+                  BindingElement,
+                ],
+                "type": "conditional",
+                "whenFalse": BoxNodeLiteral {
+                  "kind": "undefined",
+                  "node": Identifier,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ConditionalExpression,
+                    Identifier,
+                    BindingElement,
+                  ],
+                  "type": "literal",
+                  "value": undefined,
+                },
+                "whenTrue": BoxNodeUnresolvable {
+                  "node": BindingElement,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ConditionalExpression,
+                    Identifier,
+                    BindingElement,
+                  ],
+                  "type": "unresolvable",
+                },
+              },
+            },
+          ],
+        },
+      ],
+      [
+        "Stack",
+        [
+          [
+            "as",
+            "header",
+          ],
+          [
+            "flexWrap",
+            "wrap",
+          ],
+          [
+            "alignItems",
+            "flex-end",
+          ],
+          [
+            "justifyContent",
+            "flex-end",
+          ],
+          [
+            "paddingRight",
+            2,
+          ],
+          [
+            "paddingBottom",
+            2,
+          ],
+          [
+            "borderBottomWidth",
+            "1px",
+          ],
+          [
+            "borderBottomColor",
+            "gray.400",
+          ],
+          [
+            "className",
+            undefined,
+          ],
+          [
+            "_tablet",
+            {
+              "justifyContent": "space-between",
+            },
+          ],
+        ],
+        Map {
+          "as" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "header",
+            },
+          ],
+          "flexWrap" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "wrap",
+            },
+          ],
+          "alignItems" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "flex-end",
+            },
+          ],
+          "justifyContent" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "flex-end",
+            },
+          ],
+          "paddingRight" => [
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": NumericLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                NumericLiteral,
+              ],
+              "type": "literal",
+              "value": 2,
+            },
+          ],
+          "paddingBottom" => [
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": NumericLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                NumericLiteral,
+              ],
+              "type": "literal",
+              "value": 2,
+            },
+          ],
+          "borderBottomWidth" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "1px",
+            },
+          ],
+          "borderBottomColor" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "gray.400",
+            },
+          ],
+          "className" => [
+            BoxNodeUnresolvable {
+              "node": Identifier,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                PropertyAccessExpression,
+                Identifier,
+              ],
+              "type": "unresolvable",
+            },
+          ],
+          "_tablet" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "justifyContent" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "space-between",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > CallExpression > ObjectLiteralExpression > PropertyAssignment > TrueKeyword', () => {
@@ -8755,46 +10106,70 @@ it('extract JsxAttribute > JsxExpression > CallExpression > ObjectLiteralExpress
       { tagNameList: [], functionNameList: ['button'] },
     ),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "button",
+        [
           [
-              "button",
-              [
-                  ["color", "accent"],
-                  ["size", "large"],
-                  ["rounded", true],
-              ],
-              {
-                  color: [
-                      {
-                          stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "accent",
-                          kind: "string",
-                      },
-                  ],
-                  size: [
-                      {
-                          stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "large",
-                          kind: "string",
-                      },
-                  ],
-                  rounded: [
-                      {
-                          stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "TrueKeyword"],
-                          type: "literal",
-                          node: "TrueKeyword",
-                          value: true,
-                          kind: "boolean",
-                      },
-                  ],
-              },
+            "color",
+            "accent",
           ],
-      ]
-    `)
+          [
+            "size",
+            "large",
+          ],
+          [
+            "rounded",
+            true,
+          ],
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "accent",
+            },
+          ],
+          "size" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "large",
+            },
+          ],
+          "rounded" => [
+            BoxNodeLiteral {
+              "kind": "boolean",
+              "node": TrueKeyword,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                TrueKeyword,
+              ],
+              "type": "literal",
+              "value": true,
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract JsxAttribute > Identifier > StringLiteral tailwind-like', () => {
@@ -8831,87 +10206,126 @@ it('extract JsxAttribute > Identifier > StringLiteral tailwind-like', () => {
       { tagNameList: ['div'] },
     ),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "div",
+        [
           [
-              "div",
+            "className",
+            [
+              "bg-slate-100 rounded-xl p-8 dark:bg-slate-800",
               [
-                  [
-                      "className",
-                      [
-                          "bg-slate-100 rounded-xl p-8 dark:bg-slate-800",
-                          ["bg-sky-400", "text-lg", "bg-sky-800"],
-                          "bg-sky-400 text-lg bg-sky-800",
-                          "bg-red-400 bg-white rounded w-48 text-sm",
-                      ],
-                  ],
+                "bg-sky-400",
+                "text-lg",
+                "bg-sky-800",
               ],
-              {
-                  className: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "bg-slate-100 rounded-xl p-8 dark:bg-slate-800",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                          type: "conditional",
-                          node: "ConditionalExpression",
-                          whenTrue: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "list",
-                              node: "ArrayLiteralExpression",
-                              value: [
-                                  {
-                                      stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                                      type: "literal",
-                                      node: "StringLiteral",
-                                      value: "bg-sky-400",
-                                      kind: "string",
-                                  },
-                                  {
-                                      stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                                      type: "literal",
-                                      node: "StringLiteral",
-                                      value: "text-lg",
-                                      kind: "string",
-                                  },
-                              ],
-                          },
-                          whenFalse: {
-                              stack: ["JsxAttribute", "JsxExpression", "ConditionalExpression"],
-                              type: "literal",
-                              node: "StringLiteral",
-                              value: "bg-sky-800",
-                              kind: "string",
-                          },
-                          kind: "ternary",
-                      },
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "bg-sky-400 text-lg bg-sky-800",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "literal",
-                          node: "CallExpression",
-                          value: "bg-red-400 bg-white rounded w-48 text-sm",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "CallExpression"],
-                          type: "unresolvable",
-                          node: "CallExpression",
-                      },
-                  ],
-              },
+              "bg-sky-400 text-lg bg-sky-800",
+              "bg-red-400 bg-white rounded w-48 text-sm",
+            ],
           ],
-      ]
-    `)
+        ],
+        Map {
+          "className" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "bg-slate-100 rounded-xl p-8 dark:bg-slate-800",
+            },
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ConditionalExpression,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "string",
+                "node": StringLiteral,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "literal",
+                "value": "bg-sky-800",
+              },
+              "whenTrue": BoxNodeList {
+                "node": ArrayLiteralExpression,
+                "stack": [
+                  JsxAttribute,
+                  JsxExpression,
+                  ConditionalExpression,
+                ],
+                "type": "list",
+                "value": [
+                  BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ConditionalExpression,
+                    ],
+                    "type": "literal",
+                    "value": "bg-sky-400",
+                  },
+                  BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      JsxAttribute,
+                      JsxExpression,
+                      ConditionalExpression,
+                    ],
+                    "type": "literal",
+                    "value": "text-lg",
+                  },
+                ],
+              },
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                CallExpression,
+              ],
+              "type": "literal",
+              "value": "bg-sky-400 text-lg bg-sky-800",
+            },
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                CallExpression,
+              ],
+              "type": "literal",
+              "value": "bg-red-400 bg-white rounded w-48 text-sm",
+            },
+            BoxNodeUnresolvable {
+              "node": CallExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                CallExpression,
+              ],
+              "type": "unresolvable",
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract defineProperties config', () => {
@@ -8961,625 +10375,646 @@ it('extract defineProperties config', () => {
   const definePropsConfig = extractMap.get('defineProperties') as ExtractedFunctionResult
 
   expect(definePropsConfig.queryList).toMatchInlineSnapshot(`
-      [
-          {
-              name: "defineProperties",
-              box: {
-                  stack: [],
-                  type: "list",
-                  node: "CallExpression",
-                  value: [
-                      {
-                          stack: ["CallExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "CallExpression",
-                          value: {
-                              conditions: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "map",
-                                  node: "ObjectLiteralExpression",
-                                  value: {
-                                      small: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                          ],
-                                          type: "map",
-                                          node: "ObjectLiteralExpression",
-                                          value: {
-                                              selector: {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: ".small &",
-                                                  kind: "string",
-                                              },
-                                          },
-                                      },
-                                      large: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                          ],
-                                          type: "map",
-                                          node: "ObjectLiteralExpression",
-                                          value: {
-                                              selector: {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: ".large &",
-                                                  kind: "string",
-                                              },
-                                          },
-                                      },
-                                      dark: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                          ],
-                                          type: "map",
-                                          node: "ObjectLiteralExpression",
-                                          value: {
-                                              selector: {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: ".dark &",
-                                                  kind: "string",
-                                              },
-                                          },
-                                      },
-                                      light: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                          ],
-                                          type: "map",
-                                          node: "ObjectLiteralExpression",
-                                          value: {
-                                              selector: {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: ".light &",
-                                                  kind: "string",
-                                              },
-                                          },
-                                      },
-                                      hover: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                          ],
-                                          type: "map",
-                                          node: "ObjectLiteralExpression",
-                                          value: {
-                                              selector: {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "&:hover",
-                                                  kind: "string",
-                                              },
-                                          },
-                                      },
-                                      navItem: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                          ],
-                                          type: "map",
-                                          node: "ObjectLiteralExpression",
-                                          value: {
-                                              selector: {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "nav li > &",
-                                                  kind: "string",
-                                              },
-                                          },
-                                      },
-                                      hoverNotActive: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                          ],
-                                          type: "map",
-                                          node: "ObjectLiteralExpression",
-                                          value: {
-                                              selector: {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "&:hover:not(:active)",
-                                                  kind: "string",
-                                              },
-                                          },
-                                      },
-                                  },
-                              },
-                              defaultCondition: {
-                                  stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "small",
-                                  kind: "string",
-                              },
-                              properties: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "map",
-                                  node: "ObjectLiteralExpression",
-                                  value: {
-                                      display: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "TrueKeyword",
-                                          ],
-                                          type: "literal",
-                                          node: "TrueKeyword",
-                                          value: true,
-                                          kind: "boolean",
-                                      },
-                                      color: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "PropertyAccessExpression",
-                                              "Identifier",
-                                          ],
-                                          type: "unresolvable",
-                                          node: "Identifier",
-                                      },
-                                      backgroundColor: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "PropertyAccessExpression",
-                                              "Identifier",
-                                          ],
-                                          type: "unresolvable",
-                                          node: "Identifier",
-                                      },
-                                      borderColor: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "PropertyAccessExpression",
-                                              "Identifier",
-                                          ],
-                                          type: "unresolvable",
-                                          node: "Identifier",
-                                      },
-                                      borderRadius: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "PropertyAccessExpression",
-                                              "Identifier",
-                                          ],
-                                          type: "unresolvable",
-                                          node: "Identifier",
-                                      },
-                                      padding: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                          ],
-                                          type: "map",
-                                          node: "ObjectLiteralExpression",
-                                          value: {
-                                              "4": {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "4px",
-                                                  kind: "string",
-                                              },
-                                              "8": {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "8px",
-                                                  kind: "string",
-                                              },
-                                              "12": {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "12px",
-                                                  kind: "string",
-                                              },
-                                              "16": {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "16px",
-                                                  kind: "string",
-                                              },
-                                              "20": {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "20px",
-                                                  kind: "string",
-                                              },
-                                              "24": {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "24px",
-                                                  kind: "string",
-                                              },
-                                          },
-                                      },
-                                      width: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                          ],
-                                          type: "map",
-                                          node: "ObjectLiteralExpression",
-                                          value: {
-                                              "1/2": {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "StringLiteral",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "50%",
-                                                  kind: "string",
-                                              },
-                                          },
-                                      },
-                                  },
-                              },
-                              shorthands: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "map",
-                                  node: "ObjectLiteralExpression",
-                                  value: {
-                                      d: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "list",
-                                          node: "ArrayLiteralExpression",
-                                          value: [
-                                              {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ArrayLiteralExpression",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "display",
-                                                  kind: "string",
-                                              },
-                                          ],
-                                      },
-                                      w: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "list",
-                                          node: "ArrayLiteralExpression",
-                                          value: [
-                                              {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ArrayLiteralExpression",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "width",
-                                                  kind: "string",
-                                              },
-                                          ],
-                                      },
-                                      bg: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "list",
-                                          node: "ArrayLiteralExpression",
-                                          value: [
-                                              {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ArrayLiteralExpression",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "backgroundColor",
-                                                  kind: "string",
-                                              },
-                                          ],
-                                      },
-                                      p: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "list",
-                                          node: "ArrayLiteralExpression",
-                                          value: [
-                                              {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ArrayLiteralExpression",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "padding",
-                                                  kind: "string",
-                                              },
-                                          ],
-                                      },
-                                      rounded: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "list",
-                                          node: "ArrayLiteralExpression",
-                                          value: [
-                                              {
-                                                  stack: [
-                                                      "CallExpression",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ObjectLiteralExpression",
-                                                      "PropertyAssignment",
-                                                      "ArrayLiteralExpression",
-                                                  ],
-                                                  type: "literal",
-                                                  node: "StringLiteral",
-                                                  value: "borderRadius",
-                                                  kind: "string",
-                                              },
-                                          ],
-                                      },
-                                  },
-                              },
-                          },
-                      },
+    [
+      {
+        "box": BoxNodeList {
+          "node": CallExpression,
+          "stack": [],
+          "type": "list",
+          "value": [
+            BoxNodeMap {
+              "node": CallExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "conditions" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
                   ],
+                  "type": "map",
+                  "value": Map {
+                    "small" => BoxNodeMap {
+                      "node": ObjectLiteralExpression,
+                      "spreadConditions": undefined,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                      ],
+                      "type": "map",
+                      "value": Map {
+                        "selector" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": ".small &",
+                        },
+                      },
+                    },
+                    "large" => BoxNodeMap {
+                      "node": ObjectLiteralExpression,
+                      "spreadConditions": undefined,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                      ],
+                      "type": "map",
+                      "value": Map {
+                        "selector" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": ".large &",
+                        },
+                      },
+                    },
+                    "dark" => BoxNodeMap {
+                      "node": ObjectLiteralExpression,
+                      "spreadConditions": undefined,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                      ],
+                      "type": "map",
+                      "value": Map {
+                        "selector" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": ".dark &",
+                        },
+                      },
+                    },
+                    "light" => BoxNodeMap {
+                      "node": ObjectLiteralExpression,
+                      "spreadConditions": undefined,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                      ],
+                      "type": "map",
+                      "value": Map {
+                        "selector" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": ".light &",
+                        },
+                      },
+                    },
+                    "hover" => BoxNodeMap {
+                      "node": ObjectLiteralExpression,
+                      "spreadConditions": undefined,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                      ],
+                      "type": "map",
+                      "value": Map {
+                        "selector" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": "&:hover",
+                        },
+                      },
+                    },
+                    "navItem" => BoxNodeMap {
+                      "node": ObjectLiteralExpression,
+                      "spreadConditions": undefined,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                      ],
+                      "type": "map",
+                      "value": Map {
+                        "selector" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": "nav li > &",
+                        },
+                      },
+                    },
+                    "hoverNotActive" => BoxNodeMap {
+                      "node": ObjectLiteralExpression,
+                      "spreadConditions": undefined,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                      ],
+                      "type": "map",
+                      "value": Map {
+                        "selector" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": "&:hover:not(:active)",
+                        },
+                      },
+                    },
+                  },
+                },
+                "defaultCondition" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "small",
+                },
+                "properties" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "display" => BoxNodeLiteral {
+                      "kind": "boolean",
+                      "node": TrueKeyword,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        TrueKeyword,
+                      ],
+                      "type": "literal",
+                      "value": true,
+                    },
+                    "color" => BoxNodeUnresolvable {
+                      "node": Identifier,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        PropertyAccessExpression,
+                        Identifier,
+                      ],
+                      "type": "unresolvable",
+                    },
+                    "backgroundColor" => BoxNodeUnresolvable {
+                      "node": Identifier,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        PropertyAccessExpression,
+                        Identifier,
+                      ],
+                      "type": "unresolvable",
+                    },
+                    "borderColor" => BoxNodeUnresolvable {
+                      "node": Identifier,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        PropertyAccessExpression,
+                        Identifier,
+                      ],
+                      "type": "unresolvable",
+                    },
+                    "borderRadius" => BoxNodeUnresolvable {
+                      "node": Identifier,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        PropertyAccessExpression,
+                        Identifier,
+                      ],
+                      "type": "unresolvable",
+                    },
+                    "padding" => BoxNodeMap {
+                      "node": ObjectLiteralExpression,
+                      "spreadConditions": undefined,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                      ],
+                      "type": "map",
+                      "value": Map {
+                        "4" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": "4px",
+                        },
+                        "8" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": "8px",
+                        },
+                        "12" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": "12px",
+                        },
+                        "16" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": "16px",
+                        },
+                        "20" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": "20px",
+                        },
+                        "24" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": "24px",
+                        },
+                      },
+                    },
+                    "width" => BoxNodeMap {
+                      "node": ObjectLiteralExpression,
+                      "spreadConditions": undefined,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                      ],
+                      "type": "map",
+                      "value": Map {
+                        "1/2" => BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            StringLiteral,
+                          ],
+                          "type": "literal",
+                          "value": "50%",
+                        },
+                      },
+                    },
+                  },
+                },
+                "shorthands" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "d" => BoxNodeList {
+                      "node": ArrayLiteralExpression,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "list",
+                      "value": [
+                        BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ArrayLiteralExpression,
+                          ],
+                          "type": "literal",
+                          "value": "display",
+                        },
+                      ],
+                    },
+                    "w" => BoxNodeList {
+                      "node": ArrayLiteralExpression,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "list",
+                      "value": [
+                        BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ArrayLiteralExpression,
+                          ],
+                          "type": "literal",
+                          "value": "width",
+                        },
+                      ],
+                    },
+                    "bg" => BoxNodeList {
+                      "node": ArrayLiteralExpression,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "list",
+                      "value": [
+                        BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ArrayLiteralExpression,
+                          ],
+                          "type": "literal",
+                          "value": "backgroundColor",
+                        },
+                      ],
+                    },
+                    "p" => BoxNodeList {
+                      "node": ArrayLiteralExpression,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "list",
+                      "value": [
+                        BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ArrayLiteralExpression,
+                          ],
+                          "type": "literal",
+                          "value": "padding",
+                        },
+                      ],
+                    },
+                    "rounded" => BoxNodeList {
+                      "node": ArrayLiteralExpression,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "list",
+                      "value": [
+                        BoxNodeLiteral {
+                          "kind": "string",
+                          "node": StringLiteral,
+                          "stack": [
+                            CallExpression,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ObjectLiteralExpression,
+                            PropertyAssignment,
+                            ArrayLiteralExpression,
+                          ],
+                          "type": "literal",
+                          "value": "borderRadius",
+                        },
+                      ],
+                    },
+                  },
+                },
               },
-          },
-      ]
-    `)
+            },
+          ],
+        },
+        "name": "defineProperties",
+      },
+    ]
+  `)
 })
 
 it('extract CallExpression > ObjectLiteralExpression > PropertyAssignment > Identifier > ArrayBindingPattern', () => {
@@ -9609,169 +11044,174 @@ it('extract CallExpression > ObjectLiteralExpression > PropertyAssignment > Iden
       { tagNameList: [], functionNameList: ['defineProperties'] },
     ),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "defineProperties",
+        [
           [
-              "defineProperties",
-              [
-                  [
-                      "properties",
-                      {
-                          display: true,
-                          backgroundColor: {
-                              error: "var(--backgroundColor-error__1dghp00s)",
-                              warning: "var(--backgroundColor-warning__1dghp00t)",
-                          },
-                      },
-                  ],
-                  [
-                      "shorthands",
-                      {
-                          margin: ["marginTop"],
-                      },
-                  ],
-              ],
-              {
-                  properties: [
-                      {
-                          stack: [
-                              "CallExpression",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "ObjectLiteralExpression",
-                          ],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              display: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "TrueKeyword",
-                                  ],
-                                  type: "literal",
-                                  node: "TrueKeyword",
-                                  value: true,
-                                  kind: "boolean",
-                              },
-                              backgroundColor: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "PropertyAccessExpression",
-                                      "Identifier",
-                                      "Identifier",
-                                      "BindingElement",
-                                      "ArrayLiteralExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "map",
-                                  node: "ObjectLiteralExpression",
-                                  value: {
-                                      error: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "PropertyAccessExpression",
-                                              "Identifier",
-                                              "Identifier",
-                                              "BindingElement",
-                                              "ArrayLiteralExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "var(--backgroundColor-error__1dghp00s)",
-                                          kind: "string",
-                                      },
-                                      warning: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "PropertyAccessExpression",
-                                              "Identifier",
-                                              "Identifier",
-                                              "BindingElement",
-                                              "ArrayLiteralExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "var(--backgroundColor-warning__1dghp00t)",
-                                          kind: "string",
-                                      },
-                                  },
-                              },
-                          },
-                      },
-                  ],
-                  shorthands: [
-                      {
-                          stack: [
-                              "CallExpression",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "ObjectLiteralExpression",
-                          ],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              margin: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ArrayLiteralExpression",
-                                  ],
-                                  type: "list",
-                                  node: "ArrayLiteralExpression",
-                                  value: [
-                                      {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ArrayLiteralExpression",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "marginTop",
-                                          kind: "string",
-                                      },
-                                  ],
-                              },
-                          },
-                      },
-                  ],
+            "properties",
+            {
+              "backgroundColor": {
+                "error": "var(--backgroundColor-error__1dghp00s)",
+                "warning": "var(--backgroundColor-warning__1dghp00t)",
               },
+              "display": true,
+            },
           ],
-      ]
-    `)
+          [
+            "shorthands",
+            {
+              "margin": [
+                "marginTop",
+              ],
+            },
+          ],
+        ],
+        Map {
+          "properties" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "display" => BoxNodeLiteral {
+                  "kind": "boolean",
+                  "node": TrueKeyword,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    TrueKeyword,
+                  ],
+                  "type": "literal",
+                  "value": true,
+                },
+                "backgroundColor" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    PropertyAccessExpression,
+                    Identifier,
+                    Identifier,
+                    BindingElement,
+                    ArrayLiteralExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "error" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        PropertyAccessExpression,
+                        Identifier,
+                        Identifier,
+                        BindingElement,
+                        ArrayLiteralExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "var(--backgroundColor-error__1dghp00s)",
+                    },
+                    "warning" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        PropertyAccessExpression,
+                        Identifier,
+                        Identifier,
+                        BindingElement,
+                        ArrayLiteralExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "var(--backgroundColor-warning__1dghp00t)",
+                    },
+                  },
+                },
+              },
+            },
+          ],
+          "shorthands" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "margin" => BoxNodeList {
+                  "node": ArrayLiteralExpression,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "list",
+                  "value": [
+                    BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ArrayLiteralExpression,
+                      ],
+                      "type": "literal",
+                      "value": "marginTop",
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract function with multiple args even if not starting by ObjectLiteralExpression - CallExpression > StringLiteral + ObjectLiteralExpression > *', () => {
@@ -9805,64 +11245,72 @@ it('extract function with multiple args even if not starting by ObjectLiteralExp
   )
 
   expect(extracted.get('createTheme')!.queryList).toMatchInlineSnapshot(`
-      [
-          {
-              name: "createTheme",
-              box: {
-                  stack: [],
-                  type: "list",
-                  node: "CallExpression",
-                  value: [
-                      {
-                          stack: ["CallExpression", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "contract",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["CallExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "CallExpression",
-                          value: {
-                              color: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "map",
-                                  node: "ObjectLiteralExpression",
-                                  value: {
-                                      mainBg: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ElementAccessExpression",
-                                              "Identifier",
-                                              "StringLiteral",
-                                              "Identifier",
-                                              "VariableDeclaration",
-                                              "PropertyAssignment",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "#95a7d8",
-                                          kind: "string",
-                                      },
-                                  },
-                              },
-                          },
-                      },
+    [
+      {
+        "box": BoxNodeList {
+          "node": CallExpression,
+          "stack": [],
+          "type": "list",
+          "value": [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                CallExpression,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "contract",
+            },
+            BoxNodeMap {
+              "node": CallExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
                   ],
+                  "type": "map",
+                  "value": Map {
+                    "mainBg" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ElementAccessExpression,
+                        Identifier,
+                        StringLiteral,
+                        Identifier,
+                        VariableDeclaration,
+                        PropertyAssignment,
+                      ],
+                      "type": "literal",
+                      "value": "#95a7d8",
+                    },
+                  },
+                },
               },
-          },
-      ]
-    `)
+            },
+          ],
+        },
+        "name": "createTheme",
+      },
+    ]
+  `)
 })
 
 // TODO nested valueOrNullable ?? fallback ?? fallback
@@ -9885,150 +11333,168 @@ it('extract NullKeyword', () => {
   )
 
   expect(extracted.get('createTheme')!.queryList).toMatchInlineSnapshot(`
-      [
-          {
-              name: "createTheme",
-              box: {
-                  stack: [],
-                  type: "list",
-                  node: "CallExpression",
-                  value: [
-                      {
-                          stack: ["CallExpression", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "contract",
-                          kind: "string",
-                      },
-                      {
-                          stack: ["CallExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "CallExpression",
-                          value: {
-                              color: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "map",
-                                  node: "ObjectLiteralExpression",
-                                  value: {
-                                      mainBg: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "NullKeyword",
-                                          ],
-                                          type: "literal",
-                                          node: "NullKeyword",
-                                          value: null,
-                                          kind: "null",
-                                      },
-                                      secondaryBg: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "NullKeyword",
-                                          ],
-                                          type: "literal",
-                                          node: "NullKeyword",
-                                          value: null,
-                                          kind: "null",
-                                      },
-                                      text: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "NullKeyword",
-                                          ],
-                                          type: "literal",
-                                          node: "NullKeyword",
-                                          value: null,
-                                          kind: "null",
-                                      },
-                                      bg: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "NullKeyword",
-                                          ],
-                                          type: "literal",
-                                          node: "NullKeyword",
-                                          value: null,
-                                          kind: "null",
-                                      },
-                                      bgSecondary: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "NullKeyword",
-                                          ],
-                                          type: "literal",
-                                          node: "NullKeyword",
-                                          value: null,
-                                          kind: "null",
-                                      },
-                                      bgHover: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "NullKeyword",
-                                          ],
-                                          type: "literal",
-                                          node: "NullKeyword",
-                                          value: null,
-                                          kind: "null",
-                                      },
-                                  },
-                              },
-                          },
-                      },
+    [
+      {
+        "box": BoxNodeList {
+          "node": CallExpression,
+          "stack": [],
+          "type": "list",
+          "value": [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                CallExpression,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "contract",
+            },
+            BoxNodeMap {
+              "node": CallExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
                   ],
+                  "type": "map",
+                  "value": Map {
+                    "mainBg" => BoxNodeLiteral {
+                      "kind": "null",
+                      "node": NullKeyword,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        NullKeyword,
+                      ],
+                      "type": "literal",
+                      "value": null,
+                    },
+                    "secondaryBg" => BoxNodeLiteral {
+                      "kind": "null",
+                      "node": NullKeyword,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        NullKeyword,
+                      ],
+                      "type": "literal",
+                      "value": null,
+                    },
+                    "text" => BoxNodeLiteral {
+                      "kind": "null",
+                      "node": NullKeyword,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        NullKeyword,
+                      ],
+                      "type": "literal",
+                      "value": null,
+                    },
+                    "bg" => BoxNodeLiteral {
+                      "kind": "null",
+                      "node": NullKeyword,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        NullKeyword,
+                      ],
+                      "type": "literal",
+                      "value": null,
+                    },
+                    "bgSecondary" => BoxNodeLiteral {
+                      "kind": "null",
+                      "node": NullKeyword,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        NullKeyword,
+                      ],
+                      "type": "literal",
+                      "value": null,
+                    },
+                    "bgHover" => BoxNodeLiteral {
+                      "kind": "null",
+                      "node": NullKeyword,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        NullKeyword,
+                      ],
+                      "type": "literal",
+                      "value": null,
+                    },
+                  },
+                },
               },
-          },
-      ]
-    `)
+            },
+          ],
+        },
+        "name": "createTheme",
+      },
+    ]
+  `)
 })
 
 it('extract UndefinedKeyword', () => {
   expect(extractFromCode(`<ColorBox color={undefined} />`)).toMatchInlineSnapshot(`
+    [
       [
+        "ColorBox",
+        [
           [
-              "ColorBox",
-              [["color", null]],
-              {
-                  color: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "Identifier"],
-                          type: "literal",
-                          node: "Identifier",
-                          kind: "undefined",
-                      },
-                  ],
-              },
+            "color",
+            undefined,
           ],
-      ]
-    `)
+        ],
+        Map {
+          "color" => [
+            BoxNodeLiteral {
+              "kind": "undefined",
+              "node": Identifier,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                Identifier,
+              ],
+              "type": "literal",
+              "value": undefined,
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract css from createTheme result', () => {
@@ -10058,73 +11524,82 @@ it('extract css from createTheme result', () => {
   )
 
   expect(extracted.get('css')!.queryList).toMatchInlineSnapshot(`
-      [
-          {
-              name: "css",
-              box: {
-                  stack: [],
-                  type: "list",
-                  node: "CallExpression",
-                  value: [
-                      {
-                          stack: ["CallExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "CallExpression",
-                          value: {
-                              background: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "TemplateExpression",
-                                      "PropertyAccessExpression",
-                                      "Identifier",
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAccessExpression",
-                                      "Identifier",
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "literal",
-                                  node: "TemplateExpression",
-                                  value: "linear-gradient(to bottom, var(--color-mainBg__1du39r70) 20%, var(--color-secondaryBg__1du39r71))",
-                                  kind: "string",
-                              },
-                              backgroundAttachment: {
-                                  stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "StringLiteral"],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "fixed",
-                                  kind: "string",
-                              },
-                              color: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "PropertyAccessExpression",
-                                      "PropertyAccessExpression",
-                                      "Identifier",
-                                      "Identifier",
-                                      "VariableDeclaration",
-                                      "PropertyAssignment",
-                                      "PropertyAssignment",
-                                  ],
-                                  type: "literal",
-                                  node: "StringLiteral",
-                                  value: "var(--color-text__1du39r72)",
-                                  kind: "string",
-                              },
-                          },
-                      },
+    [
+      {
+        "box": BoxNodeList {
+          "node": CallExpression,
+          "stack": [],
+          "type": "list",
+          "value": [
+            BoxNodeMap {
+              "node": CallExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "background" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": TemplateExpression,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    TemplateExpression,
+                    PropertyAccessExpression,
+                    Identifier,
+                    Identifier,
+                    VariableDeclaration,
+                    ObjectLiteralExpression,
+                    PropertyAccessExpression,
+                    Identifier,
+                    Identifier,
+                    VariableDeclaration,
+                    ObjectLiteralExpression,
                   ],
+                  "type": "literal",
+                  "value": "linear-gradient(to bottom, var(--color-mainBg__1du39r70) 20%, var(--color-secondaryBg__1du39r71))",
+                },
+                "backgroundAttachment" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    StringLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "fixed",
+                },
+                "color" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    PropertyAccessExpression,
+                    PropertyAccessExpression,
+                    Identifier,
+                    Identifier,
+                    VariableDeclaration,
+                    PropertyAssignment,
+                    PropertyAssignment,
+                  ],
+                  "type": "literal",
+                  "value": "var(--color-text__1du39r72)",
+                },
               },
-          },
-      ]
-    `)
+            },
+          ],
+        },
+        "name": "css",
+      },
+    ]
+  `)
 })
 
 it('extract assignVars args', () => {
@@ -10158,138 +11633,146 @@ it('extract assignVars args', () => {
   )
 
   expect(extracted.get('assignVars')!.queryList).toMatchInlineSnapshot(`
-      [
-          {
-              name: "assignVars",
-              box: {
-                  stack: [],
-                  type: "list",
-                  node: "CallExpression",
-                  value: [
-                      {
-                          stack: ["CallExpression", "Identifier"],
-                          type: "unresolvable",
-                          node: "Identifier",
-                      },
-                      {
-                          stack: ["CallExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "CallExpression",
-                          value: {
-                              color: {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "map",
-                                  node: "ObjectLiteralExpression",
-                                  value: {
-                                      mainBg: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ElementAccessExpression",
-                                              "Identifier",
-                                              "StringLiteral",
-                                              "Identifier",
-                                              "VariableDeclaration",
-                                              "PropertyAssignment",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "#39539b",
-                                          kind: "string",
-                                      },
-                                      secondaryBg: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ElementAccessExpression",
-                                              "Identifier",
-                                              "StringLiteral",
-                                              "Identifier",
-                                              "VariableDeclaration",
-                                              "PropertyAssignment",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "#324989",
-                                          kind: "string",
-                                      },
-                                      bg: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ElementAccessExpression",
-                                              "Identifier",
-                                              "StringLiteral",
-                                              "Identifier",
-                                              "VariableDeclaration",
-                                              "PropertyAssignment",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "#8297d1",
-                                          kind: "string",
-                                      },
-                                      bgSecondary: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ElementAccessExpression",
-                                              "Identifier",
-                                              "StringLiteral",
-                                              "Identifier",
-                                              "VariableDeclaration",
-                                              "PropertyAssignment",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "#2b3f76",
-                                          kind: "string",
-                                      },
-                                      bgHover: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ElementAccessExpression",
-                                              "Identifier",
-                                              "StringLiteral",
-                                              "Identifier",
-                                              "VariableDeclaration",
-                                              "PropertyAssignment",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "#324989",
-                                          kind: "string",
-                                      },
-                                  },
-                              },
-                          },
-                      },
+    [
+      {
+        "box": BoxNodeList {
+          "node": CallExpression,
+          "stack": [],
+          "type": "list",
+          "value": [
+            BoxNodeUnresolvable {
+              "node": Identifier,
+              "stack": [
+                CallExpression,
+                Identifier,
+              ],
+              "type": "unresolvable",
+            },
+            BoxNodeMap {
+              "node": CallExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "color" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
                   ],
+                  "type": "map",
+                  "value": Map {
+                    "mainBg" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ElementAccessExpression,
+                        Identifier,
+                        StringLiteral,
+                        Identifier,
+                        VariableDeclaration,
+                        PropertyAssignment,
+                      ],
+                      "type": "literal",
+                      "value": "#39539b",
+                    },
+                    "secondaryBg" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ElementAccessExpression,
+                        Identifier,
+                        StringLiteral,
+                        Identifier,
+                        VariableDeclaration,
+                        PropertyAssignment,
+                      ],
+                      "type": "literal",
+                      "value": "#324989",
+                    },
+                    "bg" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ElementAccessExpression,
+                        Identifier,
+                        StringLiteral,
+                        Identifier,
+                        VariableDeclaration,
+                        PropertyAssignment,
+                      ],
+                      "type": "literal",
+                      "value": "#8297d1",
+                    },
+                    "bgSecondary" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ElementAccessExpression,
+                        Identifier,
+                        StringLiteral,
+                        Identifier,
+                        VariableDeclaration,
+                        PropertyAssignment,
+                      ],
+                      "type": "literal",
+                      "value": "#2b3f76",
+                    },
+                    "bgHover" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ElementAccessExpression,
+                        Identifier,
+                        StringLiteral,
+                        Identifier,
+                        VariableDeclaration,
+                        PropertyAssignment,
+                      ],
+                      "type": "literal",
+                      "value": "#324989",
+                    },
+                  },
+                },
               },
-          },
-      ]
-    `)
+            },
+          ],
+        },
+        "name": "assignVars",
+      },
+    ]
+  `)
 })
 
 it('extract CallExpression > no args', () => {
@@ -10301,24 +11784,24 @@ it('extract CallExpression > no args', () => {
       { functionNameList: ['defineProperties'] },
     ),
   ).toMatchInlineSnapshot(`
-      {
-          defineProperties: {
-              kind: "function",
-              nodesByProp: {},
-              queryList: [
-                  {
-                      name: "defineProperties",
-                      box: {
-                          stack: [],
-                          type: "list",
-                          node: "CallExpression",
-                          value: [],
-                      },
-                  },
-              ],
+    Map {
+      "defineProperties" => {
+        "kind": "function",
+        "nodesByProp": Map {},
+        "queryList": [
+          {
+            "box": BoxNodeList {
+              "node": CallExpression,
+              "stack": [],
+              "type": "list",
+              "value": [],
+            },
+            "name": "defineProperties",
           },
-      }
-    `)
+        ],
+      },
+    }
+  `)
 })
 
 it('extract CallExpression nested ObjectLiteralExpression', () => {
@@ -10342,68 +11825,70 @@ it('extract CallExpression nested ObjectLiteralExpression', () => {
       { functionNameList: ['css'] },
     ),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "css",
+        [
           [
-              "css",
-              [
-                  [
-                      "selectors",
-                      {
-                          "&:hover": {
-                              background: "red.200",
-                          },
-                      },
-                  ],
-              ],
-              {
-                  selectors: [
-                      {
-                          stack: [
-                              "CallExpression",
-                              "ObjectLiteralExpression",
-                              "PropertyAssignment",
-                              "ObjectLiteralExpression",
-                          ],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              "&:hover": {
-                                  stack: [
-                                      "CallExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "ObjectLiteralExpression",
-                                  ],
-                                  type: "map",
-                                  node: "ObjectLiteralExpression",
-                                  value: {
-                                      background: {
-                                          stack: [
-                                              "CallExpression",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "ObjectLiteralExpression",
-                                              "PropertyAssignment",
-                                              "StringLiteral",
-                                          ],
-                                          type: "literal",
-                                          node: "StringLiteral",
-                                          value: "red.200",
-                                          kind: "string",
-                                      },
-                                  },
-                              },
-                          },
-                      },
-                  ],
+            "selectors",
+            {
+              "&:hover": {
+                "background": "red.200",
               },
+            },
           ],
-      ]
-    `)
+        ],
+        Map {
+          "selectors" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "&:hover" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "background" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "red.200",
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })
 
 it('extract CallExpression nested ObjectLiteralExpression', () => {
@@ -10448,7 +11933,15 @@ it('extract CallExpression nested ObjectLiteralExpression', () => {
         `,
       { functionNameList: ['factory'] },
     ),
-  ).toMatchInlineSnapshot('[["factory", [], {}]]')
+  ).toMatchInlineSnapshot(`
+    [
+      [
+        "factory",
+        [],
+        Map {},
+      ],
+    ]
+  `)
 })
 
 it('handles multiline string literal', () => {
@@ -10479,93 +11972,127 @@ it('handles multiline string literal', () => {
       { tagNameList: ['div'] },
     ),
   ).toMatchInlineSnapshot(`
+    [
       [
+        "div",
+        [
           [
-              "div",
-              [
-                  ["marginTop", "3"],
-                  ["display", "flex"],
-                  ["flexDir", "column"],
-                  ["background", "#e879f91a"],
-                  ["backgroundSize", "8px 8px"],
-                  [
-                      "style",
-                      {
-                          backgroundImage:
-                              "linear-gradient( 135deg, #d946ef80 10%, transparent 0, transparent 50%, #d946ef80 0, #d946ef80 60%, transparent 0, transparent )",
-                      },
-                  ],
-              ],
-              {
-                  marginTop: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "3",
-                          kind: "string",
-                      },
-                  ],
-                  display: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "flex",
-                          kind: "string",
-                      },
-                  ],
-                  flexDir: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "column",
-                          kind: "string",
-                      },
-                  ],
-                  background: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "#e879f91a",
-                          kind: "string",
-                      },
-                  ],
-                  backgroundSize: [
-                      {
-                          stack: ["JsxAttribute", "StringLiteral"],
-                          type: "literal",
-                          node: "StringLiteral",
-                          value: "8px 8px",
-                          kind: "string",
-                      },
-                  ],
-                  style: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ObjectLiteralExpression"],
-                          type: "map",
-                          node: "ObjectLiteralExpression",
-                          value: {
-                              backgroundImage: {
-                                  stack: [
-                                      "JsxAttribute",
-                                      "JsxExpression",
-                                      "ObjectLiteralExpression",
-                                      "PropertyAssignment",
-                                      "NoSubstitutionTemplateLiteral",
-                                  ],
-                                  type: "literal",
-                                  node: "NoSubstitutionTemplateLiteral",
-                                  value: "linear-gradient( 135deg, #d946ef80 10%, transparent 0, transparent 50%, #d946ef80 0, #d946ef80 60%, transparent 0, transparent )",
-                                  kind: "string",
-                              },
-                          },
-                      },
-                  ],
-              },
+            "marginTop",
+            "3",
           ],
-      ]
-    `)
+          [
+            "display",
+            "flex",
+          ],
+          [
+            "flexDir",
+            "column",
+          ],
+          [
+            "background",
+            "#e879f91a",
+          ],
+          [
+            "backgroundSize",
+            "8px 8px",
+          ],
+          [
+            "style",
+            {
+              "backgroundImage": "linear-gradient( 135deg, #d946ef80 10%, transparent 0, transparent 50%, #d946ef80 0, #d946ef80 60%, transparent 0, transparent )",
+            },
+          ],
+        ],
+        Map {
+          "marginTop" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "3",
+            },
+          ],
+          "display" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "flex",
+            },
+          ],
+          "flexDir" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "column",
+            },
+          ],
+          "background" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "#e879f91a",
+            },
+          ],
+          "backgroundSize" => [
+            BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                JsxAttribute,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "8px 8px",
+            },
+          ],
+          "style" => [
+            BoxNodeMap {
+              "node": ObjectLiteralExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "backgroundImage" => BoxNodeLiteral {
+                  "kind": "string",
+                  "node": NoSubstitutionTemplateLiteral,
+                  "stack": [
+                    JsxAttribute,
+                    JsxExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    NoSubstitutionTemplateLiteral,
+                  ],
+                  "type": "literal",
+                  "value": "linear-gradient( 135deg, #d946ef80 10%, transparent 0, transparent 50%, #d946ef80 0, #d946ef80 60%, transparent 0, transparent )",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `)
 })

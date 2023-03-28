@@ -66,30 +66,30 @@ it('can find usage references from a variable', () => {
   const backgroundColor = properties.value.get('backgroundColor')! as BoxNodeMap
   const warning = backgroundColor.value.get('warning')! as BoxNodeLiteral
 
-  expect(warning.getNode().getText()).toMatchInlineSnapshot('""var(--backgroundColor-warning__1dghp00t)""')
+  expect(warning.getNode().getText()).toMatchInlineSnapshot('"\\"var(--backgroundColor-warning__1dghp00t)\\""')
   expect(warning).toMatchInlineSnapshot(`
-      {
-          stack: [
-              "CallExpression",
-              "ObjectLiteralExpression",
-              "PropertyAssignment",
-              "ObjectLiteralExpression",
-              "PropertyAssignment",
-              "PropertyAccessExpression",
-              "Identifier",
-              "Identifier",
-              "BindingElement",
-              "ArrayLiteralExpression",
-              "ObjectLiteralExpression",
-              "PropertyAssignment",
-              "ObjectLiteralExpression",
-              "PropertyAssignment",
-              "StringLiteral",
-          ],
-          type: "literal",
-          node: "StringLiteral",
-          value: "var(--backgroundColor-warning__1dghp00t)",
-          kind: "string",
-      }
-    `)
+    BoxNodeLiteral {
+      "kind": "string",
+      "node": StringLiteral,
+      "stack": [
+        CallExpression,
+        ObjectLiteralExpression,
+        PropertyAssignment,
+        ObjectLiteralExpression,
+        PropertyAssignment,
+        PropertyAccessExpression,
+        Identifier,
+        Identifier,
+        BindingElement,
+        ArrayLiteralExpression,
+        ObjectLiteralExpression,
+        PropertyAssignment,
+        ObjectLiteralExpression,
+        PropertyAssignment,
+        StringLiteral,
+      ],
+      "type": "literal",
+      "value": "var(--backgroundColor-warning__1dghp00t)",
+    }
+  `)
 })

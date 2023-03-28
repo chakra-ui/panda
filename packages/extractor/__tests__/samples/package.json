@@ -1,6 +1,0 @@
-{
-  "name": "box-extractor-tests-samples",
-  "dependencies": {
-    "@box-extractor/vanilla-theme": "link:../../../vanilla-theme"
-  }
-}

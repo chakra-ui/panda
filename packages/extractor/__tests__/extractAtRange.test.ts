@@ -59,22 +59,52 @@ test('getTsNodeAtPosition', () => {
   let node
 
   node = getTsNodeAtPosition(sourceFile, 1, 1)
-  expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot('["import", "ImportKeyword"]')
+  expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot(`
+    [
+      "import",
+      "ImportKeyword",
+    ]
+  `)
 
   node = getTsNodeAtPosition(sourceFile, 15, 19)
-  expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot('["abc", "Identifier"]')
+  expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot(`
+    [
+      "abc",
+      "Identifier",
+    ]
+  `)
 
   node = getTsNodeAtPosition(sourceFile, 19, 12)
-  expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot('["factory", "Identifier"]')
+  expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot(`
+    [
+      "factory",
+      "Identifier",
+    ]
+  `)
 
   node = getTsNodeAtPosition(sourceFile, 20, 12)
-  expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot('["SceneAlt", "Identifier"]')
+  expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot(`
+    [
+      "SceneAlt",
+      "Identifier",
+    ]
+  `)
 
   node = getTsNodeAtPosition(sourceFile, 31, 13)
-  expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot('["Cylinder", "Identifier"]')
+  expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot(`
+    [
+      "Cylinder",
+      "Identifier",
+    ]
+  `)
 
   node = getTsNodeAtPosition(sourceFile, 37, 14)
-  expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot('["position", "Identifier"]')
+  expect([node.getText(), node.getKindName()]).toMatchInlineSnapshot(`
+    [
+      "position",
+      "Identifier",
+    ]
+  `)
 })
 
 test('extractAtRange', () => {
@@ -86,95 +116,123 @@ test('extractAtRange', () => {
 
   extracted = extractAtRange(sourceFile, 15, 19)
   expect(extracted).toMatchInlineSnapshot(`
-      {
-          stack: [],
-          type: "list",
-          node: "CallExpression",
-          value: [
-              {
-                  stack: ["CallExpression", "ObjectLiteralExpression"],
-                  type: "map",
-                  node: "ObjectLiteralExpression",
-                  value: {
-                      prop: {
-                          stack: ["CallExpression", "ObjectLiteralExpression", "PropertyAssignment", "NumericLiteral"],
-                          type: "literal",
-                          node: "NumericLiteral",
-                          value: 123,
-                          kind: "number",
-                      },
-                  },
-              },
+    BoxNodeList {
+      "node": CallExpression,
+      "stack": [],
+      "type": "list",
+      "value": [
+        BoxNodeMap {
+          "node": ObjectLiteralExpression,
+          "spreadConditions": undefined,
+          "stack": [
+            CallExpression,
+            ObjectLiteralExpression,
           ],
-      }
-    `)
+          "type": "map",
+          "value": Map {
+            "prop" => BoxNodeLiteral {
+              "kind": "number",
+              "node": NumericLiteral,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                NumericLiteral,
+              ],
+              "type": "literal",
+              "value": 123,
+            },
+          },
+        },
+      ],
+    }
+  `)
 
   extracted = extractAtRange(sourceFile, 19, 12)
   expect(extracted).toMatchInlineSnapshot(`
-      {
-          type: "component",
-          node: "JsxSelfClosingElement",
-          tagName: "factory.div",
-          props: {
-              className: {
-                  stack: ["JsxAttribute", "StringLiteral"],
-                  type: "literal",
-                  node: "StringLiteral",
-                  value: "aa",
-                  kind: "string",
-              },
-          },
-      }
-    `)
+    {
+      "node": JsxSelfClosingElement,
+      "props": Map {
+        "className" => BoxNodeLiteral {
+          "kind": "string",
+          "node": StringLiteral,
+          "stack": [
+            JsxAttribute,
+            StringLiteral,
+          ],
+          "type": "literal",
+          "value": "aa",
+        },
+      },
+      "tagName": "factory.div",
+      "type": "component",
+    }
+  `)
 
   extracted = extractAtRange(sourceFile, 20, 12)
   expect(extracted).toMatchInlineSnapshot(`
-      {
-          type: "component",
-          node: "JsxSelfClosingElement",
-          tagName: "SceneAlt",
-          props: {},
-      }
-    `)
+    {
+      "node": JsxSelfClosingElement,
+      "props": Map {},
+      "tagName": "SceneAlt",
+      "type": "component",
+    }
+  `)
 
   extracted = extractAtRange(sourceFile, 31, 13)
   expect(extracted).toMatchInlineSnapshot(`
-      {
-          type: "component",
-          node: "JsxOpeningElement",
-          tagName: "Cylinder",
-          props: {
-              position: {
-                  stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
-                  type: "list",
-                  node: "ArrayLiteralExpression",
-                  value: [
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
-                          type: "literal",
-                          node: "NumericLiteral",
-                          value: 0.47835635435693047,
-                          kind: "number",
-                      },
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
-                          type: "literal",
-                          node: "NumericLiteral",
-                          value: 0,
-                          kind: "number",
-                      },
-                      {
-                          stack: ["JsxAttribute", "JsxExpression", "ArrayLiteralExpression"],
-                          type: "literal",
-                          node: "PrefixUnaryExpression",
-                          value: -0.5445324755430057,
-                          kind: "number",
-                      },
-                  ],
-              },
-          },
-      }
-    `)
+    {
+      "node": JsxOpeningElement,
+      "props": Map {
+        "position" => BoxNodeList {
+          "node": ArrayLiteralExpression,
+          "stack": [
+            JsxAttribute,
+            JsxExpression,
+            ArrayLiteralExpression,
+          ],
+          "type": "list",
+          "value": [
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": NumericLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": 0.47835635435693047,
+            },
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": NumericLiteral,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": 0,
+            },
+            BoxNodeLiteral {
+              "kind": "number",
+              "node": PrefixUnaryExpression,
+              "stack": [
+                JsxAttribute,
+                JsxExpression,
+                ArrayLiteralExpression,
+              ],
+              "type": "literal",
+              "value": -0.5445324755430057,
+            },
+          ],
+        },
+      },
+      "tagName": "Cylinder",
+      "type": "component",
+    }
+  `)
 
   extracted = extractAtRange(sourceFile, 37, 14)
   expect(extracted).toMatchInlineSnapshot('undefined')
