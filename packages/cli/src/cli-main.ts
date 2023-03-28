@@ -140,13 +140,12 @@ export async function main() {
     // .option('--html [dir]', 'Output analyze report in interactive web page')
     .option('--silent', "Don't print any logs")
     .option('--only', "Only analyze given filepath, skip config's include/exclude")
-    .option('--mode [mode]', 'box-extractor || internal')
     .action(
       async (
         maybePath?: string,
         flags?: { silent?: boolean; json?: string; html?: string; mode?: ParserMode; only?: boolean },
       ) => {
-        const { silent, mode = 'internal', only } = flags ?? {}
+        const { silent, only } = flags ?? {}
         if (silent) logger.level = 'silent'
 
         const configPath = (maybePath && findConfigFile({ cwd: maybePath })) ?? undefined
@@ -157,13 +156,12 @@ export async function main() {
           configPath,
           config: only ? { include: [maybePath] } : (undefined as any),
         })
-        logger.info('cli', `Found config at ${colors.bold(ctx.path)}, using mode=[${colors.bold(mode)}]`)
+        logger.info('cli', `Found config at ${colors.bold(ctx.path)}]`)
 
         const result = analyzeTokens(ctx, {
           onResult: (file) => {
             logger.info('cli', `Analyzed ${colors.bold(file)}`)
           },
-          mode,
         })
 
         logger.info('cli', result.counts)
