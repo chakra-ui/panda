@@ -587,13 +587,13 @@ importers:
     dependencies:
       '@astrojs/solid-js':
         specifier: 2.1.0
-        version: 2.1.0(@babel/core@7.21.3)(solid-js@1.6.16)
+        version: 2.1.0(@babel/core@7.21.3)(solid-js@1.7.0)
       astro:
         specifier: 2.1.8
         version: 2.1.8(@types/node@18.15.11)
       solid-js:
-        specifier: 1.6.16
-        version: 1.6.16
+        specifier: 1.7.0
+        version: 1.7.0
     devDependencies:
       '@pandacss/dev':
         specifier: workspace:*
@@ -934,14 +934,14 @@ packages:
       - supports-color
     dev: false
 
-  /@astrojs/solid-js@2.1.0(@babel/core@7.21.3)(solid-js@1.6.16):
+  /@astrojs/solid-js@2.1.0(@babel/core@7.21.3)(solid-js@1.7.0):
     resolution: {integrity: sha512-p07DP9NRWJPjtF+CzPZ9lzOMkoyw6wSs3S6g3OZUxR+DVQy3VIXXDqCcnZZVJI34VakkHuViZaoNNkBW/9I54w==}
     engines: {node: '>=16.12.0'}
     peerDependencies:
       solid-js: ^1.4.3
     dependencies:
       babel-preset-solid: 1.6.9(@babel/core@7.21.3)
-      solid-js: 1.6.16
+      solid-js: 1.7.0
       vitefu: 0.2.4(vite@4.2.1)
     transitivePeerDependencies:
       - '@babel/core'
@@ -16711,6 +16711,11 @@ packages:
       randombytes: 2.1.0
     dev: true
 
+  /seroval@0.5.1:
+    resolution: {integrity: sha512-ZfhQVB59hmIauJG5Ydynupy8KHyr5imGNtdDhbZG68Ufh1Ynkv9KOYOAABf71oVbQxJ8VkWnMHAjEHE7fWkH5g==}
+    engines: {node: '>=10'}
+    dev: false
+
   /serve-favicon@2.5.0:
     resolution: {integrity: sha512-FMW2RvqNr03x+C0WxTyu6sOv21oOjkq5j8tjquWccwa6ScNyGFOGJVpuS1NmTVGBAHS07xnSKotgf2ehQmf9iA==}
     engines: {node: '>= 0.8.0'}
@@ -16909,10 +16914,11 @@ packages:
     dependencies:
       csstype: 3.1.1
 
-  /solid-js@1.6.16:
-    resolution: {integrity: sha512-Ng4CahvLlpGA3BXIMiiMdwhI8WpObZ8gXqm97GCKR4+MpnODs6Pdpco+tmVCY/4ZDFaEKDxz7WRLAAdoXdlY7w==}
+  /solid-js@1.7.0:
+    resolution: {integrity: sha512-tLG68KWlVRgzYeAW003G3E70emZqTcqCKJR9QoGr0rcuiLIuKrlUoezT8jLME1YSl3Wfu35jzgeY10iLEY4YQQ==}
     dependencies:
       csstype: 3.1.1
+      seroval: 0.5.1
     dev: false
 
   /solid-refresh@0.5.2(solid-js@1.6.15):
