@@ -287,7 +287,6 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
 
   queryComponentMap.forEach((parentRef, componentNode) => {
     const componentName = parentRef.name
-    const componentMap = extractMap.get(componentName)! as ExtractedComponentResult
     const localList = (localExtraction.get(componentName)! as ExtractedComponentResult).queryList
 
     // TODO box.component
@@ -295,9 +294,7 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
       name: parentRef.name,
       box: box.map(parentRef.props, componentNode, []),
     } as ExtractedComponentInstance
-    queryComponentMap
 
-    componentMap.queryList.push(query)
     localList.push(query)
   })
 

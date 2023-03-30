@@ -12,18 +12,22 @@ export const isObjectLiteral = <T>(value: any): value is T extends unknown ? Rec
   isObject(value) && value.constructor.name === 'Object'
 
 export const unwrapExpression = (node: Node): Node => {
+  // Object as any => Object
   if (Node.isAsExpression(node)) {
     return unwrapExpression(node.getExpression())
   }
 
+  // (Object) => Object
   if (Node.isParenthesizedExpression(node)) {
     return unwrapExpression(node.getExpression())
   }
 
+  // "red"! => "red"
   if (Node.isNonNullExpression(node)) {
     return unwrapExpression(node.getExpression())
   }
 
+  // <T>Object => Object
   if (Node.isTypeAssertion(node)) {
     return unwrapExpression(node.getExpression())
   }
