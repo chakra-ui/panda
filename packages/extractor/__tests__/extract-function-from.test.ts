@@ -1,8 +1,8 @@
 import { SourceFile, ts } from 'ts-morph'
 import { afterEach, expect, it } from 'vitest'
-import { extractFunctionFrom } from '../src/extractFunctionFrom'
-import { getBoxLiteralValue } from '../src/getBoxLiteralValue'
-import { createProject } from './createProject'
+import { extractFunctionFrom } from '../src/extract-function-from'
+import { getBoxLiteralValue } from '../src/get-box-literal-value'
+import { createProject } from './create-project'
 
 const project = createProject()
 

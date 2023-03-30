@@ -1,13 +1,13 @@
 export { extract } from './extract'
-export { extractAtRange, extractJsxElementProps } from './extractAtRange'
-export { extractCallExpressionArguments } from './extractCallExpressionArguments'
-export { extractFunctionFrom, isImportedFrom } from './extractFunctionFrom'
-export { extractJsxAttribute } from './extractJsxAttribute'
-export { extractJsxSpreadAttributeValues } from './extractJsxSpreadAttributeValues'
-export { findIdentifierValueDeclaration, getDeclarationFor, isScope } from './findIdentifierValueDeclaration'
-export { getBoxLiteralValue } from './getBoxLiteralValue'
-export type { MaybeBoxNodeReturn } from './maybeBoxNode'
-export { getNameLiteral, maybeBoxNode } from './maybeBoxNode'
+export { extractAtRange, extractJsxElementProps } from './extract-at-range'
+export { extractCallExpressionArguments } from './extract-call-expression-arguments'
+export { extractFunctionFrom, isImportedFrom } from './extract-function-from'
+export { extractJsxAttribute } from './extract-jsx-attribute'
+export { extractJsxSpreadAttributeValues } from './extract-jsx-spread-attribute-values'
+export { findIdentifierValueDeclaration, getDeclarationFor, isScope } from './find-identifier-value-declaration'
+export { getBoxLiteralValue } from './get-box-literal-value'
+export type { MaybeBoxNodeReturn } from './maybe-box-node'
+export { getNameLiteral, maybeBoxNode } from './maybe-box-node'
 export type {
   BoxNode,
   ConditionalType,
@@ -45,4 +45,4 @@ export type {
 } from './types'
 export { unbox } from './unbox'
 export { unquote, unwrapExpression } from './utils'
-export { visitBoxNode } from './visitBoxNode'
+export { visitBoxNode } from './visit-box-node'

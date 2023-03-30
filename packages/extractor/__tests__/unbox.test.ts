@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
-import { getBoxLiteralValue } from '../src/getBoxLiteralValue'
+import { getBoxLiteralValue } from '../src/get-box-literal-value'
 import { type ExtractedFunctionResult } from '../src/types'
 import { unbox } from '../src/unbox'
-import { createProject, getTestExtract, type TestExtractOptions } from './createProject'
+import { createProject, getTestExtract, type TestExtractOptions } from './create-project'
 // @ts-ignore
 import { default as BigThemeSampleInlined } from './samples/BigThemeSampleInlined?raw'
 

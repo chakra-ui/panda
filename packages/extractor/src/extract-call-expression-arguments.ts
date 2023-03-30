@@ -1,8 +1,8 @@
 import { createLogger } from './logger'
 import type { CallExpression, Node } from 'ts-morph'
-import { maybeBoxNode } from './maybeBoxNode'
+import { maybeBoxNode } from './maybe-box-node'
 
-import { maybeObjectLikeBox } from './maybeObjectLikeBox'
+import { maybeObjectLikeBox } from './maybe-object-like-box'
 import { box } from './type-factory'
 import type { BoxContext, MatchFnArgs, MatchFnArguments, MatchFnPropArgs } from './types'
 import { unwrapExpression } from './utils'

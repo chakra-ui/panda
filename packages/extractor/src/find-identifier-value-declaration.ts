@@ -1,6 +1,6 @@
 import { createLogger } from './logger'
 import { Identifier, Node } from 'ts-morph'
-import { getExportedVarDeclarationWithName, getModuleSpecifierSourceFile } from './maybeBoxNode'
+import { getExportedVarDeclarationWithName, getModuleSpecifierSourceFile } from './maybe-box-node'
 import type { BoxContext } from './types'
 
 const logger = createLogger('box-extractor:extractor:findIdentifierValueDeclaration')

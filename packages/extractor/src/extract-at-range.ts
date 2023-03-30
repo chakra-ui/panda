@@ -1,9 +1,9 @@
 import { createLogger } from './logger'
 import { JsxOpeningElement, JsxSelfClosingElement, Node, SourceFile, ts } from 'ts-morph'
 
-import { extractCallExpressionArguments } from './extractCallExpressionArguments'
-import { extractJsxAttribute } from './extractJsxAttribute'
-import { extractJsxSpreadAttributeValues } from './extractJsxSpreadAttributeValues'
+import { extractCallExpressionArguments } from './extract-call-expression-arguments'
+import { extractJsxAttribute } from './extract-jsx-attribute'
+import { extractJsxSpreadAttributeValues } from './extract-jsx-spread-attribute-values'
 import { box, type BoxNode } from './type-factory'
 import type { BoxContext, ComponentMatchers, FunctionMatchers } from './types'
 

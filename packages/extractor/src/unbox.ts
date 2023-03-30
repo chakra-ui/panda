@@ -1,6 +1,6 @@
 import type { BoxNode, LiteralValue } from './type-factory'
-import { visitBoxNode } from './visitBoxNode'
-import { cacheMap } from './getBoxLiteralValue'
+import { visitBoxNode } from './visit-box-node'
+import { cacheMap } from './get-box-literal-value'
 
 export const unbox = (rootNode: BoxNode | undefined, localCacheMap: WeakMap<BoxNode, unknown> = cacheMap) => {
   if (!rootNode) return

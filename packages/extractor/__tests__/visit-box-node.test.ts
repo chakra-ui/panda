@@ -2,8 +2,8 @@ import { expect, it, test } from 'vitest'
 import { type BoxNode, BoxNodeMap } from '../src/type-factory'
 import { type ExtractedFunctionResult } from '../src/types'
 import { unbox } from '../src/unbox'
-import { visitBoxNode } from '../src/visitBoxNode'
-import { createProject, getTestExtract, type TestExtractOptions } from './createProject'
+import { visitBoxNode } from '../src/visit-box-node'
+import { createProject, getTestExtract, type TestExtractOptions } from './create-project'
 
 const project = createProject()
 const getExtract = (code: string, options: TestExtractOptions) => getTestExtract(project, code, options)

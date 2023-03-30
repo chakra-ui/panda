@@ -1,9 +1,9 @@
 import { ts } from 'ts-morph'
 import { expect, it } from 'vitest'
-import { extractFunctionFrom } from '../src/extractFunctionFrom'
+import { extractFunctionFrom } from '../src/extract-function-from'
 import type { BoxNodeLiteral, BoxNodeMap } from '../src/type-factory'
 import { unbox } from '../src/unbox'
-import { createProject } from './createProject'
+import { createProject } from './create-project'
 
 const project = createProject()
 

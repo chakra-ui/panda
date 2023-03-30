@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-abusive-eslint-disable */
 /* eslint-disable */
 import { PropsWithChildren, useState } from 'react'
 import { ColorSprinkles, colorSprinkles } from './colors.css'
