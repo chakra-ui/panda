@@ -234,8 +234,8 @@ importers:
         specifier: 2.1.0
         version: 2.1.0
       lil-fp:
-        specifier: 1.2.5
-        version: 1.2.5
+        specifier: 1.3.1
+        version: 1.3.1
       outdent:
         specifier: ' ^0.8.0'
         version: 0.8.0
@@ -268,8 +268,8 @@ importers:
         specifier: ^4.1.5
         version: 4.1.5
       lil-fp:
-        specifier: 1.2.5
-        version: 1.2.5
+        specifier: 1.3.1
+        version: 1.3.1
     devDependencies:
       matcher:
         specifier: 5.0.0
@@ -338,8 +338,8 @@ importers:
         specifier: 2.1.0
         version: 2.1.0
       lil-fp:
-        specifier: 1.2.5
-        version: 1.2.5
+        specifier: 1.3.1
+        version: 1.3.1
       lodash.merge:
         specifier: 4.6.2
         version: 4.6.2
@@ -408,8 +408,8 @@ importers:
         specifier: workspace:*
         version: link:../types
       lil-fp:
-        specifier: 1.2.5
-        version: 1.2.5
+        specifier: 1.3.1
+        version: 1.3.1
       ts-morph:
         specifier: 17.0.1
         version: 17.0.1
@@ -4562,7 +4562,7 @@ packages:
       '@storybook/csf-plugin': 7.0.0-beta.45
       '@storybook/csf-tools': 7.0.0-beta.45
       '@storybook/global': 5.0.0
-      '@storybook/mdx2-csf': 1.0.0-next.6
+      '@storybook/mdx2-csf': 1.0.0-next.7
       '@storybook/node-logger': 7.0.0-beta.45
       '@storybook/postinstall': 7.0.0-beta.45
       '@storybook/preview-api': 7.0.0-beta.45
@@ -5259,8 +5259,8 @@ packages:
     resolution: {integrity: sha512-iMaJ1Wn26OxIW4vbHx3MFXTDIkJVGmJNl/D7UgXTHKRlUzAj497SVhT/2jv+dIRC/3CZsQySGMgl6RdFRd7VPQ==}
     dev: true
 
-  /@storybook/mdx2-csf@1.0.0-next.6:
-    resolution: {integrity: sha512-m6plojocU/rmrqWd26yvm8D+oHZPZ6PtSSFmZIgpNDEPVmc8s4fBD6LXOAB5MiPI5f8KLUr2HVhOMZ97o5pDTw==}
+  /@storybook/mdx2-csf@1.0.0-next.7:
+    resolution: {integrity: sha512-xcQ8w4IecABAjsakaZTGiUEnEgFZzVKsMjqECjd+qdkwgD3R/kwrBdfyC15CLM5Ye1miPwYBIwJGeBXB9qxsZg==}
     dev: true
 
   /@storybook/node-logger@6.5.16:
@@ -12969,8 +12969,8 @@ packages:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  /lil-fp@1.2.5:
-    resolution: {integrity: sha512-7NSMQwZaGq0lNF8ZU4Dhb/Z0DSnEEUcXGWNdN1HISgXUkn15re6UJoRjmhGgPMfMwgpZSEf/gpZZzsq4LD0iGA==}
+  /lil-fp@1.3.1:
+    resolution: {integrity: sha512-Eo+Foz+lUA9Ez+9hPGZf9rFawutjtI0QrLPnkUollE5ZB6pFS6iXwpqvsWS2EWckrn/deW8or/W77sNAzGySrQ==}
     dev: false
 
   /lilconfig@2.1.0:
