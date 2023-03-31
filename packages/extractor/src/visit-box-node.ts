@@ -99,6 +99,7 @@ export const visitBoxNode = <T>(
 
   function getResult(innerNode: BoxNode | BoxNode[], key: string | number | null, parent: BoxNode | null) {
     let returnValue: T | undefined | Array<T | undefined>
+
     if (Array.isArray(innerNode)) {
       returnValue = arrayCallback
         ? arrayCallback(innerNode, key, parent)
@@ -116,8 +117,6 @@ export const visitBoxNode = <T>(
   }
 
   function forEachChildForNode(node: BoxNode, key: string | number | null, parent: BoxNode | null): T | undefined {
-    // visitedCount++;
-    // logger({ visitedCount, type: node.type, kind: node.getNode().getKindName() });
     if (box.isMap(node)) {
       let result: T | undefined
 

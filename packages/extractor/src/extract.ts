@@ -1,9 +1,7 @@
-import { createLogger } from './logger'
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
-
-import { extractCallExpressionArguments } from './extract-call-expression-arguments'
-import { extractJsxAttribute } from './extract-jsx-attribute'
-import { extractJsxSpreadAttributeValues } from './extract-jsx-spread-attribute-values'
+import { extractCallExpressionArguments } from './call-expression'
+import { extractJsxAttribute } from './jsx-attribute'
+import { extractJsxSpreadAttributeValues } from './jsx-spread-attribute'
 import {
   box,
   type BoxNode,
@@ -23,8 +21,10 @@ import type {
   MatchPropArgs,
 } from './types'
 import { getComponentName } from './utils'
+import { createLogScope, logger } from '@pandacss/logger'
 
-const logger = createLogger('box-ex:extractor:extract')
+const scope = createLogScope('extractor:extract')
+
 type QueryComponentMap = Map<JsxOpeningElement | JsxSelfClosingElement, { name: string; props: MapTypeValue }>
 
 export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions) => {
@@ -118,7 +118,7 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
           matchProp: objLike.isObject() ? (matchProp as any) : undefined,
         })
         entries.forEach(([propName, propValue]) => {
-          logger.scoped('merge-spread', { jsx: true, propName, propValue: (propValue as any).value })
+          logger.debug('merge-spread', { jsx: true, propName, propValue: (propValue as any).value })
 
           localNodes.set(propName, (localNodes.get(propName) ?? []).concat(propValue))
           componentMap.nodesByProp.set(propName, (componentMap.nodesByProp.get(propName) ?? []).concat(propValue))
@@ -149,6 +149,7 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
         processObjectLike(boxNode)
       }
 
+      //@ts-ignore
       processBoxNode(spreadNode)
 
       return
@@ -191,7 +192,7 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
       const maybeBox = extractJsxAttribute(node, ctx)
       if (!maybeBox) return
 
-      logger({ propName, maybeBox })
+      logger.debug('extract:prop-name', { propName, maybeBox })
 
       if (!localExtraction.has(componentName)) {
         localExtraction.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
@@ -262,7 +263,7 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
           })
 
           entries.forEach(([propName, propValue]) => {
-            logger.scoped('merge-spread', {
+            logger.debug('merge-spread', {
               fn: true,
               propName,
               propValue: (propValue as any).value,
@@ -320,7 +321,8 @@ function mergeSpreadEntries({ map, matchProp }: { map: MapTypeValue; matchProp?:
       foundPropList.add(propName)
       return true
     })
-  logger.scoped('merge-spread', { extracted: map, merged })
+
+  logger.debug(scope('merge-spread'), { extracted: map, merged })
 
   // reverse again to keep the original order
   return merged.reverse()

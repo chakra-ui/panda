@@ -77,20 +77,10 @@ export type BoxContext = {
   getEvaluateOptions?: (node: Expression, stack: Node[]) => EvaluateOptions
   canEval?: (node: Expression, stack: Node[]) => boolean
   flags?: {
-    skipEvaluate?: boolean // TODO allow list of Node.kind ? = [ts.SyntaxKind.CallExpression, ts.SyntaxKind.ConditionalExpression, ts.SyntaxKind.BinaryExpression]
+    skipEvaluate?: boolean
     skipTraverseFiles?: boolean
     skipConditions?: boolean
   }
-  // TODO
-  // cache: {
-  //     box: WeakMap<any, any>;
-  //     objectBox: WeakMap<any, any>;
-  //     evaluate: WeakMap<any, any>;
-  //     identifierValueDeclaration: WeakMap<any, any>;
-  //     unbox: WeakMap<any, any>;
-  //     typeLiteral: WeakMap<any, any>;
-  //     typeLiteralProps: WeakMap<any, any>;
-  // };
 }
 
 export type ExtractOptions = BoxContext & {

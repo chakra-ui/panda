@@ -1,13 +1,10 @@
-import { createLogger } from './logger'
+import { logger } from '@pandacss/logger'
 import { JsxOpeningElement, JsxSelfClosingElement, Node, SourceFile, ts } from 'ts-morph'
-
-import { extractCallExpressionArguments } from './extract-call-expression-arguments'
-import { extractJsxAttribute } from './extract-jsx-attribute'
-import { extractJsxSpreadAttributeValues } from './extract-jsx-spread-attribute-values'
+import { extractCallExpressionArguments } from './call-expression'
+import { extractJsxAttribute } from './jsx-attribute'
+import { extractJsxSpreadAttributeValues } from './jsx-spread-attribute'
 import { box, type BoxNode } from './type-factory'
 import type { BoxContext, ComponentMatchers, FunctionMatchers } from './types'
-
-const logger = createLogger('box-ex:extractor:extractAtRange')
 
 export const extractAtRange = (
   source: SourceFile,
@@ -17,7 +14,9 @@ export const extractAtRange = (
   ctx: BoxContext = {},
 ) => {
   const node = getTsNodeAtPosition(source, line, column)
-  logger({ line, column, node: node?.getKindName() })
+
+  logger.debug('extract-at-range', { line, column, node: node?.getKindName() })
+
   if (!node) return
 
   // pointing directly at the node
@@ -40,7 +39,7 @@ export const extractAtRange = (
   const parent = node.getParent()
 
   if (parent && Node.isIdentifier(node)) {
-    logger({ line, column, parent: parent?.getKindName() })
+    logger.debug('is-identifier', { line, column, parent: parent?.getKindName() })
 
     if (Node.isJsxOpeningElement(parent) || Node.isJsxSelfClosingElement(parent)) {
       return extractJsxElementProps(parent, ctx, matchProp as ComponentMatchers['matchProp'])
@@ -73,7 +72,7 @@ export const extractJsxElementProps = (
 ) => {
   const tagName = node.getTagNameNode().getText()
   const jsxAttributes = node.getAttributes()
-  logger.scoped('jsx', { tagName, jsxAttributes: jsxAttributes.length })
+  logger.debug('jsx', { tagName, jsxAttributes: jsxAttributes.length })
 
   const props = new Map<string, BoxNode>()
   jsxAttributes.forEach((attrNode) => {

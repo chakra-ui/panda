@@ -1,0 +1,30 @@
+import type { JsxSpreadAttribute, Node } from 'ts-morph'
+import { maybeBoxNode } from './maybe-box-node'
+import { box, type BoxNode } from './type-factory'
+import type { BoxContext, MatchFnPropArgs, MatchPropArgs } from './types'
+import { unwrapExpression } from './utils'
+import { P, match } from 'ts-pattern'
+import { maybeObjectLikeBox } from './maybe-object-like-box'
+import { Bool } from 'lil-fp'
+
+const isResolvable = (node: BoxNode): node is BoxNode =>
+  node.isMap() || node.isObject() || node.isUnresolvable() || node.isConditional()
+
+const isNullish = (node: BoxNode): node is BoxNode =>
+  node.isLiteral() && (node.kind == 'null' || node.kind == 'undefined')
+
+type MatchProp = (prop: MatchFnPropArgs | MatchPropArgs) => boolean
+
+export const extractJsxSpreadAttributeValues = (node: JsxSpreadAttribute, ctx: BoxContext, matchProp: MatchProp) => {
+  const expr = unwrapExpression(node.getExpression())
+  const stack: Node[] = []
+  const boxNode = maybeBoxNode(expr, stack, ctx)
+
+  return match(boxNode)
+    .with(P.nullish, () => {
+      const maybeEntries = maybeObjectLikeBox(expr, stack, ctx, matchProp)
+      return maybeEntries ?? box.emptyObject(expr, stack)
+    })
+    .when(Bool.or(isResolvable, isNullish), (boxNode) => boxNode)
+    .otherwise(() => undefined)
+}

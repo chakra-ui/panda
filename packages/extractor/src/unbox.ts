@@ -1,6 +1,6 @@
 import type { BoxNode, LiteralValue } from './type-factory'
 import { visitBoxNode } from './visit-box-node'
-import { cacheMap } from './get-box-literal-value'
+import { cacheMap } from './get-literal-value'
 
 export const unbox = (rootNode: BoxNode | undefined, localCacheMap: WeakMap<BoxNode, unknown> = cacheMap) => {
   if (!rootNode) return
@@ -55,6 +55,7 @@ export const unbox = (rootNode: BoxNode | undefined, localCacheMap: WeakMap<BoxN
     }
 
     parent[key!] = current
+
     if (parentNode && !pathByNode.has(node)) {
       const parentPath = pathByNode.get(parentNode) ?? []
       pathByNode.set(node, [...parentPath, key as string])
@@ -63,5 +64,6 @@ export const unbox = (rootNode: BoxNode | undefined, localCacheMap: WeakMap<BoxN
 
     localCacheMap.set(node, current)
   })
+
   return reconstructed
 }

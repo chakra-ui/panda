@@ -1,16 +1,15 @@
-import { createLogger } from './logger'
+import { logger } from '@pandacss/logger'
 import { evaluate } from 'ts-evaluator'
 import type { Expression } from 'ts-morph'
-import { ts, Node } from 'ts-morph'
+import { Node, ts } from 'ts-morph'
 import type { BoxContext } from './types'
 
 const TsEvalError = Symbol('EvalError')
-const logger = createLogger('box-ex:extractor:evaluator')
 
 const cacheMap = new WeakMap<Expression, unknown>()
 
 /**
- * Evaluates with strict policies restrictions
+ * Evaluates a node with strict policies restrictions
  * @see https://github.com/wessberg/ts-evaluator#setting-up-policies
  */
 export const evaluateNode = (node: Expression, stack: Node[], ctx: BoxContext) => {
@@ -23,8 +22,6 @@ export const evaluateNode = (node: Expression, stack: Node[], ctx: BoxContext) =
 
   const result = evaluate({
     node: node.compilerNode as any,
-    // TODO only with a flag
-    // typeChecker: node.getProject().getTypeChecker().compilerObject as any,
     typescript: ts as any,
     policy: {
       deterministic: true,
@@ -38,32 +35,14 @@ export const evaluateNode = (node: Expression, stack: Node[], ctx: BoxContext) =
     ...ctx.getEvaluateOptions?.(node, stack),
   })
 
-  logger({ compilerNodeKind: node.getKindName() })
-  if (result.success) {
-    logger.scoped('success', result.value)
-  } else {
-    logger.scoped('error', result.reason.stack)
-    logger.lazyScoped('error-reason', () => ({
-      result: {
-        name: result.reason.name,
-        reason: result.reason.message,
-        atNode: {
-          path: result.reason.node.getSourceFile().fileName + ':' + result.reason.node.getFullStart(),
-          start: result.reason.node.getFullStart(),
-          end: result.reason.node.getEnd(),
-          // text: result.reason.node.getText().slice(0, 100),
-          kind: ts.SyntaxKind[result.reason.node.kind],
-        },
-      },
-    }))
+  logger.debug('extract:node-kind', { compilerNodeKind: node.getKindName() })
 
-    if (logger.isEnabled(logger.namespace + ':trace')) {
-      logger.scoped('trace')
-      console.trace()
-    }
+  if (result.success) {
+    logger.debug('evaluate:success', result.value)
+  } else {
+    logger.error('evaluate:error', result.reason.message)
   }
 
-  // TODO BoxNodeUnresolvable kind: "eval-error"
   const expr = result.success ? result.value : TsEvalError
   cacheMap.set(node, expr)
 
@@ -73,7 +52,6 @@ export const evaluateNode = (node: Expression, stack: Node[], ctx: BoxContext) =
 export const safeEvaluateNode = <T>(node: Expression, stack: Node[], ctx: BoxContext) => {
   const result = evaluateNode(node, stack, ctx)
   if (result === TsEvalError) return
-
   return result as T
 }
 

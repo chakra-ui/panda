@@ -87,6 +87,31 @@ export abstract class BoxNodeType<Definition extends BoxNodeDefinition = BoxNode
   isEmptyInitializer(): this is BoxNodeEmptyInitializer {
     return this.type === 'empty-initializer'
   }
+
+  static isObject(node: BoxNode | undefined): node is BoxNodeObject {
+    return node?.type === 'object'
+  }
+  static isLiteral(node: BoxNode | undefined): node is BoxNodeLiteral {
+    return node?.type === 'literal'
+  }
+  static isMap(node: BoxNode | undefined): node is BoxNodeMap {
+    return node?.type === 'map'
+  }
+  static isList(node: BoxNode | undefined): node is BoxNodeList {
+    return node?.type === 'list'
+  }
+  static isUnresolvable(node: BoxNode | undefined): node is BoxNodeUnresolvable {
+    return node?.type === 'unresolvable'
+  }
+  static isConditional(node: BoxNode | undefined): node is BoxNodeConditional {
+    return node?.type === 'conditional'
+  }
+  static isEmptyInitializer(node: BoxNode | undefined): node is BoxNodeEmptyInitializer {
+    return node?.type === 'empty-initializer'
+  }
+  static isNumberLiteral(node: BoxNode | undefined): node is BoxNodeLiteral {
+    return BoxNodeType.isLiteral(node) && node.kind === 'number'
+  }
 }
 
 export class BoxNodeObject extends BoxNodeType<ObjectType> {

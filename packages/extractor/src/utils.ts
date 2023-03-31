@@ -3,6 +3,7 @@ import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
 type Nullable<T> = T | null | undefined
 
 export const isNotNullish = <T>(element: Nullable<T>): element is T => element != null
+export const isNullish = <T>(element: Nullable<T>): element is null | undefined => element == null
 
 /** Returns true if typeof value is object && not null */
 export const isObject = (value: any): value is object => value !== null && typeof value === 'object'
