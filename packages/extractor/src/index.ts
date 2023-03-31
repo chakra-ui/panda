@@ -1,5 +1,4 @@
 export { extract } from './extract'
-export { extractAtRange, extractJsxElementProps } from './extract-at-range'
 export { extractCallExpressionArguments } from './call-expression'
 export { extractJsxAttribute } from './jsx-attribute'
 export { extractJsxSpreadAttributeValues } from './jsx-spread-attribute'

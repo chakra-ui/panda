@@ -1,11 +1,11 @@
+import { Bool } from 'lil-fp'
 import type { JsxSpreadAttribute, Node } from 'ts-morph'
+import { P, match } from 'ts-pattern'
 import { maybeBoxNode } from './maybe-box-node'
+import { maybeObjectLikeBox } from './maybe-object-like-box'
 import { box, type BoxNode } from './type-factory'
 import type { BoxContext, MatchFnPropArgs, MatchPropArgs } from './types'
 import { unwrapExpression } from './utils'
-import { P, match } from 'ts-pattern'
-import { maybeObjectLikeBox } from './maybe-object-like-box'
-import { Bool } from 'lil-fp'
 
 const isResolvable = (node: BoxNode): node is BoxNode =>
   node.isMap() || node.isObject() || node.isUnresolvable() || node.isConditional()
