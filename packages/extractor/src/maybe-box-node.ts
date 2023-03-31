@@ -27,7 +27,7 @@ import { box, isBoxNode, type BoxNode, type ConditionalKind, type LiteralValue }
 import type { BoxContext, EvaluatedObjectResult, PrimitiveType } from './types'
 import { isNotNullish, isNullish, isObject, trimWhitespace, unwrapExpression } from './utils'
 import { BoxNodeType } from './type-factory'
-import { P, match } from 'ts-pattern'
+import { match } from 'ts-pattern'
 import { Bool } from 'lil-fp'
 
 const cacheMap = new WeakMap<Node, MaybeBoxNodeReturn>()

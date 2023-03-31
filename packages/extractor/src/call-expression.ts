@@ -1,4 +1,6 @@
+import { alt, pipe } from 'lil-fp'
 import type { CallExpression, Node } from 'ts-morph'
+import { P, match } from 'ts-pattern'
 import { maybeBoxNode } from './maybe-box-node'
 import { maybeObjectLikeBox } from './maybe-object-like-box'
 import { box } from './type-factory'
@@ -25,28 +27,20 @@ export const extractCallExpressionArguments = (
   return box.list(
     fnArguments.map((argument, index) => {
       const argNode = unwrapExpression(argument)
-
-      if (!argNode) {
-        return box.unresolvable(argNode, [])
-      }
-
-      if (!matchArg({ fnNode: node, fnName, argNode, index })) {
-        return box.unresolvable(argNode, [])
-      }
-
       const stack = [node, argNode] as Node[]
-
-      const maybeValue = maybeBoxNode(argNode, stack, ctx)
-      if (maybeValue) {
-        return maybeValue
-      }
-
-      const maybeObject = maybeObjectLikeBox(argNode, stack, ctx, matchProp)
-      if (maybeObject) {
-        return maybeObject
-      }
-
-      return box.unresolvable(argNode, stack)
+      return match(argNode)
+        .with(P.nullish, () => box.emptyInitializer(argNode, stack))
+        .when(
+          (argNode) => matchArg({ fnNode: node, fnName, argNode, index }),
+          (argNode) => {
+            return pipe(
+              maybeBoxNode(argNode, stack, ctx),
+              alt(() => maybeObjectLikeBox(argNode, stack, ctx, matchProp)),
+              alt(() => box.unresolvable(argNode, stack)),
+            )
+          },
+        )
+        .otherwise(() => box.unresolvable(argNode, stack))
     }),
     node,
     [],
