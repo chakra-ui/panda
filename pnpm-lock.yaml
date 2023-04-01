@@ -480,8 +480,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       csstype:
-        specifier: 3.1.1
-        version: 3.1.1
+        specifier: 3.1.2
+        version: 3.1.2
 
   playground:
     dependencies:
@@ -6433,7 +6433,7 @@ packages:
       chalk: 4.1.2
       css-what: 5.1.0
       cssesc: 3.0.0
-      csstype: 3.1.1
+      csstype: 3.1.2
       deep-object-diff: 1.1.9
       deepmerge: 4.2.2
       media-query-parser: 2.0.2
@@ -9041,6 +9041,9 @@ packages:
 
   /csstype@3.1.1:
     resolution: {integrity: sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw==}
+
+  /csstype@3.1.2:
+    resolution: {integrity: sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ==}
 
   /csv-generate@3.4.3:
     resolution: {integrity: sha512-w/T+rqR0vwvHqWs/1ZyMDWtHHSJaN06klRqJXBEpDJaM/+dZkso0OKh1VcuuYvK3XM53KysVNq8Ko/epCK8wOw==}
@@ -16930,12 +16933,12 @@ packages:
   /solid-js@1.6.15:
     resolution: {integrity: sha512-xEuMUIdDf4YRFT4i3XEJCNg4Y21lZiWWPSEqj0R3UnLLpENGJVXkqpmbIyRU5CuMImKPIEu5CYgmFKL7Npfe1A==}
     dependencies:
-      csstype: 3.1.1
+      csstype: 3.1.2
 
   /solid-js@1.7.0:
     resolution: {integrity: sha512-tLG68KWlVRgzYeAW003G3E70emZqTcqCKJR9QoGr0rcuiLIuKrlUoezT8jLME1YSl3Wfu35jzgeY10iLEY4YQQ==}
     dependencies:
-      csstype: 3.1.1
+      csstype: 3.1.2
       seroval: 0.5.1
     dev: false
 
