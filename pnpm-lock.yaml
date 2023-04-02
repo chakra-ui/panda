@@ -53,8 +53,8 @@ importers:
   packages/cli:
     dependencies:
       '@ark-ui/react':
-        specifier: 0.0.0-rc-20230402031038
-        version: 0.0.0-rc-20230402031038(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.0-rc-20230402172649
+        version: 0.0.0-rc-20230402172649(react-dom@18.2.0)(react@18.2.0)
       '@astrojs/react':
         specifier: 2.1.1
         version: 2.1.1(@types/react-dom@18.0.11)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0)
@@ -486,8 +486,8 @@ importers:
   playground:
     dependencies:
       '@ark-ui/react':
-        specifier: 0.0.0-rc-20230402031038
-        version: 0.0.0-rc-20230402031038(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.0-rc-20230402172649
+        version: 0.0.0-rc-20230402172649(react-dom@18.2.0)(react@18.2.0)
       '@monaco-editor/react':
         specifier: 4.4.6
         version: 4.4.6(monaco-editor@0.36.1)(react-dom@18.2.0)(react@18.2.0)
@@ -821,8 +821,8 @@ packages:
       '@jridgewell/gen-mapping': 0.1.1
       '@jridgewell/trace-mapping': 0.3.17
 
-  /@ark-ui/react@0.0.0-rc-20230402031038(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-Fkr7VwrT9laB30VV5OoGl1LQ4pHbPmIUMQF51xOgDkRwQP88rSnSDZcR20dKw+tSqsmGwJPlV3DW8PcwD81p9g==}
+  /@ark-ui/react@0.0.0-rc-20230402172649(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-haRPQ06ANk7EdsEfP+gVt5J15KCdtkCuzBb/KqjIneLaCOzNFMlQ/p0fH+N/DZmnn8UTux6KzG5a9/Zd8vdGxA==}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
