@@ -53,8 +53,8 @@ importers:
   packages/cli:
     dependencies:
       '@ark-ui/react':
-        specifier: 0.0.0-rc-20230330225109
-        version: 0.0.0-rc-20230330225109(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.0-rc-20230402031038
+        version: 0.0.0-rc-20230402031038(react-dom@18.2.0)(react@18.2.0)
       '@astrojs/react':
         specifier: 2.1.1
         version: 2.1.1(@types/react-dom@18.0.11)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0)
@@ -486,8 +486,8 @@ importers:
   playground:
     dependencies:
       '@ark-ui/react':
-        specifier: 0.0.0-rc-20230330225109
-        version: 0.0.0-rc-20230330225109(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.0-rc-20230402031038
+        version: 0.0.0-rc-20230402031038(react-dom@18.2.0)(react@18.2.0)
       '@monaco-editor/react':
         specifier: 4.4.6
         version: 4.4.6(monaco-editor@0.36.1)(react-dom@18.2.0)(react@18.2.0)
@@ -821,13 +821,13 @@ packages:
       '@jridgewell/gen-mapping': 0.1.1
       '@jridgewell/trace-mapping': 0.3.17
 
-  /@ark-ui/react@0.0.0-rc-20230330225109(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-HuOJuw+0OxwQhN3d8xFVIJJMafVJhSHGyLLh+j6gSZDWVYFgPU0/3Gvgxl4U9ahBpXkeNDnLYGLOES7hwDoT4w==}
+  /@ark-ui/react@0.0.0-rc-20230402031038(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-Fkr7VwrT9laB30VV5OoGl1LQ4pHbPmIUMQF51xOgDkRwQP88rSnSDZcR20dKw+tSqsmGwJPlV3DW8PcwD81p9g==}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
     dependencies:
-      '@polymorphic-factory/react': 0.3.0(react@18.2.0)
+      '@polymorphic-factory/react': 0.4.1(react@18.2.0)
       '@zag-js/accordion': 0.2.15
       '@zag-js/anatomy': 0.1.4
       '@zag-js/carousel': 0.0.4
@@ -3992,8 +3992,8 @@ packages:
       config-chain: 1.1.13
     dev: true
 
-  /@polymorphic-factory/react@0.3.0(react@18.2.0):
-    resolution: {integrity: sha512-MMJNVV1yVqVBuOcAZhEyZgcWcMhN8Dwp+mg9dtakjiPVma+BQgIV/3GpErA9TXB9W5q4D2CalT42LGe6ta6Suw==}
+  /@polymorphic-factory/react@0.4.1(react@18.2.0):
+    resolution: {integrity: sha512-GQMmzGARKDLmj3DYAS1lSiQNfUbqIGInAmOMpJwbbwm3MWUPfg+3UE8jQmeORaiXUjoO0sagHdwtf2lx1XCyhA==}
     peerDependencies:
       react: '>=16.8 || >=17 || >18'
     dependencies:
