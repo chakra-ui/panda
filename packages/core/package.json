@@ -29,7 +29,7 @@
     "postcss-nested": "6.0.1",
     "postcss-discard-empty": "^6.0.0",
     "postcss-normalize-whitespace": "^6.0.0",
-    "postcss-discard-duplicates": "^5.1.0",
+    "postcss-discard-duplicates": "^6.0.0",
     "postcss-merge-rules": "^6.0.0",
     "postcss-selector-parser": "^6.0.11",
     "autoprefixer": "10.4.14",
