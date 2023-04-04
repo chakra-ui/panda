@@ -7,7 +7,7 @@ import { box, type BoxNode } from './type-factory'
 import type { BoxContext, MatchFnPropArgs, MatchPropArgs } from './types'
 import { unwrapExpression } from './utils'
 
-const isResolvable = (node: BoxNode): node is BoxNode =>
+const isBoxNode = (node: BoxNode): node is BoxNode =>
   node.isMap() || node.isObject() || node.isUnresolvable() || node.isConditional()
 
 const isNullish = (node: BoxNode): node is BoxNode =>
@@ -25,6 +25,6 @@ export const extractJsxSpreadAttributeValues = (node: JsxSpreadAttribute, ctx: B
       const maybeEntries = maybeObjectLikeBox(expr, stack, ctx, matchProp)
       return maybeEntries ?? box.emptyObject(expr, stack)
     })
-    .when(Bool.or(isResolvable, isNullish), (boxNode) => boxNode)
+    .when(Bool.or(isBoxNode, isNullish), (boxNode) => boxNode)
     .otherwise(() => undefined)
 }

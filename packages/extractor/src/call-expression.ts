@@ -1,6 +1,6 @@
 import { alt, pipe } from 'lil-fp'
 import type { CallExpression, Node } from 'ts-morph'
-import { P, match } from 'ts-pattern'
+import { match } from 'ts-pattern'
 import { maybeBoxNode } from './maybe-box-node'
 import { maybeObjectLikeBox } from './maybe-object-like-box'
 import { box } from './type-factory'
@@ -29,7 +29,6 @@ export const extractCallExpressionArguments = (
       const argNode = unwrapExpression(argument)
       const stack = [node, argNode] as Node[]
       return match(argNode)
-        .with(P.nullish, () => box.emptyInitializer(argNode, stack))
         .when(
           (argNode) => matchArg({ fnNode: node, fnName, argNode, index }),
           (argNode) => {
