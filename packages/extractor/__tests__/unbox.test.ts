@@ -1,7 +1,6 @@
 import { expect, test } from 'vitest'
-import { getBoxLiteralValue } from '../src/get-literal-value'
-import { type ExtractedFunctionResult } from '../src/types'
 import { unbox } from '../src/unbox'
+import { type ExtractedFunctionResult } from '../src/types'
 import { createProject, getTestExtract, type TestExtractOptions } from './create-project'
 // @ts-ignore
 import { default as BigThemeSampleInlined } from './samples/BigThemeSampleInlined?raw'
@@ -14,7 +13,7 @@ test('unbox', () => {
   const defineProperties = extracted.get('defineProperties')!
   const properties = (defineProperties as ExtractedFunctionResult).queryList[0].box
 
-  const getBoxLiteralValueResult = getBoxLiteralValue(properties)
+  const getBoxLiteralValueResult = unbox(properties)
   const unboxResult = unbox(properties)
   expect(unboxResult).toEqual(getBoxLiteralValueResult)
 

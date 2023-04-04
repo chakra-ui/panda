@@ -1,69 +1,59 @@
-import type { BoxNode, LiteralValue } from './type-factory'
-import { visitBoxNode } from './visit-box-node'
-import { cacheMap } from './get-literal-value'
+import { Arr, pipe, Bool } from 'lil-fp'
+import { match, P } from 'ts-pattern'
+import { BoxNodeType, type BoxNode, type LiteralValue, type SingleLiteralValue } from './type-factory'
+import { isNotNullish } from './utils'
 
-export const unbox = (rootNode: BoxNode | undefined, localCacheMap: WeakMap<BoxNode, unknown> = cacheMap) => {
-  if (!rootNode) return
-  if (rootNode.isObject() || rootNode.isLiteral()) return rootNode.value
-  if (!rootNode.isMap() && !rootNode.isList()) return
+const getLiteralValue = (node: BoxNode | undefined, cache: WeakMap<BoxNode, unknown>): LiteralValue | undefined => {
+  return match(node)
+    .with(P.nullish, () => undefined)
+    .when(BoxNodeType.isConditional, () => undefined)
+    .when(Bool.or(BoxNodeType.isLiteral, BoxNodeType.isObject), (node) => {
+      return node.value
+    })
+    .when(BoxNodeType.isMap, (node) => {
+      return pipe(
+        Arr.from(node.value.entries()),
+        Arr.map(([key, value]) => [key, unbox(value, cache)]),
+        Arr.filter(([_key, value]) => isNotNullish(value)),
+        Object.fromEntries,
+      )
+    })
+    .when(BoxNodeType.isList, (node) => {
+      return pipe(
+        node.value,
+        Arr.map((value) => unbox(value, cache)),
+        Arr.filter(isNotNullish),
+        (v) => v.flat(),
+      )
+    })
 
-  const reconstructed = rootNode.isMap() ? {} : []
-  const pathByNode = new WeakMap<BoxNode, string[]>()
-  let parent = reconstructed as any
-  let prevParent = null as any
+    .otherwise(() => undefined)
+}
 
-  // TODO return infos like: has circular ? has unresolvable ? has conditional ? has empty initializer ?
-  visitBoxNode(rootNode, (node, key, parentNode, traversal) => {
-    if (node.isConditional()) {
-      traversal.skip()
-      return
-    }
+export const cacheMap = new WeakMap()
 
-    if (localCacheMap.has(node)) {
-      if (parentNode) {
-        const parentPath = pathByNode.get(parentNode) ?? []
-        prevParent = parentNode
-        parent = parentPath.reduce((o, i) => (o as any)[i], reconstructed)
+export const unbox = (
+  node: BoxNode | BoxNode[] | undefined,
+  cache: WeakMap<BoxNode, unknown> = cacheMap,
+): LiteralValue | undefined => {
+  if (!node) return
 
-        parent[key!] = localCacheMap.get(node)
-      }
+  if (cacheMap.has(node)) return cacheMap.get(node)
 
-      traversal.skip()
-      return
-    }
+  if (Array.isArray(node)) {
+    const values = node
+      .map((valueType) => getLiteralValue(valueType, cache))
+      .filter(isNotNullish) as SingleLiteralValue[]
 
-    let current: LiteralValue
-    if (node.isObject()) {
-      current = node.value
-      traversal.skip()
-    } else if (node.isMap()) {
-      current = {}
-    } else if (node.isList()) {
-      current = []
-    } else if (node.isLiteral()) {
-      current = node.value
-    } else if (node.isEmptyInitializer()) {
-      current = true
-    } else if (node.isUnresolvable()) {
-      current = undefined
-    }
+    let result: any = values
+    if (values.length === 0) result = undefined
+    if (values.length === 1) result = values[0]
 
-    if (parentNode && parentNode !== prevParent) {
-      const parentPath = pathByNode.get(parentNode) ?? []
-      prevParent = parentNode
-      parent = parentPath.reduce((o, i) => (o as any)[i], reconstructed)
-    }
+    cacheMap.set(node, result)
+    return result
+  }
 
-    parent[key!] = current
-
-    if (parentNode && !pathByNode.has(node)) {
-      const parentPath = pathByNode.get(parentNode) ?? []
-      pathByNode.set(node, [...parentPath, key as string])
-      // console.log({ parentPath });
-    }
-
-    localCacheMap.set(node, current)
-  })
-
-  return reconstructed
+  const result = getLiteralValue(node, cache)
+  cacheMap.set(node, result)
+  return result
 }

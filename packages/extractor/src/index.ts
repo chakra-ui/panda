@@ -3,7 +3,7 @@ export { extractCallExpressionArguments } from './call-expression'
 export { extractJsxAttribute } from './jsx-attribute'
 export { extractJsxSpreadAttributeValues } from './jsx-spread-attribute'
 export { findIdentifierValueDeclaration, getDeclarationFor, isScope } from './find-identifier-value-declaration'
-export { getBoxLiteralValue } from './get-literal-value'
+export { unbox } from './unbox'
 export type { MaybeBoxNodeReturn } from './maybe-box-node'
 export { getNameLiteral, maybeBoxNode } from './maybe-box-node'
 export type {
@@ -41,6 +41,4 @@ export type {
   ExtractResultItem,
   PrimitiveType,
 } from './types'
-export { unbox } from './unbox'
 export { unquote, unwrapExpression } from './utils'
-export { visitBoxNode } from './visit-box-node'
