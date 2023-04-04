@@ -1,19 +1,12 @@
-import type { ObjectLiteralElementLike, ObjectLiteralExpression } from 'ts-morph'
+import type { ObjectLiteralExpression } from 'ts-morph'
 import { Node } from 'ts-morph'
 import { evaluateNode, isEvalError } from './evaluate'
-import { maybeBoxNode, maybeExpandConditionalExpression, maybePropName } from './maybe-box-node'
-import {
-  box,
-  type BoxNode,
-  BoxNodeConditional,
-  BoxNodeLiteral,
-  BoxNodeMap,
-  BoxNodeObject,
-  BoxNodeUnresolvable,
-} from './type-factory'
+import { maybeBoxNode, maybeExpandConditionalExpression } from './maybe-box-node'
+import { box, type BoxNode, BoxNodeConditional, BoxNodeMap, BoxNodeObject, BoxNodeUnresolvable } from './type-factory'
 import type { BoxContext, MatchFnPropArgs } from './types'
 import { isNotNullish, isObjectLiteral, unwrapExpression } from './utils'
 import { createLogScope, logger } from '@pandacss/logger'
+import { getPropertyName } from './get-property-name'
 
 const scope = createLogScope('extractor/maybe-object')
 const cacheMap = new WeakMap<Node, MaybeObjectLikeBoxReturn>()
@@ -94,27 +87,23 @@ const getObjectLiteralExpressionPropPairs = (
 
   const extractedPropValues = [] as Array<[string, BoxNode]>
   const spreadConditions = [] as BoxNodeConditional[]
-  // console.log({
-  //     expression: expression.getText(),
-  //     properties: expression.getProperties().map((prop) => prop.getText()),
-  // });
 
-  properties.forEach((propElement) => {
+  properties.forEach((property) => {
     const stack = [..._stack]
 
-    stack.push(propElement)
+    stack.push(property)
 
-    if (Node.isPropertyAssignment(propElement) || Node.isShorthandPropertyAssignment(propElement)) {
-      const propNameBox = getPropertyName(propElement, stack, ctx)
+    if (Node.isPropertyAssignment(property) || Node.isShorthandPropertyAssignment(property)) {
+      const propNameBox = getPropertyName(property, stack, ctx)
       if (!propNameBox) return
 
       const propName = propNameBox.value
       if (!isNotNullish(propName)) return
-      if (matchProp && !matchProp?.({ propName: propName as string, propNode: propElement })) {
+      if (matchProp && !matchProp?.({ propName: propName as string, propNode: property })) {
         return
       }
 
-      const init = propElement.getInitializer()
+      const init = property.getInitializer()
       if (!init) return
 
       const initializer = unwrapExpression(init)
@@ -140,8 +129,8 @@ const getObjectLiteralExpressionPropPairs = (
       }
     }
 
-    if (Node.isSpreadAssignment(propElement)) {
-      const initializer = unwrapExpression(propElement.getExpression())
+    if (Node.isSpreadAssignment(property)) {
+      const initializer = unwrapExpression(property.getExpression())
       stack.push(initializer)
 
       const maybeObject = maybeObjectLikeBox(initializer, stack, ctx, matchProp)
@@ -187,43 +176,4 @@ const getObjectLiteralExpressionPropPairs = (
   }
 
   return map
-}
-
-const getPropertyName = (
-  property: ObjectLiteralElementLike,
-  stack: Node[],
-  ctx: BoxContext,
-): BoxNodeLiteral | undefined => {
-  if (Node.isPropertyAssignment(property)) {
-    const node = unwrapExpression(property.getNameNode())
-
-    // { propName: "value" }
-    if (Node.isIdentifier(node)) {
-      return box.cast(node.getText(), node, stack)
-    }
-
-    // { [computed]: "value" }
-    if (Node.isComputedPropertyName(node)) {
-      const expression = node.getExpression()
-      stack.push(expression)
-
-      return maybePropName(expression, stack, ctx)
-    }
-
-    // { "propName": "value" }
-    if (Node.isStringLiteral(node)) {
-      return box.cast(node.getLiteralText(), node, stack)
-    }
-
-    // { "propName": "value" }
-    if (Node.isNumericLiteral(node)) {
-      return box.cast(node.getLiteralText(), node, stack)
-    }
-  }
-
-  // { shorthand }
-  if (Node.isShorthandPropertyAssignment(property)) {
-    const name = property.getName()
-    if (isNotNullish(name)) return box.cast(name, property, stack)
-  }
 }
