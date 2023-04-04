@@ -1,4 +1,3 @@
-import { logger } from '@pandacss/logger'
 import { evaluate } from 'ts-evaluator'
 import type { Expression } from 'ts-morph'
 import { Node, ts } from 'ts-morph'
@@ -34,14 +33,6 @@ export const evaluateNode = (node: Expression, stack: Node[], ctx: BoxContext) =
     },
     ...ctx.getEvaluateOptions?.(node, stack),
   })
-
-  logger.debug('extract:node-kind', { compilerNodeKind: node.getKindName() })
-
-  if (result.success) {
-    logger.debug('evaluate:success', result.value)
-  } else {
-    logger.error('evaluate:error', result.reason.message)
-  }
 
   const expr = result.success ? result.value : TsEvalError
   cacheMap.set(node, expr)
