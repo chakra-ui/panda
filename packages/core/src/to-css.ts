@@ -1,6 +1,7 @@
 import type { Dict } from '@pandacss/types'
 import postcss from 'postcss'
 import postcssNested from 'postcss-nested'
+import { safeParse } from './safe-parse'
 import { postCssJs } from './vendor'
 
 export function toCss(styles: Dict, { important }: { important?: boolean } = {}) {
@@ -22,7 +23,7 @@ export function toCss(styles: Dict, { important }: { important?: boolean } = {})
 }
 
 export function cssToJs(css: string) {
-  return postCssJs.objectify(postcss.parse(css))
+  return postCssJs.objectify(safeParse(css))
 }
 
 export function addImportant(css: Record<string, any>): Record<string, any> {

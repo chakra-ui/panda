@@ -6,6 +6,7 @@ import { Recipe } from './recipe'
 import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
+import { safeParse } from './safe-parse'
 
 export type StylesheetOptions = {
   content: string
@@ -30,7 +31,7 @@ export class Stylesheet {
 
   processSelectorObject(selector: string, styleObject: Dict) {
     const cssString = toCss(styleObject)
-    const { nodes } = postcss.parse(cssString)
+    const { nodes } = safeParse(cssString)
 
     // don't process empty rulesets
     if (nodes.length === 0) return

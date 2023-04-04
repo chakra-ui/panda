@@ -1,13 +1,13 @@
 import type { AtRule } from 'postcss'
-import postcss from 'postcss'
 import { isMatching } from 'ts-pattern'
 import { discardDuplicate } from './optimize'
+import { safeParse } from './safe-parse'
 
 // write postcss plugin to merge two css strings
 // merge layer (utilities) at-rules and override other layers
 export function mergeCss(oldCss: string, newCss: string) {
-  const oldRoot = postcss.parse(oldCss)
-  const newRoot = postcss.parse(newCss)
+  const oldRoot = safeParse(oldCss)
+  const newRoot = safeParse(newCss)
 
   // from the old root, get the at rules with the layer name "utilities"
   const oldUtilities = oldRoot.nodes.filter(
