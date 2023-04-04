@@ -1,8 +1,9 @@
 import type { RawCondition } from '@pandacss/types'
-import postcss, { AtRule } from 'postcss'
+import { AtRule } from 'postcss'
+import { safeParse } from './safe-parse'
 
 function parseAtRule(value: string): RawCondition {
-  const result = postcss.parse(value)
+  const result = safeParse(value)
   const rule = result.nodes[0] as AtRule
   return {
     type: 'at-rule',

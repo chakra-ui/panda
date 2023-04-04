@@ -57,8 +57,8 @@
     "astro.mjs"
   ],
   "dependencies": {
-    "@ark-ui/react": "0.0.0-rc-20230327133433",
-    "@astrojs/react": "2.1.0",
+    "@ark-ui/react": "0.0.0-rc-20230403193437",
+    "@astrojs/react": "2.1.1",
     "@pandacss/config": "workspace:*",
     "@pandacss/error": "workspace:*",
     "@pandacss/logger": "workspace:*",
@@ -66,7 +66,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "astro": "2.1.7",
+    "astro": "2.1.9",
     "cac": "6.7.14",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -74,7 +74,7 @@
   },
   "devDependencies": {
     "@pandacss/presets": "workspace:*",
-    "@types/react": "18.0.30",
+    "@types/react": "18.0.33",
     "@types/react-dom": "18.0.11",
     "@types/update-notifier": "6.0.2",
     "@vitejs/plugin-react": "3.1.0",

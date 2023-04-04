@@ -30,18 +30,18 @@
   "dependencies": {
     "@changesets/changelog-github": "0.4.8",
     "@changesets/cli": "2.26.1",
-    "@types/node": "18.15.10",
-    "@typescript-eslint/eslint-plugin": "5.56.0",
-    "@typescript-eslint/parser": "5.56.0",
-    "concurrently": "^7.6.0",
+    "@types/node": "18.15.11",
+    "@typescript-eslint/eslint-plugin": "5.57.1",
+    "@typescript-eslint/parser": "5.57.1",
+    "concurrently": "^8.0.0",
     "husky": "8.0.3",
     "lint-staged": "13.2.0",
     "prettier": "2.8.7",
     "ts-morph": "17.0.1",
     "tsup": "6.7.0",
     "tsx": "3.12.6",
-    "typescript": "5.0.2",
-    "vitest": "0.29.7"
+    "typescript": "5.0.3",
+    "vitest": "0.29.8"
   },
   "lint-staged": {
     "packages/**/*.{ts,tsx}": [
