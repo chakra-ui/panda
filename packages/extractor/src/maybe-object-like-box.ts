@@ -1,6 +1,6 @@
 import type { ObjectLiteralExpression } from 'ts-morph'
 import { Node } from 'ts-morph'
-import { evaluateNode, isEvalError } from './evaluate'
+import { evaluateNode, isEvalError } from './evaluate-node'
 import { maybeBoxNode, maybeExpandConditionalExpression } from './maybe-box-node'
 import { box, type BoxNode, BoxNodeConditional, BoxNodeMap, BoxNodeObject, BoxNodeUnresolvable } from './type-factory'
 import type { BoxContext, MatchFnPropArgs } from './types'

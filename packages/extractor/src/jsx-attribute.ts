@@ -21,11 +21,13 @@ export const extractJsxAttribute = (jsxAttribute: JsxAttribute, ctx: BoxContext)
         const nameNode = jsxAttribute.getNameNode()
         return box.emptyInitializer(nameNode, stack)
       })
+
       // <ColorBox color="red.200" />
       .when(Node.isStringLiteral, (initializer) => {
         const literalText = initializer.getLiteralText()
         return box.literal(trimWhitespace(literalText), initializer, stack)
       })
+
       // <ColorBox color={xxx} />
       .when(Node.isJsxExpression, (initializer) => {
         const expr = initializer.getExpression()
@@ -42,6 +44,7 @@ export const extractJsxAttribute = (jsxAttribute: JsxAttribute, ctx: BoxContext)
         const maybeObject = maybeObjectLikeBox(expression, stack, ctx)
         if (maybeObject) return maybeObject
       })
+
       .otherwise(() => undefined)
   )
 }

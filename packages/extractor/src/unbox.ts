@@ -1,6 +1,6 @@
-import { Arr, pipe, Bool } from 'lil-fp'
-import { match, P } from 'ts-pattern'
-import { BoxNodeType, type BoxNode, type LiteralValue, type SingleLiteralValue } from './type-factory'
+import { Arr, Bool, pipe } from 'lil-fp'
+import { P, match } from 'ts-pattern'
+import { BoxNodeType, type BoxNode, type LiteralValue } from './type-factory'
 import { isNotNullish } from './utils'
 
 const getLiteralValue = (node: BoxNode | undefined, cache: WeakMap<BoxNode, unknown>): LiteralValue | undefined => {
@@ -30,30 +30,38 @@ const getLiteralValue = (node: BoxNode | undefined, cache: WeakMap<BoxNode, unkn
     .otherwise(() => undefined)
 }
 
-export const cacheMap = new WeakMap()
+type NodeType = BoxNode | BoxNode[] | undefined
+type CacheMap = WeakMap<BoxNode, unknown>
 
-export const unbox = (
-  node: BoxNode | BoxNode[] | undefined,
-  cache: WeakMap<BoxNode, unknown> = cacheMap,
-): LiteralValue | undefined => {
-  if (!node) return
+export const cacheMap: CacheMap = new WeakMap()
 
-  if (cacheMap.has(node)) return cacheMap.get(node)
+const createCache = (map: CacheMap) => ({
+  value: map,
+  has: (node: NodeType) => map.has(node as any),
+  get: (node: NodeType) => map.get(node as any) as LiteralValue | undefined,
+  set: (node: NodeType, value: any) => map.set(node as any, value),
+})
 
-  if (Array.isArray(node)) {
-    const values = node
-      .map((valueType) => getLiteralValue(valueType, cache))
-      .filter(isNotNullish) as SingleLiteralValue[]
+const isArray = (node: NodeType): node is BoxNode[] => Array.isArray(node)
 
-    let result: any = values
-    if (values.length === 0) result = undefined
-    if (values.length === 1) result = values[0]
-
-    cacheMap.set(node, result)
-    return result
-  }
-
-  const result = getLiteralValue(node, cache)
-  cacheMap.set(node, result)
-  return result
+export const unbox = (node: NodeType, unboxCache: CacheMap = cacheMap): LiteralValue | undefined => {
+  const cache = createCache(unboxCache)
+  return match(node)
+    .with(P.nullish, () => undefined)
+    .when(cache.has, cache.get)
+    .when(isArray, (node) => {
+      const value = pipe(
+        node,
+        Arr.map((valueType) => getLiteralValue(valueType, cache.value)),
+        Arr.filter(isNotNullish),
+        Arr.head,
+      )
+      cache.set(node, value)
+      return value
+    })
+    .otherwise((node) => {
+      const value = getLiteralValue(node, cache.value)
+      cache.set(node, value)
+      return value
+    })
 }

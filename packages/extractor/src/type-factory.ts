@@ -17,6 +17,7 @@ export type ListType = WithNode & { type: 'list'; value: BoxNode[] }
 export type UnresolvableType = WithNode & { type: 'unresolvable' }
 
 export type ConditionalKind = 'ternary' | 'and' | 'or' | 'nullish-coalescing'
+
 export type ConditionalType = WithNode & {
   type: 'conditional'
   whenTrue: BoxNode
@@ -87,7 +88,6 @@ export abstract class BoxNodeType<Definition extends BoxNodeDefinition = BoxNode
   isEmptyInitializer(): this is BoxNodeEmptyInitializer {
     return this.type === 'empty-initializer'
   }
-
   static isObject(node: BoxNode | undefined): node is BoxNodeObject {
     return node?.type === 'object'
   }
@@ -281,8 +281,6 @@ export const castObjectLikeAsMapValue = (maybeObject: MaybeObjectLikeBoxReturn, 
   if (!isBoxNode(maybeObject)) return new Map<string, BoxNode>(Object.entries(maybeObject))
   if (maybeObject.isUnresolvable() || maybeObject.isConditional()) return new Map<string, BoxNode>()
   if (box.isMap(maybeObject)) return maybeObject.value
-
-  // console.dir({ entries }, { depth: null });
   return new Map<string, BoxNode>(
     Object.entries(maybeObject.value)
       .map(([key, value]) => {

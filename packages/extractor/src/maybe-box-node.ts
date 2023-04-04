@@ -20,7 +20,7 @@ import type {
   VariableDeclaration,
 } from 'ts-morph'
 import { Node, ts } from 'ts-morph'
-import { safeEvaluateNode } from './evaluate'
+import { safeEvaluateNode } from './evaluate-node'
 import { findIdentifierValueDeclaration } from './find-identifier-value-declaration'
 import { maybeObjectLikeBox } from './maybe-object-like-box'
 import { box, isBoxNode, type BoxNode, type ConditionalKind, type LiteralValue } from './type-factory'
@@ -523,12 +523,7 @@ function maybePropDefinitionValue(def: Node, accessList: string[], _stack: Node[
           let propName = accessList.pop()!
           let typeProp = type.getProperty(propName)
           let typeLiteral = typeProp?.getTypeNode()
-          // logger.debug("maybe-prop-def-value", {
-          //     before: true,
-          //     propName,
-          //     typeProp: typeProp?.getText(),
-          //     typeLiteral: typeLiteral?.getText(),
-          // });
+
           while (typeProp && accessList.length > 0 && typeLiteral && Node.isTypeLiteral(typeLiteral)) {
             stack.push(typeProp, typeLiteral)
             propName = accessList.pop()!
@@ -536,16 +531,12 @@ function maybePropDefinitionValue(def: Node, accessList: string[], _stack: Node[
             typeLiteral = typeProp?.getTypeNode()
           }
 
-          // logger.debug("maybe-prop-def-value", {
-          //     after: true,
-          //     propName,
-          //     typeProp: typeProp?.getText(),
-          //     typeLiteral: typeLiteral?.getText(),
-          // });
           if (!typeLiteral) return
 
           const typeValue = getTypeNodeValue(typeLiteral, stack, ctx)
+
           logger.debug('maybe-prop-def-value', { propName, typeValue: Boolean(typeValue) })
+
           return box.cast(typeValue, typeLiteral, stack)
         }
 
@@ -603,12 +594,13 @@ const maybePropIdentifierValue = (
   _stack: Node[],
   ctx: BoxContext,
 ): BoxNode | undefined => {
-  // console.trace();
   const maybeValueDeclaration = findIdentifierValueDeclaration(identifier, _stack, ctx)
+
   logger.debug('maybePropIdentifierValue', {
     identifier: identifier.getText(),
     hasValueDeclaration: Boolean(maybeValueDeclaration),
   })
+
   if (!maybeValueDeclaration) {
     return box.unresolvable(identifier, _stack)
   }
@@ -624,6 +616,7 @@ const maybePropIdentifierValue = (
 
 // TODO pass & push in stack ?
 const typeLiteralCache = new WeakMap<TypeLiteralNode, null | Map<string, LiteralValue>>()
+
 const getTypeLiteralNodePropValue = (
   type: TypeLiteralNode,
   propName: string,
@@ -633,8 +626,8 @@ const getTypeLiteralNodePropValue = (
   if (typeLiteralCache.has(type)) {
     const map = typeLiteralCache.get(type)
     logger.debug('cached', { typeLiteralNodeProp: true, kind: type.getKindName() })
-    if (map === null) return
 
+    if (map === null) return
     if (map?.has(propName)) {
       return map.get(propName)
     }
@@ -642,11 +635,6 @@ const getTypeLiteralNodePropValue = (
 
   const members = type.getMembers()
   const prop = members.find((member) => Node.isPropertySignature(member) && member.getName() === propName)
-
-  logger.debug('type', {
-    // prop: prop?.getText().slice(0, 20),
-    propKind: prop?.getKindName(),
-  })
 
   if (Node.isPropertySignature(prop) && prop.isReadonly()) {
     const propType = prop.getTypeNode()
