@@ -33,7 +33,7 @@
     "@types/node": "18.15.11",
     "@typescript-eslint/eslint-plugin": "5.57.1",
     "@typescript-eslint/parser": "5.57.1",
-    "concurrently": "^7.6.0",
+    "concurrently": "^8.0.0",
     "husky": "8.0.3",
     "lint-staged": "13.2.0",
     "prettier": "2.8.7",
