@@ -5,12 +5,6 @@ import type { SystemProperties } from './style-props'
 type String = string & {}
 type Number = number & {}
 
-type ContainerProperties = {
-  container?: string
-  containerType?: 'size' | 'inline-size' | String
-  containerName?: string
-}
-
 /* -----------------------------------------------------------------------------
  * Native css properties
  * -----------------------------------------------------------------------------*/
@@ -19,7 +13,7 @@ type CssVarProperties = {
   [key in `--${string}`]?: string | number
 }
 
-export type NativeCssProperties = PropertiesFallback<String | Number> & ContainerProperties
+export type NativeCssProperties = PropertiesFallback<String | Number>
 
 export type NativeCssProperty = keyof NativeCssProperties
 
