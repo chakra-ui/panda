@@ -1,11 +1,12 @@
 import { createLogScope, logger } from '@pandacss/logger'
+import { Bool } from 'lil-fp'
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
 import { box } from './box'
+import { BoxNodeMap, BoxNodeObject, type BoxNode, type MapTypeValue } from './box-factory'
 import { extractCallExpressionArguments } from './call-expression'
 import { extractJsxAttribute } from './jsx-attribute'
 import { extractJsxSpreadAttributeValues } from './jsx-spread-attribute'
 import { objectLikeToMap } from './object-like-to-map'
-import { BoxNodeMap, BoxNodeObject, type BoxNode, type MapTypeValue } from './box-factory'
 import type {
   ExtractOptions,
   ExtractResultByName,
@@ -22,6 +23,9 @@ const scope = createLogScope('extractor:extract')
 
 type QueryComponentMap = Map<JsxOpeningElement | JsxSelfClosingElement, { name: string; props: MapTypeValue }>
 
+const isJsxElement = Bool.or(Node.isJsxOpeningElement, Node.isJsxSelfClosingElement)
+const isImportOrExport = Bool.or(Node.isImportDeclaration, Node.isExportDeclaration)
+
 export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions) => {
   // contains all the extracted nodes from this ast parsing
   // whereas `extractMap` is the global map that could be populated by this function in multiple `extract` calls
@@ -33,7 +37,7 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
 
   ast.forEachDescendant((node, traversal) => {
     // quick win
-    if (Node.isImportDeclaration(node) || Node.isExportDeclaration(node)) {
+    if (isImportOrExport(node)) {
       traversal.skip()
       return
     }
@@ -42,10 +46,7 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
       // <ColorBox {...{ color: "facebook.100" }}>spread</ColorBox>
       //           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      const componentNode = node.getFirstAncestor(
-        (n): n is JsxOpeningElement | JsxSelfClosingElement =>
-          Node.isJsxOpeningElement(n) || Node.isJsxSelfClosingElement(n),
-      )
+      const componentNode = node.getFirstAncestor(isJsxElement)
       if (!componentNode) return
 
       // skip re-extracting nested spread attribute
@@ -78,7 +79,6 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
       }
 
       const componentMap = extractMap.get(componentName)! as ExtractedComponentResult
-      // console.log(componentName, componentMap);
 
       if (!queryComponentMap.has(componentNode)) {
         queryComponentMap.set(componentNode, { name: componentName, props: new Map() })
@@ -114,9 +114,9 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
           // otherwise, it was already filtered in extractJsxSpreadAttributeValues
           matchProp: box.isObject(objLike) ? (matchProp as any) : undefined,
         })
+
         entries.forEach(([propName, propValue]) => {
           logger.debug('merge-spread', { jsx: true, propName, propValue: (propValue as any).value })
-
           localNodes.set(propName, (localNodes.get(propName) ?? []).concat(propValue))
           componentMap.nodesByProp.set(propName, (componentMap.nodesByProp.get(propName) ?? []).concat(propValue))
         })
