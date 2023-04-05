@@ -2,7 +2,8 @@ import type { ObjectLiteralExpression } from 'ts-morph'
 import { Node } from 'ts-morph'
 import { evaluateNode, isEvalError } from './evaluate-node'
 import { maybeBoxNode, maybeExpandConditionalExpression } from './maybe-box-node'
-import { box, type BoxNode, BoxNodeConditional, BoxNodeMap, BoxNodeObject, BoxNodeUnresolvable } from './type-factory'
+import { type BoxNode, BoxNodeConditional, BoxNodeMap, BoxNodeObject, BoxNodeUnresolvable } from './box-factory'
+import { box } from './box'
 import type { BoxContext, MatchFnPropArgs } from './types'
 import { isNotNullish, isObjectLiteral, unwrapExpression } from './utils'
 import { createLogScope, logger } from '@pandacss/logger'
@@ -48,18 +49,15 @@ export const maybeObjectLikeBox = (
       const whenFalseExpr = unwrapExpression(node.getWhenFalse())
 
       const maybeBox = maybeExpandConditionalExpression(
-        {
-          whenTrueExpr,
-          whenFalseExpr,
-          node,
-          stack,
-          kind: 'ternary',
-          // canReturnWhenTrue: true,
-        },
+        { whenTrueExpr, whenFalseExpr, node, stack, kind: 'ternary' },
         ctx,
       )
+
       if (!maybeBox) return
-      if (maybeBox.isConditional() || maybeBox.isObject() || maybeBox.isMap()) return cache(maybeBox)
+
+      if (box.isConditional(maybeBox) || box.isObject(maybeBox) || box.isMap(maybeBox)) {
+        return cache(maybeBox)
+      }
 
       return cache(box.unresolvable(node, stack))
     }
@@ -73,7 +71,10 @@ export const maybeObjectLikeBox = (
 
   const maybeBox = maybeBoxNode(node, stack, ctx)
   if (!maybeBox) return cache(box.unresolvable(node, stack))
-  if (maybeBox.isMap() || maybeBox.isObject() || maybeBox.isConditional()) return cache(maybeBox)
+
+  if (box.isConditional(maybeBox) || box.isObject(maybeBox) || box.isMap(maybeBox)) {
+    return cache(maybeBox)
+  }
 }
 
 const getObjectLiteralExpressionPropPairs = (
@@ -121,7 +122,7 @@ const getObjectLiteralExpressionPropPairs = (
 
       const maybeObject = maybeObjectLikeBox(initializer, stack, ctx)
       logger.debug('prop-obj', { propName, hasObject: !!maybeObject })
-      // console.log({ maybeObject });
+
       if (maybeObject) {
         logger.debug('prop-obj', { propName, maybeObject })
         extractedPropValues.push([propName.toString(), maybeObject])
@@ -137,24 +138,23 @@ const getObjectLiteralExpressionPropPairs = (
       logger.debug('isSpreadAssignment', { extracted: Boolean(maybeObject) })
       if (!maybeObject) return
 
-      if (maybeObject.isObject()) {
+      if (box.isObject(maybeObject)) {
         Object.entries(maybeObject.value).forEach(([propName, value]) => {
           const boxed = box.cast(value, initializer, stack)
           if (!boxed) return
-
           extractedPropValues.push([propName, boxed])
         })
         return
       }
 
-      if (maybeObject.isMap()) {
+      if (box.isMap(maybeObject)) {
         maybeObject.value.forEach((nested, propName) => {
           extractedPropValues.push([propName, nested])
         })
         return
       }
 
-      if (maybeObject.isConditional()) {
+      if (box.isConditional(maybeObject)) {
         spreadConditions.push(maybeObject)
       }
     }
@@ -166,7 +166,6 @@ const getObjectLiteralExpressionPropPairs = (
     if (orderedMapValue.has(propName)) {
       orderedMapValue.delete(propName)
     }
-
     orderedMapValue.set(propName, value)
   })
 

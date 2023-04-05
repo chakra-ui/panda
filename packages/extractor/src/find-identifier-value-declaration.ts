@@ -1,7 +1,7 @@
+import { createLogScope, logger } from '@pandacss/logger'
 import { Identifier, Node } from 'ts-morph'
 import { getExportedVarDeclarationWithName, getModuleSpecifierSourceFile } from './maybe-box-node'
 import type { BoxContext } from './types'
-import { createLogScope, logger } from '@pandacss/logger'
 
 const scope = createLogScope('findIdentifierValueDeclaration')
 

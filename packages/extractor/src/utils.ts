@@ -1,4 +1,5 @@
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
+import type { PrimitiveType } from './types'
 
 type Nullable<T> = T | null | undefined
 
@@ -7,6 +8,13 @@ export const isNullish = <T>(element: Nullable<T>): element is null | undefined 
 
 /** Returns true if typeof value is object && not null */
 export const isObject = (value: any): value is object => value !== null && typeof value === 'object'
+
+export const isArray = (value: any): value is any[] => Array.isArray(value)
+
+export const isPrimitiveType = (value: unknown): value is PrimitiveType => {
+  const type = typeof value
+  return type === 'string' || type === 'number' || type === 'boolean' || value === null || value === undefined
+}
 
 /** Returns true if value extends basic Object prototype and is not a Date */
 export const isObjectLiteral = <T>(value: any): value is T extends unknown ? Record<string, any> : T =>
@@ -51,12 +59,7 @@ export const unquote = (str: string) => {
 }
 
 export const getComponentName = (node: JsxOpeningElement | JsxSelfClosingElement) => {
-  const tagNameNode = node.getTagNameNode()
-  if (Node.isPropertyAccessExpression(tagNameNode)) {
-    return tagNameNode.getText()
-  }
-
-  return tagNameNode.getText()
+  return node.getTagNameNode().getText()
 }
 
 const whitespaceRegex = /\s+/g

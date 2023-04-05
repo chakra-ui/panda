@@ -10,9 +10,16 @@ import type {
   ShorthandPropertyAssignment,
   SourceFile,
 } from 'ts-morph'
-import type { BoxNode, BoxNodeList, BoxNodeMap, LiteralValue } from './type-factory'
+import type { BoxNode, BoxNodeList, BoxNodeMap } from './box-factory'
 
 export type PrimitiveType = string | number | boolean | null | undefined
+
+export type LiteralObject = Record<string, unknown>
+
+export type SingleLiteralValue = PrimitiveType | LiteralObject
+
+export type LiteralValue = SingleLiteralValue | SingleLiteralValue[]
+
 export type EvaluatedObjectResult = Record<string, LiteralValue>
 
 export type ExtractResultKind = 'component' | 'function'

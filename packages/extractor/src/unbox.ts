@@ -1,24 +1,26 @@
 import { Arr, Bool, pipe } from 'lil-fp'
 import { P, match } from 'ts-pattern'
-import { BoxNodeType, type BoxNode, type LiteralValue } from './type-factory'
+import { box } from './box'
+import type { BoxNode } from './box-factory'
+import type { LiteralValue } from './types'
 import { isNotNullish } from './utils'
 
 const getLiteralValue = (node: BoxNode | undefined, cache: WeakMap<BoxNode, unknown>): LiteralValue | undefined => {
   return match(node)
     .with(P.nullish, () => undefined)
-    .when(BoxNodeType.isConditional, () => undefined)
-    .when(Bool.or(BoxNodeType.isLiteral, BoxNodeType.isObject), (node) => {
+    .when(box.isConditional, () => undefined)
+    .when(Bool.or(box.isLiteral, box.isObject), (node) => {
       return node.value
     })
-    .when(BoxNodeType.isMap, (node) => {
+    .when(box.isMap, (node) => {
       return pipe(
         Arr.from(node.value.entries()),
         Arr.map(([key, value]) => [key, unbox(value, cache)]),
-        Arr.filter(([_key, value]) => isNotNullish(value)),
+        Arr.filter(([, value]) => isNotNullish(value)),
         Object.fromEntries,
       )
     })
-    .when(BoxNodeType.isList, (node) => {
+    .when(box.isList, (node) => {
       return pipe(
         node.value,
         Arr.map((value) => unbox(value, cache)),
@@ -52,7 +54,7 @@ export const unbox = (node: NodeType, unboxCache: CacheMap = cacheMap): LiteralV
     .when(isArray, (node) => {
       const value = pipe(
         node,
-        Arr.map((valueType) => getLiteralValue(valueType, cache.value)),
+        Arr.map((boxNode) => getLiteralValue(boxNode, cache.value)),
         Arr.filter(isNotNullish),
         Arr.head,
       )

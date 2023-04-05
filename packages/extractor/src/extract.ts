@@ -1,27 +1,22 @@
+import { createLogScope, logger } from '@pandacss/logger'
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
+import { box } from './box'
 import { extractCallExpressionArguments } from './call-expression'
 import { extractJsxAttribute } from './jsx-attribute'
 import { extractJsxSpreadAttributeValues } from './jsx-spread-attribute'
-import {
-  box,
-  type BoxNode,
-  BoxNodeMap,
-  BoxNodeObject,
-  castObjectLikeAsMapValue,
-  type MapTypeValue,
-} from './type-factory'
+import { objectLikeToMap } from './object-like-to-map'
+import { BoxNodeMap, BoxNodeObject, type BoxNode, type MapTypeValue } from './box-factory'
 import type {
+  ExtractOptions,
+  ExtractResultByName,
   ExtractedComponentInstance,
   ExtractedComponentResult,
   ExtractedFunctionInstance,
   ExtractedFunctionResult,
-  ExtractOptions,
-  ExtractResultByName,
   MatchFnPropArgs,
   MatchPropArgs,
 } from './types'
 import { getComponentName } from './utils'
-import { createLogScope, logger } from '@pandacss/logger'
 
 const scope = createLogScope('extractor:extract')
 
@@ -91,6 +86,7 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
 
       const matchProp = ({ propName, propNode }: MatchPropArgs) =>
         components.matchProp({ tagNode: componentNode, tagName: componentName, propName, propNode })
+
       const spreadNode = extractJsxSpreadAttributeValues(node, ctx, matchProp as any)
       const parentRef = queryComponentMap.get(componentNode)!
 
@@ -102,9 +98,10 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
 
       // TODO move to root scope
       const processObjectLike = (objLike: BoxNodeMap | BoxNodeObject) => {
-        const mapValue = castObjectLikeAsMapValue(objLike, node)
+        const mapValue = objectLikeToMap(objLike, node)
         const boxed = box.map(mapValue, node, [componentNode])
-        if (objLike.isMap() && objLike.spreadConditions?.length) {
+
+        if (box.isMap(objLike) && objLike.spreadConditions?.length) {
           boxed.spreadConditions = objLike.spreadConditions
         }
 
@@ -115,7 +112,7 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
           // if the boxNode is an object
           // that means it was evaluated so we need to filter its props
           // otherwise, it was already filtered in extractJsxSpreadAttributeValues
-          matchProp: objLike.isObject() ? (matchProp as any) : undefined,
+          matchProp: box.isObject(objLike) ? (matchProp as any) : undefined,
         })
         entries.forEach(([propName, propValue]) => {
           logger.debug('merge-spread', { jsx: true, propName, propValue: (propValue as any).value })
@@ -126,23 +123,23 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
       }
 
       const processBoxNode = (boxNode: BoxNode) => {
-        if (boxNode.isUnresolvable()) {
+        if (box.isUnresolvable(boxNode)) {
           return
         }
 
-        if (boxNode.isConditional()) {
+        if (box.isConditional(boxNode)) {
           processBoxNode(boxNode.whenTrue)
           processBoxNode(boxNode.whenFalse)
           return
         }
 
-        if (boxNode.isLiteral() && (boxNode.kind === 'null' || boxNode.kind === 'undefined')) {
+        if (box.isLiteral(boxNode) && (boxNode.kind === 'null' || boxNode.kind === 'undefined')) {
           parentRef.props.set(getSpreadPropName(), boxNode)
           return
         }
 
         // shouldnt' happen
-        if (!boxNode.isObject() && !boxNode.isMap()) {
+        if (!box.isObject(boxNode) && !box.isMap(boxNode)) {
           return
         }
 
@@ -247,14 +244,14 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
       // console.log(componentName, componentMap);
 
       const nodeList = extractCallExpressionArguments(node, ctx, matchProp, functions.matchArg).value.map((boxNode) => {
-        if (boxNode.isObject() || boxNode.isMap()) {
-          const map = castObjectLikeAsMapValue(boxNode, node)
+        if (box.isObject(boxNode) || box.isMap(boxNode)) {
+          const map = objectLikeToMap(boxNode, node)
           const entries = mergeSpreadEntries({
             map,
             // if the boxNode is an object
             // that means it was evaluated so we need to filter its props
             // otherwise, it was already filtered in extractCallExpressionArguments
-            matchProp: boxNode.isObject() ? (matchProp as any) : undefined,
+            matchProp: box.isObject(boxNode) ? (matchProp as any) : undefined,
           })
 
           const mapAfterSpread = new Map() as MapTypeValue

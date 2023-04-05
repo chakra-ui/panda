@@ -1,0 +1,70 @@
+import type { Node } from 'ts-morph'
+import { getTypeOfLiteral } from './get-typeof-literal'
+import { toBoxNode } from './to-box-node'
+import {
+  BoxNodeConditional,
+  BoxNodeEmptyInitializer,
+  BoxNodeList,
+  BoxNodeLiteral,
+  BoxNodeMap,
+  BoxNodeObject,
+  BoxNodeUnresolvable,
+  type BoxNode,
+  type ConditionalKind,
+  type MapTypeValue,
+} from './box-factory'
+import type { EvaluatedObjectResult, PrimitiveType } from './types'
+
+export const box = {
+  object(value: EvaluatedObjectResult, node: Node, stack: Node[]) {
+    return new BoxNodeObject({ type: 'object', value, node, stack })
+  },
+  literal(value: PrimitiveType, node: Node, stack: Node[]) {
+    return new BoxNodeLiteral({ type: 'literal', value, kind: getTypeOfLiteral(value), node, stack })
+  },
+  map(value: MapTypeValue, node: Node, stack: Node[]) {
+    return new BoxNodeMap({ type: 'map', value, node, stack })
+  },
+  list(value: BoxNode[], node: Node, stack: Node[]) {
+    return new BoxNodeList({ type: 'list', value, node, stack })
+  },
+  conditional(whenTrue: BoxNode, whenFalse: BoxNode, node: Node, stack: Node[], kind: ConditionalKind) {
+    return new BoxNodeConditional({ type: 'conditional', whenTrue, whenFalse, kind, node, stack })
+  },
+  cast: toBoxNode,
+  //
+  emptyObject: (node: Node, stack: Node[]) => {
+    return new BoxNodeObject({ type: 'object', value: {}, isEmpty: true, node, stack })
+  },
+  emptyInitializer: (node: Node, stack: Node[]) => {
+    return new BoxNodeEmptyInitializer({ type: 'empty-initializer', node, stack })
+  },
+  unresolvable: (node: Node, stack: Node[]) => {
+    return new BoxNodeUnresolvable({ type: 'unresolvable', node, stack })
+  },
+  // asserts
+  isObject(value: BoxNode | undefined): value is BoxNodeObject {
+    return value?.type === 'object'
+  },
+  isLiteral(value: BoxNode | undefined): value is BoxNodeLiteral {
+    return value?.type === 'literal'
+  },
+  isMap(value: BoxNode | undefined): value is BoxNodeMap {
+    return value?.type === 'map'
+  },
+  isList(value: BoxNode | undefined): value is BoxNodeList {
+    return value?.type === 'list'
+  },
+  isUnresolvable(value: BoxNode | undefined): value is BoxNodeUnresolvable {
+    return value?.type === 'unresolvable'
+  },
+  isConditional(value: BoxNode | undefined): value is BoxNodeConditional {
+    return value?.type === 'conditional'
+  },
+  isEmptyInitializer(value: BoxNode | undefined): value is BoxNodeEmptyInitializer {
+    return value?.type === 'empty-initializer'
+  },
+  isNumberLiteral(node: BoxNode | undefined): node is BoxNodeLiteral {
+    return box.isLiteral(node) && node.kind === 'number'
+  },
+}

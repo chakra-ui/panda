@@ -1,25 +1,12 @@
-export { extract } from './extract'
+export { box } from './box'
 export { extractCallExpressionArguments } from './call-expression'
+export { extract } from './extract'
+export { findIdentifierValueDeclaration, getDeclarationFor, isScope } from './find-identifier-value-declaration'
 export { extractJsxAttribute } from './jsx-attribute'
 export { extractJsxSpreadAttributeValues } from './jsx-spread-attribute'
-export { findIdentifierValueDeclaration, getDeclarationFor, isScope } from './find-identifier-value-declaration'
-export { unbox } from './unbox'
-export type { MaybeBoxNodeReturn } from './maybe-box-node'
 export { getNameLiteral, maybeBoxNode } from './maybe-box-node'
-export type {
-  BoxNode,
-  ConditionalType,
-  EmptyInitializerType,
-  ListType,
-  LiteralType,
-  LiteralValue,
-  MapType,
-  MapTypeValue,
-  ObjectType,
-  SingleLiteralValue,
-} from './type-factory'
+export type { MaybeBoxNodeReturn } from './maybe-box-node'
 export {
-  box,
   BoxNodeConditional,
   BoxNodeEmptyInitializer,
   BoxNodeList,
@@ -28,17 +15,18 @@ export {
   BoxNodeObject,
   BoxNodeUnresolvable,
   isBoxNode,
-  isPrimitiveType,
-} from './type-factory'
+} from './box-factory'
+export type { BoxNode } from './box-factory'
 export type {
   BoxContext,
+  ExtractOptions,
+  ExtractResultByName,
+  ExtractResultItem,
   ExtractedComponentInstance,
   ExtractedComponentResult,
   ExtractedFunctionInstance,
   ExtractedFunctionResult,
-  ExtractOptions,
-  ExtractResultByName,
-  ExtractResultItem,
   PrimitiveType,
 } from './types'
+export { unbox } from './unbox'
 export { unquote, unwrapExpression } from './utils'

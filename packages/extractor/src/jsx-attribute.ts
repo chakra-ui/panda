@@ -1,11 +1,11 @@
 import type { JsxAttribute } from 'ts-morph'
 import { Node } from 'ts-morph'
+import { P, match } from 'ts-pattern'
+import { box } from './box'
 import { maybeBoxNode } from './maybe-box-node'
 import { maybeObjectLikeBox } from './maybe-object-like-box'
-import { box } from './type-factory'
 import type { BoxContext } from './types'
 import { trimWhitespace, unwrapExpression } from './utils'
-import { P, match } from 'ts-pattern'
 
 // <ColorBox color="red.200" backgroundColor="blackAlpha.100" />
 //           ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
