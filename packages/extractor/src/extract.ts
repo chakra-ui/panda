@@ -1,4 +1,4 @@
-import { Arr, Bool, Obj, Opt, cast, pipe } from 'lil-fp'
+import { Arr, Bool, Obj, Opt, cast, noop, pipe } from 'lil-fp'
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { box } from './box'
@@ -19,21 +19,20 @@ import type {
 } from './types'
 import { getComponentName } from './utils'
 
-type QueryComponentMap = Map<JsxOpeningElement | JsxSelfClosingElement, { name: string; props: MapTypeValue }>
+type JsxElement = JsxOpeningElement | JsxSelfClosingElement
+type ComponentMap = Map<JsxElement, { name: string; props: MapTypeValue }>
 
 const isJsxElement = Bool.or(Node.isJsxOpeningElement, Node.isJsxSelfClosingElement)
 const isImportOrExport = Bool.or(Node.isImportDeclaration, Node.isExportDeclaration)
 
-const doNothing = () => void 0
-
 export const extract = ({ ast, ...ctx }: ExtractOptions) => {
-  // contains all the extracted nodes from this ast parsing
-  // whereas `extractMap` is the global map that could be populated by this function in multiple `extract` calls
-  const localExtraction = new Map() as ExtractResultByName
-  const queryComponentMap = new Map() as QueryComponentMap
-
-  const visitedComponentFromSpreadList = new WeakSet<Node>()
   const { components, functions } = ctx
+
+  // contains all the extracted nodes from this ast parsing
+  const result: ExtractResultByName = new Map()
+  const componentMap: ComponentMap = new Map()
+
+  const visitedComponentFromSpread = new WeakSet<Node>()
 
   ast.forEachDescendant((node, traversal) => {
     // quick win
@@ -50,12 +49,12 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
       if (!componentNode) return
 
       // skip re-extracting nested spread attribute
-      if (visitedComponentFromSpreadList.has(componentNode)) {
+      if (visitedComponentFromSpread.has(componentNode)) {
         traversal.skip()
         return
       }
 
-      visitedComponentFromSpreadList.add(componentNode)
+      visitedComponentFromSpread.add(componentNode)
 
       const componentName = getComponentName(componentNode)
       const isFactory = componentName.includes('.')
@@ -64,21 +63,21 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         return
       }
 
-      if (!localExtraction.has(componentName)) {
-        localExtraction.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
+      if (!result.has(componentName)) {
+        result.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
       }
 
-      const localNodes = localExtraction.get(componentName)!.nodesByProp
+      const localNodes = result.get(componentName)!.nodesByProp
 
-      if (!queryComponentMap.has(componentNode)) {
-        queryComponentMap.set(componentNode, { name: componentName, props: new Map() })
+      if (!componentMap.has(componentNode)) {
+        componentMap.set(componentNode, { name: componentName, props: new Map() })
       }
 
       const matchProp = ({ propName, propNode }: MatchPropArgs) =>
         components.matchProp({ tagNode: componentNode, tagName: componentName, propName, propNode })
 
       const spreadNode = extractJsxSpreadAttributeValues(node, ctx, cast(matchProp))
-      const parentRef = queryComponentMap.get(componentNode)!
+      const parentRef = componentMap.get(componentNode)!
 
       // increment count since there might be conditional
       // so it doesn't override the whole spread prop
@@ -88,13 +87,13 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
 
       const processObjectLike = (objLike: BoxNodeMap | BoxNodeObject) => {
         const mapValue = objectLikeToMap(objLike, node)
-        const boxed = box.map(mapValue, node, [componentNode])
+        const boxNode = box.map(mapValue, node, [componentNode])
 
         if (box.isMap(objLike) && objLike.spreadConditions?.length) {
-          boxed.spreadConditions = objLike.spreadConditions
+          boxNode.spreadConditions = objLike.spreadConditions
         }
 
-        parentRef.props.set(getSpreadPropName(), boxed)
+        parentRef.props.set(getSpreadPropName(), boxNode)
 
         const entries = mergeSpreads({
           map: mapValue,
@@ -111,7 +110,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
 
       const processBoxNode = (boxNode: BoxNode) => {
         return match(boxNode)
-          .when(box.isUnresolvable, doNothing)
+          .when(box.isUnresolvable, noop)
           .when(box.isConditional, (boxNode) => {
             processBoxNode(boxNode.whenTrue)
             processBoxNode(boxNode.whenFalse)
@@ -157,17 +156,17 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
             extractJsxAttribute(node, ctx),
             Opt.fromNullable,
             Opt.tap((maybeBox) => {
-              if (!localExtraction.has(componentName)) {
-                localExtraction.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
+              if (!result.has(componentName)) {
+                result.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
               }
-              const localNodes = localExtraction.get(componentName)!.nodesByProp
+              const localNodes = result.get(componentName)!.nodesByProp
               localNodes.set(propName, (localNodes.get(propName) ?? []).concat(maybeBox))
             }),
             Opt.tap((maybeBox) => {
-              if (!queryComponentMap.has(componentNode)) {
-                queryComponentMap.set(componentNode, { name: componentName, props: new Map() })
+              if (!componentMap.has(componentNode)) {
+                componentMap.set(componentNode, { name: componentName, props: new Map() })
               }
-              const parentRef = queryComponentMap.get(componentNode)!
+              const parentRef = componentMap.get(componentNode)!
               parentRef.props.set(propName, maybeBox)
             }),
           )
@@ -182,11 +181,11 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
       const matchProp = ({ propName, propNode }: MatchFnPropArgs) =>
         functions.matchProp({ fnNode: node, fnName, propName, propNode })
 
-      if (!localExtraction.has(fnName)) {
-        localExtraction.set(fnName, { kind: 'function', nodesByProp: new Map(), queryList: [] })
+      if (!result.has(fnName)) {
+        result.set(fnName, { kind: 'function', nodesByProp: new Map(), queryList: [] })
       }
 
-      const localFnMap = localExtraction.get(fnName)! as ExtractedFunctionResult
+      const localFnMap = result.get(fnName)! as ExtractedFunctionResult
       const localNodes = localFnMap.nodesByProp
       const localList = localFnMap.queryList
 
@@ -226,9 +225,9 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
     }
   })
 
-  queryComponentMap.forEach((parentRef, componentNode) => {
+  componentMap.forEach((parentRef, componentNode) => {
     const componentName = parentRef.name
-    const localList = (localExtraction.get(componentName)! as ExtractedComponentResult).queryList
+    const localList = (result.get(componentName)! as ExtractedComponentResult).queryList
     const query = cast<ExtractedComponentInstance>({
       name: parentRef.name,
       box: box.map(parentRef.props, componentNode, []),
@@ -236,7 +235,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
     localList.push(query)
   })
 
-  return localExtraction
+  return result
 }
 
 /**
