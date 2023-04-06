@@ -1,4 +1,4 @@
-import { alt, pipe } from 'lil-fp'
+import { orElse, pipe } from 'lil-fp'
 import type { CallExpression, Node } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { box } from './box'
@@ -34,8 +34,8 @@ export const extractCallExpressionArguments = (
           (argNode) => {
             return pipe(
               maybeBoxNode(argNode, stack, ctx),
-              alt(() => maybeObjectLikeBox(argNode, stack, ctx, matchProp)),
-              alt(() => box.unresolvable(argNode, stack)),
+              orElse(() => maybeObjectLikeBox(argNode, stack, ctx, matchProp)),
+              orElse(() => box.unresolvable(argNode, stack)),
             )
           },
         )

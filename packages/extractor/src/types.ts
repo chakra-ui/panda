@@ -94,5 +94,4 @@ export type ExtractOptions = BoxContext & {
   ast: SourceFile
   components?: ComponentMatchers
   functions?: FunctionMatchers
-  extractMap?: ExtractResultByName
 }

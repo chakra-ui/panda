@@ -18,6 +18,7 @@ import type {
   MatchPropArgs,
 } from './types'
 import { getComponentName } from './utils'
+import { match } from 'ts-pattern'
 
 const scope = createLogScope('extractor:extract')
 
@@ -26,7 +27,9 @@ type QueryComponentMap = Map<JsxOpeningElement | JsxSelfClosingElement, { name: 
 const isJsxElement = Bool.or(Node.isJsxOpeningElement, Node.isJsxSelfClosingElement)
 const isImportOrExport = Bool.or(Node.isImportDeclaration, Node.isExportDeclaration)
 
-export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions) => {
+const doNothing = () => void 0
+
+export const extract = ({ ast, ...ctx }: ExtractOptions) => {
   // contains all the extracted nodes from this ast parsing
   // whereas `extractMap` is the global map that could be populated by this function in multiple `extract` calls
   const localExtraction = new Map() as ExtractResultByName
@@ -74,12 +77,6 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
 
       const localNodes = localExtraction.get(componentName)!.nodesByProp
 
-      if (!extractMap.has(componentName)) {
-        extractMap.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
-      }
-
-      const componentMap = extractMap.get(componentName)! as ExtractedComponentResult
-
       if (!queryComponentMap.has(componentNode)) {
         queryComponentMap.set(componentNode, { name: componentName, props: new Map() })
       }
@@ -116,34 +113,26 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
         })
 
         entries.forEach(([propName, propValue]) => {
-          logger.debug('merge-spread', { jsx: true, propName, propValue: (propValue as any).value })
           localNodes.set(propName, (localNodes.get(propName) ?? []).concat(propValue))
-          componentMap.nodesByProp.set(propName, (componentMap.nodesByProp.get(propName) ?? []).concat(propValue))
         })
       }
 
       const processBoxNode = (boxNode: BoxNode) => {
-        if (box.isUnresolvable(boxNode)) {
-          return
-        }
-
-        if (box.isConditional(boxNode)) {
-          processBoxNode(boxNode.whenTrue)
-          processBoxNode(boxNode.whenFalse)
-          return
-        }
-
-        if (box.isLiteral(boxNode) && (boxNode.kind === 'null' || boxNode.kind === 'undefined')) {
-          parentRef.props.set(getSpreadPropName(), boxNode)
-          return
-        }
-
-        // shouldnt' happen
-        if (!box.isObject(boxNode) && !box.isMap(boxNode)) {
-          return
-        }
-
-        processObjectLike(boxNode)
+        return match(boxNode)
+          .when(box.isUnresolvable, doNothing)
+          .when(box.isConditional, (boxNode) => {
+            processBoxNode(boxNode.whenTrue)
+            processBoxNode(boxNode.whenFalse)
+          })
+          .when(box.isLiteral, (boxNode) => {
+            if (boxNode.kind === 'null' || boxNode.kind === 'undefined') {
+              parentRef.props.set(getSpreadPropName(), boxNode)
+            }
+          })
+          .when(Bool.or(box.isObject, box.isMap), (boxNode) => {
+            processObjectLike(boxNode)
+          })
+          .run()
       }
 
       //@ts-ignore
@@ -197,12 +186,6 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
 
       const localNodes = localExtraction.get(componentName)!.nodesByProp
 
-      if (!extractMap.has(componentName)) {
-        extractMap.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
-      }
-
-      const componentMap = extractMap.get(componentName)! as ExtractedComponentResult
-
       localNodes.set(propName, (localNodes.get(propName) ?? []).concat(maybeBox))
 
       if (!queryComponentMap.has(componentNode)) {
@@ -211,13 +194,6 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
 
       const parentRef = queryComponentMap.get(componentNode)!
       parentRef.props.set(propName, maybeBox)
-
-      const propNodes = componentMap.nodesByProp.get(propName) ?? []
-      propNodes.push(maybeBox)
-
-      if (propNodes.length > 0) {
-        componentMap.nodesByProp.set(propName, propNodes)
-      }
     }
 
     if (functions && Node.isCallExpression(node)) {
@@ -232,11 +208,6 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
         localExtraction.set(fnName, { kind: 'function', nodesByProp: new Map(), queryList: [] })
       }
 
-      if (!extractMap.has(fnName)) {
-        extractMap.set(fnName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
-      }
-
-      const fnMap = extractMap.get(fnName)! as ExtractedFunctionResult
       const localFnMap = localExtraction.get(fnName)! as ExtractedFunctionResult
 
       const localNodes = localFnMap.nodesByProp
@@ -260,14 +231,7 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
           })
 
           entries.forEach(([propName, propValue]) => {
-            logger.debug('merge-spread', {
-              fn: true,
-              propName,
-              propValue: (propValue as any).value,
-            })
-
             localNodes.set(propName, (localNodes.get(propName) ?? []).concat(propValue))
-            fnMap.nodesByProp.set(propName, (fnMap.nodesByProp.get(propName) ?? []).concat(propValue))
           })
 
           return box.map(mapAfterSpread, node, boxNode.getStack())
@@ -276,9 +240,7 @@ export const extract = ({ ast, extractMap = new Map(), ...ctx }: ExtractOptions)
         return boxNode
       })
 
-      // TODO box.function
       const query = { name: fnName, box: box.list(nodeList, node, []) } as ExtractedFunctionInstance
-      fnMap.queryList.push(query)
       localList.push(query)
     }
   })
