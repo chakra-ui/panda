@@ -20,7 +20,7 @@ const getLiteralValue = (node: BoxNode | undefined, cache: WeakMap<BoxNode, unkn
         Object.fromEntries,
       )
     })
-    .when(box.isList, (node) => {
+    .when(box.isArray, (node) => {
       return pipe(
         node.value,
         Arr.map((value) => unbox(value, cache)),

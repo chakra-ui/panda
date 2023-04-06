@@ -7,7 +7,7 @@ export const isNotNullish = <T>(element: Nullable<T>): element is T => element !
 export const isNullish = <T>(element: Nullable<T>): element is null | undefined => element == null
 
 /** Returns true if typeof value is object && not null */
-export const isObject = (value: any): value is object => value !== null && typeof value === 'object'
+export const isObject = (value: any): value is object => value != null && typeof value === 'object'
 
 export const isArray = (value: any): value is any[] => Array.isArray(value)
 

@@ -4184,10 +4184,10 @@ test('unbox with unresolvable spread', () => {
   const [css, HStack] = [extracted.get('css')?.queryList[0].box, extracted.get('HStack')?.queryList[0].box]
 
   expect(css).toMatchInlineSnapshot(`
-    BoxNodeList {
+    BoxNodeArray {
       "node": CallExpression,
       "stack": [],
-      "type": "list",
+      "type": "array",
       "value": [
         BoxNodeMap {
           "node": CallExpression,

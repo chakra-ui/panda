@@ -25,10 +25,10 @@ describe('ast parser / styled', () => {
       {
         "cva": Set {
           {
-            "box": BoxNodeList {
+            "box": BoxNodeArray {
               "node": CallExpression,
               "stack": [],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",

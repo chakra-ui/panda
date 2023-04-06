@@ -3,7 +3,7 @@ export { extract } from './extract'
 export {
   BoxNodeConditional,
   BoxNodeEmptyInitializer,
-  BoxNodeList,
+  BoxNodeArray,
   BoxNodeLiteral,
   BoxNodeMap,
   BoxNodeObject,

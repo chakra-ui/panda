@@ -189,10 +189,10 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
       const localNodes = localFnMap.nodesByProp
       const localList = localFnMap.queryList
 
-      const boxNodeList = extractCallExpressionArguments(node, ctx, matchProp, functions.matchArg)
+      const boxNodeArray = extractCallExpressionArguments(node, ctx, matchProp, functions.matchArg)
 
       const nodeList = pipe(
-        boxNodeList.value,
+        boxNodeArray.value,
         Arr.map((boxNode) =>
           match(boxNode)
             .when(Bool.or(box.isObject, box.isMap), (boxNode) => {
@@ -220,7 +220,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         ),
       )
 
-      const query = { name: fnName, box: box.list(nodeList, node, []) } as ExtractedFunctionInstance
+      const query = { name: fnName, box: box.array(nodeList, node, []) } as ExtractedFunctionInstance
       localList.push(query)
     }
   })

@@ -3278,7 +3278,7 @@ it('can extract theme with tokens from another package with declaration files', 
           ],
           "type": "map",
           "value": Map {
-            "d" => BoxNodeList {
+            "d" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3288,7 +3288,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3306,7 +3306,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "pos" => BoxNodeList {
+            "pos" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3316,7 +3316,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3334,7 +3334,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "t" => BoxNodeList {
+            "t" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3344,7 +3344,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3362,7 +3362,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "b" => BoxNodeList {
+            "b" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3372,7 +3372,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3390,7 +3390,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "l" => BoxNodeList {
+            "l" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3400,7 +3400,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3418,7 +3418,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "r" => BoxNodeList {
+            "r" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3428,7 +3428,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3446,7 +3446,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "boxSize" => BoxNodeList {
+            "boxSize" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3456,7 +3456,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3488,7 +3488,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "w" => BoxNodeList {
+            "w" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3498,7 +3498,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3516,7 +3516,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "h" => BoxNodeList {
+            "h" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3526,7 +3526,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3544,7 +3544,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "minW" => BoxNodeList {
+            "minW" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3554,7 +3554,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3572,7 +3572,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "maxW" => BoxNodeList {
+            "maxW" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3582,7 +3582,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3600,7 +3600,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "minH" => BoxNodeList {
+            "minH" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3610,7 +3610,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3628,7 +3628,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "maxH" => BoxNodeList {
+            "maxH" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3638,7 +3638,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3656,7 +3656,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "placeItems" => BoxNodeList {
+            "placeItems" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3666,7 +3666,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3698,7 +3698,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "ta" => BoxNodeList {
+            "ta" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3708,7 +3708,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3726,7 +3726,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "tt" => BoxNodeList {
+            "tt" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3736,7 +3736,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3754,7 +3754,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "fs" => BoxNodeList {
+            "fs" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3764,7 +3764,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3782,7 +3782,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "fw" => BoxNodeList {
+            "fw" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3792,7 +3792,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3810,7 +3810,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "m" => BoxNodeList {
+            "m" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3820,7 +3820,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3838,7 +3838,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "mt" => BoxNodeList {
+            "mt" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3848,7 +3848,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3866,7 +3866,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "mr" => BoxNodeList {
+            "mr" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3876,7 +3876,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3894,7 +3894,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "mb" => BoxNodeList {
+            "mb" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3904,7 +3904,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3922,7 +3922,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "ml" => BoxNodeList {
+            "ml" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3932,7 +3932,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3950,7 +3950,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "mx" => BoxNodeList {
+            "mx" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -3960,7 +3960,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -3992,7 +3992,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "my" => BoxNodeList {
+            "my" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4002,7 +4002,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4034,7 +4034,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "ms" => BoxNodeList {
+            "ms" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4044,7 +4044,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4062,7 +4062,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "me" => BoxNodeList {
+            "me" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4072,7 +4072,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4090,7 +4090,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "p" => BoxNodeList {
+            "p" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4100,7 +4100,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4118,7 +4118,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "marginX" => BoxNodeList {
+            "marginX" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4128,7 +4128,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4160,7 +4160,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "marginY" => BoxNodeList {
+            "marginY" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4170,7 +4170,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4202,7 +4202,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "pt" => BoxNodeList {
+            "pt" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4212,7 +4212,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4230,7 +4230,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "pr" => BoxNodeList {
+            "pr" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4240,7 +4240,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4258,7 +4258,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "pb" => BoxNodeList {
+            "pb" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4268,7 +4268,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4286,7 +4286,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "pl" => BoxNodeList {
+            "pl" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4296,7 +4296,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4314,7 +4314,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "px" => BoxNodeList {
+            "px" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4324,49 +4324,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
-              "value": [
-                BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ArrayLiteralExpression,
-                  ],
-                  "type": "literal",
-                  "value": "paddingLeft",
-                },
-                BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ArrayLiteralExpression,
-                  ],
-                  "type": "literal",
-                  "value": "paddingRight",
-                },
-              ],
-            },
-            "paddingX" => BoxNodeList {
-              "node": ArrayLiteralExpression,
-              "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
-                PropertyAssignment,
-                ObjectLiteralExpression,
-                PropertyAssignment,
-                ArrayLiteralExpression,
-              ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4398,7 +4356,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "paddingY" => BoxNodeList {
+            "paddingX" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4408,7 +4366,49 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
+              "value": [
+                BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "literal",
+                  "value": "paddingLeft",
+                },
+                BoxNodeLiteral {
+                  "kind": "string",
+                  "node": StringLiteral,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ArrayLiteralExpression,
+                  ],
+                  "type": "literal",
+                  "value": "paddingRight",
+                },
+              ],
+            },
+            "paddingY" => BoxNodeArray {
+              "node": ArrayLiteralExpression,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                ArrayLiteralExpression,
+              ],
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4440,7 +4440,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "ps" => BoxNodeList {
+            "ps" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4450,7 +4450,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4468,7 +4468,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "pe" => BoxNodeList {
+            "pe" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4478,7 +4478,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4496,7 +4496,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "py" => BoxNodeList {
+            "py" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4506,7 +4506,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4538,7 +4538,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "bw" => BoxNodeList {
+            "bw" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4548,7 +4548,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4566,7 +4566,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "bx" => BoxNodeList {
+            "bx" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4576,7 +4576,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4608,7 +4608,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "borderX" => BoxNodeList {
+            "borderX" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4618,7 +4618,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4650,7 +4650,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "by" => BoxNodeList {
+            "by" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4660,7 +4660,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4692,7 +4692,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "borderY" => BoxNodeList {
+            "borderY" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4702,7 +4702,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4734,7 +4734,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "bg" => BoxNodeList {
+            "bg" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4744,7 +4744,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4762,7 +4762,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "bgColor" => BoxNodeList {
+            "bgColor" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4772,7 +4772,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -4790,7 +4790,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 },
               ],
             },
-            "borderXColor" => BoxNodeList {
+            "borderXColor" => BoxNodeArray {
               "node": ArrayLiteralExpression,
               "stack": [
                 CallExpression,
@@ -4800,7 +4800,7 @@ it('can extract theme with tokens from another package with declaration files', 
                 PropertyAssignment,
                 ArrayLiteralExpression,
               ],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",

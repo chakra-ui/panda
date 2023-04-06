@@ -10,7 +10,7 @@ import type {
   ShorthandPropertyAssignment,
   SourceFile,
 } from 'ts-morph'
-import type { BoxNode, BoxNodeList, BoxNodeMap } from './box-factory'
+import type { BoxNode, BoxNodeArray, BoxNodeMap } from './box-factory'
 
 export type PrimitiveType = string | number | boolean | null | undefined
 
@@ -24,7 +24,12 @@ export type EvaluatedObjectResult = Record<string, LiteralValue>
 
 export type ExtractResultKind = 'component' | 'function'
 
-export type ExtractedFunctionInstance = { name: string; fromNode: () => CallExpression; box: BoxNodeList }
+export type ExtractedFunctionInstance = {
+  name: string
+  fromNode: () => CallExpression
+  box: BoxNodeArray
+}
+
 export type ExtractedFunctionResult = {
   kind: 'function'
   nodesByProp: Map<string, BoxNode[]>

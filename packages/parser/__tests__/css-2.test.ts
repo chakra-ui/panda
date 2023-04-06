@@ -147,7 +147,7 @@ describe('ast parser', () => {
                     },
                   },
                 },
-                "padding" => BoxNodeList {
+                "padding" => BoxNodeArray {
                   "node": ArrayLiteralExpression,
                   "stack": [
                     CallExpression,
@@ -155,7 +155,7 @@ describe('ast parser', () => {
                     PropertyAssignment,
                     ArrayLiteralExpression,
                   ],
-                  "type": "list",
+                  "type": "array",
                   "value": [
                     BoxNodeLiteral {
                       "kind": "number",
@@ -328,7 +328,7 @@ describe('ast parser', () => {
                     },
                   },
                 },
-                "padding" => BoxNodeList {
+                "padding" => BoxNodeArray {
                   "node": ArrayLiteralExpression,
                   "stack": [
                     CallExpression,
@@ -336,7 +336,7 @@ describe('ast parser', () => {
                     PropertyAssignment,
                     ArrayLiteralExpression,
                   ],
-                  "type": "list",
+                  "type": "array",
                   "value": [
                     BoxNodeLiteral {
                       "kind": "number",

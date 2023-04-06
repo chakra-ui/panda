@@ -21,10 +21,10 @@ export const extractCallExpressionArguments = (
   const fnName = node.getExpression().getText()
 
   if (fnArguments.length === 0) {
-    return box.list([], node, [])
+    return box.array([], node, [])
   }
 
-  return box.list(
+  return box.array(
     fnArguments.map((argument, index) => {
       const argNode = unwrapExpression(argument)
       const stack = [node, argNode] as Node[]

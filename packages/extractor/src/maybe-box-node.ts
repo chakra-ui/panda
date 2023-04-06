@@ -91,7 +91,7 @@ export function maybeBoxNode(node: Node, stack: Node[], ctx: BoxContext): MaybeB
           return boxNode ?? cache(box.unresolvable(element, stack))
         }) as BoxNode[]
 
-        return cache(box.list(boxNodes, node, stack))
+        return cache(box.array(boxNodes, node, stack))
       })
 
       // <ColorBox color={staticColor} />
@@ -993,7 +993,7 @@ const getElementAccessedExpressionValue = (
       return box.from(propValue, arg, stack)
     }
 
-    if (box.isList(propRefValue)) {
+    if (box.isArray(propRefValue)) {
       const propValue = propRefValue.value[Number(propName)]
       return box.from(propValue, arg, stack)
     }

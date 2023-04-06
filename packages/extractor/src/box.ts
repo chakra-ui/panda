@@ -4,7 +4,7 @@ import { toBoxNode } from './to-box-node'
 import {
   BoxNodeConditional,
   BoxNodeEmptyInitializer,
-  BoxNodeList,
+  BoxNodeArray,
   BoxNodeLiteral,
   BoxNodeMap,
   BoxNodeObject,
@@ -25,8 +25,8 @@ export const box = {
   map(value: MapTypeValue, node: Node, stack: Node[]) {
     return new BoxNodeMap({ type: 'map', value, node, stack })
   },
-  list(value: BoxNode[], node: Node, stack: Node[]) {
-    return new BoxNodeList({ type: 'list', value, node, stack })
+  array(value: BoxNode[], node: Node, stack: Node[]) {
+    return new BoxNodeArray({ type: 'array', value, node, stack })
   },
   conditional(whenTrue: BoxNode, whenFalse: BoxNode, node: Node, stack: Node[], kind: ConditionalKind) {
     return new BoxNodeConditional({ type: 'conditional', whenTrue, whenFalse, kind, node, stack })
@@ -52,8 +52,8 @@ export const box = {
   isMap(value: BoxNode | undefined): value is BoxNodeMap {
     return value?.type === 'map'
   },
-  isList(value: BoxNode | undefined): value is BoxNodeList {
-    return value?.type === 'list'
+  isArray(value: BoxNode | undefined): value is BoxNodeArray {
+    return value?.type === 'array'
   },
   isUnresolvable(value: BoxNode | undefined): value is BoxNodeUnresolvable {
     return value?.type === 'unresolvable'

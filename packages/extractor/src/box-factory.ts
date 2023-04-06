@@ -19,7 +19,7 @@ export type LiteralType = WithNode & {
 
 export type MapType = WithNode & { type: 'map'; value: MapTypeValue }
 
-export type ListType = WithNode & { type: 'list'; value: BoxNode[] }
+export type ArrayType = WithNode & { type: 'array'; value: BoxNode[] }
 
 export type UnresolvableType = WithNode & { type: 'unresolvable' }
 
@@ -40,7 +40,7 @@ type BoxNodeDefinition =
   | ObjectType
   | LiteralType
   | MapType
-  | ListType
+  | ArrayType
   | UnresolvableType
   | ConditionalType
   | EmptyInitializerType
@@ -49,7 +49,7 @@ export type BoxNode =
   | BoxNodeObject
   | BoxNodeLiteral
   | BoxNodeMap
-  | BoxNodeList
+  | BoxNodeArray
   | BoxNodeUnresolvable
   | BoxNodeConditional
   | BoxNodeEmptyInitializer
@@ -106,9 +106,9 @@ export class BoxNodeMap extends BoxNodeType<MapType> {
   }
 }
 
-export class BoxNodeList extends BoxNodeType<ListType> {
-  public value: ListType['value']
-  constructor(definition: ListType) {
+export class BoxNodeArray extends BoxNodeType<ArrayType> {
+  public value: ArrayType['value']
+  constructor(definition: ArrayType) {
     super(definition)
     this.value = definition.value
   }

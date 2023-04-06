@@ -5375,10 +5375,10 @@ it('extract function with multiple args even if not starting by ObjectLiteralExp
   expect(extracted.get('createTheme')!.queryList).toMatchInlineSnapshot(`
     [
       {
-        "box": BoxNodeList {
+        "box": BoxNodeArray {
           "node": CallExpression,
           "stack": [],
-          "type": "list",
+          "type": "array",
           "value": [
             BoxNodeLiteral {
               "kind": "string",
@@ -5463,10 +5463,10 @@ it('extract NullKeyword', () => {
   expect(extracted.get('createTheme')!.queryList).toMatchInlineSnapshot(`
     [
       {
-        "box": BoxNodeList {
+        "box": BoxNodeArray {
           "node": CallExpression,
           "stack": [],
-          "type": "list",
+          "type": "array",
           "value": [
             BoxNodeLiteral {
               "kind": "string",
@@ -5636,10 +5636,10 @@ it('extract css from createTheme result', () => {
   expect(extracted.get('css')!.queryList).toMatchInlineSnapshot(`
     [
       {
-        "box": BoxNodeList {
+        "box": BoxNodeArray {
           "node": CallExpression,
           "stack": [],
-          "type": "list",
+          "type": "array",
           "value": [
             BoxNodeMap {
               "node": CallExpression,
@@ -5745,10 +5745,10 @@ it('extract assignVars args', () => {
   expect(extracted.get('assignVars')!.queryList).toMatchInlineSnapshot(`
     [
       {
-        "box": BoxNodeList {
+        "box": BoxNodeArray {
           "node": CallExpression,
           "stack": [],
-          "type": "list",
+          "type": "array",
           "value": [
             BoxNodeUnresolvable {
               "node": Identifier,
@@ -5900,10 +5900,10 @@ it('extract CallExpression > no args', () => {
         "nodesByProp": Map {},
         "queryList": [
           {
-            "box": BoxNodeList {
+            "box": BoxNodeArray {
               "node": CallExpression,
               "stack": [],
-              "type": "list",
+              "type": "array",
               "value": [],
             },
             "name": "defineProperties",
