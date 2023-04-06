@@ -66,7 +66,6 @@ export function getDeclarationFor(node: Identifier, stack: Node[], ctx: BoxConte
     stack.push(...declarationStack)
   }
 
-  // console.log({ found: node.getText(), parent: parent.getKindName() });
   return declaration
 }
 
@@ -106,7 +105,6 @@ export function findIdentifierValueDeclaration(
     const refName = identifier.getText()
     // eslint-disable-next-line @typescript-eslint/no-loop-func
     scope.forEachDescendant((node, traversal) => {
-      // logger.debug("find", node.getKindName());
       if (visitedsWithStack.has(node)) {
         traversal.skip()
         innerStack.push(...visitedsWithStack.get(node)!)

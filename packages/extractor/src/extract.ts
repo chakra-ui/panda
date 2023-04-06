@@ -1,4 +1,4 @@
-import { Bool, Obj, Opt, cast, pipe } from 'lil-fp'
+import { Arr, Bool, Obj, Opt, cast, pipe } from 'lil-fp'
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { box } from './box'
@@ -181,42 +181,45 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
 
       const matchProp = ({ propName, propNode }: MatchFnPropArgs) =>
         functions.matchProp({ fnNode: node, fnName, propName, propNode })
-      // console.log({ objectOrMapType });
 
       if (!localExtraction.has(fnName)) {
         localExtraction.set(fnName, { kind: 'function', nodesByProp: new Map(), queryList: [] })
       }
 
       const localFnMap = localExtraction.get(fnName)! as ExtractedFunctionResult
-
       const localNodes = localFnMap.nodesByProp
       const localList = localFnMap.queryList
 
-      const nodeList = extractCallExpressionArguments(node, ctx, matchProp, functions.matchArg).value.map((boxNode) => {
-        if (box.isObject(boxNode) || box.isMap(boxNode)) {
-          const map = objectLikeToMap(boxNode, node)
-          const entries = mergeSpreads({
-            map,
-            // if the boxNode is an object
-            // that means it was evaluated so we need to filter its props
-            // otherwise, it was already filtered in extractCallExpressionArguments
-            matchProp: box.isObject(boxNode) ? (matchProp as any) : undefined,
-          })
+      const boxNodeList = extractCallExpressionArguments(node, ctx, matchProp, functions.matchArg)
 
-          const mapAfterSpread = new Map() as MapTypeValue
-          entries.forEach(([propName, propValue]) => {
-            mapAfterSpread.set(propName, propValue)
-          })
+      const nodeList = pipe(
+        boxNodeList.value,
+        Arr.map((boxNode) =>
+          match(boxNode)
+            .when(Bool.or(box.isObject, box.isMap), (boxNode) => {
+              const map = objectLikeToMap(boxNode, node)
+              const entries = mergeSpreads({
+                map,
+                // if the boxNode is an object
+                // that means it was evaluated so we need to filter its props
+                // otherwise, it was already filtered in extractCallExpressionArguments
+                matchProp: box.isObject(boxNode) ? (matchProp as any) : undefined,
+              })
 
-          entries.forEach(([propName, propValue]) => {
-            localNodes.set(propName, (localNodes.get(propName) ?? []).concat(propValue))
-          })
+              const mapAfterSpread = new Map() as MapTypeValue
+              entries.forEach(([propName, propValue]) => {
+                mapAfterSpread.set(propName, propValue)
+              })
 
-          return box.map(mapAfterSpread, node, boxNode.getStack())
-        }
+              entries.forEach(([propName, propValue]) => {
+                localNodes.set(propName, (localNodes.get(propName) ?? []).concat(propValue))
+              })
 
-        return boxNode
-      })
+              return box.map(mapAfterSpread, node, boxNode.getStack())
+            })
+            .otherwise((boxNode) => boxNode),
+        ),
+      )
 
       const query = { name: fnName, box: box.list(nodeList, node, []) } as ExtractedFunctionInstance
       localList.push(query)
@@ -242,7 +245,9 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
  * // color: "blue" wins / color: "red" is ignored
  */
 function mergeSpreads({ map, matchProp }: { map: MapTypeValue; matchProp?: (prop: MatchFnPropArgs) => boolean }) {
-  if (map.size <= 1) return Array.from(map.entries())
+  if (map.size <= 1) {
+    return Array.from(map.entries())
+  }
 
   const foundPropList = new Set<string>()
 
@@ -251,7 +256,6 @@ function mergeSpreads({ map, matchProp }: { map: MapTypeValue; matchProp?: (prop
     .filter(([propName, boxed]) => {
       if (matchProp && !matchProp?.({ propName, propNode: boxed.getNode() as any })) return false
       if (foundPropList.has(propName)) return false
-
       foundPropList.add(propName)
       return true
     })
