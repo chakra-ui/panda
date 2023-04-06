@@ -24,7 +24,7 @@
   ],
   "dependencies": {
     "@pandacss/logger": "workspace:*",
-    "lil-fp": "1.4.0",
+    "lil-fp": "1.4.1",
     "ts-evaluator": "^1.1.0",
     "ts-morph": "17.0.1",
     "ts-pattern": "4.2.2"

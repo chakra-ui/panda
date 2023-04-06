@@ -1,6 +1,6 @@
-import { createLogScope, logger } from '@pandacss/logger'
-import { Bool } from 'lil-fp'
+import { Bool, Obj, Opt, cast, pipe } from 'lil-fp'
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
+import { match } from 'ts-pattern'
 import { box } from './box'
 import { BoxNodeMap, BoxNodeObject, type BoxNode, type MapTypeValue } from './box-factory'
 import { extractCallExpressionArguments } from './call-expression'
@@ -18,9 +18,6 @@ import type {
   MatchPropArgs,
 } from './types'
 import { getComponentName } from './utils'
-import { match } from 'ts-pattern'
-
-const scope = createLogScope('extractor:extract')
 
 type QueryComponentMap = Map<JsxOpeningElement | JsxSelfClosingElement, { name: string; props: MapTypeValue }>
 
@@ -61,13 +58,9 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
       visitedComponentFromSpreadList.add(componentNode)
 
       const componentName = getComponentName(componentNode)
-      if (
-        !components.matchTag({
-          tagNode: componentNode,
-          tagName: componentName,
-          isFactory: componentName.includes('.'),
-        })
-      ) {
+      const isFactory = componentName.includes('.')
+
+      if (!components.matchTag({ tagNode: componentNode, tagName: componentName, isFactory })) {
         return
       }
 
@@ -84,7 +77,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
       const matchProp = ({ propName, propNode }: MatchPropArgs) =>
         components.matchProp({ tagNode: componentNode, tagName: componentName, propName, propNode })
 
-      const spreadNode = extractJsxSpreadAttributeValues(node, ctx, matchProp as any)
+      const spreadNode = extractJsxSpreadAttributeValues(node, ctx, cast(matchProp))
       const parentRef = queryComponentMap.get(componentNode)!
 
       // increment count since there might be conditional
@@ -93,7 +86,6 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
       const propSizeAtThisPoint = parentRef.props.size
       const getSpreadPropName = () => `_SPREAD_${propSizeAtThisPoint}_${count++}`
 
-      // TODO move to root scope
       const processObjectLike = (objLike: BoxNodeMap | BoxNodeObject) => {
         const mapValue = objectLikeToMap(objLike, node)
         const boxed = box.map(mapValue, node, [componentNode])
@@ -104,7 +96,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
 
         parentRef.props.set(getSpreadPropName(), boxed)
 
-        const entries = mergeSpreadEntries({
+        const entries = mergeSpreads({
           map: mapValue,
           // if the boxNode is an object
           // that means it was evaluated so we need to filter its props
@@ -145,55 +137,42 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
       // <ColorBox color="red.200" backgroundColor="blackAlpha.100" />
       //           ^^^^^           ^^^^^^^^^^^^^^^
 
-      const componentNode = node.getFirstAncestor(
-        (n): n is JsxOpeningElement | JsxSelfClosingElement =>
-          Node.isJsxOpeningElement(n) || Node.isJsxSelfClosingElement(n),
+      pipe(
+        node.getFirstAncestor(isJsxElement),
+        Opt.fromNullable,
+        Opt.map((componentNode) => {
+          const componentName = getComponentName(componentNode)
+          const isFactory = componentName.includes('.')
+          return { componentNode, componentName, isFactory }
+        }),
+        Opt.filter(({ componentName, componentNode, isFactory }) =>
+          components.matchTag({ tagNode: componentNode, tagName: componentName, isFactory }),
+        ),
+        Opt.map(Obj.assign({ propName: node.getNameNode().getText() })),
+        Opt.filter(({ propName, componentNode, componentName }) =>
+          components.matchProp({ tagNode: componentNode, tagName: componentName, propName, propNode: node }),
+        ),
+        Opt.tap(({ propName, componentNode, componentName }) => {
+          pipe(
+            extractJsxAttribute(node, ctx),
+            Opt.fromNullable,
+            Opt.tap((maybeBox) => {
+              if (!localExtraction.has(componentName)) {
+                localExtraction.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
+              }
+              const localNodes = localExtraction.get(componentName)!.nodesByProp
+              localNodes.set(propName, (localNodes.get(propName) ?? []).concat(maybeBox))
+            }),
+            Opt.tap((maybeBox) => {
+              if (!queryComponentMap.has(componentNode)) {
+                queryComponentMap.set(componentNode, { name: componentName, props: new Map() })
+              }
+              const parentRef = queryComponentMap.get(componentNode)!
+              parentRef.props.set(propName, maybeBox)
+            }),
+          )
+        }),
       )
-      if (!componentNode) return
-
-      const componentName = getComponentName(componentNode)
-      if (
-        !components.matchTag({
-          tagNode: componentNode,
-          tagName: componentName,
-          isFactory: componentName.includes('.'),
-        })
-      ) {
-        return
-      }
-
-      const propName = node.getNameNode().getText()
-      if (
-        !components.matchProp({
-          tagNode: componentNode,
-          tagName: componentName,
-          propName,
-          propNode: node,
-        })
-      ) {
-        return
-      }
-      // console.log({ componentName, propName });
-
-      const maybeBox = extractJsxAttribute(node, ctx)
-      if (!maybeBox) return
-
-      logger.debug('extract:prop-name', { propName, maybeBox })
-
-      if (!localExtraction.has(componentName)) {
-        localExtraction.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
-      }
-
-      const localNodes = localExtraction.get(componentName)!.nodesByProp
-
-      localNodes.set(propName, (localNodes.get(propName) ?? []).concat(maybeBox))
-
-      if (!queryComponentMap.has(componentNode)) {
-        queryComponentMap.set(componentNode, { name: componentName, props: new Map() })
-      }
-
-      const parentRef = queryComponentMap.get(componentNode)!
-      parentRef.props.set(propName, maybeBox)
     }
 
     if (functions && Node.isCallExpression(node)) {
@@ -212,12 +191,11 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
 
       const localNodes = localFnMap.nodesByProp
       const localList = localFnMap.queryList
-      // console.log(componentName, componentMap);
 
       const nodeList = extractCallExpressionArguments(node, ctx, matchProp, functions.matchArg).value.map((boxNode) => {
         if (box.isObject(boxNode) || box.isMap(boxNode)) {
           const map = objectLikeToMap(boxNode, node)
-          const entries = mergeSpreadEntries({
+          const entries = mergeSpreads({
             map,
             // if the boxNode is an object
             // that means it was evaluated so we need to filter its props
@@ -248,13 +226,10 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
   queryComponentMap.forEach((parentRef, componentNode) => {
     const componentName = parentRef.name
     const localList = (localExtraction.get(componentName)! as ExtractedComponentResult).queryList
-
-    // TODO box.component
-    const query = {
+    const query = cast<ExtractedComponentInstance>({
       name: parentRef.name,
       box: box.map(parentRef.props, componentNode, []),
-    } as ExtractedComponentInstance
-
+    })
     localList.push(query)
   })
 
@@ -266,7 +241,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
  * @example <Box sx={{ ...{ color: "red" }, color: "blue" }} />
  * // color: "blue" wins / color: "red" is ignored
  */
-function mergeSpreadEntries({ map, matchProp }: { map: MapTypeValue; matchProp?: (prop: MatchFnPropArgs) => boolean }) {
+function mergeSpreads({ map, matchProp }: { map: MapTypeValue; matchProp?: (prop: MatchFnPropArgs) => boolean }) {
   if (map.size <= 1) return Array.from(map.entries())
 
   const foundPropList = new Set<string>()
@@ -280,8 +255,6 @@ function mergeSpreadEntries({ map, matchProp }: { map: MapTypeValue; matchProp?:
       foundPropList.add(propName)
       return true
     })
-
-  logger.debug(scope('merge-spread'), { extracted: map, merged })
 
   // reverse again to keep the original order
   return merged.reverse()

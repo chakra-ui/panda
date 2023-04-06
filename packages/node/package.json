@@ -39,7 +39,7 @@
     "hookable": "5.5.3",
     "is-glob": "^4.0.3",
     "javascript-stringify": "2.1.0",
-    "lil-fp": "1.4.0",
+    "lil-fp": "1.4.1",
     "lodash.merge": "4.6.2",
     "look-it-up": "2.1.0",
     "outdent": " ^0.8.0",

@@ -27,7 +27,7 @@
     "@pandacss/types": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "javascript-stringify": "2.1.0",
-    "lil-fp": "1.4.0",
+    "lil-fp": "1.4.1",
     "outdent": " ^0.8.0",
     "pluralize": "8.0.0",
     "postcss": "8.4.21",
