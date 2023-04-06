@@ -226,7 +226,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
         contains: [],
       } as ReportInstanceItem // TODO satisfies
 
-      if (box.isList(item.box)) {
+      if (box.isArray(item.box)) {
         addTo(byInstanceInFilepath, filepath, reportInstanceItem.instanceId)
 
         return reportInstanceItem
