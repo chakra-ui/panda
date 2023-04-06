@@ -1,5 +1,5 @@
 import { assignCompositions, Conditions, Stylesheet, type StylesheetOptions, Utility } from '@pandacss/core'
-import { isCssProperty } from '@pandacss/is-valid-prop'
+import { isCssProperty, allCssProperties } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
 import { compact, mapObject } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
@@ -45,7 +45,7 @@ export const getBaseEngine = (conf: LoadConfigResult) =>
     }),
 
     Obj.bind('properties', ({ utility, conditions }) =>
-      Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()])),
+      Array.from(new Set(['css', ...utility.keys(), ...conditions.keys(), ...allCssProperties])),
     ),
 
     Obj.bind('isValidProperty', ({ properties }) => {

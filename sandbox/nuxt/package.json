@@ -6,8 +6,9 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "css:gen": "panda codegen --clean",
-    "css:dev": "panda --watch",
+    "css": "PANDA_DEBUG=ast:* panda",
+    "css:gen": "PANDA_DEBUG=* panda codegen",
+    "css:dev": "PANDA_DEBUG=file:* panda --watch",
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
