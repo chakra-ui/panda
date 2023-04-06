@@ -304,6 +304,9 @@ importers:
       '@pandacss/error':
         specifier: workspace:*
         version: link:../error
+      '@pandacss/extractor':
+        specifier: workspace:*
+        version: link:../extractor
       '@pandacss/generator':
         specifier: workspace:*
         version: link:../generator

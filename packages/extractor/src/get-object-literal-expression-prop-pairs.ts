@@ -7,22 +7,25 @@ import { getPropertyName } from './get-property-name'
 import { maybeBoxNode } from './maybe-box-node'
 import { maybeObjectLikeBox } from './maybe-object-like-box'
 import type { BoxContext, MatchFnPropArgs } from './types'
-import { isNotNullish, unwrapExpression } from './utils'
+import { isNullish, unwrapExpression } from './utils'
 
 export const getObjectLiteralExpressionPropPairs = (
   expression: ObjectLiteralExpression,
-  _stack: Node[],
+  expressionStack: Node[],
   ctx: BoxContext,
   matchProp?: (prop: MatchFnPropArgs) => boolean,
 ) => {
   const properties = expression.getProperties()
-  if (properties.length === 0) return box.emptyObject(expression, _stack)
+
+  if (properties.length === 0) {
+    return box.emptyObject(expression, expressionStack)
+  }
 
   const extractedPropValues = [] as Array<[string, BoxNode]>
   const spreadConditions = [] as BoxNodeConditional[]
 
   properties.forEach((property) => {
-    const stack = [..._stack]
+    const stack = [...expressionStack]
 
     stack.push(property)
 
@@ -32,7 +35,7 @@ export const getObjectLiteralExpressionPropPairs = (
 
       const propName = propNameBox.value
 
-      if (!isNotNullish(propName)) return
+      if (isNullish(propName)) return
 
       if (matchProp && !matchProp?.({ propName: propName as string, propNode: property })) {
         return
@@ -106,7 +109,7 @@ export const getObjectLiteralExpressionPropPairs = (
     orderedMapValue.set(propName, value)
   })
 
-  const map = box.map(orderedMapValue, expression, _stack)
+  const map = box.map(orderedMapValue, expression, expressionStack)
 
   if (spreadConditions.length > 0) {
     map.spreadConditions = spreadConditions
