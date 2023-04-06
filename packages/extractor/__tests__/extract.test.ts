@@ -1,10 +1,10 @@
 import { SourceFile } from 'ts-morph'
 import { afterEach, expect, it } from 'vitest'
-import type { ComponentMatchers, ExtractedFunctionResult, ExtractOptions } from '../src/types'
+import type { ComponentMatchers, ExtractOptions } from '../src/types'
 import { createProject, getTestExtract } from './create-project'
+import { unbox } from '../src/unbox'
 // @ts-ignore
 import { default as ExtractSample } from './samples/ExtractSample?raw'
-import { unbox } from '../src/unbox'
 
 const project = createProject()
 
