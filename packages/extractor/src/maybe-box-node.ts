@@ -136,7 +136,7 @@ export function maybeBoxNode(node: Node, stack: Node[], ctx: BoxContext): MaybeB
 
         if (isNullish(condBoxNode)) return
 
-        const condValue = isBoxNode(condBoxNode) ? condBoxNode : box.cast(condBoxNode, node, stack)
+        const condValue = isBoxNode(condBoxNode) ? condBoxNode : box.from(condBoxNode, node, stack)
 
         if (box.isEmptyInitializer(condValue)) return
 
@@ -168,7 +168,7 @@ export function maybeBoxNode(node: Node, stack: Node[], ctx: BoxContext): MaybeB
       .when(Node.isCallExpression, (node) => {
         const value = safeEvaluateNode<PrimitiveType | EvaluatedObjectResult>(node, stack, ctx)
         if (!value) return
-        return cache(box.cast(value, node, stack))
+        return cache(box.from(value, node, stack))
       })
 
       // <ColorBox color={isFocused && "red.400"} />
@@ -180,7 +180,7 @@ export function maybeBoxNode(node: Node, stack: Node[], ctx: BoxContext): MaybeB
               tryComputingPlusTokenBinaryExpressionToString(node, stack, ctx) ??
               safeEvaluateNode<string>(node, stack, ctx)
             if (!value) return
-            return cache(box.cast(value, node, stack))
+            return cache(box.from(value, node, stack))
           })
           .when(isLogicalSyntax, (op) => {
             const whenTrueExpr = unwrapExpression(node.getLeft())
@@ -476,7 +476,7 @@ const maybeBindingElementValue = (def: BindingElement, stack: Node[], propName: 
         const propValue = maybeObject.value[propName]
         logger.debug('id-def', { propName, propValue })
 
-        return box.cast(propValue, element, innerStack)
+        return box.from(propValue, element, innerStack)
       }
 
       if (!box.isMap(maybeObject)) {
@@ -537,12 +537,12 @@ function maybePropDefinitionValue(def: Node, accessList: string[], _stack: Node[
 
           logger.debug('maybe-prop-def-value', { propName, typeValue: Boolean(typeValue) })
 
-          return box.cast(typeValue, typeLiteral, stack)
+          return box.from(typeValue, typeLiteral, stack)
         }
 
         const propValue = getTypeLiteralNodePropValue(type, propName, _stack, ctx)
         _stack.push(type)
-        return box.cast(propValue, type, _stack)
+        return box.from(propValue, type, _stack)
       }
 
       return
@@ -744,7 +744,7 @@ const maybeDefinitionValue = (def: Node, stack: Node[], ctx: BoxContext): BoxNod
       if (Node.isTypeLiteral(type)) {
         stack.push(type)
         const maybeTypeValue = getTypeNodeValue(type, stack, ctx)
-        if (isNotNullish(maybeTypeValue)) return box.cast(maybeTypeValue, def, stack)
+        if (isNotNullish(maybeTypeValue)) return box.from(maybeTypeValue, def, stack)
       }
 
       // skip evaluation if no initializer (only a type)
@@ -985,17 +985,17 @@ const getElementAccessedExpressionValue = (
 
     if (box.isObject(propRefValue)) {
       const propValue = propRefValue.value[propName]
-      return box.cast(propValue, arg, stack)
+      return box.from(propValue, arg, stack)
     }
 
     if (box.isMap(propRefValue)) {
       const propValue = propRefValue.value.get(propName)
-      return box.cast(propValue, arg, stack)
+      return box.from(propValue, arg, stack)
     }
 
     if (box.isList(propRefValue)) {
       const propValue = propRefValue.value[Number(propName)]
-      return box.cast(propValue, arg, stack)
+      return box.from(propValue, arg, stack)
     }
 
     return box.unresolvable(elementAccessed, stack)
@@ -1034,7 +1034,7 @@ const getElementAccessedExpressionValue = (
         logger.debug('isObject', { isElementAccessExpression: true, maybeLiteralValue })
         if (!maybeLiteralValue) return
 
-        return box.cast(maybeLiteralValue, expression, stack)
+        return box.from(maybeLiteralValue, expression, stack)
       }
     }
   }
@@ -1150,12 +1150,12 @@ const getPropertyAccessedExpressionValue = (
     logger.debug('prop-access-value', { propName, leftElementAccessed })
     if (box.isObject(leftElementAccessed)) {
       const propValue = leftElementAccessed.value[propName]
-      return box.cast(propValue, expression, stack)
+      return box.from(propValue, expression, stack)
     }
 
     if (box.isMap(leftElementAccessed)) {
       const propValue = leftElementAccessed.value.get(propName)
-      return box.cast(propValue, expression, stack)
+      return box.from(propValue, expression, stack)
     }
   }
 }

@@ -23,7 +23,7 @@ export const objectLikeToMap = (maybeObject: MaybeObjectLikeBoxReturn, node: Nod
   return new Map<string, BoxNode>(
     Object.entries(maybeObject.value)
       .map(([key, value]) => {
-        const boxed = box.cast(value, maybeObject.getNode() ?? node, maybeObject.getStack() ?? [])
+        const boxed = box.from(value, maybeObject.getNode() ?? node, maybeObject.getStack() ?? [])
         return [key, boxed || null]
       })
       .filter(([, value]) => value !== null) as Array<[string, BoxNodeObject | BoxNodeLiteral]>,

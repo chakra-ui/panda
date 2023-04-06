@@ -31,7 +31,7 @@ export const box = {
   conditional(whenTrue: BoxNode, whenFalse: BoxNode, node: Node, stack: Node[], kind: ConditionalKind) {
     return new BoxNodeConditional({ type: 'conditional', whenTrue, whenFalse, kind, node, stack })
   },
-  cast: toBoxNode,
+  from: toBoxNode,
   //
   emptyObject: (node: Node, stack: Node[]) => {
     return new BoxNodeObject({ type: 'object', value: {}, isEmpty: true, node, stack })

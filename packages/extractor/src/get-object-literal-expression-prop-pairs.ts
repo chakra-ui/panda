@@ -79,9 +79,9 @@ export const getObjectLiteralExpressionPropPairs = (
 
       if (box.isObject(maybeObject)) {
         Object.entries(maybeObject.value).forEach(([propName, value]) => {
-          const boxed = box.cast(value, initializer, stack)
-          if (!boxed) return
-          extractedPropValues.push([propName, boxed])
+          const boxNode = box.from(value, initializer, stack)
+          if (!boxNode) return
+          extractedPropValues.push([propName, boxNode])
         })
         return
       }

@@ -15,7 +15,7 @@ export const getPropertyName = (property: ObjectLiteralElementLike, stack: Node[
         return (
           match(node)
             // { propName: "value" }
-            .when(Node.isIdentifier, (node) => box.cast(node.getText(), node, stack))
+            .when(Node.isIdentifier, (node) => box.from(node.getText(), node, stack))
 
             // { [computed]: "value" }
             .when(Node.isComputedPropertyName, (node) => {
@@ -26,7 +26,7 @@ export const getPropertyName = (property: ObjectLiteralElementLike, stack: Node[
 
             // { "propName": "value" }
             .when(Bool.or(Node.isStringLiteral, Node.isNumericLiteral), (node) =>
-              box.cast(node.getLiteralText(), node, stack),
+              box.from(node.getLiteralText(), node, stack),
             )
 
             .otherwise(() => undefined)
@@ -36,7 +36,7 @@ export const getPropertyName = (property: ObjectLiteralElementLike, stack: Node[
       // { shorthand }
       .when(Node.isShorthandPropertyAssignment, (property) => {
         const name = property.getName()
-        if (name != null) return box.cast(name, property, stack)
+        if (name != null) return box.from(name, property, stack)
       })
       .otherwise(() => undefined)
   )
