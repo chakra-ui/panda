@@ -326,8 +326,8 @@ importers:
         specifier: ^6.0.2
         version: 6.0.2
       gzip-size:
-        specifier: ^6.0.0
-        version: 6.0.0
+        specifier: ^7.0.0
+        version: 7.0.0
       hookable:
         specifier: 5.5.3
         version: 5.5.3
@@ -11767,19 +11767,11 @@ packages:
       through2: 2.0.5
     dev: true
 
-  /gzip-size@6.0.0:
-    resolution: {integrity: sha512-ax7ZYomf6jqPTQ4+XCpUGyXKHk5WweS+e05MBO4/y3WJ5RkmPXNKvX+bx1behVILVwr6JSQvZAku021CHPXG3Q==}
-    engines: {node: '>=10'}
-    dependencies:
-      duplexer: 0.1.2
-    dev: false
-
   /gzip-size@7.0.0:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dependencies:
       duplexer: 0.1.2
-    dev: true
 
   /h3@1.6.4:
     resolution: {integrity: sha512-uoDNeaoeDRwWBtwwi4siZ6l5sBmDJpnpcBssuAbvsaPBonl8vP7Ym4tFPe+tAvGM0GbUoC24wYcloCG+J9hqmA==}
