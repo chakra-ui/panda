@@ -30,237 +30,232 @@ const getExtract = (code: string, options: TestExtractOptions) => getTestExtract
 
 const extractFromCode = (code: string, options?: TestExtractOptions) => {
   const extracted = getExtract(code, { components: componentsMatcher, ...options })
-  return Array.from(extracted.entries()).map(([name]) => [
+  const entries = Array.from(extracted.entries()).map(([name]) => [
     name,
     extracted.get(name)!.queryList.map((query) => unbox(query.box)),
   ])
+  return Object.fromEntries(entries)
 }
 
 it('extract it all', () => {
   expect(extractFromCode(ExtractSample)).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "red.200",
+    {
+      "ColorBox": [
+        {
+          "color": "red.200",
+        },
+        {
+          "backgroundColor": "blackAlpha.100",
+          "color": "yellow.300",
+        },
+        {},
+        {
+          "color": "facebook.400",
+        },
+        {
+          "color": "gray.100",
+        },
+        {
+          "color": "facebook.500",
+        },
+        {},
+        {},
+        {
+          "color": "gray.100",
+        },
+        {
+          "color": "facebook.900",
+        },
+        {
+          "color": "facebook.900",
+        },
+        {
+          "color": "pink.100",
+        },
+        {
+          "color": "pink.100",
+        },
+        {
+          "color": "pink.100",
+        },
+        {
+          "color": "pink.100",
+        },
+        {
+          "color": "pink.100",
+        },
+        {
+          "color": "facebook.900",
+        },
+        {
+          "color": "facebook.900",
+        },
+        {
+          "color": "facebook.900",
+        },
+        {
+          "color": "gray.100",
+        },
+        {
+          "color": "gray.100",
+        },
+        {
+          "color": "gray.100",
+        },
+        {
+          "color": "gray.100",
+        },
+        {
+          "color": "gray.100",
+        },
+        {
+          "color": "gray.100",
+        },
+        {
+          "color": "gray.100",
+        },
+        {
+          "color": "gray.100",
+        },
+        {
+          "color": "gray.100",
+        },
+        {
+          "color": "gray.100",
+        },
+        {
+          "color": "gray.100",
+        },
+        {},
+        {},
+        {
+          "color": "gray.100",
+        },
+        {
+          "_SPREAD_0_0": {
+            "color": "facebook.100",
           },
-          {
+        },
+        {
+          "_SPREAD_0_0": {
+            "color": "blackAlpha.400",
+          },
+        },
+        {
+          "_SPREAD_0_0": {
+            "color": "blackAlpha.400",
+          },
+        },
+        {
+          "_SPREAD_0_0": {
             "backgroundColor": "blackAlpha.100",
-            "color": "yellow.300",
+            "color": "facebook.200",
           },
-          {},
-          {
-            "color": "facebook.400",
+        },
+        {
+          "_SPREAD_0_0": {
+            "color": "facebook.200",
           },
-          {
-            "color": "gray.100",
+        },
+        {
+          "_SPREAD_0_0": {
+            "color": "facebook.300",
           },
-          {
-            "color": "facebook.500",
+        },
+        {
+          "_SPREAD_0_0": {
+            "backgroundColor": "twitter.200",
+            "color": "twitter.100",
           },
-          {},
-          {},
-          {
-            "color": "gray.100",
-          },
-          {
-            "color": "facebook.900",
-          },
-          {
-            "color": "facebook.900",
-          },
-          {
-            "color": "pink.100",
-          },
-          {
-            "color": "pink.100",
-          },
-          {
-            "color": "pink.100",
-          },
-          {
-            "color": "pink.100",
-          },
-          {
-            "color": "pink.100",
-          },
-          {
-            "color": "facebook.900",
-          },
-          {
-            "color": "facebook.900",
-          },
-          {
-            "color": "facebook.900",
-          },
-          {
-            "color": "gray.100",
-          },
-          {
-            "color": "gray.100",
-          },
-          {
-            "color": "gray.100",
-          },
-          {
-            "color": "gray.100",
-          },
-          {
-            "color": "gray.100",
-          },
-          {
-            "color": "gray.100",
-          },
-          {
-            "color": "gray.100",
-          },
-          {
-            "color": "gray.100",
-          },
-          {
-            "color": "gray.100",
-          },
-          {
-            "color": "gray.100",
-          },
-          {
-            "color": "gray.100",
-          },
-          {},
-          {},
-          {
-            "color": "gray.100",
-          },
-          {
-            "_SPREAD_0_0": {
-              "color": "facebook.100",
-            },
-          },
-          {
-            "_SPREAD_0_0": {
-              "color": "blackAlpha.400",
-            },
-          },
-          {
-            "_SPREAD_0_0": {
-              "color": "blackAlpha.400",
-            },
-          },
-          {
-            "_SPREAD_0_0": {
-              "backgroundColor": "blackAlpha.100",
-              "color": "facebook.200",
-            },
-          },
-          {
-            "_SPREAD_0_0": {
-              "color": "facebook.200",
-            },
-          },
-          {
-            "_SPREAD_0_0": {
-              "color": "facebook.300",
-            },
-          },
-          {
-            "_SPREAD_0_0": {
-              "backgroundColor": "twitter.200",
-              "color": "twitter.100",
-            },
-          },
-          {
-            "_SPREAD_0_0": {
-              "backgroundColor": "twitter.200",
-              "color": "orange.100",
-            },
-          },
-          {
-            "_SPREAD_0_0": {
-              "color": "orange.200",
-            },
-          },
-          {
-            "_SPREAD_0_0": {
-              "color": "orange.400",
-            },
-          },
-          {
-            "_SPREAD_0_0": {
-              "backgroundColor": "telegram.400",
-              "color": "telegram.300",
-            },
-          },
-          {
-            "color": {
-              "default": "red.100",
-              "focus": "blue.100",
-              "hover": "green.100",
-            },
-          },
-          {
-            "backgroundColor": {
-              "default": "orange.800",
-              "focus": "yellow.700",
-              "hover": "telegram.200",
-            },
-          },
-          {
-            "color": "facebook.900",
-          },
-          {
-            "color": "facebook.900",
-          },
-          {
-            "color": "facebook.900",
-          },
-          {
-            "color": "red.100",
-          },
-          {
-            "color": "red.100",
-          },
-          {
-            "color": "green.100",
-          },
-          {
-            "color": "blue.100",
-          },
-          {
-            "color": "yellow.100",
-          },
-          {
+        },
+        {
+          "_SPREAD_0_0": {
+            "backgroundColor": "twitter.200",
             "color": "orange.100",
           },
-          {
-            "color": "orange.300",
+        },
+        {
+          "_SPREAD_0_0": {
+            "color": "orange.200",
           },
-          {
-            "color": "red.100",
-          },
-          {
+        },
+        {
+          "_SPREAD_0_0": {
             "color": "orange.400",
           },
-        ],
+        },
+        {
+          "_SPREAD_0_0": {
+            "backgroundColor": "telegram.400",
+            "color": "telegram.300",
+          },
+        },
+        {
+          "color": {
+            "default": "red.100",
+            "focus": "blue.100",
+            "hover": "green.100",
+          },
+        },
+        {
+          "backgroundColor": {
+            "default": "orange.800",
+            "focus": "yellow.700",
+            "hover": "telegram.200",
+          },
+        },
+        {
+          "color": "facebook.900",
+        },
+        {
+          "color": "facebook.900",
+        },
+        {
+          "color": "facebook.900",
+        },
+        {
+          "color": "red.100",
+        },
+        {
+          "color": "red.100",
+        },
+        {
+          "color": "green.100",
+        },
+        {
+          "color": "blue.100",
+        },
+        {
+          "color": "yellow.100",
+        },
+        {
+          "color": "orange.100",
+        },
+        {
+          "color": "orange.300",
+        },
+        {
+          "color": "red.100",
+        },
+        {
+          "color": "orange.400",
+        },
       ],
-    ]
+    }
   `)
 })
 
 it('extract JsxAttribute > StringLiteral (multiple)', () => {
   expect(extractFromCode(`<ColorBox color="red.200" backgroundColor="blackAlpha.100"></ColorBox>`))
     .toMatchInlineSnapshot(`
-      [
-        [
-          "ColorBox",
-          [
-            {
-              "backgroundColor": "blackAlpha.100",
-              "color": "red.200",
-            },
-          ],
+      {
+        "ColorBox": [
+          {
+            "backgroundColor": "blackAlpha.100",
+            "color": "red.200",
+          },
         ],
-      ]
+      }
     `)
 })
 
@@ -2323,16 +2318,13 @@ it('ExtractSample - groups extract props in parent component instance', () => {
 it('extract JsxAttribute > JsxExpression > StringLiteral', () => {
   expect(extractFromCode(`<ColorBox color={"red.300"}></ColorBox>`)).toMatchInlineSnapshot(
     `
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "red.300",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "red.300",
+        },
       ],
-    ]
+    }
   `,
   )
 })
@@ -2344,16 +2336,13 @@ it('extract JsxAttribute > JsxExpression > Identifier', () => {
             <ColorBox color={color}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "red.400",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "red.400",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2364,14 +2353,11 @@ it('extract JsxAttribute > JsxExpression > ConditonalExpression > Identifier|Val
             <ColorBox color={isDark ? darkValue : "whiteAlpha.100"}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {},
-        ],
+    {
+      "ColorBox": [
+        {},
       ],
-    ]
+    }
   `)
 })
 
@@ -2384,16 +2370,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression', () => {
             <ColorBox color={colorMap["red"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "red.600",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "red.600",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2406,16 +2389,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression without as co
             <ColorBox color={colorMap["red"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "red.600",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "red.600",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2428,16 +2408,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression optional', ()
             <ColorBox color={colorMap?.["red"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "red.700",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "red.700",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2450,16 +2427,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression optional with
             <ColorBox color={colorMap?.["red"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "red.700",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "red.700",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2473,16 +2447,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > Identifier'
             <ColorBox color={colorMap[propName]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "red.800",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "red.800",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2496,16 +2467,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > Identifier 
             <ColorBox color={colorMap[propName]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "red.800",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "red.800",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2519,16 +2487,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > StringLiter
             <ColorBox color={colorMap["red"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "red.900",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "red.900",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2542,16 +2507,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > StringLiter
             <ColorBox color={colorMap["red"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "red.900",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "red.900",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2565,16 +2527,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ComputedPro
             <ColorBox color={colorMap[propName]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "blue.100",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "blue.100",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2588,16 +2547,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ComputedPro
             <ColorBox color={colorMap[propName]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "blue.100",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "blue.100",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2610,16 +2566,13 @@ it('extract JsxAttribute > JsxExpression > PropertyAccessExpression', () => {
             <ColorBox color={colorMap.blue}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "blue.200",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "blue.200",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2632,16 +2585,13 @@ it('extract JsxAttribute > JsxExpression > PropertyAccessExpression optional', (
             <ColorBox color={colorMap?.blue}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "blue.300",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "blue.300",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2654,16 +2604,13 @@ it('extract JsxAttribute > JsxExpression > PropertyAccessExpression optional wit
             <ColorBox color={colorMap?.blue}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "blue.300",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "blue.300",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2676,16 +2623,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap["long" + "Prop"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "blue.400",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "blue.400",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2698,16 +2642,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap["long" + "Prop"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "blue.400",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "blue.400",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2721,16 +2662,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap["long" + part2]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "blue.500",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "blue.500",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2743,16 +2681,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > NoSubstitio
             <ColorBox color={colorMap[\`longProp\`]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "blue.600",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "blue.600",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2765,16 +2700,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > NoSubstitio
             <ColorBox color={colorMap[\`longProp\`]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "blue.600",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "blue.600",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2788,16 +2720,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateStr
             <ColorBox color={colorMap[\`long\${part2}\`]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "blue.700",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "blue.700",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2812,16 +2741,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateStr
             <ColorBox color={colorMap[\`$\{part1}\${part2}\`]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "blue.800",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "blue.800",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2837,16 +2763,13 @@ it('extract JsxAttribute > JsxExpression > ConditonalExpression > AsExpression (
             <ColorBox color={colorMap[isDark ? ("dark" as const) : lightRef]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "blue.900",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "blue.900",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2859,16 +2782,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateStr
             <ColorBox color={colorMap["long" + \`\${"Prop"}\`]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "green.100",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "green.100",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2884,16 +2804,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap[("long" as any) + (\`\${dynamic["part2"]}\`) as any]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "green.200",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "green.200",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2911,16 +2828,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap[dynamic.part1 + dynamic[part2ref]]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "green.300",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "green.300",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2930,16 +2844,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ObjectLiter
             <ColorBox color={{ staticColor: "green.400" }["staticColor"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "green.400",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "green.400",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2952,16 +2863,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression (AsExpression
             <ColorBox color={colorMap["long" + "Prop"] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "green.500",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "green.500",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -2975,16 +2883,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression (AsExpression
             <ColorBox color={colorMap["long" + "Prop"] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "green.600",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "green.600",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3002,16 +2907,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap[("long" as any) + \`\${withDynamicPart["dynamicPart2"]}\`] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "green.700",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "green.700",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3030,16 +2932,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ElementAcce
             <ColorBox color={colorMap[wrapperMap[secondRef]]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "green.800",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "green.800",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3049,16 +2948,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLitera
             <ColorBox color={["green.900"][0]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "green.900",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "green.900",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3068,16 +2964,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLitera
             <ColorBox color={["pink.100"]["0"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "pink.100",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "pink.100",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3088,16 +2981,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLitera
             <ColorBox color={["pink.100", "pink.200"][nbIndex]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "pink.200",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "pink.200",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3108,16 +2998,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ArrayLitera
             <ColorBox color={["pink.300"][strIndex]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "pink.300",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "pink.300",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3128,16 +3015,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > Parenthesiz
             <ColorBox color={(array as any)?.[0] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "pink.400",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "pink.400",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3148,16 +3032,13 @@ it('extract JsxAttribute > JsxExpression > ArrayLiteralExpression > ElementAcces
             <ColorBox color={[array[0]]![0]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "pink.500",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "pink.500",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3167,16 +3048,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ElementAcce
             <ColorBox color={[{ staticColor: "pink.600" }][0]["staticColor"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "pink.600",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "pink.600",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3196,16 +3074,13 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression', () => {
             <ColorBox color={colorMap[!isShown ? ("literalColor" as const) : deepReference] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "pink.800",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "pink.800",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3223,16 +3098,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateExp
             <ColorBox color={colorMap[\`\${dynamicPartsAsTemplateString}\`] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "pink.900",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "pink.900",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3250,16 +3122,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > TemplateExp
             <ColorBox color={colorMap[\`\${dynamicPartsAsTemplateString}\`] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "pink.900",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "pink.900",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3288,16 +3157,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > BinaryExpre
             <ColorBox color={colorMap[wrapperMap.thirdRef + wrapperMap["fourthRef"]]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "yellow.100",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "yellow.100",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3319,16 +3185,13 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression evaluate (first
             <ColorBox color={colorMap[isShown ? ("literalColor" as const) : (false ? "yellow.never" : 1 === 1 ? colorMap["refToAnother"] : deepReference)] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "yellow.200",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "yellow.200",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3349,16 +3212,13 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression evaluate (secon
             <ColorBox color={colorMap[(false ? "yellow.never" : 1 === 1 ? colorMap["refToAnother"] : deepReference)] as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "yellow.500",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "yellow.500",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3370,16 +3230,13 @@ it('extract JsxAttribute > JsxExpression > CallExpression > ArrowFunction > Iden
             <ColorBox color={getColor()}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "yellow.600",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "yellow.600",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3393,16 +3250,13 @@ it('extract JsxAttribute > JsxExpression > CallExpression > FunctionDeclaration 
             <ColorBox color={getColor()}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "yellow.700",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "yellow.700",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3415,16 +3269,13 @@ it('extract JsxAttribute > JsxExpression > CallExpression with Parameter > Eleme
             <ColorBox color={pickSecondElement(array)}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "yellow.900",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "yellow.900",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3437,14 +3288,11 @@ it('extract JsxAttribute > JsxExpression > CallExpression with non-deterministic
             <ColorBox color={pickRandom(array)}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {},
-        ],
+    {
+      "ColorBox": [
+        {},
       ],
-    ]
+    }
   `)
 })
 
@@ -3454,16 +3302,13 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > BinaryExpress
             <ColorBox color={(1 + 1) === 2 ? "purple.100" : "purple.never2"}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "purple.100",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "purple.100",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3476,16 +3321,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > Conditional
             <ColorBox color={colorMap[(1 + 1) !== 2 ? "never" : "literalColor"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "purple.200",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "purple.200",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3500,16 +3342,13 @@ it('extract JsxAttribute > JsxExpression > CallExpression > ElementAccessExpress
             <ColorBox color={colorMap[getter()]()}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "purple.300",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "purple.300",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3520,16 +3359,13 @@ it('extract JsxAttribute > JsxExpression > BinaryExpression > StringLiteral', ()
             <ColorBox color={"purple" + dot + "400"}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "purple.400",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "purple.400",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3550,16 +3386,13 @@ it('extract JsxAttribute > JsxExpression > resolvable ConditionalExpression resu
             <ColorBox color={(isShown ? colorMap?.[dynamicColorName] : dynamicColor) as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "purple.500",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "purple.500",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3580,14 +3413,11 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression with Unexpected
             <ColorBox color={(isShown ? colorMap?.[dynamicColorName] : dynamicColor) as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {},
-        ],
+    {
+      "ColorBox": [
+        {},
       ],
-    ]
+    }
   `)
 })
 
@@ -3600,14 +3430,11 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > unresolvable 
             <ColorBox color={(!knownCondition ? "purple.800" : unresolvableBoolean ? "purple.900" : "purple.950")}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {},
-        ],
+    {
+      "ColorBox": [
+        {},
       ],
-    ]
+    }
   `)
 })
 
@@ -3625,14 +3452,11 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
             <ColorBox color={(!knownCondition ? "orange.100" : colorMap[unresolvableBoolean ? "staticColor" : "another"])}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {},
-        ],
+    {
+      "ColorBox": [
+        {},
       ],
-    ]
+    }
   `)
 })
 
@@ -3650,16 +3474,13 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
             <ColorBox color={(knownTruthy ? "orange.400" : colorMap[unresolvableBoolean ? "staticColor" : "another"])}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "orange.400",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "orange.400",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3675,16 +3496,13 @@ it('extract JsxAttribute > JsxExpression > multiple variables with same name but
 
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "orange.500",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "orange.500",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3700,16 +3518,13 @@ it('extract JsxAttribute > JsxExpression > variables referencing another var in 
 
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "orange.600",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "orange.600",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3719,18 +3534,15 @@ it('extract JsxSpreadAttribute > ObjectLiteralExpression', () => {
             <ColorBox {...{ color: "orange.700" }}>spread</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "orange.700",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "orange.700",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3740,19 +3552,16 @@ it('extract JsxSpreadAttribute > ObjectLiteralExpression with allowed properties
             <ColorBox {...{ color: "orange.725", flexDirection: "flex", ...{ backgroundColor: "orange.750", justifyContent: "center" } }}>spread</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "backgroundColor": "orange.750",
-              "color": "orange.725",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "backgroundColor": "orange.750",
+            "color": "orange.725",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3763,18 +3572,15 @@ it('extract JsxSpreadAttribute > Identifier > ObjectLiteralExpression', () => {
             <ColorBox {...objectWithAttributes}>var spread</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "orange.800",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "orange.800",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3787,14 +3593,11 @@ it('extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword 
             <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {},
-        ],
+    {
+      "ColorBox": [
+        {},
       ],
-    ]
+    }
   `)
 })
 
@@ -3806,18 +3609,15 @@ it('extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword 
             <ColorBox {...(isShown ? objectWithAttributes : null)}>conditional var spread</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "orange.900",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "orange.900",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3837,19 +3637,16 @@ it('extract JsxSpreadAttribute > PropertyAssignment / ComputedProperty', () => {
             </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "backgroundColor": "teal.200",
-              "color": "teal.100",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "backgroundColor": "teal.200",
+            "color": "teal.100",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3859,18 +3656,15 @@ it('extract JsxSpreadAttribute > ConditionalExpression > ObjectLiteralExpression
             <ColorBox {...(true ? ({ color: "teal.400" }) as any : (undefined) as unknown)}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "teal.400",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "teal.400",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3880,18 +3674,15 @@ it('extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / Ob
             <ColorBox {...(true && ({ color: "teal.500" }))}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "teal.500",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "teal.500",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3902,19 +3693,16 @@ it('extract JsxSpreadAttribute > CallExpression', () => {
             <ColorBox {...getColorConfig()}>spread fn result</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "backgroundColor": "teal.650",
-              "color": "teal.600",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "backgroundColor": "teal.650",
+            "color": "teal.600",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3925,21 +3713,18 @@ it('extract JsxSpreadAttribute > CallExpression with allowed properties list', (
             <ColorBox {...getColorConfig()}>spread fn result</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "backgroundColor": "teal.699",
-              "color": "teal.625",
-              "flexDirection": "flex",
-              "justifyContent": "center",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "backgroundColor": "teal.699",
+            "color": "teal.625",
+            "flexDirection": "flex",
+            "justifyContent": "center",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3950,19 +3735,16 @@ it('extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > Ca
             <ColorBox {...{ ...getColorConfig(), color: "teal.700" }}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "backgroundColor": "teal.800",
-              "color": "teal.700",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "backgroundColor": "teal.800",
+            "color": "teal.700",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -3981,19 +3763,16 @@ it('extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > Co
             </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "backgroundColor": "cyan.100",
-              "color": "cyan.200",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "backgroundColor": "cyan.100",
+            "color": "cyan.200",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4014,19 +3793,16 @@ it('extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / Ob
             </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "backgroundColor": "cyan.300",
-              "color": "cyan.400",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "backgroundColor": "cyan.300",
+            "color": "cyan.400",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4047,19 +3823,16 @@ it('extract JsxSpreadAttribute > 3 depth spread', () => {
             </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "backgroundColor": "cyan.600",
-              "color": "cyan.500",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "backgroundColor": "cyan.600",
+            "color": "cyan.500",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4071,21 +3844,18 @@ it("extract JsxSpreadAttribute > ConditionalExpression > unresolvable expression
             <ColorBox {...(isShown ? objectWithAttributes : { backgroundColor: "cyan.800" })}>conditional var spread</ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "cyan.700",
-            },
-            "_SPREAD_0_1": {
-              "backgroundColor": "cyan.800",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "cyan.700",
           },
-        ],
+          "_SPREAD_0_1": {
+            "backgroundColor": "cyan.800",
+          },
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4099,18 +3869,15 @@ it('extract JsxSpreadAttribute > ElementAccessExpression', () => {
             <ColorBox {...themeObjectsMap[\`basic\`]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "cyan.900",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "cyan.900",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4124,18 +3891,15 @@ it('extract JsxSpreadAttribute > PropertyAccessExpression', () => {
             <ColorBox {...themeObjectsMap.basic}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "salmon.100",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "salmon.100",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4151,18 +3915,15 @@ it('extract JsxSpreadAttribute > PropertyAccessExpression > nested', () => {
             <ColorBox {...themeObjectsMap.basic.nested}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "salmon.200",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "salmon.200",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4176,18 +3937,15 @@ it('extract JsxSpreadAttribute > ElementAccessExpression + PropertyAccessExpress
             <ColorBox {...themeObjectsMap[\`basic\`].nested}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "salmon.300",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "salmon.300",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4201,18 +3959,15 @@ it('extract JsxSpreadAttribute > ElementAccessExpression > nested', () => {
             <ColorBox {...themeObjectsMap[\`basic\`]["nested"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "salmon.400",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "salmon.400",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4227,18 +3982,15 @@ it('extract JsxSpreadAttribute > ElementAccessExpression > Identifier / Computed
             <ColorBox {...themeObjectsMap[dynamicAttribute]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "salmon.500",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "salmon.500",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4256,18 +4008,15 @@ it('extract JsxSpreadAttribute > ElementAccessExpression > ComputedProperty / Te
             <ColorBox {...(themeObjectsMap[\`\${dynamicPartsAsTemplateString}\`]) as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "salmon.600",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "salmon.600",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4291,18 +4040,15 @@ it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
             <ColorBox {...(!knownCondition ? { color: "never.250" } : assertMap.isTrue() ? getMap.getter() : themeObjectsMap[dynamicPart1 + dynamicPart2] )}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "salmon.700",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "salmon.700",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4326,18 +4072,15 @@ it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
             <ColorBox {...(!knownCondition ? { color: "never.250" } : assertMap.isFalse() ? getMap.getter() : themeObjectsMap[dynamicPart1 + dynamicPart2] )}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "salmon.800",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "salmon.800",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4357,21 +4100,18 @@ it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > unresol
             <ColorBox {...(!knownCondition ? { color: "never.250" } : unresolvableBoolean ? themeObjectsMap.basic : themeObjectsMap.longProp )}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "salmon.850",
-            },
-            "_SPREAD_0_1": {
-              "color": "salmon.900",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "salmon.850",
           },
-        ],
+          "_SPREAD_0_1": {
+            "color": "salmon.900",
+          },
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4386,18 +4126,15 @@ it('extract JsxSpreadAttribute > ElementAccessExpression > CallExpression', () =
             <ColorBox {...themeObjectsMap[getDynamicAttribute()]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "_SPREAD_0_0": {
-              "color": "white.100",
-            },
+    {
+      "ColorBox": [
+        {
+          "_SPREAD_0_0": {
+            "color": "white.100",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4412,16 +4149,13 @@ it('extract JsxAttribute > ElementAccessExpression > CallExpression > PropertyAc
             <ColorBox color={themeObjectsMap[getDynamicAttribute()].color}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "white.200",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "white.200",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4431,16 +4165,13 @@ it('extract JsxAttribute > JsxExpression  > NumericLiteral', () => {
             <ColorBox zIndex={1}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "zIndex": 1,
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "zIndex": 1,
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4455,23 +4186,20 @@ it('extract JsxAttribute > JsxExpression > NumericLiteral > PrefixUnaryExpressio
       { tagNameList: ['ThreeBox'] },
     ),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ThreeBox",
-        [
-          {
-            "position": [
-              -1.2466866852487384,
-              0.3325255778835592,
-              -0.6517939595349769,
-            ],
-            "scale": 1.25,
-            "someProp": -2,
-            "zIndex": 1,
-          },
-        ],
+    {
+      "ThreeBox": [
+        {
+          "position": [
+            -1.2466866852487384,
+            0.3325255778835592,
+            -0.6517939595349769,
+          ],
+          "scale": 1.25,
+          "someProp": -2,
+          "zIndex": 1,
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4482,16 +4210,13 @@ it('extract JsxAttribute > JsxExpression > Identifier > NumericLiteral', () => {
             <ColorBox zIndex={nbIndex}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "zIndex": 2,
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "zIndex": 2,
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4503,16 +4228,13 @@ it('extract JsxAttribute > JsxExpression > Identifier > ConditionExpression > Nu
             <ColorBox zIndex={isShown ? 3 : 0}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "zIndex": 3,
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "zIndex": 3,
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4522,16 +4244,13 @@ it('extract JsxAttribute > JsxExpression > CallExpression > immediately invoked 
             <ColorBox zIndex={(() => 4)()}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "zIndex": 4,
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "zIndex": 4,
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4542,16 +4261,13 @@ it('extract JsxAttribute > JsxExpression > CallExpression > optional + NonNullab
             <ColorBox zIndex={(getMap?.get()!) as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "zIndex": 5,
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "zIndex": 5,
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4562,16 +4278,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > NumericLite
             <ColorBox zIndex={map["thing"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "zIndex": 6,
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "zIndex": 6,
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4581,20 +4294,17 @@ it('extract JsxAttribute > JsxExpression > ObjectLiteralExpression > conditional
             <ColorBox color={{ mobile: "white.300", tablet: "white.400", desktop: "white.500" }}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": {
-              "desktop": "white.500",
-              "mobile": "white.300",
-              "tablet": "white.400",
-            },
+    {
+      "ColorBox": [
+        {
+          "color": {
+            "desktop": "white.500",
+            "mobile": "white.300",
+            "tablet": "white.400",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4612,20 +4322,17 @@ it('extract JsxAttribute > JsxExpression > PropertyAccessExpression > ObjectLite
             <ColorBox color={(map?.responsiveColor) as any}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": {
-              "desktop": "white.800",
-              "mobile": "white.600",
-              "tablet": "white.700",
-            },
+    {
+      "ColorBox": [
+        {
+          "color": {
+            "desktop": "white.800",
+            "mobile": "white.600",
+            "tablet": "white.700",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4643,20 +4350,17 @@ it('extract JsxAttribute > JsxExpression > PropertyAccessExpression > CallExpres
             <ColorBox color={map["responsiveColor"]!()}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": {
-              "desktop": "white.800",
-              "mobile": "white.600",
-              "tablet": "white.700",
-            },
+    {
+      "ColorBox": [
+        {
+          "color": {
+            "desktop": "white.800",
+            "mobile": "white.600",
+            "tablet": "white.700",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4678,20 +4382,17 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression + AsExpressio
             <ColorBox color={((map as any)?.[\`responsive\` + \`\${colorRef}\`] as any)()}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": {
-              "desktop": "black.300",
-              "mobile": "black.100",
-              "tablet": "black.200",
-            },
+    {
+      "ColorBox": [
+        {
+          "color": {
+            "desktop": "black.300",
+            "mobile": "black.100",
+            "tablet": "black.200",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4701,20 +4402,17 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
             <ColorBox color={true ? { mobile: "black.400", tablet: "black.500", desktop: "black.600" } : "black.700"}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": {
-              "desktop": "black.600",
-              "mobile": "black.400",
-              "tablet": "black.500",
-            },
+    {
+      "ColorBox": [
+        {
+          "color": {
+            "desktop": "black.600",
+            "mobile": "black.400",
+            "tablet": "black.500",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4724,16 +4422,13 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
             <ColorBox color={false ? { mobile: "black.400", tablet: "black.500", desktop: "black.600" } : "black.700"}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "black.700",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "black.700",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4745,14 +4440,11 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
         `),
   ).toMatchInlineSnapshot(
     `
-    [
-      [
-        "ColorBox",
-        [
-          {},
-        ],
+    {
+      "ColorBox": [
+        {},
       ],
-    ]
+    }
   `,
   )
 })
@@ -4763,20 +4455,17 @@ it('extract JsxAttribute > JsxExpression > reversed', () => {
             <ColorBox mobile={{ color: "sky.100", tablet: "sky.200", desktop: "sky.300" }} />
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "mobile": {
-              "color": "sky.100",
-              "desktop": "sky.300",
-              "tablet": "sky.200",
-            },
+    {
+      "ColorBox": [
+        {
+          "mobile": {
+            "color": "sky.100",
+            "desktop": "sky.300",
+            "tablet": "sky.200",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4795,26 +4484,23 @@ it('extract JsxAttribute > ObjectLiteralExpression > css prop', () => {
         </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "css": {
-              "__color": "##ff0",
-              "backgroundColor": "sky.500",
-              "mobile": {
-                "display": "flex",
-                "fontSize": "2xl",
-              },
-              "zIndex": {
-                "desktop": "10",
-              },
+    {
+      "ColorBox": [
+        {
+          "css": {
+            "__color": "##ff0",
+            "backgroundColor": "sky.500",
+            "mobile": {
+              "display": "flex",
+              "fontSize": "2xl",
+            },
+            "zIndex": {
+              "desktop": "10",
             },
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4834,25 +4520,22 @@ it('extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
         </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "css": {
-              "__color": "##ff0",
-              "backgroundColor": "sky.600",
-              "mobile": {
-                "fontSize": "2xl",
-              },
-              "zIndex": {
-                "desktop": "10",
-              },
+    {
+      "ColorBox": [
+        {
+          "css": {
+            "__color": "##ff0",
+            "backgroundColor": "sky.600",
+            "mobile": {
+              "fontSize": "2xl",
+            },
+            "zIndex": {
+              "desktop": "10",
             },
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4872,21 +4555,18 @@ it('extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignme
         </ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "css": {
-              "__color": "##ff0",
-              "zIndex": {
-                "desktop": "10",
-              },
+    {
+      "ColorBox": [
+        {
+          "css": {
+            "__color": "##ff0",
+            "zIndex": {
+              "desktop": "10",
             },
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4901,14 +4581,11 @@ it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
 
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {},
-        ],
+    {
+      "ColorBox": [
+        {},
       ],
-    ]
+    }
   `)
 })
 
@@ -4920,14 +4597,11 @@ it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
             <ColorBox color={color}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {},
-        ],
+    {
+      "ColorBox": [
+        {},
       ],
-    ]
+    }
   `)
 })
 
@@ -4939,14 +4613,11 @@ it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
             <ColorBox color={color}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {},
-        ],
+    {
+      "ColorBox": [
+        {},
       ],
-    ]
+    }
   `)
 })
 
@@ -4958,19 +4629,16 @@ it('extract JsxAttribute > JsxExpression > Identifier > ArrayLiteralExpression)'
             <ColorBox color={color}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": [
-              "apple.400",
-              "apple.500",
-            ],
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": [
+            "apple.400",
+            "apple.500",
+          ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -4982,16 +4650,13 @@ it('extract JsxAttribute > JsxExpression > ElementAccessExpression > ObjectLiter
             })["apple"]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {
-            "color": "apple.600",
-          },
-        ],
+    {
+      "ColorBox": [
+        {
+          "color": "apple.600",
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -5004,26 +4669,20 @@ it('extract JsxAttribute + CallExpression > booleans', () => {
       { tagNameList: ['Container'], functionNameList: ['someFn'] },
     ),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "Container",
+    {
+      "Container": [
+        {
+          "withBorder": true,
+        },
+      ],
+      "someFn": [
         [
           {
-            "withBorder": true,
+            "isFlex": false,
           },
         ],
       ],
-      [
-        "someFn",
-        [
-          [
-            {
-              "isFlex": false,
-            },
-          ],
-        ],
-      ],
-    ]
+    }
   `)
 })
 
@@ -5036,25 +4695,22 @@ it('extract JsxAttribute > JsxExpression > ArrayLiteralExpression', () => {
       { tagNameList: ['Container'] },
     ),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "Container",
-        [
-          {
-            "classNames": [
-              "color:main",
-              "hover:secondary",
+    {
+      "Container": [
+        {
+          "classNames": [
+            "color:main",
+            "hover:secondary",
+          ],
+          "config": {
+            "state": [
+              "hovered",
+              "focused",
             ],
-            "config": {
-              "state": [
-                "hovered",
-                "focused",
-              ],
-            },
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -5067,14 +4723,11 @@ it('extract JsxAttribute > Identifier without initializer', () => {
       { tagNameList: ['Flex'] },
     ),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "Flex",
-        [
-          {},
-        ],
+    {
+      "Flex": [
+        {},
       ],
-    ]
+    }
   `)
 })
 
@@ -5096,37 +4749,34 @@ it('extract CallExpression > ObjectLiteralExpression > PropertyAssignment > Obje
       { tagNameList: [], functionNameList: ['defineProperties'] },
     ),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "defineProperties",
+    {
+      "defineProperties": [
         [
-          [
-            {
-              "properties": {
-                "display": [
-                  "block",
-                  "inline-block",
-                  "flex",
-                  "inline-flex",
-                ],
-                "position": [
-                  "relative",
-                  "absolute",
-                ],
-              },
-              "shorthands": {
-                "d": [
-                  "display",
-                ],
-                "p": [
-                  "position",
-                ],
-              },
+          {
+            "properties": {
+              "display": [
+                "block",
+                "inline-block",
+                "flex",
+                "inline-flex",
+              ],
+              "position": [
+                "relative",
+                "absolute",
+              ],
             },
-          ],
+            "shorthands": {
+              "d": [
+                "display",
+              ],
+              "p": [
+                "position",
+              ],
+            },
+          },
         ],
       ],
-    ]
+    }
   `)
 })
 
@@ -5176,35 +4826,29 @@ it('extract real-world Stack example ', () => {
       { tagNameList: ['Box', 'Stack'] },
     ),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "Box",
-        [
-          {
-            "display": "flex",
-          },
-          {},
-        ],
+    {
+      "Box": [
+        {
+          "display": "flex",
+        },
+        {},
       ],
-      [
-        "Stack",
-        [
-          {
-            "_tablet": {
-              "justifyContent": "space-between",
-            },
-            "alignItems": "flex-end",
-            "as": "header",
-            "borderBottomColor": "gray.400",
-            "borderBottomWidth": "1px",
-            "flexWrap": "wrap",
-            "justifyContent": "flex-end",
-            "paddingBottom": 2,
-            "paddingRight": 2,
+      "Stack": [
+        {
+          "_tablet": {
+            "justifyContent": "space-between",
           },
-        ],
+          "alignItems": "flex-end",
+          "as": "header",
+          "borderBottomColor": "gray.400",
+          "borderBottomWidth": "1px",
+          "flexWrap": "wrap",
+          "justifyContent": "flex-end",
+          "paddingBottom": 2,
+          "paddingRight": 2,
+        },
       ],
-    ]
+    }
   `)
 })
 
@@ -5217,20 +4861,17 @@ it('extract JsxAttribute > JsxExpression > CallExpression > ObjectLiteralExpress
       { tagNameList: [], functionNameList: ['button'] },
     ),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "button",
+    {
+      "button": [
         [
-          [
-            {
-              "color": "accent",
-              "rounded": true,
-              "size": "large",
-            },
-          ],
+          {
+            "color": "accent",
+            "rounded": true,
+            "size": "large",
+          },
         ],
       ],
-    ]
+    }
   `)
 })
 
@@ -5268,24 +4909,21 @@ it('extract JsxAttribute > Identifier > StringLiteral tailwind-like', () => {
       { tagNameList: ['div'] },
     ),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "div",
-        [
-          {
-            "className": "bg-slate-100 rounded-xl p-8 dark:bg-slate-800",
-          },
-          {},
-          {
-            "className": "bg-sky-400 text-lg bg-sky-800",
-          },
-          {
-            "className": "bg-red-400 bg-white rounded w-48 text-sm",
-          },
-          {},
-        ],
+    {
+      "div": [
+        {
+          "className": "bg-slate-100 rounded-xl p-8 dark:bg-slate-800",
+        },
+        {},
+        {
+          "className": "bg-sky-400 text-lg bg-sky-800",
+        },
+        {
+          "className": "bg-red-400 bg-white rounded w-48 text-sm",
+        },
+        {},
       ],
-    ]
+    }
   `)
 })
 
@@ -5316,29 +4954,26 @@ it('extract CallExpression > ObjectLiteralExpression > PropertyAssignment > Iden
       { tagNameList: [], functionNameList: ['defineProperties'] },
     ),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "defineProperties",
+    {
+      "defineProperties": [
         [
-          [
-            {
-              "properties": {
-                "backgroundColor": {
-                  "error": "var(--backgroundColor-error__1dghp00s)",
-                  "warning": "var(--backgroundColor-warning__1dghp00t)",
-                },
-                "display": true,
+          {
+            "properties": {
+              "backgroundColor": {
+                "error": "var(--backgroundColor-error__1dghp00s)",
+                "warning": "var(--backgroundColor-warning__1dghp00t)",
               },
-              "shorthands": {
-                "margin": [
-                  "marginTop",
-                ],
-              },
+              "display": true,
             },
-          ],
+            "shorthands": {
+              "margin": [
+                "marginTop",
+              ],
+            },
+          },
         ],
       ],
-    ]
+    }
   `)
 })
 
@@ -5596,14 +5231,11 @@ it('extract NullKeyword', () => {
 
 it('extract UndefinedKeyword', () => {
   expect(extractFromCode(`<ColorBox color={undefined} />`)).toMatchInlineSnapshot(`
-    [
-      [
-        "ColorBox",
-        [
-          {},
-        ],
+    {
+      "ColorBox": [
+        {},
       ],
-    ]
+    }
   `)
 })
 
@@ -5935,22 +5567,19 @@ it('extract CallExpression nested ObjectLiteralExpression', () => {
       { functionNameList: ['css'] },
     ),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "css",
+    {
+      "css": [
         [
-          [
-            {
-              "selectors": {
-                "&:hover": {
-                  "background": "red.200",
-                },
+          {
+            "selectors": {
+              "&:hover": {
+                "background": "red.200",
               },
             },
-          ],
+          },
         ],
       ],
-    ]
+    }
   `)
 })
 
@@ -5997,16 +5626,13 @@ it('extract CallExpression nested ObjectLiteralExpression', () => {
       { functionNameList: ['factory'] },
     ),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "factory",
+    {
+      "factory": [
         [
-          [
-            "span",
-          ],
+          "span",
         ],
       ],
-    ]
+    }
   `)
 })
 
@@ -6038,22 +5664,19 @@ it('handles multiline string literal', () => {
       { tagNameList: ['div'] },
     ),
   ).toMatchInlineSnapshot(`
-    [
-      [
-        "div",
-        [
-          {
-            "background": "#e879f91a",
-            "backgroundSize": "8px 8px",
-            "display": "flex",
-            "flexDir": "column",
-            "marginTop": "3",
-            "style": {
-              "backgroundImage": "linear-gradient( 135deg, #d946ef80 10%, transparent 0, transparent 50%, #d946ef80 0, #d946ef80 60%, transparent 0, transparent )",
-            },
+    {
+      "div": [
+        {
+          "background": "#e879f91a",
+          "backgroundSize": "8px 8px",
+          "display": "flex",
+          "flexDir": "column",
+          "marginTop": "3",
+          "style": {
+            "backgroundImage": "linear-gradient( 135deg, #d946ef80 10%, transparent 0, transparent 50%, #d946ef80 0, #d946ef80 60%, transparent 0, transparent )",
           },
-        ],
+        },
       ],
-    ]
+    }
   `)
 })
