@@ -40,7 +40,7 @@
     "ts-morph": "17.0.1",
     "tsup": "6.7.0",
     "tsx": "3.12.6",
-    "typescript": "5.0.3",
+    "typescript": "5.0.4",
     "vitest": "0.29.8"
   },
   "lint-staged": {
