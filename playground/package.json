@@ -46,7 +46,7 @@
     "@pandacss/dev": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@types/prettier": "2.7.2",
-    "eslint": "8.37.0",
+    "eslint": "8.38.0",
     "eslint-config-next": "13.3.0"
   }
 }
