@@ -41,7 +41,7 @@
     "tsup": "6.7.0",
     "tsx": "3.12.6",
     "typescript": "5.0.4",
-    "vitest": "0.29.8"
+    "vitest": "0.30.0"
   },
   "lint-staged": {
     "packages/**/*.{ts,tsx}": [
