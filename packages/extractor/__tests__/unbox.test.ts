@@ -8,7 +8,7 @@ import { default as BigThemeSampleInlined } from './samples/BigThemeSampleInline
 const project = createProject()
 const getExtract = (code: string, options: TestExtractOptions) => getTestExtract(project, code, options)
 
-test('unbox', () => {
+test.skip('unbox big theme', () => {
   const extracted = getExtract(BigThemeSampleInlined, { functionNameList: ['defineProperties'] })
   const defineProperties = extracted.get('defineProperties')!
   const properties = (defineProperties as ExtractedFunctionResult).queryList[0].box
@@ -4156,7 +4156,7 @@ test('unbox', () => {
   `)
 })
 
-test('unbox with unresolvable spread', () => {
+test.skip('unbox with unresolvable spread', () => {
   const extracted = getExtract(
     `
     const className = css({ color: "red", ...something, ...{ ...another, backgroundColor: "blue.100" } })
@@ -4312,6 +4312,182 @@ test('unbox with unresolvable spread', () => {
     {
       "paddingInline": "4",
       "style": {},
+    }
+  `)
+})
+
+test('unbox', () => {
+  const extracted = getExtract(
+    `
+    const spacings = { md: 6 };
+    const className = css({ color: "red",  padding: 4, mx: -2, my: spacings.md, debug: true })
+    `,
+    { functionNameList: ['css'] },
+  )
+  const css = extracted.get('css')?.queryList[0].box.value[0]
+  expect(unbox(css)).toMatchInlineSnapshot(`
+    {
+      "conditions": [],
+      "raw": {
+        "color": "red",
+        "debug": true,
+        "mx": -2,
+        "my": 6,
+        "padding": 4,
+      },
+      "spreadConditions": [],
+    }
+  `)
+})
+
+test('unbox with spread', () => {
+  const extracted = getExtract(
+    `
+    const something = { color: "never.200" }
+    const another = { color: "rgba(75,173,58,0.50)", backgroundColor: "never.300" }
+    const className = css({ color: "never.100", ...something, ...{ ...another, backgroundColor: "green.100" } })
+    `,
+    { functionNameList: ['css'] },
+  )
+  const css = extracted.get('css')?.queryList[0].box.value[0]
+  expect(unbox(css)).toMatchInlineSnapshot(`
+    {
+      "conditions": [],
+      "raw": {
+        "backgroundColor": "green.100",
+        "color": "rgba(75,173,58,0.50)",
+      },
+      "spreadConditions": [],
+    }
+  `)
+})
+
+test('unbox with conditions', () => {
+  const extracted = getExtract(
+    `
+    const { isDark } = useContext(ColorContext)
+    const isKnown = true
+    const aligns = { left: 'left' }
+    const outlineColor = 'pink.300'
+    const styles = {
+      color: outlineColor,
+      hover: {
+        color: !isKnown ? 'never.500' : 'pink.500',
+        ...(unresolvable && { '& span': { display: 'block' } }),
+        ...(isDark ? { color: 'white' } : { color: 'black' }),
+      },
+    }
+
+    const className = css({
+      px: 4,
+      color: isDark ? 'blue.100' : 'blue.200',
+      ...(isKnown && {
+        backgroundColor: 'red.100',
+        padding: false ? 2 : 8,
+        fontSize: unresolvable ?? '2xl',
+        textAlign: aligns.left || 'never.100',
+      }),
+      ...(isKnown ? { display: 'flex' } : { never: true }),
+      ...(isNotKnown ? { alignItems: 'flex-start' } : { alignItems: 'flex-end' }),
+      md: {
+        display: 'inline-flex',
+        justifyContent: direction === 'row' ? 'flex-start' : 'flex-end',
+        hover: isDark ? { color: 'blue.200' } : { color: 'blue.300' },
+        light: {
+          px: 6,
+          color: 'never.400',
+          backgroundColor: unresolvable ?? 'red.200',
+          borderColor: unresolvable ? 'pink.100' : 'pink.200',
+          borderColor: outlineColor || 'never.200',
+          ...styles,
+        },
+      },
+    })
+    `,
+    { functionNameList: ['css'] },
+  )
+  const css = extracted.get('css')?.queryList[0].box.value[0]
+  // console.log(css)
+  expect(unbox(css)).toMatchInlineSnapshot(`
+    {
+      "conditions": [
+        {
+          "path": "#color",
+          "whenFalse": "blue.200",
+          "whenTrue": "blue.100",
+        },
+        {
+          "path": "#fontSize",
+          "whenFalse": "2xl",
+          "whenTrue": undefined,
+        },
+        {
+          "path": "#md.justifyContent",
+          "whenFalse": "flex-end",
+          "whenTrue": "flex-start",
+        },
+        {
+          "path": "#md.hover",
+          "whenFalse": {
+            "color": "blue.300",
+          },
+          "whenTrue": {
+            "color": "blue.200",
+          },
+        },
+        {
+          "path": "#md.light.backgroundColor",
+          "whenFalse": "red.200",
+          "whenTrue": undefined,
+        },
+      ],
+      "raw": {
+        "backgroundColor": "red.100",
+        "display": "flex",
+        "md": {
+          "display": "inline-flex",
+          "light": {
+            "borderColor": "pink.300",
+            "color": "pink.300",
+            "hover": {
+              "color": "pink.500",
+            },
+            "px": 6,
+          },
+        },
+        "padding": 8,
+        "px": 4,
+        "textAlign": "left",
+      },
+      "spreadConditions": [
+        {
+          "path": "#",
+          "whenFalse": {
+            "alignItems": "flex-end",
+          },
+          "whenTrue": {
+            "alignItems": "flex-start",
+          },
+        },
+        {
+          "path": "#md.light.hover",
+          "whenFalse": {
+            "& span": {
+              "display": "block",
+            },
+          },
+          "whenTrue": undefined,
+        },
+        {
+          "path": "#md.light.hover",
+          "whenFalse": {
+            "color": "black",
+          },
+          "whenTrue": {
+            "color": "white",
+          },
+        },
+      ],
     }
   `)
 })

@@ -186,7 +186,14 @@ export function maybeBoxNode(node: Node, stack: Node[], ctx: BoxContext): MaybeB
             const whenTrueExpr = unwrapExpression(node.getLeft())
             const whenFalseExpr = unwrapExpression(node.getRight())
             const kind = getConditionalKind(op)!
-            const exprObject = { whenTrueExpr, whenFalseExpr, node, stack, kind, canReturnWhenTrue: true } as const
+            const exprObject = {
+              whenTrueExpr,
+              whenFalseExpr,
+              node,
+              stack,
+              kind,
+              canReturnWhenTrue: kind !== 'and',
+            } as const
             return cache(maybeExpandConditionalExpression(exprObject, ctx))
           })
           .otherwise(() => undefined)
@@ -255,7 +262,7 @@ export const maybeExpandConditionalExpression = (
   let whenTrueValue = maybeBoxNode(whenTrueExpr, stack, ctx)
   let whenFalseValue = maybeBoxNode(whenFalseExpr, stack, ctx)
 
-  logger.debug('cond', { before: true, whenTrueValue, whenFalseValue, canReturnWhenTrue })
+  logger.debug('cond', { before: true, whenTrueValue, whenFalseValue, kind, canReturnWhenTrue })
 
   // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
   if (!whenTrueValue) {
@@ -267,17 +274,19 @@ export const maybeExpandConditionalExpression = (
     }
   }
 
-  if (canReturnWhenTrue && kind !== 'and' && whenTrueValue && !box.isUnresolvable(whenTrueValue)) {
+  //<ColorBox <ColorBox color={"blue.100" || "never.100"} />
+  //<ColorBox <ColorBox color={"blue.100" ?? "never.100"} />
+  if (canReturnWhenTrue && whenTrueValue && !box.isUnresolvable(whenTrueValue)) {
     logger.debug('cond', { earlyReturn: true, kind, whenTrueValue })
     return whenTrueValue
   }
 
-  // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
+  // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : getColor()} />
   if (!whenFalseValue) {
     logger.debug('cond', 'whenFalse is not a box, maybe an object ?')
     const maybeObject = maybeObjectLikeBox(whenFalseExpr, stack, ctx)
     if (maybeObject && !box.isUnresolvable(maybeObject)) {
-      logger.debug('cond', 'whenFasle is an object-like box')
+      logger.debug('cond', 'whenFalse is an object-like box')
       whenFalseValue = maybeObject
     }
   }
@@ -290,14 +299,30 @@ export const maybeExpandConditionalExpression = (
     whenFalseValue,
   })
 
+  //<ColorBox <ColorBox color={true ? "blue.200" : "never.100"} />
+  // whenTrueValue === true
+  // whenFalseValue === "never.100"
+  if (
+    kind === 'and' &&
+    whenTrueValue &&
+    whenFalseValue &&
+    box.isLiteral(whenTrueValue) &&
+    whenTrueValue.value === true
+  ) {
+    return whenFalseValue
+  }
+
+  //<ColorBox <ColorBox color={true ? unextractable : unextractable} />
   if (!whenTrueValue && !whenFalseValue) {
     return
   }
 
+  //<ColorBox <ColorBox color={true ? extractableNode : unextractable} />
   if (whenTrueValue && !whenFalseValue) {
     return whenTrueValue
   }
 
+  //<ColorBox <ColorBox color={true ? unextractable : extractableNode} />
   if (!whenTrueValue && whenFalseValue) {
     return whenFalseValue
   }
@@ -305,10 +330,12 @@ export const maybeExpandConditionalExpression = (
   const whenTrue = whenTrueValue!
   const whenFalse = whenFalseValue!
 
+  //<ColorBox <ColorBox color={true ? "blue.400" : "blue.400"} />
   if (box.isLiteral(whenTrue) && box.isLiteral(whenFalse) && whenTrue.value === whenFalse.value) {
     return whenTrue
   }
 
+  //<ColorBox <ColorBox color={true ? extractableNode : extractableNode} />
   return box.conditional(whenTrue, whenFalse, node, stack, kind)
 }
 

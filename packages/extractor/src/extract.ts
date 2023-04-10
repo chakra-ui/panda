@@ -197,6 +197,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
           match(boxNode)
             .when(Bool.or(box.isObject, box.isMap), (boxNode) => {
               const map = objectLikeToMap(boxNode, node)
+
               const entries = mergeSpreads({
                 map,
                 // if the boxNode is an object
@@ -214,7 +215,12 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
                 localNodes.set(propName, (localNodes.get(propName) ?? []).concat(propValue))
               })
 
-              return box.map(mapAfterSpread, node, boxNode.getStack())
+              const boxMap = box.map(mapAfterSpread, node, boxNode.getStack())
+              if (box.isMap(boxNode) && boxNode.spreadConditions?.length) {
+                boxMap.spreadConditions = boxNode.spreadConditions
+              }
+
+              return boxMap
             })
             .otherwise((boxNode) => boxNode),
         ),
