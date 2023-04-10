@@ -4412,22 +4412,32 @@ test('unbox with conditions', () => {
     {
       "conditions": [
         {
-          "path": "#color",
+          "path": [
+            "color",
+          ],
           "whenFalse": "blue.200",
           "whenTrue": "blue.100",
         },
         {
-          "path": "#fontSize",
+          "path": [
+            "fontSize",
+          ],
           "whenFalse": "2xl",
           "whenTrue": undefined,
         },
         {
-          "path": "#md.justifyContent",
+          "path": [
+            "md",
+            "justifyContent",
+          ],
           "whenFalse": "flex-end",
           "whenTrue": "flex-start",
         },
         {
-          "path": "#md.hover",
+          "path": [
+            "md",
+            "hover",
+          ],
           "whenFalse": {
             "color": "blue.300",
           },
@@ -4436,7 +4446,11 @@ test('unbox with conditions', () => {
           },
         },
         {
-          "path": "#md.light.backgroundColor",
+          "path": [
+            "md",
+            "light",
+            "backgroundColor",
+          ],
           "whenFalse": "red.200",
           "whenTrue": undefined,
         },
@@ -4461,7 +4475,7 @@ test('unbox with conditions', () => {
       },
       "spreadConditions": [
         {
-          "path": "#",
+          "path": [],
           "whenFalse": {
             "alignItems": "flex-end",
           },
@@ -4470,7 +4484,11 @@ test('unbox with conditions', () => {
           },
         },
         {
-          "path": "#md.light.hover",
+          "path": [
+            "md",
+            "light",
+            "hover",
+          ],
           "whenFalse": {
             "& span": {
               "display": "block",
@@ -4479,7 +4497,11 @@ test('unbox with conditions', () => {
           "whenTrue": undefined,
         },
         {
-          "path": "#md.light.hover",
+          "path": [
+            "md",
+            "light",
+            "hover",
+          ],
           "whenFalse": {
             "color": "black",
           },

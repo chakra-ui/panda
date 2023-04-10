@@ -59,7 +59,9 @@ it('extract it all', () => {
         {
           "conditions": [
             {
-              "path": "#color",
+              "path": [
+                "color",
+              ],
               "whenFalse": "cyan.500",
               "whenTrue": "cyan.400",
             },
@@ -91,7 +93,9 @@ it('extract it all', () => {
         {
           "conditions": [
             {
-              "path": "#color",
+              "path": [
+                "color",
+              ],
               "whenFalse": "gray.200",
               "whenTrue": "facebook.600",
             },
@@ -102,7 +106,9 @@ it('extract it all', () => {
         {
           "conditions": [
             {
-              "path": "#color",
+              "path": [
+                "color",
+              ],
               "whenFalse": "gray.300",
               "whenTrue": "gray.200",
             },
@@ -267,7 +273,9 @@ it('extract it all', () => {
         {
           "conditions": [
             {
-              "path": "#color",
+              "path": [
+                "color",
+              ],
               "whenFalse": "gray.800",
               "whenTrue": "gray.600",
             },
@@ -278,7 +286,9 @@ it('extract it all', () => {
         {
           "conditions": [
             {
-              "path": "#color",
+              "path": [
+                "color",
+              ],
               "whenFalse": "gray.100",
               "whenTrue": "gray.700",
             },
@@ -296,125 +306,75 @@ it('extract it all', () => {
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "facebook.100",
-            },
+            "color": "facebook.100",
           },
           "spreadConditions": [],
         },
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "blackAlpha.400",
-            },
+            "color": "blackAlpha.400",
+          },
+          "spreadConditions": [],
+        },
+        {
+          "conditions": [],
+          "raw": {},
+          "spreadConditions": [],
+        },
+        {
+          "conditions": [],
+          "raw": {
+            "backgroundColor": "blackAlpha.100",
+            "color": "facebook.200",
+          },
+          "spreadConditions": [],
+        },
+        {
+          "conditions": [],
+          "raw": {},
+          "spreadConditions": [],
+        },
+        {
+          "conditions": [],
+          "raw": {},
+          "spreadConditions": [],
+        },
+        {
+          "conditions": [],
+          "raw": {
+            "backgroundColor": "twitter.200",
+            "color": "twitter.100",
           },
           "spreadConditions": [],
         },
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "blackAlpha.400",
-            },
+            "backgroundColor": "twitter.200",
+            "color": "orange.100",
           },
           "spreadConditions": [],
         },
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "backgroundColor": "blackAlpha.100",
-              "color": "facebook.200",
-            },
+            "color": "orange.200",
           },
           "spreadConditions": [],
         },
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "facebook.200",
-            },
+            "color": "orange.400",
           },
           "spreadConditions": [],
         },
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "facebook.300",
-            },
-          },
-          "spreadConditions": [],
-        },
-        {
-          "conditions": [],
-          "raw": {
-            "_SPREAD_0_0": {
-              "backgroundColor": "twitter.200",
-              "color": "twitter.100",
-            },
-          },
-          "spreadConditions": [],
-        },
-        {
-          "conditions": [],
-          "raw": {
-            "_SPREAD_0_0": {
-              "backgroundColor": "twitter.200",
-              "color": "orange.100",
-            },
-          },
-          "spreadConditions": [],
-        },
-        {
-          "conditions": [],
-          "raw": {
-            "_SPREAD_0_0": {
-              "color": "orange.200",
-            },
-          },
-          "spreadConditions": [
-            {
-              "path": "#_SPREAD_0_0",
-              "whenFalse": {
-                "color": "never.150",
-              },
-              "whenTrue": {
-                "backgroundColor": "twitter.200",
-                "color": "twitter.100",
-              },
-            },
-          ],
-        },
-        {
-          "conditions": [],
-          "raw": {
-            "_SPREAD_0_0": {
-              "color": "orange.400",
-            },
-          },
-          "spreadConditions": [
-            {
-              "path": "#_SPREAD_0_0",
-              "whenFalse": {
-                "borderColor": "orange.300",
-              },
-              "whenTrue": {
-                "backgroundColor": "twitter.200",
-                "color": "twitter.100",
-              },
-            },
-          ],
-        },
-        {
-          "conditions": [],
-          "raw": {
-            "_SPREAD_0_0": {
-              "backgroundColor": "telegram.400",
-              "color": "telegram.300",
-            },
+            "backgroundColor": "telegram.400",
+            "color": "telegram.300",
           },
           "spreadConditions": [],
         },
@@ -591,11 +551,11 @@ it('minimal - groups extract props in parent component instance', () => {
               "kind": "string",
               "node": StringLiteral,
               "stack": [
-                JsxAttribute,
+                PropertyAssignment,
                 StringLiteral,
               ],
               "type": "literal",
-              "value": "yellow.300",
+              "value": "blue.100",
             },
             "backgroundColor" => BoxNodeLiteral {
               "kind": "string",
@@ -607,115 +567,15 @@ it('minimal - groups extract props in parent component instance', () => {
               "type": "literal",
               "value": "blackAlpha.100",
             },
-            "_SPREAD_2_0" => BoxNodeMap {
-              "node": JsxSpreadAttribute,
-              "spreadConditions": [
-                BoxNodeConditional {
-                  "kind": "ternary",
-                  "node": ConditionalExpression,
-                  "stack": [
-                    SpreadAssignment,
-                    ConditionalExpression,
-                  ],
-                  "type": "conditional",
-                  "whenFalse": BoxNodeMap {
-                    "node": ObjectLiteralExpression,
-                    "spreadConditions": undefined,
-                    "stack": [
-                      SpreadAssignment,
-                      ConditionalExpression,
-                    ],
-                    "type": "map",
-                    "value": Map {
-                      "flexDirection" => BoxNodeLiteral {
-                        "kind": "string",
-                        "node": StringLiteral,
-                        "stack": [
-                          SpreadAssignment,
-                          ConditionalExpression,
-                          PropertyAssignment,
-                          StringLiteral,
-                        ],
-                        "type": "literal",
-                        "value": "column",
-                      },
-                      "justifyAlign" => BoxNodeLiteral {
-                        "kind": "string",
-                        "node": StringLiteral,
-                        "stack": [
-                          SpreadAssignment,
-                          ConditionalExpression,
-                          PropertyAssignment,
-                          StringLiteral,
-                        ],
-                        "type": "literal",
-                        "value": "center",
-                      },
-                    },
-                  },
-                  "whenTrue": BoxNodeMap {
-                    "node": ObjectLiteralExpression,
-                    "spreadConditions": undefined,
-                    "stack": [
-                      SpreadAssignment,
-                      ConditionalExpression,
-                    ],
-                    "type": "map",
-                    "value": Map {
-                      "flexDirection" => BoxNodeLiteral {
-                        "kind": "string",
-                        "node": StringLiteral,
-                        "stack": [
-                          SpreadAssignment,
-                          ConditionalExpression,
-                          PropertyAssignment,
-                          StringLiteral,
-                        ],
-                        "type": "literal",
-                        "value": "row",
-                      },
-                      "alignItems" => BoxNodeLiteral {
-                        "kind": "string",
-                        "node": StringLiteral,
-                        "stack": [
-                          SpreadAssignment,
-                          ConditionalExpression,
-                          PropertyAssignment,
-                          StringLiteral,
-                        ],
-                        "type": "literal",
-                        "value": "flex-start",
-                      },
-                    },
-                  },
-                },
-              ],
+            "display" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
               "stack": [
-                JsxSelfClosingElement,
+                PropertyAssignment,
+                StringLiteral,
               ],
-              "type": "map",
-              "value": Map {
-                "display" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "flex",
-                },
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "blue.100",
-                },
-              },
+              "type": "literal",
+              "value": "flex",
             },
           },
         },
@@ -1722,25 +1582,15 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "stack": [],
           "type": "map",
           "value": Map {
-            "_SPREAD_0_0" => BoxNodeMap {
-              "node": JsxSpreadAttribute,
-              "spreadConditions": undefined,
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
               "stack": [
-                JsxOpeningElement,
+                PropertyAssignment,
+                StringLiteral,
               ],
-              "type": "map",
-              "value": Map {
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "facebook.100",
-                },
-              },
+              "type": "literal",
+              "value": "facebook.100",
             },
           },
         },
@@ -1753,72 +1603,18 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "stack": [],
           "type": "map",
           "value": Map {
-            "_SPREAD_0_0" => BoxNodeMap {
-              "node": JsxSpreadAttribute,
-              "spreadConditions": undefined,
-              "stack": [
-                JsxOpeningElement,
-              ],
-              "type": "map",
-              "value": Map {
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    Identifier,
-                    VariableDeclaration,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "blackAlpha.400",
-                },
-              },
-            },
-          },
-        },
-        "name": "ColorBox",
-      },
-      {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
-          "stack": [],
-          "type": "map",
-          "value": Map {
-            "_SPREAD_0_0" => BoxNodeMap {
-              "node": JsxSpreadAttribute,
-              "spreadConditions": undefined,
-              "stack": [
-                JsxOpeningElement,
-              ],
-              "type": "map",
-              "value": Map {
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    Identifier,
-                    VariableDeclaration,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "blackAlpha.400",
-                },
-              },
-            },
-            "_SPREAD_0_1" => BoxNodeLiteral {
-              "kind": "null",
-              "node": NullKeyword,
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
               "stack": [
                 Identifier,
                 VariableDeclaration,
+                ObjectLiteralExpression,
+                PropertyAssignment,
+                StringLiteral,
               ],
               "type": "literal",
-              "value": null,
+              "value": "blackAlpha.400",
             },
           },
         },
@@ -1830,49 +1626,49 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "spreadConditions": undefined,
           "stack": [],
           "type": "map",
+          "value": Map {},
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
           "value": Map {
-            "_SPREAD_0_0" => BoxNodeMap {
-              "node": JsxSpreadAttribute,
-              "spreadConditions": undefined,
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
               "stack": [
-                JsxOpeningElement,
+                PropertyAssignment,
+                StringLiteral,
               ],
-              "type": "map",
-              "value": Map {
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "facebook.200",
-                },
-                "backgroundColor" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "blackAlpha.100",
-                },
-                "borderColor" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    PropertyAssignment,
-                    Identifier,
-                    Identifier,
-                    VariableDeclaration,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "blackAlpha.300",
-                },
-              },
+              "type": "literal",
+              "value": "facebook.200",
+            },
+            "backgroundColor" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "blackAlpha.100",
+            },
+            "borderColor" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                Identifier,
+                Identifier,
+                VariableDeclaration,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "blackAlpha.300",
             },
           },
         },
@@ -1884,33 +1680,40 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "spreadConditions": undefined,
           "stack": [],
           "type": "map",
+          "value": Map {},
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
+          "value": Map {},
+        },
+        "name": "ColorBox",
+      },
+      {
+        "box": BoxNodeMap {
+          "node": JsxOpeningElement,
+          "spreadConditions": undefined,
+          "stack": [],
+          "type": "map",
           "value": Map {
-            "_SPREAD_0_0" => BoxNodeMap {
-              "node": JsxSpreadAttribute,
-              "spreadConditions": undefined,
-              "stack": [
-                JsxOpeningElement,
-              ],
-              "type": "map",
-              "value": Map {
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "facebook.200",
-                },
-              },
-            },
-            "_SPREAD_0_1" => BoxNodeLiteral {
-              "kind": "undefined",
-              "node": Identifier,
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
               "stack": [],
               "type": "literal",
-              "value": undefined,
+              "value": "twitter.100",
+            },
+            "backgroundColor" => BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
+              "stack": [],
+              "type": "literal",
+              "value": "twitter.200",
             },
           },
         },
@@ -1923,27 +1726,25 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "stack": [],
           "type": "map",
           "value": Map {
-            "_SPREAD_0_0" => BoxNodeMap {
-              "node": JsxSpreadAttribute,
-              "spreadConditions": undefined,
+            "backgroundColor" => BoxNodeLiteral {
+              "kind": "string",
+              "node": CallExpression,
               "stack": [
-                JsxOpeningElement,
+                SpreadAssignment,
+                CallExpression,
               ],
-              "type": "map",
-              "value": Map {
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    Identifier,
-                    BindingElement,
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "facebook.300",
-                },
-              },
+              "type": "literal",
+              "value": "twitter.200",
+            },
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
+              "stack": [
+                PropertyAssignment,
+                StringLiteral,
+              ],
+              "type": "literal",
+              "value": "orange.100",
             },
           },
         },
@@ -1956,29 +1757,15 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "stack": [],
           "type": "map",
           "value": Map {
-            "_SPREAD_0_0" => BoxNodeMap {
-              "node": JsxSpreadAttribute,
-              "spreadConditions": undefined,
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
               "stack": [
-                JsxOpeningElement,
+                PropertyAssignment,
+                StringLiteral,
               ],
-              "type": "map",
-              "value": Map {
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": CallExpression,
-                  "stack": [],
-                  "type": "literal",
-                  "value": "twitter.100",
-                },
-                "backgroundColor" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": CallExpression,
-                  "stack": [],
-                  "type": "literal",
-                  "value": "twitter.200",
-                },
-              },
+              "type": "literal",
+              "value": "orange.200",
             },
           },
         },
@@ -1991,35 +1778,15 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "stack": [],
           "type": "map",
           "value": Map {
-            "_SPREAD_0_0" => BoxNodeMap {
-              "node": JsxSpreadAttribute,
-              "spreadConditions": undefined,
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
               "stack": [
-                JsxOpeningElement,
+                PropertyAssignment,
+                StringLiteral,
               ],
-              "type": "map",
-              "value": Map {
-                "backgroundColor" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": CallExpression,
-                  "stack": [
-                    SpreadAssignment,
-                    CallExpression,
-                  ],
-                  "type": "literal",
-                  "value": "twitter.200",
-                },
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "orange.100",
-                },
-              },
+              "type": "literal",
+              "value": "orange.400",
             },
           },
         },
@@ -2032,192 +1799,25 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "stack": [],
           "type": "map",
           "value": Map {
-            "_SPREAD_0_0" => BoxNodeMap {
-              "node": JsxSpreadAttribute,
-              "spreadConditions": [
-                BoxNodeConditional {
-                  "kind": "ternary",
-                  "node": ConditionalExpression,
-                  "stack": [
-                    SpreadAssignment,
-                    ConditionalExpression,
-                  ],
-                  "type": "conditional",
-                  "whenFalse": BoxNodeMap {
-                    "node": ObjectLiteralExpression,
-                    "spreadConditions": undefined,
-                    "stack": [
-                      SpreadAssignment,
-                      ConditionalExpression,
-                    ],
-                    "type": "map",
-                    "value": Map {
-                      "color" => BoxNodeLiteral {
-                        "kind": "string",
-                        "node": StringLiteral,
-                        "stack": [
-                          SpreadAssignment,
-                          ConditionalExpression,
-                          PropertyAssignment,
-                          StringLiteral,
-                        ],
-                        "type": "literal",
-                        "value": "never.150",
-                      },
-                    },
-                  },
-                  "whenTrue": BoxNodeObject {
-                    "isEmpty": undefined,
-                    "node": CallExpression,
-                    "stack": [
-                      SpreadAssignment,
-                      ConditionalExpression,
-                    ],
-                    "type": "object",
-                    "value": {
-                      "backgroundColor": "twitter.200",
-                      "color": "twitter.100",
-                    },
-                  },
-                },
-              ],
+            "color" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
               "stack": [
-                JsxOpeningElement,
+                PropertyAssignment,
+                StringLiteral,
               ],
-              "type": "map",
-              "value": Map {
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "orange.200",
-                },
-              },
+              "type": "literal",
+              "value": "telegram.300",
             },
-          },
-        },
-        "name": "ColorBox",
-      },
-      {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
-          "stack": [],
-          "type": "map",
-          "value": Map {
-            "_SPREAD_0_0" => BoxNodeMap {
-              "node": JsxSpreadAttribute,
-              "spreadConditions": [
-                BoxNodeConditional {
-                  "kind": "ternary",
-                  "node": ConditionalExpression,
-                  "stack": [
-                    SpreadAssignment,
-                    ConditionalExpression,
-                  ],
-                  "type": "conditional",
-                  "whenFalse": BoxNodeMap {
-                    "node": ObjectLiteralExpression,
-                    "spreadConditions": undefined,
-                    "stack": [
-                      SpreadAssignment,
-                      ConditionalExpression,
-                    ],
-                    "type": "map",
-                    "value": Map {
-                      "borderColor" => BoxNodeLiteral {
-                        "kind": "string",
-                        "node": StringLiteral,
-                        "stack": [
-                          SpreadAssignment,
-                          ConditionalExpression,
-                          PropertyAssignment,
-                          Identifier,
-                          Identifier,
-                          VariableDeclaration,
-                          StringLiteral,
-                        ],
-                        "type": "literal",
-                        "value": "orange.300",
-                      },
-                    },
-                  },
-                  "whenTrue": BoxNodeObject {
-                    "isEmpty": undefined,
-                    "node": CallExpression,
-                    "stack": [
-                      SpreadAssignment,
-                      ConditionalExpression,
-                    ],
-                    "type": "object",
-                    "value": {
-                      "backgroundColor": "twitter.200",
-                      "color": "twitter.100",
-                    },
-                  },
-                },
-              ],
+            "backgroundColor" => BoxNodeLiteral {
+              "kind": "string",
+              "node": StringLiteral,
               "stack": [
-                JsxOpeningElement,
+                PropertyAssignment,
+                StringLiteral,
               ],
-              "type": "map",
-              "value": Map {
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "orange.400",
-                },
-              },
-            },
-          },
-        },
-        "name": "ColorBox",
-      },
-      {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
-          "stack": [],
-          "type": "map",
-          "value": Map {
-            "_SPREAD_0_0" => BoxNodeMap {
-              "node": JsxSpreadAttribute,
-              "spreadConditions": undefined,
-              "stack": [
-                JsxOpeningElement,
-              ],
-              "type": "map",
-              "value": Map {
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "telegram.300",
-                },
-                "backgroundColor" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
-                  "stack": [
-                    PropertyAssignment,
-                    StringLiteral,
-                  ],
-                  "type": "literal",
-                  "value": "telegram.400",
-                },
-              },
+              "type": "literal",
+              "value": "telegram.400",
             },
           },
         },
@@ -2654,7 +2254,9 @@ it('extract JsxAttribute > JsxExpression > ConditonalExpression > Identifier|Val
         {
           "conditions": [
             {
-              "path": "#color",
+              "path": [
+                "color",
+              ],
               "whenFalse": "whiteAlpha.100",
               "whenTrue": "red.500",
             },
@@ -3928,7 +3530,9 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression with Unexpected
         {
           "conditions": [
             {
-              "path": "#color",
+              "path": [
+                "color",
+              ],
               "whenFalse": "purple.700",
               "whenTrue": "purple.600",
             },
@@ -3955,7 +3559,9 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > unresolvable 
         {
           "conditions": [
             {
-              "path": "#color",
+              "path": [
+                "color",
+              ],
               "whenFalse": "purple.950",
               "whenTrue": "purple.900",
             },
@@ -3987,7 +3593,9 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
         {
           "conditions": [
             {
-              "path": "#color",
+              "path": [
+                "color",
+              ],
               "whenFalse": "orange.300",
               "whenTrue": "orange.200",
             },
@@ -4091,9 +3699,7 @@ it('extract JsxSpreadAttribute > ObjectLiteralExpression', () => {
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "orange.700",
-            },
+            "color": "orange.700",
           },
           "spreadConditions": [],
         },
@@ -4113,10 +3719,8 @@ it('extract JsxSpreadAttribute > ObjectLiteralExpression with allowed properties
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "backgroundColor": "orange.750",
-              "color": "orange.725",
-            },
+            "backgroundColor": "orange.750",
+            "color": "orange.725",
           },
           "spreadConditions": [],
         },
@@ -4137,9 +3741,7 @@ it('extract JsxSpreadAttribute > Identifier > ObjectLiteralExpression', () => {
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "orange.800",
-            },
+            "color": "orange.800",
           },
           "spreadConditions": [],
         },
@@ -4182,9 +3784,7 @@ it('extract JsxSpreadAttribute > ConditionalExpression > Identifier/NullKeyword 
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "orange.900",
-            },
+            "color": "orange.900",
           },
           "spreadConditions": [],
         },
@@ -4214,10 +3814,8 @@ it('extract JsxSpreadAttribute > PropertyAssignment / ComputedProperty', () => {
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "backgroundColor": "teal.200",
-              "color": "teal.100",
-            },
+            "backgroundColor": "teal.200",
+            "color": "teal.100",
           },
           "spreadConditions": [],
         },
@@ -4237,9 +3835,7 @@ it('extract JsxSpreadAttribute > ConditionalExpression > ObjectLiteralExpression
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "teal.400",
-            },
+            "color": "teal.400",
           },
           "spreadConditions": [],
         },
@@ -4259,9 +3855,7 @@ it('extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / Ob
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "teal.500",
-            },
+            "color": "teal.500",
           },
           "spreadConditions": [],
         },
@@ -4282,10 +3876,8 @@ it('extract JsxSpreadAttribute > CallExpression', () => {
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "backgroundColor": "teal.650",
-              "color": "teal.600",
-            },
+            "backgroundColor": "teal.650",
+            "color": "teal.600",
           },
           "spreadConditions": [],
         },
@@ -4306,12 +3898,8 @@ it('extract JsxSpreadAttribute > CallExpression with allowed properties list', (
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "backgroundColor": "teal.699",
-              "color": "teal.625",
-              "flexDirection": "flex",
-              "justifyContent": "center",
-            },
+            "backgroundColor": "teal.699",
+            "color": "teal.625",
           },
           "spreadConditions": [],
         },
@@ -4332,10 +3920,8 @@ it('extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > Ca
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "backgroundColor": "teal.800",
-              "color": "teal.700",
-            },
+            "backgroundColor": "teal.800",
+            "color": "teal.700",
           },
           "spreadConditions": [],
         },
@@ -4364,10 +3950,8 @@ it('extract JsxSpreadAttribute > ObjectLiteralExpression > SpreadAssignment > Co
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "backgroundColor": "cyan.100",
-              "color": "cyan.200",
-            },
+            "backgroundColor": "cyan.100",
+            "color": "cyan.200",
           },
           "spreadConditions": [],
         },
@@ -4398,10 +3982,8 @@ it('extract JsxSpreadAttribute > BinaryExpression > AmpersandAmpersandToken / Ob
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "backgroundColor": "cyan.300",
-              "color": "cyan.400",
-            },
+            "backgroundColor": "cyan.300",
+            "color": "cyan.400",
           },
           "spreadConditions": [],
         },
@@ -4432,10 +4014,8 @@ it('extract JsxSpreadAttribute > 3 depth spread', () => {
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "backgroundColor": "cyan.600",
-              "color": "cyan.500",
-            },
+            "backgroundColor": "cyan.600",
+            "color": "cyan.500",
           },
           "spreadConditions": [],
         },
@@ -4456,15 +4036,18 @@ it("extract JsxSpreadAttribute > ConditionalExpression > unresolvable expression
       "ColorBox": [
         {
           "conditions": [],
-          "raw": {
-            "_SPREAD_0_0": {
-              "color": "cyan.700",
+          "raw": {},
+          "spreadConditions": [
+            {
+              "path": [],
+              "whenFalse": {
+                "backgroundColor": "cyan.800",
+              },
+              "whenTrue": {
+                "color": "cyan.700",
+              },
             },
-            "_SPREAD_0_1": {
-              "backgroundColor": "cyan.800",
-            },
-          },
-          "spreadConditions": [],
+          ],
         },
       ],
     }
@@ -4478,7 +4061,7 @@ it('extract JsxSpreadAttribute > ElementAccessExpression', () => {
             const themeObjectsMap = {
                 basic: objectWithAttributes,
             };
-            <ColorBox {...themeObjectsMap[\`basic\`]}></ColorBox>
+            <ColorBox color="never.000" {...themeObjectsMap[\`basic\`]}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
     {
@@ -4486,9 +4069,7 @@ it('extract JsxSpreadAttribute > ElementAccessExpression', () => {
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "cyan.900",
-            },
+            "color": "cyan.900",
           },
           "spreadConditions": [],
         },
@@ -4504,7 +4085,7 @@ it('extract JsxSpreadAttribute > PropertyAccessExpression', () => {
             const themeObjectsMap = {
                 basic: objectWithAttributes,
             };
-            <ColorBox {...themeObjectsMap.basic}></ColorBox>
+            <ColorBox color="never.111" {...themeObjectsMap.basic}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
     {
@@ -4512,9 +4093,7 @@ it('extract JsxSpreadAttribute > PropertyAccessExpression', () => {
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "salmon.100",
-            },
+            "color": "salmon.100",
           },
           "spreadConditions": [],
         },
@@ -4532,7 +4111,7 @@ it('extract JsxSpreadAttribute > PropertyAccessExpression > nested', () => {
                     nested: objectWithAttributes
                 },
             };
-            <ColorBox {...themeObjectsMap.basic.nested}></ColorBox>
+            <ColorBox color="never.222" {...themeObjectsMap.basic.nested}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
     {
@@ -4540,9 +4119,7 @@ it('extract JsxSpreadAttribute > PropertyAccessExpression > nested', () => {
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "salmon.200",
-            },
+            "color": "salmon.200",
           },
           "spreadConditions": [],
         },
@@ -4558,7 +4135,7 @@ it('extract JsxSpreadAttribute > ElementAccessExpression + PropertyAccessExpress
             const themeObjectsMap = {
                 basic: { nested: objectWithAttributes },
             };
-            <ColorBox {...themeObjectsMap[\`basic\`].nested}></ColorBox>
+            <ColorBox color="never.333" {...themeObjectsMap[\`basic\`].nested}></ColorBox>
         `),
   ).toMatchInlineSnapshot(`
     {
@@ -4566,9 +4143,7 @@ it('extract JsxSpreadAttribute > ElementAccessExpression + PropertyAccessExpress
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "salmon.300",
-            },
+            "color": "salmon.300",
           },
           "spreadConditions": [],
         },
@@ -4592,9 +4167,7 @@ it('extract JsxSpreadAttribute > ElementAccessExpression > nested', () => {
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "salmon.400",
-            },
+            "color": "salmon.400",
           },
           "spreadConditions": [],
         },
@@ -4619,9 +4192,7 @@ it('extract JsxSpreadAttribute > ElementAccessExpression > Identifier / Computed
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "salmon.500",
-            },
+            "color": "salmon.500",
           },
           "spreadConditions": [],
         },
@@ -4649,9 +4220,7 @@ it('extract JsxSpreadAttribute > ElementAccessExpression > ComputedProperty / Te
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "salmon.600",
-            },
+            "color": "salmon.600",
           },
           "spreadConditions": [],
         },
@@ -4685,9 +4254,7 @@ it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "salmon.700",
-            },
+            "color": "salmon.700",
           },
           "spreadConditions": [],
         },
@@ -4721,9 +4288,7 @@ it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "salmon.800",
-            },
+            "color": "salmon.800",
           },
           "spreadConditions": [],
         },
@@ -4732,7 +4297,7 @@ it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > complex
   `)
 })
 
-it.only('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > unresolvable expression will output both outcome ', () => {
+it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > unresolvable expression will output both outcome ', () => {
   expect(
     extractFromCode(`
             const [unresolvableBoolean, setUnresolvableBoolean] = useState(false)
@@ -4752,15 +4317,18 @@ it.only('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > un
       "ColorBox": [
         {
           "conditions": [],
-          "raw": {
-            "_SPREAD_0_0": {
-              "color": "salmon.850",
+          "raw": {},
+          "spreadConditions": [
+            {
+              "path": [],
+              "whenFalse": {
+                "color": "salmon.900",
+              },
+              "whenTrue": {
+                "color": "salmon.850",
+              },
             },
-            "_SPREAD_0_1": {
-              "color": "salmon.900",
-            },
-          },
-          "spreadConditions": [],
+          ],
         },
       ],
     }
@@ -4783,9 +4351,7 @@ it('extract JsxSpreadAttribute > ElementAccessExpression > CallExpression', () =
         {
           "conditions": [],
           "raw": {
-            "_SPREAD_0_0": {
-              "color": "white.100",
-            },
+            "color": "white.100",
           },
           "spreadConditions": [],
         },
@@ -5157,7 +4723,9 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
         {
           "conditions": [
             {
-              "path": "#color",
+              "path": [
+                "color",
+              ],
               "whenFalse": "black.700",
               "whenTrue": {
                 "desktop": "black.600",
@@ -5259,7 +4827,11 @@ it('extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
         {
           "conditions": [
             {
-              "path": "#css.mobile.display",
+              "path": [
+                "css",
+                "mobile",
+                "display",
+              ],
               "whenFalse": "block",
               "whenTrue": "flex",
             },
@@ -5304,12 +4876,18 @@ it('extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignme
         {
           "conditions": [
             {
-              "path": "#css.backgroundColor",
+              "path": [
+                "css",
+                "backgroundColor",
+              ],
               "whenFalse": "sky.900",
               "whenTrue": "sky.800",
             },
             {
-              "path": "#css.mobile",
+              "path": [
+                "css",
+                "mobile",
+              ],
               "whenFalse": "crimson.900",
               "whenTrue": {
                 "display": "flex",
@@ -5348,7 +4926,9 @@ it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
         {
           "conditions": [
             {
-              "path": "#color",
+              "path": [
+                "color",
+              ],
               "whenFalse": "apple.100",
               "whenTrue": undefined,
             },
@@ -5374,7 +4954,9 @@ it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
         {
           "conditions": [
             {
-              "path": "#color",
+              "path": [
+                "color",
+              ],
               "whenFalse": "apple.200",
               "whenTrue": undefined,
             },
@@ -5400,7 +4982,9 @@ it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
         {
           "conditions": [
             {
-              "path": "#color",
+              "path": [
+                "color",
+              ],
               "whenFalse": "apple.300",
               "whenTrue": undefined,
             },
@@ -5651,7 +5235,9 @@ it('extract real-world Stack example ', () => {
         {
           "conditions": [
             {
-              "path": "#flexDirection",
+              "path": [
+                "flexDirection",
+              ],
               "whenFalse": "column",
               "whenTrue": undefined,
             },
@@ -5763,7 +5349,9 @@ it('extract JsxAttribute > Identifier > StringLiteral tailwind-like', () => {
         {
           "conditions": [
             {
-              "path": "#className",
+              "path": [
+                "className",
+              ],
               "whenFalse": "bg-sky-800",
               "whenTrue": [
                 "bg-sky-400",

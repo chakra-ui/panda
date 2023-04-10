@@ -5,18 +5,11 @@ import type { BoxNode } from './box-factory'
 import type { LiteralValue } from './types'
 import { isNotNullish } from './utils'
 
-const append = (path: string, key: string | number) => {
-  if (!path || (path.length === 1 && path[0] === '#')) return `#${key}`
-  return path + '.' + key
-}
-
 const getLiteralValue = (node: BoxNode | undefined, ctx: UnboxContext): LiteralValue | undefined => {
   return match(node)
     .with(P.nullish, () => undefined)
     .when(box.isConditional, (node) => {
-      const path = ctx.path || '#'
-      // console.log('conditional', ctx.path, node)
-
+      const path = ctx.path
       const whenTrue = getLiteralValue(node.whenTrue, Object.assign({}, ctx, { path, parent: node }))
       const whenFalse = getLiteralValue(node.whenFalse, Object.assign({}, ctx, { path, parent: node }))
 
@@ -32,7 +25,7 @@ const getLiteralValue = (node: BoxNode | undefined, ctx: UnboxContext): LiteralV
     })
     .when(box.isMap, (node) => {
       if (node.spreadConditions) {
-        const path = ctx.path || '#'
+        const path = ctx.path
         node.spreadConditions.forEach((spread) => {
           const whenTrue = getLiteralValue(spread.whenTrue, Object.assign({}, ctx, { path, parent: node }))
           const whenFalse = getLiteralValue(spread.whenFalse, Object.assign({}, ctx, { path, parent: node }))
@@ -48,7 +41,7 @@ const getLiteralValue = (node: BoxNode | undefined, ctx: UnboxContext): LiteralV
         Arr.from(node.value.entries()),
         Arr.map(([key, propNode]) => [
           key,
-          getLiteralValue(propNode, Object.assign({}, ctx, { path: append(ctx.path, key), parent: node })),
+          getLiteralValue(propNode, Object.assign({}, ctx, { path: ctx.path.concat(key), parent: node })),
         ]),
         Arr.filter(([, value]) => isNotNullish(value)),
         Object.fromEntries,
@@ -59,7 +52,10 @@ const getLiteralValue = (node: BoxNode | undefined, ctx: UnboxContext): LiteralV
       return pipe(
         node.value,
         Arr.map((elementNode) =>
-          getLiteralValue(elementNode, Object.assign({}, ctx, { path: append(ctx.path, index++), parent: node })),
+          getLiteralValue(
+            elementNode,
+            Object.assign({}, ctx, { path: ctx.path.concat(String(index++)), parent: node }),
+          ),
         ),
         Arr.filter(isNotNullish),
         (v) => v.flat(),
@@ -73,21 +69,22 @@ type BoxNodeType = BoxNode | BoxNode[] | undefined
 type CacheMap = WeakMap<BoxNode, unknown>
 
 type ConditionalPath = {
+  // not sure if adding those infos is useful, leaving it for now
   // node: BoxNodeConditional
   // parent: BoxNode | undefined
-  path: string
+  path: string[]
   whenTrue: LiteralValue
   whenFalse: LiteralValue
 }
 
 type UnboxContext = {
-  path: string
+  path: string[]
   parent: BoxNode | undefined
-  // enter: (node: BoxNode) => void
-  // exit: (node: BoxNode) => void
   cache: CacheMap
+  /** @example <ColorBox color={unresolvableIdentifier ? "light.100" : "dark.200" } /> */
   conditions: ConditionalPath[]
-  spreadConditions: ConditionalPath[]
+  /** @example <ColorBox {...(someCondition && { color: "blue.100" })} /> */
+  spreadConditions: ConditionalPath[] // there is no specific upside to having this separated from conditions but it's easier to debug
 }
 type Unboxed = {
   raw: LiteralValue | undefined
@@ -108,7 +105,7 @@ export const unbox = (node: BoxNodeType, ctx?: Pick<UnboxContext, 'cache'>): Unb
   const _ctx: UnboxContext = {
     cache: ctx?.cache ?? cacheMap,
     ...ctx,
-    path: '',
+    path: [],
     parent: undefined,
     conditions: [],
     spreadConditions: [],
