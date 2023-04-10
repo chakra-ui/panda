@@ -2,8 +2,21 @@ import { Arr, Bool, pipe } from 'lil-fp'
 import { P, match } from 'ts-pattern'
 import { box } from './box'
 import type { BoxNode } from './box-factory'
-import type { LiteralValue } from './types'
+import type { LiteralObject, LiteralValue } from './types'
 import { isNotNullish } from './utils'
+
+const makeObjAt = (path: string[], value: unknown) => {
+  if (!path.length) return value as LiteralObject
+
+  const obj = {} as any
+  path.reduce((acc, key, i) => {
+    const isLast = i === path.length - 1
+    acc[key] = isLast ? value : {}
+    return isLast ? obj : acc[key]
+  }, obj)
+
+  return obj as LiteralObject
+}
 
 const getLiteralValue = (node: BoxNode | undefined, ctx: UnboxContext): LiteralValue | undefined => {
   return match(node)
@@ -13,10 +26,11 @@ const getLiteralValue = (node: BoxNode | undefined, ctx: UnboxContext): LiteralV
       const whenTrue = getLiteralValue(node.whenTrue, Object.assign({}, ctx, { path, parent: node }))
       const whenFalse = getLiteralValue(node.whenFalse, Object.assign({}, ctx, { path, parent: node }))
 
-      // if we can't resolve any of the 2 branches, ignore it
-      if (whenTrue || whenFalse) {
-        // node, parent: ctx.parent,
-        ctx.conditions.push({ path, whenTrue, whenFalse })
+      if (whenTrue) {
+        ctx.conditions.push(makeObjAt(path, whenTrue))
+      }
+      if (whenFalse) {
+        ctx.conditions.push(makeObjAt(path, whenFalse))
       }
       return undefined
     })
@@ -30,9 +44,11 @@ const getLiteralValue = (node: BoxNode | undefined, ctx: UnboxContext): LiteralV
           const whenTrue = getLiteralValue(spread.whenTrue, Object.assign({}, ctx, { path, parent: node }))
           const whenFalse = getLiteralValue(spread.whenFalse, Object.assign({}, ctx, { path, parent: node }))
 
-          // if we can't resolve any of the 2 branches, ignore it
-          if (whenTrue || whenFalse) {
-            ctx.spreadConditions.push({ path, whenTrue, whenFalse })
+          if (whenTrue) {
+            ctx.spreadConditions.push(makeObjAt(path, whenTrue))
+          }
+          if (whenFalse) {
+            ctx.spreadConditions.push(makeObjAt(path, whenFalse))
           }
         })
       }
@@ -68,28 +84,19 @@ const getLiteralValue = (node: BoxNode | undefined, ctx: UnboxContext): LiteralV
 type BoxNodeType = BoxNode | BoxNode[] | undefined
 type CacheMap = WeakMap<BoxNode, unknown>
 
-type ConditionalPath = {
-  // not sure if adding those infos is useful, leaving it for now
-  // node: BoxNodeConditional
-  // parent: BoxNode | undefined
-  path: string[]
-  whenTrue: LiteralValue
-  whenFalse: LiteralValue
-}
-
 type UnboxContext = {
   path: string[]
   parent: BoxNode | undefined
   cache: CacheMap
   /** @example <ColorBox color={unresolvableIdentifier ? "light.100" : "dark.200" } /> */
-  conditions: ConditionalPath[]
+  conditions: LiteralObject[]
   /** @example <ColorBox {...(someCondition && { color: "blue.100" })} /> */
-  spreadConditions: ConditionalPath[] // there is no specific upside to having this separated from conditions but it's easier to debug
+  spreadConditions: LiteralObject[] // there is no specific upside to having this separated from conditions but it's easier to debug
 }
 type Unboxed = {
   raw: LiteralValue | undefined
-  conditions: ConditionalPath[]
-  spreadConditions: ConditionalPath[]
+  conditions: LiteralObject[]
+  spreadConditions: LiteralObject[]
 }
 
 export const cacheMap: CacheMap = new WeakMap()

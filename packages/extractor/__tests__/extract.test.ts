@@ -59,11 +59,10 @@ it('extract it all', () => {
         {
           "conditions": [
             {
-              "path": [
-                "color",
-              ],
-              "whenFalse": "cyan.500",
-              "whenTrue": "cyan.400",
+              "color": "cyan.400",
+            },
+            {
+              "color": "cyan.500",
             },
           ],
           "raw": {},
@@ -93,11 +92,10 @@ it('extract it all', () => {
         {
           "conditions": [
             {
-              "path": [
-                "color",
-              ],
-              "whenFalse": "gray.200",
-              "whenTrue": "facebook.600",
+              "color": "facebook.600",
+            },
+            {
+              "color": "gray.200",
             },
           ],
           "raw": {},
@@ -106,11 +104,10 @@ it('extract it all', () => {
         {
           "conditions": [
             {
-              "path": [
-                "color",
-              ],
-              "whenFalse": "gray.300",
-              "whenTrue": "gray.200",
+              "color": "gray.200",
+            },
+            {
+              "color": "gray.300",
             },
           ],
           "raw": {},
@@ -273,11 +270,10 @@ it('extract it all', () => {
         {
           "conditions": [
             {
-              "path": [
-                "color",
-              ],
-              "whenFalse": "gray.800",
-              "whenTrue": "gray.600",
+              "color": "gray.600",
+            },
+            {
+              "color": "gray.800",
             },
           ],
           "raw": {},
@@ -286,11 +282,10 @@ it('extract it all', () => {
         {
           "conditions": [
             {
-              "path": [
-                "color",
-              ],
-              "whenFalse": "gray.100",
-              "whenTrue": "gray.700",
+              "color": "gray.700",
+            },
+            {
+              "color": "gray.100",
             },
           ],
           "raw": {},
@@ -2254,11 +2249,10 @@ it('extract JsxAttribute > JsxExpression > ConditonalExpression > Identifier|Val
         {
           "conditions": [
             {
-              "path": [
-                "color",
-              ],
-              "whenFalse": "whiteAlpha.100",
-              "whenTrue": "red.500",
+              "color": "red.500",
+            },
+            {
+              "color": "whiteAlpha.100",
             },
           ],
           "raw": {},
@@ -3530,11 +3524,10 @@ it("extract JsxAttribute > JsxExpression > ConditionalExpression with Unexpected
         {
           "conditions": [
             {
-              "path": [
-                "color",
-              ],
-              "whenFalse": "purple.700",
-              "whenTrue": "purple.600",
+              "color": "purple.600",
+            },
+            {
+              "color": "purple.700",
             },
           ],
           "raw": {},
@@ -3559,11 +3552,10 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > unresolvable 
         {
           "conditions": [
             {
-              "path": [
-                "color",
-              ],
-              "whenFalse": "purple.950",
-              "whenTrue": "purple.900",
+              "color": "purple.900",
+            },
+            {
+              "color": "purple.950",
             },
           ],
           "raw": {},
@@ -3593,11 +3585,10 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > ElementAccess
         {
           "conditions": [
             {
-              "path": [
-                "color",
-              ],
-              "whenFalse": "orange.300",
-              "whenTrue": "orange.200",
+              "color": "orange.200",
+            },
+            {
+              "color": "orange.300",
             },
           ],
           "raw": {},
@@ -4039,13 +4030,10 @@ it("extract JsxSpreadAttribute > ConditionalExpression > unresolvable expression
           "raw": {},
           "spreadConditions": [
             {
-              "path": [],
-              "whenFalse": {
-                "backgroundColor": "cyan.800",
-              },
-              "whenTrue": {
-                "color": "cyan.700",
-              },
+              "color": "cyan.700",
+            },
+            {
+              "backgroundColor": "cyan.800",
             },
           ],
         },
@@ -4320,13 +4308,10 @@ it('extract JsxSpreadAttribute > JsxExpression > ConditionalExpression > unresol
           "raw": {},
           "spreadConditions": [
             {
-              "path": [],
-              "whenFalse": {
-                "color": "salmon.900",
-              },
-              "whenTrue": {
-                "color": "salmon.850",
-              },
+              "color": "salmon.850",
+            },
+            {
+              "color": "salmon.900",
             },
           ],
         },
@@ -4723,15 +4708,14 @@ it('extract JsxAttribute > JsxExpression > ConditionalExpression > StringLiteral
         {
           "conditions": [
             {
-              "path": [
-                "color",
-              ],
-              "whenFalse": "black.700",
-              "whenTrue": {
+              "color": {
                 "desktop": "black.600",
                 "mobile": "black.400",
                 "tablet": "black.500",
               },
+            },
+            {
+              "color": "black.700",
             },
           ],
           "raw": {},
@@ -4827,13 +4811,18 @@ it('extract JsxAttribute > ObjectLiteralExpression > css prop > ConditionalExpre
         {
           "conditions": [
             {
-              "path": [
-                "css",
-                "mobile",
-                "display",
-              ],
-              "whenFalse": "block",
-              "whenTrue": "flex",
+              "css": {
+                "mobile": {
+                  "display": "flex",
+                },
+              },
+            },
+            {
+              "css": {
+                "mobile": {
+                  "display": "block",
+                },
+              },
             },
           ],
           "raw": {
@@ -4876,22 +4865,26 @@ it('extract JsxAttribute > ObjectLiteralExpression > css prop > PropertyAssignme
         {
           "conditions": [
             {
-              "path": [
-                "css",
-                "backgroundColor",
-              ],
-              "whenFalse": "sky.900",
-              "whenTrue": "sky.800",
+              "css": {
+                "backgroundColor": "sky.800",
+              },
             },
             {
-              "path": [
-                "css",
-                "mobile",
-              ],
-              "whenFalse": "crimson.900",
-              "whenTrue": {
-                "display": "flex",
-                "fontSize": "2xl",
+              "css": {
+                "backgroundColor": "sky.900",
+              },
+            },
+            {
+              "css": {
+                "mobile": {
+                  "display": "flex",
+                  "fontSize": "2xl",
+                },
+              },
+            },
+            {
+              "css": {
+                "mobile": "crimson.900",
               },
             },
           ],
@@ -4926,11 +4919,7 @@ it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
         {
           "conditions": [
             {
-              "path": [
-                "color",
-              ],
-              "whenFalse": "apple.100",
-              "whenTrue": undefined,
+              "color": "apple.100",
             },
           ],
           "raw": {},
@@ -4954,11 +4943,7 @@ it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
         {
           "conditions": [
             {
-              "path": [
-                "color",
-              ],
-              "whenFalse": "apple.200",
-              "whenTrue": undefined,
+              "color": "apple.200",
             },
           ],
           "raw": {},
@@ -4982,11 +4967,7 @@ it('extract JsxAttribute > JsxExpression > Identifier > BinaryExpression > (Prop
         {
           "conditions": [
             {
-              "path": [
-                "color",
-              ],
-              "whenFalse": "apple.300",
-              "whenTrue": undefined,
+              "color": "apple.300",
             },
           ],
           "raw": {},
@@ -5235,11 +5216,7 @@ it('extract real-world Stack example ', () => {
         {
           "conditions": [
             {
-              "path": [
-                "flexDirection",
-              ],
-              "whenFalse": "column",
-              "whenTrue": undefined,
+              "flexDirection": "column",
             },
           ],
           "raw": {
@@ -5349,14 +5326,13 @@ it('extract JsxAttribute > Identifier > StringLiteral tailwind-like', () => {
         {
           "conditions": [
             {
-              "path": [
-                "className",
-              ],
-              "whenFalse": "bg-sky-800",
-              "whenTrue": [
+              "className": [
                 "bg-sky-400",
                 "text-lg",
               ],
+            },
+            {
+              "className": "bg-sky-800",
             },
           ],
           "raw": {},

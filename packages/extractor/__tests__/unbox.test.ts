@@ -4320,12 +4320,9 @@ test('unbox with unresolvable spread', () => {
     {
       "conditions": [
         {
-          "path": [
-            "style",
-            "background",
-          ],
-          "whenFalse": "rgb(99 102 241)",
-          "whenTrue": undefined,
+          "style": {
+            "background": "rgb(99 102 241)",
+          },
         },
       ],
       "raw": {
@@ -4413,7 +4410,7 @@ test('unbox with conditions', () => {
       md: {
         display: 'inline-flex',
         justifyContent: direction === 'row' ? 'flex-start' : 'flex-end',
-        hover: isDark ? { color: 'blue.200' } : { color: 'blue.300' },
+        hover: isDark ? { color: 'blue.400' } : { color: 'blue.300' },
         light: {
           px: 6,
           color: 'never.400',
@@ -4433,47 +4430,44 @@ test('unbox with conditions', () => {
     {
       "conditions": [
         {
-          "path": [
-            "color",
-          ],
-          "whenFalse": "blue.200",
-          "whenTrue": "blue.100",
+          "color": "blue.100",
         },
         {
-          "path": [
-            "fontSize",
-          ],
-          "whenFalse": "2xl",
-          "whenTrue": undefined,
+          "color": "blue.200",
         },
         {
-          "path": [
-            "md",
-            "justifyContent",
-          ],
-          "whenFalse": "flex-end",
-          "whenTrue": "flex-start",
+          "fontSize": "2xl",
         },
         {
-          "path": [
-            "md",
-            "hover",
-          ],
-          "whenFalse": {
-            "color": "blue.300",
-          },
-          "whenTrue": {
-            "color": "blue.200",
+          "md": {
+            "justifyContent": "flex-start",
           },
         },
         {
-          "path": [
-            "md",
-            "light",
-            "backgroundColor",
-          ],
-          "whenFalse": "red.200",
-          "whenTrue": undefined,
+          "md": {
+            "justifyContent": "flex-end",
+          },
+        },
+        {
+          "md": {
+            "hover": {
+              "color": "blue.400",
+            },
+          },
+        },
+        {
+          "md": {
+            "hover": {
+              "color": "blue.300",
+            },
+          },
+        },
+        {
+          "md": {
+            "light": {
+              "backgroundColor": "red.200",
+            },
+          },
         },
       ],
       "raw": {
@@ -4496,38 +4490,38 @@ test('unbox with conditions', () => {
       },
       "spreadConditions": [
         {
-          "path": [],
-          "whenFalse": {
-            "alignItems": "flex-end",
-          },
-          "whenTrue": {
-            "alignItems": "flex-start",
-          },
+          "alignItems": "flex-start",
         },
         {
-          "path": [
-            "md",
-            "light",
-            "hover",
-          ],
-          "whenFalse": {
-            "& span": {
-              "display": "block",
+          "alignItems": "flex-end",
+        },
+        {
+          "md": {
+            "light": {
+              "hover": {
+                "& span": {
+                  "display": "block",
+                },
+              },
             },
           },
-          "whenTrue": undefined,
         },
         {
-          "path": [
-            "md",
-            "light",
-            "hover",
-          ],
-          "whenFalse": {
-            "color": "black",
+          "md": {
+            "light": {
+              "hover": {
+                "color": "white",
+              },
+            },
           },
-          "whenTrue": {
-            "color": "white",
+        },
+        {
+          "md": {
+            "light": {
+              "hover": {
+                "color": "black",
+              },
+            },
           },
         },
       ],
