@@ -315,7 +315,11 @@ it('extract it all', () => {
         {
           "conditions": [],
           "raw": {},
-          "spreadConditions": [],
+          "spreadConditions": [
+            {
+              "color": "blackAlpha.400",
+            },
+          ],
         },
         {
           "conditions": [],
@@ -328,12 +332,20 @@ it('extract it all', () => {
         {
           "conditions": [],
           "raw": {},
-          "spreadConditions": [],
+          "spreadConditions": [
+            {
+              "color": "facebook.200",
+            },
+          ],
         },
         {
           "conditions": [],
           "raw": {},
-          "spreadConditions": [],
+          "spreadConditions": [
+            {
+              "color": "facebook.300",
+            },
+          ],
         },
         {
           "conditions": [],
@@ -1618,7 +1630,52 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": BoxNodeMap {
           "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+          "spreadConditions": [
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [
+                Identifier,
+                VariableDeclaration,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "null",
+                "node": NullKeyword,
+                "stack": [
+                  Identifier,
+                  VariableDeclaration,
+                ],
+                "type": "literal",
+                "value": null,
+              },
+              "whenTrue": BoxNodeMap {
+                "node": ObjectLiteralExpression,
+                "spreadConditions": undefined,
+                "stack": [
+                  Identifier,
+                  VariableDeclaration,
+                  ObjectLiteralExpression,
+                ],
+                "type": "map",
+                "value": Map {
+                  "color" => BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      Identifier,
+                      VariableDeclaration,
+                      ObjectLiteralExpression,
+                      PropertyAssignment,
+                      StringLiteral,
+                    ],
+                    "type": "literal",
+                    "value": "blackAlpha.400",
+                  },
+                },
+              },
+            },
+          ],
           "stack": [],
           "type": "map",
           "value": Map {},
@@ -1672,7 +1729,39 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": BoxNodeMap {
           "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+          "spreadConditions": [
+            BoxNodeConditional {
+              "kind": "ternary",
+              "node": ConditionalExpression,
+              "stack": [],
+              "type": "conditional",
+              "whenFalse": BoxNodeLiteral {
+                "kind": "undefined",
+                "node": Identifier,
+                "stack": [],
+                "type": "literal",
+                "value": undefined,
+              },
+              "whenTrue": BoxNodeMap {
+                "node": ObjectLiteralExpression,
+                "spreadConditions": undefined,
+                "stack": [],
+                "type": "map",
+                "value": Map {
+                  "color" => BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      PropertyAssignment,
+                      StringLiteral,
+                    ],
+                    "type": "literal",
+                    "value": "facebook.200",
+                  },
+                },
+              },
+            },
+          ],
           "stack": [],
           "type": "map",
           "value": Map {},
@@ -1682,7 +1771,48 @@ it('ExtractSample - groups extract props in parent component instance', () => {
       {
         "box": BoxNodeMap {
           "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+          "spreadConditions": [
+            BoxNodeConditional {
+              "kind": "and",
+              "node": BinaryExpression,
+              "stack": [
+                Identifier,
+                BindingElement,
+              ],
+              "type": "conditional",
+              "whenFalse": BoxNodeMap {
+                "node": ObjectLiteralExpression,
+                "spreadConditions": undefined,
+                "stack": [
+                  Identifier,
+                  BindingElement,
+                ],
+                "type": "map",
+                "value": Map {
+                  "color" => BoxNodeLiteral {
+                    "kind": "string",
+                    "node": StringLiteral,
+                    "stack": [
+                      Identifier,
+                      BindingElement,
+                      PropertyAssignment,
+                      StringLiteral,
+                    ],
+                    "type": "literal",
+                    "value": "facebook.300",
+                  },
+                },
+              },
+              "whenTrue": BoxNodeUnresolvable {
+                "node": BindingElement,
+                "stack": [
+                  Identifier,
+                  BindingElement,
+                ],
+                "type": "unresolvable",
+              },
+            },
+          ],
           "stack": [],
           "type": "map",
           "value": Map {},
@@ -6130,6 +6260,63 @@ it('handles multiline string literal', () => {
             },
           },
           "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})
+
+it('handles merge spread', () => {
+  expect(
+    extractFromCode(
+      `<div>
+        <ColorBox color="never.100" padding="4" {...{ color: "never.200" }} color="after.300" margin={2} />
+        <ColorBox color="never.400" padding="4" {...{ color: "spread.500" }} margin={2} />
+      </div>`,
+      {
+        tagNameList: ['ColorBox'],
+      },
+    ),
+  ).toMatchInlineSnapshot(`
+    {
+      "ColorBox": [
+        {
+          "conditions": [],
+          "raw": {
+            "color": "after.300",
+            "margin": 2,
+            "padding": "4",
+          },
+          "spreadConditions": [],
+        },
+        {
+          "conditions": [],
+          "raw": {
+            "color": "spread.500",
+            "margin": 2,
+            "padding": "4",
+          },
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})
+
+it('handles root spread conditional', () => {
+  expect(
+    extractFromCode(`<ColorBox {...(someCondition && { color: "facebook.100" })} />`, { tagNameList: ['ColorBox'] }),
+  ).toMatchInlineSnapshot(`
+    {
+      "ColorBox": [
+        {
+          "conditions": [],
+          "raw": {},
+          "spreadConditions": [
+            {
+              "color": "facebook.100",
+            },
+          ],
         },
       ],
     }
