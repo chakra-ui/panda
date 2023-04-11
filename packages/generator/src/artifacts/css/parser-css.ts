@@ -3,6 +3,7 @@ import type { ParserResult } from '@pandacss/types'
 import { pipe, tap, tryCatch } from 'lil-fp/func'
 import { match, P } from 'ts-pattern'
 import type { Context } from '../../engines'
+import type { Dict } from '@pandacss/types'
 
 export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
   pipe(
@@ -23,19 +24,17 @@ export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
       result.jsx.forEach((jsx) => {
         jsx.data.forEach((data) => {
           const { css = {}, ...rest } = data
-          const styles = { ...rest, ...css }
+          const styles = { ...rest, ...css } as Dict
 
           match(jsx)
             // treat pattern jsx like regular pattern
             .with({ type: 'pattern', name: P.string }, ({ name }) => {
-              result.setPattern(patterns.getFnName(name), { data: styles })
+              result.setPattern(patterns.getFnName(name), { data: [styles] })
             })
             // treat recipe jsx like regular recipe + atomic
             .with({ type: 'recipe', name: P.string }, ({ name }) => {
               const [recipeProps, styleProps] = recipes.splitProps(name, styles)
-              result.setRecipe(recipes.getFnName(name), {
-                data: [recipeProps],
-              })
+              result.setRecipe(recipes.getFnName(name), { data: [recipeProps] })
               sheet.processAtomic(styleProps)
             })
             // read and process style props
@@ -50,7 +49,10 @@ export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
           for (const recipe of recipeSet) {
             const recipeConfig = recipes.getConfig(name)
             if (!recipeConfig) continue
-            sheet.processRecipe(recipeConfig, recipe.data)
+
+            recipe.data.forEach((data) => {
+              sheet.processRecipe(recipeConfig, data)
+            })
           }
         } catch (error) {
           logger.error('serializer:recipe', error)
