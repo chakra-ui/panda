@@ -2,7 +2,7 @@ import { isCssProperty, allCssProperties } from '@pandacss/is-valid-prop'
 import { utilities, conditions } from '@pandacss/fixture'
 import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
-import { ParserOptions } from '../src/parser'
+import { type ParserOptions } from '../src/parser'
 
 const staticFilePath = 'test.tsx'
 const properties = Array.from(
