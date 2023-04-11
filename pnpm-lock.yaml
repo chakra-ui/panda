@@ -234,8 +234,8 @@ importers:
         specifier: 2.1.0
         version: 2.1.0
       lil-fp:
-        specifier: 1.4.1
-        version: 1.4.1
+        specifier: 1.4.5
+        version: 1.4.5
       outdent:
         specifier: ' ^0.8.0'
         version: 0.8.0
@@ -268,8 +268,8 @@ importers:
         specifier: ^4.1.5
         version: 4.1.5
       lil-fp:
-        specifier: 1.4.1
-        version: 1.4.1
+        specifier: 1.4.5
+        version: 1.4.5
     devDependencies:
       matcher:
         specifier: 5.0.0
@@ -338,8 +338,8 @@ importers:
         specifier: 2.1.0
         version: 2.1.0
       lil-fp:
-        specifier: 1.4.1
-        version: 1.4.1
+        specifier: 1.4.5
+        version: 1.4.5
       lodash.merge:
         specifier: 4.6.2
         version: 4.6.2
@@ -408,8 +408,8 @@ importers:
         specifier: workspace:*
         version: link:../types
       lil-fp:
-        specifier: 1.4.1
-        version: 1.4.1
+        specifier: 1.4.5
+        version: 1.4.5
       ts-morph:
         specifier: 17.0.1
         version: 17.0.1
@@ -13397,8 +13397,8 @@ packages:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  /lil-fp@1.4.1:
-    resolution: {integrity: sha512-BSDAm0pULnNu7L2uXCzuXwTF7S0SJ1OzJuWTuadfx43yz4WqXGgP6IKm2XS1ddksXOd76LwHPW0W/2nmGkxVIw==}
+  /lil-fp@1.4.5:
+    resolution: {integrity: sha512-RrMQ2dB7SDXriFPZMMHEmroaSP6lFw3QEV7FOfSkf19kvJnDzHqKMc2P9HOf5uE8fOp5YxodSrq7XxWjdeC2sw==}
     dev: false
 
   /lilconfig@2.1.0:
