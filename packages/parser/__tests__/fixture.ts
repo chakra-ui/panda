@@ -2,7 +2,6 @@ import { isCssProperty, allCssProperties } from '@pandacss/is-valid-prop'
 import { utilities, conditions } from '@pandacss/fixture'
 import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
-import { type ParserOptions } from '../src/parser'
 
 const staticFilePath = 'test.tsx'
 const properties = Array.from(
@@ -20,7 +19,7 @@ const properties = Array.from(
   ]),
 )
 
-function getProject(code: string, options: { nodes?: NonNullable<ParserOptions['jsx']>['nodes'] } = {}) {
+function getProject(code: string, options: { nodes?: any[] } = {}) {
   return createProject({
     useInMemoryFileSystem: true,
     getFiles: () => [staticFilePath],
