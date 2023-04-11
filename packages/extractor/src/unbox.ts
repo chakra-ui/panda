@@ -93,8 +93,8 @@ type UnboxContext = {
   /** @example <ColorBox {...(someCondition && { color: "blue.100" })} /> */
   spreadConditions: LiteralObject[] // there is no specific upside to having this separated from conditions but it's easier to debug
 }
-type Unboxed = {
-  raw: LiteralValue | undefined
+export type Unboxed = {
+  raw: LiteralObject
   conditions: LiteralObject[]
   spreadConditions: LiteralObject[]
 }
@@ -136,7 +136,7 @@ export const unbox = (node: BoxNodeType, ctx?: Pick<UnboxContext, 'cache'>): Unb
       const value = getLiteralValue(node, _ctx)
       cache.set(node, value)
       return value
-    })
+    }) as LiteralObject
 
   return { raw, conditions: _ctx.conditions, spreadConditions: _ctx.spreadConditions }
 }

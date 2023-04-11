@@ -157,22 +157,26 @@ describe('ast parser / styled', () => {
                 },
               ],
             },
-            "data": [
-              "div",
-              {
-                "base": {
-                  "color": "red",
-                  "fontSize": "12px",
-                },
-                "variants": {
-                  "color": {
-                    "red": {
-                      "background": "red",
+            "data": {
+              "conditions": [],
+              "raw": [
+                "div",
+                {
+                  "base": {
+                    "color": "red",
+                    "fontSize": "12px",
+                  },
+                  "variants": {
+                    "color": {
+                      "red": {
+                        "background": "red",
+                      },
                     },
                   },
                 },
-              },
-            ],
+              ],
+              "spreadConditions": [],
+            },
             "name": "panda",
             "type": "cva",
           },

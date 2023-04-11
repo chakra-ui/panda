@@ -1,7 +1,6 @@
 import { BoxNodeMap, extract, unbox } from '@pandacss/extractor'
 import { logger } from '@pandacss/logger'
 import { memo } from '@pandacss/shared'
-import type { ResultItem } from '@pandacss/types'
 import type { SourceFile } from 'ts-morph'
 import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
@@ -16,8 +15,6 @@ type ParserNodeOptions = {
   props?: string[]
   baseName: string
 }
-
-type ResultData = ResultItem['data']
 
 export type ParserOptions = {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string>
@@ -169,7 +166,7 @@ export function createParser(options: ParserOptions) {
                 collector.set(name, {
                   name,
                   box: query.box.value[0] as BoxNodeMap,
-                  data: unbox(query.box.value[0]) as ResultData,
+                  data: unbox(query.box.value[0]),
                 })
               })
             })
@@ -179,7 +176,7 @@ export function createParser(options: ParserOptions) {
                 collector.setPattern(name, {
                   name,
                   box: query.box.value[0] as BoxNodeMap,
-                  data: unbox(query.box.value[0]) as ResultData,
+                  data: unbox(query.box.value[0]),
                 })
               })
             })
@@ -189,14 +186,14 @@ export function createParser(options: ParserOptions) {
                 collector.setRecipe(name, {
                   name,
                   box: query.box.value[0] as BoxNodeMap,
-                  data: unbox(query.box.value[0]) as ResultData,
+                  data: unbox(query.box.value[0]),
                 })
               })
             })
             // panda("span", { ... }) or panda("div", badge)
             .when(isValidStyleFn, () => {
               result.queryList.forEach((query) => {
-                collector.setCva({ name, box: query.box, data: unbox(query.box) as ResultData })
+                collector.setCva({ name, box: query.box, data: unbox(query.box) })
               })
             })
             .otherwise(() => {
@@ -206,7 +203,7 @@ export function createParser(options: ParserOptions) {
           result.queryList.forEach((query) => {
             let type: string
 
-            const data = unbox(query.box) as ResultData
+            const data = unbox(query.box)
             logger.debug(`ast:jsx:${name}`, { filePath, result: data })
 
             if (jsx && name.startsWith(jsxFactoryAlias)) {

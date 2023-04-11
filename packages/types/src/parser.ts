@@ -1,8 +1,8 @@
-import type { BoxNodeMap, BoxNodeArray } from '@pandacss/extractor'
+import type { BoxNodeMap, BoxNodeArray, Unboxed } from '@pandacss/extractor'
 
 export type ResultItem = {
   name?: string
-  data: Record<string, any>
+  data: Unboxed
   type?: string
   box?: BoxNodeArray | BoxNodeMap
 }

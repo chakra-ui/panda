@@ -14,7 +14,7 @@ import type { BoxNode, BoxNodeArray, BoxNodeMap } from './box-factory'
 
 export type PrimitiveType = string | number | boolean | null | undefined
 
-export type LiteralObject = Record<string, unknown>
+export type LiteralObject = Record<string, any>
 
 export type SingleLiteralValue = PrimitiveType | LiteralObject
 

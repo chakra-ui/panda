@@ -13,11 +13,11 @@ export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
       })
 
       result.cva.forEach((cva) => {
-        sheet.processAtomicRecipe(cva.data)
+        sheet.processAtomicRecipe(cva.data.raw)
       })
 
       result.jsx.forEach((jsx) => {
-        const { css = {}, ...rest } = jsx.data
+        const { css = {}, ...rest } = jsx.data.raw
         const styles = { ...rest, ...css }
 
         match(jsx)
@@ -28,7 +28,9 @@ export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
           // treat recipe jsx like regular recipe + atomic
           .with({ type: 'recipe', name: P.string }, ({ name }) => {
             const [recipeProps, styleProps] = recipes.splitProps(name, styles)
-            result.setRecipe(recipes.getFnName(name), { data: recipeProps })
+            result.setRecipe(recipes.getFnName(name), {
+              data: { raw: recipeProps, conditions: [], spreadConditions: [] },
+            })
             sheet.processAtomic(styleProps)
           })
           // read and process style props
@@ -52,7 +54,7 @@ export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
       result.pattern.forEach((patternSet, name) => {
         try {
           for (const pattern of patternSet) {
-            const styleProps = patterns.transform(name, pattern.data)
+            const styleProps = patterns.transform(name, pattern.data.raw)
             sheet.processAtomic(styleProps)
           }
         } catch (error) {

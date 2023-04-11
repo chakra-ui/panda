@@ -22,4 +22,4 @@ export type {
   ExtractedFunctionResult,
   PrimitiveType,
 } from './types'
-export { unbox } from './unbox'
+export { unbox, type Unboxed } from './unbox'

@@ -1,5 +1,5 @@
 import { capitalize, dashCase, mapObject, uncapitalize } from '@pandacss/shared'
-import type { UserConfig } from '@pandacss/types'
+import type { ResultItem, UserConfig } from '@pandacss/types'
 import { Obj, pipe } from 'lil-fp'
 
 const helpers = { map: mapObject }
@@ -13,7 +13,7 @@ export const getPatternEngine = (config: UserConfig) => {
     }),
 
     Obj.bind('transform', ({ getConfig }) => {
-      return (name: string, data: Record<string, any>) => {
+      return (name: string, data: ResultItem['data']['raw']) => {
         return getConfig(name)?.transform?.(data, helpers) ?? {}
       }
     }),

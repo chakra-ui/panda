@@ -141,17 +141,21 @@ describe('ast parser / cva', () => {
               },
             },
             "data": {
-              "base": {
-                "color": "red",
-                "fontSize": "12px",
-              },
-              "variants": {
-                "color": {
-                  "red": {
-                    "background": "red",
+              "conditions": [],
+              "raw": {
+                "base": {
+                  "color": "red",
+                  "fontSize": "12px",
+                },
+                "variants": {
+                  "color": {
+                    "red": {
+                      "background": "red",
+                    },
                   },
                 },
               },
+              "spreadConditions": [],
             },
             "name": "cva",
             "type": "object",

@@ -78,8 +78,12 @@ describe('ast parser', () => {
               },
             },
             "data": {
-              "color": "red",
-              "fontSize": "12px",
+              "conditions": [],
+              "raw": {
+                "color": "red",
+                "fontSize": "12px",
+              },
+              "spreadConditions": [],
             },
             "name": "css",
             "type": "object",
@@ -186,15 +190,19 @@ describe('ast parser', () => {
               },
             },
             "data": {
-              "bg": "red.300",
-              "margin": {
-                "lg": "40px",
-                "xs": "0",
+              "conditions": [],
+              "raw": {
+                "bg": "red.300",
+                "margin": {
+                  "lg": "40px",
+                  "xs": "0",
+                },
+                "padding": [
+                  12,
+                  50,
+                ],
               },
-              "padding": [
-                12,
-                50,
-              ],
+              "spreadConditions": [],
             },
             "name": "css",
             "type": "object",
@@ -259,8 +267,12 @@ describe('ast parser', () => {
               },
             },
             "data": {
-              "color": "red",
-              "fontSize": "12px",
+              "conditions": [],
+              "raw": {
+                "color": "red",
+                "fontSize": "12px",
+              },
+              "spreadConditions": [],
             },
             "name": "css",
             "type": "object",
@@ -367,15 +379,19 @@ describe('ast parser', () => {
               },
             },
             "data": {
-              "bg": "red.300",
-              "margin": {
-                "lg": "40px",
-                "xs": "0",
+              "conditions": [],
+              "raw": {
+                "bg": "red.300",
+                "margin": {
+                  "lg": "40px",
+                  "xs": "0",
+                },
+                "padding": [
+                  12,
+                  50,
+                ],
               },
-              "padding": [
-                12,
-                50,
-              ],
+              "spreadConditions": [],
             },
             "name": "css",
             "type": "object",
@@ -462,11 +478,15 @@ console.log(
               },
             },
             "data": {
-              "selectors": {
-                "&:hover": {
-                  "background": "red.200",
+              "conditions": [],
+              "raw": {
+                "selectors": {
+                  "&:hover": {
+                    "background": "red.200",
+                  },
                 },
               },
+              "spreadConditions": [],
             },
             "name": "css",
             "type": "object",
@@ -518,7 +538,11 @@ export function Card({ className }) {
               },
             },
             "data": {
-              "background": "white",
+              "conditions": [],
+              "raw": {
+                "background": "white",
+              },
+              "spreadConditions": [],
             },
             "name": "css",
             "type": "object",

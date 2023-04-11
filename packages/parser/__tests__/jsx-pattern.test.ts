@@ -57,9 +57,13 @@ describe('pattern jsx', () => {
             },
           },
           "data": {
-            "align": "center",
-            "marginBottom": "42px",
-            "marginTop": "40px",
+            "conditions": [],
+            "raw": {
+              "align": "center",
+              "marginBottom": "42px",
+              "marginTop": "40px",
+            },
+            "spreadConditions": [],
           },
           "name": "Stack",
           "type": "pattern",
