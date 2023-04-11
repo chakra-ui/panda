@@ -23,6 +23,7 @@ describe('ast parser', () => {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -55,16 +56,19 @@ describe('ast parser', () => {
                 },
               },
             },
-            "data": {
-              "color": "red",
-              "fontSize": "12px",
-            },
+            "data": [
+              {
+                "color": "red",
+                "fontSize": "12px",
+              },
+            ],
             "name": "css",
             "type": "object",
           },
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -85,6 +89,7 @@ describe('ast parser', () => {
                 },
                 "margin" => BoxNodeMap {
                   "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
                   "stack": [
                     CallExpression,
                     ObjectLiteralExpression,
@@ -125,13 +130,15 @@ describe('ast parser', () => {
                 },
               },
             },
-            "data": {
-              "bg": "red.300",
-              "margin": {
-                "lg": "40px",
-                "xs": "0",
+            "data": [
+              {
+                "bg": "red.300",
+                "margin": {
+                  "lg": "40px",
+                  "xs": "0",
+                },
               },
-            },
+            ],
             "name": "css",
             "type": "object",
           },

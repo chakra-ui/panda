@@ -8,12 +8,12 @@ The inline recipe takes the following properties:
 - `variants`: The variant styles for the recipe
 - `defaultVariants`: The default variants for the recipe
 
-To define an inline recipe, you’d need to use the `recipe` function like this.
+To define an inline recipe, you’d need to use the `cva` function like this.
 
 ```jsx
-import { recipe } from '../panda/css'
+import { cva } from '../panda/css'
 
-const button = recipe({
+const button = cva({
   base: {
     display: 'flex',
   },

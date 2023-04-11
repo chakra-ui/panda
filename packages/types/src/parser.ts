@@ -1,10 +1,10 @@
-import type { BoxNodeMap, BoxNodeList } from '@box-extractor/core'
+import type { BoxNodeMap, BoxNodeArray, Unboxed } from '@pandacss/extractor'
 
 export type ResultItem = {
   name?: string
-  data: Record<string, any>
+  data: Array<Unboxed['raw']>
   type?: string
-  box?: BoxNodeList | BoxNodeMap
+  box?: BoxNodeArray | BoxNodeMap
 }
 
 export type ParserResult = {

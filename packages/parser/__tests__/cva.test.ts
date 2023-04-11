@@ -27,6 +27,7 @@ describe('ast parser / cva', () => {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -35,6 +36,7 @@ describe('ast parser / cva', () => {
               "value": Map {
                 "base" => BoxNodeMap {
                   "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
                   "stack": [
                     CallExpression,
                     ObjectLiteralExpression,
@@ -75,6 +77,7 @@ describe('ast parser / cva', () => {
                 },
                 "variants" => BoxNodeMap {
                   "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
                   "stack": [
                     CallExpression,
                     ObjectLiteralExpression,
@@ -85,6 +88,7 @@ describe('ast parser / cva', () => {
                   "value": Map {
                     "color" => BoxNodeMap {
                       "node": ObjectLiteralExpression,
+                      "spreadConditions": undefined,
                       "stack": [
                         CallExpression,
                         ObjectLiteralExpression,
@@ -97,6 +101,7 @@ describe('ast parser / cva', () => {
                       "value": Map {
                         "red" => BoxNodeMap {
                           "node": ObjectLiteralExpression,
+                          "spreadConditions": undefined,
                           "stack": [
                             CallExpression,
                             ObjectLiteralExpression,
@@ -135,19 +140,21 @@ describe('ast parser / cva', () => {
                 },
               },
             },
-            "data": {
-              "base": {
-                "color": "red",
-                "fontSize": "12px",
-              },
-              "variants": {
-                "color": {
-                  "red": {
-                    "background": "red",
+            "data": [
+              {
+                "base": {
+                  "color": "red",
+                  "fontSize": "12px",
+                },
+                "variants": {
+                  "color": {
+                    "red": {
+                      "background": "red",
+                    },
                   },
                 },
               },
-            },
+            ],
             "name": "cva",
             "type": "object",
           },

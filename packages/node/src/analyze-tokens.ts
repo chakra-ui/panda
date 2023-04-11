@@ -7,8 +7,8 @@ import { classifyTokens } from './classify'
 import type { PandaContext } from './create-context'
 import { getNodeRange } from './get-node-range'
 
-import gzipSize from 'gzip-size'
 import { filesize } from 'filesize'
+import { gzipSizeSync } from 'gzip-size'
 
 export function analyzeTokens(
   ctx: PandaContext,
@@ -70,8 +70,8 @@ export function analyzeTokens(
         normal: filesize(Buffer.byteLength(css, 'utf-8')),
         minified: filesize(Buffer.byteLength(minifiedCss, 'utf-8')),
         gzip: {
-          normal: filesize(gzipSize.sync(css)),
-          minified: filesize(gzipSize.sync(minifiedCss)),
+          normal: filesize(gzipSizeSync(css)),
+          minified: filesize(gzipSizeSync(minifiedCss)),
         },
       },
     },

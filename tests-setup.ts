@@ -1,14 +1,5 @@
-import * as path from 'node:path'
-import { Options, resolveConfig } from 'prettier'
 import { Node } from 'ts-morph'
-import { beforeAll, expect } from 'vitest'
-
-let prettierConfig: Options | null
-const pkgRoot = process.cwd()
-
-beforeAll(async () => {
-  prettierConfig = await resolveConfig(path.resolve(pkgRoot, '../'))
-})
+import { expect } from 'vitest'
 
 expect.addSnapshotSerializer({
   serialize(value) {

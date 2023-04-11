@@ -20,6 +20,7 @@ describe('pattern jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -55,11 +56,13 @@ describe('pattern jsx', () => {
               },
             },
           },
-          "data": {
-            "align": "center",
-            "marginBottom": "42px",
-            "marginTop": "40px",
-          },
+          "data": [
+            {
+              "align": "center",
+              "marginBottom": "42px",
+              "marginTop": "40px",
+            },
+          ],
           "name": "Stack",
           "type": "pattern",
         },

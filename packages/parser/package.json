@@ -16,13 +16,13 @@
     "dev": "pnpm build-fast --watch"
   },
   "dependencies": {
-    "@box-extractor/core": "^0.9.0",
+    "@pandacss/extractor": "workspace:*",
     "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
     "lil-fp": "1.4.5",
-    "ts-morph": "17.0.1",
+    "ts-morph": "18.0.0",
     "ts-pattern": "4.2.2"
   },
   "devDependencies": {

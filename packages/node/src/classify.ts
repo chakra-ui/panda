@@ -1,4 +1,5 @@
 import type { ParserResult, ReportInstanceItem, ReportItem } from '@pandacss/types'
+import { box } from '@pandacss/extractor'
 import type { PandaContext } from './create-context'
 import type { ResultItem } from '@pandacss/types'
 
@@ -106,8 +107,8 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
       const { from, type, kind } = reportInstanceItem
 
       map.value.forEach((attrNode, attrName) => {
-        if (attrNode.isLiteral() || attrNode.isEmptyInitializer()) {
-          const value = attrNode.isLiteral() ? (attrNode.value as string) : true
+        if (box.isLiteral(attrNode) || box.isEmptyInitializer(attrNode)) {
+          const value = box.isLiteral(attrNode) ? (attrNode.value as string) : true
           const reportItem = {
             id: id++,
             instanceId,
@@ -195,14 +196,14 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
           return
         }
 
-        if (attrNode.isMap() && attrNode.value.size) {
+        if (box.isMap(attrNode) && attrNode.value.size) {
           return processMap(attrNode, current.concat(attrName), reportInstanceItem)
         }
       })
     }
 
     const processResultItem = (item: ResultItem, kind: ReportItem['kind']) => {
-      if (!item.box || item.box.isUnresolvable()) {
+      if (!item.box || box.isUnresolvable(item.box)) {
         // console.log('no box', item)
         return
       }
@@ -225,13 +226,13 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
         contains: [],
       } as ReportInstanceItem // TODO satisfies
 
-      if (item.box.isList()) {
+      if (box.isArray(item.box)) {
         addTo(byInstanceInFilepath, filepath, reportInstanceItem.instanceId)
 
         return reportInstanceItem
       }
 
-      if (item.box.isMap() && item.box.value.size) {
+      if (box.isMap(item.box) && item.box.value.size) {
         addTo(byInstanceInFilepath, filepath, reportInstanceItem.instanceId)
 
         processMap(item.box, [], reportInstanceItem)

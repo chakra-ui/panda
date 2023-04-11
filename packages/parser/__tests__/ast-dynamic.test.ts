@@ -29,6 +29,7 @@ describe('[dynamic] ast parser', () => {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -49,15 +50,18 @@ describe('[dynamic] ast parser', () => {
                 },
               },
             },
-            "data": {
-              "variant": "h1",
-            },
+            "data": [
+              {
+                "variant": "h1",
+              },
+            ],
             "name": "textStyle",
             "type": "recipe",
           },
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -66,6 +70,7 @@ describe('[dynamic] ast parser', () => {
               "value": Map {
                 "variant" => BoxNodeMap {
                   "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
                   "stack": [
                     CallExpression,
                     ObjectLiteralExpression,
@@ -106,18 +111,22 @@ describe('[dynamic] ast parser', () => {
                 },
               },
             },
-            "data": {
-              "variant": {
-                "base": "h4",
-                "md": "h5",
+            "data": [
+              {
+                "variant": {
+                  "base": "h4",
+                  "md": "h5",
+                },
               },
-            },
+            ],
             "name": "textStyle",
             "type": "recipe",
           },
           {
             "box": undefined,
-            "data": undefined,
+            "data": [
+              {},
+            ],
             "name": "textStyle",
             "type": "recipe",
           },
@@ -126,6 +135,7 @@ describe('[dynamic] ast parser', () => {
           {
             "box": BoxNodeMap {
               "node": CallExpression,
+              "spreadConditions": undefined,
               "stack": [
                 CallExpression,
                 ObjectLiteralExpression,
@@ -146,9 +156,11 @@ describe('[dynamic] ast parser', () => {
                 },
               },
             },
-            "data": {
-              "variant": "raised",
-            },
+            "data": [
+              {
+                "variant": "raised",
+              },
+            ],
             "name": "layerStyle",
             "type": "recipe",
           },

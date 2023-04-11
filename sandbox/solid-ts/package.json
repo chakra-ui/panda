@@ -13,11 +13,11 @@
   "license": "MIT",
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
-    "typescript": "^5.0.2",
+    "typescript": "^5.0.4",
     "vite": "^4.2.1",
-    "vite-plugin-solid": "^2.6.1"
+    "vite-plugin-solid": "^2.7.0"
   },
   "dependencies": {
-    "solid-js": "^1.6.15"
+    "solid-js": "^1.7.3"
   }
 }

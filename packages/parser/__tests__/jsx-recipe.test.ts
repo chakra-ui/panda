@@ -23,6 +23,7 @@ describe('pattern jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -48,16 +49,19 @@ describe('pattern jsx', () => {
               },
             },
           },
-          "data": {
-            "mt": "40px",
-            "size": "sm",
-          },
+          "data": [
+            {
+              "mt": "40px",
+              "size": "sm",
+            },
+          ],
           "name": "Button",
           "type": "recipe",
         },
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -73,6 +77,7 @@ describe('pattern jsx', () => {
               },
               "variant" => BoxNodeMap {
                 "node": ObjectLiteralExpression,
+                "spreadConditions": undefined,
                 "stack": [
                   JsxAttribute,
                   JsxExpression,
@@ -110,13 +115,15 @@ describe('pattern jsx', () => {
               },
             },
           },
-          "data": {
-            "size": "sm",
-            "variant": {
-              "base": "outline",
-              "md": "solid",
+          "data": [
+            {
+              "size": "sm",
+              "variant": {
+                "base": "outline",
+                "md": "solid",
+              },
             },
-          },
+          ],
           "name": "Button",
           "type": "recipe",
         },

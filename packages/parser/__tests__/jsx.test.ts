@@ -21,6 +21,7 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -46,16 +47,19 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "marginBottom": "42px",
-            "marginTop": "40px",
-          },
+          "data": [
+            {
+              "marginBottom": "42px",
+              "marginTop": "40px",
+            },
+          ],
           "name": "panda.button",
           "type": "jsx-factory",
         },
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -71,9 +75,11 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "bg": "red.200",
-          },
+          "data": [
+            {
+              "bg": "red.200",
+            },
+          ],
           "name": "panda.div",
           "type": "jsx-factory",
         },
@@ -100,6 +106,7 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -125,16 +132,19 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "marginBottom": "42px",
-            "marginTop": "40px",
-          },
+          "data": [
+            {
+              "marginBottom": "42px",
+              "marginTop": "40px",
+            },
+          ],
           "name": "styled.button",
           "type": "jsx-factory",
         },
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -150,9 +160,11 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "bg": "red.200",
-          },
+          "data": [
+            {
+              "bg": "red.200",
+            },
+          ],
           "name": "styled.div",
           "type": "jsx-factory",
         },
@@ -180,11 +192,13 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
               "marginTop" => BoxNodeMap {
                 "node": ObjectLiteralExpression,
+                "spreadConditions": undefined,
                 "stack": [
                   JsxAttribute,
                   JsxExpression,
@@ -207,6 +221,7 @@ describe('jsx', () => {
                   },
                   "md" => BoxNodeMap {
                     "node": ObjectLiteralExpression,
+                    "spreadConditions": undefined,
                     "stack": [
                       JsxAttribute,
                       JsxExpression,
@@ -247,21 +262,24 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "marginBottom": "42px",
-            "marginTop": {
-              "md": {
-                "rtl": "40px",
+          "data": [
+            {
+              "marginBottom": "42px",
+              "marginTop": {
+                "md": {
+                  "rtl": "40px",
+                },
+                "sm": "40px",
               },
-              "sm": "40px",
             },
-          },
+          ],
           "name": "panda.button",
           "type": "jsx-factory",
         },
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -277,9 +295,11 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "bg": "red.200",
-          },
+          "data": [
+            {
+              "bg": "red.200",
+            },
+          ],
           "name": "panda.div",
           "type": "jsx-factory",
         },
@@ -306,6 +326,7 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -332,10 +353,12 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "marginBottom": "42px",
-            "marginLeft": "40px",
-          },
+          "data": [
+            {
+              "marginBottom": "42px",
+              "marginLeft": "40px",
+            },
+          ],
           "name": "panda.button",
           "type": "jsx-factory",
         },
@@ -362,11 +385,13 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxOpeningElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
               "css" => BoxNodeMap {
                 "node": ObjectLiteralExpression,
+                "spreadConditions": undefined,
                 "stack": [
                   JsxAttribute,
                   JsxExpression,
@@ -391,11 +416,13 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "css": {
-              "bg": "red.200",
+          "data": [
+            {
+              "css": {
+                "bg": "red.200",
+              },
             },
-          },
+          ],
           "name": "panda.div",
           "type": "jsx-factory",
         },
@@ -433,6 +460,7 @@ describe('jsx', () => {
         {
           "box": BoxNodeMap {
             "node": JsxSelfClosingElement,
+            "spreadConditions": undefined,
             "stack": [],
             "type": "map",
             "value": Map {
@@ -448,9 +476,11 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "backgroundImage": "linear-gradient( 135deg, hsla(0, 0%, 100%, 0.75) 10%, transparent 0, transparent 50%, hsla(0, 0%, 100%, 0.75) 0, hsla(0, 0%, 100%, 0.75) 60%, transparent 0, transparent )",
-          },
+          "data": [
+            {
+              "backgroundImage": "linear-gradient( 135deg, hsla(0, 0%, 100%, 0.75) 10%, transparent 0, transparent 50%, hsla(0, 0%, 100%, 0.75) 0, hsla(0, 0%, 100%, 0.75) 60%, transparent 0, transparent )",
+            },
+          ],
           "name": "panda.div",
           "type": "jsx-factory",
         },

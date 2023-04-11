@@ -25,10 +25,10 @@ describe('ast parser / styled', () => {
       {
         "cva": Set {
           {
-            "box": BoxNodeList {
+            "box": BoxNodeArray {
               "node": CallExpression,
               "stack": [],
-              "type": "list",
+              "type": "array",
               "value": [
                 BoxNodeLiteral {
                   "kind": "string",
@@ -42,6 +42,7 @@ describe('ast parser / styled', () => {
                 },
                 BoxNodeMap {
                   "node": CallExpression,
+                  "spreadConditions": undefined,
                   "stack": [
                     CallExpression,
                     ObjectLiteralExpression,
@@ -50,6 +51,7 @@ describe('ast parser / styled', () => {
                   "value": Map {
                     "base" => BoxNodeMap {
                       "node": ObjectLiteralExpression,
+                      "spreadConditions": undefined,
                       "stack": [
                         CallExpression,
                         ObjectLiteralExpression,
@@ -90,6 +92,7 @@ describe('ast parser / styled', () => {
                     },
                     "variants" => BoxNodeMap {
                       "node": ObjectLiteralExpression,
+                      "spreadConditions": undefined,
                       "stack": [
                         CallExpression,
                         ObjectLiteralExpression,
@@ -100,6 +103,7 @@ describe('ast parser / styled', () => {
                       "value": Map {
                         "color" => BoxNodeMap {
                           "node": ObjectLiteralExpression,
+                          "spreadConditions": undefined,
                           "stack": [
                             CallExpression,
                             ObjectLiteralExpression,
@@ -112,6 +116,7 @@ describe('ast parser / styled', () => {
                           "value": Map {
                             "red" => BoxNodeMap {
                               "node": ObjectLiteralExpression,
+                              "spreadConditions": undefined,
                               "stack": [
                                 CallExpression,
                                 ObjectLiteralExpression,
@@ -153,20 +158,22 @@ describe('ast parser / styled', () => {
               ],
             },
             "data": [
-              "div",
-              {
-                "base": {
-                  "color": "red",
-                  "fontSize": "12px",
-                },
-                "variants": {
-                  "color": {
-                    "red": {
-                      "background": "red",
+              [
+                "div",
+                {
+                  "base": {
+                    "color": "red",
+                    "fontSize": "12px",
+                  },
+                  "variants": {
+                    "color": {
+                      "red": {
+                        "background": "red",
+                      },
                     },
                   },
                 },
-              },
+              ],
             ],
             "name": "panda",
             "type": "cva",

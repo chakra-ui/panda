@@ -19,9 +19,9 @@
     "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "eslint": "^8.36.0",
+    "eslint": "^8.38.0",
     "ts-pattern": "4.2.2",
-    "vue-eslint-parser": "^9.1.0"
+    "vue-eslint-parser": "^9.1.1"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*"
