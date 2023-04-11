@@ -20,7 +20,7 @@ function vitePlugin() {
       config = await loadConfigFile({ cwd: process.cwd() })
 
       const ctx = createContext(config)
-      const result = analyzeTokens(ctx, 'box-extractor')
+      const result = analyzeTokens(ctx)
 
       await writeAnalyzeJSON(jsonPath, result, ctx)
     },
