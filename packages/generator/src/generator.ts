@@ -39,6 +39,8 @@ export const createGenerator = (conf: LoadConfigResult) =>
         isStyleProp: isValidProperty,
         nodes: [...patterns.nodes, ...recipes.nodes],
       },
+      getRecipeName: recipes.getFnName,
+      getRecipeByName: recipes.getConfig,
     })),
   )
 

@@ -2,6 +2,7 @@ import { isCssProperty, allCssProperties } from '@pandacss/is-valid-prop'
 import { utilities, conditions } from '@pandacss/fixture'
 import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
+import { ParserOptions } from '../src/parser'
 
 const staticFilePath = 'test.tsx'
 const properties = Array.from(
@@ -19,7 +20,7 @@ const properties = Array.from(
   ]),
 )
 
-function getProject(code: string, options: { nodes?: any[] } = {}) {
+function getProject(code: string, options: { nodes?: NonNullable<ParserOptions['jsx']>['nodes'] } = {}) {
   return createProject({
     useInMemoryFileSystem: true,
     getFiles: () => [staticFilePath],
@@ -38,6 +39,8 @@ function getProject(code: string, options: { nodes?: any[] } = {}) {
           return isCssProperty(prop) || prop === 'css'
         },
       },
+      getRecipeByName: () => undefined,
+      getRecipeName: () => '',
     },
   })
 }
@@ -91,7 +94,9 @@ export function jsxParser(code: string) {
 
 export function jsxPatternParser(code: string) {
   const project = getProject(code, {
-    nodes: [{ name: 'Stack', type: 'pattern', props: ['align', 'gap', 'direction'] }],
+    nodes: [
+      { name: 'Stack', type: 'pattern', props: ['align', 'gap', 'direction'], baseName: 'Stack', jsx: ['Stack'] },
+    ],
   })
   const data = project.parseSourceFile(staticFilePath, properties)!
   return data.jsx
@@ -99,7 +104,7 @@ export function jsxPatternParser(code: string) {
 
 export function jsxRecipeParser(code: string) {
   const project = getProject(code, {
-    nodes: [{ name: 'Button', type: 'recipe', props: ['size', 'variant'] }],
+    nodes: [{ name: 'Button', type: 'recipe', props: ['size', 'variant'], baseName: 'Button', jsx: ['Button'] }],
   })
   const data = project.parseSourceFile(staticFilePath, properties)!
   return data.jsx

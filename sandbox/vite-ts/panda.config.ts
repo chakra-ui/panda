@@ -18,6 +18,7 @@ export default defineConfig({
     recipes: {
       button: {
         name: 'button',
+        jsx: ['Button', 'ListedButton', /WithRegex$/],
         description: 'A button styles',
         base: {
           fontSize: 'lg',
@@ -41,6 +42,10 @@ export default defineConfig({
             danger: {
               color: 'white',
               backgroundColor: 'red.500',
+            },
+            secondary: {
+              color: 'pink.300',
+              backgroundColor: 'green.500',
             },
           },
         },

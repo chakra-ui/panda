@@ -15,7 +15,7 @@ export class Recipe {
   values = new Map<string, Set<{ className: string; value: string }>>()
 
   constructor(config: RecipeConfig, private context: StylesheetContext) {
-    const { name, jsx = capitalize(name), base = {}, variants = {}, defaultVariants = {}, description = '' } = config
+    const { name, jsx = [capitalize(name)], base = {}, variants = {}, defaultVariants = {}, description = '' } = config
 
     this.name = name
 
