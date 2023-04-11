@@ -119,7 +119,7 @@ export const unbox = (node: BoxNodeType, ctx?: Pick<UnboxContext, 'cache'>): Unb
   }
   const cache = createCache(_ctx.cache)
 
-  const raw = match(node)
+  const raw = (match(node)
     .with(P.nullish, () => undefined)
     .when(cache.has, cache.get)
     .when(Array.isArray, (node: BoxNode[]) => {
@@ -136,7 +136,7 @@ export const unbox = (node: BoxNodeType, ctx?: Pick<UnboxContext, 'cache'>): Unb
       const value = getLiteralValue(node, _ctx)
       cache.set(node, value)
       return value
-    }) as LiteralObject
+    }) ?? {}) as LiteralObject
 
   return { raw, conditions: _ctx.conditions, spreadConditions: _ctx.spreadConditions }
 }

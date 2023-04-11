@@ -130,7 +130,7 @@ describe('[dynamic] ast parser', () => {
             "box": undefined,
             "data": {
               "conditions": [],
-              "raw": undefined,
+              "raw": {},
               "spreadConditions": [],
             },
             "name": "textStyle",
