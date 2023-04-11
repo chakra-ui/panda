@@ -4,6 +4,7 @@ import { type ExtractedFunctionResult } from '../src/types'
 import { createProject, getTestExtract, type TestExtractOptions } from './create-project'
 // @ts-ignore
 import { default as BigThemeSampleInlined } from './samples/BigThemeSampleInlined?raw'
+import { BoxNodeArray } from '../src/box-factory'
 
 const project = createProject()
 const getExtract = (code: string, options: TestExtractOptions) => getTestExtract(project, code, options)
@@ -4342,7 +4343,7 @@ test('unbox', () => {
     `,
     { functionNameList: ['css'] },
   )
-  const css = extracted.get('css')?.queryList[0].box.value[0]
+  const css = (extracted.get('css')?.queryList[0].box as BoxNodeArray).value[0]
   expect(unbox(css)).toMatchInlineSnapshot(`
     {
       "conditions": [],
@@ -4367,7 +4368,7 @@ test('unbox with spread', () => {
     `,
     { functionNameList: ['css'] },
   )
-  const css = extracted.get('css')?.queryList[0].box.value[0]
+  const css = (extracted.get('css')?.queryList[0].box as BoxNodeArray).value[0]
   expect(unbox(css)).toMatchInlineSnapshot(`
     {
       "conditions": [],
@@ -4424,7 +4425,7 @@ test('unbox with conditions', () => {
     `,
     { functionNameList: ['css'] },
   )
-  const css = extracted.get('css')?.queryList[0].box.value[0]
+  const css = (extracted.get('css')?.queryList[0].box as BoxNodeArray).value[0]
   // console.log(css)
   expect(unbox(css)).toMatchInlineSnapshot(`
     {
