@@ -50,13 +50,11 @@ describe('[dynamic] ast parser', () => {
                 },
               },
             },
-            "data": {
-              "conditions": [],
-              "raw": {
+            "data": [
+              {
                 "variant": "h1",
               },
-              "spreadConditions": [],
-            },
+            ],
             "name": "textStyle",
             "type": "recipe",
           },
@@ -113,26 +111,22 @@ describe('[dynamic] ast parser', () => {
                 },
               },
             },
-            "data": {
-              "conditions": [],
-              "raw": {
+            "data": [
+              {
                 "variant": {
                   "base": "h4",
                   "md": "h5",
                 },
               },
-              "spreadConditions": [],
-            },
+            ],
             "name": "textStyle",
             "type": "recipe",
           },
           {
             "box": undefined,
-            "data": {
-              "conditions": [],
-              "raw": {},
-              "spreadConditions": [],
-            },
+            "data": [
+              {},
+            ],
             "name": "textStyle",
             "type": "recipe",
           },
@@ -162,13 +156,11 @@ describe('[dynamic] ast parser', () => {
                 },
               },
             },
-            "data": {
-              "conditions": [],
-              "raw": {
+            "data": [
+              {
                 "variant": "raised",
               },
-              "spreadConditions": [],
-            },
+            ],
             "name": "layerStyle",
             "type": "recipe",
           },

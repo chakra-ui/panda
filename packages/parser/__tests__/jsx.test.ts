@@ -47,14 +47,12 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "conditions": [],
-            "raw": {
+          "data": [
+            {
               "marginBottom": "42px",
               "marginTop": "40px",
             },
-            "spreadConditions": [],
-          },
+          ],
           "name": "panda.button",
           "type": "jsx-factory",
         },
@@ -77,13 +75,11 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "conditions": [],
-            "raw": {
+          "data": [
+            {
               "bg": "red.200",
             },
-            "spreadConditions": [],
-          },
+          ],
           "name": "panda.div",
           "type": "jsx-factory",
         },
@@ -136,14 +132,12 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "conditions": [],
-            "raw": {
+          "data": [
+            {
               "marginBottom": "42px",
               "marginTop": "40px",
             },
-            "spreadConditions": [],
-          },
+          ],
           "name": "styled.button",
           "type": "jsx-factory",
         },
@@ -166,13 +160,11 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "conditions": [],
-            "raw": {
+          "data": [
+            {
               "bg": "red.200",
             },
-            "spreadConditions": [],
-          },
+          ],
           "name": "styled.div",
           "type": "jsx-factory",
         },
@@ -270,9 +262,8 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "conditions": [],
-            "raw": {
+          "data": [
+            {
               "marginBottom": "42px",
               "marginTop": {
                 "md": {
@@ -281,8 +272,7 @@ describe('jsx', () => {
                 "sm": "40px",
               },
             },
-            "spreadConditions": [],
-          },
+          ],
           "name": "panda.button",
           "type": "jsx-factory",
         },
@@ -305,13 +295,11 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "conditions": [],
-            "raw": {
+          "data": [
+            {
               "bg": "red.200",
             },
-            "spreadConditions": [],
-          },
+          ],
           "name": "panda.div",
           "type": "jsx-factory",
         },
@@ -365,14 +353,12 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "conditions": [],
-            "raw": {
+          "data": [
+            {
               "marginBottom": "42px",
               "marginLeft": "40px",
             },
-            "spreadConditions": [],
-          },
+          ],
           "name": "panda.button",
           "type": "jsx-factory",
         },
@@ -430,15 +416,13 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "conditions": [],
-            "raw": {
+          "data": [
+            {
               "css": {
                 "bg": "red.200",
               },
             },
-            "spreadConditions": [],
-          },
+          ],
           "name": "panda.div",
           "type": "jsx-factory",
         },
@@ -492,13 +476,11 @@ describe('jsx', () => {
               },
             },
           },
-          "data": {
-            "conditions": [],
-            "raw": {
+          "data": [
+            {
               "backgroundImage": "linear-gradient( 135deg, hsla(0, 0%, 100%, 0.75) 10%, transparent 0, transparent 50%, hsla(0, 0%, 100%, 0.75) 0, hsla(0, 0%, 100%, 0.75) 60%, transparent 0, transparent )",
             },
-            "spreadConditions": [],
-          },
+          ],
           "name": "panda.div",
           "type": "jsx-factory",
         },

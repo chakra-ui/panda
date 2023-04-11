@@ -49,14 +49,12 @@ describe('pattern jsx', () => {
               },
             },
           },
-          "data": {
-            "conditions": [],
-            "raw": {
+          "data": [
+            {
               "mt": "40px",
               "size": "sm",
             },
-            "spreadConditions": [],
-          },
+          ],
           "name": "Button",
           "type": "recipe",
         },
@@ -117,17 +115,15 @@ describe('pattern jsx', () => {
               },
             },
           },
-          "data": {
-            "conditions": [],
-            "raw": {
+          "data": [
+            {
               "size": "sm",
               "variant": {
                 "base": "outline",
                 "md": "solid",
               },
             },
-            "spreadConditions": [],
-          },
+          ],
           "name": "Button",
           "type": "recipe",
         },

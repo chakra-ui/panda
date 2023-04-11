@@ -56,14 +56,12 @@ describe('ast parser', () => {
                 },
               },
             },
-            "data": {
-              "conditions": [],
-              "raw": {
+            "data": [
+              {
                 "color": "red",
                 "fontSize": "12px",
               },
-              "spreadConditions": [],
-            },
+            ],
             "name": "css",
             "type": "object",
           },
@@ -132,17 +130,15 @@ describe('ast parser', () => {
                 },
               },
             },
-            "data": {
-              "conditions": [],
-              "raw": {
+            "data": [
+              {
                 "bg": "red.300",
                 "margin": {
                   "lg": "40px",
                   "xs": "0",
                 },
               },
-              "spreadConditions": [],
-            },
+            ],
             "name": "css",
             "type": "object",
           },

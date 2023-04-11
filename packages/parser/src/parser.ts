@@ -1,4 +1,4 @@
-import { BoxNodeMap, extract, unbox } from '@pandacss/extractor'
+import { BoxNodeMap, extract, unbox, type Unboxed } from '@pandacss/extractor'
 import { logger } from '@pandacss/logger'
 import { memo } from '@pandacss/shared'
 import type { SourceFile } from 'ts-morph'
@@ -35,6 +35,10 @@ function createImportMatcher(mod: string, values?: string[]) {
       return regex.test(value)
     },
   }
+}
+
+const extractResult = (unboxed: Unboxed) => {
+  return [...unboxed.conditions, unboxed.raw, ...unboxed.spreadConditions]
 }
 
 export type ParserMode = 'box-extractor' | 'internal'
@@ -166,7 +170,7 @@ export function createParser(options: ParserOptions) {
                 collector.set(name, {
                   name,
                   box: query.box.value[0] as BoxNodeMap,
-                  data: unbox(query.box.value[0]),
+                  data: extractResult(unbox(query.box.value[0])),
                 })
               })
             })
@@ -176,7 +180,7 @@ export function createParser(options: ParserOptions) {
                 collector.setPattern(name, {
                   name,
                   box: query.box.value[0] as BoxNodeMap,
-                  data: unbox(query.box.value[0]),
+                  data: extractResult(unbox(query.box.value[0])),
                 })
               })
             })
@@ -186,14 +190,18 @@ export function createParser(options: ParserOptions) {
                 collector.setRecipe(name, {
                   name,
                   box: query.box.value[0] as BoxNodeMap,
-                  data: unbox(query.box.value[0]),
+                  data: extractResult(unbox(query.box.value[0])),
                 })
               })
             })
             // panda("span", { ... }) or panda("div", badge)
             .when(isValidStyleFn, () => {
               result.queryList.forEach((query) => {
-                collector.setCva({ name, box: query.box, data: unbox(query.box) })
+                collector.setCva({
+                  name,
+                  box: query.box,
+                  data: extractResult(unbox(query.box)),
+                })
               })
             })
             .otherwise(() => {
@@ -203,7 +211,7 @@ export function createParser(options: ParserOptions) {
           result.queryList.forEach((query) => {
             let type: string
 
-            const data = unbox(query.box)
+            const data = extractResult(unbox(query.box))
             logger.debug(`ast:jsx:${name}`, { filePath, result: data })
 
             if (jsx && name.startsWith(jsxFactoryAlias)) {

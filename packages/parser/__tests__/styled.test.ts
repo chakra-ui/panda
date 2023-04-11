@@ -157,9 +157,8 @@ describe('ast parser / styled', () => {
                 },
               ],
             },
-            "data": {
-              "conditions": [],
-              "raw": [
+            "data": [
+              [
                 "div",
                 {
                   "base": {
@@ -175,8 +174,7 @@ describe('ast parser / styled', () => {
                   },
                 },
               ],
-              "spreadConditions": [],
-            },
+            ],
             "name": "panda",
             "type": "cva",
           },

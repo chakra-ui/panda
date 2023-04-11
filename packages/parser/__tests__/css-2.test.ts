@@ -77,14 +77,12 @@ describe('ast parser', () => {
                 },
               },
             },
-            "data": {
-              "conditions": [],
-              "raw": {
+            "data": [
+              {
                 "color": "red",
                 "fontSize": "12px",
               },
-              "spreadConditions": [],
-            },
+            ],
             "name": "css",
             "type": "object",
           },
@@ -189,9 +187,8 @@ describe('ast parser', () => {
                 },
               },
             },
-            "data": {
-              "conditions": [],
-              "raw": {
+            "data": [
+              {
                 "bg": "red.300",
                 "margin": {
                   "lg": "40px",
@@ -202,8 +199,7 @@ describe('ast parser', () => {
                   50,
                 ],
               },
-              "spreadConditions": [],
-            },
+            ],
             "name": "css",
             "type": "object",
           },
@@ -266,14 +262,12 @@ describe('ast parser', () => {
                 },
               },
             },
-            "data": {
-              "conditions": [],
-              "raw": {
+            "data": [
+              {
                 "color": "red",
                 "fontSize": "12px",
               },
-              "spreadConditions": [],
-            },
+            ],
             "name": "css",
             "type": "object",
           },
@@ -378,9 +372,8 @@ describe('ast parser', () => {
                 },
               },
             },
-            "data": {
-              "conditions": [],
-              "raw": {
+            "data": [
+              {
                 "bg": "red.300",
                 "margin": {
                   "lg": "40px",
@@ -391,8 +384,7 @@ describe('ast parser', () => {
                   50,
                 ],
               },
-              "spreadConditions": [],
-            },
+            ],
             "name": "css",
             "type": "object",
           },
@@ -477,17 +469,15 @@ console.log(
                 },
               },
             },
-            "data": {
-              "conditions": [],
-              "raw": {
+            "data": [
+              {
                 "selectors": {
                   "&:hover": {
                     "background": "red.200",
                   },
                 },
               },
-              "spreadConditions": [],
-            },
+            ],
             "name": "css",
             "type": "object",
           },
@@ -537,13 +527,11 @@ export function Card({ className }) {
                 },
               },
             },
-            "data": {
-              "conditions": [],
-              "raw": {
+            "data": [
+              {
                 "background": "white",
               },
-              "spreadConditions": [],
-            },
+            ],
             "name": "css",
             "type": "object",
           },

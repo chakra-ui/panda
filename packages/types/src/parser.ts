@@ -2,7 +2,7 @@ import type { BoxNodeMap, BoxNodeArray, Unboxed } from '@pandacss/extractor'
 
 export type ResultItem = {
   name?: string
-  data: Unboxed
+  data: Array<Unboxed['raw']>
   type?: string
   box?: BoxNodeArray | BoxNodeMap
 }

@@ -9,34 +9,40 @@ export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
     { ...ctx, sheet: ctx.createSheet(), result },
     tap(({ sheet, result, patterns, recipes }) => {
       result.css.forEach((css) => {
-        sheet.processAtomic(css.data)
+        css.data.forEach((data) => {
+          sheet.processAtomic(data)
+        })
       })
 
       result.cva.forEach((cva) => {
-        sheet.processAtomicRecipe(cva.data.raw)
+        cva.data.forEach((data) => {
+          sheet.processAtomicRecipe(data)
+        })
       })
 
       result.jsx.forEach((jsx) => {
-        const { css = {}, ...rest } = jsx.data.raw
-        const styles = { ...rest, ...css }
+        jsx.data.forEach((data) => {
+          const { css = {}, ...rest } = data
+          const styles = { ...rest, ...css }
 
-        match(jsx)
-          // treat pattern jsx like regular pattern
-          .with({ type: 'pattern', name: P.string }, ({ name }) => {
-            result.setPattern(patterns.getFnName(name), { data: styles })
-          })
-          // treat recipe jsx like regular recipe + atomic
-          .with({ type: 'recipe', name: P.string }, ({ name }) => {
-            const [recipeProps, styleProps] = recipes.splitProps(name, styles)
-            result.setRecipe(recipes.getFnName(name), {
-              data: { raw: recipeProps, conditions: [], spreadConditions: [] },
+          match(jsx)
+            // treat pattern jsx like regular pattern
+            .with({ type: 'pattern', name: P.string }, ({ name }) => {
+              result.setPattern(patterns.getFnName(name), { data: styles })
             })
-            sheet.processAtomic(styleProps)
-          })
-          // read and process style props
-          .otherwise(() => {
-            sheet.processAtomic(styles)
-          })
+            // treat recipe jsx like regular recipe + atomic
+            .with({ type: 'recipe', name: P.string }, ({ name }) => {
+              const [recipeProps, styleProps] = recipes.splitProps(name, styles)
+              result.setRecipe(recipes.getFnName(name), {
+                data: [recipeProps],
+              })
+              sheet.processAtomic(styleProps)
+            })
+            // read and process style props
+            .otherwise(() => {
+              sheet.processAtomic(styles)
+            })
+        })
       })
 
       result.recipe.forEach((recipeSet, name) => {
@@ -54,8 +60,10 @@ export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
       result.pattern.forEach((patternSet, name) => {
         try {
           for (const pattern of patternSet) {
-            const styleProps = patterns.transform(name, pattern.data.raw)
-            sheet.processAtomic(styleProps)
+            pattern.data.forEach((data) => {
+              const styleProps = patterns.transform(name, data)
+              sheet.processAtomic(styleProps)
+            })
           }
         } catch (error) {
           logger.error('serializer:pattern', error)
