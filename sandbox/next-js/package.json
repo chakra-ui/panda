@@ -11,16 +11,16 @@
     "css:dev": "PANDA_DEBUG=* panda --watch"
   },
   "dependencies": {
-    "next": "13.2.4",
+    "next": "13.3.0",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "eslint": "8.37.0",
-    "eslint-config-next": "13.2.4",
+    "eslint": "8.38.0",
+    "eslint-config-next": "13.3.0",
     "@pandacss/fixture": "workspace:*",
     "@pandacss/node": "workspace:*",
-    "@types/react": "18.0.33",
+    "@types/react": "18.0.34",
     "@types/react-dom": "^18.0.11",
     "@pandacss/dev": "workspace:*"
   }

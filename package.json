@@ -35,13 +35,13 @@
     "@typescript-eslint/parser": "5.57.1",
     "concurrently": "^8.0.0",
     "husky": "8.0.3",
-    "lint-staged": "13.2.0",
+    "lint-staged": "13.2.1",
     "prettier": "2.8.7",
     "ts-morph": "17.0.1",
     "tsup": "6.7.0",
     "tsx": "3.12.6",
-    "typescript": "5.0.3",
-    "vitest": "0.29.8"
+    "typescript": "5.0.4",
+    "vitest": "0.30.0"
   },
   "lint-staged": {
     "packages/**/*.{ts,tsx}": [
