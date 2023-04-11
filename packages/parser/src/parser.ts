@@ -37,11 +37,12 @@ function createImportMatcher(mod: string, values?: string[]) {
   }
 }
 
-const extractResult = (unboxed: Unboxed) => {
+const combineResult = (unboxed: Unboxed) => {
   return [...unboxed.conditions, unboxed.raw, ...unboxed.spreadConditions]
 }
 
 export type ParserMode = 'box-extractor' | 'internal'
+
 export function createParser(options: ParserOptions) {
   return function parse(sourceFile: SourceFile | undefined, confProperties: string[], mode: ParserMode = 'internal') {
     if (!sourceFile) return
@@ -170,7 +171,7 @@ export function createParser(options: ParserOptions) {
                 collector.set(name, {
                   name,
                   box: query.box.value[0] as BoxNodeMap,
-                  data: extractResult(unbox(query.box.value[0])),
+                  data: combineResult(unbox(query.box.value[0])),
                 })
               })
             })
@@ -180,7 +181,7 @@ export function createParser(options: ParserOptions) {
                 collector.setPattern(name, {
                   name,
                   box: query.box.value[0] as BoxNodeMap,
-                  data: extractResult(unbox(query.box.value[0])),
+                  data: combineResult(unbox(query.box.value[0])),
                 })
               })
             })
@@ -190,7 +191,7 @@ export function createParser(options: ParserOptions) {
                 collector.setRecipe(name, {
                   name,
                   box: query.box.value[0] as BoxNodeMap,
-                  data: extractResult(unbox(query.box.value[0])),
+                  data: combineResult(unbox(query.box.value[0])),
                 })
               })
             })
@@ -200,7 +201,7 @@ export function createParser(options: ParserOptions) {
                 collector.setCva({
                   name,
                   box: query.box,
-                  data: extractResult(unbox(query.box)),
+                  data: combineResult(unbox(query.box)),
                 })
               })
             })
@@ -211,7 +212,7 @@ export function createParser(options: ParserOptions) {
           result.queryList.forEach((query) => {
             let type: string
 
-            const data = extractResult(unbox(query.box))
+            const data = combineResult(unbox(query.box))
             logger.debug(`ast:jsx:${name}`, { filePath, result: data })
 
             if (jsx && name.startsWith(jsxFactoryAlias)) {
