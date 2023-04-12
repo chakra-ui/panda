@@ -544,7 +544,7 @@ function memo<T>(fn: (value: string) => T): (value: string) => T {
 }
 
 const isCssProperty = memo((prop: string) => {
-  return regex.test(prop)
+  return regex.test(prop) || prop.startsWith('--')
 })
 
 export { isCssProperty, allCssProperties }
