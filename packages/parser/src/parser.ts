@@ -8,13 +8,22 @@ import { getImportDeclarations } from './import'
 import { createParserResult } from './parser-result'
 import type { RecipeConfig } from '@pandacss/types'
 
-type ParserNodeOptions = {
+type ParserPatternNode = {
   name: string
-  type: 'pattern' | 'recipe'
+  type: 'pattern'
   props?: string[]
+  baseName: string
+}
+type ParserRecipeNode = {
+  name: string
+  type: 'recipe'
+  props: string[]
   baseName: string
   jsx: RecipeConfig['jsx']
 }
+
+export type ParserNodeOptions = ParserPatternNode | ParserRecipeNode
+export const isNodeRecipe = (node: ParserNodeOptions): node is ParserRecipeNode => node.type === 'recipe'
 
 export type ParserOptions = {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string>
@@ -84,7 +93,6 @@ export function createParser(options: ParserOptions) {
 
     const jsxFactoryAlias = jsx ? imports.getAlias(jsx.factory) : 'panda'
     const jsxPatternNodes = new RegExp(`(${jsx?.nodes.map((node) => node.type === 'pattern' && node.name).join('|')})$`)
-    const jsxRecipeNodes = new RegExp(`(${jsx?.nodes.map((node) => node.type === 'recipe' && node.name).join('|')})$`)
 
     const recipes = new Map<string, boolean>()
     imports.value.forEach((importDeclaration) => {
@@ -99,6 +107,23 @@ export function createParser(options: ParserOptions) {
     const components = new Map<string, Map<string, boolean>>()
 
     const propertiesMap = new Map<string, boolean>(confProperties.map((prop) => [prop, true]))
+    const recipePropertiesByName = new Map<string, Set<string>>()
+    const recipeJsxLists = (jsx?.nodes ?? []).filter(isNodeRecipe).reduce(
+      (acc, recipe) => {
+        recipePropertiesByName.set(recipe.baseName, new Set(recipe.props ?? []))
+
+        recipe.jsx?.forEach((jsx) => {
+          if (typeof jsx === 'string') {
+            acc.string.add(jsx)
+          } else {
+            acc.regex.push(jsx)
+          }
+        })
+
+        return acc
+      },
+      { string: new Set<string>(), regex: [] as RegExp[] },
+    )
 
     const cvaAlias = imports.getAlias('cva')
     const cssAlias = imports.getAlias('css')
@@ -109,19 +134,38 @@ export function createParser(options: ParserOptions) {
         const alias = imports.getAlias(node.name)
         node.props?.forEach((prop) => properties.set(prop, true))
 
-        functions.set(node.baseName, properties)
         functions.set(alias, properties)
         components.set(alias, properties)
       })
     }
 
+    const getRecipeName = memo(options.getRecipeName)
+    const isJsxTagRecipe = memo(
+      (tagName: string) =>
+        recipeJsxLists.string.has(tagName) || recipeJsxLists.regex.some((regex) => regex.test(tagName)),
+    )
+
     const matchTag = memo((tagName: string) => {
-      return components.has(tagName) || isUpperCase(tagName) || tagName.startsWith(jsxFactoryAlias)
+      return (
+        components.has(tagName) ||
+        isUpperCase(tagName) ||
+        tagName.startsWith(jsxFactoryAlias) ||
+        isJsxTagRecipe(tagName)
+      )
     })
     const matchTagProp = memo((tagName: string, propName: string) => {
       if (propertiesMap.size === 0) return true // = allow all
 
-      return Boolean(components.get(tagName)?.get(propName)) || propertiesMap.has(propName)
+      if (Boolean(components.get(tagName)?.get(propName)) || propertiesMap.has(propName)) return true
+
+      if (isJsxTagRecipe(tagName)) {
+        const recipe = getRecipeByName(getRecipeName(tagName))
+        if (recipe) {
+          return recipePropertiesByName.get(recipe.name)?.has(propName) ?? false
+        }
+      }
+
+      return false
     })
 
     const matchFn = memo((fnName: string) => {
@@ -200,8 +244,8 @@ export function createParser(options: ParserOptions) {
             result.queryList.forEach((query) => {
               collector.setCva({
                 name,
-                box: query.box,
-                data: combineResult(unbox(query.box)),
+                box: query.box.value[1] as BoxNodeMap,
+                data: combineResult(unbox(query.box.value[1])),
               })
             })
           })
@@ -210,28 +254,18 @@ export function createParser(options: ParserOptions) {
           })
       } else if (result.kind === 'component') {
         result.queryList.forEach((query) => {
-          let type: string
-
           const data = combineResult(unbox(query.box))
           logger.debug(`ast:jsx:${name}`, { filePath, result: data })
 
           if (jsx && name.startsWith(jsxFactoryAlias)) {
-            type = 'jsx-factory'
+            collector.jsx.add({ name, box: query.box, type: 'jsx-factory', data })
           } else if (jsxPatternNodes.test(name)) {
-            type = 'pattern'
-          } else if (jsxRecipeNodes.test(name)) {
-            type = 'recipe'
+            collector.setPattern(name, { type: 'jsx-pattern', name, box: query.box, data })
+          } else if (recipeJsxLists.string.has(name) || recipeJsxLists.regex.some((regex) => regex.test(name))) {
+            collector.setRecipe(getRecipeName(name), { type: 'jsx-recipe', name, box: query.box, data })
           } else {
-            type = 'jsx'
+            collector.jsx.add({ name, box: query.box, type: 'jsx', data })
           }
-
-          collector.jsx.add({
-            // from "panda.*" -> "panda.button"
-            name,
-            box: query.box,
-            type,
-            data,
-          })
         })
       }
     })

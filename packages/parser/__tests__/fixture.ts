@@ -2,6 +2,8 @@ import { isCssProperty, allCssProperties } from '@pandacss/is-valid-prop'
 import { utilities, conditions } from '@pandacss/fixture'
 import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
+import { isNodeRecipe, type ParserNodeOptions } from '../src/parser'
+import { uncapitalize } from '@pandacss/shared'
 
 const staticFilePath = 'test.tsx'
 const properties = Array.from(
@@ -19,7 +21,10 @@ const properties = Array.from(
   ]),
 )
 
-function getProject(code: string, options: { nodes?: any[] } = {}) {
+function getProject(code: string, options: { nodes?: ParserNodeOptions[] } = {}) {
+  const nodes = options.nodes ?? []
+  const recipeNodes = nodes.filter(isNodeRecipe)
+
   return createProject({
     useInMemoryFileSystem: true,
     getFiles: () => [staticFilePath],
@@ -32,14 +37,20 @@ function getProject(code: string, options: { nodes?: any[] } = {}) {
         jsx: '.panda/jsx',
       },
       jsx: {
-        nodes: options.nodes ?? [],
+        nodes,
         factory: 'panda',
         isStyleProp(prop) {
           return isCssProperty(prop) || prop === 'css'
         },
       },
       getRecipeByName: () => undefined,
-      getRecipeName: () => '',
+      getRecipeName: (jsx: string) => {
+        const recipe = recipeNodes.find((node) => {
+          return node.jsx?.some((tag) => (typeof tag === 'string' ? tag === jsx : tag.test(jsx)))
+        })
+
+        return recipe?.baseName ?? uncapitalize(jsx)
+      },
     },
   })
 }
@@ -93,12 +104,10 @@ export function jsxParser(code: string) {
 
 export function jsxPatternParser(code: string) {
   const project = getProject(code, {
-    nodes: [
-      { name: 'Stack', type: 'pattern', props: ['align', 'gap', 'direction'], baseName: 'Stack', jsx: ['Stack'] },
-    ],
+    nodes: [{ name: 'Stack', type: 'pattern', props: ['align', 'gap', 'direction'], baseName: 'Stack' }],
   })
   const data = project.parseSourceFile(staticFilePath, properties)!
-  return data.jsx
+  return data.pattern
 }
 
 export function jsxRecipeParser(code: string) {
@@ -106,5 +115,5 @@ export function jsxRecipeParser(code: string) {
     nodes: [{ name: 'Button', type: 'recipe', props: ['size', 'variant'], baseName: 'Button', jsx: ['Button'] }],
   })
   const data = project.parseSourceFile(staticFilePath, properties)!
-  return data.jsx
+  return data.recipe
 }

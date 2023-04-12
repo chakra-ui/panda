@@ -1,9 +1,10 @@
 import { logger } from '@pandacss/logger'
-import type { ParserResult } from '@pandacss/types'
+import type { Dict, ParserResult } from '@pandacss/types'
 import { pipe, tap, tryCatch } from 'lil-fp/func'
 import { match, P } from 'ts-pattern'
 import type { Context } from '../../engines'
-import type { Dict } from '@pandacss/types'
+
+const flattenStyles = (data: Dict) => Object.assign({}, data, { css: undefined }, data.css ?? {}) as Dict
 
 export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
   pipe(
@@ -23,24 +24,7 @@ export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
 
       result.jsx.forEach((jsx) => {
         jsx.data.forEach((data) => {
-          const { css = {}, ...rest } = data
-          const styles = { ...rest, ...css } as Dict
-
-          match(jsx)
-            // treat pattern jsx like regular pattern
-            .with({ type: 'pattern', name: P.string }, ({ name }) => {
-              result.setPattern(patterns.getFnName(name), { data: [styles] })
-            })
-            // treat recipe jsx like regular recipe + atomic
-            .with({ type: 'recipe', name: P.string }, ({ name }) => {
-              const [recipeProps, styleProps] = recipes.splitProps(name, styles)
-              result.setRecipe(recipes.getFnName(name), { data: [recipeProps] })
-              sheet.processAtomic(styleProps)
-            })
-            // read and process style props
-            .otherwise(() => {
-              sheet.processAtomic(styles)
-            })
+          sheet.processAtomic(flattenStyles(data))
         })
       })
 
@@ -50,9 +34,20 @@ export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
             const recipeConfig = recipes.getConfig(name)
             if (!recipeConfig) continue
 
-            recipe.data.forEach((data) => {
-              sheet.processRecipe(recipeConfig, data)
-            })
+            match(recipe)
+              // treat recipe jsx like regular recipe + atomic
+              .with({ type: 'jsx-recipe', name: P.string }, ({ name }) => {
+                recipe.data.forEach((data) => {
+                  const [recipeProps, styleProps] = recipes.splitProps(name, flattenStyles(data))
+                  sheet.processAtomic(styleProps)
+                  sheet.processRecipe(recipeConfig, recipeProps)
+                })
+              })
+              .otherwise(() => {
+                recipe.data.forEach((data) => {
+                  sheet.processRecipe(recipeConfig, data)
+                })
+              })
           }
         } catch (error) {
           logger.error('serializer:recipe', error)
@@ -62,10 +57,20 @@ export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
       result.pattern.forEach((patternSet, name) => {
         try {
           for (const pattern of patternSet) {
-            pattern.data.forEach((data) => {
-              const styleProps = patterns.transform(name, data)
-              sheet.processAtomic(styleProps)
-            })
+            match(pattern)
+              // treat pattern jsx like regular pattern
+              .with({ type: 'jsx-pattern', name: P.string }, ({ name }) => {
+                pattern.data.forEach((data) => {
+                  const styleProps = patterns.transform(name, flattenStyles(data))
+                  sheet.processAtomic(styleProps)
+                })
+              })
+              .otherwise(() => {
+                pattern.data.forEach((data) => {
+                  const styleProps = patterns.transform(name, data)
+                  sheet.processAtomic(styleProps)
+                })
+              })
           }
         } catch (error) {
           logger.error('serializer:pattern', error)
