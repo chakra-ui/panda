@@ -68,6 +68,7 @@ describe('recipe ruleset', () => {
           "display": "inline-flex",
           "justifyContent": "center",
         },
+        "compoundVariants": [],
         "defaultVariants": {
           "size": "md",
           "variant": "solid",

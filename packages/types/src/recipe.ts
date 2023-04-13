@@ -18,6 +18,17 @@ export type RecipeRuntimeFn<T extends RecipeVariantRecord> = RecipeVariantFn<T> 
   config: RecipeConfig<T>
 }
 
+export type RecipeCompoundSelection<
+  T extends RecipeVariantRecord,
+  Key extends Exclude<keyof T, 'css'> = Exclude<keyof T, 'css'>,
+> = {
+  [K in Key]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>>
+}
+
+export type RecipeCompoundVariant<T extends RecipeVariantRecord> = RecipeCompoundSelection<T> & {
+  css: SystemStyleObject
+}
+
 export type RecipeDefinition<T extends RecipeVariantRecord> = {
   /**
    * The base styles of the recipe.
@@ -31,11 +42,15 @@ export type RecipeDefinition<T extends RecipeVariantRecord> = {
    * The default variants of the recipe.
    */
   defaultVariants?: RecipeSelection<T>
+  /**
+   * The styles to apply when a combination of variants is selected.
+   */
+  compoundVariants?: Array<RecipeCompoundVariant<T>>
 }
 
 export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => RecipeRuntimeFn<T>
 
-export type RecipeConfig<T extends RecipeVariantRecord = RecipeVariantRecord> = RecipeDefinition<T> & {
+export type RecipeConfig<T extends RecipeVariantRecord> = RecipeDefinition<T> & {
   /**
    * The name of the recipe.
    */
@@ -52,3 +67,4 @@ export type RecipeConfig<T extends RecipeVariantRecord = RecipeVariantRecord> = 
    */
   jsx?: Array<string | RegExp>
 }
+export type AnyRecipeConfig = RecipeConfig<RecipeVariantRecord>

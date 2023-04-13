@@ -1,7 +1,7 @@
 import type { LayerStyles, TextStyles } from './composition'
 import type { Conditions as TConditions } from './conditions'
 import type { PatternConfig } from './pattern'
-import type { RecipeConfig } from './recipe'
+import type { AnyRecipeConfig } from './recipe'
 import type { Extendable, RequiredBy, UnwrapExtend } from './shared'
 import type { StaticCssOptions } from './static-css'
 import type { CssKeyframes, GlobalStyleObject } from './system-types'
@@ -132,7 +132,7 @@ export type Config = {
      * Multi-variant style definitions for your project.
      * Useful for defining component styles.
      */
-    recipes?: Record<string, RecipeConfig>
+    recipes?: Record<string, AnyRecipeConfig>
   }>
   /**
    * The css utility definitions.

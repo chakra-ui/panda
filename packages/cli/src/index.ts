@@ -1,4 +1,5 @@
 import type {
+  AnyRecipeConfig,
   CompositionStyles,
   Config,
   GlobalStyleObject,
@@ -20,8 +21,8 @@ export function defineConfig(config: Config): Config {
   return config
 }
 
-export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): RecipeConfig<V> {
-  return config
+export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): AnyRecipeConfig {
+  return config as AnyRecipeConfig
 }
 
 export function definePattern(config: PatternConfig): PatternConfig {

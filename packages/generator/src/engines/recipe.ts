@@ -1,5 +1,5 @@
 import { capitalize, dashCase, splitProps, uncapitalize } from '@pandacss/shared'
-import type { RecipeConfig, UserConfig } from '@pandacss/types'
+import type { AnyRecipeConfig, UserConfig } from '@pandacss/types'
 import { Obj, pipe } from 'lil-fp'
 
 export const getRecipeEngine = (config: UserConfig) => {
@@ -7,7 +7,7 @@ export const getRecipeEngine = (config: UserConfig) => {
     { recipes: config.theme?.recipes ?? {} },
 
     Obj.bind('getConfig', ({ recipes }) => {
-      return (name: string): RecipeConfig | undefined => recipes[name]
+      return (name: string): AnyRecipeConfig | undefined => recipes[name]
     }),
 
     Obj.bind('getNames', () => {
@@ -53,7 +53,7 @@ export const getRecipeEngine = (config: UserConfig) => {
         ...getNames(name),
         config: recipe,
         variantKeyMap: Object.fromEntries(
-          Object.entries(recipe.variants ?? {}).map(([key, value]) => [key, Object.keys(value)]),
+          Object.entries(recipe.variants ?? {}).map(([key, value]) => [key, Object.keys(value as any)]),
         ),
       }))
     }),

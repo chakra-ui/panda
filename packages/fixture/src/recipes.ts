@@ -1,6 +1,6 @@
-import type { RecipeConfig } from '@pandacss/types'
+import type { AnyRecipeConfig } from '@pandacss/types'
 
-export const recipes: Record<string, RecipeConfig> = {
+export const recipes: Record<string, AnyRecipeConfig> = {
   textStyle: {
     name: 'textStyle',
     base: {

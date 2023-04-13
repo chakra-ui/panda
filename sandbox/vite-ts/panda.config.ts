@@ -1,4 +1,4 @@
-import { defineConfig } from '@pandacss/dev'
+import { defineConfig, defineRecipe } from '@pandacss/dev'
 
 export default defineConfig({
   studio: {
@@ -16,7 +16,7 @@ export default defineConfig({
       },
     },
     recipes: {
-      button: {
+      button: defineRecipe({
         name: 'button',
         jsx: ['Button', 'ListedButton', /WithRegex$/],
         description: 'A button styles',
@@ -49,7 +49,23 @@ export default defineConfig({
             },
           },
         },
-      },
+        compoundVariants: [
+          {
+            size: 'sm',
+            variant: 'primary',
+            css: {
+              fontSize: '12px',
+            },
+          },
+          {
+            variant: ['primary', 'danger'],
+            size: ['md'],
+            css: {
+              fontSize: '24px',
+            },
+          },
+        ],
+      }),
     },
   },
   jsxFramework: 'react',

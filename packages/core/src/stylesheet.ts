@@ -1,4 +1,4 @@
-import type { Dict, RecipeConfig } from '@pandacss/types'
+import type { AnyRecipeConfig, Dict, SystemStyleObject } from '@pandacss/types'
 import postcss from 'postcss'
 import { AtomicRule } from './atomic-rule'
 import { discardDuplicate, expandCssFunctions, optimizeCss } from './optimize'
@@ -44,30 +44,34 @@ export class Stylesheet {
     this.context.root.append(output)
   }
 
-  processObject(styleObject: Dict) {
+  processObject(styleObject: SystemStyleObject) {
     const result = toCss(styleObject)
     const output = result.root
     this.context.root.append(output)
   }
 
-  processAtomic = (styleObject: Dict) => {
+  processAtomic = (styleObject: SystemStyleObject) => {
     const ruleset = new AtomicRule(this.context)
     ruleset.process({ styles: styleObject })
   }
 
-  processRecipe = (config: RecipeConfig, styles: Record<string, any>) => {
+  processRecipe = (config: AnyRecipeConfig, styles: SystemStyleObject) => {
     const recipe = new Recipe(config, this.context)
     recipe.process({ styles })
   }
 
-  processAtomicRecipe = (recipe: Pick<RecipeConfig, 'base' | 'variants'>) => {
-    const { base = {}, variants = {} } = recipe
+  processAtomicRecipe = (recipe: Pick<AnyRecipeConfig, 'base' | 'variants' | 'compoundVariants'>) => {
+    const { base = {}, variants = {}, compoundVariants = [] } = recipe
     this.processAtomic(base)
     for (const variant of Object.values(variants)) {
       for (const styles of Object.values(variant)) {
         this.processAtomic(styles)
       }
     }
+
+    compoundVariants.forEach((compoundVariant) => {
+      this.processAtomic(compoundVariant.css)
+    })
   }
 
   toCss = ({ optimize = true, minify }: { optimize?: boolean; minify?: boolean } = {}) => {

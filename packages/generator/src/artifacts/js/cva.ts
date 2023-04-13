@@ -6,10 +6,10 @@ export function generateCvaFn(ctx: Context) {
     js: outdent`
     ${ctx.file.import('compact', '../helpers')}
     ${ctx.file.import('css, mergeCss', './css')}
-    
+
     export function cva(config) {
-      const { base = {}, variants = {}, defaultVariants = {} } = config
-      
+      const { base = {}, variants = {}, defaultVariants = {}, compoundVariants = [] } = config
+
       function resolve(props) {
         const computedVariants = { ...defaultVariants, ...compact(props) }
         let result = { ...base }
@@ -18,6 +18,20 @@ export function generateCvaFn(ctx: Context) {
             result = mergeCss(result, variants[key][value])
           }
         }
+
+        compoundVariants.forEach((compoundVariant) => {
+          const isMatching = Object.entries(compoundVariant).every(([key, value]) => {
+            if (key === 'css') return true
+
+            const values = Array.isArray(value) ? value : [value]
+            return values.some((value) => computedVariants[key] === value)
+          })
+
+          if (isMatching) {
+            result = mergeCss(result, compoundVariant.css)
+          }
+        })
+
         return result
       }
 

@@ -541,7 +541,7 @@ function memo(fn) {
   };
 }
 var isCssProperty = memo((prop) => {
-  return regex.test(prop);
+  return regex.test(prop) || prop.startsWith("--");
 });
 export {
   allCssProperties,

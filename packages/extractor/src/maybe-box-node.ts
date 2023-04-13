@@ -88,7 +88,7 @@ export function maybeBoxNode(node: Node, stack: Node[], ctx: BoxContext): MaybeB
       .when(Node.isArrayLiteralExpression, (node) => {
         const boxNodes = node.getElements().map((element) => {
           const boxNode = maybeBoxNode(element, stack, ctx)
-          return boxNode ?? cache(box.unresolvable(element, stack))
+          return boxNode ?? maybeObjectLikeBox(element, stack, ctx) ?? cache(box.unresolvable(element, stack))
         }) as BoxNode[]
 
         return cache(box.array(boxNodes, node, stack))

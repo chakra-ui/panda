@@ -4,6 +4,7 @@ import { circle as circleLike, vstack } from '../design-system/patterns'
 import { button } from '../design-system/recipes'
 import { Badge, badge } from './Badge'
 import { AnotherButtonWithRegex, Button, ListedButton } from './Button'
+import { Card } from './Card'
 
 function App() {
   const paddingY = '25px'
@@ -92,6 +93,14 @@ function App() {
             </button>
           </div>
         </div>
+      </div>
+      <div>
+        <Card size="sm" shape="square">
+          size:sm + open:true
+        </Card>
+        <Card shape="circle" open>
+          size:xs + open:true + shape:square
+        </Card>
       </div>
     </div>
   )
