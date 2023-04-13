@@ -1,5 +1,5 @@
 import { capitalize } from '@pandacss/shared'
-import type { RecipeConfig } from '@pandacss/types'
+import type { AnyRecipeConfig } from '@pandacss/types'
 import merge from 'lodash.merge'
 import { AtomicRule, type ProcessOptions } from './atomic-rule'
 import { serializeStyle } from './serialize'
@@ -8,24 +8,33 @@ import type { StylesheetContext } from './types'
 type StyleObject = Record<string, any>
 
 export class Recipe {
-  config: RecipeConfig
+  config: AnyRecipeConfig
 
   name: string
 
   values = new Map<string, Set<{ className: string; value: string }>>()
 
-  constructor(config: RecipeConfig, private context: StylesheetContext) {
-    const { name, jsx = [capitalize(name)], base = {}, variants = {}, defaultVariants = {}, description = '' } = config
+  constructor(config: AnyRecipeConfig, private context: StylesheetContext) {
+    const {
+      name,
+      jsx = [capitalize(name)],
+      base = {},
+      variants = {},
+      defaultVariants = {},
+      description = '',
+      compoundVariants = [],
+    } = config
 
     this.name = name
 
-    const recipe: Required<RecipeConfig> = {
+    const recipe: Required<AnyRecipeConfig> = {
       jsx,
       name,
       description,
       base: {},
       variants: {},
       defaultVariants,
+      compoundVariants,
     }
 
     recipe.base = this.walk(base)

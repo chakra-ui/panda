@@ -49,6 +49,22 @@ export default defineConfig({
             },
           },
         },
+        compoundVariants: [
+          {
+            size: 'sm',
+            variant: 'primary',
+            css: {
+              fontSize: '12px',
+            },
+          },
+          {
+            variant: ['primary', 'danger'],
+            size: ['md'],
+            css: {
+              fontSize: '24px',
+            },
+          },
+        ],
       },
     },
   },
