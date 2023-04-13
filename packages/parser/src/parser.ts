@@ -134,6 +134,7 @@ export function createParser(options: ParserOptions) {
         const alias = imports.getAlias(node.name)
         node.props?.forEach((prop) => properties.set(prop, true))
 
+        functions.set(node.baseName, properties)
         functions.set(alias, properties)
         components.set(alias, properties)
       })
