@@ -48,6 +48,14 @@ export default defineConfig({
               backgroundColor: 'green.500',
             },
           },
+          state: {
+            focused: {
+              color: 'green',
+            },
+            hovered: {
+              color: 'pink.400',
+            },
+          },
         },
         compoundVariants: [
           {
@@ -59,8 +67,10 @@ export default defineConfig({
           },
           {
             variant: ['primary', 'danger'],
-            size: ['md'],
+            state: 'focused',
             css: {
+              padding: 4,
+              fontWeight: 'bold',
               fontSize: '24px',
             },
           },
