@@ -1,9 +1,9 @@
 import { css, cx } from '../design-system/css'
+import { Circle, HStack, Stack, panda } from '../design-system/jsx'
 import { circle as circleLike, vstack } from '../design-system/patterns'
-import { Stack, panda, Circle, HStack } from '../design-system/jsx'
 import { button } from '../design-system/recipes'
-import { Button } from './Button'
-import { badge, Badge } from './Badge'
+import { Badge, badge } from './Badge'
+import { AnotherButtonWithRegex, Button, ListedButton } from './Button'
 
 function App() {
   const paddingY = '25px'
@@ -20,6 +20,22 @@ function App() {
       >
         Hello
       </Button>
+      <ListedButton
+        aria-label="Listed"
+        variant="primary"
+        size={{ base: 'sm', md: 'md' }}
+        css={{ color: 'yellow', transform: 'auto', scale: '1.1', x: '40px' }}
+      >
+        Listed
+      </ListedButton>
+      <AnotherButtonWithRegex
+        aria-label="AnotherButtonWithRegex"
+        variant="secondary"
+        size={{ base: 'sm', md: 'md' }}
+        css={{ color: 'yellow', transform: 'auto', scale: '1.1', x: '40px' }}
+      >
+        AnotherButtonWithRegex
+      </AnotherButtonWithRegex>
       <button className={cx(button({ variant: 'primary' }), css({ color: 'yellow' }))}>Click me</button>
       <Stack align="center" padding="20px" marginBottom="30px" bg="green.100" gap={{ base: '4', md: '10' }}>
         <Circle size="40px" bg="red.300" fontSize="1.2em" fontWeight="bold">

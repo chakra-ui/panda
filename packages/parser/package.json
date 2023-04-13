@@ -26,7 +26,8 @@
     "ts-pattern": "4.2.2"
   },
   "devDependencies": {
-    "@pandacss/fixture": "workspace:*"
+    "@pandacss/fixture": "workspace:*",
+    "@pandacss/generator": "workspace:*"
   },
   "files": [
     "dist"

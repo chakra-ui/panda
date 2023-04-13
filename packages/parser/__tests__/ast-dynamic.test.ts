@@ -4,7 +4,7 @@ import { recipeParser } from './fixture'
 describe('[dynamic] ast parser', () => {
   test('should parse', () => {
     const code = `
-        import { textStyle, layerStyle } from ".panda/recipe"
+        import { textStyle, layerStyle } from ".panda/recipes"
 
         textStyle({
             variant: "h1"

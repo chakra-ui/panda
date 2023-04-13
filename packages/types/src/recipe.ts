@@ -45,7 +45,10 @@ export type RecipeConfig<T extends RecipeVariantRecord = RecipeVariantRecord> = 
    */
   description?: string
   /**
-   * The jsx elements to track for this recipe.
+   * The jsx elements to track for this recipe. Can be string or Regexp.
+   *
+   * @default capitalize(recipe.name)
+   * @example ['Button', 'Link', /Button$/]
    */
-  jsx?: string
+  jsx?: Array<string | RegExp>
 }
