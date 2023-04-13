@@ -1,5 +1,4 @@
 import { logger } from '@pandacss/logger'
-import type { ParserMode } from '@pandacss/parser'
 import type { ParserResult } from '@pandacss/types'
 import { writeFile } from 'fs/promises'
 import { Node } from 'ts-morph'
@@ -12,9 +11,7 @@ import { gzipSizeSync } from 'gzip-size'
 
 export function analyzeTokens(
   ctx: PandaContext,
-  options: { onResult?: (file: string, result: ParserResult) => void; mode?: ParserMode } = {
-    mode: 'box-extractor',
-  },
+  options: { onResult?: (file: string, result: ParserResult) => void } = {},
 ) {
   const parserResultByFilepath = new Map<string, ParserResult>()
   const extractTimeByFilepath = new Map<string, number>()
@@ -23,7 +20,7 @@ export function analyzeTokens(
     .getFiles()
     .map((file) => {
       const start = performance.now()
-      const result = ctx.project.parseSourceFile(file, ctx.properties, options.mode)
+      const result = ctx.project.parseSourceFile(file, ctx.properties)
 
       const extractMs = performance.now() - start
       extractTimeByFilepath.set(file, extractMs)
