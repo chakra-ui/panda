@@ -441,6 +441,9 @@ importers:
       '@pandacss/fixture':
         specifier: workspace:*
         version: link:../fixture
+      '@pandacss/generator':
+        specifier: workspace:*
+        version: link:../generator
 
   packages/parser-vue:
     dependencies:

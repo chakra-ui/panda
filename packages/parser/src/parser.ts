@@ -23,7 +23,7 @@ type ParserRecipeNode = {
 }
 
 export type ParserNodeOptions = ParserPatternNode | ParserRecipeNode
-export const isNodeRecipe = (node: ParserNodeOptions): node is ParserRecipeNode => node.type === 'recipe'
+const isNodeRecipe = (node: ParserNodeOptions): node is ParserRecipeNode => node.type === 'recipe'
 
 export type ParserOptions = {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string>

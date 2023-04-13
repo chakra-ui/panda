@@ -1,9 +1,19 @@
-import { isCssProperty, allCssProperties } from '@pandacss/is-valid-prop'
-import { utilities, conditions } from '@pandacss/fixture'
+import {
+  breakpoints,
+  conditions,
+  keyframes,
+  patterns,
+  recipes,
+  semanticTokens,
+  tokens,
+  utilities,
+} from '@pandacss/fixture'
+import { createGenerator } from '@pandacss/generator'
+import { allCssProperties } from '@pandacss/is-valid-prop'
+import type { LoadConfigResult } from '@pandacss/types'
+import { type UserConfig } from '@pandacss/types'
 import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
-import { isNodeRecipe, type ParserNodeOptions } from '../src/parser'
-import { uncapitalize } from '@pandacss/shared'
 
 const staticFilePath = 'test.tsx'
 const properties = Array.from(
@@ -21,37 +31,40 @@ const properties = Array.from(
   ]),
 )
 
-function getProject(code: string, options: { nodes?: ParserNodeOptions[] } = {}) {
-  const nodes = options.nodes ?? []
-  const recipeNodes = nodes.filter(isNodeRecipe)
+const defaults = {
+  dependencies: [],
+  config: {
+    cwd: '',
+    include: [],
+    utilities,
+    patterns,
+    theme: {
+      tokens,
+      semanticTokens,
+      breakpoints,
+      keyframes,
+      recipes,
+    },
+    cssVarRoot: ':where(html)',
+    conditions: {
+      ...conditions,
+      dark: '[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]',
+      light: '[data-theme=light] &, .light &, &.light, &[data-theme=light]',
+    },
+    outdir: '.panda',
+  },
+  path: '',
+} satisfies LoadConfigResult
+
+function getProject(code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf) {
+  const config = options ? options(defaults.config) : defaults.config
+  const generator = createGenerator({ ...defaults, config })
 
   return createProject({
     useInMemoryFileSystem: true,
     getFiles: () => [staticFilePath],
     readFile: () => code,
-    parserOptions: {
-      importMap: {
-        css: '.panda/css',
-        recipe: '.panda/recipe',
-        pattern: '.panda/pattern',
-        jsx: '.panda/jsx',
-      },
-      jsx: {
-        nodes,
-        factory: 'panda',
-        isStyleProp(prop) {
-          return isCssProperty(prop) || prop === 'css'
-        },
-      },
-      getRecipeByName: () => undefined,
-      getRecipeName: (jsx: string) => {
-        const recipe = recipeNodes.find((node) => {
-          return node.jsx?.some((tag) => (typeof tag === 'string' ? tag === jsx : tag.test(jsx)))
-        })
-
-        return recipe?.baseName ?? uncapitalize(jsx)
-      },
-    },
+    parserOptions: generator.parserOptions,
   })
 }
 
@@ -103,17 +116,62 @@ export function jsxParser(code: string) {
 }
 
 export function jsxPatternParser(code: string) {
-  const project = getProject(code, {
-    nodes: [{ name: 'Stack', type: 'pattern', props: ['align', 'gap', 'direction'], baseName: 'Stack' }],
-  })
+  const project = getProject(code, (conf) => ({
+    ...conf,
+    patterns: {
+      ...conf.patterns,
+      stack: {
+        properties: {
+          align: { type: 'property', value: 'alignItems' },
+          justify: { type: 'property', value: 'justifyContent' },
+          direction: { type: 'property', value: 'flexDirection' },
+          gap: { type: 'property', value: 'gap' },
+        },
+        transform(props) {
+          const { align = 'flex-start', justify, direction = 'column', gap = '10px', ...rest } = props
+          return {
+            display: 'flex',
+            flexDirection: direction,
+            alignItems: align,
+            justifyContent: justify,
+            gap,
+            ...rest,
+          }
+        },
+      },
+    },
+  }))
   const data = project.parseSourceFile(staticFilePath, properties)!
   return data.pattern
 }
 
 export function jsxRecipeParser(code: string) {
-  const project = getProject(code, {
-    nodes: [{ name: 'Button', type: 'recipe', props: ['size', 'variant'], baseName: 'Button', jsx: ['Button'] }],
-  })
+  const project = getProject(code, (conf) => ({
+    ...conf,
+    theme: {
+      ...conf.theme,
+      recipes: {
+        ...conf.theme?.recipes,
+        button: {
+          name: 'button',
+          jsx: ['Button', /WithRegex$/],
+          description: 'A button styles',
+          base: { fontSize: 'lg' },
+          variants: {
+            size: {
+              sm: { padding: '2', borderRadius: 'sm' },
+              md: { padding: '4', borderRadius: 'md' },
+            },
+            variant: {
+              primary: { color: 'white', backgroundColor: 'blue.500' },
+              danger: { color: 'white', backgroundColor: 'red.500' },
+              secondary: { color: 'pink.300', backgroundColor: 'green.500' },
+            },
+          },
+        },
+      },
+    },
+  }))
   const data = project.parseSourceFile(staticFilePath, properties)!
   return data.recipe
 }
