@@ -37,7 +37,7 @@ export type RecipeDefinition<T extends RecipeVariantRecord> = {
   /**
    * The multi-variant styles of the recipe.
    */
-  variants?: T
+  variants?: T | RecipeVariantRecord
   /**
    * The default variants of the recipe.
    */
