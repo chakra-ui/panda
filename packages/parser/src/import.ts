@@ -10,7 +10,7 @@ type ImportResult = {
 export function getImportDeclarations(
   file: SourceFile,
   options: {
-    match: (value: { id: string; mod: string }) => boolean
+    match: (value: ImportResult) => boolean
   },
 ) {
   const { match } = options
@@ -26,7 +26,7 @@ export function getImportDeclarations(
       const name = specifier.getNameNode().getText()
       const alias = specifier.getAliasNode()?.getText() || name
 
-      if (!match({ id: name, mod: source })) return
+      if (!match({ name, alias, mod: source })) return
 
       result.push({ name, alias, mod: source })
     })
@@ -42,7 +42,7 @@ export function getImportDeclarations(
     },
     createMatch(mod: string) {
       const mods = result.filter((o) => o.mod.includes(mod))
-      return memo((id: string) => !!mods.find((mod) => mod.alias === id))
+      return memo((id: string) => !!mods.find((mod) => mod.alias === id || mod.name === id))
     },
     match(id: string) {
       return !!this.find(id)

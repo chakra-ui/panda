@@ -73,7 +73,7 @@ export function createParser(options: ParserOptions) {
     // Get all import declarations
     const imports = getImportDeclarations(sourceFile, {
       match(value) {
-        return importRegex.some(({ regex, mod }) => regex.test(value.id) && value.mod.includes(mod))
+        return importRegex.some(({ regex, mod }) => regex.test(value.name) && value.mod.includes(mod))
       },
     })
 
@@ -94,12 +94,16 @@ export function createParser(options: ParserOptions) {
     const jsxFactoryAlias = jsx ? imports.getAlias(jsx.factory) : 'panda'
     const jsxPatternNodes = new RegExp(`(${jsx?.nodes.map((node) => node.type === 'pattern' && node.name).join('|')})$`)
 
-    const recipes = new Map<string, boolean>()
+    const recipes = new Set<string>()
+    const patterns = new Set<string>()
     imports.value.forEach((importDeclaration) => {
-      const { name, alias } = importDeclaration
-      const isRecipe = isValidRecipe(name)
-      if (isRecipe) {
-        recipes.set(alias, true)
+      const { alias } = importDeclaration
+      if (isValidRecipe(alias)) {
+        recipes.add(alias)
+      }
+
+      if (isValidPattern(alias)) {
+        patterns.add(alias)
       }
     })
 
@@ -170,14 +174,14 @@ export function createParser(options: ParserOptions) {
     })
 
     const matchFn = memo((fnName: string) => {
-      if (recipes.has(fnName)) return true
+      if (recipes.has(fnName) || patterns.has(fnName)) return true
       if (fnName === cvaAlias || fnName === cssAlias || fnName.startsWith(jsxFactoryAlias)) return true
       return Boolean(functions.get(fnName))
     })
     const matchFnProp = memo((fnName: string, propName: string) => {
       if (propertiesMap.size === 0) return true // = allow all
 
-      if (recipes.has(fnName)) return true
+      if (recipes.has(fnName) || patterns.has(fnName)) return true
       if (fnName === cvaAlias) return true
       if (fnName.startsWith(jsxFactoryAlias)) return true
       if (fnName === cssAlias) return Boolean(propertiesMap.get(propName) || propName === 'selectors')
