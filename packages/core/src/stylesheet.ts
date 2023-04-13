@@ -1,4 +1,4 @@
-import type { AnyRecipeConfig, Dict, RecipeConfig, SystemStyleObject } from '@pandacss/types'
+import type { AnyRecipeConfig, Dict, SystemStyleObject } from '@pandacss/types'
 import postcss from 'postcss'
 import { AtomicRule } from './atomic-rule'
 import { discardDuplicate, expandCssFunctions, optimizeCss } from './optimize'
