@@ -52,8 +52,4 @@ const card = cva({
   ],
 })
 
-// export function Card() {
-//   return <div className={card({ size: 'sm', shape: 'square' })}>Hello</div>
-// }
-
 export const Card = panda('section', card)
