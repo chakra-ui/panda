@@ -6,27 +6,14 @@ export function cva(config) {
 
   function resolve(props) {
     const computedVariants = { ...defaultVariants, ...compact(props) }
-    let result = { ...base }
+    let variantCss = { ...base }
     for (const [key, value] of Object.entries(computedVariants)) {
       if (variants[key]?.[value]) {
-        result = mergeCss(result, variants[key][value])
+        variantCss = mergeCss(variantCss, variants[key][value])
       }
     }
-
-    compoundVariants.forEach((compoundVariant) => {
-      const isMatching = Object.entries(compoundVariant).every(([key, value]) => {
-        if (key === 'css') return true
-
-        const values = Array.isArray(value) ? value : [value]
-        return values.some((value) => computedVariants[key] === value)
-      })
-
-      if (isMatching) {
-        result = mergeCss(result, compoundVariant.css)
-      }
-    })
-
-    return result
+    const compoundVariantCss = getCompoundVariantCss(compoundVariants, computedVariants)
+    return mergeCss(variantCss, compoundVariantCss)
   }
 
   function cvaFn(props) {
@@ -40,3 +27,29 @@ export function cva(config) {
     config,
   })
 }
+
+export function getCompoundVariantCss(compoundVariants, variantMap) {
+  let result = {}
+  compoundVariants.forEach((compoundVariant) => {
+    const isMatching = Object.entries(compoundVariant).every(([key, value]) => {
+      if (key === 'css') return true
+
+      const values = Array.isArray(value) ? value : [value]
+      return values.some((value) => variantMap[key] === value)
+    })
+
+    if (isMatching) {
+      result = mergeCss(result, compoundVariant.css)
+    }
+  })
+
+  return result
+}
+
+export function assertCompoundVariant(name, compoundVariants, variants, prop) {
+  if (compoundVariants.length > 0 && typeof variants[prop] === 'object') {
+    throw new Error(
+      `[recipe:${name}:${prop}] Conditions are not supported when using compound variants.`,
+    )
+  }
+}    
