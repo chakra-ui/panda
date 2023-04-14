@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { jsxPatternParser } from './fixture'
+import { patternParser } from './fixture'
 
 describe('pattern jsx', () => {
   test('should extract', () => {
@@ -15,7 +15,7 @@ describe('pattern jsx', () => {
        }
      `
 
-    expect(jsxPatternParser(code)).toMatchInlineSnapshot(`
+    expect(patternParser(code)).toMatchInlineSnapshot(`
       Map {
         "Stack" => Set {
           {

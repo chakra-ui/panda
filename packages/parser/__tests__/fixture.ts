@@ -72,8 +72,8 @@ export function importParser(code: string, option: { name: string; module: strin
   const project = getProject(code)
   const sourceFile = project.getSourceFile(staticFilePath)!
   const imports = getImportDeclarations(sourceFile, {
-    match({ id, mod }) {
-      return id === option.name && mod === option.module
+    match({ name, mod }) {
+      return name === option.name && mod === option.module
     },
   })
   return imports.value
@@ -115,7 +115,7 @@ export function jsxParser(code: string) {
   return data.jsx
 }
 
-export function jsxPatternParser(code: string) {
+export function patternParser(code: string) {
   const project = getProject(code, (conf) => ({
     ...conf,
     patterns: {
