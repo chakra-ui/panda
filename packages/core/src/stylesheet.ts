@@ -58,6 +58,10 @@ export class Stylesheet {
   processRecipe = (config: AnyRecipeConfig, styles: SystemStyleObject) => {
     const recipe = new Recipe(config, this.context)
     recipe.process({ styles })
+
+    config.compoundVariants?.forEach((compoundVariant) => {
+      this.processAtomic(compoundVariant.css)
+    })
   }
 
   processAtomicRecipe = (recipe: Pick<AnyRecipeConfig, 'base' | 'variants' | 'compoundVariants'>) => {

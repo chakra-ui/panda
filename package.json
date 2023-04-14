@@ -10,6 +10,7 @@
     "dev": "pnpm -r --parallel --filter=./packages/** dev",
     "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
     "build": "pnpm -r --parallel --filter=./packages/** build",
+    "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
     "clean": "pnpm -r --parallel exec rm -rf dist .turbo *.log",
     "reset": "pnpm -r --parallel exec rm -rf node_modules && rm -rf node_modules",
     "test": "vitest",

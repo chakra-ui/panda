@@ -8,11 +8,19 @@ describe('generate recipes', () => {
       [
         {
           "dts": "",
-          "js": "import { createCss, withoutSpace, compact } from '../helpers.mjs';
+          "js": "import { css, mergeCss } from '../css/css.mjs';
+      import { cx } from '../css/cx.mjs';
+      import { createCss, withoutSpace, compact } from '../helpers.mjs';
 
-      export const createRecipe = (name, defaultVariants) => {
+      export const createRecipe = (name, defaultVariants, compoundVariants) => {
         return (variants) => {
          const transform = (prop, value) => {
+           if (compoundVariants.length > 0 && typeof variants[prop] === 'object') {
+             throw new Error(
+               \`[recipe:\${name}:\${prop}:\${value}] Conditions are not supported when using compound variants.\`,
+             )
+           }
+
             if (value === '__ignore__') {
               return { className: name }
             }
@@ -20,7 +28,7 @@ describe('generate recipes', () => {
             value = withoutSpace(value)
             return { className: \`\${name}--\${prop}_\${value}\` }
          }
-         
+
          const context = {
            hash: false,
            utility: {
@@ -28,14 +36,29 @@ describe('generate recipes', () => {
              transform,
            }
          }
-         
-         const css = createCss(context)
-         
-         return css({
+
+         const recipeCss = createCss(context)
+         const recipeStyles = {
            [name]: '__ignore__',
            ...defaultVariants,
-           ...compact(variants)
+           ...compact(variants),
+         }
+
+         let result = {}
+         compoundVariants.forEach((compoundVariant) => {
+           const isMatching = Object.entries(compoundVariant).every(([key, value]) => {
+             if (key === 'css') return true
+
+             const values = Array.isArray(value) ? value : [value]
+             return values.some((value) => recipeStyles[key] === value)
+           })
+
+           if (isMatching) {
+             result = mergeCss(result, compoundVariant.css)
+           }
          })
+
+         return cx(recipeCss(recipeStyles), css(result))
         }
       }",
           "name": "create-recipe",
@@ -61,7 +84,7 @@ describe('generate recipes', () => {
       }",
           "js": "import { createRecipe } from './create-recipe.mjs';
 
-      export const textStyle = createRecipe('textStyle', {})
+      export const textStyle = createRecipe('textStyle', {}, [])
       textStyle.variants = {\\"size\\":[\\"h1\\",\\"h2\\"]}",
           "name": "text-style",
         },
@@ -86,7 +109,7 @@ describe('generate recipes', () => {
       }",
           "js": "import { createRecipe } from './create-recipe.mjs';
 
-      export const tooltipStyle = createRecipe('tooltipStyle', {})
+      export const tooltipStyle = createRecipe('tooltipStyle', {}, [])
       tooltipStyle.variants = {}",
           "name": "tooltip-style",
         },
@@ -112,7 +135,7 @@ describe('generate recipes', () => {
       }",
           "js": "import { createRecipe } from './create-recipe.mjs';
 
-      export const buttonStyle = createRecipe('buttonStyle', {\\"size\\":\\"md\\",\\"variant\\":\\"solid\\"})
+      export const buttonStyle = createRecipe('buttonStyle', {\\"size\\":\\"md\\",\\"variant\\":\\"solid\\"}, [])
       buttonStyle.variants = {\\"size\\":[\\"sm\\",\\"md\\"],\\"variant\\":[\\"solid\\",\\"outline\\"]}",
           "name": "button-style",
         },

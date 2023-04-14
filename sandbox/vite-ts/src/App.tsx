@@ -16,7 +16,7 @@ function App() {
       <Button
         aria-label="Hello World"
         variant="danger"
-        size={{ base: 'sm', md: 'md' }}
+        size="md"
         css={{ color: 'yellow', transform: 'auto', scale: '1.1', x: '40px' }}
       >
         Hello
@@ -24,7 +24,7 @@ function App() {
       <ListedButton
         aria-label="Listed"
         variant="primary"
-        size={{ base: 'sm', md: 'md' }}
+        size="md"
         css={{ color: 'yellow', transform: 'auto', scale: '1.1', x: '40px' }}
       >
         Listed
@@ -32,12 +32,11 @@ function App() {
       <AnotherButtonWithRegex
         aria-label="AnotherButtonWithRegex"
         variant="secondary"
-        size={{ base: 'sm', md: 'md' }}
+        size="md"
         css={{ color: 'yellow', transform: 'auto', scale: '1.1', x: '40px' }}
       >
         AnotherButtonWithRegex
       </AnotherButtonWithRegex>
-      <button className={cx(button({ variant: 'primary' }), css({ color: 'yellow' }))}>Click me</button>
       <Stack align="center" padding="20px" marginBottom="30px" bg="green.100" gap={{ base: '4', md: '10' }}>
         <Circle size="40px" bg="red.300" fontSize="1.2em" fontWeight="bold">
           S
@@ -52,6 +51,9 @@ function App() {
       <div className={css({ maxWidth: '840px', marginX: 'auto', textAlign: 'center' })}>
         <div>
           <div className={vstack({ justify: 'center', bg: 'red.200', py: '2', mb: '30px', debug: true })}>
+            <button className={cx(button({ variant: 'primary', state: 'focused' }), css({ color: 'yellow' }))}>
+              Click me
+            </button>
             <button>Button 1</button>
             <button>Button 2</button>
             <div className={circleLike({ size: '10', bg: 'purple', color: 'white' })}>3</div>
