@@ -6,12 +6,14 @@ transform(props, { map }) {
   const { axis = "both", ...rest } = props;
   return {
     position: "absolute",
-    top: map(axis, (v) => v === "x" ? "auto" : "50%"),
-    left: map(axis, (v) => v === "y" ? "auto" : "50%"),
+    insetBlockStart: map(axis, (v) => v === "x" ? "auto" : "50%"),
+    insetInlineStart: map(axis, (v) => v === "y" ? "auto" : "50%"),
     transform: map(
       axis,
       (v) => v === "both" ? "translate(-50%, -50%)" : v === "x" ? "translateX(-50%)" : "translateY(-50%)"
     ),
+    maxWidth: "100%",
+    maxHeight: "100%",
     ...rest
   };
 }}

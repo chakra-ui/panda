@@ -51,8 +51,9 @@ const stack: PatternConfig = {
     direction: { type: 'property', value: 'flexDirection' },
     gap: { type: 'property', value: 'gap' },
   },
+  blocklist: ['flexDirection', 'alignItems', 'justifyContent'],
   transform(props) {
-    const { align = 'flex-start', justify, direction = 'column', gap = '10px', ...rest } = props
+    const { align, justify, direction = 'column', gap = '10px', ...rest } = props
     return {
       display: 'flex',
       flexDirection: direction,
@@ -70,6 +71,7 @@ const vstack: PatternConfig = {
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'property', value: 'gap' },
   },
+  blocklist: ['flexDirection', 'alignItems', 'justifyContent'],
   transform(props) {
     const { justify, gap = '10px', ...rest } = props
     return {
@@ -89,6 +91,7 @@ const hstack: PatternConfig = {
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'property', value: 'gap' },
   },
+  blocklist: ['flexDirection', 'alignItems', 'justifyContent'],
   transform(props) {
     const { justify, gap = '10px', ...rest } = props
     return {
@@ -121,17 +124,18 @@ const circle: PatternConfig = {
   properties: {
     size: { type: 'property', value: 'width' },
   },
+  blocklist: ['width', 'height', 'borderRadius'],
   transform(props) {
     const { size, ...rest } = props
     return {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      flex: '0 0 auto',
+      ...rest,
       width: size,
       height: size,
       borderRadius: '9999px',
-      flex: '0 0 auto',
-      ...rest,
     }
   },
 }
@@ -144,11 +148,13 @@ const absoluteCenter: PatternConfig = {
     const { axis = 'both', ...rest } = props
     return {
       position: 'absolute',
-      top: map(axis, (v) => (v === 'x' ? 'auto' : '50%')),
-      left: map(axis, (v) => (v === 'y' ? 'auto' : '50%')),
+      insetBlockStart: map(axis, (v) => (v === 'x' ? 'auto' : '50%')),
+      insetInlineStart: map(axis, (v) => (v === 'y' ? 'auto' : '50%')),
       transform: map(axis, (v) =>
         v === 'both' ? 'translate(-50%, -50%)' : v === 'x' ? 'translateX(-50%)' : 'translateY(-50%)',
       ),
+      maxWidth: '100%',
+      maxHeight: '100%',
       ...rest,
     }
   },
@@ -242,6 +248,44 @@ const container: PatternConfig = {
   },
 }
 
+const center: PatternConfig = {
+  properties: {
+    inline: { type: 'boolean' },
+  },
+  transform(props) {
+    const { inline, ...rest } = props
+    return {
+      display: inline ? 'inline-flex' : 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      ...rest,
+    }
+  },
+}
+
+const aspectRatio: PatternConfig = {
+  properties: {
+    ratio: { type: 'number' },
+  },
+  blocklist: ['aspectRatio'],
+  transform(props) {
+    const { ratio, ...rest } = props
+    return {
+      aspectRatio: ratio,
+      overflow: 'hidden',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      '&>img, &>video': {
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+      },
+      ...rest,
+    }
+  },
+}
+
 export const patterns = {
   box,
   flex,
@@ -250,7 +294,9 @@ export const patterns = {
   hstack,
   spacer,
   circle,
+  center,
   absoluteCenter,
+  aspectRatio,
   grid,
   gridItem,
   wrap,

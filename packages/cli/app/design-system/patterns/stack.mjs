@@ -3,7 +3,7 @@ import { css } from '../css/index.mjs';
 
 const stackConfig = {
 transform(props) {
-  const { align = "flex-start", justify, direction = "column", gap = "10px", ...rest } = props;
+  const { align, justify, direction = "column", gap = "10px", ...rest } = props;
   return {
     display: "flex",
     flexDirection: direction,
