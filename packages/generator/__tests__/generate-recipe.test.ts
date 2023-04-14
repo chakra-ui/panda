@@ -15,7 +15,7 @@ describe('generate recipes', () => {
       export const createRecipe = (name, defaultVariants, compoundVariants) => {
         return (variants) => {
          const transform = (prop, value) => {
-           if (compoundVariants.length > 0 && typeof value === 'object') {
+           if (compoundVariants.length > 0 && typeof variants[prop] === 'object') {
              throw new Error(
                \`[recipe:\${name}:\${prop}:\${value}] Conditions are not supported when using compound variants.\`,
              )
