@@ -1,50 +1,165 @@
 # Recipes
 
-Recipes are defined sets of CSS styles composed together that can be easily applied to specific components. Panda allows
-you create recipes for your design system or components.
+Panda provides a way to write CSS-in-JS with better performance, developer experience, and composability. One of its key
+features is the ability to define recipes, which are sets of styles that can be applied to a component based on certain
+conditions.
 
-> All recipe styles are generated at build time.
+> Recipes are reusable, composable, and type-safe.
 
-## Base and Variants
+## Creating a Recipe
 
-As you build out components in your application or design system, you'll discover you need components with similar
-styles and only a few differences. To achieve this, we came up with the idea of `base` and `variants` keys for recipes.
+A recipe consists of four properties:
 
-- Base refers to the common or shared styles for a specific component
-- Variants are the properties that map to the different visual styles of a single component.
+- `base`: The base styles for the component
+- `variants`: The different visual styles for the component
+- `compoundVariants`: The different combinations of variants for the component
+- `defaultVariants`: The default variant values for the component
 
 Here's an example button recipe
 
 ```jsx
-// recipes/button.tsx
-import { defineRecipe } from '@pandacss/dev'
+import { cva } from '../panda/css'
 
-const buttonRecipe = defineRecipe({
-  ...
+const button = cva({
   base: {
     display: 'flex',
   },
   variants: {
     visual: {
-      funky: { bg: 'red.200', color: 'white' },
-      edgy: { border: '1px solid token(colors.red.500)' },
+      solid: { bg: 'red.200', color: 'white' },
+      outline: { borderWidth: '1px', borderColor: 'red.200' },
     },
     size: {
       sm: { padding: '4', fontSize: '12px' },
-      lg: { padding: '8', fontSize: '40px' },
+      lg: { padding: '8', fontSize: '24px' },
     },
   },
 })
-
 ```
 
-From the example above, you’ll notice the base style of the button is the `display: 'flex'`. We then applied the
-`visual` and `size` properties to the variant key.
+## Using the Recipe
 
-> You can add as many variant properties and values as you need.
+The returned value from the `cva` function is a function that can be used to apply the recipe to a component. Here's an
+example of how to use the `button` recipe:
+
+```jsx
+import { button } from './button'
+
+const Button = () => {
+  return <button css={button({ visual: 'solid', size: 'lg' })}>Click Me</button>
+}
+```
+
+## Setting the default Variants
+
+The `defaultVariants` property is used to set the default variant values for the recipe. This is useful when you want to
+apply a variant by default. Here's an example of how to use `defaultVariants`:
+
+```jsx
+import { cva } from '../panda/css'
+
+const button = cva({
+  base: {
+    display: 'flex',
+  },
+  variants: {
+    visual: {
+      solid: { bg: 'red.200', color: 'white' },
+      outline: { borderWidth: '1px', borderColor: 'red.200' },
+    },
+    size: {
+      sm: { padding: '4', fontSize: '12px' },
+      lg: { padding: '8', fontSize: '24px' },
+    },
+  },
+  defaultVariants: {
+    visual: 'solid',
+    size: 'lg',
+  },
+})
+```
+
+## Compound Variants
+
+Compound variants are a way to combine multiple variants together to create more complex sets of styles. They are
+defined using the `compoundVariants` property , which takes an array of objects as its argument. Each object in the
+array represents a set of conditions that must be met in order for the corresponding styles to be applied.
+
+Here's an example of how to use `compoundVariants` in Panda:
+
+```js
+import { cva } from '../panda/css'
+
+const button = cva({
+  base: {
+    padding: '8px 16px',
+    borderRadius: '4px',
+    fontSize: '16px',
+    fontWeight: 'bold',
+  },
+
+  variants: {
+    size: {
+      small: {
+        fontSize: '14px',
+        padding: '4px 8px',
+      },
+      large: {
+        fontSize: '18px',
+        padding: '12px 24px',
+      },
+    },
+    color: {
+      primary: {
+        backgroundColor: 'blue',
+        color: 'white',
+      },
+      secondary: {
+        backgroundColor: 'gray',
+        color: 'black',
+      },
+    },
+    disabled: {
+      true: {
+        opacity: 0.5,
+        cursor: 'not-allowed',
+      },
+    },
+  },
+
+  // compound variants
+  compoundVariants: [
+    // apply small size variant when both small size and primary color are selected
+    {
+      size: 'small',
+      color: 'primary',
+      css: {
+        border: '2px solid blue',
+      },
+    },
+    // apply large size variant when both large size and secondary color are selected and the button is disabled
+    {
+      size: 'large',
+      color: 'secondary',
+      disabled: true,
+      css: {
+        backgroundColor: 'lightgray',
+        color: 'darkgray',
+        border: 'none',
+      },
+    },
+  ],
+})
+```
+
+Overall, using compound variants allows you to create more complex sets of styles that can be applied to your components
+based on multiple conditions.
+
+By combining simple variants together in this way, you can create a wide range of visual styles without cluttering up
+your code with lots of conditional logic.
 
 ## Best Practices
 
-- Leverage css variables in the base styles as much as possible. Makes it easier to theme this component even with JS
+- Leverage css variables in the base styles as much as possible. Makes it easier to theme the component with JS
 - Separate concerns (don't mix styles). Group them in logical groups that mean something visually
-- Consider using a virtual palette when needed for more robustness
+- Use the `compoundVariants` property to create more complex sets of styles
