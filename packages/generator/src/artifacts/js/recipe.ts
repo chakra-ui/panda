@@ -11,23 +11,19 @@ export function generateRecipes(ctx: Context) {
 
   if (recipes.isEmpty()) return
 
-  // TODO add link to docs in the error ?
   const createRecipeFn = {
     name: 'create-recipe',
     dts: '',
     js: outdent`
-   ${ctx.file.import('css, mergeCss', '../css/css')}
+   ${ctx.file.import('css', '../css/css')}
+   ${ctx.file.import('assertCompoundVariant, getCompoundVariantCss', '../css/cva')}
    ${ctx.file.import('cx', '../css/cx')}
-   ${ctx.file.import('createCss, withoutSpace, compact', '../helpers')}
+   ${ctx.file.import('compact, createCss, withoutSpace', '../helpers')}
 
    export const createRecipe = (name, defaultVariants, compoundVariants) => {
      return (variants) => {
       const transform = (prop, value) => {
-        if (compoundVariants.length > 0 && typeof variants[prop] === 'object') {
-          throw new Error(
-            \`[recipe:\${name}:\${prop}:\${value}] Conditions are not supported when using compound variants.\`,
-          )
-        }
+        assertCompoundVariant(name, compoundVariants, variants, prop)
 
          if (value === '__ignore__') {
            return { className: name }
@@ -37,36 +33,23 @@ export function generateRecipes(ctx: Context) {
          return { className: \`\${name}--\${prop}${separator}\${value}\` }
       }
 
-      const context = {
+      const recipeCss = createCss({
         hash: ${hash ? 'true' : 'false'},
         utility: {
           prefix: ${prefix ? JSON.stringify(prefix) : undefined},
           transform,
         }
-      }
+      })
 
-      const recipeCss = createCss(context)
       const recipeStyles = {
         [name]: '__ignore__',
         ...defaultVariants,
         ...compact(variants),
       }
 
-      let result = {}
-      compoundVariants.forEach((compoundVariant) => {
-        const isMatching = Object.entries(compoundVariant).every(([key, value]) => {
-          if (key === 'css') return true
+      const compoundVariantStyles = getCompoundVariantCss(compoundVariants, recipeStyles)
 
-          const values = Array.isArray(value) ? value : [value]
-          return values.some((value) => recipeStyles[key] === value)
-        })
-
-        if (isMatching) {
-          result = mergeCss(result, compoundVariant.css)
-        }
-      })
-
-      return cx(recipeCss(recipeStyles), css(result))
+      return cx(recipeCss(recipeStyles), css(compoundVariantStyles))
      }
    }
   `,
