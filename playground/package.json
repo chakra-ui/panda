@@ -14,7 +14,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@ark-ui/react": "0.0.0-rc-20230413191207",
+    "@ark-ui/react": "0.0.0-rc-20230414131749",
     "@monaco-editor/react": "4.5.0",
     "@next/font": "13.3.0",
     "@pandacss/generator": "workspace:*",
