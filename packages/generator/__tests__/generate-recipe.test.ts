@@ -8,18 +8,15 @@ describe('generate recipes', () => {
       [
         {
           "dts": "",
-          "js": "import { css, mergeCss } from '../css/css.mjs';
+          "js": "import { css } from '../css/css.mjs';
+      import { assertCompoundVariant, getCompoundVariantCss } from '../css/cva.mjs';
       import { cx } from '../css/cx.mjs';
-      import { createCss, withoutSpace, compact } from '../helpers.mjs';
+      import { compact, createCss, withoutSpace } from '../helpers.mjs';
 
       export const createRecipe = (name, defaultVariants, compoundVariants) => {
         return (variants) => {
          const transform = (prop, value) => {
-           if (compoundVariants.length > 0 && typeof variants[prop] === 'object') {
-             throw new Error(
-               \`[recipe:\${name}:\${prop}:\${value}] Conditions are not supported when using compound variants.\`,
-             )
-           }
+           assertCompoundVariant(name, compoundVariants, variants, prop)
 
             if (value === '__ignore__') {
               return { className: name }
@@ -29,36 +26,23 @@ describe('generate recipes', () => {
             return { className: \`\${name}--\${prop}_\${value}\` }
          }
 
-         const context = {
+         const recipeCss = createCss({
            hash: false,
            utility: {
              prefix: undefined,
              transform,
            }
-         }
+         })
 
-         const recipeCss = createCss(context)
          const recipeStyles = {
            [name]: '__ignore__',
            ...defaultVariants,
            ...compact(variants),
          }
 
-         let result = {}
-         compoundVariants.forEach((compoundVariant) => {
-           const isMatching = Object.entries(compoundVariant).every(([key, value]) => {
-             if (key === 'css') return true
+         const compoundVariantStyles = getCompoundVariantCss(compoundVariants, recipeStyles)
 
-             const values = Array.isArray(value) ? value : [value]
-             return values.some((value) => recipeStyles[key] === value)
-           })
-
-           if (isMatching) {
-             result = mergeCss(result, compoundVariant.css)
-           }
-         })
-
-         return cx(recipeCss(recipeStyles), css(result))
+         return cx(recipeCss(recipeStyles), css(compoundVariantStyles))
         }
       }",
           "name": "create-recipe",
