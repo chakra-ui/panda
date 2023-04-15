@@ -257,20 +257,37 @@ export function createParser(options: ParserOptions) {
           .otherwise(() => {
             //
           })
+        //
       } else if (result.kind === 'component') {
+        //
         result.queryList.forEach((query) => {
+          //
           const data = combineResult(unbox(query.box))
+
           logger.debug(`ast:jsx:${name}`, { filePath, result: data })
 
-          if (jsx && name.startsWith(jsxFactoryAlias)) {
-            collector.jsx.add({ name, box: query.box, type: 'jsx-factory', data })
-          } else if (jsxPatternNodes.test(name)) {
-            collector.setPattern(name, { type: 'jsx-pattern', name, box: query.box, data })
-          } else if (recipeJsxLists.string.has(name) || recipeJsxLists.regex.some((regex) => regex.test(name))) {
-            collector.setRecipe(getRecipeName(name), { type: 'jsx-recipe', name, box: query.box, data })
-          } else {
-            collector.jsx.add({ name, box: query.box, type: 'jsx', data })
-          }
+          match(name)
+            .when(
+              (name) => jsx && name.startsWith(jsxFactoryAlias),
+              (name) => {
+                collector.jsx.add({ name, box: query.box, type: 'jsx-factory', data })
+              },
+            )
+            .when(
+              (name) => jsxPatternNodes.test(name),
+              (name) => {
+                collector.setPattern(name, { type: 'jsx-pattern', name, box: query.box, data })
+              },
+            )
+            .when(
+              (name) => recipeJsxLists.string.has(name) || recipeJsxLists.regex.some((regex) => regex.test(name)),
+              (name) => {
+                collector.setRecipe(getRecipeName(name), { type: 'jsx-recipe', name, box: query.box, data })
+              },
+            )
+            .otherwise(() => {
+              collector.jsx.add({ name, box: query.box, type: 'jsx', data })
+            })
         })
       }
     })
