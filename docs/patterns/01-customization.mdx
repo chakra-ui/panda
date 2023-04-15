@@ -30,6 +30,8 @@ const config = {
           // Whether to hide the scrollbar
           hideScrollbar: { type: 'boolean' },
         },
+        // disallow the `overflow` property (in TypeScript)
+        blocklist: ['overflow'],
         transform(props) {
           const { direction, hideScrollbar, ...rest } = props
           return {
