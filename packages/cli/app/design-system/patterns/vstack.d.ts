@@ -9,7 +9,7 @@ export type VstackProperties = {
 }
 
         
-type VstackOptions = VstackProperties & Omit<SystemStyleObject, keyof VstackProperties | 'flexDirection' | 'alignItems' | 'justifyContent'>
+type VstackOptions = VstackProperties & Omit<SystemStyleObject, keyof VstackProperties | 'flexDirection'>
 
 
 export declare function vstack(options?: VstackOptions): string

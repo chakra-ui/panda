@@ -9,10 +9,10 @@ transform(props) {
     alignItems: "center",
     justifyContent: "center",
     flex: "0 0 auto",
-    ...rest,
     width: size,
     height: size,
-    borderRadius: "9999px"
+    borderRadius: "9999px",
+    ...rest
   };
 }}
 

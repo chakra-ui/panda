@@ -17,17 +17,6 @@ const flex: PatternConfig = {
     grow: { type: 'property', value: 'flexGrow' },
     shrink: { type: 'property', value: 'flexShrink' },
   },
-  blocklist: [
-    'alignItems',
-    'justifyContent',
-    'flexDirection',
-    'flexDir',
-    'flexWrap',
-    'flexShrink',
-    'flexBasis',
-    'flexGrow',
-    'flexFlow',
-  ],
   transform(props) {
     const { direction, align, justify, wrap, basis, grow, shrink, ...rest } = props
     return {
@@ -51,7 +40,7 @@ const stack: PatternConfig = {
     direction: { type: 'property', value: 'flexDirection' },
     gap: { type: 'property', value: 'gap' },
   },
-  blocklist: ['flexDirection', 'alignItems', 'justifyContent'],
+  blocklist: ['flexDirection'],
   transform(props) {
     const { align, justify, direction = 'column', gap = '10px', ...rest } = props
     return {
@@ -71,7 +60,7 @@ const vstack: PatternConfig = {
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'property', value: 'gap' },
   },
-  blocklist: ['flexDirection', 'alignItems', 'justifyContent'],
+  blocklist: ['flexDirection'],
   transform(props) {
     const { justify, gap = '10px', ...rest } = props
     return {
@@ -91,7 +80,7 @@ const hstack: PatternConfig = {
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'property', value: 'gap' },
   },
-  blocklist: ['flexDirection', 'alignItems', 'justifyContent'],
+  blocklist: ['flexDirection'],
   transform(props) {
     const { justify, gap = '10px', ...rest } = props
     return {
@@ -132,10 +121,10 @@ const circle: PatternConfig = {
       alignItems: 'center',
       justifyContent: 'center',
       flex: '0 0 auto',
-      ...rest,
       width: size,
       height: size,
       borderRadius: '9999px',
+      ...rest,
     }
   },
 }

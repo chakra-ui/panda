@@ -14,7 +14,7 @@ export type FlexProperties = {
 }
 
         
-type FlexOptions = FlexProperties & Omit<SystemStyleObject, keyof FlexProperties | 'alignItems' | 'justifyContent' | 'flexDirection' | 'flexDir' | 'flexWrap' | 'flexShrink' | 'flexBasis' | 'flexGrow' | 'flexFlow'>
+type FlexOptions = FlexProperties & Omit<SystemStyleObject, keyof FlexProperties >
 
 
 export declare function flex(options?: FlexOptions): string
