@@ -53,7 +53,7 @@ const combineResult = (unboxed: Unboxed) => {
 }
 
 export function createParser(options: ParserOptions) {
-  return function parse(sourceFile: SourceFile | undefined, confProperties: string[]) {
+  return function parse(sourceFile: SourceFile | undefined, styleProperties: string[]) {
     if (!sourceFile) return
 
     const filePath = sourceFile.getFilePath()
@@ -110,7 +110,7 @@ export function createParser(options: ParserOptions) {
     const functions = new Map<string, Map<string, boolean>>()
     const components = new Map<string, Map<string, boolean>>()
 
-    const propertiesMap = new Map<string, boolean>(confProperties.map((prop) => [prop, true]))
+    const propertiesMap = new Map<string, boolean>(styleProperties.map((prop) => [prop, true]))
     const recipePropertiesByName = new Map<string, Set<string>>()
     const recipeJsxLists = (jsx?.nodes ?? []).filter(isNodeRecipe).reduce(
       (acc, recipe) => {
