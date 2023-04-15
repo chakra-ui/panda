@@ -18,6 +18,6 @@ transform(props, { map }) {
   };
 }}
 
-export const getAbsoluteCenterStyle = (styles) => absoluteCenterConfig.transform(styles, { map: mapObject })
+export const getAbsoluteCenterStyle = (styles = {}) => absoluteCenterConfig.transform(styles, { map: mapObject })
 
 export const absoluteCenter = (styles) => css(getAbsoluteCenterStyle(styles))

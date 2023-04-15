@@ -11,4 +11,4 @@ export type CircleProperties = {
 type CircleOptions = CircleProperties & Omit<SystemStyleObject, keyof CircleProperties | 'width' | 'height' | 'borderRadius'>
 
 
-export declare function circle(options: CircleOptions): string
+export declare function circle(options?: CircleOptions): string

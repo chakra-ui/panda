@@ -22,7 +22,7 @@ test('should generate pattern', () => {
     type StackOptions = StackProperties & Omit<SystemStyleObject, keyof StackProperties >
 
 
-    export declare function stack(options: StackOptions): string
+    export declare function stack(options?: StackOptions): string
     ",
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
@@ -40,7 +40,7 @@ test('should generate pattern', () => {
       };
     }}
 
-    export const getStackStyle = (styles) => stackConfig.transform(styles, { map: mapObject })
+    export const getStackStyle = (styles = {}) => stackConfig.transform(styles, { map: mapObject })
 
     export const stack = (styles) => css(getStackStyle(styles))",
         "name": "stack",
@@ -59,7 +59,7 @@ test('should generate pattern', () => {
     type AbsoluteCenterOptions = AbsoluteCenterProperties & Omit<SystemStyleObject, keyof AbsoluteCenterProperties >
 
 
-    export declare function absoluteCenter(options: AbsoluteCenterOptions): string
+    export declare function absoluteCenter(options?: AbsoluteCenterOptions): string
     ",
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
@@ -78,7 +78,7 @@ test('should generate pattern', () => {
       };
     }}
 
-    export const getAbsoluteCenterStyle = (styles) => absoluteCenterConfig.transform(styles, { map: mapObject })
+    export const getAbsoluteCenterStyle = (styles = {}) => absoluteCenterConfig.transform(styles, { map: mapObject })
 
     export const absoluteCenter = (styles) => css(getAbsoluteCenterStyle(styles))",
         "name": "absolute-center",
@@ -99,7 +99,7 @@ test('should generate pattern', () => {
     type SimpleGridOptions = SimpleGridProperties & Omit<SystemStyleObject, keyof SimpleGridProperties >
 
 
-    export declare function simpleGrid(options: SimpleGridOptions): string
+    export declare function simpleGrid(options?: SimpleGridOptions): string
     ",
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
@@ -114,7 +114,7 @@ test('should generate pattern', () => {
       };
     }}
 
-    export const getSimpleGridStyle = (styles) => simpleGridConfig.transform(styles, { map: mapObject })
+    export const getSimpleGridStyle = (styles = {}) => simpleGridConfig.transform(styles, { map: mapObject })
 
     export const simpleGrid = (styles) => css(getSimpleGridStyle(styles))",
         "name": "simple-grid",
@@ -133,7 +133,7 @@ test('should generate pattern', () => {
     type GridItemOptions = GridItemProperties & Omit<SystemStyleObject, keyof GridItemProperties >
 
 
-    export declare function gridItem(options: GridItemOptions): string
+    export declare function gridItem(options?: GridItemOptions): string
     ",
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
@@ -146,7 +146,7 @@ test('should generate pattern', () => {
       };
     }}
 
-    export const getGridItemStyle = (styles) => gridItemConfig.transform(styles, { map: mapObject })
+    export const getGridItemStyle = (styles = {}) => gridItemConfig.transform(styles, { map: mapObject })
 
     export const gridItem = (styles) => css(getGridItemStyle(styles))",
         "name": "grid-item",

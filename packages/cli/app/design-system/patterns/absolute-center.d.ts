@@ -11,4 +11,4 @@ export type AbsoluteCenterProperties = {
 type AbsoluteCenterOptions = AbsoluteCenterProperties & Omit<SystemStyleObject, keyof AbsoluteCenterProperties >
 
 
-export declare function absoluteCenter(options: AbsoluteCenterOptions): string
+export declare function absoluteCenter(options?: AbsoluteCenterOptions): string

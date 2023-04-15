@@ -11,4 +11,4 @@ export type SpacerProperties = {
 type SpacerOptions = SpacerProperties & Omit<SystemStyleObject, keyof SpacerProperties >
 
 
-export declare function spacer(options: SpacerOptions): string
+export declare function spacer(options?: SpacerOptions): string

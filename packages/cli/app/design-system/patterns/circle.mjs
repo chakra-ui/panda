@@ -16,6 +16,6 @@ transform(props) {
   };
 }}
 
-export const getCircleStyle = (styles) => circleConfig.transform(styles, { map: mapObject })
+export const getCircleStyle = (styles = {}) => circleConfig.transform(styles, { map: mapObject })
 
 export const circle = (styles) => css(getCircleStyle(styles))

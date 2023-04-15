@@ -11,4 +11,4 @@ export type CenterProperties = {
 type CenterOptions = CenterProperties & Omit<SystemStyleObject, keyof CenterProperties >
 
 
-export declare function center(options: CenterOptions): string
+export declare function center(options?: CenterOptions): string

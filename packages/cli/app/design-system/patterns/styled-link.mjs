@@ -12,6 +12,6 @@ transform:(props) => ({
   ...props
 })}
 
-export const getStyledLinkStyle = (styles) => styledLinkConfig.transform(styles, { map: mapObject })
+export const getStyledLinkStyle = (styles = {}) => styledLinkConfig.transform(styles, { map: mapObject })
 
 export const styledLink = (styles) => css(getStyledLinkStyle(styles))

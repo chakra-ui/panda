@@ -12,4 +12,4 @@ export type VstackProperties = {
 type VstackOptions = VstackProperties & Omit<SystemStyleObject, keyof VstackProperties | 'flexDirection' | 'alignItems' | 'justifyContent'>
 
 
-export declare function vstack(options: VstackOptions): string
+export declare function vstack(options?: VstackOptions): string

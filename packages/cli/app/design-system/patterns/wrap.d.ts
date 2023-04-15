@@ -15,4 +15,4 @@ export type WrapProperties = {
 type WrapOptions = WrapProperties & Omit<SystemStyleObject, keyof WrapProperties >
 
 
-export declare function wrap(options: WrapOptions): string
+export declare function wrap(options?: WrapOptions): string

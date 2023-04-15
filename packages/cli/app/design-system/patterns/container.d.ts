@@ -4,11 +4,11 @@ import type { Properties } from '../types/csstype'
 import type { Tokens } from '../types/token'
 
 export type ContainerProperties = {
-   centerContent?: ConditionalValue<boolean>
+   size?: ConditionalValue<Tokens["breakpoints"]>
 }
 
         
 type ContainerOptions = ContainerProperties & Omit<SystemStyleObject, keyof ContainerProperties >
 
 
-export declare function container(options: ContainerOptions): string
+export declare function container(options?: ContainerOptions): string

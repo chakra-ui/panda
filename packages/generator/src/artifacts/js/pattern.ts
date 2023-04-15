@@ -59,7 +59,7 @@ export function generatePattern(ctx: Context) {
           type ${upperName}Options = ${upperName}Properties & Omit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}>
   
           ${description ? `/** ${description} */` : ''}
-          export declare function ${name}(options: ${upperName}Options): string
+          export declare function ${name}(options?: ${upperName}Options): string
           `
       }
   
@@ -70,7 +70,7 @@ export function generatePattern(ctx: Context) {
   
     const ${name}Config = ${transformFn.replace(`{transform`, `{\ntransform`)}
   
-    export const ${styleFnName} = (styles) => ${name}Config.transform(styles, { map: mapObject })
+    export const ${styleFnName} = (styles = {}) => ${name}Config.transform(styles, { map: mapObject })
   
     export const ${name} = (styles) => css(${styleFnName}(styles))
     `,

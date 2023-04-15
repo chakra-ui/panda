@@ -11,4 +11,4 @@ export type StyledLinkProperties = {
 type StyledLinkOptions = StyledLinkProperties & Omit<SystemStyleObject, keyof StyledLinkProperties >
 
 
-export declare function styledLink(options: StyledLinkOptions): string
+export declare function styledLink(options?: StyledLinkOptions): string

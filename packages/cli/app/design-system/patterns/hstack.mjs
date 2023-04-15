@@ -14,6 +14,6 @@ transform(props) {
   };
 }}
 
-export const getHstackStyle = (styles) => hstackConfig.transform(styles, { map: mapObject })
+export const getHstackStyle = (styles = {}) => hstackConfig.transform(styles, { map: mapObject })
 
 export const hstack = (styles) => css(getHstackStyle(styles))

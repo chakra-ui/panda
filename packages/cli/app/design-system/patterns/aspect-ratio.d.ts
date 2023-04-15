@@ -11,4 +11,4 @@ export type AspectRatioProperties = {
 type AspectRatioOptions = AspectRatioProperties & Omit<SystemStyleObject, keyof AspectRatioProperties | 'aspectRatio'>
 
 
-export declare function aspectRatio(options: AspectRatioOptions): string
+export declare function aspectRatio(options?: AspectRatioOptions): string
