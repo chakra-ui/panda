@@ -14,11 +14,11 @@ const theme = {
   tokens: {
     borders: {
       // string value
-      subtle: { $value: '1px solid red' },
+      subtle: { value: '1px solid red' },
       // string value with reference to color token
-      danger: { $value: '1px solid {colors.red.400}' },
+      danger: { value: '1px solid {colors.red.400}' },
       // composite value
-      accent: { $value: { width: '1px', color: 'red', style: 'solid' } },
+      accent: { value: { width: '1px', color: 'red', style: 'solid' } },
     },
   },
 }
@@ -36,7 +36,7 @@ states. It is mostly defined as a string value or reference to other tokens.
 const theme = {
   tokens: {
     colors: {
-      red: { 100: { $value: '#fff1f0' } },
+      red: { 100: { value: '#fff1f0' } },
     },
   },
 }
@@ -50,7 +50,7 @@ This token type represents the depth of an element's position on the z-axis.
 const theme = {
   tokens: {
     zIndices: {
-      modal: { $value: 1000 },
+      modal: { value: 1000 },
     },
   },
 }
@@ -76,7 +76,7 @@ const theme = {
   tokens: {
     gradients: {
       primary: {
-        $value: { type: 'linear', placement: 'to right', colors: ['red', 'blue'] },
+        value: { type: 'linear', placement: 'to right', colors: ['red', 'blue'] },
       },
     },
   },
@@ -92,7 +92,7 @@ value is defined as a string.
 const theme = {
   tokens: {
     durations: {
-      fast: { $value: '100ms' },
+      fast: { value: '100ms' },
     },
   },
 }
@@ -108,8 +108,8 @@ Font tokens represent the font family of a text element. Its value is defined as
 const theme = {
   tokens: {
     fonts: {
-      body: { $value: 'Inter, sans-serif' },
-      heading: { $value: ['Roboto Mono', 'sans-serif'] },
+      body: { value: 'Inter, sans-serif' },
+      heading: { value: ['Roboto Mono', 'sans-serif'] },
     },
   },
 }
@@ -123,7 +123,7 @@ Font size tokens represent the size of a text element. Its value is defined as a
 const theme = {
   tokens: {
     fontSizes: {
-      sm: { $value: '12px' },
+      sm: { value: '12px' },
     },
   },
 }
@@ -137,7 +137,7 @@ Font weight tokens represent the weight of a text element. Its value is defined 
 const theme = {
   tokens: {
     fontWeights: {
-      bold: { $value: '700' },
+      bold: { value: '700' },
     },
   },
 }
@@ -151,7 +151,7 @@ Letter spacing tokens represent the spacing between letters in a text element. I
 const theme = {
   tokens: {
     letterSpacings: {
-      wide: { $value: '0.1em' },
+      wide: { value: '0.1em' },
     },
   },
 }
@@ -165,7 +165,7 @@ Line height tokens represent the height of a line of text. Its value is defined 
 const theme = {
   tokens: {
     lineHeights: {
-      normal: { $value: '1.5' },
+      normal: { value: '1.5' },
     },
   },
 }
@@ -179,7 +179,7 @@ Radii tokens represent the radius of a border. Its value is defined as a string.
 const theme = {
   tokens: {
     radii: {
-      sm: { $value: '4px' },
+      sm: { value: '4px' },
     },
   },
 }
@@ -193,7 +193,7 @@ Size tokens represent the width and height of an element. Its value is defined a
 const theme = {
   tokens: {
     sizes: {
-      sm: { $value: '12px' },
+      sm: { value: '12px' },
     },
   },
 }
@@ -209,7 +209,7 @@ Spacing tokens represent the margin and padding of an element. Its value is defi
 const theme = {
   tokens: {
     spacings: {
-      sm: { $value: '12px' },
+      sm: { value: '12px' },
     },
   },
 }
@@ -238,14 +238,14 @@ const theme = {
   tokens: {
     shadows: {
       // string value
-      subtle: { $value: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' },
+      subtle: { value: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' },
       // composite value
       accent: {
-        $value: { offsetX: 0, offsetY: 4, blurRadius: 4, spreadRadius: 0, color: 'rgba(0, 0, 0, 0.1)' },
+        value: { offsetX: 0, offsetY: 4, blurRadius: 4, spreadRadius: 0, color: 'rgba(0, 0, 0, 0.1)' },
       },
       // multiple string values
       realistic: {
-        $value: ['0 1px 2px 0 rgba(0, 0, 0, 0.05)', '0 1px 4px 0 rgba(0, 0, 0, 0.1)'],
+        value: ['0 1px 2px 0 rgba(0, 0, 0, 0.05)', '0 1px 4px 0 rgba(0, 0, 0, 0.1)'],
       },
     },
   },
@@ -262,9 +262,9 @@ const theme = {
   tokens: {
     easings: {
       // string value
-      easeIn: { $value: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+      easeIn: { value: 'cubic-bezier(0.4, 0, 0.2, 1)' },
       // array value
-      easeOut: { $value: [0.4, 0, 0.2, 1] },
+      easeOut: { value: [0.4, 0, 0.2, 1] },
     },
   },
 }
@@ -278,7 +278,7 @@ Opacity tokens help you set the opacity of an element.
 const theme = {
   tokens: {
     opacity: {
-      50: { $value: 0.5 },
+      50: { value: 0.5 },
     },
   },
 }
@@ -298,10 +298,10 @@ const theme = {
   tokens: {
     assets: {
       logo: {
-        $value: { type: 'url', url: '/static/logo.png' },
+        value: { type: 'url', url: '/static/logo.png' },
       },
       checkmark: {
-        $value: { type: 'svg', svg: '<svg>...</svg>' },
+        value: { type: 'svg', svg: '<svg>...</svg>' },
       },
     },
   },
@@ -317,7 +317,7 @@ const theme = {
   tokens: {
     animations: {
       spin: {
-        $value: 'spin 1s linear infinite',
+        value: 'spin 1s linear infinite',
       },
     },
   },

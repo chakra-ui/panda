@@ -26,29 +26,29 @@ Here's an example of a basic token definition:
 const theme = {
   tokens: {
     colors: {
-      primary: { $value: '#0FEE0F' },
-      secondary: { $value: '#EE0F0F' },
+      primary: { value: '#0FEE0F' },
+      secondary: { value: '#EE0F0F' },
     },
     fonts: {
-      body: { $value: 'system-ui, sans-serif' },
+      body: { value: 'system-ui, sans-serif' },
     },
     sizes: {
-      small: { $value: '12px' },
-      medium: { $value: '16px' },
-      large: { $value: '24px' },
+      small: { value: '12px' },
+      medium: { value: '16px' },
+      large: { value: '24px' },
     },
   },
 }
 ```
 
-> **Good to know:** The extra dollar sign `$value` might seem inconvenient at first, but it's reserved property by the
+> **Good to know:** The extra dollar sign `value` might seem inconvenient at first, but it's reserved property by the
 > [W3C Token Format](https://tr.designtokens.org/format/#name-and-value) to define the value of a token.
 
 ## Defining a Token
 
 A design token consist of the following properties:
 
-- `$value`: The value of the token. This can be any valid CSS value.
+- `value`: The value of the token. This can be any valid CSS value.
 - `$description`: An optional description of what the token can be used for.
 - `$extensions`: An optional metadata to store token-related information (e.g. Figma source, deprecation, etc.).
 
@@ -56,7 +56,7 @@ A design token consist of the following properties:
 const theme = {
   tokens: {
     colors: {
-      danger: { $value: '#EE0F0F' },
+      danger: { value: '#EE0F0F' },
     },
   },
 }
@@ -109,7 +109,7 @@ const theme = {
   tokens: {
     shadows: {
       basic: {
-        $value: { color: '{colors.shadow}', blur: '2px', offsetX: '2px', offsetY: '4px' },
+        value: { color: '{colors.shadow}', blur: '2px', offsetX: '2px', offsetY: '4px' },
       },
     },
   },
@@ -127,7 +127,7 @@ const theme = {
   tokens: {
     borders: {
       basic: {
-        $value: { width: '1px', style: 'solid', color: '{colors.gray.200}' },
+        value: { width: '1px', style: 'solid', color: '{colors.gray.200}' },
       },
     },
   },
@@ -143,7 +143,7 @@ const theme = {
   tokens: {
     gradients: {
       basic: {
-        $value: {
+        value: {
           type: 'linear',
           placement: 'to right',
           stops: ['{colors.red}', '{colors.blue}'],
@@ -163,10 +163,10 @@ const theme = {
   tokens: {
     assets: {
       logo: {
-        $value: { type: 'url', url: '/static/logo.png' },
+        value: { type: 'url', url: '/static/logo.png' },
       },
       checkmark: {
-        $value: { type: 'svg', svg: '<svg>...</svg>' },
+        value: { type: 'svg', svg: '<svg>...</svg>' },
       },
     },
   },
