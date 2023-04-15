@@ -88,6 +88,19 @@ const App = () => (
 )
 ```
 
-## Caveats
+## Dynamic style props
 
-We don't support dynamic style props. This is a limitation of the current implementation.
+Panda can statically extract conditional values at any level of the style props or object.
+
+```jsx
+import { Stack } from '../panda/jsx'
+
+const DynamicBox = (
+  <Box
+    bg={isPressed ? 'red.400' : 'green.500'}
+    _hover={{ color: { base: 'red.400', md: isOpen ? 'pink.500' : undefined } }}
+  />
+)
+
+const DynamicCircle = <Circle size={isPressed ? '5' : '8'} />
+```
