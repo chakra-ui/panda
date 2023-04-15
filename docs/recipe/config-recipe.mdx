@@ -119,6 +119,36 @@ function Button2() {
 }
 ```
 
+## Styling component slots
+
+Panda provides a `defineParts` helper function to define and style parts of a component. This is useful for components
+that have multiple slots like a button.
+
+```jsx
+import { defineParts, defineRecipe } from '@pandacss/dev'
+
+const parts = defineParts(['icon', 'label'])
+
+const buttonStyle = defineRecipe({
+  name: 'button',
+  base: parts({
+    icon: { fontSize: 'sm' },
+    label: { fontSize: 'md' },
+  }),
+  variants: {
+    visual: {
+      funky: parts({
+        icon: { color: 'gray.200' },
+        label: { color: 'gray.500' },
+      }),
+    },
+  },
+})
+```
+
+The `parts` function will convert the keys to a css selector that matches the pattern
+`&[data-part=KEY], & [data-part=KEY]`. This makes it convenient to style the parts of a component.
+
 ## TypeScript guide
 
 Every recipe ships a type interface for its accepted variants. You can import them from the `<outdir>/recipes`
@@ -131,5 +161,94 @@ import type { ButtonVariants } from '../styled-system/recipes'
 
 type ButtonProps = ButtonVariants & {
   children: React.ReactNode
+}
+```
+
+## Usage in JSX
+
+For recipes added to the config file, you can consume them directly in your custom JSX components or design system.
+
+If your recipe is called `button` and you have a `Button` component, Panda will automatically track the usage of the
+variants and extract the css as needed.
+
+```tsx
+import { button, type ButtonVariants } from '../panda/recipes'
+
+type ButtonProps = ButtonVariants & {
+  children: React.ReactNode
+}
+
+const Button = (props: ButtonProps) => {
+  const { children, size } = props
+  return (
+    <button {...props} className={button({ size })}>
+      {children}
+    </button>
+  )
+}
+```
+
+### Advanced JSX Tracking
+
+We recommend that you use the recipe functions in most cases, in design systems there might be a need to compose
+existing components (like Button) to create new components. To tracking the usage of the recipes in these cases, you'll
+need to add the `jsx` hint for the recipe config
+
+```js
+const button = defineRecipe({
+  base: {
+    color: 'red',
+    fontSize: '1.5rem',
+  },
+  variants: {
+    ...
+  },
+  // Add the jsx hint to track the usage of the recipe in JSX
+  jsx: ['Button', 'PageButton'],
+})
+```
+
+Then you can create a new component that uses the `Button` component and Panda will track the usage of the `button`
+recipe as well.
+
+```tsx
+const PageButton = (props: ButtonProps) => {
+  const { children, size } = props
+  return (
+    <Button {...props} size={size}>
+      {children}
+    </Button>
+  )
+}
+```
+
+### Limitations
+
+Due to static nature of Panda, it's not possible to track the usage of the recipes in all cases.
+
+Here are some of use cases that Panda won't be able to track the usage of the recipe variants:
+
+- When you change the name of the variant prop in the JSX component
+
+```tsx
+const Button = ({ buttonSize, children }) => {
+  return (
+    <button {...props} className={button({ size: buttonSize })}>
+      {children}
+    </button>
+  )
+}
+```
+
+- When you use the recipe in a custom component that is not a JSX component, Panda won't be able to track the usage of
+  the recipe variants.
+
+```tsx
+const Random = ({ size, children }) => {
+  return (
+    <button {...props} className={button({ size })}>
+      {children}
+    </button>
+  )
 }
 ```
