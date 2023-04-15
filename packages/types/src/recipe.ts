@@ -1,5 +1,7 @@
 import type { SystemStyleObject } from './system-types'
 
+type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
+
 type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
 
 export type RecipeVariantRecord = Record<string, Record<string, SystemStyleObject>>
@@ -10,7 +12,7 @@ export type RecipeSelection<T extends RecipeVariantRecord> = {
 
 export type RecipeVariantFn<T extends RecipeVariantRecord> = (props?: RecipeSelection<T>) => string
 
-export type RecipeVariantProps<T extends RecipeVariantFn<RecipeVariantRecord>> = Parameters<T>[0]
+export type RecipeVariantProps<T extends RecipeVariantFn<RecipeVariantRecord>> = Pretty<Parameters<T>[0]>
 
 export type RecipeRuntimeFn<T extends RecipeVariantRecord> = RecipeVariantFn<T> & {
   variants: (keyof T)[]

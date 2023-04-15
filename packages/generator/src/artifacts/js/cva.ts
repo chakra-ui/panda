@@ -66,6 +66,8 @@ export function generateCvaFn(ctx: Context) {
 
     export declare const cva: RecipeCreatorFn
 
+    export type { RecipeVariantProps } from '../types/recipe'
+
     `,
   }
 }
