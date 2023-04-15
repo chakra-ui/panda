@@ -1,19 +1,21 @@
 # Config Recipe
 
-A config recipe optimizes the CSS output by emitting only the CSS for the recipe used in your application and also
-allows you to share as many recipes across your project.
+Recipes defined in the panda config is useful for distributing component recipes across projects in your company.
 
-It is generally useful to share design system recipes between projects.
+Config recipes are extracted and generated just in time, this means regardless of the recipes in the config, only the
+recipes and variants you use will exist in the compile CSS.
 
 The config recipe takes the following properties:
 
-- `name`: The name of the recipe
-- `description`: A description of the recipe (used in the js-doc comments)
+- `name`: The name of the recipe. Used in the generated class name
+- `description`: An optional description of the recipe (used in the js-doc comments)
 - `base`: The base style object for the recipe
 - `variants`: The variant styles for the recipe
 - `defaultVariants`: The default variants for the recipe
+- `compoundVariants`: An array of compound variants for the recipe
+- `jsx`: An array of JSX components that use the recipe. Defaults to the uppercase version of the recipe name
 
-## Creating a recipe
+## Creating a config recipe
 
 To define a config recipe, import the `defineRecipe` helper function
 
@@ -82,22 +84,20 @@ tracks the usage of the recipe and only generates CSS of the variants used in yo
 ```js
 import { button } from '../styled-system/recipes'
 
-function Button() {
-  // the default variants are applied
-  return <button class={button()}>Click me</button>
-}
-
-function Button2() {
-  // the default variants are applied
-  return <button class={button({ shape: 'circle' })}>Click me</button>
+function App() {
+  return (
+    <div>
+      <button class={button()}>Click me</button>
+      <button class={button({ shape: 'circle' })}>Click me</button>
+    </div>
+  )
 }
 ```
 
-## Technical Notes
+The generated css is registered under the `recipe` [cascade layer](/concepts/cascade-layer) with the class name that
+matches the recipe-variant name pattern `<recipe-name>--<variant-name>`.
 
-- The generated css is registered under the `recipe` cascade layer.
-- The generated styles are grouped under a single class name that matches the recipe/variant name.
-- Only the recipe and variants used in your application are generated. Not more!
+> **Technical Notes 📝:** Only the recipe and variants used in your application are generated. Not more!
 
 ```css
 @layer recipes {
@@ -116,6 +116,65 @@ function Button2() {
     padding: var(--space-8);
     font-size: var(--font-sizes-40px);
   }
+}
+```
+
+## Compound variants
+
+Compound variants are a way to combine multiple variants together to create more complex sets of styles. They are
+defined using the `compoundVariants` property , which takes an array of objects as its argument. Each object in the
+array represents a set of conditions that must be met in order for the corresponding styles to be applied.
+
+Here's an example of how to use `compoundVariants` in Panda:
+
+```js
+import { cva } from '../panda/css'
+
+const button = cva({
+  base: {
+    padding: '8px 16px',
+    borderRadius: '4px',
+    fontSize: '16px',
+    fontWeight: 'bold',
+  },
+
+  variants: {
+    // ...
+  },
+
+  // compound variants
+  compoundVariants: [
+    // apply small size variant when both small size and primary color are selected
+    {
+      size: 'small',
+      color: 'primary',
+      css: {
+        bg: 'blue.500',
+      },
+    },
+  ],
+})
+```
+
+Compounds variants are registered under the `utilities` cascade layer. This is useful to ensure that the component
+variant's `css` overrides the defined variant styles.
+
+```css
+/* from recipe variant definition */
+@layer recipe {
+  @layer base {
+    .button {
+      font-size: var(--font-sizes-lg);
+    }
+  }
+}
+
+/* from compound variant css */
+@layer utilities {
+  .bg_blue.500 {
+    background-color: var(--colors-blue-500);
+  }
+  /* ... */
 }
 ```
 
@@ -222,7 +281,7 @@ const PageButton = (props: ButtonProps) => {
 }
 ```
 
-### Limitations
+## Limitations
 
 Due to static nature of Panda, it's not possible to track the usage of the recipes in all cases.
 
@@ -251,4 +310,42 @@ const Random = ({ size, children }) => {
     </button>
   )
 }
+```
+
+- When using `compoundVariants` in the recipe, you're not able to use responsive values in the variants.
+
+```tsx
+const button = defineRecipe({
+  base: {
+    color: 'red',
+    fontSize: '1.5rem',
+  },
+  variants: {
+    size: {
+      sm: {
+        fontSize: '1rem',
+      },
+      md: {
+        fontSize: '2rem',
+      },
+    },
+  },
+  // this  will disable responsive values for the variants
+  compoundVariants: [
+    {
+      size: 'sm',
+      visual: 'funky',
+      css: {
+        color: 'blue',
+      },
+    },
+    {
+      size: 'md',
+      visual: 'funky',
+      css: {
+        color: 'green',
+      },
+    },
+  ],
+})
 ```
