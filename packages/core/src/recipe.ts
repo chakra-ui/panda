@@ -9,7 +9,7 @@ type StyleObject = Record<string, any>
 
 export class Recipe {
   config: AnyRecipeConfig
-
+  rule: AtomicRule
   name: string
 
   values = new Map<string, Set<{ className: string; value: string }>>()
@@ -49,6 +49,7 @@ export class Recipe {
     }
 
     this.config = recipe
+    this.rule = this.createRule()
   }
 
   private setValues = (key: string, value: string) => {
@@ -86,11 +87,7 @@ export class Recipe {
     }
   }
 
-  process = (options: ProcessOptions) => {
-    const { styles: variants } = options
-
-    const { name, defaultVariants = {} } = this.config
-
+  private createRule = () => {
     const rule = new AtomicRule({
       ...this.context,
       transform: this.transform,
@@ -98,7 +95,14 @@ export class Recipe {
 
     rule.layer = 'recipes'
 
-    rule.process({
+    return rule
+  }
+
+  process = (options: ProcessOptions) => {
+    const { styles: variants } = options
+    const { name, defaultVariants = {} } = this.config
+
+    this.rule.process({
       styles: {
         [name]: '__ignore__',
         ...defaultVariants,
