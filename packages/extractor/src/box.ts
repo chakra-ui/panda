@@ -10,7 +10,6 @@ import {
   BoxNodeObject,
   BoxNodeUnresolvable,
   type BoxNode,
-  type ConditionalKind,
   type MapTypeValue,
 } from './box-factory'
 import type { EvaluatedObjectResult, PrimitiveType } from './types'
@@ -28,8 +27,8 @@ export const box = {
   array(value: BoxNode[], node: Node, stack: Node[]) {
     return new BoxNodeArray({ type: 'array', value, node, stack })
   },
-  conditional(whenTrue: BoxNode, whenFalse: BoxNode, node: Node, stack: Node[], kind: ConditionalKind) {
-    return new BoxNodeConditional({ type: 'conditional', whenTrue, whenFalse, kind, node, stack })
+  conditional(whenTrue: BoxNode, whenFalse: BoxNode, node: Node, stack: Node[]) {
+    return new BoxNodeConditional({ type: 'conditional', whenTrue, whenFalse, node, stack })
   },
   from: toBoxNode,
   //
