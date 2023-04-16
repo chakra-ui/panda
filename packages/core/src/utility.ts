@@ -1,4 +1,4 @@
-import { compact, hypenateProperty, isFunction, isString, withoutSpace } from '@pandacss/shared'
+import { compact, hypenateProperty, isFunction, isString, memo, withoutSpace } from '@pandacss/shared'
 import type { TokenDictionary } from '@pandacss/token-dictionary'
 import type { AnyFunction, Dict, PropertyConfig, PropertyTransform, UtilityConfig } from '@pandacss/types'
 import type { TransformResult } from './types'
@@ -261,7 +261,7 @@ export class Utility {
     return map
   }
 
-  defaultTransform = (value: string, prop: string) => {
+  defaultTransform = memo((value: string, prop: string) => {
     const isCssVar = prop.startsWith('--')
 
     if (isCssVar) {
@@ -270,7 +270,7 @@ export class Utility {
     }
 
     return { [prop]: value }
-  }
+  })
 
   private setTransform = (property: string, transform?: AnyFunction) => {
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
