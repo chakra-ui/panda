@@ -1,120 +1,101 @@
 # Utility - Customization
 
-The utilities API is a way to create your own CSS properties, map existing properties to a set of values or tokens. It's
+The utility API is a way to create your own CSS properties, map existing properties to a set of values or tokens. It's
 like building your own typesafe version of Chakra UI, Tailwind (in JS), or Styled System.
 
+Panda comes with a set of utilities out of the box. You can customize them, or add your own.
+
+Here are the properties you need to define or customize a utility:
+
+- `className` : The className the property maps to
+- `shorthand`: The shorthand or alias version of the property
+- `values`: The possible values the property can have. Could be a token category, or an enum of values, string, number,
+  or boolean.
+- `transform`: A function that converts the value to a valid css object
+
 ## Creating a custom utility
 
-The utilities API provides a way to define the property configuration for your system. It includes the following keys:
-
-- `className` : The className the property maps to in the DOM
-- `shorthand`: The shorthand version of the property
-- `values`: The token group the property references.
-- `transform`: A transform function that takes the passed value, and returns a valid css object
-
-## Creating a custom utility
-
-The utilities API provides a way to define the property configuration for your system. It includes the following keys:
-
-- `className` : The className the property maps to in the DOM
-- `shorthand`: The shorthand version of the property
-- `values`: The token group the property references.
-- `transform`: A transform function that takes the passed value, and returns a valid css object
-
-**Basic Example**
+Let's say we want to create new property `br` that applies a border radius to an element.
 
 ```js
 const config = {
   utilities: {
-    backgroundColor: {
-      className: 'bg', // css({ backgroundColor: "red200" }) => bg-pink500,
-      shorthand: 'bgColor', // bgColor is now alias for backgroundColor
-      values: 'colors', // connect
+    extend: {
+      br: {
+        className: 'rounded', // css({ br: "sm" }) => rounded-sm
+        values: 'radii', // connect values to the radii tokens
+        transform(value) {
+          return { borderRadius: value }
+        },
+      },
     },
   },
 }
 ```
 
-**Custom properties - Tokens**
+Now, we can use the `br` property in our components.
+
+```jsx
+function App() {
+  return <div className={css({ br: 'sm' })} />
+}
+```
+
+or using the JSX flavor
+
+```jsx
+function App() {
+  return <panda.div br="sm" />
+}
+```
+
+### Using enum values
+
+Let's say we want to create a new property `bdt` that applies a limited set of border top to an element and
+automatically applies the border color.
 
 ```js
 const config = {
   utilities: {
-    bdt: {
-      values: 'borders',
-      transform(value) {
-        return {
-          borderTop: value,
-        }
+    extend: {
+      bdt: {
+        values: ['1px', '2px', '4px'],
+        transform(value, token) {
+          return {
+            borderTopWidth: value,
+            borderColor: token('colors.red.200'), // read the css variable for red.200
+          }
+        },
       },
     },
   },
 }
-
-// usage: <div className={css({ bdt: "2px solid red" })} />
 ```
 
-**Custom properties - custom values**
+Now, we can use the `bdt` property in our components.
+
+```jsx
+function App() {
+  return <div className={css({ bdt: 'sm' })} />
+}
+```
+
+### Using mapped values
 
 ```js
 const config = {
   utilities: {
-    bdt: {
-      values: ['1px', '2px', '4px'],
-      transform(value, token) {
-        return {
-          borderTopWidth: value,
-          borderColor: token('colors.red.200'),
-        }
+    extend: {
+      bdt: {
+        values: { small: '2px', medium: '5px' },
+        transform(value, token) {
+          return {
+            borderTopWidth: value,
+            borderTopColor: token('colors.gray.400'),
+          }
+        },
       },
     },
   },
 }
-
-// usage: <div className={css({ bdt: "2px solid red" })} />
-```
-
-**Custom properties - custom mapped values**
-
-```js
-const config = {
-  utilities: {
-    bdt: {
-      values: {
-        small: '2px',
-        medium: '5px',
-      },
-      transform(value, token) {
-        return {
-          borderTopWidth: value,
-          borderTopColor: token('colors', 'gray.400'),
-        }
-      },
-    },
-  },
-}
-
-// usage: <div className={css({ bdt: "2px solid red" })} />
-```
-
-**Technical notes**
-
-- When no className is specified, the property key will be used as the fallback.
-- By default the transform function receives the "raw value". When tokens references a token name ("colors"), the
-  transform function receives the css variable NOT the raw value.
-
-```js
-
-const config = {
-	backgroundColor: {
-		className: "bg",
-		values: { sm: "indigo.500", md: "red.200" },
-		shorthand: "bgColor",
-		transform(value, token) {},
-	      return {
-	         backgroundColor: token("colors", value)
-	      }
-		},
-};
-
 ```
