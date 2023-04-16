@@ -1,17 +1,16 @@
-# Utilities
-
-> This API is an advanced feature and should only be used if you want a custom system for your project. In our default
-> preset, we've done most of the heavy lifting for you.
+# Utility - Customization
 
 The utilities API is a way to create your own CSS properties, map existing properties to a set of values or tokens. It's
-like building your own typesafe version of Chakra UI, Tailwind (in JS), Styled System, etc.
+like building your own typesafe version of Chakra UI, Tailwind (in JS), or Styled System.
 
-This provides an interface to:
+## Creating a custom utility
 
-- Map css properties to custom classNames
-- Map css properties to a specific set of values or tokens
-- Make your own css properties and transform them to css objects
-- Mark custom shorthands for css properties
+The utilities API provides a way to define the property configuration for your system. It includes the following keys:
+
+- `className` : The className the property maps to in the DOM
+- `shorthand`: The shorthand version of the property
+- `values`: The token group the property references.
+- `transform`: A transform function that takes the passed value, and returns a valid css object
 
 ## Creating a custom utility
 
