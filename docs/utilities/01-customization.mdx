@@ -51,18 +51,19 @@ function App() {
 
 ### Using enum values
 
-Let's say we want to create a new property `bdt` that applies a limited set of border top to an element and
+Let's say we want to create a new property `borderX` that applies a limited set of inline border to an element and
 automatically applies the border color.
 
 ```js
 const config = {
   utilities: {
     extend: {
-      bdt: {
+      borderX: {
         values: ['1px', '2px', '4px'],
+        shorthand: 'bx', // `bx` or `borderX` can be used
         transform(value, token) {
           return {
-            borderTopWidth: value,
+            borderInlineWidth: value,
             borderColor: token('colors.red.200'), // read the css variable for red.200
           }
         },
@@ -72,11 +73,11 @@ const config = {
 }
 ```
 
-Now, we can use the `bdt` property in our components.
+Now, we can use the `borderX` or `bx` property in our components.
 
 ```jsx
 function App() {
-  return <div className={css({ bdt: 'sm' })} />
+  return <div className={css({ borderX: 'sm' })} />
 }
 ```
 
@@ -86,8 +87,9 @@ function App() {
 const config = {
   utilities: {
     extend: {
-      bdt: {
+      borderX: {
         values: { small: '2px', medium: '5px' },
+        shorthand: 'bx',
         transform(value, token) {
           return {
             borderTopWidth: value,
