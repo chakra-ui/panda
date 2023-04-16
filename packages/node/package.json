@@ -45,7 +45,7 @@
     "outdent": " ^0.8.0",
     "pkg-types": "1.0.2",
     "pluralize": "8.0.0",
-    "postcss": "8.4.21",
+    "postcss": "8.4.22",
     "preferred-pm": "^3.0.3",
     "ts-morph": "18.0.0",
     "ts-pattern": "4.2.2"
