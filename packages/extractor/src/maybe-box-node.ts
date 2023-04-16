@@ -25,10 +25,10 @@ import { match } from 'ts-pattern'
 import { box } from './box'
 import { safeEvaluateNode } from './evaluate-node'
 import { findIdentifierValueDeclaration } from './find-identifier-value-declaration'
-import { maybeObjectLikeBox } from './maybe-object-like-box'
-import { isBoxNode, type BoxNode, type ConditionalKind } from './box-factory'
-import type { BoxContext, EvaluatedObjectResult, LiteralValue, PrimitiveType } from './types'
-import { isNotNullish, isNullish, isObject, trimWhitespace, unwrapExpression } from './utils'
+import { isBoxNode, type BoxNode } from './box-factory'
+import type { BoxContext, EvaluatedObjectResult, LiteralValue, MatchFnPropArgs, PrimitiveType } from './types'
+import { isNotNullish, isObject, trimWhitespace, unwrapExpression } from './utils'
+import { getObjectLiteralExpressionPropPairs } from './get-object-literal-expression-prop-pairs'
 
 const cacheMap = new WeakMap<Node, MaybeBoxNodeReturn>()
 const isCached = (node: Node) => cacheMap.has(node)
@@ -38,11 +38,30 @@ const isPlusSyntax = (op: SyntaxKind) => op === ts.SyntaxKind.PlusToken
 const isLogicalSyntax = (op: SyntaxKind) =>
   op === ts.SyntaxKind.BarBarToken ||
   op === ts.SyntaxKind.QuestionQuestionToken ||
-  op === ts.SyntaxKind.AmpersandAmpersandToken
+  op === ts.SyntaxKind.AmpersandAmpersandToken ||
+  op === ts.SyntaxKind.EqualsEqualsEqualsToken ||
+  op === ts.SyntaxKind.EqualsEqualsToken ||
+  op === ts.SyntaxKind.ExclamationEqualsEqualsToken ||
+  op === ts.SyntaxKind.ExclamationEqualsToken ||
+  op === ts.SyntaxKind.GreaterThanEqualsToken ||
+  op === ts.SyntaxKind.GreaterThanToken ||
+  op === ts.SyntaxKind.LessThanEqualsToken ||
+  op === ts.SyntaxKind.LessThanToken ||
+  op === ts.SyntaxKind.InstanceOfKeyword ||
+  op === ts.SyntaxKind.InKeyword
+
+const canReturnWhenTrueInLogicalExpression = (op: ts.SyntaxKind) => {
+  return op === ts.SyntaxKind.BarBarToken || op === ts.SyntaxKind.QuestionQuestionToken
+}
 
 export type MaybeBoxNodeReturn = BoxNode | undefined
 
-export function maybeBoxNode(node: Node, stack: Node[], ctx: BoxContext): MaybeBoxNodeReturn {
+export function maybeBoxNode(
+  node: Node,
+  stack: Node[],
+  ctx: BoxContext,
+  matchProp?: (prop: MatchFnPropArgs) => boolean,
+): MaybeBoxNodeReturn {
   const cache = (value: MaybeBoxNodeReturn) => {
     cacheMap.set(node, value)
     return value
@@ -56,6 +75,9 @@ export function maybeBoxNode(node: Node, stack: Node[], ctx: BoxContext): MaybeB
       .when(Bool.or(Node.isStringLiteral, Node.isNoSubstitutionTemplateLiteral), (node) => {
         const value = trimWhitespace(node.getLiteralValue())
         return cache(box.literal(value, node, stack))
+      })
+      .when(Node.isObjectLiteralExpression, (node) => {
+        return cache(getObjectLiteralExpressionPropPairs(node, stack, ctx, matchProp))
       })
 
       // <Box truncate={true} /> or <Box truncate={false} />
@@ -87,8 +109,7 @@ export function maybeBoxNode(node: Node, stack: Node[], ctx: BoxContext): MaybeB
       // <ColorBox color={['red.300', 'green.400']} />
       .when(Node.isArrayLiteralExpression, (node) => {
         const boxNodes = node.getElements().map((element) => {
-          const boxNode = maybeBoxNode(element, stack, ctx)
-          return boxNode ?? maybeObjectLikeBox(element, stack, ctx) ?? cache(box.unresolvable(element, stack))
+          return maybeBoxNode(element, stack, ctx) ?? cache(box.unresolvable(element, stack))
         }) as BoxNode[]
 
         return cache(box.array(boxNodes, node, stack))
@@ -130,36 +151,31 @@ export function maybeBoxNode(node: Node, stack: Node[], ctx: BoxContext): MaybeB
 
         const condExpr = unwrapExpression(node.getCondition())
 
-        const condBoxNode = Node.isIdentifier(condExpr)
-          ? maybeBoxNode(condExpr, [], ctx)
-          : safeEvaluateNode<LiteralValue>(condExpr as Expression, stack, ctx)
-
-        if (isNullish(condBoxNode)) return
+        const condBoxNode =
+          (Node.isIdentifier(condExpr)
+            ? maybeBoxNode(condExpr, [], ctx)
+            : safeEvaluateNode<LiteralValue>(condExpr as Expression, stack, ctx)) ?? box.unresolvable(condExpr, stack)
 
         const condValue = isBoxNode(condBoxNode) ? condBoxNode : box.from(condBoxNode, node, stack)
-
         if (box.isEmptyInitializer(condValue)) return
 
         if (box.isUnresolvable(condValue) || box.isConditional(condValue)) {
           const whenTrueExpr = unwrapExpression(node.getWhenTrue())
           const whenFalseExpr = unwrapExpression(node.getWhenFalse())
-          const exprObject = { whenTrueExpr, whenFalseExpr, node, stack, kind: 'ternary' } as const
-          return cache(maybeExpandConditionalExpression(exprObject, ctx))
+          return cache(maybeResolveConditionalExpression({ whenTrueExpr, whenFalseExpr, node, stack }, ctx))
         }
 
         if (condValue.value) {
           const whenTrueExpr = unwrapExpression(node.getWhenTrue())
           const innerStack = [...stack] as Node[]
-          const maybeValue =
-            maybeBoxNode(whenTrueExpr, innerStack, ctx) ?? maybeObjectLikeBox(whenTrueExpr, innerStack, ctx)
+          const maybeValue = maybeBoxNode(whenTrueExpr, innerStack, ctx)
           return cache(maybeValue ?? box.unresolvable(whenTrueExpr, stack))
         }
 
         const whenFalseExpr = unwrapExpression(node.getWhenFalse())
         const innerStack = [...stack] as Node[]
 
-        const maybeValue =
-          maybeBoxNode(whenFalseExpr, innerStack, ctx) ?? maybeObjectLikeBox(whenFalseExpr, innerStack, ctx)
+        const maybeValue = maybeBoxNode(whenFalseExpr, innerStack, ctx)
 
         return cache(maybeValue ?? box.unresolvable(node, stack))
       })
@@ -185,30 +201,20 @@ export function maybeBoxNode(node: Node, stack: Node[], ctx: BoxContext): MaybeB
           .when(isLogicalSyntax, (op) => {
             const whenTrueExpr = unwrapExpression(node.getLeft())
             const whenFalseExpr = unwrapExpression(node.getRight())
-            const kind = getConditionalKind(op)!
             const exprObject = {
               whenTrueExpr,
               whenFalseExpr,
               node,
               stack,
-              kind,
-              canReturnWhenTrue: kind !== 'and',
+              canReturnWhenTrue: canReturnWhenTrueInLogicalExpression(op),
             } as const
-            return cache(maybeExpandConditionalExpression(exprObject, ctx))
+            return cache(maybeResolveConditionalExpression(exprObject, ctx))
           })
           .otherwise(() => undefined)
       })
 
       .otherwise(() => undefined)
   )
-}
-
-const getConditionalKind = (op: number) => {
-  return {
-    [ts.SyntaxKind.BarBarToken]: 'or' as ConditionalKind,
-    [ts.SyntaxKind.QuestionQuestionToken]: 'nullish-coalescing' as ConditionalKind,
-    [ts.SyntaxKind.AmpersandAmpersandToken]: 'and' as ConditionalKind,
-  }[op]
 }
 
 export const onlyStringLiteral = (boxNode: MaybeBoxNodeReturn) => {
@@ -241,54 +247,33 @@ export const maybePropName = (node: Node, stack: Node[], ctx: BoxContext) => {
 }
 
 // <ColorBox color={isDark ? darkValue : "whiteAlpha.100"} />
-export const maybeExpandConditionalExpression = (
+const maybeResolveConditionalExpression = (
   {
     whenTrueExpr,
     whenFalseExpr,
     node,
     stack,
-    kind,
     canReturnWhenTrue,
   }: {
     whenTrueExpr: Node
     whenFalseExpr: Node
     node: Node
     stack: Node[]
-    kind: ConditionalKind
     canReturnWhenTrue?: boolean
   },
   ctx: BoxContext,
 ) => {
-  let whenTrueValue = maybeBoxNode(whenTrueExpr, stack, ctx)
-  let whenFalseValue = maybeBoxNode(whenFalseExpr, stack, ctx)
+  // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : getColor()} />
+  const whenTrueValue = maybeBoxNode(whenTrueExpr, stack, ctx)
+  const whenFalseValue = maybeBoxNode(whenFalseExpr, stack, ctx)
 
-  logger.debug('cond', { before: true, whenTrueValue, whenFalseValue, kind, canReturnWhenTrue })
-
-  // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : "whiteAlpha.100"} />
-  if (!whenTrueValue) {
-    logger.debug('cond', 'whenTrue is not a box, maybe an object ?')
-    const maybeObject = maybeObjectLikeBox(whenTrueExpr, stack, ctx)
-    if (maybeObject && !box.isUnresolvable(maybeObject)) {
-      logger.debug('cond', 'whenTrue is an object-like box')
-      whenTrueValue = maybeObject
-    }
-  }
+  logger.debug('cond', { before: true, whenTrueValue, whenFalseValue, canReturnWhenTrue })
 
   //<ColorBox <ColorBox color={"blue.100" || "never.100"} />
   //<ColorBox <ColorBox color={"blue.100" ?? "never.100"} />
   if (canReturnWhenTrue && whenTrueValue && !box.isUnresolvable(whenTrueValue)) {
-    logger.debug('cond', { earlyReturn: true, kind, whenTrueValue })
+    logger.debug('cond', { earlyReturn: true, whenTrueValue })
     return whenTrueValue
-  }
-
-  // <ColorBox color={isDark ? { mobile: "blue.100", desktop: "blue.300" } : getColor()} />
-  if (!whenFalseValue) {
-    logger.debug('cond', 'whenFalse is not a box, maybe an object ?')
-    const maybeObject = maybeObjectLikeBox(whenFalseExpr, stack, ctx)
-    if (maybeObject && !box.isUnresolvable(maybeObject)) {
-      logger.debug('cond', 'whenFalse is an object-like box')
-      whenFalseValue = maybeObject
-    }
   }
 
   logger.debug('cond', {
@@ -299,11 +284,12 @@ export const maybeExpandConditionalExpression = (
     whenFalseValue,
   })
 
-  //<ColorBox <ColorBox color={true ? "blue.200" : "never.100"} />
+  // <ColorBox <ColorBox color={true && "never.100"} />
   // whenTrueValue === true
   // whenFalseValue === "never.100"
   if (
-    kind === 'and' &&
+    Node.isBinaryExpression(node) &&
+    node.getOperatorToken().getKind() === ts.SyntaxKind.AmpersandAmpersandToken &&
     whenTrueValue &&
     whenFalseValue &&
     box.isLiteral(whenTrueValue) &&
@@ -336,7 +322,7 @@ export const maybeExpandConditionalExpression = (
   }
 
   //<ColorBox <ColorBox color={true ? extractableNode : extractableNode} />
-  return box.conditional(whenTrue, whenFalse, node, stack, kind)
+  return box.conditional(whenTrue, whenFalse, node, stack)
 }
 
 const findProperty = (node: ObjectLiteralElementLike, propName: string, _stack: Node[], ctx: BoxContext) => {
@@ -361,7 +347,6 @@ const findProperty = (node: ObjectLiteralElementLike, propName: string, _stack: 
       const expression = unwrapExpression(name.getExpression())
       const computedPropNameBox = maybePropName(expression, stack, ctx)
       if (!computedPropNameBox) return
-      // console.log({ computedPropName, propName, expression: expression.getText() });
 
       if (String(computedPropNameBox.value) === propName) {
         stack.push(name, expression)
@@ -421,7 +406,7 @@ const getObjectLiteralPropValue = (
         return getObjectLiteralPropValue(propInit, accessList, stack, ctx)
       }
 
-      return maybeObjectLikeBox(propInit, stack, ctx)
+      return maybeBoxNode(propInit, stack, ctx)
     }
 
     const maybePropValue = maybeBoxNode(propInit, stack, ctx)
@@ -496,7 +481,7 @@ const maybeBindingElementValue = (def: BindingElement, stack: Node[], propName: 
       if (!element) return
 
       const innerStack = [...stack, initializer, element]
-      const maybeObject = maybeObjectLikeBox(element, innerStack, ctx)
+      const maybeObject = maybeBoxNode(element, innerStack, ctx)
       if (!maybeObject) return
 
       if (box.isObject(maybeObject)) {
@@ -783,21 +768,6 @@ const maybeDefinitionValue = (def: Node, stack: Node[], ctx: BoxContext): BoxNod
     const innerStack = [...stack, initializer]
     const maybeValue = maybeBoxNode(initializer, innerStack, ctx)
     if (maybeValue) return maybeValue
-
-    if (Node.isObjectLiteralExpression(initializer)) {
-      logger.debug('maybe-def-value', { objectLiteral: true })
-      return maybeObjectLikeBox(initializer, innerStack, ctx)
-    }
-
-    // console.log({
-    //     maybeDefinitionValue: true,
-    //     def: def?.getText(),
-    //     // identifier: identifier.getText(),
-    //     kind: def?.getKindName(),
-    //     initializer: initializer?.getText(),
-    //     initializerKind: initializer?.getKindName(),
-    // });
-    return
   }
 
   if (Node.isBindingElement(def)) {
@@ -912,7 +882,6 @@ function resolveVarDeclarationFromExportWithName(
 }
 
 export const maybeIdentifierValue = (identifier: Identifier, _stack: Node[], ctx: BoxContext) => {
-  // console.trace();
   const valueDeclaration = findIdentifierValueDeclaration(identifier, _stack, ctx)
   logger.debug('id-ref', { identifier: identifier.getText(), hasValueDeclaration: Boolean(valueDeclaration) })
   if (!valueDeclaration) {
@@ -1111,7 +1080,7 @@ const getElementAccessedExpressionValue = (
         return whenFalseResolved
       }
 
-      return box.conditional(whenTrueResolved!, whenFalseResolved!, arg, stack, 'ternary')
+      return box.conditional(whenTrueResolved!, whenFalseResolved!, arg, stack)
     }
   }
 }
@@ -1127,15 +1096,11 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
     // element: element.getText(),
     elementKind: element.getKindName(),
     value,
-    // obj: maybeObjectLikeBox(element, stack, ctx),
+    // obj: maybeBoxNode(element, stack, ctx),
   })
 
   if (isNotNullish(value)) {
     return value
-  }
-
-  if (Node.isObjectLiteralExpression(element)) {
-    return maybeObjectLikeBox(element, stack, ctx)
   }
 }
 

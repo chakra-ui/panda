@@ -3,7 +3,6 @@ import { Node } from 'ts-morph'
 import { P, match } from 'ts-pattern'
 import { box } from './box'
 import { maybeBoxNode } from './maybe-box-node'
-import { maybeObjectLikeBox } from './maybe-object-like-box'
 import type { BoxContext } from './types'
 import { trimWhitespace, unwrapExpression } from './utils'
 
@@ -40,9 +39,6 @@ export const extractJsxAttribute = (jsxAttribute: JsxAttribute, ctx: BoxContext)
 
         const maybeValue = maybeBoxNode(expression, stack, ctx)
         if (maybeValue) return maybeValue
-
-        const maybeObject = maybeObjectLikeBox(expression, stack, ctx)
-        if (maybeObject) return maybeObject
       })
 
       .otherwise(() => undefined)

@@ -5,7 +5,6 @@ import { box } from './box'
 import { BoxNodeConditional, type BoxNode } from './box-factory'
 import { getPropertyName } from './get-property-name'
 import { maybeBoxNode } from './maybe-box-node'
-import { maybeObjectLikeBox } from './maybe-object-like-box'
 import type { BoxContext, MatchFnPropArgs } from './types'
 import { isNullish, unwrapExpression } from './utils'
 
@@ -57,22 +56,13 @@ export const getObjectLiteralExpressionPropPairs = (
         extractedPropValues.push([propName.toString(), maybeValue])
         return
       }
-
-      const maybeObject = maybeObjectLikeBox(initializer, stack, ctx)
-      logger.debug('prop-obj', { propName, hasObject: !!maybeObject })
-
-      if (maybeObject) {
-        logger.debug('prop-obj', { propName, maybeObject })
-        extractedPropValues.push([propName.toString(), maybeObject])
-        return
-      }
     }
 
     if (Node.isSpreadAssignment(property)) {
       const initializer = unwrapExpression(property.getExpression())
       stack.push(initializer)
 
-      const maybeObject = maybeObjectLikeBox(initializer, stack, ctx, matchProp)
+      const maybeObject = maybeBoxNode(initializer, stack, ctx, matchProp)
       logger.debug('isSpreadAssignment', { extracted: Boolean(maybeObject) })
 
       if (!maybeObject) return

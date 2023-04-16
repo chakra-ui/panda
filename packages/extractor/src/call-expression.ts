@@ -1,9 +1,7 @@
-import { orElse, pipe } from 'lil-fp'
 import type { CallExpression, Node } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { box } from './box'
 import { maybeBoxNode } from './maybe-box-node'
-import { maybeObjectLikeBox } from './maybe-object-like-box'
 import type { BoxContext, MatchFnArgs, MatchFnArguments, MatchFnPropArgs } from './types'
 import { unwrapExpression } from './utils'
 
@@ -31,12 +29,7 @@ export const extractCallExpressionArguments = (
       return match(argNode)
         .when(
           (argNode) => matchArg({ fnNode: node, fnName, argNode, index }),
-          (argNode) =>
-            pipe(
-              maybeBoxNode(argNode, stack, ctx),
-              orElse(() => maybeObjectLikeBox(argNode, stack, ctx, matchProp)),
-              orElse(() => box.unresolvable(argNode, stack)),
-            ),
+          (argNode) => maybeBoxNode(argNode, stack, ctx, matchProp) ?? box.unresolvable(argNode, stack),
         )
         .otherwise(() => box.unresolvable(argNode, stack))
     }),

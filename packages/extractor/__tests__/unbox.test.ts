@@ -4266,7 +4266,6 @@ test('unbox with unresolvable spread', () => {
           "type": "map",
           "value": Map {
             "background" => BoxNodeConditional {
-              "kind": "or",
               "node": BinaryExpression,
               "stack": [
                 JsxAttribute,

@@ -656,7 +656,6 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "type": "map",
           "value": Map {
             "color" => BoxNodeConditional {
-              "kind": "ternary",
               "node": ConditionalExpression,
               "stack": [
                 JsxAttribute,
@@ -768,7 +767,6 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "type": "map",
           "value": Map {
             "color" => BoxNodeConditional {
-              "kind": "ternary",
               "node": ConditionalExpression,
               "stack": [
                 JsxAttribute,
@@ -816,7 +814,6 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "type": "map",
           "value": Map {
             "color" => BoxNodeConditional {
-              "kind": "ternary",
               "node": ConditionalExpression,
               "stack": [
                 JsxAttribute,
@@ -1439,7 +1436,6 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "type": "map",
           "value": Map {
             "color" => BoxNodeConditional {
-              "kind": "ternary",
               "node": ConditionalExpression,
               "stack": [
                 JsxAttribute,
@@ -1510,7 +1506,6 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "type": "map",
           "value": Map {
             "color" => BoxNodeConditional {
-              "kind": "ternary",
               "node": ConditionalExpression,
               "stack": [
                 JsxAttribute,
@@ -1632,7 +1627,6 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "node": JsxOpeningElement,
           "spreadConditions": [
             BoxNodeConditional {
-              "kind": "ternary",
               "node": ConditionalExpression,
               "stack": [
                 Identifier,
@@ -1731,7 +1725,6 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "node": JsxOpeningElement,
           "spreadConditions": [
             BoxNodeConditional {
-              "kind": "ternary",
               "node": ConditionalExpression,
               "stack": [],
               "type": "conditional",
@@ -1773,7 +1766,6 @@ it('ExtractSample - groups extract props in parent component instance', () => {
           "node": JsxOpeningElement,
           "spreadConditions": [
             BoxNodeConditional {
-              "kind": "and",
               "node": BinaryExpression,
               "stack": [
                 Identifier,
@@ -3499,17 +3491,7 @@ it('extract JsxAttribute > JsxExpression > CallExpression with non-deterministic
 
             <ColorBox color={pickRandom(array)}></ColorBox>
         `),
-  ).toMatchInlineSnapshot(`
-    {
-      "ColorBox": [
-        {
-          "conditions": [],
-          "raw": {},
-          "spreadConditions": [],
-        },
-      ],
-    }
-  `)
+  ).toMatchInlineSnapshot('{}')
 })
 
 it('extract JsxAttribute > JsxExpression > ConditionalExpression > BinaryExpression > StringLiteral', () => {
@@ -5480,11 +5462,6 @@ it('extract JsxAttribute > Identifier > StringLiteral tailwind-like', () => {
           "raw": {
             "className": "bg-red-400 bg-white rounded w-48 text-sm",
           },
-          "spreadConditions": [],
-        },
-        {
-          "conditions": [],
-          "raw": {},
           "spreadConditions": [],
         },
       ],

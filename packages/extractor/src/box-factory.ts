@@ -23,13 +23,10 @@ export type ArrayType = WithNode & { type: 'array'; value: BoxNode[] }
 
 export type UnresolvableType = WithNode & { type: 'unresolvable' }
 
-export type ConditionalKind = 'ternary' | 'and' | 'or' | 'nullish-coalescing'
-
 export type ConditionalType = WithNode & {
   type: 'conditional'
   whenTrue: BoxNode
   whenFalse: BoxNode
-  kind: ConditionalKind
 }
 
 /** -> Jsx boolean attribute <Box flex /> */
@@ -119,12 +116,10 @@ export class BoxNodeUnresolvable extends BoxNodeType<UnresolvableType> {}
 export class BoxNodeConditional extends BoxNodeType<ConditionalType> {
   public whenTrue: ConditionalType['whenTrue']
   public whenFalse: ConditionalType['whenFalse']
-  public kind: ConditionalType['kind']
   constructor(definition: ConditionalType) {
     super(definition)
     this.whenTrue = definition.whenTrue
     this.whenFalse = definition.whenFalse
-    this.kind = definition.kind
   }
 }
 
