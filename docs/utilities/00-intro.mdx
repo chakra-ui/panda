@@ -105,6 +105,28 @@ function App() {
 }
 ```
 
+or if you're a JSX style props fanatic, Panda has you covered:
+
+```jsx
+import { Box, Stack, Circle } from './panda/jsx'
+
+function App() {
+  return (
+    <Stack direction="row" p="4" rounded="md" shadow="lg" bg="white">
+      <Circle size="5rem" overflow="hidden">
+        <img src="https://via.placeholder.com/150" alt="avatar" />
+      </Circle>
+      <Box mt="4" fontSize="xl" fontWeight="semibold">
+        John Doe
+      </Box>
+      <Box mt="2" fontSize="sm" color="gray.600">
+        john@doe.com
+      </Box>
+    </Stack>
+  )
+}
+```
+
 The resulting HTML and CSS will look like this:
 
 ```html
