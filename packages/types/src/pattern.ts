@@ -12,10 +12,7 @@ export type PatternHelpers = {
   map: (value: any, fn: (value: string) => string | undefined) => any
 }
 
-export type PatternConfig<
-  T,
-  Properties = T extends Record<string, PatternProperty> ? T : Record<string, PatternProperty>,
-> = {
+export type PatternConfig<T> = {
   /**
    * The description of the pattern. This will be used in the JSDoc comment.
    */
@@ -28,11 +25,14 @@ export type PatternConfig<
   /**
    * The properties of the pattern.
    */
-  properties: Properties
+  properties: T extends Record<string, PatternProperty> ? T : Record<string, PatternProperty>
   /**
    * The css object this pattern will generate.
    */
-  transform?: (props: Properties, helpers: PatternHelpers) => SystemStyleObject
+  transform?: (
+    props: T extends Record<infer Keys, PatternProperty> ? Record<Keys, any> : Record<string, PatternProperty>,
+    helpers: PatternHelpers,
+  ) => SystemStyleObject
   /**
    * The jsx element name this pattern will generate.
    */
