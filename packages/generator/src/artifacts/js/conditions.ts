@@ -6,26 +6,29 @@ export function generateConditions(ctx: Context) {
   return {
     js: outdent`
     ${ctx.file.import('withoutSpace', '../helpers')}
-    
+
     const conditions = new Set([${keys.map((key) => JSON.stringify(key))}])
-    
+
     export function isCondition(value){
       return conditions.has(value) || /^@|&|&$/.test(value)
     }
-    
+
+    const underscoreRegex = /^_/
+    const selectorRegex = /&|@/
+
     export function finalizeConditions(paths){
       return paths.map((path) => {
         if (conditions.has(path)){
-          return path.replace(/^_/, '')
+          return path.replace(underscoreRegex, '')
         }
-        
-        if (/&|@/.test(path)){
+
+        if (selectorRegex.test(path)){
           return \`[\${withoutSpace(path.trim())}]\`
         }
-        
+
         return path
       })}
-      
+
       export function sortConditions(paths){
         return paths.sort((a, b) => {
           const aa = isCondition(a)
@@ -38,7 +41,7 @@ export function generateConditions(ctx: Context) {
       `,
     dts: outdent`
     import type { AnySelector, Selectors } from './selectors'
-    
+
     export type Conditions = {
     ${keys.map((key) => `\t${JSON.stringify(key)}: string`).join('\n')}
     }
@@ -51,7 +54,7 @@ export function generateConditions(ctx: Context) {
       | {
           [K in keyof Conditions]?: Conditional<V>
         }
-    
+
     export type ConditionalValue<T> = Conditional<T>
 
     export type Nested<P> = P & {
@@ -61,7 +64,7 @@ export function generateConditions(ctx: Context) {
     } & {
       [K in keyof Conditions]?: Nested<P>
     }
-    
+
   `,
   }
 }

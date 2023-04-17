@@ -1,8 +1,9 @@
 import { writeFileSync } from 'fs'
 import json from 'mdn-data/css/properties.json'
 
+const dashRegex = /-+(.)/g
 function camelCaseProperty(str: string): string {
-  return str.replace(/-+(.)/g, (_, p1) => p1.toUpperCase())
+  return str.replace(dashRegex, (_, p1) => p1.toUpperCase())
 }
 
 const omitRegex = /^(?:--\*)/
@@ -28,7 +29,7 @@ writeFileSync(
   const uniq = (arr: string[]) => Array.from(new Set(arr))
 
   const allCssProperties = uniq([${Array.from(new Set(properties)).join(',')}, ...userGenerated])
-  
+
   const regex = new RegExp('^(?:' + Array.from(allCssProperties).join('|') + ')$')
 
   function memo<T>(fn: (value: string) => T): (value: string) => T {
@@ -38,7 +39,7 @@ writeFileSync(
       return cache[arg]
     }
   }
-   
+
   const isCssProperty = memo((prop: string) => {
     return regex.test(prop)
   })

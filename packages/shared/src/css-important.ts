@@ -1,9 +1,11 @@
+const importantRegex = /!(important)?$/
+
 export function isImportant(value: string) {
-  return typeof value === 'string' ? /!(important)?$/.test(value) : false
+  return typeof value === 'string' ? importantRegex.test(value) : false
 }
 
 export function withoutImportant(value: string) {
-  return typeof value === 'string' ? value.replace(/!(important)?$/, '').trim() : value
+  return typeof value === 'string' ? value.replace(importantRegex, '').trim() : value
 }
 
 export function withoutSpace(str: string) {

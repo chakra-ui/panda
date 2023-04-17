@@ -2,6 +2,8 @@ import parser from 'postcss-selector-parser'
 import { match } from 'ts-pattern'
 import { parseCondition } from './parse-condition'
 
+const parentNestingRegex = /\s&/g
+
 export function extractParentSelectors(selector: string) {
   const result: Set<string> = new Set()
 
@@ -12,7 +14,7 @@ export function extractParentSelectors(selector: string) {
       const condition = parseCondition(selector.toString())
       match(condition)
         .with({ type: 'parent-nesting' }, () => {
-          result.add(selector.toString().replace(/\s&/g, '').trim())
+          result.add(selector.toString().replace(parentNestingRegex, '').trim())
         })
         .otherwise(() => {
           //

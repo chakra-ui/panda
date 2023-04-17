@@ -29,11 +29,11 @@ const UNITLESS = {
   'stroke-width': true,
 }
 
+const dashifyWordRegex = /([A-Z])/g
+const dashifySecondRegex = /^ms-/
+
 function dashify(str: string) {
-  return str
-    .replace(/([A-Z])/g, '-$1')
-    .replace(/^ms-/, '-ms-')
-    .toLowerCase()
+  return str.replace(dashifyWordRegex, '-$1').replace(dashifySecondRegex, '-ms-').toLowerCase()
 }
 
 function decl(parent: Container, name: string, value: any) {

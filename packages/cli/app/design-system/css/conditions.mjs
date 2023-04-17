@@ -6,19 +6,22 @@ export function isCondition(value){
   return conditions.has(value) || /^@|&|&$/.test(value)
 }
 
+const underscoreRegex = /^_/
+const selectorRegex = /&|@/
+
 export function finalizeConditions(paths){
   return paths.map((path) => {
     if (conditions.has(path)){
-      return path.replace(/^_/, '')
+      return path.replace(underscoreRegex, '')
     }
-    
-    if (/&|@/.test(path)){
+
+    if (selectorRegex.test(path)){
       return `[${withoutSpace(path.trim())}]`
     }
-    
+
     return path
   })}
-  
+
   export function sortConditions(paths){
     return paths.sort((a, b) => {
       const aa = isCondition(a)

@@ -9,6 +9,7 @@ import type { Token } from '@pandacss/types'
  * Regex for matching a tokenized reference.
  */
 const REFERENCE_REGEX = /(\$[^\s,]+\w)|({([^}]*)})/g
+const curlyBracketRegex = /[{}]/g
 
 /**
  * Returns all references in a string
@@ -21,7 +22,7 @@ export function getReferences(value: string) {
   if (typeof value !== 'string') return []
   const matches = value.match(REFERENCE_REGEX)
   if (!matches) return []
-  return matches.map((match) => match.replace(/[{}]/g, '')).map((value) => value.trim())
+  return matches.map((match) => match.replace(curlyBracketRegex, '')).map((value) => value.trim())
 }
 
 export function hasReference(value: string) {

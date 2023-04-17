@@ -12,8 +12,9 @@ function getRef(operand: Operand): string {
   return isCssVar(operand) ? operand.ref : operand.toString()
 }
 
+const calcRegex = /calc/g
 const toExpression = (operator: Operator, ...operands: Array<Operand>) =>
-  operands.map(getRef).join(` ${operator} `).replace(/calc/g, '')
+  operands.map(getRef).join(` ${operator} `).replace(calcRegex, '')
 
 const multiply = (...operands: Array<Operand>) => `calc(${toExpression('*', ...operands)})`
 

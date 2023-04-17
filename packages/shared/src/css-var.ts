@@ -1,9 +1,11 @@
+const escRegex = /[.*+?^${}()|[\]\\]/g
 function esc(string: string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return string.replace(escRegex, '\\$&')
 }
 
+const dashCaseRegex = /[A-Z]/g
 function dashCase(string: string) {
-  return string.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)
+  return string.replace(dashCaseRegex, (match) => `-${match.toLowerCase()}`)
 }
 
 export type CssVar = {

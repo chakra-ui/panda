@@ -12,6 +12,9 @@ type Options = {
   breakpoints?: Record<string, string>
 }
 
+const underscoreRegex = /^_/
+const selectorRegex = /&|@/
+
 export class Conditions {
   values: Record<string, RawCondition>
 
@@ -33,10 +36,10 @@ export class Conditions {
   finalize = (paths: string[]) => {
     return paths.map((path) => {
       if (this.has(path)) {
-        return path.replace(/^_/, '')
+        return path.replace(underscoreRegex, '')
       }
 
-      if (/&|@/.test(path)) {
+      if (selectorRegex.test(path)) {
         return `[${withoutSpace(path.trim())}]`
       }
 
