@@ -4,10 +4,11 @@ export type ResultItem = {
   name?: string
   data: Array<Unboxed['raw']>
   type?: 'object' | 'cva' | 'pattern' | 'recipe' | 'jsx-factory' | 'jsx-pattern' | 'jsx-recipe' | 'jsx'
-  box?: BoxNodeMap
+  box: BoxNodeMap
 }
 
 export type ParserResult = {
+  all: Set<ResultItem>
   jsx: Set<ResultItem>
   css: Set<ResultItem>
   cva: Set<ResultItem>

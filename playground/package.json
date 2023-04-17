@@ -21,6 +21,7 @@
     "@pandacss/parser": "workspace:*",
     "@pandacss/presets": "workspace:*",
     "@prisma/client": "4.12.0",
+    "@textea/json-viewer": "^2.16.2",
     "@types/node": "18.15.11",
     "@types/react": "18.0.35",
     "@types/react-dom": "18.0.11",
