@@ -1,4 +1,4 @@
-import { defineConfig, defineRecipe } from '@pandacss/dev'
+import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   studio: {
@@ -16,7 +16,7 @@ export default defineConfig({
       },
     },
     recipes: {
-      button: defineRecipe({
+      button: {
         name: 'button',
         jsx: ['Button', 'ListedButton', /WithRegex$/],
         description: 'A button styles',
@@ -75,7 +75,7 @@ export default defineConfig({
             },
           },
         ],
-      }),
+      },
     },
   },
   jsxFramework: 'react',

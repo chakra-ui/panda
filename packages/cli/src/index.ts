@@ -1,7 +1,7 @@
 import type {
   AnyRecipeConfig,
   CompositionStyles,
-  Config,
+  GenericConfig,
   GlobalStyleObject,
   Parts,
   PatternConfig,
@@ -17,7 +17,7 @@ import type {
  * Config creators
  * -----------------------------------------------------------------------------*/
 
-export function defineConfig(config: Config): Config {
+export function defineConfig<RecipeVariants>(config: GenericConfig<RecipeVariants>) {
   return config
 }
 

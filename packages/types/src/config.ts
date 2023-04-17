@@ -1,7 +1,7 @@
 import type { LayerStyles, TextStyles } from './composition'
 import type { Conditions as TConditions } from './conditions'
 import type { PatternConfig } from './pattern'
-import type { AnyRecipeConfig } from './recipe'
+import type { AnyRecipeConfig, RecipeConfig } from './recipe'
 import type { Extendable, RequiredBy, UnwrapExtend } from './shared'
 import type { StaticCssOptions } from './static-css'
 import type { CssKeyframes, GlobalStyleObject } from './system-types'
@@ -13,6 +13,43 @@ export type Preset = Pick<Config, 'utilities' | 'theme' | 'patterns' | 'presets'
 type Studio = {
   title: string
   logo: string
+}
+
+type Theme<RecipeVariants> = {
+  /**
+   * The breakpoints for your project.
+   */
+  breakpoints?: Record<string, string>
+  /**
+   * The css animation keyframes definitions.
+   */
+  keyframes?: CssKeyframes
+  /**
+   * The design tokens for your project.
+   */
+  tokens?: Tokens
+  /**
+   * The semantic design tokens for your project.
+   */
+  semanticTokens?: SemanticTokens
+  /**
+   * The typography styles for your project.
+   */
+  textStyles?: TextStyles
+  /**
+   * The layer styles for your project.
+   */
+  layerStyles?: LayerStyles
+  /**
+   * Multi-variant style definitions for your project.
+   * Useful for defining component styles.
+   */
+  recipes?: Record<string, RecipeConfig<RecipeVariants>>
+}
+type AnyTheme = Theme<Record<string, AnyRecipeConfig>>
+
+export type GenericConfig<RecipeVariants> = Omit<Config, 'theme'> & {
+  theme?: Extendable<Theme<RecipeVariants>>
 }
 
 export type Config = {
@@ -103,37 +140,7 @@ export type Config = {
   /**
    * The theme configuration for your project.
    */
-  theme?: Extendable<{
-    /**
-     * The breakpoints for your project.
-     */
-    breakpoints?: Record<string, string>
-    /**
-     * The css animation keyframes definitions.
-     */
-    keyframes?: CssKeyframes
-    /**
-     * The design tokens for your project.
-     */
-    tokens?: Tokens
-    /**
-     * The semantic design tokens for your project.
-     */
-    semanticTokens?: SemanticTokens
-    /**
-     * The typography styles for your project.
-     */
-    textStyles?: TextStyles
-    /**
-     * The layer styles for your project.
-     */
-    layerStyles?: LayerStyles
-    /**
-     * Multi-variant style definitions for your project.
-     * Useful for defining component styles.
-     */
-    recipes?: Record<string, AnyRecipeConfig>
-  }>
+  theme?: Extendable<AnyTheme>
   /**
    * The css utility definitions.
    */
