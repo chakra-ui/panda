@@ -57,7 +57,7 @@
     "astro.mjs"
   ],
   "dependencies": {
-    "@ark-ui/react": "0.0.0-rc-20230417080344",
+    "@ark-ui/react": "0.1.0",
     "@astrojs/react": "2.1.1",
     "@pandacss/config": "workspace:*",
     "@pandacss/error": "workspace:*",
