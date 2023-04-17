@@ -3,7 +3,7 @@ import { css } from '../css/index.mjs';
 
 const spacerConfig = {
 transform(props, { map }) {
-  const { axis, size, ...rest } = props;
+  const { size, ...rest } = props;
   return {
     alignSelf: "stretch",
     justifySelf: "stretch",
