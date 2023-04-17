@@ -52,6 +52,10 @@ const combineResult = (unboxed: Unboxed) => {
   return [...unboxed.conditions, unboxed.raw, ...unboxed.spreadConditions]
 }
 
+type GetEvaluateOptions = NonNullable<Parameters<typeof extract>['0']['getEvaluateOptions']>
+type EvalOptions = ReturnType<GetEvaluateOptions>
+const defaultEnv: EvalOptions['environment'] = { preset: 'NONE' }
+
 export function createParser(options: ParserOptions) {
   return function parse(sourceFile: SourceFile | undefined, styleProperties: string[]) {
     if (!sourceFile) return
@@ -204,6 +208,7 @@ export function createParser(options: ParserOptions) {
           return true
         },
       },
+      getEvaluateOptions: (node) => ({ node: node as any, environment: defaultEnv }),
       flags: { skipTraverseFiles: true },
     })
 

@@ -47,9 +47,9 @@ export function usePanda(source: string, theme: string) {
       getFiles: () => ['code.tsx'],
       readFile: (file) => (file === 'code.tsx' ? source : ''),
     })
-    const result = project.parseSourceFile('code.tsx', [])
-    console.log(result)
-    const parsedCss = result ? generator.getParserCss(result) ?? '' : ''
+    const parserResult = project.parseSourceFile('code.tsx', [])
+    console.log(parserResult)
+    const parsedCss = parserResult ? generator.getParserCss(parserResult) ?? '' : ''
     const artifacts = generator.getArtifacts() ?? []
 
     const cssFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.css')) ?? [])
@@ -63,6 +63,7 @@ export function usePanda(source: string, theme: string) {
 
     const patternNames = Object.keys(generator.config.patterns ?? {})
     return {
+      parserResult,
       parsedCss,
       previewCss,
       previewJs,

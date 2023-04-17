@@ -21,6 +21,7 @@ export default defineConfig({
       flexDirection: 'column',
       minHeight: 'full',
       height: 'fit-content',
+      maxHeight: '100%',
       _dark: {
         colorScheme: 'dark',
       },
