@@ -1,7 +1,12 @@
-import type { PatternConfig } from '@pandacss/types'
+import type { AnyPatternConfig, PatternConfig } from '@pandacss/types'
 
-export const patterns: Record<string, PatternConfig> = {
-  stack: {
+// inlining this function to avoid having to depend on @pandacss/dev
+function definePattern<Pattern>(config: PatternConfig<Pattern>) {
+  return config as AnyPatternConfig
+}
+
+export const patterns = {
+  stack: definePattern({
     properties: {
       align: { type: 'property', value: 'alignItems' },
       justify: { type: 'property', value: 'justifyContent' },
@@ -19,9 +24,9 @@ export const patterns: Record<string, PatternConfig> = {
         minWidth: '0',
       }
     },
-  },
+  }),
 
-  absoluteCenter: {
+  absoluteCenter: definePattern({
     properties: {
       axis: { type: 'enum', value: ['x', 'y', 'both'] },
     },
@@ -36,9 +41,9 @@ export const patterns: Record<string, PatternConfig> = {
         ),
       }
     },
-  },
+  }),
 
-  simpleGrid: {
+  simpleGrid: definePattern({
     properties: {
       gap: { type: 'token', value: 'spacing' },
       columns: { type: 'number' },
@@ -54,9 +59,9 @@ export const patterns: Record<string, PatternConfig> = {
           : map(minChildWidth, (v) => `repeat(auto-fill, minmax(${v}, 1fr))`),
       }
     },
-  },
+  }),
 
-  gridItem: {
+  gridItem: definePattern({
     properties: {
       colSpan: { type: 'number' },
     },
@@ -66,5 +71,5 @@ export const patterns: Record<string, PatternConfig> = {
         gridColumn: map(colSpan, (v) => (v ? `span ${v}` : 'auto')),
       }
     },
-  },
+  }),
 }

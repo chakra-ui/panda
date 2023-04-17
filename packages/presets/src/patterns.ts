@@ -1,13 +1,18 @@
-import type { PatternConfig } from '@pandacss/types'
+import type { AnyPatternConfig, PatternConfig } from '@pandacss/types'
 
-const box: PatternConfig = {
+// inlining this function to avoid having to depend on @pandacss/dev
+function definePattern<Pattern>(config: PatternConfig<Pattern>) {
+  return config as AnyPatternConfig
+}
+
+const box = definePattern({
   properties: {},
   transform(props) {
     return props
   },
-}
+})
 
-const flex: PatternConfig = {
+const flex = definePattern({
   properties: {
     align: { type: 'property', value: 'alignItems' },
     justify: { type: 'property', value: 'justifyContent' },
@@ -31,9 +36,9 @@ const flex: PatternConfig = {
       ...rest,
     }
   },
-}
+})
 
-const stack: PatternConfig = {
+const stack = definePattern({
   properties: {
     align: { type: 'property', value: 'alignItems' },
     justify: { type: 'property', value: 'justifyContent' },
@@ -52,9 +57,9 @@ const stack: PatternConfig = {
       ...rest,
     }
   },
-}
+})
 
-const vstack: PatternConfig = {
+const vstack = definePattern({
   jsx: 'VStack',
   properties: {
     justify: { type: 'property', value: 'justifyContent' },
@@ -72,9 +77,9 @@ const vstack: PatternConfig = {
       ...rest,
     }
   },
-}
+})
 
-const hstack: PatternConfig = {
+const hstack = definePattern({
   jsx: 'HStack',
   properties: {
     justify: { type: 'property', value: 'justifyContent' },
@@ -92,14 +97,14 @@ const hstack: PatternConfig = {
       ...rest,
     }
   },
-}
+})
 
-const spacer: PatternConfig = {
+const spacer = definePattern({
   properties: {
     size: { type: 'token', value: 'spacing' },
   },
   transform(props, { map }) {
-    const { axis, size, ...rest } = props
+    const { size, ...rest } = props
     return {
       alignSelf: 'stretch',
       justifySelf: 'stretch',
@@ -107,9 +112,9 @@ const spacer: PatternConfig = {
       ...rest,
     }
   },
-}
+})
 
-const circle: PatternConfig = {
+const circle = definePattern({
   properties: {
     size: { type: 'property', value: 'width' },
   },
@@ -127,9 +132,9 @@ const circle: PatternConfig = {
       ...rest,
     }
   },
-}
+})
 
-const absoluteCenter: PatternConfig = {
+const absoluteCenter = definePattern({
   properties: {
     axis: { type: 'enum', value: ['x', 'y', 'both'] },
   },
@@ -147,9 +152,9 @@ const absoluteCenter: PatternConfig = {
       ...rest,
     }
   },
-}
+})
 
-const grid: PatternConfig = {
+const grid = definePattern({
   properties: {
     gap: { type: 'property', value: 'gap' },
     gapX: { type: 'property', value: 'gap' },
@@ -173,9 +178,9 @@ const grid: PatternConfig = {
       ...rest,
     }
   },
-}
+})
 
-const gridItem: PatternConfig = {
+const gridItem = definePattern({
   properties: {
     colSpan: { type: 'number' },
     rowSpan: { type: 'number' },
@@ -195,9 +200,9 @@ const gridItem: PatternConfig = {
       ...rest,
     }
   },
-}
+})
 
-const wrap: PatternConfig = {
+const wrap = definePattern({
   properties: {
     gap: { type: 'property', value: 'gap' },
     gapX: { type: 'property', value: 'gap' },
@@ -218,9 +223,9 @@ const wrap: PatternConfig = {
       ...rest,
     }
   },
-}
+})
 
-const container: PatternConfig = {
+const container = definePattern({
   properties: {
     size: { type: 'token', value: 'breakpoints' },
   },
@@ -234,9 +239,9 @@ const container: PatternConfig = {
       ...rest,
     }
   },
-}
+})
 
-const center: PatternConfig = {
+const center = definePattern({
   properties: {
     inline: { type: 'boolean' },
   },
@@ -249,9 +254,9 @@ const center: PatternConfig = {
       ...rest,
     }
   },
-}
+})
 
-const aspectRatio: PatternConfig = {
+const aspectRatio = definePattern({
   properties: {
     ratio: { type: 'number' },
   },
@@ -272,7 +277,7 @@ const aspectRatio: PatternConfig = {
       ...rest,
     }
   },
-}
+})
 
 export const patterns = {
   box,

@@ -1,6 +1,6 @@
 import type { LayerStyles, TextStyles } from './composition'
 import type { Conditions as TConditions } from './conditions'
-import type { PatternConfig } from './pattern'
+import type { AnyPatternConfig, PatternConfig } from './pattern'
 import type { AnyRecipeConfig, RecipeConfig } from './recipe'
 import type { Extendable, RequiredBy, UnwrapExtend } from './shared'
 import type { StaticCssOptions } from './static-css'
@@ -48,8 +48,9 @@ type Theme<RecipeVariants> = {
 }
 type AnyTheme = Theme<Record<string, AnyRecipeConfig>>
 
-export type GenericConfig<RecipeVariants> = Omit<Config, 'theme'> & {
+export type GenericConfig<RecipeVariants, PatternProps> = Omit<Config, 'theme' | 'patterns'> & {
   theme?: Extendable<Theme<RecipeVariants>>
+  patterns?: Extendable<Record<string, PatternConfig<PatternProps>>>
 }
 
 export type Config = {
@@ -148,7 +149,7 @@ export type Config = {
   /**
    * Common styling or layout patterns for your project.
    */
-  patterns?: Extendable<Record<string, PatternConfig>>
+  patterns?: Extendable<Record<string, AnyPatternConfig>>
   /**
    * The framework to use for generating supercharged elements.
    * @default 'react'
