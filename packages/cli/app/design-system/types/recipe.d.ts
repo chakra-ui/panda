@@ -52,7 +52,7 @@ export type RecipeDefinition<T extends RecipeVariantRecord> = {
 
 export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => RecipeRuntimeFn<T>
 
-export type RecipeConfig<T> = RecipeDefinition<T extends RecipeVariantRecord ? T : RecipeVariantRecord> & {
+export type RecipeConfig<T extends RecipeVariantRecord> = RecipeDefinition<T> & {
   /**
    * The name of the recipe.
    */

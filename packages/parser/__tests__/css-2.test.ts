@@ -422,61 +422,10 @@ console.log(
                 ObjectLiteralExpression,
               ],
               "type": "map",
-              "value": Map {
-                "selectors" => BoxNodeMap {
-                  "node": ObjectLiteralExpression,
-                  "spreadConditions": undefined,
-                  "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ObjectLiteralExpression,
-                  ],
-                  "type": "map",
-                  "value": Map {
-                    "&:hover" => BoxNodeMap {
-                      "node": ObjectLiteralExpression,
-                      "spreadConditions": undefined,
-                      "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                      ],
-                      "type": "map",
-                      "value": Map {
-                        "background" => BoxNodeLiteral {
-                          "kind": "string",
-                          "node": StringLiteral,
-                          "stack": [
-                            CallExpression,
-                            ObjectLiteralExpression,
-                            PropertyAssignment,
-                            ObjectLiteralExpression,
-                            PropertyAssignment,
-                            ObjectLiteralExpression,
-                            PropertyAssignment,
-                            StringLiteral,
-                          ],
-                          "type": "literal",
-                          "value": "red.200",
-                        },
-                      },
-                    },
-                  },
-                },
-              },
+              "value": Map {},
             },
             "data": [
-              {
-                "selectors": {
-                  "&:hover": {
-                    "background": "red.200",
-                  },
-                },
-              },
+              {},
             ],
             "name": "css",
             "type": "object",
