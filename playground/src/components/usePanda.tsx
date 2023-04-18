@@ -61,6 +61,19 @@ export function usePanda(source: string, theme: string) {
     const presetCss = cssFiles.map((f) => f.code).join('\n')
     const previewCss = ['@layer reset, base, tokens, recipes, utilities;', presetCss, parsedCss].join('\n')
 
+    const cssArtifacts = artifacts.reduce(
+      (acc, artifact) => {
+        const artifactCss = (artifact?.files?.filter((art) => art.code && art.file.endsWith('.css')) ?? []).map(
+          (file) => ({
+            ...file,
+            dir: artifact?.dir,
+          }),
+        )
+        return acc.concat(artifactCss)
+      },
+      [{ code: previewCss, file: 'styles.css' }] as CssFileArtifact[],
+    )
+
     const patternNames = Object.keys(generator.config.patterns ?? {})
     return {
       parserResult,
@@ -69,6 +82,13 @@ export function usePanda(source: string, theme: string) {
       previewJs,
       patternNames,
       artifacts,
+      cssArtifacts,
     }
   }, [source, generator])
+}
+
+export type CssFileArtifact = {
+  file: string
+  code: string | undefined
+  dir: string[] | undefined
 }

@@ -10,7 +10,7 @@ export const ASTViewer = (props: { parserResult: ReturnType<typeof usePanda>['pa
 
   return (
     <Stack p="4" h="full" overflow="auto">
-      {Array.from(props.parserResult.all).map((result, index) => {
+      {Array.from(props.parserResult.getAll()).map((result, index) => {
         return <ResultItemRow key={index} result={result} />
       })}
     </Stack>

@@ -9,6 +9,7 @@ import { usePlayground, UsePlayGroundProps } from './usePlayground'
 import { usePanda } from '@/src/components/usePanda'
 import { TabContent, TabIndicator, TabList, Tabs, TabTrigger } from '@ark-ui/react'
 import { ASTViewer } from './ASTViewer'
+import { GeneratedCss } from './GeneratedCss'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const { layout, setLayout, isPristine, state, setState, share } = usePlayground(props)
@@ -79,6 +80,9 @@ export const Playground = (props: UsePlayGroundProps) => {
               <TabTrigger value="ast">
                 <button>AST</button>
               </TabTrigger>
+              <TabTrigger value="generated">
+                <button>Generated</button>
+              </TabTrigger>
               <TabIndicator className={css({ background: 'yellow.400', height: '2px', mb: '-1px' })} />
             </TabList>
             <TabContent value="preview" className={css({ flex: '1', pt: '4' })}>
@@ -86,6 +90,9 @@ export const Playground = (props: UsePlayGroundProps) => {
             </TabContent>
             <TabContent value="ast" className={css({ flex: '1', minHeight: 0 })}>
               <ASTViewer parserResult={panda.parserResult} />
+            </TabContent>
+            <TabContent value="generated" className={css({ flex: '1', minHeight: 0 })}>
+              <GeneratedCss cssArtifacts={panda.cssArtifacts} />
             </TabContent>
           </Tabs>
         </SplitterPanel>
