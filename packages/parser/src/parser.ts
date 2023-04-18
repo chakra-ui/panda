@@ -155,6 +155,9 @@ export function createParser(options: ParserOptions) {
     )
 
     const matchTag = memo((tagName: string) => {
+      // ignore fragments
+      if (!tagName) return false
+
       return (
         components.has(tagName) ||
         isUpperCase(tagName) ||
