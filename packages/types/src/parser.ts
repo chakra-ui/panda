@@ -8,7 +8,6 @@ export type ResultItem = {
 }
 
 export type ParserResult = {
-  all: Set<ResultItem>
   jsx: Set<ResultItem>
   css: Set<ResultItem>
   cva: Set<ResultItem>
@@ -19,4 +18,5 @@ export type ParserResult = {
   setRecipe: (name: string, result: ResultItem) => void
   setPattern: (name: string, result: ResultItem) => void
   isEmpty: () => boolean
+  getAll: () => Array<ResultItem>
 }
