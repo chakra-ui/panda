@@ -155,6 +155,9 @@ export function createParser(options: ParserOptions) {
     )
 
     const matchTag = memo((tagName: string) => {
+      // ignore fragments
+      if (!tagName) return false
+
       return (
         components.has(tagName) ||
         isUpperCase(tagName) ||
@@ -275,7 +278,7 @@ export function createParser(options: ParserOptions) {
             .when(
               (name) => jsx && name.startsWith(jsxFactoryAlias),
               (name) => {
-                collector.jsx.add({ name, box: query.box, type: 'jsx-factory', data })
+                collector.setJsx({ name, box: query.box, type: 'jsx-factory', data })
               },
             )
             .when(
@@ -291,7 +294,7 @@ export function createParser(options: ParserOptions) {
               },
             )
             .otherwise(() => {
-              collector.jsx.add({ name, box: query.box, type: 'jsx', data })
+              collector.setJsx({ name, box: query.box, type: 'jsx', data })
             })
         })
       }

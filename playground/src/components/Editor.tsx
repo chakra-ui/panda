@@ -12,6 +12,16 @@ type EditorProps = {
   artifacts: Artifact[]
 }
 
+const editorOptions = {
+  minimap: { enabled: false },
+  fontSize: 14,
+  quickSuggestions: {
+    strings: true,
+    other: true,
+    comments: true,
+  },
+}
+
 export const Editor = (props: EditorProps) => {
   const { onChange, value, artifacts } = props
 
@@ -110,16 +120,6 @@ export const Editor = (props: EditorProps) => {
     },
     [artifacts, configureEditor],
   )
-
-  const editorOptions = {
-    minimap: { enabled: false },
-    fontSize: 14,
-    quickSuggestions: {
-      strings: true,
-      other: true,
-      comments: true,
-    },
-  }
 
   return (
     <Flex flex="1" direction="column" align="flex-start">
