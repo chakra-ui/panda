@@ -47,17 +47,20 @@ export function usePanda(source: string, theme: string) {
       getFiles: () => ['code.tsx'],
       readFile: (file) => (file === 'code.tsx' ? source : ''),
     })
-    const parserResult = project.parseSourceFile('code.tsx', [])
-    console.log(parserResult)
+
+    const parserResult = project.parseSourceFile('code.tsx')
     const parsedCss = parserResult ? generator.getParserCss(parserResult) ?? '' : ''
     const artifacts = generator.getArtifacts() ?? []
 
     const cssFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.css')) ?? [])
+
     const allJsFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.mjs')) ?? [])
     const jsFiles = allJsFiles.filter((f) => f.file.endsWith('.mjs'))
+
     const previewJs = jsFiles
       .map((f) => f.code?.replaceAll(/import .*/g, '').replaceAll(/export \* .*/g, ''))
       .join('\n')
+
     const presetCss = cssFiles.map((f) => f.code).join('\n')
     const previewCss = ['@layer reset, base, tokens, recipes, utilities;', presetCss, parsedCss].join('\n')
 
