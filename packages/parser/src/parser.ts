@@ -188,7 +188,8 @@ export function createParser(options: ParserOptions) {
       if (recipes.has(fnName) || patterns.has(fnName)) return true
       if (fnName === cvaAlias) return true
       if (fnName.startsWith(jsxFactoryAlias)) return true
-      if (fnName === cssAlias) return Boolean(propertiesMap.get(propName) || propName === 'selectors')
+      if (fnName === cssAlias)
+        return Boolean(propertiesMap.get(propName) || propName[0] === '&' || propName.startsWith('['))
       return Boolean(functions.get(fnName)?.get(propName))
     })
 

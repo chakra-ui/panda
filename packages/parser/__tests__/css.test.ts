@@ -15,6 +15,16 @@ describe('ast parser', () => {
           bg: "red.300",
           margin: { xs: "0", lg:"40px" },
         })
+
+        const welcome = css({
+          '[dir=rtl]': {
+            textAlign: 'right',
+          }
+          '&[data-state=closed]': {
+            animation: 'exit',
+            fadeOut: '0.2',
+          },
+        })
      `
 
     expect(cssParser(code)).toMatchInlineSnapshot(`
@@ -136,6 +146,100 @@ describe('ast parser', () => {
                 "margin": {
                   "lg": "40px",
                   "xs": "0",
+                },
+              },
+            ],
+            "name": "css",
+            "type": "object",
+          },
+          {
+            "box": BoxNodeMap {
+              "node": CallExpression,
+              "spreadConditions": undefined,
+              "stack": [
+                CallExpression,
+                ObjectLiteralExpression,
+              ],
+              "type": "map",
+              "value": Map {
+                "[dir=rtl]" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "textAlign" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "right",
+                    },
+                  },
+                },
+                "&[data-state=closed]" => BoxNodeMap {
+                  "node": ObjectLiteralExpression,
+                  "spreadConditions": undefined,
+                  "stack": [
+                    CallExpression,
+                    ObjectLiteralExpression,
+                    PropertyAssignment,
+                    ObjectLiteralExpression,
+                  ],
+                  "type": "map",
+                  "value": Map {
+                    "animation" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "exit",
+                    },
+                    "fadeOut" => BoxNodeLiteral {
+                      "kind": "string",
+                      "node": StringLiteral,
+                      "stack": [
+                        CallExpression,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        ObjectLiteralExpression,
+                        PropertyAssignment,
+                        StringLiteral,
+                      ],
+                      "type": "literal",
+                      "value": "0.2",
+                    },
+                  },
+                },
+              },
+            },
+            "data": [
+              {
+                "&[data-state=closed]": {
+                  "animation": "exit",
+                  "fadeOut": "0.2",
+                },
+                "[dir=rtl]": {
+                  "textAlign": "right",
                 },
               },
             ],
