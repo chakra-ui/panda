@@ -185,16 +185,6 @@ export function createParser(options: ParserOptions) {
       if (fnName === cvaAlias || fnName === cssAlias || fnName.startsWith(jsxFactoryAlias)) return true
       return Boolean(functions.get(fnName))
     })
-    const matchFnProp = memo((fnName: string, propName: string) => {
-      if (propertiesMap.size === 0) return true // = allow all
-
-      if (recipes.has(fnName) || patterns.has(fnName)) return true
-      if (fnName === cvaAlias) return true
-      if (fnName.startsWith(jsxFactoryAlias)) return true
-      if (fnName === cssAlias) return Boolean(propertiesMap.get(propName) || propName === 'selectors')
-      return Boolean(functions.get(fnName)?.get(propName))
-    })
-
     const measure = logger.time.debug(`Tokens extracted from ${filePath}`)
     const extractResultByName = extract({
       ast: sourceFile,
@@ -204,7 +194,7 @@ export function createParser(options: ParserOptions) {
       },
       functions: {
         matchFn: (prop) => matchFn(prop.fnName),
-        matchProp: (prop) => matchFnProp(prop.fnName, prop.propName),
+        matchProp: () => true,
         matchArg: (prop) => {
           // skip resolving `badge` here: `panda("span", badge)`
           if (prop.fnName === jsxFactoryAlias && prop.index === 1 && Node.isIdentifier(prop.argNode)) return false
