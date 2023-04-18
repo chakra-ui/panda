@@ -305,6 +305,7 @@ export type SystemProperties = CssVarProperties & {
 	hangingPunctuation?: PropertyValue<'hangingPunctuation'>
 	height?: PropertyValue<'height'>
 	hyphenateCharacter?: PropertyValue<'hyphenateCharacter'>
+	hyphenateLimitChars?: PropertyValue<'hyphenateLimitChars'>
 	hyphens?: PropertyValue<'hyphens'>
 	imageOrientation?: PropertyValue<'imageOrientation'>
 	imageRendering?: PropertyValue<'imageRendering'>

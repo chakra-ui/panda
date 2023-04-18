@@ -20,7 +20,7 @@ export function analyzeTokens(
     .getFiles()
     .map((file) => {
       const start = performance.now()
-      const result = ctx.project.parseSourceFile(file, ctx.properties)
+      const result = ctx.project.parseSourceFile(file)
 
       const extractMs = performance.now() - start
       extractTimeByFilepath.set(file, extractMs)

@@ -1,8 +1,6 @@
 const userGenerated: string[] = []
 
-const uniq = (arr: string[]) => Array.from(new Set(arr))
-
-const allCssProperties = uniq([
+const allCssProperties = [
   'MsAccelerator',
   'MsBlockProgression',
   'MsContentZoomChaining',
@@ -302,6 +300,7 @@ const allCssProperties = uniq([
   'hangingPunctuation',
   'height',
   'hyphenateCharacter',
+  'hyphenateLimitChars',
   'hyphens',
   'imageOrientation',
   'imageRendering',
@@ -531,9 +530,9 @@ const allCssProperties = uniq([
   'zIndex',
   'zoom',
   ...userGenerated,
-])
+]
 
-const regex = new RegExp('^(?:' + Array.from(allCssProperties).join('|') + ')$')
+const properties = new Map(allCssProperties.map((prop) => [prop, true]))
 
 function memo<T>(fn: (value: string) => T): (value: string) => T {
   const cache = Object.create(null)
@@ -544,7 +543,7 @@ function memo<T>(fn: (value: string) => T): (value: string) => T {
 }
 
 const isCssProperty = memo((prop: string) => {
-  return regex.test(prop) || prop.startsWith('--')
+  return properties.has(prop) || prop.startsWith('--')
 })
 
 export { isCssProperty, allCssProperties }

@@ -32,7 +32,7 @@ export function extractFile(ctx: PandaContext, file: string) {
     Obj.bind(
       'result',
       tryCatch(
-        ({ file }) => ctx.project.parseSourceFile(file, ctx.properties),
+        ({ file }) => ctx.project.parseSourceFile(file),
         (error) => logger.error('file:parse', error),
       ),
     ),

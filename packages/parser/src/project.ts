@@ -40,8 +40,8 @@ export const createProject = ({ getFiles, readFile, parserOptions, ...projectOpt
           overwrite: true,
           scriptKind: ScriptKind.TSX,
         }),
-      parseSourceFile: (filePath: string, properties: string[]) => {
-        return parser(project.getSourceFile(filePath), properties)
+      parseSourceFile: (filePath: string) => {
+        return parser(project.getSourceFile(filePath))
       },
     })),
 

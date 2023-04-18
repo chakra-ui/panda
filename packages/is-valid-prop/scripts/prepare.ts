@@ -26,11 +26,9 @@ writeFileSync(
   format(`
   const userGenerated: string[] = []
 
-  const uniq = (arr: string[]) => Array.from(new Set(arr))
+  const allCssProperties = [${Array.from(new Set(properties)).join(',')}, ...userGenerated]
 
-  const allCssProperties = uniq([${Array.from(new Set(properties)).join(',')}, ...userGenerated])
-
-  const regex = new RegExp('^(?:' + Array.from(allCssProperties).join('|') + ')$')
+  const properties = new Map(allCssProperties.map((prop) => [prop, true]))
 
   function memo<T>(fn: (value: string) => T): (value: string) => T {
     const cache = Object.create(null)
@@ -41,7 +39,7 @@ writeFileSync(
   }
 
   const isCssProperty = memo((prop: string) => {
-    return regex.test(prop)
+    return properties.has(prop) || prop.startsWith('--')
   })
 
   export { isCssProperty, allCssProperties }

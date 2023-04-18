@@ -15,11 +15,12 @@ function filterBaseConditions(c) {
 }
 
 // src/css-important.ts
+var importantRegex = /!(important)?$/;
 function isImportant(value) {
-  return typeof value === "string" ? /!(important)?$/.test(value) : false;
+  return typeof value === "string" ? importantRegex.test(value) : false;
 }
 function withoutImportant(value) {
-  return typeof value === "string" ? value.replace(/!(important)?$/, "").trim() : value;
+  return typeof value === "string" ? value.replace(importantRegex, "").trim() : value;
 }
 function withoutSpace(str) {
   return typeof str === "string" ? str.replaceAll(" ", "_") : str;
@@ -225,10 +226,11 @@ var memo = (fn) => {
 };
 
 // src/hypenate.ts
+var dashCaseRegex = /[A-Z]/g;
 var hypenateProperty = memo((property) => {
   if (property.startsWith("--"))
     return property;
-  return property.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
+  return property.replace(dashCaseRegex, (match) => `-${match.toLowerCase()}`);
 });
 export {
   compact,

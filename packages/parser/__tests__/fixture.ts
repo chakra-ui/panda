@@ -9,27 +9,12 @@ import {
   utilities,
 } from '@pandacss/fixture'
 import { createGenerator } from '@pandacss/generator'
-import { allCssProperties } from '@pandacss/is-valid-prop'
 import type { LoadConfigResult } from '@pandacss/types'
 import { type UserConfig } from '@pandacss/types'
 import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
 
 const staticFilePath = 'test.tsx'
-const properties = Array.from(
-  new Set([
-    'css',
-    ...allCssProperties,
-    ...Object.values(utilities).reduce((acc, prop) => {
-      if (prop?.shorthand) {
-        return acc.concat(prop.shorthand)
-      }
-
-      return acc
-    }, [] as string[]),
-    ...Object.keys(conditions),
-  ]),
-)
 
 const defaults = {
   dependencies: [],
@@ -81,7 +66,7 @@ export function importParser(code: string, option: { name: string; module: strin
 
 export function cssParser(code: string) {
   const project = getProject(code)
-  const data = project.parseSourceFile(staticFilePath, properties)!
+  const data = project.parseSourceFile(staticFilePath)!
   return {
     css: data.css,
   }
@@ -89,7 +74,7 @@ export function cssParser(code: string) {
 
 export function cvaParser(code: string) {
   const project = getProject(code)
-  const data = project.parseSourceFile(staticFilePath, properties)!
+  const data = project.parseSourceFile(staticFilePath)!
   return {
     cva: data.cva,
   }
@@ -97,7 +82,7 @@ export function cvaParser(code: string) {
 
 export function styledParser(code: string) {
   const project = getProject(code)
-  const data = project.parseSourceFile(staticFilePath, properties)!
+  const data = project.parseSourceFile(staticFilePath)!
   return {
     cva: data.cva,
   }
@@ -105,13 +90,13 @@ export function styledParser(code: string) {
 
 export function recipeParser(code: string) {
   const project = getProject(code)
-  const data = project.parseSourceFile(staticFilePath, properties)!
+  const data = project.parseSourceFile(staticFilePath)!
   return data.recipe
 }
 
 export function jsxParser(code: string) {
   const project = getProject(code)
-  const data = project.parseSourceFile(staticFilePath, properties)!
+  const data = project.parseSourceFile(staticFilePath)!
   return data.jsx
 }
 
@@ -141,7 +126,7 @@ export function patternParser(code: string) {
       },
     },
   }))
-  const data = project.parseSourceFile(staticFilePath, properties)!
+  const data = project.parseSourceFile(staticFilePath)!
   return data.pattern
 }
 
@@ -172,6 +157,6 @@ export function jsxRecipeParser(code: string) {
       },
     },
   }))
-  const data = project.parseSourceFile(staticFilePath, properties)!
+  const data = project.parseSourceFile(staticFilePath)!
   return data.recipe
 }

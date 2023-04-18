@@ -53,11 +53,13 @@ const combineResult = (unboxed: Unboxed) => {
 }
 
 type GetEvaluateOptions = NonNullable<Parameters<typeof extract>['0']['getEvaluateOptions']>
+
 type EvalOptions = ReturnType<GetEvaluateOptions>
+
 const defaultEnv: EvalOptions['environment'] = { preset: 'NONE' }
 
 export function createParser(options: ParserOptions) {
-  return function parse(sourceFile: SourceFile | undefined, styleProperties: string[]) {
+  return function parse(sourceFile: SourceFile | undefined) {
     if (!sourceFile) return
 
     const filePath = sourceFile.getFilePath()
@@ -114,7 +116,7 @@ export function createParser(options: ParserOptions) {
     const functions = new Map<string, Map<string, boolean>>()
     const components = new Map<string, Map<string, boolean>>()
 
-    const propertiesMap = new Map<string, boolean>(styleProperties.map((prop) => [prop, true]))
+    const propertiesMap = new Map<string, boolean>()
     const recipePropertiesByName = new Map<string, Set<string>>()
     const recipeJsxLists = (jsx?.nodes ?? []).filter(isNodeRecipe).reduce(
       (acc, recipe) => {
@@ -138,13 +140,12 @@ export function createParser(options: ParserOptions) {
 
     if (options.jsx) {
       options.jsx.nodes.forEach((node) => {
-        const properties = node.props ? new Map(propertiesMap) : propertiesMap
         const alias = imports.getAlias(node.name)
-        node.props?.forEach((prop) => properties.set(prop, true))
+        node.props?.forEach((prop) => propertiesMap.set(prop, true))
 
-        functions.set(node.baseName, properties)
-        functions.set(alias, properties)
-        components.set(alias, properties)
+        functions.set(node.baseName, propertiesMap)
+        functions.set(alias, propertiesMap)
+        components.set(alias, propertiesMap)
       })
     }
 
@@ -165,16 +166,20 @@ export function createParser(options: ParserOptions) {
         isJsxTagRecipe(tagName)
       )
     })
+
     const matchTagProp = memo((tagName: string, propName: string) => {
       if (propertiesMap.size === 0) return true // = allow all
 
-      if (Boolean(components.get(tagName)?.get(propName)) || propertiesMap.has(propName)) return true
+      if (
+        Boolean(components.get(tagName)?.has(propName)) ||
+        options.jsx?.isStyleProp(propName) ||
+        propertiesMap.has(propName)
+      )
+        return true
 
       if (isJsxTagRecipe(tagName)) {
         const recipe = getRecipeByName(getRecipeName(tagName))
-        if (recipe) {
-          return recipePropertiesByName.get(recipe.name)?.has(propName) ?? false
-        }
+        return recipe != null && !!recipePropertiesByName.get(recipe.name)?.has(propName)
       }
 
       return false
@@ -183,9 +188,11 @@ export function createParser(options: ParserOptions) {
     const matchFn = memo((fnName: string) => {
       if (recipes.has(fnName) || patterns.has(fnName)) return true
       if (fnName === cvaAlias || fnName === cssAlias || fnName.startsWith(jsxFactoryAlias)) return true
-      return Boolean(functions.get(fnName))
+      return functions.has(fnName)
     })
+
     const measure = logger.time.debug(`Tokens extracted from ${filePath}`)
+
     const extractResultByName = extract({
       ast: sourceFile,
       components: {
@@ -294,4 +301,4 @@ export function createParser(options: ParserOptions) {
   }
 }
 
-const isUpperCase = (value: string) => value[0] === value[0].toUpperCase()
+const isUpperCase = (value: string) => value[0] === value[0]?.toUpperCase()

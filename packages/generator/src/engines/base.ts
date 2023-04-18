@@ -1,7 +1,7 @@
-import { assignCompositions, Conditions, Stylesheet, type StylesheetOptions, Utility } from '@pandacss/core'
-import { isCssProperty, allCssProperties } from '@pandacss/is-valid-prop'
+import { Conditions, Stylesheet, Utility, assignCompositions, type StylesheetOptions } from '@pandacss/core'
+import { isCssProperty } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
-import { compact, mapObject } from '@pandacss/shared'
+import { compact, mapObject, memo } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type { LoadConfigResult } from '@pandacss/types'
 import { Obj, pipe, tap } from 'lil-fp'
@@ -45,13 +45,13 @@ export const getBaseEngine = (conf: LoadConfigResult) =>
     }),
 
     Obj.bind('properties', ({ utility, conditions }) =>
-      Array.from(new Set(['css', ...utility.keys(), ...conditions.keys(), ...allCssProperties])),
+      Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()])),
     ),
 
     Obj.bind('isValidProperty', ({ properties }) => {
-      return (key: string) => {
-        const regex = new RegExp('^(?:' + properties.join('|') + ')$')
-        return regex.test(key) || isCssProperty(key)
-      }
+      const propertyMap = new Map(properties.map((prop) => [prop, true]))
+      return memo((key: string) => {
+        return propertyMap.has(key) || isCssProperty(key)
+      })
     }),
   )
