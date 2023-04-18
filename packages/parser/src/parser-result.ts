@@ -1,24 +1,25 @@
 import type { ParserResult, ResultItem } from '@pandacss/types'
 
-type PartialResult = Pick<ResultItem, 'data' | 'box'>
-
 export const createParserResult = (): ParserResult => ({
   jsx: new Set<ResultItem>(),
   css: new Set<ResultItem>(),
   cva: new Set<ResultItem>(),
   recipe: new Map<string, Set<ResultItem>>(),
   pattern: new Map<string, Set<ResultItem>>(),
-  set(name: 'cva' | 'css', result: PartialResult) {
+  set(name: 'cva' | 'css', result: ResultItem) {
     this[name].add({ type: 'object', ...result })
   },
-  setCva(result: PartialResult) {
+  setCva(result: ResultItem) {
     this.cva.add({ type: 'cva', ...result })
   },
-  setPattern(name: string, result: PartialResult) {
+  setJsx(result: ResultItem) {
+    this.jsx.add({ type: 'jsx', ...result })
+  },
+  setPattern(name: string, result: ResultItem) {
     this.pattern.get(name) ?? this.pattern.set(name, new Set())
     this.pattern.get(name)?.add({ type: 'pattern', name, ...result })
   },
-  setRecipe(name: string, result: PartialResult) {
+  setRecipe(name: string, result: ResultItem) {
     this.recipe.get(name) ?? this.recipe.set(name, new Set())
     this.recipe.get(name)?.add({ type: 'recipe', ...result })
   },
