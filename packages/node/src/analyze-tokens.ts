@@ -16,24 +16,21 @@ export function analyzeTokens(
   const parserResultByFilepath = new Map<string, ParserResult>()
   const extractTimeByFilepath = new Map<string, number>()
 
-  ctx
-    .getFiles()
-    .map((file) => {
-      const start = performance.now()
-      const result = ctx.project.parseSourceFile(file)
+  ctx.getFiles().map((file) => {
+    const start = performance.now()
+    const result = ctx.project.parseSourceFile(file)
 
-      const extractMs = performance.now() - start
-      extractTimeByFilepath.set(file, extractMs)
-      logger.debug('analyze', `Extracted ${file} in ${extractMs}ms`)
+    const extractMs = performance.now() - start
+    extractTimeByFilepath.set(file, extractMs)
+    logger.debug('analyze', `Parsed ${file} in ${extractMs}ms`)
 
-      if (result) {
-        parserResultByFilepath.set(file, result)
-        options.onResult?.(file, result)
-      }
+    if (result) {
+      parserResultByFilepath.set(file, result)
+      options.onResult?.(file, result)
+    }
 
-      return [file, result] as [string, ParserResult]
-    })
-    .filter(([, result]) => result)
+    return [file, result] as [string, ParserResult]
+  })
 
   const totalMs = Array.from(extractTimeByFilepath.values()).reduce((a, b) => a + b, 0)
   logger.debug('analyze', `Analyzed ${ctx.getFiles().length} files in ${totalMs.toFixed(2)}ms`)

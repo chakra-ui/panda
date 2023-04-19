@@ -2,6 +2,7 @@ import { findConfigFile } from '@pandacss/config'
 import { colors, logger } from '@pandacss/logger'
 import {
   analyzeTokens,
+  debugFiles,
   emitArtifacts,
   extractCss,
   generate,
@@ -137,7 +138,6 @@ export async function main() {
   cli
     .command('analyze [path]', 'Anaylyze design token usage in path')
     .option('--json [filepath]', 'Output analyze report in JSON')
-    // .option('--html [dir]', 'Output analyze report in interactive web page')
     .option('--silent', "Don't print any logs")
     .option('--only', "Only analyze given filepath, skip config's include/exclude")
     .action(async (maybePath?: string, flags?: { silent?: boolean; json?: string; html?: string; only?: boolean }) => {
@@ -178,6 +178,25 @@ export async function main() {
       // }
 
       logger.info('cli', `Found ${result.details.byId.size} token used in ${result.details.byFilePathMaps.size} files`)
+    })
+
+  cli
+    .command('debug [glob]', 'Anaylyze design token usage in path')
+    .option('--silent', "Don't print any logs")
+    .option('--dry', 'Output debug files in stdout without writing to disk')
+    .option('--outdir', "Output directory for debug files, default to '.panda/debug'")
+    .action(async (maybeGlob?: string, flags?: { silent?: boolean; dry?: boolean; outdir?: string }) => {
+      const { silent, dry = false, outdir: outdirFlag } = flags ?? {}
+      if (silent) logger.level = 'silent'
+
+      const ctx = await loadConfigAndCreateContext({
+        cwd,
+        config: maybeGlob ? { include: [maybeGlob] } : (undefined as any),
+      })
+      const outdir = path.resolve(cwd, outdirFlag ?? `.${ctx.config.outdir}/debug`)
+      logger.info('cli', `Found config at ${colors.bold(ctx.path)}`)
+
+      await debugFiles(ctx, { outdir, dry })
     })
 
   cli.help()
