@@ -1,4 +1,4 @@
-import type { PatternConfig, Config } from '@pandacss/types'
+import type { Config } from '@pandacss/types'
 import config from '../src/presets'
 
 export default {
@@ -32,7 +32,7 @@ export default {
         _hover: { opacity: 1, borderBottomColor: 'black' },
         ...props,
       }),
-    } as PatternConfig,
+    },
   },
   utilities: {
     ...config.utilities,
