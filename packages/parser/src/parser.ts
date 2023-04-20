@@ -1,4 +1,4 @@
-import { BoxNodeMap, extract, unbox, type Unboxed } from '@pandacss/extractor'
+import { BoxNodeMap, extract, unbox, type BoxNode, type Unboxed } from '@pandacss/extractor'
 import { logger } from '@pandacss/logger'
 import { memo } from '@pandacss/shared'
 import type { SourceFile } from 'ts-morph'
@@ -51,6 +51,11 @@ function createImportMatcher(mod: string, values?: string[]) {
 const combineResult = (unboxed: Unboxed) => {
   return [...unboxed.conditions, unboxed.raw, ...unboxed.spreadConditions]
 }
+const fallback = (box: BoxNode) => ({
+  value: undefined,
+  getNode: () => box.getNode(),
+  getStack: () => box.getStack(),
+})
 
 type GetEvaluateOptions = NonNullable<Parameters<typeof extract>['0']['getEvaluateOptions']>
 
@@ -224,11 +229,7 @@ export function createParser(options: ParserOptions) {
             result.queryList.forEach((query) => {
               collector.set(name, {
                 name,
-                box: (query.box.value[0] as BoxNodeMap) ?? {
-                  value: undefined,
-                  getNode: () => query.box.getNode(),
-                  stack: query.box.getStack,
-                },
+                box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                 data: combineResult(unbox(query.box.value[0])),
               })
             })
@@ -238,11 +239,7 @@ export function createParser(options: ParserOptions) {
             result.queryList.forEach((query) => {
               collector.setPattern(name, {
                 name,
-                box: (query.box.value[0] as BoxNodeMap) ?? {
-                  value: undefined,
-                  getNode: () => query.box.getNode(),
-                  stack: query.box.getStack,
-                },
+                box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                 data: combineResult(unbox(query.box.value[0])),
               })
             })
@@ -252,11 +249,7 @@ export function createParser(options: ParserOptions) {
             result.queryList.forEach((query) => {
               collector.setRecipe(name, {
                 name,
-                box: (query.box.value[0] as BoxNodeMap) ?? {
-                  value: undefined,
-                  getNode: () => query.box.getNode(),
-                  stack: query.box.getStack,
-                },
+                box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                 data: combineResult(unbox(query.box.value[0])),
               })
             })
@@ -266,11 +259,7 @@ export function createParser(options: ParserOptions) {
             result.queryList.forEach((query) => {
               collector.setCva({
                 name,
-                box: (query.box.value[1] as BoxNodeMap) ?? {
-                  value: undefined,
-                  getNode: () => query.box.getNode(),
-                  stack: query.box.getStack,
-                },
+                box: (query.box.value[1] as BoxNodeMap) ?? fallback(query.box),
                 data: combineResult(unbox(query.box.value[1])),
               })
             })
