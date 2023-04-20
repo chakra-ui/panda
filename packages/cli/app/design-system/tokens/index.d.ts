@@ -1,6 +1,5 @@
 import type { Token } from '../types/token'
 
-export declare const token: {
-  (path: Token, fallback?: string): string
+export declare function token(path: Token, fallback?: string): string & {
   var: (path: Token, fallback?: string) => string
 }
