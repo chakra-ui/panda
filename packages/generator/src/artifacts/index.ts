@@ -71,6 +71,8 @@ function setupTypes(ctx: Context): Artifact {
       { file: 'composition.d.ts', code: gen.composition },
       { file: 'global.d.ts', code: entry.global },
       { file: 'recipe.d.ts', code: gen.recipe },
+      { file: 'pattern.d.ts', code: gen.pattern },
+      { file: 'parts.d.ts', code: gen.parts },
       { file: 'index.d.ts', code: entry.index },
       { file: 'token.d.ts', code: generateTokenTypes(ctx) },
       { file: 'prop-type.d.ts', code: generatePropTypes(ctx) },

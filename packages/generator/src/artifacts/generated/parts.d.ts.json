@@ -1,0 +1,3 @@
+{
+  "content": "export type Part = {\n  selector: string\n}\n\nexport type Parts = Record<string, Part>\n"
+}

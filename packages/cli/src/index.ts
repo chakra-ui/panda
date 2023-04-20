@@ -45,10 +45,12 @@ export function definePreset(preset: Preset): Preset {
  * -----------------------------------------------------------------------------*/
 
 type ProxyValue<T> = {
-  [K in keyof T]: (definition: T[K]) => T[K]
+  <Value>(definition: Value extends T ? Value : T): Value
+} & {
+  [K in keyof Required<T>]: <Value>(definition: Value extends T[K] ? Value : T[K]) => Value
 }
 
-function createProxy<T>(): ProxyValue<Required<T>> {
+function createProxy<T>(): ProxyValue<T> {
   const identity = (v: unknown) => v
   return new Proxy(identity as any, {
     get() {
