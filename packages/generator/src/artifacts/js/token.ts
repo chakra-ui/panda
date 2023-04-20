@@ -16,11 +16,11 @@ export function generateTokenJs(ctx: Context) {
   return {
     js: outdent`
   const tokens = ${JSON.stringify(obj, null, 2)}
-  
+
   export function token(path, fallback) {
     return tokens[path]?.value || fallback
   }
-  
+
   function tokenVar(path, fallback) {
     return tokens[path]?.variable || fallback
   }
@@ -30,7 +30,8 @@ export function generateTokenJs(ctx: Context) {
     dts: outdent`
   import type { Token } from '../types/token'
 
-  export declare function token(path: Token, fallback?: string): string & {
+  export declare const token: {
+    (path: Token, fallback?: string): string
     var: (path: Token, fallback?: string) => string
   }
   `,
