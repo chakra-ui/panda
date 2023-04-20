@@ -213,5 +213,5 @@ export async function main() {
 }
 
 const stripTrailingSlash = (str: string) => {
-  return str.endsWith('/') ? str.slice(0, -1) : str
+  return str.endsWith(path.sep) ? str.slice(0, -1) : str
 }
