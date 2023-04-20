@@ -181,7 +181,7 @@ export async function main() {
     })
 
   cli
-    .command('debug [glob]', 'Anaylyze design token usage in path')
+    .command('debug [glob]', 'Debug design token extraction & css generated from files in glob')
     .option('--silent', "Don't print any logs")
     .option('--dry', 'Output debug files in stdout without writing to disk')
     .option('--outdir', "Output directory for debug files, default to '.panda/debug'")
@@ -189,11 +189,14 @@ export async function main() {
       const { silent, dry = false, outdir: outdirFlag } = flags ?? {}
       if (silent) logger.level = 'silent'
 
+      const configPath = (maybeGlob && findConfigFile({ cwd: maybeGlob })) ?? undefined
+      const cwd = configPath ? path.dirname(configPath) : maybeGlob ?? process.cwd()
       const ctx = await loadConfigAndCreateContext({
         cwd,
-        config: maybeGlob ? { include: [maybeGlob] } : (undefined as any),
+        configPath,
+        config: maybeGlob ? { include: [stripTrailingSlash(maybeGlob) + '/**'] } : (undefined as any),
       })
-      const outdir = path.resolve(cwd, outdirFlag ?? `.${ctx.config.outdir}/debug`)
+      const outdir = path.resolve(cwd, outdirFlag ?? `${ctx.config.outdir}/debug`)
       logger.info('cli', `Found config at ${colors.bold(ctx.path)}`)
 
       await debugFiles(ctx, { outdir, dry })
@@ -207,4 +210,8 @@ export async function main() {
   await cli.runMatchedCommand()
 
   updateNotifier({ pkg: packageJson, distTag: 'dev' }).notify()
+}
+
+const stripTrailingSlash = (str: string) => {
+  return str.endsWith('/') ? str.slice(0, -1) : str
 }
