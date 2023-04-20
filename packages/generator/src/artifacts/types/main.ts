@@ -3,6 +3,7 @@ import { outdent } from 'outdent'
 export const generateTypesEntry = () => ({
   global: outdent`
     import { RecipeVariantRecord, RecipeConfig } from './recipe'
+    import { Parts } from './parts'
     import { AnyPatternConfig, PatternConfig } from './pattern'
     import { GlobalStyleObject, SystemStyleObject } from './system-types'
     import { CompositionStyles } from './composition'
