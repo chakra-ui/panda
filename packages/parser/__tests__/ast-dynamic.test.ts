@@ -123,7 +123,11 @@ describe('[dynamic] ast parser', () => {
             "type": "recipe",
           },
           {
-            "box": undefined,
+            "box": {
+              "getNode": [Function],
+              "stack": [Function],
+              "value": undefined,
+            },
             "data": [
               {},
             ],

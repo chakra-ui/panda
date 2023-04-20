@@ -224,7 +224,11 @@ export function createParser(options: ParserOptions) {
             result.queryList.forEach((query) => {
               collector.set(name, {
                 name,
-                box: query.box.value[0] as BoxNodeMap,
+                box: (query.box.value[0] as BoxNodeMap) ?? {
+                  value: undefined,
+                  getNode: () => query.box.getNode(),
+                  stack: query.box.getStack,
+                },
                 data: combineResult(unbox(query.box.value[0])),
               })
             })
@@ -234,7 +238,11 @@ export function createParser(options: ParserOptions) {
             result.queryList.forEach((query) => {
               collector.setPattern(name, {
                 name,
-                box: query.box.value[0] as BoxNodeMap,
+                box: (query.box.value[0] as BoxNodeMap) ?? {
+                  value: undefined,
+                  getNode: () => query.box.getNode(),
+                  stack: query.box.getStack,
+                },
                 data: combineResult(unbox(query.box.value[0])),
               })
             })
@@ -244,7 +252,11 @@ export function createParser(options: ParserOptions) {
             result.queryList.forEach((query) => {
               collector.setRecipe(name, {
                 name,
-                box: query.box.value[0] as BoxNodeMap,
+                box: (query.box.value[0] as BoxNodeMap) ?? {
+                  value: undefined,
+                  getNode: () => query.box.getNode(),
+                  stack: query.box.getStack,
+                },
                 data: combineResult(unbox(query.box.value[0])),
               })
             })
@@ -254,7 +266,11 @@ export function createParser(options: ParserOptions) {
             result.queryList.forEach((query) => {
               collector.setCva({
                 name,
-                box: query.box.value[1] as BoxNodeMap,
+                box: (query.box.value[1] as BoxNodeMap) ?? {
+                  value: undefined,
+                  getNode: () => query.box.getNode(),
+                  stack: query.box.getStack,
+                },
                 data: combineResult(unbox(query.box.value[1])),
               })
             })
