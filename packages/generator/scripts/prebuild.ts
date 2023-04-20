@@ -17,7 +17,15 @@ function getEntrypoint(pkg: string, file: string) {
 const fileMap = [
   [
     '@pandacss/types',
-    [['csstype.d.ts'], ['system-types.d.ts'], ['selectors.d.ts'], ['recipe.d.ts'], ['composition.d.ts']],
+    [
+      ['csstype.d.ts'],
+      ['system-types.d.ts'],
+      ['selectors.d.ts'],
+      ['recipe.d.ts'],
+      ['pattern.d.ts'],
+      ['parts.d.ts'],
+      ['composition.d.ts'],
+    ],
   ],
   ['@pandacss/is-valid-prop', [['index.mjs', 'is-valid-prop.mjs']]],
   ['@pandacss/shared', [['shared.mjs', 'helpers.mjs']]],
