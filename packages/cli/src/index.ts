@@ -2,6 +2,7 @@ import type {
   AnyPatternConfig,
   AnyRecipeConfig,
   CompositionStyles,
+  CssKeyframes,
   GenericConfig,
   GlobalStyleObject,
   Parts,
@@ -38,6 +39,10 @@ export function defineParts<T extends Parts>(parts: T) {
 
 export function definePreset(preset: Preset): Preset {
   return preset
+}
+
+export function defineKeyframes(keyframes: CssKeyframes) {
+  return keyframes
 }
 
 /* -----------------------------------------------------------------------------
