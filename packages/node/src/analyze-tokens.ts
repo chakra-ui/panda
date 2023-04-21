@@ -16,7 +16,8 @@ export function analyzeTokens(
   const parserResultByFilepath = new Map<string, ParserResult>()
   const extractTimeByFilepath = new Map<string, number>()
 
-  ctx.getFiles().map((file) => {
+  const includedFiles = ctx.getFiles()
+  includedFiles.map((file) => {
     const start = performance.now()
     const result = ctx.project.parseSourceFile(file)
 
@@ -33,16 +34,16 @@ export function analyzeTokens(
   })
 
   const totalMs = Array.from(extractTimeByFilepath.values()).reduce((a, b) => a + b, 0)
-  logger.debug('analyze', `Analyzed ${ctx.getFiles().length} files in ${totalMs.toFixed(2)}ms`)
+  logger.debug('analyze', `Analyzed ${includedFiles.length} files in ${totalMs.toFixed(2)}ms`)
 
   const minify = ctx.config.minify
-  const files = ctx.chunks.getFiles()
+  const chunkFiles = ctx.chunks.getFiles()
 
   ctx.config.minify = false
-  const css = ctx.getCss({ files })
+  const css = ctx.getCss({ files: chunkFiles })
 
   ctx.config.minify = true
-  const minifiedCss = ctx.getCss({ files })
+  const minifiedCss = ctx.getCss({ files: chunkFiles })
 
   // restore minify config
   ctx.config.minify = minify
