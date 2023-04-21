@@ -90,12 +90,10 @@ export function createParser(options: ParserOptions) {
 
     const collector = createParserResult()
 
-    if (!imports.value.length) {
-      logger.debug('ast:import', `No import found in ${filePath}`)
-      return collector
-    }
-
-    logger.debug('ast:import', `Found import { ${imports} } in ${filePath}`)
+    logger.debug(
+      'ast:import',
+      imports.value.length ? `Found import { ${imports} } in ${filePath}` : `No import found in ${filePath}`,
+    )
 
     const [css] = importRegex
     const isValidPattern = imports.createMatch(importMap.pattern)
