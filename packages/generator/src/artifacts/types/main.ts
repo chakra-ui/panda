@@ -23,4 +23,7 @@ export const generateTypesEntry = () => ({
     export { GlobalStyleObject, JsxStyleProps, SystemStyleObject } from './system-types'
 
     `,
+  helpers: outdent`
+  export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
+  `,
 })

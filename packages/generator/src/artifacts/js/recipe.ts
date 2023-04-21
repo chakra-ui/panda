@@ -2,6 +2,8 @@ import { unionType } from '@pandacss/shared'
 import { outdent } from 'outdent'
 import type { Context } from '../../engines'
 
+const stringify = (value: any) => JSON.stringify(value, null, 2)
+
 export function generateRecipes(ctx: Context) {
   const {
     recipes,
@@ -65,16 +67,22 @@ export function generateRecipes(ctx: Context) {
         name: dashName,
 
         js: outdent`
+        ${ctx.file.import('splitProps', '../helpers')}
         ${ctx.file.import('createRecipe', './create-recipe')}
 
-        export const ${name} = createRecipe('${name}', ${JSON.stringify(defaultVariants ?? {})}, ${JSON.stringify(
+        export const ${name} = createRecipe('${name}', ${stringify(defaultVariants ?? {})}, ${stringify(
           compoundVariants ?? [],
         )})
-        ${name}.variants = ${JSON.stringify(variantKeyMap)}
+
+        ${name}.variants = ${stringify(variantKeyMap)}
+        
+        const variantKeys = ${stringify(Object.keys(variantKeyMap))}
+        ${name}.splitVariantProps = (props) => splitProps(props, variantKeys)
         `,
 
         dts: outdent`
         import type { ConditionalValue } from '../types'
+        import type { Pretty } from '../types/helpers'
 
         type ${upperName}Variant = {
           ${Object.keys(variantKeyMap)
@@ -86,16 +94,20 @@ export function generateRecipes(ctx: Context) {
           [key in keyof ${upperName}Variant]: Array<${upperName}Variant[key]>
         }
 
-        export type ${upperName}Variants = {
+        export type ${upperName}VariantProps = {
           [key in keyof ${upperName}Variant]?: ${
           compoundVariants?.length ? `${upperName}Variant[key]` : `ConditionalValue<${upperName}Variant[key]>`
         }
         }
 
-        ${description ? `/** ${description} */` : ''}
-        export declare function ${name}(variants?: ${upperName}Variants): string & {
+        interface ${upperName}Recipe {
+          (variants?: ${upperName}Variants): string
           variants: ${upperName}VariantMap
+          splitVariantProps<Props extends ${upperName}VariantProps>(props: Props): [${upperName}VariantProps, Pretty<Omit<Props, keyof ${upperName}VariantProps>>]
         }
+
+        ${description ? `/** ${description} */` : ''}
+        export declare const ${name}: ${upperName}Recipe
         `,
       }
     }),

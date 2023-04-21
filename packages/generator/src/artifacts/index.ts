@@ -70,6 +70,7 @@ function setupTypes(ctx: Context): Artifact {
       { file: 'selectors.d.ts', code: gen.selectors },
       { file: 'composition.d.ts', code: gen.composition },
       { file: 'global.d.ts', code: entry.global },
+      { file: 'helpers.d.ts', code: entry.helpers },
       { file: 'recipe.d.ts', code: gen.recipe },
       { file: 'pattern.d.ts', code: gen.pattern },
       { file: 'parts.d.ts', code: gen.parts },
