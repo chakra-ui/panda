@@ -1,4 +1,3 @@
-import { findConfigFile } from '@pandacss/config'
 import { colors, logger } from '@pandacss/logger'
 import {
   analyzeTokens,
@@ -136,21 +135,16 @@ export async function main() {
     })
 
   cli
-    .command('analyze [path]', 'Anaylyze design token usage in path')
+    .command('analyze [glob]', 'Analyze design token usage in glob')
     .option('--json [filepath]', 'Output analyze report in JSON')
     .option('--silent', "Don't print any logs")
-    .option('--only', "Only analyze given filepath, skip config's include/exclude")
-    .action(async (maybePath?: string, flags?: { silent?: boolean; json?: string; html?: string; only?: boolean }) => {
-      const { silent, only } = flags ?? {}
+    .action(async (maybeGlob?: string, flags?: { silent?: boolean; json?: string }) => {
+      const { silent } = flags ?? {}
       if (silent) logger.level = 'silent'
-
-      const configPath = (maybePath && findConfigFile({ cwd: maybePath })) ?? undefined
-      const cwd = configPath ? path.dirname(configPath) : maybePath ?? process.cwd()
 
       const ctx = await loadConfigAndCreateContext({
         cwd,
-        configPath,
-        config: only ? { include: [maybePath] } : (undefined as any),
+        config: maybeGlob ? { include: [maybeGlob] } : (undefined as any),
       })
       logger.info('cli', `Found config at ${colors.bold(ctx.path)}`)
 
@@ -189,12 +183,9 @@ export async function main() {
       const { silent, dry = false, outdir: outdirFlag } = flags ?? {}
       if (silent) logger.level = 'silent'
 
-      const configPath = (maybeGlob && findConfigFile({ cwd: maybeGlob })) ?? undefined
-      const cwd = configPath ? path.dirname(configPath) : maybeGlob ?? process.cwd()
       const ctx = await loadConfigAndCreateContext({
         cwd,
-        configPath,
-        config: maybeGlob ? { include: [stripTrailingSlash(maybeGlob) + '/**'] } : (undefined as any),
+        config: maybeGlob ? { include: [maybeGlob] } : (undefined as any),
       })
       const outdir = path.resolve(cwd, outdirFlag ?? `${ctx.config.outdir}/debug`)
       logger.info('cli', `Found config at ${colors.bold(ctx.path)}`)
@@ -210,8 +201,4 @@ export async function main() {
   await cli.runMatchedCommand()
 
   updateNotifier({ pkg: packageJson, distTag: 'dev' }).notify()
-}
-
-const stripTrailingSlash = (str: string) => {
-  return str.endsWith(path.sep) ? str.slice(0, -1) : str
 }
