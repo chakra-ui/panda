@@ -49,6 +49,7 @@ describe('generate recipes', () => {
         },
         {
           "dts": "import type { ConditionalValue } from '../types'
+      import type { Pretty } from '../types/helpers'
 
       type TextStyleVariant = {
         size: \\"h1\\" | \\"h2\\"
@@ -58,22 +59,39 @@ describe('generate recipes', () => {
         [key in keyof TextStyleVariant]: Array<TextStyleVariant[key]>
       }
 
-      export type TextStyleVariants = {
+      export type TextStyleVariantProps = {
         [key in keyof TextStyleVariant]?: ConditionalValue<TextStyleVariant[key]>
       }
 
-
-      export declare function textStyle(variants?: TextStyleVariants): string & {
+      interface TextStyleRecipe {
+        (variants?: TextStyleVariants): string
         variants: TextStyleVariantMap
-      }",
-          "js": "import { createRecipe } from './create-recipe.mjs';
+        splitVariantProps<Props extends TextStyleVariantProps>(props: Props): [TextStyleVariantProps, Pretty<Omit<Props, keyof TextStyleVariantProps>>]
+      }
+
+
+      export declare const textStyle: TextStyleRecipe",
+          "js": "import { splitProps } from '../helpers.mjs';
+      import { createRecipe } from './create-recipe.mjs';
 
       export const textStyle = createRecipe('textStyle', {}, [])
-      textStyle.variants = {\\"size\\":[\\"h1\\",\\"h2\\"]}",
+
+      textStyle.variants = {
+        \\"size\\": [
+          \\"h1\\",
+          \\"h2\\"
+        ]
+      }
+
+      const variantKeys = [
+        \\"size\\"
+      ]
+      textStyle.splitVariantProps = (props) => splitProps(props, variantKeys)",
           "name": "text-style",
         },
         {
           "dts": "import type { ConditionalValue } from '../types'
+      import type { Pretty } from '../types/helpers'
 
       type TooltipStyleVariant = {
         
@@ -83,22 +101,32 @@ describe('generate recipes', () => {
         [key in keyof TooltipStyleVariant]: Array<TooltipStyleVariant[key]>
       }
 
-      export type TooltipStyleVariants = {
+      export type TooltipStyleVariantProps = {
         [key in keyof TooltipStyleVariant]?: ConditionalValue<TooltipStyleVariant[key]>
       }
 
-
-      export declare function tooltipStyle(variants?: TooltipStyleVariants): string & {
+      interface TooltipStyleRecipe {
+        (variants?: TooltipStyleVariants): string
         variants: TooltipStyleVariantMap
-      }",
-          "js": "import { createRecipe } from './create-recipe.mjs';
+        splitVariantProps<Props extends TooltipStyleVariantProps>(props: Props): [TooltipStyleVariantProps, Pretty<Omit<Props, keyof TooltipStyleVariantProps>>]
+      }
+
+
+      export declare const tooltipStyle: TooltipStyleRecipe",
+          "js": "import { splitProps } from '../helpers.mjs';
+      import { createRecipe } from './create-recipe.mjs';
 
       export const tooltipStyle = createRecipe('tooltipStyle', {}, [])
-      tooltipStyle.variants = {}",
+
+      tooltipStyle.variants = {}
+
+      const variantKeys = []
+      tooltipStyle.splitVariantProps = (props) => splitProps(props, variantKeys)",
           "name": "tooltip-style",
         },
         {
           "dts": "import type { ConditionalValue } from '../types'
+      import type { Pretty } from '../types/helpers'
 
       type ButtonStyleVariant = {
         size: \\"sm\\" | \\"md\\"
@@ -109,18 +137,42 @@ describe('generate recipes', () => {
         [key in keyof ButtonStyleVariant]: Array<ButtonStyleVariant[key]>
       }
 
-      export type ButtonStyleVariants = {
+      export type ButtonStyleVariantProps = {
         [key in keyof ButtonStyleVariant]?: ConditionalValue<ButtonStyleVariant[key]>
       }
 
-
-      export declare function buttonStyle(variants?: ButtonStyleVariants): string & {
+      interface ButtonStyleRecipe {
+        (variants?: ButtonStyleVariants): string
         variants: ButtonStyleVariantMap
-      }",
-          "js": "import { createRecipe } from './create-recipe.mjs';
+        splitVariantProps<Props extends ButtonStyleVariantProps>(props: Props): [ButtonStyleVariantProps, Pretty<Omit<Props, keyof ButtonStyleVariantProps>>]
+      }
 
-      export const buttonStyle = createRecipe('buttonStyle', {\\"size\\":\\"md\\",\\"variant\\":\\"solid\\"}, [])
-      buttonStyle.variants = {\\"size\\":[\\"sm\\",\\"md\\"],\\"variant\\":[\\"solid\\",\\"outline\\"]}",
+
+      export declare const buttonStyle: ButtonStyleRecipe",
+          "js": "import { splitProps } from '../helpers.mjs';
+      import { createRecipe } from './create-recipe.mjs';
+
+      export const buttonStyle = createRecipe('buttonStyle', {
+        \\"size\\": \\"md\\",
+        \\"variant\\": \\"solid\\"
+      }, [])
+
+      buttonStyle.variants = {
+        \\"size\\": [
+          \\"sm\\",
+          \\"md\\"
+        ],
+        \\"variant\\": [
+          \\"solid\\",
+          \\"outline\\"
+        ]
+      }
+
+      const variantKeys = [
+        \\"size\\",
+        \\"variant\\"
+      ]
+      buttonStyle.splitVariantProps = (props) => splitProps(props, variantKeys)",
           "name": "button-style",
         },
       ]
