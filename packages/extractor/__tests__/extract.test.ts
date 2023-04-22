@@ -3491,7 +3491,17 @@ it('extract JsxAttribute > JsxExpression > CallExpression with non-deterministic
 
             <ColorBox color={pickRandom(array)}></ColorBox>
         `),
-  ).toMatchInlineSnapshot('{}')
+  ).toMatchInlineSnapshot(`
+    {
+      "ColorBox": [
+        {
+          "conditions": [],
+          "raw": {},
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
 })
 
 it('extract JsxAttribute > JsxExpression > ConditionalExpression > BinaryExpression > StringLiteral', () => {
@@ -5462,6 +5472,11 @@ it('extract JsxAttribute > Identifier > StringLiteral tailwind-like', () => {
           "raw": {
             "className": "bg-red-400 bg-white rounded w-48 text-sm",
           },
+          "spreadConditions": [],
+        },
+        {
+          "conditions": [],
+          "raw": {},
           "spreadConditions": [],
         },
       ],

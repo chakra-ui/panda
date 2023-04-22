@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest'
 import { jsxRecipeParser } from './fixture'
 
-describe('pattern jsx', () => {
+describe('recipe jsx', () => {
   test('should extract', () => {
     const code = `
     import { Button } from ".panda/jsx"
