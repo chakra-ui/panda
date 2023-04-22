@@ -53,6 +53,19 @@ function getProject(code: string, options?: <Conf extends UserConfig>(conf: Conf
   })
 }
 
+export function getFixtureProject(code: string) {
+  const generator = createGenerator(defaults)
+
+  const project = createProject({
+    useInMemoryFileSystem: true,
+    getFiles: () => [staticFilePath],
+    readFile: () => code,
+    parserOptions: generator.parserOptions,
+  })
+
+  return { parse: () => project.parseSourceFile(staticFilePath), generator }
+}
+
 export function importParser(code: string, option: { name: string; module: string }) {
   const project = getProject(code)
   const sourceFile = project.getSourceFile(staticFilePath)!

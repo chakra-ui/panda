@@ -1,4 +1,4 @@
-import { Arr, Bool, Obj, Opt, cast, noop, pipe } from 'lil-fp'
+import { Arr, Bool, Opt, cast, noop, pipe } from 'lil-fp'
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { box } from './box'
@@ -20,7 +20,8 @@ import type {
 import { getComponentName } from './utils'
 
 type JsxElement = JsxOpeningElement | JsxSelfClosingElement
-type ComponentMap = Map<JsxElement, { name: string; props: MapTypeValue; conditionals: BoxNodeConditional[] }>
+type Component = { name: string; props: MapTypeValue; conditionals: BoxNodeConditional[] }
+type ComponentMap = Map<JsxElement, Component>
 
 const isImportOrExport = Bool.or(Node.isImportDeclaration, Node.isExportDeclaration)
 
@@ -41,6 +42,10 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
   // keep track of the current component node
   // so we don't have to traverse the tree upwards again
   let componentNode: JsxElement | undefined
+  let componentName: string
+  let isFactory: boolean
+  let boxByProp: ExtractedComponentResult['nodesByProp']
+  let component: Component
 
   ast.forEachDescendant((node, traversal) => {
     // quick win
@@ -52,18 +57,11 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
     if (components) {
       if (Node.isJsxOpeningElement(node) || Node.isJsxSelfClosingElement(node)) {
         componentNode = node
-      }
-
-      if (Node.isJsxSpreadAttribute(node)) {
-        // <ColorBox {...{ color: "facebook.100" }}>spread</ColorBox>
-        //           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-        if (!componentNode) return
-
-        const componentName = getComponentName(componentNode)
-        const isFactory = componentName.includes('.')
+        componentName = getComponentName(componentNode)
+        isFactory = componentName.includes('.')
 
         if (!components.matchTag({ tagNode: componentNode, tagName: componentName, isFactory })) {
+          componentNode = undefined
           return
         }
 
@@ -71,11 +69,20 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
           byName.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
         }
 
-        const boxByProp = byName.get(componentName)!.nodesByProp
+        boxByProp = byName.get(componentName)!.nodesByProp
 
         if (!componentByNode.has(componentNode)) {
           componentByNode.set(componentNode, { name: componentName, props: new Map(), conditionals: [] })
         }
+
+        component = componentByNode.get(componentNode)!
+      }
+
+      if (Node.isJsxSpreadAttribute(node)) {
+        // <ColorBox {...{ color: "facebook.100" }}>spread</ColorBox>
+        //           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        if (!componentNode || !component) return
 
         const matchProp = ({ propName, propNode }: MatchPropArgs) =>
           components.matchProp({ tagNode: componentNode!, tagName: componentName, propName, propNode })
@@ -86,7 +93,6 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         // <ColorBox padding="4" {...{ color: "facebook.100" }} margin={2} />
         // the parent ref contains the props that were already extracted from the jsx attributes (not spread)
         // so we can merge the spread props with those extracted props
-        const component = componentByNode.get(componentNode)!
 
         const processObjectLike = (objLike: BoxNodeMap | BoxNodeObject) => {
           const mapValue = objectLikeToMap(objLike, node)
@@ -128,40 +134,19 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         // <ColorBox color="red.200" backgroundColor="blackAlpha.100" />
         //           ^^^^^           ^^^^^^^^^^^^^^^
 
+        if (!componentNode || !component) return
+
+        const propName = node.getNameNode().getText()
+        if (!components.matchProp({ tagNode: componentNode, tagName: componentName, propName, propNode: node })) {
+          return
+        }
+
         pipe(
-          componentNode,
+          extractJsxAttribute(node, ctx),
           Opt.fromNullable,
-          Opt.map((componentNode) => {
-            const componentName = getComponentName(componentNode)
-            const isFactory = componentName.includes('.')
-            return { componentNode, componentName, isFactory }
-          }),
-          Opt.filter(({ componentName, componentNode, isFactory }) =>
-            components.matchTag({ tagNode: componentNode, tagName: componentName, isFactory }),
-          ),
-          Opt.map(Obj.assign({ propName: node.getNameNode().getText() })),
-          Opt.filter(({ propName, componentNode, componentName }) =>
-            components.matchProp({ tagNode: componentNode, tagName: componentName, propName, propNode: node }),
-          ),
-          Opt.tap(({ propName, componentNode, componentName }) => {
-            pipe(
-              extractJsxAttribute(node, ctx),
-              Opt.fromNullable,
-              Opt.tap((maybeBox) => {
-                if (!byName.has(componentName)) {
-                  byName.set(componentName, { kind: 'component', nodesByProp: new Map(), queryList: [] })
-                }
-
-                if (!componentByNode.has(componentNode)) {
-                  componentByNode.set(componentNode, { name: componentName, props: new Map(), conditionals: [] })
-                }
-                const component = componentByNode.get(componentNode)!
-                const boxByProp = byName.get(componentName)!.nodesByProp
-
-                component.props.set(propName, maybeBox)
-                boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(maybeBox))
-              }),
-            )
+          Opt.tap((maybeBox) => {
+            component.props.set(propName, maybeBox)
+            boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(maybeBox))
           }),
         )
       }
