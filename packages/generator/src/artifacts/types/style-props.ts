@@ -6,7 +6,7 @@ export function generateStyleProps(ctx: Context) {
   const props = new Set(allCssProperties.concat(ctx.utility.keys()))
   return outdent`
     import { PropertyValue } from './prop-type'
-    import { Token } from './token'
+    import { Token } from './token-types'
 
     type CssVarProperties = {
       [key in \`--\${string}\`]?: Token | (string & {}) | (number & {})

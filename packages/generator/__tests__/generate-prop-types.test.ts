@@ -7,7 +7,7 @@ describe('generate property types', () => {
     expect(generatePropTypes(generator)).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { Properties as CSSProperties } from './csstype'
-      import type { Tokens } from './token'
+      import type { Tokens } from './token-types'
 
       type PropertyValueTypes  = {
       	divideX: string;

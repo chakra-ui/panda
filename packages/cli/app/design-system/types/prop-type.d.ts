@@ -1,6 +1,6 @@
 import type { ConditionalValue } from './conditions';
 import type { Properties as CSSProperties } from './csstype'
-import type { Tokens } from './token'
+import type { Tokens } from './token-types'
 
 type PropertyValueTypes  = {
 	aspectRatio: "square" | "landscape" | "portrait" | "wide" | "ultrawide" | "golden";

@@ -1,5 +1,5 @@
 import { PropertyValue } from './prop-type'
-import { Token } from './token'
+import { Token } from './token-types'
 
 type CssVarProperties = {
   [key in `--${string}`]?: Token | (string & {}) | (number & {})
