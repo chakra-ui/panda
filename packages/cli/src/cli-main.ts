@@ -2,6 +2,7 @@ import { colors, logger } from '@pandacss/logger'
 import {
   analyzeTokens,
   debugFiles,
+  shipFiles,
   emitArtifacts,
   extractCss,
   generate,
@@ -191,6 +192,25 @@ export async function main() {
       logger.info('cli', `Found config at ${colors.bold(ctx.path)}`)
 
       await debugFiles(ctx, { outdir, dry })
+    })
+
+  cli
+    .command('ship [glob]', 'Ship extract result from files in glob')
+    .option('--silent', "Don't print any logs")
+    .option('--outdir', "Output directory for shipped files, default to '.panda/ship'")
+    .action(async (maybeGlob?: string, flags?: { silent?: boolean; dry?: boolean; outdir?: string }) => {
+      const { silent, outdir: outdirFlag } = flags ?? {}
+      if (silent) logger.level = 'silent'
+
+      const ctx = await loadConfigAndCreateContext({
+        cwd,
+        config: maybeGlob ? { include: [maybeGlob] } : (undefined as any),
+      })
+      const outdir = path.resolve(cwd, outdirFlag ?? `${ctx.config.outdir}/ship`)
+      logger.info('cli', `Found config at ${colors.bold(ctx.path)}`)
+
+      const libPkgJson = JSON.parse(readFileSync(ctx.path.replace('panda.config.ts', 'package.json'), 'utf8'))
+      await shipFiles(ctx, { outdir, pkgJson: libPkgJson })
     })
 
   cli.help()

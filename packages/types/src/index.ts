@@ -10,7 +10,7 @@ export type {
 export type { CompositionStyles, LayerStyles, TextStyles } from './composition'
 export type { ConditionDetails, Conditions, ConditionType, RawCondition } from './conditions'
 export type { Config, GenericConfig, LoadConfigResult, Preset, UserConfig } from './config'
-export type { ParserResult, ResultItem } from './parser'
+export type { ExtractedData, ParserResult, ResultItem } from './parser'
 export type { Part, Parts } from './parts'
 export type { AnyPatternConfig, PatternConfig, PatternHelpers, PatternProperty } from './pattern'
 export type { AnyRecipeConfig, RecipeConfig, RecipeVariantRecord } from './recipe'

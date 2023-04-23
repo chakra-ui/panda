@@ -56,6 +56,7 @@ export function mergeConfigs(configs: ExtendableRecord[]) {
       patterns: mergeExtensions(configs.map((config) => config.patterns ?? {})),
       utilities: mergeExtensions(configs.map((config) => config.utilities ?? {})),
       globalCss: mergeExtensions(configs.map((config) => config.globalCss ?? {})),
+      vendorsCss: configs.flatMap((config) => config.vendorsCss ?? []),
     },
     ...configs,
   )

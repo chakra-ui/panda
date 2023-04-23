@@ -21,3 +21,10 @@ export type ParserResult = {
   isEmpty: () => boolean
   getAll: () => Array<ResultItem>
 }
+
+export type ExtractedData = {
+  name: string
+  version: string
+  files: string[]
+  ast: ResultItem[]
+}

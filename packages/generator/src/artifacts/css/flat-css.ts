@@ -5,6 +5,7 @@ import { generateResetCss } from './reset-css'
 import { generateStaticCss } from './static-css'
 import { generateTokenCss } from './token-css'
 import type { Context } from '../../engines'
+import { generateVendorsCss } from './vendors-css'
 
 export const generateFlattenedCss = (ctx: Context) => (options: { files: string[]; resolve?: boolean }) => {
   const { files, resolve } = options
@@ -29,6 +30,7 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
     generateResetCss(),
     generateTokenCss(ctx),
     generateKeyframeCss(ctx),
+    generateVendorsCss(ctx),
   ]
     .filter(Boolean)
     .join('\n\n')

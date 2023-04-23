@@ -1,5 +1,6 @@
 import type { LayerStyles, TextStyles } from './composition'
 import type { Conditions as TConditions } from './conditions'
+import type { ExtractedData } from './parser'
 import type { AnyPatternConfig, PatternConfig } from './pattern'
 import type { AnyRecipeConfig, RecipeConfig } from './recipe'
 import type { Extendable, RequiredBy, UnwrapExtend } from './shared'
@@ -8,7 +9,10 @@ import type { CssKeyframes, GlobalStyleObject } from './system-types'
 import type { SemanticTokens, Tokens } from './tokens'
 import type { UtilityConfig } from './utility'
 
-export type Preset = Pick<Config, 'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions' | 'globalCss'>
+export type Preset = Pick<
+  Config,
+  'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions' | 'globalCss' | 'vendorsCss'
+>
 
 type Studio = {
   title: string
@@ -174,6 +178,11 @@ export type Config = {
    * Used to generate css utility classes for your project.
    */
   staticCss?: StaticCssOptions
+  /**
+   * @experimental
+   * Used to generate css from libraires using panda for your project.
+   */
+  vendorsCss?: ExtractedData[]
   /**
    * File extension for generated javascript files.
    */

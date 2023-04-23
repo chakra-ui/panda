@@ -239,6 +239,9 @@ importers:
       '@pandacss/logger':
         specifier: workspace:*
         version: link:../logger
+      '@pandacss/parser':
+        specifier: workspace:^
+        version: link:../parser
       '@pandacss/shared':
         specifier: workspace:*
         version: link:../shared

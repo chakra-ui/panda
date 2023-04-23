@@ -23,6 +23,7 @@ import { generateTokenTypes } from './types/token-types'
 import type { Context } from '../engines'
 import { generateGlobalCss } from './css/global-css'
 import { generateStaticCss } from './css/static-css'
+import { generateVendorsCss } from './css/vendors-css'
 
 function setupHelpers(ctx: Context): Artifact {
   const code = generateHelpers()
@@ -245,6 +246,11 @@ function setupStaticCss(ctx: Context): Artifact {
   return { files: [{ file: 'static.css', code }] }
 }
 
+function setupVendorsCss(ctx: Context): Artifact {
+  const code = generateVendorsCss(ctx)
+  return { files: [{ file: 'vendors.css', code }] }
+}
+
 function setupPackageJson(ctx: Context): Artifact {
   if (!ctx.config.emitPackage) return
   return {
@@ -267,6 +273,7 @@ export const generateArtifacts = (ctx: Context) => (): Artifact[] =>
     setupJsx(ctx),
     setupGlobalCss(ctx),
     setupStaticCss(ctx),
+    setupVendorsCss(ctx),
     setupResetCss(ctx),
     setupLayoutGridCss(),
     setupPackageJson(ctx),
