@@ -11,7 +11,9 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
   // easier to debug
   ctx.config.minify = false
 
-  await mkdir(options.outdir, { recursive: true })
+  if (!options.dry && options.outdir) {
+    await mkdir(options.outdir, { recursive: true })
+  }
 
   const filesWithCss = []
   await files.map(async (file) => {
@@ -51,6 +53,7 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
       const cssPath = `${relative}/${parsedPath.name}.css`.replaceAll(path.sep, '__')
 
       logger.info('cli', `Writing ${colors.bold(`${options.outdir}/${astJsonPath}`)}`)
+      logger.info('cli', `Writing ${colors.bold(`${options.outdir}/${cssPath}`)}`)
 
       return Promise.all([
         writeFile(`${options.outdir}/${astJsonPath}`, JSON.stringify(list, debugResultSerializer, 2)),
