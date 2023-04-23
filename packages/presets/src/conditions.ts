@@ -97,4 +97,7 @@ export const conditions = {
   scrollbar: '&::-webkit-scrollbar',
   scrollbarThumb: '&::-webkit-scrollbar-thumb',
   scrollbarTrack: '&::-webkit-scrollbar-track',
+
+  horizontal: '&[data-orientation=horizontal]',
+  vertical: '&[data-orientation=vertical]',
 }
