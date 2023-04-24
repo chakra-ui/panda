@@ -1,7 +1,7 @@
 import { toPx } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { config } from 'virtual:panda'
-import { Grid, panda } from '../../design-system/jsx'
+import { Grid, panda } from '../../styled-system/jsx'
 import { getSortedSizes } from '../utils/sizes-sort'
 import { TokenGroup } from './token-group'
 

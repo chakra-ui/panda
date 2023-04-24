@@ -1,4 +1,4 @@
-import { HTMLPandaProps, panda } from '../../design-system/jsx'
+import { HTMLPandaProps, panda } from '../../styled-system/jsx'
 
 export function ColorWrapper(props: HTMLPandaProps<'div'>) {
   return (

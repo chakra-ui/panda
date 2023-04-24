@@ -5,5 +5,5 @@ coverage
 build
 *.hbs
 *.d.ts
-packages/cli/app/design-system
+packages/cli/app/styled-system
 packages/generator/src/artifacts/generated

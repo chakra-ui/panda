@@ -1,6 +1,6 @@
-import { css, cx } from '../../../design-system/css'
-import { panda, Wrap } from '../../../design-system/jsx'
-import { styledLink } from '../../../design-system/patterns'
+import { css, cx } from '../../../styled-system/css'
+import { panda, Wrap } from '../../../styled-system/jsx'
+import { styledLink } from '../../../styled-system/patterns'
 import { analysisData } from '../../utils/analysis-data'
 
 import { getFileLink, getReportRelativeFilePath, SearchableReportItemAttributes } from '../../utils/get-report-item'

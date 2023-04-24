@@ -1,5 +1,5 @@
-import { css, cx } from '../../design-system/css'
-import { panda, Stack, Wrap } from '../../design-system/jsx'
+import { css, cx } from '../../styled-system/css'
+import { panda, Stack, Wrap } from '../../styled-system/jsx'
 import { analysisData } from '../utils/analysis-data'
 
 import {
@@ -17,9 +17,9 @@ import {
 } from '@ark-ui/react'
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@ark-ui/react'
-import { stack } from '../../design-system/patterns/stack'
+import { stack } from '../../styled-system/patterns/stack'
 
-import { styledLink } from '../../design-system/patterns'
+import { styledLink } from '../../styled-system/patterns'
 import { getReportItem, getUtilityLink, getReportRelativeFilePath, getFileLink } from '../utils/get-report-item'
 import { pick } from '../utils/pick'
 import { ReportItemLink } from './analyzer/report-item-link'

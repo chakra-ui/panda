@@ -1,6 +1,6 @@
 import type { PropsWithChildren, ReactNode } from 'react'
-import { panda, Stack } from '../../../design-system/jsx'
-import type { JsxStyleProps } from '../../../design-system/types'
+import { panda, Stack } from '../../../styled-system/jsx'
+import type { JsxStyleProps } from '../../../styled-system/types'
 
 export const Section = ({
   title,

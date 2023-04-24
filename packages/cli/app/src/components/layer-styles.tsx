@@ -3,7 +3,7 @@ import type { Dict, LayerStyles as LayerStylesType } from '@pandacss/types'
 import { config } from 'virtual:panda'
 import { EmptyState } from './empty-state'
 import { LayerStylesIcon } from './icons'
-import { panda } from '../../design-system/jsx'
+import { panda } from '../../styled-system/jsx'
 import { TokenGroup } from './token-group'
 import { TokenContent } from './token-content'
 

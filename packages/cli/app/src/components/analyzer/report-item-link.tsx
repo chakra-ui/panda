@@ -1,6 +1,6 @@
 import type { ReportItemJSON } from '@pandacss/types'
-import { panda } from '../../../design-system/jsx'
-import { styledLink } from '../../../design-system/patterns'
+import { panda } from '../../../styled-system/jsx'
+import { styledLink } from '../../../styled-system/patterns'
 import { analysisData } from '../../utils/analysis-data'
 import {
   getReportItem,

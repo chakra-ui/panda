@@ -1,4 +1,4 @@
-import { panda } from '../../design-system/jsx'
+import { panda } from '../../styled-system/jsx'
 
 export function MadeWithBadge() {
   return (

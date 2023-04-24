@@ -7,8 +7,8 @@ export default defineConfig({
   },
   preflight: true,
   include: ['./src/**/*.{html,js,svelte,ts}'],
-  exclude: ['./src/design-system', './src/**/app.*'],
-  outdir: './src/design-system',
+  exclude: ['./src/styled-system', './src/**/app.*'],
+  outdir: './src/styled-system',
   theme: {
     semanticTokens: {
       colors: {

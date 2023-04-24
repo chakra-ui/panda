@@ -51,13 +51,13 @@ pnpm panda codegen
 ## Usage
 
 ```js
-import { css } from '../design-system/css'
-import { stack, vstack, hstack } from '../design-system/patterns'
+import { css } from '../styled-system/css'
+import { stack, vstack, hstack } from '../styled-system/patterns'
 ```
 
 ```jsx
-import { css } from '../design-system/css'
-import { stack, vstack, hstack } from '../design-system/patterns'
+import { css } from '../styled-system/css'
+import { stack, vstack, hstack } from '../styled-system/patterns'
 
 function Example() {
   return (

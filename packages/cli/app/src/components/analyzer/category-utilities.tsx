@@ -1,5 +1,5 @@
-import { Grid, panda, Wrap } from '../../../design-system/jsx'
-import { gridItem, styledLink } from '../../../design-system/patterns'
+import { Grid, panda, Wrap } from '../../../styled-system/jsx'
+import { gridItem, styledLink } from '../../../styled-system/patterns'
 import { getReportItem, getUtilityLink } from '../../utils/get-report-item'
 import { groupBy } from '../../utils/group-in'
 import { Section } from './section'
@@ -8,7 +8,7 @@ import { TruncatedText } from './truncated-text'
 
 import { Portal, Select, SelectContent, SelectOption, SelectPositioner, SelectTrigger } from '@ark-ui/react'
 import { useState } from 'react'
-import { css, cx } from '../../../design-system/css'
+import { css, cx } from '../../../styled-system/css'
 import { ReportItemLink } from './report-item-link'
 import { SortIcon } from './sort-icon'
 

@@ -3,7 +3,7 @@ import { getContrastPairs, getContrastRatio } from '../utils/color'
 import { ErrorIcon, SuccessIcon } from './icons'
 import { config } from 'virtual:panda'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import { panda, HStack, VStack, Stack } from '../../design-system/jsx'
+import { panda, HStack, VStack, Stack } from '../../styled-system/jsx'
 import { TokenGroup } from './token-group'
 import { TokenContent } from './token-content'
 

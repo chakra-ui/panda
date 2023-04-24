@@ -1,6 +1,6 @@
-import { panda, Stack } from '../../design-system/jsx'
+import { panda, Stack } from '../../styled-system/jsx'
 import { Fragment, useState } from 'react'
-import { css } from '../../design-system/css'
+import { css } from '../../styled-system/css'
 import { TokenContent } from '../components/token-content'
 import { TokenGroup } from '../components/token-group'
 import { customDocs } from '../utils/custom-docs'

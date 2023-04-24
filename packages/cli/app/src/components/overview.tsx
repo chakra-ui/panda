@@ -1,5 +1,5 @@
-import { css } from '../../design-system/css'
-import { panda, Wrap } from '../../design-system/jsx'
+import { css } from '../../styled-system/css'
+import { panda, Wrap } from '../../styled-system/jsx'
 import { NavItem } from './nav-item'
 import { navItems } from '../utils/constants'
 import { customDocs } from '../utils/custom-docs'

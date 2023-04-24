@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 ## Panda
-design-system
+styled-system
