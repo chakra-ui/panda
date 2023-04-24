@@ -2,14 +2,14 @@ import { outdent } from 'outdent'
 
 export const generateTypesEntry = () => ({
   global: outdent`
-    import { RecipeVariantRecord, RecipeConfig } from './recipe'
+    import { AnyRecipeConfig, RecipeVariantRecord, RecipeConfig } from './recipe'
     import { Parts } from './parts'
     import { AnyPatternConfig, PatternConfig } from './pattern'
     import { GlobalStyleObject, SystemStyleObject } from './system-types'
     import { CompositionStyles } from './composition'
 
     declare module '@pandacss/dev' {
-      export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): RecipeConfig<V>
+      export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): AnyRecipeConfig
       export function defineGlobalStyles(definition: GlobalStyleObject): GlobalStyleObject
       export function defineTextStyles(definition: CompositionStyles['textStyles']): CompositionStyles['textStyles']
       export function defineLayerStyles(definition: CompositionStyles['layerStyles']): CompositionStyles['layerStyles']
