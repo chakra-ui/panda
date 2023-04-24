@@ -10,14 +10,7 @@ export type SerializeContext = {
   utility: Utility
 }
 
-const styleCache = new Map()
-
 export function serializeStyle(styleObj: Dict, context: SerializeContext) {
-  const key = JSON.stringify(styleObj)
-  if (styleCache.has(key)) {
-    return styleCache.get(key)
-  }
-
   const { utility, conditions } = context
   const rule = conditions.rule()
 
@@ -47,8 +40,6 @@ export function serializeStyle(styleObj: Dict, context: SerializeContext) {
 
     merge(result, styles)
   })
-
-  styleCache.set(key, result)
 
   return result
 }
