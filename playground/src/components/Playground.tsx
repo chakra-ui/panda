@@ -1,5 +1,5 @@
 'use client'
-import { css } from '@/design-system/css'
+import { css } from '@/styled-system/css'
 import { Splitter, SplitterPanel, SplitterResizeTrigger } from '@ark-ui/react'
 import { Editor } from './Editor'
 import { LayoutControl } from './LayoutControl'

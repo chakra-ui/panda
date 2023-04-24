@@ -1,4 +1,4 @@
-import { css } from '@/design-system/css'
+import { css } from '@/styled-system/css'
 import { Radio, RadioControl, RadioGroup, RadioInput, RadioLabel } from '@ark-ui/react'
 
 export type Layout = 'horizontal' | 'vertical'
