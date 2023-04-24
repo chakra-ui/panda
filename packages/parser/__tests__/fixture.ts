@@ -23,6 +23,7 @@ const defaults = {
     include: [],
     utilities,
     patterns,
+    optimize: true,
     theme: {
       tokens,
       semanticTokens,

@@ -78,7 +78,7 @@ export class Stylesheet {
     })
   }
 
-  toCss = ({ optimize = true, minify }: { optimize?: boolean; minify?: boolean } = {}) => {
+  toCss = ({ optimize = false, minify }: { optimize?: boolean; minify?: boolean } = {}) => {
     const {
       conditions: { breakpoints },
       utility,
@@ -97,7 +97,7 @@ export class Stylesheet {
       css = `${this.options.content}\n\n${css}`
     }
 
-    return discardDuplicate(css)
+    return optimize ? discardDuplicate(css) : css
   }
 
   append = (...css: string[]) => {
