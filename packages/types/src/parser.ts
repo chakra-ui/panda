@@ -22,9 +22,10 @@ export type ParserResult = {
   getAll: () => Array<ResultItem>
 }
 
+export type ExtractedDataItem = Omit<ResultItem, 'box'>
 export type ExtractedData = {
   name: string
   version: string
   files: string[]
-  ast: ResultItem[]
+  ast: Array<ExtractedDataItem>
 }

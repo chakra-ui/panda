@@ -2,6 +2,7 @@ import { createParserResult } from '@pandacss/parser'
 import type { Context } from '../../engines'
 import { generateParserCss } from './parser-css'
 import { P, match } from 'ts-pattern'
+import type { ResultItem } from '@pandacss/types'
 
 export const generateVendorsCss = (ctx: Context) => {
   if (!ctx.config.vendorsCss?.length) return ''
@@ -10,8 +11,8 @@ export const generateVendorsCss = (ctx: Context) => {
   const parserResult = createParserResult()
 
   ctx.config.vendorsCss.forEach((vendor) => {
-    vendor.ast.forEach((resultItem) => {
-      console.log(resultItem.type)
+    vendor.ast.forEach((dataItem) => {
+      const resultItem = dataItem as ResultItem
       match(resultItem)
         .with({ name: P.union('css', 'cva') }, () => parserResult.set(resultItem.name as any, resultItem))
         .with({ type: P.union('pattern', 'jsx-pattern') }, () =>

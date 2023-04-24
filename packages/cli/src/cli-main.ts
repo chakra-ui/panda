@@ -198,8 +198,9 @@ export async function main() {
     .command('ship [glob]', 'Ship extract result from files in glob')
     .option('--silent', "Don't print any logs")
     .option('--outdir', "Output directory for shipped files, default to '.panda/ship'")
-    .action(async (maybeGlob?: string, flags?: { silent?: boolean; dry?: boolean; outdir?: string }) => {
-      const { silent, outdir: outdirFlag } = flags ?? {}
+    .option('-m, --minify', 'Minify generated JSON file')
+    .action(async (maybeGlob?: string, flags?: { silent?: boolean; minify?: boolean; outdir?: string }) => {
+      const { silent, outdir: outdirFlag, minify } = flags ?? {}
       if (silent) logger.level = 'silent'
 
       const ctx = await loadConfigAndCreateContext({
@@ -210,7 +211,7 @@ export async function main() {
       logger.info('cli', `Found config at ${colors.bold(ctx.path)}`)
 
       const libPkgJson = JSON.parse(readFileSync(ctx.path.replace('panda.config.ts', 'package.json'), 'utf8'))
-      await shipFiles(ctx, { outdir, pkgJson: libPkgJson })
+      await shipFiles(ctx, { outdir, minify, pkgJson: libPkgJson })
     })
 
   cli.help()

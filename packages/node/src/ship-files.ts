@@ -1,19 +1,20 @@
 import { colors, logger, quote } from '@pandacss/logger'
-import type { ResultItem } from '@pandacss/types'
+import type { ExtractedDataItem } from '@pandacss/types'
 import { mkdir, writeFile } from 'fs/promises'
 import * as path from 'path'
 import type { PandaContext } from './create-context'
-import { Node } from 'ts-morph'
-import { getNodeRange } from './get-node-range'
 import { createBox } from './cli-box'
 import { outdent } from 'outdent'
 
-export async function shipFiles(ctx: PandaContext, options: { outdir: string; pkgJson: PackageJson }) {
+export async function shipFiles(
+  ctx: PandaContext,
+  options: { outdir: string; minify?: boolean; pkgJson: PackageJson },
+) {
   await mkdir(options.outdir, { recursive: true })
 
   const files = ctx.getFiles()
 
-  const parserResultList = new Set<ResultItem>()
+  const parserResultList = new Set<ExtractedDataItem>()
   const filesWithCss = [] as string[]
 
   files.forEach(async (file) => {
@@ -23,7 +24,7 @@ export async function shipFiles(ctx: PandaContext, options: { outdir: string; pk
     const css = ctx.getParserCss(result)
     if (!css) return
 
-    result.getAll().forEach((result) => {
+    result.getAll().forEach(({ box, ...result }) => {
       parserResultList.add(result)
     })
     filesWithCss.push(path.relative(ctx.config.cwd, file))
@@ -32,13 +33,20 @@ export async function shipFiles(ctx: PandaContext, options: { outdir: string; pk
   logger.info('cli', `Found ${colors.bold(`${filesWithCss.length}/${files.length}`)} files using Panda`)
 
   const extractedPath = path.join(options.outdir, 'extracted.ast.json')
-  logger.info('cli', `Writing ${colors.bold(`${extractedPath}`)}`)
+  const minify = options.minify ?? ctx.config.minify
+  logger.info('cli', `Writing ${minify ? '[min] ' : ' '}${colors.bold(`${extractedPath}`)}`)
+
   await writeFile(
     `${extractedPath}`,
     JSON.stringify(
-      { name: options.pkgJson.name, version: options.pkgJson.version, files: filesWithCss, ast: parserResultList },
-      shipResultSerializer,
-      2,
+      {
+        name: options.pkgJson.name,
+        version: options.pkgJson.version,
+        files: filesWithCss,
+        ast: Array.from(parserResultList),
+      },
+      null,
+      minify ? 0 : 2,
     ),
   )
 
@@ -59,25 +67,9 @@ export async function shipFiles(ctx: PandaContext, options: { outdir: string; pk
         vendorsCss: [extracted as unknown as ExtractedData],
       });
     `,
-      title: `🐼 Congralutations ! ✨`,
+      title: `🐼 Congratulations ! ✨`,
     }),
   )
-}
-
-const shipResultSerializer = (_key: string, value: any) => {
-  if (value instanceof Set) {
-    return Array.from(value)
-  }
-
-  if (value instanceof Map) {
-    return Object.fromEntries(value)
-  }
-
-  if (Node.isNode(value)) {
-    return { kind: value.getKindName(), range: getNodeRange(value) }
-  }
-
-  return value
 }
 
 type PackageJson = {
