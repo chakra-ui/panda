@@ -22,19 +22,19 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
     .filter(Boolean)
     .join('\n\n')
 
-  const resolved = [
-    generateLayoutGridCss(),
-    generateGlobalCss(ctx),
-    generateStaticCss(ctx),
-    generateResetCss(),
-    generateTokenCss(ctx),
-    generateKeyframeCss(ctx),
-  ]
-    .filter(Boolean)
-    .join('\n\n')
-
   const sheet = ctx.createSheet({
-    content: resolve ? resolved : unresolved,
+    content: resolve
+      ? [
+          generateLayoutGridCss(),
+          generateGlobalCss(ctx),
+          generateStaticCss(ctx),
+          generateResetCss(),
+          generateTokenCss(ctx),
+          generateKeyframeCss(ctx),
+        ]
+          .filter(Boolean)
+          .join('\n\n')
+      : unresolved,
   })
 
   sheet.append(...files)
