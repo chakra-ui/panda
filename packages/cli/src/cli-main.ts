@@ -93,7 +93,7 @@ export async function main() {
     .command('[files]', 'Include file glob', {
       ignoreOptionDefaultValue: true,
     })
-    .option('-o, --outdir <dir>', 'Output directory', { default: 'panda' })
+    .option('-o, --outdir <dir>', 'Output directory', { default: 'styled-system' })
     .option('-m, --minify', 'Minify generated code')
     .option('--cwd <cwd>', 'Current working directory', { default: process.cwd() })
     .option('-w, --watch', 'Watch files and rebuild')

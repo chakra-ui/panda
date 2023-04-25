@@ -1,4 +1,4 @@
-import { HStack } from '@/design-system/jsx'
+import { HStack } from '@/styled-system/jsx'
 import { PropsWithChildren } from 'react'
 import { Logo } from './Logo'
 

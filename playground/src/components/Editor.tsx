@@ -1,5 +1,5 @@
-import { css } from '@/design-system/css'
-import { Flex } from '@/design-system/jsx'
+import { css } from '@/styled-system/css'
+import { Flex } from '@/styled-system/jsx'
 import { Artifact } from '@pandacss/types'
 import { TabContent, TabIndicator, TabList, Tabs, TabTrigger } from '@ark-ui/react'
 import MonacoEditor, { OnMount } from '@monaco-editor/react'

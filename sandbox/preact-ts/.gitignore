@@ -23,5 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 ## Panda
-design-system
+styled-system
 design-system-static

@@ -1,6 +1,6 @@
-import { css, cx } from '../design-system/css'
-import { button, ButtonVariantProps } from '../design-system/recipes'
-import { SystemStyleObject } from '../design-system/types'
+import { css, cx } from '../styled-system/css'
+import { button, ButtonVariantProps } from '../styled-system/recipes'
+import { SystemStyleObject } from '../styled-system/types'
 import { ReactNode } from 'react'
 
 interface ButtonProps extends ButtonVariantProps {

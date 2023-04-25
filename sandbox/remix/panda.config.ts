@@ -9,7 +9,7 @@ export default defineConfig({
   preflight: true,
   include: ['./app/routes/**/*.{tsx,jsx}', './app/components/**/*.{tsx,jsx}'],
   exclude: [],
-  outdir: 'design-system',
+  outdir: 'styled-system',
   theme: {
     semanticTokens: {
       colors: {

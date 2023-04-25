@@ -1,7 +1,7 @@
 import Frame, { FrameContextConsumer } from 'react-frame-component'
 import { LiveError, LivePreview, LiveProvider } from 'react-live'
 import { useIsClient } from 'usehooks-ts'
-import { Flex } from '@/design-system/jsx'
+import { Flex } from '@/styled-system/jsx'
 
 export type PreviewProps = {
   previewCss?: string
@@ -23,11 +23,11 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
   <div></div>
   <script type="module">
     ${previewJs}
-    ;window.panda = { 
-      css, 
-      cva, 
+    ;window.panda = {
+      css,
+      cva,
       cx,
-      ${patternNames.map((name) => `${name},`).join('\n')} 
+      ${patternNames.map((name) => `${name},`).join('\n')}
     };
   </script>
 </body>

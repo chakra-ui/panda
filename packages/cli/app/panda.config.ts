@@ -8,7 +8,7 @@ export default {
   ...config,
   include: ['./src/**/*.{tsx,jsx,astro}'],
   exclude: [],
-  outdir: 'design-system',
+  outdir: 'styled-system',
   theme: {
     ...config.theme,
     semanticTokens: {

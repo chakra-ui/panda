@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import { config as pandaConfig } from 'virtual:panda'
-import { panda } from '../../design-system/jsx'
+import { panda } from '../../styled-system/jsx'
 import { TokenGroup } from './token-group'
 import { TokenContent } from './token-content'
 import { customDocs } from '../utils/custom-docs'

@@ -1,5 +1,5 @@
-import { cva } from '../design-system/css'
-import { panda } from '../design-system/jsx'
+import { cva } from '../styled-system/css'
+import { panda } from '../styled-system/jsx'
 
 const card = cva({
   base: {

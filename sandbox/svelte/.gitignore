@@ -34,4 +34,4 @@ lerna-debug.log*
 *.sw?
 
 ## Panda
-src/design-system
+src/styled-system

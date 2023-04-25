@@ -35,5 +35,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 ## Panda
-design-system
+styled-system
 design-system-static

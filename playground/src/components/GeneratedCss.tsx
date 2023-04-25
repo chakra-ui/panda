@@ -1,5 +1,5 @@
-import { css } from '@/design-system/css'
-import { panda, Stack } from '@/design-system/jsx'
+import { css } from '@/styled-system/css'
+import { panda, Stack } from '@/styled-system/jsx'
 import { TabIndicator, TabList, Tabs, TabTrigger } from '@ark-ui/react'
 import MonacoEditor from '@monaco-editor/react'
 import { useState } from 'react'

@@ -1,5 +1,5 @@
-import { panda } from 'design-system/jsx'
-import { cva } from 'design-system/css'
+import { panda } from 'styled-system/jsx'
+import { cva } from 'styled-system/css'
 
 export const badge = cva({
   base: {

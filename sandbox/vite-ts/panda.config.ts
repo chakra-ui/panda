@@ -8,7 +8,7 @@ export default defineConfig({
   preflight: true,
   include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
   exclude: [],
-  outdir: 'design-system',
+  outdir: 'styled-system',
   theme: {
     semanticTokens: {
       colors: {

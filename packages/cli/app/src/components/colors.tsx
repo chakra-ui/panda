@@ -1,4 +1,4 @@
-import { panda, Stack, Grid } from '../../design-system/jsx'
+import { panda, Stack, Grid } from '../../styled-system/jsx'
 import { TokenGroup } from '../components/token-group'
 import { TokenContent } from '../components/token-content'
 import { ColorWrapper } from '../components/color-wrapper'

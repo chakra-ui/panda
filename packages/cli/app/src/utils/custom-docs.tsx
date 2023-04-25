@@ -1,5 +1,5 @@
 import { config } from 'virtual:panda'
-import { panda } from '../../design-system/jsx'
+import { panda } from '../../styled-system/jsx'
 
 const title = config.studio?.title ?? 'Panda'
 

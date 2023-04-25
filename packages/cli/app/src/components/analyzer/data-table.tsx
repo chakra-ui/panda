@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { Grid, panda } from '../../../design-system/jsx'
-import { flex } from '../../../design-system/patterns'
+import { Grid, panda } from '../../../styled-system/jsx'
+import { flex } from '../../../styled-system/patterns'
 
 export type Column<T> = { header: string; accessor: string; cell?: (item: T) => ReactNode }
 

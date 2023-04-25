@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from 'react'
-import { panda } from '../../design-system/jsx'
-import type { JsxStyleProps } from '../../design-system/types'
+import { panda } from '../../styled-system/jsx'
+import type { JsxStyleProps } from '../../styled-system/types'
 import { tokenDictionary } from '../utils/analysis-data'
 import { getReportItemFromTokenName, getUtilityLink } from '../utils/get-report-item'
 import { ColorWrapper } from './color-wrapper'

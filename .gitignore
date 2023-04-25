@@ -24,4 +24,5 @@ styled-system
 styled-system-static
 panda
 panda-static
+!packages/cli/app/styled-system
 packages/cli/app/src/utils/analysis.json

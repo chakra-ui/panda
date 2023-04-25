@@ -1,5 +1,5 @@
 import type { ReportItemJSON } from '@pandacss/types'
-import { panda } from '../../../design-system/jsx'
+import { panda } from '../../../styled-system/jsx'
 import { ReportItemOpenInEditorLink, UtilityLink } from './report-item-link'
 import { QuickTooltip } from './quick-tooltip'
 

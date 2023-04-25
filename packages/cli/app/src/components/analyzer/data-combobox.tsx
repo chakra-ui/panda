@@ -1,5 +1,5 @@
-import { css } from '../../../design-system/css'
-import { panda } from '../../../design-system/jsx'
+import { css } from '../../../styled-system/css'
+import { panda } from '../../../styled-system/jsx'
 import { Portal } from '@ark-ui/react'
 import {
   Combobox,

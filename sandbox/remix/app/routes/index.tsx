@@ -1,7 +1,7 @@
-import { css, cx } from 'design-system/css'
-import { circle, vstack } from 'design-system/patterns'
-import { Stack, panda, Circle, HStack } from 'design-system/jsx'
-import { button } from 'design-system/recipes'
+import { css, cx } from 'styled-system/css'
+import { circle, vstack } from 'styled-system/patterns'
+import { Stack, panda, Circle, HStack } from 'styled-system/jsx'
+import { button } from 'styled-system/recipes'
 import { Button } from 'app/components/Button'
 import { badge, Badge } from 'app/components/Badge'
 

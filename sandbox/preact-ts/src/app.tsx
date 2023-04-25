@@ -1,4 +1,4 @@
-import { Stack, panda } from '../design-system/jsx'
+import { Stack, panda } from '../styled-system/jsx'
 
 const Mark = panda('mark')
 
