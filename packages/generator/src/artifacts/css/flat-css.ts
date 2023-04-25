@@ -8,7 +8,7 @@ import type { Context } from '../../engines'
 
 export const generateFlattenedCss = (ctx: Context) => (options: { files: string[]; resolve?: boolean }) => {
   const { files, resolve } = options
-  const { theme: { keyframes } = {}, preflight, minify, optimize = true, staticCss } = ctx.config
+  const { theme: { keyframes } = {}, preflight, minify, staticCss } = ctx.config
 
   const unresolved = [
     '@layer reset, base, tokens, recipes, utilities;',
@@ -39,5 +39,5 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
 
   sheet.append(...files)
 
-  return sheet.toCss({ optimize, minify })
+  return sheet.toCss({ optimize: true, minify })
 }
