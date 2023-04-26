@@ -12,7 +12,7 @@ export function generateStyleProps(ctx: Context) {
       [key in \`--\${string}\`]?: Token | (string & {}) | (number & {})
     }
   
-    export type SystemProperties = CssVarProperties & {
+    export type SystemProperties = CssVarProperties | {
       ${Array.from(props)
         .map((v) => `\t${v}?: PropertyValue<'${v}'>`)
         .join('\n')}
