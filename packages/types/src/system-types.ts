@@ -1,6 +1,6 @@
 import type { ConditionalValue, Conditions, Nested } from './conditions'
 import type { PropertiesFallback } from './csstype'
-import type { SystemProperties } from './style-props'
+import type { SystemProperties, CssVarProperties } from './style-props'
 
 type String = string & {}
 type Number = number & {}
@@ -8,10 +8,6 @@ type Number = number & {}
 /* -----------------------------------------------------------------------------
  * Native css properties
  * -----------------------------------------------------------------------------*/
-
-type CssVarProperties = {
-  [key in `--${string}`]?: string | number
-}
 
 export type NativeCssProperties = PropertiesFallback<String | Number>
 
@@ -43,7 +39,7 @@ type GenericProperties = {
 
 export type NestedCssProperties = Nested<CssProperties>
 
-export type SystemStyleObject = Nested<SystemProperties | GenericProperties>
+export type SystemStyleObject = Nested<SystemProperties | GenericProperties | CssVarProperties>
 
 export type GlobalStyleObject = {
   [selector: string]: SystemStyleObject

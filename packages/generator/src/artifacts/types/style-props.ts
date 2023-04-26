@@ -8,11 +8,11 @@ export function generateStyleProps(ctx: Context) {
     import { PropertyValue } from './prop-type'
     import { Token } from './token'
 
-    type CssVarProperties = {
+    export type CssVarProperties = {
       [key in \`--\${string}\`]?: Token | (string & {}) | (number & {})
     }
   
-    export type SystemProperties = CssVarProperties | {
+    export type SystemProperties = {
       ${Array.from(props)
         .map((v) => `\t${v}?: PropertyValue<'${v}'>`)
         .join('\n')}

@@ -3,6 +3,29 @@ import { outdent } from 'outdent'
 import pluralize from 'pluralize'
 import type { Context } from '../../engines'
 
+const categories = [
+  'zIndex',
+  'opacity',
+  'colors',
+  'fonts',
+  'fontSizes',
+  'fontWeights',
+  'lineHeights',
+  'letterSpacings',
+  'sizes',
+  'shadows',
+  'spacing',
+  'radii',
+  'borders',
+  'durations',
+  'easings',
+  'animations',
+  'blurs',
+  'gradients',
+  'breakpoints',
+  'assets',
+]
+
 export function generateTokenTypes(ctx: Context) {
   const { tokens } = ctx
 
@@ -26,6 +49,8 @@ export function generateTokenTypes(ctx: Context) {
   result.add('} & { [token: string]: never }')
 
   set.add(Array.from(result).join('\n'))
+
+  set.add(`export type TokenCategory = ${unionType(categories)}`)
 
   return outdent.string(Array.from(set).join('\n\n'))
 }

@@ -10,6 +10,10 @@ type Number = number & {}
 
 type CssProperties = PropertiesFallback<String | Number>
 
+export type CssVarProperties = {
+  [key in `--${string}`]?: string | number
+}
+
 export type SystemProperties = {
   [K in keyof CssProperties]?: PropertyValue<K>
 }

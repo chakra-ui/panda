@@ -49,3 +49,5 @@ export type Tokens = {
 		animations: Animation
 		breakpoints: Breakpoint
 } & { [token: string]: never }
+
+export type TokenCategory = "zIndex" | "opacity" | "colors" | "fonts" | "fontSizes" | "fontWeights" | "lineHeights" | "letterSpacings" | "sizes" | "shadows" | "spacing" | "radii" | "borders" | "durations" | "easings" | "animations" | "blurs" | "gradients" | "breakpoints" | "assets"
