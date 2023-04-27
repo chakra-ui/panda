@@ -7,7 +7,7 @@ describe('generate property types', () => {
     expect(generatePropTypes(generator)).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
       import type { Properties as CSSProperties } from './csstype'
-      import type { Tokens } from './token'
+      import type { Tokens } from './tokens'
 
       type PropertyValueTypes  = {
       	divideX: string;
@@ -96,9 +96,9 @@ describe('generate property types', () => {
 
 
         type NativeValue<T> = T extends keyof CSSProperties ? CSSProperties[T] : never
-          
+
         type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] | NativeValue<T> : NativeValue<T>
-         
+
         export type PropertyTypes = PropertyValueTypes & {
         
       	z: Shorthand<\\"zIndex\\">;
