@@ -1,7 +1,7 @@
 import type { Context } from '../../engines'
 
 export const generateGlobalCss = (ctx: Context) => {
-  const { globalCss = {} } = ctx.config
+  const { globalCss = {}, optimize = true } = ctx.config
 
   const sheet = ctx.createSheet()
 
@@ -43,5 +43,5 @@ export const generateGlobalCss = (ctx: Context) => {
 
   sheet.processGlobalCss(globalCss)
 
-  return sheet.toCss()
+  return sheet.toCss({ optimize })
 }

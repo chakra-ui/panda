@@ -178,7 +178,7 @@ export async function main() {
     .command('debug [glob]', 'Debug design token extraction & css generated from files in glob')
     .option('--silent', "Don't print any logs")
     .option('--dry', 'Output debug files in stdout without writing to disk')
-    .option('--outdir', "Output directory for debug files, default to '.panda/debug'")
+    .option('--outdir [dir]', "Output directory for debug files, default to '.panda/debug'")
     .action(async (maybeGlob?: string, flags?: { silent?: boolean; dry?: boolean; outdir?: string }) => {
       const { silent, dry = false, outdir: outdirFlag } = flags ?? {}
       if (silent) logger.level = 'silent'

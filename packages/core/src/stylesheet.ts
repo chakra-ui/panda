@@ -13,6 +13,8 @@ export type StylesheetOptions = {
 }
 
 export class Stylesheet {
+  private recipes = new Map<string, Recipe>()
+
   constructor(private context: StylesheetContext, private options?: StylesheetOptions) {}
 
   processGlobalCss = (styleObject: Dict) => {
@@ -56,7 +58,11 @@ export class Stylesheet {
   }
 
   processRecipe = (config: AnyRecipeConfig, styles: SystemStyleObject) => {
-    const recipe = new Recipe(config, this.context)
+    if (!this.recipes.has(config.name)) {
+      this.recipes.set(config.name, new Recipe(config, this.context))
+    }
+
+    const recipe = this.recipes.get(config.name)!
     recipe.process({ styles })
 
     config.compoundVariants?.forEach((compoundVariant) => {
@@ -78,7 +84,7 @@ export class Stylesheet {
     })
   }
 
-  toCss = ({ optimize = true, minify }: { optimize?: boolean; minify?: boolean } = {}) => {
+  toCss = ({ optimize = false, minify }: { optimize?: boolean; minify?: boolean } = {}) => {
     const {
       conditions: { breakpoints },
       utility,
@@ -97,7 +103,7 @@ export class Stylesheet {
       css = `${this.options.content}\n\n${css}`
     }
 
-    return discardDuplicate(css)
+    return optimize ? discardDuplicate(css) : css
   }
 
   append = (...css: string[]) => {

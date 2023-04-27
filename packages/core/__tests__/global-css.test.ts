@@ -7,7 +7,7 @@ function globalCss(values: Dict) {
   const ctx = createContext()
   const sheet = new Stylesheet(ctx)
   sheet.processGlobalCss(values)
-  return sheet.toCss()
+  return sheet.toCss({ optimize: true })
 }
 
 describe('Global css', () => {

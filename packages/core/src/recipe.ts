@@ -1,4 +1,4 @@
-import { capitalize } from '@pandacss/shared'
+import { capitalize, memo } from '@pandacss/shared'
 import type { AnyRecipeConfig } from '@pandacss/types'
 import merge from 'lodash.merge'
 import { AtomicRule, type ProcessOptions } from './atomic-rule'
@@ -98,18 +98,18 @@ export class Recipe {
     return rule
   }
 
-  process = (options: ProcessOptions) => {
+  process = memo((options: ProcessOptions) => {
     const { styles: variants } = options
-    const { name, defaultVariants = {} } = this.config
+    const { name, defaultVariants = {}, base = {} } = this.config
 
-    this.rule.process({
-      styles: {
-        [name]: '__ignore__',
-        ...defaultVariants,
-        ...variants,
-      },
-    })
-  }
+    const styles = Object.assign({ [name]: '__ignore__' }, defaultVariants, variants)
+    const keys = Object.keys(styles)
+    if (keys.length === 1 && Object.keys(base).length === 0) {
+      return
+    }
+
+    this.rule.process({ styles })
+  })
 
   toCss = () => {
     return this.context.root.toString()
