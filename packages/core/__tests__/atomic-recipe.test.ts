@@ -7,7 +7,7 @@ function recipe(values: Dict) {
   const ctx = createContext()
   const sheet = new Stylesheet(ctx)
   sheet.processAtomicRecipe(values)
-  return sheet.toCss()
+  return sheet.toCss({ optimize: true })
 }
 
 describe('Atomic recipe', () => {

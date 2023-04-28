@@ -1,6 +1,29 @@
-import type { LiteralUnion } from './shared'
 import type { NativeCssProperty, SystemStyleObject } from './system-types'
-import type { TokenCategory } from './tokens'
+
+type Primitive = string | number | boolean | null | undefined
+type LiteralUnion<T, K extends Primitive = string> = T | (K & Record<never, never>)
+
+type TokenCategory =
+  | 'zIndex'
+  | 'opacity'
+  | 'colors'
+  | 'fonts'
+  | 'fontSizes'
+  | 'fontWeights'
+  | 'lineHeights'
+  | 'letterSpacings'
+  | 'sizes'
+  | 'shadows'
+  | 'spacing'
+  | 'radii'
+  | 'borders'
+  | 'durations'
+  | 'easings'
+  | 'animations'
+  | 'blurs'
+  | 'gradients'
+  | 'breakpoints'
+  | 'assets'
 
 export type PatternProperty =
   | { type: 'property'; value: NativeCssProperty }

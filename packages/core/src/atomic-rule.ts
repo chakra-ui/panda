@@ -54,10 +54,10 @@ export class AtomicRule {
     const rule = this.rule
 
     walkObject(styleObject, (value, paths) => {
-      const important = isImportant(value)
-
       // if value doesn't exist
       if (value == null) return
+
+      const important = isImportant(value)
 
       // conditions.shift was done to support condition groups
       const [prop, ...allConditions] = cond.shift(paths)
@@ -73,12 +73,12 @@ export class AtomicRule {
 
       rule.nodes = cssRoot.root.nodes
 
+      // no empty rulesets
+      if (rule.isEmpty) return
+
       const selector = this.hashFn(conditions, transformed.className)
 
       rule.selector = important ? `.${selector}\\!` : `.${selector}`
-
-      // no empty rulesets
-      if (rule.isEmpty) return
 
       rule.update()
 

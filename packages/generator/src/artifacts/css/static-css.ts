@@ -3,7 +3,7 @@ import type { Context } from '../../engines'
 
 export const generateStaticCss = (ctx: Context) => {
   const { config, createSheet, utility, recipes } = ctx
-  const { staticCss = {}, theme = {} } = config
+  const { staticCss = {}, theme = {}, optimize = true } = config
 
   const sheet = createSheet()
   const fn = getStaticCss(staticCss)
@@ -27,5 +27,5 @@ export const generateStaticCss = (ctx: Context) => {
     })
   })
 
-  return sheet.toCss()
+  return sheet.toCss({ optimize })
 }

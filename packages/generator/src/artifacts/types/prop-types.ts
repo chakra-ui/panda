@@ -13,7 +13,7 @@ export function generatePropTypes(ctx: Context) {
     outdent`
     import type { ConditionalValue } from './conditions';
     import type { Properties as CSSProperties } from './csstype'
-    import type { Tokens } from './token'
+    import type { Tokens } from './tokens'
 
     type PropertyValueTypes  = {`,
   ]
@@ -28,9 +28,9 @@ export function generatePropTypes(ctx: Context) {
 
   result.push(`
   type NativeValue<T> = T extends keyof CSSProperties ? CSSProperties[T] : never
-    
+
   type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T]${strictText} : NativeValue<T>
-   
+
   export type PropertyTypes = PropertyValueTypes & {
   `)
 

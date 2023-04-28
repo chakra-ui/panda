@@ -88,6 +88,10 @@ export type Config = {
    */
   preflight?: boolean
   /**
+   * Whether to optimize the generated css.
+   */
+  optimize?: boolean
+  /**
    * Whether to minify the generated css.
    */
   minify?: boolean

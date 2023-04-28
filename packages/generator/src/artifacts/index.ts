@@ -75,7 +75,7 @@ function setupTypes(ctx: Context): Artifact {
       { file: 'pattern.d.ts', code: gen.pattern },
       { file: 'parts.d.ts', code: gen.parts },
       { file: 'index.d.ts', code: entry.index },
-      { file: 'token.d.ts', code: generateTokenTypes(ctx) },
+      { file: 'tokens.d.ts', code: generateTokenTypes(ctx) },
       { file: 'prop-type.d.ts', code: generatePropTypes(ctx) },
       { file: 'style-props.d.ts', code: generateStyleProps(ctx) },
       { file: 'conditions.d.ts', code: conditions.dts },
