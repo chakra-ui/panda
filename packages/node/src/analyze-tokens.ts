@@ -39,6 +39,7 @@ export function analyzeTokens(
   const minify = ctx.config.minify
   const chunkFiles = ctx.chunks.getFiles()
 
+  ctx.config.optimize = true
   ctx.config.minify = false
   const css = ctx.getCss({ files: chunkFiles })
 

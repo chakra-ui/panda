@@ -10,6 +10,7 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
 
   // easier to debug
   ctx.config.minify = false
+  ctx.config.optimize = true
 
   if (!options.dry && options.outdir) {
     await mkdir(options.outdir, { recursive: true })
