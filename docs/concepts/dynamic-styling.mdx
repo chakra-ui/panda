@@ -1,7 +1,12 @@
 # Dynamic styling
 
 While panda is mainly focused on the static styling experience, we have some mechanics to support dynamic styling.
-"Dynamic" can have different meaning. Let's go over some of the ways you can do this.
+
+We recommend that you **avoid relying on runtime values most of the time** and instead use the alternatives we offer
+(css vars, conditions, cva, etc..) since they allow for some level of dynamic styling while still retaining the benefits
+of static CSS.
+
+That being said, "Dynamic" can have different meaning. Let's go over some of the ways you can do this.
 
 ## Sections
 
@@ -125,11 +130,15 @@ export default defineConfig({
 })
 ```
 
-Another way to solve this is by using the `token()` CSS custom properties: That way panda knows the relationship between
-the property and the variable while still being able to change the value at runtime.
+Another way to solve this is by using the `token()` function in addition to CSS custom properties : That way panda knows
+about the relationship between the property and the variable while still being able to change the value at runtime.
+
+Using the `token()` function:
 
 ```tsx
 // Component.tsx
+import { token } from '../styled-system/tokens'
+
 const Component = (props) => {
   return (
     <panda.div style={{ ['--dynamic-color']: token('colors.' + props.color) }} color="var(--dynamic-color)">
@@ -145,7 +154,26 @@ const App = () => {
 }
 ```
 
-> Note that if you know that the value won't be a runtime value, you could just have done this and it would just work:
+You could also directly use the `token.var()` function to get a reference to the panda CSS custom property for a given
+token:
+
+```tsx
+// Component.tsx
+import { token } from '../styled-system/tokens'
+
+const Component = (props) => {
+  return <div style={{ color: token.var('colors.' + props.color) }}>Dynamic color with runtime value</div>
+}
+
+// App.tsx
+const App = () => {
+  const [runtimeColor, setRuntimeColor] = useState('yellow.300')
+  return <Component color={runtimeColor} />
+}
+```
+
+> Note that if you know that the value won't be a runtime value (meaning you will statically use the value somewhere
+> else) , you could just have done this and it would just work:
 >
 > ```tsx
 > // Component.tsx
@@ -161,6 +189,9 @@ const App = () => {
 > ```
 
 ## Runtime conditions
+
+Even though wee recommend that you first look for better alternatives (such as using
+[recipe variants](/recipe/config-recipe)), you may still occasionally need runtime conditions.
 
 When encountering a runtime condition, panda will first try to resolve it statically. If it can't, it will fallback to
 the generating the corresponding CSS for each possible branches.
@@ -238,6 +269,67 @@ const App = () => {
   return <div className={css({ color: mainColor, fontSize: sizes.md, width: sizes['2xl'] })} />
 }
 ```
+
+### Runtime reference on known objects
+
+Using a more complex but still common example :
+
+```tsx
+const colorByType = {
+  primary: 'red.300',
+  secondary: 'blue.300',
+  tertiary: 'green.300',
+}
+
+const Section = () => {
+  const [type, setType] = useState('primary')
+
+  // since only "gray.100" is statically extractable here
+  // ❌ this will not work as expected, the color CSS won't be generated
+  return <section className={css({ color: colorByType[type] ?? 'gray.100' })}>❌ Will not be extracted</section>
+}
+```
+
+Even though `colorByType` is statically analyzable, panda does not _yet_ support this kind of automatic extraction
+fallback.
+
+But this looks like the perfect opportunity to use the [`cva`](/recipe/atomic-recipe) function !
+
+```tsx
+import { cva } from './styled-system/cva'
+
+const sectionRecipe = cva({
+  base: { color: 'gray.100' },
+  variants: {
+    type: {
+      primary: { color: 'red.300' },
+      secondary: { color: 'blue.300' },
+      tertiary: { color: 'green.300' },
+    },
+  },
+})
+
+const Section = () => {
+  const [type, setType] = useState('primary')
+
+  // since the whole `cva` config will be extracted & corresponding CSS be generated
+  // ✅ this will work as expected
+  return <section className={sectionRecipe({ type })}>✅ With a recipe</section>
+}
+```
+
+Not only did you get the same end result, but you also got a more readable and maintainable code !
+
+You can now :
+
+- add more variants to your recipe
+- add more properties
+- use a shorthand or a condition
+
+All of this with complete type-safety and without having to make drastic changes to the component.
+
+> Note that you can also [integrate this recipe directly into your theme](/recipe/config-recipe) if you want to only
+> generate the CSS that you use, among other things
 
 ## Summary
 
