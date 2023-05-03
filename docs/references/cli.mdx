@@ -14,7 +14,7 @@ Initialize panda in a project. This process will:
 
 #### `--postcss, -p`
 
-Whether to emit a postcss config file
+Whether to emit a [postcss](https://postcss.org/) config file
 
 #### `--force, -f`
 
@@ -36,37 +36,55 @@ Run the extract process to generate static css from your project.
 
 The output directory for the generated css utilities
 
+Related: [`config.outdir`](/references/panda-config#outdir)
+
 #### `--minify`
 
 Whether to minify the generated css
+
+Related: [`config.minify`](/references/panda-config#minify)
 
 #### `--cwd`
 
 The current working directory
 
+Related: [`config.cwd`](/references/panda-config#cwd)
+
 #### `--watch, -w`
 
 Whether to watch for changes in the project
+
+Related: [`config.watch`](/references/panda-config#watch)
 
 #### `--poll`
 
 Whether to poll for file changes.
 
+Related: [`config.poll`](/references/panda-config#poll)
+
 #### `--config`
 
 The path to the config file
+
+Related: [`config.config`](/references/panda-config#config)
 
 #### `--preflight`
 
 Whether to emit the preflight or reset css
 
+Related: [`config.preflight`](/references/panda-preflight#config)
+
 #### `--clean`
 
 Whether to clean the output directory before emitting
 
+Related: [`config.clean`](/references/panda-config#clean)
+
 #### `--hash`
 
 Whether to hash the output classnames
+
+Related: [`config.hash`](/references/panda-config#hash)
 
 ---
 
@@ -80,6 +98,10 @@ Generate a new css utilities for your project based on the configuraion file.
 
 Whether to clean the output directory before emitting
 
+Related: [`config.clean`](/references/panda-config#clean)
+
 #### `--silent`
 
 Whether to suppress all output
+
+Related: [`config.silent`](/references/panda-config#silent)
