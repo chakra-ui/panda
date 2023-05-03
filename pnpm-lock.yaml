@@ -57,7 +57,7 @@ importers:
         version: 0.2.0(react-dom@18.2.0)(react@18.2.0)
       '@astrojs/react':
         specifier: 2.1.2
-        version: 2.1.2(@types/react-dom@18.2.1)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0)
+        version: 2.1.2(@types/react-dom@18.2.2)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0)
       '@pandacss/config':
         specifier: workspace:*
         version: link:../config
@@ -102,8 +102,8 @@ importers:
         specifier: 18.0.17
         version: 18.0.17
       '@types/react-dom':
-        specifier: 18.2.1
-        version: 18.2.1
+        specifier: 18.2.2
+        version: 18.2.2
       '@types/update-notifier':
         specifier: 6.0.2
         version: 6.0.2
@@ -537,8 +537,8 @@ importers:
         specifier: 18.0.17
         version: 18.0.17
       '@types/react-dom':
-        specifier: 18.2.1
-        version: 18.2.1
+        specifier: 18.2.2
+        version: 18.2.2
       merge-anything:
         specifier: ^5.1.5
         version: 5.1.5
@@ -881,8 +881,8 @@ importers:
         specifier: 18.0.17
         version: 18.0.17
       '@types/react-dom':
-        specifier: 18.2.1
-        version: 18.2.1
+        specifier: 18.2.2
+        version: 18.2.2
       '@vitejs/plugin-react':
         specifier: 4.0.0
         version: 4.0.0(vite@4.3.4)
@@ -998,7 +998,7 @@ packages:
       prismjs: 1.29.0
     dev: false
 
-  /@astrojs/react@2.1.2(@types/react-dom@18.2.1)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0):
+  /@astrojs/react@2.1.2(@types/react-dom@18.2.2)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-ApxiaX31T9ZL80z/w4Ep9lC2TvEtLtxhOYdKz+TSqdE5wgVOmKk5plRrMA5gvy87L9pFcyXyR4ZC91qEZaUGxA==}
     engines: {node: '>=16.12.0'}
     peerDependencies:
@@ -1010,7 +1010,7 @@ packages:
       '@babel/core': 7.21.8
       '@babel/plugin-transform-react-jsx': 7.19.0(@babel/core@7.21.8)
       '@types/react': 18.0.17
-      '@types/react-dom': 18.2.1
+      '@types/react-dom': 18.2.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     transitivePeerDependencies:
@@ -1193,8 +1193,8 @@ packages:
       lru-cache: 5.1.1
       semver: 6.3.0
 
-  /@babel/helper-create-class-features-plugin@7.20.12(@babel/core@7.21.4):
-    resolution: {integrity: sha512-9OunRkbT0JQcednL0UFvbfXpAsUXiGjUk0a7sN8fUXX7Mue79cUSMjHGDRRi/Vz9vYlpIhLV5fMD5dKoMhhsNQ==}
+  /@babel/helper-create-class-features-plugin@7.21.4(@babel/core@7.21.4):
+    resolution: {integrity: sha512-46QrX2CQlaFRF4TkwfTt6nJD7IHq8539cCL7SDpqWSDeJKY1xylKKY5F/33mJhLZ3mFvKv2gGrVS6NkyF6qs+Q==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0
@@ -1203,7 +1203,7 @@ packages:
       '@babel/helper-annotate-as-pure': 7.18.6
       '@babel/helper-environment-visitor': 7.21.5
       '@babel/helper-function-name': 7.21.0
-      '@babel/helper-member-expression-to-functions': 7.20.7
+      '@babel/helper-member-expression-to-functions': 7.21.0
       '@babel/helper-optimise-call-expression': 7.18.6
       '@babel/helper-replace-supers': 7.20.7
       '@babel/helper-skip-transparent-expression-wrappers': 7.20.0
@@ -2296,7 +2296,7 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.21.4
-      '@babel/helper-create-class-features-plugin': 7.20.12(@babel/core@7.21.4)
+      '@babel/helper-create-class-features-plugin': 7.21.4(@babel/core@7.21.4)
       '@babel/helper-plugin-utils': 7.20.2
       '@babel/plugin-syntax-typescript': 7.20.0(@babel/core@7.21.4)
     transitivePeerDependencies:
@@ -6218,6 +6218,12 @@ packages:
 
   /@types/react-dom@18.2.1:
     resolution: {integrity: sha512-8QZEV9+Kwy7tXFmjJrp3XUKQSs9LTnE0KnoUb0YCguWBiNW0Yfb2iBMYZ08WPg35IR6P3Z0s00B15SwZnO26+w==}
+    dependencies:
+      '@types/react': 18.0.17
+    dev: true
+
+  /@types/react-dom@18.2.2:
+    resolution: {integrity: sha512-IGuuCsLmAH0f3KksOZp/vkpUtO2YrIwob4YxvoFQR2XvkLL7tf7mLYcXiyG47KgTKngI4+7lNm4dM4eBTbG1Bw==}
     dependencies:
       '@types/react': 18.0.17
 
