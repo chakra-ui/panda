@@ -14,10 +14,10 @@
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
     "typescript": "^5.0.4",
-    "vite": "^4.2.1",
+    "vite": "^4.3.4",
     "vite-plugin-solid": "^2.7.0"
   },
   "dependencies": {
-    "solid-js": "^1.7.3"
+    "solid-js": "^1.7.4"
   }
 }

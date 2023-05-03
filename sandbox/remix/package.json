@@ -12,22 +12,22 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@remix-run/node": "^1.15.0",
-    "@remix-run/react": "^1.15.0",
-    "@remix-run/vercel": "^1.15.0",
-    "@vercel/node": "^2.10.3",
+    "@remix-run/node": "^1.16.0",
+    "@remix-run/react": "^1.16.0",
+    "@remix-run/vercel": "^1.16.0",
+    "@vercel/node": "^2.14.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "^1.15.0",
-    "@remix-run/eslint-config": "^1.15.0",
-    "@remix-run/serve": "^1.15.0",
-    "@types/react": "^18.0.34",
-    "@types/react-dom": "^18.0.11",
+    "@remix-run/dev": "^1.16.0",
+    "@remix-run/eslint-config": "^1.16.0",
+    "@remix-run/serve": "^1.16.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.1",
     "@pandacss/dev": "workspace:*",
-    "eslint": "^8.38.0",
-    "postcss": "^8.4.21",
+    "eslint": "^8.39.0",
+    "postcss": "^8.4.23",
     "typescript": "^5.0.4"
   },
   "engines": {
