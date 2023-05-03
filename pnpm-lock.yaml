@@ -41,8 +41,8 @@ importers:
         specifier: 6.7.0
         version: 6.7.0(typescript@5.0.4)
       tsx:
-        specifier: 3.12.6
-        version: 3.12.6
+        specifier: 3.12.7
+        version: 3.12.7
       typescript:
         specifier: 5.0.4
         version: 5.0.4
@@ -18771,8 +18771,8 @@ packages:
       tslib: 1.14.1
       typescript: 5.0.4
 
-  /tsx@3.12.6:
-    resolution: {integrity: sha512-q93WgS3lBdHlPgS0h1i+87Pt6n9K/qULIMNYZo07nSeu2z5QE2CellcAZfofVXBo2tQg9av2ZcRMQ2S2i5oadQ==}
+  /tsx@3.12.7:
+    resolution: {integrity: sha512-C2Ip+jPmqKd1GWVQDvz/Eyc6QJbGfE7NrR3fx5BpEHMZsEHoIxHL1j+lKdGobr8ovEyqeNkPLSKp6SCSOt7gmw==}
     hasBin: true
     dependencies:
       '@esbuild-kit/cjs-loader': 2.4.2
