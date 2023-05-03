@@ -131,18 +131,15 @@ importers:
       '@pandacss/types':
         specifier: workspace:*
         version: link:../types
-      esbuild:
-        specifier: 0.17.18
-        version: 0.17.18
+      bundle-n-require:
+        specifier: ^1.0.1
+        version: 1.0.1
       escalade:
         specifier: 3.1.1
         version: 3.1.1
       merge-anything:
         specifier: ^5.1.4
         version: 5.1.4
-      node-eval:
-        specifier: 2.0.0
-        version: 2.0.0
 
   packages/core:
     dependencies:
@@ -8832,6 +8829,13 @@ packages:
     resolution: {integrity: sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw==}
     engines: {node: '>=6'}
     dev: true
+
+  /bundle-n-require@1.0.1:
+    resolution: {integrity: sha512-gItLuU8M0uI7bcHim+wM+Y1bY9eG7j3XbGcU3ZCqsrJLj4ZIHhchHWQ1luL9c4P8yPNLC9Jkwbct/EgR0u/dzQ==}
+    dependencies:
+      esbuild: 0.17.18
+      node-eval: 2.0.0
+    dev: false
 
   /bundle-require@4.0.0(esbuild@0.17.18):
     resolution: {integrity: sha512-5xjxGtR06579D7UcTBhcQO7Zg3A7ji5xuIUl7kNHSvVJ7/CmAs3bCosfYWNuD/Xm5k0jS9VFuPipSpm5S+ZlKw==}

@@ -1,8 +1,8 @@
 import { ConfigError, ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
-import { bundleAndRequire } from './bundle-require'
 import { findConfigFile } from './find-config'
 import { getResolvedConfig } from './merge-config'
+import { bundle } from './bundle'
 
 type ConfigFileOptions = {
   cwd: string
@@ -19,7 +19,7 @@ export async function loadConfigFile(options: ConfigFileOptions) {
 
   logger.debug('config:path', filePath)
 
-  const result = await bundleAndRequire(filePath, cwd)
+  const result = await bundle(filePath, cwd)
 
   // TODO: Validate config shape
   if (typeof result.config !== 'object') {

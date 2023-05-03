@@ -92,4 +92,8 @@
     top: -0.5em;
   }
 
+  dialog {
+    padding: 0;
+  }
+
   }

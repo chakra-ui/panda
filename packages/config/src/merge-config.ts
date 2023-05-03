@@ -1,5 +1,5 @@
 import { mergeAndConcat } from 'merge-anything'
-import { bundleAndRequire } from './bundle-require'
+import { bundle } from './bundle'
 import { assign, mergeWith } from './utils'
 
 type Extendable<T> = T & { extend?: T }
@@ -73,7 +73,7 @@ export async function getResolvedConfig(config: ExtendableRecord, cwd: string) {
       .reverse()
       .map(async (preset: any) => {
         if (typeof preset === 'string') {
-          const presetModule = await bundleAndRequire(preset, cwd)
+          const presetModule = await bundle(preset, cwd)
           return getResolvedConfig(presetModule.config, cwd)
         } else {
           return getResolvedConfig(preset, cwd)
