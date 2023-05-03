@@ -16,51 +16,53 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
   }
 
   const filesWithCss = []
-  await files.map(async (file) => {
-    const measure = logger.time.debug(`Parsed ${file}`)
-    const result = ctx.project.parseSourceFile(file)
+  await Promise.all(
+    files.map(async (file) => {
+      const measure = logger.time.debug(`Parsed ${file}`)
+      const result = ctx.project.parseSourceFile(file)
 
-    measure()
-    if (!result) return
+      measure()
+      if (!result) return
 
-    const list = result.getAll().map((result) => {
-      const node = result.box.getNode()
-      const range = getNodeRange(node)
+      const list = result.getAll().map((result) => {
+        const node = result.box.getNode()
+        const range = getNodeRange(node)
 
-      return {
-        name: result.name,
-        type: result.type,
-        data: result.data,
-        kind: node.getKindName(),
-        line: range.startLineNumber,
-        column: range.startColumn,
+        return {
+          name: result.name,
+          type: result.type,
+          data: result.data,
+          kind: node.getKindName(),
+          line: range.startLineNumber,
+          column: range.startColumn,
+        }
+      })
+      const css = ctx.getParserCss(result)
+      if (!css) return
+
+      if (options.dry) {
+        console.log({ path: file, ast: list, code: css })
+        return Promise.resolve()
       }
-    })
-    const css = ctx.getParserCss(result)
-    if (!css) return
 
-    if (options.dry) {
-      console.log({ path: file, ast: list, code: css })
-      return Promise.resolve()
-    }
+      if (options.outdir) {
+        filesWithCss.push(file)
+        const parsedPath = path.parse(file)
+        const relative = path.relative(ctx.config.cwd, parsedPath.dir)
 
-    if (options.outdir) {
-      filesWithCss.push(file)
-      const parsedPath = path.parse(file)
-      const relative = path.relative(ctx.config.cwd, parsedPath.dir)
+        const astJsonPath = `${relative}/${parsedPath.name}.ast.json`.replaceAll(path.sep, '__')
+        const cssPath = `${relative}/${parsedPath.name}.css`.replaceAll(path.sep, '__')
 
-      const astJsonPath = `${relative}/${parsedPath.name}.ast.json`.replaceAll(path.sep, '__')
-      const cssPath = `${relative}/${parsedPath.name}.css`.replaceAll(path.sep, '__')
+        logger.info('cli', `Writing ${colors.bold(`${options.outdir}/${astJsonPath}`)}`)
+        logger.info('cli', `Writing ${colors.bold(`${options.outdir}/${cssPath}`)}`)
 
-      logger.info('cli', `Writing ${colors.bold(`${options.outdir}/${astJsonPath}`)}`)
-      logger.info('cli', `Writing ${colors.bold(`${options.outdir}/${cssPath}`)}`)
-
-      return Promise.all([
-        writeFile(`${options.outdir}/${astJsonPath}`, JSON.stringify(list, debugResultSerializer, 2)),
-        writeFile(`${options.outdir}/${cssPath}`, css),
-      ])
-    }
-  })
+        return Promise.all([
+          writeFile(`${options.outdir}/${astJsonPath}`, JSON.stringify(list, debugResultSerializer, 2)),
+          writeFile(`${options.outdir}/${cssPath}`, css),
+        ])
+      }
+    }),
+  )
 
   logger.info('cli', `Found ${colors.bold(`${filesWithCss.length}/${files.length}`)} files using Panda`)
   measureTotal()
