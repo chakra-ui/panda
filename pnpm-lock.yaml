@@ -57,7 +57,7 @@ importers:
         version: 0.2.0(react-dom@18.2.0)(react@18.2.0)
       '@astrojs/react':
         specifier: 2.1.1
-        version: 2.1.1(@types/react-dom@18.0.11)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0)
+        version: 2.1.1(@types/react-dom@18.2.1)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0)
       '@pandacss/config':
         specifier: workspace:*
         version: link:../config
@@ -102,8 +102,8 @@ importers:
         specifier: 18.0.17
         version: 18.0.17
       '@types/react-dom':
-        specifier: 18.0.11
-        version: 18.0.11
+        specifier: 18.2.1
+        version: 18.2.1
       '@types/update-notifier':
         specifier: 6.0.2
         version: 6.0.2
@@ -537,8 +537,8 @@ importers:
         specifier: 18.0.17
         version: 18.0.17
       '@types/react-dom':
-        specifier: 18.0.11
-        version: 18.0.11
+        specifier: 18.2.1
+        version: 18.2.1
       merge-anything:
         specifier: ^5.1.4
         version: 5.1.4
@@ -881,8 +881,8 @@ importers:
         specifier: 18.0.17
         version: 18.0.17
       '@types/react-dom':
-        specifier: 18.0.11
-        version: 18.0.11
+        specifier: 18.2.1
+        version: 18.2.1
       '@vitejs/plugin-react':
         specifier: 4.0.0
         version: 4.0.0(vite@4.3.1)
@@ -1000,7 +1000,7 @@ packages:
       prismjs: 1.29.0
     dev: false
 
-  /@astrojs/react@2.1.1(@types/react-dom@18.0.11)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0):
+  /@astrojs/react@2.1.1(@types/react-dom@18.2.1)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-nIcDFnn5H4FKGoSBYXZr95RIQvpcTNRcVV1hvUQifO0F5hQsgb0PVyk6TG4JWxiPGY4Jt4MVQb5JaaDQHlHu4w==}
     engines: {node: '>=16.12.0'}
     peerDependencies:
@@ -1012,7 +1012,7 @@ packages:
       '@babel/core': 7.21.3
       '@babel/plugin-transform-react-jsx': 7.19.0(@babel/core@7.21.3)
       '@types/react': 18.0.17
-      '@types/react-dom': 18.0.11
+      '@types/react-dom': 18.2.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     transitivePeerDependencies:
@@ -6564,6 +6564,12 @@ packages:
 
   /@types/react-dom@18.0.11:
     resolution: {integrity: sha512-O38bPbI2CWtgw/OoQoY+BRelw7uysmXbWvw3nLWO21H1HSh+GOlqPuXshJfjmpNlKiiSDG9cc1JZAaMmVdcTlw==}
+    dependencies:
+      '@types/react': 18.0.17
+    dev: true
+
+  /@types/react-dom@18.2.1:
+    resolution: {integrity: sha512-8QZEV9+Kwy7tXFmjJrp3XUKQSs9LTnE0KnoUb0YCguWBiNW0Yfb2iBMYZ08WPg35IR6P3Z0s00B15SwZnO26+w==}
     dependencies:
       '@types/react': 18.0.17
 
