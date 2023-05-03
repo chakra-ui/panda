@@ -1,7 +1,7 @@
 import type { SystemStyleObject, ConditionalValue } from '../types'
 import type { PropertyValue } from '../types/prop-type'
 import type { Properties } from '../types/csstype'
-import type { Tokens } from '../types/token'
+import type { Tokens } from '../types/tokens'
 
 export type GridProperties = {
    gap?: PropertyValue<'gap'>
@@ -11,7 +11,7 @@ export type GridProperties = {
 	minChildWidth?: ConditionalValue<Tokens["sizes"] | Properties["width"]>
 }
 
-        
+
 type GridOptions = GridProperties & Omit<SystemStyleObject, keyof GridProperties >
 
 
