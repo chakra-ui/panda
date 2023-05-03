@@ -56,14 +56,17 @@ export type GenericConfig<RecipeVariants, PatternProps> = Omit<Config, 'theme' |
 export type Config = {
   /**
    * Whether to emit the artifacts to `node_modules` as a package.
+   * @default false
    */
   emitPackage?: boolean
   /**
    * The namespace prefix for the generated css classes and css variables.
+   * @default ''
    */
   prefix?: string
   /**
    * Whether to update the .gitignore file.
+   * @default 'true'
    */
   gitignore?: boolean
   /**
@@ -73,10 +76,12 @@ export type Config = {
   separator?: '_' | '=' | '-'
   /**
    * Used to customize the design system studio
+   * @default { title: 'Panda', logo: '🐼' }
    */
   studio?: Partial<Studio>
   /**
    * The log level for the built-in logger.
+   * @default 'info'
    */
   logLevel?: 'debug' | 'info' | 'warn' | 'error' | 'silent'
   /**
@@ -85,31 +90,38 @@ export type Config = {
   presets?: (string | Preset)[]
   /**
    * Whether to include css reset styles in the generated css.
+   * @default true
    */
   preflight?: boolean
   /**
    * Whether to optimize the generated css.
+   * @default true
    */
   optimize?: boolean
   /**
    * Whether to minify the generated css.
+   * @default false
    */
   minify?: boolean
   /**
    * The current working directory.
+   * @default 'process.cwd()'
    */
   cwd?: string
   /**
    * Whether to hash the generated class names.
    * This is useful if want to shorten the class names.
+   * @default false
    */
   hash?: boolean
   /**
    * Whether to clean the output directory before generating the css.
+   * @default false
    */
   clean?: boolean
   /**
    * The output directory.
+   * @default 'styled-system'
    */
   outdir?: string
   /**
@@ -118,19 +130,23 @@ export type Config = {
    */
   cssVarRoot?: string
   /**
-   * Files to watch for changes.
+   * List of files glob to watch for changes.
+   * @default []
    */
   include?: string[]
   /**
-   * Files to ignore.
+   * List of files glob to ignore.
+   * @default []
    */
   exclude?: string[]
   /**
    * Whether to watch for changes and regenerate the css.
+   * @default false
    */
   watch?: boolean
   /**
    * Whether to use polling instead of filesystem events when watching.
+   * @default false
    */
   poll?: boolean
   /**
@@ -156,7 +172,6 @@ export type Config = {
   patterns?: Extendable<Record<string, AnyPatternConfig>>
   /**
    * The framework to use for generating supercharged elements.
-   * @default 'react'
    */
   jsxFramework?: 'react' | 'solid' | 'preact' | 'vue'
   /**
