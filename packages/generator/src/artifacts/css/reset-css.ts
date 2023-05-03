@@ -92,6 +92,10 @@ const reset = css`
   sup {
     top: -0.5em;
   }
+
+  dialog {
+    padding: 0;
+  }
 `
 
 export function generateResetCss() {
