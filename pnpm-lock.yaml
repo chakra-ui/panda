@@ -531,8 +531,8 @@ importers:
         specifier: 4.13.0
         version: 4.13.0(prisma@4.13.0)
       '@textea/json-viewer':
-        specifier: ^2.16.2
-        version: 2.16.2(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^3.0.0
+        version: 3.0.0(@emotion/react@11.10.6)(@emotion/styled@11.10.6)(@mui/material@5.12.1)(react-dom@18.2.0)(react@18.2.0)
       '@types/node':
         specifier: 18.16.3
         version: 18.16.3
@@ -3034,7 +3034,7 @@ packages:
       '@types/react':
         optional: true
     dependencies:
-      '@babel/runtime': 7.20.6
+      '@babel/runtime': 7.21.0
       '@emotion/babel-plugin': 11.10.6
       '@emotion/cache': 11.10.7
       '@emotion/serialize': 1.1.1
@@ -3070,7 +3070,7 @@ packages:
       '@types/react':
         optional: true
     dependencies:
-      '@babel/runtime': 7.20.6
+      '@babel/runtime': 7.21.0
       '@emotion/babel-plugin': 11.10.6
       '@emotion/is-prop-valid': 1.2.0
       '@emotion/react': 11.10.6(@types/react@18.0.17)(react@18.2.0)
@@ -6139,9 +6139,12 @@ packages:
       pretty-format: 27.5.1
     dev: true
 
-  /@textea/json-viewer@2.16.2(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-ZPRNpcLJ+hOO6C8tzkQvltRSp7Ol73j8oJ1+w5mWVWn+JR1QqzZJJgBqnNZvs3S1h/jJAjwyeZUVlb0VtIJcvg==}
+  /@textea/json-viewer@3.0.0(@emotion/react@11.10.6)(@emotion/styled@11.10.6)(@mui/material@5.12.1)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-rO/JdEcr4dfki0B+nZNAcEMCVCAjLfi0tGgZhm1/33Md5dlVbQAtxaR4rFU5W+tHom9tBBnsTT7d7T1JHkmjAg==}
     peerDependencies:
+      '@emotion/react': ^11
+      '@emotion/styled': ^11
+      '@mui/material': ^5
       react: ^17 || ^18
       react-dom: ^17 || ^18
     dependencies:
@@ -6154,7 +6157,6 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
       zustand: 4.3.7(react@18.2.0)
     transitivePeerDependencies:
-      - '@types/react'
       - immer
     dev: false
 
