@@ -53,8 +53,8 @@ importers:
   packages/cli:
     dependencies:
       '@ark-ui/react':
-        specifier: 0.1.0
-        version: 0.1.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.2.0
+        version: 0.2.0(react-dom@18.2.0)(react@18.2.0)
       '@astrojs/react':
         specifier: 2.1.1
         version: 2.1.1(@types/react-dom@18.0.11)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0)
@@ -510,8 +510,8 @@ importers:
   playground:
     dependencies:
       '@ark-ui/react':
-        specifier: 0.1.0
-        version: 0.1.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.2.0
+        version: 0.2.0(react-dom@18.2.0)(react@18.2.0)
       '@monaco-editor/react':
         specifier: 4.5.0
         version: 4.5.0(monaco-editor@0.37.1)(react-dom@18.2.0)(react@18.2.0)
@@ -908,8 +908,8 @@ packages:
       '@jridgewell/gen-mapping': 0.1.1
       '@jridgewell/trace-mapping': 0.3.17
 
-  /@ark-ui/react@0.1.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-pjR8DfY4Ns+qxYgwCp7U+tMDck+Qb5q5ffgEll9+J/G2z4i3dT+l34Hhzc51CuDQauU6ZshA6gI1fiVvP8PYOg==}
+  /@ark-ui/react@0.2.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-D6u3MORc1nfbL5DMuAod8K0Lbf3KVwmuUtg+ahdLI2C0SXA+1E06MpiF5bKo6ZXeKt/t4r0G+NcR9ZcSjybVjg==}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
@@ -919,6 +919,7 @@ packages:
       '@zag-js/anatomy': 0.1.4
       '@zag-js/carousel': 0.5.0
       '@zag-js/checkbox': 0.6.0
+      '@zag-js/color-picker': 0.6.0
       '@zag-js/combobox': 0.6.0
       '@zag-js/dialog': 0.6.0
       '@zag-js/editable': 0.6.0
@@ -7478,6 +7479,25 @@ packages:
       '@zag-js/types': 0.5.0
       '@zag-js/utils': 0.3.4
       '@zag-js/visually-hidden': 0.0.1
+    dev: false
+
+  /@zag-js/color-picker@0.6.0:
+    resolution: {integrity: sha512-bjEBOkS9XOH8cnA27hHlrDDqtOzcKtAfSeNqNJxCtHzBGA6mKvfWYxkNiJpHhdcFF0tYUBM9Boo4Lxi/2bAEkw==}
+    dependencies:
+      '@zag-js/anatomy': 0.1.4
+      '@zag-js/color-utils': 0.6.0
+      '@zag-js/core': 0.5.0
+      '@zag-js/dom-event': 0.6.0
+      '@zag-js/dom-query': 0.1.4
+      '@zag-js/number-utils': 0.2.3
+      '@zag-js/numeric-range': 0.1.1
+      '@zag-js/text-selection': 0.0.1
+      '@zag-js/types': 0.5.0
+      '@zag-js/utils': 0.3.4
+    dev: false
+
+  /@zag-js/color-utils@0.6.0:
+    resolution: {integrity: sha512-Nkpa3Dx+lQoy6pkxxztxsvuLnRiN27IMrtQ3Z4OPHZi90GrscWqq+8+mOBhF/r1ogWq2CI8hLe5SwnRA519SiA==}
     dev: false
 
   /@zag-js/combobox@0.6.0:
