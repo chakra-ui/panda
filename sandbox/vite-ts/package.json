@@ -17,8 +17,8 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/react": "18.2.1",
-    "@types/react-dom": "18.2.2",
+    "@types/react": "18.2.2",
+    "@types/react-dom": "18.2.3",
     "@vitejs/plugin-react": "4.0.0",
     "@pandacss/dev": "workspace:*",
     "postcss": "8.4.23",
