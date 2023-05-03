@@ -25,8 +25,8 @@ export function generatePattern(ctx: Context) {
       import type { SystemStyleObject, ConditionalValue } from '../types'
       import type { PropertyValue } from '../types/prop-type'
       import type { Properties } from '../types/csstype'
-      import type { Tokens } from '../types/token'
-  
+      import type { Tokens } from '../types/tokens'
+
       export type ${upperName}Properties = {
          ${Object.keys(properties ?? {})
            .map((key) => {
@@ -50,28 +50,28 @@ export function generatePattern(ctx: Context) {
            })
            .join('\n\t')}
       }
-  
+
       ${
         strict
           ? outdent`export declare function ${name}(options: ${upperName}Properties): string`
           : outdent`
-                  
+
           type ${upperName}Options = ${upperName}Properties & Omit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}>
-  
+
           ${description ? `/** ${description} */` : ''}
           export declare function ${name}(options?: ${upperName}Options): string
           `
       }
-  
+
      `,
       js: outdent`
     ${ctx.file.import(helperImports.join(', '), '../helpers')}
     ${ctx.file.import('css', '../css/index')}
-  
+
     const ${name}Config = ${transformFn.replace(`{transform`, `{\ntransform`)}
-  
+
     export const ${styleFnName} = (styles = {}) => ${name}Config.transform(styles, { map: mapObject })
-  
+
     export const ${name} = (styles) => css(${styleFnName}(styles))
     `,
     }

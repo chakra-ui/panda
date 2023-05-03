@@ -28,7 +28,7 @@ export function generateTokenJs(ctx: Context) {
   token.var = tokenVar
   `,
     dts: outdent`
-  import type { Token } from '../types/token'
+  import type { Token } from '../types/tokens'
 
   export declare const token: {
     (path: Token, fallback?: string): string

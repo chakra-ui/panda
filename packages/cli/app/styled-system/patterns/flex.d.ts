@@ -1,7 +1,7 @@
 import type { SystemStyleObject, ConditionalValue } from '../types'
 import type { PropertyValue } from '../types/prop-type'
 import type { Properties } from '../types/csstype'
-import type { Tokens } from '../types/token'
+import type { Tokens } from '../types/tokens'
 
 export type FlexProperties = {
    align?: PropertyValue<'alignItems'>
@@ -13,7 +13,7 @@ export type FlexProperties = {
 	shrink?: PropertyValue<'flexShrink'>
 }
 
-        
+
 type FlexOptions = FlexProperties & Omit<SystemStyleObject, keyof FlexProperties >
 
 

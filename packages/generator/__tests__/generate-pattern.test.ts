@@ -9,7 +9,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../types/token'
+    import type { Tokens } from '../types/tokens'
 
     export type StackProperties = {
        align?: PropertyValue<'alignItems'>
@@ -18,7 +18,7 @@ test('should generate pattern', () => {
     	gap?: ConditionalValue<Tokens[\\"spacing\\"]>
     }
 
-            
+
     type StackOptions = StackProperties & Omit<SystemStyleObject, keyof StackProperties >
 
 
@@ -49,13 +49,13 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../types/token'
+    import type { Tokens } from '../types/tokens'
 
     export type AbsoluteCenterProperties = {
        axis?: ConditionalValue<\\"x\\" | \\"y\\" | \\"both\\">
     }
 
-            
+
     type AbsoluteCenterOptions = AbsoluteCenterProperties & Omit<SystemStyleObject, keyof AbsoluteCenterProperties >
 
 
@@ -87,7 +87,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../types/token'
+    import type { Tokens } from '../types/tokens'
 
     export type SimpleGridProperties = {
        gap?: ConditionalValue<Tokens[\\"spacing\\"]>
@@ -95,7 +95,7 @@ test('should generate pattern', () => {
     	minChildWidth?: ConditionalValue<Tokens[\\"sizes\\"] | Properties[\\"width\\"]>
     }
 
-            
+
     type SimpleGridOptions = SimpleGridProperties & Omit<SystemStyleObject, keyof SimpleGridProperties >
 
 
@@ -123,13 +123,13 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../types/token'
+    import type { Tokens } from '../types/tokens'
 
     export type GridItemProperties = {
        colSpan?: ConditionalValue<number>
     }
 
-            
+
     type GridItemOptions = GridItemProperties & Omit<SystemStyleObject, keyof GridItemProperties >
 
 
