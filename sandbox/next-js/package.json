@@ -20,7 +20,7 @@
     "eslint-config-next": "13.3.4",
     "@pandacss/fixture": "workspace:*",
     "@pandacss/node": "workspace:*",
-    "@types/react": "18.2.1",
+    "@types/react": "18.2.2",
     "@types/react-dom": "^18.2.1",
     "@pandacss/dev": "workspace:*"
   }
