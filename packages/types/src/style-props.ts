@@ -1,3 +1,4 @@
+import type { ConditionalValue } from './conditions'
 import type { PropertiesFallback } from './csstype'
 import type { PropertyValue } from './prop-type'
 
@@ -11,7 +12,7 @@ type Number = number & {}
 type CssProperties = PropertiesFallback<String | Number>
 
 export type CssVarProperties = {
-  [key in `--${string}`]?: string | number
+  [key in `--${string}`]?: ConditionalValue<string | number>
 }
 
 export type SystemProperties = {
