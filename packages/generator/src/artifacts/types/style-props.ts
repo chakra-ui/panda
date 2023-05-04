@@ -5,11 +5,12 @@ import type { Context } from '../../engines'
 export function generateStyleProps(ctx: Context) {
   const props = new Set(allCssProperties.concat(ctx.utility.keys()))
   return outdent`
+    import { ConditionalValue } from './conditions'
     import { PropertyValue } from './prop-type'
     import { Token } from './tokens'
 
     export type CssVarProperties = {
-      [key in \`--\${string}\`]?: Token | (string & {}) | (number & {})
+      [key in \`--\${string}\`]?: ConditionalValue<Token | (string & {}) | (number & {})>
     }
 
     export type SystemProperties = {
