@@ -6,14 +6,14 @@ describe('generate property types', () => {
   test('should ', () => {
     expect(generatePropTypes(generator)).toMatchInlineSnapshot(`
       "import type { ConditionalValue } from './conditions';
-      import type { Properties as CSSProperties } from './csstype'
+      import type { CssProperties } from './system-types'
       import type { Tokens } from './tokens'
 
       type PropertyValueTypes  = {
       	divideX: string;
       	divideY: string;
       	divideColor: Tokens[\\"colors\\"];
-      	divideStyle: CSSProperties[\\"borderStyle\\"];
+      	divideStyle: CssProperties[\\"borderStyle\\"];
       	top: Tokens[\\"spacing\\"];
       	left: Tokens[\\"spacing\\"];
       	start: Tokens[\\"spacing\\"];
@@ -95,9 +95,9 @@ describe('generate property types', () => {
 
 
 
-        type NativeValue<T> = T extends keyof CSSProperties ? CSSProperties[T] : never
+        type CssValue<T> = T extends keyof CssProperties ? CssProperties[T] : never
 
-        type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] | NativeValue<T> : NativeValue<T>
+        type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] | CssValue<T> : CssValue<T>
 
         export type PropertyTypes = PropertyValueTypes & {
         
@@ -140,9 +140,9 @@ describe('generate property types', () => {
       }
 
       export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-        ? ConditionalValue<PropertyTypes[T] | NativeValue<T>>
-        : T extends keyof CSSProperties
-        ? ConditionalValue<CSSProperties[T]>
+        ? ConditionalValue<PropertyTypes[T] | CssValue<T>>
+        : T extends keyof CssProperties
+        ? ConditionalValue<CssProperties[T]>
         : ConditionalValue<string | number>"
     `)
   })

@@ -7,12 +7,12 @@ export function generatePropTypes(ctx: Context) {
     utility,
   } = ctx
 
-  const strictText = `${strictTokens ? '' : ' | NativeValue<T>'}`
+  const strictText = `${strictTokens ? '' : ' | CssValue<T>'}`
 
   const result: string[] = [
     outdent`
     import type { ConditionalValue } from './conditions';
-    import type { Properties as CSSProperties } from './csstype'
+    import type { CssProperties } from './system-types'
     import type { Tokens } from './tokens'
 
     type PropertyValueTypes  = {`,
@@ -27,9 +27,9 @@ export function generatePropTypes(ctx: Context) {
   result.push('}', '\n')
 
   result.push(`
-  type NativeValue<T> = T extends keyof CSSProperties ? CSSProperties[T] : never
+  type CssValue<T> = T extends keyof CssProperties ? CssProperties[T] : never
 
-  type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T]${strictText} : NativeValue<T>
+  type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T]${strictText} : CssValue<T>
 
   export type PropertyTypes = PropertyValueTypes & {
   `)
@@ -45,8 +45,8 @@ export function generatePropTypes(ctx: Context) {
 
   export type PropertyValue<T extends string> = T extends keyof PropertyTypes
     ? ConditionalValue<PropertyTypes[T]${strictText}>
-    : T extends keyof CSSProperties
-    ? ConditionalValue<CSSProperties[T]>
+    : T extends keyof CssProperties
+    ? ConditionalValue<CssProperties[T]>
     : ConditionalValue<string | number>
   `
 }

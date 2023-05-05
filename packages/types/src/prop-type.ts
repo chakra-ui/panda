@@ -1,5 +1,5 @@
 import type { ConditionalValue } from './conditions'
-import type { Properties as CSSProperties } from './csstype'
+import type { CssProperties } from './system-types'
 
 /* -----------------------------------------------------------------------------
  * Shadowed export (in CLI): DO NOT REMOVE
@@ -9,6 +9,6 @@ export type PropertyTypes = {}
 
 export type PropertyValue<K extends string> = K extends keyof PropertyTypes
   ? ConditionalValue<PropertyTypes[K]>
-  : K extends keyof CSSProperties
-  ? ConditionalValue<CSSProperties[K]>
+  : K extends keyof CssProperties
+  ? ConditionalValue<CssProperties[K]>
   : never

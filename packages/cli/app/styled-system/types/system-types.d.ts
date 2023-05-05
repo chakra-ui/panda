@@ -9,11 +9,9 @@ type Number = number & {}
  * Native css properties
  * -----------------------------------------------------------------------------*/
 
-export type NativeCssProperties = PropertiesFallback<String | Number>
+export type CssProperty = keyof PropertiesFallback
 
-export type NativeCssProperty = keyof NativeCssProperties
-
-export type CssProperties = NativeCssProperties & CssVarProperties
+export type CssProperties = PropertiesFallback<String | Number> & CssVarProperties
 
 export type CssKeyframes = {
   [name: string]: {

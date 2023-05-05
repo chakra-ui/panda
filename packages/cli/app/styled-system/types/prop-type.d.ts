@@ -1,5 +1,5 @@
 import type { ConditionalValue } from './conditions';
-import type { Properties as CSSProperties } from './csstype'
+import type { CssProperties } from './system-types'
 import type { Tokens } from './tokens'
 
 type PropertyValueTypes  = {
@@ -17,8 +17,8 @@ type PropertyValueTypes  = {
 	right: Tokens["spacing"];
 	end: Tokens["spacing"];
 	bottom: Tokens["spacing"];
-	insetX: Tokens["spacing"] | CSSProperties["insetInline"];
-	insetY: Tokens["spacing"] | CSSProperties["insetBlock"];
+	insetX: Tokens["spacing"] | CssProperties["insetInline"];
+	insetY: Tokens["spacing"] | CssProperties["insetBlock"];
 	float: "left" | "right" | "start" | "end";
 	hideFrom: Tokens["breakpoints"];
 	hideBelow: Tokens["breakpoints"];
@@ -47,15 +47,15 @@ type PropertyValueTypes  = {
 	paddingInline: Tokens["spacing"];
 	paddingInlineEnd: Tokens["spacing"];
 	paddingInlineStart: Tokens["spacing"];
-	paddingX: Tokens["spacing"] | CSSProperties["paddingInline"];
-	paddingY: Tokens["spacing"] | CSSProperties["paddingBlock"];
+	paddingX: Tokens["spacing"] | CssProperties["paddingInline"];
+	paddingY: Tokens["spacing"] | CssProperties["paddingBlock"];
 	marginLeft: Tokens["spacing"];
 	marginRight: Tokens["spacing"];
 	marginTop: Tokens["spacing"];
 	marginBottom: Tokens["spacing"];
 	margin: Tokens["spacing"];
-	marginX: Tokens["spacing"] | CSSProperties["marginInline"];
-	marginY: Tokens["spacing"] | CSSProperties["marginBlock"];
+	marginX: Tokens["spacing"] | CssProperties["marginInline"];
+	marginY: Tokens["spacing"] | CssProperties["marginBlock"];
 	marginBlock: Tokens["spacing"];
 	marginBlockEnd: Tokens["spacing"];
 	marginBlockStart: Tokens["spacing"];
@@ -70,7 +70,7 @@ type PropertyValueTypes  = {
 	divideX: string;
 	divideY: string;
 	divideColor: Tokens["colors"];
-	divideStyle: CSSProperties["borderStyle"];
+	divideStyle: CssProperties["borderStyle"];
 	width: Tokens["sizes"] | "1/2" | "1/3" | "2/3" | "1/4" | "2/4" | "3/4" | "1/5" | "2/5" | "3/5" | "4/5" | "1/6" | "2/6" | "3/6" | "4/6" | "5/6" | "1/12" | "2/12" | "3/12" | "4/12" | "5/12" | "6/12" | "7/12" | "8/12" | "9/12" | "10/12" | "11/12" | "screen";
 	inlineSize: Tokens["sizes"] | "1/2" | "1/3" | "2/3" | "1/4" | "2/4" | "3/4" | "1/5" | "2/5" | "3/5" | "4/5" | "1/6" | "2/6" | "3/6" | "4/6" | "5/6" | "1/12" | "2/12" | "3/12" | "4/12" | "5/12" | "6/12" | "7/12" | "8/12" | "9/12" | "10/12" | "11/12" | "screen";
 	height: Tokens["sizes"] | "1/2" | "1/3" | "2/3" | "1/4" | "2/4" | "3/4" | "1/5" | "2/5" | "3/5" | "4/5" | "1/6" | "2/6" | "3/6" | "4/6" | "5/6";
@@ -163,8 +163,8 @@ type PropertyValueTypes  = {
 	caretColor: Tokens["colors"];
 	scrollbar: "visible" | "hidden";
 	scrollMargin: Tokens["spacing"];
-	scrollMarginX: Tokens["spacing"] | CSSProperties["scrollMarginInline"];
-	scrollMarginY: Tokens["spacing"] | CSSProperties["scrollMarginBlock"];
+	scrollMarginX: Tokens["spacing"] | CssProperties["scrollMarginInline"];
+	scrollMarginY: Tokens["spacing"] | CssProperties["scrollMarginBlock"];
 	scrollMarginLeft: Tokens["spacing"];
 	scrollMarginRight: Tokens["spacing"];
 	scrollMarginTop: Tokens["spacing"];
@@ -182,8 +182,8 @@ type PropertyValueTypes  = {
 	scrollPaddingInline: Tokens["spacing"];
 	scrollPaddingInlineEnd: Tokens["spacing"];
 	scrollPaddingInlineStart: Tokens["spacing"];
-	scrollPaddingX: Tokens["spacing"] | CSSProperties["scrollPaddingInline"];
-	scrollPaddingY: Tokens["spacing"] | CSSProperties["scrollPaddingBlock"];
+	scrollPaddingX: Tokens["spacing"] | CssProperties["scrollPaddingInline"];
+	scrollPaddingY: Tokens["spacing"] | CssProperties["scrollPaddingBlock"];
 	scrollPaddingLeft: Tokens["spacing"];
 	scrollPaddingRight: Tokens["spacing"];
 	scrollPaddingTop: Tokens["spacing"];
@@ -206,9 +206,9 @@ type PropertyValueTypes  = {
 
 
 
-  type NativeValue<T> = T extends keyof CSSProperties ? CSSProperties[T] : never
+  type CssValue<T> = T extends keyof CssProperties ? CssProperties[T] : never
 
-  type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] | NativeValue<T> : NativeValue<T>
+  type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] | CssValue<T> : CssValue<T>
 
   export type PropertyTypes = PropertyValueTypes & {
   
@@ -282,7 +282,7 @@ type PropertyValueTypes  = {
 }
 
 export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-  ? ConditionalValue<PropertyTypes[T] | NativeValue<T>>
-  : T extends keyof CSSProperties
-  ? ConditionalValue<CSSProperties[T]>
+  ? ConditionalValue<PropertyTypes[T] | CssValue<T>>
+  : T extends keyof CssProperties
+  ? ConditionalValue<CssProperties[T]>
   : ConditionalValue<string | number>

@@ -1,5 +1,5 @@
 import type { LiteralUnion } from './shared'
-import type { NativeCssProperty, NestedCssProperties } from './system-types'
+import type { CssProperty, NestedCssProperties } from './system-types'
 import type { TokenCategory } from './tokens'
 
 type Getter = (path: string) => any
@@ -36,7 +36,7 @@ export type PropertyConfig = {
   /**
    * The css property this utility maps to.
    */
-  property?: NativeCssProperty
+  property?: CssProperty
   /**
    * The shorthand of the property.
    */
@@ -44,5 +44,5 @@ export type PropertyConfig = {
 }
 
 export type UtilityConfig = {
-  [property in LiteralUnion<NativeCssProperty>]?: PropertyConfig
+  [property in LiteralUnion<CssProperty>]?: PropertyConfig
 }

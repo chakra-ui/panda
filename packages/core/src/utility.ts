@@ -225,7 +225,7 @@ export class Utility {
     const set = this.types.get(property) ?? new Set()
 
     if (config.property) {
-      this.types.set(property, set.add(`CSSProperties["${config.property}"]`))
+      this.types.set(property, set.add(`CssProperties["${config.property}"]`))
     }
   }
 
@@ -250,7 +250,7 @@ export class Utility {
       }
 
       const typeValues = Array.from(tokens).map((key) => {
-        if (key.startsWith('CSSProperties')) return key
+        if (key.startsWith('CssProperties')) return key
         if (key.startsWith('type:')) return key.replace('type:', '')
         return JSON.stringify(key)
       })
