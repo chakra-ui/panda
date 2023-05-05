@@ -1,13 +1,13 @@
-import type { NativeCssProperty, SystemStyleObject } from './system-types'
+import type { CssProperty, SystemStyleObject } from './system-types'
 import type { TokenCategory } from './tokens'
 
 type Primitive = string | number | boolean | null | undefined
 type LiteralUnion<T, K extends Primitive = string> = T | (K & Record<never, never>)
 
 export type PatternProperty =
-  | { type: 'property'; value: NativeCssProperty }
+  | { type: 'property'; value: CssProperty }
   | { type: 'enum'; value: string[] }
-  | { type: 'token'; value: TokenCategory; property?: NativeCssProperty }
+  | { type: 'token'; value: TokenCategory; property?: CssProperty }
   | { type: 'string' | 'boolean' | 'number' }
 
 export type PatternHelpers = {
@@ -48,7 +48,7 @@ export type PatternConfig<T> = {
    * @experimental
    * Disallow certain css properties for this pattern
    */
-  blocklist?: LiteralUnion<NativeCssProperty>[]
+  blocklist?: LiteralUnion<CssProperty>[]
 }
 
 export type AnyPatternConfig = PatternConfig<PatternProperty>
