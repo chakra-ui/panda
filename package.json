@@ -23,7 +23,8 @@
     "prepare-studio": "pnpm --filter=./packages/cli app",
     "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
     "deploy-studio": "pnpm prepare-studio && pnpm build-studio",
-    "serve-studio": "npx serve ./sandbox/vite-ts/panda-static"
+    "serve-studio": "npx serve ./sandbox/vite-ts/panda-static",
+    "mdx-check": "mdx-local-link-checker docs"
   },
   "keywords": [],
   "author": "Segun Adebayo <joseshegs@gmail.com>",
@@ -55,5 +56,8 @@
     "overrides": {
       "@types/react": "18.0.17"
     }
+  },
+  "devDependencies": {
+    "mdx-local-link-checker": "^2.1.1"
   }
 }
