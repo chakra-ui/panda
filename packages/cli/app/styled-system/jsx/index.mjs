@@ -1,5 +1,4 @@
 export * from './factory.mjs';
-export * from './layout-grid.mjs';
 export * from './box.mjs';
 export * from './flex.mjs';
 export * from './stack.mjs';

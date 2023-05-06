@@ -1,6 +1,5 @@
 import { generateGlobalCss } from './global-css'
 import { generateKeyframeCss } from './keyframe-css'
-import { generateLayoutGridCss } from './layout-grid-css'
 import { generateResetCss } from './reset-css'
 import { generateStaticCss } from './static-css'
 import { generateTokenCss } from './token-css'
@@ -12,7 +11,6 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
 
   const unresolved = [
     '@layer reset, base, tokens, recipes, utilities;',
-    "@import './layout-grid.css';",
     "@import './global.css';",
     staticCss && "@import './static.css';",
     preflight && "@import './reset.css';",
@@ -25,7 +23,6 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
   const sheet = ctx.createSheet({
     content: resolve
       ? [
-          generateLayoutGridCss(),
           generateGlobalCss(ctx),
           generateStaticCss(ctx),
           generateResetCss(),

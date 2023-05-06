@@ -1,7 +1,6 @@
 import type { Artifact } from '@pandacss/types'
 import outdent from 'outdent'
 import { generateKeyframeCss } from './css/keyframe-css'
-import { generateLayoutGridCss } from './css/layout-grid-css'
 import { generateResetCss } from './css/reset-css'
 import { generateTokenCss } from './css/token-css'
 import { generateConditions } from './js/conditions'
@@ -13,7 +12,7 @@ import { generateisValidProp } from './js/is-valid-prop'
 import { generatePattern } from './js/pattern'
 import { generateRecipes } from './js/recipe'
 import { generateTokenJs } from './js/token'
-import { generateJsxFactory, generateJsxPatterns, generateJsxTypes, generateLayoutGrid } from './jsx'
+import { generateJsxFactory, generateJsxPatterns, generateJsxTypes } from './jsx'
 import { generatePackageJson } from './pkg-json'
 import { getGeneratedTypes } from './types/generated'
 import { generateTypesEntry } from './types/main'
@@ -167,17 +166,14 @@ function setupJsx(ctx: Context): Artifact {
   const types = generateJsxTypes(ctx)!
   const factory = generateJsxFactory(ctx)
   const patterns = generateJsxPatterns(ctx)
-  const layoutGrid = generateLayoutGrid(ctx)
 
   const index = {
     js: outdent`
   ${ctx.file.export('./factory')}
-  ${ctx.file.export('./layout-grid')}
   ${outdent.string(patterns.map((file) => ctx.file.export(`./${file.name}`)).join('\n'))}
   `,
     dts: outdent`
   export * from './factory'
-  export * from './layout-grid'
   ${outdent.string(patterns.map((file) => `export * from './${file.name}'`).join('\n'))}
   export type { ${ctx.jsx.typeName} } from '../types/jsx'
     `,
@@ -188,8 +184,6 @@ function setupJsx(ctx: Context): Artifact {
     files: [
       ...patterns.map((file) => ({ file: ctx.file.ext(file.name), code: file.js })),
       ...patterns.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
-      { file: ctx.file.ext('layout-grid'), code: layoutGrid?.js },
-      { file: 'layout-grid.d.ts', code: layoutGrid?.dts },
       { file: ctx.file.ext('is-valid-prop'), code: isValidProp.js },
       { file: 'factory.d.ts', code: types.jsxFactory },
       { file: ctx.file.ext('factory'), code: factory?.js },
@@ -228,11 +222,6 @@ function setupResetCss(ctx: Context): Artifact {
   return { files: [{ file: 'reset.css', code }] }
 }
 
-function setupLayoutGridCss(): Artifact {
-  const code = generateLayoutGridCss()
-  return { files: [{ file: 'layout-grid.css', code }] }
-}
-
 function setupGlobalCss(ctx: Context): Artifact {
   const code = generateGlobalCss(ctx)
   return { files: [{ file: 'global.css', code }] }
@@ -266,6 +255,5 @@ export const generateArtifacts = (ctx: Context) => (): Artifact[] =>
     setupGlobalCss(ctx),
     setupStaticCss(ctx),
     setupResetCss(ctx),
-    setupLayoutGridCss(),
     setupPackageJson(ctx),
   ].filter(Boolean)

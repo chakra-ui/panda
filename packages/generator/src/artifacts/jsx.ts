@@ -1,24 +1,8 @@
 import type { Context } from '../engines'
-import {
-  generatePreactJsxFactory,
-  generatePreactLayoutGrid,
-  generatePreactJsxPattern,
-  generatePreactJsxTypes,
-} from './preact-jsx'
-import {
-  generateReactJsxFactory,
-  generateReactLayoutGrid,
-  generateReactJsxPattern,
-  generateReactJsxTypes,
-} from './react-jsx'
-import {
-  generateSolidJsxFactory,
-  generateSolidLayoutGrid,
-  generateSolidJsxPattern,
-  generateSolidJsxTypes,
-} from './solid-jsx'
+import { generatePreactJsxFactory, generatePreactJsxPattern, generatePreactJsxTypes } from './preact-jsx'
+import { generateReactJsxFactory, generateReactJsxPattern, generateReactJsxTypes } from './react-jsx'
+import { generateSolidJsxFactory, generateSolidJsxPattern, generateSolidJsxTypes } from './solid-jsx'
 import { generateVueJsxFactory } from './vue-jsx/jsx'
-import { generateVueLayoutGrid } from './vue-jsx/layout-grid'
 import { generateVueJsxTypes } from './vue-jsx/types'
 
 /* -----------------------------------------------------------------------------
@@ -67,20 +51,4 @@ const patternMap = {
 export function generateJsxPatterns(ctx: Context) {
   if (ctx.patterns.isEmpty() && !ctx.jsx.framework) return []
   return patternMap[ctx.jsx.framework!](ctx)
-}
-
-/* -----------------------------------------------------------------------------
- * Layout Grid
- * -----------------------------------------------------------------------------*/
-
-const layoutGridMap = {
-  react: generateReactLayoutGrid,
-  preact: generatePreactLayoutGrid,
-  solid: generateSolidLayoutGrid,
-  vue: generateVueLayoutGrid,
-}
-
-export function generateLayoutGrid(ctx: Context) {
-  if (!ctx.jsx.framework) return
-  return layoutGridMap[ctx.jsx.framework]()
 }
