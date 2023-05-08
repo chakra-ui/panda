@@ -1,7 +1,9 @@
 import { defineConfig } from '@pandacss/dev'
 
 const makePrimaryColor = (l: number) => {
-  return { value: `hsl(var(--nextra-primary-hue) 100% ${l}%)` }
+  return {
+    value: `hsl(var(--nextra-primary-hue) 100% ${l}% / var(--nextra-primary-opacity, 1))`
+  }
 }
 
 export default defineConfig({

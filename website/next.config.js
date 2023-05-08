@@ -1,7 +1,8 @@
 const withNextra = require('nextra')({
   // Tell Nextra to use the custom theme as the layout
-  // theme: "./theme.tsx",
-  theme: './src/index.tsx'
+  theme: './src/index.tsx',
+  themeConfig: './theme.config.tsx',
+  docsRepositoryBase: 'https://github.com/chakra-ui/panda-docs/blob/pages'
 })
 
 module.exports = withNextra({

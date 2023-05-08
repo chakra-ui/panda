@@ -26,7 +26,7 @@ const classes = {
     })
   ),
   active: css({
-    fontSize: 'md',
+    fontWeight: 'medium',
     WebkitFontSmoothing: 'auto',
     MozOsxFontSmoothing: 'auto'
   }),
@@ -393,6 +393,8 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
         >
           <MenuIcon className={cn({ open: menu })} />
         </button>
+        {config.darkMode &&
+          renderComponent(config.themeSwitch.component, { lite: true })}
       </nav>
     </div>
   )

@@ -167,7 +167,7 @@ export function Search({
             backgroundColor: 'white',
             px: 1.5,
             fontFamily: 'mono',
-            fontSize: 'xs',
+            fontSize: '10px',
             fontWeight: 'medium',
             color: 'gray.500',
             border: '1px solid',

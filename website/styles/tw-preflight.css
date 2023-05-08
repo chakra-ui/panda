@@ -108,7 +108,7 @@ Add the correct font weight in Edge and Safari.
   kbd,
   samp,
   pre {
-    /* font-family: 'ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace'; */
+    font-family: var(--fonts-mono);
     font-size: 1em; /* 2 */
   }
 
