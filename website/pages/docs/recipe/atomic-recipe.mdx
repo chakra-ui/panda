@@ -1,0 +1,267 @@
+# Recipes
+
+Panda provides a way to write CSS-in-JS with better performance, developer experience, and composability. One of its key
+features is the ability to define recipes, which are sets of styles that can be applied to a component based on certain
+conditions.
+
+> Recipes are reusable, composable, and type-safe.
+
+## Creating a Recipe
+
+A recipe consists of four properties:
+
+- `base`: The base styles for the component
+- `variants`: The different visual styles for the component
+- `compoundVariants`: The different combinations of variants for the component
+- `defaultVariants`: The default variant values for the component
+
+Here's an example button recipe
+
+```jsx
+import { cva } from '../panda/css'
+
+const button = cva({
+  base: {
+    display: 'flex',
+  },
+  variants: {
+    visual: {
+      solid: { bg: 'red.200', color: 'white' },
+      outline: { borderWidth: '1px', borderColor: 'red.200' },
+    },
+    size: {
+      sm: { padding: '4', fontSize: '12px' },
+      lg: { padding: '8', fontSize: '24px' },
+    },
+  },
+})
+```
+
+When a recipe is created, Panda will extract and generate CSS for every variant and compoundVariant `css` ahead of time,
+as atomic classes.
+
+Here's what the generated CSS looks like:
+
+```css
+@layer utilities {
+  .d_flex {
+    display: flex;
+  }
+
+  .bg_red_200 {
+    background-color: #fed7d7;
+  }
+
+  .color_white {
+    color: #fff;
+  }
+
+  .border_width_1px {
+    border-width: 1px;
+  }
+  /* ... */
+}
+```
+
+## Using the Recipe
+
+The returned value from the `cva` function is a function that can be used to apply the recipe to a component. Here's an
+example of how to use the `button` recipe:
+
+```jsx
+import { button } from './button'
+
+const Button = () => {
+  return <button css={button({ visual: 'solid', size: 'lg' })}>Click Me</button>
+}
+```
+
+## Setting the default Variants
+
+The `defaultVariants` property is used to set the default variant values for the recipe. This is useful when you want to
+apply a variant by default. Here's an example of how to use `defaultVariants`:
+
+```jsx
+import { cva } from '../panda/css'
+
+const button = cva({
+  base: {
+    display: 'flex',
+  },
+  variants: {
+    visual: {
+      solid: { bg: 'red.200', color: 'white' },
+      outline: { borderWidth: '1px', borderColor: 'red.200' },
+    },
+    size: {
+      sm: { padding: '4', fontSize: '12px' },
+      lg: { padding: '8', fontSize: '24px' },
+    },
+  },
+  defaultVariants: {
+    visual: 'solid',
+    size: 'lg',
+  },
+})
+```
+
+## Compound Variants
+
+Compound variants are a way to combine multiple variants together to create more complex sets of styles. They are
+defined using the `compoundVariants` property , which takes an array of objects as its argument. Each object in the
+array represents a set of conditions that must be met in order for the corresponding styles to be applied.
+
+Here's an example of how to use `compoundVariants` in Panda:
+
+```js
+import { cva } from '../panda/css'
+
+const button = cva({
+  base: {
+    padding: '8px 16px',
+    borderRadius: '4px',
+    fontSize: '16px',
+    fontWeight: 'bold',
+  },
+
+  variants: {
+    size: {
+      small: {
+        fontSize: '14px',
+        padding: '4px 8px',
+      },
+      large: {
+        fontSize: '18px',
+        padding: '12px 24px',
+      },
+    },
+    color: {
+      primary: {
+        backgroundColor: 'blue',
+        color: 'white',
+      },
+      secondary: {
+        backgroundColor: 'gray',
+        color: 'black',
+      },
+    },
+    disabled: {
+      true: {
+        opacity: 0.5,
+        cursor: 'not-allowed',
+      },
+    },
+  },
+
+  // compound variants
+  compoundVariants: [
+    // apply small size variant when both small size and primary color are selected
+    {
+      size: 'small',
+      color: 'primary',
+      css: {
+        border: '2px solid blue',
+      },
+    },
+    // apply large size variant when both large size and secondary color are selected and the button is disabled
+    {
+      size: 'large',
+      color: 'secondary',
+      disabled: true,
+      css: {
+        backgroundColor: 'lightgray',
+        color: 'darkgray',
+        border: 'none',
+      },
+    },
+  ],
+})
+```
+
+Here's an example usage of the `button` recipe:
+
+```jsx
+import { button } from './button'
+
+const Button = () => {
+  // will apply size: small, color: primary, css: { border: '2px solid blue' }
+  return <button css={button({ size: 'small', color: 'primary' })}>Click Me</button>
+}
+```
+
+Overall, using compound variants allows you to create more complex sets of styles that can be applied to your components
+based on multiple conditions.
+
+By combining simple variants together in this way, you can create a wide range of visual styles without cluttering up
+your code with lots of conditional logic.
+
+## Usage in JSX
+
+For recipes created using the `cva` function, you can wrap them in the `panda` factory function to create a component
+that can be used in JSX.
+
+```js
+import { cva } from '../panda/css'
+import { panda } from '../panda/jsx'
+
+const recipe = cva({
+  base: {
+    color: 'red',
+    fontSize: '1.5rem',
+  },
+  variants: {
+    size: {
+      small: {
+        fontSize: '1rem',
+      },
+      large: {
+        fontSize: '2rem',
+      },
+    },
+  },
+})
+
+const Component = panda('div', recipe)
+```
+
+Then you can use the component in JSX:
+
+```jsx
+<Component size="large">Some text</Component>
+```
+
+## TypeScript Guide
+
+Panda ships a type interface to help infer the variants for a recipe. This is useful when you want to use the recipe in
+JSX and want to get type safety for the variants.
+
+```tsx
+import { cva, type RecipeVariantProps } from '../styled-system/css'
+
+const recipe = cva({
+  base: {
+    color: 'red',
+    fontSize: '1.5rem',
+  },
+  variants: {
+    size: {
+      small: {
+        fontSize: '1rem',
+      },
+      large: {
+        fontSize: '2rem',
+      },
+    },
+  },
+})
+
+export type ComponentProps = RecipeVariantProps<typeof recipe> // { size?: 'small' | 'large' }
+
+export const Component = panda('div', recipe)
+```
+
+## Best Practices
+
+- Leverage css variables in the base styles as much as possible. Makes it easier to theme the component with JS
+- Separate concerns (don't mix styles). Group them in logical groups that mean something visually
+- Use the `compoundVariants` property to create more complex sets of styles

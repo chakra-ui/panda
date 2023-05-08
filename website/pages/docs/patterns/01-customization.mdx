@@ -1,0 +1,99 @@
+# Customizing Patterns
+
+Panda provides the ability to customize the built-in patterns, as well as creating your own custom patterns. This is
+useful to create your own layout pattern abstractions that can be used in your application.
+
+A pattern accepts the following parameters:
+
+- `description` - The description of the pattern
+- `properties` - The list of properties that the pattern accepts.
+- `transform` - The function that accepts the properties and returns a css object
+- `jsx` - The JSX element that will be generated (when `jsxFramework` is set). Defaults to the pascal-case version of
+  the pattern name.
+- `blocklist` - The list of properties that are not allowed to be used in the pattern. Can be used to ensure strict
+  typings when using the pattern.
+
+## Creating a Pattern
+
+To create a pattern, you can use the `patterns` property in the config. Let's say we want to create a "Scrollable"
+pattern that applies preset styles to a container that allows for scrolling.
+
+```js
+const config = {
+  patterns: {
+    extend: {
+      scrollable: {
+        description: 'A container that allows for scrolling',
+        properties: {
+          // The direction of the scroll
+          direction: { type: 'enum', value: ['horizontal', 'vertical'] },
+          // Whether to hide the scrollbar
+          hideScrollbar: { type: 'boolean' },
+        },
+        // disallow the `overflow` property (in TypeScript)
+        blocklist: ['overflow'],
+        transform(props) {
+          const { direction, hideScrollbar, ...rest } = props
+          return {
+            overflow: 'auto',
+            height: direction === 'horizontal' ? '100%' : 'auto',
+            width: direction === 'vertical' ? '100%' : 'auto',
+            scrollbarWidth: hideScrollbar ? 'none' : 'auto',
+            WebkitOverflowScrolling: 'touch',
+            '&::-webkit-scrollbar': {
+              display: hideScrollbar ? 'none' : 'auto',
+            },
+            ...rest,
+          }
+        },
+      },
+    },
+  },
+}
+```
+
+Then you can run the following command to generate the pattern JS code:
+
+```bash
+pnpm panda codegen
+```
+
+Now you can import the pattern and use it in your application:
+
+```js
+import { scrollable } from './panda/patterns'
+
+const App = () => {
+  return (
+    <div className={scrollable({ direction: 'vertical', hideScrollbar: true })}>
+      <div>Scrollable content</div>
+    </div>
+  )
+}
+```
+
+## Customizing Built-in Patterns
+
+You can extend the default patterns by using the `patterns.extend` property in the config.
+
+```js
+const config = {
+  patterns: {
+    extend: {
+      // Extend the default `flex` pattern
+      flex: {
+        properties: {
+          // only allow row and column
+          direction: { type: 'enum', value: ['row', 'column'] },
+        },
+      },
+    },
+  },
+}
+```
+
+Then you can run the following command to update the pattern JS code:
+
+```bash
+pnpm panda codegen
+```

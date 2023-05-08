@@ -1,0 +1,103 @@
+# Utility - Customization
+
+The utility API is a way to create your own CSS properties, map existing properties to a set of values or tokens. It's
+like building your own typesafe version of Chakra UI, Tailwind (in JS), or Styled System.
+
+Panda comes with a set of utilities out of the box. You can customize them, or add your own.
+
+Here are the properties you need to define or customize a utility:
+
+- `className` : The className the property maps to
+- `shorthand`: The shorthand or alias version of the property
+- `values`: The possible values the property can have. Could be a token category, or an enum of values, string, number,
+  or boolean.
+- `transform`: A function that converts the value to a valid css object
+
+## Creating a custom utility
+
+Let's say we want to create new property `br` that applies a border radius to an element.
+
+```js
+const config = {
+  utilities: {
+    extend: {
+      br: {
+        className: 'rounded', // css({ br: "sm" }) => rounded-sm
+        values: 'radii', // connect values to the radii tokens
+        transform(value) {
+          return { borderRadius: value }
+        },
+      },
+    },
+  },
+}
+```
+
+Now, we can use the `br` property in our components.
+
+```jsx
+function App() {
+  return <div className={css({ br: 'sm' })} />
+}
+```
+
+or using the JSX flavor
+
+```jsx
+function App() {
+  return <panda.div br="sm" />
+}
+```
+
+### Using enum values
+
+Let's say we want to create a new property `borderX` that applies a limited set of inline border to an element and
+automatically applies the border color.
+
+```js
+const config = {
+  utilities: {
+    extend: {
+      borderX: {
+        values: ['1px', '2px', '4px'],
+        shorthand: 'bx', // `bx` or `borderX` can be used
+        transform(value, token) {
+          return {
+            borderInlineWidth: value,
+            borderColor: token('colors.red.200'), // read the css variable for red.200
+          }
+        },
+      },
+    },
+  },
+}
+```
+
+Now, we can use the `borderX` or `bx` property in our components.
+
+```jsx
+function App() {
+  return <div className={css({ borderX: 'sm' })} />
+}
+```
+
+### Using mapped values
+
+```js
+const config = {
+  utilities: {
+    extend: {
+      borderX: {
+        values: { small: '2px', medium: '5px' },
+        shorthand: 'bx',
+        transform(value, token) {
+          return {
+            borderTopWidth: value,
+            borderTopColor: token('colors.gray.400'),
+          }
+        },
+      },
+    },
+  },
+}
+```

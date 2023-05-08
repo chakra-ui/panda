@@ -1,5 +1,0 @@
-# Global Objects
-
-(German translation)
-
-...

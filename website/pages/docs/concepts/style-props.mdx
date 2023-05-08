@@ -1,0 +1,106 @@
+# Style props
+
+Style props lets you quickly build UI components in JSX by passing css properties as "props" to your components.
+
+In the past, this had a lot of runtime implications but with Panda, all style props are statically analyzed and compiled
+to CSS.
+
+> Note: There's a feather weight runtime that handles splitting style props from native DOM attributes.
+
+Although, you can get very far with just using the `className` prop, style props are a great way to quickly build UI
+components in JSX.
+
+```jsx
+// The className approach
+
+const Button = ({ children }) => (
+  <button className={css({ bg: 'blue.500', color: 'white', py: '2', px: '4', rounded: 'md' })}>{children}</button>
+)
+```
+
+```jsx
+// The style props approach
+
+const Button = ({ children }) => (
+  <panda.button bg="blue.500" color="white" py="2" px="4" rounded="md">
+    {children}
+  </panda.button>
+)
+```
+
+If you're used to Chakra UI, Styled System, or Vanilla Extract, you'll feel right at home with style props.
+
+## Configuring JSX
+
+Panda doesn't come with any JSX runtime by default. It supports JSX for React, Solid.js, Preact and Vue 3.
+
+To enable JSX support, add the following options to your `panda.config.js` file.
+
+- `jsxFactory` - The name of the JSX factory that generates supercharged elements like `panda.div`. Defaults to `panda`
+- `jsxFramework` - The name of the JSX framework you're using. Defaults to `react`. Other options are `solid`, `preact`
+  and `vue`
+
+```js
+{
+    jsxFactory: 'panda',
+    jsxFramework: 'react'
+}
+```
+
+Next, you need to run `panda codegen` to generate the JSX runtime for your framework.
+
+```bash
+panda codegen --clean
+```
+
+That's it! You can now use JSX style props in your components.
+
+## Using style props
+
+Style props are just CSS properties that you can pass to your components as props. With the JSX runtime, you can use
+`panda.<element>` syntax to create supercharged JSX elements that support style props.
+
+```jsx title="src/components/button.jsx"
+import { panda } from '../panda/jsx'
+
+const Button = ({ children }) => (
+  <panda.button bg="blue.500" color="white" py="2" px="4" rounded="md">
+    {children}
+  </panda.button>
+)
+```
+
+## Patterns
+
+All the patterns provided by Panda are available as JSX components.
+
+> Learn more about the [patterns](/docs/patterns/00-intro.mdx) we provide.
+
+```jsx
+import { Stack } from '../panda/jsx'
+
+const App = () => (
+  <Stack gap="4">
+    <button>Button</button>
+    <button>Button</button>
+    <button>Button</button>
+  </Stack>
+)
+```
+
+## Dynamic style props
+
+Panda can statically extract conditional values at any level of the style props or object.
+
+```jsx
+import { Stack } from '../panda/jsx'
+
+const DynamicBox = (
+  <Box
+    bg={isPressed ? 'red.400' : 'green.500'}
+    _hover={{ color: { base: 'red.400', md: isOpen ? 'pink.500' : undefined } }}
+  />
+)
+
+const DynamicCircle = <Circle size={isPressed ? '5' : '8'} />
+```

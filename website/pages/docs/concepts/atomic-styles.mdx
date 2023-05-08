@@ -1,0 +1,37 @@
+# Writing Styles
+
+Panda generates the utilities you need to style your components with confidence.
+
+## Atomic styles
+
+The `css` function is used to write atomic styles. It accepts a style object of both native and user-defined properties,
+and returns a string.
+
+```js
+import { css } from './styled-system/css'
+
+const btnClass = css({
+  backgroundColor: 'gainsboro',
+  borderRadius: '9999px',
+  fontSize: '13px',
+  padding: '10px 15px',
+})
+
+// => bg-gainsboro br-9999px fs-13px p-10px_15px
+```
+
+## Global styles
+
+To write global styles in your app, add it to your `panda.config.ts`
+
+```js
+// panda.config.ts
+export default defineConfig({
+  globalCss: {
+    'html, body': {
+      margin: 0,
+      padding: 0,
+    },
+  },
+})
+```
