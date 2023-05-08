@@ -1,6 +1,7 @@
 import { useState, useCallback, createContext, useContext, memo } from 'react'
 import type { ReactElement, ReactNode } from 'react'
 import cn from 'clsx'
+import { css } from '../../styled-system/css'
 
 const ctx = createContext(0)
 
@@ -24,8 +25,33 @@ interface FileProps {
 }
 
 const Tree = ({ children }: { children: ReactNode }): ReactElement => (
-  <div className="nx-mt-6 nx-select-none nx-text-sm nx-text-gray-800 dark:nx-text-gray-300">
-    <div className="nx-inline-flex nx-flex-col nx-rounded-lg nx-border nx-px-4 nx-py-2 dark:nx-border-neutral-800">
+  <div
+    className={css({
+      marginTop: 6,
+      userSelect: 'none',
+      textStyle: 'sm',
+      color: 'gray.800',
+      _dark: {
+        color: 'gray.300',
+        _hover: {
+          pt: 0,
+          color: 'gray.50',
+          pb: '4'
+        }
+      }
+    })}
+  >
+    <div
+      className={css({
+        display: 'inline-flex',
+        flexDirection: 'column',
+        borderRadius: 'lg',
+        border: '1px solid',
+        px: 4,
+        py: 2,
+        _dark: { borderColor: 'rgb(38 38 38 / 1)' }
+      })}
+    >
       {children}
     </div>
   </div>
@@ -37,7 +63,10 @@ function Ident(): ReactElement {
   return (
     <>
       {[...Array(indent)].map((_, i) => (
-        <span className="nx-inline-block nx-w-5" key={i} />
+        <span
+          className={css({ display: 'inline-block', width: '5px' })}
+          key={i}
+        />
       ))}
     </>
   )
@@ -56,11 +85,23 @@ const Folder = memo<FolderProps>(
     const isFolderOpen = open === undefined ? isOpen : open
 
     return (
-      <li className="nx-flex nx-list-none nx-flex-col">
+      <li
+        className={css({
+          display: 'flex',
+          listStyle: 'none',
+          flexDirection: 'column'
+        })}
+      >
         <a
           onClick={toggle}
           title={name}
-          className="nx-inline-flex nx-cursor-pointer nx-items-center nx-py-1 hover:nx-opacity-60"
+          className={css({
+            display: 'inline-flex',
+            cursor: 'pointer',
+            alignItems: 'center',
+            py: 1,
+            _hover: { opacity: 0.6 }
+          })}
         >
           <Ident />
           <svg width="1em" height="1em" viewBox="0 0 24 24">
@@ -77,7 +118,7 @@ const Folder = memo<FolderProps>(
               }
             />
           </svg>
-          <span className="nx-ml-1">{label ?? name}</span>
+          <span className={css({ ml: 1 })}>{label ?? name}</span>
         </a>
         {isFolderOpen && (
           <ul>
@@ -93,11 +134,19 @@ Folder.displayName = 'Folder'
 const File = memo<FileProps>(({ label, name, active }) => (
   <li
     className={cn(
-      'nx-flex nx-list-none',
-      active && 'nx-text-primary-600 contrast-more:nx-underline'
+      css({ display: 'flex', listStyle: 'none' }),
+      active &&
+        css({ color: 'primary.600', _moreContrast: { color: 'primary.400' } })
     )}
   >
-    <a className="nx-inline-flex nx-cursor-default nx-items-center nx-py-1">
+    <a
+      className={css({
+        display: 'inline-flex',
+        cursor: 'default',
+        alignItems: 'center',
+        py: 1
+      })}
+    >
       <Ident />
       <svg width="1em" height="1em" viewBox="0 0 24 24">
         <path
@@ -109,7 +158,7 @@ const File = memo<FileProps>(({ label, name, active }) => (
           d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2Z"
         />
       </svg>
-      <span className="nx-ml-1">{label ?? name}</span>
+      <span className={css({ ml: 1 })}>{label ?? name}</span>
     </a>
   </li>
 ))

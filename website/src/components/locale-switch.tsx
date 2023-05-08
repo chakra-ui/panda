@@ -4,6 +4,7 @@ import { Select } from './select'
 import type { DocsThemeConfig } from '../constants'
 import { GlobeIcon } from 'nextra/icons'
 import { addBasePath } from 'next/dist/client/add-base-path'
+import { css } from '../../styled-system/css'
 
 interface LocaleSwitchProps {
   options: NonNullable<DocsThemeConfig['i18n']>
@@ -32,9 +33,13 @@ export function LocaleSwitch({
       selected={{
         key: selected?.locale || '',
         name: (
-          <span className="nx-flex nx-items-center nx-gap-2">
+          <span
+            className={css({ display: 'flex', alignItems: 'center', gap: 2 })}
+          >
             <GlobeIcon />
-            <span className={lite ? 'nx-hidden' : ''}>{selected?.text}</span>
+            <span className={lite ? css({ display: 'none' }) : ''}>
+              {selected?.text}
+            </span>
           </span>
         )
       }}

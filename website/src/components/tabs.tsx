@@ -1,6 +1,7 @@
 import type { ComponentProps, ReactElement, ReactNode } from 'react'
 import cn from 'clsx'
 import { Tab as HeadlessTab } from '@headlessui/react'
+import { css } from '../../styled-system/css'
 
 type TabItem = {
   label: ReactElement
@@ -38,8 +39,25 @@ export function Tabs({
       defaultIndex={defaultIndex}
       onChange={onChange}
     >
-      <div className="nextra-scrollbar nx-overflow-x-auto nx-overflow-y-hidden nx-overscroll-x-contain">
-        <HeadlessTab.List className="nx-mt-4 nx-flex nx-w-max nx-min-w-full nx-border-b nx-border-gray-200 nx-pb-px dark:nx-border-neutral-800">
+      <div
+        className={cn('nextra-scrollbar', {
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          overscrollX: 'contain'
+        })}
+      >
+        <HeadlessTab.List
+          className={css({
+            mt: 4,
+            display: 'flex',
+            w: 'max',
+            minW: 'full',
+            borderBottom: '1px solid',
+            borderColor: 'gray.200',
+            pb: 'px',
+            _dark: { borderColor: 'neutral.800' }
+          })}
+        >
           {items.map((item, index) => {
             const disabled = !!(
               item &&
@@ -54,13 +72,43 @@ export function Tabs({
                 disabled={disabled}
                 className={({ selected }) =>
                   cn(
-                    'nx-mr-2 nx-rounded-t nx-p-2 nx-font-medium nx-leading-5 nx-transition-colors',
-                    '-nx-mb-0.5 nx-select-none nx-border-b-2',
+                    css({
+                      mr: 2,
+                      roundedTop: 'md',
+                      p: 2,
+                      fontWeight: 'medium',
+                      lineHeight: '1.25rem',
+                      transitionProperty: 'colors',
+                      mb: '-0.5',
+                      userSelect: 'none',
+                      borderBottom: '2px solid '
+                    }),
                     selected
-                      ? 'nx-border-primary-500 nx-text-primary-600'
-                      : 'nx-border-transparent nx-text-gray-600 hover:nx-border-gray-200 hover:nx-text-black dark:nx-text-gray-200 dark:hover:nx-border-neutral-800 dark:hover:nx-text-white',
+                      ? css({
+                          borderColor: 'primary.500',
+                          color: 'primary.600'
+                        })
+                      : css({
+                          borderColor: 'transparent',
+                          color: 'gray.600',
+                          _hover: {
+                            borderColor: 'gray.200',
+                            color: 'black'
+                          },
+                          _dark: {
+                            borderColor: 'neutral.800',
+                            color: 'neutral.200',
+                            _hover: {
+                              color: 'white'
+                            }
+                          }
+                        }),
                     disabled &&
-                      'nx-pointer-events-none nx-text-gray-400 dark:nx-text-neutral-600'
+                      css({
+                        pointerEvents: 'none',
+                        color: 'gray.400',
+                        _dark: { color: 'neutral.600' }
+                      })
                   )
                 }
               >
@@ -80,7 +128,7 @@ export function Tab({
   ...props
 }: ComponentProps<'div'>): ReactElement {
   return (
-    <HeadlessTab.Panel {...props} className="nx-rounded nx-pt-6">
+    <HeadlessTab.Panel {...props} className={css({ rounded: 'md', pt: 6 })}>
       {children}
     </HeadlessTab.Panel>
   )

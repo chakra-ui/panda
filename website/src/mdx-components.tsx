@@ -8,6 +8,7 @@ import cn from 'clsx'
 import { Code, Pre, Table, Td, Th, Tr } from 'nextra/components'
 import { useIntersectionObserver, useSlugs } from './contexts/active-anchor'
 import type { AnchorProps } from './components/anchor'
+import { css } from '../styled-system/css'
 
 // Anchor links
 function HeadingLink({
@@ -46,19 +47,39 @@ function HeadingLink({
   return (
     <Tag
       className={cn(
-        'nx-font-semibold nx-tracking-tight nx-text-slate-900 dark:nx-text-slate-100',
+        css({
+          fontWeight: 'semibold',
+          letterSpacing: 'tight',
+          color: 'slate.900',
+          _dark: { color: 'slate.100' }
+        }),
         {
-          h2: 'nx-mt-10 nx-border-b nx-pb-1 nx-text-3xl nx-border-neutral-200/70 contrast-more:nx-border-neutral-400 dark:nx-border-primary-100/10 contrast-more:dark:nx-border-neutral-400',
-          h3: 'nx-mt-8 nx-text-2xl',
-          h4: 'nx-mt-8 nx-text-xl',
-          h5: 'nx-mt-8 nx-text-lg',
-          h6: 'nx-mt-8 nx-text-base'
+          h2: css({
+            mt: 10,
+            borderBottom: '1px solid',
+            pb: 1,
+            fontSize: '3xl',
+            borderColor: 'neutral.200/70',
+            _moreContrast: {
+              borderColor: 'neutral.400',
+              _dark: { borderColor: 'primary.400' }
+            },
+            _dark: { borderColor: 'primary.100/10' }
+          }),
+          h3: css({ mt: 8, fontSize: '2xl' }),
+          h4: css({ mt: 8, fontSize: 'xl' }),
+          h5: css({ mt: 8, fontSize: 'lg' }),
+          h6: css({ mt: 8, fontSize: 'base' })
         }[Tag]
       )}
       {...props}
     >
       {children}
-      <span className="nx-absolute -nx-mt-20" id={id} ref={obRef} />
+      <span
+        className={css({ position: 'absolute', mt: -20 })}
+        id={id}
+        ref={obRef}
+      />
       <a
         href={`#${id}`}
         className="subheading-anchor"
@@ -122,7 +143,20 @@ const Details = ({
 
   return (
     <details
-      className="nx-my-4 nx-rounded nx-border nx-border-gray-200 nx-bg-white nx-p-2 nx-shadow-sm first:nx-mt-0 dark:nx-border-neutral-800 dark:nx-bg-neutral-900"
+      className={css({
+        my: 4,
+        rounded: 'md',
+        border: '1px solid',
+        borderColor: 'gray.200',
+        bg: 'white',
+        p: 2,
+        shadow: 'sm',
+        _first: { mt: 0 },
+        _dark: {
+          borderColor: 'neutral.800',
+          bg: 'neutral.900'
+        }
+      })}
       {...props}
       open={delayedOpenState}
       {...(openState && { 'data-expanded': true })}
@@ -138,9 +172,33 @@ const Summary = (props: ComponentProps<'summary'>): ReactElement => {
   return (
     <summary
       className={cn(
-        'nx-flex nx-items-center nx-cursor-pointer nx-list-none nx-p-1 nx-transition-colors hover:nx-bg-gray-100 dark:hover:nx-bg-neutral-800',
-        "before:nx-mr-1 before:nx-inline-block before:nx-transition-transform before:nx-content-[''] dark:before:nx-invert",
-        'rtl:before:nx-rotate-180 [[data-expanded]>&]:before:nx-rotate-90'
+        css({
+          display: 'flex',
+          alignItems: 'center',
+          cursor: 'pointer',
+          listStyle: 'none',
+          p: 1,
+          transitionProperty: 'colors',
+          _hover: {
+            bg: 'gray.100',
+            _dark: { bg: 'neutral.800' }
+          },
+          _before: {
+            mr: 1,
+            display: 'inline-block',
+            transitionProperty: 'transform',
+            content: "''",
+            _dark: { filter: 'invert(1)' }
+          },
+          _rtl: {
+            _before: { transform: 'rotate(180deg)' }
+          },
+          '[data-expanded] > &': {
+            _before: {
+              transform: 'rotate(90deg)'
+            }
+          }
+        })
       )}
       {...props}
       onClick={e => {
@@ -158,7 +216,12 @@ export const Link = ({ href = '', className, ...props }: AnchorProps) => (
     href={href}
     newWindow={EXTERNAL_HREF_REGEX.test(href)}
     className={cn(
-      'nx-text-primary-600 nx-underline nx-decoration-from-font [text-underline-position:from-font]',
+      css({
+        color: 'primary.600',
+        textDecorationLine: 'underline',
+        textDecorationThickness: 'from-font',
+        textUnderlinePosition: 'from-font'
+      }),
       className
     )}
     {...props}
@@ -184,7 +247,14 @@ export const getComponents = ({
   return {
     h1: props => (
       <h1
-        className="nx-mt-2 nx-text-4xl nx-font-bold nx-tracking-tight nx-text-slate-900 dark:nx-text-slate-100"
+        className={css({
+          mt: 2,
+          fontSize: '4xl',
+          fontWeight: 'bold',
+          lineHeight: 'tight',
+          color: 'slate.900',
+          _dark: { color: 'slate.100' }
+        })}
         {...props}
       />
     ),
@@ -195,35 +265,68 @@ export const getComponents = ({
     h6: props => <HeadingLink tag="h6" context={context} {...props} />,
     ul: props => (
       <ul
-        className="nx-mt-6 nx-list-disc first:nx-mt-0 ltr:nx-ml-6 rtl:nx-mr-6"
+        className={css({
+          mt: 6,
+          listStyleType: 'disc',
+          _first: { mt: 0 },
+          _ltr: { ml: 6 },
+          _rtl: { mr: 6 }
+        })}
         {...props}
       />
     ),
     ol: props => (
       <ol
-        className="nx-mt-6 nx-list-decimal first:nx-mt-0 ltr:nx-ml-6 rtl:nx-mr-6"
+        className={css({
+          mt: 6,
+          listStyleType: 'decimal',
+          _first: { mt: 0 },
+          _ltr: { ml: 6 },
+          _rtl: { mr: 6 }
+        })}
         {...props}
       />
     ),
-    li: props => <li className="nx-my-2" {...props} />,
+    li: props => <li className={css({ my: 2 })} {...props} />,
     blockquote: props => (
       <blockquote
         className={cn(
-          'nx-mt-6 nx-border-gray-300 nx-italic nx-text-gray-700 dark:nx-border-gray-700 dark:nx-text-gray-400',
-          'first:nx-mt-0 ltr:nx-border-l-2 ltr:nx-pl-6 rtl:nx-border-r-2 rtl:nx-pr-6'
+          css({
+            mt: 6,
+            borderColor: 'gray.300',
+            fontStyle: 'italic',
+            color: 'gray.700',
+            _dark: { borderColor: 'gray.700', color: 'gray.400' },
+            _first: { mt: 0 },
+            _ltr: { borderLeftWidth: '2', pl: 6 },
+            _rtl: { borderRightWidth: '2', pr: 6 }
+          })
         )}
         {...props}
       />
     ),
-    hr: props => <hr className="nx-my-8 dark:nx-border-gray-900" {...props} />,
-    a: Link,
-    table: props => (
-      <Table
-        className="nextra-scrollbar nx-mt-6 nx-p-0 first:nx-mt-0"
+    hr: props => (
+      <hr
+        className={css({ my: 8, _dark: { borderColor: 'gray.900' } })}
         {...props}
       />
     ),
-    p: props => <p className="nx-mt-6 nx-leading-7 first:nx-mt-0" {...props} />,
+    a: Link,
+    table: props => (
+      <Table
+        className={cn(
+          'nextra-scrollbar',
+          css({ mt: 6, p: 0, _first: { mt: 0 } })
+        )}
+        {...props}
+      />
+    ),
+    p: props => (
+      <p
+        className={css({ mt: 6, lineHeight: '1.75rem', _first: { mt: 0 } })}
+        {...props}
+      />
+    ),
     tr: Tr,
     th: Th,
     td: Td,

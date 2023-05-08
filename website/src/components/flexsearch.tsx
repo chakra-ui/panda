@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode} from 'react';
+import type { ReactElement, ReactNode } from 'react'
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import FlexSearch from 'flexsearch'
@@ -7,6 +7,7 @@ import { Search } from './search'
 import { HighlightMatches } from './highlight-matches'
 import { DEFAULT_LOCALE } from '../constants'
 import type { SearchResult } from '../types'
+import { css, cx } from '../../styled-system/css'
 
 type SectionIndex = FlexSearch.Document<
   {
@@ -204,8 +205,35 @@ export function Flexsearch({
           prefix: isFirstItemOfPage && (
             <div
               className={cn(
-                'nx-mx-2.5 nx-mb-2 nx-mt-6 nx-select-none nx-border-b nx-border-black/10 nx-px-2.5 nx-pb-1.5 nx-text-xs nx-font-semibold nx-uppercase nx-text-gray-500 first:nx-mt-0 dark:nx-border-white/20 dark:nx-text-gray-300',
-                'contrast-more:nx-border-gray-600 contrast-more:nx-text-gray-900 contrast-more:dark:nx-border-gray-50 contrast-more:dark:nx-text-gray-50'
+                css({
+                  mx: '2.5',
+                  mb: 2,
+                  mt: 6,
+                  userSelect: 'none',
+                  borderBottom: '1px solid',
+                  borderColor: 'rgb(black / 10%)',
+                  px: '2.5',
+                  pb: '1.5',
+                  textStyle: 'xs',
+                  fontWeights: 'semibold',
+                  textTransform: 'uppercase',
+                  color: 'gray.500',
+                  _firstOfType: {
+                    mt: 0
+                  },
+                  _dark: {
+                    borderColor: 'rgb(from white / 20%)',
+                    color: 'gray.300'
+                  },
+                  _moreContrast: {
+                    borderColor: 'gray.600',
+                    color: 'gray.900',
+                    _dark: {
+                      borderColor: 'gray.50',
+                      color: 'gray.50'
+                    }
+                  }
+                })
               )}
             >
               {result.doc.title}
@@ -213,11 +241,33 @@ export function Flexsearch({
           ),
           children: (
             <>
-              <div className="nx-text-base nx-font-semibold nx-leading-5">
+              <div
+                className={css({
+                  textStyle: 'md',
+                  fontWeights: 'semibold',
+                  lineHeight: '1.25rem'
+                })}
+              >
                 <HighlightMatches match={search} value={title} />
               </div>
               {content && (
-                <div className="excerpt nx-mt-1 nx-text-sm nx-leading-[1.35rem] nx-text-gray-600 dark:nx-text-gray-400 contrast-more:dark:nx-text-gray-50">
+                <div
+                  className={cx(
+                    'excerpt',
+                    css({
+                      mt: 1,
+                      textStyle: 'sm',
+                      lineHeight: '1.35rem',
+                      color: 'gray.600',
+                      _dark: {
+                        color: 'gray.400'
+                      },
+                      _moreContrast: {
+                        color: 'gray.50'
+                      }
+                    })
+                  )}
+                >
                   <HighlightMatches match={search} value={content} />
                 </div>
               )}
@@ -289,7 +339,11 @@ export function Flexsearch({
       onChange={handleChange}
       onActive={preload}
       className={className}
-      overlayClassName="nx-w-screen nx-min-h-[100px] nx-max-w-[min(calc(100vw-2rem),calc(100%+20rem))]"
+      overlayClassName={css({
+        w: '100vw',
+        minH: '100px',
+        maxW: 'min(calc(100vw-2rem),calc(100%+20rem))'
+      })}
       results={results}
     />
   )

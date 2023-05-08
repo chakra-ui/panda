@@ -5,6 +5,7 @@ import { CheckIcon } from 'nextra/icons'
 import { usePopper } from '../utils'
 import { createPortal } from 'react-dom'
 import { useMounted } from 'nextra/hooks'
+import { css } from '../../styled-system/css'
 
 interface MenuOption {
   key: string
@@ -50,10 +51,30 @@ export function Select({
           ref={trigger}
           title={title}
           className={cn(
-            'nx-h-7 nx-rounded-md nx-px-2 nx-text-left nx-text-xs nx-font-medium nx-text-gray-600 nx-transition-colors dark:nx-text-gray-400',
+            css({
+              height: 7,
+              borderRadius: 'md',
+              px: 2,
+              textAlign: 'left',
+              fontSize: 'xs',
+              fontWeight: 'medium',
+              color: 'gray.600',
+              transitionProperty: 'colors',
+              _dark: { color: 'gray.400' }
+            }),
             open
-              ? 'nx-bg-gray-200 nx-text-gray-900 dark:nx-bg-primary-100/10 dark:nx-text-gray-50'
-              : 'hover:nx-bg-gray-100 hover:nx-text-gray-900 dark:hover:nx-bg-primary-100/5 dark:hover:nx-text-gray-50',
+              ? css({
+                  bg: 'gray.200',
+                  color: 'gray.900',
+                  _dark: { bg: 'primary.100/10', color: 'gray.50' }
+                })
+              : css({
+                  _hover: {
+                    bg: 'gray.100',
+                    color: 'gray.900',
+                    _dark: { bg: 'primary.100/5', color: 'gray.50' }
+                  }
+                }),
             className
           )}
         >
@@ -64,10 +85,25 @@ export function Select({
               ref={container}
               show={open}
               as={Listbox.Options}
-              className="nx-z-20 nx-max-h-64 nx-overflow-auto nx-rounded-md nx-ring-1 nx-ring-black/5 nx-bg-white nx-py-1 nx-text-sm nx-shadow-lg dark:nx-ring-white/20 dark:nx-bg-neutral-800"
-              leave="nx-transition-opacity"
-              leaveFrom="nx-opacity-100"
-              leaveTo="nx-opacity-0"
+              className={css({
+                zIndex: 20,
+                maxHeight: 64,
+                overflow: 'auto',
+                borderRadius: 'md',
+                outline: '1px',
+                outlineColor: 'black/5',
+                bg: 'white',
+                py: 1,
+                fontSize: 'sm',
+                shadow: 'lg',
+                _dark: {
+                  outlineColor: 'white/20',
+                  bg: 'neutral.800'
+                }
+              })}
+              leave={css({ transitionProperty: 'opacity' })}
+              leaveFrom={css({ opacity: 1 })}
+              leaveTo={css({ opacity: 0 })}
             >
               {options.map(option => (
                 <Listbox.Option
@@ -76,16 +112,41 @@ export function Select({
                   className={({ active }) =>
                     cn(
                       active
-                        ? 'nx-bg-primary-50 nx-text-primary-600 dark:nx-bg-primary-500/10'
-                        : 'nx-text-gray-800 dark:nx-text-gray-100',
-                      'nx-relative nx-cursor-pointer nx-whitespace-nowrap nx-py-1.5',
-                      'nx-transition-colors ltr:nx-pl-3 ltr:nx-pr-9 rtl:nx-pr-3 rtl:nx-pl-9'
+                        ? css({
+                            bg: 'primary.50',
+                            color: 'primary.600',
+                            _dark: { bg: 'primary.500/10' }
+                          })
+                        : css({
+                            color: 'gray.800',
+                            _dark: { color: 'gray.100' }
+                          }),
+                      css({
+                        position: 'relative',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        py: 1.5
+                      }),
+                      css({
+                        transitionProperty: 'colors',
+                        _ltr: { pl: 3, pr: 9 },
+                        _rtl: { pr: 3, pl: 9 }
+                      })
                     )
                   }
                 >
                   {option.name}
                   {option.key === selected.key && (
-                    <span className="nx-absolute nx-inset-y-0 nx-flex nx-items-center ltr:nx-right-3 rtl:nx-left-3">
+                    <span
+                      className={css({
+                        position: 'absolute',
+                        insetY: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        _ltr: { right: 3 },
+                        _rtl: { left: 3 }
+                      })}
+                    >
                       <CheckIcon />
                     </span>
                   )}

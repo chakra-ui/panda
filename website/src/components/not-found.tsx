@@ -4,6 +4,7 @@ import { useConfig } from '../contexts'
 import { renderComponent, getGitIssueUrl } from '../utils'
 import { useRouter } from 'next/router'
 import { Anchor } from './anchor'
+import { css } from '../../styled-system/css'
 
 export function NotFoundPage(): ReactElement | null {
   const config = useConfig()
@@ -15,7 +16,7 @@ export function NotFoundPage(): ReactElement | null {
   }
 
   return (
-    <p className="nx-text-center">
+    <p className={css({ textAlign: 'center' })}>
       <Anchor
         href={getGitIssueUrl({
           repository: config.docsRepositoryBase,
@@ -23,7 +24,11 @@ export function NotFoundPage(): ReactElement | null {
           labels
         })}
         newWindow
-        className="nx-text-primary-600 nx-underline nx-decoration-from-font [text-underline-position:from-font]"
+        className={css({
+          color: 'primary.600',
+          textDecoration: 'from-font',
+          textUnderlinePosition: 'from-font'
+        })}
       >
         {renderComponent(content)}
       </Anchor>

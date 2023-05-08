@@ -1,23 +1,62 @@
 import type { ComponentProps, CSSProperties, ReactNode } from 'react'
 import cn from 'clsx'
 import { Anchor } from './anchor'
+import { css } from '../../styled-system/css'
 
 const classes = {
-  cards: cn('nextra-cards nx-mt-4 nx-gap-4 nx-grid'),
+  cards: cn('nextra-cards', css({ mt: 4, gap: 4, display: 'grid' })),
   card: cn(
-    'nextra-card nx-group nx-flex nx-flex-col nx-justify-start nx-overflow-hidden nx-rounded-lg nx-border nx-border-gray-200',
-    'nx-text-current nx-no-underline dark:nx-shadow-none',
-    'hover:nx-shadow-gray-100 dark:hover:nx-shadow-none nx-shadow-gray-100',
-    'active:nx-shadow-sm active:nx-shadow-gray-200',
-    'nx-transition-all nx-duration-200 hover:nx-border-gray-300'
+    'nextra-card group', // TODO group ?
+    css({
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'start',
+      overflow: 'hidden',
+      borderRadius: 'lg',
+      border: '1px solid',
+      borderColor: 'gray.200',
+      color: 'currentColor',
+      textDecorationLine: 'none',
+      shadow: 'gray.100',
+      transitionProperty: 'all',
+      transitionDuration: '200ms',
+      _hover: {
+        shadowColor: 'gray.100',
+        borderColor: 'gray.300'
+      },
+      _active: {
+        shadow: 'sm',
+        shadowColor: 'gray.200'
+      },
+      _dark: {
+        _hover: { shadow: 'none' },
+        shadow: 'none',
+        borderColor: 'rgb(from token(colors.gray.700) / 30%)', // TODO
+        backgroundColor: 'rgb(from token(colors.gray.900) / 30%)'
+      }
+    })
   ),
   title: cn(
-    'nx-flex nx-font-semibold nx-items-start nx-gap-2 nx-p-4 nx-text-gray-700 hover:nx-text-gray-900'
+    css({
+      display: 'flex',
+      fontWeight: 'semibold',
+      alignItems: 'start',
+      gap: 2,
+      p: 4,
+      color: 'gray.700',
+      _hover: { color: 'gray.900' }
+    })
   )
 }
 
 const arrowEl = (
-  <span className="nx-transition-transform nx-duration-75 group-hover:nx-translate-x-[2px]">
+  <span
+    className={css({
+      transitionProperty: 'transform',
+      transitionDuration: '75ms',
+      _groupHover: { transform: 'translateX(2px)' }
+    })}
+  >
     →
   </span>
 )
@@ -46,7 +85,22 @@ export function Card({
         href={href}
         className={cn(
           classes.card,
-          'nx-bg-gray-100 nx-shadow dark:nx-border-neutral-700 dark:nx-bg-neutral-800 dark:nx-text-gray-50 hover:nx-shadow-lg dark:hover:nx-border-neutral-500 dark:hover:nx-bg-neutral-700'
+          css({
+            bgColor: 'gray.100',
+            shadow: 'md',
+            _dark: {
+              borderColor: 'rgb(64 64 64)',
+              backgroundColor: 'rgb(38 38 38)',
+              color: 'gray.50',
+              _hover: {
+                borderColor: 'rgb(115 115 115 / 1)',
+                backgroundColor: 'rgb(64 64 64 / 1)'
+              }
+            },
+            _hover: {
+              shadow: 'lg'
+            }
+          })
         )}
         {...props}
       >
@@ -54,11 +108,11 @@ export function Card({
         <span
           className={cn(
             classes.title,
-            'dark:nx-text-gray-300 dark:hover:nx-text-gray-100'
+            css({ _dark: { color: 'gray.300', _hover: { color: 'gray.100' } } })
           )}
         >
           {icon}
-          <span className="nx-flex nx-gap-1">
+          <span className={css({ display: 'flex', gap: 1 })}>
             {title}
             {animatedArrow}
           </span>
@@ -72,14 +126,33 @@ export function Card({
       href={href}
       className={cn(
         classes.card,
-        'nx-bg-transparent nx-shadow-sm dark:nx-border-neutral-800 hover:nx-bg-slate-50 hover:nx-shadow-md dark:hover:nx-border-neutral-700 dark:hover:nx-bg-neutral-900'
+        css({
+          bg: 'transparent',
+          shadow: 'sm',
+          _dark: {
+            borderColor: 'rgb(38 38 38 / 1)',
+            _hover: {
+              borderColor: 'rgb(64 64 64 / 1)',
+              backgroundColor: 'rgb(115 115 115 / 1)'
+            }
+          },
+          _hover: {
+            bgColor: 'slate.50',
+            shadow: 'md'
+          }
+        })
       )}
       {...props}
     >
       <span
         className={cn(
           classes.title,
-          'dark:nx-text-neutral-200 dark:hover:nx-text-neutral-50'
+          css({
+            _dark: {
+              color: 'rgb(229 229 229 / 1)',
+              _hover: { color: 'rgb(250 250 250 / 1)' }
+            }
+          })
         )}
       >
         {icon}

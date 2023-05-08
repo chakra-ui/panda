@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactElement } from 'react'
 import cn from 'clsx'
+import { css } from '../../styled-system/css'
 
 export function Steps({
   children,
@@ -9,8 +10,18 @@ export function Steps({
   return (
     <div
       className={cn(
-        'nextra-steps nx-ml-4 nx-mb-12 nx-border-l nx-border-gray-200 nx-pl-6',
-        'dark:nx-border-neutral-800 [counter-reset:step]',
+        'nextra-steps',
+        css({
+          ml: 4,
+          mb: 12,
+          borderLeft: '1px solid',
+          borderLeftColor: 'gray.200',
+          pl: 6,
+          _dark: {
+            borderColor: 'neutral.800'
+          },
+          counterReset: 'step'
+        }),
         className
       )}
       {...props}

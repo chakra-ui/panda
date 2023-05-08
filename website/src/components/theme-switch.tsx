@@ -7,6 +7,7 @@ import { useTheme } from 'next-themes'
 import { Select } from './select'
 import { useConfig } from '../contexts'
 import { z } from 'zod'
+import { css } from '../../styled-system/css'
 
 type ThemeSwitchProps = {
   lite?: boolean
@@ -50,9 +51,16 @@ export function ThemeSwitch({
       selected={{
         key: theme,
         name: (
-          <div className="nx-flex nx-items-center nx-gap-2 nx-capitalize">
+          <div
+            className={css({
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              textTransform: 'capitalize'
+            })}
+          >
             <IconToUse />
-            <span className={lite ? 'md:nx-hidden' : ''}>
+            <span className={lite ? css({ display: 'none' }) : ''}>
               {mounted ? options[theme as keyof typeof options] : options.light}
             </span>
           </div>

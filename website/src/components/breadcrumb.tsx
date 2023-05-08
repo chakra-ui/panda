@@ -4,6 +4,7 @@ import { Anchor } from './anchor'
 import cn from 'clsx'
 import { ArrowRightIcon } from 'nextra/icons'
 import type { Item } from 'nextra/normalize-pages'
+import { css, cx } from '../../styled-system/css'
 
 export function Breadcrumb({
   activePath
@@ -11,23 +12,67 @@ export function Breadcrumb({
   activePath: Item[]
 }): ReactElement {
   return (
-    <div className="nextra-breadcrumb nx-mt-1.5 nx-flex nx-items-center nx-gap-1 nx-overflow-hidden nx-text-sm nx-text-gray-500 contrast-more:nx-text-current">
+    <div
+      className={cx(
+        'nextra-breadcrumb',
+        css({
+          mt: 1.5,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          overflow: 'hidden',
+          textStyle: 'sm',
+          color: 'gray.500',
+          _moreContrast: { color: 'currentColor' }
+        })
+      )}
+    >
       {activePath.map((item, index) => {
         const isLink = !item.children || item.withIndexPage
         const isActive = index === activePath.length - 1
 
         return (
           <Fragment key={item.route + item.name}>
-            {index > 0 && <ArrowRightIcon className="nx-w-3.5 nx-shrink-0" />}
+            {index > 0 && (
+              <ArrowRightIcon className={css({ w: 3.5, flexShrink: 0 })} />
+            )}
             <div
               className={cn(
-                'nx-whitespace-nowrap nx-transition-colors',
+                css({
+                  whiteSpace: 'nowrap',
+                  transitionProperty: 'colors',
+                  transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                  transitionDuration: '150ms'
+                }),
+
                 isActive
-                  ? 'nx-font-medium nx-text-gray-700 contrast-more:nx-font-bold contrast-more:nx-text-current dark:nx-text-gray-400 contrast-more:dark:nx-text-current'
+                  ? css({
+                      fontWeight: 'medium',
+                      color: 'gray.700',
+                      _moreContrast: {
+                        fontWeight: 'bold',
+                        color: 'currentColor'
+                      },
+                      _dark: {
+                        color: 'gray.400',
+                        _moreContrast: {
+                          color: 'currentColor'
+                        }
+                      }
+                    })
                   : [
-                      'nx-min-w-[24px] nx-overflow-hidden nx-text-ellipsis',
+                      css({
+                        minWidth: '24px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }),
                       isLink &&
-                        'hover:nx-text-gray-900 dark:hover:nx-text-gray-200'
+                        css({
+                          color: {
+                            _hover: 'gray.900',
+                            _dark: { _hover: 'gray.200' }
+                          }
+                        })
                     ]
               )}
               title={item.title}

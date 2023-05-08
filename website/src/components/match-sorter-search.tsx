@@ -1,10 +1,11 @@
-import type { ReactElement } from 'react';
+import type { ReactElement } from 'react'
 import { useMemo, useState } from 'react'
 import { matchSorter } from 'match-sorter'
 import type { Item as NormalItem } from 'nextra/normalize-pages'
 import { Search } from './search'
 import { HighlightMatches } from './highlight-matches'
 import type { SearchResult } from '../types'
+import { css } from '../../styled-system/css'
 
 export function MatchSorterSearch({
   className,
@@ -36,7 +37,7 @@ export function MatchSorterSearch({
       value={search}
       onChange={setSearch}
       className={className}
-      overlayClassName="nx-w-full"
+      overlayClassName={css({ w: 'full' })}
       results={results}
     />
   )

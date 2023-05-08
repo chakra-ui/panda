@@ -23,6 +23,7 @@ import type { PageTheme } from 'nextra/normalize-pages'
 import { normalizePages } from 'nextra/normalize-pages'
 import { DEFAULT_LOCALE, PartialDocsThemeConfig } from './constants'
 import { renderComponent } from './utils'
+import { css } from '../styled-system/css'
 
 interface BodyProps {
   themeContext: PageTheme
@@ -33,10 +34,21 @@ interface BodyProps {
 }
 
 const classes = {
-  toc: cn(
-    'nextra-toc nx-order-last nx-hidden nx-w-64 nx-shrink-0 xl:nx-block print:nx-hidden'
-  ),
-  main: cn('nx-w-full nx-break-words')
+  toc: css({
+    order: 9999,
+    display: 'none',
+    width: '16rem',
+    flexShrink: 0,
+    xl: { display: 'block' },
+    _print: { display: 'none' },
+    // nextra-toc
+    md: {
+      '& > div': {
+        maskImage: `linear-gradient(to bottom, transparent, #000 20px), linear-gradient(to left, #000 10px, transparent 10px)`
+      }
+    }
+  }),
+  main: css({ w: 'full', overflowWrap: 'break-word' })
 }
 
 const Body = ({
@@ -61,11 +73,21 @@ const Body = ({
   const gitTimestampEl =
     // Because a user's time zone may be different from the server page
     mounted && date ? (
-      <div className="nx-mt-12 nx-mb-8 nx-block nx-text-xs nx-text-gray-500 ltr:nx-text-right rtl:nx-text-left dark:nx-text-gray-400">
+      <div
+        className={css({
+          marginTop: '12',
+          marginBottom: '8',
+          display: 'block',
+          textStyle: 'xs',
+          color: 'gray.500',
+          _dark: { color: 'gray.400' },
+          textAlign: { _ltr: 'right', _rtl: 'left' }
+        })}
+      >
         {renderComponent(config.gitTimestamp, { timestamp: date })}
       </div>
     ) : (
-      <div className="nx-mt-16" />
+      <div className={css({ mt: 16 })} />
     )
 
   const content = (
@@ -83,7 +105,14 @@ const Body = ({
       <article
         className={cn(
           classes.main,
-          'nextra-content nx-min-h-[calc(100vh-var(--nextra-navbar-height))] nx-pl-[max(env(safe-area-inset-left),1.5rem)] nx-pr-[max(env(safe-area-inset-right),1.5rem)]'
+          css({
+            color: 'slate.700',
+            _dark: { color: 'slate.200' },
+            display: 'flex',
+            minH: 'calc(100vh-var(--nextra-navbar-height))',
+            pl: 'max(env(safe-area-inset-left),1.5rem)',
+            pr: 'max(env(safe-area-inset-right),1.5rem)'
+          })
         )}
       >
         {body}
@@ -95,12 +124,30 @@ const Body = ({
     <article
       className={cn(
         classes.main,
-        'nextra-content nx-flex nx-min-h-[calc(100vh-var(--nextra-navbar-height))] nx-min-w-0 nx-justify-center nx-pb-8 nx-pr-[calc(env(safe-area-inset-right)-1.5rem)]',
+        css({
+          color: 'slate.700',
+          _dark: { color: 'slate.200' },
+          display: 'flex',
+          minH: 'calc(100vh-var(--nextra-navbar-height))',
+          minW: 0,
+          justifyContent: 'center',
+          pb: 8,
+          pr: 'calc(env(safe-area-inset-right)-1.5rem)]'
+        }),
         themeContext.typesetting === 'article' &&
           'nextra-body-typesetting-article'
       )}
     >
-      <main className="nx-w-full nx-min-w-0 nx-max-w-6xl nx-px-6 nx-pt-4 md:nx-px-12">
+      <main
+        className={css({
+          w: 'full',
+          minW: 0,
+          maxW: '6xl',
+          px: 6,
+          pt: 4,
+          md: { px: 12 }
+        })}
+      >
         {breadcrumb}
         {body}
       </main>
@@ -157,7 +204,7 @@ const InnerLayout = ({
       )
     ) : (
       <nav
-        className={cn(classes.toc, 'nx-px-4')}
+        className={cn(classes.toc, css({ px: 4 }))}
         aria-label="table of contents"
       >
         {renderComponent(config.toc.component, {
@@ -193,8 +240,8 @@ const InnerLayout = ({
         })}
       <div
         className={cn(
-          'nx-mx-auto nx-flex',
-          themeContext.layout !== 'raw' && 'nx-max-w-[90rem]'
+          css({ mx: 'auto', display: 'flex' }),
+          themeContext.layout !== 'raw' && css({ w: '90rem' })
         )}
       >
         <ActiveAnchorProvider>
@@ -253,7 +300,8 @@ export default function Layout({
   )
 }
 
-export { useConfig, PartialDocsThemeConfig as DocsThemeConfig }
+export { useConfig }
+export type { PartialDocsThemeConfig as DocsThemeConfig }
 export { useMDXComponents } from 'nextra/mdx'
 export { useTheme } from 'next-themes'
 export { Link } from './mdx-components'

@@ -5,7 +5,7 @@ import { ThemeProvider } from 'next-themes'
 import type { Context } from '../types'
 import type { DocsThemeConfig } from '../constants'
 import { DEEP_OBJECT_KEYS, themeSchema } from '../constants'
-import { DEFAULT_THEME } from "../DEFAULT_THEME"
+import { DEFAULT_THEME } from '../DEFAULT_THEME'
 import { metaSchema } from 'nextra/normalize-pages'
 import { MenuProvider } from './menu'
 import type { ZodError } from 'zod'

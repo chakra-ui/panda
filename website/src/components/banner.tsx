@@ -3,6 +3,7 @@ import { XIcon } from 'nextra/icons'
 import cn from 'clsx'
 import { useConfig } from '../contexts'
 import { renderComponent } from '../utils'
+import { css } from '../../styled-system/css'
 
 export function Banner(): ReactElement | null {
   const { banner } = useConfig()
@@ -18,20 +19,70 @@ export function Banner(): ReactElement | null {
       <script dangerouslySetInnerHTML={{ __html: hideBannerScript }} />
       <div
         className={cn(
-          'nextra-banner-container nx-sticky nx-top-0 nx-z-20 nx-flex nx-items-center md:nx-relative',
-          'nx-h-[var(--nextra-banner-height)] [body.nextra-banner-hidden_&]:nx-hidden',
-          'nx-text-slate-50 dark:nx-text-white nx-bg-neutral-900 dark:nx-bg-[linear-gradient(1deg,#383838,#212121)]',
-          'nx-px-2 ltr:nx-pl-10 rtl:nx-pr-10 print:nx-hidden'
+          'nextra-banner-container',
+          css({
+            position: 'sticky',
+            top: 0,
+            zIndex: 20,
+            display: 'flex',
+            alignItems: 'center',
+            md: { position: 'relative' },
+            h: 'var(--nextra-banner-height)',
+            '& ~ div': {
+              '& .nextra-sidebar-container': {
+                pt: '6.5rem'
+              },
+              '&.nextra-nav-container': {
+                top: 10,
+                md: { top: 0 }
+              }
+            },
+            'body.nextra-banner-hidden &': {
+              display: 'none',
+              '& ~ div': {
+                '& .nextra-sidebar-container': {
+                  pt: '16'
+                },
+                '&.nextra-nav-container': {
+                  top: 0
+                }
+              }
+            },
+            color: 'slate.50',
+            bg: 'neutral.900',
+            _dark: {
+              color: 'white',
+              bg: 'linear-gradient(1deg,#383838,#212121)'
+            },
+            px: 2,
+            _ltr: { pl: 10 },
+            _rtl: { pr: 10 },
+            _print: { display: 'none' }
+          })
         )}
       >
-        <div className="nx-w-full nx-truncate nx-px-4 nx-text-center nx-font-medium nx-text-sm">
+        <div
+          className={css({
+            w: 'full',
+            truncate: true,
+            px: 4,
+            textAlign: 'center',
+            fontWeight: 'medium',
+            textStyle: 'sm'
+          })}
+        >
           {renderComponent(banner.text)}
         </div>
         {banner.dismissible && (
           <button
             type="button"
             aria-label="Dismiss banner"
-            className="nx-w-8 nx-h-8 nx-opacity-80 hover:nx-opacity-100"
+            className={css({
+              w: 8,
+              h: 8,
+              opacity: 0.8,
+              _hover: { opacity: 1 }
+            })}
             onClick={() => {
               try {
                 localStorage.setItem(banner.key, '0')
@@ -41,7 +92,7 @@ export function Banner(): ReactElement | null {
               document.body.classList.add('nextra-banner-hidden')
             }}
           >
-            <XIcon className="nx-mx-auto nx-h-4 nx-w-4" />
+            <XIcon className={css({ mx: 'auto', h: 4, w: 4 })} />
           </button>
         )}
       </div>

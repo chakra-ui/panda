@@ -5,6 +5,7 @@ import { useConfig } from '../contexts'
 import type { Item } from 'nextra/normalize-pages'
 import { Anchor } from './anchor'
 import type { DocsThemeConfig } from '../index'
+import { css } from '../../styled-system/css'
 
 interface NavLinkProps {
   currentIndex: number
@@ -12,10 +13,22 @@ interface NavLinkProps {
 }
 
 const classes = {
-  link: cn(
-    'nx-flex nx-max-w-[50%] nx-items-center nx-gap-1 nx-py-4 nx-text-base nx-font-medium nx-text-gray-600 nx-transition-colors [word-break:break-word] hover:nx-text-primary-600 dark:nx-text-gray-300 md:nx-text-lg'
-  ),
-  icon: cn('nx-inline nx-h-5 nx-shrink-0')
+  link: css({
+    display: 'flex',
+    maxWidth: '50%',
+    alignItems: 'center',
+    gap: 1,
+    py: 4,
+    textStyle: 'md',
+    fontWeight: 'medium',
+    color: 'gray.600',
+    transitionProperty: 'colors',
+    wordBreak: 'break-word',
+    _hover: { color: 'primary.600' },
+    _dark: { color: 'gray.300' },
+    md: { textStyle: 'lg' }
+  }),
+  icon: css({ display: 'inline', height: '5', flexShrink: 0 })
 }
 
 export const NavLinks = ({
@@ -36,19 +49,36 @@ export const NavLinks = ({
 
   return (
     <div
-      className={cn(
-        'nx-mb-8 nx-flex nx-items-center nx-border-t nx-pt-8 dark:nx-border-neutral-800',
-        'contrast-more:nx-border-neutral-400 dark:contrast-more:nx-border-neutral-400',
-        'print:nx-hidden'
-      )}
+      className={css({
+        mb: 8,
+        display: 'flex',
+        alignItems: 'center',
+        borderTopWidth: '1px',
+        pt: 8,
+        borderTopColor: 'neutral.400',
+        _dark: { borderTopColor: 'neutral.800' },
+        _moreContrast: {
+          borderTopColor: 'neutral.400',
+          _dark: { borderTopColor: 'neutral.400' }
+        },
+        _print: { display: 'none' }
+      })}
     >
       {prev && (
         <Anchor
           href={prev.route}
           title={prev.title}
-          className={cn(classes.link, 'ltr:nx-pr-4 rtl:nx-pl-4')}
+          className={cn(
+            classes.link,
+            css({ _ltr: { pr: 4 }, _rtl: { pl: 4 } })
+          )}
         >
-          <ArrowRightIcon className={cn(classes.icon, 'ltr:nx-rotate-180')} />
+          <ArrowRightIcon
+            className={cn(
+              classes.icon,
+              css({ _ltr: { transform: 'rotate(180deg)' } })
+            )}
+          />
           {prev.title}
         </Anchor>
       )}
@@ -58,11 +88,19 @@ export const NavLinks = ({
           title={next.title}
           className={cn(
             classes.link,
-            'ltr:nx-ml-auto ltr:nx-pl-4 ltr:nx-text-right rtl:nx-mr-auto rtl:nx-pr-4 rtl:nx-text-left'
+            css({
+              _ltr: { ml: 'auto', pl: 4, textAlign: 'right' },
+              _rtl: { mr: 'auto', pr: 4, textAlign: 'left' }
+            })
           )}
         >
           {next.title}
-          <ArrowRightIcon className={cn(classes.icon, 'rtl:nx-rotate-180')} />
+          <ArrowRightIcon
+            className={cn(
+              classes.icon,
+              css({ _rtl: { transform: 'rotate(-180deg)' } })
+            )}
+          />
         </Anchor>
       )}
     </div>

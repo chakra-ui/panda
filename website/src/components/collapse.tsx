@@ -1,6 +1,7 @@
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react'
 import { useRef, useEffect } from 'react'
 import cn from 'clsx'
+import { css } from '../../styled-system/css'
 
 export function Collapse({
   children,
@@ -28,8 +29,8 @@ export function Collapse({
     }
     if (initialRender.current || !container || !inner) return
 
-    container.classList.toggle('nx-duration-500', !isOpen)
-    container.classList.toggle('nx-duration-300', isOpen)
+    container.classList.toggle(css({ transitionDuration: '500ms' }), !isOpen)
+    container.classList.toggle(css({ transitionDuration: '300ms' }), isOpen)
 
     if (horizontal) {
       // save initial width to avoid word wrapping when container width will be changed
@@ -62,14 +63,25 @@ export function Collapse({
   return (
     <div
       ref={containerRef}
-      className="nx-transform-gpu nx-overflow-hidden nx-transition-all nx-ease-in-out motion-reduce:nx-transition-none"
+      className={css({
+        transform: 'translateZ(0)',
+        overflow: 'hidden',
+        transitionProperty: 'all',
+        transition: 'ease-in-out',
+        _motionReduce: { transitionProperty: 'none' }
+      })}
       style={initialOpen.current || horizontal ? undefined : { height: 0 }}
     >
       <div
         ref={innerRef}
         className={cn(
-          'nx-transition-opacity nx-duration-500 nx-ease-in-out motion-reduce:nx-transition-none',
-          isOpen ? 'nx-opacity-100' : 'nx-opacity-0',
+          css({
+            transitionProperty: 'opacity',
+            transitionDuration: '500ms',
+            transition: 'ease-in-out',
+            _motionReduce: { transitionProperty: 'none' },
+            opacity: isOpen ? 1 : 0
+          }),
           className
         )}
       >

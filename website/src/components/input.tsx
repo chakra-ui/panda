@@ -1,23 +1,57 @@
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react'
 import { forwardRef } from 'react'
 import cn from 'clsx'
+import { css } from '../../styled-system/css'
 
 type InputProps = ComponentProps<'input'> & { suffix?: ReactNode }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, suffix, ...props }, forwardedRef) => (
-    <div className="nx-relative nx-flex nx-items-center nx-text-gray-900 contrast-more:nx-text-gray-800 dark:nx-text-gray-300 contrast-more:dark:nx-text-gray-300">
+    <div
+      className={css({
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        color: 'gray.900',
+        _moreContrast: { color: 'gray.800', _dark: { color: 'gray.300' } },
+        _dark: { color: 'gray.300' }
+      })}
+    >
       <input
         ref={forwardedRef}
         spellCheck={false}
         className={cn(
           className,
-          'nx-block nx-w-full nx-appearance-none nx-rounded-lg nx-px-3 nx-py-2 nx-transition-colors',
-          'nx-text-base nx-leading-tight md:nx-text-sm',
-          'nx-bg-black/[.05] dark:nx-bg-gray-50/10',
-          'focus:nx-bg-white dark:focus:nx-bg-dark',
-          'placeholder:nx-text-gray-500 dark:placeholder:nx-text-gray-400',
-          'contrast-more:nx-border contrast-more:nx-border-current'
+          css({
+            display: 'block',
+            w: 'full',
+            appearance: 'none',
+            rounded: 'lg',
+            px: 3,
+            py: 2,
+            transitionProperty: 'colors',
+            textStyle: 'md',
+            lineHeight: 'tight',
+            md: {
+              textStyle: 'sm'
+            },
+            bgColor: 'black/0.5',
+            _dark: {
+              color: 'gray.400',
+              bgColor: 'gray.50/0.1',
+              _focus: { bgColor: 'black' }
+            },
+            _focus: {
+              bg: 'white'
+            },
+            _placeholder: {
+              color: 'gray.500'
+            },
+            _moreContrast: {
+              border: '1px solid',
+              borderColor: 'currentColor'
+            }
+          })
         )}
         {...props}
       />

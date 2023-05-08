@@ -1,11 +1,12 @@
 import type { ReactElement, ReactNode } from 'react'
 import cn from 'clsx'
 import { InformationCircleIcon } from 'nextra/icons'
+import { css } from '../../styled-system/css'
 
 const TypeToEmoji = {
   default: '💡',
   error: '🚫',
-  info: <InformationCircleIcon className="nx-mt-1" />,
+  info: <InformationCircleIcon className={css({ mt: 1 })} />,
   warning: '⚠️'
 }
 
@@ -13,16 +14,52 @@ type CalloutType = keyof typeof TypeToEmoji
 
 const classes: Record<CalloutType, string> = {
   default: cn(
-    'nx-border-orange-100 nx-bg-orange-50 nx-text-orange-800 dark:nx-border-orange-400/30 dark:nx-bg-orange-400/20 dark:nx-text-orange-300'
+    css({
+      borderColor: 'orange.100',
+      backgroundColor: 'orange.50',
+      color: 'orange.800',
+      _dark: {
+        borderColor: 'rgb(from token(colors.orange.400) / 30%)',
+        backgroundColor: 'rgb(from token(colors.orange.400) / 20%)', // TODO ?
+        color: 'orange.300'
+      }
+    })
   ),
   error: cn(
-    'nx-border-red-200 nx-bg-red-100 nx-text-red-900 dark:nx-border-red-200/30 dark:nx-bg-red-900/30 dark:nx-text-red-200'
+    css({
+      borderColor: 'red.100',
+      backgroundColor: 'red.50',
+      color: 'red.800',
+      _dark: {
+        borderColor: 'rgb(from token(colors.red.200) / 30%)',
+        backgroundColor: 'rgb(from token(colors.red.900) / 30%)',
+        color: 'red.200'
+      }
+    })
   ),
   info: cn(
-    'nx-border-blue-200 nx-bg-blue-100 nx-text-blue-900 dark:nx-border-blue-200/30 dark:nx-bg-blue-900/30 dark:nx-text-blue-200'
+    css({
+      borderColor: 'blue.100',
+      backgroundColor: 'blue.50',
+      color: 'blue.800',
+      _dark: {
+        borderColor: 'rgb(from token(colors.blue.200) / 30%)',
+        backgroundColor: 'rgb(from token(colors.blue.900) / 30%)',
+        color: 'blue.200'
+      }
+    })
   ),
   warning: cn(
-    'nx-border-yellow-100 nx-bg-yellow-50 nx-text-yellow-900 dark:nx-border-yellow-200/30 dark:nx-bg-yellow-700/30 dark:nx-text-yellow-200'
+    css({
+      borderColor: 'yellow.100',
+      backgroundColor: 'yellow.50',
+      color: 'yellow.800',
+      _dark: {
+        borderColor: 'rgb(from token(colors.yellow.200) / 30%)',
+        backgroundColor: 'rgb(from token(colors.yellow.700) / 30%)',
+        color: 'yellow.200'
+      }
+    })
   )
 }
 
@@ -40,20 +77,42 @@ export function Callout({
   return (
     <div
       className={cn(
-        'nextra-callout nx-overflow-x-auto nx-mt-6 nx-flex nx-rounded-lg nx-border nx-py-2 ltr:nx-pr-4 rtl:nx-pl-4',
-        'contrast-more:nx-border-current contrast-more:dark:nx-border-current',
+        'nextra-callout',
+        css({
+          overflowX: 'auto',
+          mt: 6,
+          display: 'flex',
+          borderRadius: 'lg',
+          border: '1px solid',
+          py: 2,
+          _ltr: { pr: 4 },
+          _rtl: { pl: 4 },
+          _moreContrast: {
+            color: 'currentColor',
+            _dark: { borderColor: 'currentColor' } // TODO currentColor vs current vs currentcolor
+          }
+        }),
         classes[type]
       )}
     >
       <div
-        className="nx-select-none nx-text-xl ltr:nx-pl-3 ltr:nx-pr-2 rtl:nx-pr-3 rtl:nx-pl-2"
+        className={css({
+          userSelect: 'none',
+          textStyle: 'xl',
+          _ltr: { pl: 3, pr: 2 },
+          _rtl: { pr: 3, pl: 2 }
+        })}
         style={{
           fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
         }}
       >
         {emoji}
       </div>
-      <div className="nx-w-full nx-min-w-0 nx-leading-7">{children}</div>
+      <div
+        className={css({ width: '100%', minWidth: 0, lineHeight: '1.75rem' })}
+      >
+        {children}
+      </div>
     </div>
   )
 }

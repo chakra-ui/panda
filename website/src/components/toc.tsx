@@ -7,6 +7,7 @@ import scrollIntoView from 'scroll-into-view-if-needed'
 import { renderComponent } from '../utils'
 import { useConfig, useActiveAnchor } from '../contexts'
 import { Anchor } from './anchor'
+import { css } from '../../styled-system/css'
 
 export type TOCProps = {
   headings: Heading[]
@@ -52,41 +53,94 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
   }, [activeSlug])
 
   const linkClassName = cn(
-    'nx-text-xs nx-font-medium nx-text-gray-500 hover:nx-text-gray-900 dark:nx-text-gray-400 dark:hover:nx-text-gray-100',
-    'contrast-more:nx-text-gray-800 contrast-more:dark:nx-text-gray-50'
+    css({
+      textStyle: 'xs',
+      fontWeight: 'medium',
+      color: 'gray.500',
+      _hover: { color: 'gray.900' },
+      _dark: {
+        color: 'gray.400',
+        _hover: { color: 'gray.100' }
+      },
+      _moreContrast: {
+        color: 'gray.800',
+        _dark: { color: 'gray.50' }
+      }
+    })
   )
 
   return (
     <div
       ref={tocRef}
       className={cn(
-        'nextra-scrollbar nx-sticky nx-top-16 nx-overflow-y-auto nx-pr-4 nx-pt-6 nx-text-sm [hyphens:auto]',
-        'nx-max-h-[calc(100vh-var(--nextra-navbar-height)-env(safe-area-inset-bottom))] ltr:-nx-mr-4 rtl:-nx-ml-4'
+        'nextra-scrollbar',
+        css({
+          position: 'sticky',
+          top: 16,
+          overflowY: 'auto',
+          paddingRight: 4,
+          paddingTop: 6,
+          textStyle: 'sm',
+          hyphens: 'auto',
+          maxHeight:
+            'calc(100vh - var(--nextra-navbar-height) - env(safe-area-inset-bottom))',
+          _ltr: { marginRight: 4 },
+          _rtl: { marginLeft: 4 }
+        })
       )}
     >
       {hasHeadings && (
         <>
-          <p className="nx-mb-4 nx-font-semibold nx-tracking-tight">
+          <p
+            className={css({
+              mb: 4,
+              fontWeight: 'semibold',
+              letterSpacing: 'tight'
+            })}
+          >
             {renderComponent(config.toc.title)}
           </p>
           <ul>
             {items.map(({ id, value, depth }) => (
-              <li className="nx-my-2 nx-scroll-my-6 nx-scroll-py-6" key={id}>
+              <li
+                className={css({ my: 2, scrollMarginY: 6, scrollPaddingY: 6 })}
+                key={id}
+              >
                 <a
                   href={`#${id}`}
                   className={cn(
                     {
-                      2: 'nx-font-semibold',
-                      3: 'ltr:nx-pl-4 rtl:nx-pr-4',
-                      4: 'ltr:nx-pl-8 rtl:nx-pr-8',
-                      5: 'ltr:nx-pl-12 rtl:nx-pr-12',
-                      6: 'ltr:nx-pl-16 rtl:nx-pr-16'
+                      2: css({ fontWeight: 'semibold' }),
+                      3: css({ _ltr: { pl: 4 }, _rtl: { pr: 4 } }),
+                      4: css({ _ltr: { pl: 8 }, _rtl: { pr: 8 } }),
+                      5: css({ _ltr: { pl: 12 }, _rtl: { pr: 12 } }),
+                      6: css({ _ltr: { pl: 16 }, _rtl: { pr: 16 } })
                     }[depth as Exclude<typeof depth, 1>],
-                    'nx-inline-block',
+                    css({ display: 'inline-block' }),
                     activeAnchor[id]?.isActive
-                      ? 'nx-text-primary-600 nx-subpixel-antialiased contrast-more:!nx-text-primary-600'
-                      : 'nx-text-gray-500 hover:nx-text-gray-900 dark:nx-text-gray-400 dark:hover:nx-text-gray-300',
-                    'contrast-more:nx-text-gray-900 contrast-more:nx-underline contrast-more:dark:nx-text-gray-50 nx-w-full nx-break-words'
+                      ? css({
+                          color: 'primary.600',
+                          WebkitFontSmoothing: 'auto',
+                          MozOsxFontSmoothing: 'auto',
+                          _moreContrast: { color: 'primary.600!' }
+                        })
+                      : css({
+                          color: 'gray.500',
+                          _hover: { color: 'gray.900' },
+                          _dark: {
+                            color: 'gray.400',
+                            _hover: { color: 'gray.300' }
+                          }
+                        }),
+                    css({
+                      _moreContrast: {
+                        color: 'gray.900',
+                        textDecoration: 'underline',
+                        w: 'full',
+                        overflowWrap: 'break-word',
+                        _dark: { color: 'gray.50' }
+                      }
+                    })
                   )}
                 >
                   {config.toc.headingComponent?.({
@@ -104,9 +158,33 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
         <div
           className={cn(
             hasHeadings &&
-              'nx-mt-8 nx-border-t nx-bg-white nx-pt-8 nx-shadow-[0_-12px_16px_white] dark:nx-bg-dark dark:nx-shadow-[0_-12px_16px_#111]',
-            'nx-sticky nx-bottom-0 nx-flex nx-flex-col nx-items-start nx-gap-2 nx-pb-8 dark:nx-border-neutral-800',
-            'contrast-more:nx-border-t contrast-more:nx-border-neutral-400 contrast-more:nx-shadow-none contrast-more:dark:nx-border-neutral-400'
+              css({
+                mt: 8,
+                borderTop: '1px solid',
+                bg: 'white',
+                pt: 8,
+                shadow: '0 -12px 16px white',
+                _dark: {
+                  bg: 'dark',
+                  shadow: '0 -12px 16px #111',
+                  borderColor: 'neutral.800'
+                },
+                position: 'sticky',
+                bottom: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                gap: 2,
+                pb: 8,
+                _moreContrast: {
+                  borderTop: '1px solid',
+                  borderColor: 'neutral.400',
+                  shadow: 'none',
+                  _dark: {
+                    borderColor: 'neutral.400'
+                  }
+                }
+              })
           )}
         >
           {config.feedback.content ? (

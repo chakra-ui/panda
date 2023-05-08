@@ -1,4 +1,5 @@
 import { Fragment, memo } from 'react'
+import { css } from '../../styled-system/css'
 
 type MatchArgs = {
   value?: string
@@ -22,7 +23,7 @@ export const HighlightMatches = memo<MatchArgs>(function HighlightMatches({
       res.push(
         <Fragment key={id++}>
           {splitText.splice(0, result.index - index).join('')}
-          <span className="nx-text-primary-600">
+          <span className={css({ color: 'blue.600' })}>
             {splitText.splice(0, regexp.lastIndex - result.index).join('')}
           </span>
         </Fragment>

@@ -21,6 +21,7 @@ import { LocaleSwitch } from './locale-switch'
 import { ArrowRightIcon, ExpandIcon } from 'nextra/icons'
 import { Collapse } from './collapse'
 import { Anchor } from './anchor'
+import { css } from '../../styled-system/css'
 
 const TreeState: Record<string, boolean> = Object.create(null)
 
@@ -40,26 +41,69 @@ const Folder = memo(function FolderInner(props: FolderProps) {
 })
 
 const classes = {
-  link: cn(
-    'nx-flex nx-rounded nx-px-2 nx-py-1.5 nx-text-sm nx-transition-colors [word-break:break-word]',
-    'nx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:nx-border'
-  ),
-  inactive: cn(
-    'nx-text-gray-500 hover:nx-bg-gray-100 hover:nx-text-gray-900',
-    'dark:nx-text-neutral-500 dark:hover:nx-bg-primary-100/5 dark:hover:nx-text-gray-50',
-    'contrast-more:nx-text-gray-900 contrast-more:dark:nx-text-gray-50',
-    'contrast-more:nx-border-transparent contrast-more:hover:nx-border-gray-900 contrast-more:dark:hover:nx-border-gray-50'
-  ),
-  active: cn(
-    'nx-bg-primary-100 nx-font-semibold nx-text-primary-800 dark:nx-bg-primary-400/10 dark:nx-text-primary-600',
-    'contrast-more:nx-border-primary-500 contrast-more:dark:nx-border-primary-500'
-  ),
-  list: cn('nx-flex nx-flex-col nx-gap-1'),
-  border: cn(
-    'nx-relative before:nx-absolute before:nx-inset-y-1',
-    'before:nx-w-px before:nx-bg-gray-200 before:nx-content-[""] dark:before:nx-bg-neutral-800',
-    'ltr:nx-pl-3 ltr:before:nx-left-0 rtl:nx-pr-3 rtl:before:nx-right-0'
-  )
+  link: css({
+    display: 'flex',
+    rounded: 'md',
+    px: 2,
+    py: 1.5,
+    textStyle: 'sm',
+    transitionProperty: 'colors',
+    wordBreak: 'break-word',
+    cursor: 'pointer',
+    WebkitTapHighlightColor: 'transparent',
+    WebkitTouchCallout: 'none',
+    _moreContrast: { border: '1px solid' }
+  }),
+  inactive: css({
+    color: 'gray.500',
+    _hover: { bg: 'gray.100', color: 'gray.900' },
+    _dark: {
+      color: 'neutral.400',
+      _hover: {
+        bg: 'primary.100/5',
+        color: 'gray.50'
+      }
+    },
+    _moreContrast: {
+      color: 'gray.900',
+      _dark: {
+        color: 'gray.50',
+        _hover: {
+          borderColor: 'gray.50'
+        }
+      },
+      borderColor: 'transparent',
+      _hover: {
+        borderColor: 'gray.900'
+      }
+    }
+  }),
+  active: css({
+    bg: 'primary.100',
+    fontWeight: 'semibold',
+    color: 'primary.600',
+    _dark: { bg: 'primary.400/10', color: 'primary.600' },
+    _moreContrast: {
+      borderColor: 'primary.500',
+      _dark: {
+        borderColor: 'primary.500'
+      }
+    }
+  }),
+  list: css({ display: 'flex', flexDirection: 'column', gap: 1 }),
+  border: css({
+    position: 'relative',
+    _before: {
+      position: 'absolute',
+      insetY: 1,
+      width: '1px',
+      bg: 'gray.200',
+      content: "''",
+      _dark: { bg: 'neutral.800' }
+    },
+    _ltr: { pl: 3, _before: { left: 0 } },
+    _rtl: { pr: 3, _before: { right: 0 } }
+  })
 }
 
 type FolderProps = {
@@ -125,8 +169,13 @@ function FolderImpl({ item, anchors }: FolderProps): ReactElement {
       <ComponentToUse
         href={isLink ? item.route : undefined}
         className={cn(
-          'nx-items-center nx-justify-between nx-gap-2',
-          !isLink && 'nx-text-left nx-w-full',
+          css({
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2
+          }),
+          !isLink && css({ textAlign: 'left', width: '100%' }),
           classes.link,
           active ? classes.active : classes.inactive
         )}
@@ -159,17 +208,40 @@ function FolderImpl({ item, anchors }: FolderProps): ReactElement {
           route: item.route
         })}
         <ArrowRightIcon
-          className="nx-h-[18px] nx-min-w-[18px] nx-rounded-sm nx-p-0.5 hover:nx-bg-gray-800/5 dark:hover:nx-bg-gray-100/5"
+          className={css({
+            height: '18px',
+            minWidth: '18px',
+            borderRadius: 'sm',
+            p: '0.5',
+            _hover: {
+              bg: 'gray.800/5',
+              _dark: { bg: 'gray.100/5' }
+            }
+          })}
           pathClassName={cn(
-            'nx-origin-center nx-transition-transform rtl:-nx-rotate-180',
-            open && 'ltr:nx-rotate-90 rtl:nx-rotate-[-270deg]'
+            css({
+              transformOrigin: 'center',
+              transitionProperty: 'transform',
+              _rtl: { transform: 'rotate(-180deg)' }
+            }),
+            open &&
+              css({
+                _ltr: { transform: 'rotate(90deg)' },
+                _rtl: { transform: 'rotate(-270deg)' }
+              })
           )}
         />
       </ComponentToUse>
-      <Collapse className="ltr:nx-pr-0 rtl:nx-pl-0 nx-pt-1" isOpen={open}>
+      <Collapse
+        className={css({ _ltr: { pr: 0 }, _rtl: { pl: 0 }, pt: 1 })}
+        isOpen={open}
+      >
         {Array.isArray(item.children) ? (
           <Menu
-            className={cn(classes.border, 'ltr:nx-ml-3 rtl:nx-mr-3')}
+            className={cn(
+              classes.border,
+              css({ _ltr: { ml: 3 }, _rtl: { mr: 3 } })
+            )}
             directories={item.children}
             base={item.route}
             anchors={anchors}
@@ -185,10 +257,20 @@ function Separator({ title }: { title: string }): ReactElement {
   return (
     <li
       className={cn(
-        '[word-break:break-word]',
+        css({ wordBreak: 'break-word' }),
         title
-          ? 'nx-mt-5 nx-mb-2 nx-px-2 nx-py-1.5 nx-text-sm nx-font-semibold nx-text-gray-900 first:nx-mt-0 dark:nx-text-gray-100'
-          : 'nx-my-4'
+          ? css({
+              mt: 5,
+              mb: 2,
+              px: 2,
+              py: 1.5,
+              textStyle: 'sm',
+              fontWeight: 'semibold',
+              color: 'gray.900',
+              _first: { mt: 0 },
+              _dark: { color: 'gray.100' }
+            })
+          : css({ my: 4 })
       )}
     >
       {title ? (
@@ -198,7 +280,14 @@ function Separator({ title }: { title: string }): ReactElement {
           route: ''
         })
       ) : (
-        <hr className="nx-mx-2 nx-border-t nx-border-gray-200 dark:nx-border-primary-100/10" />
+        <hr
+          className={css({
+            mx: 2,
+            borderTopWidth: '1px',
+            borderTopColor: 'gray.200',
+            _dark: { borderTopColor: 'primary.100/10' }
+          })}
+        />
       )}
     </li>
   )
@@ -251,7 +340,7 @@ function File({
           className={cn(
             classes.list,
             classes.border,
-            'ltr:nx-ml-3 rtl:nx-mr-3'
+            css({ _ltr: { ml: 3 }, _rtl: { mr: 3 } })
           )}
         >
           {anchors.map(({ id, value }) => (
@@ -260,7 +349,11 @@ function File({
                 href={`#${id}`}
                 className={cn(
                   classes.link,
-                  'nx-flex nx-gap-2 before:nx-opacity-25 before:nx-content-["#"]',
+                  css({
+                    display: 'flex',
+                    gap: 2,
+                    _before: { opacity: 0.25, content: '"#"' }
+                  }),
                   activeAnchor[id]?.isActive ? classes.active : classes.inactive
                 )}
                 onClick={() => {
@@ -337,11 +430,12 @@ export function Sidebar({
 
   useEffect(() => {
     if (menu) {
-      document.body.classList.add('nx-overflow-hidden', 'md:nx-overflow-auto')
+      document.body.classList.add(
+        ...css({ overflow: 'hidden', md: { overflow: 'auto' } }).split(' ')
+      )
     } else {
       document.body.classList.remove(
-        'nx-overflow-hidden',
-        'md:nx-overflow-auto'
+        ...css({ overflow: 'hidden', md: { overflow: 'auto' } }).split(' ')
       )
     }
   }, [menu])
@@ -378,32 +472,91 @@ export function Sidebar({
   return (
     <>
       {includePlaceholder && asPopover ? (
-        <div className="max-xl:nx-hidden nx-h-0 nx-w-64 nx-shrink-0" />
+        <div
+          className={css({
+            xl: { display: 'none' },
+            h: 0,
+            w: 64,
+            flexShrink: 0
+          })}
+        />
       ) : null}
       <div
         className={cn(
-          'motion-reduce:nx-transition-none [transition:background-color_1.5s_ease]',
+          css({
+            _motionReduce: { transitionProperty: 'none' },
+            transition: 'background-color 1.5s ease'
+          }),
           menu
-            ? 'nx-fixed nx-inset-0 nx-z-10 nx-bg-black/80 dark:nx-bg-black/60'
-            : 'nx-bg-transparent'
+            ? css({
+                position: 'fixed',
+                inset: 0,
+                zIndex: 10,
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                _dark: { backgroundColor: 'rgba(0,0,0,0.6)' }
+              })
+            : css({ backgroundColor: 'transparent' })
         )}
         onClick={() => setMenu(false)}
       />
       <aside
         className={cn(
-          'nextra-sidebar-container nx-flex nx-flex-col',
-          'md:nx-top-16 md:nx-shrink-0 motion-reduce:nx-transform-none',
-          'nx-transform-gpu nx-transition-all nx-ease-in-out',
-          'print:nx-hidden',
-          showSidebar ? 'md:nx-w-64' : 'md:nx-w-20',
-          asPopover ? 'md:nx-hidden' : 'md:nx-sticky md:nx-self-start',
+          'nextra-sidebar-container',
+          css({
+            display: 'flex',
+            flexDirection: 'column',
+            mdDown: {
+              _motionReduce: { transitionProperty: 'none' },
+              position: 'fixed',
+              pt: 'var(--nextra-navbar-height)',
+              top: 0,
+              bottom: 0,
+              w: '100%',
+              zIndex: 15,
+              overscrollBehavior: 'contain',
+              backgroundColor: 'white',
+              _dark: { backgroundColor: 'dark' },
+              transition: 'transform 0.8s cubic-bezier(0.52, 0.16, 0.04, 1)',
+              willChange: 'transform, opacity',
+              contain: 'layout style',
+              backfaceVisibility: 'hidden',
+              '& > .nextra-scrollbar': {
+                maskImage: `linear-gradient(to bottom, transparent, #000 20px), linear-gradient(to left, #000 10px, transparent 10px)`
+              }
+            },
+            md: {
+              top: 16,
+              '& > div': {
+                maskImage: `linear-gradient(to bottom, transparent, #000 20px), linear-gradient(to left, #000 10px, transparent 10px)`
+              }
+            },
+            _motionReduce: {
+              transform: 'none'
+            },
+            transform: 'translate3d(0,0,0)',
+            transitionProperty: 'all',
+            transition: 'ease-in-out',
+            _print: { display: 'none' },
+            "& [data-toggle-animation='show'] button": {
+              opacity: 0,
+              animation: 'fadein 1s ease 0.2s forwards'
+            },
+            "& [data-toggle-animation='hide'] button": {
+              opacity: 0,
+              animation: 'fadein2 1s ease 0.2s forwards'
+            }
+          }),
+          showSidebar ? css({ md: { w: 64 } }) : css({ md: { w: 20 } }),
+          asPopover
+            ? css({ md: { display: 'hidden' } })
+            : css({ position: 'sticky', alignItems: 'flex-start' }),
           menu
-            ? 'max-md:[transform:translate3d(0,0,0)]'
-            : 'max-md:[transform:translate3d(0,-100%,0)]'
+            ? css({ mdDown: { transform: 'translate3d(0,0,0)' } })
+            : css({ mdDown: { transform: 'translate3d(-100%,0,0)' } })
         )}
         ref={containerRef}
       >
-        <div className="nx-px-4 nx-pt-4 md:nx-hidden">
+        <div className={css({ px: 4, pt: 4, md: { display: 'none' } })}>
           {renderComponent(config.search.component, {
             directories: flatDirectories
           })}
@@ -416,8 +569,14 @@ export function Sidebar({
           >
             <div
               className={cn(
-                'nx-overflow-y-auto nx-overflow-x-hidden',
-                'nx-p-4 nx-grow md:nx-h-[calc(100vh-var(--nextra-navbar-height)-var(--nextra-menu-height))]',
+                css({
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                  p: 4,
+                  md: {
+                    h: 'calc(100vh - var(--nextra-navbar-height) - var(--nextra-menu-height))'
+                  }
+                }),
                 showSidebar ? 'nextra-scrollbar' : 'no-scrollbar'
               )}
               ref={sidebarRef}
@@ -426,7 +585,7 @@ export function Sidebar({
               {(!asPopover || !showSidebar) && (
                 <Collapse isOpen={showSidebar} horizontal>
                   <Menu
-                    className="max-md:nx-hidden"
+                    className={css({ mdDown: { display: 'hidden' } })}
                     // The sidebar menu, shows only the docs directories.
                     directories={docsDirectories}
                     // When the viewport size is larger than `md`, hide the anchors in
@@ -437,7 +596,7 @@ export function Sidebar({
                 </Collapse>
               )}
               <Menu
-                className="md:nx-hidden"
+                className={css({ md: { display: 'hidden' } })}
                 // The mobile dropdown menu, shows all the directories.
                 directories={fullDirectories}
                 // Always show the anchor links on mobile (`md`).
@@ -450,15 +609,36 @@ export function Sidebar({
         {hasMenu && (
           <div
             className={cn(
-              'nx-sticky nx-bottom-0',
-              'nx-bg-white dark:nx-bg-dark', // when banner is showed, sidebar links can be behind menu, set bg color as body bg color
-              'nx-mx-4 nx-py-4 nx-shadow-[0_-12px_16px_#fff]',
-              'nx-flex nx-items-center nx-gap-2',
-              'dark:nx-border-neutral-800 dark:nx-shadow-[0_-12px_16px_#111]',
-              'contrast-more:nx-border-neutral-400 contrast-more:nx-shadow-none contrast-more:dark:nx-shadow-none',
+              css({
+                position: 'sticky',
+                bottom: 0,
+                bg: 'white',
+                _dark: {
+                  // when banner is showed, sidebar links can be behind menu, set bg color as body bg color
+                  bg: 'dark',
+                  borderColor: 'neutral.800',
+                  shadow: '0 -12px 16px #111'
+                },
+                mx: 4,
+                py: 4,
+                shadow: '0 -12px 16px #fff',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                _moreContrast: {
+                  bg: 'neutral.400',
+                  shadow: 'none',
+                  _dark: {
+                    shadow: 'none'
+                  }
+                }
+              }),
               showSidebar
-                ? cn(hasI18n && 'nx-justify-end', 'nx-border-t')
-                : 'nx-py-4 nx-flex-wrap nx-justify-center'
+                ? cn(
+                    hasI18n && css({ justifyContent: 'end' }),
+                    css({ borderTop: '1px' })
+                  )
+                : css({ py: 4, flexWrap: 'wrap', justifyContent: 'center' })
             )}
             data-toggle-animation={
               showToggleAnimation ? (showSidebar ? 'show' : 'hide') : 'off'
@@ -468,13 +648,17 @@ export function Sidebar({
               <LocaleSwitch
                 options={config.i18n}
                 lite={!showSidebar}
-                className={cn(showSidebar ? 'nx-grow' : 'max-md:nx-grow')}
+                className={cn(
+                  showSidebar ? css({ flex: 1 }) : css({ mdDown: { flex: 1 } })
+                )}
               />
             )}
             {config.darkMode && (
               <div
                 className={
-                  showSidebar && !hasI18n ? 'nx-grow nx-flex nx-flex-col' : ''
+                  showSidebar && !hasI18n
+                    ? css({ flex: 1, display: 'flex', flexDirection: 'column' })
+                    : ''
                 }
               >
                 {renderComponent(config.themeSwitch.component, {
@@ -485,7 +669,19 @@ export function Sidebar({
             {config.sidebar.toggleButton && (
               <button
                 title={showSidebar ? 'Hide sidebar' : 'Show sidebar'}
-                className="max-md:nx-hidden nx-h-7 nx-rounded-md nx-transition-colors nx-text-gray-600 dark:nx-text-gray-400 nx-px-2 hover:nx-bg-gray-100 hover:nx-text-gray-900 dark:hover:nx-bg-primary-100/5 dark:hover:nx-text-gray-50"
+                className={css({
+                  mdDown: { display: 'hidden' },
+                  h: 7,
+                  transitionProperty: 'colors',
+                  color: 'gray.600',
+                  _dark: { color: 'gray.400' },
+                  px: 2,
+                  _hover: {
+                    color: 'gray.900',
+                    bg: 'gray.100',
+                    _dark: { color: 'gray.50', bg: 'primary.100/5' }
+                  }
+                })}
                 onClick={() => {
                   setSidebar(!showSidebar)
                   setToggleAnimation(true)
