@@ -83,8 +83,8 @@ export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
       ({ sheet, result, config: { minify, optimize } }) => {
         return !result.isEmpty() ? sheet.toCss({ minify, optimize }) : undefined
       },
-      () => {
-        logger.error('serializer:css', 'Failed to serialize CSS')
+      (err) => {
+        logger.error('serializer:css', 'Failed to serialize CSS: ' + err)
       },
     ),
   )
