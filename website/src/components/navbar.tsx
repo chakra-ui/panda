@@ -87,13 +87,15 @@ function NavbarMenu({
               overflow: 'auto',
               rounded: 'md',
               outline: '1px solid',
-              outlineColor: 'black/5',
+              // outlineColor: 'black/5',
+              outlineColor: 'rgb(0 0 0 / 0.05)',
               bgColor: 'white',
               py: 1,
               textStyle: 'sm',
               shadow: 'lg',
               _dark: {
-                outlineColor: 'white/20',
+                // outlineColor: 'white/20',
+                outlineColor: 'rgb(255 255 255 / 0.2)',
                 bgColor: 'neutral.800'
               }
             })}
@@ -185,7 +187,7 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
           display: 'flex',
           h: 'var(--nextra-navbar-height)',
           maxW: '90rem',
-          items: 'center',
+          alignItems: 'center',
           justify: 'end',
           gap: 2,
           pl: 'max(env(safe-area-inset-left),1.5rem)',
@@ -343,7 +345,8 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
               mr: -2,
               rounded: 'sm',
               p: 2,
-              _active: { bg: 'gray.400/20' },
+              // _active: { bg: 'gray.400/20' },
+              _active: { bg: 'rgb(156 163 175 / 0.2)' },
               md: { display: 'none' },
               // "nextra-hamburger",
               '& svg': {

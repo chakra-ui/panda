@@ -59,12 +59,14 @@ function HeadingLink({
             borderBottom: '1px solid',
             pb: 1,
             fontSize: '3xl',
-            borderColor: 'neutral.200/70',
+            // borderColor: 'neutral.200/70', // opacity modifier
+            borderColor: 'rgb(229 229 229 / 0.7)',
             _moreContrast: {
               borderColor: 'neutral.400',
               _dark: { borderColor: 'primary.400' }
             },
-            _dark: { borderColor: 'primary.100/10' }
+            // _dark: { borderColor: 'primary.100/10' } // opacity modifier
+            _dark: { borderColor: 'rgb(219 234 254 / 0.1)' }
           }),
           h3: css({ mt: 8, fontSize: '2xl' }),
           h4: css({ mt: 8, fontSize: 'xl' }),

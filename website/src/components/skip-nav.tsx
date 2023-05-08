@@ -64,7 +64,7 @@ export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProps>(
                 zIndex: 50,
                 m: 3,
                 ml: 4,
-                h: 'calc(var(--nextra-navbar-height)-1.5rem)',
+                h: 'calc(var(--nextra-navbar-height) - 1.5rem)',
                 rounded: 'lg',
                 border: 'px',
                 py: 2,

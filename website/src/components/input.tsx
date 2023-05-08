@@ -35,10 +35,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             md: {
               textStyle: 'sm'
             },
-            bgColor: 'black/0.5',
+            bgColor: 'rgb(0 0 0 / 0.05)', // opacity modifier
             _dark: {
               color: 'gray.400',
-              bgColor: 'gray.50/0.1',
+              // bgColor: 'gray.50/0.1',
+              bgColor: 'rgb(249 250 251 / 0.1)',
               _focus: { bgColor: 'black' }
             },
             _focus: {

@@ -211,7 +211,7 @@ export function Flexsearch({
                   mt: 6,
                   userSelect: 'none',
                   borderBottom: '1px solid',
-                  borderColor: 'rgb(black / 10%)',
+                  borderColor: 'rgb(black / 10%)', // black/10
                   px: '2.5',
                   pb: '1.5',
                   textStyle: 'xs',
@@ -222,7 +222,7 @@ export function Flexsearch({
                     mt: 0
                   },
                   _dark: {
-                    borderColor: 'rgb(from white / 20%)',
+                    borderColor: 'rgb(from white / 20%)', // white/20
                     color: 'gray.300'
                   },
                   _moreContrast: {
@@ -342,7 +342,7 @@ export function Flexsearch({
       overlayClassName={css({
         w: '100vw',
         minH: '100px',
-        maxW: 'min(calc(100vw-2rem),calc(100%+20rem))'
+        maxW: 'min(calc(100vw - 2rem), calc(100% + 20rem))'
       })}
       results={results}
     />

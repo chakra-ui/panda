@@ -58,9 +58,10 @@ const classes = {
     color: 'gray.500',
     _hover: { bg: 'gray.100', color: 'gray.900' },
     _dark: {
-      color: 'neutral.400',
+      color: 'neutral.500',
       _hover: {
-        bg: 'primary.100/5',
+        // bg: 'primary.100/5',
+        bg: 'rgb(219 234 254 / 0.05)',
         color: 'gray.50'
       }
     },
@@ -81,8 +82,9 @@ const classes = {
   active: css({
     bg: 'primary.100',
     fontWeight: 'semibold',
-    color: 'primary.600',
-    _dark: { bg: 'primary.400/10', color: 'primary.600' },
+    color: 'primary.800',
+    // _dark: { bg: 'primary.400/10', color: 'primary.600' },
+    _dark: { bgColor: 'rgb(96 165 250 / 0.1)', color: 'primary.600' },
     _moreContrast: {
       borderColor: 'primary.500',
       _dark: {
@@ -214,8 +216,10 @@ function FolderImpl({ item, anchors }: FolderProps): ReactElement {
             borderRadius: 'sm',
             p: '0.5',
             _hover: {
-              bg: 'gray.800/5',
-              _dark: { bg: 'gray.100/5' }
+              // bg: 'gray.800/5',
+              bg: 'rgb(31 41 55 / 0.5)',
+              // _dark: { bg: 'gray.100/5' }
+              _dark: { bg: 'rgb(243 244 246 / 0.05)' }
             }
           })}
           pathClassName={cn(
@@ -285,7 +289,8 @@ function Separator({ title }: { title: string }): ReactElement {
             mx: 2,
             borderTopWidth: '1px',
             borderTopColor: 'gray.200',
-            _dark: { borderTopColor: 'primary.100/10' }
+            // _dark: { borderTopColor: 'primary.100/10' }
+            _dark: { borderTopColor: 'rgb(219 234 254 / 0.1)' } // TODO opacity modifier
           })}
         />
       )}
@@ -492,7 +497,7 @@ export function Sidebar({
                 position: 'fixed',
                 inset: 0,
                 zIndex: 10,
-                backgroundColor: 'rgba(0,0,0,0.8)',
+                backgroundColor: 'rgba(0,0,0,0.8)', // opacity modifier
                 _dark: { backgroundColor: 'rgba(0,0,0,0.6)' }
               })
             : css({ backgroundColor: 'transparent' })
@@ -526,6 +531,7 @@ export function Sidebar({
             },
             md: {
               top: 16,
+              flexShrink: 0,
               '& > div': {
                 maskImage: `linear-gradient(to bottom, transparent, #000 20px), linear-gradient(to left, #000 10px, transparent 10px)`
               }
@@ -548,7 +554,7 @@ export function Sidebar({
           }),
           showSidebar ? css({ md: { w: 64 } }) : css({ md: { w: 20 } }),
           asPopover
-            ? css({ md: { display: 'hidden' } })
+            ? css({ md: { display: 'none' } })
             : css({ position: 'sticky', alignItems: 'flex-start' }),
           menu
             ? css({ mdDown: { transform: 'translate3d(0,0,0)' } })
@@ -585,7 +591,7 @@ export function Sidebar({
               {(!asPopover || !showSidebar) && (
                 <Collapse isOpen={showSidebar} horizontal>
                   <Menu
-                    className={css({ mdDown: { display: 'hidden' } })}
+                    className={css({ mdDown: { display: 'none' } })}
                     // The sidebar menu, shows only the docs directories.
                     directories={docsDirectories}
                     // When the viewport size is larger than `md`, hide the anchors in
@@ -596,7 +602,7 @@ export function Sidebar({
                 </Collapse>
               )}
               <Menu
-                className={css({ md: { display: 'hidden' } })}
+                className={css({ md: { display: 'none' } })}
                 // The mobile dropdown menu, shows all the directories.
                 directories={fullDirectories}
                 // Always show the anchor links on mobile (`md`).
@@ -670,7 +676,7 @@ export function Sidebar({
               <button
                 title={showSidebar ? 'Hide sidebar' : 'Show sidebar'}
                 className={css({
-                  mdDown: { display: 'hidden' },
+                  mdDown: { display: 'none' },
                   h: 7,
                   transitionProperty: 'colors',
                   color: 'gray.600',
@@ -679,7 +685,8 @@ export function Sidebar({
                   _hover: {
                     color: 'gray.900',
                     bg: 'gray.100',
-                    _dark: { color: 'gray.50', bg: 'primary.100/5' }
+                    // _dark: { color: 'gray.50', bg: 'primary.100/5' }
+                    _dark: { color: 'gray.50', bg: 'rgb(219 234 254 / 0.05)' } // opacity modifier
                   }
                 })}
                 onClick={() => {

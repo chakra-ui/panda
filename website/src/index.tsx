@@ -109,9 +109,9 @@ const Body = ({
             color: 'slate.700',
             _dark: { color: 'slate.200' },
             display: 'flex',
-            minH: 'calc(100vh-var(--nextra-navbar-height))',
-            pl: 'max(env(safe-area-inset-left),1.5rem)',
-            pr: 'max(env(safe-area-inset-right),1.5rem)'
+            minH: 'calc(100vh - var(--nextra-navbar-height))',
+            pl: 'max(env(safe-area-inset-left), 1.5rem)',
+            pr: 'max(env(safe-area-inset-right), 1.5rem)'
           })
         )}
       >
@@ -128,11 +128,11 @@ const Body = ({
           color: 'slate.700',
           _dark: { color: 'slate.200' },
           display: 'flex',
-          minH: 'calc(100vh-var(--nextra-navbar-height))',
+          minH: 'calc(100vh - var(--nextra-navbar-height))',
           minW: 0,
           justifyContent: 'center',
           pb: 8,
-          pr: 'calc(env(safe-area-inset-right)-1.5rem)]'
+          pr: 'calc(env(safe-area-inset-right) - 1.5rem)]'
         }),
         themeContext.typesetting === 'article' &&
           'nextra-body-typesetting-article'
@@ -241,7 +241,7 @@ const InnerLayout = ({
       <div
         className={cn(
           css({ mx: 'auto', display: 'flex' }),
-          themeContext.layout !== 'raw' && css({ w: '90rem' })
+          themeContext.layout !== 'raw' && css({ maxW: '90rem' })
         )}
       >
         <ActiveAnchorProvider>

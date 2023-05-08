@@ -171,8 +171,10 @@ export function Search({
             fontWeight: 'medium',
             color: 'gray.500',
             border: '1px solid',
-            borderColor: 'gray.100/20',
-            _dark: { bgColor: 'dark/50' },
+            // borderColor: 'gray.100/20',
+            borderColor: 'rgb(243 244 246 / 0.2)',
+            // _dark: { bgColor: 'dark/50' },
+            _dark: { bgColor: 'rgb(17 17 17 / 0.2)' },
             _moreContrast: {
               borderColor: 'current',
               color: 'current',
@@ -278,7 +280,8 @@ export function Search({
             // Using bg-white as background-color when the browser didn't support backdrop-filter
             css({
               border: '1px solid',
-              borderColor: 'gray.100/20',
+              // borderColor: 'gray.100/20',
+              borderColor: 'rgb(243 244 246 / 0.2)',
               backgroundColor: 'white',
               color: 'gray.100',
               _dark: { borderColor: 'neutral.800', bgColor: 'neutral.900' },
@@ -292,10 +295,10 @@ export function Search({
               py: 2.5,
               boxShadow: 'xl',
               maxHeight:
-                'min(calc(50vh-11rem-env(safe-area-inset-bottom)),400px)',
+                'min(calc(50vh - 11rem - env(safe-area-inset-bottom)), 400px)',
               md: {
                 maxHeight:
-                  'min(calc(100vh-5rem-env(safe-area-inset-bottom)),400px)'
+                  'min(calc(100vh - 5rem - env(safe-area-inset-bottom)), 400px)'
               },
               insetX: 0,
               _ltr: { left: 'auto' },
@@ -367,7 +370,8 @@ export function Search({
                     }),
                     i === active
                       ? css({
-                          bg: 'primary.500/10',
+                          // bg: 'primary.500/10',
+                          bg: 'rgb(59 130 246 / 0.1)',
                           color: 'primary.600',
                           _dark: { borderColor: 'primary.500' }
                         })

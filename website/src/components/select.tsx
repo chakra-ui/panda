@@ -66,13 +66,15 @@ export function Select({
               ? css({
                   bg: 'gray.200',
                   color: 'gray.900',
-                  _dark: { bg: 'primary.100/10', color: 'gray.50' }
+                  // _dark: { bg: 'primary.100/10', color: 'gray.50' } // opacity modifier
+                  _dark: { bg: 'rgb(219 234 254 / 0.1)', color: 'gray.50' }
                 })
               : css({
                   _hover: {
                     bg: 'gray.100',
                     color: 'gray.900',
-                    _dark: { bg: 'primary.100/5', color: 'gray.50' }
+                    // _dark: { bg: 'primary.100/5', color: 'gray.50' }
+                    _dark: { bg: 'rgb(219 234 254 / 0.1)', color: 'gray.50' } // opacity modifier
                   }
                 }),
             className
@@ -91,13 +93,15 @@ export function Select({
                 overflow: 'auto',
                 borderRadius: 'md',
                 outline: '1px',
-                outlineColor: 'black/5',
+                // outlineColor: 'black/5',
+                outlineColor: 'rgb(0 0 0 / 0.05)',
                 bg: 'white',
                 py: 1,
                 fontSize: 'sm',
                 shadow: 'lg',
                 _dark: {
-                  outlineColor: 'white/20',
+                  // outlineColor: 'white/20',
+                  outlineColor: 'rgb(255 255 255 / 0.2)',
                   bg: 'neutral.800'
                 }
               })}
@@ -115,7 +119,8 @@ export function Select({
                         ? css({
                             bg: 'primary.50',
                             color: 'primary.600',
-                            _dark: { bg: 'primary.500/10' }
+                            // _dark: { bg: 'primary.500/10' }
+                            _dark: { bg: 'rgb(59 130 246 / 0.1)' }
                           })
                         : css({
                             color: 'gray.800',

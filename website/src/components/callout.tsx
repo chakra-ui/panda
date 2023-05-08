@@ -19,8 +19,8 @@ const classes: Record<CalloutType, string> = {
       backgroundColor: 'orange.50',
       color: 'orange.800',
       _dark: {
-        borderColor: 'rgb(from token(colors.orange.400) / 30%)',
-        backgroundColor: 'rgb(from token(colors.orange.400) / 20%)', // TODO ?
+        borderColor: 'rgb(251 146 60 / 0.3)', // opacity modifier
+        backgroundColor: 'rgb(251 146 60 / 0.2)',
         color: 'orange.300'
       }
     })
@@ -31,8 +31,8 @@ const classes: Record<CalloutType, string> = {
       backgroundColor: 'red.50',
       color: 'red.800',
       _dark: {
-        borderColor: 'rgb(from token(colors.red.200) / 30%)',
-        backgroundColor: 'rgb(from token(colors.red.900) / 30%)',
+        borderColor: 'rgb(248 113 113 / 0.3)',
+        backgroundColor: 'rgb(127 29 29 / 0.3)',
         color: 'red.200'
       }
     })
@@ -43,8 +43,8 @@ const classes: Record<CalloutType, string> = {
       backgroundColor: 'blue.50',
       color: 'blue.800',
       _dark: {
-        borderColor: 'rgb(from token(colors.blue.200) / 30%)',
-        backgroundColor: 'rgb(from token(colors.blue.900) / 30%)',
+        borderColor: 'rgb(191 219 254 / 0.3)',
+        backgroundColor: 'rgb(30 58 138 / 0.3)',
         color: 'blue.200'
       }
     })
@@ -55,8 +55,8 @@ const classes: Record<CalloutType, string> = {
       backgroundColor: 'yellow.50',
       color: 'yellow.800',
       _dark: {
-        borderColor: 'rgb(from token(colors.yellow.200) / 30%)',
-        backgroundColor: 'rgb(from token(colors.yellow.700) / 30%)',
+        borderColor: 'rgb(254 240 138 / 0.3)',
+        backgroundColor: 'rgb(113 63 18 / 0.3)',
         color: 'yellow.200'
       }
     })
@@ -89,7 +89,7 @@ export function Callout({
           _rtl: { pl: 4 },
           _moreContrast: {
             color: 'currentColor',
-            _dark: { borderColor: 'currentColor' } // TODO currentColor vs current vs currentcolor
+            _dark: { borderColor: 'currentColor' }
           }
         }),
         classes[type]

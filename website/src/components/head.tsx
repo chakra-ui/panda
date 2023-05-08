@@ -65,7 +65,7 @@ export function Head(): ReactElement {
           --nextra-menu-height: 3.75rem;
           --nextra-banner-height: 2.5rem;
         }
-        
+
         .dark {
           --nextra-primary-hue: ${darkHue}deg;
         }
