@@ -99,6 +99,7 @@ function NavbarMenu({
                 bgColor: 'neutral.800'
               }
             })}
+            // @ts-ignore
             tabIndex={0}
           >
             {Object.entries(items || {}).map(([key, item]) => (

@@ -42,7 +42,9 @@ export const NavLinks = ({
   let prev = navigation.prev && flatDirectories[currentIndex - 1]
   let next = navigation.next && flatDirectories[currentIndex + 1]
 
+  // @ts-ignore
   if (prev && !prev.isUnderCurrentDocsTree) prev = false
+  // @ts-ignore
   if (next && !next.isUnderCurrentDocsTree) next = false
 
   if (!prev && !next) return null

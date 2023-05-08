@@ -80,8 +80,7 @@ export const ConfigProvider = ({
       Object.entries(themeConfig ?? {}).map(([key, value]) => [
         key,
         value && typeof value === 'object' && DEEP_OBJECT_KEYS.includes(key)
-          ? // @ts-expect-error -- key has always object value
-            { ...DEFAULT_THEME[key], ...value }
+          ? { ...DEFAULT_THEME[key], ...value }
           : value
       ])
     )

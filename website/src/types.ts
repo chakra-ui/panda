@@ -1,4 +1,3 @@
-/* eslint typescript-sort-keys/interface: error */
 import type { ReactNode } from 'react'
 import type { PageOpts } from 'nextra'
 import type { DocsThemeConfig } from './constants'

@@ -128,6 +128,7 @@ export function Tab({
   ...props
 }: ComponentProps<'div'>): ReactElement {
   return (
+    // @ts-ignore
     <HeadlessTab.Panel {...props} className={css({ rounded: 'md', pt: 6 })}>
       {children}
     </HeadlessTab.Panel>

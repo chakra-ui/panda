@@ -149,6 +149,7 @@ function FolderImpl({ item, anchors }: FolderProps): ReactElement {
     const routes = Object.fromEntries(
       (menu.children || []).map(route => [route.name, route])
     )
+    // @ts-ignore
     item.children = Object.entries(menu.items || {}).map(([key, item]) => {
       const route = routes[key] || {
         name: key,

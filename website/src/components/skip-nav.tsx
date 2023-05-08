@@ -27,7 +27,6 @@
  */
 import type { ComponentProps, ReactElement } from 'react'
 import { forwardRef } from 'react'
-import cn from 'clsx'
 import { css } from '../../styled-system/css'
 
 // TODO: Change the DEFAULT_ID for `nextra-skip-nav` or something else on the next major version (v3.x). The DEFAULT_ID must be 'reach-skip-nav' because changing this value is a breaking change for users that use v2.0.1 and earlier

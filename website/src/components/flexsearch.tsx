@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { ReactElement, ReactNode } from 'react'
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/router'

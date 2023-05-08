@@ -11,12 +11,11 @@ export const Code = ({
     <code
       className={[
         css({
-          borderWidth: '0.04',
-          bgOpacity: '0.03',
-          bg: 'black',
+          borderWidth: '1px',
+          borderColor: 'rgba(0, 0, 0, 0.04)',
+          bg: 'rgba(0, 0, 0, 0.03)',
           overflowWrap: 'break-word',
           borderRadius: 'md',
-          border: '1px solid black',
           py: '0.5',
           px: '.25em',
           fontSize: '.9em',

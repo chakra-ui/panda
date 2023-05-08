@@ -25,7 +25,7 @@ const config: DocsThemeConfig = {
 
     return { titleTemplate: '%s – Panda' }
   },
-  docsRepositoryBase: 'https://github.com/chakra-ui/panda-docs',
+  docsRepositoryBase: 'https://github.com/chakra-ui/panda/blob/website/pages',
   footer: {
     text: (
       <div
