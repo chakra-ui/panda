@@ -1,3 +1,8 @@
+---
+title: Patterns
+description: Patterns are layout primitives can be used to create robust and responsive layouts with ease. Panda comes with predefined patterns like stack, hstack, vstack, wrap, etc. These patterns can be used as functions or JSX elements.
+---
+
 # Patterns
 
 Patterns are layout primitives can be used to create robust and responsive layouts with ease. Panda comes with
@@ -130,7 +135,11 @@ The `aspectRatio` function accepts the following properties:
 function App() {
   return (
     <div className={aspectRatio({ ratio: 16 / 9 })}>
-      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m1" title="Google map" frameBorder="0" />
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m1"
+        title="Google map"
+        frameBorder="0"
+      />
     </div>
   )
 }

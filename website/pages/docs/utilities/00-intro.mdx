@@ -1,3 +1,8 @@
+---
+title: Utility-First CSS-in-JS
+description: Panda is a powerful styling library that provides developers with primitives to create, organize, and manage CSS styles in a type-safe and readable manner.
+---
+
 # Utility-First CSS-in-JS
 
 Panda is a powerful styling library that provides developers with primitives to create, organize, and manage CSS styles
@@ -70,7 +75,9 @@ Another popular approach is to use utility classes, which are pre-defined classe
 to allow you to quickly create UI components.
 
 ```html
-<div class="flex flex-col items-center justify-center p-4 rounded bg-white shadow-lg">
+<div
+  class="flex flex-col items-center justify-center p-4 rounded bg-white shadow-lg"
+>
   <div class="w-20 h-20 rounded-full overflow-hidden">
     <img src="https://via.placeholder.com/150" alt="avatar" />
   </div>
@@ -94,12 +101,24 @@ import { circle, stack } from './panda/patterns'
 
 function App() {
   return (
-    <div className={stack({ direction: 'row', p: '4', rounded: 'md', shadow: 'lg', bg: 'white' })}>
+    <div
+      className={stack({
+        direction: 'row',
+        p: '4',
+        rounded: 'md',
+        shadow: 'lg',
+        bg: 'white'
+      })}
+    >
       <div className={circle({ size: '5rem', overflow: 'hidden' })}>
         <img src="https://via.placeholder.com/150" alt="avatar" />
       </div>
-      <div className={css({ mt: '4', fontSize: 'xl', fontWeight: 'semibold' })}>John Doe</div>
-      <div className={css({ mt: '2', fontSize: 'sm', color: 'gray.600' })}>john@doe.com</div>
+      <div className={css({ mt: '4', fontSize: 'xl', fontWeight: 'semibold' })}>
+        John Doe
+      </div>
+      <div className={css({ mt: '2', fontSize: 'sm', color: 'gray.600' })}>
+        john@doe.com
+      </div>
     </div>
   )
 }
@@ -203,7 +222,7 @@ can use the `hash` option to enable classname hashing.
 // config.ts
 
 export const config = {
-  hash: true,
+  hash: true
 }
 ```
 

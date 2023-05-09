@@ -1,3 +1,8 @@
+---
+title: Recipes
+description: Panda provides a way to write CSS-in-JS with better performance, developer experience, and composability.
+---
+
 # Recipes
 
 Panda provides a way to write CSS-in-JS with better performance, developer experience, and composability. One of its key
@@ -22,18 +27,18 @@ import { cva } from '../panda/css'
 
 const button = cva({
   base: {
-    display: 'flex',
+    display: 'flex'
   },
   variants: {
     visual: {
       solid: { bg: 'red.200', color: 'white' },
-      outline: { borderWidth: '1px', borderColor: 'red.200' },
+      outline: { borderWidth: '1px', borderColor: 'red.200' }
     },
     size: {
       sm: { padding: '4', fontSize: '12px' },
-      lg: { padding: '8', fontSize: '24px' },
-    },
-  },
+      lg: { padding: '8', fontSize: '24px' }
+    }
+  }
 })
 ```
 
@@ -86,22 +91,22 @@ import { cva } from '../panda/css'
 
 const button = cva({
   base: {
-    display: 'flex',
+    display: 'flex'
   },
   variants: {
     visual: {
       solid: { bg: 'red.200', color: 'white' },
-      outline: { borderWidth: '1px', borderColor: 'red.200' },
+      outline: { borderWidth: '1px', borderColor: 'red.200' }
     },
     size: {
       sm: { padding: '4', fontSize: '12px' },
-      lg: { padding: '8', fontSize: '24px' },
-    },
+      lg: { padding: '8', fontSize: '24px' }
+    }
   },
   defaultVariants: {
     visual: 'solid',
-    size: 'lg',
-  },
+    size: 'lg'
+  }
 })
 ```
 
@@ -121,36 +126,36 @@ const button = cva({
     padding: '8px 16px',
     borderRadius: '4px',
     fontSize: '16px',
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
 
   variants: {
     size: {
       small: {
         fontSize: '14px',
-        padding: '4px 8px',
+        padding: '4px 8px'
       },
       large: {
         fontSize: '18px',
-        padding: '12px 24px',
-      },
+        padding: '12px 24px'
+      }
     },
     color: {
       primary: {
         backgroundColor: 'blue',
-        color: 'white',
+        color: 'white'
       },
       secondary: {
         backgroundColor: 'gray',
-        color: 'black',
-      },
+        color: 'black'
+      }
     },
     disabled: {
       true: {
         opacity: 0.5,
-        cursor: 'not-allowed',
-      },
-    },
+        cursor: 'not-allowed'
+      }
+    }
   },
 
   // compound variants
@@ -160,8 +165,8 @@ const button = cva({
       size: 'small',
       color: 'primary',
       css: {
-        border: '2px solid blue',
-      },
+        border: '2px solid blue'
+      }
     },
     // apply large size variant when both large size and secondary color are selected and the button is disabled
     {
@@ -171,10 +176,10 @@ const button = cva({
       css: {
         backgroundColor: 'lightgray',
         color: 'darkgray',
-        border: 'none',
-      },
-    },
-  ],
+        border: 'none'
+      }
+    }
+  ]
 })
 ```
 
@@ -185,7 +190,9 @@ import { button } from './button'
 
 const Button = () => {
   // will apply size: small, color: primary, css: { border: '2px solid blue' }
-  return <button css={button({ size: 'small', color: 'primary' })}>Click Me</button>
+  return (
+    <button css={button({ size: 'small', color: 'primary' })}>Click Me</button>
+  )
 }
 ```
 
@@ -207,18 +214,18 @@ import { panda } from '../panda/jsx'
 const recipe = cva({
   base: {
     color: 'red',
-    fontSize: '1.5rem',
+    fontSize: '1.5rem'
   },
   variants: {
     size: {
       small: {
-        fontSize: '1rem',
+        fontSize: '1rem'
       },
       large: {
-        fontSize: '2rem',
-      },
-    },
-  },
+        fontSize: '2rem'
+      }
+    }
+  }
 })
 
 const Component = panda('div', recipe)
@@ -241,18 +248,18 @@ import { cva, type RecipeVariantProps } from '../styled-system/css'
 const recipe = cva({
   base: {
     color: 'red',
-    fontSize: '1.5rem',
+    fontSize: '1.5rem'
   },
   variants: {
     size: {
       small: {
-        fontSize: '1rem',
+        fontSize: '1rem'
       },
       large: {
-        fontSize: '2rem',
-      },
-    },
-  },
+        fontSize: '2rem'
+      }
+    }
+  }
 })
 
 export type ComponentProps = RecipeVariantProps<typeof recipe> // { size?: 'small' | 'large' }

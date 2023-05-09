@@ -9,7 +9,8 @@
   },
   "docs": {
     "title": "Documentation",
-    "type": "page"
+    "type": "page",
+    "href": "/docs"
   },
   "playground": {
     "title": "Playground",

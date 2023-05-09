@@ -1,3 +1,8 @@
+---
+title: Consuming tokens
+description: There are various ways to consume Panda tokens depending on your need at that point in time.
+---
+
 # Consuming tokens
 
 There are various ways to consume Panda tokens depending on your need at that point in time.
@@ -9,7 +14,12 @@ This is the basic way to consume your tokens. You use them as attribute values i
 ```js
 import { css } from '../styled-system/css'
 
-const className = css({ color: 'green.400', background: 'grey.200', height: '4', borderRadius: 'md' })
+const className = css({
+  color: 'green.400',
+  background: 'grey.200',
+  height: '4',
+  borderRadius: 'md'
+})
 ```
 
 ## Usage in Composite values
@@ -42,7 +52,7 @@ import { token } from '../styled-system/tokens'
 return (
   <div
     style={{
-      background: token('colors.blue.200'),
+      background: token('colors.blue.200')
     }}
   />
 )
@@ -55,8 +65,8 @@ const tokens = {
   // ...
   'colors.blue.200': {
     value: '#bfdbfe',
-    variable: 'var(--colors-blue-200)',
-  },
+    variable: 'var(--colors-blue-200)'
+  }
   // ...
 }
 ```

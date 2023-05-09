@@ -1,3 +1,8 @@
+---
+title: Style props
+description: Style props lets you quickly build UI components in JSX by passing css properties as "props" to your components.
+---
+
 # Style props
 
 Style props lets you quickly build UI components in JSX by passing css properties as "props" to your components.
@@ -14,7 +19,17 @@ components in JSX.
 // The className approach
 
 const Button = ({ children }) => (
-  <button className={css({ bg: 'blue.500', color: 'white', py: '2', px: '4', rounded: 'md' })}>{children}</button>
+  <button
+    className={css({
+      bg: 'blue.500',
+      color: 'white',
+      py: '2',
+      px: '4',
+      rounded: 'md'
+    })}
+  >
+    {children}
+  </button>
 )
 ```
 

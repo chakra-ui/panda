@@ -1,3 +1,8 @@
+---
+title: Nested Styles
+description: Panda provides different ways of nesting style declarations.
+---
+
 # Nested Styles
 
 Panda provides different ways of nesting style declarations.
@@ -14,8 +19,8 @@ attribute selectors directly in the css object.
   className={css({
     bg: 'red.400',
     '&:hover': {
-      bg: 'orange.400',
-    },
+      bg: 'orange.400'
+    }
   })}
 />
 ```
@@ -29,11 +34,11 @@ CSS styles can be nested using the css conditions in the panda config.
   className={css({
     bg: 'red.400',
     _hover: {
-      bg: 'orange.400',
+      bg: 'orange.400'
     },
     sm: {
-      fontSize: '50px',
-    },
+      fontSize: '50px'
+    }
   })}
 />
 ```
@@ -50,7 +55,7 @@ css({
   bg: 'red.500',
   // ❌ won't work. It should be `& span`
   span: {
-    color: 'pink.500',
-  },
+    color: 'pink.500'
+  }
 })
 ```

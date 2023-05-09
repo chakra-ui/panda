@@ -1,3 +1,8 @@
+---
+title: Tokens
+description: Design tokens are the platform-agnostic way to manage design decisions in your application or website.
+---
+
 # Tokens
 
 Design tokens are the platform-agnostic way to manage design decisions in your application or website.
@@ -15,8 +20,8 @@ Tokens are defined in the `panda.config.(ts|mjs)` file, and can contain the foll
 export default defineConfig({
   theme: {
     // 👇🏻 Define your tokens here
-    tokens: {},
-  },
+    tokens: {}
+  }
 })
 ```
 
@@ -27,17 +32,17 @@ const theme = {
   tokens: {
     colors: {
       primary: { value: '#0FEE0F' },
-      secondary: { value: '#EE0F0F' },
+      secondary: { value: '#EE0F0F' }
     },
     fonts: {
-      body: { value: 'system-ui, sans-serif' },
+      body: { value: 'system-ui, sans-serif' }
     },
     sizes: {
       small: { value: '12px' },
       medium: { value: '16px' },
-      large: { value: '24px' },
-    },
-  },
+      large: { value: '24px' }
+    }
+  }
 }
 ```
 
@@ -56,9 +61,9 @@ A design token consist of the following properties:
 const theme = {
   tokens: {
     colors: {
-      danger: { value: '#EE0F0F' },
-    },
-  },
+      danger: { value: '#EE0F0F' }
+    }
+  }
 }
 ```
 
@@ -87,15 +92,15 @@ const theme = {
   tokens: {
     colors: {
       red: { value: '#EE0F0F' },
-      green: { value: '#0FEE0F' },
-    },
+      green: { value: '#0FEE0F' }
+    }
   },
   semanticTokens: {
     colors: {
       danger: { value: '{colors.red}' },
-      success: { value: '{colors.green}' },
-    },
-  },
+      success: { value: '{colors.green}' }
+    }
+  }
 }
 ```
 
@@ -109,10 +114,15 @@ const theme = {
   tokens: {
     shadows: {
       basic: {
-        value: { color: '{colors.shadow}', blur: '2px', offsetX: '2px', offsetY: '4px' },
-      },
-    },
-  },
+        value: {
+          color: '{colors.shadow}',
+          blur: '2px',
+          offsetX: '2px',
+          offsetY: '4px'
+        }
+      }
+    }
+  }
 }
 ```
 
@@ -127,10 +137,10 @@ const theme = {
   tokens: {
     borders: {
       basic: {
-        value: { width: '1px', style: 'solid', color: '{colors.gray.200}' },
-      },
-    },
-  },
+        value: { width: '1px', style: 'solid', color: '{colors.gray.200}' }
+      }
+    }
+  }
 }
 ```
 
@@ -146,11 +156,11 @@ const theme = {
         value: {
           type: 'linear',
           placement: 'to right',
-          stops: ['{colors.red}', '{colors.blue}'],
-        },
-      },
-    },
-  },
+          stops: ['{colors.red}', '{colors.blue}']
+        }
+      }
+    }
+  }
 }
 ```
 
@@ -163,13 +173,13 @@ const theme = {
   tokens: {
     assets: {
       logo: {
-        value: { type: 'url', url: '/static/logo.png' },
+        value: { type: 'url', url: '/static/logo.png' }
       },
       checkmark: {
-        value: { type: 'svg', svg: '<svg>...</svg>' },
-      },
-    },
-  },
+        value: { type: 'svg', svg: '<svg>...</svg>' }
+      }
+    }
+  }
 }
 ```
 
@@ -189,9 +199,11 @@ const theme = {
   semanticTokens: {
     colors: {
       danger: { value: { base: '{colors.red}', _dark: '{colors.darkred}' } },
-      success: { value: { base: '{colors.green}', _dark: '{colors.darkgreen}' } },
-    },
-  },
+      success: {
+        value: { base: '{colors.green}', _dark: '{colors.darkgreen}' }
+      }
+    }
+  }
 }
 ```
 

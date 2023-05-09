@@ -1,3 +1,8 @@
+---
+title: Using PostCSS
+description: Installing Panda as a PostCSS plugin is the most seamless way to integrate it with build tools like webpack, Rollup, Vite, and Parcel.
+---
+
 # Using PostCSS
 
 Installing Panda as a PostCSS plugin is the most seamless way to integrate it with build tools like webpack, Rollup,
@@ -20,8 +25,8 @@ Add panda and autoprefixer to your `postcss.config.cjs` file, or wherever PostCS
 module.exports = {
   plugins: {
     autoprefixer: {},
-    '@pandacss/dev/postcss': {},
-  },
+    '@pandacss/dev/postcss': {}
+  }
 }
 ```
 
@@ -36,7 +41,7 @@ export default defineConfig({
   // define the content to scan 👇🏻
   include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
   exclude: [],
-  outdir: 'styled-system',
+  outdir: 'styled-system'
 })
 ```
 

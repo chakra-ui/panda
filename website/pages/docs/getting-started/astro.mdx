@@ -1,7 +1,11 @@
-# Using PostCSS
+---
+title: Using PostCSS
+description: Easily use Panda with Astro with our dedicated integration.
+---
 
-Installing Panda as a PostCSS plugin is the most seamless way to integrate it with build tools like webpack, Rollup,
-Vite, and Parcel.
+# Using Astro
+
+Easily use Panda with Astro with our dedicated integration.
 
 ## Install Panda
 
@@ -22,7 +26,7 @@ import pandacss from '@pandacss/dev/astro'
 
 export default defineConfig({
   // ...
-  integrations: [pandacss()],
+  integrations: [pandacss()]
 })
 ```
 
@@ -37,7 +41,7 @@ export default defineConfig({
   // define the content to scan 👇🏻
   include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
   exclude: [],
-  outdir: 'styled-system',
+  outdir: 'styled-system'
 })
 ```
 

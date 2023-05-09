@@ -1,3 +1,8 @@
+---
+title: Static CSS Generator
+description: Panda can be used to generate a static set of utility classes for your project.
+---
+
 # Static CSS Generator
 
 Panda can be used to generate a static set of utility classes for your project.
@@ -14,8 +19,8 @@ export default {
     // the css properties you want to generate
     css: [],
     // the recipes you want to generate
-    recipes: {},
-  },
+    recipes: {}
+  }
 }
 ```
 
@@ -44,19 +49,19 @@ export default {
       {
         properties: {
           margin: ['*'],
-          padding: ['*', '50px', '80px'],
+          padding: ['*', '50px', '80px']
         },
-        responsive: true,
+        responsive: true
       },
       {
         properties: {
           color: ['*'],
-          backgroundColor: ['green.200', 'red.400'],
+          backgroundColor: ['green.200', 'red.400']
         },
-        conditions: ['light', 'dark'],
-      },
-    ],
-  },
+        conditions: ['light', 'dark']
+      }
+    ]
+  }
 }
 ```
 
@@ -71,14 +76,14 @@ export default {
       button: [
         {
           size: ['sm', 'md'],
-          responsive: true,
+          responsive: true
         },
-        { variant: ['*'] },
+        { variant: ['*'] }
       ],
       // shorthand for all variants
-      tooltip: ['*'],
-    },
-  },
+      tooltip: ['*']
+    }
+  }
 }
 ```
 

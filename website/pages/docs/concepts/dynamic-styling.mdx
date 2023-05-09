@@ -1,3 +1,8 @@
+---
+title: Dynamic styling
+description: While panda is mainly focused on the static styling experience, we have some mechanics to support dynamic styling.
+---
+
 # Dynamic styling
 
 While panda is mainly focused on the static styling experience, we have some mechanics to support dynamic styling.
@@ -36,8 +41,8 @@ const Button = () => {
         color: 'blue.100',
         // change the color on hover
         _hover: {
-          color: 'red.300',
-        },
+          color: 'red.300'
+        }
       })}
     >
       Red on hover
@@ -63,7 +68,9 @@ config.
 import { css } from './styled-system/css'
 
 const App = () => {
-  return <div className={css({ left: '123px', _hover: { bgColor: '#2ecc71' } })} />
+  return (
+    <div className={css({ left: '123px', _hover: { bgColor: '#2ecc71' } })} />
+  )
 }
 ```
 
@@ -81,7 +88,7 @@ const App = () => {
     <div
       className={css({
         '&[data-state=closed]': { color: 'red.300' },
-        '& > *': { margin: '2' },
+        '& > *': { margin: '2' }
       })}
     />
   )
@@ -126,8 +133,8 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   staticCss: {
-    css: [{ properties: { color: ['red.200'] } }],
-  },
+    css: [{ properties: { color: ['red.200'] } }]
+  }
 })
 ```
 
@@ -140,9 +147,12 @@ Using the `token()` function:
 // Component.tsx
 import { token } from '../styled-system/tokens'
 
-const Component = (props) => {
+const Component = props => {
   return (
-    <panda.div style={{ ['--dynamic-color']: token('colors.' + props.color) }} color="var(--dynamic-color)">
+    <panda.div
+      style={{ ['--dynamic-color']: token('colors.' + props.color) }}
+      color="var(--dynamic-color)"
+    >
       Dynamic color with runtime value
     </panda.div>
   )
@@ -162,8 +172,12 @@ token:
 // Component.tsx
 import { token } from '../styled-system/tokens'
 
-const Component = (props) => {
-  return <div style={{ color: token.var('colors.' + props.color) }}>Dynamic color with runtime value</div>
+const Component = props => {
+  return (
+    <div style={{ color: token.var('colors.' + props.color) }}>
+      Dynamic color with runtime value
+    </div>
+  )
 }
 
 // App.tsx
@@ -178,8 +192,12 @@ const App = () => {
 >
 > ```tsx
 > // Component.tsx
-> const Component = (props) => {
->   return <panda.div color={props.color}>Dynamic color with runtime value</panda.div>
+> const Component = props => {
+>   return (
+>     <panda.div color={props.color}>
+>       Dynamic color with runtime value
+>     </panda.div>
+>   )
 > }
 >
 > // App.tsx
@@ -207,7 +225,9 @@ const App = () => {
   return (
     <Stack
       color={isHovered ? { _hover: 'red.100' } : 'red.200'}
-      _hover={{ color: { base: 'red.300', md: isHovered ? 'red.400' : undefined } }}
+      _hover={{
+        color: { base: 'red.300', md: isHovered ? 'red.400' : undefined }
+      }}
     >
       <div className={css({ color: isHovered ? 'red.500' : 'red.600' })} />
     </Stack>
@@ -267,7 +287,15 @@ const mainColor = 'red.300'
 const sizes = { sm: '12px', md: '16px', '2xl': '42px' }
 
 const App = () => {
-  return <div className={css({ color: mainColor, fontSize: sizes.md, width: sizes['2xl'] })} />
+  return (
+    <div
+      className={css({
+        color: mainColor,
+        fontSize: sizes.md,
+        width: sizes['2xl']
+      })}
+    />
+  )
 }
 ```
 
@@ -279,7 +307,7 @@ Using a more complex but still common example :
 const colorByType = {
   primary: 'red.300',
   secondary: 'blue.300',
-  tertiary: 'green.300',
+  tertiary: 'green.300'
 }
 
 const Section = () => {
@@ -287,7 +315,11 @@ const Section = () => {
 
   // since only "gray.100" is statically extractable here
   // ❌ this will not work as expected, the color CSS won't be generated
-  return <section className={css({ color: colorByType[type] ?? 'gray.100' })}>❌ Will not be extracted</section>
+  return (
+    <section className={css({ color: colorByType[type] ?? 'gray.100' })}>
+      ❌ Will not be extracted
+    </section>
+  )
 }
 ```
 
@@ -305,9 +337,9 @@ const sectionRecipe = cva({
     type: {
       primary: { color: 'red.300' },
       secondary: { color: 'blue.300' },
-      tertiary: { color: 'green.300' },
-    },
-  },
+      tertiary: { color: 'green.300' }
+    }
+  }
 })
 
 const Section = () => {

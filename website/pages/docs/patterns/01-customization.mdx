@@ -1,3 +1,8 @@
+---
+title: Customizing Patterns
+description: Panda provides the ability to customize the built-in patterns, as well as creating your own custom patterns. This is useful to create your own layout pattern abstractions that can be used in your application.
+---
+
 # Customizing Patterns
 
 Panda provides the ability to customize the built-in patterns, as well as creating your own custom patterns. This is
@@ -28,7 +33,7 @@ const config = {
           // The direction of the scroll
           direction: { type: 'enum', value: ['horizontal', 'vertical'] },
           // Whether to hide the scrollbar
-          hideScrollbar: { type: 'boolean' },
+          hideScrollbar: { type: 'boolean' }
         },
         // disallow the `overflow` property (in TypeScript)
         blocklist: ['overflow'],
@@ -41,14 +46,14 @@ const config = {
             scrollbarWidth: hideScrollbar ? 'none' : 'auto',
             WebkitOverflowScrolling: 'touch',
             '&::-webkit-scrollbar': {
-              display: hideScrollbar ? 'none' : 'auto',
+              display: hideScrollbar ? 'none' : 'auto'
             },
-            ...rest,
+            ...rest
           }
-        },
-      },
-    },
-  },
+        }
+      }
+    }
+  }
 }
 ```
 
@@ -84,11 +89,11 @@ const config = {
       flex: {
         properties: {
           // only allow row and column
-          direction: { type: 'enum', value: ['row', 'column'] },
-        },
-      },
-    },
-  },
+          direction: { type: 'enum', value: ['row', 'column'] }
+        }
+      }
+    }
+  }
 }
 ```
 

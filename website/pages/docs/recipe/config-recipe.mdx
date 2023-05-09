@@ -1,3 +1,8 @@
+---
+title: Config Recipe
+description: Recipes defined in the panda config is useful for distributing component recipes across projects in your company.
+---
+
 # Config Recipe
 
 Recipes defined in the panda config is useful for distributing component recipes across projects in your company.
@@ -26,27 +31,27 @@ export const buttonRecipe = defineRecipe({
   name: 'button',
   description: 'The styles for the Button component',
   base: {
-    display: 'flex',
+    display: 'flex'
   },
   variants: {
     visual: {
       funky: { bg: 'red.200', color: 'white' },
-      edgy: { border: '1px solid {colors.red.500}' },
+      edgy: { border: '1px solid {colors.red.500}' }
     },
     size: {
       sm: { padding: '4', fontSize: '12px' },
-      lg: { padding: '8', fontSize: '40px' },
+      lg: { padding: '8', fontSize: '40px' }
     },
     shape: {
       square: { borderRadius: '0' },
-      circle: { borderRadius: 'full' },
-    },
+      circle: { borderRadius: 'full' }
+    }
   },
   defaultVariants: {
     visual: 'funky',
     size: 'sm',
-    shape: 'circle',
-  },
+    shape: 'circle'
+  }
 })
 ```
 
@@ -65,9 +70,9 @@ export default defineConfig({
   jsxFramework: 'solid',
   theme: {
     recipes: {
-      button: buttonRecipe,
-    },
-  },
+      button: buttonRecipe
+    }
+  }
 })
 ```
 
@@ -135,7 +140,7 @@ const button = cva({
     padding: '8px 16px',
     borderRadius: '4px',
     fontSize: '16px',
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
 
   variants: {
@@ -149,10 +154,10 @@ const button = cva({
       size: 'small',
       color: 'primary',
       css: {
-        bg: 'blue.500',
-      },
-    },
-  ],
+        bg: 'blue.500'
+      }
+    }
+  ]
 })
 ```
 
@@ -192,16 +197,16 @@ const buttonStyle = defineRecipe({
   name: 'button',
   base: parts({
     icon: { fontSize: 'sm' },
-    label: { fontSize: 'md' },
+    label: { fontSize: 'md' }
   }),
   variants: {
     visual: {
       funky: parts({
         icon: { color: 'gray.200' },
-        label: { color: 'gray.500' },
-      }),
-    },
-  },
+        label: { color: 'gray.500' }
+      })
+    }
+  }
 })
 ```
 
@@ -318,17 +323,17 @@ const Random = ({ size, children }) => {
 const button = defineRecipe({
   base: {
     color: 'red',
-    fontSize: '1.5rem',
+    fontSize: '1.5rem'
   },
   variants: {
     size: {
       sm: {
-        fontSize: '1rem',
+        fontSize: '1rem'
       },
       md: {
-        fontSize: '2rem',
-      },
-    },
+        fontSize: '2rem'
+      }
+    }
   },
   // this  will disable responsive values for the variants
   compoundVariants: [
@@ -336,16 +341,16 @@ const button = defineRecipe({
       size: 'sm',
       visual: 'funky',
       css: {
-        color: 'blue',
-      },
+        color: 'blue'
+      }
     },
     {
       size: 'md',
       visual: 'funky',
       css: {
-        color: 'green',
-      },
-    },
-  ],
+        color: 'green'
+      }
+    }
+  ]
 })
 ```
