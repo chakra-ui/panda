@@ -1,8 +1,397 @@
 import { describe, test, expect } from 'vitest'
 import { getFixtureProject } from './fixture'
 
-describe('complete output pipeline', () => {
-  test('should extract recipes', () => {
+describe('extract to css output pipeline', () => {
+  test('basic usage', () => {
+    const code = `
+      import { panda } from ".panda/jsx"
+      import { css } from ".panda/css"
+
+       function Button() {
+         return (
+            <div marginTop="55555px">
+              <div className={css({
+                color: "blue.100",
+                backgroundImage: \`url("https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true")\`,
+                border: "1px solid token(colors.yellow.100)",
+                "--shadow": {
+                  base: "colors.orange.100",
+                  _dark: "colors.gray.800",
+                },
+                boxShadow: "0 0 0 4px var(--shadow)",
+                outlineColor: "var(--colors-pink-200)",
+              })} />
+              <panda.div
+                p="2"
+                m={{
+                  base: "1px",
+                  sm: "4px",
+                  _dark: { _hover: { m: -2 } }
+                }}
+                css={{
+                  md: { p: 4 },
+                  _hover: { color: "#2ecc71", backgroundColor: "var(--some-bg)" }
+                }}>Click me</panda.div>
+            </div>
+        )
+       }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "--shadow": {
+                "_dark": "colors.gray.800",
+                "base": "colors.orange.100",
+              },
+              "backgroundImage": "url(\\"https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true\\")",
+              "border": "1px solid token(colors.yellow.100)",
+              "boxShadow": "0 0 0 4px var(--shadow)",
+              "color": "blue.100",
+              "outlineColor": "var(--colors-pink-200)",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "css": {
+                "_hover": {
+                  "backgroundColor": "var(--some-bg)",
+                  "color": "#2ecc71",
+                },
+                "md": {
+                  "p": 4,
+                },
+              },
+              "m": {
+                "_dark": {
+                  "_hover": {
+                    "m": -2,
+                  },
+                },
+                "base": "1px",
+                "sm": "4px",
+              },
+              "p": "2",
+            },
+          ],
+          "name": "panda.div",
+          "type": "jsx-factory",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue\\\\.100 {
+          color: blue.100
+          }
+
+        .background-image_url\\\\(\\\\\\"https\\\\:\\\\/\\\\/raw\\\\.githubusercontent\\\\.com\\\\/chakra-ui\\\\/chakra-ui\\\\/main\\\\/media\\\\/logo-colored\\\\@2x\\\\.png\\\\?raw\\\\=true\\\\\\"\\\\) {
+          background-image: url(\\"https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true\\")
+          }
+
+        .border_1px_solid_token\\\\(colors\\\\.yellow\\\\.100\\\\) {
+          border: 1px solid colors.yellow.100
+          }
+
+        .\\\\--shadow_colors\\\\.orange\\\\.100 {
+          --shadow: colors.orange.100
+          }
+
+        [data-theme=dark] .dark\\\\:--shadow_colors\\\\.gray\\\\.800, .dark .dark\\\\:--shadow_colors\\\\.gray\\\\.800, .dark\\\\:--shadow_colors\\\\.gray\\\\.800.dark, .dark\\\\:--shadow_colors\\\\.gray\\\\.800[data-theme=dark] {
+          --shadow: var(--colors-gray-800)
+              }
+
+        .shadow_0_0_0_4px_var\\\\(--shadow\\\\) {
+          box-shadow: 0 0 0 4px var(--shadow)
+          }
+
+        .oc_var\\\\(--colors-pink-200\\\\) {
+          outline-color: var(--colors-pink-200)
+          }
+
+        .p_2 {
+          padding: var(--spacing-2)
+          }
+
+        .m_1px {
+          margin: 1px
+          }
+
+        .hover\\\\:text_\\\\#2ecc71:hover {
+          color: #2ecc71
+              }
+
+        .hover\\\\:bg_var\\\\(--some-bg\\\\):hover {
+          background-color: var(--some-bg)
+              }
+
+        [data-theme=dark] .margin\\\\:dark\\\\:hover\\\\:m_-2:hover, .dark .margin\\\\:dark\\\\:hover\\\\:m_-2:hover, .margin\\\\:dark\\\\:hover\\\\:m_-2:hover.dark, .margin\\\\:dark\\\\:hover\\\\:m_-2:hover[data-theme=dark] {
+          margin: calc(var(--spacing-2) * -1)
+                  }
+
+        @media screen and (min-width: 30em) {
+          .sm\\\\:m_4px {
+            margin: 4px
+          }
+              }
+
+        @media screen and (min-width: 48em) {
+          .md\\\\:p_4 {
+            padding: var(--spacing-4)
+          }
+              }
+      }"
+    `)
+  })
+
+  test('runtime conditions', () => {
+    const code = `
+      import { css } from ".panda/css"
+
+       function Button() {
+        const [isHovered, setIsHovered] = useState(false)
+
+         return (
+          <div className={css({ color: isHovered ? "blue.100" : "red.100" })} />
+        )
+       }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+            {
+              "color": "red.100",
+            },
+            {},
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue\\\\.100 {
+          color: blue.100
+          }
+
+        .text_red\\\\.100 {
+          color: var(--colors-red-100)
+          }
+      }"
+    `)
+  })
+
+  test('arbitrary selectors', () => {
+    const code = `
+      import { css } from ".panda/css"
+
+       function Button() {
+
+         return (
+          <div className={css({
+            [".closed > &"]: {
+              color: "green.100",
+              _dark: { color: "green.900" }
+            },
+            ["& + &"]: {
+              margin: "-2px",
+              _hover: { margin: 0 }
+            },
+            ["&[data-state='open']"]: {
+              cursor: "pointer",
+              _before: {
+                content: '"👋"',
+              }
+            },
+          })} />
+        )
+       }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "& + &": {
+                "_hover": {
+                  "margin": 0,
+                },
+                "margin": "-2px",
+              },
+              "&[data-state='open']": {
+                "_before": {
+                  "content": "\\"👋\\"",
+                },
+                "cursor": "pointer",
+              },
+              ".closed > &": {
+                "_dark": {
+                  "color": "green.900",
+                },
+                "color": "green.100",
+              },
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:text_green\\\\.100 {
+          color: var(--colors-green-100)
+              }
+
+        .closed > [data-theme=dark] .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900, .closed > .dark .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900, .closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900.dark, .closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900[data-theme=dark] {
+          color: var(--colors-green-900)
+                  }
+
+        .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:m_-2px + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:m_-2px {
+          margin: -2px
+              }
+
+        .\\\\[\\\\&\\\\[data-state\\\\=\\\\'open\\\\'\\\\]\\\\]\\\\:cursor_pointer[data-state='open'] {
+          cursor: pointer
+              }
+
+        .\\\\[\\\\&\\\\[data-state\\\\=\\\\'open\\\\'\\\\]\\\\]\\\\:before\\\\:content_\\\\\\"👋\\\\\\"[data-state='open']::before {
+          content: \\"👋\\"
+                  }
+
+        .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0 + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0:hover {
+          margin: 0
+                  }
+      }"
+    `)
+  })
+
+  test('colorPalette', () => {
+    const code = `
+      import { css } from ".panda/css"
+
+       function Button() {
+         return (
+          <div className={css({ colorPalette: "blue", bg: "colorPalette.100", _hover: { color: "colorPalette.300" } })} />
+        )
+       }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "_hover": {
+                "color": "colorPalette.300",
+              },
+              "bg": "colorPalette.100",
+              "colorPalette": "blue",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bg_colorPalette\\\\.100 {
+          background: var(--colors-color-palette-100)
+          }
+
+        .hover\\\\:text_colorPalette\\\\.300:hover {
+          color: var(--colors-color-palette-300)
+              }
+      }"
+    `)
+  })
+
+  test('patterns', () => {
+    const code = `
+      import { stack, hstack as aliased } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={stack({ align: "center" })}>Click me</div>
+              <div className={aliased({ justify: "flex-end" })}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "align": "center",
+            },
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {
+              "justify": "flex-end",
+            },
+          ],
+          "name": "hstack",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .items_center {
+          align-items: center
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .min-w_0 {
+          min-width: 0
+          }
+      }"
+    `)
+  })
+
+  test('should extract config recipes', () => {
     const code = `
        import { panda, Stack } from ".panda/jsx"
       import { button, anotherButton, complexButton } from ".panda/recipes"
@@ -55,6 +444,7 @@ describe('complete output pipeline', () => {
                 secondary: { color: 'pink.300', backgroundColor: 'green.500' },
               },
             },
+            compoundVariants: [{ variant: 'danger', size: 'md', css: { zIndex: 100 } }],
           },
           anotherButton: {
             name: 'anotherButton',
@@ -181,6 +571,10 @@ describe('complete output pipeline', () => {
           background: var(--colors-red-200)
           }
 
+        .z_100 {
+          z-index: 100
+          }
+
         .d_flex {
           display: flex
           }
@@ -225,6 +619,997 @@ describe('complete output pipeline', () => {
           .button {
             font-size: var(--font-sizes-lg)
               }
+          }
+      }"
+    `)
+  })
+})
+
+describe('preset patterns', () => {
+  // stack vstack hstack spacer circle absoluteCenter grid gridItem wrap container center aspectRatio
+  test('box', () => {
+    const code = `
+      import { box } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={box({ color: "blue.100" })}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "box",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot('""')
+  })
+
+  test('jsx box', () => {
+    const code = `
+      import { Box } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <Box color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "Box",
+          "type": "jsx",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue\\\\.100 {
+          color: blue.100
+          }
+      }"
+    `)
+  })
+
+  test('flex', () => {
+    const code = `
+      import { flex } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={flex()}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "flex",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot('""')
+  })
+
+  test('jsx flex', () => {
+    const code = `
+      import { Flex } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <Flex color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "Flex",
+          "type": "jsx",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue\\\\.100 {
+          color: blue.100
+          }
+      }"
+    `)
+  })
+
+  test('stack', () => {
+    const code = `
+      import { stack } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={stack()}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .items_flex-start {
+          align-items: flex-start
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .min-w_0 {
+          min-width: 0
+          }
+      }"
+    `)
+  })
+
+  test('jsx stack', () => {
+    const code = `
+      import { Stack } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <Stack color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "Stack",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .items_flex-start {
+          align-items: flex-start
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .min-w_0 {
+          min-width: 0
+          }
+      }"
+    `)
+  })
+
+  test('vstack', () => {
+    const code = `
+      import { vstack } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={vstack()}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "vstack",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot('""')
+  })
+
+  test('jsx vStack', () => {
+    const code = `
+      import { VStack } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <VStack color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "VStack",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot('""')
+  })
+
+  test('hstack', () => {
+    const code = `
+      import { hstack } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={hstack()}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "hstack",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot('""')
+  })
+
+  test('jsx hStack', () => {
+    const code = `
+      import { HStack } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <HStack color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "HStack",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot('""')
+  })
+
+  test('spacer', () => {
+    const code = `
+      import { spacer } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={spacer()}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "spacer",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot('""')
+  })
+
+  test('jsx spacer', () => {
+    const code = `
+      import { Spacer } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <Spacer color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "Spacer",
+          "type": "jsx",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue\\\\.100 {
+          color: blue.100
+          }
+      }"
+    `)
+  })
+
+  test('circle', () => {
+    const code = `
+      import { circle } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={circle()}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "circle",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot('""')
+  })
+
+  test('jsx circle', () => {
+    const code = `
+      import { Circle } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <Circle color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "Circle",
+          "type": "jsx",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue\\\\.100 {
+          color: blue.100
+          }
+      }"
+    `)
+  })
+
+  test('absoluteCenter', () => {
+    const code = `
+      import { absoluteCenter } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={absoluteCenter()}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "absoluteCenter",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .pos_absolute {
+          position: absolute
+          }
+
+        .t_50\\\\% {
+          top: 50%
+          }
+
+        .l_50\\\\% {
+          left: 50%
+          }
+
+        .transform_translateY\\\\(-50\\\\%\\\\) {
+          transform: translateY(-50%)
+          }
+      }"
+    `)
+  })
+
+  test('jsx absoluteCenter', () => {
+    const code = `
+      import { AbsoluteCenter } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <AbsoluteCenter color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "AbsoluteCenter",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .pos_absolute {
+          position: absolute
+          }
+
+        .t_50\\\\% {
+          top: 50%
+          }
+
+        .l_50\\\\% {
+          left: 50%
+          }
+
+        .transform_translateY\\\\(-50\\\\%\\\\) {
+          transform: translateY(-50%)
+          }
+      }"
+    `)
+  })
+
+  test('grid', () => {
+    const code = `
+      import { grid } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={grid()}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "grid",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot('""')
+  })
+
+  test('jsx grid', () => {
+    const code = `
+      import { Grid } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <Grid color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "Grid",
+          "type": "jsx",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue\\\\.100 {
+          color: blue.100
+          }
+      }"
+    `)
+  })
+
+  test('gridItem', () => {
+    const code = `
+      import { gridItem } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={gridItem()}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "gridItem",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .grid-column_auto {
+          grid-column: auto
+          }
+      }"
+    `)
+  })
+
+  test('jsx gridItem', () => {
+    const code = `
+      import { GridItem } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <GridItem color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "GridItem",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .grid-column_auto {
+          grid-column: auto
+          }
+      }"
+    `)
+  })
+
+  test('wrap', () => {
+    const code = `
+      import { wrap } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={wrap()}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "wrap",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot('""')
+  })
+
+  test('jsx wrap', () => {
+    const code = `
+      import { Wrap } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <Wrap color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "Wrap",
+          "type": "jsx",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue\\\\.100 {
+          color: blue.100
+          }
+      }"
+    `)
+  })
+
+  test('container', () => {
+    const code = `
+      import { container } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={container()}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "container",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot('""')
+  })
+
+  test('jsx container', () => {
+    const code = `
+      import { Container } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <Container color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "Container",
+          "type": "jsx",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue\\\\.100 {
+          color: blue.100
+          }
+      }"
+    `)
+  })
+
+  test('center', () => {
+    const code = `
+      import { center } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={center()}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "center",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot('""')
+  })
+
+  test('jsx center', () => {
+    const code = `
+      import { Center } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <Center color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "Center",
+          "type": "jsx",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue\\\\.100 {
+          color: blue.100
+          }
+      }"
+    `)
+  })
+
+  test('aspectRatio', () => {
+    const code = `
+      import { aspectRatio } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div>
+              <div className={aspectRatio()}>Click me</div>
+          </div>
+        )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "aspectRatio",
+          "type": "pattern",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot('""')
+  })
+
+  test('jsx aspectRatio', () => {
+    const code = `
+      import { AspectRatio } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <div>
+              <AspectRatio color="blue.100">Click me</div>
+          </div>
+          )
+      }
+     `
+    const { parse, generator } = getFixtureProject(code)
+    const result = parse()!
+    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "blue.100",
+            },
+          ],
+          "name": "AspectRatio",
+          "type": "jsx",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue\\\\.100 {
+          color: blue.100
           }
       }"
     `)
