@@ -60,6 +60,11 @@ export type Config = {
    */
   emitPackage?: boolean
   /**
+   * Whether to only emit the `tokens` directory
+   * @default false
+   */
+  emitTokensOnly?: boolean
+  /**
    * The namespace prefix for the generated css classes and css variables.
    * @default ''
    */

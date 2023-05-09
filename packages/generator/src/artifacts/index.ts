@@ -82,6 +82,13 @@ function setupTypes(ctx: Context): Artifact {
   } as Artifact
 }
 
+function setupTokenTypes(ctx: Context): Artifact {
+  return {
+    dir: ctx.paths.types,
+    files: [{ file: 'tokens.d.ts', code: generateTokenTypes(ctx) }],
+  } as Artifact
+}
+
 function setupCss(ctx: Context): Artifact {
   const code = generateCssFn(ctx)
   const conditions = generateConditions(ctx)
@@ -239,8 +246,10 @@ function setupPackageJson(ctx: Context): Artifact {
   }
 }
 
-export const generateArtifacts = (ctx: Context) => (): Artifact[] =>
-  [
+export const generateArtifacts = (ctx: Context) => (): Artifact[] => {
+  if (ctx.config.emitTokensOnly) return [setupDesignTokens(ctx), setupTokenTypes(ctx)]
+
+  return [
     setupHelpers(ctx),
     setupDesignTokens(ctx),
     setupKeyframes(ctx),
@@ -257,3 +266,4 @@ export const generateArtifacts = (ctx: Context) => (): Artifact[] =>
     setupResetCss(ctx),
     setupPackageJson(ctx),
   ].filter(Boolean)
+}
