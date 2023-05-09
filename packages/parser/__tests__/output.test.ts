@@ -1,10 +1,23 @@
 import { describe, test, expect } from 'vitest'
 import { getFixtureProject } from './fixture'
 
-describe('jsx', () => {
-  test('should extract', () => {
+describe('complete output pipeline', () => {
+  test('should extract recipes', () => {
     const code = `
        import { panda, Stack } from ".panda/jsx"
+      import { button, anotherButton, complexButton } from ".panda/recipes"
+
+      function AnotherButtonWithRegex({ children, variant, size, css: cssProp }: ButtonProps) {
+        return <button className={cx(button({ variant, size }), css(cssProp))}>{children}</button>
+      }
+
+      const AnotherButton = ({ spacing }) => {
+        return <button className={cx(anotherButton({ spacing }))}>Hello</button>
+      }
+
+      const ComplexDesignSystemButton = ({ color }) => {
+        return <button className={cx(complexButton({ color }))}>Hello</button>
+      }
 
        function Button() {
          return (
@@ -12,15 +25,119 @@ describe('jsx', () => {
                 <Stack>
                     <panda.button marginTop="40px" marginBottom="42px">Click me</panda.button>
                     <panda.div bg="red.200">Click me</panda.div>
+                    <AnotherButtonWithRegex variant="danger" size="md" />
+                    <AnotherButton spacing="sm" />
+                    <ComplexDesignSystemButton color="blue" />
                 </Stack>
             </div>
         )
        }
      `
-    const { parse, generator } = getFixtureProject(code)
+    const { parse, generator } = getFixtureProject(code, (conf) => ({
+      ...conf,
+      theme: {
+        ...conf.theme,
+        recipes: {
+          ...conf.theme?.recipes,
+          button: {
+            name: 'button',
+            jsx: ['Button', /WithRegex$/],
+            description: 'A button styles',
+            base: { fontSize: 'lg' },
+            variants: {
+              size: {
+                sm: { padding: '2', borderRadius: 'sm' },
+                md: { padding: '4', borderRadius: 'md' },
+              },
+              variant: {
+                primary: { color: 'white', backgroundColor: 'blue.500' },
+                danger: { color: 'white', backgroundColor: 'red.500' },
+                secondary: { color: 'pink.300', backgroundColor: 'green.500' },
+              },
+            },
+          },
+          anotherButton: {
+            name: 'anotherButton',
+            jsx: ['AnotherButton'],
+            variants: {
+              spacing: {
+                sm: { padding: '2', borderRadius: 'sm' },
+                md: { padding: '4', borderRadius: 'md' },
+              },
+            },
+          },
+          complexButton: {
+            name: 'complexButton',
+            jsx: ['ComplexButton', /^Complex.+Button$/],
+            variants: {
+              color: {
+                blue: { color: 'blue.500' },
+                red: { color: 'red.500' },
+              },
+            },
+          },
+        },
+      },
+    }))
     const result = parse()!
     expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
+        {
+          "data": [
+            {},
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "button",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "size": "md",
+              "variant": "danger",
+            },
+          ],
+          "name": "AnotherButtonWithRegex",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "anotherButton",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "spacing": "sm",
+            },
+          ],
+          "name": "AnotherButton",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "complexButton",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "color": "blue",
+            },
+          ],
+          "name": "ComplexDesignSystemButton",
+          "type": "jsx-recipe",
+        },
         {
           "data": [
             {},
@@ -82,6 +199,32 @@ describe('jsx', () => {
 
         .min-w_0 {
           min-width: 0
+          }}
+
+      @layer recipes {
+        .button--size_md {
+          padding: var(--spacing-4);
+          border-radius: var(--radii-md)
+          }
+
+        .button--variant_danger {
+          color: white;
+          background-color: var(--colors-red-500)
+          }
+
+        .anotherButton--spacing_sm {
+          padding: var(--spacing-2);
+          border-radius: var(--radii-sm)
+          }
+
+        .complexButton--color_blue {
+          color: blue.500
+          }
+
+        @layer base {
+          .button {
+            font-size: var(--font-sizes-lg)
+              }
           }
       }"
     `)

@@ -2,9 +2,9 @@ import { capitalize, dashCase, splitProps, uncapitalize } from '@pandacss/shared
 import type { AnyRecipeConfig, UserConfig } from '@pandacss/types'
 import { Obj, pipe } from 'lil-fp'
 
-const mergeRegex = (item: Array<string | RegExp>): RegExp => {
+const mergeRegex = (item: Array<string | RegExp>) => {
   const regex = item.map((item) => (typeof item === 'string' ? item : item.source)).join('|')
-  return new RegExp(regex)
+  return new RegExp(`^${regex}$`)
 }
 
 export const getRecipeEngine = (config: UserConfig) => {
