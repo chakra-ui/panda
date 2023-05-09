@@ -612,9 +612,9 @@ export default defineConfig({
     '.subheading-anchor': {
       opacity: 0,
       transition: 'opacity',
-      _lkr: { ml: 1 },
+      _ltr: { ml: 1 },
       _rtl: { mr: 1 },
-      'span:target + &,&:hover > &,&:focus': {
+      'span:target + &, :hover > &, &:focus': {
         opacity: 1
       },
       'span + &,&:hover > &': {
