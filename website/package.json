@@ -1,0 +1,36 @@
+{
+  "name": "website",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@headlessui/react": "^1.7.14",
+    "@pandacss/dev": "workspace:*",
+    "@popperjs/core": "^2.11.7",
+    "autoprefixer": "^10.4.14",
+    "clsx": "^1.2.1",
+    "flexsearch": "^0.7.31",
+    "focus-visible": "^5.2.0",
+    "git-url-parse": "^13.1.0",
+    "intersection-observer": "^0.12.2",
+    "match-sorter": "^6.3.1",
+    "next": "13.4.0",
+    "next-seo": "^6.0.0",
+    "next-themes": "^0.2.1",
+    "nextra": "^2.5.0",
+    "postcss": "^8.4.23",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "scroll-into-view-if-needed": "^3.0.10",
+    "zod": "^3.21.4"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.6",
+    "prettier": "^2.8.8"
+  }
+}

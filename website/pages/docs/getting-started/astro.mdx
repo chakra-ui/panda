@@ -1,0 +1,72 @@
+---
+title: Using PostCSS
+description: Easily use Panda with Astro with our dedicated integration.
+---
+
+# Using Astro
+
+Easily use Panda with Astro with our dedicated integration.
+
+## Install Panda
+
+Install panda and create your `panda.config.ts` file.
+
+```bash
+npm install -g @pandacss/dev
+npx panda init
+```
+
+## Add Panda to your Astro config
+
+Add panda integration to your `astro.config.mjs` file.
+
+```js
+import { defineConfig } from 'astro/config'
+import pandacss from '@pandacss/dev/astro'
+
+export default defineConfig({
+  // ...
+  integrations: [pandacss()]
+})
+```
+
+## Configure the content
+
+```js {3}
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  preflight: true,
+  presets: ['@pandacss/dev/presets'],
+  // define the content to scan 👇🏻
+  include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
+  exclude: [],
+  outdir: 'styled-system'
+})
+```
+
+## Configure the entry CSS with layers
+
+```css
+@layer reset, base, tokens, recipes, utilities;
+```
+
+## Start your build process
+
+Run your build process with `npm run dev` or whatever command is configured in your package.json file.
+
+```bash
+npm run dev
+```
+
+## Start using Panda in your code
+
+Use the generated style utilities in your code and panda will extract them to the generated CSS file.
+
+```jsx
+import { css } from './styled-system/css'
+
+export function App() {
+  return <div className={css({ bg: 'red.400' })} />
+}
+```
