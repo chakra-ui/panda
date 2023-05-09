@@ -1,11 +1,11 @@
 import { describe, test, expect } from 'vitest'
 import { getFixtureProject } from './fixture'
 
-describe('jsx', () => {
-  test('should extract', () => {
+describe('complete output pipeline', () => {
+  test('should extract recipes', () => {
     const code = `
        import { panda, Stack } from ".panda/jsx"
-      import { button, anotherButton } from ".panda/recipes"
+      import { button, anotherButton, complexButton } from ".panda/recipes"
 
       function AnotherButtonWithRegex({ children, variant, size, css: cssProp }: ButtonProps) {
         return <button className={cx(button({ variant, size }), css(cssProp))}>{children}</button>
@@ -13,6 +13,10 @@ describe('jsx', () => {
 
       const AnotherButton = ({ spacing }) => {
         return <button className={cx(anotherButton({ spacing }))}>Hello</button>
+      }
+
+      const ComplexDesignSystemButton = ({ color }) => {
+        return <button className={cx(complexButton({ color }))}>Hello</button>
       }
 
        function Button() {
@@ -23,6 +27,7 @@ describe('jsx', () => {
                     <panda.div bg="red.200">Click me</panda.div>
                     <AnotherButtonWithRegex variant="danger" size="md" />
                     <AnotherButton spacing="sm" />
+                    <ComplexDesignSystemButton color="blue" />
                 </Stack>
             </div>
         )
@@ -58,6 +63,16 @@ describe('jsx', () => {
               spacing: {
                 sm: { padding: '2', borderRadius: 'sm' },
                 md: { padding: '4', borderRadius: 'md' },
+              },
+            },
+          },
+          complexButton: {
+            name: 'complexButton',
+            jsx: ['ComplexButton', /^Complex.+Button$/],
+            variants: {
+              color: {
+                blue: { color: 'blue.500' },
+                red: { color: 'red.500' },
               },
             },
           },
@@ -105,6 +120,22 @@ describe('jsx', () => {
             },
           ],
           "name": "AnotherButton",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "complexButton",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "color": "blue",
+            },
+          ],
+          "name": "ComplexDesignSystemButton",
           "type": "jsx-recipe",
         },
         {
@@ -184,6 +215,10 @@ describe('jsx', () => {
         .anotherButton--spacing_sm {
           padding: var(--spacing-2);
           border-radius: var(--radii-sm)
+          }
+
+        .complexButton--color_blue {
+          color: blue.500
           }
 
         @layer base {
