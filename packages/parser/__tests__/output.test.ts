@@ -93,19 +93,19 @@ describe('jsx', () => {
         },
         {
           "data": [
+            {},
+          ],
+          "name": "anotherButton",
+          "type": "recipe",
+        },
+        {
+          "data": [
             {
               "spacing": "sm",
             },
           ],
           "name": "AnotherButton",
           "type": "jsx-recipe",
-        },
-        {
-          "data": [
-            {},
-          ],
-          "name": "anotherButton",
-          "type": "recipe",
         },
         {
           "data": [
@@ -150,10 +150,6 @@ describe('jsx', () => {
           background: var(--colors-red-200)
           }
 
-        .spacing_sm {
-          spacing: sm
-          }
-
         .d_flex {
           display: flex
           }
@@ -183,6 +179,11 @@ describe('jsx', () => {
         .button--variant_danger {
           color: white;
           background-color: var(--colors-red-500)
+          }
+
+        .anotherButton--spacing_sm {
+          padding: var(--spacing-2);
+          border-radius: var(--radii-sm)
           }
 
         @layer base {
