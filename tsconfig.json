@@ -19,6 +19,7 @@
     "verbatimModuleSyntax": true
   },
   "include": ["packages"],
+  "types": ["vitest/globals"],
   "exclude": [
     "node_modules",
     "./packages/cli/app",
