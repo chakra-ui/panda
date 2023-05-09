@@ -28,3 +28,19 @@ pnpm panda studio --build
 
 This will create a `panda-static` folder in the root of your project. You can deploy this folder to any static site host
 like Vercel or Netlify.
+
+## Token Analyzer
+
+When you run the Panda Studio, it will scan your project for tokens and generate a JSON report that you can then interactivily explore in the Studio's Token analyzer page.
+
+Navigate to `http://localhost:3000/token-analyzer` to explore the report.
+
+> You can also generate and inspect that JSON report using the CLI [`analyze`](docs/references/cli.mdx#panda-analyze) command
+
+In the Token analyzer page, you can:
+
+- See how many tokens are used in your project, sort them, and search them by property name, category, file path or value...
+- Look at a visual color palette from your most used colors
+- Inspect a token and see where and how it is used in your project
+- Open the exact line where a token is defined in your preferred code editor
+- Scope tokens & colors used by files
