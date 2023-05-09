@@ -74,8 +74,8 @@
   },
   "devDependencies": {
     "@pandacss/presets": "workspace:*",
-    "@types/react": "18.2.5",
-    "@types/react-dom": "18.2.3",
+    "@types/react": "18.2.6",
+    "@types/react-dom": "18.2.4",
     "@types/update-notifier": "6.0.2",
     "@vitejs/plugin-react": "4.0.0",
     "execa": "7.1.1",
