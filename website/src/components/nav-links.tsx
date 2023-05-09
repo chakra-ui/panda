@@ -1,11 +1,10 @@
 import type { ReactElement } from 'react'
-import cn from 'clsx'
 import { ArrowRightIcon } from 'nextra/icons'
 import { useConfig } from '../contexts'
 import type { Item } from 'nextra/normalize-pages'
 import { Anchor } from './anchor'
 import type { DocsThemeConfig } from '../index'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 
 interface NavLinkProps {
   currentIndex: number
@@ -70,13 +69,13 @@ export const NavLinks = ({
         <Anchor
           href={prev.route}
           title={prev.title}
-          className={cn(
+          className={cx(
             classes.link,
             css({ _ltr: { pr: 4 }, _rtl: { pl: 4 } })
           )}
         >
           <ArrowRightIcon
-            className={cn(
+            className={cx(
               classes.icon,
               css({ _ltr: { transform: 'rotate(180deg)' } })
             )}
@@ -88,7 +87,7 @@ export const NavLinks = ({
         <Anchor
           href={next.route}
           title={next.title}
-          className={cn(
+          className={cx(
             classes.link,
             css({
               _ltr: { ml: 'auto', pl: 4, textAlign: 'right' },
@@ -98,7 +97,7 @@ export const NavLinks = ({
         >
           {next.title}
           <ArrowRightIcon
-            className={cn(
+            className={cx(
               classes.icon,
               css({ _rtl: { transform: 'rotate(-180deg)' } })
             )}

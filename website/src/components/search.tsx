@@ -1,7 +1,5 @@
 import type { ReactElement, KeyboardEvent } from 'react'
 import { Fragment, useCallback, useState, useEffect, useRef } from 'react'
-import cn from 'clsx'
-import { Transition } from '@headlessui/react'
 import { InformationCircleIcon, SpinnerIcon } from 'nextra/icons'
 import { useMounted } from 'nextra/hooks'
 import { Input } from './input'
@@ -10,7 +8,7 @@ import { renderComponent, renderString } from '../utils'
 import { useConfig, useMenu } from '../contexts'
 import { useRouter } from 'next/router'
 import type { SearchResult } from '../types'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 
 type SearchProps = {
   className?: string
@@ -144,81 +142,72 @@ export function Search({
   const renderList = show && Boolean(value)
 
   const icon = (
-    <Transition
-      show={mounted && (!show || Boolean(value))}
-      as={Fragment}
-      enter={css({ transitionProperty: 'opacity' })}
-      enterFrom={css({ opacity: 0 })}
-      enterTo={css({ opacity: 1 })}
-      leave={css({ transitionProperty: 'opacity' })}
-      leaveFrom={css({ opacity: 1 })}
-      leaveTo={css({ opacity: 0 })}
+    <kbd
+      className={cx(
+        css({
+          opacity: mounted && (!show || Boolean(value)) ? '1' : '0',
+          pointerEvents: renderList ? 'auto' : 'none',
+          transitionProperty: 'opacity',
+          position: 'absolute',
+          my: 1.5,
+          userSelect: 'none',
+          _ltr: { right: 1.5 },
+          _rtl: { left: 1.5 },
+          height: 5,
+          borderRadius: 'md',
+          backgroundColor: 'white',
+          px: 1.5,
+          fontFamily: 'mono',
+          fontSize: '10px',
+          fontWeight: 'medium',
+          color: 'gray.500',
+          border: '1px solid',
+          // borderColor: 'gray.100/20',
+          borderColor: 'rgb(243 244 246 / 0.2)',
+          // _dark: { bgColor: 'dark/50' },
+          _dark: { bgColor: 'rgb(17 17 17 / 0.2)' },
+          _moreContrast: {
+            borderColor: 'current',
+            color: 'current',
+            _dark: { borderColor: 'current' }
+          },
+          alignItems: 'center',
+          gap: 1
+        }),
+        value
+          ? css({
+              zIndex: 20,
+              display: 'flex',
+              cursor: 'pointer',
+              _hover: { opacity: 0.7 }
+            })
+          : css({
+              pointerEvents: 'none',
+              display: 'none',
+              sm: { display: 'flex' }
+            })
+      )}
+      title={value ? 'Clear' : undefined}
+      onClick={() => {
+        onChange('')
+      }}
     >
-      <kbd
-        className={cn(
-          css({
-            position: 'absolute',
-            my: 1.5,
-            userSelect: 'none',
-            _ltr: { right: 1.5 },
-            _rtl: { left: 1.5 },
-            height: 5,
-            borderRadius: 'md',
-            backgroundColor: 'white',
-            px: 1.5,
-            fontFamily: 'mono',
-            fontSize: '10px',
-            fontWeight: 'medium',
-            color: 'gray.500',
-            border: '1px solid',
-            // borderColor: 'gray.100/20',
-            borderColor: 'rgb(243 244 246 / 0.2)',
-            // _dark: { bgColor: 'dark/50' },
-            _dark: { bgColor: 'rgb(17 17 17 / 0.2)' },
-            _moreContrast: {
-              borderColor: 'current',
-              color: 'current',
-              _dark: { borderColor: 'current' }
-            },
-            alignItems: 'center',
-            gap: 1,
-            transitionProperty: 'opacity'
-          }),
-          value
-            ? css({
-                zIndex: 20,
-                display: 'flex',
-                cursor: 'pointer',
-                _hover: { opacity: 0.7 }
-              })
-            : css({
-                pointerEvents: 'none',
-                display: 'none',
-                sm: { display: 'flex' }
-              })
-        )}
-        title={value ? 'Clear' : undefined}
-        onClick={() => {
-          onChange('')
-        }}
-      >
-        {value && focused
-          ? 'ESC'
-          : mounted &&
-            (navigator.userAgent.includes('Macintosh') ? (
-              <>
-                <span className={css({ textStyle: 'xs' })}>⌘</span>K
-              </>
-            ) : (
-              'CTRL K'
-            ))}
-      </kbd>
-    </Transition>
+      {value && focused
+        ? 'ESC'
+        : mounted &&
+          (navigator.userAgent.includes('Macintosh') ? (
+            <>
+              <span className={css({ textStyle: 'xs' })}>⌘</span>K
+            </>
+          ) : (
+            'CTRL K'
+          ))}
+    </kbd>
   )
 
   return (
     <div
-      className={cn(
+      className={cx(
         'nextra-search',
         css({
           position: 'relative',
@@ -263,19 +252,15 @@ export function Search({
         suffix={icon}
       />
 
-      <Transition
-        show={renderList}
-        // Transition.Child is required here, otherwise popup will be still present in DOM after focus out
-        as={Transition.Child}
-        leave={css({
-          transitionProperty: 'opacity',
-          transitionDuration: '100ms'
+      <div
+        className={css({
+          opacity: renderList ? '1' : '0',
+          pointerEvents: renderList ? 'auto' : 'none',
+          transitionProperty: 'opacity'
         })}
-        leaveFrom={css({ opacity: 1 })}
-        leaveTo={css({ opacity: 0 })}
       >
         <ul
-          className={cn(
+          className={cx(
             'nextra-scrollbar',
             // Using bg-white as background-color when the browser didn't support backdrop-filter
             css({
@@ -361,7 +346,7 @@ export function Search({
               <Fragment key={id}>
                 {prefix}
                 <li
-                  className={cn(
+                  className={cx(
                     css({
                       mx: 2.5,
                       overflowWrap: 'break-word',
@@ -405,7 +390,7 @@ export function Search({
             renderComponent(config.search.emptyResult)
           )}
         </ul>
-      </Transition>
+      </div>
     </div>
   )
 }

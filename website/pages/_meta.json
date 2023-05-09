@@ -17,11 +17,5 @@
     "type": "page",
     "href": "https://panda-playground.vercel.app/",
     "newWindow": true
-  },
-  "studio": {
-    "title": "Studio",
-    "type": "page",
-    "href": "https://panda-app.vercel.app/",
-    "newWindow": true
   }
 }

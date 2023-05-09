@@ -4,11 +4,10 @@ import type { Components } from 'nextra/mdx'
 import { useSetActiveAnchor, DetailsProvider, useDetails } from './contexts'
 import { Collapse, Anchor } from './components'
 import type { DocsThemeConfig } from './constants'
-import cn from 'clsx'
 import { Code, Pre, Table, Td, Th, Tr } from './nextra-components'
 import { useIntersectionObserver, useSlugs } from './contexts/active-anchor'
 import type { AnchorProps } from './components/anchor'
-import { css } from '../styled-system/css'
+import { css, cx } from '../styled-system/css'
 
 // Anchor links
 function HeadingLink({
@@ -46,7 +45,7 @@ function HeadingLink({
 
   return (
     <Tag
-      className={cn(
+      className={cx(
         css({
           fontWeight: 'semibold',
           letterSpacing: 'tight',
@@ -174,7 +173,7 @@ const Summary = (props: ComponentProps<'summary'>): ReactElement => {
   const setOpen = useDetails()
   return (
     <summary
-      className={cn(
+      className={cx(
         css({
           display: 'flex',
           alignItems: 'center',
@@ -218,7 +217,7 @@ export const Link = ({ href = '', className, ...props }: AnchorProps) => (
   <Anchor
     href={href}
     newWindow={EXTERNAL_HREF_REGEX.test(href)}
-    className={cn(
+    className={cx(
       css({
         color: 'primary.600',
         textDecorationLine: 'underline',
@@ -293,7 +292,7 @@ export const getComponents = ({
     li: props => <li className={css({ my: 2 })} {...props} />,
     blockquote: props => (
       <blockquote
-        className={cn(
+        className={cx(
           css({
             mt: 6,
             borderColor: 'gray.300',
@@ -317,7 +316,7 @@ export const getComponents = ({
     a: Link,
     table: props => (
       <Table
-        className={cn(
+        className={cx(
           'nextra-scrollbar',
           css({ mt: 6, p: 0, _first: { mt: 0 } })
         )}

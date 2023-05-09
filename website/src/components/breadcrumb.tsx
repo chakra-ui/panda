@@ -1,7 +1,6 @@
 import type { ReactElement } from 'react'
 import { Fragment } from 'react'
 import { Anchor } from './anchor'
-import cn from 'clsx'
 import { ArrowRightIcon } from 'nextra/icons'
 import type { Item } from 'nextra/normalize-pages'
 import { css, cx } from '../../styled-system/css'
@@ -37,7 +36,7 @@ export function Breadcrumb({
               <ArrowRightIcon className={css({ w: 3.5, flexShrink: 0 })} />
             )}
             <div
-              className={cn(
+              className={cx(
                 css({
                   whiteSpace: 'nowrap',
                   transitionProperty: 'colors',
@@ -73,7 +72,7 @@ export function Breadcrumb({
                             _dark: { _hover: 'gray.200' }
                           }
                         })
-                    ]
+                    ].join(' ')
               )}
               title={item.title}
             >

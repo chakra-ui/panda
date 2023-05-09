@@ -9,11 +9,9 @@
     "start": "next start"
   },
   "dependencies": {
-    "@headlessui/react": "^1.7.14",
+    "@ark-ui/react": "0.2.0",
     "@pandacss/dev": "workspace:*",
-    "@popperjs/core": "^2.11.7",
     "autoprefixer": "^10.4.14",
-    "clsx": "^1.2.1",
     "flexsearch": "^0.7.31",
     "focus-visible": "^5.2.0",
     "git-url-parse": "^13.1.0",

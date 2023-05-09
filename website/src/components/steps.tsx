@@ -1,6 +1,5 @@
 import type { ComponentProps, ReactElement } from 'react'
-import cn from 'clsx'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 
 export function Steps({
   children,
@@ -9,7 +8,7 @@ export function Steps({
 }: ComponentProps<'div'>): ReactElement {
   return (
     <div
-      className={cn(
+      className={cx(
         'nextra-steps',
         css({
           ml: 4,

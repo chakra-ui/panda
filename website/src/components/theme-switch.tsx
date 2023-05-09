@@ -41,16 +41,16 @@ export function ThemeSwitch({
       className={className}
       title="Change theme"
       options={[
-        { key: 'light', name: options.light },
-        { key: 'dark', name: options.dark },
-        { key: 'system', name: options.system }
+        { value: 'light', label: options.light },
+        { value: 'dark', label: options.dark },
+        { value: 'system', label: options.system }
       ]}
       onChange={option => {
-        setTheme(option.key)
+        setTheme(option.value)
       }}
       selected={{
-        key: theme,
-        name: (
+        value: theme,
+        label: (
           <div
             className={css({
               display: 'flex',

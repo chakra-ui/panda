@@ -8,7 +8,6 @@ import {
   createContext,
   useContext
 } from 'react'
-import cn from 'clsx'
 import { useRouter } from 'next/router'
 import type { Heading } from 'nextra'
 import scrollIntoView from 'scroll-into-view-if-needed'
@@ -21,7 +20,7 @@ import { LocaleSwitch } from './locale-switch'
 import { ArrowRightIcon, ExpandIcon } from 'nextra/icons'
 import { Collapse } from './collapse'
 import { Anchor } from './anchor'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 
 const TreeState: Record<string, boolean> = Object.create(null)
 
@@ -168,10 +167,10 @@ function FolderImpl({ item, anchors }: FolderProps): ReactElement {
   const ComponentToUse = isLink ? Anchor : 'button'
 
   return (
-    <li className={cn({ open, active })}>
+    <li className={cx(open && 'open', active && 'active')}>
       <ComponentToUse
         href={isLink ? item.route : undefined}
-        className={cn(
+        className={cx(
           css({
             display: 'flex',
             alignItems: 'center',
@@ -223,7 +222,7 @@ function FolderImpl({ item, anchors }: FolderProps): ReactElement {
               _dark: { bg: 'rgb(243 244 246 / 0.05)' }
             }
           })}
-          pathClassName={cn(
+          pathClassName={cx(
             css({
               transformOrigin: 'center',
               transitionProperty: 'transform',
@@ -243,7 +242,7 @@ function FolderImpl({ item, anchors }: FolderProps): ReactElement {
       >
         {Array.isArray(item.children) ? (
           <Menu
-            className={cn(
+            className={cx(
               classes.border,
               css({ _ltr: { ml: 3 }, _rtl: { mr: 3 } })
             )}
@@ -261,7 +260,7 @@ function Separator({ title }: { title: string }): ReactElement {
   const config = useConfig()
   return (
     <li
-      className={cn(
+      className={cx(
         css({ wordBreak: 'break-word' }),
         title
           ? css({
@@ -320,11 +319,11 @@ function File({
   }
 
   return (
-    <li className={cn(classes.list, { active })}>
+    <li className={cx(classes.list, { active })}>
       <Anchor
         href={(item as PageItem).href || item.route}
         newWindow={(item as PageItem).newWindow}
-        className={cn(classes.link, active ? classes.active : classes.inactive)}
+        className={cx(classes.link, active ? classes.active : classes.inactive)}
         onClick={() => {
           setMenu(false)
         }}
@@ -343,7 +342,7 @@ function File({
       </Anchor>
       {active && anchors.length > 0 && (
         <ul
-          className={cn(
+          className={cx(
             classes.list,
             classes.border,
             css({ _ltr: { ml: 3 }, _rtl: { mr: 3 } })
@@ -353,7 +352,7 @@ function File({
             <li key={id}>
               <a
                 href={`#${id}`}
-                className={cn(
+                className={cx(
                   classes.link,
                   css({
                     display: 'flex',
@@ -391,7 +390,7 @@ function Menu({
   onlyCurrentDocs
 }: MenuProps): ReactElement {
   return (
-    <ul className={cn(classes.list, className)}>
+    <ul className={cx(classes.list, className)}>
       {directories.map(item =>
         !onlyCurrentDocs || item.isUnderCurrentDocsTree ? (
           item.type === 'menu' ||
@@ -488,7 +487,7 @@ export function Sidebar({
         />
       ) : null}
       <div
-        className={cn(
+        className={cx(
           css({
             _motionReduce: { transitionProperty: 'none' },
             transition: 'background-color 1.5s ease'
@@ -506,7 +505,7 @@ export function Sidebar({
         onClick={() => setMenu(false)}
       />
       <aside
-        className={cn(
+        className={cx(
           'nextra-sidebar-container',
           css({
             display: 'flex',
@@ -575,7 +574,7 @@ export function Sidebar({
             }}
           >
             <div
-              className={cn(
+              className={cx(
                 css({
                   overflowY: 'auto',
                   overflowX: 'hidden',
@@ -615,7 +614,7 @@ export function Sidebar({
 
         {hasMenu && (
           <div
-            className={cn(
+            className={cx(
               css({
                 position: 'sticky',
                 bottom: 0,
@@ -641,7 +640,7 @@ export function Sidebar({
                 }
               }),
               showSidebar
-                ? cn(
+                ? cx(
                     hasI18n && css({ justifyContent: 'end' }),
                     css({ borderTop: '1px' })
                   )
@@ -655,7 +654,7 @@ export function Sidebar({
               <LocaleSwitch
                 options={config.i18n}
                 lite={!showSidebar}
-                className={cn(
+                className={cx(
                   showSidebar ? css({ flex: 1 }) : css({ mdDown: { flex: 1 } })
                 )}
               />

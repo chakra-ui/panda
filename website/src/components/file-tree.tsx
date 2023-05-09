@@ -1,7 +1,6 @@
 import { useState, useCallback, createContext, useContext, memo } from 'react'
 import type { ReactElement, ReactNode } from 'react'
-import cn from 'clsx'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 
 const ctx = createContext(0)
 
@@ -133,7 +132,7 @@ Folder.displayName = 'Folder'
 
 const File = memo<FileProps>(({ label, name, active }) => (
   <li
-    className={cn(
+    className={cx(
       css({ display: 'flex', listStyle: 'none' }),
       active &&
         css({ color: 'primary.600', _moreContrast: { color: 'primary.400' } })

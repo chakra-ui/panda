@@ -1,22 +1,32 @@
-import type { ReactElement, ReactNode } from 'react'
-import cn from 'clsx'
-import { Menu, Transition } from '@headlessui/react'
+import {
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuPositioner,
+  MenuTrigger,
+  Portal
+} from '@ark-ui/react'
 import { ArrowRightIcon, MenuIcon } from 'nextra/icons'
+import type { ReactElement, ReactNode } from 'react'
 
-import { useConfig, useMenu } from '../contexts'
-import type { Item, PageItem, MenuItem } from 'nextra/normalize-pages'
-import { renderComponent } from '../utils'
 import { useFSRoute } from 'nextra/hooks'
-import { Anchor } from './anchor'
+import type {
+  Item,
+  MenuItem as MenuItemData,
+  PageItem
+} from 'nextra/normalize-pages'
 import { css, cx } from '../../styled-system/css'
+import { useConfig, useMenu } from '../contexts'
+import { renderComponent } from '../utils'
+import { Anchor } from './anchor'
 
 export type NavBarProps = {
   flatDirectories: Item[]
-  items: (PageItem | MenuItem)[]
+  items: (PageItem | MenuItemData)[]
 }
 
 const classes = {
-  link: cn(
+  link: cx(
     css({
       textStyle: 'sm',
       _moreContrast: {
@@ -43,7 +53,7 @@ function NavbarMenu({
   children
 }: {
   className?: string
-  menu: MenuItem
+  menu: MenuItemData
   children: ReactNode
 }): ReactElement {
   const { items } = menu
@@ -54,88 +64,85 @@ function NavbarMenu({
   return (
     <div className={css({ position: 'relative', display: 'inline-block' })}>
       <Menu>
-        <Menu.Button
-          className={cn(
-            className,
-            css({
-              ml: -2,
-              display: 'none',
-              alignItems: 'center',
-              whitespace: 'nowrap',
-              rounded: 'md',
-              p: 2,
-              md: { display: 'inline-flex' }
-            }),
-            classes.inactive
-          )}
-        >
-          {children}
-        </Menu.Button>
-        <Transition
-          leave={css({ transitionProperty: 'opacity' })}
-          leaveFrom={css({ opacity: 1 })}
-          leaveTo={css({ opacity: 0 })}
-        >
-          <Menu.Items
-            className={css({
-              position: 'absolute',
-              right: 0,
-              zIndex: 20,
-              mt: 1,
-              maxHeight: 64,
-              minWidth: 'full',
-              overflow: 'auto',
-              rounded: 'md',
-              outline: '1px solid',
-              // outlineColor: 'black/5',
-              outlineColor: 'rgb(0 0 0 / 0.05)',
-              bgColor: 'white',
-              py: 1,
-              textStyle: 'sm',
-              shadow: 'lg',
-              _dark: {
-                // outlineColor: 'white/20',
-                outlineColor: 'rgb(255 255 255 / 0.2)',
-                bgColor: 'neutral.800'
-              }
-            })}
-            // @ts-ignore
-            tabIndex={0}
+        <MenuTrigger>
+          <button
+            className={cx(
+              className,
+              css({
+                ml: -2,
+                display: 'none',
+                alignItems: 'center',
+                whitespace: 'nowrap',
+                rounded: 'md',
+                p: 2,
+                md: { display: 'inline-flex' }
+              }),
+              classes.inactive
+            )}
           >
-            {Object.entries(items || {}).map(([key, item]) => (
-              <Menu.Item key={key}>
-                <Anchor
-                  href={
-                    item.href || routes[key]?.route || menu.route + '/' + key
-                  }
-                  className={cn(
-                    css({
-                      position: 'relative',
-                      display: 'none',
-                      w: 'full',
-                      userSelect: 'none',
-                      whitespace: 'nowrap',
-                      color: 'gray.600',
-                      _hover: { color: 'gray.900' },
-                      _dark: {
-                        color: 'gray.400',
-                        _hover: { color: 'gray.100' }
-                      },
-                      md: { display: 'inline-block' },
-                      py: 1.5,
-                      transitionProperty: 'color',
-                      _ltr: { pl: 3, pr: 9 },
-                      _rtl: { pr: 3, pl: 9 }
-                    })
-                  )}
-                  newWindow={item.newWindow}
-                >
-                  {item.title || key}
-                </Anchor>
-              </Menu.Item>
-            ))}
-          </Menu.Items>
-        </Transition>
+            {children}
+          </button>
+        </MenuTrigger>
+        <Portal>
+          <MenuPositioner className={css({ zIndex: 20 })}>
+            <MenuContent
+              className={css({
+                mt: 1,
+                maxHeight: 64,
+                minWidth: 'full',
+                overflow: 'auto',
+                rounded: 'md',
+                outline: '1px solid',
+                // outlineColor: 'black/5',
+                outlineColor: 'rgb(0 0 0 / 0.05)',
+                bgColor: 'white',
+                py: 1,
+                textStyle: 'sm',
+                shadow: 'lg',
+                _dark: {
+                  // outlineColor: 'white/20',
+                  outlineColor: 'rgb(255 255 255 / 0.2)',
+                  bgColor: 'neutral.800'
+                }
+              })}
+              // @ts-ignore
+              tabIndex={0}
+            >
+              {Object.entries(items || {}).map(([key, item]) => (
+                <MenuItem id={key} key={key}>
+                  <Anchor
+                    href={
+                      item.href || routes[key]?.route || menu.route + '/' + key
+                    }
+                    className={cx(
+                      css({
+                        position: 'relative',
+                        display: 'none',
+                        w: 'full',
+                        userSelect: 'none',
+                        whitespace: 'nowrap',
+                        color: 'gray.600',
+                        _hover: { color: 'gray.900' },
+                        _dark: {
+                          color: 'gray.400',
+                          _hover: { color: 'gray.100' }
+                        },
+                        md: { display: 'inline-block' },
+                        py: 1.5,
+                        transitionProperty: 'color',
+                        _ltr: { pl: 3, pr: 9 },
+                        _rtl: { pr: 3, pl: 9 }
+                      })
+                    )}
+                    newWindow={item.newWindow}
+                  >
+                    {item.title || key}
+                  </Anchor>
+                </MenuItem>
+              ))}
+            </MenuContent>
+          </MenuPositioner>
+        </Portal>
       </Menu>
     </div>
   )
@@ -161,7 +168,7 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
       )}
     >
       <div
-        className={cn(
+        className={cx(
           'nextra-nav-container-blur',
           css({
             pointerEvents: 'none',
@@ -224,7 +231,7 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
           if (pageOrMenu.display === 'hidden') return null
 
           if (pageOrMenu.type === 'menu') {
-            const menu = pageOrMenu as MenuItem
+            const menu = pageOrMenu as MenuItemData
 
             const isActive =
               menu.route === activeRoute ||
@@ -233,7 +240,7 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
             return (
               <NavbarMenu
                 key={menu.title}
-                className={cn(
+                className={cx(
                   classes.link,
                   css({ display: 'flex', gap: 1 }),
                   isActive ? classes.active : classes.inactive
@@ -274,7 +281,7 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
             <Anchor
               href={href}
               key={href}
-              className={cn(
+              className={cx(
                 classes.link,
                 css({
                   position: 'relative',
@@ -392,7 +399,7 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
           )}
           onClick={() => setMenu(!menu)}
         >
-          <MenuIcon className={cn({ open: menu })} />
+          <MenuIcon className={cx(menu && 'open')} />
         </button>
         {config.darkMode &&
           renderComponent(config.themeSwitch.component, { lite: true })}

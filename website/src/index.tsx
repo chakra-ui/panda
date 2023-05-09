@@ -4,7 +4,6 @@ import type { ReactElement, ReactNode } from 'react'
 import { useMemo } from 'react'
 import { useRouter } from 'next/router'
 import 'focus-visible'
-import cn from 'clsx'
 import { MDXProvider } from 'nextra/mdx'
 import { useMounted, useFSRoute } from 'nextra/hooks'
 
@@ -23,7 +22,7 @@ import type { PageTheme } from 'nextra/normalize-pages'
 import { normalizePages } from 'nextra/normalize-pages'
 import { DEFAULT_LOCALE, PartialDocsThemeConfig } from './constants'
 import { renderComponent } from './utils'
-import { css } from '../styled-system/css'
+import { css, cx } from '../styled-system/css'
 
 interface BodyProps {
   themeContext: PageTheme
@@ -103,7 +102,7 @@ const Body = ({
   if (themeContext.layout === 'full') {
     return (
       <article
-        className={cn(
+        className={cx(
           classes.main,
           css({
             color: 'slate.700',
@@ -122,7 +121,7 @@ const Body = ({
 
   return (
     <article
-      className={cn(
+      className={cx(
         classes.main,
         css({
           color: 'slate.700',
@@ -204,7 +203,7 @@ const InnerLayout = ({
       )
     ) : (
       <nav
-        className={cn(classes.toc, css({ px: 4 }))}
+        className={cx(classes.toc, css({ px: 4 }))}
         aria-label="table of contents"
       >
         {renderComponent(config.toc.component, {
@@ -239,7 +238,7 @@ const InnerLayout = ({
           items: topLevelNavbarItems
         })}
       <div
-        className={cn(
+        className={cx(
           css({ mx: 'auto', display: 'flex' }),
           themeContext.layout !== 'raw' && css({ maxW: '90rem' })
         )}
@@ -312,8 +311,8 @@ export {
   NotFoundPage,
   ServerSideErrorPage,
   Steps,
-  Tabs,
-  Tab,
+  // Tabs,
+  // Tab,
   Cards,
   Card,
   FileTree,
