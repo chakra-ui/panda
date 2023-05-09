@@ -107,16 +107,24 @@ const HeadlineSummary = () => {
           </Portal>
         </Tooltip>
       </panda.div>
-      <panda.div fontSize="md">
-        <span>Mostly </span>
-        <TextWithCount display="inline-block" count={topKind.count}>
-          {topKind.key === 'function' ? 'using functions' : 'using style props'}
-        </TextWithCount>
-        , and others{' '}
-        <TextWithCount display="inline-block" count={secondKind.count}>
-          {secondKind.key === 'function' ? 'using functions' : 'using style props'}.
-        </TextWithCount>
-      </panda.div>
+      {topKind && (
+        <panda.div fontSize="md">
+          <span>Mostly </span>
+          {
+            <TextWithCount display="inline-block" count={topKind.count}>
+              {topKind.key === 'function' ? 'using functions' : 'using style props'}
+            </TextWithCount>
+          }
+          {secondKind && (
+            <>
+              , and others{' '}
+              <TextWithCount display="inline-block" count={secondKind.count}>
+                {secondKind.key === 'function' ? 'using functions' : 'using style props'}.
+              </TextWithCount>
+            </>
+          )}
+        </panda.div>
+      )}
       <panda.div fontSize="sm">
         <span>
           With{' '}

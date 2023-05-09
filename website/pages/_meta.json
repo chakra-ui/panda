@@ -1,0 +1,27 @@
+{
+  "index": {
+    "title": "Home",
+    "hidden": true,
+    "display": "hidden",
+    "theme": {
+      "layout": "raw"
+    }
+  },
+  "docs": {
+    "title": "Documentation",
+    "type": "page",
+    "href": "/docs"
+  },
+  "playground": {
+    "title": "Playground",
+    "type": "page",
+    "href": "https://panda-playground.vercel.app/",
+    "newWindow": true
+  },
+  "studio": {
+    "title": "Studio",
+    "type": "page",
+    "href": "https://panda-app.vercel.app/",
+    "newWindow": true
+  }
+}

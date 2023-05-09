@@ -1,0 +1,356 @@
+---
+title: Config Recipe
+description: Recipes defined in the panda config is useful for distributing component recipes across projects in your company.
+---
+
+# Config Recipe
+
+Recipes defined in the panda config is useful for distributing component recipes across projects in your company.
+
+Config recipes are extracted and generated just in time, this means regardless of the recipes in the config, only the
+recipes and variants you use will exist in the compile CSS.
+
+The config recipe takes the following properties:
+
+- `name`: The name of the recipe. Used in the generated class name
+- `description`: An optional description of the recipe (used in the js-doc comments)
+- `base`: The base style object for the recipe
+- `variants`: The variant styles for the recipe
+- `defaultVariants`: The default variants for the recipe
+- `compoundVariants`: An array of compound variants for the recipe
+- `jsx`: An array of JSX components that use the recipe. Defaults to the uppercase version of the recipe name
+
+## Creating a config recipe
+
+To define a config recipe, import the `defineRecipe` helper function
+
+```jsx
+import { defineRecipe } from '@pandacss/dev'
+
+export const buttonRecipe = defineRecipe({
+  name: 'button',
+  description: 'The styles for the Button component',
+  base: {
+    display: 'flex'
+  },
+  variants: {
+    visual: {
+      funky: { bg: 'red.200', color: 'white' },
+      edgy: { border: '1px solid {colors.red.500}' }
+    },
+    size: {
+      sm: { padding: '4', fontSize: '12px' },
+      lg: { padding: '8', fontSize: '40px' }
+    },
+    shape: {
+      square: { borderRadius: '0' },
+      circle: { borderRadius: 'full' }
+    }
+  },
+  defaultVariants: {
+    visual: 'funky',
+    size: 'sm',
+    shape: 'circle'
+  }
+})
+```
+
+## Adding recipe to config
+
+To add the recipe to the config, you’d need to add it to the `theme.recipes` object.
+
+```jsx
+import { defineConfig } from '@pandacss/dev'
+import { buttonRecipe } from './recipes/button'
+
+export default defineConfig({
+  include: ['src/**/*.tsx'],
+  outdir: 'styled-system',
+  presets: ['@pandacss/dev/presets'],
+  jsxFramework: 'solid',
+  theme: {
+    recipes: {
+      button: buttonRecipe
+    }
+  }
+})
+```
+
+This generates a recipes folder the specified `outdir` which is `styled-system` by default. If Panda doesn’t
+automatically generate your CSS file, you can run the `panda codegen` command.
+
+You only need to import the recipes into the component files where you need to use them.
+
+## Using the recipe
+
+To use the recipe, you can import the recipe from the `<outdir>/recipes` entrypoint and use it in your component. Panda
+tracks the usage of the recipe and only generates CSS of the variants used in your application.
+
+```js
+import { button } from '../styled-system/recipes'
+
+function App() {
+  return (
+    <div>
+      <button class={button()}>Click me</button>
+      <button class={button({ shape: 'circle' })}>Click me</button>
+    </div>
+  )
+}
+```
+
+The generated css is registered under the `recipe` [cascade layer](/docs/concepts/cascade-layers.mdx) with the class
+name that matches the recipe-variant name pattern `<recipe-name>--<variant-name>`.
+
+> **Technical Notes 📝:** Only the recipe and variants used in your application are generated. Not more!
+
+```css
+@layer recipes {
+  @layer base {
+    .button {
+      font-size: var(--font-sizes-lg);
+    }
+  }
+
+  .button--visual-funky {
+    background-color: var(--colors-red-200);
+    color: var(--colors-white);
+  }
+
+  .button--size-lg {
+    padding: var(--space-8);
+    font-size: var(--font-sizes-40px);
+  }
+}
+```
+
+## Compound variants
+
+Compound variants are a way to combine multiple variants together to create more complex sets of styles. They are
+defined using the `compoundVariants` property , which takes an array of objects as its argument. Each object in the
+array represents a set of conditions that must be met in order for the corresponding styles to be applied.
+
+Here's an example of how to use `compoundVariants` in Panda:
+
+```js
+import { cva } from '../panda/css'
+
+const button = cva({
+  base: {
+    padding: '8px 16px',
+    borderRadius: '4px',
+    fontSize: '16px',
+    fontWeight: 'bold'
+  },
+
+  variants: {
+    // ...
+  },
+
+  // compound variants
+  compoundVariants: [
+    // apply small size variant when both small size and primary color are selected
+    {
+      size: 'small',
+      color: 'primary',
+      css: {
+        bg: 'blue.500'
+      }
+    }
+  ]
+})
+```
+
+Compounds variants are registered under the `utilities` cascade layer. This is useful to ensure that the component
+variant's `css` overrides the defined variant styles.
+
+```css
+/* from recipe variant definition */
+@layer recipe {
+  @layer base {
+    .button {
+      font-size: var(--font-sizes-lg);
+    }
+  }
+}
+
+/* from compound variant css */
+@layer utilities {
+  .bg_blue.500 {
+    background-color: var(--colors-blue-500);
+  }
+  /* ... */
+}
+```
+
+## Styling component slots
+
+Panda provides a `defineParts` helper function to define and style parts of a component. This is useful for components
+that have multiple slots like a button.
+
+```jsx
+import { defineParts, defineRecipe } from '@pandacss/dev'
+
+const parts = defineParts(['icon', 'label'])
+
+const buttonStyle = defineRecipe({
+  name: 'button',
+  base: parts({
+    icon: { fontSize: 'sm' },
+    label: { fontSize: 'md' }
+  }),
+  variants: {
+    visual: {
+      funky: parts({
+        icon: { color: 'gray.200' },
+        label: { color: 'gray.500' }
+      })
+    }
+  }
+})
+```
+
+The `parts` function will convert the keys to a css selector that matches the pattern
+`&[data-part=KEY], & [data-part=KEY]`. This makes it convenient to style the parts of a component.
+
+## TypeScript guide
+
+Every recipe ships a type interface for its accepted variants. You can import them from the `<outdir>/recipes`
+entrypoint.
+
+For the button recipe, we can import the `ButtonVariants` type like so:
+
+```ts
+import type { ButtonVariants } from '../styled-system/recipes'
+
+type ButtonProps = ButtonVariants & {
+  children: React.ReactNode
+}
+```
+
+## Usage in JSX
+
+For recipes added to the config file, you can consume them directly in your custom JSX components or design system.
+
+If your recipe is called `button` and you have a `Button` component, Panda will automatically track the usage of the
+variants and extract the css as needed.
+
+```tsx
+import { button, type ButtonVariants } from '../panda/recipes'
+
+type ButtonProps = ButtonVariants & {
+  children: React.ReactNode
+}
+
+const Button = (props: ButtonProps) => {
+  const { children, size } = props
+  return (
+    <button {...props} className={button({ size })}>
+      {children}
+    </button>
+  )
+}
+```
+
+### Advanced JSX Tracking
+
+We recommend that you use the recipe functions in most cases, in design systems there might be a need to compose
+existing components (like Button) to create new components. To tracking the usage of the recipes in these cases, you'll
+need to add the `jsx` hint for the recipe config
+
+```js
+const button = defineRecipe({
+  base: {
+    color: 'red',
+    fontSize: '1.5rem',
+  },
+  variants: {
+    ...
+  },
+  // Add the jsx hint to track the usage of the recipe in JSX
+  jsx: ['Button', 'PageButton'],
+})
+```
+
+Then you can create a new component that uses the `Button` component and Panda will track the usage of the `button`
+recipe as well.
+
+```tsx
+const PageButton = (props: ButtonProps) => {
+  const { children, size } = props
+  return (
+    <Button {...props} size={size}>
+      {children}
+    </Button>
+  )
+}
+```
+
+## Limitations
+
+Due to static nature of Panda, it's not possible to track the usage of the recipes in all cases.
+
+Here are some of use cases that Panda won't be able to track the usage of the recipe variants:
+
+- When you change the name of the variant prop in the JSX component
+
+```tsx
+const Button = ({ buttonSize, children }) => {
+  return (
+    <button {...props} className={button({ size: buttonSize })}>
+      {children}
+    </button>
+  )
+}
+```
+
+- When you use the recipe in a custom component that is not a JSX component, Panda won't be able to track the usage of
+  the recipe variants.
+
+```tsx
+const Random = ({ size, children }) => {
+  return (
+    <button {...props} className={button({ size })}>
+      {children}
+    </button>
+  )
+}
+```
+
+- When using `compoundVariants` in the recipe, you're not able to use responsive values in the variants.
+
+```tsx
+const button = defineRecipe({
+  base: {
+    color: 'red',
+    fontSize: '1.5rem'
+  },
+  variants: {
+    size: {
+      sm: {
+        fontSize: '1rem'
+      },
+      md: {
+        fontSize: '2rem'
+      }
+    }
+  },
+  // this  will disable responsive values for the variants
+  compoundVariants: [
+    {
+      size: 'sm',
+      visual: 'funky',
+      css: {
+        color: 'blue'
+      }
+    },
+    {
+      size: 'md',
+      visual: 'funky',
+      css: {
+        color: 'green'
+      }
+    }
+  ]
+})
+```

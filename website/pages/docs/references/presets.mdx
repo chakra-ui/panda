@@ -1,0 +1,36 @@
+---
+title: Presets
+description: Presets are also valid Panda configuration objects, taking the exact same shape as the configuration you would add in your `panda.config.ts` file.
+---
+
+# Presets
+
+Presets are also valid Panda configuration objects, taking the exact same shape as the configuration you would add in
+your `panda.config.ts` file.
+
+```js
+// my-preset.js
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  tokens: {
+    rose: {
+      50: { value: '#fff1f2' },
+      // ...
+      800: { value: '#9f2233' }
+    }
+  }
+})
+```
+
+You can then use this preset in your `panda.config.ts` file:
+
+```js
+// panda.config.ts
+import { defineConfig } from '@pandacss/dev'
+import myPreset from './my-preset'
+
+export default defineConfig({
+  presets: [myPreset]
+})
+```

@@ -24,7 +24,7 @@
     "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
     "deploy-studio": "pnpm prepare-studio && pnpm build-studio",
     "serve-studio": "npx serve ./sandbox/vite-ts/panda-static",
-    "mdx-check": "mdx-local-link-checker docs"
+    "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs"
   },
   "keywords": [],
   "author": "Segun Adebayo <joseshegs@gmail.com>",
