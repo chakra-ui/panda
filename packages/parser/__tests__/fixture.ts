@@ -54,8 +54,9 @@ function getProject(code: string, options?: <Conf extends UserConfig>(conf: Conf
   })
 }
 
-export function getFixtureProject(code: string) {
-  const generator = createGenerator(defaults)
+export function getFixtureProject(code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf) {
+  const config = options ? options(defaults.config) : defaults.config
+  const generator = createGenerator({ ...defaults, config })
 
   const project = createProject({
     useInMemoryFileSystem: true,
