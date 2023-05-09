@@ -101,7 +101,7 @@ export function generateRecipes(ctx: Context) {
         }
 
         interface ${upperName}Recipe {
-          (variants?: ${upperName}Variants): string
+          (variants?: ${upperName}VariantProps): string
           variants: ${upperName}VariantMap
           splitVariantProps<Props extends ${upperName}VariantProps>(props: Props): [${upperName}VariantProps, Pretty<Omit<Props, keyof ${upperName}VariantProps>>]
         }
