@@ -48,7 +48,7 @@
     "postcss": "8.4.23",
     "preferred-pm": "^3.0.3",
     "ts-morph": "18.0.0",
-    "ts-pattern": "4.2.2"
+    "ts-pattern": "4.3.0"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",
@@ -57,7 +57,7 @@
     "@types/is-glob": "^4.0.2",
     "@types/lodash.merge": "4.6.7",
     "@types/pluralize": "0.0.29",
-    "boxen": "^7.0.2",
+    "boxen": "^7.1.0",
     "gzip-size": "^7.0.0"
   }
 }

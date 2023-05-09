@@ -31,7 +31,7 @@
     "outdent": " ^0.8.0",
     "pluralize": "8.0.0",
     "postcss": "8.4.23",
-    "ts-pattern": "4.2.2"
+    "ts-pattern": "4.3.0"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",

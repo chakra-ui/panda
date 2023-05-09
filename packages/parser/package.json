@@ -23,7 +23,7 @@
     "@pandacss/types": "workspace:*",
     "lil-fp": "1.4.5",
     "ts-morph": "18.0.0",
-    "ts-pattern": "4.2.2"
+    "ts-pattern": "4.3.0"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",
