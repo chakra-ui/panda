@@ -193,8 +193,8 @@ importers:
         specifier: ^6.0.12
         version: 6.0.12
       ts-pattern:
-        specifier: 4.2.2
-        version: 4.2.2
+        specifier: 4.3.0
+        version: 4.3.0
     devDependencies:
       '@pandacss/fixture':
         specifier: workspace:*
@@ -220,8 +220,8 @@ importers:
         specifier: 18.0.0
         version: 18.0.0
       ts-pattern:
-        specifier: 4.2.2
-        version: 4.2.2
+        specifier: 4.3.0
+        version: 4.3.0
 
   packages/fixture:
     dependencies:
@@ -265,8 +265,8 @@ importers:
         specifier: 8.4.23
         version: 8.4.23
       ts-pattern:
-        specifier: 4.2.2
-        version: 4.2.2
+        specifier: 4.3.0
+        version: 4.3.0
     devDependencies:
       '@pandacss/fixture':
         specifier: workspace:*
@@ -384,8 +384,8 @@ importers:
         specifier: 18.0.0
         version: 18.0.0
       ts-pattern:
-        specifier: 4.2.2
-        version: 4.2.2
+        specifier: 4.3.0
+        version: 4.3.0
     devDependencies:
       '@pandacss/fixture':
         specifier: workspace:*
@@ -436,8 +436,8 @@ importers:
         specifier: 18.0.0
         version: 18.0.0
       ts-pattern:
-        specifier: 4.2.2
-        version: 4.2.2
+        specifier: 4.3.0
+        version: 4.3.0
     devDependencies:
       '@pandacss/fixture':
         specifier: workspace:*
@@ -461,8 +461,8 @@ importers:
         specifier: ^8.39.0
         version: 8.39.0
       ts-pattern:
-        specifier: 4.2.2
-        version: 4.2.2
+        specifier: 4.3.0
+        version: 4.3.0
       vue-eslint-parser:
         specifier: ^9.2.0
         version: 9.2.0(eslint@8.39.0)
@@ -488,8 +488,8 @@ importers:
         specifier: workspace:*
         version: link:../types
       ts-pattern:
-        specifier: 4.2.2
-        version: 4.2.2
+        specifier: 4.3.0
+        version: 4.3.0
     devDependencies:
       '@pandacss/fixture':
         specifier: workspace:*
@@ -580,8 +580,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(react-dom@18.2.0)(react@18.2.0)
       ts-pattern:
-        specifier: 4.2.2
-        version: 4.2.2
+        specifier: 4.3.0
+        version: 4.3.0
       typescript:
         specifier: 5.0.4
         version: 5.0.4
@@ -18444,8 +18444,8 @@ packages:
       yn: 3.1.1
     dev: false
 
-  /ts-pattern@4.2.2:
-    resolution: {integrity: sha512-qzJMo2pbkUJWusRH5o8xR+xogn6RmvViyUgwBFTtRENLse470clCGjHDf6haWGZ1AOmk8XkEohUoBW8Uut6Scg==}
+  /ts-pattern@4.3.0:
+    resolution: {integrity: sha512-pefrkcd4lmIVR0LA49Imjf9DYLK8vtWhqBPA3Ya1ir8xCW0O2yjL9dsCVvI7pCodLC5q7smNpEtDR2yVulQxOg==}
     dev: false
 
   /ts-toolbelt@6.15.5:

@@ -20,7 +20,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
     "eslint": "^8.39.0",
-    "ts-pattern": "4.2.2",
+    "ts-pattern": "4.3.0",
     "vue-eslint-parser": "^9.2.0"
   },
   "devDependencies": {
