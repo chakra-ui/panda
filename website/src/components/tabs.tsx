@@ -15,7 +15,6 @@ export function Tabs({
   items: string[]
   children: ReactElement
 }): ReactElement {
-  console.log(items)
   const tabs = Children.map(children, (child, index) =>
     cloneElement(child as any, {
       ...child.props,
