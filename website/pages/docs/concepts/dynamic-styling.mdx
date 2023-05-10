@@ -7,20 +7,13 @@ description: While panda is mainly focused on the static styling experience, we 
 
 While panda is mainly focused on the static styling experience, we have some mechanics to support dynamic styling.
 
-We recommend that you **avoid relying on runtime values most of the time** and instead use the alternatives we offer
-(css vars, conditions, cva, etc..) since they allow for some level of dynamic styling while still retaining the benefits
-of static CSS.
+<Callout type="warning">
+  We recommend that you **avoid relying on runtime values most of the time** and instead use the alternatives we offer
+  (css vars, conditions, cva, etc..) since they allow for some level of dynamic styling while still retaining the benefits
+  of static CSS.
+</Callout>
 
 That being said, "Dynamic" can have different meaning. Let's go over some of the ways you can do this.
-
-## Sections
-
-- [Conditional CSS](#conditional-css)
-- [Arbitrary values](#arbitrary-values)
-- [Arbitrary selectors](#arbitrary-selectors)
-- [Runtime values](#runtime-values)
-- [Runtime conditions](#runtime-conditions)
-- [Referenced values](#referenced-values)
 
 ## Conditional CSS
 
@@ -187,25 +180,26 @@ const App = () => {
 }
 ```
 
-> Note that if you know that the value won't be a runtime value (meaning you will statically use the value somewhere
-> else) , you could just have done this and it would just work:
->
-> ```tsx
-> // Component.tsx
-> const Component = props => {
->   return (
->     <panda.div color={props.color}>
->       Dynamic color with runtime value
->     </panda.div>
->   )
-> }
->
-> // App.tsx
-> const App = () => {
->   // this will be statically extractable and will automatically generate the corresponding CSS
->   return <Component color="blue.300" />
-> }
-> ```
+<Callout type="info">
+  Note that if you know that the value won't be a runtime value (meaning you will **statically use the value somewhere
+  else**), you could just have done this and it would **just work**:
+
+  ```tsx
+  // Component.tsx
+  const Component = props => {
+    return (
+      <panda.div color={props.color}>
+        Dynamic color with runtime value
+      </panda.div>
+    )
+  }
+  // App.tsx
+  const App = () => {
+    // this will be statically extractable and will automatically generate the corresponding CSS
+    return <Component color="blue.300" />
+  }
+  ```
+</Callout>
 
 ## Runtime conditions
 
@@ -279,6 +273,8 @@ Here's a short list of things to avoid:
 
 - avoid using variables that are not defined in the same file
 - avoid using variables resulting from a function call (e.g. `const color = getColor()`)
+
+<Callout type="info">Basically, if you don't know what value a variable holds with a quick glance, panda won't be able to either.</Callout>
 
 ```tsx
 import { css } from './styled-system/css'

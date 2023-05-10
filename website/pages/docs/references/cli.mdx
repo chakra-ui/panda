@@ -110,3 +110,39 @@ Related: [`config.clean`](/docs/references/panda-config.mdx#clean)
 Whether to suppress all output
 
 Related: [`config.logLevel`](/docs/references/panda-config.mdx#log-level)
+
+## `panda analyze`
+
+Analyze design token usage in glob
+
+### Flags
+
+#### `--json [filepath]`
+
+Output analyze report in given JSON filepath.
+
+> `panda analyze --json report.json`
+
+#### `--silent`
+
+Whether to suppress all output
+
+Related: [`config.logLevel`](/docs/references/panda-config.mdx#log-level)
+
+## `panda debug`
+
+Debug design token extraction & css generated from files in glob
+
+### Flags
+
+#### `--dry`
+
+Output debug files in stdout without writing to disk
+
+#### `--outdir [dir]`
+
+Output directory for debug files, default to '.panda/debug'
+
+#### `--silent`
+
+Whether to suppress all output

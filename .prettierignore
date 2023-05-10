@@ -7,3 +7,4 @@ build
 *.d.ts
 packages/cli/app/styled-system
 packages/generator/src/artifacts/generated
+website/pages/**/*.mdx

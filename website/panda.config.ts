@@ -2,7 +2,7 @@ import { defineConfig } from '@pandacss/dev'
 
 const makePrimaryColor = (l: number) => {
   return {
-    value: `hsl(var(--nextra-primary-hue) 100% ${l}% / var(--nextra-primary-opacity, 1))`
+    value: `hsl(var(--nextra-primary-hue) 100% ${l}%)`
   }
 }
 
@@ -557,18 +557,18 @@ export default defineConfig({
       },
       '& .line': {
         '&.highlighted': {
-          bg: 'rgb(37 99 235 / 0.1)',
-          text: 'rgb(37 99 235 / 0.5)',
+          bg: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.1)', // primary.600/10
+          color: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.5)', // primary.600/50
           shadow: '2px 0 currentColor inset'
         },
         '& .highlighted': {
           rounded: 'md',
-          bg: 'rgb(30 64 175 / 0.1)',
+          bg: 'hsl(var(--nextra-primary-hue), 100%, 32%, 0.1)', // primary.800/10
           shadow: '0 0 0 2px rgba(0,0,0,.3)',
-          shadowColor: 'rgb(30 64 175 / 0.1)',
+          shadowColor: 'hsl(var(--nextra-primary-hue), 100%, 32%, 0.1)', // primary.800/10
           _dark: {
-            bg: 'rgb(147 197 253 / 0.3)',
-            shadowColor: 'rgb(147 197 253 / 0.5)'
+            bg: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.1)', // primary.300/10
+            shadowColor: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.1)' // primary.300/10
           }
         }
       }

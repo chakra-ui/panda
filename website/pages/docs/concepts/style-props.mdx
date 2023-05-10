@@ -64,9 +64,23 @@ To enable JSX support, add the following options to your `panda.config.js` file.
 
 Next, you need to run `panda codegen` to generate the JSX runtime for your framework.
 
-```bash
-panda codegen --clean
-```
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm panda codegen --clean
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm panda codegen --clean
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn panda codegen --clean
+    ```
+  </Tab>
+</Tabs>
 
 That's it! You can now use JSX style props in your components.
 
