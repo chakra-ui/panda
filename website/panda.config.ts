@@ -30,7 +30,9 @@ export default defineConfig({
   conditions: {
     extend: {
       dark: '.dark &',
-      light: '.light &'
+      light: '.light &',
+      supportsBackdrop:
+        '@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px)))'
     }
   },
   theme: {
@@ -426,31 +428,34 @@ export default defineConfig({
         verticalAlign: '-4px'
       }
     },
-    '@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px)))':
-      {
-        '.nextra-search ul': {
-          backdropFilter: 'blur(12px)',
-          backgroundColor: 'rgba(255, 255, 255, 0.7)',
-          _dark: {
-            backgroundColor: 'rgba(0, 0, 0, 0.7)'
-          }
-        },
-        '.nextra-nav-container-blur': {
-          backdropFilter: 'blur(8px)',
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          _dark: {
-            backgroundColor: 'rgba(0, 0, 0, 0.85)'
-          }
-        },
-        '.nextra-button': {
-          // @apply nx-backdrop-blur-md nx-bg-opacity-[.85] dark:nx-bg-opacity-80;
-          backdropFilter: 'blur(8px)',
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          _dark: {
-            backgroundColor: 'rgba(0, 0, 0, 0.85)'
-          }
-        }
+
+    '.nextra-search ul': {
+      _supportsBackdrop: {
+        backdropFilter: 'blur(12px)'
       },
+      backgroundColor: 'rgba(255, 255, 255, 0.7)',
+      _dark: {
+        backgroundColor: 'rgba(0, 0, 0, 0.7)'
+      }
+    },
+    '.nextra-nav-container-blur': {
+      _supportsBackdrop: {
+        backdropFilter: 'blur(8px)'
+      },
+      backgroundColor: 'rgba(255, 255, 255, 0.85)',
+      _dark: {
+        backgroundColor: 'rgba(0, 0, 0, 0.85)'
+      }
+    },
+    '.nextra-button': {
+      _supportsBackdrop: {
+        backdropFilter: 'blur(8px)'
+      },
+      backgroundColor: 'rgba(255, 255, 255, 0.85)',
+      _dark: {
+        backgroundColor: 'rgba(0, 0, 0, 0.85)'
+      }
+    },
     "input[type='search']": {
       '&::-webkit-search-decoration, &::-webkit-search-cancel-button, &::-webkit-search-results-button, &::-webkit-search-results-decoration':
         {
@@ -460,7 +465,7 @@ export default defineConfig({
     '.contains-task-list': {
       ml: 0,
       listStyle: 'none',
-      "input[type='checkbox']": {
+      "& input[type='checkbox']": {
         mr: 1
       }
     },
@@ -523,7 +528,6 @@ export default defineConfig({
         border: '3px solid transparent',
         backgroundColor: 'neutral.500',
         backgroundClip: 'content-box',
-        // @apply nx-shadow-neutral-500/20 hover:nx-shadow-neutral-500/40;
         mdDown: {
           '.nextra-container &': {
             scrollbarGutter: 'auto'
@@ -557,18 +561,18 @@ export default defineConfig({
       },
       '& .line': {
         '&.highlighted': {
-          bg: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.1)', // primary.600/10
-          color: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.5)', // primary.600/50
+          bg: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.1)',
+          color: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.5)',
           shadow: '2px 0 currentColor inset'
         },
         '& .highlighted': {
           rounded: 'md',
-          bg: 'hsl(var(--nextra-primary-hue), 100%, 32%, 0.1)', // primary.800/10
+          bg: 'hsl(var(--nextra-primary-hue), 100%, 32%, 0.1)',
           shadow: '0 0 0 2px rgba(0,0,0,.3)',
-          shadowColor: 'hsl(var(--nextra-primary-hue), 100%, 32%, 0.1)', // primary.800/10
+          shadowColor: 'hsl(var(--nextra-primary-hue), 100%, 32%, 0.1)',
           _dark: {
-            bg: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.1)', // primary.300/10
-            shadowColor: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.1)' // primary.300/10
+            bg: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.1)',
+            shadowColor: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.1)'
           }
         }
       }
@@ -597,9 +601,9 @@ export default defineConfig({
       },
       'html[data-nextra-word-wrap] &': {
         wordBreak: 'break-word',
-        whitespace: 'pre-wrap',
+        whiteSpace: 'pre-wrap',
         md: {
-          whitespace: 'pre'
+          whiteSpace: 'pre'
         },
         '& .line': {
           display: 'inline-block'
