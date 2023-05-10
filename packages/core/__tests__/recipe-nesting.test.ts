@@ -56,7 +56,7 @@ test('[recipe] direct nesting / recipe ruleset', () => {
                 margin-top: auto;
                 margin-bottom: 0;
                 padding-top: 0;
-                object-position: center;
+                object-pos: center;
             }
         }
         .text--variant_sm {
@@ -66,7 +66,7 @@ test('[recipe] direct nesting / recipe ruleset', () => {
             &:first-child:hover {
                 color: var(--colors-red-200);
             }
-            @media screen and (min-width: 48em) {
+            @media screen and (min-width: 768px) {
                 &:first-child:hover {
                     color: var(--colors-gray-300);
                 }
@@ -86,7 +86,7 @@ test('[recipe] direct nesting / recipe ruleset', () => {
                 margin-top: auto;
                 margin-bottom: 0;
                 padding-top: 0;
-                object-position: center
+                object-pos: center
             }
         }
         .text--variant_md {
@@ -94,11 +94,11 @@ test('[recipe] direct nesting / recipe ruleset', () => {
                 --mb: var(--colors-gray-300)
         ;
                 left: var(--spacing-5);
-                border-bottom-right-radius: sm
+                border-bottom-right-radius: var(--radii-sm)
             }
             &:after {
                 right: 90px;
-                border-bottom-right-radius: lg;
+                border-bottom-right-radius: var(--radii-lg);
                 transform: scaleX(-1)
             }
         }

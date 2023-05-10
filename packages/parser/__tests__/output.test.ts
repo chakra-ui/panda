@@ -90,19 +90,19 @@ describe('extract to css output pipeline', () => {
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_blue\\\\.100 {
-          color: blue.100
+          color: var(--colors-blue-100)
           }
 
-        .background-image_url\\\\(\\\\\\"https\\\\:\\\\/\\\\/raw\\\\.githubusercontent\\\\.com\\\\/chakra-ui\\\\/chakra-ui\\\\/main\\\\/media\\\\/logo-colored\\\\@2x\\\\.png\\\\?raw\\\\=true\\\\\\"\\\\) {
+        .bg-img_url\\\\(\\\\\\"https\\\\:\\\\/\\\\/raw\\\\.githubusercontent\\\\.com\\\\/chakra-ui\\\\/chakra-ui\\\\/main\\\\/media\\\\/logo-colored\\\\@2x\\\\.png\\\\?raw\\\\=true\\\\\\"\\\\) {
           background-image: url(\\"https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true\\")
           }
 
         .border_1px_solid_token\\\\(colors\\\\.yellow\\\\.100\\\\) {
-          border: 1px solid colors.yellow.100
+          border: 1px solid var(--colors-yellow-100)
           }
 
         .\\\\--shadow_colors\\\\.orange\\\\.100 {
-          --shadow: colors.orange.100
+          --shadow: var(--colors-orange-100)
           }
 
         [data-theme=dark] .dark\\\\:--shadow_colors\\\\.gray\\\\.800, .dark .dark\\\\:--shadow_colors\\\\.gray\\\\.800, .dark\\\\:--shadow_colors\\\\.gray\\\\.800.dark, .dark\\\\:--shadow_colors\\\\.gray\\\\.800[data-theme=dark] {
@@ -113,7 +113,7 @@ describe('extract to css output pipeline', () => {
           box-shadow: 0 0 0 4px var(--shadow)
           }
 
-        .oc_var\\\\(--colors-pink-200\\\\) {
+        .ring_var\\\\(--colors-pink-200\\\\) {
           outline-color: var(--colors-pink-200)
           }
 
@@ -125,25 +125,25 @@ describe('extract to css output pipeline', () => {
           margin: 1px
           }
 
-        .hover\\\\:text_\\\\#2ecc71:hover {
+        .hover\\\\:text_\\\\#2ecc71:where(:hover, [data-hover]) {
           color: #2ecc71
               }
 
-        .hover\\\\:bg_var\\\\(--some-bg\\\\):hover {
+        .hover\\\\:bg_var\\\\(--some-bg\\\\):where(:hover, [data-hover]) {
           background-color: var(--some-bg)
               }
 
-        [data-theme=dark] .margin\\\\:dark\\\\:hover\\\\:m_-2:hover, .dark .margin\\\\:dark\\\\:hover\\\\:m_-2:hover, .margin\\\\:dark\\\\:hover\\\\:m_-2:hover.dark, .margin\\\\:dark\\\\:hover\\\\:m_-2:hover[data-theme=dark] {
+        [data-theme=dark] .margin\\\\:dark\\\\:hover\\\\:m_-2:where(:hover, [data-hover]), .dark .margin\\\\:dark\\\\:hover\\\\:m_-2:where(:hover, [data-hover]), .margin\\\\:dark\\\\:hover\\\\:m_-2:where(:hover, [data-hover]).dark, .margin\\\\:dark\\\\:hover\\\\:m_-2:where(:hover, [data-hover])[data-theme=dark] {
           margin: calc(var(--spacing-2) * -1)
                   }
 
-        @media screen and (min-width: 30em) {
+        @media screen and (min-width: 640px) {
           .sm\\\\:m_4px {
             margin: 4px
           }
               }
 
-        @media screen and (min-width: 48em) {
+        @media screen and (min-width: 768px) {
           .md\\\\:p_4 {
             padding: var(--spacing-4)
           }
@@ -187,7 +187,7 @@ describe('extract to css output pipeline', () => {
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_blue\\\\.100 {
-          color: blue.100
+          color: var(--colors-blue-100)
           }
 
         .text_red\\\\.100 {
@@ -278,7 +278,7 @@ describe('extract to css output pipeline', () => {
           content: \\"👋\\"
                   }
 
-        .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0 + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0:hover {
+        .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0 + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0:where(:hover, [data-hover]) {
           margin: 0
                   }
       }"
@@ -317,11 +317,24 @@ describe('extract to css output pipeline', () => {
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .color-palette_blue {
+          --colors-color-palette-50: var(--colors-blue-50);
+          --colors-color-palette-100: var(--colors-blue-100);
+          --colors-color-palette-200: var(--colors-blue-200);
+          --colors-color-palette-300: var(--colors-blue-300);
+          --colors-color-palette-400: var(--colors-blue-400);
+          --colors-color-palette-500: var(--colors-blue-500);
+          --colors-color-palette-600: var(--colors-blue-600);
+          --colors-color-palette-700: var(--colors-blue-700);
+          --colors-color-palette-800: var(--colors-blue-800);
+          --colors-color-palette-900: var(--colors-blue-900)
+          }
+
         .bg_colorPalette\\\\.100 {
           background: var(--colors-color-palette-100)
           }
 
-        .hover\\\\:text_colorPalette\\\\.300:hover {
+        .hover\\\\:text_colorPalette\\\\.300:where(:hover, [data-hover]) {
           color: var(--colors-color-palette-300)
               }
       }"
@@ -368,24 +381,28 @@ describe('extract to css output pipeline', () => {
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .d_flex {
-          display: flex
-          }
-
         .flex_column {
           flex-direction: column
+          }
+
+        .d_flex {
+          display: flex
           }
 
         .items_center {
           align-items: center
           }
 
+        .justify_flex-end {
+          justify-content: flex-end
+          }
+
         .gap_10px {
           gap: 10px
           }
 
-        .min-w_0 {
-          min-width: 0
+        .flex_row {
+          flex-direction: row
           }
       }"
     `)
@@ -583,16 +600,8 @@ describe('extract to css output pipeline', () => {
           flex-direction: column
           }
 
-        .items_flex-start {
-          align-items: flex-start
-          }
-
         .gap_10px {
           gap: 10px
-          }
-
-        .min-w_0 {
-          min-width: 0
           }}
 
       @layer recipes {
@@ -602,7 +611,7 @@ describe('extract to css output pipeline', () => {
           }
 
         .button--variant_danger {
-          color: white;
+          color: var(--colors-white);
           background-color: var(--colors-red-500)
           }
 
@@ -612,7 +621,7 @@ describe('extract to css output pipeline', () => {
           }
 
         .complexButton--color_blue {
-          color: blue.500
+          color: var(--colors-blue-500)
           }
 
         @layer base {
@@ -655,7 +664,13 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_blue\\\\.100 {
+          color: var(--colors-blue-100)
+          }
+      }"
+    `)
   })
 
   test('jsx box', () => {
@@ -681,7 +696,7 @@ describe('preset patterns', () => {
             },
           ],
           "name": "Box",
-          "type": "jsx",
+          "type": "jsx-pattern",
         },
       ]
     `)
@@ -689,7 +704,7 @@ describe('preset patterns', () => {
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_blue\\\\.100 {
-          color: blue.100
+          color: var(--colors-blue-100)
           }
       }"
     `)
@@ -721,7 +736,13 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+      }"
+    `)
   })
 
   test('jsx flex', () => {
@@ -747,15 +768,19 @@ describe('preset patterns', () => {
             },
           ],
           "name": "Flex",
-          "type": "jsx",
+          "type": "jsx-pattern",
         },
       ]
     `)
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
         .text_blue\\\\.100 {
-          color: blue.100
+          color: var(--colors-blue-100)
           }
       }"
     `)
@@ -797,16 +822,8 @@ describe('preset patterns', () => {
           flex-direction: column
           }
 
-        .items_flex-start {
-          align-items: flex-start
-          }
-
         .gap_10px {
           gap: 10px
-          }
-
-        .min-w_0 {
-          min-width: 0
           }
       }"
     `)
@@ -850,16 +867,12 @@ describe('preset patterns', () => {
           flex-direction: column
           }
 
-        .items_flex-start {
-          align-items: flex-start
-          }
-
         .gap_10px {
           gap: 10px
           }
 
-        .min-w_0 {
-          min-width: 0
+        .text_blue\\\\.100 {
+          color: var(--colors-blue-100)
           }
       }"
     `)
@@ -891,7 +904,25 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .items_center {
+          align-items: center
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+      }"
+    `)
   })
 
   test('jsx vStack', () => {
@@ -922,7 +953,29 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .items_center {
+          align-items: center
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .text_blue\\\\.100 {
+          color: var(--colors-blue-100)
+          }
+      }"
+    `)
   })
 
   test('hstack', () => {
@@ -951,7 +1004,25 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .items_center {
+          align-items: center
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .flex_row {
+          flex-direction: row
+          }
+      }"
+    `)
   })
 
   test('jsx hStack', () => {
@@ -982,7 +1053,29 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .items_center {
+          align-items: center
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .flex_row {
+          flex-direction: row
+          }
+
+        .text_blue\\\\.100 {
+          color: var(--colors-blue-100)
+          }
+      }"
+    `)
   })
 
   test('spacer', () => {
@@ -1011,7 +1104,21 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .self_stretch {
+          align-self: stretch
+          }
+
+        .justify-self_stretch {
+          justify-self: stretch
+          }
+
+        .flex_1 {
+          flex: 1 1 0%
+          }
+      }"
+    `)
   })
 
   test('jsx spacer', () => {
@@ -1037,15 +1144,27 @@ describe('preset patterns', () => {
             },
           ],
           "name": "Spacer",
-          "type": "jsx",
+          "type": "jsx-pattern",
         },
       ]
     `)
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .self_stretch {
+          align-self: stretch
+          }
+
+        .justify-self_stretch {
+          justify-self: stretch
+          }
+
+        .flex_1 {
+          flex: 1 1 0%
+          }
+
         .text_blue\\\\.100 {
-          color: blue.100
+          color: var(--colors-blue-100)
           }
       }"
     `)
@@ -1077,7 +1196,29 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .items_center {
+          align-items: center
+          }
+
+        .justify_center {
+          justify-content: center
+          }
+
+        .flex_0_0_auto {
+          flex: 0 0 auto
+          }
+
+        .rounded_9999px {
+          border-radius: 9999px
+          }
+      }"
+    `)
   })
 
   test('jsx circle', () => {
@@ -1103,15 +1244,35 @@ describe('preset patterns', () => {
             },
           ],
           "name": "Circle",
-          "type": "jsx",
+          "type": "jsx-pattern",
         },
       ]
     `)
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .items_center {
+          align-items: center
+          }
+
+        .justify_center {
+          justify-content: center
+          }
+
+        .flex_0_0_auto {
+          flex: 0 0 auto
+          }
+
+        .rounded_9999px {
+          border-radius: 9999px
+          }
+
         .text_blue\\\\.100 {
-          color: blue.100
+          color: var(--colors-blue-100)
           }
       }"
     `)
@@ -1149,16 +1310,24 @@ describe('preset patterns', () => {
           position: absolute
           }
 
-        .t_50\\\\% {
-          top: 50%
+        .inset-t_50\\\\% {
+          inset-block-start: 50%
           }
 
-        .l_50\\\\% {
-          left: 50%
+        .start_50\\\\% {
+          inset-inline-start: 50%
           }
 
-        .transform_translateY\\\\(-50\\\\%\\\\) {
-          transform: translateY(-50%)
+        .transform_translate\\\\(-50\\\\%\\\\,_-50\\\\%\\\\) {
+          transform: translate(-50%, -50%)
+          }
+
+        .max-w_100\\\\% {
+          max-width: 100%
+          }
+
+        .max-h_100\\\\% {
+          max-height: 100%
           }
       }"
     `)
@@ -1198,16 +1367,28 @@ describe('preset patterns', () => {
           position: absolute
           }
 
-        .t_50\\\\% {
-          top: 50%
+        .inset-t_50\\\\% {
+          inset-block-start: 50%
           }
 
-        .l_50\\\\% {
-          left: 50%
+        .start_50\\\\% {
+          inset-inline-start: 50%
           }
 
-        .transform_translateY\\\\(-50\\\\%\\\\) {
-          transform: translateY(-50%)
+        .transform_translate\\\\(-50\\\\%\\\\,_-50\\\\%\\\\) {
+          transform: translate(-50%, -50%)
+          }
+
+        .max-w_100\\\\% {
+          max-width: 100%
+          }
+
+        .max-h_100\\\\% {
+          max-height: 100%
+          }
+
+        .text_blue\\\\.100 {
+          color: var(--colors-blue-100)
           }
       }"
     `)
@@ -1239,7 +1420,17 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_grid {
+          display: grid
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+      }"
+    `)
   })
 
   test('jsx grid', () => {
@@ -1265,15 +1456,23 @@ describe('preset patterns', () => {
             },
           ],
           "name": "Grid",
-          "type": "jsx",
+          "type": "jsx-pattern",
         },
       ]
     `)
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .d_grid {
+          display: grid
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
         .text_blue\\\\.100 {
-          color: blue.100
+          color: var(--colors-blue-100)
           }
       }"
     `)
@@ -1305,13 +1504,7 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
-      "@layer utilities {
-        .grid-column_auto {
-          grid-column: auto
-          }
-      }"
-    `)
+    expect(css).toMatchInlineSnapshot('""')
   })
 
   test('jsx gridItem', () => {
@@ -1344,8 +1537,8 @@ describe('preset patterns', () => {
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .grid-column_auto {
-          grid-column: auto
+        .text_blue\\\\.100 {
+          color: var(--colors-blue-100)
           }
       }"
     `)
@@ -1377,7 +1570,21 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .flex-wrap_wrap {
+          flex-wrap: wrap
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+      }"
+    `)
   })
 
   test('jsx wrap', () => {
@@ -1403,15 +1610,27 @@ describe('preset patterns', () => {
             },
           ],
           "name": "Wrap",
-          "type": "jsx",
+          "type": "jsx-pattern",
         },
       ]
     `)
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .flex-wrap_wrap {
+          flex-wrap: wrap
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
         .text_blue\\\\.100 {
-          color: blue.100
+          color: var(--colors-blue-100)
           }
       }"
     `)
@@ -1443,7 +1662,25 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .pos_relative {
+          position: relative
+          }
+
+        .w_100\\\\% {
+          width: 100%
+          }
+
+        .max-w_60ch {
+          max-width: 60ch
+          }
+
+        .mx_auto {
+          margin-inline: auto
+          }
+      }"
+    `)
   })
 
   test('jsx container', () => {
@@ -1469,15 +1706,31 @@ describe('preset patterns', () => {
             },
           ],
           "name": "Container",
-          "type": "jsx",
+          "type": "jsx-pattern",
         },
       ]
     `)
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .pos_relative {
+          position: relative
+          }
+
+        .w_100\\\\% {
+          width: 100%
+          }
+
+        .max-w_60ch {
+          max-width: 60ch
+          }
+
+        .mx_auto {
+          margin-inline: auto
+          }
+
         .text_blue\\\\.100 {
-          color: blue.100
+          color: var(--colors-blue-100)
           }
       }"
     `)
@@ -1509,7 +1762,21 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .items_center {
+          align-items: center
+          }
+
+        .justify_center {
+          justify-content: center
+          }
+      }"
+    `)
   })
 
   test('jsx center', () => {
@@ -1535,15 +1802,27 @@ describe('preset patterns', () => {
             },
           ],
           "name": "Center",
-          "type": "jsx",
+          "type": "jsx-pattern",
         },
       ]
     `)
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .items_center {
+          align-items: center
+          }
+
+        .justify_center {
+          justify-content: center
+          }
+
         .text_blue\\\\.100 {
-          color: blue.100
+          color: var(--colors-blue-100)
           }
       }"
     `)
@@ -1575,7 +1854,37 @@ describe('preset patterns', () => {
       ]
     `)
     const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .overflow_hidden {
+          overflow: hidden
+          }
+
+        .d_flex {
+          display: flex
+          }
+
+        .justify_center {
+          justify-content: center
+          }
+
+        .items_center {
+          align-items: center
+          }
+
+        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:w_100\\\\%>img, .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:w_100\\\\%>video {
+          width: 100%
+              }
+
+        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:h_100\\\\%>img, .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:h_100\\\\%>video {
+          height: 100%
+              }
+
+        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>img, .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>video {
+          object-fit: cover
+              }
+      }"
+    `)
   })
 
   test('jsx aspectRatio', () => {
@@ -1601,15 +1910,43 @@ describe('preset patterns', () => {
             },
           ],
           "name": "AspectRatio",
-          "type": "jsx",
+          "type": "jsx-pattern",
         },
       ]
     `)
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .overflow_hidden {
+          overflow: hidden
+          }
+
+        .d_flex {
+          display: flex
+          }
+
+        .justify_center {
+          justify-content: center
+          }
+
+        .items_center {
+          align-items: center
+          }
+
+        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:w_100\\\\%>img, .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:w_100\\\\%>video {
+          width: 100%
+              }
+
+        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:h_100\\\\%>img, .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:h_100\\\\%>video {
+          height: 100%
+              }
+
+        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>img, .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>video {
+          object-fit: cover
+              }
+
         .text_blue\\\\.100 {
-          color: blue.100
+          color: var(--colors-blue-100)
           }
       }"
     `)

@@ -4,7 +4,7 @@ export const semanticTokens: SemanticTokens = {
   colors: {
     primary: { value: { base: '{colors.red.500}', _dark: '{colors.red.400}' } },
     secondary: { value: { base: '{colors.red.800}', _dark: '{colors.red.700}' } },
-    complex: { value: { base: '{colors.red.800}', _dark: { _hiConstrast: '{colors.red.700}' } } },
+    complex: { value: { base: '{colors.red.800}', _dark: { _highContrast: '{colors.red.700}' } } },
     surface: {
       value: {
         _materialTheme: { base: '#m-b', _dark: '#m-d' },

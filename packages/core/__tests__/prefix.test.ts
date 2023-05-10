@@ -25,7 +25,7 @@ describe('atomic-rule / prefix', () => {
     expect(backend({ color: { sm: 'red' } })).toMatchInlineSnapshot(`
       "@layer utilities {
           .tw-geqOyW {
-              @media screen and (min-width: 30em) {
+              @media screen and (min-width: 640px) {
                   color: red
               }
           }

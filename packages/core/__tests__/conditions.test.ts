@@ -18,9 +18,9 @@ describe('Conditions', () => {
     expect(css.getRaw('sm')).toMatchInlineSnapshot(`
       {
         "name": "breakpoint",
-        "params": "screen and (min-width: 30em)",
+        "params": "screen and (min-width: 640px)",
         "raw": "sm",
-        "rawValue": "@media screen and (min-width: 30em)",
+        "rawValue": "@media screen and (min-width: 640px)",
         "type": "at-rule",
         "value": "sm",
       }
