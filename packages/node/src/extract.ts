@@ -64,6 +64,8 @@ export async function emitArtifacts(ctx: PandaContext) {
 
 export async function emitAndExtract(ctx: PandaContext) {
   await emitArtifacts(ctx)
+  if (ctx.config.emitTokensOnly) return 'Successfully rebuilt the css variables and js function to query your tokens ✨'
+
   return extractCss(ctx)
 }
 

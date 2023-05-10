@@ -104,6 +104,7 @@ export async function main() {
     .option('-e, --exclude <files>', 'Exclude files', { default: [] })
     .option('--clean', 'Clean output directory')
     .option('--hash', 'Hash the generated classnames to make them shorter')
+    .option('--emitTokensOnly', 'Whether to only emit the `tokens` directory')
     .action(async (files: string[], flags) => {
       const { config: configPath, silent, ...rest } = flags
       if (silent) logger.level = 'silent'
