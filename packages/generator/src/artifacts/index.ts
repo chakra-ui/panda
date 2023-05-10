@@ -247,7 +247,9 @@ function setupPackageJson(ctx: Context): Artifact {
 }
 
 export const generateArtifacts = (ctx: Context) => (): Artifact[] => {
-  if (ctx.config.emitTokensOnly) return [setupDesignTokens(ctx), setupTokenTypes(ctx)]
+  if (ctx.config.emitTokensOnly) {
+    return [setupDesignTokens(ctx), setupTokenTypes(ctx)]
+  }
 
   return [
     setupHelpers(ctx),

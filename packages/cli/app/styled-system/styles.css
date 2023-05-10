@@ -1,7 +1,5 @@
 @layer reset, base, tokens, recipes, utilities;
 
-@import './layout-grid.css';
-
 @import './global.css';
 
 @import './static.css';
