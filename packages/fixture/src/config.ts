@@ -1,22 +1,17 @@
 import type { Config } from '@pandacss/types'
-import { breakpoints } from './breakpoints'
-import { conditions } from './conditions'
-import { utilities } from './utility'
-import { keyframes } from './keyframes'
-import { patterns } from './pattern'
-import { recipes } from './recipes'
-import { semanticTokens, tokens } from './tokens'
+import { config as preset } from '@pandacss/presets'
 
-export const config: Config = {
-  prefix: 'pd',
+import { semanticTokens } from './semantic-tokens'
+import { recipes } from './recipes'
+
+export const { theme, conditions, utilities, patterns } = preset
+export const { breakpoints, keyframes, tokens } = theme
+
+export const config = {
+  ...preset,
   theme: {
-    tokens,
-    breakpoints,
-    keyframes,
+    ...preset.theme,
     semanticTokens,
     recipes,
   },
-  conditions,
-  utilities,
-  patterns,
-}
+} satisfies Config

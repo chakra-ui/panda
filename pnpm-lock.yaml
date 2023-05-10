@@ -225,6 +225,9 @@ importers:
 
   packages/fixture:
     dependencies:
+      '@pandacss/presets':
+        specifier: workspace:*
+        version: link:../presets
       '@pandacss/types':
         specifier: workspace:*
         version: link:../types

@@ -16,6 +16,7 @@
     "dist"
   ],
   "dependencies": {
+    "@pandacss/presets": "workspace:*",
     "@pandacss/types": "workspace:*"
   }
 }
