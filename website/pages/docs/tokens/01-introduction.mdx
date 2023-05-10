@@ -46,9 +46,6 @@ const theme = {
 }
 ```
 
-> **Good to know:** The extra dollar sign `value` might seem inconvenient at first, but it's reserved property by the
-> [W3C Token Format](https://tr.designtokens.org/format/#name-and-value) to define the value of a token.
-
 ## Defining a Token
 
 A design token consist of the following properties:
@@ -75,9 +72,28 @@ import { css } from '../styled-system/css'
 const className = css({ color: 'danger' })
 ```
 
+### Adding a description
+
+```js {6}
+const theme = {
+  tokens: {
+    colors: {
+      danger: {
+        value: "#EE0F0F",
+        $description: "Color for signyfying errors",
+      },
+    },
+  },
+};
+```
+
+> **Good to know:** The extra dollar sign `value` might seem inconvenient at first, but it's reserved property by the
+> [W3C Token Format](https://tr.designtokens.org/format/#name-and-value) to define the value of a token.
+
+
 ## Semantic or Alias Tokens
 
-An alias token is a token that reference to another token or defines a more specific context. It is often used to
+An alias token is a token that references another token or defines a more specific context. It is often used to
 communicate the intended purpose of a token independent of its raw value.
 
 Semantic tokens can reference existing tokens using the `{}` syntax.

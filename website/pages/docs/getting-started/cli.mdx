@@ -32,6 +32,8 @@ The simplest and fastest way to use Panda is with the Panda CLI tool.
 
 ## Configure the content
 
+Add your panda config to your `panda.config.js` file, or wherver panda is configured in your project.
+
 ```js {3}
 import { defineConfig } from '@pandacss/dev'
 
@@ -46,6 +48,8 @@ export default defineConfig({
 ```
 
 ## Configure the entry CSS with layers
+
+Add this code to an `index.css` file imported in the root component of your project.
 
 ```css
 @layer reset, base, tokens, recipes, utilities;
@@ -157,7 +161,7 @@ This would generate a `debug` folder in your `config.outdir` folder with the fol
   </FileTree.Folder>
 </FileTree>
 
-Any `xxx.ast.json` file will look like:
+`*.ast.json` files will look like:
 
 ```json
 [

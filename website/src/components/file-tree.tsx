@@ -34,8 +34,7 @@ const Tree = ({ children }: { children: ReactNode }): ReactElement => (
         color: 'gray.300',
         _hover: {
           pt: 0,
-          color: 'gray.50',
-          pb: '4'
+          color: 'gray.50'
         }
       }
     })}
