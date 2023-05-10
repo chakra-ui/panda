@@ -1,7 +1,6 @@
 import type { ReactElement, ReactNode } from 'react'
-import cn from 'clsx'
 import { InformationCircleIcon } from 'nextra/icons'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 
 const TypeToEmoji = {
   default: '💡',
@@ -13,7 +12,7 @@ const TypeToEmoji = {
 type CalloutType = keyof typeof TypeToEmoji
 
 const classes: Record<CalloutType, string> = {
-  default: cn(
+  default: cx(
     css({
       borderColor: 'orange.100',
       backgroundColor: 'orange.50',
@@ -25,7 +24,7 @@ const classes: Record<CalloutType, string> = {
       }
     })
   ),
-  error: cn(
+  error: cx(
     css({
       borderColor: 'red.100',
       backgroundColor: 'red.50',
@@ -37,7 +36,7 @@ const classes: Record<CalloutType, string> = {
       }
     })
   ),
-  info: cn(
+  info: cx(
     css({
       borderColor: 'blue.100',
       backgroundColor: 'blue.50',
@@ -49,7 +48,7 @@ const classes: Record<CalloutType, string> = {
       }
     })
   ),
-  warning: cn(
+  warning: cx(
     css({
       borderColor: 'yellow.100',
       backgroundColor: 'yellow.50',
@@ -76,7 +75,7 @@ export function Callout({
 }: CalloutProps): ReactElement {
   return (
     <div
-      className={cn(
+      className={cx(
         'nextra-callout',
         css({
           overflowX: 'auto',

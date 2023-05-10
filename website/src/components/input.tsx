@@ -1,7 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react'
 import { forwardRef } from 'react'
-import cn from 'clsx'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 
 type InputProps = ComponentProps<'input'> & { suffix?: ReactNode }
 
@@ -20,7 +19,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <input
         ref={forwardedRef}
         spellCheck={false}
-        className={cn(
+        className={cx(
           className,
           css({
             display: 'block',

@@ -1,15 +1,14 @@
-// @ts-nocheck
 import type { ReactElement, ReactNode } from 'react'
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import FlexSearch from 'flexsearch'
-import cn from 'clsx'
 import { Search } from './search'
 import { HighlightMatches } from './highlight-matches'
 import { DEFAULT_LOCALE } from '../constants'
 import type { SearchResult } from '../types'
 import { css, cx } from '../../styled-system/css'
 
+// @ts-expect-error
 type SectionIndex = FlexSearch.Document<
   {
     id: string
@@ -22,6 +21,7 @@ type SectionIndex = FlexSearch.Document<
   ['title', 'content', 'url', 'display']
 >
 
+// @ts-expect-error
 type PageIndex = FlexSearch.Document<
   {
     id: number
@@ -72,6 +72,7 @@ const loadIndexesImpl = async (
   )
   const data = (await response.json()) as NextraData
 
+  // @ts-expect-error
   const pageIndex: PageIndex = new FlexSearch.Document({
     cache: 100,
     tokenize: 'full',
@@ -87,6 +88,7 @@ const loadIndexesImpl = async (
     }
   })
 
+  // @ts-expect-error
   const sectionIndex: SectionIndex = new FlexSearch.Document({
     cache: 100,
     tokenize: 'full',
@@ -205,7 +207,7 @@ export function Flexsearch({
           route: url,
           prefix: isFirstItemOfPage && (
             <div
-              className={cn(
+              className={cx(
                 css({
                   mx: '2.5',
                   mb: 2,

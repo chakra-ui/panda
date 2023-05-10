@@ -1,52 +1,42 @@
-import type { ComponentProps, ReactElement, ReactNode } from 'react'
-import cn from 'clsx'
-import { Tab as HeadlessTab } from '@headlessui/react'
-import { css } from '../../styled-system/css'
-
-type TabItem = {
-  label: ReactElement
-  disabled?: boolean
-}
-
-function isTabItem(item: unknown): item is TabItem {
-  if (item && typeof item === 'object' && 'label' in item) return true
-  return false
-}
-
-const renderTab = (item: ReactNode | TabItem) => {
-  if (isTabItem(item)) {
-    return item.label
-  }
-  return item
-}
+import { Children, ComponentProps, ReactElement, cloneElement } from 'react'
+import {
+  TabContent,
+  TabIndicator,
+  TabList,
+  Tabs as ArkTabs,
+  TabTrigger
+} from '@ark-ui/react'
+import { css, cx } from '../../styled-system/css'
 
 export function Tabs({
   items,
-  selectedIndex,
-  defaultIndex,
-  onChange,
   children
 }: {
-  items: ReactNode[] | ReadonlyArray<ReactNode> | TabItem[]
-  selectedIndex?: number
-  defaultIndex?: number
-  onChange?: (index: number) => void
-  children: ReactNode
+  items: string[]
+  children: ReactElement
 }): ReactElement {
+  const tabs = Children.map(children, (child, index) =>
+    cloneElement(child as any, {
+      ...child.props,
+      key: index,
+      value: items[index]
+    })
+  )
+
   return (
-    <HeadlessTab.Group
-      selectedIndex={selectedIndex}
-      defaultIndex={defaultIndex}
-      onChange={onChange}
-    >
+    <ArkTabs defaultValue={items[0]}>
       <div
-        className={cn('nextra-scrollbar', {
-          overflowX: 'auto',
-          overflowY: 'hidden',
-          overscrollX: 'contain'
-        })}
+        className={cx(
+          'nextra-scrollbar',
+          css({
+            position: 'relative',
+            overflowX: 'auto',
+            overflowY: 'hidden',
+            overscrollBehaviorX: 'contain'
+          })
+        )}
       >
-        <HeadlessTab.List
+        <TabList
           className={css({
             mt: 4,
             display: 'flex',
@@ -59,19 +49,10 @@ export function Tabs({
           })}
         >
           {items.map((item, index) => {
-            const disabled = !!(
-              item &&
-              typeof item === 'object' &&
-              'disabled' in item &&
-              item.disabled
-            )
-
             return (
-              <HeadlessTab
-                key={index}
-                disabled={disabled}
-                className={({ selected }) =>
-                  cn(
+              <TabTrigger value={item} key={index}>
+                <button
+                  className={cx(
                     css({
                       mr: 2,
                       roundedTop: 'md',
@@ -81,45 +62,43 @@ export function Tabs({
                       transitionProperty: 'colors',
                       mb: '-0.5',
                       userSelect: 'none',
-                      borderBottom: '2px solid '
-                    }),
-                    selected
-                      ? css({
-                          borderColor: 'primary.500',
-                          color: 'primary.600'
-                        })
-                      : css({
-                          borderColor: 'transparent',
-                          color: 'gray.600',
-                          _hover: {
-                            borderColor: 'gray.200',
-                            color: 'black'
-                          },
-                          _dark: {
-                            borderColor: 'neutral.800',
-                            color: 'neutral.200',
-                            _hover: {
-                              color: 'white'
-                            }
-                          }
-                        }),
-                    disabled &&
-                      css({
-                        pointerEvents: 'none',
-                        color: 'gray.400',
-                        _dark: { color: 'neutral.600' }
-                      })
-                  )
-                }
-              >
-                {renderTab(item)}
-              </HeadlessTab>
+                      borderBottom: '2px solid',
+                      borderColor: 'transparent',
+                      color: 'gray.600',
+                      _hover: {
+                        borderColor: 'gray.200',
+                        color: 'black'
+                      },
+                      _dark: {
+                        borderColor: 'neutral.800',
+                        color: 'neutral.200',
+                        _hover: {
+                          color: 'white'
+                        }
+                      },
+                      _selected: {
+                        borderColor: 'primary.500',
+                        color: 'primary.600'
+                      }
+                    })
+                  )}
+                >
+                  {item}
+                </button>
+              </TabTrigger>
             )
           })}
-        </HeadlessTab.List>
+          <TabIndicator
+            className={css({
+              height: '2px',
+              bottom: '-1px',
+              background: { base: 'neutral.500', _dark: 'gray.200' }
+            })}
+          />
+        </TabList>
       </div>
-      <HeadlessTab.Panels>{children}</HeadlessTab.Panels>
-    </HeadlessTab.Group>
+      {tabs}
+    </ArkTabs>
   )
 }
 
@@ -129,8 +108,8 @@ export function Tab({
 }: ComponentProps<'div'>): ReactElement {
   return (
     // @ts-ignore
-    <HeadlessTab.Panel {...props} className={css({ rounded: 'md', pt: 6 })}>
+    <TabContent {...props} className={css({ rounded: 'md', pt: 6 })}>
       {children}
-    </HeadlessTab.Panel>
+    </TabContent>
   )
 }

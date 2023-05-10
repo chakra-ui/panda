@@ -1,11 +1,10 @@
 import type { ComponentProps, CSSProperties, ReactNode } from 'react'
-import cn from 'clsx'
 import { Anchor } from './anchor'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 
 const classes = {
-  cards: cn('nextra-cards', css({ mt: 4, gap: 4, display: 'grid' })),
-  card: cn(
+  cards: cx('nextra-cards', css({ mt: 4, gap: 4, display: 'grid' })),
+  card: cx(
     'nextra-card group', // TODO group ?
     css({
       display: 'flex',
@@ -36,7 +35,7 @@ const classes = {
       }
     })
   ),
-  title: cn(
+  title: cx(
     css({
       display: 'flex',
       fontWeight: 'semibold',
@@ -83,7 +82,7 @@ export function Card({
     return (
       <Anchor
         href={href}
-        className={cn(
+        className={cx(
           classes.card,
           css({
             bgColor: 'gray.100',
@@ -106,7 +105,7 @@ export function Card({
       >
         {children}
         <span
-          className={cn(
+          className={cx(
             classes.title,
             css({ _dark: { color: 'gray.300', _hover: { color: 'gray.100' } } })
           )}
@@ -124,7 +123,7 @@ export function Card({
   return (
     <Anchor
       href={href}
-      className={cn(
+      className={cx(
         classes.card,
         css({
           bg: 'transparent',
@@ -145,7 +144,7 @@ export function Card({
       {...props}
     >
       <span
-        className={cn(
+        className={cx(
           classes.title,
           css({
             _dark: {
@@ -172,7 +171,7 @@ export function Cards({
 }: { num?: number } & ComponentProps<'div'>) {
   return (
     <div
-      className={cn(classes.cards, className)}
+      className={cx(classes.cards, className)}
       {...props}
       style={
         {

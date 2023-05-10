@@ -12,10 +12,26 @@ Vite, and Parcel.
 
 Install panda and create your `panda.config.ts` file.
 
-```bash
-npm install -g @pandacss/dev postcss autoprefixer
-npx panda init --postcss
-```
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm install -g @pandacss/dev postcss autoprefixer
+    pnpx panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install -g @pandacss/dev postcss autoprefixer
+    npx panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn install -g @pandacss/dev postcss autoprefixer
+    npx panda init --postcss
+    ```
+  </Tab>
+</Tabs>
 
 ## Add Panda to your PostCSS config
 
@@ -55,9 +71,23 @@ export default defineConfig({
 
 Run your build process with `npm run dev` or whatever command is configured in your package.json file.
 
-```bash
-npm run dev
-```
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm run dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm run dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn run dev
+    ```
+  </Tab>
+</Tabs>
 
 ## Start using Panda in your code
 

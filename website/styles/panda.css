@@ -15,3 +15,63 @@
     --color-primary-900-hue: 24%;
   }
 }
+
+@layer reset {
+  /*
+1. Remove the margin in all browsers.
+2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.
+*/
+
+  body {
+    line-height: inherit; /* 2 */
+  }
+
+  /*
+Reset links to optimize for opt-in styling instead of opt-out.
+*/
+
+  a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
+  /*
+1. Correct the inability to style clickable types in iOS and Safari.
+2. Remove default button styles.
+*/
+
+  button,
+  [type='button'],
+  [type='reset'],
+  [type='submit'] {
+    background-color: transparent; /* 2 */
+  }
+
+  ol,
+  ul,
+  menu {
+    padding: 0;
+  }
+
+  /*
+Set the default cursor for buttons.
+*/
+
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+
+  /*
+Make sure disabled buttons don't get the pointer cursor.
+*/
+  :disabled {
+    cursor: default;
+  }
+
+  /*
+1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)
+2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)
+   This can trigger a poorly considered lint error in some tools but is included by design.
+*/
+}

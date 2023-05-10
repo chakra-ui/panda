@@ -1,9 +1,8 @@
 import type { ReactElement } from 'react'
-import cn from 'clsx'
 import { useConfig } from '../contexts'
 import { LocaleSwitch } from './locale-switch'
 import { renderComponent } from '../utils'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 
 export function Footer({ menu }: { menu?: boolean }): ReactElement {
   const config = useConfig()
@@ -16,7 +15,7 @@ export function Footer({ menu }: { menu?: boolean }): ReactElement {
       })}
     >
       <div
-        className={cn(
+        className={cx(
           css({
             mx: 'auto',
             display: 'flex',
@@ -35,7 +34,7 @@ export function Footer({ menu }: { menu?: boolean }): ReactElement {
       </div>
       <hr className={css({ _dark: { borderColor: 'neutral.800' } })} />
       <div
-        className={cn(
+        className={cx(
           css({
             mx: 'auto',
             display: 'flex',

@@ -1,9 +1,8 @@
 import type { ReactElement } from 'react'
 import { XIcon } from 'nextra/icons'
-import cn from 'clsx'
 import { useConfig } from '../contexts'
 import { renderComponent } from '../utils'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 
 export function Banner(): ReactElement | null {
   const { banner } = useConfig()
@@ -18,7 +17,7 @@ export function Banner(): ReactElement | null {
     <>
       <script dangerouslySetInnerHTML={{ __html: hideBannerScript }} />
       <div
-        className={cn(
+        className={cx(
           'nextra-banner-container',
           css({
             position: 'sticky',

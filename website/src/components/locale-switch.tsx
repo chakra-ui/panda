@@ -26,13 +26,13 @@ export function LocaleSwitch({
       onChange={option => {
         const date = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
         document.cookie = `NEXT_LOCALE=${
-          option.key
+          option.value
         }; expires=${date.toUTCString()}; path=/`
         location.href = addBasePath(asPath)
       }}
       selected={{
-        key: selected?.locale || '',
-        name: (
+        value: selected?.locale || '',
+        label: (
           <span
             className={css({ display: 'flex', alignItems: 'center', gap: 2 })}
           >
@@ -43,10 +43,7 @@ export function LocaleSwitch({
           </span>
         )
       }}
-      options={options.map(l => ({
-        key: l.locale,
-        name: l.text
-      }))}
+      options={options.map(l => ({ value: l.locale, label: l.text }))}
     />
   )
 }

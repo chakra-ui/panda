@@ -1,6 +1,5 @@
 import type { ReactElement, ReactNode } from 'react'
-import cn from 'clsx'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 
 export function Bleed({
   full,
@@ -11,7 +10,7 @@ export function Bleed({
 }): ReactElement {
   return (
     <div
-      className={cn(
+      className={cx(
         'nextra-bleed',
         css({
           position: 'relative',
@@ -20,16 +19,14 @@ export function Bleed({
           md: { mx: -8 },
           '2xl': { mx: -24 }
         }),
-        full && [
+        full &&
           css({
             _ltr: {
               xl: {
                 ml: 'calc(50% - 50vw + 16rem)',
                 mr: 'calc(50% - 50vw)'
               }
-            }
-          }),
-          css({
+            },
             _rtl: {
               xl: {
                 ml: 'calc(50% - 50vw)',
@@ -37,7 +34,6 @@ export function Bleed({
               }
             }
           })
-        ]
       )}
     >
       {children}

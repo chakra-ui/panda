@@ -9,10 +9,26 @@ The simplest and fastest way to use Panda is with the Panda CLI tool.
 
 ## Install Panda
 
-```bash
-npm install -g @pandacss/dev
-npx panda init
-```
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm install -g @pandacss/dev
+    pnpx panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install -g @pandacss/dev
+    npx panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn install -g @pandacss/dev
+    npx panda init
+    ```
+  </Tab>
+</Tabs>
 
 ## Configure the content
 
@@ -39,13 +55,35 @@ export default defineConfig({
 
 Run the CLI tool to scan your component files for style properties and css call expressions.
 
-```bash
-# Run it once
-panda
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    # Run it once
+    pnpm panda
 
-# Run it in watch mode
-panda --watch
-```
+    # Run it in watch mode
+    panda --watch
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    # Run it once
+    npm panda
+
+    # Run it in watch mode
+    panda --watch
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    # Run it once
+    yarn panda
+
+    # Run it in watch mode
+    panda --watch
+    ```
+  </Tab>
+</Tabs>
 
 ## Start using Panda in your code
 
@@ -58,3 +96,100 @@ export function App() {
   return <div className={css({ bg: 'red.400' })} />
 }
 ```
+
+## Panda DX
+
+Panda comes with built-in commands to help you develop and debug your app.
+
+| Command                                            | Description                                                                                                                                                                                                                                                   |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`studio`](docs/references/cli.mdx#panda-studio)   | Panda provide built-in documentation for tokens defined in your project. This will be useful for your team to communicate design decisions in your own way, and share information effectively. <br /> More on that [here](/docs/tokens/02-visualization.mdx). |
+| [`analyze`](docs/references/cli.mdx#panda-analyze) | Analyze design token usage in your project, this will be automatically used by the `studio` command and available in the studio's [Token Analyzer page](/docs/tokens/02-visualization.mdx#token-analyzer)                                                     |
+| [`debug`](docs/references/cli.mdx#panda-debug)     | Debug design token extraction & css generated from files                                                                                                                                                                                                      |
+
+### Debugging
+
+Panda comes with a built-in debug command to help you debug your app. This can be useful to understand how Panda is
+extracting styles from your code and generating CSS.
+
+By default it will scan & output debug files for the entire project depending on your `include` and `exclude` options
+from your config file.
+
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm debug
+    # You can also debug a specific file or folder
+    # using the optional glob argument
+    pnpm debug src/components/Button.tsx
+    pnpm debug "./src/components/**"
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm debug
+    # # You can also debug a specific file or folder
+    # using the optional glob argument
+    npm debug src/components/Button.tsx
+    npm debug "./src/components/**"
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn debug
+    # # You can also debug a specific file or folder
+    # using the optional glob argument
+    yarn debug src/components/Button.tsx
+    yarn debug "./src/components/**"
+    ```
+  </Tab>
+</Tabs>
+
+This would generate a `debug` folder in your `config.outdir` folder with the following structure:
+
+<FileTree>
+  <FileTree.Folder name="styled-system" defaultOpen>
+    <FileTree.Folder name="debug" defaultOpen>
+      <FileTree.File name="src__components__Button.ast.json" />
+      <FileTree.File name="src__components__Button.css" />
+    </FileTree.Folder>
+  </FileTree.Folder>
+</FileTree>
+
+Any `xxx.ast.json` file will look like:
+
+```json
+[
+  {
+    "name": "css",
+    "type": "object",
+    "data": [
+      {
+        "transitionProperty": "all",
+        "opacity": "0.5",
+        "border": "1px solid",
+        "borderColor": "black",
+        "color": "gray.600",
+        "_hover": {
+          "color": "gray.900"
+        },
+        "rounded": "md",
+        "p": "1.5",
+        "_dark": {
+          "borderColor": "rgba(255, 255, 255, 0.1)",
+          "color": "gray.400",
+          "_hover": {
+            "color": "gray.50"
+          }
+        }
+      }
+    ],
+    "kind": "CallExpression",
+    "line": 13,
+    "column": 9
+  }
+]
+```
+
+And the `css` file associated would just contain the styles generated from the extraction process on that file.

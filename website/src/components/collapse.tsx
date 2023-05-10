@@ -1,7 +1,6 @@
 import type { ReactElement, ReactNode } from 'react'
 import { useRef, useEffect } from 'react'
-import cn from 'clsx'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 
 export function Collapse({
   children,
@@ -74,7 +73,7 @@ export function Collapse({
     >
       <div
         ref={innerRef}
-        className={cn(
+        className={cx(
           css({
             transitionProperty: 'opacity',
             transitionDuration: '500ms',

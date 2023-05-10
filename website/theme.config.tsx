@@ -1,9 +1,26 @@
 import React from 'react'
-import { DocsThemeConfig, useConfig } from './src' // nextra-theme-docs
+import {
+  DocsThemeConfig,
+  Tabs,
+  Tab,
+  useConfig,
+  Callout,
+  FileTree,
+  Steps
+} from './src' // nextra-theme-docs
 import { useRouter } from 'next/router'
 import { css } from './styled-system/css'
 
 const config: DocsThemeConfig = {
+  components: {
+    blockquote: Callout,
+    //
+    Callout: Callout,
+    FileTree: FileTree,
+    Steps: Steps,
+    Tab: Tab,
+    Tabs: Tabs
+  },
   logo: (
     <span
       className={css({

@@ -1,13 +1,12 @@
 import type { ReactElement } from 'react'
 import { useEffect, useRef, useMemo } from 'react'
-import cn from 'clsx'
 import type { Heading } from 'nextra'
 import scrollIntoView from 'scroll-into-view-if-needed'
 
 import { renderComponent } from '../utils'
 import { useConfig, useActiveAnchor } from '../contexts'
 import { Anchor } from './anchor'
-import { css } from '../../styled-system/css'
+import { css, cx } from '../../styled-system/css'
 
 export type TOCProps = {
   headings: Heading[]
@@ -52,7 +51,7 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
     }
   }, [activeSlug])
 
-  const linkClassName = cn(
+  const linkClassName = cx(
     css({
       textStyle: 'xs',
       fontWeight: 'medium',
@@ -72,7 +71,7 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
   return (
     <div
       ref={tocRef}
-      className={cn(
+      className={cx(
         'nextra-scrollbar',
         css({
           position: 'sticky',
@@ -108,7 +107,7 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
               >
                 <a
                   href={`#${id}`}
-                  className={cn(
+                  className={cx(
                     {
                       2: css({ fontWeight: 'semibold' }),
                       3: css({ _ltr: { pl: 4 }, _rtl: { pr: 4 } }),
@@ -156,7 +155,7 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
 
       {hasMetaInfo && (
         <div
-          className={cn(
+          className={cx(
             hasHeadings &&
               css({
                 mt: 8,
