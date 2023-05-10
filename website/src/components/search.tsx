@@ -161,9 +161,8 @@ export function Search({
           fontSize: '10px',
           fontWeight: 'medium',
           color: 'gray.500',
-          border: '1px solid',
+          border: '1px solid rgb(243 244 246 / 0.2)',
           // borderColor: 'gray.100/20',
-          borderColor: 'rgb(243 244 246 / 0.2)',
           // _dark: { bgColor: 'dark/50' },
           _dark: { bgColor: 'rgb(17 17 17 / 0.2)' },
           _moreContrast: {
@@ -264,9 +263,8 @@ export function Search({
             'nextra-scrollbar',
             // Using bg-white as background-color when the browser didn't support backdrop-filter
             css({
-              border: '1px solid',
+              border: '1px solid rgb(243 244 246 / 0.2)',
               // borderColor: 'gray.100/20',
-              borderColor: 'rgb(243 244 246 / 0.2)',
               backgroundColor: 'white',
               color: 'gray.100',
               _dark: { borderColor: 'neutral.800', bgColor: 'neutral.900' },

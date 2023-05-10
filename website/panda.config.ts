@@ -1,4 +1,11 @@
 import { defineConfig } from '@pandacss/dev'
+import { breadcrumbRecipe } from './src/components/breadcrumb.recipe'
+import { bannerRecipe } from './src/components/banner.recipe'
+import { cardRecipe } from './src/components/card.recipe'
+import { calloutRecipe } from './src/components/callout.recipe'
+import { tabsRecipe } from './src/components/tabs.recipe'
+import { navbarRecipe } from './src/components/navbar.recipe'
+import { navLinksRecipe } from './src/components/nav-links.recipe'
 
 const makePrimaryColor = (l: number) => {
   return {
@@ -33,6 +40,14 @@ export default defineConfig({
       light: '.light &',
       supportsBackdrop:
         '@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px)))'
+    }
+  },
+  staticCss: {
+    recipes: {
+      // used in .mdx files, e.g. <Callout type="default" /> or with the blockquote sign like: `> Blabla`
+      // ts-morph can't parse MDX properly, so we need to specify it here
+      callout: [{ type: ['*'] }],
+      card: [{ variant: ['*'] }]
     }
   },
   theme: {
@@ -372,6 +387,15 @@ export default defineConfig({
           '0%': { opacity: '1' },
           '100%': { opacity: '0' }
         }
+      },
+      recipes: {
+        banner: bannerRecipe,
+        breadcrumb: breadcrumbRecipe,
+        card: cardRecipe,
+        callout: calloutRecipe,
+        navbar: navbarRecipe,
+        navLinks: navLinksRecipe,
+        tabs: tabsRecipe
       }
     }
   },
@@ -431,29 +455,20 @@ export default defineConfig({
 
     '.nextra-search ul': {
       _supportsBackdrop: {
-        backdropFilter: 'blur(12px)'
-      },
-      backgroundColor: 'rgba(255, 255, 255, 0.7)',
-      _dark: {
-        backgroundColor: 'rgba(0, 0, 0, 0.7)'
-      }
-    },
-    '.nextra-nav-container-blur': {
-      _supportsBackdrop: {
-        backdropFilter: 'blur(8px)'
-      },
-      backgroundColor: 'rgba(255, 255, 255, 0.85)',
-      _dark: {
-        backgroundColor: 'rgba(0, 0, 0, 0.85)'
+        backdropFilter: 'blur(12px)',
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        _dark: {
+          backgroundColor: 'rgba(0, 0, 0, 0.7)'
+        }
       }
     },
     '.nextra-button': {
       _supportsBackdrop: {
-        backdropFilter: 'blur(8px)'
-      },
-      backgroundColor: 'rgba(255, 255, 255, 0.85)',
-      _dark: {
-        backgroundColor: 'rgba(0, 0, 0, 0.85)'
+        backdropFilter: 'blur(8px)',
+        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+        _dark: {
+          backgroundColor: 'rgba(0, 0, 0, 0.85)'
+        }
       }
     },
     "input[type='search']": {
@@ -467,47 +482,6 @@ export default defineConfig({
       listStyle: 'none',
       "& input[type='checkbox']": {
         mr: 1
-      }
-    },
-    '.nextra-cards': {
-      gridTemplateColumns:
-        'repeat(auto-fill, minmax(max(250px, calc((100% - 1rem * 2) / var(--rows))), 1fr))'
-    },
-    '.nextra-card img': {
-      userSelect: 'none'
-    },
-    '.nextra-card:hover svg': {
-      color: 'currentColor'
-    },
-    '.nextra-card svg': {
-      width: '1.5rem',
-      color: '#00000033',
-      _dark: { color: '#ffffff66', _hover: { color: 'currentColor' } },
-      transition: 'color 0.3s ease'
-    },
-    '.nextra-card p': {
-      mt: '0.5rem'
-    },
-    '.nextra-card h3': {
-      counterIncrement: 'step',
-      _before: {
-        content: 'counter(step)',
-        position: 'absolute',
-        width: '33px',
-        height: '33px',
-        border: '4px solid white',
-        backgroundColor: 'gray.100',
-        _dark: {
-          backgroundColor: 'neutral.800'
-        },
-        borderRadius: '9999px',
-        color: 'neutral.400',
-        fontSize: 'base',
-        fontWeight: 'normal',
-        textAlign: 'center',
-        textIndent: '1px',
-        mt: '3px',
-        ml: '-41px'
       }
     },
     '.nextra-scrollbar': {

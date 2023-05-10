@@ -6,8 +6,7 @@ export const Tr = ({ className = '', ...props }: ComponentProps<'tr'>) => (
     className={cx(
       css({
         m: '0',
-        borderTop: '1px solid',
-        borderColor: 'gray.300',
+        border: '1px solid token(colors.gray.300)',
         p: '0',
         _dark: {
           borderColor: 'gray.600'

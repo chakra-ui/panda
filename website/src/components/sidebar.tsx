@@ -641,7 +641,7 @@ export function Sidebar({
               }),
               showSidebar
                 ? cx(
-                    hasI18n && css({ justifyContent: 'end' }),
+                    hasI18n && css({ justifyContent: 'flex-end' }),
                     css({ borderTop: '1px' })
                   )
                 : css({ py: 4, flexWrap: 'wrap', justifyContent: 'center' })

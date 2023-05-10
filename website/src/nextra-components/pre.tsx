@@ -68,9 +68,8 @@ export const Pre = ({
               bg: 'hsl(var(--nextra-primary-hue) 100% var(--color-primary-300-hue) / 0.1)' // bg: 'primary.300/10',
             },
             _moreContrast: {
-              border: '1px solid',
-              borderColor:
-                'hsl(var(--nextra-primary-hue) 100% var(--color-primary-900-hue) / 0.2)',
+              border:
+                '1px solid hsl(var(--nextra-primary-hue) 100% var(--color-primary-900-hue) / 0.2)',
               // contrast-more:nx-contrast-150
               _dark: {
                 borderColor:
