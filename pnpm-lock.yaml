@@ -84,8 +84,8 @@ importers:
         specifier: workspace:*
         version: link:../types
       astro:
-        specifier: 2.4.3
-        version: 2.4.3(@types/node@20.1.1)
+        specifier: 2.4.4
+        version: 2.4.4(@types/node@20.1.1)
       cac:
         specifier: 6.7.14
         version: 6.7.14
@@ -617,8 +617,8 @@ importers:
         specifier: 2.1.1
         version: 2.1.1(@babel/core@7.21.8)(solid-js@1.7.5)
       astro:
-        specifier: 2.4.3
-        version: 2.4.3(@types/node@20.1.1)
+        specifier: 2.4.4
+        version: 2.4.4(@types/node@20.1.1)
       solid-js:
         specifier: 1.7.5
         version: 1.7.5
@@ -1033,13 +1033,13 @@ packages:
       vscode-uri: 3.0.7
     dev: false
 
-  /@astrojs/markdown-remark@2.2.0(astro@2.4.3):
+  /@astrojs/markdown-remark@2.2.0(astro@2.4.4):
     resolution: {integrity: sha512-4M1+GzQwDqF0KfX9Ahug43b0avorcK+iTapEaVuNnaCUVS6sZKRkztT3g6hmXiFmGHSL8qYaS9IVEmKtP6hYmw==}
     peerDependencies:
       astro: ^2.4.0
     dependencies:
       '@astrojs/prism': 2.1.0
-      astro: 2.4.3(@types/node@20.1.1)
+      astro: 2.4.4(@types/node@20.1.1)
       github-slugger: 1.4.0
       import-meta-resolve: 2.2.2
       rehype-raw: 6.1.1
@@ -8248,8 +8248,8 @@ packages:
     resolution: {integrity: sha512-97a+l2LBU3Op3bBQEff79i/E4jMD2ZLFD8rHx9B6mXyB2uQwhJQYfiDqUwtfjF4QA1F2qs//N6Cw8LetMbQjcw==}
     hasBin: true
 
-  /astro@2.4.3(@types/node@20.1.1):
-    resolution: {integrity: sha512-WU7sMkgFNQs4WZzEmpjOYZthcT8+LSmwIR0GvWzVYlb+dIMfFCQyg99LNHdhg/XZKi08ztaHmRf4ZBjJvZHsgA==}
+  /astro@2.4.4(@types/node@20.1.1):
+    resolution: {integrity: sha512-2DFxcnZySS/OzBbiuWpoVGJBikcHfbwO5xmk5ohItswoMs+PfZ5P/B6mXplTjaosjm3M43c0OIsd8Mq6UksQZQ==}
     engines: {node: '>=16.12.0', npm: '>=6.14.0'}
     hasBin: true
     peerDependencies:
@@ -8260,7 +8260,7 @@ packages:
     dependencies:
       '@astrojs/compiler': 1.4.0
       '@astrojs/language-server': 1.0.0
-      '@astrojs/markdown-remark': 2.2.0(astro@2.4.3)
+      '@astrojs/markdown-remark': 2.2.0(astro@2.4.4)
       '@astrojs/telemetry': 2.1.1
       '@astrojs/webapi': 2.1.1
       '@babel/core': 7.21.8
@@ -8683,13 +8683,13 @@ packages:
     engines: {node: '>=14.16'}
     dependencies:
       ansi-align: 3.0.1
-      camelcase: 7.0.0
+      camelcase: 7.0.1
       chalk: 5.2.0
       cli-boxes: 3.0.0
       string-width: 5.1.2
       type-fest: 2.19.0
       widest-line: 4.0.1
-      wrap-ansi: 8.0.1
+      wrap-ansi: 8.1.0
     dev: true
 
   /boxen@7.1.0:
@@ -20714,15 +20714,6 @@ packages:
       ansi-styles: 4.3.0
       string-width: 4.2.3
       strip-ansi: 6.0.1
-
-  /wrap-ansi@8.0.1:
-    resolution: {integrity: sha512-QFF+ufAqhoYHvoHdajT/Po7KoXVBPXS2bgjIam5isfWJPfIOnQZ50JtUiVvCv/sjgacf3yRrt2ZKUZ/V4itN4g==}
-    engines: {node: '>=12'}
-    dependencies:
-      ansi-styles: 6.1.1
-      string-width: 5.1.2
-      strip-ansi: 7.0.1
-    dev: true
 
   /wrap-ansi@8.1.0:
     resolution: {integrity: sha512-si7QWI6zUMq56bESFvagtmzMdGOtoxfR+Sez11Mobfc7tm+VkUckk9bW2UeffTGVUbOksxmSw0AA2gs8g71NCQ==}
