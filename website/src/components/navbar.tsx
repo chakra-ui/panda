@@ -19,6 +19,7 @@ import { css, cx } from '../../styled-system/css'
 import { useConfig, useMenu } from '../contexts'
 import { renderComponent } from '../utils'
 import { Anchor } from './anchor'
+import { navbar } from '../../styled-system/recipes'
 
 export type NavBarProps = {
   flatDirectories: Item[]
@@ -72,7 +73,7 @@ function NavbarMenu({
                 ml: -2,
                 display: 'none',
                 alignItems: 'center',
-                whitespace: 'nowrap',
+                whiteSpace: 'nowrap',
                 rounded: 'md',
                 p: 2,
                 md: { display: 'inline-flex' }
@@ -120,7 +121,7 @@ function NavbarMenu({
                         display: 'none',
                         w: 'full',
                         userSelect: 'none',
-                        whitespace: 'nowrap',
+                        whiteSpace: 'nowrap',
                         color: 'gray.600',
                         _hover: { color: 'gray.900' },
                         _dark: {
@@ -155,75 +156,29 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
 
   return (
     <div
-      className={cx(
-        'nextra-nav-container',
-        css({
-          position: 'sticky',
-          top: 0,
-          zIndex: 20,
-          w: 'full',
-          bg: 'transparent',
-          _print: { display: 'none' }
-        })
-      )}
+      data-scope="navbar"
+      data-part="root"
+      className={cx('nextra-nav-container', navbar())}
     >
       <div
-        className={cx(
-          'nextra-nav-container-blur',
-          css({
-            pointerEvents: 'none',
-            position: 'absolute',
-            zIndex: -1,
-            h: 'full',
-            w: 'full',
-            bg: 'white',
-            _dark: {
-              bg: 'dark',
-              shadow: '0 -1px 0 rgba(255,255,255,.1) inset'
-            },
-            shadow: '0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)',
-            _moreContrast: {
-              shadow: '0 0 0 1px #000',
-              _dark: { shadow: '0 0 0 1px #fff' }
-            }
-          })
-        )}
+        data-scope="navbar"
+        data-part="blur"
+        className={cx('nextra-nav-container-blur')}
       />
-      <nav
-        className={css({
-          mx: 'auto',
-          display: 'flex',
-          h: 'var(--nextra-navbar-height)',
-          maxW: '90rem',
-          alignItems: 'center',
-          justify: 'end',
-          gap: 2,
-          pl: 'max(env(safe-area-inset-left),1.5rem)',
-          pr: 'max(env(safe-area-inset-right),1.5rem)'
-        })}
-      >
+      <nav data-scope="navbar" data-part="nav">
         {config.logoLink ? (
           <Anchor
+            data-scope="navbar"
+            data-part="logo-link"
             href={typeof config.logoLink === 'string' ? config.logoLink : '/'}
             className={css({
-              display: 'flex',
-              alignItems: 'center',
-              _hover: { opacity: 0.75 },
-              _ltr: { mr: 'auto' },
-              _rtl: { ml: 'auto' }
+              _hover: { opacity: 0.75 }
             })}
           >
             {renderComponent(config.logo)}
           </Anchor>
         ) : (
-          <div
-            className={css({
-              display: 'flex',
-              alignItems: 'center',
-              _ltr: { mr: 'auto' },
-              _rtl: { ml: 'auto' }
-            })}
-          >
+          <div data-scope="navbar" data-part="logo-link">
             {renderComponent(config.logo)}
           </div>
         )}
@@ -239,22 +194,16 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
 
             return (
               <NavbarMenu
+                data-scope="navbar"
+                data-part="menu-link"
                 key={menu.title}
-                className={cx(
-                  classes.link,
-                  css({ display: 'flex', gap: 1 }),
-                  isActive ? classes.active : classes.inactive
-                )}
+                className={cx(isActive ? classes.active : classes.inactive)}
                 menu={menu}
               >
                 {menu.title}
                 <ArrowRightIcon
-                  className={css({
-                    h: '18px',
-                    minW: '18px',
-                    rounded: 'sm',
-                    p: 0.5
-                  })}
+                  data-scope="navbar"
+                  data-part="menu-link-icon"
                   pathClassName={css({
                     transformOrigin: 'center',
                     transitionProperty: 'transform',
@@ -279,30 +228,17 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
 
           return (
             <Anchor
+              data-scope="navbar"
+              data-part="nav-link"
               href={href}
               key={href}
               className={cx(
-                classes.link,
-                css({
-                  position: 'relative',
-                  ml: -2,
-                  display: 'none',
-                  whitespace: 'nowrap',
-                  p: 2,
-                  md: { display: 'inline-block' }
-                }),
                 !isActive || page.newWindow ? classes.inactive : classes.active
               )}
               newWindow={page.newWindow}
               aria-current={!page.newWindow && isActive}
             >
-              <span
-                className={css({
-                  position: 'absolute',
-                  insetX: 0,
-                  textAlign: 'center'
-                })}
-              >
+              <span data-scope="navbar" data-part="nav-link-text">
                 {page.title}
               </span>
               <span
@@ -325,6 +261,8 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
 
         {config.project.link ? (
           <Anchor
+            data-scope="navbar"
+            data-part="project-link"
             className={css({ p: 2, color: 'currentColor' })}
             href={config.project.link}
             newWindow
@@ -335,6 +273,8 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
 
         {config.chat.link ? (
           <Anchor
+            data-scope="navbar"
+            data-part="chat-link"
             className={css({ p: 2, color: 'currentColor' })}
             href={config.chat.link}
             newWindow
@@ -348,55 +288,8 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
         <button
           type="button"
           aria-label="Menu"
-          className={cx(
-            css({
-              mr: -2,
-              rounded: 'sm',
-              p: 2,
-              // _active: { bg: 'gray.400/20' },
-              _active: { bg: 'rgb(156 163 175 / 0.2)' },
-              md: { display: 'none' },
-              // "nextra-hamburger",
-              '& svg': {
-                '& g': {
-                  transformOrigin: 'center',
-                  transition: 'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1)'
-                },
-                '& path': {
-                  opacity: 1,
-                  transition:
-                    'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1) 0.2s, opacity 0.2s ease 0.2s'
-                },
-                '&.open': {
-                  '& path': {
-                    transition:
-                      'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease'
-                  },
-                  '& g': {
-                    transition:
-                      'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1) 0.2s'
-                  }
-                },
-                '&.open >': {
-                  '& path': {
-                    opacity: 0
-                  },
-                  '& g:nth-of-type(1)': {
-                    transform: 'rotate(45deg)',
-                    '& path': {
-                      transform: 'translate3d(0, 6px, 0)'
-                    }
-                  },
-                  '& g:nth-of-type(2)': {
-                    transform: 'rotate(-45deg)',
-                    '& path': {
-                      transform: 'translate3d(0, -6px, 0)'
-                    }
-                  }
-                }
-              }
-            })
-          )}
+          data-scope="navbar"
+          data-part="mobile-menu"
           onClick={() => setMenu(!menu)}
         >
           <MenuIcon className={cx(menu && 'open')} />

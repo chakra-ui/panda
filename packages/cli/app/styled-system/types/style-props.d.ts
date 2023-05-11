@@ -1,6 +1,6 @@
 import { ConditionalValue } from './conditions'
 import { PropertyValue } from './prop-type'
-import { Token } from './tokens'
+import { Token } from '../tokens'
 
 export type CssVarProperties = {
   [key in `--${string}`]?: ConditionalValue<Token | (string & {}) | (number & {})>

@@ -1,52 +1,7 @@
 import type { ComponentProps, CSSProperties, ReactNode } from 'react'
 import { Anchor } from './anchor'
 import { css, cx } from '../../styled-system/css'
-
-const classes = {
-  cards: cx('nextra-cards', css({ mt: 4, gap: 4, display: 'grid' })),
-  card: cx(
-    'nextra-card group', // TODO group ?
-    css({
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'start',
-      overflow: 'hidden',
-      borderRadius: 'lg',
-      border: '1px solid',
-      borderColor: 'gray.200',
-      color: 'currentColor',
-      textDecorationLine: 'none',
-      shadow: 'gray.100',
-      transitionProperty: 'all',
-      transitionDuration: '200ms',
-      _hover: {
-        shadowColor: 'gray.100',
-        borderColor: 'gray.300'
-      },
-      _active: {
-        shadow: 'sm',
-        shadowColor: 'gray.200'
-      },
-      _dark: {
-        _hover: { shadow: 'none' },
-        shadow: 'none',
-        borderColor: 'rgb(from token(colors.gray.700) / 30%)', // TODO
-        backgroundColor: 'rgb(from token(colors.gray.900) / 30%)'
-      }
-    })
-  ),
-  title: cx(
-    css({
-      display: 'flex',
-      fontWeight: 'semibold',
-      alignItems: 'start',
-      gap: 2,
-      p: 4,
-      color: 'gray.700',
-      _hover: { color: 'gray.900' }
-    })
-  )
-}
+import { card } from '../../styled-system/recipes'
 
 const arrowEl = (
   <span
@@ -81,37 +36,16 @@ export function Card({
   if (image) {
     return (
       <Anchor
+        data-scope="card"
+        data-part="root"
+        className={cx('group', card({ variant: 'image' }))}
         href={href}
-        className={cx(
-          classes.card,
-          css({
-            bgColor: 'gray.100',
-            shadow: 'md',
-            _dark: {
-              borderColor: 'rgb(64 64 64)',
-              backgroundColor: 'rgb(38 38 38)',
-              color: 'gray.50',
-              _hover: {
-                borderColor: 'rgb(115 115 115 / 1)',
-                backgroundColor: 'rgb(64 64 64 / 1)'
-              }
-            },
-            _hover: {
-              shadow: 'lg'
-            }
-          })
-        )}
         {...props}
       >
         {children}
-        <span
-          className={cx(
-            classes.title,
-            css({ _dark: { color: 'gray.300', _hover: { color: 'gray.100' } } })
-          )}
-        >
+        <span data-scope="card" data-part="content">
           {icon}
-          <span className={css({ display: 'flex', gap: 1 })}>
+          <span data-scope="card" data-part="title">
             {title}
             {animatedArrow}
           </span>
@@ -122,41 +56,18 @@ export function Card({
 
   return (
     <Anchor
+      data-scope="card"
+      data-part="root"
+      className={cx('group', card())}
       href={href}
-      className={cx(
-        classes.card,
-        css({
-          bg: 'transparent',
-          shadow: 'sm',
-          _dark: {
-            borderColor: 'rgb(38 38 38 / 1)',
-            _hover: {
-              borderColor: 'rgb(64 64 64 / 1)',
-              backgroundColor: 'rgb(115 115 115 / 1)'
-            }
-          },
-          _hover: {
-            bgColor: 'slate.50',
-            shadow: 'md'
-          }
-        })
-      )}
       {...props}
     >
-      <span
-        className={cx(
-          classes.title,
-          css({
-            _dark: {
-              color: 'rgb(229 229 229 / 1)',
-              _hover: { color: 'rgb(250 250 250 / 1)' }
-            }
-          })
-        )}
-      >
+      <span data-scope="card" data-part="content">
         {icon}
-        {title}
-        {animatedArrow}
+        <span data-scope="card" data-part="title">
+          {title}
+          {animatedArrow}
+        </span>
       </span>
     </Anchor>
   )
@@ -171,7 +82,16 @@ export function Cards({
 }: { num?: number } & ComponentProps<'div'>) {
   return (
     <div
-      className={cx(classes.cards, className)}
+      className={cx(
+        css({
+          gridTemplateColumns:
+            'repeat(auto-fill, minmax(max(250px, calc((100% - 1rem * 2) / var(--rows))), 1fr))',
+          mt: 4,
+          gap: 4,
+          display: 'grid'
+        }),
+        className
+      )}
       {...props}
       style={
         {

@@ -8,7 +8,7 @@ describe('recipe ruleset', () => {
           @layer base {
               .textStyle {
                   font-family: var(--fonts-mono);
-                  & > * ~ * {
+                  & > :not([hidden]) ~ :not([hidden]) {
                       border-left-width: 20px;
                       border-right-width: 0px
                   }
@@ -22,7 +22,7 @@ describe('recipe ruleset', () => {
           @layer base {
               .textStyle {
                   font-family: var(--fonts-mono);
-                  & > * ~ * {
+                  & > :not([hidden]) ~ :not([hidden]) {
                       border-left-width: 20px;
                       border-right-width: 0px
                   }
@@ -36,7 +36,7 @@ describe('recipe ruleset', () => {
           @layer base {
               .textStyle {
                   font-family: var(--fonts-mono);
-                  & > * ~ * {
+                  & > :not([hidden]) ~ :not([hidden]) {
                       border-left-width: 20px;
                       border-right-width: 0px
                   }
@@ -51,7 +51,7 @@ describe('recipe ruleset', () => {
       "@layer recipes {
           @layer base {
               .tooltipStyle {
-                  [data-theme=dark] &[data-tooltip], [data-theme=dark] & [data-tooltip] {
+                  &[data-tooltip].dark, .dark &[data-tooltip], & [data-tooltip].dark, .dark & [data-tooltip] {
                       color: red
                   }
               }
@@ -94,32 +94,32 @@ describe('recipe ruleset', () => {
           "variant": {
             "outline": {
               "&": {
-                "&:hover": {
+                "&:where(:hover, [data-hover])": {
                   "backgroundColor": "blue",
-                  "color": "white",
+                  "color": "var(--colors-white)",
                 },
                 "&[data-disabled]": {
-                  "backgroundColor": "transparent",
+                  "backgroundColor": "var(--colors-transparent)",
                   "border": "1px solid gray",
                   "color": "gray",
                 },
               },
-              "backgroundColor": "transparent",
+              "backgroundColor": "var(--colors-transparent)",
               "border": "1px solid blue",
               "color": "blue",
             },
             "solid": {
               "&": {
-                "&:hover": {
+                "&:where(:hover, [data-hover])": {
                   "backgroundColor": "darkblue",
                 },
                 "&[data-disabled]": {
                   "backgroundColor": "gray",
-                  "color": "black",
+                  "color": "var(--colors-black)",
                 },
               },
               "backgroundColor": "blue",
-              "color": "white",
+              "color": "var(--colors-white)",
             },
           },
         },
@@ -142,13 +142,13 @@ describe('recipe ruleset', () => {
           }
           .buttonStyle--variant_solid {
               background-color: blue;
-              color: white;
-              &:hover {
+              color: var(--colors-white);
+              &:where(:hover, [data-hover]) {
                   background-color: darkblue
               }
               &[data-disabled] {
                   background-color: gray;
-                  color: black
+                  color: var(--colors-black)
               }
           }
       }"
@@ -170,26 +170,26 @@ describe('recipe ruleset', () => {
           }
           .buttonStyle--variant_solid {
               background-color: blue;
-              color: white;
-              &:hover {
+              color: var(--colors-white);
+              &:where(:hover, [data-hover]) {
                   background-color: darkblue
               }
               &[data-disabled] {
                   background-color: gray;
-                  color: black
+                  color: var(--colors-black)
               }
           }
           .lg\\\\:buttonStyle--variant_outline {
-              @media screen and (min-width: 62em) {
-                  background-color: transparent;
+              @media screen and (min-width: 1024px) {
+                  background-color: var(--colors-transparent);
                   border: 1px solid blue;
                   color: blue;
-                  &:hover {
+                  &:where(:hover, [data-hover]) {
                       background-color: blue;
-                      color: white
+                      color: var(--colors-white)
                   }
                   &[data-disabled] {
-                      background-color: transparent;
+                      background-color: var(--colors-transparent);
                       border: 1px solid gray;
                       color: gray
                   }

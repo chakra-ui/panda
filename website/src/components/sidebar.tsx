@@ -319,7 +319,7 @@ function File({
   }
 
   return (
-    <li className={cx(classes.list, { active })}>
+    <li className={cx(classes.list, active && 'active')}>
       <Anchor
         href={(item as PageItem).href || item.route}
         newWindow={(item as PageItem).newWindow}
@@ -641,7 +641,7 @@ export function Sidebar({
               }),
               showSidebar
                 ? cx(
-                    hasI18n && css({ justifyContent: 'end' }),
+                    hasI18n && css({ justifyContent: 'flex-end' }),
                     css({ borderTop: '1px' })
                   )
                 : css({ py: 4, flexWrap: 'wrap', justifyContent: 'center' })

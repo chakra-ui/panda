@@ -55,7 +55,8 @@ function HeadingLink({
         {
           h2: css({
             mt: 10,
-            borderBottom: '1px solid',
+            borderBottomStyle: 'solid',
+            borderBottomWidth: '1px',
             pb: 1,
             fontSize: '3xl',
             // borderColor: 'neutral.200/70', // opacity modifier
@@ -148,8 +149,7 @@ const Details = ({
       className={css({
         my: 4,
         rounded: 'md',
-        border: '1px solid',
-        borderColor: 'gray.200',
+        border: '1px solid token(colors.gray.200)',
         bg: 'white',
         p: 2,
         shadow: 'sm',
@@ -309,7 +309,12 @@ export const getComponents = ({
     ),
     hr: props => (
       <hr
-        className={css({ my: 8, _dark: { borderColor: 'gray.900' } })}
+        className={css({
+          my: 8,
+          h: '1px',
+          bgColor: 'rgb(229 229 229 / 0.7)',
+          _dark: { bgColor: 'rgb(219 234 254 / 0.1)' }
+        })}
         {...props}
       />
     ),

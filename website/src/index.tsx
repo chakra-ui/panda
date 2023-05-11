@@ -131,7 +131,7 @@ const Body = ({
           minW: 0,
           justifyContent: 'center',
           pb: 8,
-          pr: 'calc(env(safe-area-inset-right) - 1.5rem)]'
+          pr: 'calc(env(safe-area-inset-right) - 1.5rem)'
         }),
         themeContext.typesetting === 'article' &&
           'nextra-body-typesetting-article'

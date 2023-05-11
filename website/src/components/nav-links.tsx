@@ -4,30 +4,11 @@ import { useConfig } from '../contexts'
 import type { Item } from 'nextra/normalize-pages'
 import { Anchor } from './anchor'
 import type { DocsThemeConfig } from '../index'
-import { css, cx } from '../../styled-system/css'
+import { navLinks } from '../../styled-system/recipes'
 
 interface NavLinkProps {
   currentIndex: number
   flatDirectories: Item[]
-}
-
-const classes = {
-  link: css({
-    display: 'flex',
-    maxWidth: '50%',
-    alignItems: 'center',
-    gap: 1,
-    py: 4,
-    textStyle: 'md',
-    fontWeight: 'medium',
-    color: 'gray.600',
-    transitionProperty: 'colors',
-    wordBreak: 'break-word',
-    _hover: { color: 'primary.600' },
-    _dark: { color: 'gray.300' },
-    md: { textStyle: 'lg' }
-  }),
-  icon: css({ display: 'inline', height: '5', flexShrink: 0 })
 }
 
 export const NavLinks = ({
@@ -49,37 +30,15 @@ export const NavLinks = ({
   if (!prev && !next) return null
 
   return (
-    <div
-      className={css({
-        mb: 8,
-        display: 'flex',
-        alignItems: 'center',
-        borderTopWidth: '1px',
-        pt: 8,
-        borderTopColor: 'neutral.400',
-        _dark: { borderTopColor: 'neutral.800' },
-        _moreContrast: {
-          borderTopColor: 'neutral.400',
-          _dark: { borderTopColor: 'neutral.400' }
-        },
-        _print: { display: 'none' }
-      })}
-    >
+    <div data-scope="nav-links" data-part="root" className={navLinks()}>
       {prev && (
         <Anchor
           href={prev.route}
           title={prev.title}
-          className={cx(
-            classes.link,
-            css({ _ltr: { pr: 4 }, _rtl: { pl: 4 } })
-          )}
+          data-scope="nav-links"
+          data-part="prev-lnik"
         >
-          <ArrowRightIcon
-            className={cx(
-              classes.icon,
-              css({ _ltr: { transform: 'rotate(180deg)' } })
-            )}
-          />
+          <ArrowRightIcon data-scope="nav-links" data-part="prev-icon" />
           {prev.title}
         </Anchor>
       )}
@@ -87,21 +46,11 @@ export const NavLinks = ({
         <Anchor
           href={next.route}
           title={next.title}
-          className={cx(
-            classes.link,
-            css({
-              _ltr: { ml: 'auto', pl: 4, textAlign: 'right' },
-              _rtl: { mr: 'auto', pr: 4, textAlign: 'left' }
-            })
-          )}
+          data-scope="nav-links"
+          data-part="next-link"
         >
           {next.title}
-          <ArrowRightIcon
-            className={cx(
-              classes.icon,
-              css({ _rtl: { transform: 'rotate(-180deg)' } })
-            )}
-          />
+          <ArrowRightIcon data-scope="nav-links" data-part="next-icon" />
         </Anchor>
       )}
     </div>

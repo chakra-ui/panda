@@ -14,11 +14,11 @@ const theme = {
   textStyles,
 }
 
-export const config: Config = {
+export const config = {
   theme,
   conditions,
   utilities,
   patterns,
-}
+} satisfies Config
 
 export default config

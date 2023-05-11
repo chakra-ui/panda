@@ -75,6 +75,10 @@ export function defineLayerStyles(definition: CompositionStyles['layerStyles']) 
   return definition
 }
 
+export function defineStyles(definition: SystemStyleObject) {
+  return definition
+}
+
 /* -----------------------------------------------------------------------------
  * Global styles
  * -----------------------------------------------------------------------------*/

@@ -66,18 +66,18 @@ describe('Atomic recipe', () => {
           }
 
         .bg_blue\\\\.500 {
-          background-color: blue.500
+          background-color: var(--colors-blue-500)
           }
 
         .text_white {
-          color: white
+          color: var(--colors-white)
           }
 
         .bg_red\\\\.500 {
           background-color: var(--colors-red-500)
           }
 
-        .hover\\\\:text_green:hover {
+        .hover\\\\:text_green:where(:hover, [data-hover]) {
           color: green
               }
       }"
