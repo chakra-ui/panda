@@ -319,7 +319,7 @@ function File({
   }
 
   return (
-    <li className={cx(classes.list, { active })}>
+    <li className={cx(classes.list, active && 'active')}>
       <Anchor
         href={(item as PageItem).href || item.route}
         newWindow={(item as PageItem).newWindow}
