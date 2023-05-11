@@ -40,9 +40,9 @@ export function generateTokenTypes(ctx: Context) {
   } else {
     for (const [key, value] of tokens.categoryMap.entries()) {
       const typeName = capitalize(pluralize.singular(key))
-      set.add(`export type ${typeName} = ${unionType(value.keys())}`)
+      set.add(`export type ${typeName}Token = ${unionType(value.keys())}`)
       set.add(`export type ColorPalette = ${unionType(Object.keys(tokens.colorPalettes))}`)
-      result.add(`\t\t${key}: ${typeName}`)
+      result.add(`\t\t${key}: ${typeName}Token`)
     }
   }
 

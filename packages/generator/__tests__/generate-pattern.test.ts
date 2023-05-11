@@ -9,7 +9,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type BoxProperties = {
        
@@ -38,7 +38,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type FlexProperties = {
        align?: PropertyValue<'alignItems'>
@@ -84,7 +84,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type StackProperties = {
        align?: PropertyValue<'alignItems'>
@@ -124,7 +124,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type VstackProperties = {
        justify?: PropertyValue<'justifyContent'>
@@ -162,7 +162,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type HstackProperties = {
        justify?: PropertyValue<'justifyContent'>
@@ -200,7 +200,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type SpacerProperties = {
        size?: ConditionalValue<Tokens[\\"spacing\\"]>
@@ -235,7 +235,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type CircleProperties = {
        size?: PropertyValue<'width'>
@@ -274,7 +274,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type CenterProperties = {
        inline?: ConditionalValue<boolean>
@@ -309,7 +309,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type AbsoluteCenterProperties = {
        axis?: ConditionalValue<\\"x\\" | \\"y\\" | \\"both\\">
@@ -350,7 +350,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type AspectRatioProperties = {
        ratio?: ConditionalValue<number>
@@ -392,7 +392,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type GridProperties = {
        gap?: PropertyValue<'gap'>
@@ -433,7 +433,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type GridItemProperties = {
        colSpan?: ConditionalValue<number>
@@ -475,7 +475,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type WrapProperties = {
        gap?: PropertyValue<'gap'>
@@ -518,7 +518,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
     import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
-    import type { Tokens } from '../tokens/tokens'
+    import type { Tokens } from '../tokens'
 
     export type ContainerProperties = {
        size?: ConditionalValue<Tokens[\\"breakpoints\\"]>
