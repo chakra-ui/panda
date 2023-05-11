@@ -50,6 +50,7 @@ function setupDesignTokens(ctx: Context): Artifact {
       { file: 'index.css', code: css },
       { file: 'index.d.ts', code: code.dts },
       { file: ctx.file.ext('index'), code: code.js },
+      { file: 'tokens.d.ts', code: generateTokenTypes(ctx) },
     ],
   }
 }
@@ -74,18 +75,10 @@ function setupTypes(ctx: Context): Artifact {
       { file: 'pattern.d.ts', code: gen.pattern },
       { file: 'parts.d.ts', code: gen.parts },
       { file: 'index.d.ts', code: entry.index },
-      { file: 'tokens.d.ts', code: generateTokenTypes(ctx) },
       { file: 'prop-type.d.ts', code: generatePropTypes(ctx) },
       { file: 'style-props.d.ts', code: generateStyleProps(ctx) },
       { file: 'conditions.d.ts', code: conditions.dts },
     ].filter(Boolean),
-  } as Artifact
-}
-
-function setupTokenTypes(ctx: Context): Artifact {
-  return {
-    dir: ctx.paths.types,
-    files: [{ file: 'tokens.d.ts', code: generateTokenTypes(ctx) }],
   } as Artifact
 }
 
@@ -248,7 +241,7 @@ function setupPackageJson(ctx: Context): Artifact {
 
 export const generateArtifacts = (ctx: Context) => (): Artifact[] => {
   if (ctx.config.emitTokensOnly) {
-    return [setupDesignTokens(ctx), setupTokenTypes(ctx)]
+    return [setupDesignTokens(ctx)]
   }
 
   return [

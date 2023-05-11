@@ -64,7 +64,7 @@ describe('atomic / with basic style object', () => {
               width: 50px
           }
           .sm\\\\:w_60px {
-              @media screen and (min-width: 30em) {
+              @media screen and (min-width: 640px) {
                   width: 60px
               }
           }
@@ -79,7 +79,7 @@ describe('atomic / with basic style object', () => {
               width: 50px
           }
           .md\\\\:w_60px {
-              @media screen and (min-width: 48em) {
+              @media screen and (min-width: 768px) {
                   width: 60px
               }
           }
@@ -98,7 +98,7 @@ describe('atomic / with basic style object', () => {
       "@layer utilities {
           .ltr\\\\:sm\\\\:ml_4 {
               [dir=ltr] & {
-                  @media screen and (min-width: 30em) {
+                  @media screen and (min-width: 640px) {
                       margin-left: var(--spacing-4)
                   }
               }
@@ -123,17 +123,17 @@ describe('atomic / with basic style object', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           .light\\\\:text_red {
-              [data-theme=light] & {
+               &.light, .light & {
                   color: red
               }
           }
           .dark\\\\:text_green {
-              [data-theme=dark] & {
+               &.dark, .dark & {
                   color: green
               }
           }
           .dark\\\\:opacity_slate400 {
-              [data-theme=dark] & {
+               &.dark, .dark & {
                   opacity: slate400
               }
           }
@@ -152,20 +152,20 @@ describe('atomic / with basic style object', () => {
       "@layer utilities {
           .sm\\\\:rtl\\\\:t_20px {
               [dir=rtl] & {
-                  @media screen and (min-width: 30em) {
+                  @media screen and (min-width: 640px) {
                       top: 20px
                   }
               }
           }
           .sm\\\\:hover\\\\:t_50px {
-              &:hover {
-                  @media screen and (min-width: 30em) {
+              &:where(:hover, [data-hover]) {
+                  @media screen and (min-width: 640px) {
                       top: 50px
                   }
               }
           }
           .lg\\\\:t_120px {
-              @media screen and (min-width: 62em) {
+              @media screen and (min-width: 1024px) {
                   top: 120px
               }
           }
@@ -186,7 +186,7 @@ describe('atomic / with basic style object', () => {
               left: 20px
           }
           .md\\\\:l_40px {
-              @media screen and (min-width: 48em) {
+              @media screen and (min-width: 768px) {
                   left: 40px
               }
           }
@@ -216,21 +216,21 @@ describe('atomic / with nesting scope', () => {
           }
           .\\\\[\\\\&_\\\\>_p\\\\]\\\\:md\\\\:l_40px {
               & > p {
-                  @media screen and (min-width: 48em) {
+                  @media screen and (min-width: 768px) {
                       left: 40px
                   }
               }
           }
           .\\\\[\\\\&_\\\\>_p\\\\]\\\\:light\\\\:bg_red400 {
               & > p {
-                  [data-theme=light] & {
+                   &.light, .light & {
                       background: red400
                   }
               }
           }
           .\\\\[\\\\&_\\\\>_p\\\\]\\\\:dark\\\\:bg_green500 {
               & > p {
-                  [data-theme=dark] & {
+                   &.dark, .dark & {
                       background: green500
                   }
               }
@@ -244,10 +244,10 @@ describe('atomic / with nesting scope', () => {
           }
           .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif {
               & > p {
-                  &:hover {
+                  &:where(:hover, [data-hover]) {
                       [dir=ltr] & {
-                          [data-theme=dark] & {
-                              @media screen and (min-width: 30em) {
+                           &.dark, .dark & {
+                              @media screen and (min-width: 640px) {
                                   font: serif
                               }
                           }
@@ -278,14 +278,14 @@ describe('atomic / with nesting scope', () => {
           }
           .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:sm\\\\:fs_14px {
               input:hover & {
-                  @media screen and (min-width: 30em) {
+                  @media screen and (min-width: 640px) {
                       font-size: 14px
                   }
               }
           }
           .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:lg\\\\:fs_18px {
               input:hover & {
-                  @media screen and (min-width: 62em) {
+                  @media screen and (min-width: 1024px) {
                       font-size: 18px
                   }
               }
@@ -319,7 +319,7 @@ describe('atomic / with nesting scope', () => {
           }
           .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:sm\\\\:text_left {
               &::placeholder {
-                  @media screen and (min-width: 30em) {
+                  @media screen and (min-width: 640px) {
                       text-align: left
                   }
               }
@@ -347,7 +347,7 @@ describe('atomic / with nesting scope', () => {
           }
           .\\\\[\\\\@media_base\\\\]\\\\:sm\\\\:text_left {
               @media base {
-                  @media screen and (min-width: 30em) {
+                  @media screen and (min-width: 640px) {
                       text-align: left
                   }
               }
@@ -368,8 +368,8 @@ describe('atomic / with grouped conditions styles', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           .hover\\\\:bg_pink\\\\.400 {
-              &:hover {
-                  background: pink.400
+              &:where(:hover, [data-hover]) {
+                  background: var(--colors-pink-400)
               }
           }
       }"
@@ -386,17 +386,17 @@ describe('atomic / with grouped conditions styles', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           .hover\\\\:sm\\\\:dark\\\\:bg_red\\\\.300 {
-              &:hover {
-                  [data-theme=dark] & {
-                      @media screen and (min-width: 30em) {
+              &:where(:hover, [data-hover]) {
+                   &.dark, .dark & {
+                      @media screen and (min-width: 640px) {
                           background: var(--colors-red-300)
                       }
                   }
               }
           }
           .hover\\\\:text_pink\\\\.400 {
-              &:hover {
-                  color: pink.400
+              &:where(:hover, [data-hover]) {
+                  color: var(--colors-pink-400)
               }
           }
       }"
@@ -413,9 +413,9 @@ describe('atomic / with grouped conditions styles', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           .hover\\\\:disabled\\\\:sm\\\\:bg_red\\\\.300 {
-              &:hover {
-                  &:disabled {
-                      @media screen and (min-width: 30em) {
+              &:where(:hover, [data-hover]) {
+                  &:where(:disabled, [disabled], [data-disabled]) {
+                      @media screen and (min-width: 640px) {
                           background: var(--colors-red-300)
                       }
                   }
@@ -449,7 +449,7 @@ describe('atomic / with grouped conditions styles', () => {
           .\\\\[\\\\@media_base\\\\]\\\\:\\\\[\\\\&\\\\:hover\\\\]\\\\:sm\\\\:text_left {
               &:hover {
                   @media base {
-                      @media screen and (min-width: 30em) {
+                      @media screen and (min-width: 640px) {
                           text-align: left
                       }
                   }
@@ -564,7 +564,7 @@ describe('atomic / with direct nesting', () => {
           }
           .\\\\[\\\\:focus_\\\\>_\\\\&\\\\]\\\\:text_white {
               :focus > & {
-                  color: white
+                  color: var(--colors-white)
               }
           }
           .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:bg_green {

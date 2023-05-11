@@ -22,7 +22,7 @@ describe('compositions', () => {
         "layer": "compositions",
         "styles": {
           "&": {
-            "@media screen and (min-width: 62em)": {
+            "@media screen and (min-width: 1024px)": {
               "fontSize": "2rem",
             },
           },
@@ -58,7 +58,7 @@ describe('compositions', () => {
           @layer compositions {
               .textStyle_headline\\\\.h2 {
                   font-size: 1.5rem;
-                  @media screen and (min-width: 62em) {
+                  @media screen and (min-width: 1024px) {
                       & {
                           font-size: 2rem
                       }

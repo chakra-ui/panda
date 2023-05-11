@@ -39,15 +39,15 @@ describe('Global css', () => {
           width: 40px;
           }
 
-        .btn:focus {
+        .btn:where(:focus, [data-focus]) {
           color: var(--colors-red-200);
           }
 
-        .btn:focus:hover {
+        .btn:where(:focus, [data-focus]):where(:hover, [data-hover]) {
           background-color: var(--colors-red-400);
           }
 
-        .btn:hover > * ~ * {
+        .btn:hover > :not([hidden]) ~ :not([hidden]) {
           border-left-width: 40px;
           border-right-width: 0px;
           }
@@ -56,13 +56,13 @@ describe('Global css', () => {
           color: pink;
           }
 
-        @media screen and (min-width: 30em) {
+        @media screen and (min-width: 640px) {
           .btn {
             font-size: 12px;
               }
           }
 
-        @media screen and (min-width: 62em) {
+        @media screen and (min-width: 1024px) {
           .btn {
             width: 90px;
               }
@@ -134,7 +134,7 @@ describe('Global css', () => {
           width: 100%;
           }
 
-        html.dragging-ew:hover {
+        html.dragging-ew:where(:hover, [data-hover]) {
           color: red;
           }
       }"
@@ -215,7 +215,7 @@ describe('Global css', () => {
           }
 
         body > p ~ body > p, body > ul ~ body > ul {
-          margin-top: 10px;
+          margin-top: var(--spacing-10);
           }
       }"
     `)

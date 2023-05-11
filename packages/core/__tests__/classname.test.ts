@@ -75,6 +75,6 @@ describe('generate classnames', () => {
           fontSize: '40px',
         },
       }),
-    ).toMatchInlineSnapshot('"[&_span]:fs_20px [.bold_&]:fw_bold sm:fs_50px [@media_print]:fs_40px"')
+    ).toMatchInlineSnapshot('"[&_span]:fs_20px [.bold_&]:font_bold sm:fs_50px [@media_print]:fs_40px"')
   })
 })
