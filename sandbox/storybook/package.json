@@ -18,7 +18,7 @@
     "@storybook/addon-essentials": "^7.0.9",
     "@storybook/addon-interactions": "^7.0.9",
     "@storybook/addon-links": "^7.0.9",
-    "@storybook/addon-postcss": "^2.0.0",
+    "@storybook/addon-styling": "^1.0.6",
     "@storybook/react": "^7.0.9",
     "@storybook/react-webpack5": "^7.0.9",
     "babel-loader": "^9.1.2",
