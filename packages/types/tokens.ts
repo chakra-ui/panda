@@ -1,4 +1,4 @@
-import type { Recursive } from './shared'
+import type { Recursive } from './src/shared'
 
 export type TokenStatus = 'deprecated' | 'experimental' | 'new'
 
