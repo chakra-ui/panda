@@ -15,7 +15,8 @@
     "access": "public"
   },
   "files": [
-    "dist"
+    "dist",
+    "tokens.d.ts"
   ],
   "devDependencies": {
     "chokidar-cli": "^3.0.0",
