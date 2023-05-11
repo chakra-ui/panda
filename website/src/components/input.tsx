@@ -48,8 +48,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               color: 'gray.500'
             },
             _moreContrast: {
-              border: '1px solid',
-              borderColor: 'currentColor'
+              border: '1px solid currentColor'
             }
           })
         )}

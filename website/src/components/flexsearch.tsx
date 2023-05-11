@@ -213,8 +213,7 @@ export function Flexsearch({
                   mb: 2,
                   mt: 6,
                   userSelect: 'none',
-                  borderBottom: '1px solid',
-                  borderColor: 'rgb(black / 10%)', // black/10
+                  borderBottom: '1px solid rgb(black / 10%)', // // black/10
                   px: '2.5',
                   pb: '1.5',
                   textStyle: 'xs',

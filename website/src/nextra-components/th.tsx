@@ -6,8 +6,7 @@ export const Th = ({ className = '', ...props }: ComponentProps<'th'>) => (
     className={cx(
       css({
         m: '0',
-        border: '1px solid',
-        borderColor: 'gray.300',
+        border: '1px solid token(colors.gray.300)',
         px: '4',
         py: '2',
         fontWeight: 'semibold',

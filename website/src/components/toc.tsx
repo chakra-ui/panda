@@ -176,8 +176,7 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
                 gap: 2,
                 pb: 8,
                 _moreContrast: {
-                  borderTop: '1px solid',
-                  borderColor: 'neutral.400',
+                  border: '1px solid token(colors.neutral.400)',
                   shadow: 'none',
                   _dark: {
                     borderColor: 'neutral.400'

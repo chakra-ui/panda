@@ -14,8 +14,7 @@ export const Button = ({
           transitionProperty: 'all',
           opacity: '0.5',
           bg: 'hsl(var(--nextra-primary-hue) 100% var(--color-primary-700-hue) / 0.05)', // primary-700/5
-          border: '1px solid',
-          borderColor: 'black',
+          border: '1px solid black',
           color: 'gray.600',
           _hover: {
             color: 'gray.900'

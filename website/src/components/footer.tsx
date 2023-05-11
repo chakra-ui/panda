@@ -43,7 +43,7 @@ export function Footer({ menu }: { menu?: boolean }): ReactElement {
             py: 12,
             color: 'gray.600',
             _dark: { color: 'gray.400' },
-            md: { justifyContent: 'start' }
+            md: { justifyContent: 'flex-start' }
           }),
           css({
             pl: 'max(env(safe-area-inset-left),1.5rem)',
