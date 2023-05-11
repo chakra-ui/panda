@@ -46,7 +46,7 @@ const Button = () => {
 }
 ```
 
-If you have a commun use-case or want type-safety and auto-completion for your conditions, you should add it to the
+If you have a common use-case or want type-safety and auto-completion for your conditions, you should add it to the
 config's conditions. Otherwise you can [Arbitrary selectors](#arbitrary-selectors)
 
 ## Arbitrary values
@@ -142,7 +142,7 @@ import { token } from '../styled-system/tokens'
 
 const Component = (props) => {
   return (
-    <panda.div style={{ ['--dynamic-color']: token('colors.' + props.color) }} color="var(--dynamic-color)">
+    <panda.div style={{ '--dynamic-color': token('colors.' + props.color) }} color="var(--dynamic-color)">
       Dynamic color with runtime value
     </panda.div>
   )
@@ -345,7 +345,7 @@ All of this with complete type-safety and without having to make drastic changes
 <panda.div color="#121qsd" />
 
 // arbitrary selector
-<panda.div css={{ ["&[data-thing] > span": { color: "red.100" } }} />
+<panda.div css={{ "&[data-thing] > span": { color: "red.100" } }} />
 
 // runtime value (with config.`staticCss`)
 const Button = () => {

@@ -48,6 +48,8 @@ module.exports = {
 
 ## Configure the content
 
+Add your panda config to your `panda.config.js` file, or wherver panda is configured in your project.
+
 ```js {3}
 import { defineConfig } from '@pandacss/dev'
 
@@ -62,6 +64,8 @@ export default defineConfig({
 ```
 
 ## Configure the entry CSS with layers
+
+Add this code to an `index.css` file imported in the root component of your project.
 
 ```css
 @layer reset, base, tokens, recipes, utilities;

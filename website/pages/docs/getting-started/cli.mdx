@@ -32,6 +32,8 @@ The simplest and fastest way to use Panda is with the Panda CLI tool.
 
 ## Configure the content
 
+Add your panda config to your `panda.config.js` file, or wherver panda is configured in your project.
+
 ```js {3}
 import { defineConfig } from '@pandacss/dev'
 
@@ -46,6 +48,8 @@ export default defineConfig({
 ```
 
 ## Configure the entry CSS with layers
+
+Add this code to an `index.css` file imported in the root component of your project.
 
 ```css
 @layer reset, base, tokens, recipes, utilities;
@@ -103,9 +107,9 @@ Panda comes with built-in commands to help you develop and debug your app.
 
 | Command                                            | Description                                                                                                                                                                                                                                                   |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`studio`](docs/references/cli.mdx#panda-studio)   | Panda provide built-in documentation for tokens defined in your project. This will be useful for your team to communicate design decisions in your own way, and share information effectively. <br /> More on that [here](/docs/tokens/02-visualization.mdx). |
-| [`analyze`](docs/references/cli.mdx#panda-analyze) | Analyze design token usage in your project, this will be automatically used by the `studio` command and available in the studio's [Token Analyzer page](/docs/tokens/02-visualization.mdx#token-analyzer)                                                     |
-| [`debug`](docs/references/cli.mdx#panda-debug)     | Debug design token extraction & css generated from files                                                                                                                                                                                                      |
+| [`studio`](/docs/references/cli.mdx#panda-studio)   | Panda provide built-in documentation for tokens defined in your project. This will be useful for your team to communicate design decisions in your own way, and share information effectively. <br /> More on that [here](/docs/tokens/02-visualization.mdx). |
+| [`analyze`](/docs/references/cli.mdx#panda-analyze) | Analyze design token usage in your project, this will be automatically used by the `studio` command and available in the studio's [Token Analyzer page](/docs/tokens/02-visualization.mdx#token-analyzer)                                                     |
+| [`debug`](/docs/references/cli.mdx#panda-debug)     | Debug design token extraction & css generated from files                                                                                                                                                                                                      |
 
 ### Debugging
 
@@ -157,7 +161,7 @@ This would generate a `debug` folder in your `config.outdir` folder with the fol
   </FileTree.Folder>
 </FileTree>
 
-Any `xxx.ast.json` file will look like:
+`*.ast.json` files will look like:
 
 ```json
 [
