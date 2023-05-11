@@ -1,7 +1,7 @@
 import type { SystemStyleObject, ConditionalValue } from '../types'
 import type { PropertyValue } from '../types/prop-type'
 import type { Properties } from '../types/csstype'
-import type { Tokens } from '../types/tokens'
+import type { Tokens } from '../tokens/tokens'
 
 export type AbsoluteCenterProperties = {
    axis?: ConditionalValue<"x" | "y" | "both">
