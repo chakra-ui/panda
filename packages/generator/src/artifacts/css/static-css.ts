@@ -11,8 +11,7 @@ export const generateStaticCss = (ctx: Context) => {
   const results = fn({
     breakpoints: Object.keys(theme.breakpoints ?? {}),
     getPropertyKeys: utility.getPropertyKeys,
-    // @ts-ignore
-    getRecipeKeys: (recipe) => recipes.details[recipe],
+    getRecipeKeys: (recipe) => recipes.details.find((detail) => detail.config.name === recipe)?.variantKeyMap ?? {},
   })
 
   results.css.forEach((css) => {
