@@ -10,6 +10,7 @@ export const generateTypesEntry = () => ({
 
     declare module '@pandacss/dev' {
       export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): AnyRecipeConfig
+      export function defineStyles(definition: SystemStyleObject): SystemStyleObject
       export function defineGlobalStyles(definition: GlobalStyleObject): GlobalStyleObject
       export function defineTextStyles(definition: CompositionStyles['textStyles']): CompositionStyles['textStyles']
       export function defineLayerStyles(definition: CompositionStyles['layerStyles']): CompositionStyles['layerStyles']
