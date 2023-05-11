@@ -1,6 +1,6 @@
 import type { LiteralUnion } from './shared'
 import type { CssProperty, NestedCssProperties } from './system-types'
-import type { TokenCategory } from './tokens'
+import type { TokenCategory } from '../tokens'
 
 type Getter = (path: string) => any
 
