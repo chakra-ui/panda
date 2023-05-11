@@ -9,7 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@ark-ui/react": "0.2.0",
+    "@ark-ui/react": "0.3.0",
     "@pandacss/dev": "workspace:*",
     "autoprefixer": "^10.4.14",
     "flexsearch": "^0.7.31",
