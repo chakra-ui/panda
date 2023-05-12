@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import { mergeConfigs } from '../src/merge-config'
+import { getResolvedConfig, mergeConfigs } from '../src/merge-config'
+import type { Config } from '@pandacss/types'
 
 describe('mergeConfigs / theme', () => {
   test('should merge configs', () => {
@@ -12,7 +13,7 @@ describe('mergeConfigs / theme', () => {
             },
           },
         },
-      },
+      } as Config,
       {
         theme: {
           extend: {
@@ -21,7 +22,7 @@ describe('mergeConfigs / theme', () => {
             },
           },
         },
-      },
+      } as Config,
     ])
 
     expect(result).toMatchObject({
@@ -43,7 +44,7 @@ describe('mergeConfigs / theme', () => {
           },
         },
       },
-    }
+    } as Config
 
     const defaultConfig = {
       theme: {
@@ -51,7 +52,7 @@ describe('mergeConfigs / theme', () => {
           red: 'override',
         },
       },
-    }
+    } as Config
 
     const result = mergeConfigs([userConfig, defaultConfig])
 
@@ -77,7 +78,7 @@ describe('mergeConfigs / theme', () => {
           },
         },
       },
-    }
+    } as Config
 
     const defaultConfig = {
       theme: {
@@ -90,7 +91,7 @@ describe('mergeConfigs / theme', () => {
           },
         },
       },
-    }
+    } as Config
 
     const result = mergeConfigs([userConfig, defaultConfig])
 
@@ -114,7 +115,7 @@ describe('mergeConfigs / theme', () => {
           },
         },
       },
-    }
+    } as Config
 
     const defaultConfig = {
       theme: {
@@ -122,7 +123,7 @@ describe('mergeConfigs / theme', () => {
           sans: 'Lato, sans-serif',
         },
       },
-    }
+    } as Config
 
     const result = mergeConfigs([userConfig, defaultConfig])
 
@@ -177,12 +178,19 @@ describe('mergeConfigs / recipes', () => {
   test('should merge utilities', () => {
     const userConfig = {
       theme: {
-        recipes: {
-          extend: {
+        extend: {
+          recipes: {
             button: {
               variants: {
                 size: {
                   large: { fontSize: 'lg' },
+                },
+              },
+            },
+            checkbox: {
+              variants: {
+                shape: {
+                  circle: { rounded: 'full' },
                 },
               },
             },
@@ -205,6 +213,15 @@ describe('mergeConfigs / recipes', () => {
             },
           },
         },
+        extend: {
+          recipes: {
+            checkbox: {
+              variants: {
+                default: {},
+              },
+            },
+          },
+        },
       },
     }
 
@@ -212,17 +229,174 @@ describe('mergeConfigs / recipes', () => {
 
     expect(result.theme.recipes).toMatchInlineSnapshot(`
       {
-        "extend": {
-          "button": {
-            "variants": {
-              "size": {
-                "large": {
-                  "fontSize": "lg",
+        "button": {
+          "name": "button",
+          "variants": {
+            "size": {
+              "large": {
+                "fontSize": "lg",
+              },
+              "small": {
+                "fontSize": "sm",
+              },
+            },
+          },
+        },
+        "checkbox": {
+          "variants": {
+            "default": {},
+            "shape": {
+              "circle": {
+                "rounded": "full",
+              },
+            },
+          },
+        },
+      }
+    `)
+  })
+
+  test('Recursively merge all presets into a single config', async () => {
+    const defaultConfig = {
+      theme: {
+        recipes: {
+          button: {
+            name: 'button',
+            variants: {
+              size: {
+                small: {
+                  fontSize: 'sm',
                 },
               },
             },
           },
         },
+        extend: {
+          recipes: {
+            checkbox: {
+              variants: {
+                default: {},
+              },
+            },
+          },
+        },
+      },
+    } as Config
+
+    const someLibConfig = {
+      theme: {
+        extend: {
+          recipes: {
+            button: {
+              variants: {
+                kind: {
+                  error: { backgroundColor: 'red' },
+                },
+              },
+            },
+            table: {
+              variants: {
+                style: {
+                  striped: { backgroundColor: 'gray.300' },
+                },
+              },
+            },
+          },
+        },
+      },
+    } as Config
+
+    const anotherLibConfig = {
+      theme: {
+        extend: {
+          recipes: {
+            button: {
+              variants: {
+                kind: {
+                  info: { backgroundColor: 'blue.300' },
+                },
+              },
+            },
+            menu: {
+              variants: {
+                size: {
+                  lg: { p: 0 },
+                },
+              },
+            },
+          },
+        },
+      },
+    } as Config
+
+    const userConfig = {
+      presets: [defaultConfig, someLibConfig, anotherLibConfig],
+      theme: {
+        extend: {
+          recipes: {
+            button: {
+              variants: {
+                size: {
+                  large: { fontSize: 'lg' },
+                },
+              },
+            },
+            checkbox: {
+              variants: {
+                shape: {
+                  circle: { rounded: 'full' },
+                },
+              },
+            },
+          },
+        },
+      },
+    } as Config
+
+    const result = await getResolvedConfig(userConfig, 'src')
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "conditions": {},
+        "globalCss": {},
+        "patterns": {},
+        "theme": {
+          "recipes": {
+            "button": {
+              "variants": {
+                "kind": {
+                  "info": {
+                    "backgroundColor": "blue.300",
+                  },
+                },
+                "size": {
+                  "large": {
+                    "fontSize": "lg",
+                  },
+                },
+              },
+            },
+            "checkbox": {
+              "variants": {
+                "shape": {
+                  "circle": {
+                    "rounded": "full",
+                  },
+                },
+              },
+            },
+            "menu": {
+              "variants": {
+                "size": {
+                  "lg": {
+                    "p": 0,
+                  },
+                },
+              },
+            },
+          },
+        },
+        "utilities": {},
       }
     `)
   })
