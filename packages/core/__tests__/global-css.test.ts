@@ -220,4 +220,54 @@ describe('Global css', () => {
       }"
     `)
   })
+
+  test('with at-rule', () => {
+    const sheet = globalCss({
+      '@media (min-width: 640px)': {
+        'body, :root': {
+          color: 'red.200',
+        },
+      },
+    })
+    expect(sheet).toMatchInlineSnapshot(`
+      "@layer base {
+        @media (min-width: 640px) {
+          body, :root {
+            color: var(--colors-red-200)
+              }
+          }
+      }"
+    `)
+  })
+
+  test('with nested at-rule', () => {
+    const sheet = globalCss({
+      '@media (min-width: 640px)': {
+        '@supports (display: grid) and (display: contents)': {
+          body: {
+            color: 'red.200',
+            '& a': {
+              color: 'red.400',
+            },
+          },
+        },
+      },
+    })
+
+    expect(sheet).toMatchInlineSnapshot(`
+      "@layer base {
+        @media (min-width: 640px) {
+          @supports (display: grid) and (display: contents) {
+            body {
+              color: var(--colors-red-200)
+                  }
+
+            body a {
+              color: var(--colors-red-400)
+                  }
+              }
+          }
+      }"
+    `)
+  })
 })

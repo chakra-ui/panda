@@ -25,14 +25,24 @@ export function serializeStyle(styleObj: Dict, context: SerializeContext) {
     const hasConditions = conds.length > 0
 
     let { styles } = utility.transform(prop, withoutImportant(value))
-
     const cssResult = toCss(styles, { important })
 
     if (hasConditions) {
+      /**
+       * Conditions can sometimes include an at-rule and then a selector.
+       * In this case, we need to split the conditions into two parts.
+       * The first part is the at-rule, and the second part is the selector.
+       *
+       * !!NOTE: The selector segment can only contain one selector.
+       */
+      const segments = conditions.segment(conds)
+
       rule.nodes = cssResult.root.nodes
-      rule.selector = `&`
+      rule.selector = segments.selector.length > 0 ? segments.selector[0] : '&'
+
       rule.update()
-      rule.applyConditions(conds)
+      rule.applyConditions(segments.condition)
+
       styles = cssToJs(rule.toString())
     } else {
       styles = cssToJs(cssResult.css)

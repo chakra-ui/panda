@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import { withoutSpace } from '@pandacss/shared'
+import { isBaseCondition, withoutSpace } from '@pandacss/shared'
 import type { ConditionType, Dict, RawCondition } from '@pandacss/types'
 import { Breakpoints } from './breakpoints'
 import { ConditionalRule } from './conditional-rule'
@@ -53,8 +53,24 @@ export class Conditions {
       const bIsCondition = this.isCondition(b)
       if (aIsCondition && !bIsCondition) return 1
       if (!aIsCondition && bIsCondition) return -1
+      if (!aIsCondition && !bIsCondition) return -1
       return 0
     })
+  }
+
+  segment = (paths: string[]): { condition: string[]; selector: string[] } => {
+    const condition: string[] = []
+    const selector: string[] = []
+
+    for (const path of paths) {
+      if (this.isCondition(path)) {
+        condition.push(path)
+      } else {
+        selector.push(path)
+      }
+    }
+
+    return { condition, selector }
   }
 
   has = (key: string) => {
@@ -62,7 +78,7 @@ export class Conditions {
   }
 
   isCondition = (key: string) => {
-    return this.has(key) || !!this.getRaw(key)
+    return this.has(key) || !!this.getRaw(key) || isBaseCondition(key)
   }
 
   isEmpty = () => {
