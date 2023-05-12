@@ -63,9 +63,11 @@ type HTMLProps = {
   htmlWidth?: string | number
   htmlHeight?: string | number
   htmlTranslate?: 'yes' | 'no' | undefined
+  htmlContent?: string
 }
 
-type WithHTMLProps<T> = Omit<T, 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size'> & HTMLProps
+type WithHTMLProps<T> = Omit<T, 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size' | 'content'> &
+  HTMLProps
 
 export type JsxHTMLProps<T extends Record<string, any>, P extends Record<string, any> = {}> = Assign<
   WithHTMLProps<T>,
