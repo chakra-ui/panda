@@ -6,8 +6,8 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "scripts": {
     "prepare": "cp node_modules/csstype/index.d.ts src/csstype.d.ts",
-    "build": "tsx scripts/build.ts",
-    "build-fast": "tsx scripts/build.ts",
+    "build": "tsup index.ts --clean --dts --dts-only",
+    "build-fast": "tsup index.ts --dts --dts-only",
     "dev": "chokidar -c 'pnpm build' src --initial"
   },
   "sideEffects": false,
@@ -15,12 +15,12 @@
     "access": "public"
   },
   "files": [
-    "dist",
-    "tokens.d.ts"
+    "dist"
   ],
   "devDependencies": {
     "chokidar-cli": "^3.0.0",
-    "csstype": "3.1.2"
+    "csstype": "3.1.2",
+    "tsup": "6.7.0"
   },
   "dependencies": {
     "@pandacss/extractor": "workspace:*"
