@@ -14,6 +14,8 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
 
   if (!options.dry && options.outdir) {
     await mkdir(options.outdir, { recursive: true })
+    logger.info('cli', `Writing ${colors.bold(`${options.outdir}/config.json`)}`)
+    await writeFile(`${options.outdir}/config.json`, JSON.stringify(ctx.config, null, 2))
   }
 
   const filesWithCss = []
