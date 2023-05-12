@@ -360,11 +360,16 @@ describe('mergeConfigs / recipes', () => {
         "conditions": {},
         "globalCss": {},
         "patterns": {},
+        "presets": [],
         "theme": {
           "recipes": {
             "button": {
+              "name": "button",
               "variants": {
                 "kind": {
+                  "error": {
+                    "backgroundColor": "red",
+                  },
                   "info": {
                     "backgroundColor": "blue.300",
                   },
@@ -373,11 +378,15 @@ describe('mergeConfigs / recipes', () => {
                   "large": {
                     "fontSize": "lg",
                   },
+                  "small": {
+                    "fontSize": "sm",
+                  },
                 },
               },
             },
             "checkbox": {
               "variants": {
+                "default": {},
                 "shape": {
                   "circle": {
                     "rounded": "full",
@@ -390,6 +399,15 @@ describe('mergeConfigs / recipes', () => {
                 "size": {
                   "lg": {
                     "p": 0,
+                  },
+                },
+              },
+            },
+            "table": {
+              "variants": {
+                "style": {
+                  "striped": {
+                    "backgroundColor": "gray.300",
                   },
                 },
               },
