@@ -5,7 +5,7 @@ import type { AnyRecipeConfig, RecipeConfig } from './recipe'
 import type { Extendable, RequiredBy, UnwrapExtend } from './shared'
 import type { StaticCssOptions } from './static-css'
 import type { CssKeyframes, GlobalStyleObject } from './system-types'
-import type { SemanticTokens, Tokens } from '../tokens'
+import type { SemanticTokens, Tokens } from './tokens'
 import type { UtilityConfig } from './utility'
 
 export type Preset = Pick<Config, 'utilities' | 'theme' | 'patterns' | 'presets' | 'conditions' | 'globalCss'>
