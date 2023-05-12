@@ -16,7 +16,7 @@
   "dependencies": {
     "@ark-ui/react": "0.3.0",
     "@monaco-editor/react": "4.5.1",
-    "@next/font": "13.4.1",
+    "@next/font": "13.4.2",
     "@pandacss/generator": "workspace:*",
     "@pandacss/parser": "workspace:*",
     "@pandacss/presets": "workspace:*",
@@ -28,7 +28,7 @@
     "merge-anything": "^5.1.6",
     "monaco-editor": "0.38.0",
     "nanoid": "4.0.2",
-    "next": "13.4.1",
+    "next": "13.4.2",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "prettier": "2.8.8",
@@ -48,6 +48,6 @@
     "@pandacss/types": "workspace:*",
     "@types/prettier": "2.7.2",
     "eslint": "8.40.0",
-    "eslint-config-next": "13.4.1"
+    "eslint-config-next": "13.4.2"
   }
 }
