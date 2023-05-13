@@ -5,6 +5,7 @@ import {
   emitArtifacts,
   extractCss,
   generate,
+  generateArtifacts,
   loadConfigAndCreateContext,
   setupConfig,
   setupGitIgnore,
@@ -62,14 +63,20 @@ export async function main() {
     .command('codegen', 'Generate the panda system')
     .option('--silent', "Don't print any logs")
     .option('--clean', 'Clean the output directory before generating')
+    .option('-w, --watch', 'Watch files and rebuild')
+    .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .action(async (flags) => {
       const { silent, clean } = flags
 
       if (silent) logger.level = 'silent'
 
+      if (flags.watch) {
+        await generateArtifacts(flags)
+        return
+      }
+
       const ctx = await loadConfigAndCreateContext({ config: { clean } })
       const msg = await emitArtifacts(ctx)
-
       logger.log(msg)
     })
 
