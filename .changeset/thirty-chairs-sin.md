@@ -15,4 +15,4 @@
 '@pandacss/types': patch
 ---
 
-Initial release.
+Initial release of all packages
