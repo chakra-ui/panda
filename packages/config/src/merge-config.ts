@@ -1,10 +1,12 @@
 import { mergeAndConcat } from 'merge-anything'
 import { bundle } from './bundle'
 import { assign, mergeWith } from './utils'
+import type { Config } from '@pandacss/types'
 
 type Extendable<T> = T & { extend?: T }
 type Dict = Record<string, any>
 type ExtendableRecord = Extendable<Dict>
+type ExtendableConfig = Extendable<Config>
 
 /**
  * Collect all `extend` properties into an array (to avoid mutation)
@@ -48,7 +50,7 @@ function mergeExtensions(records: ExtendableRecord[]) {
 /**
  * Merge all configs into a single config
  */
-export function mergeConfigs(configs: ExtendableRecord[]) {
+export function mergeConfigs(configs: ExtendableConfig[]) {
   return assign(
     {
       conditions: mergeExtensions(configs.map((config) => config.conditions ?? {})),
@@ -64,24 +66,22 @@ export function mergeConfigs(configs: ExtendableRecord[]) {
 /**
  * Recursively merge all presets into a single config
  */
-export async function getResolvedConfig(config: ExtendableRecord, cwd: string) {
+export async function getResolvedConfig(config: ExtendableConfig, cwd: string) {
   const presets = config.presets ?? []
 
-  const configs: any[] = await Promise.all(
-    presets
-      .slice()
-      .reverse()
-      .map(async (preset: any) => {
-        if (typeof preset === 'string') {
-          const presetModule = await bundle(preset, cwd)
-          return getResolvedConfig(presetModule.config, cwd)
-        } else {
-          return getResolvedConfig(preset, cwd)
-        }
-      }),
-  )
+  const configs: ExtendableConfig[] = [config]
+  while (presets.length > 0) {
+    const preset = presets.shift()!
 
-  delete config.presets
+    if (typeof preset === 'string') {
+      const presetModule = await bundle(preset, cwd)
+      configs.push(presetModule.config)
+      presets.unshift(...(presetModule.config.presets ?? []))
+    } else {
+      configs.push(preset)
+      presets.unshift(...(preset.presets ?? []))
+    }
+  }
 
-  return mergeConfigs([config, ...configs])
+  return mergeConfigs(configs)
 }
