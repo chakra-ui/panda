@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/parser-vue",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "The Vue.js static parser for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
