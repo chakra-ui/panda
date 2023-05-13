@@ -10,6 +10,7 @@ import { findConfig, loadConfigAndCreateContext } from './config'
 import type { PandaContext } from './create-context'
 import { emitArtifacts, extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
+import getModuleDependencies from './get-module-deps'
 
 type CachedData = {
   fileCssMap: Map<string, string>
@@ -24,7 +25,7 @@ function getConfigHash() {
   if (!file) {
     throw new ConfigNotFoundError()
   }
-  return toHash(readFileSync(file, 'utf-8'))
+  return { file, hash: toHash(readFileSync(file, 'utf-8')) }
 }
 
 let setupCount = 0
@@ -44,6 +45,8 @@ export class Builder {
 
   configChanged = true
 
+  configDepsModified: Map<string, number> | undefined
+
   writeFile(file: string, css: string) {
     const oldCss = this.fileCssMap?.get(file) ?? ''
     const newCss = mergeCss(oldCss, css)
@@ -51,8 +54,38 @@ export class Builder {
   }
 
   async setup() {
-    const configHash = getConfigHash()
-    const cachedContext = contextCache.get(configHash)
+    const { file: userConfigPath, hash } = getConfigHash()
+    const newDeps = getModuleDependencies(userConfigPath)
+
+    const prevModified = this.configDepsModified
+
+    let modified = false
+    const newModified = new Map()
+
+    for (const file of newDeps) {
+      const time = statSync(file).mtimeMs
+      newModified.set(file, time)
+      if (!prevModified || !prevModified.has(file) || time > prevModified.get(file)!) {
+        modified = true
+      }
+    }
+    this.configDepsModified = newModified
+
+    // It has changed (based on timestamps)
+    if (modified) {
+      for (const file of newDeps) {
+        delete require.cache[file]
+      }
+
+      if (setupCount > 0) {
+        logger.info('postcss', 'Config changed, reloading')
+      }
+
+      await this.loadConfig(hash)
+      return
+    }
+
+    const cachedContext = contextCache.get(hash)
 
     if (cachedContext) {
       cachedContext.project.reloadSourceFiles()
@@ -62,23 +95,25 @@ export class Builder {
       this.fileModifiedMap = builderCache.get(cachedContext)!.fileModifiedMap
       //
     } else {
-      //
-
-      this.context = await loadConfigAndCreateContext()
-
-      // don't emit artifacts on first setup
-      if (setupCount > 0) {
-        emitArtifacts(this.context) //no need to await this
-      }
-
-      this.fileCssMap = new Map()
-      this.fileModifiedMap = new Map()
-
-      contextCache.set(configHash, this.context)
-      builderCache.set(this.context, { fileCssMap: this.fileCssMap, fileModifiedMap: this.fileModifiedMap })
+      await this.loadConfig(hash)
     }
 
     setupCount++
+  }
+
+  async loadConfig(hash: string) {
+    this.context = await loadConfigAndCreateContext()
+
+    // don't emit artifacts on first setup
+    if (setupCount > 0) {
+      emitArtifacts(this.context) //no need to await this
+    }
+
+    this.fileCssMap = new Map()
+    this.fileModifiedMap = new Map()
+
+    contextCache.set(hash, this.context)
+    builderCache.set(this.context, { fileCssMap: this.fileCssMap, fileModifiedMap: this.fileModifiedMap })
   }
 
   ensure(): PandaContext {
