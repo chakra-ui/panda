@@ -2,15 +2,16 @@ import { discardDuplicate, mergeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { toHash } from '@pandacss/shared'
+import { bundleConfigFile, resolveConfigFile } from '@pandacss/config'
 import { existsSync, readFileSync } from 'fs'
 import { statSync } from 'fs-extra'
 import { resolve } from 'path'
 import type { Message, Root } from 'postcss'
-import { findConfig, loadConfigAndCreateContext } from './config'
-import type { PandaContext } from './create-context'
+import { findConfig } from './config'
+import { createContext, type PandaContext } from './create-context'
 import { emitArtifacts, extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
-import getModuleDependencies from './get-module-deps'
+import type { LoadConfigResult } from '@pandacss/types'
 
 type CachedData = {
   fileCssMap: Map<string, string>
@@ -29,6 +30,7 @@ function getConfigHash() {
 }
 
 let setupCount = 0
+const cwd = process.cwd()
 
 export class Builder {
   /**
@@ -55,7 +57,10 @@ export class Builder {
 
   async setup() {
     const { file: userConfigPath, hash } = getConfigHash()
-    const newDeps = getModuleDependencies(userConfigPath)
+    const { config, dependencies: newDeps } = await bundleConfigFile({ cwd, file: userConfigPath })
+
+    const loadConfResult = { config, dependencies: newDeps, path: userConfigPath } as LoadConfigResult
+    config.cwd = cwd
 
     const prevModified = this.configDepsModified
 
@@ -81,7 +86,7 @@ export class Builder {
         logger.info('postcss', 'Config changed, reloading')
       }
 
-      await this.loadConfig(hash)
+      await this.loadConfigAndCreateContext(loadConfResult, hash)
       return
     }
 
@@ -95,14 +100,15 @@ export class Builder {
       this.fileModifiedMap = builderCache.get(cachedContext)!.fileModifiedMap
       //
     } else {
-      await this.loadConfig(hash)
+      await this.loadConfigAndCreateContext(loadConfResult, hash)
     }
 
     setupCount++
   }
 
-  async loadConfig(hash: string) {
-    this.context = await loadConfigAndCreateContext()
+  async loadConfigAndCreateContext(result: LoadConfigResult, hash: string) {
+    const config = await resolveConfigFile(result, cwd)
+    this.context = createContext(config)
 
     // don't emit artifacts on first setup
     if (setupCount > 0) {
