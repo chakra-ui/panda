@@ -5,14 +5,14 @@ description: Presets are also valid Panda configuration objects, taking the exac
 
 # Presets
 
-Presets are also valid Panda configuration objects, taking the exact same shape as the configuration you would add in
+Presets are also valid Panda configuration objects, taking a similar shape to the configuration you would add in
 your `panda.config.ts` file.
 
 ```js
 // my-preset.js
-import { defineConfig } from '@pandacss/dev'
+import { definePreset } from '@pandacss/dev'
 
-export default defineConfig({
+export default definePreset({
   tokens: {
     rose: {
       50: { value: '#fff1f2' },
