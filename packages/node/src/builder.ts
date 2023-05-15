@@ -1,159 +1,185 @@
 import { discardDuplicate, mergeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
-import { toHash } from '@pandacss/shared'
-import { bundleConfigFile, resolveConfigFile } from '@pandacss/config'
-import { existsSync, readFileSync } from 'fs'
+import { existsSync } from 'fs'
 import { statSync } from 'fs-extra'
 import { resolve } from 'path'
 import type { Message, Root } from 'postcss'
-import { findConfig } from './config'
-import { createContext, type PandaContext } from './create-context'
+import { findConfig, loadConfigAndCreateContext } from './config'
+import { type PandaContext } from './create-context'
 import { emitArtifacts, extractFile } from './extract'
+import { getModuleDependencies } from './get-mod-deps'
 import { parseDependency } from './parse-dependency'
-import type { LoadConfigResult } from '@pandacss/types'
 
-type CachedData = {
+type ContentData = {
   fileCssMap: Map<string, string>
   fileModifiedMap: Map<string, number>
 }
 
-const contextCache = new Map<string, PandaContext>()
-const builderCache = new WeakMap<PandaContext, CachedData>()
-
-function getConfigHash() {
-  const file = findConfig()
-  if (!file) {
-    throw new ConfigNotFoundError()
-  }
-  return { file, hash: toHash(readFileSync(file, 'utf-8')) }
+type ConfigData = {
+  context: PandaContext
+  deps: Set<string>
+  depsModifiedMap: Map<string, number>
 }
 
+type ConfigDepsResult = {
+  modifiedMap: Map<string, number>
+  isModified: boolean
+}
+
+const configCache = new Map<string, ConfigData>()
+const contentFilesCache = new WeakMap<PandaContext, ContentData>()
+
 let setupCount = 0
-const cwd = process.cwd()
 
 export class Builder {
   /**
-   * Map of file path to modified time
+   * The current panda context
    */
-  fileModifiedMap: Map<string, number> = new Map()
-
-  /**
-   * Map of file path to css
-   */
-  fileCssMap: Map<string, string> = new Map()
-
   context: PandaContext | undefined
 
-  configChanged = true
-
-  configDepsModified: Map<string, number> | undefined
-
-  writeFile(file: string, css: string) {
+  writeFileCss(file: string, css: string) {
     const oldCss = this.fileCssMap?.get(file) ?? ''
     const newCss = mergeCss(oldCss, css)
     this.fileCssMap?.set(file, newCss)
   }
 
-  async setup() {
-    const { file: userConfigPath, hash } = getConfigHash()
-    const { config, dependencies: newDeps } = await bundleConfigFile({ cwd, file: userConfigPath })
-
-    const loadConfResult = { config, dependencies: newDeps, path: userConfigPath } as LoadConfigResult
-    config.cwd = cwd
-
-    const prevModified = this.configDepsModified
-
+  checkConfigDeps(configPath: string, deps: Set<string>): ConfigDepsResult {
     let modified = false
-    const newModified = new Map()
 
-    for (const file of newDeps) {
+    const newModified = new Map()
+    const prevModified = configCache.get(configPath)?.depsModifiedMap
+
+    for (const file of deps) {
       const time = statSync(file).mtimeMs
       newModified.set(file, time)
+
       if (!prevModified || !prevModified.has(file) || time > prevModified.get(file)!) {
         modified = true
       }
     }
-    this.configDepsModified = newModified
 
-    // It has changed (based on timestamps)
-    if (modified) {
-      for (const file of newDeps) {
-        delete require.cache[file]
-      }
-
-      if (setupCount > 0) {
-        logger.info('postcss', 'Config changed, reloading')
-      }
-
-      await this.loadConfigAndCreateContext(loadConfResult, hash)
-      return
+    if (!modified) {
+      return { isModified: false, modifiedMap: prevModified! }
     }
 
-    const cachedContext = contextCache.get(hash)
+    for (const file of deps) {
+      delete require.cache[file]
+    }
 
-    if (cachedContext) {
-      cachedContext.project.reloadSourceFiles()
-      this.context = cachedContext
+    if (setupCount > 0) {
+      logger.info('postcss', '⚙️ Config changed, reloading')
+    }
 
-      this.fileCssMap = builderCache.get(cachedContext)!.fileCssMap
-      this.fileModifiedMap = builderCache.get(cachedContext)!.fileModifiedMap
+    return { isModified: true, modifiedMap: newModified }
+  }
+
+  getConfigPath() {
+    const configPath = findConfig()
+
+    if (!configPath) {
+      throw new ConfigNotFoundError()
+    }
+
+    return configPath
+  }
+
+  async setup() {
+    const configPath = this.getConfigPath()
+    const configDeps = getModuleDependencies(configPath)
+
+    const deps = this.checkConfigDeps(configPath, configDeps)
+
+    if (deps.isModified) {
+      return this.setupContext({
+        configPath,
+        depsModifiedMap: deps.modifiedMap,
+      })
+    }
+
+    const cache = configCache.get(configPath)
+
+    if (cache) {
+      this.context = cache.context
+      this.context.project.reloadSourceFiles()
+
       //
     } else {
-      await this.loadConfigAndCreateContext(loadConfResult, hash)
+      await this.setupContext({
+        configPath,
+        depsModifiedMap: deps.modifiedMap,
+      })
     }
 
     setupCount++
   }
 
-  async loadConfigAndCreateContext(result: LoadConfigResult, hash: string) {
-    const config = await resolveConfigFile(result, cwd)
-    this.context = createContext(config)
+  async setupContext(options: { configPath: string; depsModifiedMap: Map<string, number> }) {
+    const { configPath, depsModifiedMap } = options
+
+    this.context = await loadConfigAndCreateContext({ configPath })
 
     // don't emit artifacts on first setup
     if (setupCount > 0) {
-      emitArtifacts(this.context) //no need to await this
+      emitArtifacts(this.context) // no need to await this
     }
 
-    this.fileCssMap = new Map()
-    this.fileModifiedMap = new Map()
+    configCache.set(configPath, {
+      context: this.context,
+      deps: new Set(this.context.configDependencies),
+      depsModifiedMap,
+    })
 
-    contextCache.set(hash, this.context)
-    builderCache.set(this.context, { fileCssMap: this.fileCssMap, fileModifiedMap: this.fileModifiedMap })
+    contentFilesCache.set(this.context, {
+      fileCssMap: new Map(),
+      fileModifiedMap: new Map(),
+    })
   }
 
-  ensure(): PandaContext {
-    if (!this.context) throw new Error('context not loaded')
+  getContextOrThrow(): PandaContext {
+    if (!this.context) {
+      throw new Error('context not loaded')
+    }
     return this.context
   }
 
+  get fileModifiedMap() {
+    const ctx = this.getContextOrThrow()
+    return contentFilesCache.get(ctx)!.fileModifiedMap
+  }
+
+  get fileCssMap() {
+    const ctx = this.getContextOrThrow()
+    return contentFilesCache.get(ctx)!.fileCssMap
+  }
+
+  async extractFile(ctx: PandaContext, file: string) {
+    const mtime = existsSync(file) ? statSync(file).mtimeMs : -Infinity
+
+    const isUnchanged = this.fileModifiedMap.has(file) && mtime === this.fileModifiedMap.get(file)
+    if (isUnchanged) return
+
+    const css = extractFile(ctx, file)
+    if (!css) return
+
+    this.fileModifiedMap.set(file, mtime)
+    this.writeFileCss(file, css)
+
+    return css
+  }
+
   async extract() {
-    const ctx = this.ensure()
+    const ctx = this.getContextOrThrow()
 
     const done = logger.time.info('Extracted in')
 
-    await Promise.all(
-      ctx.getFiles().map(async (file: string) => {
-        const mtime = existsSync(file) ? statSync(file).mtimeMs : -Infinity
-
-        const isUnchanged = this.fileModifiedMap.has(file) && mtime === this.fileModifiedMap.get(file)
-        if (isUnchanged) return
-
-        const css = extractFile(ctx, file)
-        if (!css) return
-
-        this.fileModifiedMap.set(file, mtime)
-        this.writeFile(file, css)
-
-        return css
-      }),
-    )
+    await Promise.all(ctx.getFiles().map((file) => this.extractFile(ctx, file)))
 
     done()
   }
 
   toString() {
-    const ctx = this.ensure()
+    const ctx = this.getContextOrThrow()
     return ctx.getCss({
       files: Array.from(this.fileCssMap.values()),
       resolve: true,
@@ -188,7 +214,7 @@ export class Builder {
   }
 
   registerDependency(fn: (dep: Message) => void) {
-    const ctx = this.ensure()
+    const ctx = this.getContextOrThrow()
 
     for (const fileOrGlob of ctx.config.include) {
       const dependency = parseDependency(fileOrGlob)
