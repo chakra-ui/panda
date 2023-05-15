@@ -4,7 +4,7 @@ import { Token } from './token'
 
 export const addNegativeTokens: TokenMiddleware = {
   enforce: 'pre',
-  transform(dictionary: TokenDictionary, { prefix }) {
+  transform(dictionary: TokenDictionary, { prefix, hash }) {
     const tokens = dictionary.filter({
       extensions: { category: 'spacing' },
     })
@@ -12,7 +12,7 @@ export const addNegativeTokens: TokenMiddleware = {
     tokens.forEach((token) => {
       //
       const originalPath = [...token.path]
-      const originalVar = cssVar(originalPath.join('-'), { prefix })
+      const originalVar = cssVar(originalPath.join('-'), { prefix, hash })
 
       const node = token.clone()
       node.setExtensions({

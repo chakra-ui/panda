@@ -1,3 +1,5 @@
+import { toHash } from './hash'
+
 const escRegex = /[.*+?^${}()|[\]\\]/g
 function esc(string: string) {
   return string.replace(escRegex, '\\$&')
@@ -16,12 +18,15 @@ export type CssVar = {
 export type CssVarOptions = {
   fallback?: string
   prefix?: string
+  hash?: boolean
 }
 
 export function cssVar(name: string, options: CssVarOptions = {}): CssVar {
-  const { fallback = '', prefix = '' } = options
+  const { fallback = '', prefix = '', hash } = options
 
-  const variable = dashCase(['-', prefix, esc(name)].filter(Boolean).join('-'))
+  const variable = hash
+    ? ['-', prefix, toHash(name)].filter(Boolean).join('-')
+    : dashCase(['-', prefix, esc(name)].filter(Boolean).join('-'))
 
   const result = {
     var: variable,

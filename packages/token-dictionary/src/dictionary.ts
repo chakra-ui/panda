@@ -8,6 +8,7 @@ type EnforcePhase = 'pre' | 'post'
 
 type Options = {
   prefix?: string
+  hash?: boolean
 }
 
 export type TokenTransformer = {
@@ -23,6 +24,7 @@ export type TokenDictionaryOptions = {
   semanticTokens?: SemanticTokens
   breakpoints?: Record<string, string>
   prefix?: string
+  hash?: boolean
 }
 
 export type TokenMiddleware = {
@@ -41,13 +43,14 @@ function expandBreakpoints(breakpoints?: Record<string, string>) {
 export class TokenDictionary {
   allTokens: Token[] = []
   prefix: string | undefined
+  hash: boolean | undefined
 
   get allNames() {
     return Array.from(new Set(this.allTokens.map((token) => token.name)))
   }
 
   constructor(options: TokenDictionaryOptions) {
-    const { tokens = {}, semanticTokens = {}, breakpoints, prefix } = options
+    const { tokens = {}, semanticTokens = {}, breakpoints, prefix, hash } = options
 
     const breakpointTokens = expandBreakpoints(breakpoints)
 
@@ -61,6 +64,7 @@ export class TokenDictionary {
     })
 
     this.prefix = prefix
+    this.hash = hash
 
     walkObject(
       computedTokens,
@@ -137,7 +141,11 @@ export class TokenDictionary {
       if (token.extensions.hasReference) return
       if (typeof transform.match === 'function' && !transform.match(token)) return
 
-      const transformed = transform.transform(token, { prefix: this.prefix })
+      const transformed = transform.transform(token, {
+        prefix: this.prefix,
+        hash: this.hash,
+      })
+
       match(transform)
         .with({ type: 'extensions' }, () => {
           token.setExtensions(transformed)
