@@ -10,73 +10,71 @@ export default defineConfig({
   exclude: [],
   outdir: 'styled-system',
   theme: {
-    extend: {
-      semanticTokens: {
-        colors: {
-          text: { value: { base: '{colors.gray.600}', _osDark: '{colors.gray.400}' } },
-        },
+    semanticTokens: {
+      colors: {
+        text: { value: { base: '{colors.gray.600}', _osDark: '{colors.gray.400}' } },
       },
-      recipes: {
-        button: {
-          name: 'button',
-          jsx: ['Button', 'ListedButton', /WithRegex$/],
-          description: 'A button styles',
-          base: {
-            fontSize: 'lg',
-          },
-          variants: {
-            size: {
-              sm: {
-                padding: '2',
-                borderRadius: 'sm',
-              },
-              md: {
-                padding: '4',
-                borderRadius: 'md',
-              },
-            },
-            variant: {
-              primary: {
-                color: 'white',
-                backgroundColor: 'blue.500',
-              },
-              danger: {
-                color: 'white',
-                backgroundColor: 'red.500',
-              },
-              secondary: {
-                color: 'pink.300',
-                backgroundColor: 'green.500',
-              },
-            },
-            state: {
-              focused: {
-                color: 'green',
-              },
-              hovered: {
-                color: 'pink.400',
-              },
-            },
-          },
-          compoundVariants: [
-            {
-              size: 'sm',
-              variant: 'primary',
-              css: {
-                fontSize: '12px',
-              },
-            },
-            {
-              variant: ['primary', 'danger'],
-              state: 'focused',
-              css: {
-                padding: 4,
-                fontWeight: 'bold',
-                fontSize: '24px',
-              },
-            },
-          ],
+    },
+    recipes: {
+      button: {
+        name: 'button',
+        jsx: ['Button', 'ListedButton', /WithRegex$/],
+        description: 'A button styles',
+        base: {
+          fontSize: 'lg',
         },
+        variants: {
+          size: {
+            sm: {
+              padding: '2',
+              borderRadius: 'sm',
+            },
+            md: {
+              padding: '4',
+              borderRadius: 'md',
+            },
+          },
+          variant: {
+            primary: {
+              color: 'white',
+              backgroundColor: 'blue.500',
+            },
+            danger: {
+              color: 'white',
+              backgroundColor: 'red.500',
+            },
+            secondary: {
+              color: 'pink.300',
+              backgroundColor: 'green.500',
+            },
+          },
+          state: {
+            focused: {
+              color: 'green',
+            },
+            hovered: {
+              color: 'pink.400',
+            },
+          },
+        },
+        compoundVariants: [
+          {
+            size: 'sm',
+            variant: 'primary',
+            css: {
+              fontSize: '12px',
+            },
+          },
+          {
+            variant: ['primary', 'danger'],
+            state: 'focused',
+            css: {
+              padding: 4,
+              fontWeight: 'bold',
+              fontSize: '24px',
+            },
+          },
+        ],
       },
     },
   },
