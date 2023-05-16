@@ -396,8 +396,8 @@ test('should generate pattern', () => {
 
     export type GridProperties = {
        gap?: PropertyValue<'gap'>
-    	gapX?: PropertyValue<'gap'>
-    	gapY?: PropertyValue<'gap'>
+    	columnGap?: PropertyValue<'gap'>
+    	rowGap?: PropertyValue<'gap'>
     	columns?: ConditionalValue<number>
     	minChildWidth?: ConditionalValue<Tokens[\\"sizes\\"] | Properties[\\"width\\"]>
     }
@@ -413,13 +413,13 @@ test('should generate pattern', () => {
 
     const gridConfig = {
     transform(props, { map }) {
-      const { gapX, gapY, gap = gapX || gapY ? void 0 : \\"10px\\", columns, minChildWidth, ...rest } = props;
+      const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : \\"10px\\", columns, minChildWidth, ...rest } = props;
       return {
-        gridTemplateColumns: columns != null ? map(columns, (v) => \`repeat(\${v}, minmax(0, 1fr))\`) : minChildWidth != null ? map(minChildWidth, (v) => \`repeat(auto-fit, minmax(\${v}, 1fr))\`) : void 0,
         display: \\"grid\\",
+        gridTemplateColumns: columns != null ? map(columns, (v) => \`repeat(\${v}, minmax(0, 1fr))\`) : minChildWidth != null ? map(minChildWidth, (v) => \`repeat(auto-fit, minmax(\${v}, 1fr))\`) : void 0,
         gap,
-        columnGap: gapX,
-        rowGap: gapY,
+        columnGap,
+        rowGap,
         ...rest
       };
     }}
@@ -479,8 +479,8 @@ test('should generate pattern', () => {
 
     export type WrapProperties = {
        gap?: PropertyValue<'gap'>
-    	gapX?: PropertyValue<'gap'>
-    	gapY?: PropertyValue<'gap'>
+    	rowGap?: PropertyValue<'gap'>
+    	columnGap?: PropertyValue<'gap'>
     	align?: PropertyValue<'alignItems'>
     	justify?: PropertyValue<'justifyContent'>
     }
@@ -496,15 +496,15 @@ test('should generate pattern', () => {
 
     const wrapConfig = {
     transform(props) {
-      const { gapX, gapY, gap = gapX || gapY ? void 0 : \\"10px\\", align, justify, ...rest } = props;
+      const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : \\"10px\\", align, justify, ...rest } = props;
       return {
         display: \\"flex\\",
         flexWrap: \\"wrap\\",
         alignItems: align,
         justifyContent: justify,
         gap,
-        columnGap: gapX,
-        rowGap: gapY,
+        columnGap,
+        rowGap,
         ...rest
       };
     }}

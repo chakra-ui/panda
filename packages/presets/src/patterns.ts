@@ -157,24 +157,24 @@ const absoluteCenter = definePattern({
 const grid = definePattern({
   properties: {
     gap: { type: 'property', value: 'gap' },
-    gapX: { type: 'property', value: 'gap' },
-    gapY: { type: 'property', value: 'gap' },
+    columnGap: { type: 'property', value: 'gap' },
+    rowGap: { type: 'property', value: 'gap' },
     columns: { type: 'number' },
     minChildWidth: { type: 'token', value: 'sizes', property: 'width' },
   },
   transform(props, { map }) {
-    const { gapX, gapY, gap = gapX || gapY ? undefined : '10px', columns, minChildWidth, ...rest } = props
+    const { columnGap, rowGap, gap = columnGap || rowGap ? undefined : '10px', columns, minChildWidth, ...rest } = props
     return {
+      display: 'grid',
       gridTemplateColumns:
         columns != null
           ? map(columns, (v) => `repeat(${v}, minmax(0, 1fr))`)
           : minChildWidth != null
           ? map(minChildWidth, (v) => `repeat(auto-fit, minmax(${v}, 1fr))`)
           : undefined,
-      display: 'grid',
       gap,
-      columnGap: gapX,
-      rowGap: gapY,
+      columnGap,
+      rowGap,
       ...rest,
     }
   },
@@ -205,21 +205,21 @@ const gridItem = definePattern({
 const wrap = definePattern({
   properties: {
     gap: { type: 'property', value: 'gap' },
-    gapX: { type: 'property', value: 'gap' },
-    gapY: { type: 'property', value: 'gap' },
+    rowGap: { type: 'property', value: 'gap' },
+    columnGap: { type: 'property', value: 'gap' },
     align: { type: 'property', value: 'alignItems' },
     justify: { type: 'property', value: 'justifyContent' },
   },
   transform(props) {
-    const { gapX, gapY, gap = gapX || gapY ? undefined : '10px', align, justify, ...rest } = props
+    const { columnGap, rowGap, gap = columnGap || rowGap ? undefined : '10px', align, justify, ...rest } = props
     return {
       display: 'flex',
       flexWrap: 'wrap',
       alignItems: align,
       justifyContent: justify,
       gap,
-      columnGap: gapX,
-      rowGap: gapY,
+      columnGap,
+      rowGap,
       ...rest,
     }
   },

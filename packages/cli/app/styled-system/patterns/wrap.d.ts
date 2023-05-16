@@ -5,8 +5,8 @@ import type { Tokens } from '../tokens'
 
 export type WrapProperties = {
    gap?: PropertyValue<'gap'>
-	gapX?: PropertyValue<'gap'>
-	gapY?: PropertyValue<'gap'>
+	rowGap?: PropertyValue<'gap'>
+	columnGap?: PropertyValue<'gap'>
 	align?: PropertyValue<'alignItems'>
 	justify?: PropertyValue<'justifyContent'>
 }

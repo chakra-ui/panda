@@ -5,8 +5,8 @@ import type { Tokens } from '../tokens'
 
 export type GridProperties = {
    gap?: PropertyValue<'gap'>
-	gapX?: PropertyValue<'gap'>
-	gapY?: PropertyValue<'gap'>
+	columnGap?: PropertyValue<'gap'>
+	rowGap?: PropertyValue<'gap'>
 	columns?: ConditionalValue<number>
 	minChildWidth?: ConditionalValue<Tokens["sizes"] | Properties["width"]>
 }

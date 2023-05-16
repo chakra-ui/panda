@@ -3,13 +3,13 @@ import { css } from '../css/index.mjs';
 
 const gridConfig = {
 transform(props, { map }) {
-  const { gapX, gapY, gap = gapX || gapY ? void 0 : "10px", columns, minChildWidth, ...rest } = props;
+  const { columnGap, rowGap, gap = columnGap || rowGap ? void 0 : "10px", columns, minChildWidth, ...rest } = props;
   return {
-    gridTemplateColumns: columns != null ? map(columns, (v) => `repeat(${v}, minmax(0, 1fr))`) : minChildWidth != null ? map(minChildWidth, (v) => `repeat(auto-fit, minmax(${v}, 1fr))`) : void 0,
     display: "grid",
+    gridTemplateColumns: columns != null ? map(columns, (v) => `repeat(${v}, minmax(0, 1fr))`) : minChildWidth != null ? map(minChildWidth, (v) => `repeat(auto-fit, minmax(${v}, 1fr))`) : void 0,
     gap,
-    columnGap: gapX,
-    rowGap: gapY,
+    columnGap,
+    rowGap,
     ...rest
   };
 }}
