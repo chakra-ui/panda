@@ -10,7 +10,6 @@
 '@pandacss/logger': patch
 '@pandacss/node': patch
 '@pandacss/parser': patch
-'@pandacss/parser-vue': patch
 '@pandacss/presets': patch
 '@pandacss/shared': patch
 '@pandacss/token-dictionary': patch

@@ -3,6 +3,7 @@ import { logger } from '@pandacss/logger'
 import { findConfigFile } from './find-config'
 import { getResolvedConfig } from './merge-config'
 import { bundle } from './bundle'
+import type { LoadConfigResult } from '@pandacss/types'
 
 type ConfigFileOptions = {
   cwd: string
@@ -10,6 +11,20 @@ type ConfigFileOptions = {
 }
 
 export async function loadConfigFile(options: ConfigFileOptions) {
+  const result = await bundleConfigFile(options)
+  return resolveConfigFile(result, options.cwd)
+}
+
+export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundleConfigFile>>, cwd: string) {
+  // set default presets
+  result.config.presets ||= ['@pandacss/dev/presets']
+
+  const mergedConfig = await getResolvedConfig(result.config, cwd)
+
+  return { ...result, config: mergedConfig } as LoadConfigResult
+}
+
+export async function bundleConfigFile(options: ConfigFileOptions) {
   const { cwd, file } = options
   const filePath = findConfigFile({ cwd, file })
 
@@ -26,14 +41,9 @@ export async function loadConfigFile(options: ConfigFileOptions) {
     throw new ConfigError(`💥 Config must export or return an object.`)
   }
 
-  // set default presets
-  result.config.presets ||= ['@pandacss/dev/presets']
-
-  const mergedConfig = await getResolvedConfig(result.config, cwd)
-
   return {
     ...result,
-    config: mergedConfig,
+    config: result.config,
     path: filePath,
   }
 }

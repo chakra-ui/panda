@@ -82,5 +82,5 @@ export async function getResolvedConfig(config: ExtendableConfig, cwd: string) {
     }
   }
 
-  return mergeConfigs(configs)
+  return mergeConfigs(configs) as Config
 }
