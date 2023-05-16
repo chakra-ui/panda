@@ -329,8 +329,29 @@ describe('mergeConfigs / recipes', () => {
       },
     } as Config
 
+    const asyncConfig = async () => {
+      const boxPromise = Promise.resolve({
+        variants: {
+          size: {
+            lg: { p: 0 },
+          },
+        },
+      })
+
+      const box = await boxPromise
+      return {
+        theme: {
+          extend: {
+            recipes: {
+              box,
+            },
+          },
+        },
+      } as Config
+    }
+
     const userConfig = {
-      presets: [defaultConfig, someLibConfig, anotherLibConfig],
+      presets: [defaultConfig, someLibConfig, anotherLibConfig, asyncConfig()],
       theme: {
         extend: {
           recipes: {
@@ -363,6 +384,15 @@ describe('mergeConfigs / recipes', () => {
         "presets": [],
         "theme": {
           "recipes": {
+            "box": {
+              "variants": {
+                "size": {
+                  "lg": {
+                    "p": 0,
+                  },
+                },
+              },
+            },
             "button": {
               "name": "button",
               "variants": {
