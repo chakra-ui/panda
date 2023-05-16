@@ -92,7 +92,7 @@ export type Config = {
   /**
    * Used to create reusable config presets for your project or team.
    */
-  presets?: (string | Preset)[]
+  presets?: (string | Preset | Promise<Preset>)[]
   /**
    * Whether to include css reset styles in the generated css.
    * @default true
