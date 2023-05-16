@@ -22,7 +22,7 @@ export function generateSolidJsxFactory(ctx: Context) {
           mergedProps,
           ['as', 'class'],
           allCssProperties,
-          cvaFn.variants,
+          cvaFn.variantKeys,
           normalizeHTMLProps.keys
         )
     

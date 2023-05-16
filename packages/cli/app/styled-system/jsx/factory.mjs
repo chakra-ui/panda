@@ -10,7 +10,7 @@ function styled(Dynamic, configOrCva = {}) {
     const { as: Element = Dynamic, ...restProps } = props
 
     const [styleProps, variantProps, htmlProps, elementProps] = useMemo(() => {
-      return splitProps(restProps, isCssProperty, cvaFn.variants, normalizeHTMLProps.keys)
+      return splitProps(restProps, isCssProperty, cvaFn.variantKeys, normalizeHTMLProps.keys)
     }, [restProps])
 
     function classes() {

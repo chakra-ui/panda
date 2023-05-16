@@ -20,7 +20,7 @@ export function generateVueJsxFactory(ctx: Context) {
         props: { as: { type: [String, Object], default: Dynamic } },
         setup(props, { slots, attrs }) {
           const splittedProps = computed(() => {
-            return splitProps(attrs, isCssProperty, cvaFn.variants, normalizeHTMLProps.keys)
+            return splitProps(attrs, isCssProperty, cvaFn.variantKeys, normalizeHTMLProps.keys)
           })
     
           const classes = computed(() => {

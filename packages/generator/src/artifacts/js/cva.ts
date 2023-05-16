@@ -4,7 +4,7 @@ import type { Context } from '../../engines'
 export function generateCvaFn(ctx: Context) {
   return {
     js: outdent`
-    ${ctx.file.import('compact', '../helpers')}
+    ${ctx.file.import('compact, splitProps', '../helpers')}
     ${ctx.file.import('css, mergeCss', './css')}
 
     export function cva(config) {
@@ -25,12 +25,22 @@ export function generateCvaFn(ctx: Context) {
       function cvaFn(props) {
         return css(resolve(props))
       }
+      
+      const variantKeys = Object.keys(variants)
+
+      function splitVariantProps(props) {
+        return splitProps(props, variantKeys)
+      }
+
+      const variantMap = Object.fromEntries(Object.entries(variants).map(([key, value]) => [key, Object.keys(value)]))
 
       return Object.assign(cvaFn, {
         __cva__: true,
-        variants: Object.keys(variants),
+        variants: variantMap,
+        variantKeys,
         resolve,
         config,
+        splitVariantProps,
       })
     }
 
@@ -54,9 +64,7 @@ export function generateCvaFn(ctx: Context) {
 
     export function assertCompoundVariant(name, compoundVariants, variants, prop) {
       if (compoundVariants.length > 0 && typeof variants[prop] === 'object') {
-        throw new Error(
-          \`[recipe:\${name}:\${prop}] Conditions are not supported when using compound variants.\`,
-        )
+        throw new Error(\`[recipe:\${name}:\${prop}] Conditions are not supported when using compound variants.\`)
       }
     }    
 
