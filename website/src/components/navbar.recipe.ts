@@ -57,7 +57,7 @@ export const navbarRecipe = defineRecipe({
       },
       _supportsBackdrop: {
         backdropFilter: 'blur(8px)',
-        backgroundColor: 'hsla(0,0%,7%,.8)!important',
+        backgroundColor: 'rgba(255, 255, 255, 0.85)!important',
         _dark: {
           backgroundColor: 'rgba(0, 0, 0, 0.85)'
         }
