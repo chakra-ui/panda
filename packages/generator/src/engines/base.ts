@@ -15,9 +15,9 @@ export const getBaseEngine = (conf: LoadConfigResult) =>
 
     Obj.bind('configDependencies', ({ dependencies }) => dependencies ?? []),
 
-    Obj.bind('tokens', ({ config: { theme = {}, prefix } }) => {
+    Obj.bind('tokens', ({ config: { theme = {}, prefix, hash } }) => {
       const { breakpoints, tokens, semanticTokens } = theme
-      return new TokenDictionary({ breakpoints, tokens, semanticTokens, prefix })
+      return new TokenDictionary({ breakpoints, tokens, semanticTokens, prefix, hash })
     }),
 
     tap(({ tokens }) => {
