@@ -17,6 +17,6 @@
     "@pandacss/dev": "workspace:*",
     "@preact/preset-vite": "2.5.0",
     "typescript": "5.0.4",
-    "vite": "4.3.6"
+    "vite": "4.3.7"
   }
 }
