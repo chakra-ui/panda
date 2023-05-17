@@ -16,7 +16,7 @@ export const HighlightMatches = memo<MatchArgs>(function HighlightMatches({
   let result
   let id = 0
   let index = 0
-  const res = []
+  const res = [] as any[]
 
   if (value) {
     while ((result = regexp.exec(value)) !== null) {
