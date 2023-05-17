@@ -14,15 +14,9 @@ export const SectionArticleList = () => {
       rowGap="130px"
     >
       <Flex direction="column">
-        <panda.span
-          fontSize="40px"
-          lineHeight="60px"
-          letterSpacing="tight"
-          fontWeight="bold"
-          color="panda.text.headline"
-        >
+        <panda.h3 textStyle="panda.h3" color="panda.text.headline">
           Design Tokens
-        </panda.span>
+        </panda.h3>
         <Grid columns={2} mt="12" rowGap="8!" justifyContent="space-between">
           <ArticleItem
             icon="DesignTokenBox"
@@ -43,15 +37,9 @@ export const SectionArticleList = () => {
         </Grid>
       </Flex>
       <Flex direction="column">
-        <panda.span
-          fontSize="40px"
-          lineHeight="60px"
-          letterSpacing="tight"
-          fontWeight="bold"
-          color="panda.text.headline"
-        >
+        <panda.h3 textStyle="panda.h3" color="panda.text.headline">
           Recipe and Variants
-        </panda.span>
+        </panda.h3>
         <Grid columns={2} mt="12" rowGap="8!">
           <ArticleItem icon="Recipe" title="How to write cleaner recipes" />
           <ArticleItem icon="Recipe" title="How to theme components" />

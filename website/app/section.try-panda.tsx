@@ -5,14 +5,16 @@ import Image from 'next/image'
 
 export const SectionTryPanda = () => {
   return (
-    <Flex bgColor="panda.bg.dark" justifyContent="center" pt="85px" pb="70px">
+    <Flex
+      bgColor="panda.bg.dark"
+      justifyContent="center"
+      pt={{ base: '40px', lg: '85px' }}
+      pb={{ base: '40px', lg: '70px' }}
+    >
       <Flex direction="column" width="80%" alignItems="center">
         <Flex alignItems="center">
-          <panda.div
-            fontSize="40px"
-            lineHeight="50px"
-            letterSpacing="tight"
-            fontWeight="bold"
+          <panda.h3
+            textStyle="panda.h3"
             pos="relative"
             bgColor="panda.yellow"
             color="black"
@@ -31,39 +33,51 @@ export const SectionTryPanda = () => {
                 color: 'panda.yellow'
               })}
             />
-          </panda.div>
+          </panda.h3>
           <Image
             src="/panda-hello.svg"
             width={196}
             height={261}
             alt="Yums the panda waving"
-            className={css({ ml: '50px' })}
+            className={css({
+              ml: '20px',
+              w: '75px',
+              sm: { ml: '50px', w: '196px' }
+            })}
           />
         </Flex>
-        <Flex mt="80px" justifyContent="space-between" w="100%">
-          <Flex direction="column" w="240px">
+        <Flex
+          mt={{ base: '40px', lg: '80px' }}
+          justifyContent="space-between"
+          w="100%"
+          flexDirection={{ base: 'column', lg: 'row' }}
+          alignItems={{ base: 'center', lg: 'flex-start' }}
+          rowGap={8}
+        >
+          <Flex direction="column" w="240px" position="relative">
             <panda.span
+              position={{ base: 'absolute', lg: 'static' }}
+              top="-25px"
+              right="calc(100% + 25px)"
               fontWeight="bold"
-              fontSize="95px"
-              lineHeight="120px"
+              fontSize={{ base: '4rem', md: '5.9375rem' }}
+              lineHeight="7.5rem"
               letterSpacing="tight"
               color="panda.yellow"
             >
               1
             </panda.span>
             <panda.span
-              fontWeight="600"
-              fontSize="27px"
-              lineHeight="34px"
-              letterSpacing="tight"
+              fontWeight="semibold"
+              textStyle="panda.h4"
               color="white"
             >
               Install Panda in your project
             </panda.span>
             <HStack
-              mt="35px"
+              mt={{ base: '10px', lg: '35px' }}
               fontWeight="500"
-              fontSize="20px"
+              textStyle="xl"
               letterSpacing="tight"
             >
               <panda.code color="panda.gray.100">$</panda.code>
@@ -72,29 +86,30 @@ export const SectionTryPanda = () => {
               </panda.code>
             </HStack>
           </Flex>
-          <Flex direction="column" w="240px">
+          <Flex direction="column" w="240px" position="relative">
             <panda.span
+              position={{ base: 'absolute', lg: 'static' }}
+              top="-25px"
+              right="calc(100% + 25px)"
               fontWeight="bold"
-              fontSize="95px"
-              lineHeight="120px"
+              fontSize={{ base: '4rem', md: '5.9375rem' }}
+              lineHeight="7.5rem"
               letterSpacing="tight"
               color="panda.yellow"
             >
               2
             </panda.span>
             <panda.span
-              fontWeight="600"
-              fontSize="27px"
-              lineHeight="34px"
-              letterSpacing="tight"
+              fontWeight="semibold"
+              textStyle="panda.h4"
               color="white"
             >
               Run the initialize command
             </panda.span>
             <HStack
-              mt="35px"
+              mt={{ base: '10px', lg: '35px' }}
               fontWeight="500"
-              fontSize="20px"
+              textStyle="xl"
               letterSpacing="tight"
             >
               <panda.code color="panda.gray.100">$</panda.code>
@@ -103,29 +118,30 @@ export const SectionTryPanda = () => {
               </panda.code>
             </HStack>
           </Flex>
-          <Flex direction="column" w="240px">
+          <Flex direction="column" w="240px" position="relative">
             <panda.span
+              position={{ base: 'absolute', lg: 'static' }}
+              top="-25px"
+              right="calc(100% + 25px)"
               fontWeight="bold"
-              fontSize="95px"
-              lineHeight="120px"
+              fontSize={{ base: '4rem', md: '5.9375rem' }}
+              lineHeight="7.5rem"
               letterSpacing="tight"
               color="panda.yellow"
             >
               3
             </panda.span>
             <panda.span
-              fontWeight="600"
-              fontSize="27px"
-              lineHeight="34px"
-              letterSpacing="tight"
+              fontWeight="semibold"
+              textStyle="panda.h4"
               color="white"
             >
               Use the generated code to write styles
             </panda.span>
             <HStack
-              mt="35px"
+              mt={{ base: '10px', lg: '35px' }}
               fontWeight="500"
-              fontSize="20px"
+              textStyle="xl"
               letterSpacing="tight"
             >
               <panda.code color="panda.gray.100">$</panda.code>

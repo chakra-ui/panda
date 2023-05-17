@@ -10,25 +10,28 @@ export const SectionWorksEverywhere = () => {
       alignItems="center"
       justifyContent="center"
       bgColor="panda.bg.inverted"
-      pt="110px"
-      pb="185px"
+      pt={{ base: '40px', lg: '110px' }}
+      pb={{ base: '100px', lg: '185px' }}
     >
       <Flex direction="column" maxWidth="80%" alignItems="center">
-        <panda.span
-          fontSize="48px"
-          lineHeight="60px"
-          letterSpacing="tight"
-          fontWeight="bold"
-          textAlign="center"
-        >
+        <panda.h2 textStyle="panda.h2" textAlign="center">
           Works Everywhere. <br />
           Including Server Components.
-        </panda.span>
+        </panda.h2>
 
-        <Flex alignItems="center" columnGap="65px" mt="55px" mb="65px">
-          <ProjectLogo icon="RemixLogo" title="Remix" />
-          <ProjectLogo icon="ViteLogo" title="Vite" />
-          <ProjectLogo icon="NextJsLogo" title="NextJs" height="46.5" />
+        <Flex
+          alignItems="center"
+          columnGap={{ base: '35px', lg: '65px' }}
+          mt={{ base: '40px', lg: '55px' }}
+          mb={{ base: '40px', lg: '65px' }}
+          rowGap="45px"
+          flexDirection={{ base: 'column', md: 'row' }}
+        >
+          <Flex columnGap={{ base: '35px', lg: '65px' }}>
+            <ProjectLogo icon="RemixLogo" title="Remix" />
+            <ProjectLogo icon="ViteLogo" title="Vite" />
+            <ProjectLogo icon="NextJsLogo" title="NextJs" height="46.5" />
+          </Flex>
           <panda.div
             w="118px"
             h="118px"
@@ -38,16 +41,18 @@ export const SectionWorksEverywhere = () => {
           >
             <Icon icon="LogoLetter" width="71" height="69" />
           </panda.div>
-          <ProjectLogo icon="PostCSSLogo" title="PostCSS" height="45" />
-          <ProjectLogo icon="AstroLogo" title="Astro" />
-          <ProjectLogo icon="StoryBookLogo" title="StoryBook" height="39" />
+          <Flex columnGap={{ base: '35px', lg: '65px' }}>
+            <ProjectLogo icon="PostCSSLogo" title="PostCSS" height="45" />
+            <ProjectLogo icon="AstroLogo" title="Astro" />
+            <ProjectLogo icon="StoryBookLogo" title="StoryBook" height="39" />
+          </Flex>
         </Flex>
       </Flex>
       <panda.span
-        fontSize="23px"
-        lineHeight="32px"
+        textStyle="2xl"
+        lineHeight="2rem"
         letterSpacing="tight"
-        mt="68px"
+        mt={{ base: '50px', lg: '68px' }}
         textAlign="center"
         fontWeight="semibold"
       >
@@ -74,7 +79,12 @@ const ProjectLogo = ({
   typeof Icon
 >) => (
   <Flex direction="column" pos="relative">
-    <panda.div w="76px" h="76px" p="0" className={button({ color: 'border' })}>
+    <panda.div
+      w={{ base: '50px', lg: '76px' }}
+      h={{ base: '50px', lg: '76px' }}
+      p={{ base: '12px', lg: '0' }}
+      className={button({ color: 'border' })}
+    >
       <Icon {...iconProps} />
     </panda.div>
     <panda.span
@@ -82,8 +92,7 @@ const ProjectLogo = ({
       top="calc(100% + 10px)"
       left="50%"
       transform="translateX(-50%)"
-      fontSize="21px"
-      lineHeight="26px"
+      textStyle="xl"
       letterSpacing="tight"
       fontWeight="bold"
     >

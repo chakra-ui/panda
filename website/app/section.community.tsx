@@ -10,12 +10,15 @@ export const SectionCommunity = () => {
       pos="relative"
       bgColor="panda.bg.inverted"
       justifyContent="center"
-      pb="200px"
+      pt={{ base: '60px', lg: '155px' }}
+      pb={{ base: '80px', lg: '200px' }}
       overflow="hidden"
     >
       <Flex maxWidth="80%">
         <Flex
-          w="55%"
+          position="relative"
+          zIndex={1}
+          w={{ md: '55%' }}
           flexDirection="column"
           direction="column"
           justifyContent="center"
@@ -23,19 +26,10 @@ export const SectionCommunity = () => {
           mr="auto"
           pb="72px"
         >
-          <panda.span
-            fontSize="40px"
-            lineHeight="60px"
-            letterSpacing="tight"
-            fontWeight="bold"
-            mt="155px"
-          >
-            Join our community
-          </panda.span>
+          <panda.h3 textStyle="panda.h3">Join our community</panda.h3>
           <panda.span
             mt="18px"
-            fontSize="23px"
-            lineHeight="31px"
+            textStyle="2xl"
             letterSpacing="tight"
             fontWeight="semibold"
           >
@@ -63,11 +57,16 @@ export const SectionCommunity = () => {
         </Flex>
         <Center
           position="absolute"
-          top="100px"
           right="0"
-          transform="translateX(30%)"
-          w="740px"
-          h="740px"
+          opacity={{ base: 0.2, md: 1 }}
+          top={{ base: '170px', lg: '135px', xl: '100px' }}
+          transform={{
+            base: 'translateX(38%)',
+            lg: 'translateX(34%)',
+            xl: 'translateX(30%)'
+          }}
+          w={{ base: '500px', lg: '620px', xl: '740px' }}
+          h={{ base: '500px', lg: '620px', xl: '740px' }}
           borderWidth="2px"
           borderRadius="20px"
           borderColor={{ base: '#EAEAEA', _dark: '#383838' }}

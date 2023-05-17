@@ -7,9 +7,9 @@ import { ButtonIcon, Icon } from '../theme/icons'
 export const SectionRecipes = () => {
   return (
     <Flex bgColor="panda.bg.main" justifyContent="center" pt="55px" pb="58px">
-      <Flex maxWidth="80%">
+      <Flex maxWidth="80%" flexDirection={{ base: 'column', lg: 'row' }}>
         <Flex
-          w="55%"
+          w={{ lg: '55%' }}
           flexDirection="column"
           direction="column"
           justifyContent="center"
@@ -18,12 +18,11 @@ export const SectionRecipes = () => {
           pb="72px"
         >
           <panda.div
+            alignSelf={{ base: 'center', lg: 'flex-start' }}
             w="93px"
             h="93px"
-            className={button({ shape: 'circle' })}
+            className={button({ color: 'white', shape: 'circle' })}
             position="relative"
-            bgColor="white"
-            color="black"
           >
             <Icon icon="Recipe" />
             <panda.div
@@ -42,33 +41,20 @@ export const SectionRecipes = () => {
               />
             </panda.div>
           </panda.div>
-          <panda.span
-            fontSize="40px"
-            lineHeight="50px"
-            letterSpacing="tight"
-            fontWeight="bold"
-            mt="53px"
-          >
+          <panda.h3 textStyle="panda.h3" mt="53px">
             Recipes and variants just like Stitches
-          </panda.span>
-          <panda.span
-            mt="28px"
-            fontSize="26px"
-            lineHeight="34px"
-            letterSpacing="tight"
-            color="panda.text.muted"
-            fontWeight="semibold"
-          >
+          </panda.h3>
+          <panda.h4 mt="28px" textStyle="panda.h4" color="panda.text.muted">
             Panda gives you a robust functions to define recipes and even “cva”
             to help you design composable component styles.
-          </panda.span>
-          {/* TODO fix links */}
+          </panda.h4>
           <Link
-            href="/docs/getting-started"
+            href="/learn"
             className={cx(
               button({ color: 'ghost', size: 'xl' }),
               css({
-                mt: '150px',
+                mt: '20px',
+                lg: { mt: '150px' },
                 fontSize: '32px',
                 lineHeight: '40px',
                 letterSpacing: 'tight',
@@ -82,7 +68,7 @@ export const SectionRecipes = () => {
             <ButtonIcon icon="RightArrowIcon" />
           </Link>
         </Flex>
-        <Flex w="45%" flexDirection="column" ml="5">
+        <Flex w={{ lg: '45%' }} flexDirection="column" ml="5">
           {/* TODO code example */}
           <panda.div
             w="100%"

@@ -7,8 +7,12 @@ import { useTheme } from 'next-themes'
 import { HTMLPandaProps, panda } from '../styled-system/jsx'
 import { button } from '../styled-system/recipes'
 import { ButtonIcon } from '../theme/icons'
+import { css } from '../styled-system/css'
 
-export function ThemeSwitchButton(props: HTMLPandaProps<'button'>) {
+export function ThemeSwitchButton({
+  lite,
+  ...props
+}: HTMLPandaProps<'button'> & { lite?: boolean }) {
   const theme = useTheme()
   const { setTheme, resolvedTheme } = theme
   const mounted = useMounted()
@@ -24,7 +28,13 @@ export function ThemeSwitchButton(props: HTMLPandaProps<'button'>) {
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       {...props}
     >
-      {isDark ? 'Dark' : 'Light'} <ButtonIcon icon={iconToUse} />
+      <span className={lite ? css({ display: 'none' }) : ''}>
+        {isDark ? 'Dark' : 'Light'}{' '}
+      </span>
+      <ButtonIcon
+        icon={iconToUse}
+        className={lite ? css({ mx: 0 }) : undefined}
+      />
     </panda.button>
   )
 }

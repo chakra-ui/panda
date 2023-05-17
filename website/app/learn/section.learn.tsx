@@ -13,23 +13,13 @@ export const SectionLearn = () => {
             <panda.h1
               ml="-3.5"
               color="panda.text.headline"
-              fontSize="14.5rem"
-              lineHeight="11.875rem"
-              letterSpacing="tighter"
-              fontWeight="bold"
+              textStyle="panda.h1"
             >
               Learn.
             </panda.h1>
-            <panda.h2
-              mt="15px"
-              color="panda.text.muted"
-              fontSize="26px"
-              lineHeight="34px"
-              letterSpacing="tight"
-              fontWeight="medium"
-            >
+            <panda.h4 mt="15px" color="panda.text.muted" textStyle="panda.h4">
               Tutorials, videos, and articles to get started with Panda.
-            </panda.h2>
+            </panda.h4>
             <panda.div
               mt="45px"
               maxW="450px"

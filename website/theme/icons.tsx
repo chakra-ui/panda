@@ -114,7 +114,7 @@ function Moon(props: ComponentPropsWithoutRef<'svg'>) {
     >
       <path
         d="M14.8776 11.7857C10.3878 11.7857 6.71429 8.11224 6.71429 3.62245C6.71429 2.88775 6.79592 2.15306 7.04082 1.5C3.53061 2.39796 1 5.58163 1 9.33673C1 13.8265 4.67347 17.5 9.16326 17.5C12.9184 17.5 16.102 14.9694 17 11.4592C16.3469 11.7041 15.6122 11.7857 14.8776 11.7857Z"
-        stroke="white"
+        stroke="currentColor"
         strokeWidth="2"
         strokeMiterlimit="10"
         strokeLinecap="square"

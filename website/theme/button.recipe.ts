@@ -68,16 +68,22 @@ export const buttonRecipe = defineRecipe({
     size: {
       sm: {
         paddingY: 3,
-        fontSize: '18px'
+        textStyle: 'lg'
       },
       md: {
-        fontSize: '21px'
+        textStyle: 'md',
+        md: {
+          textStyle: 'lg'
+        },
+        lg: {
+          textStyle: 'xl'
+        }
       },
       lg: {
-        fontSize: '24px'
+        textStyle: '2xl'
       },
       xl: {
-        fontSize: '32px',
+        fontSize: '2rem',
         fontWeight: 'bold'
       }
     }

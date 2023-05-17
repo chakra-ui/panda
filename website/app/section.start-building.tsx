@@ -29,8 +29,8 @@ export const SectionStartBuilding = () => {
       />
       <Flex direction="column" maxWidth="80%" alignItems="center">
         <panda.span
-          fontSize="62px"
-          lineHeight="78px"
+          fontSize={{ base: '2.75rem', lg: '3.875rem' }}
+          lineHeight={{ base: '3rem', lg: '4.875rem' }}
           letterSpacing="tight"
           fontWeight="bold"
           textAlign="center"
@@ -38,10 +38,15 @@ export const SectionStartBuilding = () => {
           Start building with <br />
           Panda today
         </panda.span>
-        <Flex fontSize="24px" mt="36px">
+        <Flex
+          textStyle="2xl"
+          mt="36px"
+          flexDirection={{ base: 'column', lg: 'row' }}
+          gap="25px"
+        >
           {/* TODO fix href */}
           <Link
-            href="/docs/getting-started"
+            href="/docs/getting-started/cli"
             className={cx(
               button({ color: 'main', size: 'lg' }),
               css({ w: '250px' })
@@ -50,10 +55,10 @@ export const SectionStartBuilding = () => {
             Get Started
           </Link>
           <Link
-            href="/docs/getting-started"
+            href="/learn"
             className={cx(
               button({ color: 'black', size: 'lg' }),
-              css({ w: '250px', ml: '25px' })
+              css({ w: '250px' })
             )}
           >
             Learn Panda

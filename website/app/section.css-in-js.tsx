@@ -8,33 +8,33 @@ export const SectionCssInJS = () => {
       display="flex"
       justifyContent="center"
       bgColor="panda.bg.muted"
-      pt="138px"
-      pb="170px"
+      pt={{ base: '50px', lg: '138px' }}
+      pb={{ base: '50px', lg: '170px' }}
     >
       <Stack justifyContent="center" alignItems="center" maxWidth="80%">
-        <panda.span
+        <panda.h2
           color="white"
-          fontSize="48px"
-          lineHeight="60px"
-          letterSpacing="tight"
+          textStyle="panda.h2"
           fontWeight="semibold"
+          textAlign={{ base: 'center', lg: 'left' }}
         >
           Styling library{' '}
           <panda.span color="panda.yellow">you’ll enjoy</panda.span> using 🐼
-        </panda.span>
+        </panda.h2>
         {/* TODO code example */}
         <panda.div
-          w="870px"
+          w="90%"
+          maxW="870px"
           h="526px"
-          mt="50px"
+          mt={{ lg: '50px' }}
           backgroundColor="panda.gray.50"
         ></panda.div>
         <panda.div display="flex" justifyContent="center" maxW="80%">
           <panda.span
-            fontSize="32px"
-            lineHeight="42px"
+            fontSize={{ base: '1.35rem', lg: '2rem' }}
+            lineHeight="2.625rem"
             letterSpacing="tight"
-            mt="68px"
+            mt={{ base: '20px', md: '68px' }}
             color="white"
             textAlign="center"
             fontWeight="semibold"
@@ -44,11 +44,13 @@ export const SectionCssInJS = () => {
           </panda.span>
         </panda.div>
         <Flex
-          fontSize="20px"
-          lineHeight="26.7px"
-          mt="75.5px"
+          textStyle="xl"
+          mt={{ base: '20px', lg: '75.5px' }}
           justifyContent="space-between"
           w="100%"
+          flexDirection={{ base: 'column', lg: 'row' }}
+          alignItems={{ base: 'center', lg: 'flex-start' }}
+          gap="8"
         >
           <Stack w="250px">
             <HStack>

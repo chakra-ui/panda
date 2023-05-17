@@ -10,29 +10,27 @@ export const SectionModernCss = () => {
       display="flex"
       justifyContent="center"
       bgColor="panda.bg.main"
-      h="650px"
-      pt="100px"
+      py="8"
+      lg={{ h: '650px', pt: '100px' }}
     >
       <Flex
         justifyContent="center"
         alignItems="center"
         maxWidth="80%"
         position="relative"
+        lgDown={{ flexDirection: 'column' }}
       >
         <Stack
           justifyContent="center"
           alignItems="flex-start"
-          maxWidth="45%"
-          mr="auto"
-          pb="92px"
+          lg={{ maxWidth: '45%', mr: 'auto', pb: '92px' }}
         >
           <panda.div
             w="93px"
             h="93px"
-            className={button({ shape: 'circle' })}
+            className={button({ color: 'white', shape: 'circle' })}
             position="relative"
-            bgColor="white"
-            color="black"
+            alignSelf={{ base: 'center', lg: 'flex-start' }}
           >
             <Icon icon="Css3" />
             <panda.div
@@ -44,29 +42,15 @@ export const SectionModernCss = () => {
               <Icon icon="Sparks2" className={css({ w: '22px', h: '22px' })} />
             </panda.div>
           </panda.div>
-          <panda.span
-            fontSize="40px"
-            lineHeight="50px"
-            letterSpacing="tight"
-            fontWeight="bold"
-            mt="53px"
-          >
+          <panda.h3 textStyle="panda.h3" mt={{ base: '20px', lg: '53px' }}>
             Generates Modern CSS code at build time
-          </panda.span>
-          <panda.span
-            fontSize="26px"
-            lineHeight="34px"
-            letterSpacing="tight"
-            color="panda.text.muted"
-            fontWeight="semibold"
-            mt="20px"
-          >
+          </panda.h3>
+          <panda.h4 textStyle="panda.h4" color="panda.text.muted" mt="20px">
             Panda uses modern features like cascade layers, :where selectors and
             css variables to give you best-in-class css output.
-          </panda.span>
-          {/* TODO fix links */}
+          </panda.h4>
           <Link
-            href="/docs/getting-started"
+            href="/learn"
             className={cx(
               button({ color: 'ghost', size: 'xl' }),
               css({ px: 0, color: 'panda.text.headline' })
@@ -78,11 +62,14 @@ export const SectionModernCss = () => {
         </Stack>
         {/* TODO code example */}
         <panda.div
-          position="absolute"
-          right="0"
-          bottom="-46px"
-          w="570px"
-          h="600px"
+          maxW="570px"
+          lg={{
+            position: 'absolute',
+            right: '0',
+            bottom: '-46px',
+            w: '48%',
+            h: '600px'
+          }}
           backgroundColor="panda.gray.600"
           borderRadius="16px"
         ></panda.div>

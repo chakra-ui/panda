@@ -8,8 +8,8 @@ export const SectionTestimonials = () => {
     <Flex
       bgColor="panda.bg.inverted"
       justifyContent="center"
-      pt="145px"
-      pb="90px"
+      pt={{ base: '40px', lg: '145px' }}
+      pb={{ base: '40px', lg: '90px' }}
     >
       <Flex direction="column" maxWidth="80%" pos="relative">
         <Icon
@@ -23,17 +23,18 @@ export const SectionTestimonials = () => {
             color: 'panda.yellow'
           })}
         />
-        <panda.span
-          fontSize="40px"
-          lineHeight="50px"
-          letterSpacing="tight"
-          fontWeight="bold"
-          mt="53px"
-          maxW="55%"
+        <panda.h3
+          textStyle="panda.h3"
+          mt={{ base: '20px', lg: '53px' }}
+          maxW={{ lg: '55%' }}
         >
           Tons of others love building and shipping sites with Panda.
-        </panda.span>
-        <Flex gap="30px" mt="95px">
+        </panda.h3>
+        <Flex
+          gap="30px"
+          mt="95px"
+          flexDirection={{ base: 'column', lg: 'row' }}
+        >
           <Testimonial>
             <Flex>
               {/* TODO avatar img */}
@@ -119,8 +120,8 @@ const TestimonialAuthor = ({ children }) => {
   return (
     <Flex
       direction="column"
-      fontSize="17px"
-      lineHeight="23px"
+      fontSize="1.0625rem"
+      lineHeight="1.4375rem"
       letterSpacing="tight"
       fontWeight="500"
       mb="20px"
@@ -133,8 +134,8 @@ const TestimonialAuthor = ({ children }) => {
 const TestimonialText = ({ children }) => {
   return (
     <panda.span
-      fontSize="17px"
-      lineHeight="25.5px"
+      fontSize="1.0625rem"
+      lineHeight="1.5625rem"
       letterSpacing="tight"
       fontWeight="600"
     >

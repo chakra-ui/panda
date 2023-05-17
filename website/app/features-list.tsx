@@ -6,10 +6,8 @@ export const FeaturesList = () => {
   return (
     <panda.div
       bgColor="panda.bg.inverted"
-      px="30px"
       py="20px"
-      fontSize="24px"
-      lineHeight="32px"
+      textStyle="2xl"
       fontWeight="semibold"
     >
       <Marquee

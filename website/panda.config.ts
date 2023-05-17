@@ -3,6 +3,7 @@ import { defineConfig } from '@pandacss/dev'
 import { tokens } from './theme/theme.tokens'
 import { semanticTokens } from './theme/theme.semantic-tokens'
 import { recipes } from './theme/theme.recipes'
+import { textStyles } from './theme/theme.text-styles'
 import { globalCss } from './theme/theme.global-css'
 
 export default defineConfig({
@@ -59,6 +60,7 @@ export default defineConfig({
       semanticTokens,
       tokens,
       recipes,
+      textStyles,
       keyframes: {
         fadein: {
           '0%': { opacity: '0' },
