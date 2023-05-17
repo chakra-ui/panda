@@ -12,4 +12,6 @@ export * from './grid.mjs';
 export * from './grid-item.mjs';
 export * from './wrap.mjs';
 export * from './container.mjs';
+export * from './divider.mjs';
+export * from './indicator.mjs';
 export * from './styled-link.mjs';

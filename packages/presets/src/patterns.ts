@@ -279,6 +279,83 @@ const aspectRatio = definePattern({
   },
 })
 
+const divider = definePattern({
+  properties: {
+    orientation: { type: 'enum', value: ['horizontal', 'vertical'] },
+    thickness: { type: 'token', value: 'sizes', property: 'borderWidth' },
+  },
+  transform(props, { map }) {
+    const { orientation = 'horizontal', thickness = '1px', ...rest } = props
+    return {
+      '--thickness': thickness,
+      width: map(orientation, (v) => (v === 'vertical' ? undefined : '100%')),
+      height: map(orientation, (v) => (v === 'horizontal' ? undefined : '100%')),
+      borderInlineStartWidth: map(orientation, (v) => (v === 'horizontal' ? 'var(--thickness)' : undefined)),
+      borderInlineEndWidth: map(orientation, (v) => (v === 'vertical' ? 'var(--thickness)' : undefined)),
+      ...rest,
+    }
+  },
+})
+
+type Dict = Record<string, any>
+
+const indicator = definePattern({
+  properties: {
+    offsetX: { type: 'token', value: 'spacing', property: 'left' },
+    offsetY: { type: 'token', value: 'spacing', property: 'top' },
+    placement: {
+      type: 'enum',
+      value: [
+        'bottom-end',
+        'bottom-start',
+        'top-end',
+        'top-start',
+        'bottom-center',
+        'top-center',
+        'middle-center',
+        'middle-end',
+        'middle-start',
+      ],
+    },
+  },
+  transform(props, { map }) {
+    const { offsetX = '0', offsetY = '0', placement = 'top-end', ...rest } = props
+    return {
+      display: 'inline-flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'absolute',
+      insetBlockStart: map(placement, (v) => {
+        const [side] = v.split('-')
+        const map: Dict = { top: offsetY, middle: '50%', bottom: 'auto' }
+        return map[side]
+      }),
+      insetBlockEnd: map(placement, (v) => {
+        const [side] = v.split('-')
+        const map: Dict = { top: 'auto', middle: '50%', bottom: offsetY }
+        return map[side]
+      }),
+      insetInlineStart: map(placement, (v) => {
+        const [, align] = v.split('-')
+        const map: Dict = { start: offsetX, center: '50%', end: 'auto' }
+        return map[align]
+      }),
+      insetInlineEnd: map(placement, (v) => {
+        const [, align] = v.split('-')
+        const map: Dict = { start: 'auto', center: '50%', end: offsetX }
+        return map[align]
+      }),
+      translate: map(placement, (v) => {
+        const [side, align] = v.split('-')
+        const mapX: Dict = { start: '-50%', center: '-50%', end: '50%' }
+        const mapY: Dict = { top: '-50%', middle: '-50%', bottom: '50%' }
+        return `${mapX[align]} ${mapY[side]}`
+      }),
+      ...rest,
+    }
+  },
+})
+
 export const patterns = {
   box,
   flex,
@@ -294,4 +371,6 @@ export const patterns = {
   gridItem,
   wrap,
   container,
+  divider,
+  indicator,
 }

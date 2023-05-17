@@ -550,6 +550,108 @@ test('should generate pattern', () => {
     export const container = (styles) => css(getContainerStyle(styles))",
         "name": "container",
       },
+      {
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { Properties } from '../types/csstype'
+    import type { Tokens } from '../tokens'
+
+    export type DividerProperties = {
+       orientation?: ConditionalValue<\\"horizontal\\" | \\"vertical\\">
+    	thickness?: ConditionalValue<Tokens[\\"sizes\\"] | Properties[\\"borderWidth\\"]>
+    }
+
+
+    type DividerOptions = DividerProperties & Omit<SystemStyleObject, keyof DividerProperties >
+
+
+    export declare function divider(options?: DividerOptions): string
+    ",
+        "js": "import { mapObject } from '../helpers.mjs';
+    import { css } from '../css/index.mjs';
+
+    const dividerConfig = {
+    transform(props, { map }) {
+      const { orientation = \\"horizontal\\", thickness = \\"1px\\", ...rest } = props;
+      return {
+        \\"--thickness\\": thickness,
+        width: map(orientation, (v) => v === \\"vertical\\" ? void 0 : \\"100%\\"),
+        height: map(orientation, (v) => v === \\"horizontal\\" ? void 0 : \\"100%\\"),
+        borderInlineStartWidth: map(orientation, (v) => v === \\"horizontal\\" ? \\"var(--thickness)\\" : void 0),
+        borderInlineEndWidth: map(orientation, (v) => v === \\"vertical\\" ? \\"var(--thickness)\\" : void 0),
+        ...rest
+      };
+    }}
+
+    export const getDividerStyle = (styles = {}) => dividerConfig.transform(styles, { map: mapObject })
+
+    export const divider = (styles) => css(getDividerStyle(styles))",
+        "name": "divider",
+      },
+      {
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { Properties } from '../types/csstype'
+    import type { Tokens } from '../tokens'
+
+    export type IndicatorProperties = {
+       offsetX?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"left\\"]>
+    	offsetY?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"top\\"]>
+    	placement?: ConditionalValue<\\"bottom-end\\" | \\"bottom-start\\" | \\"top-end\\" | \\"top-start\\" | \\"bottom-center\\" | \\"top-center\\" | \\"middle-center\\" | \\"middle-end\\" | \\"middle-start\\">
+    }
+
+
+    type IndicatorOptions = IndicatorProperties & Omit<SystemStyleObject, keyof IndicatorProperties >
+
+
+    export declare function indicator(options?: IndicatorOptions): string
+    ",
+        "js": "import { mapObject } from '../helpers.mjs';
+    import { css } from '../css/index.mjs';
+
+    const indicatorConfig = {
+    transform(props, { map }) {
+      const { offsetX = \\"0\\", offsetY = \\"0\\", placement = \\"top-end\\", ...rest } = props;
+      return {
+        display: \\"inline-flex\\",
+        justifyContent: \\"center\\",
+        alignItems: \\"center\\",
+        position: \\"absolute\\",
+        insetBlockStart: map(placement, (v) => {
+          const [side] = v.split(\\"-\\");
+          const map2 = { top: offsetY, middle: \\"50%\\", bottom: \\"auto\\" };
+          return map2[side];
+        }),
+        insetBlockEnd: map(placement, (v) => {
+          const [side] = v.split(\\"-\\");
+          const map2 = { top: \\"auto\\", middle: \\"50%\\", bottom: offsetY };
+          return map2[side];
+        }),
+        insetInlineStart: map(placement, (v) => {
+          const [, align] = v.split(\\"-\\");
+          const map2 = { start: offsetX, center: \\"50%\\", end: \\"auto\\" };
+          return map2[align];
+        }),
+        insetInlineEnd: map(placement, (v) => {
+          const [, align] = v.split(\\"-\\");
+          const map2 = { start: \\"auto\\", center: \\"50%\\", end: offsetX };
+          return map2[align];
+        }),
+        translate: map(placement, (v) => {
+          const [side, align] = v.split(\\"-\\");
+          const mapX = { start: \\"-50%\\", center: \\"-50%\\", end: \\"50%\\" };
+          const mapY = { top: \\"-50%\\", middle: \\"-50%\\", bottom: \\"50%\\" };
+          return \`\${mapX[align]} \${mapY[side]}\`;
+        }),
+        ...rest
+      };
+    }}
+
+    export const getIndicatorStyle = (styles = {}) => indicatorConfig.transform(styles, { map: mapObject })
+
+    export const indicator = (styles) => css(getIndicatorStyle(styles))",
+        "name": "indicator",
+      },
     ]
   `)
 })
