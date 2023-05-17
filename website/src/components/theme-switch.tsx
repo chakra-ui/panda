@@ -46,6 +46,7 @@ export function ThemeSwitch({
         { value: 'system', label: options.system }
       ]}
       onChange={option => {
+        if (!option) return
         setTheme(option.value)
       }}
       selected={{

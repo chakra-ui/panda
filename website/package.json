@@ -25,6 +25,7 @@
     "postcss": "^8.4.23",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-fast-marquee": "^1.5.2",
     "scroll-into-view-if-needed": "^3.0.10",
     "zod": "^3.21.4"
   },

@@ -12,13 +12,13 @@ import { CheckIcon } from 'nextra/icons'
 import { css, cx } from '../../styled-system/css'
 
 type MenuOption = {
-  value: SelectProps['selectedOption']['value']
-  label: ReactElement | SelectProps['selectedOption']['label']
+  value: NonNullable<SelectProps['selectedOption']>['value']
+  label: ReactElement | NonNullable<SelectProps['selectedOption']>['label']
 }
 
 interface MenuProps {
   selected: MenuOption
-  onChange: (option: MenuOption) => void
+  onChange: (option: MenuOption | null) => void
   options: MenuOption[]
   title?: string
   className?: string
