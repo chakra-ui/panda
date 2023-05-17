@@ -19,7 +19,7 @@ type Dict = Record<string, unknown>
 type ElementType<P = any> = keyof JSX.IntrinsicElements | Component<P>
 
 export type ${componentName}<T extends ElementType, P extends Dict = {}> = {
-  (props: JsxHTMLProps<ComponentProps<T>, P> & JsxStyleProps): JSX.Element
+  (props: JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>): JSX.Element
   displayName?: string
 }
 

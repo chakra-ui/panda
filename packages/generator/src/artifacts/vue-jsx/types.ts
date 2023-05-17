@@ -142,7 +142,7 @@ type IntrinsicElement =
     : never
 
   type ${componentName}<T extends ElementType, P extends Dict = {}> = FunctionalComponent<
-  JsxHTMLProps<ComponentProps<T>, P> & JsxStyleProps
+  JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>
   >
 
   export type ${upperName} = {

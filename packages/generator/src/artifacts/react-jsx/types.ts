@@ -11,13 +11,13 @@ export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
 import type { ElementType, ComponentProps } from 'react'
-import type { JsxStyleProps, JsxHTMLProps } from './system-types'
+import type { JsxStyleProps, JsxHTMLProps, Assign } from './system-types'
 import type { RecipeDefinition, RecipeRuntimeFn, RecipeSelection, RecipeVariantRecord } from './recipe'
 
 type Dict = Record<string, unknown>
 
 export type ${componentName}<T extends ElementType, P extends Dict = {}> = {
-  (props: JsxHTMLProps<ComponentProps<T>, P> & JsxStyleProps): JSX.Element
+  (props: JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>): JSX.Element
   displayName?: string
 }
 
