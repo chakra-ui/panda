@@ -1,40 +1,45 @@
 import { createAnatomy } from '@ark-ui/react'
 import { defineParts, defineRecipe } from '@pandacss/dev'
 
-const anatomy = createAnatomy('button', ['leftIcon', 'rightIcon'])
+const anatomy = createAnatomy('input', ['input', 'leftIcon', 'rightIcon'])
 const parts = defineParts(anatomy.build())
 
-// TODO hover
-export const buttonRecipe = defineRecipe({
-  name: 'button',
+// TODO focus
+export const inputRecipe = defineRecipe({
+  name: 'input',
   base: {
+    position: 'relative',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontWeight: 600,
     letterSpacing: 'tight',
-    paddingX: 6,
-    paddingY: 3,
     border: '3px solid var(--border-color, black)',
-    boxShadow: '4px 4px 0px 0px var(--shadow-color, black)',
-    borderRadius: '13px',
+    borderRadius: 'xl',
     ...parts({
+      input: {
+        paddingY: 4,
+        pl: 16,
+        pr: 6,
+        width: '100%',
+        height: '100%',
+        borderRadius: 'xl',
+        border: 'none',
+        outline: 'none',
+        backgroundColor: 'transparent',
+        color: 'black'
+      },
       leftIcon: {
-        marginRight: 3
+        position: 'absolute',
+        left: 6
       },
       rightIcon: {
-        marginLeft: 3
+        position: 'absolute',
+        right: 6
       }
     })
   },
   variants: {
-    shape: {
-      square: {},
-      circle: {
-        borderRadius: '50%',
-        flexShrink: 0
-      }
-    },
     color: {
       main: {
         backgroundColor: 'panda.bg.emphasized',
@@ -83,7 +88,6 @@ export const buttonRecipe = defineRecipe({
     }
   },
   defaultVariants: {
-    shape: 'square',
     color: 'main',
     size: 'md'
   }

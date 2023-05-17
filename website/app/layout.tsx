@@ -2,6 +2,8 @@ import localFont from 'next/font/local'
 import '../styles/panda.css'
 import { Providers } from './providers'
 import { css, cx } from '../styled-system/css'
+import { Navbar } from './navbar'
+import { Flex } from '../styled-system/jsx'
 
 /** @see https://github.com/github/mona-sans */
 const MonaSans = localFont({
@@ -21,7 +23,10 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className={css({ overflowX: 'hidden', overflowY: 'auto' })}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <Navbar />
+          <Flex direction="column">{children}</Flex>
+        </Providers>
       </body>
     </html>
   )

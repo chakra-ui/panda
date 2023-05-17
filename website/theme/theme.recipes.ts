@@ -6,6 +6,7 @@ import { tabsRecipe } from '../src/components/tabs.recipe'
 import { navbarRecipe } from '../src/components/navbar.recipe'
 import { navLinksRecipe } from '../src/components/nav-links.recipe'
 import { buttonRecipe } from './button.recipe'
+import { inputRecipe } from './input.recipe'
 
 export const recipes = {
   button: buttonRecipe,
@@ -13,6 +14,7 @@ export const recipes = {
   breadcrumb: breadcrumbRecipe,
   card: cardRecipe,
   callout: calloutRecipe,
+  input: inputRecipe,
   navbar: navbarRecipe,
   navLinks: navLinksRecipe,
   tabs: tabsRecipe

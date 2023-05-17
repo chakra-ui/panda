@@ -1,8 +1,7 @@
 import Link from 'next/link'
-import { HStack, panda } from '../styled-system/jsx'
+import { Flex, HStack, panda } from '../styled-system/jsx'
 import { button } from '../styled-system/recipes'
 import { ButtonIcon, Icon } from '../theme/icons'
-import { css } from '../styled-system/css'
 import { ThemeSwitchButton } from './theme-switch-button'
 
 export const Navbar = () => {
@@ -20,27 +19,27 @@ export const Navbar = () => {
       display="flex"
       alignItems="center"
       justifyContent="space-between"
-      fontSize="21px"
+      textStyle="xl"
       px="26px"
       py="24px"
     >
+      <Flex alignItems="center">
+        <Link href="/">
+          <Icon icon="LogoWithText" />
+        </Link>
+      </Flex>
       <HStack alignItems="center">
-        <Icon icon="Logo" className={css({ color: 'panda.yellow' })} />
-        <panda.span fontWeight="bold" fontSize="lg" letterSpacing="tighter">
-          panda
-        </panda.span>
-      </HStack>
-      <HStack alignItems="center">
-        {/* TODO fix links */}
         <Link href="/docs" className={button({ color: 'ghost' })}>
           Docs
         </Link>
-        {/* TODO fix links */}
-        <Link href="/docs" className={button({ color: 'ghost' })}>
+        <Link href="/learn" className={button({ color: 'ghost' })}>
           Learn
         </Link>
-        {/* TODO fix links */}
-        <Link href="/docs" className={button({ color: 'ghost' })}>
+        <Link
+          href="https://github.com/chakra-ui/panda"
+          target="_blank"
+          className={button({ color: 'ghost' })}
+        >
           Github <ButtonIcon icon="ExternalLink" />
         </Link>
         <ThemeSwitchButton />
