@@ -19,6 +19,7 @@
     "prettier": "prettier --check packages",
     "prettier-fix": "prettier --write packages",
     "typecheck": "tsc --noEmit",
+    "release": "changeset publish",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
     "prepare-studio": "pnpm --filter=./packages/cli app",
     "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
