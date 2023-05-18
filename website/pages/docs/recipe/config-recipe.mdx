@@ -133,9 +133,10 @@ array represents a set of conditions that must be met in order for the correspon
 Here's an example of how to use `compoundVariants` in Panda:
 
 ```js
-import { cva } from '../panda/css'
+import { defineRecipe } from '@pandacss/dev'
 
-const button = cva({
+const button = defineRecipe({
+  name: 'button',
   base: {
     padding: '8px 16px',
     borderRadius: '4px',
