@@ -20,10 +20,12 @@ export const SectionTestimonials = () => {
             pos: 'absolute',
             top: 0,
             right: 0,
-            color: 'panda.yellow'
+            color: 'panda.yellow',
+            opacity: { base: 0.4, md: 0.6, lg: 1 }
           })}
         />
         <panda.h3
+          position="relative"
           textStyle="panda.h3"
           mt={{ base: '20px', lg: '53px' }}
           maxW={{ lg: '55%' }}

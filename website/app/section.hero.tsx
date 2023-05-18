@@ -7,7 +7,7 @@ import Link from 'next/link'
 export const SectionHero = () => {
   return (
     <Flex justifyContent="center" backgroundColor="panda.bg.main">
-      <Flex maxWidth="90%" w="100%">
+      <Flex maxWidth={{ base: '90%', lg: '80%' }} w="100%">
         <Flex
           direction="column"
           w={{ lg: '66%' }}

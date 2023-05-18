@@ -29,8 +29,8 @@ export const SectionFooter = () => {
             height={261}
             alt="Yums the panda waving"
             className={css({
-              ml: { lg: '50px' },
-              mx: { base: 'auto', lg: 'unset' }
+              ml: { base: 'auto', md: '25px', lg: '50px!' },
+              mr: { base: 'auto', md: 'unset' }
             })}
           />
         </Flex>

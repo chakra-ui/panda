@@ -6,12 +6,20 @@ import { Icon } from '../../theme/icons'
 
 export const SectionLearn = () => {
   return (
-    <panda.div backgroundColor="panda.bg.main" px="48px">
-      <Flex direction="column">
+    <panda.div
+      backgroundColor="panda.bg.main"
+      px={{ base: '10px', lg: '48px' }}
+    >
+      <Flex direction="column" w={{ base: '90%', lg: 'unset' }} m="auto">
         <Flex position="relative">
-          <Flex direction="column" w="60%" pt="275px" pb="70px">
+          <Flex
+            direction="column"
+            w={{ lg: '60%' }}
+            pt={{ base: '145px', md: '200px', lg: '275px' }}
+            pb="70px"
+          >
             <panda.h1
-              ml="-3.5"
+              ml={{ base: '-2', md: '-3.5' }}
               color="panda.text.headline"
               textStyle="panda.h1"
             >
@@ -44,18 +52,33 @@ export const SectionLearn = () => {
             height={469}
             alt="Yums the panda driving a scooter"
             className={css({
-              ml: '120px',
               zIndex: 1,
               position: 'absolute',
               bottom: -37,
-              left: '60%'
+              right: '-20px',
+              width: '70px',
+              md: {
+                width: '250px',
+                ml: '50px',
+                left: '60%',
+                right: 'unset'
+              },
+              lg: {
+                width: '250px',
+                left: '55%'
+              },
+              xl: {
+                width: '365px',
+                ml: '120px',
+                left: '60%'
+              }
             })}
           />
         </Flex>
         <Grid
-          pt="70px"
-          pb="50px"
-          px="60px"
+          pt={{ base: '25px', lg: '70px' }}
+          pb={{ base: '15px', lg: '50px' }}
+          px={{ base: '20px', md: '60px' }}
           className={button()}
           backgroundColor="white"
           color="black"
@@ -63,7 +86,8 @@ export const SectionLearn = () => {
           position="relative"
           mb="-260px"
           justifyContent="space-between"
-          columns={3}
+          alignItems="flex-start"
+          columns={{ base: 1, md: 3 }}
         >
           <Flex direction="column">
             <Thumbnail />

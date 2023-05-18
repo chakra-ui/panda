@@ -10,14 +10,19 @@ export const SectionArticleList = () => {
       backgroundColor={{ base: 'white', _dark: 'panda.gray.400' }}
       px="48px"
       pt="350px"
-      pb="180px"
-      rowGap="130px"
+      pb={{ base: '80px', lg: '180px' }}
+      gap={{ base: '50px', md: '130px' }}
     >
       <Flex direction="column">
         <panda.h3 textStyle="panda.h3" color="panda.text.headline">
           Design Tokens
         </panda.h3>
-        <Grid columns={2} mt="12" rowGap="8!" justifyContent="space-between">
+        <Grid
+          columns={{ base: 1, md: 2 }}
+          mt={{ base: 4, md: '12' }}
+          gap={{ base: 4, md: '8!' }}
+          justifyContent="space-between"
+        >
           <ArticleItem
             icon="DesignTokenBox"
             title="How to create semantic tokens"
@@ -40,7 +45,12 @@ export const SectionArticleList = () => {
         <panda.h3 textStyle="panda.h3" color="panda.text.headline">
           Recipe and Variants
         </panda.h3>
-        <Grid columns={2} mt="12" rowGap="8!">
+        <Grid
+          columns={{ base: 1, md: 2 }}
+          mt={{ base: 4, md: '12' }}
+          gap={{ base: 4, md: '8!' }}
+          justifyContent="space-between"
+        >
           <ArticleItem icon="Recipe" title="How to write cleaner recipes" />
           <ArticleItem icon="Recipe" title="How to theme components" />
           <ArticleItem icon="Recipe" title="How to create semantic tokens" />

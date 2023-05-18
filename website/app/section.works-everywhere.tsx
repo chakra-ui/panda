@@ -21,13 +21,13 @@ export const SectionWorksEverywhere = () => {
 
         <Flex
           alignItems="center"
-          columnGap={{ base: '35px', lg: '65px' }}
+          columnGap={{ base: '45px', lg: '65px' }}
           mt={{ base: '40px', lg: '55px' }}
           mb={{ base: '40px', lg: '65px' }}
           rowGap="45px"
           flexDirection={{ base: 'column', md: 'row' }}
         >
-          <Flex columnGap={{ base: '35px', lg: '65px' }}>
+          <Flex columnGap={{ base: '45px', lg: '65px' }}>
             <ProjectLogo icon="RemixLogo" title="Remix" />
             <ProjectLogo icon="ViteLogo" title="Vite" />
             <ProjectLogo icon="NextJsLogo" title="NextJs" height="46.5" />
@@ -41,7 +41,7 @@ export const SectionWorksEverywhere = () => {
           >
             <Icon icon="LogoLetter" width="71" height="69" />
           </panda.div>
-          <Flex columnGap={{ base: '35px', lg: '65px' }}>
+          <Flex columnGap={{ base: '45px', lg: '65px' }}>
             <ProjectLogo icon="PostCSSLogo" title="PostCSS" height="45" />
             <ProjectLogo icon="AstroLogo" title="Astro" />
             <ProjectLogo icon="StoryBookLogo" title="StoryBook" height="39" />
@@ -55,6 +55,7 @@ export const SectionWorksEverywhere = () => {
         mt={{ base: '50px', lg: '68px' }}
         textAlign="center"
         fontWeight="semibold"
+        maxWidth="80%"
       >
         Panda works out of box with your favorite JS framework. <br />
         Use it with Vite, Remix,{' '}
