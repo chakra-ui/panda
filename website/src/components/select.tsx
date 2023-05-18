@@ -35,40 +35,38 @@ export function Select({
     <ArkSelect onChange={onChange}>
       {({ isOpen }) => (
         <>
-          <SelectTrigger>
-            <button
-              className={cx(
-                css({
-                  height: 7,
-                  borderRadius: 'md',
-                  px: 2,
-                  textAlign: 'left',
-                  fontSize: 'xs',
-                  fontWeight: 'medium',
-                  color: 'gray.600',
-                  transitionProperty: 'colors',
-                  _dark: { color: 'gray.400' },
-                  _expanded: {
-                    bg: 'gray.200',
-                    color: 'gray.900',
-                    // _dark: { bg: 'primary.100/10', color: 'gray.50' } // opacity modifier
-                    _dark: { bg: 'rgb(219 234 254 / 0.1)', color: 'gray.50' }
-                  },
-                  _hover: {
-                    bg: 'gray.100',
-                    color: 'gray.900',
-                    // _dark: { bg: 'primary.100/5', color: 'gray.50' }
-                    _dark: {
-                      bg: 'rgb(219 234 254 / 0.1)',
-                      color: 'gray.50'
-                    } // opacity modifier
-                  }
-                }),
-                className
-              )}
-            >
-              {(selected?.label as any) ?? title}
-            </button>
+          <SelectTrigger
+            className={cx(
+              css({
+                height: 7,
+                borderRadius: 'md',
+                px: 2,
+                textAlign: 'left',
+                fontSize: 'xs',
+                fontWeight: 'medium',
+                color: 'gray.600',
+                transitionProperty: 'colors',
+                _dark: { color: 'gray.400' },
+                _expanded: {
+                  bg: 'gray.200',
+                  color: 'gray.900',
+                  // _dark: { bg: 'primary.100/10', color: 'gray.50' } // opacity modifier
+                  _dark: { bg: 'rgb(219 234 254 / 0.1)', color: 'gray.50' }
+                },
+                _hover: {
+                  bg: 'gray.100',
+                  color: 'gray.900',
+                  // _dark: { bg: 'primary.100/5', color: 'gray.50' }
+                  _dark: {
+                    bg: 'rgb(219 234 254 / 0.1)',
+                    color: 'gray.50'
+                  } // opacity modifier
+                }
+              }),
+              className
+            )}
+          >
+            {(selected?.label as any) ?? title}
           </SelectTrigger>
           <Portal>
             <div
