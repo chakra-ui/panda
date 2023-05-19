@@ -6,7 +6,7 @@ export function renderComponent<T>(
 ) {
   if (!ComponentOrNode) return null
   if (typeof ComponentOrNode !== 'function') return ComponentOrNode
-  return <ComponentOrNode {...props} />
+  return <ComponentOrNode {...(props as any)} />
 }
 
 export function renderString<T>(

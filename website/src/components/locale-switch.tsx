@@ -26,7 +26,7 @@ export function LocaleSwitch({
       onChange={option => {
         const date = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
         document.cookie = `NEXT_LOCALE=${
-          option.value
+          option?.value
         }; expires=${date.toUTCString()}; path=/`
         location.href = addBasePath(asPath)
       }}
