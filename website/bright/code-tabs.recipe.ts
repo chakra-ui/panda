@@ -46,6 +46,7 @@ export const codeTabsRecipe = defineRecipe({
         backgroundColor: 'panda.yellow'
       }
     },
+    // @ts-expect-error
     content: {
       roundedBottom: '19px',
       '& > pre': {
