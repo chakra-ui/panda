@@ -3,6 +3,46 @@ import { Flex, Grid, panda } from '../../styled-system/jsx'
 import { button } from '../../styled-system/recipes'
 import { Icon, IconType } from '../../theme/icons'
 
+import Articles from './articles.json'
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Content = (Video | Article) & {
+  featured?: boolean
+}
+
+type Video = {
+  title: string
+  url: string
+  duration: string
+  thumbnail: string
+}
+
+type ArticleCategory =
+  | 'getting-started'
+  | 'design-tokens'
+  | 'recipes-and-variants'
+
+type Article = {
+  title: string
+  category: ArticleCategory
+  slug: string
+}
+
+const content = {
+  'Design Tokens': {
+    icon: 'DesignTokenBox',
+    articles: Articles.filter(
+      item => !item.featured && item.category === 'design-tokens'
+    )
+  },
+  'Recipes and Variants': {
+    icon: 'Recipe',
+    articles: Articles.filter(
+      item => !item.featured && item.category === 'recipes-and-variants'
+    )
+  }
+}
+
 export const SectionArticleList = () => {
   return (
     <Flex
@@ -13,50 +53,27 @@ export const SectionArticleList = () => {
       pb={{ base: '80px', lg: '180px' }}
       gap={{ base: '50px', md: '130px' }}
     >
-      <Flex direction="column">
-        <panda.h3 textStyle="panda.h3" color="panda.text.headline">
-          Design Tokens
-        </panda.h3>
-        <Grid
-          columns={{ base: 1, md: 2 }}
-          mt={{ base: 4, md: '12' }}
-          gap={{ base: 4, md: '8!' }}
-          justifyContent="space-between"
-        >
-          <ArticleItem
-            icon="DesignTokenBox"
-            title="How to create semantic tokens"
-          />
-          <ArticleItem
-            icon="DesignTokenBox"
-            title="Naming conventions for semantic tokens"
-          />
-          <ArticleItem
-            icon="DesignTokenBox"
-            title="Sync tokens from Style Dictionary"
-          />
-          <ArticleItem
-            icon="DesignTokenBox"
-            title="How to defined text and layer style"
-          />
-        </Grid>
-      </Flex>
-      <Flex direction="column">
-        <panda.h3 textStyle="panda.h3" color="panda.text.headline">
-          Recipe and Variants
-        </panda.h3>
-        <Grid
-          columns={{ base: 1, md: 2 }}
-          mt={{ base: 4, md: '12' }}
-          gap={{ base: 4, md: '8!' }}
-          justifyContent="space-between"
-        >
-          <ArticleItem icon="Recipe" title="How to write cleaner recipes" />
-          <ArticleItem icon="Recipe" title="How to theme components" />
-          <ArticleItem icon="Recipe" title="How to create semantic tokens" />
-          <ArticleItem icon="Recipe" title="How to create semantic tokens" />
-        </Grid>
-      </Flex>
+      {Object.entries(content).map(([title, { icon, articles }]) => (
+        <Flex direction="column" key={title}>
+          <panda.h3 textStyle="panda.h3" color="panda.text.headline">
+            {title}
+          </panda.h3>
+          <Grid
+            columns={{ base: 1, md: 2 }}
+            mt={{ base: 4, md: '12' }}
+            gap={{ base: 4, md: '8!' }}
+            justifyContent="space-between"
+          >
+            {articles.map(article => (
+              <ArticleItem
+                key={article.slug}
+                icon={icon as any}
+                title={article.title}
+              />
+            ))}
+          </Grid>
+        </Flex>
+      ))}
     </Flex>
   )
 }

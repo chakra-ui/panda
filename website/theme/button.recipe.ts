@@ -55,6 +55,7 @@ export const buttonRecipe = defineRecipe({
       black: {
         backgroundColor: 'black',
         color: 'white',
+        boxShadow: 'none',
         '&:is(a, button)': {
           _hover: {
             backgroundColor: 'white',

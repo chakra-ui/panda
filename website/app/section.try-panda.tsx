@@ -2,6 +2,7 @@ import { ComponentPropsWithoutRef } from 'react'
 import { css } from '../styled-system/css'
 import { Flex, HStack, panda } from '../styled-system/jsx'
 import Image from 'next/image'
+import { Content } from './content'
 
 export const SectionTryPanda = () => {
   return (
@@ -11,7 +12,7 @@ export const SectionTryPanda = () => {
       pt={{ base: '40px', lg: '85px' }}
       pb={{ base: '40px', lg: '70px' }}
     >
-      <Flex direction="column" width="80%" alignItems="center">
+      <Content alignItems="center">
         <Flex alignItems="center">
           <panda.h3
             textStyle="panda.h3"
@@ -152,7 +153,7 @@ export const SectionTryPanda = () => {
             </HStack>
           </Flex>
         </Flex>
-      </Flex>
+      </Content>
     </Flex>
   )
 }

@@ -1,8 +1,11 @@
 import Link from 'next/link'
 import { css, cx } from '../styled-system/css'
-import { Flex, Stack, panda } from '../styled-system/jsx'
-import { button } from '../styled-system/recipes'
+import { Stack, panda } from '../styled-system/jsx'
+import { button, code } from '../styled-system/recipes'
 import { ButtonIcon, Icon } from '../theme/icons'
+import { Content } from './content'
+import { Code } from '../bright/code'
+import { outdent } from 'outdent'
 
 export const SectionModernCss = () => {
   return (
@@ -13,11 +16,11 @@ export const SectionModernCss = () => {
       py="8"
       lg={{ h: '650px', pt: '100px' }}
     >
-      <Flex
+      <Content
         justifyContent="center"
         alignItems="center"
-        maxWidth="80%"
         position="relative"
+        flexDirection="row"
         lgDown={{ flexDirection: 'column' }}
       >
         <Stack
@@ -53,27 +56,68 @@ export const SectionModernCss = () => {
             href="/learn"
             className={cx(
               button({ color: 'ghost', size: 'xl' }),
-              css({ px: 0, color: 'panda.text.headline' })
+              css({
+                ml: -6,
+                color: 'panda.text.headline',
+                _hover: {
+                  backgroundColor: 'white',
+                  color: 'black',
+                  _dark: {
+                    backgroundColor: 'panda.yellow'
+                  }
+                }
+              })
             )}
           >
             Learn more
             <ButtonIcon icon="RightArrowIcon" />
           </Link>
         </Stack>
-        {/* TODO code example */}
         <panda.div
           maxW="570px"
           lg={{
             position: 'absolute',
             right: '0',
-            bottom: '-46px',
-            w: '48%',
-            h: '600px'
+            bottom: '-70px',
+            w: '48%'
           }}
           backgroundColor="panda.gray.600"
           borderRadius="16px"
-        ></panda.div>
-      </Flex>
+        >
+          {/* @ts-expect-error Server Component */}
+          <Code lang="css" className={code()}>
+            {outdent`
+              @layer reset, base, tokens, recipes, utilities;
+
+              @layer utilities {
+                .d_flex {
+                  display: flex;
+                }
+                .flex_row {
+                  flex-direction: row;
+                }
+                .items_center {
+                  align-items: center;
+                }
+                .p_4 {
+                  padding: 1rem;
+                }
+
+                /* ... */
+
+                .mt_2 {
+                  margin-top: var(--space-2);
+                }
+                .fs_sm {
+                  font-size: var(--fontSizes-sm);
+                }
+                .color_gray.600 {
+                  color: var(--color-gray-600);
+                }
+              }`}
+          </Code>
+        </panda.div>
+      </Content>
     </panda.div>
   )
 }

@@ -1,13 +1,16 @@
 import Link from 'next/link'
 import { css, cx } from '../styled-system/css'
 import { Flex, panda } from '../styled-system/jsx'
-import { button } from '../styled-system/recipes'
+import { button, code } from '../styled-system/recipes'
 import { ButtonIcon, Icon } from '../theme/icons'
+import { Content } from './content'
+import { Code } from '../bright/code'
+import { outdent } from 'outdent'
 
 export const SectionRecipes = () => {
   return (
     <Flex bgColor="panda.bg.main" justifyContent="center" pt="55px" pb="58px">
-      <Flex maxWidth="80%" flexDirection={{ base: 'column', lg: 'row' }}>
+      <Content flexDirection={{ base: 'column', lg: 'row' }}>
         <Flex
           w={{ lg: '55%' }}
           flexDirection="column"
@@ -60,7 +63,14 @@ export const SectionRecipes = () => {
                 letterSpacing: 'tight',
                 fontWeight: 'bold',
                 color: 'panda.text.headline',
-                px: 0
+                _hover: {
+                  backgroundColor: 'white',
+                  color: 'black',
+                  _dark: {
+                    backgroundColor: 'panda.yellow'
+                  }
+                },
+                ml: -6
               })
             )}
           >
@@ -69,15 +79,46 @@ export const SectionRecipes = () => {
           </Link>
         </Flex>
         <Flex w={{ lg: '45%' }} flexDirection="column" ml="5">
-          {/* TODO code example */}
           <panda.div
             w="100%"
-            h="725px"
             backgroundColor="panda.gray.600"
             borderRadius="16px"
-          ></panda.div>
+          >
+            {/* @ts-expect-error Server Component */}
+            <Code lang="tsx" className={code()}>
+              {outdent`export const badge = cva({
+                  base: {
+                    fontWeight: 'medium',
+                    letterSpacing: 'wide',
+                    flexGrow: '0',
+                    px: '3',
+                    alignSelf: 'flex-start',
+                    borderRadius: 'md',
+                  },
+                  variants: {
+                    status: {
+                      default: {
+                        color: 'white',
+                        bg: 'gray.500',
+                      },
+                      success: {
+                        color: 'white',
+                        bg: 'green.500',
+                      },
+                      warning: {
+                        color: 'white',
+                        bg: 'yellow.500',
+                      },
+                    },
+                  },
+                  defaultVariants: {
+                    status: 'default',
+                  },
+                })`}
+            </Code>
+          </panda.div>
         </Flex>
-      </Flex>
+      </Content>
     </Flex>
   )
 }

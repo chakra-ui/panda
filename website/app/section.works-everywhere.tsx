@@ -2,6 +2,7 @@ import { ComponentPropsWithoutRef } from 'react'
 import { Flex, panda } from '../styled-system/jsx'
 import { button } from '../styled-system/recipes'
 import { Icon, IconType } from '../theme/icons'
+import { Content } from './content'
 
 export const SectionWorksEverywhere = () => {
   return (
@@ -13,7 +14,7 @@ export const SectionWorksEverywhere = () => {
       pt={{ base: '40px', lg: '110px' }}
       pb={{ base: '100px', lg: '185px' }}
     >
-      <Flex direction="column" maxWidth="80%" alignItems="center">
+      <Content alignItems="center">
         <panda.h2 textStyle="panda.h2" textAlign="center">
           Works Everywhere. <br />
           Including Server Components.
@@ -47,7 +48,7 @@ export const SectionWorksEverywhere = () => {
             <ProjectLogo icon="StoryBookLogo" title="StoryBook" height="39" />
           </Flex>
         </Flex>
-      </Flex>
+      </Content>
       <panda.span
         textStyle="2xl"
         lineHeight="2rem"

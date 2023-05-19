@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { button } from '../styled-system/recipes'
 import { ButtonIcon } from '../theme/icons'
 import { ThemeSwitchButton } from './theme-switch-button'
+import { Content } from './content'
 
 export const SectionFooter = () => {
   return (
@@ -15,7 +16,7 @@ export const SectionFooter = () => {
       justifyContent={{ base: 'center', md: 'unset' }}
       textAlign={{ base: 'center', md: 'unset' }}
     >
-      <Flex direction="column" maxWidth={{ lg: '80%' }} w="100%">
+      <Content>
         <Flex flexDirection={{ base: 'column', md: 'row' }}>
           <panda.h1
             color="panda.yellow"
@@ -105,7 +106,7 @@ export const SectionFooter = () => {
             lg={{ px: 6 }}
           />
         </Wrap>
-      </Flex>
+      </Content>
     </Flex>
   )
 }

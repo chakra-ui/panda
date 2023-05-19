@@ -3,6 +3,7 @@ import { css, cx } from '../styled-system/css'
 import { Flex, panda } from '../styled-system/jsx'
 import { button } from '../styled-system/recipes'
 import Image from 'next/image'
+import { Content } from './content'
 
 export const SectionStartBuilding = () => {
   return (
@@ -27,7 +28,7 @@ export const SectionStartBuilding = () => {
           transform: 'translateX(-50%)'
         })}
       />
-      <Flex direction="column" maxWidth="80%" alignItems="center">
+      <Content alignItems="center">
         <panda.span
           fontSize={{ base: '2.75rem', lg: '3.875rem' }}
           lineHeight={{ base: '3rem', lg: '4.875rem' }}
@@ -64,7 +65,7 @@ export const SectionStartBuilding = () => {
             Learn Panda
           </Link>
         </Flex>
-      </Flex>
+      </Content>
     </Flex>
   )
 }

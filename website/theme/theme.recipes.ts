@@ -5,12 +5,17 @@ import { calloutRecipe } from '../src/components/callout.recipe'
 import { tabsRecipe } from '../src/components/tabs.recipe'
 import { navbarRecipe } from '../src/components/navbar.recipe'
 import { navLinksRecipe } from '../src/components/nav-links.recipe'
+
+import { codeRecipe } from './code.recipe'
+import { contentRecipe } from './content.recipe'
 import { buttonRecipe } from './button.recipe'
 import { inputRecipe } from './input.recipe'
 
 export const recipes = {
   button: buttonRecipe,
   banner: bannerRecipe,
+  code: codeRecipe,
+  content: contentRecipe,
   breadcrumb: breadcrumbRecipe,
   card: cardRecipe,
   callout: calloutRecipe,

@@ -3,11 +3,12 @@ import { css, cx } from '../styled-system/css'
 import { Flex, HStack, panda } from '../styled-system/jsx'
 import { button } from '../styled-system/recipes'
 import Link from 'next/link'
+import { Content } from './content'
 
 export const SectionHero = () => {
   return (
     <Flex justifyContent="center" backgroundColor="panda.bg.main">
-      <Flex maxWidth={{ base: '90%', lg: '80%' }} w="100%">
+      <Content>
         <Flex
           direction="column"
           w={{ lg: '66%' }}
@@ -107,7 +108,7 @@ export const SectionHero = () => {
             })}
           />
         </Flex>
-      </Flex>
+      </Content>
     </Flex>
   )
 }

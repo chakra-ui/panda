@@ -1,8 +1,11 @@
 import Link from 'next/link'
 import { css, cx } from '../styled-system/css'
 import { Flex, Stack, panda } from '../styled-system/jsx'
-import { button } from '../styled-system/recipes'
+import { button, code } from '../styled-system/recipes'
 import { ButtonIcon, Icon } from '../theme/icons'
+import { Content } from './content'
+import { outdent } from 'outdent'
+import { Code } from '../bright/code'
 
 export const SectionDesignTokens = () => {
   return (
@@ -12,7 +15,7 @@ export const SectionDesignTokens = () => {
       pt={{ base: '40px', lg: '105px' }}
       pb={{ base: '40px', lg: '95px' }}
     >
-      <Flex flexDirection="column" display="flex" maxWidth="80%">
+      <Content>
         <Stack
           lg={{ flexDirection: 'row' }}
           justifyContent="center"
@@ -82,13 +85,31 @@ export const SectionDesignTokens = () => {
             >
               Core Tokens
             </panda.span>
-            {/* TODO code example */}
             <panda.div
               w="100%"
-              h="445px"
               backgroundColor="panda.gray.600"
               borderRadius="16px"
-            ></panda.div>
+            >
+              {/* @ts-expect-error Server Component */}
+              <Code lang="tsx" className={code()}>
+                {outdent`const theme = {
+                tokens: {
+                  colors: {
+                    primary: { value: '#0FEE0F' },
+                    secondary: { value: '#EE0F0F' }
+                  },
+                  fonts: {
+                    body: { value: 'system-ui, sans-serif' }
+                  },
+                  sizes: {
+                    small: { value: '12px' },
+                    medium: { value: '16px' },
+                    large: { value: '24px' }
+                  }
+                }
+              }`}
+              </Code>
+            </panda.div>
           </Flex>
           <Flex w={{ lg: '45%' }} flexDirection="column">
             <panda.span
@@ -104,16 +125,29 @@ export const SectionDesignTokens = () => {
             >
               Semantic Tokens
             </panda.span>
-            {/* TODO code example */}
             <panda.div
               w="100%"
-              h="445px"
               backgroundColor="panda.gray.600"
               borderRadius="16px"
-            ></panda.div>
+            >
+              {/* @ts-expect-error Server Component */}
+              <Code lang="tsx" className={code()}>
+                {outdent`const theme = {
+                  // ...
+                  semanticTokens: {
+                    colors: {
+                      danger: { value: { base: '{colors.red}', _dark: '{colors.darkred}' } },
+                      success: {
+                        value: { base: '{colors.green}', _dark: '{colors.darkgreen}' }
+                      }
+                    }
+                  }
+                }`}
+              </Code>
+            </panda.div>
           </Flex>
         </Flex>
-      </Flex>
+      </Content>
     </Flex>
   )
 }

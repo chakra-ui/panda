@@ -2,6 +2,7 @@ import { css } from '../styled-system/css'
 import { Flex, HTMLPandaProps, panda } from '../styled-system/jsx'
 import { button } from '../styled-system/recipes'
 import { Icon } from '../theme/icons'
+import { Content } from './content'
 
 export const SectionTestimonials = () => {
   return (
@@ -11,7 +12,7 @@ export const SectionTestimonials = () => {
       pt={{ base: '40px', lg: '145px' }}
       pb={{ base: '40px', lg: '90px' }}
     >
-      <Flex direction="column" maxWidth="80%" pos="relative">
+      <Content pos="relative">
         <Icon
           icon="DoubleHeart"
           className={css({
@@ -93,7 +94,7 @@ export const SectionTestimonials = () => {
             </TestimonialText>
           </Testimonial>
         </Flex>
-      </Flex>
+      </Content>
     </Flex>
   )
 }

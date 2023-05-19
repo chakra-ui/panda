@@ -6,7 +6,7 @@ export const globalCss = defineGlobalStyles({
     WebkitFontSmoothing: 'antialiased',
     MozOsxFontSmoothing: 'grayscale',
     textStyle: 'md',
-    fontFeatureSettings: "'rlig' 1, 'calt' 1, 'ss01' 1",
+    fontFeatureSettings: 'normal',
     WebkitTapHighlightColor: 'transparent'
   },
   body: {

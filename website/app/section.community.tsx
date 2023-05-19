@@ -3,6 +3,7 @@ import { css, cx } from '../styled-system/css'
 import { Center, Flex, HTMLPandaProps, panda } from '../styled-system/jsx'
 import { button } from '../styled-system/recipes'
 import { ButtonIcon, Icon } from '../theme/icons'
+import { Content } from './content'
 
 export const SectionCommunity = () => {
   return (
@@ -14,7 +15,7 @@ export const SectionCommunity = () => {
       pb={{ base: '80px', lg: '200px' }}
       overflow="hidden"
     >
-      <Flex maxWidth="80%">
+      <Content>
         <Flex
           position="relative"
           zIndex={1}
@@ -154,7 +155,7 @@ export const SectionCommunity = () => {
             transform="translate3d(-50%, -50%, 0)"
           />
         </Center>
-      </Flex>
+      </Content>
     </Flex>
   )
 }

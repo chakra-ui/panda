@@ -2,7 +2,65 @@ import { css } from '../styled-system/css'
 import { Flex, HStack, Stack, panda } from '../styled-system/jsx'
 import { Icon } from '../theme/icons'
 
-export const SectionCssInJS = () => {
+import { code, content } from '../styled-system/recipes'
+import { Code } from '../bright/code'
+import { tabs } from '../bright/extension'
+import { outdent } from 'outdent'
+
+const examples = [
+  {
+    code: outdent`
+    import { css } from './styled-system/css'
+    import { circle, stack } from './styled-system/patterns'
+
+    function App() {
+        return (
+            <div className={stack({ direction: 'row', p: '4' })}>
+                <div className={circle({ size: '5rem', overflow: 'hidden' })}>
+                    <img src="https://via.placeholder.com/150" alt="avatar" />
+                </div>
+                <div className={css({ mt: '4', fontSize: 'xl', fontWeight: 'semibold' })}> John Doe
+                </div>
+                <div className={css({ mt: '2', fontSize: 'sm', color: 'gray.600' })}>
+                    john@doe.com
+                </div>
+            </div>
+        )
+    }`,
+    title: 'style-functions.tsx',
+    lang: 'tsx'
+  },
+  {
+    code: outdent`
+    import { Box, Stack, Circle } from './styled-system/jsx'
+
+    function App() {
+      return (
+        <Stack direction="row" p="4" rounded="md" shadow="lg" bg="white">
+          <Circle size="5rem" overflow="hidden">
+            <img src="https://via.placeholder.com/150" alt="avatar" />
+          </Circle>
+          <Box mt="4" fontSize="xl" fontWeight="semibold">
+            John Doe
+          </Box>
+          <Box mt="2" fontSize="sm" color="gray.600">
+            john@doe.com
+          </Box>
+        </Stack>
+      )
+    }
+    `,
+    title: 'style-props.tsx',
+    lang: 'tsx'
+  },
+  {
+    code: outdent`TODO`,
+    title: 'design-tokens.ts',
+    lang: 'ts'
+  }
+]
+
+export const SectionCssInJS = async () => {
   return (
     <panda.div
       display="flex"
@@ -11,7 +69,7 @@ export const SectionCssInJS = () => {
       pt={{ base: '50px', lg: '138px' }}
       pb={{ base: '50px', lg: '170px' }}
     >
-      <Stack justifyContent="center" alignItems="center" maxWidth="80%">
+      <Stack justifyContent="center" alignItems="center" className={content()}>
         <panda.h2
           color="white"
           textStyle="panda.h2"
@@ -21,18 +79,20 @@ export const SectionCssInJS = () => {
           Styling library{' '}
           <panda.span color="panda.yellow">you’ll enjoy</panda.span> using 🐼
         </panda.h2>
-        {/* TODO code example */}
-        <panda.div
-          w="90%"
-          maxW="870px"
-          h="526px"
-          mt={{ lg: '50px' }}
-          backgroundColor="panda.gray.50"
-        ></panda.div>
+        <panda.div w="90%" maxW="870px" mt={{ lg: '50px' }} borderRadius="19px">
+          {/* @ts-expect-error Server Component */}
+          <Code
+            lang="tsx"
+            // TODO tabs style
+            extensions={[tabs]}
+            subProps={examples}
+            className={code()}
+          />
+        </panda.div>
         <panda.div display="flex" justifyContent="center" maxW="80%">
           <panda.span
             fontSize={{ base: '1.35rem', lg: '2rem' }}
-            lineHeight="2.625rem"
+            lineHeight={{ base: '1.85rem', lg: '2.625rem' }}
             letterSpacing="tight"
             mt={{ base: '20px', md: '68px' }}
             color="white"

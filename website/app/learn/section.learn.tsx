@@ -3,6 +3,7 @@ import { Flex, Grid, Stack, panda } from '../../styled-system/jsx'
 import { button, input } from '../../styled-system/recipes'
 import { css } from '../../styled-system/css'
 import { Icon } from '../../theme/icons'
+import { Content } from '../content'
 
 export const SectionLearn = () => {
   return (
@@ -10,7 +11,7 @@ export const SectionLearn = () => {
       backgroundColor="panda.bg.main"
       px={{ base: '10px', lg: '48px' }}
     >
-      <Flex direction="column" w={{ base: '90%', lg: 'unset' }} m="auto">
+      <Content m="auto">
         <Flex position="relative">
           <Flex
             direction="column"
@@ -135,7 +136,7 @@ export const SectionLearn = () => {
             </Stack>
           </Flex>
         </Grid>
-      </Flex>
+      </Content>
     </panda.div>
   )
 }
