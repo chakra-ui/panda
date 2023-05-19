@@ -13,15 +13,19 @@ export const colors = defineTokens.colors({
   white: { value: '#fff' },
   panda: {
     yellow: { value: '#F6E458' },
-    yellowDark: { value: '#6D6737' },
+    yellowDark: { value: '#111111' },
+    // #91818a taupe gray
+    // 798478 battleship gray
+    // 5D737E payne's gray
+    // #75704E another yellow dark
     gray: {
-      50: { value: 'rgba(255, 255, 255, 87%)' }, // hero 1st subtext dark
+      50: { value: 'rgba(255, 255, 255, 87%)' },
       100: { value: 'rgba(255, 255, 255, 0.3)' },
-      200: { value: '#B1B1B1' }, // cssinjs feature subtext
-      300: { value: 'rgba(0, 0, 0, 67%)' }, // hero 1st subtext light
-      400: { value: '#4B4B4B' }, // bg cssInJs dark mode
-      600: { value: '#282828' }, // code example bg DS
-      900: { value: '#010201' } // bg cssinjs light mode
+      200: { value: '#B1B1B1' },
+      300: { value: 'rgba(0, 0, 0, 67%)' },
+      400: { value: '#4B4B4B' },
+      600: { value: '#282828' },
+      900: { value: '#010201' }
     }
   },
   primary: {

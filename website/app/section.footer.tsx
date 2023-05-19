@@ -42,8 +42,8 @@ export const SectionFooter = () => {
           <Link
             href="/docs"
             className={cx(
-              button({ color: 'ghost' }),
-              css({ color: 'white', px: '2', py: 0, lg: { px: 6 } })
+              button({ color: 'ghost.white' }),
+              css({ px: '2', py: 0, lg: { px: 6 } })
             )}
           >
             Docs
@@ -52,8 +52,8 @@ export const SectionFooter = () => {
           <Link
             href="/docs"
             className={cx(
-              button({ color: 'ghost' }),
-              css({ color: 'white', px: '2', py: 0, lg: { px: 6 } })
+              button({ color: 'ghost.white' }),
+              css({ px: '2', py: 0, lg: { px: 6 } })
             )}
           >
             Twitter{' '}
@@ -66,8 +66,8 @@ export const SectionFooter = () => {
           <Link
             href="/docs"
             className={cx(
-              button({ color: 'ghost' }),
-              css({ color: 'white', px: '2', py: 0, lg: { px: 6 } })
+              button({ color: 'ghost.white' }),
+              css({ px: '2', py: 0, lg: { px: 6 } })
             )}
           >
             Discord{' '}
@@ -80,8 +80,8 @@ export const SectionFooter = () => {
             href="https://github.com/chakra-ui/panda"
             target="_blank"
             className={cx(
-              button({ color: 'ghost' }),
-              css({ color: 'white', px: '2', py: 0, lg: { px: 6 } })
+              button({ color: 'ghost.white' }),
+              css({ px: '2', py: 0, lg: { px: 6 } })
             )}
           >
             Github{' '}
@@ -91,8 +91,15 @@ export const SectionFooter = () => {
             />
           </Link>
           <ThemeSwitchButton
-            css={{ ["& [data-part='right-icon']"]: { color: 'panda.yellow' } }}
-            color="white"
+            color={{ base: 'white', _hover: 'black' }}
+            css={{
+              ["& [data-part='right-icon']"]: {
+                color: 'panda.yellow'
+              },
+              ["&:hover [data-part='right-icon']"]: {
+                color: 'black'
+              }
+            }}
             p="2"
             py="0"
             lg={{ px: 6 }}

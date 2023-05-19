@@ -18,6 +18,12 @@ export const buttonRecipe = defineRecipe({
     border: '3px solid var(--border-color, black)',
     boxShadow: '4px 4px 0px 0px var(--shadow-color, black)',
     borderRadius: '13px',
+    transitionProperty: 'all',
+    '&:is(a, button)': {
+      _hover: {
+        boxShadow: '6px 6px 0px 0px var(--shadow-color, black)'
+      }
+    },
     ...parts({
       leftIcon: {
         marginRight: 3
@@ -38,19 +44,43 @@ export const buttonRecipe = defineRecipe({
     color: {
       main: {
         backgroundColor: 'panda.bg.emphasized',
-        color: 'black'
+        color: 'black',
+        '&:is(a, button)': {
+          _hover: {
+            backgroundColor: 'panda.gray.400',
+            color: 'white'
+          }
+        }
       },
       black: {
         backgroundColor: 'black',
-        color: 'white'
+        color: 'white',
+        '&:is(a, button)': {
+          _hover: {
+            backgroundColor: 'white',
+            color: 'black'
+          }
+        }
       },
       white: {
         backgroundColor: 'white',
-        color: 'black'
+        color: 'black',
+        '&:is(a, button)': {
+          _hover: {
+            backgroundColor: 'black',
+            color: 'white'
+          }
+        }
       },
       yellow: {
         backgroundColor: 'panda.bg.main',
-        color: 'panda.text.main'
+        color: 'panda.text.main',
+        '&:is(a, button)': {
+          _hover: {
+            backgroundColor: 'panda.gray.400',
+            color: 'white'
+          }
+        }
       },
       border: {
         backgroundColor: 'transparent',
@@ -60,9 +90,35 @@ export const buttonRecipe = defineRecipe({
       },
       ghost: {
         backgroundColor: 'transparent',
-        color: 'panda.text.main',
         border: 'none',
-        shadow: 'none'
+        shadow: 'none',
+        color: 'panda.text.main',
+        '&:is(a, button)': {
+          _hover: {
+            backgroundColor: 'panda.yellow',
+            color: 'black'
+          }
+        }
+      },
+      'ghost.white': {
+        backgroundColor: 'transparent',
+        border: 'none',
+        shadow: 'none',
+        color: 'white',
+        '&:is(a, button)': {
+          _hover: {
+            backgroundColor: 'panda.yellow',
+            color: 'black',
+            ...parts({
+              leftIcon: {
+                color: 'black!'
+              },
+              rightIcon: {
+                color: 'black!'
+              }
+            })
+          }
+        }
       }
     },
     size: {

@@ -27,6 +27,12 @@ export const semanticTokens = defineSemanticTokens({
         },
         emphasized: {
           value: { base: '{colors.white}', _dark: '{colors.panda.yellow}' }
+        },
+        'emphasized.hover': {
+          value: {
+            base: '{colors.panda.gray.100}',
+            _dark: '{colors.panda.yellowDark}'
+          }
         }
       },
       text: {

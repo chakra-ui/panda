@@ -46,8 +46,13 @@ export const SectionCommunity = () => {
                 borderWidth: '4px',
                 letterSpacing: 'tight',
                 fontWeight: '600',
-                color: 'black',
-                bgColor: 'panda.yellow'
+                color: { base: 'black', _hover: 'white' },
+                bgColor: { base: 'panda.yellow', _hover: 'panda.gray.400' },
+                _dark: {
+                  _hover: {
+                    shadowColor: 'panda.gray.200'
+                  }
+                }
               })
             )}
           >

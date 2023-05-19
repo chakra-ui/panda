@@ -29,6 +29,9 @@ export const Navbar = () => {
       top="22px"
       left="30px"
       right="30px"
+      borderRadius="9px"
+      boxShadow="0px 4px 4px 0px rgba(0, 0, 0, 0.05)"
+      px="26px"
       data-mobile-open={isMenuOpen ? '' : undefined}
     >
       <DesktopMenu isMenuOpen={isMenuOpen} setMenuOpen={setMenuOpen} />

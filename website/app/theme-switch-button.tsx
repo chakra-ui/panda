@@ -7,7 +7,7 @@ import { useTheme } from 'next-themes'
 import { HTMLPandaProps, panda } from '../styled-system/jsx'
 import { button } from '../styled-system/recipes'
 import { ButtonIcon } from '../theme/icons'
-import { css } from '../styled-system/css'
+import { css, cx } from '../styled-system/css'
 
 export function ThemeSwitchButton({
   lite,
@@ -24,7 +24,11 @@ export function ThemeSwitchButton({
     <panda.button
       opacity={mounted ? 1 : 0}
       transitionProperty="opacity"
-      className={button({ color: 'ghost' })}
+      className={cx(
+        button({ color: 'ghost' }),
+        // prevent layout shift with predefined width
+        !lite ? css({ w: '125px' }) : undefined
+      )}
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       {...props}
     >
