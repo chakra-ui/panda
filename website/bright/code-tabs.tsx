@@ -4,17 +4,16 @@ import { TabContent, TabList, Tabs, TabTrigger } from '@ark-ui/react'
 import React from 'react'
 import { css } from '../styled-system/css'
 
-export function TabsList({ titles, children }) {
-  const tabs = React.Children.toArray(children)
+export function TabsList({ titles }: { titles: string[] }) {
   return (
     <TabList className={css({ display: 'flex' })}>
-      {titles.map((title, i) => (
-        <TabTrigger asChild key={title} value={title}>
-          {tabs[i]}
+      {titles.map(title => (
+        <TabTrigger key={title} value={title}>
+          {title}
         </TabTrigger>
       ))}
     </TabList>
   )
 }
 
-export { Tabs as TabsRoot, TabContent as TabsContent }
+export { Tabs as CodeTabs, TabContent as TabsContent }

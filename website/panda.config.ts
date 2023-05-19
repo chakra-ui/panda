@@ -14,6 +14,7 @@ export default defineConfig({
     './src/**/*.{tsx,jsx}',
     './pages/**/*.{jsx,tsx}',
     './app/**/*.{jsx,tsx}',
+    './bright/**/*.{jsx,tsx}',
     './theme.config.tsx'
   ],
   exclude: [],
