@@ -60,7 +60,7 @@ const examples = [
   }
 ]
 
-export const SectionCssInJS = async () => {
+export const SectionCssInJS = () => {
   return (
     <panda.div
       display="flex"
