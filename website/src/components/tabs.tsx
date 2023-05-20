@@ -33,7 +33,7 @@ export function Tabs({
         {items.map((item, index) => {
           return (
             <TabTrigger value={item} key={index}>
-              <button>{item}</button>
+              {item}
             </TabTrigger>
           )
         })}
