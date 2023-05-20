@@ -4,29 +4,31 @@ import { Icon } from '../theme/icons'
 
 import { code, content } from '../styled-system/recipes'
 import { Code } from '../bright/code'
-import { tabs } from '../bright/extension'
+import { tabs } from '../bright/code-tabs.extension'
 import { outdent } from 'outdent'
 
 const examples = [
   {
     code: outdent`
-    import { css } from './styled-system/css'
-    import { circle, stack } from './styled-system/patterns'
+    import { css } from "./styled-system/css";
+    import { circle, stack } from "./styled-system/patterns";
 
     function App() {
-        return (
-            <div className={stack({ direction: 'row', p: '4' })}>
-                <div className={circle({ size: '5rem', overflow: 'hidden' })}>
-                    <img src="https://via.placeholder.com/150" alt="avatar" />
-                </div>
-                <div className={css({ mt: '4', fontSize: 'xl', fontWeight: 'semibold' })}> John Doe
-                </div>
-                <div className={css({ mt: '2', fontSize: 'sm', color: 'gray.600' })}>
-                    john@doe.com
-                </div>
-            </div>
-        )
-    }`,
+      return (
+        <div className={stack({ direction: "row", p: "4" })}>
+          <div className={circle({ size: "5rem", overflow: "hidden" })}>
+            <img src="https://via.placeholder.com/150" alt="avatar" />
+          </div>
+          <div className={css({ mt: "4", fontSize: "xl", fontWeight: "semibold" })}>
+            John Doe
+          </div>
+          <div className={css({ mt: "2", fontSize: "sm", color: "gray.600" })}>
+            john@doe.com
+          </div>
+        </div>
+      );
+    }
+`,
     title: 'style-functions.tsx',
     lang: 'tsx'
   },

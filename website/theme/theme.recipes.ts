@@ -6,6 +6,8 @@ import { tabsRecipe } from '../src/components/tabs.recipe'
 import { navbarRecipe } from '../src/components/navbar.recipe'
 import { navLinksRecipe } from '../src/components/nav-links.recipe'
 
+import { codeTabsRecipe } from '../bright/code-tabs.recipe'
+
 import { codeRecipe } from './code.recipe'
 import { contentRecipe } from './content.recipe'
 import { buttonRecipe } from './button.recipe'
@@ -15,6 +17,7 @@ export const recipes = {
   button: buttonRecipe,
   banner: bannerRecipe,
   code: codeRecipe,
+  codeTabs: codeTabsRecipe,
   content: contentRecipe,
   breadcrumb: breadcrumbRecipe,
   card: cardRecipe,
