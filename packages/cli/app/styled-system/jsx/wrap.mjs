@@ -1,9 +1,9 @@
 import { createElement, forwardRef } from 'react'
-import { panda } from './factory.mjs';
+import { styled } from './factory.mjs';
 import { getWrapStyle } from '../patterns/wrap.mjs';
 
 export const Wrap = forwardRef(function Wrap(props, ref) {
   const { gap, rowGap, columnGap, align, justify, ...restProps } = props
 const styleProps = getWrapStyle({gap, rowGap, columnGap, align, justify})
-return createElement(panda.div, { ref, ...styleProps, ...restProps })
+return createElement(styled.div, { ref, ...styleProps, ...restProps })
 })    

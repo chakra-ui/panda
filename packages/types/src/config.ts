@@ -181,7 +181,7 @@ export type Config = {
   jsxFramework?: 'react' | 'solid' | 'preact' | 'vue'
   /**
    * The factory name of the element
-   * @default 'panda'
+   * @default 'styled'
    *
    * @example
    * ```jsx

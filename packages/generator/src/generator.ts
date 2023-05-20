@@ -10,7 +10,7 @@ const defaults = (conf: LoadConfigResult): LoadConfigResult => ({
   ...conf,
   config: {
     cssVarRoot: ':where(:root, :host)',
-    jsxFactory: 'panda',
+    jsxFactory: 'styled',
     outExtension: 'mjs',
     ...conf.config,
   },

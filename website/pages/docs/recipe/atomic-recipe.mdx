@@ -23,7 +23,7 @@ A recipe consists of four properties:
 Here's an example button recipe
 
 ```jsx
-import { cva } from '../panda/css'
+import { cva } from '../styled-system/css'
 
 const button = cva({
   base: {
@@ -87,7 +87,7 @@ The `defaultVariants` property is used to set the default variant values for the
 apply a variant by default. Here's an example of how to use `defaultVariants`:
 
 ```jsx
-import { cva } from '../panda/css'
+import { cva } from '../styled-system/css'
 
 const button = cva({
   base: {
@@ -119,7 +119,7 @@ array represents a set of conditions that must be met in order for the correspon
 Here's an example of how to use `compoundVariants` in Panda:
 
 ```js
-import { cva } from '../panda/css'
+import { cva } from '../styled-system/css'
 
 const button = cva({
   base: {
@@ -208,8 +208,8 @@ For recipes created using the `cva` function, you can wrap them in the `panda` f
 that can be used in JSX.
 
 ```js
-import { cva } from '../panda/css'
-import { panda } from '../panda/jsx'
+import { cva } from '../styled-system/css'
+import { panda } from '../styled-system/jsx'
 
 const recipe = cva({
   base: {
