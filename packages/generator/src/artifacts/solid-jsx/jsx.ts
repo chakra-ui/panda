@@ -12,7 +12,7 @@ export function generateSolidJsxFactory(ctx: Context) {
     ${ctx.file.import('normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('allCssProperties', './is-valid-prop')}
     
-    function styled(element, configOrCva = {}) {
+    function styledFn(element, configOrCva = {}) {
       const cvaFn = configOrCva.__cva__ ? configOrCva : cva(configOrCva)
       
       return function ${componentName}(props) {
@@ -54,13 +54,13 @@ export function generateSolidJsxFactory(ctx: Context) {
     function createJsxFactory() {
       const cache = new Map()
     
-      return new Proxy(styled, {
+      return new Proxy(styledFn, {
         apply(_, __, args) {
-          return styled(...args)
+          return styledFn(...args)
         },
         get(_, el) {
           if (!cache.has(el)) {
-            cache.set(el, styled(el))
+            cache.set(el, styledFn(el))
           }
           return cache.get(el)
         },

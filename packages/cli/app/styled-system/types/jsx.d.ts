@@ -4,13 +4,13 @@ import type { RecipeDefinition, RecipeRuntimeFn, RecipeSelection, RecipeVariantR
 
 type Dict = Record<string, unknown>
 
-export type StyledComponent<T extends ElementType, P extends Dict = {}> = {
+export type PandaComponent<T extends ElementType, P extends Dict = {}> = {
   (props: JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>): JSX.Element
   displayName?: string
 }
 
-export type Styled = {
-  <T extends ElementType, P extends RecipeVariantRecord = {}>(component: T, recipe?: RecipeDefinition<P> | RecipeRuntimeFn<P>): StyledComponent<T, RecipeSelection<P>>
-} & { [K in keyof JSX.IntrinsicElements]: StyledComponent<K, {}> }
+export type Panda = {
+  <T extends ElementType, P extends RecipeVariantRecord = {}>(component: T, recipe?: RecipeDefinition<P> | RecipeRuntimeFn<P>): PandaComponent<T, RecipeSelection<P>>
+} & { [K in keyof JSX.IntrinsicElements]: PandaComponent<K, {}> }
 
-export type HTMLStyledProps<T extends ElementType> = JsxHTMLProps<ComponentProps<T>, JsxStyleProps>
+export type HTMLPandaProps<T extends ElementType> = JsxHTMLProps<ComponentProps<T>, JsxStyleProps>

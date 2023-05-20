@@ -20,6 +20,7 @@ export default defineConfig({
   exclude: [],
   outdir: 'styled-system',
   jsxFramework: 'react',
+  jsxFactory: 'panda',
   utilities: {
     extend: {
       transitionProperty: {

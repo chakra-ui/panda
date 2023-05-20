@@ -9,6 +9,7 @@ export default {
   include: ['./src/**/*.{tsx,jsx,astro}'],
   exclude: [],
   outdir: 'styled-system',
+  jsxFactory: 'panda',
   theme: {
     ...config.theme,
     semanticTokens: {
