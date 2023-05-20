@@ -12,6 +12,15 @@
         "reveal": "never"
       },
       "group": "build"
+    },
+    {
+      "type": "npm",
+      "script": "compile",
+      "path": "extension",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: compile - extension",
+      "detail": "tsc -p ./"
     }
   ]
 }
