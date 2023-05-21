@@ -20,6 +20,6 @@
     "dist"
   ],
   "devDependencies": {
-    "mdn-data": "^2.0.31"
+    "mdn-data": "^2.0.32"
   }
 }
