@@ -109,8 +109,8 @@ importers:
         specifier: 18.2.4
         version: 18.2.4
       '@types/update-notifier':
-        specifier: 6.0.2
-        version: 6.0.2
+        specifier: 6.0.4
+        version: 6.0.4
       '@vitejs/plugin-react':
         specifier: 4.0.0
         version: 4.0.0(vite@4.3.8)
@@ -6853,11 +6853,11 @@ packages:
   /@types/unist@2.0.6:
     resolution: {integrity: sha512-PBjIUxZHOuj0R15/xuwJYjFi+KZdNFrehocChv4g5hu6aFroHue8m0lBP0POdK2nKzbw0cgV1mws8+V/JAcEkQ==}
 
-  /@types/update-notifier@6.0.2:
-    resolution: {integrity: sha512-/OKZaYpzHqBO9D+IzqAB7VfC/fx+xl/CM1upD6D56QPNyvAsFULAVLfjlBIGCl1ibU1rKqZV45xOj018WqHhlA==}
+  /@types/update-notifier@6.0.4:
+    resolution: {integrity: sha512-CiKJPSmt/3F4sVnkQTjnP/onKtTJxRkib6Gvw4XESM8FNsHlvRnBNqU5qL0IQmqjtKnz5e9E6Y7xChOpvxFzKg==}
     dependencies:
       '@types/configstore': 6.0.0
-      boxen: 7.0.1
+      boxen: 7.1.0
     dev: true
 
   /@types/yargs-parser@21.0.0:
@@ -8847,20 +8847,6 @@ packages:
       wrap-ansi: 8.1.0
     dev: false
 
-  /boxen@7.0.1:
-    resolution: {integrity: sha512-8k2eH6SRAK00NDl1iX5q17RJ8rfl53TajdYxE3ssMLehbg487dEVgsad4pIsZb/QqBgYWIl6JOauMTLGX2Kpkw==}
-    engines: {node: '>=14.16'}
-    dependencies:
-      ansi-align: 3.0.1
-      camelcase: 7.0.0
-      chalk: 5.2.0
-      cli-boxes: 3.0.0
-      string-width: 5.1.2
-      type-fest: 2.19.0
-      widest-line: 4.0.1
-      wrap-ansi: 8.1.0
-    dev: true
-
   /boxen@7.0.2:
     resolution: {integrity: sha512-1Z4UJabXUP1/R9rLpoU3O2lEMnG3pPLAs/ZD2lF3t2q7qD5lM8rqbtnvtvm4N0wEyNlE+9yZVTVAGmd1V5jabg==}
     engines: {node: '>=14.16'}
@@ -9153,11 +9139,6 @@ packages:
   /camelcase@6.3.0:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
-
-  /camelcase@7.0.0:
-    resolution: {integrity: sha512-JToIvOmz6nhGsUhAYScbo2d6Py5wojjNfoxoc2mEVLUdJ70gJK2gnd+ABY1Tc3sVMyK7QDPtN0T/XdlCQWITyQ==}
-    engines: {node: '>=14.16'}
-    dev: true
 
   /camelcase@7.0.1:
     resolution: {integrity: sha512-xlx1yCK2Oc1APsPXDL2LdlNP6+uu8OCDdhOBSVT279M/S+y75O30C2VuD8T2ogdePBBl7PfPF4504tnLgX3zfw==}
