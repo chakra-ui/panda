@@ -3,6 +3,8 @@ const css = String.raw
 const reset = css`
   * {
     margin: 0;
+    padding: 0;
+    font: inherit;
   }
 
   *,
@@ -35,13 +37,6 @@ const reset = css`
   svg {
     display: block;
     max-width: 100%;
-  }
-
-  input,
-  button,
-  textarea,
-  select {
-    font: inherit;
   }
 
   p,

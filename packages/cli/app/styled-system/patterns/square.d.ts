@@ -3,12 +3,12 @@ import type { PropertyValue } from '../types/prop-type'
 import type { Properties } from '../types/csstype'
 import type { Tokens } from '../tokens'
 
-export type CircleProperties = {
+export type SquareProperties = {
    size?: PropertyValue<'width'>
 }
 
 
-type CircleOptions = CircleProperties & Omit<SystemStyleObject, keyof CircleProperties >
+type SquareOptions = SquareProperties & Omit<SystemStyleObject, keyof SquareProperties >
 
 
-export declare function circle(options?: CircleOptions): string
+export declare function square(options?: SquareOptions): string

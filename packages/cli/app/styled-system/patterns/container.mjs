@@ -2,14 +2,13 @@ import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
 const containerConfig = {
-transform(props, { map }) {
-  const { size, ...rest } = props;
+transform(props) {
   return {
     position: "relative",
-    width: "100%",
-    maxWidth: size != null ? map(size, (v) => `breakpoint-${v}`) : "60ch",
-    marginX: "auto",
-    ...rest
+    maxWidth: "8xl",
+    mx: "auto",
+    px: { base: "4", md: "6", lg: "8" },
+    ...props
   };
 }}
 

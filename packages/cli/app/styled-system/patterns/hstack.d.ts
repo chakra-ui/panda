@@ -9,7 +9,7 @@ export type HstackProperties = {
 }
 
 
-type HstackOptions = HstackProperties & Omit<SystemStyleObject, keyof HstackProperties | 'flexDirection'>
+type HstackOptions = HstackProperties & Omit<SystemStyleObject, keyof HstackProperties >
 
 
 export declare function hstack(options?: HstackOptions): string

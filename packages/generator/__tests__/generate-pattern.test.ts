@@ -94,7 +94,7 @@ test('should generate pattern', () => {
     }
 
 
-    type StackOptions = StackProperties & Omit<SystemStyleObject, keyof StackProperties | 'flexDirection'>
+    type StackOptions = StackProperties & Omit<SystemStyleObject, keyof StackProperties >
 
 
     export declare function stack(options?: StackOptions): string
@@ -132,7 +132,7 @@ test('should generate pattern', () => {
     }
 
 
-    type VstackOptions = VstackProperties & Omit<SystemStyleObject, keyof VstackProperties | 'flexDirection'>
+    type VstackOptions = VstackProperties & Omit<SystemStyleObject, keyof VstackProperties >
 
 
     export declare function vstack(options?: VstackOptions): string
@@ -170,7 +170,7 @@ test('should generate pattern', () => {
     }
 
 
-    type HstackOptions = HstackProperties & Omit<SystemStyleObject, keyof HstackProperties | 'flexDirection'>
+    type HstackOptions = HstackProperties & Omit<SystemStyleObject, keyof HstackProperties >
 
 
     export declare function hstack(options?: HstackOptions): string
@@ -237,12 +237,50 @@ test('should generate pattern', () => {
     import type { Properties } from '../types/csstype'
     import type { Tokens } from '../tokens'
 
+    export type SquareProperties = {
+       size?: PropertyValue<'width'>
+    }
+
+
+    type SquareOptions = SquareProperties & Omit<SystemStyleObject, keyof SquareProperties >
+
+
+    export declare function square(options?: SquareOptions): string
+    ",
+        "js": "import { mapObject } from '../helpers.mjs';
+    import { css } from '../css/index.mjs';
+
+    const squareConfig = {
+    transform(props) {
+      const { size, ...rest } = props;
+      return {
+        display: \\"flex\\",
+        alignItems: \\"center\\",
+        justifyContent: \\"center\\",
+        flex: \\"0 0 auto\\",
+        width: size,
+        height: size,
+        ...rest
+      };
+    }}
+
+    export const getSquareStyle = (styles = {}) => squareConfig.transform(styles, { map: mapObject })
+
+    export const square = (styles) => css(getSquareStyle(styles))",
+        "name": "square",
+      },
+      {
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { Properties } from '../types/csstype'
+    import type { Tokens } from '../tokens'
+
     export type CircleProperties = {
        size?: PropertyValue<'width'>
     }
 
 
-    type CircleOptions = CircleProperties & Omit<SystemStyleObject, keyof CircleProperties | 'width' | 'height' | 'borderRadius'>
+    type CircleOptions = CircleProperties & Omit<SystemStyleObject, keyof CircleProperties >
 
 
     export declare function circle(options?: CircleOptions): string
@@ -521,7 +559,7 @@ test('should generate pattern', () => {
     import type { Tokens } from '../tokens'
 
     export type ContainerProperties = {
-       size?: ConditionalValue<Tokens[\\"breakpoints\\"]>
+       
     }
 
 
@@ -534,14 +572,13 @@ test('should generate pattern', () => {
     import { css } from '../css/index.mjs';
 
     const containerConfig = {
-    transform(props, { map }) {
-      const { size, ...rest } = props;
+    transform(props) {
       return {
         position: \\"relative\\",
-        width: \\"100%\\",
-        maxWidth: size != null ? map(size, (v) => \`breakpoint-\${v}\`) : \\"60ch\\",
-        marginX: \\"auto\\",
-        ...rest
+        maxWidth: \\"8xl\\",
+        mx: \\"auto\\",
+        px: { base: \\"4\\", md: \\"6\\", lg: \\"8\\" },
+        ...props
       };
     }}
 
