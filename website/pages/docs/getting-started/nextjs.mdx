@@ -17,8 +17,6 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
 First, create a Next.js app using the official [Create Next App](https://nextjs.org/docs/api-reference/create-next-app) CLI.
 We will name our project `my-panda-css-app` but you can name it whatever you want.
 
-### Interactive
-
 If you don't enter any parameter, the CLI will guide you through the process of creating a new Next.js app.
 
 <Tabs items={['pnpm', 'npm', 'yarn']}>
@@ -49,33 +47,6 @@ You will be asked a few questions, answer them as follows:
 ✔ Use App Router (recommended)? … Yes
 ✔ Would you like to customize the default import alias? … No
 ```
-
-Enter the newly created directory:
-```bash
-cd my-panda-css-app
-```
-
-### Non-interactive
-
-If you want to create a Next.js app without any interaction, you can use the following command:
-
-<Tabs items={['pnpm', 'npm', 'yarn']}>
-  <Tab>
-    ```bash
-    npx create-next-app@latest my-panda-css-app --typescript --eslint --no-tailwind --src-dir --app --import-alias "@/*" --use-pnpm
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    npx create-next-app@latest my-panda-css-app --typescript --eslint --no-tailwind --src-dir --app --import-alias "@/*" --use-npm
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    npx create-next-app@latest my-panda-css-app --typescript --eslint --no-tailwind --src-dir --app --import-alias "@/*" --use-yarn
-    ```
-  </Tab>
-</Tabs>
 
 Enter the newly created directory:
 ```bash
