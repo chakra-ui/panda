@@ -5,22 +5,16 @@
   "tasks": [
     {
       "type": "npm",
-      "script": "extension-watch",
+      "script": "extension:watch",
       "problemMatcher": "$tsc-watch",
       "isBackground": true,
       "presentation": {
         "reveal": "never"
       },
-      "group": "build"
-    },
-    {
-      "type": "npm",
-      "script": "compile",
-      "path": "extension",
-      "group": "build",
-      "problemMatcher": [],
-      "label": "npm: compile - extension",
-      "detail": "tsc -p ./"
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ]
 }

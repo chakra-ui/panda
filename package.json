@@ -26,7 +26,9 @@
     "deploy-studio": "pnpm prepare-studio && pnpm build-studio",
     "serve-studio": "npx serve ./sandbox/vite-ts/panda-static",
     "website": "pnpm --filter=./website",
-    "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs"
+    "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs",
+    "extension:watch:tsup": "tsup packages/extension/src/index.ts --watch --dts-resolve --format cjs --minify false --sourcemap false --clean",
+    "extension:watch": "pnpm --filter=./extension watch"
   },
   "keywords": [],
   "author": "Segun Adebayo <joseshegs@gmail.com>",

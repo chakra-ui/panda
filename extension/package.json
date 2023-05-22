@@ -9,7 +9,9 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -20,14 +22,18 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "pnpm run compile && pnpm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "vscode:prepublish": "npm run build",
+    "build": "tsup src/extension.ts --format cjs --external vscode --minify -d out",
+    "dev": "tsup src/extension.ts --watch --format cjs --external vscode -d out",
+    "clean": "rm -rf dist && rm -rf out && rm -rf .vscode-test",
+    "lint": "eslint ./src --ext .ts,.tsx --fix",
+    "pretest": "tsc -p ./ && rm -f .vscode-test/user-",
+    "test": "node ./src/tests/runTest.ts",
+    "deploy": "vsce publish --no-dependencies",
+    "package": "vsce package --pre-release --no-dependencies"
   },
   "devDependencies": {
+    "@types/estree": "^1.0.1",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
@@ -41,6 +47,16 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "vscode": "^1.1.37"
+    "@pandacss/node": "workspace:^",
+    "acorn": "^8.8.2",
+    "acorn-jsx": "^5.3.2",
+    "acorn-loose": "^8.3.0",
+    "acorn-walk": "^8.2.0",
+    "tsup": "6.7.0",
+    "vscode": "^1.1.37",
+    "vscode-languageclient": "^8.1.0",
+    "vscode-languageserver": "^8.1.0",
+    "vscode-languageserver-textdocument": "^1.0.8",
+    "vscode-uri": "^3.0.7"
   }
 }
