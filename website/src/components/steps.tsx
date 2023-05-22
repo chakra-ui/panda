@@ -13,12 +13,12 @@ export function Steps({
         css({
           ml: 4,
           mb: 12,
-          border: '1px solid token(colors.gray.200)',
+          borderLeft: '1px solid token(colors.gray.200)',
           pl: 6,
           _dark: {
             borderColor: 'neutral.800'
           },
-          counterReset: 'step'
+          counterReset: 'step',
         }),
         className
       )}

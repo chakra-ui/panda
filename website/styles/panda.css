@@ -75,3 +75,33 @@ Make sure disabled buttons don't get the pointer cursor.
    This can trigger a poorly considered lint error in some tools but is included by design.
 */
 }
+
+.nextra-steps h3 {
+  counter-increment: step
+}
+
+.nextra-steps h3:before {
+  height: 33px;
+  width: 33px;
+  border-width: 4px;
+  border-color: rgba(255,255,255,1);
+  background-color: rgba(243,244,246,1);
+  position: absolute
+}
+
+:is(html[class~=dark] .nextra-steps h3):before {
+  border-color: rgba(17,17,17,1);
+  background-color: rgba(38,38,38,1)
+}
+
+.nextra-steps h3:before {
+  text-align: center;
+  text-indent: -1px;
+  color: rgba(163,163,163,1);
+  content: counter(step);
+  border-radius: 9999px;
+  margin-top: 3px;
+  margin-left: -41px;
+  font-size: 1rem;
+  font-weight: 400
+}

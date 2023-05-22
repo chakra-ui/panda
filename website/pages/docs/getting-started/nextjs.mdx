@@ -9,7 +9,10 @@ Panda CSS works out of the box with Next.js. You can use Panda CSS with Next.js 
 
 If you don't have Next.js app installed, you can follow the [Create a Next.js app](#create-a-nextjs-app) section to create a new Next.js app, otherwise you can skip to the [Install Panda CSS](#install-panda-css) section.
 
-## Create a Next.js app
+## Start a new project
+
+<Steps>
+### Create a Next.js app
 
 First, create a Next.js app using the official [Create Next App](https://nextjs.org/docs/api-reference/create-next-app) CLI.
 We will name our project `my-panda-css-app` but you can name it whatever you want.
@@ -50,7 +53,7 @@ Enter the newly created directory:
 cd my-panda-css-app
 ```
 
-## Install Panda CSS
+### Install Panda CSS
 
 Install Panda CSS dependency using your favorite package manager.
 
@@ -114,7 +117,7 @@ module.exports = {
 
 For advanced configuration follow the Next.js PostCSS guide to set up a custom PostCSS configuration by referring to this [link](https://nextjs.org/docs/pages/building-your-application/configuring/post-css#customizing-plugins).
 
-## Start using Panda
+### Start using Panda
 
 We will update the contents of `page.tsx` with the following snippet that uses Panda CSS:
 
@@ -130,7 +133,7 @@ export default function Home() {
 
 > **Note:** You can also remove `page.module.css` file as we don't need it anymore.
 
-## Start the development server
+### Start the development server
 
 Run the following command to start the development server:
 
@@ -154,7 +157,9 @@ Run the following command to start the development server:
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### Troubleshooting
+</Steps>
+
+## Troubleshooting
 
 Sometimes Next.js caches PostCSS generated styles and you need to clear the cache. To do that, delete the `.next` folder and restart your development server.
 
@@ -171,8 +176,25 @@ You can also update you `package.json` scripts to delete the `.next` folder befo
 
 ## What to read next?
 
-- [Panda CSS configuration](/docs/references/panda-config).
-- [Tokens](/docs/tokens/01-introduction)
-- [Recipes](/docs/recipe/atomic-recipe)
-- [Utilities](/docs/utilities/00-intro)
-- [Patterns](/docs/patterns/00-intro)
+<Cards>
+  <Card
+    title="Panda CSS configuration"
+    href="/docs/references/panda-config"
+  />
+  <Card
+    title="Tokens"
+    href="/docs/tokens/01-introduction"
+  />
+  <Card
+    title="Recipes"
+    href="/docs/recipe/atomic-recipe"
+  />
+  <Card
+    title="Utilities"
+    href="/docs/utilities/00-intro"
+  />
+  <Card
+    title="Patterns"
+    href="/docs/patterns/00-intro"
+  />
+</Cards>
