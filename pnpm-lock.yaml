@@ -542,6 +542,9 @@ importers:
       prettier:
         specifier: 2.8.8
         version: 2.8.8
+      prism-react-renderer:
+        specifier: ^2.0.4
+        version: 2.0.4(react@18.2.0)
       prisma:
         specifier: 4.14.1
         version: 4.14.1
@@ -6777,6 +6780,10 @@ packages:
   /@types/pretty-hrtime@1.0.1:
     resolution: {integrity: sha512-VjID5MJb1eGKthz2qUerWT8+R4b9N+CHvGCzg9fn4kWZgaF9AhdYikQio3R7wV8YY1NsQKPaCwKz1Yff+aHNUQ==}
     dev: true
+
+  /@types/prismjs@1.26.0:
+    resolution: {integrity: sha512-ZTaqn/qSqUuAq1YwvOFQfVW1AR/oQJlLSZVustdjwI+GZ8kr0MSHBj0tsXPW1EqHubx50gtBEjbPGsdZwQwCjQ==}
+    dev: false
 
   /@types/prop-types@15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
@@ -17066,11 +17073,13 @@ packages:
     dependencies:
       parse-ms: 2.1.0
 
-  /prism-react-renderer@1.3.5(react@18.2.0):
-    resolution: {integrity: sha512-IJ+MSwBWKG+SM3b2SUfdrhC+gu01QkV2KmRQgREThBfSQRoufqRfxfHUxpG1WcaFjP+kojcFyO9Qqtpgt3qLCg==}
+  /prism-react-renderer@2.0.4(react@18.2.0):
+    resolution: {integrity: sha512-1fcayBPhlGWLjKHeZMA2eJbvLsq1YJsoP3CUOF0BNlobw4knAYS6EWHYawywaZ5zoIxYkgxuqrrkCj7b+135ow==}
     peerDependencies:
-      react: '>=0.14.9'
+      react: '>=16.0.0'
     dependencies:
+      '@types/prismjs': 1.26.0
+      clsx: 1.2.1
       react: 18.2.0
     dev: false
 
@@ -17411,7 +17420,7 @@ packages:
       react: '*'
       react-dom: '*'
     dependencies:
-      prism-react-renderer: 1.3.5(react@18.2.0)
+      prism-react-renderer: 2.0.4(react@18.2.0)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       sucrase: 3.32.0
