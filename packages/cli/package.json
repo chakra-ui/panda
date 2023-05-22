@@ -76,7 +76,7 @@
     "@pandacss/presets": "workspace:*",
     "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
-    "@types/update-notifier": "6.0.2",
+    "@types/update-notifier": "6.0.4",
     "@vitejs/plugin-react": "4.0.0",
     "execa": "7.1.1",
     "kleur": "4.1.5",
