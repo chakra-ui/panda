@@ -6,24 +6,21 @@ export const textStyles = defineTextStyles({
       value: {
         fontSize: '14.5rem',
         lineHeight: '1.2',
-        letterSpacing: 'tighter',
-        fontWeight: 'bold'
+        letterSpacing: 'tighter'
       }
     },
     h2: {
       value: {
         fontSize: { base: '2.5rem', lg: '3rem' },
         lineHeight: '1.2',
-        letterSpacing: 'tight',
-        fontWeight: 'bold'
+        letterSpacing: 'tight'
       }
     },
     h3: {
       value: {
         fontSize: { base: '1.875rem', lg: '2.25rem' },
         lineHeight: '1.2',
-        letterSpacing: 'tight',
-        fontWeight: 'bold'
+        letterSpacing: 'tight'
       }
     },
     h4: {

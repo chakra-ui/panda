@@ -6,7 +6,7 @@ import { css } from '../styled-system/css'
 
 export function TabsList({ titles }: { titles: string[] }) {
   return (
-    <TabList className={css({ display: 'flex' })}>
+    <TabList className={css({ display: 'flex', fontWeight: 'medium' })}>
       {titles.map(title => (
         <TabTrigger key={title} value={title}>
           {title}

@@ -4,6 +4,7 @@ import { tokens } from './theme/theme.tokens'
 import { semanticTokens } from './theme/theme.semantic-tokens'
 import { recipes } from './theme/theme.recipes'
 import { textStyles } from './theme/theme.text-styles'
+import { layerStyles } from './theme/theme.layer-styles'
 import { globalCss } from './theme/theme.global-css'
 
 export default defineConfig({
@@ -14,7 +15,7 @@ export default defineConfig({
     './src/**/*.{tsx,jsx}',
     './pages/**/*.{jsx,tsx}',
     './app/**/*.{jsx,tsx}',
-    './bright/**/*.{jsx,tsx}',
+    './bright/**/*.{jsx,ts,tsx}',
     './theme.config.tsx'
   ],
   exclude: [],
@@ -63,6 +64,7 @@ export default defineConfig({
       tokens,
       recipes,
       textStyles,
+      layerStyles,
       keyframes: {
         fadein: {
           '0%': { opacity: '0' },

@@ -1,148 +1,87 @@
+import Image from 'next/image'
 import { css } from '../styled-system/css'
-import { Flex, HTMLPandaProps, panda } from '../styled-system/jsx'
-import { button } from '../styled-system/recipes'
+import { Container, Grid, HStack, Stack, panda } from '../styled-system/jsx'
 import { Icon } from '../theme/icons'
-import { Content } from './content'
+
+const testimonials: Array<{
+  text: string
+  author: string
+  username: string
+  avatar: string
+}> = [
+  {
+    author: 'Jess Truss',
+    avatar:
+      'https://images.unsplash.com/photo-1619895862022-09114b41f16f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8cHJvZmlsZSUyMHBob3RvfGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60',
+    text: 'Of all the libraries I’ve built design systems with: SC, emotion, xstyled, styled-system, theme-ui etc., @panda__css has been the most ergonomic and enjoyable. Took a look at the roadmap and it looks like it’s getting even better.',
+    username: '@jess__truss'
+  },
+  {
+    author: 'Dann',
+    avatar:
+      'https://images.unsplash.com/photo-1584673392125-f91e13c6a3cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fHByb2ZpbGUlMjBwaG90b3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60',
+    text: "Been using @panda__css for a week on an actual product and I've never had such a smooth collaboration, shared vocabulary, and mutual understanding with our designer. Setting up tokens and being very systematic and constrained about the UI we build has never been easier.",
+    username: '@dan_best'
+  },
+  {
+    author: 'Nabeel Ben',
+    avatar:
+      'https://images.unsplash.com/photo-1595085610896-fb31cfd5d4b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDJ8fHByb2ZpbGUlMjBwaG90b3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60',
+    text: 'I have been using @panda__css for a few weeks now and I am loving it. It is so easy to use and the documentation is great. I am using it with @reactjs and @typescript and it is a great combo.',
+    username: '@nabeel_ben'
+  }
+]
 
 export const SectionTestimonials = () => {
   return (
-    <Flex
-      bg="bg.inverted"
-      justifyContent="center"
-      pt={{ base: '40px', lg: '145px' }}
-      pb={{ base: '40px', lg: '90px' }}
-    >
-      <Content pos="relative">
+    <panda.section bg="bg.inverted">
+      <Container pt="20" pb="32">
         <Icon
           icon="DoubleHeart"
           className={css({
-            w: '173px',
-            h: '166px',
+            display: { base: 'none', sm: 'block' },
+            w: '12rem',
             pos: 'absolute',
-            top: 0,
-            right: 0,
-            color: 'panda.yellow',
-            opacity: { base: 0.4, md: 0.6, lg: 1 }
+            top: '24',
+            right: '8',
+            color: 'yellow.300'
           })}
         />
         <panda.h3
-          position="relative"
+          mt={{ base: '8', lg: '16' }}
           textStyle="panda.h3"
-          mt={{ base: '20px', lg: '53px' }}
-          maxW={{ lg: '55%' }}
+          fontWeight="bold"
+          maxW={{ base: 'lg', lg: '2xl' }}
         >
           Tons of others love building and shipping sites with Panda.
         </panda.h3>
-        <Flex
-          gap="30px"
-          mt="95px"
-          flexDirection={{ base: 'column', lg: 'row' }}
-        >
-          <Testimonial>
-            <Flex>
-              {/* TODO avatar img */}
-              <TestimonialAvatar bg="bg.main" />
-              <TestimonialAuthor>
-                <span>Alex Truss</span>
-                <panda.span color={{ base: '#7D7D7D', _dark: '#ABABAB' }}>
-                  @alextruss_dev
-                </panda.span>
-              </TestimonialAuthor>
-            </Flex>
-            <TestimonialText>
-              Of all the libraries I’ve built design systems with: SC, emotion,
-              xstyled, styled-system, theme-ui etc., @panda_css has been the
-              most ergonomic and enjoyable. Took a look at the roadmap and it
-              looks like it’s getting even better.
-            </TestimonialText>
-          </Testimonial>
-          <Testimonial>
-            <Flex>
-              {/* TODO avatar img */}
-              <TestimonialAvatar bg="bg.main" />
-              <TestimonialAuthor>
-                <span>Dann</span>
-                <panda.span color={{ base: '#7D7D7D', _dark: '#ABABAB' }}>
-                  @dan_best
-                </panda.span>
-              </TestimonialAuthor>
-            </Flex>
-            <TestimonialText>
-              Been using @panda_css for a week on an actual product and I've
-              never had such a smooth collaboration, shared vocabulary, and
-              mutual understanding with our designer. Setting up tokens and
-              being very systematic and constrained about the UI we build has
-              never been easier.
-            </TestimonialText>
-          </Testimonial>
-          <Testimonial>
-            <Flex>
-              {/* TODO avatar img */}
-              <TestimonialAvatar bg="bg.main" />
-              <TestimonialAuthor>
-                <span>Nabeel Ben</span>
-                <panda.span color={{ base: '#7D7D7D', _dark: '#ABABAB' }}>
-                  @nabbs
-                </panda.span>
-              </TestimonialAuthor>
-            </Flex>
-            <TestimonialText>
-              I haven't been much of a fan of js object syntax for css in the
-              past, but I've been trying out @stitchesjs on a side project and
-              it's quite fun so far.The performance promises and type-hinting
-              make it really appealing right away. Good docs as well.
-            </TestimonialText>
-          </Testimonial>
-        </Flex>
-      </Content>
-    </Flex>
-  )
-}
 
-const Testimonial = ({ children }) => {
-  return (
-    <panda.div
-      display="flex"
-      flexDirection="column"
-      alignItems="flex-start"
-      justifyContent="center"
-      className={button({ color: 'border' })}
-    >
-      {children}
-    </panda.div>
-  )
-}
+        <Grid columns={{ base: 1, lg: 3 }} gap="6" mt="20">
+          {testimonials.map(testimonial => (
+            <Stack gap="8" layerStyle="offShadow" rounded="xl" px="6" py="5">
+              <HStack>
+                <panda.div rounded="lg" w="12" h="12" overflow="hidden">
+                  <Image
+                    width="48"
+                    height="48"
+                    src={testimonial.avatar}
+                    alt={testimonial.author}
+                    style={{ objectFit: 'cover' }}
+                  />
+                </panda.div>
 
-const TestimonialAvatar = (props: HTMLPandaProps<'div'>) => {
-  return (
-    <panda.div borderRadius="10px" w="45px" h="45px" mr="17px" {...props} />
-  )
-}
-
-const TestimonialAuthor = ({ children }) => {
-  return (
-    <Flex
-      direction="column"
-      fontSize="1.0625rem"
-      lineHeight="1.4375rem"
-      letterSpacing="tight"
-      fontWeight="500"
-      mb="20px"
-    >
-      {children}
-    </Flex>
-  )
-}
-
-const TestimonialText = ({ children }) => {
-  return (
-    <panda.span
-      fontSize="1.0625rem"
-      lineHeight="1.5625rem"
-      letterSpacing="tight"
-      fontWeight="600"
-    >
-      {children}
-    </panda.span>
+                <Stack gap="0">
+                  <panda.span fontWeight="bold">
+                    {testimonial.author}
+                  </panda.span>
+                  <span>{testimonial.username}</span>
+                </Stack>
+              </HStack>
+              <div>{testimonial.text}</div>
+            </Stack>
+          ))}
+        </Grid>
+      </Container>
+    </panda.section>
   )
 }

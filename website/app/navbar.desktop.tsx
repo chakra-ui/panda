@@ -1,14 +1,15 @@
 import Link from 'next/link'
 import { HStack } from '../styled-system/jsx'
+import { center } from '../styled-system/patterns'
 import { ButtonIcon, Icon } from '../theme/icons'
 import { NavLink } from './nav-link'
 import { ThemeSwitchButton } from './theme-switch-button'
-import { css } from '../styled-system/css'
 
 export const DesktopNavBar = () => {
   return (
     <HStack
       bg="bg.inverted"
+      shadow="lg"
       height="16"
       py="5"
       px="4"
@@ -17,7 +18,7 @@ export const DesktopNavBar = () => {
       position="relative"
       justify="space-between"
     >
-      <Link href="/" className={css({ flexShrink: '0' })}>
+      <Link href="/" className={center({ flexShrink: '0' })}>
         <Icon icon="LogoWithText" />
       </Link>
 

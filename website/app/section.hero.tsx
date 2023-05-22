@@ -23,28 +23,29 @@ export const SectionHero = () => {
           </panda.h4>
 
           <Flex gap="8">
-            <Box>
-              <panda.h2
-                fontSize={{ base: '2.5rem', sm: '3rem' }}
-                letterSpacing="tight"
-                fontWeight="bold"
-                lineHeight="1.2"
-                maxW={{ base: '40rem', md: 'unset' }}
-              >
-                Write type-safe styles with ease using
-              </panda.h2>
+            <Stack gap="12">
+              <div>
+                <panda.p
+                  fontSize={{ base: '2.5rem', sm: '3rem' }}
+                  letterSpacing="tight"
+                  fontWeight="bold"
+                  lineHeight="1.2"
+                  maxW={{ base: '40rem', md: 'unset' }}
+                >
+                  Write type-safe styles with ease using
+                </panda.p>
 
-              <panda.h1
-                color="text.headline"
-                fontSize={{ base: '8.5rem', sm: '12rem', lg: '14.5rem' }}
-                letterSpacing="tighter"
-                lineHeight="1"
-              >
-                panda
-              </panda.h1>
-
+                <panda.h1
+                  color="text.headline"
+                  fontSize={{ base: '8.5rem', sm: '12rem', lg: '14.5rem' }}
+                  fontWeight="bold"
+                  letterSpacing="tighter"
+                  lineHeight="1"
+                >
+                  panda
+                </panda.h1>
+              </div>
               <Stack
-                mt={{ base: '10', md: '20' }}
                 align="center"
                 direction={{ base: 'column', sm: 'row' }}
                 gap="6"
@@ -70,7 +71,7 @@ export const SectionHero = () => {
               </Stack>
 
               <CommandPrompt value="npm install @pandacss/dev" />
-            </Box>
+            </Stack>
 
             <Image
               priority

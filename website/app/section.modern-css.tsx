@@ -1,12 +1,11 @@
-import Link from 'next/link'
 import { outdent } from 'outdent'
-import { Code } from '../bright/code'
+import { Code, codeStyle } from '../bright/code'
 import { css } from '../styled-system/css'
-import { Box, Circle, Flex, Stack, panda } from '../styled-system/jsx'
-import { hstack } from '../styled-system/patterns'
+import { Circle, Container, Flex, Stack, panda } from '../styled-system/jsx'
 import { button } from '../styled-system/recipes'
 import { token } from '../styled-system/tokens'
-import { ButtonIcon, Icon } from '../theme/icons'
+import { Icon } from '../theme/icons'
+import { LearnMore } from './learn-more'
 
 const codeSnippet = outdent`
 @layer reset, base, tokens, recipes, utilities;
@@ -33,35 +32,10 @@ const codeSnippet = outdent`
   }
 }`
 
-function LearnMore() {
-  return (
-    <Link
-      href="/learn"
-      className={hstack({
-        textStyle: 'panda.h4',
-        fontWeight: 'semibold'
-      })}
-    >
-      Learn more
-      <ButtonIcon
-        className={css({
-          width: '6'
-        })}
-        icon="RightArrowIcon"
-      />
-    </Link>
-  )
-}
-
 export const SectionModernCss = () => {
   return (
     <panda.section bg="bg.main">
-      <Box
-        maxW="8xl"
-        mx="auto"
-        px={{ base: '4', md: '6', lg: '8' }}
-        mb={{ lg: '-10rem' }}
-      >
+      <Container mb={{ lg: '-10rem' }}>
         <Flex
           direction={{ base: 'column', lg: 'row' }}
           gap="8"
@@ -89,7 +63,7 @@ export const SectionModernCss = () => {
             </Circle>
 
             <Stack gap="4">
-              <panda.h3 textStyle="panda.h3">
+              <panda.h3 textStyle="panda.h3" fontWeight="bold">
                 Generates Modern CSS code at build time
               </panda.h3>
               <panda.h4
@@ -109,22 +83,14 @@ export const SectionModernCss = () => {
             {/* @ts-expect-error Server Component */}
             <Code
               lang="css"
-              style={{
-                borderRadius: token('radii.xl')
-              }}
-              codeClassName={css({
-                padding: '4',
-                fontFamily: 'mono',
-                fontSize: 'md',
-                lineHeight: '1.7',
-                fontWeight: '500'
-              })}
+              style={{ borderRadius: token('radii.xl') }}
+              codeClassName={codeStyle}
             >
               {codeSnippet}
             </Code>
           </panda.div>
         </Flex>
-      </Box>
+      </Container>
     </panda.section>
   )
 }

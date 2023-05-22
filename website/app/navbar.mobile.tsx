@@ -2,24 +2,26 @@
 import {
   Dialog,
   DialogBackdrop,
-  DialogTrigger,
   DialogCloseTrigger,
+  DialogContainer,
   DialogContent,
-  DialogContainer
+  DialogTrigger
 } from '@ark-ui/react'
 import Link from 'next/link'
 import { MenuIcon } from 'nextra/icons'
 import { css } from '../styled-system/css'
 import { Center, HStack, Stack } from '../styled-system/jsx'
+import { center } from '../styled-system/patterns'
 import { ButtonIcon, Icon } from '../theme/icons'
-import { ThemeSwitchIconButton } from './theme-switch-button'
 import { NavLink } from './nav-link'
+import { ThemeSwitchIconButton } from './theme-switch-button'
 
 export const MobileNavBar = () => {
   return (
     <HStack
       bg="bg.inverted"
       height="16"
+      shadow="lg"
       py="5"
       px="4"
       borderRadius="md"
@@ -27,7 +29,7 @@ export const MobileNavBar = () => {
       position="relative"
       justify="space-between"
     >
-      <Link href="/" className={css({ flexShrink: '0' })}>
+      <Link href="/" className={center({ flexShrink: '0' })}>
         <Icon icon="LogoWithText" />
       </Link>
 
