@@ -11,7 +11,6 @@ export const inputRecipe = defineRecipe({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontWeight: 600,
     letterSpacing: 'tight',
     border: '3px solid var(--border-color, black)',
     borderRadius: 'xl',

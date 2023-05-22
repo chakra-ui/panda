@@ -5,7 +5,7 @@ export const textStyles = defineTextStyles({
     h1: {
       value: {
         fontSize: '14.5rem',
-        lineHeight: '1.2',
+        lineHeight: '1',
         letterSpacing: 'tighter'
       }
     },
