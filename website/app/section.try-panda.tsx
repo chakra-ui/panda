@@ -23,7 +23,7 @@ export const SectionTryPanda = () => {
   return (
     <panda.section bg="bg.dark">
       <Container pt="28" pb="24">
-        <HStack>
+        <HStack gap="12">
           <panda.div
             flex="1"
             maxW="3xl"
@@ -38,7 +38,7 @@ export const SectionTryPanda = () => {
             </panda.h3>
             <ChatTip
               className={css({
-                display: { base: 'none', lg: 'block' },
+                display: { base: 'none', md: 'block' },
                 pos: 'absolute',
                 top: '50%',
                 left: 'calc(100% - 2px)',
@@ -54,21 +54,19 @@ export const SectionTryPanda = () => {
             height={261}
             alt="Yums the panda waving"
             className={css({
-              display: { base: 'none', lg: 'block' },
-              ml: '5',
-              w: '20',
-              sm: { ml: '50px', w: '196px' }
+              display: { base: 'none', md: 'block' },
+              w: '56'
             })}
           />
         </HStack>
 
-        <Grid mt="20" gap="10" columns={{ base: 1, lg: 3 }}>
+        <Grid mt="20" gap="10" columns={{ base: 1, md: 3 }}>
           {installSteps.map((step, i) => (
-            <Stack color="white" gap={{ base: '2', lg: '8' }}>
-              <Stack gap="4" direction={{ base: 'row', lg: 'column' }}>
+            <Stack color="white" gap={{ base: '2', md: '8' }}>
+              <Stack gap="4" direction={{ base: 'row', md: 'column' }}>
                 <panda.span
                   key={i}
-                  fontSize={{ base: '2rem', lg: '6rem' }}
+                  fontSize={{ base: '2rem', md: '6rem' }}
                   fontWeight="bold"
                   letterSpacing="tight"
                   lineHeight="1"

@@ -1,71 +1,66 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { css, cx } from '../styled-system/css'
-import { Flex, panda } from '../styled-system/jsx'
+import { Container, Stack, VStack, panda } from '../styled-system/jsx'
 import { button } from '../styled-system/recipes'
-import Image from 'next/image'
-import { Content } from './content'
 
 export const SectionStartBuilding = () => {
   return (
-    <Flex
-      direction="column"
-      alignItems="center"
-      justifyContent="center"
-      bg="bg.main"
-      position="relative"
-      pt="225px"
-      pb="90px"
-    >
-      <Image
-        src="/panda-rocket.svg"
-        width={213}
-        height={242}
-        alt="Yums the panda riding a rocket"
-        className={css({
-          position: 'absolute',
-          top: '-75px',
-          left: '50%',
-          transform: 'translateX(-50%)'
-        })}
-      />
-      <Content alignItems="center">
-        <panda.span
-          fontSize={{ base: '2.75rem', lg: '3.875rem' }}
-          lineHeight={{ base: '3rem', lg: '4.875rem' }}
-          letterSpacing="tight"
-          fontWeight="bold"
-          textAlign="center"
-        >
-          Start building with <br />
-          Panda today
-        </panda.span>
-        <Flex
-          textStyle="2xl"
-          mt="36px"
-          flexDirection={{ base: 'column', lg: 'row' }}
-          gap="25px"
-        >
-          {/* TODO fix href */}
-          <Link
-            href="/docs/getting-started/cli"
-            className={cx(
-              button({ color: 'main', size: 'lg' }),
-              css({ w: '250px' })
-            )}
-          >
-            Get Started
-          </Link>
-          <Link
-            href="/learn"
-            className={cx(
-              button({ color: 'black', size: 'lg' }),
-              css({ w: '250px' })
-            )}
-          >
-            Learn Panda
-          </Link>
-        </Flex>
-      </Content>
-    </Flex>
+    <panda.section bg="bg.main">
+      <Container pt="240px" pb="24">
+        <VStack>
+          <Image
+            src="/panda-rocket.svg"
+            width={213}
+            height={242}
+            alt="Yums the panda riding a rocket"
+            className={css({
+              position: 'absolute',
+              top: '-10',
+              left: '50%',
+              transform: 'translateX(-50%)'
+            })}
+          />
+
+          <VStack gap="6">
+            <panda.span
+              textStyle="panda.h2"
+              letterSpacing="tight"
+              fontWeight="bold"
+              textAlign="center"
+            >
+              Start building with <br />
+              Panda today
+            </panda.span>
+
+            <Stack
+              width="full"
+              direction={{ base: 'column', sm: 'row' }}
+              align={{ base: 'center', sm: 'unset' }}
+              justify={{ sm: 'center' }}
+            >
+              <Link
+                href="/docs/getting-started/cli"
+                className={cx(
+                  button({ color: 'main', size: 'lg' }),
+                  css({ w: { base: '100%', sm: '240px' } })
+                )}
+              >
+                Get Started
+              </Link>
+              <Link
+                href="/learn"
+                className={cx(
+                  button({ color: 'black', size: 'lg' }),
+                  css({ w: { base: '100%', sm: '240px' } })
+                )}
+              >
+                Learn Panda
+              </Link>
+            </Stack>
+          </VStack>
+        </VStack>
+      </Container>
+    </panda.section>
   )
 }

@@ -14,12 +14,7 @@ export function LearnMore() {
       })}
     >
       Learn more
-      <ButtonIcon
-        className={css({
-          width: '6'
-        })}
-        icon="RightArrowIcon"
-      />
+      <ButtonIcon className={css({ width: '6' })} icon="RightArrowIcon" />
     </Link>
   )
 }

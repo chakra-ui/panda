@@ -1,14 +1,13 @@
 import Image from 'next/image'
-import { Flex, Grid, Stack, panda } from '../../styled-system/jsx'
+import { Container, Flex, Grid, Stack, panda } from '../../styled-system/jsx'
 import { button, input } from '../../styled-system/recipes'
 import { css } from '../../styled-system/css'
 import { Icon } from '../../theme/icons'
-import { Content } from '../content'
 
 export const SectionLearn = () => {
   return (
-    <panda.div bg="bg.main" px={{ base: '10px', lg: '48px' }}>
-      <Content m="auto">
+    <panda.div bg="bg.main" px={{ base: '2.5', lg: '12' }}>
+      <Container>
         <Flex position="relative">
           <Flex
             direction="column"
@@ -73,6 +72,7 @@ export const SectionLearn = () => {
             })}
           />
         </Flex>
+
         <Grid
           pt={{ base: '25px', lg: '70px' }}
           pb={{ base: '15px', lg: '50px' }}
@@ -102,6 +102,7 @@ export const SectionLearn = () => {
               </panda.span>
             </Stack>
           </Flex>
+
           <Flex direction="column">
             <Thumbnail />
             <Stack textStyle="2xl" mt="6">
@@ -117,6 +118,7 @@ export const SectionLearn = () => {
               </panda.span>
             </Stack>
           </Flex>
+
           <Flex direction="column">
             <Thumbnail />
             <Stack textStyle="2xl" mt="6">
@@ -133,7 +135,7 @@ export const SectionLearn = () => {
             </Stack>
           </Flex>
         </Grid>
-      </Content>
+      </Container>
     </panda.div>
   )
 }
