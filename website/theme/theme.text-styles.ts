@@ -23,15 +23,14 @@ export const textStyles = defineTextStyles({
         fontSize: { base: '1.875rem', lg: '2.25rem' },
         lineHeight: '1.2',
         letterSpacing: 'tight',
-        fontWeight: 'semibold'
+        fontWeight: 'bold'
       }
     },
     h4: {
       value: {
         fontSize: '1.625rem',
         lineHeight: '1.2',
-        letterSpacing: 'tight',
-        fontWeight: 'medium'
+        letterSpacing: 'tight'
       }
     }
   }

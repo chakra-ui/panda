@@ -7,7 +7,7 @@ import { CommandPrompt } from './command-prompt'
 
 export const SectionHero = () => {
   return (
-    <Box bg="bg.main">
+    <panda.section bg="bg.main">
       <Box maxW="8xl" mx="auto" px={{ base: '4', md: '6', lg: '8' }}>
         <Box pt="40" pb="24" position="relative">
           <panda.h4
@@ -83,6 +83,6 @@ export const SectionHero = () => {
           </Flex>
         </Box>
       </Box>
-    </Box>
+    </panda.section>
   )
 }
