@@ -4,7 +4,6 @@ import { defineParts, defineRecipe } from '@pandacss/dev'
 const anatomy = createAnatomy('button', ['leftIcon', 'rightIcon'])
 const parts = defineParts(anatomy.build())
 
-// TODO hover
 export const buttonRecipe = defineRecipe({
   name: 'button',
   base: {
@@ -43,83 +42,39 @@ export const buttonRecipe = defineRecipe({
     },
     color: {
       main: {
-        backgroundColor: 'panda.bg.emphasized',
-        color: 'black',
-        '&:is(a, button)': {
-          _hover: {
-            backgroundColor: 'panda.gray.400',
-            color: 'white'
-          }
-        }
+        bg: 'bg.emphasized',
+        color: 'black'
       },
       black: {
-        backgroundColor: 'black',
+        bg: 'black',
         color: 'white',
-        boxShadow: 'none',
-        '&:is(a, button)': {
-          _hover: {
-            backgroundColor: 'white',
-            color: 'black'
-          }
-        }
+        boxShadow: 'none'
       },
       white: {
-        backgroundColor: 'white',
-        color: 'black',
-        '&:is(a, button)': {
-          _hover: {
-            backgroundColor: 'black',
-            color: 'white'
-          }
-        }
+        bg: 'white',
+        color: 'black'
       },
       yellow: {
-        backgroundColor: 'panda.bg.main',
-        color: 'panda.text.main',
-        '&:is(a, button)': {
-          _hover: {
-            backgroundColor: 'panda.gray.400',
-            color: 'white'
-          }
-        }
+        bg: 'bg.main',
+        color: 'text.main'
       },
       border: {
-        backgroundColor: 'transparent',
-        color: 'panda.text.main',
-        borderColor: 'panda.text.headline',
-        boxShadowColor: 'panda.text.headline'
+        bg: 'transparent',
+        color: 'text.main',
+        borderColor: 'text.headline',
+        boxShadowColor: 'text.headline'
       },
       ghost: {
-        backgroundColor: 'transparent',
+        bg: 'transparent',
         border: 'none',
         shadow: 'none',
-        color: 'panda.text.main',
-        '&:is(a, button)': {
-          _hover: {
-            backgroundColor: 'panda.yellow',
-            color: 'black'
-          }
-        }
+        color: 'text.main'
       },
       'ghost.white': {
-        backgroundColor: 'transparent',
+        bg: 'transparent',
         border: 'none',
         shadow: 'none',
-        color: 'white',
-        '&:is(a, button)': {
-          _hover: {
-            backgroundColor: 'panda.yellow',
-            color: 'black',
-            ...parts({
-              leftIcon: {
-                color: 'black!'
-              },
-              rightIcon: {
-                color: 'black!'
-              }
-            })
-          }
-        }
+        color: 'white'
       }
     },
     size: {

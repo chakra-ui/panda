@@ -5,68 +5,34 @@ export const textStyles = defineTextStyles({
     h1: {
       value: {
         fontSize: '14.5rem',
-        lineHeight: '11.875rem',
+        lineHeight: '1.2',
         letterSpacing: 'tighter',
-        fontWeight: 'bold',
-        xlDown: {
-          fontSize: '10.5rem',
-          lineHeight: '9.375rem'
-        },
-        lgDown: {
-          fontSize: '7.5rem',
-          lineHeight: '6.875rem'
-        }
+        fontWeight: 'bold'
       }
     },
     h2: {
       value: {
-        fontSize: '3rem',
-        lineHeight: '3.75rem',
+        fontSize: { base: '2.5rem', lg: '3rem' },
+        lineHeight: '1.2',
         letterSpacing: 'tight',
-        fontWeight: 'bold',
-        xlDown: {
-          fontSize: '2.5rem',
-          lineHeight: '3.125rem'
-        },
-        lgDown: {
-          fontSize: '1.625rem',
-          lineHeight: '2.125rem'
-        }
+        fontWeight: 'bold'
       }
     },
     h3: {
       value: {
-        fontSize: '2.5rem',
-        lineHeight: '3.125rem',
+        fontSize: { base: '1.875rem', lg: '2.25rem' },
+        lineHeight: '1.2',
         letterSpacing: 'tight',
-        fontWeight: 'bold',
-        xlDown: {
-          fontSize: '2rem',
-          lineHeight: '2.5rem'
-        },
-        lgDown: {
-          fontSize: '1.5rem',
-          lineHeight: '2rem'
-        }
+        fontWeight: 'semibold'
       }
     },
     h4: {
       value: {
         fontSize: '1.625rem',
-        lineHeight: '2.125rem',
+        lineHeight: '1.2',
         letterSpacing: 'tight',
-        fontWeight: 'medium',
-        xlDown: {
-          fontSize: '1.25rem',
-          lineHeight: '1.75rem'
-        },
-        lgDown: {
-          fontSize: '1.125rem',
-          lineHeight: '1.75rem'
-        }
+        fontWeight: 'medium'
       }
     }
   }
 })
-
-// lineHeight="32px

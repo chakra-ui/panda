@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ComponentPropsWithoutRef } from 'react'
 import { Flex, Grid, panda } from '../../styled-system/jsx'
 import { button } from '../../styled-system/recipes'
@@ -5,16 +6,12 @@ import { Icon, IconType } from '../../theme/icons'
 
 import Articles from './articles.json'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type Content = (Video | Article) & {
-  featured?: boolean
-}
-
 type Video = {
   title: string
   url: string
   duration: string
   thumbnail: string
+  featured?: boolean
 }
 
 type ArticleCategory =
@@ -26,6 +23,7 @@ type Article = {
   title: string
   category: ArticleCategory
   slug: string
+  featured?: boolean
 }
 
 const content = {
@@ -47,21 +45,21 @@ export const SectionArticleList = () => {
   return (
     <Flex
       direction="column"
-      backgroundColor={{ base: 'white', _dark: 'panda.gray.400' }}
-      px="48px"
+      bg={{ base: 'white', _dark: 'gray.400' }}
+      px="12"
       pt="350px"
       pb={{ base: '80px', lg: '180px' }}
       gap={{ base: '50px', md: '130px' }}
     >
       {Object.entries(content).map(([title, { icon, articles }]) => (
         <Flex direction="column" key={title}>
-          <panda.h3 textStyle="panda.h3" color="panda.text.headline">
+          <panda.h3 textStyle="panda.h3" color="text.headline">
             {title}
           </panda.h3>
           <Grid
             columns={{ base: 1, md: 2 }}
-            mt={{ base: 4, md: '12' }}
-            gap={{ base: 4, md: '8!' }}
+            mt={{ base: '4', md: '12' }}
+            gap={{ base: '4', md: '8!' }}
             justifyContent="space-between"
           >
             {articles.map(article => (
@@ -85,21 +83,10 @@ const ArticleItem = ({
   typeof Icon
 >) => (
   <Flex>
-    <panda.div
-      w="64px"
-      h="64px"
-      p="4"
-      className={button()}
-      backgroundColor="panda.yellow"
-    >
+    <panda.div w="16" h="16" p="4" className={button()} bg="yellow.300">
       <Icon {...iconProps} />
     </panda.div>
-    <panda.span
-      ml="30px"
-      textStyle="xl"
-      letterSpacing="tight"
-      fontWeight="bold"
-    >
+    <panda.span ml="8" textStyle="xl" letterSpacing="tight" fontWeight="bold">
       {title}
     </panda.span>
   </Flex>

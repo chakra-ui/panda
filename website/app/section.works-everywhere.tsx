@@ -10,7 +10,7 @@ export const SectionWorksEverywhere = () => {
       direction="column"
       alignItems="center"
       justifyContent="center"
-      bgColor="panda.bg.inverted"
+      bg="bg.inverted"
       pt={{ base: '40px', lg: '110px' }}
       pb={{ base: '100px', lg: '185px' }}
     >
@@ -37,7 +37,7 @@ export const SectionWorksEverywhere = () => {
             w="118px"
             h="118px"
             className={button({ color: 'yellow' })}
-            bgColor="panda.yellow"
+            bg="yellow.400"
             color="black"
           >
             <Icon icon="LogoLetter" width="71" height="69" />
@@ -62,7 +62,7 @@ export const SectionWorksEverywhere = () => {
         Use it with Vite, Remix,{' '}
         <panda.span
           position="relative"
-          bgColor="panda.bg.main"
+          bg="bg.main"
           inset="0"
           rounded="lg"
           p="2"

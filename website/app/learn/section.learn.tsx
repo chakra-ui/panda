@@ -7,10 +7,7 @@ import { Content } from '../content'
 
 export const SectionLearn = () => {
   return (
-    <panda.div
-      backgroundColor="panda.bg.main"
-      px={{ base: '10px', lg: '48px' }}
-    >
+    <panda.div bg="bg.main" px={{ base: '10px', lg: '48px' }}>
       <Content m="auto">
         <Flex position="relative">
           <Flex
@@ -21,12 +18,12 @@ export const SectionLearn = () => {
           >
             <panda.h1
               ml={{ base: '-2', md: '-3.5' }}
-              color="panda.text.headline"
+              color="text.headline"
               textStyle="panda.h1"
             >
               Learn.
             </panda.h1>
-            <panda.h4 mt="15px" color="panda.text.muted" textStyle="panda.h4">
+            <panda.h4 mt="15px" color="text.muted" textStyle="panda.h4">
               Tutorials, videos, and articles to get started with Panda.
             </panda.h4>
             <panda.div
@@ -81,7 +78,7 @@ export const SectionLearn = () => {
           pb={{ base: '15px', lg: '50px' }}
           px={{ base: '20px', md: '60px' }}
           className={button()}
-          backgroundColor="white"
+          bg="white"
           color="black"
           columnGap="30px!"
           position="relative"
@@ -92,12 +89,12 @@ export const SectionLearn = () => {
         >
           <Flex direction="column">
             <Thumbnail />
-            <Stack textStyle="2xl" mt="25px">
+            <Stack textStyle="2xl" mt="6">
               <panda.span fontWeight="bold" letterSpacing="tight">
                 Getting started with Panda
               </panda.span>
               <panda.span
-                color="panda.bg.muted"
+                color="bg.muted"
                 fontWeight="semibold"
                 letterSpacing="tight"
               >
@@ -107,12 +104,12 @@ export const SectionLearn = () => {
           </Flex>
           <Flex direction="column">
             <Thumbnail />
-            <Stack textStyle="2xl" mt="25px">
+            <Stack textStyle="2xl" mt="6">
               <panda.span fontWeight="bold" letterSpacing="tight">
                 Style props fundamentals
               </panda.span>
               <panda.span
-                color="panda.bg.muted"
+                color="bg.muted"
                 fontWeight="semibold"
                 letterSpacing="tight"
               >
@@ -122,12 +119,12 @@ export const SectionLearn = () => {
           </Flex>
           <Flex direction="column">
             <Thumbnail />
-            <Stack textStyle="2xl" mt="25px">
+            <Stack textStyle="2xl" mt="6">
               <panda.span fontWeight="bold" letterSpacing="tight">
                 Building a design system
               </panda.span>
               <panda.span
-                color="panda.bg.muted"
+                color="bg.muted"
                 fontWeight="semibold"
                 letterSpacing="tight"
               >
@@ -142,13 +139,5 @@ export const SectionLearn = () => {
 }
 
 const Thumbnail = props => {
-  return (
-    <Flex
-      w="100%"
-      h="240px"
-      bgColor="panda.bg.main"
-      borderRadius="18px"
-      {...props}
-    />
-  )
+  return <Flex w="100%" h="240px" bg="bg.main" borderRadius="18px" {...props} />
 }

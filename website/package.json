@@ -22,7 +22,7 @@
     "next": "13.4.3",
     "next-seo": "^6.0.0",
     "next-themes": "^0.2.1",
-    "nextra": "^2.5.0",
+    "nextra": "^2.5.2",
     "outdent": " ^0.8.0",
     "postcss": "^8.4.23",
     "react": "^18.2.0",

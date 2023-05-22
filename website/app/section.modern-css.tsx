@@ -12,7 +12,7 @@ export const SectionModernCss = () => {
     <panda.div
       display="flex"
       justifyContent="center"
-      bgColor="panda.bg.main"
+      bg="bg.main"
       py="8"
       lg={{ h: '650px', pt: '100px' }}
     >
@@ -40,7 +40,7 @@ export const SectionModernCss = () => {
               position="absolute"
               top="-7px"
               right="-18px"
-              color="panda.text.main"
+              color="text.main"
             >
               <Icon icon="Sparks2" className={css({ w: '22px', h: '22px' })} />
             </panda.div>
@@ -48,7 +48,7 @@ export const SectionModernCss = () => {
           <panda.h3 textStyle="panda.h3" mt={{ base: '20px', lg: '53px' }}>
             Generates Modern CSS code at build time
           </panda.h3>
-          <panda.h4 textStyle="panda.h4" color="panda.text.muted" mt="20px">
+          <panda.h4 textStyle="panda.h4" color="text.muted" mt="20px">
             Panda uses modern features like cascade layers, :where selectors and
             css variables to give you best-in-class css output.
           </panda.h4>
@@ -58,12 +58,12 @@ export const SectionModernCss = () => {
               button({ color: 'ghost', size: 'xl' }),
               css({
                 ml: -6,
-                color: 'panda.text.headline',
+                color: 'text.headline',
                 _hover: {
-                  backgroundColor: 'white',
+                  bg: 'white',
                   color: 'black',
                   _dark: {
-                    backgroundColor: 'panda.yellow'
+                    bg: 'yellow.400'
                   }
                 }
               })
@@ -81,7 +81,7 @@ export const SectionModernCss = () => {
             bottom: '-70px',
             w: '48%'
           }}
-          backgroundColor="panda.gray.600"
+          bg="gray.600"
           borderRadius="16px"
         >
           {/* @ts-expect-error Server Component */}

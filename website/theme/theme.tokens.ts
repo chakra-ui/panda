@@ -14,5 +14,10 @@ export const tokens = defineTokens({
     '5xl': { value: '3rem' },
     '6xl': { value: '4rem' }
   },
+  fonts: {
+    mono: { value: 'var(--font-fira-code), Menlo, monospace' },
+    body: { value: 'var(--font-mona-sans), sans-serif' },
+    heading: { value: 'var(--font-mona-sans), sans-serif' }
+  },
   colors
 })

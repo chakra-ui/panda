@@ -10,15 +10,15 @@ import { Code } from '../bright/code'
 export const SectionDesignTokens = () => {
   return (
     <Flex
-      bgColor="panda.bg.inverted"
-      justifyContent="center"
+      bg="bg.inverted"
+      justify="center"
       pt={{ base: '40px', lg: '105px' }}
       pb={{ base: '40px', lg: '95px' }}
     >
       <Content>
         <Stack
           lg={{ flexDirection: 'row' }}
-          justifyContent="center"
+          justify="center"
           alignItems="center"
           mr="auto"
           pb={{ base: '40px', lg: '72px' }}
@@ -26,17 +26,17 @@ export const SectionDesignTokens = () => {
           <panda.div
             w="173px"
             h="173px"
-            boxShadowColor="panda.bg.dark"
+            boxShadowColor="bg.dark"
             className={button({ color: 'yellow', shape: 'circle' })}
             position="relative"
-            color="panda.text.headline"
+            color="text.headline"
           >
             <Icon icon="DesignTokenBox" />
             <panda.div
               position="absolute"
               top="-15px"
               right="-30px"
-              color="panda.text.main"
+              color="text.main"
             >
               <Icon icon="Sparks2" className={css({ w: '48px', h: '48px' })} />
             </panda.div>
@@ -45,7 +45,7 @@ export const SectionDesignTokens = () => {
             <panda.h3 textStyle="panda.h3" mt="53px">
               Design token support
             </panda.h3>
-            <panda.h4 textStyle="panda.h4" color="panda.text.muted" mt="14px">
+            <panda.h4 textStyle="panda.h4" color="text.muted" mt="14px">
               Specify base and semantic tokens with ease using the W3C working
               token spec.
             </panda.h4>
@@ -62,7 +62,7 @@ export const SectionDesignTokens = () => {
                 letterSpacing: 'tight',
                 fontWeight: 'bold',
                 flexShrink: 0,
-                color: 'panda.text.headline'
+                color: 'text.headline'
               })
             )}
           >
@@ -79,17 +79,13 @@ export const SectionDesignTokens = () => {
               py="10px"
               px="22px"
               roundedTop="lg"
-              bgColor="panda.bg.main"
+              bg="bg.main"
               fontWeight="semibold"
               textStyle="xl"
             >
               Core Tokens
             </panda.span>
-            <panda.div
-              w="100%"
-              backgroundColor="panda.gray.600"
-              borderRadius="16px"
-            >
+            <panda.div w="100%" bg="gray.600" borderRadius="16px">
               {/* @ts-expect-error Server Component */}
               <Code lang="tsx" className={code()}>
                 {outdent`const theme = {
@@ -116,20 +112,16 @@ export const SectionDesignTokens = () => {
               ml="35px"
               display="inline-flex"
               alignSelf="start"
-              py="10px"
-              px="22px"
+              py="5"
+              px="6"
               roundedTop="lg"
-              bgColor="panda.bg.main"
+              bg="bg.main"
               fontWeight="semibold"
               textStyle="xl"
             >
               Semantic Tokens
             </panda.span>
-            <panda.div
-              w="100%"
-              backgroundColor="panda.gray.600"
-              borderRadius="16px"
-            >
+            <panda.div w="100%" bg="gray.600" borderRadius="16px">
               {/* @ts-expect-error Server Component */}
               <Code lang="tsx" className={code()}>
                 {outdent`const theme = {

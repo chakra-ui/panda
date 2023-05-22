@@ -10,16 +10,16 @@ import { Content } from './content'
 export const SectionFooter = () => {
   return (
     <Flex
-      bgColor="panda.bg.dark"
-      px="50px"
-      py="45px"
-      justifyContent={{ base: 'center', md: 'unset' }}
+      bg="bg.dark"
+      px="12"
+      py="10"
+      justify={{ base: 'center', md: 'unset' }}
       textAlign={{ base: 'center', md: 'unset' }}
     >
       <Content>
-        <Flex flexDirection={{ base: 'column', md: 'row' }}>
+        <Flex direction={{ base: 'column', md: 'row' }}>
           <panda.h1
-            color="panda.yellow"
+            color="yellow.300"
             textStyle={{ base: '7xl', md: 'panda.h1' }}
           >
             panda
@@ -60,7 +60,7 @@ export const SectionFooter = () => {
             Twitter{' '}
             <ButtonIcon
               icon="ExternalLink"
-              className={css({ color: 'panda.yellow' })}
+              className={css({ color: 'yellow.400' })}
             />
           </Link>
           {/* TODO fix links */}
@@ -74,7 +74,7 @@ export const SectionFooter = () => {
             Discord{' '}
             <ButtonIcon
               icon="ExternalLink"
-              className={css({ color: 'panda.yellow' })}
+              className={css({ color: 'yellow.400' })}
             />
           </Link>
           <Link
@@ -88,23 +88,10 @@ export const SectionFooter = () => {
             Github{' '}
             <ButtonIcon
               icon="ExternalLink"
-              className={css({ color: 'panda.yellow' })}
+              className={css({ color: 'yellow.400' })}
             />
           </Link>
-          <ThemeSwitchButton
-            color={{ base: 'white', _hover: 'black' }}
-            css={{
-              ["& [data-part='right-icon']"]: {
-                color: 'panda.yellow'
-              },
-              ["&:hover [data-part='right-icon']"]: {
-                color: 'black'
-              }
-            }}
-            p="2"
-            py="0"
-            lg={{ px: 6 }}
-          />
+          <ThemeSwitchButton />
         </Wrap>
       </Content>
     </Flex>

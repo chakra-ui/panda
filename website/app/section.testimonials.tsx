@@ -7,7 +7,7 @@ import { Content } from './content'
 export const SectionTestimonials = () => {
   return (
     <Flex
-      bgColor="panda.bg.inverted"
+      bg="bg.inverted"
       justifyContent="center"
       pt={{ base: '40px', lg: '145px' }}
       pb={{ base: '40px', lg: '90px' }}
@@ -41,7 +41,7 @@ export const SectionTestimonials = () => {
           <Testimonial>
             <Flex>
               {/* TODO avatar img */}
-              <TestimonialAvatar bgColor="panda.bg.main" />
+              <TestimonialAvatar bg="bg.main" />
               <TestimonialAuthor>
                 <span>Alex Truss</span>
                 <panda.span color={{ base: '#7D7D7D', _dark: '#ABABAB' }}>
@@ -59,7 +59,7 @@ export const SectionTestimonials = () => {
           <Testimonial>
             <Flex>
               {/* TODO avatar img */}
-              <TestimonialAvatar bgColor="panda.bg.main" />
+              <TestimonialAvatar bg="bg.main" />
               <TestimonialAuthor>
                 <span>Dann</span>
                 <panda.span color={{ base: '#7D7D7D', _dark: '#ABABAB' }}>
@@ -78,7 +78,7 @@ export const SectionTestimonials = () => {
           <Testimonial>
             <Flex>
               {/* TODO avatar img */}
-              <TestimonialAvatar bgColor="panda.bg.main" />
+              <TestimonialAvatar bg="bg.main" />
               <TestimonialAuthor>
                 <span>Nabeel Ben</span>
                 <panda.span color={{ base: '#7D7D7D', _dark: '#ABABAB' }}>

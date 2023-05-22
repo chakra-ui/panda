@@ -9,14 +9,13 @@ import { outdent } from 'outdent'
 
 export const SectionRecipes = () => {
   return (
-    <Flex bgColor="panda.bg.main" justifyContent="center" pt="55px" pb="58px">
+    <Flex bg="bg.main" justifyContent="center" pt="55px" pb="58px">
       <Content flexDirection={{ base: 'column', lg: 'row' }}>
         <Flex
           w={{ lg: '55%' }}
-          flexDirection="column"
           direction="column"
-          justifyContent="center"
-          alignItems="flex-start"
+          justify="center"
+          align="flex-start"
           mr="auto"
           pb="72px"
         >
@@ -32,14 +31,14 @@ export const SectionRecipes = () => {
               position="absolute"
               top="-7px"
               right="-18px"
-              color="panda.text.main"
+              color="text.main"
             >
               <Icon
                 icon="Sparks2"
                 className={css({
                   w: '22px',
                   h: '22px',
-                  color: 'panda.text.headline'
+                  color: 'text.headline'
                 })}
               />
             </panda.div>
@@ -47,7 +46,7 @@ export const SectionRecipes = () => {
           <panda.h3 textStyle="panda.h3" mt="53px">
             Recipes and variants just like Stitches
           </panda.h3>
-          <panda.h4 mt="28px" textStyle="panda.h4" color="panda.text.muted">
+          <panda.h4 mt="28px" textStyle="panda.h4" color="text.muted">
             Panda gives you a robust functions to define recipes and even “cva”
             to help you design composable component styles.
           </panda.h4>
@@ -62,12 +61,12 @@ export const SectionRecipes = () => {
                 lineHeight: '40px',
                 letterSpacing: 'tight',
                 fontWeight: 'bold',
-                color: 'panda.text.headline',
+                color: 'text.headline',
                 _hover: {
-                  backgroundColor: 'white',
+                  bg: 'white',
                   color: 'black',
                   _dark: {
-                    backgroundColor: 'panda.yellow'
+                    bg: 'yellow.400'
                   }
                 },
                 ml: -6
@@ -78,12 +77,8 @@ export const SectionRecipes = () => {
             <ButtonIcon icon="RightArrowIcon" />
           </Link>
         </Flex>
-        <Flex w={{ lg: '45%' }} flexDirection="column" ml="5">
-          <panda.div
-            w="100%"
-            backgroundColor="panda.gray.600"
-            borderRadius="16px"
-          >
+        <Flex w={{ lg: '45%' }} direction="column" ml="5">
+          <panda.div w="100%" bg="gray.600" borderRadius="16px">
             {/* @ts-expect-error Server Component */}
             <Code lang="tsx" className={code()}>
               {outdent`export const badge = cva({

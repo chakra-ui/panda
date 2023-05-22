@@ -1,34 +1,30 @@
-import { css } from '../styled-system/css'
-import { panda } from '../styled-system/jsx'
 import Marquee from 'react-fast-marquee'
+import { css } from '../styled-system/css'
+import { HStack, panda } from '../styled-system/jsx'
+
+const features = [
+  'Style props',
+  'TypeScript based',
+  'Design Tokens',
+  'Cascade Layers',
+  'Utility Classes',
+  'Recipes',
+  'Just-in-Time',
+  'Variants'
+]
 
 export const FeaturesList = () => {
   return (
-    <panda.div
-      bgColor="panda.bg.inverted"
-      py="20px"
-      textStyle="2xl"
-      fontWeight="semibold"
-    >
-      <Marquee
-        className={css({ listStyleType: 'none', letterSpacing: 'tight' })}
-        autoFill
-      >
-        <panda.li mx="2">Style props</panda.li>
-        <panda.li mx="2">•</panda.li>
-        <panda.li mx="2">TypeScript based</panda.li>
-        <panda.li mx="2">•</panda.li>
-        <panda.li mx="2">Design Tokens</panda.li>
-        <panda.li mx="2">•</panda.li>
-        <panda.li mx="2">Cascade Layers</panda.li>
-        <panda.li mx="2">•</panda.li>
-        <panda.li mx="2">Utility Classes</panda.li>
-        <panda.li mx="2">•</panda.li>
-        <panda.li mx="2">Recipes</panda.li>
-        <panda.li mx="2">•</panda.li>
-        <panda.li mx="2">Just-in-Time</panda.li>
-        <panda.li mx="2">•</panda.li>
-        <panda.li mx="2">Fast</panda.li>
+    <panda.div bg="bg.inverted" py="5" textStyle="2xl" fontWeight="semibold">
+      <Marquee className={css({ listStyleType: 'none' })} autoFill>
+        {features.map((feature, index) => (
+          <panda.li key={index} mx="2">
+            <HStack gap="4">
+              <panda.span letterSpacing="tight">{feature}</panda.span>
+              <span>•</span>
+            </HStack>
+          </panda.li>
+        ))}
       </Marquee>
     </panda.div>
   )

@@ -11,7 +11,7 @@ export const SectionStartBuilding = () => {
       direction="column"
       alignItems="center"
       justifyContent="center"
-      bgColor="panda.bg.main"
+      bg="bg.main"
       position="relative"
       pt="225px"
       pb="90px"

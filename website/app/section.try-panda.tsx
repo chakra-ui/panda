@@ -7,7 +7,7 @@ import { Content } from './content'
 export const SectionTryPanda = () => {
   return (
     <Flex
-      bgColor="panda.bg.dark"
+      bg="bg.dark"
       justifyContent="center"
       pt={{ base: '40px', lg: '85px' }}
       pb={{ base: '40px', lg: '70px' }}
@@ -17,7 +17,7 @@ export const SectionTryPanda = () => {
           <panda.h3
             textStyle="panda.h3"
             pos="relative"
-            bgColor="panda.yellow"
+            bg="yellow.400"
             color="black"
             py="25px"
             px="30px"
@@ -31,7 +31,7 @@ export const SectionTryPanda = () => {
                 top: '50%',
                 left: 'calc(100% - 2px)',
                 transform: 'translateY(-50%)',
-                color: 'panda.yellow'
+                color: 'yellow.400'
               })}
             />
           </panda.h3>
@@ -64,7 +64,7 @@ export const SectionTryPanda = () => {
               fontSize={{ base: '4rem', md: '5.9375rem' }}
               lineHeight="7.5rem"
               letterSpacing="tight"
-              color="panda.yellow"
+              color="yellow.400"
             >
               1
             </panda.span>
@@ -81,7 +81,7 @@ export const SectionTryPanda = () => {
               textStyle="xl"
               letterSpacing="tight"
             >
-              <panda.code color="panda.gray.100">$</panda.code>
+              <panda.code color="gray.100">$</panda.code>
               <panda.code color="white" whiteSpace="nowrap">
                 npm install @pandacss/dev
               </panda.code>
@@ -96,7 +96,7 @@ export const SectionTryPanda = () => {
               fontSize={{ base: '4rem', md: '5.9375rem' }}
               lineHeight="7.5rem"
               letterSpacing="tight"
-              color="panda.yellow"
+              color="yellow.400"
             >
               2
             </panda.span>
@@ -113,7 +113,7 @@ export const SectionTryPanda = () => {
               textStyle="xl"
               letterSpacing="tight"
             >
-              <panda.code color="panda.gray.100">$</panda.code>
+              <panda.code color="gray.100">$</panda.code>
               <panda.code color="white" whiteSpace="nowrap">
                 npm run panda init
               </panda.code>
@@ -128,7 +128,7 @@ export const SectionTryPanda = () => {
               fontSize={{ base: '4rem', md: '5.9375rem' }}
               lineHeight="7.5rem"
               letterSpacing="tight"
-              color="panda.yellow"
+              color="yellow.400"
             >
               3
             </panda.span>
@@ -145,7 +145,7 @@ export const SectionTryPanda = () => {
               textStyle="xl"
               letterSpacing="tight"
             >
-              <panda.code color="panda.gray.100">$</panda.code>
+              <panda.code color="gray.100">$</panda.code>
               <panda.code color="white" whiteSpace="nowrap">
                 npm run dev
               </panda.code>

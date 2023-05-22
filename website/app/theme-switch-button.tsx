@@ -1,44 +1,72 @@
-// prettier-ignore
 'use client'
 
-import { useMounted } from 'nextra/hooks'
 import { useTheme } from 'next-themes'
+import { useMounted } from 'nextra/hooks'
 
-import { HTMLPandaProps, panda } from '../styled-system/jsx'
-import { button } from '../styled-system/recipes'
+import { css } from '../styled-system/css'
+import { HStack } from '../styled-system/jsx'
 import { ButtonIcon } from '../theme/icons'
-import { css, cx } from '../styled-system/css'
 
-export function ThemeSwitchButton({
-  lite,
-  ...props
-}: HTMLPandaProps<'button'> & { lite?: boolean }) {
+function useThemeSwitch() {
   const theme = useTheme()
   const { setTheme, resolvedTheme } = theme
-  const mounted = useMounted()
 
+  const mounted = useMounted()
   const isDark = mounted && resolvedTheme === 'dark'
-  const iconToUse = isDark ? 'Moon' : 'Sun'
+
+  const toggleTheme = () => setTheme(isDark ? 'light' : 'dark')
+
+  const iconToUse: 'Moon' | 'Sun' = isDark ? 'Moon' : 'Sun'
+  const iconText = isDark ? 'Dark' : 'Light'
+
+  return {
+    mounted,
+    iconToUse,
+    iconText,
+    toggleTheme
+  }
+}
+
+const switchStyle = css({
+  px: '2',
+  py: '1',
+  textStyle: 'xl',
+  fontWeight: 'semibold',
+  letterSpacing: 'tight',
+  rounded: 'md',
+  _hover: {
+    bg: 'bg.emphasized.hover'
+  }
+})
+
+export function ThemeSwitchButton() {
+  const { iconToUse, toggleTheme, mounted, iconText } = useThemeSwitch()
 
   return (
-    <panda.button
-      opacity={mounted ? 1 : 0}
-      transitionProperty="opacity"
-      className={cx(
-        button({ color: 'ghost' }),
-        // prevent layout shift with predefined width
-        !lite ? css({ w: '125px' }) : undefined
-      )}
-      onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      {...props}
+    <button
+      style={{ opacity: mounted ? 1 : 0 }}
+      onClick={toggleTheme}
+      className={switchStyle}
     >
-      <span className={lite ? css({ display: 'none' }) : ''}>
-        {isDark ? 'Dark' : 'Light'}{' '}
-      </span>
-      <ButtonIcon
-        icon={iconToUse}
-        className={lite ? css({ mx: 0 }) : undefined}
-      />
-    </panda.button>
+      <HStack gap="2">
+        <span>{iconText} </span>
+        <ButtonIcon icon={iconToUse} />
+      </HStack>
+    </button>
+  )
+}
+
+export function ThemeSwitchIconButton() {
+  const { iconToUse, iconText, toggleTheme, mounted } = useThemeSwitch()
+
+  return (
+    <button
+      style={{ opacity: mounted ? 1 : 0 }}
+      onClick={toggleTheme}
+      aria-label={iconText}
+      className={switchStyle}
+    >
+      <ButtonIcon icon={iconToUse} />
+    </button>
   )
 }

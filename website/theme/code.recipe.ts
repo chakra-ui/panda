@@ -6,7 +6,7 @@ export const codeRecipe = defineRecipe({
     m: '0!',
     px: 4,
     py: 6,
-    backgroundColor: 'transparent!',
+    bg: 'transparent!',
     borderRadius: '16px!'
   }
 })

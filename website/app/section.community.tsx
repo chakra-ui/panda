@@ -9,7 +9,7 @@ export const SectionCommunity = () => {
   return (
     <Flex
       pos="relative"
-      bgColor="panda.bg.inverted"
+      bg="bg.inverted"
       justifyContent="center"
       pt={{ base: '60px', lg: '155px' }}
       pb={{ base: '80px', lg: '200px' }}
@@ -48,10 +48,10 @@ export const SectionCommunity = () => {
                 letterSpacing: 'tight',
                 fontWeight: '600',
                 color: { base: 'black', _hover: 'white' },
-                bgColor: { base: 'panda.yellow', _hover: 'panda.gray.400' },
+                bg: { base: 'yellow.400', _hover: 'gray.400' },
                 _dark: {
                   _hover: {
-                    shadowColor: 'panda.gray.200'
+                    shadowColor: 'gray.200'
                   }
                 }
               })
@@ -105,7 +105,7 @@ export const SectionCommunity = () => {
                   w="64px"
                   h="64px"
                   className={button({ color: 'yellow' })}
-                  bgColor="panda.yellow"
+                  bg="yellow.400"
                   color="black"
                   p="0"
                 >
@@ -170,7 +170,7 @@ const TeamMember = (props: HTMLPandaProps<'div'>) => (
     borderRadius="10px"
     w="50px"
     h="50px"
-    bgColor="panda.yellowDark"
+    bg="yellow.700"
     {...props}
   />
 )

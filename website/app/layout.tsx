@@ -1,25 +1,38 @@
+import { Fira_Code } from 'next/font/google'
 import localFont from 'next/font/local'
-import '../styles/panda.css'
-import { Providers } from './providers'
 import { css, cx } from '../styled-system/css'
-import { Navbar } from './navbar'
 import { Flex } from '../styled-system/jsx'
+import '../styles/panda.css'
+import { Navbar } from './navbar'
+import { Providers } from './providers'
 
-/** @see https://github.com/github/mona-sans */
 const MonaSans = localFont({
   src: '../styles/Mona-Sans.woff2',
-  display: 'swap'
+  display: 'swap',
+  variable: '--font-mona-sans'
 })
 
-export default function RootLayout({
-  children
-}: {
+const FiraCode = Fira_Code({
+  weight: ['400', '500', '700'],
+  display: 'swap',
+  subsets: ['latin'],
+  variable: '--font-fira-code'
+})
+
+type Props = {
   children: React.ReactNode
-}) {
+}
+
+export default function RootLayout(props: Props) {
+  const { children } = props
   return (
     <html
       lang="en"
-      className={cx(MonaSans.className, css({ overflow: 'hidden' }))}
+      className={cx(
+        MonaSans.variable,
+        FiraCode.variable,
+        css({ overflow: 'hidden', fontFamily: 'body' })
+      )}
       suppressHydrationWarning
     >
       <body className={css({ overflowX: 'hidden', overflowY: 'auto' })}>
