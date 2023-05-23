@@ -12,7 +12,7 @@ export const SectionCommunity = () => {
         display={{ base: 'none', md: 'block' }}
         position="absolute"
         bottom="-56%"
-        right="-7%"
+        right="-2%"
         pointerEvents="none"
       >
         <Image
@@ -20,7 +20,7 @@ export const SectionCommunity = () => {
           height="800"
           alt=""
           src="/community.png"
-          style={{ objectFit: 'contain' }}
+          style={{ height: '100%', width: '560px' }}
         />
       </panda.div>
 

@@ -19,7 +19,7 @@ export const SectionHero = () => {
             mb="24"
           >
             CSS-in-JS with build time generated styles, RSC compatible,
-            multi-variant support, and a best-in-class developer experience
+            multi-variant support, and best-in-class developer experience
           </panda.h4>
 
           <Flex gap="8">

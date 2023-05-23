@@ -66,7 +66,7 @@ export const SectionTestimonials = () => {
                     height="48"
                     src={testimonial.avatar}
                     alt={testimonial.author}
-                    style={{ objectFit: 'cover' }}
+                    style={{ objectFit: 'cover', height: '100%' }}
                   />
                 </panda.div>
 
