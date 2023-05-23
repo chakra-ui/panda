@@ -31,7 +31,7 @@ To scaffold the panda config and postcss
 ```sh
 pnpm panda init
 # or
-pnpm panda init --postcss
+pnpm panda init -p
 ```
 
 To run the extract styles, run
