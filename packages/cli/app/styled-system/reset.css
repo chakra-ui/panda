@@ -1,94 +1,185 @@
-@layer reset {
-    
-  * {
-    margin: 0;
-    padding: 0;
-    font: inherit;
-  }
 
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-    border-width: 0;
-    border-style: solid;
-  }
+    @layer reset {
+      * {
+        margin: 0;
+        padding: 0;
+        font: inherit;
+      }
 
-  html,
-  body {
-    height: 100%;
-  }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        border-width: 0;
+        border-style: solid;
+      }
 
-  body {
-    line-height: 1.5;
-    -webkit-text-size-adjust: 100%;
-    -webkit-font-smoothing: antialiased;
-  }
+      html {
+        line-height: 1.5;
+        -webkit-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+        -webkit-font-smoothing: antialiased;
+        -moz-tab-size: 4;
+        tab-size: 4;
+      }
 
-  img {
-    border-style: none;
-  }
+      hr {
+        height: 0;
+        color: inherit;
+        border-top-width: 1px;
+      }
 
-  img,
-  picture,
-  video,
-  canvas,
-  svg {
-    display: block;
-    max-width: 100%;
-  }
+      body {
+        height: 100%;
+        line-height: inherit;
+      }
 
-  p,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    overflow-wrap: break-word;
-  }
+      img {
+        border-style: none;
+      }
 
-  ::-webkit-search-decoration {
-    -webkit-appearance: none;
-    appearance: none;
-  }
+      img,
+      svg,
+      video,
+      canvas,
+      audio,
+      iframe,
+      embed,
+      object {
+        display: block;
+        vertical-align: middle;
+      }
 
-  ::-webkit-file-upload-button {
-    -webkit-appearance: button;
-    appearance: none;
-    font: inherit;
-  }
+      img,
+      video {
+        max-width: 100%;
+        height: auto;
+      }
 
-  ::-webkit-inner-spin-button,
-  ::-webkit-outer-spin-button {
-    height: auto;
-  }
+      p,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        overflow-wrap: break-word;
+      }
 
-  code,
-  kbd,
-  pre,
-  samp {
-    font-size: 1em;
-  }
+      ol,
+      ul {
+        list-style: none;
+      }
 
-  table {
-    border-collapse: collapse;
-  }
+      code,
+      kbd,
+      pre,
+      samp {
+        font-size: 1em;
+      }
 
-  textarea {
-    resize: vertical;
-  }
+      button,
+      [type='button'],
+      [type='reset'],
+      [type='submit'] {
+        -webkit-appearance: button;
+        background-color: transparent;
+        background-image: none;
+      }
 
-  sub {
-    bottom: -0.25em;
-  }
+      button,
+      select {
+        text-transform: none;
+      }
 
-  sup {
-    top: -0.5em;
-  }
+      table {
+        text-indent: 0;
+        border-color: inherit;
+        border-collapse: collapse;
+      }
 
-  dialog {
-    padding: 0;
-  }
+      input::placeholder,
+      textarea::placeholder {
+        opacity: 1;
+      }
 
-  }
+      textarea {
+        resize: vertical;
+      }
+
+      summary {
+        display: list-item;
+      }
+
+      small {
+        font-size: 80%;
+      }
+
+      sub,
+      sup {
+        font-size: 75%;
+        line-height: 0;
+        position: relative;
+        vertical-align: baseline;
+      }
+
+      sub {
+        bottom: -0.25em;
+      }
+
+      sup {
+        top: -0.5em;
+      }
+
+      dialog {
+        padding: 0;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: inherit;
+      }
+
+      abbr:where([title]) {
+        text-decoration: underline dotted;
+      }
+
+      b,
+      strong {
+        font-weight: bolder;
+      }
+
+      code,
+      kbd,
+      samp,
+      pre {
+        font-size: 1em;
+      }
+
+      [type='search'] {
+        -webkit-appearance: textfield;
+        outline-offset: -2px;
+      }
+
+      ::-webkit-search-decoration {
+        -webkit-appearance: none;
+      }
+
+      ::-webkit-file-upload-button {
+        -webkit-appearance: button;
+      }
+
+      ::-webkit-inner-spin-button,
+      ::-webkit-outer-spin-button {
+        height: auto;
+      }
+
+      :-moz-ui-invalid {
+        box-shadow: none;
+      }
+
+      :-moz-focusring {
+        outline: auto;
+      }
+    }
+  

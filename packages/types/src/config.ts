@@ -97,7 +97,7 @@ export type Config = {
    * Whether to include css reset styles in the generated css.
    * @default true
    */
-  preflight?: boolean
+  preflight?: boolean | { scope: string }
   /**
    * Whether to optimize the generated css.
    * @default true

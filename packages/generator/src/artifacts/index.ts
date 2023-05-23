@@ -1,7 +1,11 @@
+import { isObject } from '@pandacss/shared'
 import type { Artifact } from '@pandacss/types'
 import outdent from 'outdent'
+import type { Context } from '../engines'
+import { generateGlobalCss } from './css/global-css'
 import { generateKeyframeCss } from './css/keyframe-css'
 import { generateResetCss } from './css/reset-css'
+import { generateStaticCss } from './css/static-css'
 import { generateTokenCss } from './css/token-css'
 import { generateConditions } from './js/conditions'
 import { generateCssFn } from './js/css-fn'
@@ -19,9 +23,6 @@ import { generateTypesEntry } from './types/main'
 import { generatePropTypes } from './types/prop-types'
 import { generateStyleProps } from './types/style-props'
 import { generateTokenTypes } from './types/token-types'
-import type { Context } from '../engines'
-import { generateGlobalCss } from './css/global-css'
-import { generateStaticCss } from './css/static-css'
 
 function setupHelpers(ctx: Context): Artifact {
   const code = generateHelpers()
@@ -217,8 +218,10 @@ function setupCssIndex(ctx: Context): Artifact {
 }
 
 function setupResetCss(ctx: Context): Artifact {
-  if (!ctx.config.preflight) return
-  const code = generateResetCss()
+  const { preflight } = ctx.config
+  if (!preflight) return
+  const scope = isObject(preflight) ? preflight.scope : undefined
+  const code = generateResetCss(scope)
   return { files: [{ file: 'reset.css', code }] }
 }
 
