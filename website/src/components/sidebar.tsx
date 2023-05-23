@@ -409,6 +409,11 @@ interface SideBarProps {
   includePlaceholder: boolean
 }
 
+const hiddenClass = css({
+  overflow: 'hidden',
+  md: { overflow: 'auto' }
+})
+
 export function Sidebar({
   docsDirectories,
   flatDirectories,
@@ -430,13 +435,12 @@ export function Sidebar({
 
   useEffect(() => {
     if (menu) {
-      document.body.classList.add(
-        ...css({ overflow: 'hidden', md: { overflow: 'auto' } }).split(' ')
-      )
+      document.body.classList.add(...hiddenClass.split(' '))
     } else {
-      document.body.classList.remove(
-        ...css({ overflow: 'hidden', md: { overflow: 'auto' } }).split(' ')
-      )
+      document.body.classList.remove(...hiddenClass.split(' '))
+    }
+    return () => {
+      document.body.classList.remove(...hiddenClass.split(' '))
     }
   }, [menu])
 

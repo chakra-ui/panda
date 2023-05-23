@@ -54,7 +54,7 @@ export default function RootLayout(props: Props) {
       className={cx(
         MonaSans.variable,
         FiraCode.variable,
-        css({ overflow: 'hidden', fontFamily: 'body' })
+        css({ overflowX: 'hidden', fontFamily: 'body' })
       )}
       suppressHydrationWarning
     >
