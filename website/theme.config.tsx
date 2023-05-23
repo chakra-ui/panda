@@ -14,17 +14,17 @@ import { useRouter } from 'next/router'
 import { css } from './styled-system/css'
 
 const config: DocsThemeConfig = {
-  banner: {
-    key: 'first-release',
-    text: (
-      <a
-        href="https://www.adebayosegun.com/blog/the-future-of-chakra-ui"
-        target="_blank"
-      >
-        🎉 Panda is released. Read more →
-      </a>
-    )
-  },
+  // banner: {
+  //   key: 'first-release',
+  //   text: (
+  //     <a
+  //       href="https://www.adebayosegun.com/blog/the-future-of-chakra-ui"
+  //       target="_blank"
+  //     >
+  //       🎉 Panda is released. Read more →
+  //     </a>
+  //   )
+  // },
   components: {
     blockquote: Callout,
     //
