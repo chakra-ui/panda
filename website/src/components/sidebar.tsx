@@ -1,26 +1,26 @@
-import type { ReactElement } from 'react'
-import {
-  useState,
-  useEffect,
-  useMemo,
-  memo,
-  useRef,
-  createContext,
-  useContext
-} from 'react'
 import { useRouter } from 'next/router'
 import type { Heading } from 'nextra'
+import type { ReactElement } from 'react'
+import {
+  createContext,
+  memo,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 
-import { useConfig, useMenu, useActiveAnchor } from '../contexts'
-import type { Item, MenuItem, PageItem } from 'nextra/normalize-pages'
-import { renderComponent } from '../utils'
 import { useFSRoute } from 'nextra/hooks'
-import { LocaleSwitch } from './locale-switch'
 import { ArrowRightIcon, ExpandIcon } from 'nextra/icons'
-import { Collapse } from './collapse'
-import { Anchor } from './anchor'
+import type { Item, MenuItem, PageItem } from 'nextra/normalize-pages'
 import { css, cx } from '../../styled-system/css'
+import { useActiveAnchor, useConfig, useMenu } from '../contexts'
+import { renderComponent } from '../utils'
+import { Anchor } from './anchor'
+import { Collapse } from './collapse'
+import { LocaleSwitch } from './locale-switch'
 
 const TreeState: Record<string, boolean> = Object.create(null)
 
@@ -236,16 +236,11 @@ function FolderImpl({ item, anchors }: FolderProps): ReactElement {
           )}
         />
       </ComponentToUse>
-      <Collapse
-        className={css({ _ltr: { pr: 0 }, _rtl: { pl: 0 }, pt: 1 })}
-        isOpen={open}
-      >
+
+      <Collapse className={css({ ps: '0', pt: '1' })} isOpen={open}>
         {Array.isArray(item.children) ? (
           <Menu
-            className={cx(
-              classes.border,
-              css({ _ltr: { ml: 3 }, _rtl: { mr: 3 } })
-            )}
+            className={cx(classes.border, css({ ms: '3' }))}
             directories={item.children}
             base={item.route}
             anchors={anchors}
@@ -578,7 +573,8 @@ export function Sidebar({
                 css({
                   overflowY: 'auto',
                   overflowX: 'hidden',
-                  p: 4,
+                  px: '4',
+                  py: '10',
                   md: {
                     h: 'calc(100vh - var(--nextra-navbar-height) - var(--nextra-menu-height))'
                   }
@@ -642,7 +638,7 @@ export function Sidebar({
               showSidebar
                 ? cx(
                     hasI18n && css({ justifyContent: 'flex-end' }),
-                    css({ borderTop: '1px' })
+                    css({ borderTopWidth: '1px' })
                   )
                 : css({ py: 4, flexWrap: 'wrap', justifyContent: 'center' })
             )}
@@ -685,8 +681,10 @@ export function Sidebar({
                   _hover: {
                     color: 'gray.900',
                     bg: 'gray.100',
-                    // _dark: { color: 'gray.50', bg: 'primary.100/5' }
-                    _dark: { color: 'gray.50', bg: 'rgb(219 234 254 / 0.05)' } // opacity modifier
+                    _dark: {
+                      color: 'gray.50',
+                      bg: 'rgb(219 234 254 / 0.05)'
+                    }
                   }
                 })}
                 onClick={() => {

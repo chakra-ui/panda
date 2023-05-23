@@ -1,5 +1,4 @@
 import { bannerRecipe } from './banner.recipe'
-import { breadcrumbRecipe } from './breadcrumb.recipe'
 import { calloutRecipe } from './callout.recipe'
 import { cardRecipe } from './card.recipe'
 import { navbarRecipe } from './navbar.recipe'
@@ -12,7 +11,6 @@ export const recipes = {
   button: buttonRecipe,
   banner: bannerRecipe,
   codeTabs: codeTabsRecipe,
-  breadcrumb: breadcrumbRecipe,
   card: cardRecipe,
   callout: calloutRecipe,
   input: inputRecipe,
