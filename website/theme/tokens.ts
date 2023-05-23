@@ -1,5 +1,5 @@
 import { defineTokens } from '@pandacss/dev'
-import { colors } from './theme.colors'
+import { colors } from './colors'
 
 export const tokens = defineTokens({
   fontSizes: {

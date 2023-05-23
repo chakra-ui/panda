@@ -1,11 +1,11 @@
 import { defineConfig } from '@pandacss/dev'
 
-import { tokens } from './theme/theme.tokens'
-import { semanticTokens } from './theme/theme.semantic-tokens'
-import { recipes } from './theme/theme.recipes'
-import { textStyles } from './theme/theme.text-styles'
-import { layerStyles } from './theme/theme.layer-styles'
-import { globalCss } from './theme/theme.global-css'
+import { tokens } from './theme/tokens'
+import { semanticTokens } from './theme/semantic-tokens'
+import { recipes } from './theme/recipes'
+import { textStyles } from './theme/text-styles'
+import { layerStyles } from './theme/layer-styles'
+import { globalCss } from './theme/global-css'
 
 export default defineConfig({
   preflight: true,
