@@ -89,8 +89,13 @@ export class Utility {
   private assignShorthands = () => {
     for (const [property, config] of Object.entries(this.config)) {
       const { shorthand } = this.normalize(config) ?? {}
+
       if (!shorthand) continue
-      this.shorthands.set(shorthand, property)
+
+      const values = Array.isArray(shorthand) ? shorthand : [shorthand]
+      values.forEach((shorthandName) => {
+        this.shorthands.set(shorthandName, property)
+      })
     }
   }
 
@@ -187,7 +192,7 @@ export class Utility {
 
     for (const [alias, raw] of Object.entries(values)) {
       const propKey = this.getPropKey(property, alias)
-      this.setStyles(property, raw, propKey)
+      this.setStyles(property, raw, alias, propKey)
       this.setClassName(property, alias)
     }
   }
@@ -281,13 +286,13 @@ export class Utility {
     return this
   }
 
-  private setStyles = (property: string, raw: string, propKey?: string) => {
+  private setStyles = (property: string, raw: string, alias: string, propKey?: string) => {
     propKey = propKey ?? this.getPropKey(property, raw)
 
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
     const getStyles = this.transforms.get(property) ?? defaultTransform
 
-    const styles = getStyles(raw, this.getToken.bind(this))
+    const styles = getStyles(raw, { token: this.getToken.bind(this), raw: alias })
 
     this.styles.set(propKey, styles ?? {})
 
@@ -349,7 +354,7 @@ export class Utility {
    */
   private getOrCreateStyle = (prop: string, value: string) => {
     const propKey = this.getPropKey(prop, value)
-    this.styles.get(propKey) ?? this.setStyles(prop, value, propKey)
+    this.styles.get(propKey) ?? this.setStyles(prop, value, value, propKey)
     return this.styles.get(propKey)!
   }
 

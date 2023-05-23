@@ -13,7 +13,12 @@ export type PropertyValues =
   | Record<string, string>
   | ThemeFn
 
-export type PropertyTransform = (value: any, token: Getter) => NestedCssProperties | undefined
+type TransformArgs = {
+  token: Getter
+  raw: any
+}
+
+export type PropertyTransform = (value: any, args: TransformArgs) => NestedCssProperties | undefined
 
 export type PropertyConfig = {
   /**
@@ -40,7 +45,7 @@ export type PropertyConfig = {
   /**
    * The shorthand of the property.
    */
-  shorthand?: string
+  shorthand?: string | string[]
 }
 
 export type UtilityConfig = {
