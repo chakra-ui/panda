@@ -62,8 +62,6 @@ type PropertyValueTypes  = {
 	marginInline: Tokens["spacing"];
 	marginInlineEnd: Tokens["spacing"];
 	marginInlineStart: Tokens["spacing"];
-	spaceX: Tokens["spacing"];
-	spaceY: Tokens["spacing"];
 	outlineColor: Tokens["colors"];
 	outline: Tokens["borders"];
 	outlineOffset: Tokens["spacing"];

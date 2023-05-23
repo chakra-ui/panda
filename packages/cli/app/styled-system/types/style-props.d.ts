@@ -612,8 +612,6 @@ export type SystemProperties = {
 	paddingY?: PropertyValue<'paddingY'>
 	marginX?: PropertyValue<'marginX'>
 	marginY?: PropertyValue<'marginY'>
-	spaceX?: PropertyValue<'spaceX'>
-	spaceY?: PropertyValue<'spaceY'>
 	divideX?: PropertyValue<'divideX'>
 	divideY?: PropertyValue<'divideY'>
 	divideColor?: PropertyValue<'divideColor'>

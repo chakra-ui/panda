@@ -82,8 +82,6 @@ const classNameMap = {
   "marginInline": "mx",
   "marginInlineEnd": "me",
   "marginInlineStart": "ms",
-  "spaceX": "space-x",
-  "spaceY": "space-y",
   "outlineWidth": "ring",
   "outlineColor": "ring",
   "outline": "ring",

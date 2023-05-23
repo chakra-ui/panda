@@ -148,27 +148,4 @@ export const spacing: UtilityConfig = {
     shorthand: 'ms',
     values: 'spacing',
   },
-
-  spaceX: {
-    className: 'space-x',
-    values: 'spacing',
-    transform(value) {
-      return {
-        '& > :not([hidden]) ~ :not([hidden])': {
-          marginInlineStart: value,
-        },
-      }
-    },
-  },
-  spaceY: {
-    className: 'space-y',
-    values: 'spacing',
-    transform(value) {
-      return {
-        '& > :not([hidden]) ~ :not([hidden])': {
-          marginBlockStart: value,
-        },
-      }
-    },
-  },
 }
