@@ -16,8 +16,8 @@ We'll start by defining the following conditions for these theme and color modes
 ```js
 const config = {
   conditions: {
-    light: '[data-color-mode=light]',
-    dark: '[data-color-mode=dark]',
+    light: '[data-color-mode=light] &',
+    dark: '[data-color-mode=dark] &',
     pinkTheme: '[data-theme=pink] &',
     blueTheme: '[data-theme=blue] &'
   }

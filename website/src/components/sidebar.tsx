@@ -25,7 +25,7 @@ import { LocaleSwitch } from './locale-switch'
 const TreeState: Record<string, boolean> = Object.create(null)
 
 const FocusedItemContext = createContext<null | string>(null)
-const OnFocuseItemContext = createContext<
+const OnFocusedItemContext = createContext<
   null | ((item: string | null) => any)
 >(null)
 const FolderLevelContext = createContext(0)
@@ -301,7 +301,7 @@ function File({
   anchors: Heading[]
 }): ReactElement {
   const route = useFSRoute()
-  const onFocus = useContext(OnFocuseItemContext)
+  const onFocus = useContext(OnFocusedItemContext)
 
   // It is possible that the item doesn't have any route - for example an external link.
   const active = item.route && [route, route + '/'].includes(item.route + '/')
@@ -550,7 +550,10 @@ export function Sidebar({
           showSidebar ? css({ md: { w: 64 } }) : css({ md: { w: 20 } }),
           asPopover
             ? css({ md: { display: 'none' } })
-            : css({ position: 'sticky', alignItems: 'flex-start' }),
+            : css({
+                position: 'sticky',
+                alignItems: { base: 'stretch', md: 'flex-start' }
+              }),
           menu
             ? css({ mdDown: { transform: 'translate3d(0,0,0)' } })
             : css({ mdDown: { transform: 'translate3d(-100%,0,0)' } })
@@ -563,7 +566,7 @@ export function Sidebar({
           })}
         </div>
         <FocusedItemContext.Provider value={focused}>
-          <OnFocuseItemContext.Provider
+          <OnFocusedItemContext.Provider
             value={item => {
               setFocused(item)
             }}
@@ -605,7 +608,7 @@ export function Sidebar({
                 anchors={anchors}
               />
             </div>
-          </OnFocuseItemContext.Provider>
+          </OnFocusedItemContext.Provider>
         </FocusedItemContext.Provider>
 
         {hasMenu && (
