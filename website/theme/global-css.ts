@@ -2,6 +2,9 @@ import { defineGlobalStyles } from '@pandacss/dev'
 
 export const globalCss = defineGlobalStyles({
   // nextra specific styles
+  '*, *::before, *::after': {
+    borderColor: 'neutral.200'
+  },
   html: {
     WebkitFontSmoothing: 'antialiased',
     MozOsxFontSmoothing: 'grayscale',

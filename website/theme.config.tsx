@@ -12,19 +12,9 @@ import {
 } from './src' // nextra-theme-docs
 import { useRouter } from 'next/router'
 import { css } from './styled-system/css'
+import { Icon } from './theme/icons'
 
 const config: DocsThemeConfig = {
-  // banner: {
-  //   key: 'first-release',
-  //   text: (
-  //     <a
-  //       href="https://www.adebayosegun.com/blog/the-future-of-chakra-ui"
-  //       target="_blank"
-  //     >
-  //       🎉 Panda is released. Read more →
-  //     </a>
-  //   )
-  // },
   components: {
     blockquote: Callout,
     //
@@ -36,19 +26,7 @@ const config: DocsThemeConfig = {
     Tab: Tab,
     Tabs: Tabs
   },
-  logo: (
-    <span
-      className={css({
-        textStyle: { base: 'md', md: 'lg' },
-        mx: 2,
-        fontWeight: 'extrabold',
-        display: 'inline',
-        userSelect: 'none'
-      })}
-    >
-      🐼 panda
-    </span>
-  ),
+  logo: <Icon icon="LogoWithText" />,
   project: { link: 'https://github.com/chakra-ui/panda' },
   useNextSeoProps() {
     const { route } = useRouter()

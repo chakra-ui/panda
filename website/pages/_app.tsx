@@ -2,6 +2,12 @@
 import '../styles/global.css'
 import '../styles/panda.css'
 
+import { fontClassName } from '../styles/fonts'
+
 export default function MyApp({ Component, pageProps }) {
-  return <Component {...pageProps} />
+  return (
+    <div className={fontClassName}>
+      <Component {...pageProps} />
+    </div>
+  )
 }

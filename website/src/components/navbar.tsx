@@ -65,7 +65,7 @@ function NavbarMenu({
   return (
     <div className={css({ position: 'relative', display: 'inline-block' })}>
       <Menu>
-        <MenuTrigger>
+        <MenuTrigger asChild>
           <button
             className={cx(
               className,

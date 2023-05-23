@@ -159,7 +159,8 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
             hasHeadings &&
               css({
                 mt: 8,
-                borderTop: '1px solid',
+                borderTopWidth: '1px',
+                borderColor: 'neutral.300',
                 bg: 'white',
                 pt: 8,
                 shadow: '0 -12px 16px white',
