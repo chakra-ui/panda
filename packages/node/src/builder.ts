@@ -126,7 +126,7 @@ export class Builder {
 
     configCache.set(configPath, {
       context: this.context,
-      deps: new Set(this.context.configDependencies),
+      deps: new Set(this.context.dependencies ?? []),
       depsModifiedMap,
     })
 

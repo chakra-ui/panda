@@ -1,48 +1,82 @@
-import { printAst } from 'pinceau/utils'
 import { CompletionItem, CompletionItemKind, TextDocumentPositionParams } from 'vscode-languageserver'
-import { PinceauExtension } from '..'
-import { getCursorContext } from '../utils/getCursorContext'
+import { PandaExtension } from '..'
 import { stringifiedValue } from '../utils/tokens'
+import { ts } from 'ts-morph'
+import { normalizeStyleObject, walkObject, withoutImportant } from '@pandacss/shared'
+import { ResultItem } from '@pandacss/types'
 
-export function registerCompletion (
-  context: PinceauExtension
-) {
-  const { connection, documents, tokensManager, documentReady, rootPath, getDocumentTokensData } = context
+export function registerCompletion(extension: PandaExtension) {
+  const { connection, documents, documentReady, parseSourceFile } = extension
 
   // This handler provides the initial list of the completion items.
-  connection.onCompletion(async (_textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[]> => {
+  connection.onCompletion(async (textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[]> => {
     await documentReady('✅ onCompletion')
 
-    const doc = documents.get(_textDocumentPosition.textDocument.uri)
-    if (!doc) { return [] }
+    const ctx = extension.getContext()
+    if (!ctx) {
+      connection.console.log('🐼 Extension context not ready')
+      return []
+    }
 
-    const tokensData = getDocumentTokensData(doc)
+    const doc = documents.get(textDocumentPosition.textDocument.uri)
+    if (!doc) {
+      return []
+    }
 
-    const { isInStringExpression, isOffsetOnStyleTsTag, isTokenFunctionCall } = getCursorContext(doc, _textDocumentPosition.position, tokensData?.styles)
+    const parserResult = parseSourceFile(doc)
+    console.log(parserResult)
+    if (!parserResult) {
+      return []
+    }
+
+    const sourceFile = extension.getSourceFile(doc)
+    if (!sourceFile) {
+      return []
+    }
+
+    const position = textDocumentPosition.position
+    const pos = ts.getPositionOfLineAndCharacter(
+      sourceFile.compilerNode,
+      // TS uses 0-based line and char #s
+      position.line,
+      position.character,
+    )
+    console.log({ line: position.line, column: position.character, character: pos })
+
+    // const node = sourceFile.getDescendantAtPos(pos)
+
+    // parserResult.pattern.forEach(onResult)
+    // TODO recipe
+
+    // console.log(dict.allNames)
+    // console.log(Object.keys(dict.categoryMap), dict.allTokens)
+
+    return []
 
     // Create completion symbols
     const items: CompletionItem[] = []
-    if (isTokenFunctionCall || ((doc.uri.includes('tokens.config.ts') || isOffsetOnStyleTsTag) && isInStringExpression)) {
-      Object.entries(tokensData?.localTokens || {}).forEach(
-        ([key, localToken]: [string, any]) => {
-          const path = key.replace(/^--/, '').split('-').join('.')
-          const completion: CompletionItem = {
-            label: path,
-            detail: printAst(localToken).code,
-            insertText: `{${path}}`,
-            kind: CompletionItemKind.EnumMember,
-            sortText: 'z' + path
-          }
-          items.push(completion)
+    if (isTokenFunctionCall) {
+      Object.entries(parserResult || {}).forEach(([key, localToken]) => {
+        const path = key.replace(/^--/, '').split('-').join('.')
+        const completion: CompletionItem = {
+          label: path,
+          detail: printAst(localToken).code,
+          insertText: `{${path}}`,
+          kind: CompletionItemKind.EnumMember,
+          sortText: 'z' + path,
         }
-      )
-      tokensManager.getAll().forEach((token: any) => {
-        if (!token?.name || !token?.value) { return }
+        items.push(completion)
+      })
+
+      ctx.tokens.allTokens.forEach((token) => {
+        if (!token?.name || !token?.value) {
+          return
+        }
 
         const insertText = isTokenFunctionCall ? token?.name : `{${token.name}}`
 
         const originalString = stringifiedValue({ value: token?.original })
-        const configValue = originalString ? `🎨 Config value:\n${originalString}` : undefined
+        const configValue = originalString ? `🐼 Config value:\n${originalString}` : undefined
         const stringValue = stringifiedValue(token)
         const sourcePath = token?.definition?.uri.replace(rootPath || '', '')
         const source = sourcePath ? `📎 Source:\n${sourcePath}` : ''
@@ -53,15 +87,15 @@ export function registerCompletion (
           documentation: `${configValue}${sourcePath ? '\n\n' + source : ''}`,
           insertText,
           kind: CompletionItemKind.Color,
-          sortText: 'z' + token?.name
+          sortText: 'z' + token?.name,
         }
 
         items.push(completion)
       })
     }
+
     return items
-  }
-  )
+  })
 
   // This handler resolves additional information for the item selected in the completion list.
   connection.onCompletionResolve((item: CompletionItem): CompletionItem => item)

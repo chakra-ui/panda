@@ -1,224 +1,329 @@
+import { ColorPresentationParams, Position, Range } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
-import { defu } from 'defu'
-import { parse as parseSfc, SFCStyleBlock } from '@vue/compiler-sfc'
-import { pathToVarName, transforms } from 'pinceau/utils'
-import { DesignToken } from 'pinceau/index'
-import { ColorInformation, Position, Range } from 'vscode-languageserver'
-import { DocumentTokensData } from '../index'
-import PinceauTokensManager, { PinceauVSCodeSettings } from '../manager'
-import { findAll } from '../utils/findAll'
-import { indexToPosition } from '../utils/indexToPosition'
-import { getCurrentLine } from '../utils/getCurrentLine'
-import { getHoveredToken, getHoveredTokenFunction } from '../utils/getHoveredToken'
-import { findStringRange } from '../utils/findStringRange'
+import { PandaExtensionSetup } from '../config'
 
-export function setupTokensHelpers (
-  tokensManager: PinceauTokensManager
-) {
-  /**
-   * Use the Pinceau transformers to get the style data out of a `css()` tag.
-   *
-   * This helps in resolving the local tokens of a `css()` function.
-   */
-  function getStyleData (uri: string, version: number, index: number, styleBlock: SFCStyleBlock) {
-    let transformData = {
-      version,
-      start: styleBlock.loc.start,
-      end: styleBlock.loc.end,
-      variants: {},
-      computedStyles: {},
-      localTokens: {}
-    }
-    try {
-      const transformCache = tokensManager.getTransformCache()
-      const cachedTransform = transformCache.get(`css${index}`, uri)
-      if (cachedTransform?.version === version) {
-        transformData = cachedTransform
-      } else {
-        transforms.transformCssFunction('---', styleBlock.content, transformData.variants, transformData.computedStyles, transformData.localTokens, { $tokens: () => undefined, utils: {} })
-        // Tag localTokens with <style> source
-        transformData.localTokens = Object.entries(transformData.localTokens as any).reduce((acc, [key, value]: [string, any]) => ({
-          ...acc,
-          [key]: {
-            ...value,
-            source: {
-              start: styleBlock.loc.start,
-              end: styleBlock.loc.end
-            }
-          }
-        }), {})
-        tokensManager.getTransformCache().set(uri, `css${index}`, transformData)
-      }
-    } catch (e) {
-    // Mitigate
-    }
+import { ParserResult, ResultItem, Token as TokenDefinition } from '@pandacss/types'
+import { Node, ts } from 'ts-morph'
 
-    return transformData
+import { BoxContext, BoxNode, PrimitiveType, box, extractJsxAttribute, maybeBoxNode } from '@pandacss/extractor'
+import { PandaContext } from '@pandacss/node'
+import { normalizeStyleObject, walkObject } from '@pandacss/shared'
+import { match } from 'ts-pattern'
+import { isColor } from '../utils/isColor'
+import { parseToRgba } from 'color2k'
+
+type Token = NonNullable<ReturnType<PandaContext['tokens']['getByName']>>
+type ClosestToken = { token: Token; range: Range; propName: string; propValue: PrimitiveType; box: BoxNode }
+type OnTokenCallback = (args: ClosestToken) => void
+const boxCtx: BoxContext = { flags: { skipTraverseFiles: true, skipEvaluate: true } }
+
+export function setupTokensHelpers(setup: PandaExtensionSetup) {
+  const versionByFilepath = new Map<string, number>()
+
+  function getSourceFile(doc: TextDocument) {
+    const ctx = setup.getContext()
+    if (!ctx) return
+
+    return ctx.project.getSourceFile(doc.uri)
   }
 
   /**
    * Get the local component list of local tokens.
    */
-  function getDocumentTokensData (
-    doc: TextDocument
-  ): DocumentTokensData {
-    const parsedData = getParsedVueComponent(doc.uri, doc.version, doc.getText())
-    const mergedData = (parsedData?.styles || []).reduce(
-      (acc, styleTag, index) => defu(getStyleData(doc.uri, doc.version, index, styleTag), acc),
-      {}
-    )
-    return { ...parsedData, ...mergedData } as DocumentTokensData
-  }
+  function parseSourceFile(doc: TextDocument) {
+    const ctx = setup.getContext()
+    if (!ctx) return
 
-  /**
-   * Returns a parsed Vue component data.
-   */
-  function getParsedVueComponent (
-    uri: string,
-    version: number,
-    code: string
-  ): { version: number, styles: SFCStyleBlock[] } {
-    try {
-      const transformCache = tokensManager.getTransformCache()
-      const cachedTransform = transformCache.get('sfc', uri)
-      if (cachedTransform?.version === version) {
-        return cachedTransform
-      } else {
-        const parsed = parseSfc(code)
-        const data = { version, styles: parsed?.descriptor?.styles.filter(styleTag => styleTag.lang === 'ts') || [] }
-        tokensManager.getTransformCache().set(uri, 'sfc', data)
-        return data
-      }
-    } catch (e) {
-      return {
-        version,
-        styles: []
-      }
+    const project = ctx.project
+    const currentFilePath = doc.uri
+
+    if (versionByFilepath.get(currentFilePath) !== doc.version) {
+      project.addSourceFile(doc.uri, doc.getText())
     }
+
+    return project.parseSourceFile(doc.uri)
   }
 
-  /**
- * Get all the tokens from the document and call a callback on it.
- */
-  function getDocumentTokens (
-    doc: TextDocument,
-    tokensData?: DocumentTokensData,
-    settings?: PinceauVSCodeSettings,
-    onToken?: (token: { match: RegExpMatchArray, tokenPath: string, token: DesignToken, range: Range, localToken?: any, settings: PinceauVSCodeSettings }) => void
-  ) {
-    const colors: ColorInformation[] = []
+  const createResultTokensGetter = (onToken: OnTokenCallback) => {
+    const ctx = setup.getContext()
+    if (!ctx) return () => {}
 
-    const text = doc.getText()
-    const referencesRegex = /{([a-zA-Z0-9.]+)}/g
-    const dtRegex = /\$dt\(['|`|"]([a-zA-Z0-9.]+)['|`|"](?:,\s*(['|`|"]([a-zA-Z0-9.]+)['|`|"]))?\)?/g
-    const dtMatches = findAll(dtRegex, text)
-    const tokenMatches = findAll(referencesRegex, text)
+    return (result: ResultItem) => {
+      const boxNode = result.box
 
-    const globalStart: Position = { line: 0, character: 0 }
+      result.data.forEach((styles) => {
+        const keys = Object.keys(styles)
+        if (!keys.length) return
 
-    for (const match of [...dtMatches, ...tokenMatches]) {
-      const tokenPath = match[1]
-      const varName = pathToVarName(tokenPath)
-      const start = indexToPosition(text, match.index)
-      const end = indexToPosition(text, match.index + tokenPath.length)
+        // const styleObject = normalizeStyleObject(styles, ctx)
+        // console.log({ styleObject })
 
-      const localToken = tokensData?.localTokens?.[varName]
+        walkObject(styles, (value, paths) => {
+          // if value doesn't exist
+          if (value == null) return
 
-      const token = tokensManager.getAll().get(tokenPath)
+          const [prop, ..._allConditions] = ctx.conditions.shift(paths)
+          const propNode = boxNode.value.get(prop)
+          if (!propNode) return
 
-      const range = {
-        start: {
-          line: globalStart.line + start.line,
-          character: (end.line === 0 ? globalStart.character : 0) + start.character
-        },
-        end: {
-          line: globalStart.line + end.line,
-          character: (end.line === 0 ? globalStart.character : 0) + end.character
-        }
-      }
+          const propName = ctx.utility.resolveShorthand(prop)
+          const token = getTokenFromPropValue(ctx, propName, value)
+          if (!token) return
 
-      onToken({
-        match,
-        tokenPath,
-        token,
-        localToken,
-        range,
-        settings
+          // console.log({ prop, value, paths, propNode })
+          const range = nodeRangeToVsCodeRange(getNodeRange(propNode.getNode()))
+          onToken?.({ token, range, propName, propValue: value, box: propNode })
+        })
       })
     }
+  }
 
-    return colors
+  const getTokenFromPropValue = (ctx: PandaContext, prop: string, value: any): Token | undefined => {
+    const utility = ctx.config.utilities?.[prop]
+
+    const category = typeof utility?.values === 'string' && utility?.values
+    if (!category) return
+
+    // console.log({ utility, category, prop, value })
+
+    const tokenPath = [category, value].join('.')
+    const token = ctx.tokens.getByName(tokenPath)
+
+    // arbitrary value like
+    // display: "block", zIndex: 1, ...
+    if (!token) {
+      // any color
+      // color: "blue", color: "#000", color: "rgb(0, 0, 0)", ...
+      if (isColor(value)) {
+        const vscodeColor = color2kToVsCodeColor(value)
+        if (!vscodeColor) return
+
+        return { value, name: value, path: tokenPath, type: 'color', extensions: { vscodeColor } } as unknown as Token
+      }
+
+      // border="1px solid token(colors.gray.300)"
+      if (typeof value === 'string' && value.includes('token(')) {
+        const matches = expandTokenFn(value, ctx.tokens.getByName)
+
+        // TODO: handle multiple tokens
+        const first = matches?.[0]?.token
+        if (!first) return
+
+        if (isColor(first.value)) {
+          const vscodeColor = color2kToVsCodeColor(first.value)
+          if (!vscodeColor) return
+
+          return first.setExtensions({ vscodeColor: color2kToVsCodeColor(first.value) })
+        }
+
+        return first
+      }
+
+      return
+    }
+
+    // known theme token
+    // px: "2", fontSize: "xl", ...
+    // color: "blue.300"
+    if (isColor(token.value)) {
+      const vscodeColor = color2kToVsCodeColor(token.value)
+      if (!vscodeColor) return
+
+      return token.setExtensions({ vscodeColor: color2kToVsCodeColor(token.value) })
+    }
+
+    return token
   }
 
   /**
- * Get the closest token starting from a cursor position.
- *
- * Useful for hover/definition.
- */
-  function getClosestToken (
-    doc: TextDocument,
-    position: Position,
-    tokensData?: DocumentTokensData
-  ) {
-    const toRet: {
-    delimiter: string
-    currentLine?: { text: string, range: { start: number; end: number; } }
-    currentToken?: { token: string, range: { start: number; end: number; } }
-    closestToken?: any
-    token?: any
-    localToken?: any
-    lineRange?: { start: number, end: number }
-  } = {
-    delimiter: '{',
-    currentToken: undefined,
-    currentLine: undefined,
-    closestToken: undefined,
-    localToken: undefined,
-    token: undefined,
-    lineRange: undefined
+   * Get all the tokens from the document and call a callback on it.
+   */
+  function getFileTokens(_doc: TextDocument, parserResult: ParserResult, onToken: OnTokenCallback) {
+    const ctx = setup.getContext()
+    if (!ctx) return
+
+    const onResult = createResultTokensGetter(onToken)
+
+    parserResult.css.forEach(onResult)
+    parserResult.jsx.forEach(onResult)
   }
 
-    toRet.currentLine = getCurrentLine(doc, position)
-    if (!toRet.currentLine) { return }
+  const getClosestToken = (doc: TextDocument, position: Position): ClosestToken | undefined => {
+    const ctx = setup.getContext()
+    if (!ctx) return
 
-    // Try to grab `{}` syntax
-    toRet.currentToken = getHoveredToken(doc, position)
+    const sourceFile = getSourceFile(doc)
+    if (!sourceFile) return
 
-    // Try to grab `$dt()` syntax
-    if (!toRet.currentToken) {
-      toRet.currentToken = getHoveredTokenFunction(doc, position)
-      if (toRet.currentToken) { toRet.delimiter = '$dt(' }
-    }
+    const charIndex = ts.getPositionOfLineAndCharacter(sourceFile.compilerNode, position.line, position.character)
+    const { node, stack } = getDescendantAtPos(sourceFile, charIndex)
+    if (!node) return
 
-    // No syntax found
-    if (!toRet.currentToken) { return toRet }
+    // console.log({
+    //   line: position.line,
+    //   column: position.character,
+    //   character: charIndex,
+    //   text: node.getText(),
+    //   stack: stack.map((node) => node.getKindName()),
+    // })
 
-    // Get from local component tokens
-    toRet.localToken = tokensData?.localTokens?.[pathToVarName(toRet.currentToken.token)]
+    return getTokenAtNode(node, stack)
+  }
 
-    toRet.token = tokensManager.getAll().get(toRet.currentToken.token)
+  const getTokenAtNode = (node: Node, stack: Node[]): ClosestToken | undefined => {
+    const ctx = setup.getContext()
+    if (!ctx) return
 
-    // Try to resolve from parent token
-    if (!toRet.localToken && !toRet?.token?.definitions) {
-      let currentTokenPath = toRet.currentToken.token.split('.')
-      while (currentTokenPath.length) {
-        toRet.currentToken.token = currentTokenPath.join('.')
-        toRet.closestToken = tokensManager.getAll().get(toRet.currentToken.token)
-        if (toRet.closestToken) { currentTokenPath = [] }
-        currentTokenPath = currentTokenPath.splice(1)
+    // quick index based loop
+    const getFirstAncestorMatching = <Ancestor extends Node>(
+      callback: (parent: Node, index: number) => parent is Ancestor,
+    ) => {
+      for (let i = stack.length - 1; i >= 0; i--) {
+        const parent = stack[i]
+        if (callback(parent, i)) return parent
       }
     }
 
-    toRet.lineRange = findStringRange(toRet.currentLine.text, toRet.currentToken.token, position, toRet.delimiter)
+    return match(node)
+      .when(
+        () => getFirstAncestorMatching(Node.isPropertyAssignment),
+        () => {
+          const propAssignment = getFirstAncestorMatching(Node.isPropertyAssignment)!
+          const name = propAssignment.getName()
 
-    return toRet
+          const objectLiteral = getFirstAncestorMatching(Node.isObjectLiteralExpression)!
+          const maybeBox = maybeBoxNode(objectLiteral, [], boxCtx, (args) => args.propName === name)
+          if (!box.isMap(maybeBox)) return
+
+          const propNode = maybeBox.value.get(name)
+          if (!box.isLiteral(propNode)) return
+
+          const propName = ctx.utility.resolveShorthand(name)
+          const propValue = propNode.value
+
+          const maybeToken = getTokenFromPropValue(ctx, propName, propValue)
+          if (!maybeToken) return
+
+          // console.log(maybeToken)
+
+          const range = nodeRangeToVsCodeRange(getNodeRange(propNode.getNode()))
+          return { token: maybeToken, range, propName, propValue, box: propNode }
+        },
+      )
+      .when(
+        () => getFirstAncestorMatching(Node.isJsxAttribute),
+        () => {
+          const attrNode = getFirstAncestorMatching(Node.isJsxAttribute)!
+
+          const nameNode = attrNode.getNameNode()
+          const maybeBox = extractJsxAttribute(attrNode, boxCtx)
+          if (!box.isLiteral(maybeBox)) return
+
+          const name = nameNode.getText()
+          const propName = ctx.utility.resolveShorthand(name)
+          const propValue = maybeBox.value
+          // console.log({ propName, propValue })
+
+          const maybeToken = getTokenFromPropValue(ctx, propName, propValue)
+          if (!maybeToken) return
+
+          // console.log(maybeToken)
+
+          const range = nodeRangeToVsCodeRange(getNodeRange(attrNode))
+          return { token: maybeToken, range, propName, propValue, box: maybeBox }
+        },
+      )
+      .otherwise(() => {
+        //
+        return undefined
+      })
   }
 
   return {
+    getSourceFile,
+    parseSourceFile,
+    getFileTokens,
     getClosestToken,
-    getDocumentTokensData,
-    getParsedVueComponent,
-    getDocumentTokens,
-    getStyleData
+    getNodeRange,
   }
 }
+
+const getNodeRange = (node: Node) => {
+  const src = node.getSourceFile()
+  const [startPosition, endPosition] = [node.getStart(), node.getEnd()]
+
+  const startInfo = src.getLineAndColumnAtPos(startPosition)
+  const endInfo = src.getLineAndColumnAtPos(endPosition)
+
+  return {
+    startPosition,
+    startLineNumber: startInfo.line,
+    startColumn: startInfo.column,
+    endPosition,
+    endLineNumber: endInfo.line,
+    endColumn: endInfo.column,
+  }
+}
+
+const nodeRangeToVsCodeRange = (range: ReturnType<typeof getNodeRange>) =>
+  Range.create(
+    { line: range.startLineNumber - 1, character: range.startColumn - 1 },
+    { line: range.endLineNumber - 1, character: range.endColumn - 1 },
+  )
+
+const getDescendantAtPos = (from: Node, pos: number) => {
+  let node: Node | undefined = from
+  let stack: Node[] = [from]
+
+  while (true) {
+    const nextNode: Node | undefined = node.getChildAtPos(pos)
+    if (nextNode == null) return { node, stack }
+    else {
+      node = nextNode
+      stack.push(node)
+    }
+  }
+}
+
+const color2kToVsCodeColor = (value: string) => {
+  try {
+    const [red, green, blue, alpha] = parseToRgba(value)
+
+    const color = {
+      red: red / 255,
+      green: green / 255,
+      blue: blue / 255,
+      alpha,
+    }
+    return color as ColorPresentationParams['color']
+  } catch (e) {
+    return
+  }
+}
+
+const tokenRegex = /token\(([^)]+)\)/g
+
+/** @see packages/core/src/plugins/expand-token-fn.ts */
+const expandTokenFn = (str: string, fn: (tokenName: string) => Token | undefined) => {
+  if (!str.includes('token(')) return []
+
+  const tokens = [] as TokenFnMatch[]
+  let match: RegExpExecArray | null
+
+  while ((match = tokenRegex.exec(str)) != null) {
+    match[1]
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .forEach((s) => {
+        const token = fn(s)
+        if (token) {
+          tokens.push({ token, index: match!.index })
+        }
+      })
+  }
+
+  return tokens
+}
+
+type TokenFnMatch = { token: Token; index: number }

@@ -1,5 +1,6 @@
 export { box } from './box'
 export { extract } from './extract'
+export { extractJsxAttribute } from './jsx-attribute'
 export {
   BoxNodeConditional,
   BoxNodeEmptyInitializer,
@@ -11,6 +12,7 @@ export {
   isBoxNode,
 } from './box-factory'
 export type { BoxNode } from './box-factory'
+export { maybeBoxNode } from './maybe-box-node'
 export type {
   BoxContext,
   ExtractOptions,

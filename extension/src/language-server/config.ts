@@ -1,88 +1,66 @@
+import { Builder } from '@pandacss/node'
 import {
   Connection,
-  DidChangeConfigurationNotification,
   InitializeParams,
   InitializeResult,
   TextDocuments,
   TextDocumentSyncKind,
 } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
-import PinceauTokensManager, { PinceauVSCodeSettings, defaultSettings } from './manager'
-import { uriToPath } from './utils/protocol'
-
-// Cache the settings of all open documents
-const documentSettings: Map<string, Thenable<PinceauVSCodeSettings>> = new Map()
 
 // Context ; exposed via return of `setupExtension()`
-let debug = false
-let rootPath: string
-let globalSettings = defaultSettings
-let hasConfigurationCapability = false
-let hasWorkspaceFolderCapability = false
+const ref = {
+  context: null as unknown as Builder['context'],
+  synchronizing: false as Promise<void> | false,
+}
 
 /**
  * Setup extension
  * - Config detection & loading
- * - Configuration capabilities
  */
-export function setupExtension(
-  connection: Connection,
-  tokensManager: PinceauTokensManager,
-  documents: TextDocuments<TextDocument>,
-) {
+export function setupExtension(connection: Connection, documents: TextDocuments<TextDocument>) {
+  const builder = new Builder()
+
   /**
    * Resolve current extension settings
    */
-  function getDocumentSettings(): Thenable<PinceauVSCodeSettings> {
-    const resource = 'all'
-    if (!hasConfigurationCapability) {
-      return Promise.resolve(globalSettings)
+  async function loadPandaContext() {
+    try {
+      ref.synchronizing = builder.setup()
+      await ref.synchronizing
+    } catch {
+      // Ignore
+      ref.synchronizing = false
+      return
     }
-    let result = documentSettings.get(resource)
-    if (!result) {
-      result = connection.workspace.getConfiguration('pinceau')
-      documentSettings.set(resource, result)
+
+    ref.synchronizing = false
+    ref.context = builder.context!
+
+    if (ref.context) {
+      console.log('🐼 Loaded panda context!')
     }
-    return result
+
+    return ref.context
   }
 
-  connection.onInitialize((params: InitializeParams) => {
-    connection.console.log('🖌️ Booting Pinceau extension...')
-
-    const capabilities = params.capabilities
-
-    // Check context support
-    hasConfigurationCapability = !!(capabilities.workspace && !!capabilities.workspace.configuration)
-    hasWorkspaceFolderCapability = !!(capabilities.workspace && !!capabilities.workspace.workspaceFolders)
+  connection.onInitialize((_params: InitializeParams) => {
+    connection.console.log('🐼 Booting PandaCss extension...')
 
     connection.onInitialized(async () => {
-      if (hasConfigurationCapability) {
-        // Register for all configuration changes.
-        connection.client.register(DidChangeConfigurationNotification.type, undefined)
-      }
-      if (hasWorkspaceFolderCapability) {
-        connection.workspace.onDidChangeWorkspaceFolders((_event) =>
-          connection.console.log('Workspace folder change event received.'),
-        )
-      }
+      await loadPandaContext()
 
-      const workspaceFolders = await connection.workspace.getWorkspaceFolders()
-      const validFolders = workspaceFolders?.map((folder) => uriToPath(folder.uri) || '').filter((path) => !!path)
-
-      rootPath = validFolders?.[0]
-
-      const settings = await getDocumentSettings()
-
-      debug = settings?.debug || false
-
-      await tokensManager.syncTokens(validFolders || [], settings)
-
-      connection.console.log('🖌️ Booted Pinceau extension!')
+      connection.console.log('🐼 Started PandaCss extension! ✅')
     })
 
     const result: InitializeResult = {
       capabilities: {
         textDocumentSync: TextDocumentSyncKind.Incremental,
+        // workspace: {
+        //   workspaceFolders: {
+        //     supported: false,
+        //   },
+        // },
 
         // Tell the client that this server supports code completion.
         completionProvider: {
@@ -95,76 +73,27 @@ export function setupExtension(
       },
     }
 
-    if (hasWorkspaceFolderCapability) {
-      result.capabilities.workspace = {
-        workspaceFolders: {
-          supported: true,
-          changeNotifications: true,
-        },
-      }
-    }
-
     return result
   })
 
-  connection.onDidChangeConfiguration(async (change) => {
-    debug && connection.console.log('⌛ onDidChangeConfiguration')
-
-    if (hasConfigurationCapability) {
-      // Reset all cached document settings
-      documentSettings.clear()
-      tokensManager.clearAllCache()
-
-      const validFolders = await connection.workspace
-        .getWorkspaceFolders()
-        .then((folders) => folders?.map((folder) => uriToPath(folder.uri) || '').filter((path) => !!path))
-
-      const settings = await getDocumentSettings()
-
-      await tokensManager.syncTokens(validFolders || [], settings)
-    } else {
-      globalSettings = <PinceauVSCodeSettings>(change.settings?.pinceau || defaultSettings)
-    }
-  })
-
   connection.onDidChangeWatchedFiles(async (_change) => {
-    const settings = await getDocumentSettings()
-
-    tokensManager.clearAllCache()
-
-    const validFolders = await connection.workspace
-      .getWorkspaceFolders()
-      .then((folders) => folders?.map((folder) => uriToPath(folder.uri) || '').filter((path) => !!path))
-
-    await tokensManager.syncTokens(validFolders || [], settings)
+    await loadPandaContext()
+    // connection.console.log('🐼 Reloading panda context...')
   })
-
-  // Only keep settings for open documents
-  documents.onDidClose((e) => documentSettings.delete(e.document.uri))
 
   documents.listen(connection)
 
   connection.listen()
 
   return {
-    getDocumentSettings,
-    get documentSettings() {
-      return documentSettings
+    loadPandaContext,
+    getContext() {
+      return ref.context
     },
-    get rootPath() {
-      return rootPath
-    },
-    get debug() {
-      return debug
-    },
-    get globalSettings() {
-      return globalSettings
-    },
-    get hasConfigurationCapability() {
-      return hasConfigurationCapability
-    },
-    get hasWorkspaceFolderCapability() {
-      return hasWorkspaceFolderCapability
+    isSynchronizing() {
+      return ref.synchronizing
     },
   }
 }
+
+export type PandaExtensionSetup = ReturnType<typeof setupExtension>

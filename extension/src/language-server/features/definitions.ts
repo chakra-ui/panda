@@ -1,20 +1,22 @@
 import { Position } from 'vscode-languageserver-textdocument'
-import { PinceauExtension } from '..'
+import { PandaExtension } from '..'
 
-export function regsiterDefinitions (
-  context: PinceauExtension
-) {
-  const { connection, documents, getDocumentTokensData, getClosestToken, documentReady } = context
+export function registerDefinitions(context: PandaExtension) {
+  const { connection, documents, parseSourceFile, documentReady, getClosestToken } = context
+
+  return
 
   connection.onDefinition(async (params) => {
     await documentReady('🔗 onDefinition')
 
     const doc = documents.get(params.textDocument.uri)
-    if (!doc) { return null }
+    if (!doc) {
+      return null
+    }
 
-    const tokensData = getDocumentTokensData(doc)
+    const parserResult = parseSourceFile(doc)
 
-    const { token, lineRange, localToken } = getClosestToken(doc, params.position, tokensData)
+    const { token, lineRange, localToken } = getClosestToken(doc, params.position)
 
     if ((token?.definition || localToken) && lineRange) {
       let start: Position
@@ -34,21 +36,21 @@ export function regsiterDefinitions (
           targetUri: token?.definition?.uri || doc.uri,
           range: {
             start: { character: lineRange.start, line: params.position.line },
-            end: { character: lineRange.end, line: params.position.line }
+            end: { character: lineRange.end, line: params.position.line },
           },
           targetRange: {
             start,
-            end
+            end,
           },
           targetSelectionRange: {
             start,
-            end
+            end,
           },
           originSelectionRange: {
             start: { line: params.position.line, character: lineRange.start },
-            end: { line: params.position.line, character: lineRange.end }
-          }
-        }
+            end: { line: params.position.line, character: lineRange.end },
+          },
+        },
       ]
     }
   })

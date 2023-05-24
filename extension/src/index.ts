@@ -1,22 +1,14 @@
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) Vu Nguyen. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
-
 import * as path from 'path'
 import vscode from 'vscode'
-import {
-  LanguageClient,
-  LanguageClientOptions,
-  ServerOptions,
-  TransportKind
-} from 'vscode-languageclient/node'
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node'
 
 let client: LanguageClient
 
-export function activate (context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
+  console.log('activate')
   // The server is implemented in node
-  const serverModule = context.asAbsolutePath(path.join('dist', 'server.js'))
+  const serverModule = context.asAbsolutePath(path.join('out', 'server.js'))
+  console.log({ serverModule })
 
   // The debug options for the server
   // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
@@ -29,8 +21,8 @@ export function activate (context: vscode.ExtensionContext) {
     debug: {
       module: serverModule,
       transport: TransportKind.ipc,
-      options: debugOptions
-    }
+      options: debugOptions,
+    },
   }
 
   // Options to control the language client
@@ -50,35 +42,37 @@ export function activate (context: vscode.ExtensionContext) {
       'onLanguage:javascriptreact',
       'onLanguage:typescript',
       'onLanguage:typescriptreact',
-      'onLanguage:source.css.styled'
-    ].map(event => ({
+      'onLanguage:source.css.styled',
+    ].map((event) => ({
       scheme: 'file',
-      language: event.split(':')[1]
+      language: event.split(':')[1],
     })),
-    diagnosticCollectionName: 'pinceau',
-    synchronize: {
-      fileEvents: [
-        vscode.workspace.createFileSystemWatcher('**/*/.nuxt/pinceau/index.ts'),
-        vscode.workspace.createFileSystemWatcher('**/*/node_modules/.vite/pinceau/index.ts'),
-        vscode.workspace.createFileSystemWatcher('**/*/.nuxt/pinceau/definitions.ts'),
-        vscode.workspace.createFileSystemWatcher('**/*/node_modules/.vite/pinceau/definitions.ts')
-      ]
-    }
+    diagnosticCollectionName: 'panda',
+    // synchronize: {
+    //   fileEvents: [vscode.workspace.createFileSystemWatcher('**/*/panda.config.ts')],
+    // },
   }
 
   // Create the language client and start the client.
-  client = new LanguageClient(
-    'pinceau',
-    'Pinceau IntelliSense',
-    serverOptions,
-    clientOptions
-  )
+  client = new LanguageClient('panda', 'Panda IntelliSense', serverOptions, clientOptions)
 
-  // Start the client. This will also launch the server
-  client.start()
+  console.log('before start')
+
+  try {
+    // Start the client. This will also launch the server
+    await client.start()
+    console.log('starting...')
+  } catch (err) {
+    console.log('error', err)
+  }
 }
 
-export function deactivate (): Thenable<void> | undefined {
-  if (!client) { return undefined }
+export function deactivate(): Thenable<void> | undefined {
+  console.log('deactivate')
+  if (!client) {
+    return undefined
+  }
+
+  console.log('stoppping...')
   return client.stop()
 }

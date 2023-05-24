@@ -1,7 +1,7 @@
 {
   "name": "panda-css-extension",
   "displayName": "panda-css-extension",
-  "description": "",
+  "description": "IntelliSense integration for Panda features",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.78.2"
@@ -12,7 +12,7 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "main": "./out/extension.js",
+  "main": "./out/index.js",
   "contributes": {
     "commands": [
       {
@@ -23,12 +23,10 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run build",
-    "build": "tsup src/extension.ts --format cjs --external vscode --minify -d out",
-    "dev": "tsup src/extension.ts --watch --format cjs --external vscode -d out",
+    "build": "tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --minify -d out --clean",
+    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode -d out --clean",
     "clean": "rm -rf dist && rm -rf out && rm -rf .vscode-test",
     "lint": "eslint ./src --ext .ts,.tsx --fix",
-    "pretest": "tsc -p ./ && rm -f .vscode-test/user-",
-    "test": "node ./src/tests/runTest.ts",
     "deploy": "vsce publish --no-dependencies",
     "package": "vsce package --pre-release --no-dependencies"
   },
@@ -47,11 +45,17 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@pandacss/extractor": "workspace:^",
     "@pandacss/node": "workspace:^",
+    "@pandacss/shared": "workspace:^",
+    "@pandacss/types": "workspace:^",
     "acorn": "^8.8.2",
     "acorn-jsx": "^5.3.2",
     "acorn-loose": "^8.3.0",
     "acorn-walk": "^8.2.0",
+    "color2k": "^2.0.2",
+    "lil-fp": "1.4.5",
+    "ts-pattern": "4.3.0",
     "tsup": "6.7.0",
     "vscode": "^1.1.37",
     "vscode-languageclient": "^8.1.0",

@@ -1,5 +1,5 @@
 export * from './color-hints'
 export * from './completion'
-export * from './definitions'
+// export * from './definitions'
 export * from './hover'
-export * from './diagnostics'
+// export * from './diagnostics'

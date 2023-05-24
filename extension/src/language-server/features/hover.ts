@@ -1,25 +1,26 @@
+import { PandaExtension } from '../index'
 
-import { printAst } from 'pinceau/utils'
-import { PinceauExtension } from '../index'
-import { stringifiedValue } from '../utils/tokens'
+// https://github.com/tailwindlabs/tailwindcss-intellisense/blob/master/packages/tailwindcss-language-service/src/hoverProvider.ts#L74
+// TODO inline hints for px -> rem
+// toPx / toEm / toRem
 
-export function registerHover (
-  context: PinceauExtension
-) {
-  const { connection, documentReady, documents, getDocumentTokensData, getClosestToken } = context
+export function registerHover(context: PandaExtension) {
+  const { connection, documentReady, documents, getClosestToken } = context
 
   connection.onHover(async (params) => {
     await documentReady('📘 onHover')
 
     const doc = documents.get(params.textDocument.uri)
-    if (!doc) { return }
+    if (!doc) {
+      return
+    }
 
-    const tokensData = getDocumentTokensData(doc)
+    const match = getClosestToken(doc, params.position)
+    if (!match) return
 
-    const { token, localToken } = getClosestToken(doc, params.position, tokensData)
+    const { token } = match
+    console.log(match)
 
-    if (localToken) { return { contents: `📍 \`\`\`\n${printAst(localToken).code}\n\`\`\``, code: '', message: '', data: {}, name: '' } }
-
-    if (token) { return { contents: `🎨 ${stringifiedValue(token)}`, code: '', message: '', data: {}, name: '' } }
+    return { contents: `🐼 ${token.value}`, code: '', message: '', data: {}, name: '' }
   })
 }

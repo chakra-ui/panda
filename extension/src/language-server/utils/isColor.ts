@@ -157,7 +157,7 @@ const CSS_COLOR_NAMES = [
   'white',
   'whitesmoke',
   'yellow',
-  'yellowgreen'
+  'yellowgreen',
 ]
 
 const PREFIX = '^(rgb|hsl)(a?)\\s*\\('
@@ -170,8 +170,8 @@ const NUM_TYPE = 1
 const PERCENTAGE_TYPE = 2
 const ERROR_TYPE = NUM_TYPE & PERCENTAGE_TYPE
 
-const isColor = (str: string) => {
-  function getColorType (token: string) {
+export const isColor = (str: string) => {
+  function getColorType(token: string) {
     return token.includes('%') ? PERCENTAGE_TYPE : NUM_TYPE
   }
 
@@ -182,7 +182,7 @@ const isColor = (str: string) => {
   const color = str.replace(/^\s+|\s+$/g, '').toLocaleLowerCase()
 
   // named colors or hex code
-  if ((CSS_COLOR_NAMES.includes(color)) || HEX_PATTERN.test(color)) {
+  if (CSS_COLOR_NAMES.includes(color) || HEX_PATTERN.test(color)) {
     return true
   }
 
@@ -214,5 +214,3 @@ const isColor = (str: string) => {
 
   return false
 }
-
-export default isColor
