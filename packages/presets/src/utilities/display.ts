@@ -8,9 +8,9 @@ export const display: UtilityConfig = {
   hideFrom: {
     className: 'hide',
     values: 'breakpoints',
-    transform(value) {
+    transform(value, { raw }) {
       return {
-        [`@breakpoint ${value}`]: {
+        [`@breakpoint ${raw}`]: {
           display: 'none',
         },
       }
@@ -20,9 +20,9 @@ export const display: UtilityConfig = {
   hideBelow: {
     className: 'show',
     values: 'breakpoints',
-    transform(value) {
+    transform(value, { raw }) {
       return {
-        [`@breakpoint ${value}Down`]: {
+        [`@breakpoint ${raw}Down`]: {
           display: 'none',
         },
       }

@@ -44,7 +44,7 @@ const Tree = ({ children }: { children: ReactNode }): ReactElement => (
         display: 'inline-flex',
         flexDirection: 'column',
         borderRadius: 'lg',
-        border: '1px solid',
+        borderWidth: '1px',
         px: 4,
         py: 2,
         _dark: { borderColor: 'rgb(38 38 38 / 1)' }

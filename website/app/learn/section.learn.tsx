@@ -1,34 +1,58 @@
 import Image from 'next/image'
-import { Flex, Grid, Stack, panda } from '../../styled-system/jsx'
-import { button, input } from '../../styled-system/recipes'
-import { css } from '../../styled-system/css'
+import { Container, Grid, HStack, Stack, panda } from '../../styled-system/jsx'
+import { input } from '../../styled-system/recipes'
 import { Icon } from '../../theme/icons'
-import { Content } from '../content'
+import { css } from '../../styled-system/css'
+
+const featureItems = [
+  {
+    title: 'Getting started with Panda',
+    description: 'Learn the fundamentals of Panda in 3 minutes.',
+    image:
+      'https://images.unsplash.com/photo-1523437113738-bbd3cc89fb19?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y3NzfGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60',
+    duration: '3m'
+  },
+  {
+    title: 'Style props fundamentals',
+    description: 'Learn the fundamentals of style props in 4 minutes.',
+    image:
+      'https://images.unsplash.com/photo-1593720219276-0b1eacd0aef4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8cmVhY3R8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=800&q=60',
+    duration: '4m'
+  },
+  {
+    title: 'Building a design system',
+    description: 'Learn how to build a design system in 8 minutes.',
+    image:
+      'https://images.unsplash.com/photo-1558655146-d09347e92766?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1364&q=80',
+    duration: '8m'
+  }
+]
 
 export const SectionLearn = () => {
   return (
-    <panda.div bg="bg.main" px={{ base: '10px', lg: '48px' }}>
-      <Content m="auto">
-        <Flex position="relative">
-          <Flex
-            direction="column"
-            w={{ lg: '60%' }}
-            pt={{ base: '145px', md: '200px', lg: '275px' }}
-            pb="70px"
-          >
-            <panda.h1
-              ml={{ base: '-2', md: '-3.5' }}
-              color="text.headline"
-              textStyle="panda.h1"
-            >
-              Learn.
-            </panda.h1>
-            <panda.h4 mt="15px" color="text.muted" textStyle="panda.h4">
-              Tutorials, videos, and articles to get started with Panda.
-            </panda.h4>
+    <panda.section bg="bg.main">
+      <Container pt="40" pb="20">
+        <HStack gap="14" mb={{ base: '10', md: '0' }}>
+          <Stack gap="10" flex="1">
+            <Stack gap="2">
+              <panda.h1
+                color="text.headline"
+                textStyle="panda.h1"
+                fontWeight="bold"
+              >
+                Learn.
+              </panda.h1>
+              <panda.p
+                color="text.muted"
+                textStyle="panda.h4"
+                fontWeight="medium"
+              >
+                Tutorials, videos, and articles to get started with Panda.
+              </panda.p>
+            </Stack>
+
             <panda.div
-              mt="45px"
-              maxW="450px"
+              maxW={{ lg: '420px' }}
               className={input({ color: 'white' })}
             >
               <Icon
@@ -43,101 +67,68 @@ export const SectionLearn = () => {
                 placeholder="Search articles and videos"
               />
             </panda.div>
-          </Flex>
+          </Stack>
+
           <Image
             src="/panda-scooter.svg"
             width={365}
             height={469}
             alt="Yums the panda driving a scooter"
             className={css({
-              zIndex: 1,
-              position: 'absolute',
-              bottom: -37,
-              right: '-20px',
-              width: '70px',
-              md: {
-                width: '250px',
-                ml: '50px',
-                left: '60%',
-                right: 'unset'
-              },
-              lg: {
-                width: '250px',
-                left: '55%'
-              },
-              xl: {
-                width: '365px',
-                ml: '120px',
-                left: '60%'
-              }
+              display: { base: 'none', lg: 'block' },
+              position: 'relative',
+              top: '10'
             })}
           />
-        </Flex>
-        <Grid
-          pt={{ base: '25px', lg: '70px' }}
-          pb={{ base: '15px', lg: '50px' }}
-          px={{ base: '20px', md: '60px' }}
-          className={button()}
-          bg="white"
-          color="black"
-          columnGap="30px!"
-          position="relative"
-          mb="-260px"
-          justifyContent="space-between"
-          alignItems="flex-start"
-          columns={{ base: 1, md: 3 }}
-        >
-          <Flex direction="column">
-            <Thumbnail />
-            <Stack textStyle="2xl" mt="6">
-              <panda.span fontWeight="bold" letterSpacing="tight">
-                Getting started with Panda
-              </panda.span>
-              <panda.span
-                color="bg.muted"
-                fontWeight="semibold"
-                letterSpacing="tight"
-              >
-                3m
-              </panda.span>
-            </Stack>
-          </Flex>
-          <Flex direction="column">
-            <Thumbnail />
-            <Stack textStyle="2xl" mt="6">
-              <panda.span fontWeight="bold" letterSpacing="tight">
-                Style props fundamentals
-              </panda.span>
-              <panda.span
-                color="bg.muted"
-                fontWeight="semibold"
-                letterSpacing="tight"
-              >
-                4m
-              </panda.span>
-            </Stack>
-          </Flex>
-          <Flex direction="column">
-            <Thumbnail />
-            <Stack textStyle="2xl" mt="6">
-              <panda.span fontWeight="bold" letterSpacing="tight">
-                Building a design system
-              </panda.span>
-              <panda.span
-                color="bg.muted"
-                fontWeight="semibold"
-                letterSpacing="tight"
-              >
-                8m
-              </panda.span>
-            </Stack>
-          </Flex>
-        </Grid>
-      </Content>
-    </panda.div>
-  )
-}
+        </HStack>
 
-const Thumbnail = props => {
-  return <Flex w="100%" h="240px" bg="bg.main" borderRadius="18px" {...props} />
+        <Grid
+          columns={{ base: 1, lg: 3 }}
+          layerStyle="offShadow"
+          bg="bg.inverted"
+          pt="16"
+          pb="12"
+          px="12"
+          rounded="xl"
+          gap="8"
+        >
+          {featureItems.map((item, index) => (
+            <Stack key={index} gap="6">
+              <panda.div
+                w="100%"
+                h="240px"
+                bg="bg.main"
+                borderRadius="xl"
+                overflow="hidden"
+              >
+                <Image
+                  width="380"
+                  height="240"
+                  style={{ objectFit: 'cover' }}
+                  src={item.image}
+                  alt=""
+                />
+              </panda.div>
+              <Stack gap="0">
+                <panda.span
+                  textStyle="2xl"
+                  fontWeight="bold"
+                  letterSpacing="tight"
+                >
+                  {item.title}
+                </panda.span>
+                <panda.span
+                  color="bg.muted"
+                  fontWeight="medium"
+                  letterSpacing="tight"
+                >
+                  {item.duration}
+                </panda.span>
+              </Stack>
+            </Stack>
+          ))}
+        </Grid>
+      </Container>
+    </panda.section>
+  )
 }

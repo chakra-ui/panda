@@ -4,11 +4,30 @@ import { useConfig } from '../contexts'
 import type { Item } from 'nextra/normalize-pages'
 import { Anchor } from './anchor'
 import type { DocsThemeConfig } from '../index'
-import { navLinks } from '../../styled-system/recipes'
+import { hstack } from '../../styled-system/patterns'
+import { css, cx } from '../../styled-system/css'
 
 interface NavLinkProps {
   currentIndex: number
   flatDirectories: Item[]
+}
+
+const styles = {
+  root: hstack({
+    justify: 'space-between',
+    mb: '8',
+    pt: '8',
+    borderTopWidth: '1px'
+  }),
+
+  anchor: hstack({
+    gap: '2',
+    flexShrink: '0'
+  }),
+
+  icon: css({
+    height: '5'
+  })
 }
 
 export const NavLinks = ({
@@ -30,27 +49,20 @@ export const NavLinks = ({
   if (!prev && !next) return null
 
   return (
-    <div data-scope="nav-links" data-part="root" className={navLinks()}>
+    <div className={styles.root}>
       {prev && (
-        <Anchor
-          href={prev.route}
-          title={prev.title}
-          data-scope="nav-links"
-          data-part="prev-lnik"
-        >
-          <ArrowRightIcon data-scope="nav-links" data-part="prev-icon" />
+        <Anchor href={prev.route} title={prev.title} className={styles.anchor}>
+          <ArrowRightIcon
+            className={cx(styles.icon)}
+            style={{ rotate: '180deg' }}
+          />
           {prev.title}
         </Anchor>
       )}
       {next && (
-        <Anchor
-          href={next.route}
-          title={next.title}
-          data-scope="nav-links"
-          data-part="next-link"
-        >
+        <Anchor href={next.route} className={styles.anchor} title={next.title}>
           {next.title}
-          <ArrowRightIcon data-scope="nav-links" data-part="next-icon" />
+          <ArrowRightIcon className={cx(styles.icon)} />
         </Anchor>
       )}
     </div>

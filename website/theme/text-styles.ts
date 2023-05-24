@@ -5,33 +5,29 @@ export const textStyles = defineTextStyles({
     h1: {
       value: {
         fontSize: '14.5rem',
-        lineHeight: '1.2',
-        letterSpacing: 'tighter',
-        fontWeight: 'bold'
+        lineHeight: '1',
+        letterSpacing: 'tighter'
       }
     },
     h2: {
       value: {
         fontSize: { base: '2.5rem', lg: '3rem' },
         lineHeight: '1.2',
-        letterSpacing: 'tight',
-        fontWeight: 'bold'
+        letterSpacing: 'tight'
       }
     },
     h3: {
       value: {
         fontSize: { base: '1.875rem', lg: '2.25rem' },
         lineHeight: '1.2',
-        letterSpacing: 'tight',
-        fontWeight: 'semibold'
+        letterSpacing: 'tight'
       }
     },
     h4: {
       value: {
         fontSize: '1.625rem',
         lineHeight: '1.2',
-        letterSpacing: 'tight',
-        fontWeight: 'medium'
+        letterSpacing: 'tight'
       }
     }
   }

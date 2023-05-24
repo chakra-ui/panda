@@ -4,7 +4,6 @@ export const CommandPrompt = (props: { value: string }) => {
   const { value } = props
   return (
     <HStack
-      mt="8"
       textStyle="xl"
       letterSpacing="tight"
       fontWeight="medium"

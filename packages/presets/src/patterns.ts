@@ -45,7 +45,6 @@ const stack = definePattern({
     direction: { type: 'property', value: 'flexDirection' },
     gap: { type: 'property', value: 'gap' },
   },
-  blocklist: ['flexDirection'],
   transform(props) {
     const { align, justify, direction = 'column', gap = '10px', ...rest } = props
     return {
@@ -65,7 +64,6 @@ const vstack = definePattern({
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'property', value: 'gap' },
   },
-  blocklist: ['flexDirection'],
   transform(props) {
     const { justify, gap = '10px', ...rest } = props
     return {
@@ -85,7 +83,6 @@ const hstack = definePattern({
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'property', value: 'gap' },
   },
-  blocklist: ['flexDirection'],
   transform(props) {
     const { justify, gap = '10px', ...rest } = props
     return {
@@ -118,7 +115,6 @@ const circle = definePattern({
   properties: {
     size: { type: 'property', value: 'width' },
   },
-  blocklist: ['width', 'height', 'borderRadius'],
   transform(props) {
     const { size, ...rest } = props
     return {
@@ -129,6 +125,24 @@ const circle = definePattern({
       width: size,
       height: size,
       borderRadius: '9999px',
+      ...rest,
+    }
+  },
+})
+
+const square = definePattern({
+  properties: {
+    size: { type: 'property', value: 'width' },
+  },
+  transform(props) {
+    const { size, ...rest } = props
+    return {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: '0 0 auto',
+      width: size,
+      height: size,
       ...rest,
     }
   },
@@ -226,17 +240,14 @@ const wrap = definePattern({
 })
 
 const container = definePattern({
-  properties: {
-    size: { type: 'token', value: 'breakpoints' },
-  },
-  transform(props, { map }) {
-    const { size, ...rest } = props
+  properties: {},
+  transform(props) {
     return {
       position: 'relative',
-      width: '100%',
-      maxWidth: size != null ? map(size, (v) => `breakpoint-${v}`) : '60ch',
-      marginX: 'auto',
-      ...rest,
+      maxWidth: '8xl',
+      mx: 'auto',
+      px: { base: '4', md: '6', lg: '8' },
+      ...props,
     }
   },
 })
@@ -363,6 +374,7 @@ export const patterns = {
   vstack,
   hstack,
   spacer,
+  square,
   circle,
   center,
   absoluteCenter,

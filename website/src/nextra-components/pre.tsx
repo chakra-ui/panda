@@ -61,7 +61,6 @@ export const Pre = ({
             mb: '4',
             overflowX: 'auto',
             rounded: 'xl',
-            fontWeight: 'medium',
             WebkitFontSmoothing: 'auto',
             MozOsxFontSmoothing: 'auto',
             _dark: {

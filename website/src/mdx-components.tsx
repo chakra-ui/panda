@@ -48,30 +48,26 @@ function HeadingLink({
       className={cx(
         css({
           fontWeight: 'semibold',
+          fontFamily: 'heading',
           letterSpacing: 'tight',
           color: 'slate.900',
           _dark: { color: 'slate.100' }
         }),
         {
           h2: css({
-            mt: 10,
-            borderBottomStyle: 'solid',
-            borderBottomWidth: '1px',
-            pb: 1,
+            mt: '10',
             fontSize: '3xl',
-            // borderColor: 'neutral.200/70', // opacity modifier
             borderColor: 'rgb(229 229 229 / 0.7)',
             _moreContrast: {
               borderColor: 'neutral.400',
               _dark: { borderColor: 'primary.400' }
             },
-            // _dark: { borderColor: 'primary.100/10' } // opacity modifier
             _dark: { borderColor: 'rgb(219 234 254 / 0.1)' }
           }),
-          h3: css({ mt: 8, fontSize: '2xl' }),
-          h4: css({ mt: 8, fontSize: 'xl' }),
-          h5: css({ mt: 8, fontSize: 'lg' }),
-          h6: css({ mt: 8, fontSize: 'base' })
+          h3: css({ mt: '8', fontSize: '2xl' }),
+          h4: css({ mt: '8', fontSize: 'xl' }),
+          h5: css({ mt: '8', fontSize: 'lg' }),
+          h6: css({ mt: '8', fontSize: 'base' })
         }[Tag]
       )}
       {...props}
@@ -149,7 +145,7 @@ const Details = ({
       className={css({
         my: 4,
         rounded: 'md',
-        border: '1px solid token(colors.gray.200)',
+        borderWidth: '1px',
         bg: 'white',
         p: 2,
         shadow: 'sm',
@@ -253,9 +249,8 @@ export const getComponents = ({
           mt: 2,
           fontSize: '4xl',
           fontWeight: 'bold',
-          lineHeight: 'tight',
-          color: 'slate.900',
-          _dark: { color: 'slate.100' }
+          fontFamily: 'heading',
+          letterSpacing: 'tight'
         })}
         {...props}
       />

@@ -1,106 +1,60 @@
-import type { ComponentProps, CSSProperties, ReactNode } from 'react'
-import { Anchor } from './anchor'
+import type { ComponentProps, ReactNode } from 'react'
 import { css, cx } from '../../styled-system/css'
-import { card } from '../../styled-system/recipes'
+import { grid } from '../../styled-system/patterns'
+import { Anchor } from './anchor'
+import { HStack, panda, Stack } from '../../styled-system/jsx'
 
-const arrowEl = (
-  <span
-    className={css({
-      transitionProperty: 'transform',
-      transitionDuration: '75ms',
-      _groupHover: { transform: 'translateX(2px)' }
-    })}
-  >
-    →
-  </span>
+const Arrow = () => (
+  <span className={css({ opacity: { base: '0', _groupHover: '1' } })}>→</span>
 )
 
-export function Card({
-  children,
-  title,
-  icon,
-  image,
-  arrow,
-  href,
-  ...props
-}: {
-  children: ReactNode
+type CardProps = {
+  children?: ReactNode
   title: string
+  description?: string
   icon: ReactNode
   image?: boolean
   arrow?: boolean
   href: string
-}) {
-  const animatedArrow = arrow ? arrowEl : null
+}
 
-  if (image) {
-    return (
-      <Anchor
-        data-scope="card"
-        data-part="root"
-        className={cx('group', card({ variant: 'image' }))}
-        href={href}
-        {...props}
-      >
-        {children}
-        <span data-scope="card" data-part="content">
-          {icon}
-          <span data-scope="card" data-part="title">
-            {title}
-            {animatedArrow}
-          </span>
-        </span>
-      </Anchor>
-    )
-  }
+export function Card(props: CardProps) {
+  const { children, title, description, icon, image, arrow, href } = props
+  const animatedArrow = arrow ? <Arrow /> : null
 
   return (
-    <Anchor
-      data-scope="card"
-      data-part="root"
-      className={cx('group', card())}
-      href={href}
-      {...props}
-    >
-      <span data-scope="card" data-part="content">
+    <panda.div borderWidth="1px" px="6" py="4" rounded="lg">
+      <Anchor className="group" href={href}>
+        {image || children}
         {icon}
-        <span data-scope="card" data-part="title">
-          {title}
-          {animatedArrow}
+        <span>
+          <Stack gap="1">
+            <panda.span textStyle="lg" fontWeight="semibold">
+              <HStack>
+                {title}
+                {animatedArrow}
+              </HStack>
+            </panda.span>
+            {description && (
+              <panda.span color={{ base: 'neutral.700', _dark: 'neutral.400' }}>
+                {description}
+              </panda.span>
+            )}
+          </Stack>
         </span>
-      </span>
-    </Anchor>
+      </Anchor>
+    </panda.div>
   )
 }
 
-export function Cards({
-  children,
-  num = 3,
-  className,
-  style,
-  ...props
-}: { num?: number } & ComponentProps<'div'>) {
+export function Cards({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       className={cx(
-        css({
-          gridTemplateColumns:
-            'repeat(auto-fill, minmax(max(250px, calc((100% - 1rem * 2) / var(--rows))), 1fr))',
-          mt: 4,
-          gap: 4,
-          display: 'grid'
-        }),
+        grid({ columns: { base: 1, sm: 2 }, mt: '10', gap: '6' }),
         className
       )}
       {...props}
-      style={
-        {
-          ...style,
-          '--rows': num
-        } as CSSProperties
-      }
-    >
-      {children}
-    </div>
+    />
   )
 }

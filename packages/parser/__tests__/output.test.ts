@@ -1668,17 +1668,29 @@ describe('preset patterns', () => {
           position: relative
           }
 
-        .w_100\\\\% {
-          width: 100%
-          }
-
-        .max-w_60ch {
-          max-width: 60ch
+        .max-w_8xl {
+          max-width: var(--sizes-8xl)
           }
 
         .mx_auto {
           margin-inline: auto
           }
+
+        .px_4 {
+          padding-inline: var(--spacing-4)
+          }
+
+        @media screen and (min-width: 768px) {
+          .md\\\\:px_6 {
+            padding-inline: var(--spacing-6)
+          }
+              }
+
+        @media screen and (min-width: 1024px) {
+          .lg\\\\:px_8 {
+            padding-inline: var(--spacing-8)
+          }
+              }
       }"
     `)
   })
@@ -1717,21 +1729,33 @@ describe('preset patterns', () => {
           position: relative
           }
 
-        .w_100\\\\% {
-          width: 100%
-          }
-
-        .max-w_60ch {
-          max-width: 60ch
+        .max-w_8xl {
+          max-width: var(--sizes-8xl)
           }
 
         .mx_auto {
           margin-inline: auto
           }
 
+        .px_4 {
+          padding-inline: var(--spacing-4)
+          }
+
         .text_blue\\\\.100 {
           color: var(--colors-blue-100)
           }
+
+        @media screen and (min-width: 768px) {
+          .md\\\\:px_6 {
+            padding-inline: var(--spacing-6)
+          }
+              }
+
+        @media screen and (min-width: 1024px) {
+          .lg\\\\:px_8 {
+            padding-inline: var(--spacing-8)
+          }
+              }
       }"
     `)
   })

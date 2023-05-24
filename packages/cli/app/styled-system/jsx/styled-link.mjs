@@ -3,5 +3,6 @@ import { panda } from './factory.mjs';
 import { getStyledLinkStyle } from '../patterns/styled-link.mjs';
 
 export const StyledLink = forwardRef(function StyledLink(props, ref) {
-  return createElement(panda.div, { ref, ...props })
+  const styleProps = getStyledLinkStyle()
+return createElement(panda.div, { ref, ...styleProps, ...props })
 })    

@@ -13,7 +13,7 @@ const features = [
   'Variants'
 ]
 
-export const FeaturesList = () => {
+export const FeatureMarquee = () => {
   return (
     <panda.div bg="bg.inverted" py="5" textStyle="2xl" fontWeight="semibold">
       <Marquee className={css({ listStyleType: 'none' })} autoFill>

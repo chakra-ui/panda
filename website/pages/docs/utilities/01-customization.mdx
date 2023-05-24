@@ -66,7 +66,7 @@ const config = {
       borderX: {
         values: ['1px', '2px', '4px'],
         shorthand: 'bx', // `bx` or `borderX` can be used
-        transform(value, token) {
+        transform(value, { token }) {
           return {
             borderInlineWidth: value,
             borderColor: token('colors.red.200') // read the css variable for red.200
@@ -95,7 +95,7 @@ const config = {
       borderX: {
         values: { small: '2px', medium: '5px' },
         shorthand: 'bx',
-        transform(value, token) {
+        transform(value, { token }) {
           return {
             borderTopWidth: value,
             borderTopColor: token('colors.gray.400')

@@ -15,7 +15,7 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
 ### Create a Next.js app
 
 First, create a Next.js app using the official [Create Next App](https://nextjs.org/docs/api-reference/create-next-app) CLI.
-We will name our project `my-panda-css-app` but you can name it whatever you want.
+We will name our project `test-app` but you can name it whatever you want.
 
 If you don't enter any parameter, the CLI will guide you through the process of creating a new Next.js app.
 
@@ -39,7 +39,7 @@ If you don't enter any parameter, the CLI will guide you through the process of 
 
 You will be asked a few questions, answer them as follows:
 ```bash
-✔ What is your project named? … my-panda-css-app
+✔ What is your project named? … test-app
 ✔ Would you like to use TypeScript with this project? … Yes
 ✔ Would you like to use ESLint with this project? … Yes
 ✔ Would you like to use Tailwind CSS with this project? … No
@@ -50,7 +50,7 @@ You will be asked a few questions, answer them as follows:
 
 Enter the newly created directory:
 ```bash
-cd my-panda-css-app
+cd test-app
 ```
 
 ### Install Panda CSS
@@ -61,19 +61,19 @@ Install Panda CSS dependency using your favorite package manager.
   <Tab>
     ```bash
     pnpm install @pandacss/dev
-    pnpm panda init --postcss
+    pnpm panda init -p
     ```
   </Tab>
   <Tab>
     ```bash
     npm install @pandacss/dev
-    npm exec panda init --postcss
+    npx panda init -p
     ```
   </Tab>
   <Tab>
     ```bash
     yarn install @pandacss/dev
-    yarn panda init --postcss
+    yarn panda init -p
     ```
   </Tab>
 </Tabs>
@@ -105,7 +105,7 @@ In your Next.js project, navigate to the `src/app` folder and open `global.css` 
 
 ### PostCSS config
 
-`panda init --postcss` command will automatically create a `postcss.config.js` file in the root of your project with the following code:
+`panda init -p` command will automatically create a `postcss.config.js` file in the root of your project with the following code:
 
 ```js
 module.exports = {
@@ -126,7 +126,7 @@ import { css } from '../../styled-system/css';
 
 export default function Home() {
   return (
-    <div className={css({ fontSize: "2xl", fontWeight: 'bold', textDecoration: 'underline' })}>Hello 🐼!</div>
+    <div className={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello 🐼!</div>
   )
 }
 ```
@@ -140,7 +140,7 @@ Run the following command to start the development server:
 <Tabs items={['pnpm', 'npm', 'yarn']}>
   <Tab>
     ```bash
-    pnpm run dev
+    pnpm dev
     ```
   </Tab>
   <Tab>
@@ -150,7 +150,7 @@ Run the following command to start the development server:
   </Tab>
   <Tab>
     ```bash
-    yarn run dev
+    yarn dev
     ```
   </Tab>
 </Tabs>
@@ -173,28 +173,3 @@ You can also update you `package.json` scripts to delete the `.next` folder befo
   },
 }
 ```
-
-## What to read next?
-
-<Cards>
-  <Card
-    title="Panda CSS configuration"
-    href="/docs/references/panda-config"
-  />
-  <Card
-    title="Tokens"
-    href="/docs/tokens/01-introduction"
-  />
-  <Card
-    title="Recipes"
-    href="/docs/recipe/atomic-recipe"
-  />
-  <Card
-    title="Utilities"
-    href="/docs/utilities/00-intro"
-  />
-  <Card
-    title="Patterns"
-    href="/docs/patterns/00-intro"
-  />
-</Cards>

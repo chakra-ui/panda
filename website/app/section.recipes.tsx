@@ -1,119 +1,101 @@
-import Link from 'next/link'
-import { css, cx } from '../styled-system/css'
-import { Flex, panda } from '../styled-system/jsx'
-import { button, code } from '../styled-system/recipes'
-import { ButtonIcon, Icon } from '../theme/icons'
-import { Content } from './content'
-import { Code } from '../bright/code'
 import { outdent } from 'outdent'
+import { Code, codeStyle } from '../bright/code'
+import { css } from '../styled-system/css'
+import { Circle, Container, Flex, Stack, panda } from '../styled-system/jsx'
+import { button } from '../styled-system/recipes'
+import { token } from '../styled-system/tokens'
+import { Icon } from '../theme/icons'
+import { LearnMore } from './learn-more'
+
+const codeSnippet = outdent`
+export const badge = cva({
+  base: {
+    fontWeight: 'medium',
+    px: '3',
+    rounded: 'md',
+  },
+  variants: {
+    status: {
+      default: {
+        color: 'white',
+        bg: 'gray.500',
+      },
+      success: {
+        color: 'white',
+        bg: 'green.500',
+      },
+      warning: {
+        color: 'white',
+        bg: 'yellow.500',
+      },
+    },
+  },
+  defaultVariants: {
+    status: 'default',
+  },
+})`
 
 export const SectionRecipes = () => {
   return (
-    <Flex bg="bg.main" justifyContent="center" pt="55px" pb="58px">
-      <Content flexDirection={{ base: 'column', lg: 'row' }}>
+    <panda.section bg="bg.main">
+      <Container mb={{ lg: '-10rem' }}>
         <Flex
-          w={{ lg: '55%' }}
-          direction="column"
-          justify="center"
-          align="flex-start"
-          mr="auto"
-          pb="72px"
+          direction={{ base: 'column', lg: 'row' }}
+          gap="8"
+          justify="space-between"
+          py="20"
         >
-          <panda.div
-            alignSelf={{ base: 'center', lg: 'flex-start' }}
-            w="93px"
-            h="93px"
-            className={button({ color: 'white', shape: 'circle' })}
-            position="relative"
-          >
-            <Icon icon="Recipe" />
-            <panda.div
-              position="absolute"
-              top="-7px"
-              right="-18px"
-              color="text.main"
+          <Stack position="relative" gap="14" maxW={{ lg: '560px' }} pt="10">
+            <Circle
+              size="94px"
+              className={button({ color: 'white', shape: 'circle' })}
+              position="relative"
             >
-              <Icon
-                icon="Sparks2"
-                className={css({
-                  w: '22px',
-                  h: '22px',
-                  color: 'text.headline'
-                })}
-              />
+              <Icon icon="Recipe" />
+              <panda.div
+                position="absolute"
+                top="-2"
+                right="-5"
+                color="text.main"
+              >
+                <Icon
+                  icon="Sparks2"
+                  className={css({ w: '22px', h: '22px' })}
+                />
+              </panda.div>
+            </Circle>
+
+            <Stack gap="4">
+              <panda.h3 textStyle="panda.h3" fontWeight="bold">
+                Recipes and variants just like Stitches
+              </panda.h3>
+              <panda.h4
+                textStyle="panda.h4"
+                fontWeight="medium"
+                color="text.muted"
+              >
+                Panda gives you a robust functions to define recipes and even
+                “cva” to help you design composable component styles.
+              </panda.h4>
+            </Stack>
+
+            <panda.div position={{ lg: 'absolute' }} bottom="40" left="0">
+              <LearnMore />
             </panda.div>
-          </panda.div>
-          <panda.h3 textStyle="panda.h3" mt="53px">
-            Recipes and variants just like Stitches
-          </panda.h3>
-          <panda.h4 mt="28px" textStyle="panda.h4" color="text.muted">
-            Panda gives you a robust functions to define recipes and even “cva”
-            to help you design composable component styles.
-          </panda.h4>
-          <Link
-            href="/learn"
-            className={cx(
-              button({ color: 'ghost', size: 'xl' }),
-              css({
-                mt: '20px',
-                lg: { mt: '150px' },
-                fontSize: '32px',
-                lineHeight: '40px',
-                letterSpacing: 'tight',
-                fontWeight: 'bold',
-                color: 'text.headline',
-                _hover: {
-                  bg: 'white',
-                  color: 'black',
-                  _dark: {
-                    bg: 'yellow.400'
-                  }
-                },
-                ml: -6
-              })
-            )}
-          >
-            Learn more
-            <ButtonIcon icon="RightArrowIcon" />
-          </Link>
-        </Flex>
-        <Flex w={{ lg: '45%' }} direction="column" ml="5">
-          <panda.div w="100%" bg="gray.600" borderRadius="16px">
+          </Stack>
+
+          <panda.div flex="1" maxW={{ lg: '40rem' }} flexShrink="0">
             {/* @ts-expect-error Server Component */}
-            <Code lang="tsx" className={code()}>
-              {outdent`export const badge = cva({
-                  base: {
-                    fontWeight: 'medium',
-                    letterSpacing: 'wide',
-                    flexGrow: '0',
-                    px: '3',
-                    alignSelf: 'flex-start',
-                    borderRadius: 'md',
-                  },
-                  variants: {
-                    status: {
-                      default: {
-                        color: 'white',
-                        bg: 'gray.500',
-                      },
-                      success: {
-                        color: 'white',
-                        bg: 'green.500',
-                      },
-                      warning: {
-                        color: 'white',
-                        bg: 'yellow.500',
-                      },
-                    },
-                  },
-                  defaultVariants: {
-                    status: 'default',
-                  },
-                })`}
+            <Code
+              lang="tsx"
+              style={{ borderRadius: token('radii.xl') }}
+              codeClassName={codeStyle}
+            >
+              {codeSnippet}
             </Code>
           </panda.div>
         </Flex>
-      </Content>
-    </Flex>
+      </Container>
+    </panda.section>
   )
 }

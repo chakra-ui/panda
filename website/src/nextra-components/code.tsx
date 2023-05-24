@@ -15,6 +15,7 @@ export const Code = ({
           borderColor: 'rgba(0, 0, 0, 0.04)',
           bg: 'rgba(0, 0, 0, 0.03)',
           overflowWrap: 'break-word',
+          fontFamily: 'mono',
           borderRadius: 'md',
           py: '0.5',
           px: '.25em',

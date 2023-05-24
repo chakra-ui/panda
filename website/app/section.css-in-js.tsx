@@ -55,8 +55,33 @@ const codeSnippets = [
     lang: 'tsx'
   },
   {
-    code: outdent`TODO`,
-    title: 'design-tokens.ts',
+    code: outdent`
+    import { styled } from '../styled-system/jsx'
+    import { cva } from '../styled-system/css'
+    
+    export const badge = cva({
+      base: {
+        fontWeight: 'medium',
+        borderRadius: 'md',
+      },
+      variants: {
+        status: {
+          default: {
+            color: 'white',
+            bg: 'gray.500',
+          },
+          success: {
+            color: 'white',
+            bg: 'green.500',
+          },
+        },
+      }
+    })
+    
+    export const Badge = styled('span', badge)    
+    
+    `,
+    title: 'style-recipes.ts',
     lang: 'ts'
   }
 ]
@@ -100,7 +125,11 @@ export const SectionCssInJS = () => {
           </panda.div>
 
           <VStack maxW={{ base: '2xl', lg: '5xl' }} mx="auto" gap="16">
-            <panda.span textStyle="panda.h3" textAlign="center">
+            <panda.span
+              textStyle="panda.h3"
+              textAlign="center"
+              fontWeight="semibold"
+            >
               CSS-in-JS with build time generated styles, RSC compatible,
               multi-variant support.
             </panda.span>
