@@ -8,7 +8,6 @@ import {
 } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 
-// Context ; exposed via return of `setupExtension()`
 const ref = {
   context: null as unknown as Builder['context'],
   synchronizing: false as Promise<void> | false,
@@ -82,7 +81,7 @@ export function setupExtension(connection: Connection, documents: TextDocuments<
 
   connection.onDidChangeWatchedFiles(async (_change) => {
     await loadPandaContext()
-    // connection.console.log('🐼 Reloading panda context...')
+    connection.console.log('🐼 Reloading panda context...')
   })
 
   documents.listen(connection)

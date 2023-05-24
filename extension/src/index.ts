@@ -1,20 +1,10 @@
 import * as path from 'path'
-import vscode, { CompletionList, commands } from 'vscode'
-import {
-  CloseAction,
-  ErrorAction,
-  LanguageClient,
-  LanguageClientOptions,
-  ServerOptions,
-  TransportKind,
-} from 'vscode-languageclient/node'
-
-let client: LanguageClient
-let updateTextTimeout: NodeJS.Timeout | undefined
+import vscode from 'vscode'
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node'
 
 const docSelector: vscode.DocumentSelector = ['typescript', 'typescriptreact', 'javascript', 'javascriptreact']
-// https://github.com/microsoft/vscode/issues/128036#issuecomment-876202882
-// customizable/extendable CompletionItem
+
+let client: LanguageClient
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('activate')
@@ -41,8 +31,6 @@ export async function activate(context: vscode.ExtensionContext) {
     },
   }
 
-  let isInternalCompletion = false
-
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
     documentSelector: docSelector as string[],
@@ -50,47 +38,6 @@ export async function activate(context: vscode.ExtensionContext) {
     // synchronize: {
     //   fileEvents: [vscode.workspace.createFileSystemWatcher('**/*/panda.config.ts')],
     // },
-    // errorHandler: {
-    //   error(error, message, count) {
-    //     console.error(error, message, count)
-    //     return { action: ErrorAction.Continue }
-    //   },
-    //   closed() {
-    //     return { action: CloseAction.DoNotRestart }
-    //   },
-    // },
-    middleware: {
-      async provideCompletionItem(doc, position, context, cancel, next) {
-        if (isInternalCompletion) return next(doc, position, context, cancel)
-        console.log('provideCompletionItem', context)
-        // return next(item, token)
-
-        isInternalCompletion = true
-        const list = await commands.executeCommand<CompletionList>(
-          'vscode.executeCompletionItemProvider',
-          doc.uri,
-          position,
-          context.triggerCharacter,
-        )
-        const oui = list.items.find((item) => item.label === 'blue.100')
-        if (oui) {
-          oui.detail = '🐼 yesyes'
-          oui.documentation = "la doc de l'item blue.100"
-          console.log(oui)
-        }
-
-        isInternalCompletion = false
-
-        console.log(list)
-
-        return list
-      },
-      resolveCompletionItem(item, token, next) {
-        console.log('resolveCompletionItem', item, token)
-        // return next(item, token)
-        return item
-      },
-    },
   }
 
   // Create the language client and start the client.
@@ -98,9 +45,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   console.log('before start')
 
-  const disposable = vscode.commands.registerCommand('panda-css-extension.restart', async () => {
-    updateTextTimeout && clearTimeout(updateTextTimeout)
-
+  const restartCmd = vscode.commands.registerCommand('panda-css-extension.restart', async () => {
     loadingStatusBarItem.text = '🐼 Restarting...'
     loadingStatusBarItem.show()
 
@@ -113,79 +58,7 @@ export async function activate(context: vscode.ExtensionContext) {
     console.log('restarted !')
   })
 
-  context.subscriptions.push(disposable)
-
-  // Register the 'onCompletion' event
-  // const completionProvider = vscode.languages.registerCompletionItemProvider(
-  //   { language: 'typescript' },
-  //   {
-  //     provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
-  //       // Get the default completion items from TypeScript
-  //       // const defaultItems = vscode.languages
-  //       //   .getLanguages()
-  //       //   .find((language) => language.id === 'typescript')
-  //       //   ?.completionItemProvider!.provideCompletionItems(document, position);
-
-  //       // if (defaultItems) {
-  //       //   // Modify the default completion items or create new ones with additional details
-  //       //   const modifiedItems = defaultItems.map((item) => {
-  //       //     // Create a new CompletionItem with additional details
-  //       //     const modifiedItem = new vscode.CompletionItem(item.label);
-  //       //     modifiedItem.kind = item.kind;
-  //       //     modifiedItem.detail = 'Additional detail information';
-
-  //       //     return modifiedItem;
-  //       //   });
-
-  //       //   return modifiedItems;
-  //       // }
-
-  //       return [];
-  //     },
-  //   }
-  // );
-
-  // console.log(vscode.extensions.getExtension('vscode.typescript-language-features'))
-  // console.log((await vscode.commands.getCommands()).filter((command) => command.includes('Completion')))
-
-  // https://github.com/microsoft/vscode/blob/7d572968ffc496213defe770b6597db97fce8b24/src/vs/workbench/api/common/extHostApiCommands.ts#L240
-  // https://github.com/microsoft/vscode/blob/7d572968ffc496213defe770b6597db97fce8b24/src/vs/editor/contrib/suggest/browser/suggest.ts#L383
-  // console.log(
-  //   await vscode.commands.executeCommand(
-  //     'vscode.executeCompletionItemProvider',
-  //     vscode.window.activeTextEditor?.document.uri,
-  //     new vscode.Position(0, 0),
-  //     '',
-  //   ),
-  // )
-
-  // new vscode.CompletionItem('test', vscode.CompletionItemKind.Text)
-  // https://github.com/microsoft/vscode/blob/7d572968ffc496213defe770b6597db97fce8b24/extensions/typescript-language-features/src/api.ts
-  const tsExtension = vscode.extensions.getExtension('vscode.typescript-language-features')
-  const languageFeatures = await tsExtension?.activate()
-  console.log(languageFeatures)
-  const api = languageFeatures.getAPI(0)
-  console.log(Object.keys(api))
-  console.log(api, Array.from(api.a.configurations()))
-
-  // vscode.languages.registerInlineCompletionItemProvider(docSelector, {
-  //   provideInlineCompletionItems(document, position, context, token) {
-  //     console.log('provideInlineCompletionItems', document, position, context, token)
-  //     return [
-  //       {
-  //         text: 'ayayaya',
-  //         range: new vscode.Range(position, position),
-  //         insertText: 'ayayaya',
-  //         filterText: 'ayayaya',
-  //       },
-  //     ]
-  //   },
-  // })
-
-  // const configurePluginCommand = '_typescript.configurePlugin'
-  // https://github.com/microsoft/vscode/blob/2eb365c80d57491f40b700a8a09771bf707c27d3/extensions/typescript-language-features/src/commands/configurePlugin.ts#L10
-
-  // console.log(client.getFeature('textDocument/completion'))
+  context.subscriptions.push(restartCmd)
 
   try {
     // Start the client. This will also launch the server
@@ -193,21 +66,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
     await client.start()
     console.log('starting...')
-    loadingStatusBarItem.text = '🐼 Ready !'
-
-    updateTextTimeout = setTimeout(() => {
-      loadingStatusBarItem.hide()
-    }, 2000)
+    loadingStatusBarItem.hide()
   } catch (err) {
-    updateTextTimeout && clearTimeout(updateTextTimeout)
     console.log('error', err)
   }
 }
 
 export function deactivate(): Thenable<void> | undefined {
   console.log('deactivate')
-
-  updateTextTimeout && clearTimeout(updateTextTimeout)
 
   if (!client) {
     return undefined

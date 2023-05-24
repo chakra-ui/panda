@@ -1,6 +1,8 @@
 export { box } from './box'
+export { extractCallExpressionArguments } from './call-expression'
 export { extract } from './extract'
 export { extractJsxAttribute } from './jsx-attribute'
+export { extractJsxSpreadAttributeValues } from './jsx-spread-attribute'
 export {
   BoxNodeConditional,
   BoxNodeEmptyInitializer,

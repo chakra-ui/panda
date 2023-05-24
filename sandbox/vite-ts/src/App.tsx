@@ -12,6 +12,7 @@ function App() {
 
   return (
     <div className={stack({ padding: '40px', align: 'stretch' })}>
+      <panda.div color="blue.100" css={{ color: 'red.200' }} className={css({ color: 'green.300' })} />
       <section className={css({ padding: '5', borderWidth: '1px' })}>
         <p className={css({ fontWeight: 'semibold', mb: '2' })}>CSS - Function</p>
         <div className={css({ maxWidth: '840px', marginX: 'auto', textAlign: 'center' })}>

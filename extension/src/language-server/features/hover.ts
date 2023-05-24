@@ -1,14 +1,16 @@
 import { PandaExtension } from '../index'
 
-// https://github.com/tailwindlabs/tailwindcss-intellisense/blob/master/packages/tailwindcss-language-service/src/hoverProvider.ts#L74
 // TODO inline hints for px -> rem
-// toPx / toEm / toRem
 
-export function registerHover(context: PandaExtension) {
-  const { connection, documentReady, documents, getClosestToken } = context
+export function registerHover(extension: PandaExtension) {
+  const { connection, documentReady, documents, getClosestToken, getClosestInstance, getMarkdownCss, printTokenValue } =
+    extension
 
   connection.onHover(async (params) => {
     await documentReady('🐼 onHover')
+
+    const ctx = extension.getContext()
+    if (!ctx) return
 
     const doc = documents.get(params.textDocument.uri)
     if (!doc) {
@@ -16,12 +18,22 @@ export function registerHover(context: PandaExtension) {
     }
 
     // TODO recipe
-    const match = getClosestToken(doc, params.position)
-    if (!match) return
+    const tokenMatch = getClosestToken(doc, params.position)
+    if (tokenMatch) {
+      const { token } = tokenMatch
+      const css = getMarkdownCss(ctx, { [token.name]: token.value }).css
+      // console.log(match)
 
-    const { token } = match
-    // console.log(match)
+      return {
+        contents: [printTokenValue(token), { language: 'css', value: css }],
+      }
+    }
 
-    return { contents: `🐼 ${token.value}`, code: '', message: '', data: {}, name: '' }
+    const instanceMatch = getClosestInstance(doc, params.position)
+    if (instanceMatch) {
+      return {
+        contents: getMarkdownCss(ctx, instanceMatch.styles).withCss,
+      }
+    }
   })
 }
