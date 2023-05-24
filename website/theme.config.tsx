@@ -6,10 +6,10 @@ import {
   useConfig,
   Callout,
   FileTree,
-  Steps,
   Card,
   Cards
 } from './src' // nextra-theme-docs
+import { Steps } from './src/nextra-components/steps'
 import { useRouter } from 'next/router'
 import { css } from './styled-system/css'
 import { Icon } from './theme/icons'
