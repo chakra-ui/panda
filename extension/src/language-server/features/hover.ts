@@ -8,18 +8,19 @@ export function registerHover(context: PandaExtension) {
   const { connection, documentReady, documents, getClosestToken } = context
 
   connection.onHover(async (params) => {
-    await documentReady('📘 onHover')
+    await documentReady('🐼 onHover')
 
     const doc = documents.get(params.textDocument.uri)
     if (!doc) {
       return
     }
 
+    // TODO recipe
     const match = getClosestToken(doc, params.position)
     if (!match) return
 
     const { token } = match
-    console.log(match)
+    // console.log(match)
 
     return { contents: `🐼 ${token.value}`, code: '', message: '', data: {}, name: '' }
   })

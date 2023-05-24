@@ -16,8 +16,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "panda-css-extension.helloWorld",
-        "title": "Hello World"
+        "command": "panda-css-extension.restart",
+        "title": "Panda: Restart PandaCss Language Server"
       }
     ]
   },

@@ -26,6 +26,7 @@ export function setupExtension(connection: Connection, documents: TextDocuments<
    */
   async function loadPandaContext() {
     try {
+      // console.log('🐼 Builder setup...')
       ref.synchronizing = builder.setup()
       await ref.synchronizing
     } catch {
@@ -38,7 +39,7 @@ export function setupExtension(connection: Connection, documents: TextDocuments<
     ref.context = builder.context!
 
     if (ref.context) {
-      console.log('🐼 Loaded panda context!')
+      // console.log('🐼 Loaded panda context!')
     }
 
     return ref.context
@@ -65,6 +66,9 @@ export function setupExtension(connection: Connection, documents: TextDocuments<
         // Tell the client that this server supports code completion.
         completionProvider: {
           resolveProvider: true,
+          completionItem: {
+            labelDetailsSupport: true,
+          },
         },
         definitionProvider: true,
         hoverProvider: true,
