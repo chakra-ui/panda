@@ -46,6 +46,7 @@ function run(value: Record<string, any> = {}) {
     createContext(),
   )
 
+  recipe.save()
   recipe.process('text', { styles: value })
   return recipe.toCss()
 }

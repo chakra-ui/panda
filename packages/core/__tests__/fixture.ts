@@ -38,12 +38,14 @@ export const createContext = ({ hash, prefix }: ContextOptions = {}): Stylesheet
 
 export function getRecipe(key: 'buttonStyle' | 'textStyle' | 'tooltipStyle') {
   const recipes = new Recipes(mocks.recipes, createContext())
+  recipes.save()
   const recipe = recipes.getRecipe(key)
   return recipe!.config
 }
 
 export function processRecipe(recipe: 'buttonStyle' | 'textStyle' | 'tooltipStyle', value: Record<string, any>) {
   const recipes = new Recipes(mocks.recipes, createContext())
+  recipes.save()
   recipes.process(recipe, { styles: value })
   return recipes.toCss()
 }

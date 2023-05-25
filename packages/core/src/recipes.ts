@@ -4,7 +4,6 @@ import merge from 'lodash.merge'
 import { AtomicRule, type ProcessOptions } from './atomic-rule'
 import { serializeStyle } from './serialize'
 import type { RecipeNode, StylesheetContext } from './types'
-import { sharedHooks } from './shared-hooks'
 
 type RecipeValues = Record<string, AnyRecipeConfig>
 
@@ -28,57 +27,35 @@ const sharedState = {
   configs: new Map<string, RecipeNode>(),
 }
 
-sharedHooks.hook('config:changed', () => {
-  Recipes.count = 0
-})
-
 export class Recipes {
   /**
    * The map of the recipes to their atomic rules
    */
   rules: Map<string, AtomicRule> = new Map()
 
-  /**
-   * The count of the recipe instances
-   * For performance reasons, we only want to assign the recipes once
-   */
-  static count = 0
-
   constructor(private recipes: RecipeValues = {}, private context?: StylesheetContext) {
-    if (Recipes.count == 0) {
-      this.assignRecipes()
-    }
-
     this.assignRules()
-
-    if (this.context) {
-      Recipes.count++
-    }
   }
 
-  reset() {
-    // rebuild the rules
-  }
-
-  getPropKey = (recipe: string, variant: string, value: any) => {
+  private getPropKey = (recipe: string, variant: string, value: any) => {
     return `${recipe} (${variant} = ${value})`
   }
 
-  get separator() {
-    return this.context?.utility.separator ?? '-'
+  private get separator() {
+    return this.context?.utility.separator ?? '_'
   }
 
-  getClassName = (recipe: string, variant: string, value: string) => {
+  private getClassName = (recipe: string, variant: string, value: string) => {
     return `${recipe}--${variant}${this.separator}${value}`
   }
 
-  assignRecipes = () => {
+  save = () => {
     for (const [name, recipe] of Object.entries(this.recipes)) {
       this.assignRecipe(name, this.normalize(recipe))
     }
   }
 
-  assignRecipe = (name: string, recipe: AnyRecipeConfig) => {
+  private assignRecipe = (name: string, recipe: AnyRecipeConfig) => {
     const variantKeys = Object.keys(recipe.variants ?? {})
     const jsx = recipe.jsx ?? [capitalize(name)]
     const match = createRegex(jsx)
@@ -124,8 +101,8 @@ export class Recipes {
     return sharedState.configs.get(name)
   })
 
-  getConfig = memo((name: string) => {
-    return this.getRecipe(name)?.config
+  getConfig = memo((name: string): AnyRecipeConfig | undefined => {
+    return this.recipes[name]
   })
 
   find = memo((name: string) => {
@@ -210,7 +187,7 @@ export class Recipes {
     return serializeStyle(styleObject, { utility, conditions })
   }
 
-  getTransform = (name: string) => {
+  private getTransform = (name: string) => {
     return (variant: string, value: string) => {
       if (value === '__ignore__') {
         return {
