@@ -1,4 +1,4 @@
-import { discardDuplicate, mergeCss, sharedHooks } from '@pandacss/core'
+import { discardDuplicate, mergeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { existsSync } from 'fs'
@@ -91,7 +91,6 @@ export class Builder {
     const deps = this.checkConfigDeps(configPath, configDeps)
 
     if (deps.isModified) {
-      sharedHooks.callHook('config:changed')
       return this.setupContext({
         configPath,
         depsModifiedMap: deps.modifiedMap,

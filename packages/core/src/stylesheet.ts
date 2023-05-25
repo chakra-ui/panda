@@ -14,7 +14,7 @@ export type StylesheetOptions = {
 }
 
 export class Stylesheet {
-  recipes: Recipes
+  private recipes: Recipes
 
   constructor(private context: StylesheetContext, private options?: StylesheetOptions) {
     const { recipes } = options ?? {}

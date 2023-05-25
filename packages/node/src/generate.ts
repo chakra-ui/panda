@@ -1,4 +1,3 @@
-import { sharedHooks } from '@pandacss/core'
 import { logger } from '@pandacss/logger'
 import type { Config } from '@pandacss/types'
 import { match } from 'ts-pattern'
@@ -26,7 +25,6 @@ export async function generate(config: Config, configPath?: string) {
   if (ctx.config.watch) {
     const configWatcher = fs.watch({ include: dependencies })
     configWatcher.on('change', async () => {
-      sharedHooks.callHook('config:change')
       logger.info('config:change', 'Config changed, restarting...')
       await loadCtx()
       return build(ctxRef.current)
