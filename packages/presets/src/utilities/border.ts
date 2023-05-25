@@ -29,6 +29,7 @@ export const border: UtilityConfig = {
   borderTopRadius: {
     className: 'rounded-t',
     shorthand: 'roundedTop',
+    property: 'borderRadius',
     values: 'radii',
     transform(value) {
       return {
@@ -40,6 +41,7 @@ export const border: UtilityConfig = {
   borderRightRadius: {
     className: 'rounded-r',
     shorthand: 'roundedRight',
+    property: 'borderRadius',
     values: 'radii',
     transform(value) {
       return {
@@ -51,6 +53,7 @@ export const border: UtilityConfig = {
   borderBottomRadius: {
     className: 'rounded-b',
     shorthand: 'roundedBottom',
+    property: 'borderRadius',
     values: 'radii',
     transform(value) {
       return {
@@ -63,6 +66,7 @@ export const border: UtilityConfig = {
     className: 'rounded-l',
     shorthand: 'roundedLeft',
     values: 'radii',
+    property: 'borderRadius',
     transform(value) {
       return {
         borderTopLeftRadius: value,
@@ -83,6 +87,7 @@ export const border: UtilityConfig = {
   borderStartRadius: {
     className: 'rounded-start',
     values: 'radii',
+    property: 'borderRadius',
     shorthand: 'roundedStart',
     transform(value) {
       return {
@@ -104,6 +109,7 @@ export const border: UtilityConfig = {
   borderEndRadius: {
     className: 'rounded-end',
     shorthand: 'roundedEnd',
+    property: 'borderRadius',
     values: 'radii',
     transform(value) {
       return {
