@@ -305,7 +305,6 @@ export {
   Collapse,
   NotFoundPage,
   ServerSideErrorPage,
-  Steps,
   Tabs,
   Tab,
   Cards,
@@ -316,3 +315,4 @@ export {
   SkipNavLink,
   ThemeSwitch
 } from './components'
+export { Steps } from './nextra-components'
