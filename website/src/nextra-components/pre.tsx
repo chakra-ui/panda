@@ -61,8 +61,6 @@ export const Pre = ({
             mb: '4',
             overflowX: 'auto',
             rounded: 'xl',
-            WebkitFontSmoothing: 'auto',
-            MozOsxFontSmoothing: 'auto',
             _dark: {
               bg: 'hsl(var(--nextra-primary-hue) 100% var(--color-primary-300-hue) / 0.1)' // bg: 'primary.300/10',
             },

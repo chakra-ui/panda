@@ -1,4 +1,4 @@
-import { Conditions, Stylesheet, Utility, assignCompositions, type StylesheetOptions } from '@pandacss/core'
+import { Conditions, Recipes, Stylesheet, Utility, assignCompositions, type StylesheetOptions } from '@pandacss/core'
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { logger } from '@pandacss/logger'
 import { compact, mapObject, memo } from '@pandacss/shared'
@@ -41,10 +41,24 @@ export const getBaseEngine = (conf: LoadConfigResult) =>
       assignCompositions({ conditions, utility }, compositions)
     }),
 
-    Obj.bind('createSheet', ({ conditions, utility, config: { hash } }) => (options?: StylesheetOptions) => {
+    Obj.bind('recipes', ({ conditions, utility, config: { hash, theme } }) => {
       const context = { root: postcss.root(), conditions, utility, hash, helpers }
-      return new Stylesheet(context, options)
+      const recipes = new Recipes(theme?.recipes, context)
+      recipes.save() // cache recipes on first run
+      return recipes
     }),
+
+    Obj.bind(
+      'createSheet',
+      ({ conditions, utility, config: { hash, theme } }) =>
+        (options?: Pick<StylesheetOptions, 'content'>) => {
+          const context = { root: postcss.root(), conditions, utility, hash, helpers }
+          return new Stylesheet(context, {
+            content: options?.content,
+            recipes: theme?.recipes,
+          })
+        },
+    ),
 
     Obj.bind('properties', ({ utility, conditions }) =>
       Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()])),

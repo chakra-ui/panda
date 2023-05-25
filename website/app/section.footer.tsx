@@ -34,8 +34,11 @@ export const SectionFooter = () => {
           <Link href="/docs" className={button({ color: 'ghost.white' })}>
             Docs
           </Link>
-          {/* TODO fix links */}
-          <Link href="/docs" className={button({ color: 'ghost.white' })}>
+
+          <Link
+            href="https://twitter.com/panda__css"
+            className={button({ color: 'ghost.white' })}
+          >
             Twitter{' '}
             <ButtonIcon
               icon="ExternalLink"

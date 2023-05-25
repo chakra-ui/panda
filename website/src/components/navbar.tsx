@@ -37,9 +37,7 @@ const classes = {
     })
   ),
   active: css({
-    fontWeight: 'medium',
-    WebkitFontSmoothing: 'auto',
-    MozOsxFontSmoothing: 'auto'
+    fontWeight: 'medium'
   }),
   inactive: css({
     color: 'gray.600',

@@ -168,6 +168,9 @@ importers:
       camelcase-css:
         specifier: ^2.0.1
         version: 2.0.1
+      hookable:
+        specifier: 5.5.3
+        version: 5.5.3
       lodash.merge:
         specifier: 4.6.2
         version: 4.6.2

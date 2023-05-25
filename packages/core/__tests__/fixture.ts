@@ -1,11 +1,15 @@
 import * as mocks from '@pandacss/fixture'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import postcss from 'postcss'
-import { Conditions, Utility } from '../src'
-import { Recipe } from '../src/recipe'
+import { Conditions, Utility, Recipes } from '../src'
 import type { StylesheetContext } from '../src/types'
 
-export const createContext = ({ hash, prefix }: { hash?: boolean; prefix?: string } = {}): StylesheetContext => {
+type ContextOptions = {
+  hash?: boolean
+  prefix?: string
+}
+
+export const createContext = ({ hash, prefix }: ContextOptions = {}): StylesheetContext => {
   const conditions = new Conditions({
     conditions: mocks.conditions,
     breakpoints: mocks.breakpoints,
@@ -33,14 +37,17 @@ export const createContext = ({ hash, prefix }: { hash?: boolean; prefix?: strin
 }
 
 export function getRecipe(key: 'buttonStyle' | 'textStyle' | 'tooltipStyle') {
-  const recipe = new Recipe(mocks.recipes[key], createContext())
-  return recipe.config
+  const recipes = new Recipes(mocks.recipes, createContext())
+  recipes.save()
+  const recipe = recipes.getRecipe(key)
+  return recipe!.config
 }
 
-export function processRecipe(key: 'buttonStyle' | 'textStyle' | 'tooltipStyle', value: Record<string, any>) {
-  const recipe = new Recipe(mocks.recipes[key], createContext())
-  recipe.process({ styles: value })
-  return recipe.toCss()
+export function processRecipe(recipe: 'buttonStyle' | 'textStyle' | 'tooltipStyle', value: Record<string, any>) {
+  const recipes = new Recipes(mocks.recipes, createContext())
+  recipes.save()
+  recipes.process(recipe, { styles: value })
+  return recipes.toCss()
 }
 
 export const compositions = {

@@ -24,7 +24,7 @@ function App() {
               need to build your React applications.
             </p>
 
-            <div className={css({ marginTop: '40px', display: 'inline-flex', spaceX: '4' })}>
+            <div className={css({ marginTop: '40px', display: 'inline-flex', gap: '4' })}>
               <button
                 className={css({
                   height: '40px',

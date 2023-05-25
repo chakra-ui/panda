@@ -217,7 +217,7 @@ export function Flexsearch({
                   px: '2.5',
                   pb: '1.5',
                   textStyle: 'xs',
-                  fontWeights: 'semibold',
+                  fontWeight: 'semibold',
                   textTransform: 'uppercase',
                   color: 'gray.500',
                   _firstOfType: {
@@ -246,7 +246,7 @@ export function Flexsearch({
               <div
                 className={css({
                   textStyle: 'md',
-                  fontWeights: 'semibold',
+                  fontWeight: 'semibold',
                   lineHeight: '1.25rem'
                 })}
               >

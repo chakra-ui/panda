@@ -3,12 +3,10 @@ import { getBaseEngine } from './base'
 import { getJsxEngine } from './jsx'
 import { getPathEngine } from './path'
 import { getPatternEngine } from './pattern'
-import { getRecipeEngine } from './recipe'
 
 export const getEngine = (conf: LoadConfigResult) => ({
   ...getBaseEngine(conf),
   patterns: getPatternEngine(conf.config),
-  recipes: getRecipeEngine(conf.config),
   jsx: getJsxEngine(conf.config),
   paths: getPathEngine(conf.config),
   file: {

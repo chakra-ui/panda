@@ -16,7 +16,7 @@ export function ExpandIcon({
       <path
         fillRule="evenodd"
         d="M4.177 7.823l2.396-2.396A.25.25 0 017 5.604v4.792a.25.25 0 01-.427.177L4.177 8.177a.25.25 0 010-.354z"
-        className={isOpen ? '' : css({ originX: '35%', rotate: 180 })}
+        className={isOpen ? '' : css({ transform: 'auto', rotate: '180deg' })}
       />
       <path
         fillRule="evenodd"
