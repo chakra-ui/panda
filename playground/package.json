@@ -23,7 +23,7 @@
     "@prisma/client": "4.14.1",
     "@textea/json-viewer": "^3.0.0",
     "@types/node": "20.2.1",
-    "@types/react": "18.2.6",
+    "@types/react": "18.2.7",
     "@types/react-dom": "18.2.4",
     "merge-anything": "^5.1.6",
     "monaco-editor": "0.38.0",
