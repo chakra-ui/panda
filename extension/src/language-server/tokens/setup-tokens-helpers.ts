@@ -474,7 +474,7 @@ const getCompletionFor = (ctx: PandaContext, propName: string, propValue: Primit
       label: name,
       kind: isColor ? CompletionItemKind.Color : CompletionItemKind.EnumMember,
       documentation: { kind: 'markdown', value: getMarkdownCss(ctx, { [propName]: token.value }).withCss },
-      labelDetails: { description: printTokenValue(token) },
+      labelDetails: { description: printTokenValue(token), detail: `   ${token.extensions.varRef}` },
       sortText: '-' + name,
       preselect: true,
     } as CompletionItem
