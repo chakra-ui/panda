@@ -6,7 +6,6 @@
   "scripts": {
     "prepare": "panda codegen",
     "dev": "next dev",
-    "redev": "panda codegen --clean && next dev",
     "build": "next build",
     "start": "next start"
   },
