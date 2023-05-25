@@ -2,8 +2,9 @@ import { CompletionItem, CompletionItemKind, Position, Range } from 'vscode-lang
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { PandaExtensionSetup } from '../config'
 
-import { ParserResult, RawCondition, ResultItem, SystemStyleObject } from '@pandacss/types'
-import { CallExpression, JsxOpeningElement, JsxSelfClosingElement, Node, ts } from 'ts-morph'
+import { defineKeyframes, defineParts, definePattern, defineRecipe, defineStyles } from '@pandacss/dev'
+import { AnyPatternConfig, AnyRecipeConfig, Dict, ParserResult, RawCondition, ResultItem } from '@pandacss/types'
+import { CallExpression, Identifier, JsxOpeningElement, JsxSelfClosingElement, Node, ts } from 'ts-morph'
 
 import {
   BoxContext,
@@ -16,6 +17,7 @@ import {
   box,
   extractCallExpressionArguments,
   extractJsxAttribute,
+  findIdentifierValueDeclaration,
   maybeBoxNode,
   unbox,
 } from '@pandacss/extractor'
@@ -48,13 +50,27 @@ type ClosestConditionMatch = ClosestMatch & {
 }
 type ClosestToken = ClosestTokenMatch | ClosestConditionMatch
 
-type ClosestInstance = { tokenList: Token[]; range: Range; name: string; props: BoxNodeMap | BoxNodeObject }
+type ClosestInstanceMatch = { name: string }
+type ClosestStylesInstance = { kind: 'styles'; props: BoxNodeMap | BoxNodeObject }
+type ClosestRecipeConfigInstance = { kind: 'recipe-config'; recipe: AnyRecipeConfig }
+type ClosestPatternConfigInstance = { kind: 'pattern-config'; pattern: AnyPatternConfig }
+type ClosestInstance = ClosestInstanceMatch & (ClosestStylesInstance | ClosestRecipeConfigInstance)
 
 type OnTokenCallback = (args: ClosestToken) => void
 type BoxNodeWithValue = BoxNodeObject | BoxNodeLiteral | BoxNodeMap | BoxNodeArray
-type BoxValue = BoxNodeWithValue['value']
 
-const canEvalFn = (name: string) => name === 'css' || name === 'cx'
+const extractableFns = [
+  'css',
+  'cx',
+  'defineStyles',
+  'defineRecipe',
+  'definePattern',
+  'defineKeyframes',
+  'defineParts',
+] as const
+type ExtractableFnName = (typeof extractableFns)[number]
+const canEvalFn = (name: string): name is ExtractableFnName => extractableFns.includes(name as any)
+
 const mergeCx = (...args: any[]) =>
   args.filter(Boolean).reduce((acc, curr) => {
     if (typeof curr === 'object') return Object.assign(acc, curr)
@@ -62,20 +78,41 @@ const mergeCx = (...args: any[]) =>
     return acc
   }, {})
 
+const isFunctionMadeFromDefineParts = (expr: Identifier) => {
+  const declaration = findIdentifierValueDeclaration(expr, [], boxCtx)
+  if (!Node.isVariableDeclaration(declaration)) return
+
+  const initializer = declaration.getInitializer()
+  if (!Node.isCallExpression(initializer)) return
+
+  const fromFunctionName = initializer.getExpression().getText()
+  return fromFunctionName === 'defineParts'
+}
+
 const boxCtx: BoxContext = {
   flags: { skipTraverseFiles: true },
   getEvaluateOptions: (node) => {
     if (!Node.isCallExpression(node)) return
     const expr = node.getExpression()
-    const name = Node.isIdentifier(expr) && expr.getText()
 
-    if (!canEvalFn(name as string)) return
+    if (!Node.isIdentifier(expr)) return
+    const name = expr.getText()
+
+    // TODO - check for import alias ? kinda overkill for now
+    if (!canEvalFn(name as string) && !isFunctionMadeFromDefineParts(expr)) {
+      return
+    }
 
     return {
       environment: {
         extra: {
-          css: (styles: SystemStyleObject) => styles,
           cx: mergeCx,
+          css: defineStyles,
+          defineStyles,
+          defineRecipe,
+          definePattern,
+          defineKeyframes,
+          defineParts,
         },
       },
     } as any
@@ -176,7 +213,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
   const findClosestInstance = <Return>(
     node: Node,
     stack: Node[],
-    onFoundInstance: (args: Pick<ClosestInstance, 'name' | 'props'>) => Return,
+    onFoundInstance: (args: ClosestInstance) => Return,
   ) => {
     const ctx = setup.getContext()
     if (!ctx) return
@@ -186,25 +223,23 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
     return match(node)
       .when(
         () => {
-          current = getFirstAncestorMatching(stack, Node.isCallExpression)
+          const callExpression = getFirstAncestorMatching(stack, (node): node is CallExpression => {
+            if (!Node.isCallExpression(node)) return false
+            const expr = node.getExpression()
+
+            // TODO - check for import alias ? kinda overkill for now
+            if (Node.isIdentifier(expr) && !canEvalFn(expr.getText())) return false
+
+            return true
+          })
+          if (!callExpression) return
+
+          current = callExpression
           return current
         },
         () => {
           const callExpression = current as CallExpression
-          const name = callExpression.getExpression().getText()
-
-          if (name === 'css') {
-            const list = extractCallExpressionArguments(
-              callExpression,
-              boxCtx,
-              () => true,
-              (args) => args.index === 0,
-            )
-            const styles = list.value[0]
-            if (!isObjectLike(styles)) return
-
-            return onFoundInstance({ name, props: styles })
-          }
+          const name = callExpression.getExpression().getText() as ExtractableFnName
 
           if (name === 'cx') {
             const list = extractCallExpressionArguments(
@@ -219,7 +254,38 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
                 .map((item) => (item as BoxNodeMap | BoxNodeObject).value),
             )
 
-            return onFoundInstance({ name, props: box.object(styles, callExpression, stack) })
+            return onFoundInstance({
+              kind: 'styles',
+              name,
+              props: box.object(styles, callExpression, stack),
+            })
+          }
+
+          const shouldOnlyExtractConfigName = name === 'defineRecipe' || name === 'definePattern'
+          const list = extractCallExpressionArguments(
+            callExpression,
+            boxCtx,
+            // we can extract the whole config with findIdentifierValueDeclaration
+            // but that takes a lot of time and we can just extract the name instead
+            // and then find the config in the recipes object
+            // tho, we could extract the whole recipe config if we can't find it in the recipes object
+            // (cause the user hasn't yet run panda codegen OR is using `cva`)
+            (args) => (shouldOnlyExtractConfigName ? args.propName === 'name' : true),
+            (args) => args.index === 0,
+          )
+          const config = list.value[0]
+          if (!isObjectLike(config)) return
+
+          if (name === 'css' || name === 'defineStyles') {
+            return onFoundInstance({ kind: 'styles', name, props: config })
+          }
+
+          // console.log({ name, styles: config })
+          if (name === 'defineRecipe' && box.isMap(config)) {
+            const unboxed = unbox(config).raw
+            const recipe = ctx.recipes.recipes[unboxed['name']]
+            // console.log(recipe)
+            return onFoundInstance({ kind: 'recipe-config', name, recipe })
           }
         },
       )
@@ -233,7 +299,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
           const { name, props } = extractJsxElementProps(componentNode, boxCtx)
           if (!props.size) return
 
-          return onFoundInstance({ name, props: box.map(props, componentNode, stack) })
+          return onFoundInstance({ kind: 'styles', name, props: box.map(props, componentNode, stack) })
         },
       )
       .otherwise(() => {
@@ -334,10 +400,19 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
 
     const { node, stack } = match
 
-    return findClosestInstance(node, stack, ({ name, props }) => {
-      const unboxed = unbox(props)
-      const { className, css, ...rest } = unboxed.raw
-      return { name, props, styles: Object.assign({}, className, css, rest) }
+    return findClosestInstance(node, stack, (instance) => {
+      if (instance.kind === 'styles') {
+        const { name, props } = instance
+
+        const unboxed = unbox(props)
+        const { className, css, ...rest } = unboxed.raw
+        return {
+          kind: 'styles',
+          name,
+          props,
+          styles: Object.assign({}, className, css, rest),
+        } as ClosestStylesInstance & { styles: Dict }
+      }
     })
   }
 

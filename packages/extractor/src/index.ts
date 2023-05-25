@@ -1,6 +1,7 @@
 export { box } from './box'
 export { extractCallExpressionArguments } from './call-expression'
 export { extract } from './extract'
+export { findIdentifierValueDeclaration } from './find-identifier-value-declaration'
 export { extractJsxAttribute } from './jsx-attribute'
 export { extractJsxSpreadAttributeValues } from './jsx-spread-attribute'
 export {
@@ -14,7 +15,7 @@ export {
   isBoxNode,
 } from './box-factory'
 export type { BoxNode } from './box-factory'
-export { maybeBoxNode } from './maybe-box-node'
+export { maybeBoxNode, maybeIdentifierValue } from './maybe-box-node'
 export type {
   BoxContext,
   ExtractOptions,

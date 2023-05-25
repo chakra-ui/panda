@@ -5,7 +5,7 @@ import { renderTokenColorPreview } from '../tokens/render-token-color-preview'
 import { renderFontSizePreview } from '../tokens/render-font-size-preview'
 import { generateKeyframeCss } from '../tokens/generate-keyframe-css'
 
-// TODO configuration
+// TODO extension configuration (enable/disable features)
 // TODO handle config changes (reload context)
 
 // TODO recipes
@@ -87,7 +87,7 @@ export function registerHover(extension: PandaExtension) {
     }
 
     const instanceMatch = getClosestInstance(doc, params.position)
-    if (instanceMatch) {
+    if (instanceMatch && instanceMatch.kind === 'styles') {
       // console.log({ instanceMatch })
       return {
         contents: getMarkdownCss(ctx, instanceMatch.styles).withCss,

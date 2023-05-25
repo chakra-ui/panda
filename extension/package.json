@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "@pandacss/core": "workspace:^",
+    "@pandacss/dev": "workspace:^",
     "@pandacss/extractor": "workspace:^",
     "@pandacss/node": "workspace:^",
     "@pandacss/shared": "workspace:^",
