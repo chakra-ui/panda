@@ -1,41 +1,43 @@
 import { expect, test } from 'vitest'
-import { Recipe } from '../src'
+import { Recipes } from '../src'
 import { createContext } from './fixture'
 
 function run(value: Record<string, any> = {}) {
-  const recipe = new Recipe(
+  const recipe = new Recipes(
     {
-      name: 'text',
-      base: {
-        marginTop: 'auto',
-        marginBottom: 0,
-        paddingTop: 0,
-        objectPos: 'center',
-      },
-      variants: {
-        variant: {
-          sm: {
-            '&:first-child': {
-              marginRight: '4',
-              '&:hover': {
-                color: { base: 'red.200', md: 'gray.300' },
+      text: {
+        name: 'text',
+        base: {
+          marginTop: 'auto',
+          marginBottom: 0,
+          paddingTop: 0,
+          objectPos: 'center',
+        },
+        variants: {
+          variant: {
+            sm: {
+              '&:first-child': {
+                marginRight: '4',
+                '&:hover': {
+                  color: { base: 'red.200', md: 'gray.300' },
+                },
+              },
+              '&:disabled': {
+                marginRight: '40px',
+                filter: 'unset',
               },
             },
-            '&:disabled': {
-              marginRight: '40px',
-              filter: 'unset',
-            },
-          },
-          md: {
-            '&:before': {
-              '--mb': 'colors.gray.300',
-              left: '5',
-              borderBottomRightRadius: 'sm',
-            },
-            '&:after': {
-              right: 90,
-              borderBottomRightRadius: 'lg',
-              transform: 'scaleX(-1)',
+            md: {
+              '&:before': {
+                '--mb': 'colors.gray.300',
+                left: '5',
+                borderBottomRightRadius: 'sm',
+              },
+              '&:after': {
+                right: 90,
+                borderBottomRightRadius: 'lg',
+                transform: 'scaleX(-1)',
+              },
             },
           },
         },
@@ -44,7 +46,7 @@ function run(value: Record<string, any> = {}) {
     createContext(),
   )
 
-  recipe.process({ styles: value })
+  recipe.process('text', { styles: value })
   return recipe.toCss()
 }
 

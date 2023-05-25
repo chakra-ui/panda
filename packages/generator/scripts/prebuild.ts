@@ -36,7 +36,13 @@ async function main() {
     files.forEach((file: any) => {
       const [input, output = input] = file
       const filepath = getEntrypoint(pkg, input)
-      const content = readFileSync(filepath, 'utf8').replace("'./tokens'", "'../tokens'")
+
+      let content = readFileSync(filepath, 'utf8').replace("'./tokens'", "'../tokens'")
+
+      if (filepath.includes('system-types.d.ts')) {
+        content = content.replace('(SystemProperties | GenericProperties)', 'SystemProperties')
+      }
+
       const outPath = join(__dirname, '..', 'src', 'artifacts', 'generated', basename(output) + '.json')
       writeFileSync(outPath, JSON.stringify({ content }, null, 2), 'utf8')
     })

@@ -64,8 +64,8 @@ type Placement =
   | 'BlockEnd'
 
 type Radius =
-  | `Top${'Right' | 'Left' | 'Start' | 'End'}`
-  | `Bottom${'Right' | 'Left' | 'Start' | 'End'}`
+  | `Top${'Right' | 'Left'}`
+  | `Bottom${'Right' | 'Left'}`
   | `Start${'Start' | 'End'}`
   | `End${'Start' | 'End'}`
 
@@ -93,6 +93,7 @@ type LayerStyleProperty =
   | 'backgroundSize'
   | `border${Placement}`
   | `border${Placement}Width`
+  | 'borderRadius'
   | `border${Radius}Radius`
   | `border${Placement}Color`
   | `border${Placement}Style`

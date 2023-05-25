@@ -56,8 +56,8 @@ const codeSnippets = [
   },
   {
     code: outdent`
-    import { styled } from '../styled-system/jsx'
-    import { cva } from '../styled-system/css'
+    import { styled } from './styled-system/jsx'
+    import { cva } from './styled-system/css'
     
     export const badge = cva({
       base: {

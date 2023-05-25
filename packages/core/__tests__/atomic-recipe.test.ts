@@ -4,8 +4,7 @@ import { Stylesheet } from '../src'
 import { createContext } from './fixture'
 
 function recipe(values: Dict) {
-  const ctx = createContext()
-  const sheet = new Stylesheet(ctx)
+  const sheet = new Stylesheet(createContext())
   sheet.processAtomicRecipe(values)
   return sheet.toCss({ optimize: true })
 }

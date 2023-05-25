@@ -37,7 +37,7 @@ type GenericProperties = {
 
 export type NestedCssProperties = Nested<CssProperties>
 
-export type SystemStyleObject = Nested<(SystemProperties | GenericProperties) & CssVarProperties>
+export type SystemStyleObject = Nested<SystemProperties & CssVarProperties>
 
 export type GlobalStyleObject = {
   [selector: string]: SystemStyleObject
