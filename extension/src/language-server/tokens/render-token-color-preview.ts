@@ -51,11 +51,6 @@ export const renderTokenColorPreview = async (ctx: PandaContext, token: Token) =
   return svgToMarkdownLink(svg)
 }
 
-type Styles = {
-  width: number
-  height: number
-}
-
 const createDiv = (style: Dict, children?: DivNode) => ({ type: 'div', key: null, props: { style, children } })
 type DivLike = {
   type: string

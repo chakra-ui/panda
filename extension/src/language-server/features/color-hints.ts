@@ -48,7 +48,7 @@ export function registerColorHints(extension: PandaExtension) {
     return colors
   })
 
-  connection.onColorPresentation(async (params) => {
+  connection.onColorPresentation(async (_params) => {
     await documentReady('🐼 onColorPresentation')
 
     // const document = documents.get(params.textDocument.uri)

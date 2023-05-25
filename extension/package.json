@@ -32,18 +32,12 @@
   },
   "devDependencies": {
     "@types/base-64": "^1.0.0",
-    "@types/estree": "^1.0.1",
-    "@types/glob": "^8.1.0",
-    "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
     "@types/utf8": "^3.0.1",
     "@types/vscode": "^1.78.0",
     "@typescript-eslint/eslint-plugin": "^5.59.1",
     "@typescript-eslint/parser": "^5.59.1",
-    "@vscode/test-electron": "^2.3.0",
     "eslint": "^8.39.0",
-    "glob": "^8.1.0",
-    "mocha": "^10.2.0",
     "typescript": "^5.0.4"
   },
   "dependencies": {
@@ -55,11 +49,8 @@
     "@pandacss/types": "workspace:^",
     "acorn": "^8.8.2",
     "acorn-jsx": "^5.3.2",
-    "acorn-loose": "^8.3.0",
-    "acorn-walk": "^8.2.0",
     "base-64": "^1.0.0",
     "color2k": "^2.0.2",
-    "lightningcss": "^1.20.0",
     "lil-fp": "1.4.5",
     "postcss": "^8.4.23",
     "prettier": "^2.8.8",
@@ -70,7 +61,6 @@
     "vscode": "^1.1.37",
     "vscode-languageclient": "^8.1.0",
     "vscode-languageserver": "^8.1.0",
-    "vscode-languageserver-textdocument": "^1.0.8",
-    "vscode-uri": "^3.0.7"
+    "vscode-languageserver-textdocument": "^1.0.8"
   }
 }

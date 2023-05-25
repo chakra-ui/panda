@@ -3,7 +3,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument'
 import { PandaExtensionSetup } from '../config'
 
 import { defineKeyframes, defineParts, definePattern, defineRecipe, defineStyles } from '@pandacss/dev'
-import { AnyPatternConfig, AnyRecipeConfig, Dict, ParserResult, RawCondition, ResultItem } from '@pandacss/types'
+import { AnyRecipeConfig, Dict, ParserResult, RawCondition, ResultItem } from '@pandacss/types'
 import { CallExpression, Identifier, JsxOpeningElement, JsxSelfClosingElement, Node, ts } from 'ts-morph'
 
 import {
@@ -53,7 +53,6 @@ type ClosestToken = ClosestTokenMatch | ClosestConditionMatch
 type ClosestInstanceMatch = { name: string }
 type ClosestStylesInstance = { kind: 'styles'; props: BoxNodeMap | BoxNodeObject }
 type ClosestRecipeConfigInstance = { kind: 'recipe-config'; recipe: AnyRecipeConfig }
-type ClosestPatternConfigInstance = { kind: 'pattern-config'; pattern: AnyPatternConfig }
 type ClosestInstance = ClosestInstanceMatch & (ClosestStylesInstance | ClosestRecipeConfigInstance)
 
 type OnTokenCallback = (args: ClosestToken) => void
@@ -158,7 +157,10 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
 
   const createResultTokensGetter = (onToken: OnTokenCallback) => {
     const ctx = setup.getContext()
-    if (!ctx) return () => {}
+    if (!ctx)
+      return () => {
+        //
+      }
 
     return (result: ResultItem) => {
       const boxNode = result.box
@@ -444,8 +446,9 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
 
 const getDescendantAtPos = (from: Node, pos: number) => {
   let node: Node | undefined = from
-  let stack: Node[] = [from]
+  const stack: Node[] = [from]
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const nextNode: Node | undefined = node.getChildAtPos(pos)
     if (nextNode == null) return { node, stack }
