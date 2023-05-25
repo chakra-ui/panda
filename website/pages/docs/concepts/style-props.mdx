@@ -57,7 +57,7 @@ To enable JSX support, add the following options to your `panda.config.js` file.
 
 ```js
 {
-    jsxFactory: 'panda',
+    jsxFactory: 'styled',
     jsxFramework: 'react'
 }
 ```
@@ -90,12 +90,12 @@ Style props are just CSS properties that you can pass to your components as prop
 `panda.<element>` syntax to create supercharged JSX elements that support style props.
 
 ```jsx
-import { panda } from '../panda/jsx'
+import { styled } from '../styled-system/jsx'
 
 const Button = ({ children }) => (
-  <panda.button bg="blue.500" color="white" py="2" px="4" rounded="md">
+  <styled.button bg="blue.500" color="white" py="2" px="4" rounded="md">
     {children}
-  </panda.button>
+  </styled.button>
 )
 ```
 
@@ -106,7 +106,7 @@ All the patterns provided by Panda are available as JSX components.
 > Learn more about the [patterns](/docs/patterns/00-intro.mdx) we provide.
 
 ```jsx
-import { Stack } from '../panda/jsx'
+import { Stack } from '../styled-system/jsx'
 
 const App = () => (
   <Stack gap="4">
@@ -122,7 +122,7 @@ const App = () => (
 Panda can statically extract conditional values at any level of the style props or object.
 
 ```jsx
-import { Stack } from '../panda/jsx'
+import { Stack } from '../styled-system/jsx'
 
 const DynamicBox = (
   <Box

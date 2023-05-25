@@ -5,59 +5,61 @@ description: The simplest and fastest way to use Panda is with the Panda CLI too
 
 # Panda CLI
 
-The simplest and fastest way to use Panda is with the Panda CLI tool.
+The quickest way to use Panda from scratch is by using the Panda CLI tool.
 
 ## Install Panda
 
 <Tabs items={['pnpm', 'npm', 'yarn']}>
   <Tab>
     ```bash
-    pnpm install -g @pandacss/dev
-    pnpx panda init
+    pnpm install @pandacss/dev
+    pnpm panda init
     ```
   </Tab>
   <Tab>
     ```bash
-    npm install -g @pandacss/dev
-    npx panda init
+    npm install @pandacss/dev
+    npm init
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn install -g @pandacss/dev
-    npx panda init
+    yarn install @pandacss/dev
+    npm init
     ```
   </Tab>
 </Tabs>
 
 ## Configure the content
 
-Add your panda config to your `panda.config.js` file, or wherver panda is configured in your project.
+Add the paths to all of your JavaScript or TypeScript code where you intend to use panda.
 
-```js {3}
+```js {5}
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   preflight: true,
-  presets: ['@pandacss/dev/presets'],
-  // define the content to scan 👇🏻
   include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
   exclude: [],
   outdir: 'styled-system'
 })
 ```
 
-## Configure the entry CSS with layers
+## Import the generated CSS
 
-Add this code to an `index.css` file imported in the root component of your project.
+For each Panda run, it emits the generated CSS at the `styled-system/styles.css` file path. Import this file at the root component of your project.
 
-```css
-@layer reset, base, tokens, recipes, utilities;
+```jsx {1}
+import './styled-system/styles.css'
+
+export function App() {
+  return <div>Page</div>
+}
 ```
 
-## Start the Panda extract process
+## Start the Panda build process
 
-Run the CLI tool to scan your component files for style properties and css call expressions.
+Run the CLI tool to scan your JavaScript and TypeScript files for style properties and call expressions.
 
 <Tabs items={['pnpm', 'npm', 'yarn']}>
   <Tab>
@@ -66,16 +68,16 @@ Run the CLI tool to scan your component files for style properties and css call 
     pnpm panda
 
     # Run it in watch mode
-    panda --watch
+    pnpm panda --watch
     ```
   </Tab>
   <Tab>
     ```bash
     # Run it once
-    npm panda
+    npx panda
 
     # Run it in watch mode
-    panda --watch
+    npx panda --watch
     ```
   </Tab>
   <Tab>
@@ -84,7 +86,7 @@ Run the CLI tool to scan your component files for style properties and css call 
     yarn panda
 
     # Run it in watch mode
-    panda --watch
+    yarn panda --watch
     ```
   </Tab>
 </Tabs>
@@ -101,13 +103,13 @@ export function App() {
 }
 ```
 
-## Panda DX
+## CLI Commands
 
 Panda comes with built-in commands to help you develop and debug your app.
 
 | Command                                            | Description                                                                                                                                                                                                                                                   |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`studio`](/docs/references/cli.mdx#panda-studio)   | Panda provide built-in documentation for tokens defined in your project. This will be useful for your team to communicate design decisions in your own way, and share information effectively. <br /> More on that [here](/docs/tokens/02-visualization.mdx). |
+| [`studio`](/docs/references/cli.mdx#panda-studio)   | Runs built-in documentation for tokens defined in your project. This will be useful for your team to communicate design decisions in your own way, and share information effectively. <br /> More on that [here](/docs/tokens/02-visualization.mdx). |
 | [`analyze`](/docs/references/cli.mdx#panda-analyze) | Analyze design token usage in your project, this will be automatically used by the `studio` command and available in the studio's [Token Analyzer page](/docs/tokens/02-visualization.mdx#token-analyzer)                                                     |
 | [`debug`](/docs/references/cli.mdx#panda-debug)     | Debug design token extraction & css generated from files                                                                                                                                                                                                      |
 
@@ -132,11 +134,11 @@ from your config file.
   </Tab>
   <Tab>
     ```bash
-    npm debug
+    npx debug
     # # You can also debug a specific file or folder
     # using the optional glob argument
-    npm debug src/components/Button.tsx
-    npm debug "./src/components/**"
+    npx debug src/components/Button.tsx
+    npx debug "./src/components/**"
     ```
   </Tab>
   <Tab>

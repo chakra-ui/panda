@@ -21,7 +21,8 @@ export function generateReactJsxPattern(ctx: Context) {
           .with(
             0,
             () => outdent`
-        return createElement(${factoryName}.${jsxElement}, { ref, ...props })
+        const styleProps = ${styleFnName}()
+        return createElement(${factoryName}.${jsxElement}, { ref, ...styleProps, ...props })
           `,
           )
           .otherwise(

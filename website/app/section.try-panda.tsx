@@ -1,164 +1,97 @@
+import Image from 'next/image'
 import { ComponentPropsWithoutRef } from 'react'
 import { css } from '../styled-system/css'
-import { Flex, HStack, panda } from '../styled-system/jsx'
-import Image from 'next/image'
-import { Content } from './content'
+import { Container, Grid, HStack, Stack, panda } from '../styled-system/jsx'
+import { CommandPrompt } from './command-prompt'
+
+const installSteps = [
+  {
+    title: 'Install Panda in your project',
+    command: 'npm install @pandacss/dev'
+  },
+  {
+    title: 'Run the initialize command',
+    command: 'npm run panda init -p'
+  },
+  {
+    title: 'Start using Panda in your project',
+    command: 'npm run dev'
+  }
+]
 
 export const SectionTryPanda = () => {
   return (
-    <Flex
-      bgColor="panda.bg.dark"
-      justifyContent="center"
-      pt={{ base: '40px', lg: '85px' }}
-      pb={{ base: '40px', lg: '70px' }}
-    >
-      <Content alignItems="center">
-        <Flex alignItems="center">
-          <panda.h3
-            textStyle="panda.h3"
-            pos="relative"
-            bgColor="panda.yellow"
+    <panda.section bg="bg.dark">
+      <Container pt="28" pb="24">
+        <HStack gap="12">
+          <panda.div
+            flex="1"
+            maxW="3xl"
+            bg="yellow.300"
             color="black"
-            py="25px"
-            px="30px"
-            borderRadius="19px"
+            position="relative"
+            borderRadius="xl"
           >
-            Love what you see? <br />
-            Try Panda in 3 quick steps
-            <DialogIndicator
+            <panda.h3 textStyle="panda.h2" fontWeight="bold" py="6" px="8">
+              Love what you see? <br />
+              Try Panda in 3 quick steps
+            </panda.h3>
+            <ChatTip
               className={css({
+                display: { base: 'none', md: 'block' },
                 pos: 'absolute',
                 top: '50%',
                 left: 'calc(100% - 2px)',
                 transform: 'translateY(-50%)',
-                color: 'panda.yellow'
+                color: 'yellow.300'
               })}
             />
-          </panda.h3>
+          </panda.div>
+
           <Image
             src="/panda-hello.svg"
             width={196}
             height={261}
             alt="Yums the panda waving"
             className={css({
-              ml: '20px',
-              w: '75px',
-              sm: { ml: '50px', w: '196px' }
+              display: { base: 'none', md: 'block' },
+              w: '56'
             })}
           />
-        </Flex>
-        <Flex
-          mt={{ base: '40px', lg: '80px' }}
-          justifyContent="space-between"
-          w="100%"
-          flexDirection={{ base: 'column', lg: 'row' }}
-          alignItems={{ base: 'center', lg: 'flex-start' }}
-          rowGap={8}
-        >
-          <Flex direction="column" w="240px" position="relative">
-            <panda.span
-              position={{ base: 'absolute', lg: 'static' }}
-              top="-25px"
-              right="calc(100% + 25px)"
-              fontWeight="bold"
-              fontSize={{ base: '4rem', md: '5.9375rem' }}
-              lineHeight="7.5rem"
-              letterSpacing="tight"
-              color="panda.yellow"
-            >
-              1
-            </panda.span>
-            <panda.span
-              fontWeight="semibold"
-              textStyle="panda.h4"
-              color="white"
-            >
-              Install Panda in your project
-            </panda.span>
-            <HStack
-              mt={{ base: '10px', lg: '35px' }}
-              fontWeight="500"
-              textStyle="xl"
-              letterSpacing="tight"
-            >
-              <panda.code color="panda.gray.100">$</panda.code>
-              <panda.code color="white" whiteSpace="nowrap">
-                npm install @pandacss/dev
-              </panda.code>
-            </HStack>
-          </Flex>
-          <Flex direction="column" w="240px" position="relative">
-            <panda.span
-              position={{ base: 'absolute', lg: 'static' }}
-              top="-25px"
-              right="calc(100% + 25px)"
-              fontWeight="bold"
-              fontSize={{ base: '4rem', md: '5.9375rem' }}
-              lineHeight="7.5rem"
-              letterSpacing="tight"
-              color="panda.yellow"
-            >
-              2
-            </panda.span>
-            <panda.span
-              fontWeight="semibold"
-              textStyle="panda.h4"
-              color="white"
-            >
-              Run the initialize command
-            </panda.span>
-            <HStack
-              mt={{ base: '10px', lg: '35px' }}
-              fontWeight="500"
-              textStyle="xl"
-              letterSpacing="tight"
-            >
-              <panda.code color="panda.gray.100">$</panda.code>
-              <panda.code color="white" whiteSpace="nowrap">
-                npm run panda init
-              </panda.code>
-            </HStack>
-          </Flex>
-          <Flex direction="column" w="240px" position="relative">
-            <panda.span
-              position={{ base: 'absolute', lg: 'static' }}
-              top="-25px"
-              right="calc(100% + 25px)"
-              fontWeight="bold"
-              fontSize={{ base: '4rem', md: '5.9375rem' }}
-              lineHeight="7.5rem"
-              letterSpacing="tight"
-              color="panda.yellow"
-            >
-              3
-            </panda.span>
-            <panda.span
-              fontWeight="semibold"
-              textStyle="panda.h4"
-              color="white"
-            >
-              Use the generated code to write styles
-            </panda.span>
-            <HStack
-              mt={{ base: '10px', lg: '35px' }}
-              fontWeight="500"
-              textStyle="xl"
-              letterSpacing="tight"
-            >
-              <panda.code color="panda.gray.100">$</panda.code>
-              <panda.code color="white" whiteSpace="nowrap">
-                npm run dev
-              </panda.code>
-              {/* TODO icon */}
-            </HStack>
-          </Flex>
-        </Flex>
-      </Content>
-    </Flex>
+        </HStack>
+
+        <Grid mt="20" gap="10" columns={{ base: 1, md: 3 }}>
+          {installSteps.map((step, i) => (
+            <Stack color="white" gap={{ base: '2', md: '8' }}>
+              <Stack gap="4" direction={{ base: 'row', md: 'column' }}>
+                <panda.span
+                  key={i}
+                  fontSize={{ base: '2rem', md: '6rem' }}
+                  fontWeight="bold"
+                  letterSpacing="tight"
+                  lineHeight="1"
+                  color="yellow.300"
+                >
+                  {i + 1}
+                </panda.span>
+                <panda.span
+                  fontWeight="semibold"
+                  textStyle="panda.h4"
+                  maxW={{ lg: '240px' }}
+                >
+                  {step.title}
+                </panda.span>
+              </Stack>
+              <CommandPrompt value={step.command} />
+            </Stack>
+          ))}
+        </Grid>
+      </Container>
+    </panda.section>
   )
 }
 
-const DialogIndicator = (props: ComponentPropsWithoutRef<'svg'>) => (
+const ChatTip = (props: ComponentPropsWithoutRef<'svg'>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="772.9 44.1775 49.2 95.92"

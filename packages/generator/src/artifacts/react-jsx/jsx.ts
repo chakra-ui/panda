@@ -11,7 +11,7 @@ export function generateReactJsxFactory(ctx: Context) {
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('isCssProperty', './is-valid-prop')}
     
-    function styled(Dynamic, configOrCva = {}) {
+    function styledFn(Dynamic, configOrCva = {}) {
       const cvaFn = configOrCva.__cva__ ? configOrCva : cva(configOrCva)
       
       const ${componentName} = forwardRef(function ${componentName}(props, ref) {
@@ -43,13 +43,13 @@ export function generateReactJsxFactory(ctx: Context) {
     function createJsxFactory() {
       const cache = new Map()
     
-      return new Proxy(styled, {
+      return new Proxy(styledFn, {
         apply(_, __, args) {
-          return styled(...args)
+          return styledFn(...args)
         },
         get(_, el) {
           if (!cache.has(el)) {
-            cache.set(el, styled(el))
+            cache.set(el, styledFn(el))
           }
           return cache.get(el)
         },

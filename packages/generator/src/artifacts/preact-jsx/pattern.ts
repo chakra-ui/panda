@@ -22,7 +22,8 @@ export function generatePreactJsxPattern(ctx: Context) {
           .with(
             0,
             () => outdent`
-            return h(${factoryName}.${jsxElement}, { ref, ...props })
+          const styleProps = ${styleFnName}()
+          return h(${factoryName}.${jsxElement}, { ref, ...styleProps, ...props })
           `,
           )
           .otherwise(

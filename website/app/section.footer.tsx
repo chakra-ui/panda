@@ -1,112 +1,68 @@
-import { css, cx } from '../styled-system/css'
-import { Flex, Wrap, panda } from '../styled-system/jsx'
 import Image from 'next/image'
 import Link from 'next/link'
+import { css } from '../styled-system/css'
+import { Container, Flex, Wrap, panda } from '../styled-system/jsx'
 import { button } from '../styled-system/recipes'
 import { ButtonIcon } from '../theme/icons'
-import { ThemeSwitchButton } from './theme-switch-button'
-import { Content } from './content'
 
 export const SectionFooter = () => {
   return (
-    <Flex
-      bgColor="panda.bg.dark"
-      px="50px"
-      py="45px"
-      justifyContent={{ base: 'center', md: 'unset' }}
-      textAlign={{ base: 'center', md: 'unset' }}
-    >
-      <Content>
-        <Flex flexDirection={{ base: 'column', md: 'row' }}>
-          <panda.h1
-            color="panda.yellow"
-            textStyle={{ base: '7xl', md: 'panda.h1' }}
+    <panda.footer bg="bg.dark">
+      <Container py="10">
+        <Flex
+          gap="6"
+          direction={{ base: 'column', md: 'row' }}
+          align={{ base: 'center', md: 'unset' }}
+        >
+          <panda.p
+            color="yellow.300"
+            textStyle={{ base: '8xl', md: 'panda.h1' }}
+            letterSpacing="tighter"
+            fontWeight="bold"
           >
             panda
-          </panda.h1>
+          </panda.p>
           <Image
             src="/panda-hello.svg"
             width={196}
             height={261}
             alt="Yums the panda waving"
-            className={css({
-              ml: { base: 'auto', md: '25px', lg: '50px!' },
-              mr: { base: 'auto', md: 'unset' }
-            })}
           />
         </Flex>
-        <Wrap
-          mt="50px"
-          textStyle="xl"
-          justifyContent={{ base: 'center', md: 'unset' }}
-        >
-          <Link
-            href="/docs"
-            className={cx(
-              button({ color: 'ghost.white' }),
-              css({ px: '2', py: 0, lg: { px: 6 } })
-            )}
-          >
+
+        <Wrap mt="12" justifyContent={{ base: 'center', md: 'unset' }}>
+          <Link href="/docs" className={button({ color: 'ghost.white' })}>
             Docs
           </Link>
           {/* TODO fix links */}
-          <Link
-            href="/docs"
-            className={cx(
-              button({ color: 'ghost.white' }),
-              css({ px: '2', py: 0, lg: { px: 6 } })
-            )}
-          >
+          <Link href="/docs" className={button({ color: 'ghost.white' })}>
             Twitter{' '}
             <ButtonIcon
               icon="ExternalLink"
-              className={css({ color: 'panda.yellow' })}
+              className={css({ color: 'yellow.400' })}
             />
           </Link>
           {/* TODO fix links */}
-          <Link
-            href="/docs"
-            className={cx(
-              button({ color: 'ghost.white' }),
-              css({ px: '2', py: 0, lg: { px: 6 } })
-            )}
-          >
+          <Link href="/docs" className={button({ color: 'ghost.white' })}>
             Discord{' '}
             <ButtonIcon
               icon="ExternalLink"
-              className={css({ color: 'panda.yellow' })}
+              className={css({ color: 'yellow.400' })}
             />
           </Link>
           <Link
             href="https://github.com/chakra-ui/panda"
             target="_blank"
-            className={cx(
-              button({ color: 'ghost.white' }),
-              css({ px: '2', py: 0, lg: { px: 6 } })
-            )}
+            className={button({ color: 'ghost.white' })}
           >
             Github{' '}
             <ButtonIcon
               icon="ExternalLink"
-              className={css({ color: 'panda.yellow' })}
+              className={css({ color: 'yellow.400' })}
             />
           </Link>
-          <ThemeSwitchButton
-            color={{ base: 'white', _hover: 'black' }}
-            css={{
-              ["& [data-part='right-icon']"]: {
-                color: 'panda.yellow'
-              },
-              ["&:hover [data-part='right-icon']"]: {
-                color: 'black'
-              }
-            }}
-            p="2"
-            py="0"
-            lg={{ px: 6 }}
-          />
         </Wrap>
-      </Content>
-    </Flex>
+      </Container>
+    </panda.footer>
   )
 }

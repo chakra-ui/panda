@@ -1,5 +1,6 @@
 {
   "cli": "Using CLI",
   "postcss": "Using PostCSS",
-  "astro": "Using Astro"
+  "astro": "Using Astro",
+  "nextjs": "Using Next.js"
 }

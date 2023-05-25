@@ -1,4 +1,4 @@
-import { FeaturesList } from './features-list'
+import { FeatureMarquee } from './feature-marquee'
 import { SectionCommunity } from './section.community'
 import { SectionCssInJS } from './section.css-in-js'
 import { SectionDesignTokens } from './section.design-tokens'
@@ -15,7 +15,7 @@ export default function Page() {
   return (
     <>
       <SectionHero />
-      <FeaturesList />
+      <FeatureMarquee />
       <SectionCssInJS />
       <SectionModernCss />
       <SectionDesignTokens />

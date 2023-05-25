@@ -25,7 +25,7 @@ The `stack` function accepts the following properties:
 - `justify`: An alias for the css `justify-content` property.
 
 ```tsx
-import { stack } from '../panda/patterns'
+import { stack } from '../styled-system/patterns'
 
 function App() {
   return (
@@ -44,7 +44,7 @@ The HStack pattern is a wrapper around the `stack` pattern that sets the `direct
 centers the elements vertically.
 
 ```tsx
-import { hstack } from '../panda/patterns'
+import { hstack } from '../styled-system/patterns'
 
 function App() {
   return (
@@ -63,7 +63,7 @@ The VStack pattern is a wrapper around the `stack` pattern that sets the `direct
 the elements horizontally.
 
 ```tsx
-import { vstack } from '../panda/patterns'
+import { vstack } from '../styled-system/patterns'
 
 function App() {
   return (
@@ -89,7 +89,7 @@ The `wrap` function accepts the following properties:
 - `justify`: An alias for the css `justify-content` property.
 
 ```tsx
-import { wrap } from '../panda/patterns'
+import { wrap } from '../styled-system/patterns'
 
 function App() {
   return (
@@ -111,7 +111,7 @@ The `center` function accepts the following properties:
 - `inline`: Whether to use `inline-flex` or `flex` for the container.
 
 ```tsx
-import { center } from '../panda/patterns'
+import { center } from '../styled-system/patterns'
 
 function App() {
   return (
@@ -158,7 +158,7 @@ The `grid` function accepts the following properties:
 - `minChildWidth`: The minimum width of the child elements before wrapping.
 
 ```tsx
-import { grid } from '../panda/patterns'
+import { grid } from '../styled-system/patterns'
 
 function App() {
   return (
@@ -201,7 +201,7 @@ Every pattern can be used as a JSX element and imported from the `/jsx` entrypoi
 function name, but in PascalCase.
 
 ```tsx
-import { VStack, Center } from '../panda/jsx'
+import { VStack, Center } from '../styled-system/jsx'
 
 function App() {
   return (

@@ -22,7 +22,8 @@ export function generateSolidJsxPattern(ctx: Context) {
         .with(
           0,
           () => outdent`
-          return createComponent(${factoryName}.${jsxElement}, props)
+          const styleProps = ${styleFnName}()
+          return createComponent(${factoryName}.${jsxElement}, mergeProps(styleProps, props))
         `,
         )
         .otherwise(

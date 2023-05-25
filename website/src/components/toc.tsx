@@ -51,22 +51,20 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
     }
   }, [activeSlug])
 
-  const linkClassName = cx(
-    css({
-      textStyle: 'xs',
-      fontWeight: 'medium',
-      color: 'gray.500',
-      _hover: { color: 'gray.900' },
-      _dark: {
-        color: 'gray.400',
-        _hover: { color: 'gray.100' }
-      },
-      _moreContrast: {
-        color: 'gray.800',
-        _dark: { color: 'gray.50' }
-      }
-    })
-  )
+  const linkClassName = css({
+    textStyle: 'xs',
+    fontWeight: 'medium',
+    color: 'gray.500',
+    _hover: { color: 'gray.900' },
+    _dark: {
+      color: 'gray.400',
+      _hover: { color: 'gray.100' }
+    },
+    _moreContrast: {
+      color: 'gray.800',
+      _dark: { color: 'gray.50' }
+    }
+  })
 
   return (
     <div
@@ -74,17 +72,16 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
       className={cx(
         'nextra-scrollbar',
         css({
+          ms: '4',
           position: 'sticky',
-          top: 16,
+          top: '16',
           overflowY: 'auto',
-          paddingRight: 4,
-          paddingTop: 6,
+          pe: 4,
+          pt: 6,
           textStyle: 'sm',
           hyphens: 'auto',
           maxHeight:
-            'calc(100vh - var(--nextra-navbar-height) - env(safe-area-inset-bottom))',
-          _ltr: { marginRight: 4 },
-          _rtl: { marginLeft: 4 }
+            'calc(100vh - var(--nextra-navbar-height) - env(safe-area-inset-bottom))'
         })
       )}
     >
@@ -93,7 +90,7 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
           <p
             className={css({
               mb: 4,
-              fontWeight: 'semibold',
+              fontWeight: 'medium',
               letterSpacing: 'tight'
             })}
           >
@@ -109,11 +106,11 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
                   href={`#${id}`}
                   className={cx(
                     {
-                      2: css({ fontWeight: 'semibold' }),
-                      3: css({ _ltr: { pl: 4 }, _rtl: { pr: 4 } }),
-                      4: css({ _ltr: { pl: 8 }, _rtl: { pr: 8 } }),
-                      5: css({ _ltr: { pl: 12 }, _rtl: { pr: 12 } }),
-                      6: css({ _ltr: { pl: 16 }, _rtl: { pr: 16 } })
+                      2: css({ fontWeight: 'medium' }),
+                      3: css({ ps: '4' }),
+                      4: css({ ps: '8' }),
+                      5: css({ ps: '12' }),
+                      6: css({ ps: '16' })
                     }[depth as Exclude<typeof depth, 1>],
                     css({ display: 'inline-block' }),
                     activeAnchor[id]?.isActive
@@ -159,7 +156,8 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
             hasHeadings &&
               css({
                 mt: 8,
-                borderTop: '1px solid',
+                borderTopWidth: '1px',
+                borderColor: 'neutral.300',
                 bg: 'white',
                 pt: 8,
                 shadow: '0 -12px 16px white',

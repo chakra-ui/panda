@@ -29,6 +29,7 @@ export const spacing: UtilityConfig = {
   paddingBlock: {
     className: 'py',
     values: 'spacing',
+    shorthand: ['py', 'paddingY'],
   },
   paddingBlockEnd: {
     className: 'pb',
@@ -41,38 +42,17 @@ export const spacing: UtilityConfig = {
   paddingInline: {
     className: 'px',
     values: 'spacing',
+    shorthand: ['paddingX', 'px'],
   },
   paddingInlineEnd: {
     className: 'pe',
-    shorthand: 'pe',
+    shorthand: ['pe', 'paddingEnd'],
     values: 'spacing',
   },
   paddingInlineStart: {
     className: 'ps',
-    shorthand: 'ps',
+    shorthand: ['ps', 'paddingStart'],
     values: 'spacing',
-  },
-  paddingX: {
-    className: 'px',
-    shorthand: 'px',
-    property: 'paddingInline',
-    values: 'spacing',
-    transform(value) {
-      return {
-        paddingInline: value,
-      }
-    },
-  },
-  paddingY: {
-    className: 'py',
-    shorthand: 'py',
-    values: 'spacing',
-    property: 'paddingBlock',
-    transform(value) {
-      return {
-        paddingBlock: value,
-      }
-    },
   },
 
   marginLeft: {
@@ -100,31 +80,10 @@ export const spacing: UtilityConfig = {
     shorthand: 'm',
     values: 'spacing',
   },
-  marginX: {
-    className: 'mx',
-    shorthand: 'mx',
-    values: 'spacing',
-    property: 'marginInline',
-    transform(value) {
-      return {
-        marginInline: value,
-      }
-    },
-  },
-  marginY: {
-    className: 'my',
-    shorthand: 'my',
-    values: 'spacing',
-    property: 'marginBlock',
-    transform(value) {
-      return {
-        marginBlock: value,
-      }
-    },
-  },
   marginBlock: {
     className: 'my',
     values: 'spacing',
+    shorthand: ['my', 'marginY'],
   },
   marginBlockEnd: {
     className: 'mb',
@@ -137,38 +96,16 @@ export const spacing: UtilityConfig = {
   marginInline: {
     className: 'mx',
     values: 'spacing',
+    shorthand: ['mx', 'marginX'],
   },
   marginInlineEnd: {
     className: 'me',
-    shorthand: 'me',
+    shorthand: ['me', 'marginEnd'],
     values: 'spacing',
   },
   marginInlineStart: {
     className: 'ms',
-    shorthand: 'ms',
+    shorthand: ['ms', 'marginStart'],
     values: 'spacing',
-  },
-
-  spaceX: {
-    className: 'space-x',
-    values: 'spacing',
-    transform(value) {
-      return {
-        '& > :not([hidden]) ~ :not([hidden])': {
-          marginInlineStart: value,
-        },
-      }
-    },
-  },
-  spaceY: {
-    className: 'space-y',
-    values: 'spacing',
-    transform(value) {
-      return {
-        '& > :not([hidden]) ~ :not([hidden])': {
-          marginBlockStart: value,
-        },
-      }
-    },
   },
 }

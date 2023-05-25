@@ -460,7 +460,20 @@ const MagnifyingGlass = (props: ComponentPropsWithoutRef<'svg'>) => (
   </svg>
 )
 
+const Close = (props: ComponentPropsWithoutRef<'svg'>) => (
+  <svg viewBox="0 0 10 10" aria-hidden="true" {...props}>
+    <path
+      d="M0 0L10 10M10 0L0 10"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    ></path>
+  </svg>
+)
+
 const icons = {
+  Close,
   Logo,
   LogoLetter,
   LogoWithText,

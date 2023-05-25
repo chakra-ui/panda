@@ -38,6 +38,7 @@ const defaults = {
       light: '[data-theme=light] &, .light &, &.light, &[data-theme=light]',
     },
     outdir: '.panda',
+    jsxFactory: 'panda',
   },
   path: '',
 } satisfies LoadConfigResult

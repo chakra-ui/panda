@@ -105,8 +105,6 @@ const Body = ({
         className={cx(
           classes.main,
           css({
-            color: 'slate.700',
-            _dark: { color: 'slate.200' },
             display: 'flex',
             minH: 'calc(100vh - var(--nextra-navbar-height))',
             pl: 'max(env(safe-area-inset-left), 1.5rem)',
@@ -124,8 +122,6 @@ const Body = ({
       className={cx(
         classes.main,
         css({
-          color: 'slate.700',
-          _dark: { color: 'slate.200' },
           display: 'flex',
           minH: 'calc(100vh - var(--nextra-navbar-height))',
           minW: 0,
@@ -140,11 +136,10 @@ const Body = ({
       <main
         className={css({
           w: 'full',
-          minW: 0,
+          minW: '0',
           maxW: '6xl',
-          px: 6,
-          pt: 4,
-          md: { px: 12 }
+          px: { base: '6', md: '12' },
+          pt: '10'
         })}
       >
         {breadcrumb}

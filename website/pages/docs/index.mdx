@@ -5,17 +5,7 @@ description: The universal design system solution for the web
 
 # Get started with Panda
 
-Panda provides works by scanning all of your HTML files, JavaScript components, and any other templates for class names,
-generating the corresponding styles and then writing them to a static CSS file.
-
----
-
-<Cards>
-  <Card arrow title="Tokens" href="/docs/tokens/01-introduction" />
-  <Card arrow title="Recipes" href="/docs/recipe/config-recipe" />
-  <Card arrow title="Patterns" href="/docs/recipe/config-recipe" />
-  <Card arrow title="Utilities" href="/docs/patterns/00-intro" />
-</Cards>
+Panda combines the developer experience of CSS-in-JS and the performance of utility css. It scans your JavaScript and TypeScript files for style props and function calls, generating the corresponding styles and then writing them to a static CSS file.
 
 ## Installation
 
@@ -28,39 +18,39 @@ generating the corresponding styles and then writing them to a static CSS file.
 - [Using Astro](/docs/getting-started/astro.mdx):
   [Astro](https://astro.build/) is an all-in-one web framework for building fast, content-focused websites.
 
-## Concepts
+- [Using Next.js](/docs/getting-started/nextjs.mdx):
+  [Next.js](https://nextjs.org/) is a React framework for building full-stack Web applications.
 
-| Concept                                                     | Description                                                                                                                                                                                 |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Cascade layers](/docs/concepts/cascade-layers.mdx)         | CSS cascade layers refer to the order in which CSS rules are applied to an HTML element.                                                                                                    |
-| [Atomic styles](/docs/concepts/atomic-styles.mdx)           | The `css` function is used to write atomic styles. It accepts a style object of both native and user-defined properties, and returns a string.                                              |
-| [Style props](/docs/concepts/style-props.mdx)               | Style props lets you quickly build UI components in JSX by passing css properties as "props" to your components.                                                                            |
-| [Conditional styles](/docs/concepts/conditional-styles.mdx) | Conditional styles are styles that change based on media query, selector or at-rule. They can be changed by providing nested objects or modifying the property to use a conditional object. |
-| [Nested styles](/docs/concepts/nested-styles.mdx)           | Panda provides different ways of nesting style declarations.                                                                                                                                |
-| [Dynamic styling](/docs/concepts/dynamic-styling.mdx)       | While panda is mainly focused on the static styling experience, we have some mechanics to support dynamic styling.                                                                          |
-| [Important styles](/docs/concepts/important.mdx)            | Applying important styles works just like CSS                                                                                                                                               |
-| [Virtual color](/docs/virtual-color.mdx)                    | Panda allows you to create a virtual color or color placeholder in your project. The `colorPalette` property is how you create virtual color.                                               |
-| [Presets](/docs/creating-a-preset.mdx)                      | Creating your own reusable preset for utilities and theme                                                                                                                                   |
-| [Static](/docs/static.mdx)                                  | Panda can be used to generate a static set of utility classes for your project. This is useful if you want to use Panda in an HTML project or you want absolute zero runtime.               |
+## Next Steps
 
-## Building UI components
+Get familiar with the core features and concepts in Panda.
 
-| Feature                                          | Description                                                                                                                                                                                                                                                                                         |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Utilities](/docs/utilities/00-intro.mdx)        | One of the key features of Panda is its built-in utilities or style properties, which provide a collection of pre-defined custom css properties and shorthands to allow you create consistent and reusable UI components with speed.                                                                |
-| [Tokens](/docs/tokens/01-introduction.mdx)       | Design tokens are the platform-agnostic way to manage design decisions in your application or website, in Panda they are largely influenced by the [W3C Token Format](https://tr.designtokens.org/format/).                                                                                         |
-| [Config recipes](/docs/recipe/config-recipe.mdx) | Recipes defined in the panda config is useful for distributing component recipes across projects in your company. Config recipes are extracted and generated just in time, this means regardless of the recipes in the config, only the recipes and variants you use will exist in the compile CSS. |
-| [Atomic recipes](/docs/recipe/atomic-recipe.mdx) | Panda provides a way to write CSS-in-JS with better performance, developer experience, and composability. One of its key features is the ability to define recipes, which are sets of styles that can be applied to a component based on certain conditions.                                        |
-| [Patterns](/docs/patterns/00-intro.mdx)          | Patterns are layout primitives can be used to create robust and responsive layouts with ease. Panda comes with predefined patterns like stack, hstack, vstack, wrap, etc. These patterns can be used as functions or JSX elements.                                                                  |
-
-## References
-
-- [config](/docs/references/panda-config.mdx): Customize how Panda works via the `panda.config.ts` file in your project.
-
-- [CLI](/docs/references/cli.mdx): You can use the Command-Line Interface (CLI) provided by Astro to develop, build, and preview your project from a
-  terminal window.
-
-- [Default preset](/docs/references/default-style-props.mdx): List of the available style props when using the default preset (`@pandacss/dev/presets`)
+<Cards>
+  <Card
+    arrow
+    title="Tokens"
+    description="Learn how setup and customize design tokens to customize your colors, typography, and more"
+    href="/docs/tokens/01-introduction"
+  />
+  <Card
+    arrow
+    title="Recipes"
+    description="Create composable style variants that are typed and generates the atomic or layer recipe"
+    href="/docs/recipe/config-recipe"
+  />
+  <Card
+    arrow
+    title="Patterns"
+    description="Use the built-in layout patterns like stack, flex, grid to speed up your development"
+    href="/docs/patterns/00-intro"
+  />
+  <Card
+    arrow
+    title="Utilities"
+    description="Learn how to create your own custom css properties and speed up your development"
+    href="/docs/utilities/00-intro"
+  />
+</Cards>
 
 ## Playground
 
@@ -68,4 +58,4 @@ You can use the [online playground](https://panda-playground.vercel.app/) to get
 
 - See the live results of your JSX code
 - Inspect what panda can extract using static analysis from your code
-- Look at the generated `.css` files
+- Preview at the statically generated `.css` files

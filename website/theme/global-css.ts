@@ -2,20 +2,15 @@ import { defineGlobalStyles } from '@pandacss/dev'
 
 export const globalCss = defineGlobalStyles({
   // nextra specific styles
+  '*, *::before, *::after': {
+    borderColor: { base: 'neutral.200', _dark: 'neutral.800' }
+  },
   html: {
-    WebkitFontSmoothing: 'antialiased',
-    MozOsxFontSmoothing: 'grayscale',
-    textStyle: 'md',
-    fontFeatureSettings: 'normal',
-    WebkitTapHighlightColor: 'transparent'
+    fontFamily: 'sans'
   },
   body: {
-    w: '100%',
     bg: 'white',
-    _dark: {
-      bg: 'dark',
-      color: 'gray.100'
-    }
+    _dark: { bg: 'dark', color: 'gray.100' }
   },
   "a, summary, button, input, [tabindex]:not([tabindex='-1'])": {
     outline: 'none',
@@ -24,10 +19,8 @@ export const globalCss = defineGlobalStyles({
       outlineColor: 'primary.200',
       outlineOffset: '1px',
       outlineStyle: 'solid',
-      // nx-ring-offset-primary-300
       _dark: {
         outlineColor: 'primary.800'
-        // dark:nx-ring-offset-primary-700
       }
     }
   },
@@ -191,8 +184,7 @@ export const globalCss = defineGlobalStyles({
   '.subheading-anchor': {
     opacity: 0,
     transition: 'opacity',
-    _ltr: { ml: 1 },
-    _rtl: { mr: 1 },
+    ms: '1',
     'span:target + &, :hover > &, &:focus': {
       opacity: 1
     },

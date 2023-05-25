@@ -1,43 +1,48 @@
 import { ComponentPropsWithoutRef } from 'react'
-import { Flex, Grid, panda } from '../../styled-system/jsx'
-import { button } from '../../styled-system/recipes'
+import {
+  Container,
+  Grid,
+  HStack,
+  Square,
+  Stack,
+  panda
+} from '../../styled-system/jsx'
 import { Icon, IconType } from '../../theme/icons'
 
-import Articles from './articles.json'
+import articlesJson from './articles.json'
+import { css } from '../../styled-system/css'
+import Link from 'next/link'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type Content = (Video | Article) & {
-  featured?: boolean
-}
+// type Video = {
+//   title: string
+//   url: string
+//   duration: string
+//   thumbnail: string
+//   featured?: boolean
+// }
 
-type Video = {
-  title: string
-  url: string
-  duration: string
-  thumbnail: string
-}
+// type ArticleCategory =
+//   | 'getting-started'
+//   | 'design-tokens'
+//   | 'recipes-and-variants'
 
-type ArticleCategory =
-  | 'getting-started'
-  | 'design-tokens'
-  | 'recipes-and-variants'
-
-type Article = {
-  title: string
-  category: ArticleCategory
-  slug: string
-}
+// type Article = {
+//   title: string
+//   category: ArticleCategory
+//   slug: string
+//   featured?: boolean
+// }
 
 const content = {
   'Design Tokens': {
     icon: 'DesignTokenBox',
-    articles: Articles.filter(
+    articles: articlesJson.filter(
       item => !item.featured && item.category === 'design-tokens'
     )
   },
   'Recipes and Variants': {
     icon: 'Recipe',
-    articles: Articles.filter(
+    articles: articlesJson.filter(
       item => !item.featured && item.category === 'recipes-and-variants'
     )
   }
@@ -45,62 +50,55 @@ const content = {
 
 export const SectionArticleList = () => {
   return (
-    <Flex
-      direction="column"
-      backgroundColor={{ base: 'white', _dark: 'panda.gray.400' }}
-      px="48px"
-      pt="350px"
-      pb={{ base: '80px', lg: '180px' }}
-      gap={{ base: '50px', md: '130px' }}
-    >
-      {Object.entries(content).map(([title, { icon, articles }]) => (
-        <Flex direction="column" key={title}>
-          <panda.h3 textStyle="panda.h3" color="panda.text.headline">
-            {title}
-          </panda.h3>
-          <Grid
-            columns={{ base: 1, md: 2 }}
-            mt={{ base: 4, md: '12' }}
-            gap={{ base: 4, md: '8!' }}
-            justifyContent="space-between"
-          >
-            {articles.map(article => (
-              <ArticleItem
-                key={article.slug}
-                icon={icon as any}
-                title={article.title}
-              />
-            ))}
-          </Grid>
-        </Flex>
-      ))}
-    </Flex>
+    <panda.section>
+      <Container py="32">
+        <Stack gap="32">
+          {Object.entries(content).map(([title, { icon, articles }]) => (
+            <Stack gap={{ base: '8', md: '12' }} key={title}>
+              <panda.h3
+                textStyle="panda.h3"
+                color="text.headline"
+                fontWeight="bold"
+              >
+                {title}
+              </panda.h3>
+              <Grid columns={{ base: 1, md: 2 }} gap={{ base: '4', md: '8' }}>
+                {articles.map(article => (
+                  <ArticleItem
+                    key={article.slug}
+                    icon={icon as any}
+                    title={article.title}
+                  />
+                ))}
+              </Grid>
+            </Stack>
+          ))}
+        </Stack>
+      </Container>
+    </panda.section>
   )
 }
 
 const ArticleItem = ({
   title,
-  ...iconProps
+  ...rest
 }: { icon: IconType; title: string } & ComponentPropsWithoutRef<
   typeof Icon
 >) => (
-  <Flex>
-    <panda.div
-      w="64px"
-      h="64px"
-      p="4"
-      className={button()}
-      backgroundColor="panda.yellow"
-    >
-      <Icon {...iconProps} />
-    </panda.div>
-    <panda.span
-      ml="30px"
-      textStyle="xl"
-      letterSpacing="tight"
-      fontWeight="bold"
-    >
-      {title}
-    </panda.span>
-  </Flex>
+  <Link href="/">
+    <HStack gap="6">
+      <Square
+        size="16"
+        layerStyle="offShadow"
+        rounded="lg"
+        bg="yellow.300"
+        fontSize="lg"
+      >
+        <Icon className={css({ width: '1.4em' })} {...rest} />
+      </Square>
+      <panda.span textStyle="xl" letterSpacing="tight" fontWeight="semibold">
+        {title}
+      </panda.span>
+    </HStack>
+  </Link>
 )

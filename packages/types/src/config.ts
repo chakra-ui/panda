@@ -97,7 +97,7 @@ export type Config = {
    * Whether to include css reset styles in the generated css.
    * @default true
    */
-  preflight?: boolean
+  preflight?: boolean | { scope: string }
   /**
    * Whether to optimize the generated css.
    * @default true
@@ -181,7 +181,7 @@ export type Config = {
   jsxFramework?: 'react' | 'solid' | 'preact' | 'vue'
   /**
    * The factory name of the element
-   * @default 'panda'
+   * @default 'styled'
    *
    * @example
    * ```jsx

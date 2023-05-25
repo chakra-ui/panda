@@ -35,8 +35,7 @@ export const tabsRecipe = defineRecipe({
       borderColor: 'transparent',
       color: 'gray.600',
       _hover: {
-        borderColor: 'gray.200',
-        color: 'black'
+        borderColor: 'gray.200'
       },
       _dark: {
         borderColor: 'neutral.800',
@@ -53,7 +52,7 @@ export const tabsRecipe = defineRecipe({
     indicator: {
       height: '2px',
       bottom: '-1px',
-      background: { base: 'neutral.500', _dark: 'gray.200' }
+      background: 'primary.600'
     },
     content: {
       rounded: 'md',

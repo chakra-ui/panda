@@ -8,42 +8,38 @@ export const codeTabsRecipe = defineRecipe({
   jsx: ['CodeTabs'],
   base: parts({
     root: {
-      rounded: '19px',
+      rounded: 'xl',
       overflowX: 'auto',
       overflowY: 'hidden',
       overscrollBehaviorX: 'contain',
-      // @ts-expect-error
-      '& > .code > style + div': {
-        borderTopRadius: '19px!',
-        "& [data-part='tablist'] + div": {
-          display: 'none'
-        }
+      '& > div > div': {
+        borderTopRadius: 'xl!'
       }
     },
     tablist: {
       display: 'flex',
       w: '100%',
       gap: 5,
-      px: 5,
-      py: 7,
-      rounded: '19px'
+      px: '4',
+      py: '4',
+      rounded: 'xl'
     },
     trigger: {
       w: '100%',
       rounded: '10px',
-      py: 3,
+      py: '3',
       transitionProperty: 'colors',
       userSelect: 'none',
       color: 'white',
-      backgroundColor: 'rgba(246, 228, 88, 0.09)', // panda.yellow
+      bg: 'rgba(246, 228, 88, 0.09)',
       textStyle: 'md',
       _hover: {
         color: 'black',
-        backgroundColor: 'panda.yellow'
+        bg: 'yellow.400'
       },
       _selected: {
         color: 'black',
-        backgroundColor: 'panda.yellow'
+        bg: 'yellow.400'
       }
     },
     // @ts-expect-error
@@ -51,6 +47,12 @@ export const codeTabsRecipe = defineRecipe({
       roundedBottom: '19px',
       '& > pre': {
         roundedBottom: '19px'
+      },
+      '& code': {
+        fontFamily: 'mono',
+        fontSize: 'md',
+        lineHeight: '1.7',
+        fontWeight: '500'
       }
     }
   })

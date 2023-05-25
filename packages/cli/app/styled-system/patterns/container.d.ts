@@ -4,7 +4,7 @@ import type { Properties } from '../types/csstype'
 import type { Tokens } from '../tokens'
 
 export type ContainerProperties = {
-   size?: ConditionalValue<Tokens["breakpoints"]>
+   
 }
 
 

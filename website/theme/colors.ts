@@ -11,23 +11,6 @@ export const colors = defineTokens.colors({
   dark: { value: '#111' },
   black: { value: '#000' },
   white: { value: '#fff' },
-  panda: {
-    yellow: { value: '#F6E458' },
-    yellowDark: { value: '#111111' },
-    // #91818a taupe gray
-    // 798478 battleship gray
-    // 5D737E payne's gray
-    // #75704E another yellow dark
-    gray: {
-      50: { value: 'rgba(255, 255, 255, 87%)' },
-      100: { value: 'rgba(255, 255, 255, 0.3)' },
-      200: { value: '#B1B1B1' },
-      300: { value: 'rgba(0, 0, 0, 67%)' },
-      400: { value: '#4B4B4B' },
-      600: { value: '#282828' },
-      900: { value: '#010201' }
-    }
-  },
   primary: {
     50: makePrimaryColor(97),
     100: makePrimaryColor(94),

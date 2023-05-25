@@ -4,6 +4,97 @@ import { describe, expect, test } from 'vitest'
 import { Utility } from '../src/utility'
 
 describe('Utility', () => {
+  test('should resolve hideFrom and hideBelow', () => {
+    const utility = new Utility({
+      tokens: new TokenDictionary({
+        breakpoints: { sm: '640px', md: '768px', lg: '1024px', xl: '1280px' },
+      }),
+      config: {
+        hideFrom: {
+          className: 'hide',
+          values: 'breakpoints',
+          transform(value, { raw }) {
+            return {
+              [`@breakpoint ${raw}`]: {
+                display: 'none',
+              },
+            }
+          },
+        },
+
+        hideBelow: {
+          className: 'show',
+          values: 'breakpoints',
+          transform(value, { raw }) {
+            return {
+              [`@breakpoint ${raw}Down`]: {
+                display: 'none',
+              },
+            }
+          },
+        },
+      },
+    })
+
+    expect(utility.classNames).toMatchInlineSnapshot(`
+      Map {
+        "(hideFrom = sm)" => "hide_sm",
+        "(hideFrom = md)" => "hide_md",
+        "(hideFrom = lg)" => "hide_lg",
+        "(hideFrom = xl)" => "hide_xl",
+        "(hideBelow = sm)" => "show_sm",
+        "(hideBelow = md)" => "show_md",
+        "(hideBelow = lg)" => "show_lg",
+        "(hideBelow = xl)" => "show_xl",
+      }
+    `)
+
+    expect(utility.styles).toMatchInlineSnapshot(`
+      Map {
+        "(hideFrom = sm)" => {
+          "@breakpoint sm": {
+            "display": "none",
+          },
+        },
+        "(hideFrom = md)" => {
+          "@breakpoint md": {
+            "display": "none",
+          },
+        },
+        "(hideFrom = lg)" => {
+          "@breakpoint lg": {
+            "display": "none",
+          },
+        },
+        "(hideFrom = xl)" => {
+          "@breakpoint xl": {
+            "display": "none",
+          },
+        },
+        "(hideBelow = sm)" => {
+          "@breakpoint smDown": {
+            "display": "none",
+          },
+        },
+        "(hideBelow = md)" => {
+          "@breakpoint mdDown": {
+            "display": "none",
+          },
+        },
+        "(hideBelow = lg)" => {
+          "@breakpoint lgDown": {
+            "display": "none",
+          },
+        },
+        "(hideBelow = xl)" => {
+          "@breakpoint xlDown": {
+            "display": "none",
+          },
+        },
+      }
+    `)
+  })
+
   test('should prime cache for faster lookup', () => {
     const utility = new Utility({
       tokens: new TokenDictionary({ tokens, semanticTokens }),
@@ -28,7 +119,7 @@ describe('Utility', () => {
           values: { sm: '20px', md: '40px' },
         },
         bt: {
-          transform(value, token) {
+          transform(value, { token }) {
             return {
               borderTopWidth: value,
               borderTopStyle: 'solid',

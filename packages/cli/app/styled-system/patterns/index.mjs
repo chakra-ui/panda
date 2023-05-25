@@ -4,6 +4,7 @@ export * from './stack.mjs';
 export * from './vstack.mjs';
 export * from './hstack.mjs';
 export * from './spacer.mjs';
+export * from './square.mjs';
 export * from './circle.mjs';
 export * from './center.mjs';
 export * from './absolute-center.mjs';

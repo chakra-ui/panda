@@ -6,6 +6,7 @@ export default defineConfig({
   include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
   exclude: [],
   outdir: 'styled-system',
+  jsxFactory: 'panda',
   globalCss: {
     html: {
       lineHeight: 1.5,

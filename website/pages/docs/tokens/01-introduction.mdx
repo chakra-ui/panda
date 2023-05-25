@@ -51,8 +51,8 @@ const theme = {
 A design token consist of the following properties:
 
 - `value`: The value of the token. This can be any valid CSS value.
-- `$description`: An optional description of what the token can be used for.
-- `$extensions`: An optional metadata to store token-related information (e.g. Figma source, deprecation, etc.).
+- `description`: An optional description of what the token can be used for.
+- `extensions`: An optional metadata to store token-related information (e.g. Figma source, deprecation, etc.).
 
 ```js
 const theme = {
@@ -80,16 +80,12 @@ const theme = {
     colors: {
       danger: {
         value: "#EE0F0F",
-        $description: "Color for signyfying errors",
+        description: "Color for signyfying errors",
       },
     },
   },
 };
 ```
-
-> **Good to know:** The extra dollar sign `value` might seem inconvenient at first, but it's reserved property by the
-> [W3C Token Format](https://tr.designtokens.org/format/#name-and-value) to define the value of a token.
-
 
 ## Semantic or Alias Tokens
 

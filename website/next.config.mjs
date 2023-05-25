@@ -13,7 +13,10 @@ const withNextra = nextra({
 
 export default withNextra({
   reactStrictMode: true,
-  swcMinify: true
+  swcMinify: true,
+  images: {
+    domains: ['images.unsplash.com']
+  }
   // Other Next.js configurations
   // i18n: {
   //   locales: ["default", "en", "de"],

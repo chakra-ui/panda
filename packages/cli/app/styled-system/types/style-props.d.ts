@@ -544,19 +544,27 @@ export type SystemProperties = {
 	pr?: PropertyValue<'pr'>
 	pt?: PropertyValue<'pt'>
 	pb?: PropertyValue<'pb'>
-	pe?: PropertyValue<'pe'>
-	ps?: PropertyValue<'ps'>
-	px?: PropertyValue<'px'>
 	py?: PropertyValue<'py'>
+	paddingY?: PropertyValue<'paddingY'>
+	paddingX?: PropertyValue<'paddingX'>
+	px?: PropertyValue<'px'>
+	pe?: PropertyValue<'pe'>
+	paddingEnd?: PropertyValue<'paddingEnd'>
+	ps?: PropertyValue<'ps'>
+	paddingStart?: PropertyValue<'paddingStart'>
 	ml?: PropertyValue<'ml'>
 	mr?: PropertyValue<'mr'>
 	mt?: PropertyValue<'mt'>
 	mb?: PropertyValue<'mb'>
 	m?: PropertyValue<'m'>
-	mx?: PropertyValue<'mx'>
 	my?: PropertyValue<'my'>
+	marginY?: PropertyValue<'marginY'>
+	mx?: PropertyValue<'mx'>
+	marginX?: PropertyValue<'marginX'>
 	me?: PropertyValue<'me'>
+	marginEnd?: PropertyValue<'marginEnd'>
 	ms?: PropertyValue<'ms'>
+	marginStart?: PropertyValue<'marginStart'>
 	ringWidth?: PropertyValue<'ringWidth'>
 	ringColor?: PropertyValue<'ringColor'>
 	ring?: PropertyValue<'ring'>
@@ -608,12 +616,6 @@ export type SystemProperties = {
 	insetY?: PropertyValue<'insetY'>
 	hideFrom?: PropertyValue<'hideFrom'>
 	hideBelow?: PropertyValue<'hideBelow'>
-	paddingX?: PropertyValue<'paddingX'>
-	paddingY?: PropertyValue<'paddingY'>
-	marginX?: PropertyValue<'marginX'>
-	marginY?: PropertyValue<'marginY'>
-	spaceX?: PropertyValue<'spaceX'>
-	spaceY?: PropertyValue<'spaceY'>
 	divideX?: PropertyValue<'divideX'>
 	divideY?: PropertyValue<'divideY'>
 	divideColor?: PropertyValue<'divideColor'>

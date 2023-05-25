@@ -4,7 +4,6 @@ import { defineParts, defineRecipe } from '@pandacss/dev'
 const anatomy = createAnatomy('input', ['input', 'leftIcon', 'rightIcon'])
 const parts = defineParts(anatomy.build())
 
-// TODO focus
 export const inputRecipe = defineRecipe({
   name: 'input',
   base: {
@@ -12,13 +11,12 @@ export const inputRecipe = defineRecipe({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontWeight: 600,
     letterSpacing: 'tight',
     border: '3px solid var(--border-color, black)',
     borderRadius: 'xl',
     ...parts({
       input: {
-        paddingY: 4,
+        py: 4,
         pl: 16,
         pr: 6,
         width: '100%',
@@ -26,7 +24,7 @@ export const inputRecipe = defineRecipe({
         borderRadius: 'xl',
         border: 'none',
         outline: 'none',
-        backgroundColor: 'transparent',
+        bg: 'transparent',
         color: 'black'
       },
       leftIcon: {
@@ -42,37 +40,37 @@ export const inputRecipe = defineRecipe({
   variants: {
     color: {
       main: {
-        backgroundColor: 'panda.bg.emphasized',
+        bg: 'bg.emphasized',
         color: 'black'
       },
       black: {
-        backgroundColor: 'black',
+        bg: 'black',
         color: 'white'
       },
       white: {
-        backgroundColor: 'white',
+        bg: 'white',
         color: 'black'
       },
       yellow: {
-        backgroundColor: 'panda.bg.main',
-        color: 'panda.text.main'
+        bg: 'bg.main',
+        color: 'text.main'
       },
       border: {
-        backgroundColor: 'transparent',
-        color: 'panda.text.main',
-        borderColor: 'panda.text.headline',
-        boxShadowColor: 'panda.text.headline'
+        bg: 'transparent',
+        color: 'text.main',
+        borderColor: 'text.headline',
+        boxShadowColor: 'text.headline'
       },
       ghost: {
-        backgroundColor: 'transparent',
-        color: 'panda.text.main',
+        bg: 'transparent',
+        color: 'text.main',
         border: 'none',
         shadow: 'none'
       }
     },
     size: {
       sm: {
-        paddingY: 3,
+        py: 3,
         fontSize: '18px'
       },
       md: {

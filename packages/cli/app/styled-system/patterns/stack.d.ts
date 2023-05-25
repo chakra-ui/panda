@@ -11,7 +11,7 @@ export type StackProperties = {
 }
 
 
-type StackOptions = StackProperties & Omit<SystemStyleObject, keyof StackProperties | 'flexDirection'>
+type StackOptions = StackProperties & Omit<SystemStyleObject, keyof StackProperties >
 
 
 export declare function stack(options?: StackOptions): string
