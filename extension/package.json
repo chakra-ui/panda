@@ -1,7 +1,8 @@
 {
+  "publisher": "chakra-ui",
   "name": "panda-css-extension",
-  "displayName": "panda-css-extension",
-  "description": "IntelliSense integration for Panda features",
+  "displayName": "Panda CSS",
+  "description": "🐼 The official Panda plugin for VS Code",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.78.2"
@@ -13,13 +14,19 @@
     "onStartupFinished"
   ],
   "main": "./out/index.js",
+  "preview": true,
   "contributes": {
     "commands": [
       {
         "command": "panda-css-extension.restart",
-        "title": "Panda: Restart PandaCss Language Server"
+        "title": "Restart panda Server",
+        "category": "panda"
       }
     ]
+  },
+  "repository": {
+    "url": "https://github.com/chakra-ui/panda",
+    "directory": "packages/extension"
   },
   "scripts": {
     "vscode:prepublish": "npm run build",
@@ -47,8 +54,6 @@
     "@pandacss/node": "workspace:^",
     "@pandacss/shared": "workspace:^",
     "@pandacss/types": "workspace:^",
-    "acorn": "^8.8.2",
-    "acorn-jsx": "^5.3.2",
     "base-64": "^1.0.0",
     "color2k": "^2.0.2",
     "lil-fp": "1.4.5",
