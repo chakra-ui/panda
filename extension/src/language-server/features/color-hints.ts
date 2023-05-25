@@ -3,7 +3,7 @@ import type { PandaExtension } from '../index'
 import { color2kToVsCodeColor } from '../tokens/color2k-to-vscode-color'
 
 export function registerColorHints(extension: PandaExtension) {
-  const { connection, documents, documentReady, loadPandaContext, parseSourceFile, getFileTokens } = extension
+  const { connection, documents, documentReady, parseSourceFile, getFileTokens } = extension
 
   connection.onDocumentColor(async (params): Promise<ColorInformation[]> => {
     await documentReady('🐼 onDocumentColor')
@@ -13,7 +13,7 @@ export function registerColorHints(extension: PandaExtension) {
       return []
     }
 
-    const ctx = await loadPandaContext()
+    const ctx = extension.getContext()
     if (!ctx) return []
 
     const parserResult = parseSourceFile(doc)

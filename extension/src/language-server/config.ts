@@ -69,7 +69,7 @@ export function setupExtension(connection: Connection, documents: TextDocuments<
             labelDetailsSupport: true,
           },
         },
-        definitionProvider: true,
+        definitionProvider: false, // TODO
         hoverProvider: true,
         colorProvider: true,
         inlineValueProvider: true,

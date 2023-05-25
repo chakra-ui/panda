@@ -36,7 +36,7 @@ export function registerHover(extension: PandaExtension) {
     // TODO recipe
     const tokenMatch = getClosestToken(doc, params.position)
     if (tokenMatch) {
-      console.log(tokenMatch)
+      // console.log(tokenMatch)
 
       if (tokenMatch.kind === 'token') {
         const { token } = tokenMatch
