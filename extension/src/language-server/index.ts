@@ -1,7 +1,7 @@
 import { createConnection, TextDocuments, ProposedFeatures } from 'vscode-languageserver/node'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { setupExtension } from './config'
-import { setupTokensHelpers } from './features/tokens'
+import { setupTokensHelpers } from './tokens/setup-tokens-helpers'
 import * as features from './features'
 
 // Create a connection for the server, using Node's IPC as a transport.

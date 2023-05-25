@@ -1,8 +1,6 @@
 import { ColorInformation } from 'vscode'
 import type { PandaExtension } from '../index'
-import { ColorPresentation, ColorPresentationParams, TextEdit } from 'vscode-languageserver'
-import { parseToRgba, toHsla, toHex, toRgba } from 'color2k'
-import { tryCatch } from 'lil-fp'
+import { color2kToVsCodeColor } from '../tokens/color2k-to-vscode-color'
 
 export function registerColorHints(extension: PandaExtension) {
   const { connection, documents, documentReady, loadPandaContext, parseSourceFile, getFileTokens } = extension
@@ -25,11 +23,24 @@ export function registerColorHints(extension: PandaExtension) {
 
     const colors: ColorInformation[] = []
 
-    getFileTokens(doc, parserResult, ({ range, token }) => {
-      if (token.extensions?.vscodeColor) {
+    getFileTokens(doc, parserResult, (match) => {
+      if (match.kind === 'token' && match.token.extensions?.vscodeColor) {
+        // Add 1 color hint for each condition
+        if (match.token.extensions.conditions) {
+          Object.entries(match.token.extensions.conditions).forEach(([_name, value]) => {
+            const [tokenRef] = ctx.tokens.getReferences(value)
+            const color = color2kToVsCodeColor(tokenRef.value)
+            if (!color) return
+
+            colors.push({ color, range: match.range as any })
+          })
+
+          return
+        }
+
         colors.push({
-          color: token.extensions.vscodeColor,
-          range: range as any,
+          color: match.token.extensions.vscodeColor,
+          range: match.range as any,
         })
       }
     })
@@ -68,45 +79,45 @@ export function registerColorHints(extension: PandaExtension) {
   })
 }
 
-const color2kToVsCodeColor = (value: string) => {
-  try {
-    const [red, green, blue, alpha] = parseToRgba(value)
+// const color2kToVsCodeColor = (value: string) => {
+//   try {
+//     const [red, green, blue, alpha] = parseToRgba(value)
 
-    const color = {
-      red: red / 255,
-      green: green / 255,
-      blue: blue / 255,
-      alpha,
-    }
-    return color
-  } catch (e) {
-    return
-  }
-}
+//     const color = {
+//       red: red / 255,
+//       green: green / 255,
+//       blue: blue / 255,
+//       alpha,
+//     }
+//     return color
+//   } catch (e) {
+//     return
+//   }
+// }
 
-function vscodeColorToRgba(color: ColorPresentationParams['color']): string {
-  // Convert color values to the desired string representation
-  const { red, green, blue, alpha = 1 } = color
-  return `rgba(${red}, ${green}, ${blue}, ${alpha})`
-}
+// function vscodeColorToRgba(color: ColorPresentationParams['color']): string {
+//   // Convert color values to the desired string representation
+//   const { red, green, blue, alpha = 1 } = color
+//   return `rgba(${red}, ${green}, ${blue}, ${alpha})`
+// }
 
-function convertColorFormats(original: string, rgba: string): string[] {
-  const format = getColorFormat(original)
+// function convertColorFormats(original: string, rgba: string): string[] {
+//   const format = getColorFormat(original)
 
-  return [
-    original,
-    format?.includes('rgb') ? '' : rgba,
-    format?.includes('hsl')
-      ? ''
-      : tryCatch(
-          () => toHsla(rgba),
-          () => '',
-        )(rgba),
-  ].filter(Boolean)
-}
+//   return [
+//     original,
+//     format?.includes('rgb') ? '' : rgba,
+//     format?.includes('hsl')
+//       ? ''
+//       : tryCatch(
+//           () => toHsla(rgba),
+//           () => '',
+//         )(rgba),
+//   ].filter(Boolean)
+// }
 
-const colorFormats = ['rgb(', 'rgba(', 'hsl(', 'hsla(']
-const getColorFormat = (color: string) => {
-  const colorFormat = colorFormats.find((format) => color.includes(format))
-  return colorFormat
-}
+// const colorFormats = ['rgb(', 'rgba(', 'hsl(', 'hsla(']
+// const getColorFormat = (color: string) => {
+//   const colorFormat = colorFormats.find((format) => color.includes(format))
+//   return colorFormat
+// }
