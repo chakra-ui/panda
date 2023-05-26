@@ -57,8 +57,8 @@ importers:
   packages/cli:
     dependencies:
       '@ark-ui/react':
-        specifier: 0.4.0
-        version: 0.4.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.5.0
+        version: 0.5.0(react-dom@18.2.0)(react@18.2.0)
       '@astrojs/react':
         specifier: 2.2.0
         version: 2.2.0(@types/react-dom@18.2.4)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0)
@@ -492,8 +492,8 @@ importers:
   playground:
     dependencies:
       '@ark-ui/react':
-        specifier: 0.4.0
-        version: 0.4.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.5.0
+        version: 0.5.0(react-dom@18.2.0)(react@18.2.0)
       '@monaco-editor/react':
         specifier: 4.5.1
         version: 4.5.1(monaco-editor@0.38.0)(react-dom@18.2.0)(react@18.2.0)
@@ -613,36 +613,6 @@ importers:
       '@pandacss/fixture':
         specifier: workspace:*
         version: link:../../packages/fixture
-
-  sandbox/my-app:
-    dependencies:
-      '@types/node':
-        specifier: 20.2.1
-        version: 20.2.1
-      '@types/react':
-        specifier: 18.0.17
-        version: 18.0.17
-      '@types/react-dom':
-        specifier: 18.2.4
-        version: 18.2.4
-      eslint:
-        specifier: 8.41.0
-        version: 8.41.0
-      eslint-config-next:
-        specifier: 13.4.3
-        version: 13.4.3(eslint@8.41.0)(typescript@5.0.4)
-      next:
-        specifier: 13.4.3
-        version: 13.4.3(@babel/core@7.12.9)(react-dom@18.2.0)(react@18.2.0)
-      react:
-        specifier: 18.2.0
-        version: 18.2.0
-      react-dom:
-        specifier: 18.2.0
-        version: 18.2.0(react@18.2.0)
-      typescript:
-        specifier: 5.0.4
-        version: 5.0.4
 
   sandbox/next-js-app:
     dependencies:
@@ -949,8 +919,8 @@ importers:
   website:
     dependencies:
       '@ark-ui/react':
-        specifier: 0.4.0
-        version: 0.4.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.5.0
+        version: 0.5.0(react-dom@18.2.0)(react@18.2.0)
       '@pandacss/dev':
         specifier: workspace:*
         version: link:../packages/cli
@@ -1025,8 +995,8 @@ packages:
       '@jridgewell/gen-mapping': 0.1.1
       '@jridgewell/trace-mapping': 0.3.17
 
-  /@ark-ui/react@0.4.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-YAKZZk3J78yPtocBEm0aT4hlH2HR+L9rCV9gr/8h5VMW1IpupsfxomJ6B7zPU9xmtTcb9q3PxKSFaCgqnTaysA==}
+  /@ark-ui/react@0.5.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-dtFy+7xPzX+K9+aO/TralbDtaJDjB/p5C7jA7rtS+M2SUppfyYoiImVyD+ecPfWDc7q3QRT+cX5krZVyQGB4Rg==}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
