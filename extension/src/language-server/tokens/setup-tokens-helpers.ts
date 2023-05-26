@@ -1,6 +1,6 @@
 import { CompletionItem, CompletionItemKind, Position, Range } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
-import { PandaExtensionSetup } from '../config'
+import { PandaExtensionSetup } from '../setup-builder'
 
 import { defineKeyframes, defineParts, definePattern, defineRecipe, defineStyles } from '@pandacss/dev'
 import { AnyRecipeConfig, Dict, ParserResult, RawCondition, ResultItem } from '@pandacss/types'

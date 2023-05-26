@@ -1,6 +1,6 @@
 import { createConnection, TextDocuments, ProposedFeatures } from 'vscode-languageserver/node'
 import { TextDocument } from 'vscode-languageserver-textdocument'
-import { setupExtension } from './config'
+import { setupBuilder } from './setup-builder'
 import { setupTokensHelpers } from './tokens/setup-tokens-helpers'
 import * as features from './features'
 
@@ -12,7 +12,7 @@ const connection = createConnection(ProposedFeatures.all)
 const documents = new TextDocuments(TextDocument)
 
 // Initialize extension.
-const setup = setupExtension(connection, documents)
+const setup = setupBuilder(connection, documents)
 
 // Some document helpers that needs to have access to tokens manager but still gets injected through context.
 const tokensHelpers = setupTokensHelpers(setup)

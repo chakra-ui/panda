@@ -17,11 +17,10 @@ export function registerDiagnostics(context: PandaExtension) {
           message: `🐼 Invalid token path`,
           range: match.range,
           severity: DiagnosticSeverity.Error,
+          code: match.token.name,
         })
       }
     })
-
-    if (!diagnostics.length) return
 
     connection.sendDiagnostics({
       uri: doc.uri,

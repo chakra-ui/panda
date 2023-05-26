@@ -35,9 +35,9 @@ export async function activate(context: vscode.ExtensionContext) {
   const clientOptions: LanguageClientOptions = {
     documentSelector: docSelector as string[],
     diagnosticCollectionName: 'panda',
-    // synchronize: {
-    //   fileEvents: [vscode.workspace.createFileSystemWatcher('**/*/panda.config.ts')],
-    // },
+    synchronize: {
+      fileEvents: [vscode.workspace.createFileSystemWatcher('**/*/panda.config.ts')],
+    },
   }
 
   // Create the language client and start the client.

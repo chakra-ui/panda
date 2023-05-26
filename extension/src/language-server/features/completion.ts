@@ -22,5 +22,5 @@ export function registerCompletion(extension: PandaExtension) {
   })
 
   // This handler resolves additional information for the item selected in the completion list.
-  connection.onCompletionResolve(async (item) => item)
+  connection.onCompletionResolve((item) => item)
 }

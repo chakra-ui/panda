@@ -69,7 +69,7 @@ export const getMarkdownCss = (ctx: PandaContext, styles: SystemStyleObject) => 
 }
 
 export const printTokenValue = (token: Token) =>
-  `🐼 ${token.value}${token.value.includes('rem') ? ` (${toPx(token.value)})` : ''}`
+  `${token.value}${token.value.endsWith('rem') ? ` (${toPx(token.value)})` : ''}`
 
 export const svgToMarkdownLink = (svg: string) => {
   const dataUri = 'data:image/svg+xml;charset=UTF-8;base64,' + base64.encode(utf8.encode(svg))

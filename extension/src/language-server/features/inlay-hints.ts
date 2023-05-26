@@ -24,6 +24,8 @@ export function registerInlayHints(context: PandaExtension) {
     getFileTokens(doc, parserResult, (match) => {
       if (
         match.kind === 'token' &&
+        match.token.extensions.kind !== 'color' &&
+        match.token.extensions.kind !== 'semantic-color' &&
         match.token.extensions.kind !== 'native-color' &&
         match.token.extensions.kind !== 'invalid-token-path'
       ) {

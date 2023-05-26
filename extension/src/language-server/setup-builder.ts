@@ -17,7 +17,7 @@ const ref = {
  * Setup extension
  * - Config detection & loading
  */
-export function setupExtension(connection: Connection, documents: TextDocuments<TextDocument>) {
+export function setupBuilder(connection: Connection, documents: TextDocuments<TextDocument>) {
   const builder = new Builder()
 
   /**
@@ -72,7 +72,7 @@ export function setupExtension(connection: Connection, documents: TextDocuments<
             labelDetailsSupport: true,
           },
         },
-        definitionProvider: false, // TODO
+        definitionProvider: false,
         hoverProvider: true,
         colorProvider: true,
         inlineValueProvider: true,
@@ -102,4 +102,4 @@ export function setupExtension(connection: Connection, documents: TextDocuments<
   }
 }
 
-export type PandaExtensionSetup = ReturnType<typeof setupExtension>
+export type PandaExtensionSetup = ReturnType<typeof setupBuilder>
