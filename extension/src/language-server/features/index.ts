@@ -1,6 +1,5 @@
 export * from './color-hints'
 export * from './completion'
-// export * from './definitions'
 export * from './inlay-hints'
 export * from './hover'
 export * from './diagnostics'

@@ -68,6 +68,7 @@
     "tsup": "6.7.0",
     "utf8": "^3.0.0",
     "vscode": "^1.1.37",
+    "vscode-css-languageservice": "^6.2.5",
     "vscode-languageclient": "^8.1.0",
     "vscode-languageserver": "^8.1.0",
     "vscode-languageserver-textdocument": "^1.0.8"

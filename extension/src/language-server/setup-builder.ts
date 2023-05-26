@@ -1,12 +1,7 @@
 import { Builder } from '@pandacss/node'
-import {
-  Connection,
-  InitializeParams,
-  InitializeResult,
-  TextDocuments,
-  TextDocumentSyncKind,
-} from 'vscode-languageserver'
+import { Connection, InitializeParams, InitializeResult, TextDocuments } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
+import { capabilities } from './capabilities'
 
 const ref = {
   context: null as unknown as Builder['context'],
@@ -54,29 +49,7 @@ export function setupBuilder(connection: Connection, documents: TextDocuments<Te
     })
 
     const result: InitializeResult = {
-      capabilities: {
-        textDocumentSync: TextDocumentSyncKind.Incremental,
-        inlayHintProvider: {
-          resolveProvider: false,
-        },
-        // workspace: {
-        //   workspaceFolders: {
-        //     supported: false,
-        //   },
-        // },
-
-        // Tell the client that this server supports code completion.
-        completionProvider: {
-          resolveProvider: true,
-          completionItem: {
-            labelDetailsSupport: true,
-          },
-        },
-        definitionProvider: false,
-        hoverProvider: true,
-        colorProvider: true,
-        inlineValueProvider: true,
-      },
+      capabilities,
     }
 
     return result
