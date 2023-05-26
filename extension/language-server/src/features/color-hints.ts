@@ -1,4 +1,4 @@
-import { ColorInformation } from 'vscode'
+import { ColorInformation } from 'vscode-languageserver'
 import type { PandaExtension } from '../index'
 import { color2kToVsCodeColor } from '../tokens/color2k-to-vscode-color'
 
@@ -48,12 +48,7 @@ export function registerColorHints(extension: PandaExtension) {
     return colors
   })
 
-  connection.onColorPresentation((params) => {
-    const doc = documents.get(params.textDocument.uri)
-    if (!doc) {
-      return []
-    }
-
+  connection.onColorPresentation(() => {
     return []
   })
 }
