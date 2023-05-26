@@ -17,11 +17,13 @@ const setup = setupBuilder(connection, documents)
 // Some document helpers that needs to have access to tokens manager but still gets injected through context.
 const tokensHelpers = setupTokensHelpers(setup)
 
+const isDebug = false
+
 /**
  * Debug message helper
  */
-function debugMessage(message: string) {
-  connection.console.log(message)
+function debug(message: string) {
+  isDebug && connection.console.log(message)
 }
 
 /**
@@ -31,7 +33,7 @@ async function documentReady(step: string) {
   if (setup.isSynchronizing()) {
     await setup.isSynchronizing()
   }
-  debugMessage(step)
+  debug(step)
 }
 
 /**
@@ -40,7 +42,7 @@ async function documentReady(step: string) {
 const extension = {
   connection,
   documents,
-  debugMessage,
+  debug,
   documentReady,
   ...setup,
   ...tokensHelpers,
@@ -50,7 +52,7 @@ const extension = {
  * Register each language server feature with extension context.
  */
 Object.entries(features).forEach(([key, registerFeature]) => {
-  debugMessage(`🐼 Registering ${key}`)
+  debug(`🐼 Feature: ${key}`)
   registerFeature(extension)
 })
 

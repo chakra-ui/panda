@@ -3,9 +3,11 @@ import { TextDocument } from 'vscode-languageserver-textdocument'
 import { PandaExtension } from '..'
 
 export function registerDiagnostics(context: PandaExtension) {
-  const { connection, documents, loadPandaContext, getContext, parseSourceFile, getFileTokens } = context
+  const { connection, debug, documents, loadPandaContext, getContext, parseSourceFile, getFileTokens } = context
 
   function updateDocumentDiagnostics(doc: TextDocument) {
+    debug(`Update diagnostics for ${doc.uri}`)
+
     const diagnostics: Diagnostic[] = []
     const parserResult = parseSourceFile(doc)
 
@@ -31,7 +33,6 @@ export function registerDiagnostics(context: PandaExtension) {
 
   // Update diagnostics on document change
   documents.onDidChangeContent(async (params) => {
-    console.log('onDidChangeContent')
     const ctx = await loadPandaContext()
     if (!ctx) return
 
@@ -40,7 +41,6 @@ export function registerDiagnostics(context: PandaExtension) {
 
   // Update diagnostics when watched file changes
   connection.onDidChangeWatchedFiles((_change) => {
-    console.log('onDidChangeWatchedFiles')
     const ctx = getContext()
     if (!ctx) return
 

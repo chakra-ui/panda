@@ -3,4 +3,4 @@ packages:
   - "sandbox/**"
   - "playground"
   - "website"
-  - "extension"
+  - "extension/**"

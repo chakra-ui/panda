@@ -22,8 +22,6 @@ export function registerHover(extension: PandaExtension) {
     // TODO recipe
     const tokenMatch = getClosestToken(doc, params.position)
     if (tokenMatch) {
-      // console.log(tokenMatch)
-
       if (tokenMatch.kind === 'token') {
         const { token } = tokenMatch
         const css = getMarkdownCss(ctx, { [tokenMatch.propName]: token.value }).raw
@@ -63,7 +61,7 @@ export function registerHover(extension: PandaExtension) {
       if (tokenMatch.kind === 'condition') {
         const { condition, propValue, propName } = tokenMatch
         const css = getMarkdownCss(ctx, { [propName]: propValue }).raw
-        // console.log(match)
+
         return {
           contents: [`🐼 \`${condition.value}\``, { language: 'css', value: css }],
         }
@@ -72,7 +70,6 @@ export function registerHover(extension: PandaExtension) {
 
     const instanceMatch = getClosestInstance(doc, params.position)
     if (instanceMatch && instanceMatch.kind === 'styles') {
-      // console.log({ instanceMatch })
       return { contents: getMarkdownCss(ctx, instanceMatch.styles).withCss }
     }
   })

@@ -1,0 +1,44 @@
+{
+  "name": "panda-css-language-server",
+  "displayName": "Panda CSS",
+  "description": "🐼 The official Panda language server",
+  "version": "0.0.1",
+  "main": "./dist/index.js",
+  "repository": {
+    "url": "https://github.com/chakra-ui/panda",
+    "directory": "packages/extension/language-server"
+  },
+  "scripts": {
+    "build": "tsup --entry src/index.ts --format cjs --minify -d dist --clean",
+    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs -d dist --clean",
+    "clean": "rm -rf dist",
+    "lint": "eslint ./src --ext .ts,.tsx --fix"
+  },
+  "devDependencies": {
+    "@types/base-64": "^1.0.0",
+    "@types/node": "16.x",
+    "@types/utf8": "^3.0.1",
+    "@types/vscode": "^1.78.0",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "@pandacss/core": "workspace:^",
+    "@pandacss/extractor": "workspace:^",
+    "@pandacss/node": "workspace:^",
+    "@pandacss/shared": "workspace:^",
+    "@pandacss/types": "workspace:^",
+    "base-64": "^1.0.0",
+    "color2k": "^2.0.2",
+    "lil-fp": "1.4.5",
+    "postcss": "^8.4.23",
+    "prettier": "^2.8.8",
+    "satori": "^0.9.1",
+    "ts-morph": "18.0.0",
+    "ts-pattern": "4.3.0",
+    "tsup": "6.7.0",
+    "utf8": "^3.0.0",
+    "vscode": "^1.1.37",
+    "vscode-languageserver": "^8.1.0",
+    "vscode-languageserver-textdocument": "^1.0.8"
+  }
+}

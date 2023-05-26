@@ -20,7 +20,7 @@ export function setupBuilder(connection: Connection, documents: TextDocuments<Te
    */
   async function loadPandaContext() {
     try {
-      // console.log('🐼 Builder setup...')
+      console.log('🐼 Builder setup...')
       ref.synchronizing = builder.setup()
       await ref.synchronizing
     } catch {
@@ -32,15 +32,11 @@ export function setupBuilder(connection: Connection, documents: TextDocuments<Te
     ref.synchronizing = false
     ref.context = builder.context!
 
-    if (ref.context) {
-      // console.log('🐼 Loaded panda context!')
-    }
-
     return ref.context
   }
 
   connection.onInitialize((_params: InitializeParams) => {
-    connection.console.log('🐼 Booting PandaCss extension...')
+    connection.console.log('🤖 Booting PandaCss extension...')
 
     connection.onInitialized(async () => {
       await loadPandaContext()
@@ -57,7 +53,7 @@ export function setupBuilder(connection: Connection, documents: TextDocuments<Te
 
   connection.onDidChangeWatchedFiles(async (_change) => {
     await loadPandaContext()
-    connection.console.log('🐼 Reloading panda context...')
+    connection.console.log('🔃 Reloading panda context...')
   })
 
   documents.listen(connection)
