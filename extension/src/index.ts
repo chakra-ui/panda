@@ -39,6 +39,12 @@ export async function activate(context: vscode.ExtensionContext) {
     synchronize: {
       fileEvents: [vscode.workspace.createFileSystemWatcher('**/*/panda.config.ts')],
     },
+    middleware: {
+      // this disables the color picker on hovering a color from the extension
+      provideColorPresentations() {
+        return null
+      },
+    },
   }
 
   // Create the language client and start the client.
