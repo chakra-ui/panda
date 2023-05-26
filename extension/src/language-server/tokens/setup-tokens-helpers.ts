@@ -129,8 +129,6 @@ const getNestedBoxProp = (map: BoxNodeMap, path: string[]) => {
 }
 
 export function setupTokensHelpers(setup: PandaExtensionSetup) {
-  const versionByFilepath = new Map<string, number>()
-
   function getSourceFile(doc: TextDocument) {
     const ctx = setup.getContext()
     if (!ctx) return
@@ -146,12 +144,8 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
     if (!ctx) return
 
     const project = ctx.project
-    const currentFilePath = doc.uri
 
-    if (versionByFilepath.get(currentFilePath) !== doc.version) {
-      project.addSourceFile(doc.uri, doc.getText())
-    }
-
+    project.addSourceFile(doc.uri, doc.getText())
     return project.parseSourceFile(doc.uri)
   }
 
@@ -459,11 +453,11 @@ const getDescendantAtPos = (from: Node, pos: number) => {
   }
 }
 
-const getColorExtensions = (value: string) => {
+const getColorExtensions = (value: string, kind: string) => {
   const vscodeColor = color2kToVsCodeColor(value)
   if (!vscodeColor) return
 
-  return { vscodeColor, kind: 'native-color' }
+  return { vscodeColor, kind }
 }
 
 const getTokenFromPropValue = (ctx: PandaContext, prop: string, value: string): Token | undefined => {
@@ -481,7 +475,7 @@ const getTokenFromPropValue = (ctx: PandaContext, prop: string, value: string): 
     // any color
     // color: "blue", color: "#000", color: "rgb(0, 0, 0)", ...
     if (isColor(value)) {
-      const extensions = getColorExtensions(value)
+      const extensions = getColorExtensions(value, 'native-color')
       if (!extensions) return
 
       return { value, name: value, path: tokenPath, type: 'color', extensions } as unknown as Token
@@ -491,12 +485,23 @@ const getTokenFromPropValue = (ctx: PandaContext, prop: string, value: string): 
     if (typeof value === 'string' && value.includes('token(')) {
       const matches = expandTokenFn(value, ctx.tokens.getByName)
 
+      // wrong token path
+      if (!matches.length) {
+        return {
+          value,
+          name: value,
+          path: tokenPath,
+          type: 'color',
+          extensions: { kind: 'invalid-token-path' },
+        } as unknown as Token
+      }
+
       // TODO: handle multiple tokens like : "token(colors.gray.300), token(colors.gray.500)"
       const first = matches?.[0]?.token
       if (!first) return
 
       if (isColor(first.value)) {
-        const extensions = getColorExtensions(first.value)
+        const extensions = getColorExtensions(first.value, 'semantic-color')
         if (!extensions) return
 
         return first.setExtensions(extensions)
@@ -512,7 +517,7 @@ const getTokenFromPropValue = (ctx: PandaContext, prop: string, value: string): 
   // px: "2", fontSize: "xl", ...
   // color: "blue.300"
   if (isColor(token.value)) {
-    const extensions = getColorExtensions(token.value)
+    const extensions = getColorExtensions(token.value, 'color')
     if (!extensions) return
 
     return token.setExtensions(extensions)

@@ -56,6 +56,9 @@ export function setupExtension(connection: Connection, documents: TextDocuments<
     const result: InitializeResult = {
       capabilities: {
         textDocumentSync: TextDocumentSyncKind.Incremental,
+        inlayHintProvider: {
+          resolveProvider: false,
+        },
         // workspace: {
         //   workspaceFolders: {
         //     supported: false,

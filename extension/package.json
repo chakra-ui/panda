@@ -19,8 +19,8 @@
     "commands": [
       {
         "command": "panda-css-extension.restart",
-        "title": "Restart panda Server",
-        "category": "panda"
+        "title": "Restart Panda Server",
+        "category": "Panda"
       }
     ]
   },
