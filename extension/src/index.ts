@@ -5,9 +5,10 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } f
 const docSelector: vscode.DocumentSelector = ['typescript', 'typescriptreact', 'javascript', 'javascriptreact']
 
 let client: LanguageClient
+const debug = false
 
 export async function activate(context: vscode.ExtensionContext) {
-  console.log('activate')
+  debug && console.log('activate')
 
   const loadingStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left)
   loadingStatusBarItem.text = '🐼 Loading...'
@@ -43,42 +44,48 @@ export async function activate(context: vscode.ExtensionContext) {
   // Create the language client and start the client.
   client = new LanguageClient('panda', 'Panda IntelliSense', serverOptions, clientOptions)
 
-  console.log('before start')
+  debug && console.log('before start')
 
-  const restartCmd = vscode.commands.registerCommand('panda-css-extension.restart', async () => {
+  const restartCmd = vscode.commands.registerCommand('panda-css-vscode.restart', async () => {
     loadingStatusBarItem.text = '🐼 Restarting...'
     loadingStatusBarItem.show()
 
-    console.log('restarting...')
+    debug && console.log('restarting...')
     await client.restart()
+
+    loadingStatusBarItem.hide()
+    debug && console.log('restarted !')
+  })
+  context.subscriptions.push(restartCmd)
+
+  const showOutputCmd = vscode.commands.registerCommand('panda-css-vscode.show-output', async () => {
+    loadingStatusBarItem.show()
 
     // Show and focus the output channel
     client.outputChannel.show(true)
-    loadingStatusBarItem.hide()
-    console.log('restarted !')
   })
 
-  context.subscriptions.push(restartCmd)
+  context.subscriptions.push(showOutputCmd)
 
   try {
     // Start the client. This will also launch the server
     loadingStatusBarItem.text = '🐼 Starting...'
 
     await client.start()
-    console.log('starting...')
+    debug && console.log('starting...')
     loadingStatusBarItem.hide()
   } catch (err) {
-    console.log('error', err)
+    debug && console.log('error', err)
   }
 }
 
 export function deactivate(): Thenable<void> | undefined {
-  console.log('deactivate')
+  debug && console.log('deactivate')
 
   if (!client) {
     return undefined
   }
 
-  console.log('stoppping...')
+  debug && console.log('stoppping...')
   return client.stop()
 }

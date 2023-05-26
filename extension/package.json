@@ -18,8 +18,13 @@
   "contributes": {
     "commands": [
       {
-        "command": "panda-css-extension.restart",
+        "command": "panda-css-vscode.restart",
         "title": "Restart Panda Server",
+        "category": "Panda"
+      },
+      {
+        "command": "panda-css-vscode.show-output",
+        "title": "Show output",
         "category": "Panda"
       }
     ]
