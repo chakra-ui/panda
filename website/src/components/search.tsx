@@ -212,12 +212,7 @@ export function Search({
           position: 'relative',
           md: { width: 64 },
           '& .excerpt': {
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            lineClamp: 1,
-            '-webkit-line-clamp': 1,
-            '-webkit-box-orient': 'vertical'
+            truncate: true
           }
         }),
         className

@@ -116,8 +116,6 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
                     activeAnchor[id]?.isActive
                       ? css({
                           color: 'primary.600',
-                          WebkitFontSmoothing: 'auto',
-                          MozOsxFontSmoothing: 'auto',
                           _moreContrast: { color: 'primary.600!' }
                         })
                       : css({

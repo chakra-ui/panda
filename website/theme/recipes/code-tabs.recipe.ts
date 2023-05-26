@@ -42,7 +42,6 @@ export const codeTabsRecipe = defineRecipe({
         bg: 'yellow.400'
       }
     },
-    // @ts-expect-error
     content: {
       roundedBottom: '19px',
       '& > pre': {

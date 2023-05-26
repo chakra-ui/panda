@@ -20,7 +20,7 @@ export const SectionCommunity = () => {
           height="800"
           alt=""
           src="/community.png"
-          style={{ height: '100%', width: '560px' }}
+          style={{ height: '100%', width: '800px' }}
         />
       </panda.div>
 
