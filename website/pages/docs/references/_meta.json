@@ -1,6 +1,5 @@
 {
   "cli": "CLI",
   "default-style-props": "Default style props",
-  "panda-config": "Panda config",
-  "presets": "Presets"
+  "panda-config": "Panda config"
 }
