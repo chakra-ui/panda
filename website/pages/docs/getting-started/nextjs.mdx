@@ -11,6 +11,10 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
 
 ## Start a new project
 
+import { ContextSelect } from '../../../src/nextra-components/context-select'
+
+<ContextSelect contexts={['app', 'pages']}/>
+
 <Steps>
 ### Create a Next.js app
 
@@ -82,7 +86,7 @@ Install Panda CSS dependency using your favorite package manager.
 
 Open your `package.json` file and update the `scripts` section as follows:
 
-```diff
+```diff {3}
 {
   "scripts": {
 +    "prepare": "panda codegen",
@@ -165,7 +169,7 @@ Sometimes Next.js caches PostCSS generated styles and you need to clear the cach
 
 You can also update you `package.json` scripts to delete the `.next` folder before each build:
 
-```diff
+```diff {4}
 {
   "scripts": {
 -    "dev": "next dev",
