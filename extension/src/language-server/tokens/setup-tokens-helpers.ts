@@ -2,8 +2,7 @@ import { CompletionItem, CompletionItemKind, Position, Range } from 'vscode-lang
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { PandaExtensionSetup } from '../setup-builder'
 
-import { defineKeyframes, defineParts, definePattern, defineRecipe, defineStyles } from '@pandacss/dev'
-import { AnyRecipeConfig, Dict, ParserResult, RawCondition, ResultItem } from '@pandacss/types'
+import { Dict, ParserResult, RawCondition, ResultItem, SystemStyleObject } from '@pandacss/types'
 import { CallExpression, Identifier, JsxOpeningElement, JsxSelfClosingElement, Node, ts } from 'ts-morph'
 
 import {
@@ -52,21 +51,12 @@ type ClosestToken = ClosestTokenMatch | ClosestConditionMatch
 
 type ClosestInstanceMatch = { name: string }
 type ClosestStylesInstance = { kind: 'styles'; props: BoxNodeMap | BoxNodeObject }
-type ClosestRecipeConfigInstance = { kind: 'recipe-config'; recipe: AnyRecipeConfig }
-type ClosestInstance = ClosestInstanceMatch & (ClosestStylesInstance | ClosestRecipeConfigInstance)
+type ClosestInstance = ClosestInstanceMatch & ClosestStylesInstance
 
 type OnTokenCallback = (args: ClosestToken) => void
 type BoxNodeWithValue = BoxNodeObject | BoxNodeLiteral | BoxNodeMap | BoxNodeArray
 
-const extractableFns = [
-  'css',
-  'cx',
-  'defineStyles',
-  'defineRecipe',
-  'definePattern',
-  'defineKeyframes',
-  'defineParts',
-] as const
+const extractableFns = ['css', 'cx'] as const
 type ExtractableFnName = (typeof extractableFns)[number]
 const canEvalFn = (name: string): name is ExtractableFnName => extractableFns.includes(name as any)
 
@@ -106,12 +96,7 @@ const boxCtx: BoxContext = {
       environment: {
         extra: {
           cx: mergeCx,
-          css: defineStyles,
-          defineStyles,
-          defineRecipe,
-          definePattern,
-          defineKeyframes,
-          defineParts,
+          css: (styles: SystemStyleObject) => styles,
         },
       },
     } as any
@@ -257,16 +242,10 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
             })
           }
 
-          const shouldOnlyExtractConfigName = name === 'defineRecipe' || name === 'definePattern'
           const list = extractCallExpressionArguments(
             callExpression,
             boxCtx,
-            // we can extract the whole config with findIdentifierValueDeclaration
-            // but that takes a lot of time and we can just extract the name instead
-            // and then find the config in the recipes object
-            // tho, we could extract the whole recipe config if we can't find it in the recipes object
-            // (cause the user hasn't yet run panda codegen OR is using `cva`)
-            (args) => (shouldOnlyExtractConfigName ? args.propName === 'name' : true),
+            () => true,
             (args) => args.index === 0,
           )
           const config = list.value[0]
@@ -274,14 +253,6 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
 
           if (name === 'css' || name === 'defineStyles') {
             return onFoundInstance({ kind: 'styles', name, props: config })
-          }
-
-          // console.log({ name, styles: config })
-          if (name === 'defineRecipe' && box.isMap(config)) {
-            const unboxed = unbox(config).raw
-            const recipe = ctx.recipes.recipes[unboxed['name']]
-            // console.log(recipe)
-            return onFoundInstance({ kind: 'recipe-config', name, recipe })
           }
         },
       )
