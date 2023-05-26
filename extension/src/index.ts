@@ -1,7 +1,9 @@
 import * as path from 'path'
 import vscode from 'vscode'
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node'
+import { registerClientCommands } from './commands'
 
+// Client entrypoint
 const docSelector: vscode.DocumentSelector = ['typescript', 'typescriptreact', 'javascript', 'javascriptreact']
 
 let client: LanguageClient
@@ -19,7 +21,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // The debug options for the server
   // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
-  const debugOptions = { execArgv: ['--nolazy', '--inspect=6099'] }
+  const debugOptions = debug ? { execArgv: ['--nolazy', '--inspect=6099'] } : {}
 
   // If the extension is launched in debug mode then the debug server options are used
   // Otherwise the run options are used
@@ -52,26 +54,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   debug && console.log('before start')
 
-  const restartCmd = vscode.commands.registerCommand('panda-css-vscode.restart', async () => {
-    loadingStatusBarItem.text = '🐼 Restarting...'
-    loadingStatusBarItem.show()
-
-    debug && console.log('restarting...')
-    await client.restart()
-
-    loadingStatusBarItem.hide()
-    debug && console.log('restarted !')
-  })
-  context.subscriptions.push(restartCmd)
-
-  const showOutputCmd = vscode.commands.registerCommand('panda-css-vscode.show-output', async () => {
-    loadingStatusBarItem.show()
-
-    // Show and focus the output channel
-    client.outputChannel.show(true)
-  })
-
-  context.subscriptions.push(showOutputCmd)
+  registerClientCommands({ context, debug, client, loadingStatusBarItem })
 
   try {
     // Start the client. This will also launch the server
