@@ -18,15 +18,20 @@ describe('generate reset', () => {
               box-sizing: border-box;
               border-width: 0;
               border-style: solid;
+              border-color: var(--global-color-border, currentColor);
             }
 
             .pd-reset {
               line-height: 1.5;
+              --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+                'Noto Color Emoji';
               -webkit-text-size-adjust: 100%;
               -webkit-text-size-adjust: 100%;
               -webkit-font-smoothing: antialiased;
               -moz-tab-size: 4;
               tab-size: 4;
+              font-family: var(--global-font-body, var(--font-fallback));
             }
 
             .pd-reset hr {
@@ -107,6 +112,7 @@ describe('generate reset', () => {
             .pd-reset input::placeholder,
             .pd-reset textarea::placeholder {
               opacity: 1;
+              color: var(--global-color-placeholder, #9ca3af);
             }
 
             .pd-reset textarea {
@@ -160,6 +166,8 @@ describe('generate reset', () => {
             .pd-reset samp,
             .pd-reset pre {
               font-size: 1em;
+              --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+              font-family: var(--global-font-mono, var(--font-fallback));
             }
 
             .pd-reset [type='search'] {
