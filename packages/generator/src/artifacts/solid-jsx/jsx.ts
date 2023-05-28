@@ -18,11 +18,11 @@ export function generateSolidJsxFactory(ctx: Context) {
       return function ${componentName}(props) {
         const mergedProps = mergeProps({ as: element }, props)
     
-        const [localProps, styleProps, variantProps, htmlProps, elementProps] = splitProps(
+        const [localProps, variantProps, styleProps, htmlProps, elementProps] = splitProps(
           mergedProps,
           ['as', 'class'],
-          allCssProperties,
           cvaFn.variantKeys,
+          allCssProperties,
           normalizeHTMLProps.keys
         )
     
