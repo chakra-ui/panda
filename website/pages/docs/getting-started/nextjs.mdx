@@ -123,13 +123,18 @@ import { ContextSelect, ContextSelectOptions, ContextSelectPanel } from '../../.
   </ContextSelectPanel>
   <ContextSelectPanel index={1}>
     In your Next.js project, navigate to the `src/styles` folder and open `globals.css` file. Replace all the content with the following code:
-
-    > **Note:** Feel free to remove the `Home.module.css` file as we don't need it anymore.
   </ContextSelectPanel>
 
   ```css
      @layer reset, base, tokens, recipes, utilities;
-    ```
+  ```
+
+  <ContextSelectPanel index={0}>
+    > **Note:** Feel free to remove the `page.module.css` file as we don't need it anymore.
+  </ContextSelectPanel>
+  <ContextSelectPanel index={1}>
+    > **Note:** Feel free to remove the `Home.module.css` file as we don't need it anymore.
+  </ContextSelectPanel>
 
   ### PostCSS config
 
@@ -149,8 +154,6 @@ import { ContextSelect, ContextSelectOptions, ContextSelectPanel } from '../../.
 
   <ContextSelectPanel index={0}>
     We will update the contents of `src/app/page.tsx` with the following snippet that uses Panda CSS:
-
-    > **Note:** Feel free to remove the `page.module.css` file as we don't need it anymore.
   </ContextSelectPanel>
   <ContextSelectPanel index={1}>
     We will update the contents of `src/pages/index.tsx` with the following snippet that uses Panda CSS:
