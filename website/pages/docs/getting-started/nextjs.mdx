@@ -116,13 +116,20 @@ import { ContextSelect, ContextSelectOptions, ContextSelectPanel } from '../../.
   ```
   - `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
 
-  ### Add panda CSS styles to your app layout
+  ### Configure the entry CSS with layers
 
-  In your Next.js project, navigate to the `src/app` folder and open `global.css` file. Replace all the content with the following code:
+  <ContextSelectPanel index={0}>
+    In your Next.js project, navigate to the `src/app` folder and open `global.css` file. Replace all the content with the following code:
+  </ContextSelectPanel>
+  <ContextSelectPanel index={1}>
+    In your Next.js project, navigate to the `src/styles` folder and open `globals.css` file. Replace all the content with the following code:
+
+    > **Note:** Feel free to remove the `Home.module.css` file as we don't need it anymore.
+  </ContextSelectPanel>
 
   ```css
-  @layer reset, base, tokens, recipes, utilities;
-  ```
+     @layer reset, base, tokens, recipes, utilities;
+    ```
 
   ### PostCSS config
 
@@ -140,19 +147,24 @@ import { ContextSelect, ContextSelectOptions, ContextSelectPanel } from '../../.
 
   ### Start using Panda
 
-  We will update the contents of `page.tsx` with the following snippet that uses Panda CSS:
+  <ContextSelectPanel index={0}>
+    We will update the contents of `src/app/page.tsx` with the following snippet that uses Panda CSS:
+
+    > **Note:** Feel free to remove the `page.module.css` file as we don't need it anymore.
+  </ContextSelectPanel>
+  <ContextSelectPanel index={1}>
+    We will update the contents of `src/pages/index.tsx` with the following snippet that uses Panda CSS:
+  </ContextSelectPanel>
 
   ```tsx
-  import { css } from '../../styled-system/css';
+    import { css } from '../../styled-system/css';
 
-  export default function Home() {
-    return (
-      <div className={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello 🐼!</div>
-    )
-  }
-  ```
-
-  > **Note:** You can also remove `page.module.css` file as we don't need it anymore.
+    export default function Home() {
+      return (
+        <div className={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello 🐼!</div>
+      )
+    }
+    ```
 
   ### Start the development server
 
