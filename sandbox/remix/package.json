@@ -23,11 +23,11 @@
     "@remix-run/dev": "^1.16.1",
     "@remix-run/eslint-config": "^1.16.1",
     "@remix-run/serve": "^1.16.1",
-    "@types/react": "^18.2.6",
+    "@types/react": "^18.2.7",
     "@types/react-dom": "^18.2.4",
     "@pandacss/dev": "workspace:*",
     "eslint": "^8.41.0",
-    "postcss": "^8.4.23",
+    "postcss": "^8.4.24",
     "typescript": "^5.0.4"
   },
   "engines": {

@@ -13,18 +13,18 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@babel/core": "^7.21.8",
-    "@storybook/addon-actions": "^7.0.12",
-    "@storybook/addon-essentials": "^7.0.12",
-    "@storybook/addon-interactions": "^7.0.12",
-    "@storybook/addon-links": "^7.0.12",
+    "@babel/core": "^7.22.1",
+    "@storybook/addon-actions": "^7.0.18",
+    "@storybook/addon-essentials": "^7.0.18",
+    "@storybook/addon-interactions": "^7.0.18",
+    "@storybook/addon-links": "^7.0.18",
     "@storybook/addon-styling": "^1.0.8",
-    "@storybook/react": "^7.0.12",
-    "@storybook/react-webpack5": "^7.0.12",
+    "@storybook/react": "^7.0.18",
+    "@storybook/react-webpack5": "^7.0.18",
     "babel-loader": "^9.1.2",
     "@pandacss/dev": "workspace:*",
-    "postcss": "8.4.23",
-    "storybook": "^7.0.12"
+    "postcss": "8.4.24",
+    "storybook": "^7.0.18"
   },
   "dependencies": {
     "react": "^18.2.0",
