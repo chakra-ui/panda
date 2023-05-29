@@ -2,5 +2,6 @@
   "cli": "Using CLI",
   "postcss": "Using PostCSS",
   "astro": "Using Astro",
-  "nextjs": "Using Next.js"
+  "nextjs": "Using Next.js",
+  "storybook": "Using Storybook"
 }
