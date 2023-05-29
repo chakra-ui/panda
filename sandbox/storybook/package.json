@@ -23,7 +23,7 @@
     "@storybook/react-webpack5": "^7.0.12",
     "babel-loader": "^9.1.2",
     "@pandacss/dev": "workspace:*",
-    "postcss": "8.4.23",
+    "postcss": "8.4.24",
     "storybook": "^7.0.12"
   },
   "dependencies": {
