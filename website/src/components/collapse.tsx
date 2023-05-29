@@ -28,7 +28,7 @@ export function Collapse({
     }
     if (initialRender.current || !container || !inner) return
 
-    container.classList.toggle(css({ transitionDuration: '500ms' }), !isOpen)
+    container.classList.toggle(css({ transitionDuration: '200ms' }), !isOpen)
     container.classList.toggle(css({ transitionDuration: '300ms' }), isOpen)
 
     if (horizontal) {

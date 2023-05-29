@@ -51,7 +51,7 @@ export const SectionHero = () => {
                 gap="6"
               >
                 <Link
-                  href="/docs/getting-started"
+                  href="/docs"
                   className={cx(
                     button({ color: 'main', size: 'lg' }),
                     css({ w: { base: 'full', sm: '240px' } })

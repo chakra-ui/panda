@@ -20,11 +20,11 @@ export function generateVueJsxFactory(ctx: Context) {
         props: { as: { type: [String, Object], default: Dynamic } },
         setup(props, { slots, attrs }) {
           const splittedProps = computed(() => {
-            return splitProps(attrs, isCssProperty, cvaFn.variantKeys, normalizeHTMLProps.keys)
+            return splitProps(attrs, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
           })
     
           const classes = computed(() => {
-            const [styleProps, variantProps, _htmlProps, elementProps] = splittedProps.value
+            const [variantProps, styleProps, _htmlProps, elementProps] = splittedProps.value
             const { css: cssStyles, ...propStyles } = styleProps
             const cvaStyles = cvaFn.resolve(variantProps)
             const styles = assignCss(cvaStyles, propStyles, cssStyles)

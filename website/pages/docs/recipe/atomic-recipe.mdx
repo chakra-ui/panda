@@ -11,7 +11,7 @@ conditions.
 
 > Recipes are reusable, composable, and type-safe.
 
-## Creating a Recipe
+## Creating a recipe
 
 A recipe consists of four properties:
 
@@ -68,7 +68,7 @@ Here's what the generated CSS looks like:
 }
 ```
 
-## Using the Recipe
+## Using the recipe
 
 The returned value from the `cva` function is a function that can be used to apply the recipe to a component. Here's an
 example of how to use the `button` recipe:
@@ -81,7 +81,7 @@ const Button = () => {
 }
 ```
 
-## Setting the default Variants
+## Setting the default variants
 
 The `defaultVariants` property is used to set the default variant values for the recipe. This is useful when you want to
 apply a variant by default. Here's an example of how to use `defaultVariants`:
@@ -204,17 +204,20 @@ your code with lots of conditional logic.
 
 ## Usage in JSX
 
-For recipes created using the `cva` function, you can wrap them in the `panda` factory function to create a component
-that can be used in JSX.
+You can create a JSX component from any existing atomic recipe by using the `styled` function from the `/jsx` entrypoint.
+
+The `styled` function takes the element type as its first argument, and the recipe as its second argument.
+
+> Make sure to add the `jsxFramework` option to your `panda.config` file, and run `panda codegen` to generate the JSX entrypoint.
 
 ```js
 import { cva } from '../styled-system/css'
-import { panda } from '../styled-system/jsx'
+import { styled } from '../styled-system/jsx'
 
-const recipe = cva({
+const buttonStyle = cva({
   base: {
     color: 'red',
-    fontSize: '1.5rem'
+    textAlign: 'center'
   },
   variants: {
     size: {
@@ -228,27 +231,28 @@ const recipe = cva({
   }
 })
 
-const Component = panda('div', recipe)
+const Button = styled('button', buttonStyle)
 ```
 
-Then you can use the component in JSX:
+Then you can use the component in JSX
 
 ```jsx
-<Component size="large">Some text</Component>
+<Button size="large">Click me</Button>
 ```
 
 ## TypeScript Guide
 
-Panda ships a type interface to help infer the variants for a recipe. This is useful when you want to use the recipe in
-JSX and want to get type safety for the variants.
+Panda provides a `RecipeVariantProps` type utility that can be used to infer the variant properties of a recipe.
+
+This is useful when you want to use the recipe in JSX and want to get type safety for the variants.
 
 ```tsx
 import { cva, type RecipeVariantProps } from '../styled-system/css'
 
-const recipe = cva({
+const buttonStyle = cva({
   base: {
     color: 'red',
-    fontSize: '1.5rem'
+    textAlign: 'center'
   },
   variants: {
     size: {
@@ -262,13 +266,13 @@ const recipe = cva({
   }
 })
 
-export type ComponentProps = RecipeVariantProps<typeof recipe> // { size?: 'small' | 'large' }
+export type ButtonVariants = RecipeVariantProps<typeof buttonStyle> // { size?: 'small' | 'large' }
 
-export const Component = panda('div', recipe)
+export const Button = panda('button', buttonStyle)
 ```
 
 ## Best Practices
 
 - Leverage css variables in the base styles as much as possible. Makes it easier to theme the component with JS
-- Separate concerns (don't mix styles). Group them in logical groups that mean something visually
+- Don't mix styles by writing complex selectors. Separate concerns and group them in logical variants
 - Use the `compoundVariants` property to create more complex sets of styles

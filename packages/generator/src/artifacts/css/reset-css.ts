@@ -16,15 +16,20 @@ export function generateResetCss(scope = '') {
         box-sizing: border-box;
         border-width: 0;
         border-style: solid;
+        border-color: var(--global-color-border, currentColor);
       }
 
       ${scope || 'html'} {
         line-height: 1.5;
+        --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+          'Noto Color Emoji';
         -webkit-text-size-adjust: 100%;
         -webkit-text-size-adjust: 100%;
         -webkit-font-smoothing: antialiased;
         -moz-tab-size: 4;
         tab-size: 4;
+        font-family: var(--global-font-body, var(--font-fallback));
       }
 
       ${selector}hr {
@@ -105,6 +110,7 @@ export function generateResetCss(scope = '') {
       ${selector}input::placeholder,
       ${selector}textarea::placeholder {
         opacity: 1;
+        color: var(--global-color-placeholder, #9ca3af);
       }
 
       ${selector}textarea {
@@ -158,6 +164,8 @@ export function generateResetCss(scope = '') {
       ${selector}samp,
       ${selector}pre {
         font-size: 1em;
+        --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+        font-family: var(--global-font-mono, var(--font-fallback));
       }
 
       ${selector}[type='search'] {
