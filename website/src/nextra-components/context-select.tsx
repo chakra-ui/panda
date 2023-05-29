@@ -73,11 +73,20 @@ const ContextSelectLink: FC<IContextSelectLinkProps> = ({ context }) => {
           _hover: {
             bg: 'gray.200'
           },
+          _dark: {
+            _hover: {
+              bg: 'neutral.600'
+            }
+          },
           '&[data-active]': {
             bg: 'yellow.300',
             color: 'black',
             fontWeight: 'bold',
-            borderRadius: 'md'
+            borderRadius: 'md',
+            _dark: {
+              bg: 'yellow.300',
+              color: 'black',
+            }
           }
         })
       ].join(' ')}
@@ -100,6 +109,9 @@ export const ContextSelectOptions: FC<FlexProps> = (props) => {
       bg="gray.100"
       borderRadius="md"
       p={1}
+      _dark={{
+        bg: 'neutral.700'
+      }}
       {...props}
     >
       {contexts.map(context => (
