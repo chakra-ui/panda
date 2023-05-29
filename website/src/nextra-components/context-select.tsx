@@ -1,44 +1,53 @@
-import { FC, ReactNode, createContext, useContext } from 'react'
+import { FC, ReactNode, createContext, useContext, useId, useMemo } from 'react'
 import { Flex, FlexProps } from '../../styled-system/jsx'
 import { css } from '../../styled-system/css'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 
 interface IContextSelectContext {
-  activeContext: string;
-  contexts: Array<string>;
+  activeContext: string
+  contexts: Array<string>
+  rootId: string
 }
 
 const ContextSelectContext = createContext<IContextSelectContext>({
   activeContext: '',
-  contexts: []
-});
+  contexts: [],
+  rootId: ''
+})
 
-const ContextSelectProvider = ContextSelectContext.Provider;
+const ContextSelectProvider = ContextSelectContext.Provider
 
 const useContextSelect = () => {
-  const context = useContext(ContextSelectContext);
+  const context = useContext(ContextSelectContext)
 
   if (!context) {
     throw new Error('ContextSelect parts are not inside a ContextSelect')
   }
 
-  return context;
+  return context
 }
 
 export interface IContextSelectProps {
-  children: ReactNode;
-  contexts: Array<string>;
+  children: ReactNode
+  contexts: Array<string>
 }
 
-export const ContextSelect: FC<IContextSelectProps> = ({ children, contexts }) => {
-  const activeContext = useRouter().query.context as string || contexts[0];
+export const ContextSelect: FC<IContextSelectProps> = ({
+  children,
+  contexts
+}) => {
+  const rootId = useId();
+  const activeContext = (useRouter().query.context as string) || contexts[0];
 
   return (
-    <ContextSelectProvider value={{
-      activeContext,
-      contexts
-    }}>
+    <ContextSelectProvider
+      value={{
+        activeContext,
+        contexts,
+        rootId
+      }}
+    >
       {children}
     </ContextSelectProvider>
   )
@@ -50,8 +59,8 @@ interface IContextSelectLinkProps {
 
 const ContextSelectLink: FC<IContextSelectLinkProps> = ({ context }) => {
   const router = useRouter()
-  const { activeContext } = useContextSelect();
-  const isActive = activeContext === context;
+  const { activeContext, rootId } = useContextSelect()
+  const isActive = activeContext === context
 
   return (
     <Link
@@ -61,7 +70,10 @@ const ContextSelectLink: FC<IContextSelectLinkProps> = ({ context }) => {
         hash: router.isReady ? router.asPath.split('#')[1] : undefined
       }}
       scroll={false}
-      data-active={isActive ? true : undefined}
+      aria-selected={isActive ? true : undefined}
+      role="tab"
+      tabIndex={isActive ? 0 : -1}
+      id={`tab-${rootId}-${context}`}
       className={[
         'nextra-context-select-link',
         css({
@@ -78,14 +90,14 @@ const ContextSelectLink: FC<IContextSelectLinkProps> = ({ context }) => {
               bg: 'neutral.600'
             }
           },
-          '&[data-active]': {
+          '&[aria-selected]': {
             bg: 'yellow.300',
             color: 'black',
             fontWeight: 'bold',
             borderRadius: 'md',
             _dark: {
               bg: 'yellow.300',
-              color: 'black',
+              color: 'black'
             }
           }
         })
@@ -96,9 +108,8 @@ const ContextSelectLink: FC<IContextSelectLinkProps> = ({ context }) => {
   )
 }
 
-
-export const ContextSelectOptions: FC<FlexProps> = (props) => {
-  const { contexts } = useContextSelect();
+export const ContextSelectOptions: FC<FlexProps> = props => {
+  const { contexts } = useContextSelect()
 
   return (
     <Flex
@@ -130,12 +141,18 @@ export const ContextSelectPanel: FC<IContextSelectProps> = ({
   index,
   children
 }) => {
-  const { contexts, activeContext } = useContextSelect();
-  const context = contexts[index];
+  const { contexts, activeContext, rootId } = useContextSelect()
+  const context = contexts[index]
+  const isHidden = context !== activeContext
 
-  if (context === activeContext) {
-    return <>{children}</>
-  }
-
-  return null
+  return (
+    <div
+      role="tabpanel"
+      tabIndex={0}
+      aria-labelledby={`tab-${rootId}-${context}`}
+      hidden={isHidden}
+    >
+      {children}
+    </div>
+  )
 }
