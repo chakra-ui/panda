@@ -1,12 +1,12 @@
 import { logger } from '@pandacss/logger'
-import type { Dict, ParserResult } from '@pandacss/types'
+import type { Dict, ParserResultType } from '@pandacss/types'
 import { pipe, tap, tryCatch } from 'lil-fp/func'
 import { match, P } from 'ts-pattern'
 import type { Context } from '../../engines'
 
 const flattenStyles = (data: Dict) => Object.assign({}, data, { css: undefined }, data.css ?? {}) as Dict
 
-export const generateParserCss = (ctx: Context) => (result: ParserResult) =>
+export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
   pipe(
     { ...ctx, sheet: ctx.createSheet(), result },
     tap(({ sheet, result, patterns, recipes }) => {

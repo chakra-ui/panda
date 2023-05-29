@@ -27,7 +27,7 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
       measure()
       if (!result) return
 
-      const list = result.getAll().map((result) => {
+      const list = result.toArray().map((result) => {
         const node = result.box.getNode()
         const range = getNodeRange(node)
 

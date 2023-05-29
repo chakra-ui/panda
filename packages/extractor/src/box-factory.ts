@@ -71,6 +71,20 @@ abstract class BoxNodeType<Definition extends BoxNodeDefinition = BoxNodeDefinit
   getStack(): Node[] {
     return this.stack
   }
+
+  toJSON() {
+    return {
+      type: this.type,
+      // @ts-expect-error
+      value: this.value,
+      node: this.node.getKindName(),
+      stack: this.stack.map((node) => node.getKindName()),
+    }
+  }
+
+  toString() {
+    return JSON.stringify(this.toJSON(), null, 2)
+  }
 }
 
 export class BoxNodeObject extends BoxNodeType<ObjectType> {

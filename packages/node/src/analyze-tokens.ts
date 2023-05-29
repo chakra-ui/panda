@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import type { ParserResult } from '@pandacss/types'
+import type { ParserResultType } from '@pandacss/types'
 import { writeFile } from 'fs/promises'
 import { Node } from 'ts-morph'
 import { classifyTokens } from './classify'
@@ -11,9 +11,9 @@ import { gzipSizeSync } from 'gzip-size'
 
 export function analyzeTokens(
   ctx: PandaContext,
-  options: { onResult?: (file: string, result: ParserResult) => void } = {},
+  options: { onResult?: (file: string, result: ParserResultType) => void } = {},
 ) {
-  const parserResultByFilepath = new Map<string, ParserResult>()
+  const parserResultByFilepath = new Map<string, ParserResultType>()
   const extractTimeByFilepath = new Map<string, number>()
 
   const includedFiles = ctx.getFiles()
@@ -30,7 +30,7 @@ export function analyzeTokens(
       options.onResult?.(file, result)
     }
 
-    return [file, result] as [string, ParserResult]
+    return [file, result] as [string, ParserResultType]
   })
 
   const totalMs = Array.from(extractTimeByFilepath.values()).reduce((a, b) => a + b, 0)
