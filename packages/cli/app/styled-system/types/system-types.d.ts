@@ -58,7 +58,7 @@ export type JsxStyleProps = SystemProperties &
 
 type Assign<T, U> = Omit<T, keyof U> & U
 
-type HTMLProps = {
+export type PatchedHTMLProps = {
   htmlSize?: string | number
   htmlWidth?: string | number
   htmlHeight?: string | number
@@ -66,8 +66,9 @@ type HTMLProps = {
   htmlContent?: string
 }
 
-type WithHTMLProps<T> = Omit<T, 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size' | 'content'> &
-  HTMLProps
+export type OmittedHTMLProps = 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size' | 'content'
+
+type WithHTMLProps<T> = Omit<T, OmittedHTMLProps> & PatchedHTMLProps
 
 export type JsxHTMLProps<T extends Record<string, any>, P extends Record<string, any> = {}> = Assign<
   WithHTMLProps<T>,

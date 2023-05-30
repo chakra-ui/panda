@@ -75,7 +75,7 @@ export const formats = {
   createVarGetter(dictionary: TokenDictionary) {
     const flatValues = mapToJson(formats.getFlattenedValues(dictionary))
     return function getToken(path: string, fallback?: string | number) {
-      return getDotPath(flatValues, path, fallback)
+      return getDotPath(flatValues, path, fallback) as string
     }
   },
 

@@ -1,7 +1,6 @@
 import { colors, logger } from '@pandacss/logger'
 import { mkdir, writeFile } from 'fs/promises'
 import type { PandaContext } from './create-context'
-import { getNodeRange } from './get-node-range'
 import * as path from 'path'
 
 export async function debugFiles(ctx: PandaContext, options: { outdir: string; dry: boolean }) {
@@ -27,9 +26,9 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
       measure()
       if (!result) return
 
-      const list = result.getAll().map((result) => {
+      const list = result.toArray().map((result) => {
         const node = result.box.getNode()
-        const range = getNodeRange(node)
+        const range = result.box.getRange()
 
         return {
           name: result.name,

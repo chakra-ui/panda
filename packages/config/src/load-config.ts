@@ -2,8 +2,8 @@ import { ConfigError, ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { findConfigFile } from './find-config'
 import { getResolvedConfig } from './merge-config'
-import { bundle } from './bundle'
 import type { LoadConfigResult } from '@pandacss/types'
+import { bundle } from './bundle'
 
 type ConfigFileOptions = {
   cwd: string

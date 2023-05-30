@@ -27,23 +27,25 @@ describe('[dynamic] ast parser', () => {
       Map {
         "textStyle" => Set {
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 9,
+              "line": 4,
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "variant" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "variant" => {
+                  "column": 22,
+                  "line": 5,
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "h1",
@@ -59,50 +61,54 @@ describe('[dynamic] ast parser', () => {
             "type": "recipe",
           },
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 9,
+              "line": 12,
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "variant" => BoxNodeMap {
-                  "node": ObjectLiteralExpression,
-                  "spreadConditions": undefined,
+                "variant" => {
+                  "column": 20,
+                  "line": 13,
+                  "node": "ObjectLiteralExpression",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ObjectLiteralExpression,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
                   ],
                   "type": "map",
                   "value": Map {
-                    "base" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "base" => {
+                      "column": 27,
+                      "line": 13,
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        StringLiteral,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "StringLiteral",
                       ],
                       "type": "literal",
                       "value": "h4",
                     },
-                    "md" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "md" => {
+                      "column": 37,
+                      "line": 13,
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        StringLiteral,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "StringLiteral",
                       ],
                       "type": "literal",
                       "value": "h5",
@@ -137,23 +143,25 @@ describe('[dynamic] ast parser', () => {
         },
         "layerStyle" => Set {
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 9,
+              "line": 8,
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "variant" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "variant" => {
+                  "column": 21,
+                  "line": 9,
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "raised",
