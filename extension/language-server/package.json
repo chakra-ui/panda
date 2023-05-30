@@ -15,18 +15,14 @@
     "lint": "eslint ./src --ext .ts,.tsx --fix"
   },
   "devDependencies": {
-    "@pandacss/config": "workspace:^",
     "@pandacss/core": "workspace:^",
-    "@pandacss/error": "workspace:^",
     "@pandacss/extractor": "workspace:^",
-    "@pandacss/logger": "workspace:^",
     "@pandacss/node": "workspace:^",
     "@pandacss/shared": "workspace:^",
     "@pandacss/types": "workspace:^",
     "@types/base-64": "^1.0.0",
     "@types/node": "16.x",
     "@types/utf8": "^3.0.1",
-    "@types/vscode": "^1.78.0",
     "base-64": "^1.0.0",
     "color2k": "^2.0.2",
     "lil-fp": "1.4.5",
@@ -38,7 +34,6 @@
     "tsup": "6.7.0",
     "typescript": "^5.0.4",
     "utf8": "^3.0.0",
-    "vscode": "^1.1.37",
     "vscode-languageserver": "^8.1.0",
     "vscode-languageserver-textdocument": "^1.0.8"
   }

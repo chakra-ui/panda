@@ -56,21 +56,12 @@ importers:
 
   extension/language-server:
     devDependencies:
-      '@pandacss/config':
-        specifier: workspace:^
-        version: link:../../packages/config
       '@pandacss/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@pandacss/error':
-        specifier: workspace:^
-        version: link:../../packages/error
       '@pandacss/extractor':
         specifier: workspace:^
         version: link:../../packages/extractor
-      '@pandacss/logger':
-        specifier: workspace:^
-        version: link:../../packages/logger
       '@pandacss/node':
         specifier: workspace:^
         version: link:../../packages/node
@@ -89,9 +80,6 @@ importers:
       '@types/utf8':
         specifier: ^3.0.1
         version: 3.0.1
-      '@types/vscode':
-        specifier: ^1.78.0
-        version: 1.78.0
       base-64:
         specifier: ^1.0.0
         version: 1.0.0
@@ -125,9 +113,6 @@ importers:
       utf8:
         specifier: ^3.0.0
         version: 3.0.0
-      vscode:
-        specifier: ^1.1.37
-        version: 1.1.37
       vscode-languageserver:
         specifier: ^8.1.0
         version: 8.1.0
@@ -869,8 +854,6 @@ importers:
       vite-tsconfig-paths:
         specifier: 4.2.0
         version: 4.2.0(typescript@5.0.4)(vite@4.3.5)
-
-  sandbox/qwik-ts/server: {}
 
   sandbox/remix:
     dependencies:
