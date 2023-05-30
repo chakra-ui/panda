@@ -3,5 +3,6 @@
   "postcss": "Using PostCSS",
   "astro": "Using Astro",
   "nextjs": "Using Next.js",
-  "storybook": "Using Storybook"
+  "storybook": "Using Storybook",
+  "solidjs": "Using SolidJS"
 }
