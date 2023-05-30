@@ -1,6 +1,5 @@
 import { box, type NodeRange } from '@pandacss/extractor'
 import { Bool } from 'lil-fp'
-import { Node } from 'ts-morph'
 import { Range } from 'vscode-languageserver'
 
 import { SystemStyleObject } from '@pandacss/types'
@@ -18,23 +17,6 @@ import * as utf8 from 'utf8'
 import { Token } from './types'
 
 export const isObjectLike = Bool.or(box.isObject, box.isMap)
-
-export const getNodeRange = (node: Node) => {
-  const src = node.getSourceFile()
-  const [startPosition, endPosition] = [node.getStart(), node.getEnd()]
-
-  const startInfo = src.getLineAndColumnAtPos(startPosition)
-  const endInfo = src.getLineAndColumnAtPos(endPosition)
-
-  return {
-    startPosition,
-    startLineNumber: startInfo.line,
-    startColumn: startInfo.column,
-    endPosition,
-    endLineNumber: endInfo.line,
-    endColumn: endInfo.column,
-  }
-}
 
 export const nodeRangeToVsCodeRange = (range: NodeRange) =>
   Range.create(
