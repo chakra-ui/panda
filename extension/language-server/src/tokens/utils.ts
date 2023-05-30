@@ -1,4 +1,4 @@
-import { box } from '@pandacss/extractor'
+import { box, type NodeRange } from '@pandacss/extractor'
 import { Bool } from 'lil-fp'
 import { Node } from 'ts-morph'
 import { Range } from 'vscode-languageserver'
@@ -36,7 +36,7 @@ export const getNodeRange = (node: Node) => {
   }
 }
 
-export const nodeRangeToVsCodeRange = (range: ReturnType<typeof getNodeRange>) =>
+export const nodeRangeToVsCodeRange = (range: NodeRange) =>
   Range.create(
     { line: range.startLineNumber - 1, character: range.startColumn - 1 },
     { line: range.endLineNumber - 1, character: range.endColumn - 1 },
