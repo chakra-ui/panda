@@ -1,0 +1,7 @@
+node_modules/
+.cache/
+public
+src/gatsby-types.d.ts
+## Panda
+styled-system
+styled-system-static

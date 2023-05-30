@@ -1,0 +1,33 @@
+{
+  "name": "sandbox-gatsby-ts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "sandbox-gatsby-ts",
+  "keywords": [
+    "gatsby"
+  ],
+  "scripts": {
+    "prepare": "panda codegen",
+    "develop": "gatsby develop",
+    "start": "gatsby develop",
+    "build": "gatsby build",
+    "serve": "gatsby serve",
+    "clean": "gatsby clean",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pandacss/dev": "^0.0.2",
+    "gatsby": "^5.10.0",
+    "gatsby-plugin-pnpm": "^1.2.10",
+    "gatsby-plugin-postcss": "^6.10.0",
+    "postcss": "^8.4.24",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.16.16",
+    "@types/react": "^18.2.7",
+    "@types/react-dom": "^18.2.4",
+    "typescript": "^5.0.4"
+  }
+}
