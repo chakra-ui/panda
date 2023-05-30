@@ -1,0 +1,159 @@
+---
+title: Using Gatsby
+description: Easily use Panda with Gatsby with our dedicated integration.
+---
+
+# Using Storybook
+
+Easily use Panda with Gatsby with our dedicated integration.
+
+<Steps>
+
+### Create Gatsby project
+
+To get started, we will need to create a new Gatsby project.
+We will name our project `test-app` but you can name it whatever you want.
+
+If you don't enter any parameter, the CLI will guide you through the process of creating a new Gatsby app.
+
+```bash
+npm init gatsby
+```
+
+> **Note:** If you want to use Gatsby with pnpm use install plugin [gatsby-plugin-pnpm](https://www.gatsbyjs.com/plugins/gatsby-plugin-pnpm/).
+
+You will be asked a few questions, answer them as follows:
+
+```
+✔ What would you like to call your site? ... My Gatsby Site
+✔ What would you like to name the folder where your site will be created? ... projects/ test-app
+✔ Will you be using JavaScript or TypeScript? ... TypeScript
+✔ Will you be using a CMS? ... No (or I'll add it later)
+✔ Would you like to install a styling system? ... No (or I'll add it later)
+✔ Would you like to install additional features with other plugins? ... No items were selected
+```
+
+Enter the newly created directory:
+
+```bash
+cd test-app
+```
+
+### Install Panda CSS
+
+Install Panda CSS and `gatsby-plugin-postcss` to your project.
+After that run the `panda init` command to setup Panda CSS in your project.
+
+```bash
+npm install @pandacss/dev postcss gatsby-plugin-postcss
+npx panda init --postcss
+```
+
+### Setup the Gatsby PostCSS plugin
+
+Include the plugin in your `gatsby-config.ts` file. Check out the [official documentation](https://www.gatsbyjs.com/plugins/gatsby-plugin-postcss/) for more information.
+
+```ts {12} filename="gatsby-config.ts"
+import type { GatsbyConfig } from "gatsby"
+
+const config: GatsbyConfig = {
+  siteMetadata: {
+    title: `My Gatsby Site`,
+    siteUrl: `https://www.yourdomain.tld`,
+  },
+  // More easily incorporate content into your pages through automatic TypeScript type generation and better GraphQL IntelliSense.
+  // If you use VSCode you can also use the GraphQL plugin
+  // Learn more at: https://gatsby.dev/graphql-typegen
+  graphqlTypegen: true,
+  plugins: [`gatsby-plugin-postcss`],
+}
+
+export default config
+```
+
+### Update package.json scripts
+
+Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3} filename="package.json"
+{
+  "scripts": {
++    "prepare": "panda codegen",
+    "develop": "gatsby develop",
+    "start": "gatsby develop",
+    "build": "gatsby build",
+    "serve": "gatsby serve",
+    "clean": "gatsby clean",
+    "typecheck": "tsc --noEmit"
+  }
+}
+```
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+### Configure the content
+
+Make sure that all of the paths of your React components are included in the `include` section of the `panda.config.ts` file.
+
+```js {8} filename="panda.config.ts"
+import { defineConfig } from "@pandacss/dev"
+
+export default defineConfig({
+ // Whether to use css reset
+ preflight: true,
+
+ // Where to look for your css declarations
+ include: ["./src/**/*.{js,jsx,ts,tsx}"],
+
+ // Files to exclude
+ exclude: [],
+
+ // The output directory for your css system
+ outdir: "styled-system",
+})
+```
+
+### Configure the entry CSS with layers
+
+Create `src/styles/index.css` file and add the following content:
+
+```css filename="src/styles/index.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+### Import the entry CSS
+
+Create a `gatsby-browser.ts` file in the root of your project and add the following content:
+
+```ts filename="gatsby-browser.ts"
+import './src/styles/index.css'
+```
+
+### Start your build process
+
+Run the following command to start your development server.
+
+```bash
+npm run develop
+```
+
+### Start using Panda
+
+Now you can start using Panda CSS in your project.
+Here is the snippet of code that you can use in your `src/pages/index.tsx` file.
+
+```tsx {3, 7} filename="src/pages/index.tsx"
+import * as React from "react"
+import type { HeadFC, PageProps } from "gatsby"
+import { css } from "../../styled-system/css"
+
+const IndexPage: React.FC<PageProps> = () => {
+  return (
+    <div className={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello 🐼!</div>
+  )
+}
+
+export default IndexPage
+
+export const Head: HeadFC = () => <title>Home Page</title>
+```
+</Steps>
