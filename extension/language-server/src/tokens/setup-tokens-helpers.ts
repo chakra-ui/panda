@@ -16,6 +16,7 @@ import {
   box,
   extractCallExpressionArguments,
   extractJsxAttribute,
+  extractJsxElementProps,
   findIdentifierValueDeclaration,
   maybeBoxNode,
   unbox,
@@ -26,7 +27,6 @@ import { Bool } from 'lil-fp'
 import { match } from 'ts-pattern'
 import { color2kToVsCodeColor } from './color2k-to-vscode-color'
 import { expandTokenFn } from './expand-token-fn'
-import { extractJsxElementProps } from './extract-jsx-element-props'
 import { isColor } from './is-color'
 import { Token } from './types'
 import { getMarkdownCss, getNodeRange, isObjectLike, nodeRangeToVsCodeRange, printTokenValue } from './utils'

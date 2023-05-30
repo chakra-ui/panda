@@ -38,7 +38,7 @@
       },
       {
         "command": "panda-css-vscode.show-output",
-        "title": "Show output",
+        "title": "Show panda output",
         "category": "Panda"
       }
     ]
@@ -50,7 +50,7 @@
   "scripts": {
     "build:lsp": "pnpm --filter=../language-server build",
     "build": "pnpm build:lsp && tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --external esbuild --minify -d dist --clean --shims",
-    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims",
+    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims --watch . --watch ../language-server/dist",
     "clean": "rm -rf dist",
     "lint": "eslint ./src --ext .ts,.tsx --fix",
     "release": "esno ./scripts/publish.ts",

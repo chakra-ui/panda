@@ -1,6 +1,12 @@
 import { JsxOpeningElement, JsxSelfClosingElement, Node } from 'ts-morph'
-import { BoxContext, BoxNode, box, extractJsxAttribute, extractJsxSpreadAttributeValues } from '@pandacss/extractor'
-import { isObjectLike } from './utils'
+import { box } from './box'
+import type { BoxNode } from './box-factory'
+import { extractJsxAttribute } from './jsx-attribute'
+import { extractJsxSpreadAttributeValues } from './jsx-spread-attribute'
+import type { BoxContext } from './types'
+import { Bool } from 'lil-fp'
+
+const isObjectLike = Bool.or(box.isObject, box.isMap)
 
 export const extractJsxElementProps = (node: JsxOpeningElement | JsxSelfClosingElement, ctx: BoxContext) => {
   const tagName = node.getTagNameNode().getText()

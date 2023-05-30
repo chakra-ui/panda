@@ -9,14 +9,16 @@ const ref = {
 }
 
 /**
- * Setup extension
- * - Config detection & loading
+ * Setup builder
+ * - panda.config detection & context loading
+ * - reload on panda.config change
+ * - make the builder.setup promise shared so it can be awaited by multiple features
  */
 export function setupBuilder(connection: Connection, documents: TextDocuments<TextDocument>) {
   const builder = new Builder()
 
   /**
-   * Resolve current extension settings
+   * Resolve current panda context
    */
   async function loadPandaContext() {
     try {

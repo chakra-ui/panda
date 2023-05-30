@@ -30,10 +30,15 @@ function debug(message: string) {
  * Check await until tokens are synchronized if a synchronization process is happening.
  */
 async function documentReady(step: string) {
-  if (setup.isSynchronizing()) {
-    await setup.isSynchronizing()
+  try {
+    if (setup.isSynchronizing()) {
+      await setup.isSynchronizing()
+    }
+    debug(step)
+  } catch (error) {
+    connection.console.error('error on step ' + step)
+    connection.console.error(error)
   }
-  debug(step)
 }
 
 /**

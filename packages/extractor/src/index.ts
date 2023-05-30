@@ -3,6 +3,7 @@ export { extractCallExpressionArguments } from './call-expression'
 export { extract } from './extract'
 export { findIdentifierValueDeclaration } from './find-identifier-value-declaration'
 export { extractJsxAttribute } from './jsx-attribute'
+export { extractJsxElementProps } from './jsx-element-props'
 export { extractJsxSpreadAttributeValues } from './jsx-spread-attribute'
 export {
   BoxNodeConditional,

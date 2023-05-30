@@ -1,11 +1,13 @@
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { PandaExtension } from '..'
+import { tryCatch } from 'lil-fp/func'
+import { onError } from '../tokens/error'
 
 export function registerDiagnostics(context: PandaExtension) {
   const { connection, debug, documents, loadPandaContext, getContext, parseSourceFile, getFileTokens } = context
 
-  function updateDocumentDiagnostics(doc: TextDocument) {
+  const updateDocumentDiagnostics = tryCatch(function (doc: TextDocument) {
     debug(`Update diagnostics for ${doc.uri}`)
 
     const diagnostics: Diagnostic[] = []
@@ -29,7 +31,7 @@ export function registerDiagnostics(context: PandaExtension) {
       version: doc.version,
       diagnostics,
     })
-  }
+  }, onError)
 
   // Update diagnostics on document change
   documents.onDidChangeContent(async (params) => {

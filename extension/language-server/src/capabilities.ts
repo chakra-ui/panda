@@ -5,11 +5,6 @@ export const capabilities: ServerCapabilities = {
   inlayHintProvider: {
     resolveProvider: false,
   },
-  // workspace: {
-  //   workspaceFolders: {
-  //     supported: false,
-  //   },
-  // },
 
   completionProvider: {
     resolveProvider: true,
