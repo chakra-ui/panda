@@ -188,7 +188,7 @@ export default function App() {
 
 Update the `remix.config.ts` file with the following content:
 
-```js {14} filename="remix.config.ts"
+```js {15} filename="remix.config.ts"
 /** @type {import('@remix-run/dev').AppConfig} */
 module.exports = {
   ignoredRouteFiles: ["**/.*"],
@@ -202,8 +202,8 @@ module.exports = {
     v2_meta: true,
     v2_normalizeFormMethod: true,
     v2_routeConvention: true,
-    unstable_postcss: true,
   },
+  postcss: true,
 };
 ```
 
