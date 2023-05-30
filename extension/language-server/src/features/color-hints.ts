@@ -5,10 +5,13 @@ import { tryCatch } from 'lil-fp/func'
 import { onError } from '../tokens/error'
 
 export function registerColorHints(extension: PandaExtension) {
-  const { connection, documents, documentReady, parseSourceFile, getFileTokens } = extension
+  const { connection, documents, documentReady, parseSourceFile, getFileTokens, getPandaSettings } = extension
 
   connection.onDocumentColor(
     tryCatch(async (params) => {
+      const settings = await getPandaSettings()
+      if (!settings['color-hints.enabled']) return
+
       await documentReady('🐼 onDocumentColor')
 
       const doc = documents.get(params.textDocument.uri)
@@ -27,9 +30,12 @@ export function registerColorHints(extension: PandaExtension) {
       const colors: ColorInformation[] = []
 
       getFileTokens(doc, parserResult, (match) => {
-        if (match.kind === 'token' && match.token.extensions?.vscodeColor) {
-          // Add 1 color hint for each condition
-          if (match.token.extensions.conditions) {
+        const isColor = match.kind === 'token' && match.token.extensions?.vscodeColor
+        if (!isColor) return
+
+        // Add 1 color hint for each condition
+        if (match.token.extensions.conditions) {
+          if (settings['color-hints.semantic-tokens.enabled']) {
             Object.values(match.token.extensions.conditions).forEach((value) => {
               const [tokenRef] = ctx.tokens.getReferences(value)
               const color = color2kToVsCodeColor(tokenRef.value)
@@ -37,15 +43,15 @@ export function registerColorHints(extension: PandaExtension) {
 
               colors.push({ color, range: match.range as any })
             })
-
-            return
           }
 
-          colors.push({
-            color: match.token.extensions.vscodeColor,
-            range: match.range as any,
-          })
+          return
         }
+
+        colors.push({
+          color: match.token.extensions.vscodeColor,
+          range: match.range as any,
+        })
       })
 
       return colors

@@ -11,13 +11,15 @@ const connection = createConnection(ProposedFeatures.all)
 // Create a simple text document manager.
 const documents = new TextDocuments(TextDocument)
 
+let isDebug = false
+
 // Initialize extension.
-const setup = setupBuilder(connection, documents)
+const setup = setupBuilder(connection, documents, (settings) => {
+  isDebug = settings['debug'] ?? false
+})
 
 // Some document helpers that needs to have access to tokens manager but still gets injected through context.
 const tokensHelpers = setupTokensHelpers(setup)
-
-const isDebug = false
 
 /**
  * Debug message helper
@@ -34,6 +36,7 @@ async function documentReady(step: string) {
     if (setup.isSynchronizing()) {
       await setup.isSynchronizing()
     }
+
     debug(step)
   } catch (error) {
     connection.console.error('error on step ' + step)

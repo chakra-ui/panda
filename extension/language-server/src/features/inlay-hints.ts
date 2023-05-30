@@ -5,10 +5,14 @@ import { tryCatch } from 'lil-fp/func'
 import { onError } from '../tokens/error'
 
 export function registerInlayHints(context: PandaExtension) {
-  const { connection, documents, loadPandaContext, getContext, parseSourceFile, getFileTokens } = context
+  const { connection, documents, loadPandaContext, getContext, parseSourceFile, getFileTokens, getPandaSettings } =
+    context
 
   connection.languages.inlayHint.on(
     tryCatch(async (params) => {
+      const isEnabled = await getPandaSettings('inlay-hints.enabled')
+      if (!isEnabled) return
+
       // await when the server starts, then just get the context
       if (!getContext()) {
         await loadPandaContext()

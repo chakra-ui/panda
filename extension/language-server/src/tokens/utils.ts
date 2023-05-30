@@ -50,8 +50,8 @@ export const getMarkdownCss = (ctx: PandaContext, styles: SystemStyleObject) => 
   return { raw, withCss }
 }
 
-export const printTokenValue = (token: Token) =>
-  `${token.value}${token.value.endsWith('rem') ? ` (${toPx(token.value)})` : ''}`
+export const printTokenValue = (token: Token, withRemToPx?: boolean) =>
+  `${token.value}${withRemToPx && token.value.endsWith('rem') ? ` (${toPx(token.value)})` : ''}`
 
 export const svgToMarkdownLink = (svg: string) => {
   const dataUri = 'data:image/svg+xml;charset=UTF-8;base64,' + base64.encode(utf8.encode(svg))

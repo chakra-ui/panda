@@ -17,6 +17,7 @@
   "license": "MIT",
   "keywords": [
     "css",
+    "pandacss",
     "design tokens",
     "documentation",
     "framework",
@@ -41,7 +42,97 @@
         "title": "Show panda output",
         "category": "Panda"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Panda",
+      "properties": {
+      "panda.color-hints.enabled": {
+        "type": "boolean",
+        "default": true,
+        "title": "Color hints",
+        "description": "Enable all color hints"
+      },
+      "panda.color-hints.semantic-tokens.enabled": {
+        "type": "boolean",
+        "default": true,
+        "title": "Color hints",
+        "description": "Enable semantic tokens multiple color hints"
+      },
+      "panda.rem-to-px.enabled": {
+        "type": "boolean",
+        "default": true,
+        "title": "Rem to pixels conversion",
+        "description": "Enable rem to px conversion"
+      },
+      "panda.completions.enabled": {
+        "type": "boolean",
+        "default": true,
+        "title": "Completions",
+        "description": "Enable enhanced completions"
+      },
+      "panda.diagnostics.enabled": {
+        "type": "boolean",
+        "default": true,
+        "title": "Diagnostics",
+        "description": "Enable all diagnostics"
+      },
+      "panda.diagnostics.invalid-token-path": {
+        "scope": "",
+        "type": "string",
+        "enum": [
+          "disable",
+          "hint",
+          "information",
+          "warning",
+          "error"
+        ],
+        "default": "warning",
+        "markdownDescription": "Changes the severity of the diagnostic for invalid token paths \n(ex: `css({ border: '1px solid token(xxx) })`)"
+      },
+      "panda.hovers.enabled": {
+        "type": "boolean",
+        "default": true,
+        "title": "Hover previews",
+        "description": "Enable all hovers"
+      },
+      "panda.hovers.instances.enabled": {
+        "type": "boolean",
+        "default": true,
+        "title": "Instance hover preview",
+        "description": "Enable instance css preview on hover"
+      },
+      "panda.hovers.tokens.enabled": {
+        "type": "boolean",
+        "default": true,
+        "title": "Tokens hover preview",
+        "description": "Enable tokens css preview on hover"
+      },
+      "panda.hovers.tokens.conditions.enabled": {
+        "type": "boolean",
+        "default": true,
+        "title": "Conditions hover preview",
+        "description": "Enable conditions css preview on hover"
+      },
+      "panda.hovers.semantic-colors.enabled": {
+        "type": "boolean",
+        "default": true,
+        "title": "Semantic Colors hover preview",
+        "description": "Enable semantic colors preview on hover"
+      },
+      "panda.inlay-hints.enabled": {
+        "type": "boolean",
+        "default": true,
+        "title": "Inlay hints",
+        "description": "Enable inlay hints next to tokens"
+      },
+      "panda.debug.enabled": {
+        "type": "boolean",
+        "default": true,
+        "title": "Debug",
+        "description": "Enable debug logs"
+        }
+      }
+    }
   },
   "repository": {
     "url": "https://github.com/chakra-ui/panda",

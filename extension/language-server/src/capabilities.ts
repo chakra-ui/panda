@@ -1,9 +1,15 @@
 import { ServerCapabilities, TextDocumentSyncKind } from 'vscode-languageserver'
 
-export const capabilities: ServerCapabilities = {
+export const serverCapabilities: ServerCapabilities = {
   textDocumentSync: TextDocumentSyncKind.Incremental,
   inlayHintProvider: {
     resolveProvider: false,
+  },
+  workspace: {
+    workspaceFolders: {
+      supported: true,
+      changeNotifications: true,
+    },
   },
 
   completionProvider: {
