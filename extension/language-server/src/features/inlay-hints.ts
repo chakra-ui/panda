@@ -10,8 +10,8 @@ export function registerInlayHints(context: PandaExtension) {
 
   connection.languages.inlayHint.on(
     tryCatch(async (params) => {
-      const isEnabled = await getPandaSettings('inlay-hints.enabled')
-      if (!isEnabled) return
+      const settings = await getPandaSettings()
+      if (!settings['inlay-hints.enabled']) return
 
       // await when the server starts, then just get the context
       if (!getContext()) {
@@ -38,7 +38,7 @@ export function registerInlayHints(context: PandaExtension) {
         ) {
           inlayHints.push({
             position: match.range.end,
-            label: printTokenValue(match.token),
+            label: printTokenValue(match.token, settings),
             kind: InlayHintKind.Type,
             paddingLeft: true,
           })

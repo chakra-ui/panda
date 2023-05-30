@@ -3,6 +3,7 @@ export interface PandaVSCodeSettings {
   'color-hints.semantic-tokens.enabled'?: boolean
   'rem-to-px.enabled'?: boolean
   'completions.enabled'?: boolean
+  'completions.token-fn.enabled'?: boolean
   'diagnostics.enabled'?: boolean
   'diagnostics.invalid-token-path'?: 'disable' | 'hint' | 'information' | 'warning' | 'error'
   'hovers.enabled'?: boolean
@@ -10,7 +11,8 @@ export interface PandaVSCodeSettings {
   'hovers.tokens.enabled'?: boolean
   'hovers.conditions.enabled'?: boolean
   'hovers.semantic-colors.enabled'?: boolean
-  'hovers.font-sizes.enabled'?: boolean
+  'hovers.display.mode'?: 'nested' | 'optimized' | 'minified'
+  'hovers.display.force-hash'?: boolean
   'inlay-hints.enabled'?: boolean
   'debug.enabled'?: boolean
 }

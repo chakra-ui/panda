@@ -46,90 +46,113 @@
     "configuration": {
       "title": "Panda",
       "properties": {
-      "panda.color-hints.enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Color hints",
-        "description": "Enable all color hints"
-      },
-      "panda.color-hints.semantic-tokens.enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Color hints",
-        "description": "Enable semantic tokens multiple color hints"
-      },
-      "panda.rem-to-px.enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Rem to pixels conversion",
-        "description": "Enable rem to px conversion"
-      },
-      "panda.completions.enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Completions",
-        "description": "Enable enhanced completions"
-      },
-      "panda.diagnostics.enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Diagnostics",
-        "description": "Enable all diagnostics"
-      },
-      "panda.diagnostics.invalid-token-path": {
-        "scope": "",
-        "type": "string",
-        "enum": [
-          "disable",
-          "hint",
-          "information",
-          "warning",
-          "error"
-        ],
-        "default": "warning",
-        "markdownDescription": "Changes the severity of the diagnostic for invalid token paths \n(ex: `css({ border: '1px solid token(xxx) })`)"
-      },
-      "panda.hovers.enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Hover previews",
-        "description": "Enable all hovers"
-      },
-      "panda.hovers.instances.enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Instance hover preview",
-        "description": "Enable instance css preview on hover"
-      },
-      "panda.hovers.tokens.enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Tokens hover preview",
-        "description": "Enable tokens css preview on hover"
-      },
-      "panda.hovers.tokens.conditions.enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Conditions hover preview",
-        "description": "Enable conditions css preview on hover"
-      },
-      "panda.hovers.semantic-colors.enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Semantic Colors hover preview",
-        "description": "Enable semantic colors preview on hover"
-      },
-      "panda.inlay-hints.enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Inlay hints",
-        "description": "Enable inlay hints next to tokens"
-      },
-      "panda.debug.enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Debug",
-        "description": "Enable debug logs"
+        "panda.color-hints.enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "Color hints",
+          "description": "Enable all color hints"
+        },
+        "panda.color-hints.semantic-tokens.enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "Color hints",
+          "description": "Enable semantic tokens multiple color hints"
+        },
+        "panda.rem-to-px.enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "Rem to pixels conversion",
+          "description": "Enable rem to px conversion"
+        },
+        "panda.completions.enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "Completions",
+          "description": "Enable enhanced completions"
+        },
+        "panda.completions.token-fn.enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "token fn completions",
+          "description": "Enable token(xxx.yyy.zzz) completions"
+        },
+        "panda.diagnostics.enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "Diagnostics",
+          "description": "Enable all diagnostics"
+        },
+        "panda.diagnostics.invalid-token-path": {
+          "title": "Invalid token path",
+          "type": "string",
+          "enum": [
+            "disable",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "default": "warning",
+          "markdownDescription": "Changes the severity of the diagnostic for invalid token paths \n(ex: `css({ border: '1px solid token(xxx) })`)"
+        },
+        "panda.hovers.enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "Hover previews",
+          "description": "Enable all hovers"
+        },
+        "panda.hovers.instances.enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "Instance hover preview",
+          "description": "Enable instance css preview on hover"
+        },
+        "panda.hovers.tokens.enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "Tokens hover preview",
+          "description": "Enable tokens css preview on hover"
+        },
+        "panda.hovers.tokens.conditions.enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "Conditions hover preview",
+          "description": "Enable conditions css preview on hover"
+        },
+        "panda.hovers.semantic-colors.enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "Semantic Colors hover preview",
+          "description": "Enable semantic colors preview on hover"
+        },
+        "panda.hovers.display.mode": {
+          "title": "Hover preview display mode",
+          "type": "string",
+          "enum": [
+            "optimized",
+            "nested",
+            "minified"
+          ],
+          "default": "optimized",
+          "markdownDescription": "Changes the display mode of the css preview on hover"
+        },
+        "panda.hovers.display.force-hash": {
+          "type": "boolean",
+          "default": false,
+          "title": "Hover preview force className hashing",
+          "description": "Force className hashing on hover preview, overriding the panda.config `hash` option"
+        },
+        "panda.inlay-hints.enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "Inlay hints",
+          "description": "Enable inlay hints next to tokens"
+        },
+        "panda.debug.enabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "Debug",
+          "description": "Enable debug logs"
         }
       }
     }
@@ -141,7 +164,7 @@
   "scripts": {
     "build:lsp": "pnpm --filter=../language-server build",
     "build": "pnpm build:lsp && tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --external esbuild --minify -d dist --clean --shims",
-    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims --watch . --watch ../language-server/dist",
+    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims --watch . --watch ../language-server/dist/index.js",
     "clean": "rm -rf dist",
     "lint": "eslint ./src --ext .ts,.tsx --fix",
     "release": "esno ./scripts/publish.ts",

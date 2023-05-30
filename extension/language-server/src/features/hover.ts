@@ -29,9 +29,9 @@ export function registerHover(extension: PandaExtension) {
         if (tokenMatch) {
           if (tokenMatch.kind === 'token') {
             const { token } = tokenMatch
-            const css = getMarkdownCss(ctx, { [tokenMatch.propName]: token.value }).raw
+            const css = getMarkdownCss(ctx, { [tokenMatch.propName]: token.value }, settings).raw
 
-            const contents = [printTokenValue(token), { language: 'css', value: css }]
+            const contents = [printTokenValue(token, settings), { language: 'css', value: css }]
             const category = token.extensions.category
 
             if (category === 'colors' && settings['hovers.semantic-colors.enabled']) {
@@ -53,7 +53,7 @@ export function registerHover(extension: PandaExtension) {
 
           if (tokenMatch.kind === 'condition' && settings['hovers.conditions.enabled']) {
             const { condition, propValue, propName } = tokenMatch
-            const css = getMarkdownCss(ctx, { [propName]: propValue }).raw
+            const css = getMarkdownCss(ctx, { [propName]: propValue }, settings).raw
 
             return {
               contents: [`🐼 \`${condition.value}\``, { language: 'css', value: css }],
@@ -67,7 +67,7 @@ export function registerHover(extension: PandaExtension) {
         const instanceMatch = getClosestInstance(doc, params.position)
         if (instanceMatch && instanceMatch.kind === 'styles') {
           const range = nodeRangeToVsCodeRange(instanceMatch.props.getRange())
-          return { contents: getMarkdownCss(ctx, instanceMatch.styles).withCss, range }
+          return { contents: getMarkdownCss(ctx, instanceMatch.styles, settings).withCss, range }
         }
       }
     }, onError),
