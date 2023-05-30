@@ -32,8 +32,9 @@ export async function main() {
     .option('-p, --postcss', 'Emit postcss config file')
     .option('--silent', 'Suppress all messages except errors')
     .option('--no-gitignore', "Don't update the .gitignore")
+    .option('--out-extension <ext>', "The extension of the generated js files (default: 'mjs')")
     .action(async (flags) => {
-      const { force, postcss, silent, gitignore } = flags
+      const { force, postcss, silent, gitignore, outExtension } = flags
 
       if (silent) {
         logger.level = 'silent'
@@ -44,7 +45,7 @@ export async function main() {
       const done = logger.time.info('✨ Panda initialized')
 
       if (postcss) await setupPostcss(cwd)
-      await setupConfig(cwd, { force })
+      await setupConfig(cwd, { force, outExtension })
 
       const ctx = await loadConfigAndCreateContext()
       const msg = await emitArtifacts(ctx)
