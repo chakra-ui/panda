@@ -30,7 +30,7 @@
     "lil-fp": "1.4.5",
     "outdent": " ^0.8.0",
     "pluralize": "8.0.0",
-    "postcss": "8.4.23",
+    "postcss": "8.4.24",
     "ts-pattern": "4.3.0"
   },
   "devDependencies": {

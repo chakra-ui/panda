@@ -6,6 +6,7 @@ import type { Tokens } from '../tokens'
 export type DividerProperties = {
    orientation?: ConditionalValue<"horizontal" | "vertical">
 	thickness?: ConditionalValue<Tokens["sizes"] | Properties["borderWidth"]>
+	color?: ConditionalValue<Tokens["colors"] | Properties["borderColor"]>
 }
 
 

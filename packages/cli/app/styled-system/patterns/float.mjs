@@ -1,9 +1,9 @@
 import { mapObject } from '../helpers.mjs';
 import { css } from '../css/index.mjs';
 
-const indicatorConfig = {
+const floatConfig = {
 transform(props, { map }) {
-  const { offsetX = "0", offsetY = "0", placement = "top-end", ...rest } = props;
+  const { offset = "0", offsetX = offset, offsetY = offset, placement = "top-end", ...rest } = props;
   return {
     display: "inline-flex",
     justifyContent: "center",
@@ -39,6 +39,6 @@ transform(props, { map }) {
   };
 }}
 
-export const getIndicatorStyle = (styles = {}) => indicatorConfig.transform(styles, { map: mapObject })
+export const getFloatStyle = (styles = {}) => floatConfig.transform(styles, { map: mapObject })
 
-export const indicator = (styles) => css(getIndicatorStyle(styles))
+export const float = (styles) => css(getFloatStyle(styles))

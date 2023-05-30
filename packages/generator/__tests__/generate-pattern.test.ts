@@ -596,6 +596,7 @@ test('should generate pattern', () => {
     export type DividerProperties = {
        orientation?: ConditionalValue<\\"horizontal\\" | \\"vertical\\">
     	thickness?: ConditionalValue<Tokens[\\"sizes\\"] | Properties[\\"borderWidth\\"]>
+    	color?: ConditionalValue<Tokens[\\"colors\\"] | Properties[\\"borderColor\\"]>
     }
 
 
@@ -609,13 +610,14 @@ test('should generate pattern', () => {
 
     const dividerConfig = {
     transform(props, { map }) {
-      const { orientation = \\"horizontal\\", thickness = \\"1px\\", ...rest } = props;
+      const { orientation = \\"horizontal\\", thickness = \\"1px\\", color, ...rest } = props;
       return {
         \\"--thickness\\": thickness,
         width: map(orientation, (v) => v === \\"vertical\\" ? void 0 : \\"100%\\"),
         height: map(orientation, (v) => v === \\"horizontal\\" ? void 0 : \\"100%\\"),
         borderInlineStartWidth: map(orientation, (v) => v === \\"horizontal\\" ? \\"var(--thickness)\\" : void 0),
         borderInlineEndWidth: map(orientation, (v) => v === \\"vertical\\" ? \\"var(--thickness)\\" : void 0),
+        borderColor: color,
         ...rest
       };
     }}
@@ -631,24 +633,25 @@ test('should generate pattern', () => {
     import type { Properties } from '../types/csstype'
     import type { Tokens } from '../tokens'
 
-    export type IndicatorProperties = {
+    export type FloatProperties = {
        offsetX?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"left\\"]>
     	offsetY?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"top\\"]>
+    	offset?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"top\\"]>
     	placement?: ConditionalValue<\\"bottom-end\\" | \\"bottom-start\\" | \\"top-end\\" | \\"top-start\\" | \\"bottom-center\\" | \\"top-center\\" | \\"middle-center\\" | \\"middle-end\\" | \\"middle-start\\">
     }
 
 
-    type IndicatorOptions = IndicatorProperties & Omit<SystemStyleObject, keyof IndicatorProperties >
+    type FloatOptions = FloatProperties & Omit<SystemStyleObject, keyof FloatProperties >
 
 
-    export declare function indicator(options?: IndicatorOptions): string
+    export declare function float(options?: FloatOptions): string
     ",
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
-    const indicatorConfig = {
+    const floatConfig = {
     transform(props, { map }) {
-      const { offsetX = \\"0\\", offsetY = \\"0\\", placement = \\"top-end\\", ...rest } = props;
+      const { offset = \\"0\\", offsetX = offset, offsetY = offset, placement = \\"top-end\\", ...rest } = props;
       return {
         display: \\"inline-flex\\",
         justifyContent: \\"center\\",
@@ -684,10 +687,10 @@ test('should generate pattern', () => {
       };
     }}
 
-    export const getIndicatorStyle = (styles = {}) => indicatorConfig.transform(styles, { map: mapObject })
+    export const getFloatStyle = (styles = {}) => floatConfig.transform(styles, { map: mapObject })
 
-    export const indicator = (styles) => css(getIndicatorStyle(styles))",
-        "name": "indicator",
+    export const float = (styles) => css(getFloatStyle(styles))",
+        "name": "float",
       },
     ]
   `)

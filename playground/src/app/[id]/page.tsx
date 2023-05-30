@@ -6,9 +6,9 @@ const Page = async (props: any) => {
     params: { id },
   } = props
 
-  const initialState = await prisma?.session.findFirst({
+  const initialState = await prisma.session.findFirst({
     where: { id },
-    select: { code: true, theme: true, view: true },
+    select: { code: true, theme: true },
   })
 
   return <Playground intialState={initialState} />
