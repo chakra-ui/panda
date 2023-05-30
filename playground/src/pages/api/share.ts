@@ -7,17 +7,16 @@ import { prisma } from '../../client/prisma'
 const schema = z.object({
   code: z.string(),
   theme: z.string(),
-  view: z.enum(['code', 'config']).optional(),
 })
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) =>
   match(req)
     .with({ method: 'POST' }, async () => {
       try {
-        const { code, theme } = schema.parse(req.body)
+        const data = schema.parse(req.body)
         const id = nanoid(10)
-        await prisma.session.create({ data: { id, code, theme } })
-        return res.status(200).json({ id })
+        const session = await prisma.session.create({ data: { id, ...data }, select: { id: true } })
+        return res.status(200).json({ success: true, data: session })
       } catch (e) {
         console.log(e)
         return res.status(500).json({ success: false })

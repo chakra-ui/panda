@@ -294,15 +294,17 @@ const divider = definePattern({
   properties: {
     orientation: { type: 'enum', value: ['horizontal', 'vertical'] },
     thickness: { type: 'token', value: 'sizes', property: 'borderWidth' },
+    color: { type: 'token', value: 'colors', property: 'borderColor' },
   },
   transform(props, { map }) {
-    const { orientation = 'horizontal', thickness = '1px', ...rest } = props
+    const { orientation = 'horizontal', thickness = '1px', color, ...rest } = props
     return {
       '--thickness': thickness,
       width: map(orientation, (v) => (v === 'vertical' ? undefined : '100%')),
       height: map(orientation, (v) => (v === 'horizontal' ? undefined : '100%')),
       borderInlineStartWidth: map(orientation, (v) => (v === 'horizontal' ? 'var(--thickness)' : undefined)),
       borderInlineEndWidth: map(orientation, (v) => (v === 'vertical' ? 'var(--thickness)' : undefined)),
+      borderColor: color,
       ...rest,
     }
   },
@@ -310,10 +312,11 @@ const divider = definePattern({
 
 type Dict = Record<string, any>
 
-const indicator = definePattern({
+const float = definePattern({
   properties: {
     offsetX: { type: 'token', value: 'spacing', property: 'left' },
     offsetY: { type: 'token', value: 'spacing', property: 'top' },
+    offset: { type: 'token', value: 'spacing', property: 'top' },
     placement: {
       type: 'enum',
       value: [
@@ -330,7 +333,7 @@ const indicator = definePattern({
     },
   },
   transform(props, { map }) {
-    const { offsetX = '0', offsetY = '0', placement = 'top-end', ...rest } = props
+    const { offset = '0', offsetX = offset, offsetY = offset, placement = 'top-end', ...rest } = props
     return {
       display: 'inline-flex',
       justifyContent: 'center',
@@ -384,5 +387,5 @@ export const patterns = {
   wrap,
   container,
   divider,
-  indicator,
+  float,
 }

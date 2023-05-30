@@ -12,8 +12,8 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "postcss": "8.4.23",
-    "nuxt": "^3.5.1",
+    "postcss": "8.4.24",
+    "nuxt": "^3.5.2",
     "@pandacss/dev": "workspace:*"
   }
 }
