@@ -4189,42 +4189,39 @@ test('unbox with unresolvable spread', () => {
   const [css, HStack] = [extracted.get('css')?.queryList[0].box, extracted.get('HStack')?.queryList[0].box]
 
   expect(css).toMatchInlineSnapshot(`
-    BoxNodeArray {
-      "node": CallExpression,
+    {
+      "node": "CallExpression",
       "stack": [],
       "type": "array",
       "value": [
-        BoxNodeMap {
-          "node": CallExpression,
-          "spreadConditions": undefined,
+        {
+          "node": "CallExpression",
           "stack": [
-            CallExpression,
-            ObjectLiteralExpression,
+            "CallExpression",
+            "ObjectLiteralExpression",
           ],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
-                PropertyAssignment,
-                StringLiteral,
+                "CallExpression",
+                "ObjectLiteralExpression",
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "red",
             },
-            "backgroundColor" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "backgroundColor" => {
+              "node": "StringLiteral",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
-                SpreadAssignment,
-                ObjectLiteralExpression,
-                PropertyAssignment,
-                StringLiteral,
+                "CallExpression",
+                "ObjectLiteralExpression",
+                "SpreadAssignment",
+                "ObjectLiteralExpression",
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "blue.100",
@@ -4249,65 +4246,39 @@ test('unbox with unresolvable spread', () => {
   `)
 
   expect(HStack).toMatchInlineSnapshot(`
-    BoxNodeMap {
-      "node": JsxOpeningElement,
-      "spreadConditions": undefined,
+    {
+      "node": "JsxOpeningElement",
       "stack": [],
       "type": "map",
       "value": Map {
-        "style" => BoxNodeMap {
-          "node": ObjectLiteralExpression,
-          "spreadConditions": undefined,
+        "style" => {
+          "node": "ObjectLiteralExpression",
           "stack": [
-            JsxAttribute,
-            JsxExpression,
-            ObjectLiteralExpression,
+            "JsxAttribute",
+            "JsxExpression",
+            "ObjectLiteralExpression",
           ],
           "type": "map",
           "value": Map {
-            "background" => BoxNodeConditional {
-              "node": BinaryExpression,
+            "background" => {
+              "node": "BinaryExpression",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ObjectLiteralExpression,
-                PropertyAssignment,
-                BinaryExpression,
+                "JsxAttribute",
+                "JsxExpression",
+                "ObjectLiteralExpression",
+                "PropertyAssignment",
+                "BinaryExpression",
               ],
               "type": "conditional",
-              "whenFalse": BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
-                "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ObjectLiteralExpression,
-                  PropertyAssignment,
-                  BinaryExpression,
-                ],
-                "type": "literal",
-                "value": "rgb(99 102 241)",
-              },
-              "whenTrue": BoxNodeUnresolvable {
-                "node": Identifier,
-                "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ObjectLiteralExpression,
-                  PropertyAssignment,
-                  BinaryExpression,
-                ],
-                "type": "unresolvable",
-              },
+              "value": undefined,
             },
           },
         },
-        "paddingInline" => BoxNodeLiteral {
-          "kind": "string",
-          "node": StringLiteral,
+        "paddingInline" => {
+          "node": "StringLiteral",
           "stack": [
-            JsxAttribute,
-            StringLiteral,
+            "JsxAttribute",
+            "StringLiteral",
           ],
           "type": "literal",
           "value": "4",

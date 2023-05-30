@@ -19,28 +19,25 @@ describe('jsx', () => {
     expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
-          "box": BoxNodeMap {
-            "node": JsxOpeningElement,
-            "spreadConditions": undefined,
+          "box": {
+            "node": "JsxOpeningElement",
             "stack": [],
             "type": "map",
             "value": Map {
-              "marginTop" => BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
+              "marginTop" => {
+                "node": "StringLiteral",
                 "stack": [
-                  JsxAttribute,
-                  StringLiteral,
+                  "JsxAttribute",
+                  "StringLiteral",
                 ],
                 "type": "literal",
                 "value": "40px",
               },
-              "marginBottom" => BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
+              "marginBottom" => {
+                "node": "StringLiteral",
                 "stack": [
-                  JsxAttribute,
-                  StringLiteral,
+                  "JsxAttribute",
+                  "StringLiteral",
                 ],
                 "type": "literal",
                 "value": "42px",
@@ -57,18 +54,16 @@ describe('jsx', () => {
           "type": "jsx-factory",
         },
         {
-          "box": BoxNodeMap {
-            "node": JsxOpeningElement,
-            "spreadConditions": undefined,
+          "box": {
+            "node": "JsxOpeningElement",
             "stack": [],
             "type": "map",
             "value": Map {
-              "bg" => BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
+              "bg" => {
+                "node": "StringLiteral",
                 "stack": [
-                  JsxAttribute,
-                  StringLiteral,
+                  "JsxAttribute",
+                  "StringLiteral",
                 ],
                 "type": "literal",
                 "value": "red.200",
@@ -104,28 +99,25 @@ describe('jsx', () => {
     expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
-          "box": BoxNodeMap {
-            "node": JsxOpeningElement,
-            "spreadConditions": undefined,
+          "box": {
+            "node": "JsxOpeningElement",
             "stack": [],
             "type": "map",
             "value": Map {
-              "marginTop" => BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
+              "marginTop" => {
+                "node": "StringLiteral",
                 "stack": [
-                  JsxAttribute,
-                  StringLiteral,
+                  "JsxAttribute",
+                  "StringLiteral",
                 ],
                 "type": "literal",
                 "value": "40px",
               },
-              "marginBottom" => BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
+              "marginBottom" => {
+                "node": "StringLiteral",
                 "stack": [
-                  JsxAttribute,
-                  StringLiteral,
+                  "JsxAttribute",
+                  "StringLiteral",
                 ],
                 "type": "literal",
                 "value": "42px",
@@ -142,18 +134,16 @@ describe('jsx', () => {
           "type": "jsx-factory",
         },
         {
-          "box": BoxNodeMap {
-            "node": JsxOpeningElement,
-            "spreadConditions": undefined,
+          "box": {
+            "node": "JsxOpeningElement",
             "stack": [],
             "type": "map",
             "value": Map {
-              "bg" => BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
+              "bg" => {
+                "node": "StringLiteral",
                 "stack": [
-                  JsxAttribute,
-                  StringLiteral,
+                  "JsxAttribute",
+                  "StringLiteral",
                 ],
                 "type": "literal",
                 "value": "red.200",
@@ -190,58 +180,53 @@ describe('jsx', () => {
     expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
-          "box": BoxNodeMap {
-            "node": JsxOpeningElement,
-            "spreadConditions": undefined,
+          "box": {
+            "node": "JsxOpeningElement",
             "stack": [],
             "type": "map",
             "value": Map {
-              "marginTop" => BoxNodeMap {
-                "node": ObjectLiteralExpression,
-                "spreadConditions": undefined,
+              "marginTop" => {
+                "node": "ObjectLiteralExpression",
                 "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ObjectLiteralExpression,
+                  "JsxAttribute",
+                  "JsxExpression",
+                  "ObjectLiteralExpression",
                 ],
                 "type": "map",
                 "value": Map {
-                  "sm" => BoxNodeLiteral {
-                    "kind": "string",
-                    "node": StringLiteral,
+                  "sm" => {
+                    "node": "StringLiteral",
                     "stack": [
-                      JsxAttribute,
-                      JsxExpression,
-                      ObjectLiteralExpression,
-                      PropertyAssignment,
-                      StringLiteral,
+                      "JsxAttribute",
+                      "JsxExpression",
+                      "ObjectLiteralExpression",
+                      "PropertyAssignment",
+                      "StringLiteral",
                     ],
                     "type": "literal",
                     "value": "40px",
                   },
-                  "md" => BoxNodeMap {
-                    "node": ObjectLiteralExpression,
-                    "spreadConditions": undefined,
+                  "md" => {
+                    "node": "ObjectLiteralExpression",
                     "stack": [
-                      JsxAttribute,
-                      JsxExpression,
-                      ObjectLiteralExpression,
-                      PropertyAssignment,
-                      ObjectLiteralExpression,
+                      "JsxAttribute",
+                      "JsxExpression",
+                      "ObjectLiteralExpression",
+                      "PropertyAssignment",
+                      "ObjectLiteralExpression",
                     ],
                     "type": "map",
                     "value": Map {
-                      "rtl" => BoxNodeLiteral {
-                        "kind": "string",
-                        "node": StringLiteral,
+                      "rtl" => {
+                        "node": "StringLiteral",
                         "stack": [
-                          JsxAttribute,
-                          JsxExpression,
-                          ObjectLiteralExpression,
-                          PropertyAssignment,
-                          ObjectLiteralExpression,
-                          PropertyAssignment,
-                          StringLiteral,
+                          "JsxAttribute",
+                          "JsxExpression",
+                          "ObjectLiteralExpression",
+                          "PropertyAssignment",
+                          "ObjectLiteralExpression",
+                          "PropertyAssignment",
+                          "StringLiteral",
                         ],
                         "type": "literal",
                         "value": "40px",
@@ -250,12 +235,11 @@ describe('jsx', () => {
                   },
                 },
               },
-              "marginBottom" => BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
+              "marginBottom" => {
+                "node": "StringLiteral",
                 "stack": [
-                  JsxAttribute,
-                  StringLiteral,
+                  "JsxAttribute",
+                  "StringLiteral",
                 ],
                 "type": "literal",
                 "value": "42px",
@@ -277,18 +261,16 @@ describe('jsx', () => {
           "type": "jsx-factory",
         },
         {
-          "box": BoxNodeMap {
-            "node": JsxOpeningElement,
-            "spreadConditions": undefined,
+          "box": {
+            "node": "JsxOpeningElement",
             "stack": [],
             "type": "map",
             "value": Map {
-              "bg" => BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
+              "bg" => {
+                "node": "StringLiteral",
                 "stack": [
-                  JsxAttribute,
-                  StringLiteral,
+                  "JsxAttribute",
+                  "StringLiteral",
                 ],
                 "type": "literal",
                 "value": "red.200",
@@ -324,29 +306,26 @@ describe('jsx', () => {
     expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
-          "box": BoxNodeMap {
-            "node": JsxOpeningElement,
-            "spreadConditions": undefined,
+          "box": {
+            "node": "JsxOpeningElement",
             "stack": [],
             "type": "map",
             "value": Map {
-              "marginLeft" => BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
+              "marginLeft" => {
+                "node": "StringLiteral",
                 "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ConditionalExpression,
+                  "JsxAttribute",
+                  "JsxExpression",
+                  "ConditionalExpression",
                 ],
                 "type": "literal",
                 "value": "40px",
               },
-              "marginBottom" => BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
+              "marginBottom" => {
+                "node": "StringLiteral",
                 "stack": [
-                  JsxAttribute,
-                  StringLiteral,
+                  "JsxAttribute",
+                  "StringLiteral",
                 ],
                 "type": "literal",
                 "value": "42px",
@@ -383,31 +362,28 @@ describe('jsx', () => {
     expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
-          "box": BoxNodeMap {
-            "node": JsxOpeningElement,
-            "spreadConditions": undefined,
+          "box": {
+            "node": "JsxOpeningElement",
             "stack": [],
             "type": "map",
             "value": Map {
-              "css" => BoxNodeMap {
-                "node": ObjectLiteralExpression,
-                "spreadConditions": undefined,
+              "css" => {
+                "node": "ObjectLiteralExpression",
                 "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ObjectLiteralExpression,
+                  "JsxAttribute",
+                  "JsxExpression",
+                  "ObjectLiteralExpression",
                 ],
                 "type": "map",
                 "value": Map {
-                  "bg" => BoxNodeLiteral {
-                    "kind": "string",
-                    "node": StringLiteral,
+                  "bg" => {
+                    "node": "StringLiteral",
                     "stack": [
-                      JsxAttribute,
-                      JsxExpression,
-                      ObjectLiteralExpression,
-                      PropertyAssignment,
-                      StringLiteral,
+                      "JsxAttribute",
+                      "JsxExpression",
+                      "ObjectLiteralExpression",
+                      "PropertyAssignment",
+                      "StringLiteral",
                     ],
                     "type": "literal",
                     "value": "red.200",
@@ -458,18 +434,16 @@ describe('jsx', () => {
     expect(jsxParser(code)).toMatchInlineSnapshot(`
       Set {
         {
-          "box": BoxNodeMap {
-            "node": JsxSelfClosingElement,
-            "spreadConditions": undefined,
+          "box": {
+            "node": "JsxSelfClosingElement",
             "stack": [],
             "type": "map",
             "value": Map {
-              "backgroundImage" => BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
+              "backgroundImage" => {
+                "node": "StringLiteral",
                 "stack": [
-                  JsxAttribute,
-                  StringLiteral,
+                  "JsxAttribute",
+                  "StringLiteral",
                 ],
                 "type": "literal",
                 "value": "linear-gradient( 135deg, hsla(0, 0%, 100%, 0.75) 10%, transparent 0, transparent 50%, hsla(0, 0%, 100%, 0.75) 0, hsla(0, 0%, 100%, 0.75) 60%, transparent 0, transparent )",

@@ -19,38 +19,34 @@ describe('pattern jsx', () => {
       Map {
         "Stack" => Set {
           {
-            "box": BoxNodeMap {
-              "node": JsxOpeningElement,
-              "spreadConditions": undefined,
+            "box": {
+              "node": "JsxOpeningElement",
               "stack": [],
               "type": "map",
               "value": Map {
-                "align" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "align" => {
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "center",
                 },
-                "marginTop" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "marginTop" => {
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "40px",
                 },
-                "marginBottom" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "marginBottom" => {
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "42px",

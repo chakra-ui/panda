@@ -20,23 +20,21 @@ describe('pattern jsx', () => {
       Map {
         "stack" => Set {
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "align" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "align" => {
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "center",
@@ -54,23 +52,21 @@ describe('pattern jsx', () => {
         },
         "hstack" => Set {
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "justify" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "justify" => {
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "flex-end",

@@ -527,18 +527,16 @@ it('minimal - groups extract props in parent component instance', () => {
   expect(extracted.get('ColorBox')!.queryList).toMatchInlineSnapshot(`
     [
       {
-        "box": BoxNodeMap {
-          "node": JsxSelfClosingElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxSelfClosingElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "red.200",
@@ -548,38 +546,34 @@ it('minimal - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxSelfClosingElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxSelfClosingElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                PropertyAssignment,
-                StringLiteral,
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "blue.100",
             },
-            "backgroundColor" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "backgroundColor" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "blackAlpha.100",
             },
-            "display" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "display" => {
+              "node": "StringLiteral",
               "stack": [
-                PropertyAssignment,
-                StringLiteral,
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "flex",
@@ -597,18 +591,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
   expect(extracted.get('ColorBox')!.queryList).toMatchInlineSnapshot(`
     [
       {
-        "box": BoxNodeMap {
-          "node": JsxSelfClosingElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxSelfClosingElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "red.200",
@@ -618,28 +610,25 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "yellow.300",
             },
-            "backgroundColor" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "backgroundColor" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "blackAlpha.100",
@@ -649,61 +638,37 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeConditional {
-              "node": ConditionalExpression,
+            "color" => {
+              "node": "ConditionalExpression",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ConditionalExpression,
+                "JsxAttribute",
+                "JsxExpression",
+                "ConditionalExpression",
               ],
               "type": "conditional",
-              "whenFalse": BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
-                "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ConditionalExpression,
-                ],
-                "type": "literal",
-                "value": "cyan.500",
-              },
-              "whenTrue": BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
-                "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ConditionalExpression,
-                ],
-                "type": "literal",
-                "value": "cyan.400",
-              },
+              "value": undefined,
             },
           },
         },
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "facebook.400",
@@ -713,22 +678,20 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -738,19 +701,17 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ConditionalExpression,
+                "JsxAttribute",
+                "JsxExpression",
+                "ConditionalExpression",
               ],
               "type": "literal",
               "value": "facebook.500",
@@ -760,123 +721,66 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeConditional {
-              "node": ConditionalExpression,
+            "color" => {
+              "node": "ConditionalExpression",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ConditionalExpression,
-                Identifier,
-                VariableDeclaration,
+                "JsxAttribute",
+                "JsxExpression",
+                "ConditionalExpression",
+                "Identifier",
+                "VariableDeclaration",
               ],
               "type": "conditional",
-              "whenFalse": BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
-                "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ConditionalExpression,
-                  Identifier,
-                  VariableDeclaration,
-                  StringLiteral,
-                ],
-                "type": "literal",
-                "value": "gray.200",
-              },
-              "whenTrue": BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
-                "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ConditionalExpression,
-                ],
-                "type": "literal",
-                "value": "facebook.600",
-              },
+              "value": undefined,
             },
           },
         },
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeConditional {
-              "node": ConditionalExpression,
+            "color" => {
+              "node": "ConditionalExpression",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ConditionalExpression,
-                Identifier,
-                VariableDeclaration,
-                Identifier,
-                VariableDeclaration,
+                "JsxAttribute",
+                "JsxExpression",
+                "ConditionalExpression",
+                "Identifier",
+                "VariableDeclaration",
+                "Identifier",
+                "VariableDeclaration",
               ],
               "type": "conditional",
-              "whenFalse": BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
-                "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ConditionalExpression,
-                  Identifier,
-                  VariableDeclaration,
-                  Identifier,
-                  VariableDeclaration,
-                  StringLiteral,
-                ],
-                "type": "literal",
-                "value": "gray.300",
-              },
-              "whenTrue": BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
-                "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ConditionalExpression,
-                  Identifier,
-                  VariableDeclaration,
-                  StringLiteral,
-                ],
-                "type": "literal",
-                "value": "gray.200",
-              },
+              "value": undefined,
             },
           },
         },
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -886,22 +790,20 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ElementAccessExpression,
-                ObjectLiteralExpression,
-                StringLiteral,
-                PropertyAssignment,
+                "JsxAttribute",
+                "JsxExpression",
+                "ElementAccessExpression",
+                "ObjectLiteralExpression",
+                "StringLiteral",
+                "PropertyAssignment",
               ],
               "type": "literal",
               "value": "facebook.900",
@@ -911,21 +813,19 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ElementAccessExpression,
-                ArrayLiteralExpression,
-                NumericLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "ElementAccessExpression",
+                "ArrayLiteralExpression",
+                "NumericLiteral",
               ],
               "type": "literal",
               "value": "facebook.900",
@@ -935,24 +835,22 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ElementAccessExpression,
-                Identifier,
-                NumericLiteral,
-                Identifier,
-                VariableDeclaration,
-                ArrayLiteralExpression,
+                "JsxAttribute",
+                "JsxExpression",
+                "ElementAccessExpression",
+                "Identifier",
+                "NumericLiteral",
+                "Identifier",
+                "VariableDeclaration",
+                "ArrayLiteralExpression",
               ],
               "type": "literal",
               "value": "pink.100",
@@ -962,24 +860,22 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ElementAccessExpression,
-                Identifier,
-                NumericLiteral,
-                Identifier,
-                VariableDeclaration,
-                ArrayLiteralExpression,
+                "JsxAttribute",
+                "JsxExpression",
+                "ElementAccessExpression",
+                "Identifier",
+                "NumericLiteral",
+                "Identifier",
+                "VariableDeclaration",
+                "ArrayLiteralExpression",
               ],
               "type": "literal",
               "value": "pink.100",
@@ -989,24 +885,22 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ElementAccessExpression,
-                Identifier,
-                NumericLiteral,
-                Identifier,
-                VariableDeclaration,
-                ArrayLiteralExpression,
+                "JsxAttribute",
+                "JsxExpression",
+                "ElementAccessExpression",
+                "Identifier",
+                "NumericLiteral",
+                "Identifier",
+                "VariableDeclaration",
+                "ArrayLiteralExpression",
               ],
               "type": "literal",
               "value": "pink.100",
@@ -1016,24 +910,22 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ElementAccessExpression,
-                Identifier,
-                NumericLiteral,
-                Identifier,
-                VariableDeclaration,
-                ArrayLiteralExpression,
+                "JsxAttribute",
+                "JsxExpression",
+                "ElementAccessExpression",
+                "Identifier",
+                "NumericLiteral",
+                "Identifier",
+                "VariableDeclaration",
+                "ArrayLiteralExpression",
               ],
               "type": "literal",
               "value": "pink.100",
@@ -1043,24 +935,22 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ElementAccessExpression,
-                Identifier,
-                NumericLiteral,
-                Identifier,
-                VariableDeclaration,
-                ArrayLiteralExpression,
+                "JsxAttribute",
+                "JsxExpression",
+                "ElementAccessExpression",
+                "Identifier",
+                "NumericLiteral",
+                "Identifier",
+                "VariableDeclaration",
+                "ArrayLiteralExpression",
               ],
               "type": "literal",
               "value": "pink.100",
@@ -1070,25 +960,23 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ElementAccessExpression,
-                ElementAccessExpression,
-                StringLiteral,
-                ArrayLiteralExpression,
-                NumericLiteral,
-                PropertyAssignment,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "ElementAccessExpression",
+                "ElementAccessExpression",
+                "StringLiteral",
+                "ArrayLiteralExpression",
+                "NumericLiteral",
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "facebook.900",
@@ -1098,25 +986,23 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ElementAccessExpression,
-                ElementAccessExpression,
-                StringLiteral,
-                ArrayLiteralExpression,
-                NumericLiteral,
-                PropertyAssignment,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "ElementAccessExpression",
+                "ElementAccessExpression",
+                "StringLiteral",
+                "ArrayLiteralExpression",
+                "NumericLiteral",
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "facebook.900",
@@ -1126,25 +1012,23 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ElementAccessExpression,
-                ElementAccessExpression,
-                StringLiteral,
-                ArrayLiteralExpression,
-                NumericLiteral,
-                PropertyAssignment,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "ElementAccessExpression",
+                "ElementAccessExpression",
+                "StringLiteral",
+                "ArrayLiteralExpression",
+                "NumericLiteral",
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "facebook.900",
@@ -1154,22 +1038,20 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -1179,22 +1061,20 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -1204,22 +1084,20 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -1229,22 +1107,20 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -1254,22 +1130,20 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -1279,22 +1153,20 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -1304,22 +1176,20 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -1329,22 +1199,20 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -1354,22 +1222,20 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -1379,22 +1245,20 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -1404,22 +1268,20 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -1429,146 +1291,70 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeConditional {
-              "node": ConditionalExpression,
+            "color" => {
+              "node": "ConditionalExpression",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ElementAccessExpression,
-                Identifier,
-                ConditionalExpression,
-                Identifier,
-                VariableDeclaration,
-                ObjectLiteralExpression,
-                Identifier,
-                VariableDeclaration,
-                ObjectLiteralExpression,
+                "JsxAttribute",
+                "JsxExpression",
+                "ElementAccessExpression",
+                "Identifier",
+                "ConditionalExpression",
+                "Identifier",
+                "VariableDeclaration",
+                "ObjectLiteralExpression",
+                "Identifier",
+                "VariableDeclaration",
+                "ObjectLiteralExpression",
               ],
               "type": "conditional",
-              "whenFalse": BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
-                "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ElementAccessExpression,
-                  Identifier,
-                  ConditionalExpression,
-                  Identifier,
-                  VariableDeclaration,
-                  ObjectLiteralExpression,
-                  Identifier,
-                  VariableDeclaration,
-                  ShorthandPropertyAssignment,
-                  Identifier,
-                  VariableDeclaration,
-                  PropertyAccessExpression,
-                  Identifier,
-                  Identifier,
-                  VariableDeclaration,
-                  PropertyAssignment,
-                ],
-                "type": "literal",
-                "value": "gray.800",
-              },
-              "whenTrue": BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
-                "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ElementAccessExpression,
-                  Identifier,
-                  ConditionalExpression,
-                  Identifier,
-                  VariableDeclaration,
-                  PropertyAssignment,
-                ],
-                "type": "literal",
-                "value": "gray.600",
-              },
+              "value": undefined,
             },
           },
         },
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeConditional {
-              "node": ConditionalExpression,
+            "color" => {
+              "node": "ConditionalExpression",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ConditionalExpression,
-                Identifier,
-                VariableDeclaration,
+                "JsxAttribute",
+                "JsxExpression",
+                "ConditionalExpression",
+                "Identifier",
+                "VariableDeclaration",
               ],
               "type": "conditional",
-              "whenFalse": BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
-                "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  Identifier,
-                  Identifier,
-                  VariableDeclaration,
-                  StringLiteral,
-                ],
-                "type": "literal",
-                "value": "gray.100",
-              },
-              "whenTrue": BoxNodeLiteral {
-                "kind": "string",
-                "node": StringLiteral,
-                "stack": [
-                  JsxAttribute,
-                  JsxExpression,
-                  ConditionalExpression,
-                  Identifier,
-                  Identifier,
-                  Identifier,
-                  VariableDeclaration,
-                  Identifier,
-                  VariableDeclaration,
-                  PropertyAssignment,
-                ],
-                "type": "literal",
-                "value": "gray.700",
-              },
+              "value": undefined,
             },
           },
         },
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "JsxAttribute",
+                "JsxExpression",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "gray.100",
@@ -1578,18 +1364,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                PropertyAssignment,
-                StringLiteral,
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "facebook.100",
@@ -1599,21 +1383,19 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                Identifier,
-                VariableDeclaration,
-                ObjectLiteralExpression,
-                PropertyAssignment,
-                StringLiteral,
+                "Identifier",
+                "VariableDeclaration",
+                "ObjectLiteralExpression",
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "blackAlpha.400",
@@ -1623,53 +1405,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": [
-            BoxNodeConditional {
-              "node": ConditionalExpression,
-              "stack": [
-                Identifier,
-                VariableDeclaration,
-              ],
-              "type": "conditional",
-              "whenFalse": BoxNodeLiteral {
-                "kind": "null",
-                "node": NullKeyword,
-                "stack": [
-                  Identifier,
-                  VariableDeclaration,
-                ],
-                "type": "literal",
-                "value": null,
-              },
-              "whenTrue": BoxNodeMap {
-                "node": ObjectLiteralExpression,
-                "spreadConditions": undefined,
-                "stack": [
-                  Identifier,
-                  VariableDeclaration,
-                  ObjectLiteralExpression,
-                ],
-                "type": "map",
-                "value": Map {
-                  "color" => BoxNodeLiteral {
-                    "kind": "string",
-                    "node": StringLiteral,
-                    "stack": [
-                      Identifier,
-                      VariableDeclaration,
-                      ObjectLiteralExpression,
-                      PropertyAssignment,
-                      StringLiteral,
-                    ],
-                    "type": "literal",
-                    "value": "blackAlpha.400",
-                  },
-                },
-              },
-            },
-          ],
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {},
@@ -1677,41 +1414,37 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                PropertyAssignment,
-                StringLiteral,
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "facebook.200",
             },
-            "backgroundColor" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "backgroundColor" => {
+              "node": "StringLiteral",
               "stack": [
-                PropertyAssignment,
-                StringLiteral,
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "blackAlpha.100",
             },
-            "borderColor" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "borderColor" => {
+              "node": "StringLiteral",
               "stack": [
-                PropertyAssignment,
-                Identifier,
-                Identifier,
-                VariableDeclaration,
-                StringLiteral,
+                "PropertyAssignment",
+                "Identifier",
+                "Identifier",
+                "VariableDeclaration",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "blackAlpha.300",
@@ -1721,40 +1454,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": [
-            BoxNodeConditional {
-              "node": ConditionalExpression,
-              "stack": [],
-              "type": "conditional",
-              "whenFalse": BoxNodeLiteral {
-                "kind": "undefined",
-                "node": Identifier,
-                "stack": [],
-                "type": "literal",
-                "value": undefined,
-              },
-              "whenTrue": BoxNodeMap {
-                "node": ObjectLiteralExpression,
-                "spreadConditions": undefined,
-                "stack": [],
-                "type": "map",
-                "value": Map {
-                  "color" => BoxNodeLiteral {
-                    "kind": "string",
-                    "node": StringLiteral,
-                    "stack": [
-                      PropertyAssignment,
-                      StringLiteral,
-                    ],
-                    "type": "literal",
-                    "value": "facebook.200",
-                  },
-                },
-              },
-            },
-          ],
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {},
@@ -1762,49 +1463,8 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": [
-            BoxNodeConditional {
-              "node": BinaryExpression,
-              "stack": [
-                Identifier,
-                BindingElement,
-              ],
-              "type": "conditional",
-              "whenFalse": BoxNodeMap {
-                "node": ObjectLiteralExpression,
-                "spreadConditions": undefined,
-                "stack": [
-                  Identifier,
-                  BindingElement,
-                ],
-                "type": "map",
-                "value": Map {
-                  "color" => BoxNodeLiteral {
-                    "kind": "string",
-                    "node": StringLiteral,
-                    "stack": [
-                      Identifier,
-                      BindingElement,
-                      PropertyAssignment,
-                      StringLiteral,
-                    ],
-                    "type": "literal",
-                    "value": "facebook.300",
-                  },
-                },
-              },
-              "whenTrue": BoxNodeUnresolvable {
-                "node": BindingElement,
-                "stack": [
-                  Identifier,
-                  BindingElement,
-                ],
-                "type": "unresolvable",
-              },
-            },
-          ],
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {},
@@ -1812,22 +1472,19 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": CallExpression,
+            "color" => {
+              "node": "CallExpression",
               "stack": [],
               "type": "literal",
               "value": "twitter.100",
             },
-            "backgroundColor" => BoxNodeLiteral {
-              "kind": "string",
-              "node": CallExpression,
+            "backgroundColor" => {
+              "node": "CallExpression",
               "stack": [],
               "type": "literal",
               "value": "twitter.200",
@@ -1837,28 +1494,25 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "backgroundColor" => BoxNodeLiteral {
-              "kind": "string",
-              "node": CallExpression,
+            "backgroundColor" => {
+              "node": "CallExpression",
               "stack": [
-                SpreadAssignment,
-                CallExpression,
+                "SpreadAssignment",
+                "CallExpression",
               ],
               "type": "literal",
               "value": "twitter.200",
             },
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                PropertyAssignment,
-                StringLiteral,
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "orange.100",
@@ -1868,18 +1522,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                PropertyAssignment,
-                StringLiteral,
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "orange.200",
@@ -1889,18 +1541,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                PropertyAssignment,
-                StringLiteral,
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "orange.400",
@@ -1910,28 +1560,25 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                PropertyAssignment,
-                StringLiteral,
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "telegram.300",
             },
-            "backgroundColor" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "backgroundColor" => {
+              "node": "StringLiteral",
               "stack": [
-                PropertyAssignment,
-                StringLiteral,
+                "PropertyAssignment",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "telegram.400",
@@ -1941,57 +1588,52 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeMap {
-              "node": ObjectLiteralExpression,
-              "spreadConditions": undefined,
+            "color" => {
+              "node": "ObjectLiteralExpression",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ObjectLiteralExpression,
+                "JsxAttribute",
+                "JsxExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "default" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "default" => {
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    JsxExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "JsxExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "red.100",
                 },
-                "hover" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "hover" => {
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    JsxExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "JsxExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "green.100",
                 },
-                "focus" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "focus" => {
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    JsxExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "JsxExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "blue.100",
@@ -2003,57 +1645,52 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "backgroundColor" => BoxNodeMap {
-              "node": ObjectLiteralExpression,
-              "spreadConditions": undefined,
+            "backgroundColor" => {
+              "node": "ObjectLiteralExpression",
               "stack": [
-                JsxAttribute,
-                JsxExpression,
-                ObjectLiteralExpression,
+                "JsxAttribute",
+                "JsxExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "default" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "default" => {
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    JsxExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "JsxExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "orange.800",
                 },
-                "hover" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "hover" => {
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    JsxExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "JsxExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "telegram.200",
                 },
-                "focus" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "focus" => {
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    JsxExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "JsxExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "yellow.700",
@@ -2065,18 +1702,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "facebook.900",
@@ -2086,18 +1721,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "facebook.900",
@@ -2107,18 +1740,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "facebook.900",
@@ -2128,18 +1759,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "red.100",
@@ -2149,18 +1778,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxOpeningElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxOpeningElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "red.100",
@@ -2170,18 +1797,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxSelfClosingElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxSelfClosingElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "green.100",
@@ -2191,18 +1816,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxSelfClosingElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxSelfClosingElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "blue.100",
@@ -2212,18 +1835,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxSelfClosingElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxSelfClosingElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "yellow.100",
@@ -2233,18 +1854,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxSelfClosingElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxSelfClosingElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "orange.100",
@@ -2254,18 +1873,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxSelfClosingElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxSelfClosingElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "orange.300",
@@ -2275,18 +1892,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxSelfClosingElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxSelfClosingElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "red.100",
@@ -2296,18 +1911,16 @@ it('ExtractSample - groups extract props in parent component instance', () => {
         "name": "ColorBox",
       },
       {
-        "box": BoxNodeMap {
-          "node": JsxSelfClosingElement,
-          "spreadConditions": undefined,
+        "box": {
+          "node": "JsxSelfClosingElement",
           "stack": [],
           "type": "map",
           "value": Map {
-            "color" => BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            "color" => {
+              "node": "StringLiteral",
               "stack": [
-                JsxAttribute,
-                StringLiteral,
+                "JsxAttribute",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "orange.400",
@@ -5571,56 +5184,52 @@ it('extract function with multiple args even if not starting by ObjectLiteralExp
   expect(extracted.get('createTheme')!.queryList).toMatchInlineSnapshot(`
     [
       {
-        "box": BoxNodeArray {
-          "node": CallExpression,
+        "box": {
+          "node": "CallExpression",
           "stack": [],
           "type": "array",
           "value": [
-            BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            {
+              "node": "StringLiteral",
               "stack": [
-                CallExpression,
-                StringLiteral,
+                "CallExpression",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "contract",
             },
-            BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            {
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "color" => BoxNodeMap {
-                  "node": ObjectLiteralExpression,
-                  "spreadConditions": undefined,
+                "color" => {
+                  "node": "ObjectLiteralExpression",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ObjectLiteralExpression,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
                   ],
                   "type": "map",
                   "value": Map {
-                    "mainBg" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "mainBg" => {
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ElementAccessExpression,
-                        Identifier,
-                        StringLiteral,
-                        Identifier,
-                        VariableDeclaration,
-                        PropertyAssignment,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ElementAccessExpression",
+                        "Identifier",
+                        "StringLiteral",
+                        "Identifier",
+                        "VariableDeclaration",
+                        "PropertyAssignment",
                       ],
                       "type": "literal",
                       "value": "#95a7d8",
@@ -5659,121 +5268,112 @@ it('extract NullKeyword', () => {
   expect(extracted.get('createTheme')!.queryList).toMatchInlineSnapshot(`
     [
       {
-        "box": BoxNodeArray {
-          "node": CallExpression,
+        "box": {
+          "node": "CallExpression",
           "stack": [],
           "type": "array",
           "value": [
-            BoxNodeLiteral {
-              "kind": "string",
-              "node": StringLiteral,
+            {
+              "node": "StringLiteral",
               "stack": [
-                CallExpression,
-                StringLiteral,
+                "CallExpression",
+                "StringLiteral",
               ],
               "type": "literal",
               "value": "contract",
             },
-            BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            {
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "color" => BoxNodeMap {
-                  "node": ObjectLiteralExpression,
-                  "spreadConditions": undefined,
+                "color" => {
+                  "node": "ObjectLiteralExpression",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ObjectLiteralExpression,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
                   ],
                   "type": "map",
                   "value": Map {
-                    "mainBg" => BoxNodeLiteral {
-                      "kind": "null",
-                      "node": NullKeyword,
+                    "mainBg" => {
+                      "node": "NullKeyword",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        NullKeyword,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "NullKeyword",
                       ],
                       "type": "literal",
                       "value": null,
                     },
-                    "secondaryBg" => BoxNodeLiteral {
-                      "kind": "null",
-                      "node": NullKeyword,
+                    "secondaryBg" => {
+                      "node": "NullKeyword",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        NullKeyword,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "NullKeyword",
                       ],
                       "type": "literal",
                       "value": null,
                     },
-                    "text" => BoxNodeLiteral {
-                      "kind": "null",
-                      "node": NullKeyword,
+                    "text" => {
+                      "node": "NullKeyword",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        NullKeyword,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "NullKeyword",
                       ],
                       "type": "literal",
                       "value": null,
                     },
-                    "bg" => BoxNodeLiteral {
-                      "kind": "null",
-                      "node": NullKeyword,
+                    "bg" => {
+                      "node": "NullKeyword",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        NullKeyword,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "NullKeyword",
                       ],
                       "type": "literal",
                       "value": null,
                     },
-                    "bgSecondary" => BoxNodeLiteral {
-                      "kind": "null",
-                      "node": NullKeyword,
+                    "bgSecondary" => {
+                      "node": "NullKeyword",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        NullKeyword,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "NullKeyword",
                       ],
                       "type": "literal",
                       "value": null,
                     },
-                    "bgHover" => BoxNodeLiteral {
-                      "kind": "null",
-                      "node": NullKeyword,
+                    "bgHover" => {
+                      "node": "NullKeyword",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        NullKeyword,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "NullKeyword",
                       ],
                       "type": "literal",
                       "value": null,
@@ -5833,68 +5433,64 @@ it('extract css from createTheme result', () => {
   expect(extracted.get('css')!.queryList).toMatchInlineSnapshot(`
     [
       {
-        "box": BoxNodeArray {
-          "node": CallExpression,
+        "box": {
+          "node": "CallExpression",
           "stack": [],
           "type": "array",
           "value": [
-            BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            {
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "background" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": TemplateExpression,
+                "background" => {
+                  "node": "TemplateExpression",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    TemplateExpression,
-                    PropertyAccessExpression,
-                    Identifier,
-                    Identifier,
-                    VariableDeclaration,
-                    ObjectLiteralExpression,
-                    PropertyAccessExpression,
-                    Identifier,
-                    Identifier,
-                    VariableDeclaration,
-                    ObjectLiteralExpression,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "TemplateExpression",
+                    "PropertyAccessExpression",
+                    "Identifier",
+                    "Identifier",
+                    "VariableDeclaration",
+                    "ObjectLiteralExpression",
+                    "PropertyAccessExpression",
+                    "Identifier",
+                    "Identifier",
+                    "VariableDeclaration",
+                    "ObjectLiteralExpression",
                   ],
                   "type": "literal",
                   "value": "linear-gradient(to bottom, var(--color-mainBg__1du39r70) 20%, var(--color-secondaryBg__1du39r71))",
                 },
-                "backgroundAttachment" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "backgroundAttachment" => {
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "fixed",
                 },
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "color" => {
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    PropertyAccessExpression,
-                    PropertyAccessExpression,
-                    Identifier,
-                    Identifier,
-                    VariableDeclaration,
-                    PropertyAssignment,
-                    PropertyAssignment,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "PropertyAccessExpression",
+                    "PropertyAccessExpression",
+                    "Identifier",
+                    "Identifier",
+                    "VariableDeclaration",
+                    "PropertyAssignment",
+                    "PropertyAssignment",
                   ],
                   "type": "literal",
                   "value": "var(--color-text__1du39r72)",
@@ -5942,130 +5538,124 @@ it('extract assignVars args', () => {
   expect(extracted.get('assignVars')!.queryList).toMatchInlineSnapshot(`
     [
       {
-        "box": BoxNodeArray {
-          "node": CallExpression,
+        "box": {
+          "node": "CallExpression",
           "stack": [],
           "type": "array",
           "value": [
-            BoxNodeUnresolvable {
-              "node": Identifier,
+            {
+              "node": "Identifier",
               "stack": [
-                CallExpression,
-                Identifier,
+                "CallExpression",
+                "Identifier",
               ],
               "type": "unresolvable",
+              "value": undefined,
             },
-            BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            {
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "color" => BoxNodeMap {
-                  "node": ObjectLiteralExpression,
-                  "spreadConditions": undefined,
+                "color" => {
+                  "node": "ObjectLiteralExpression",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ObjectLiteralExpression,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
                   ],
                   "type": "map",
                   "value": Map {
-                    "mainBg" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "mainBg" => {
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ElementAccessExpression,
-                        Identifier,
-                        StringLiteral,
-                        Identifier,
-                        VariableDeclaration,
-                        PropertyAssignment,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ElementAccessExpression",
+                        "Identifier",
+                        "StringLiteral",
+                        "Identifier",
+                        "VariableDeclaration",
+                        "PropertyAssignment",
                       ],
                       "type": "literal",
                       "value": "#39539b",
                     },
-                    "secondaryBg" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "secondaryBg" => {
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ElementAccessExpression,
-                        Identifier,
-                        StringLiteral,
-                        Identifier,
-                        VariableDeclaration,
-                        PropertyAssignment,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ElementAccessExpression",
+                        "Identifier",
+                        "StringLiteral",
+                        "Identifier",
+                        "VariableDeclaration",
+                        "PropertyAssignment",
                       ],
                       "type": "literal",
                       "value": "#324989",
                     },
-                    "bg" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "bg" => {
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ElementAccessExpression,
-                        Identifier,
-                        StringLiteral,
-                        Identifier,
-                        VariableDeclaration,
-                        PropertyAssignment,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ElementAccessExpression",
+                        "Identifier",
+                        "StringLiteral",
+                        "Identifier",
+                        "VariableDeclaration",
+                        "PropertyAssignment",
                       ],
                       "type": "literal",
                       "value": "#8297d1",
                     },
-                    "bgSecondary" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "bgSecondary" => {
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ElementAccessExpression,
-                        Identifier,
-                        StringLiteral,
-                        Identifier,
-                        VariableDeclaration,
-                        PropertyAssignment,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ElementAccessExpression",
+                        "Identifier",
+                        "StringLiteral",
+                        "Identifier",
+                        "VariableDeclaration",
+                        "PropertyAssignment",
                       ],
                       "type": "literal",
                       "value": "#2b3f76",
                     },
-                    "bgHover" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "bgHover" => {
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ElementAccessExpression,
-                        Identifier,
-                        StringLiteral,
-                        Identifier,
-                        VariableDeclaration,
-                        PropertyAssignment,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ElementAccessExpression",
+                        "Identifier",
+                        "StringLiteral",
+                        "Identifier",
+                        "VariableDeclaration",
+                        "PropertyAssignment",
                       ],
                       "type": "literal",
                       "value": "#324989",
@@ -6097,8 +5687,8 @@ it('extract CallExpression > no args', () => {
         "nodesByProp": Map {},
         "queryList": [
           {
-            "box": BoxNodeArray {
-              "node": CallExpression,
+            "box": {
+              "node": "CallExpression",
               "stack": [],
               "type": "array",
               "value": [],
