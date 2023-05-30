@@ -8,8 +8,8 @@ import type { Message, Root } from 'postcss'
 import { findConfig, loadConfigAndCreateContext } from './config'
 import { type PandaContext } from './create-context'
 import { emitArtifacts, extractFile } from './extract'
-import { getModuleDependencies } from './get-mod-deps'
 import { parseDependency } from './parse-dependency'
+import { getConfigDependencies } from '@pandacss/config'
 
 type ContentData = {
   fileCssMap: Map<string, string>
@@ -86,7 +86,7 @@ export class Builder {
 
   async setup() {
     const configPath = this.getConfigPath()
-    const configDeps = getModuleDependencies(configPath)
+    const configDeps = getConfigDependencies(configPath)
 
     const deps = this.checkConfigDeps(configPath, configDeps)
 

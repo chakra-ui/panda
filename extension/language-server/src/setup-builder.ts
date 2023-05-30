@@ -1,4 +1,4 @@
-import { Builder } from './builder'
+import { Builder } from '@pandacss/node'
 import { Connection, InitializeParams, TextDocuments } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { capabilities } from './capabilities'

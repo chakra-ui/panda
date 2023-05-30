@@ -48,8 +48,8 @@
     "directory": "packages/extension/vscode"
   },
   "scripts": {
-    "build": "tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --minify -d dist --clean --shims",
-    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode -d dist --clean --shims",
+    "build": "tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --external esbuild --minify -d dist --clean --shims",
+    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims",
     "clean": "rm -rf dist",
     "lint": "eslint ./src --ext .ts,.tsx --fix",
     "publish": "esno ./scripts/publish.ts",
@@ -68,8 +68,5 @@
     "typescript": "^5.0.4",
     "vscode": "^1.1.37",
     "vscode-languageclient": "^8.1.0"
-  },
-  "dependencies": {
-    "esbuild": "^0.17.19"
   }
 }
