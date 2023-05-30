@@ -24,21 +24,17 @@ jobs:
       - name: Build packages
         run: pnpm build
 
+      - name: Build extension
+        run: pnpm extension:build
+
       - name: Publish packages
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: pnpm release
+          publish: pnpm release && pnpm extension:release
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
-      - name: Build extension
-        run: pnpm extension:build
-
-      - name: Publish extension
-        run: pnpm extension:release
-        env:
           VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
 
       - name: Release to dev tag
@@ -47,6 +43,8 @@ jobs:
           git checkout main
           pnpm changeset version --snapshot dev
           pnpm changeset publish --tag dev
+          cd ./extension/vscode
+          pnpm vsce publish --prelease --no-dependencies -p ${{ secrets.VSCE_TOKEN }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

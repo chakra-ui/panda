@@ -28,7 +28,8 @@
     "website": "pnpm --filter=./website",
     "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs",
     "extension:build": "pnpm --filter=./extension/vscode build",
-    "extension:release": "pnpm --filter=./extension/vscode release"
+    "extension:release": "pnpm --filter=./extension/vscode release",
+    "extension:prerelease": "pnpm --filter=./extension/vscode prerelease"
   },
   "keywords": [],
   "author": "Segun Adebayo <joseshegs@gmail.com>",
