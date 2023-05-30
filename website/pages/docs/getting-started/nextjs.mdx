@@ -82,19 +82,19 @@ import { ContextSelect, ContextSelectOptions, ContextSelectPanel } from '../../.
     <Tab>
       ```bash
       pnpm install @pandacss/dev
-      pnpm panda init -p
+      pnpm panda init --postcss
       ```
     </Tab>
     <Tab>
       ```bash
       npm install @pandacss/dev
-      npx panda init -p
+      npx panda init --postcss
       ```
     </Tab>
     <Tab>
       ```bash
       yarn install @pandacss/dev
-      yarn panda init -p
+      yarn panda init --postcss
       ```
     </Tab>
   </Tabs>
@@ -138,7 +138,7 @@ import { ContextSelect, ContextSelectOptions, ContextSelectPanel } from '../../.
 
   ### PostCSS config
 
-  `panda init -p` command will automatically create a `postcss.config.js` file in the root of your project with the following code:
+  `panda init --postcss` command will automatically create a `postcss.config.js` file in the root of your project with the following code:
 
   ```js {3}
   module.exports = {
