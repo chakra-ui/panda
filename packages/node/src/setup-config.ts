@@ -9,11 +9,12 @@ import { findConfig } from './config'
 
 type SetupOptions = {
   outExtension?: string
+  jsxFramework?: string
   force?: boolean
 }
 
 export async function setupConfig(cwd: string, opts: SetupOptions = {}) {
-  const { force, outExtension } = opts
+  const { force, outExtension, jsxFramework } = opts
 
   const configFile = findConfig()
 
@@ -44,6 +45,7 @@ export async function setupConfig(cwd: string, opts: SetupOptions = {}) {
         
         // The output directory for your css system
         outdir: "styled-system",
+        ${jsxFramework ? `\n // The JSX framework to use\njsxFramework: '${jsxFramework}'` : ''}
        })
     `
 
