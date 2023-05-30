@@ -6,7 +6,8 @@ import type { PandaContext } from './create-context'
 export function setupGitIgnore({ config: { outdir, gitignore = true } }: PandaContext) {
   if (!gitignore) return
 
-  const txt = outdent`## Panda
+  const txt = outdent`
+  ## Panda
   ${outdir}
   ${outdir}-static
   `
