@@ -84,9 +84,10 @@ Open your `package.json` file and update the `scripts` section as follows:
 
 ### Configure the content
 
-Make sure that all of the paths of your React components are included in the `include` section of the `panda.config.ts` file.
+Make sure that all of the paths of your SolidJS components are included in the `include` section of the `panda.config.ts` file.
+Also, make sure to set the `jsxFramework` option to `solid` so panda can auto-generate JSX components and typescript definitions.
 
-```js {8} filename="panda.config.ts"
+```js {8, 17} filename="panda.config.ts"
 import { defineConfig } from "@pandacss/dev"
 
 export default defineConfig({
@@ -101,6 +102,9 @@ export default defineConfig({
 
  // The output directory for your css system
  outdir: "styled-system",
+
+ // The framework to use for generating supercharged elements.
+ jsxFramework: "solid",
 })
 ```
 
