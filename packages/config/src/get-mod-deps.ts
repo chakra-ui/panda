@@ -60,7 +60,7 @@ function* getDeps(filename: string, base: string, seen: Set<string>, ext = path.
   }
 }
 
-export function getModuleDependencies(filePath: string): Set<string> {
+export function getConfigDependencies(filePath: string): Set<string> {
   if (filePath === null) return new Set()
   return new Set(getDeps(filePath, path.dirname(filePath), new Set()))
 }

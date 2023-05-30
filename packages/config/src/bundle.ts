@@ -1,7 +1,18 @@
 import type { Config } from '@pandacss/types'
-import { bundleNRequire } from 'bundle-n-require'
+import createJITI from 'jiti'
+import { getConfigDependencies } from './get-mod-deps'
 
-export async function bundle<T = Config>(filePath: string, cwd: string) {
-  const { mod: config, dependencies } = await bundleNRequire(filePath, { cwd })
-  return { config: config as T, dependencies }
+export const bundle = async <T = Config>(filePath: string, cwd: string) => {
+  const jiti = createJITI(cwd, { cache: false, requireCache: false, v8cache: false })
+  const conf = jiti(filePath)
+
+  return {
+    config: (conf.default ? conf.default : conf) as T,
+    dependencies: Array.from(getConfigDependencies(filePath)),
+  } as BundleConfigResult
+}
+
+interface BundleConfigResult {
+  config: Config
+  dependencies: string[]
 }
