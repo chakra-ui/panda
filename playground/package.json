@@ -9,6 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "dev": "next dev",
+    "db:start": "docker-compose up -d",
+    "db:stop": "docker-compose down",
+    "db:push": "prisma db push --skip-generate",
     "db:generate": "prisma generate",
     "db:reset": "prisma migrate reset",
     "db:studio": "prisma studio"

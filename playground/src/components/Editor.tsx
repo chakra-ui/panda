@@ -123,10 +123,7 @@ export const Editor = (props: EditorProps) => {
 
   return (
     <Flex flex="1" direction="column" align="flex-start">
-      <Tabs
-        defaultValue={value.view}
-        className={css({ flex: '1', width: 'full', display: 'flex', flexDirection: 'column' })}
-      >
+      <Tabs defaultValue="code" className={css({ flex: '1', width: 'full', display: 'flex', flexDirection: 'column' })}>
         <TabList
           className={css({
             px: '6',

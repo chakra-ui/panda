@@ -2,16 +2,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Using SQLite for local development
 datasource db {
-  provider = "sqlite"
-  url      = "file:dev.db"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Session {
-  id        String   @id
-  code      String
-  theme     String   @default("")
-  view      String   @default("code")
+  id        String   @id @default(cuid())
+  code      String   @db.Text
+  theme     String   @db.Text
   createdAt DateTime @default(now())
 }

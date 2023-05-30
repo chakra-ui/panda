@@ -4,7 +4,6 @@ import { Layout } from './LayoutControl'
 export type State = {
   code: string
   theme: string
-  view: string
 }
 
 export type UsePlayGroundProps = {
@@ -51,7 +50,7 @@ export const App = () => {
       body: JSON.stringify(state),
     })
       .then((response) => response.json())
-      .then((data) => {
+      .then(({ data }) => {
         history.pushState({ id: data.id }, '', data.id)
         setIsPristine(true)
       })
