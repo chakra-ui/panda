@@ -662,6 +662,8 @@ importers:
       vite: 4.3.5_@types+node@20.2.5
       vite-tsconfig-paths: 4.2.0_j3n3bmbdtt5x6j7a7ljkizyfq4
 
+  sandbox/qwik-ts/server: {}
+
   sandbox/remix:
     specifiers:
       '@pandacss/dev': workspace:*

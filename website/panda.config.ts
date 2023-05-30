@@ -13,10 +13,10 @@ export default defineConfig({
   // define the content to scan 👇🏻
   include: [
     './src/**/*.{tsx,jsx}',
-    './pages/**/*.{jsx,tsx}',
+    './pages/**/*.{jsx,tsx,mdx}',
     './app/**/*.{jsx,tsx}',
     './bright/**/*.{jsx,ts,tsx}',
-    './theme.config.tsx'
+    './theme.config.tsx',
   ],
   exclude: [],
   outdir: 'styled-system',
