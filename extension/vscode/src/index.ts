@@ -18,6 +18,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // The server is implemented in node
   const serverModule = context.asAbsolutePath(path.join('dist', 'server.js'))
+  console.log({ serverModule })
 
   // The debug options for the server
   // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
@@ -45,6 +46,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Create the language client and start the client.
   client = new LanguageClient('panda', 'Panda IntelliSense', serverOptions, clientOptions)
+  client.outputChannel.appendLine('Starting PandaCss client extension...')
 
   debug && console.log('before start')
 

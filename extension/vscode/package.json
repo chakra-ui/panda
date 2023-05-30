@@ -1,17 +1,31 @@
 {
   "publisher": "chakra-ui",
   "name": "panda-css-vscode",
-  "displayName": "Panda CSS",
-  "description": "🐼 The official Panda plugin for VS Code",
+  "displayName": "🐼 Panda CSS",
+  "description": "The official Panda plugin for VS Code",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.78.2"
   },
   "categories": [
+    "Linters",
     "Other"
   ],
   "activationEvents": [
     "onStartupFinished"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "css",
+    "design tokens",
+    "documentation",
+    "framework",
+    "design system",
+    "design",
+    "tokens",
+    "panda",
+    "semantic",
+    "w3c"
   ],
   "main": "./dist/index.js",
   "preview": true,
@@ -34,8 +48,8 @@
     "directory": "packages/extension/vscode"
   },
   "scripts": {
-    "build": "tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --minify -d dist --clean",
-    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode -d dist --clean",
+    "build": "tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --minify -d dist --clean --shims",
+    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode -d dist --clean --shims",
     "clean": "rm -rf dist",
     "lint": "eslint ./src --ext .ts,.tsx --fix",
     "publish": "esno ./scripts/publish.ts",
@@ -45,15 +59,17 @@
   "devDependencies": {
     "@types/node": "16.x",
     "@types/vscode": "^1.78.0",
+    "@vscode/vsce": "^2.19.0",
     "esno": "^0.16.3",
     "execa": "7.1.1",
     "fs-extra": "11.1.1",
-    "typescript": "^5.0.4"
-  },
-  "dependencies": {
     "panda-css-language-server": "workspace:*",
     "tsup": "6.7.0",
+    "typescript": "^5.0.4",
     "vscode": "^1.1.37",
     "vscode-languageclient": "^8.1.0"
+  },
+  "dependencies": {
+    "esbuild": "^0.17.19"
   }
 }

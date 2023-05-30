@@ -1,5 +1,5 @@
-import { Builder } from '@pandacss/node'
-import { Connection, InitializeParams, InitializeResult, TextDocuments } from 'vscode-languageserver'
+import { Builder } from './builder'
+import { Connection, InitializeParams, TextDocuments } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { capabilities } from './capabilities'
 
@@ -20,12 +20,13 @@ export function setupBuilder(connection: Connection, documents: TextDocuments<Te
    */
   async function loadPandaContext() {
     try {
-      console.log('🐼 Builder setup...')
+      console.log('🚧 Builder setup...')
       ref.synchronizing = builder.setup()
       await ref.synchronizing
-    } catch {
+    } catch (err) {
       // Ignore
       ref.synchronizing = false
+      console.log('❌ Builder setup failed!', err)
       return
     }
 
@@ -36,19 +37,19 @@ export function setupBuilder(connection: Connection, documents: TextDocuments<Te
   }
 
   connection.onInitialize((_params: InitializeParams) => {
-    connection.console.log('🤖 Booting PandaCss extension...')
+    connection.console.log('🤖 Starting PandaCss LSP...')
 
     connection.onInitialized(async () => {
-      await loadPandaContext()
+      const ctx = await loadPandaContext()
 
-      connection.console.log('🐼 Started PandaCss extension! ✅')
+      connection.console.log('⚡ Connection initialized!')
+
+      if (ctx) {
+        connection.console.log(`🐼 Found panda context! ✅ at ${ctx.path}`)
+      }
     })
 
-    const result: InitializeResult = {
-      capabilities,
-    }
-
-    return result
+    return { capabilities }
   })
 
   connection.onDidChangeWatchedFiles(async (_change) => {
@@ -57,7 +58,6 @@ export function setupBuilder(connection: Connection, documents: TextDocuments<Te
   })
 
   documents.listen(connection)
-
   connection.listen()
 
   return {
