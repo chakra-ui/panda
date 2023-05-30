@@ -1,5 +1,6 @@
 import type { Context } from '../engines'
 import { generatePreactJsxFactory, generatePreactJsxPattern, generatePreactJsxTypes } from './preact-jsx'
+import { generateQwikJsxFactory, generateQwikJsxPattern, generateQwikJsxTypes } from './qwik-jsx'
 import { generateReactJsxFactory, generateReactJsxPattern, generateReactJsxTypes } from './react-jsx'
 import { generateSolidJsxFactory, generateSolidJsxPattern, generateSolidJsxTypes } from './solid-jsx'
 import { generateVueJsxFactory } from './vue-jsx/jsx'
@@ -14,6 +15,7 @@ const typesMap = {
   preact: generatePreactJsxTypes,
   solid: generateSolidJsxTypes,
   vue: generateVueJsxTypes,
+  qwik: generateQwikJsxTypes,
 }
 
 export function generateJsxTypes(ctx: Context) {
@@ -30,6 +32,7 @@ const factoryMap = {
   solid: generateSolidJsxFactory,
   preact: generatePreactJsxFactory,
   vue: generateVueJsxFactory,
+  qwik: generateQwikJsxFactory,
 }
 
 export function generateJsxFactory(ctx: Context) {
@@ -46,6 +49,7 @@ const patternMap = {
   solid: generateSolidJsxPattern,
   preact: generatePreactJsxPattern,
   vue: () => [],
+  qwik: generateQwikJsxPattern,
 }
 
 export function generateJsxPatterns(ctx: Context) {

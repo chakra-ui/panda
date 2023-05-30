@@ -20,35 +20,38 @@ describe('ast parser', () => {
       {
         "css": Set {
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 27,
+              "line": 2,
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "color" => {
+                  "column": 20,
+                  "line": 3,
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "red",
                 },
-                "fontSize" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "fontSize" => {
+                  "column": 23,
+                  "line": 4,
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "12px",
@@ -65,98 +68,107 @@ describe('ast parser', () => {
             "type": "object",
           },
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 27,
+              "line": 7,
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "bg" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "bg" => {
+                  "column": 15,
+                  "line": 8,
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "red.300",
                 },
-                "margin" => BoxNodeMap {
-                  "node": ObjectLiteralExpression,
-                  "spreadConditions": undefined,
+                "margin" => {
+                  "column": 19,
+                  "line": 9,
+                  "node": "ObjectLiteralExpression",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ObjectLiteralExpression,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
                   ],
                   "type": "map",
                   "value": Map {
-                    "xs" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "xs" => {
+                      "column": 25,
+                      "line": 9,
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        StringLiteral,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "StringLiteral",
                       ],
                       "type": "literal",
                       "value": "0",
                     },
-                    "lg" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "lg" => {
+                      "column": 33,
+                      "line": 9,
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        StringLiteral,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "StringLiteral",
                       ],
                       "type": "literal",
                       "value": "40px",
                     },
                   },
                 },
-                "padding" => BoxNodeArray {
-                  "node": ArrayLiteralExpression,
+                "padding" => {
+                  "column": 20,
+                  "line": 10,
+                  "node": "ArrayLiteralExpression",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ArrayLiteralExpression,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ArrayLiteralExpression",
                   ],
                   "type": "array",
                   "value": [
-                    BoxNodeLiteral {
-                      "kind": "number",
-                      "node": NumericLiteral,
+                    {
+                      "column": 21,
+                      "line": 10,
+                      "node": "NumericLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ArrayLiteralExpression,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ArrayLiteralExpression",
                       ],
                       "type": "literal",
                       "value": 12,
                     },
-                    BoxNodeLiteral {
-                      "kind": "number",
-                      "node": NumericLiteral,
+                    {
+                      "column": 25,
+                      "line": 10,
+                      "node": "NumericLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ArrayLiteralExpression,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ArrayLiteralExpression",
                       ],
                       "type": "literal",
                       "value": 50,
@@ -205,35 +217,38 @@ describe('ast parser', () => {
       {
         "css": Set {
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 27,
+              "line": 3,
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "color" => {
+                  "column": 20,
+                  "line": 4,
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "red",
                 },
-                "fontSize" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "fontSize" => {
+                  "column": 23,
+                  "line": 5,
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "12px",
@@ -250,98 +265,107 @@ describe('ast parser', () => {
             "type": "object",
           },
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 27,
+              "line": 8,
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "bg" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "bg" => {
+                  "column": 15,
+                  "line": 9,
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "red.300",
                 },
-                "margin" => BoxNodeMap {
-                  "node": ObjectLiteralExpression,
-                  "spreadConditions": undefined,
+                "margin" => {
+                  "column": 19,
+                  "line": 10,
+                  "node": "ObjectLiteralExpression",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ObjectLiteralExpression,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
                   ],
                   "type": "map",
                   "value": Map {
-                    "xs" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "xs" => {
+                      "column": 25,
+                      "line": 10,
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        StringLiteral,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "StringLiteral",
                       ],
                       "type": "literal",
                       "value": "0",
                     },
-                    "lg" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "lg" => {
+                      "column": 33,
+                      "line": 10,
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        StringLiteral,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "StringLiteral",
                       ],
                       "type": "literal",
                       "value": "40px",
                     },
                   },
                 },
-                "padding" => BoxNodeArray {
-                  "node": ArrayLiteralExpression,
+                "padding" => {
+                  "column": 20,
+                  "line": 11,
+                  "node": "ArrayLiteralExpression",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ArrayLiteralExpression,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ArrayLiteralExpression",
                   ],
                   "type": "array",
                   "value": [
-                    BoxNodeLiteral {
-                      "kind": "number",
-                      "node": NumericLiteral,
+                    {
+                      "column": 21,
+                      "line": 11,
+                      "node": "NumericLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ArrayLiteralExpression,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ArrayLiteralExpression",
                       ],
                       "type": "literal",
                       "value": 12,
                     },
-                    BoxNodeLiteral {
-                      "kind": "number",
-                      "node": NumericLiteral,
+                    {
+                      "column": 25,
+                      "line": 11,
+                      "node": "NumericLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ArrayLiteralExpression,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ArrayLiteralExpression",
                       ],
                       "type": "literal",
                       "value": 50,
@@ -390,35 +414,38 @@ describe('ast parser', () => {
       {
         "css": Set {
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 27,
+              "line": 3,
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "color" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "color" => {
+                  "column": 20,
+                  "line": 4,
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "red",
                 },
-                "fontSize" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "fontSize" => {
+                  "column": 23,
+                  "line": 5,
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "12px",
@@ -435,98 +462,107 @@ describe('ast parser', () => {
             "type": "object",
           },
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 27,
+              "line": 8,
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "bg" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "bg" => {
+                  "column": 15,
+                  "line": 9,
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "red.300",
                 },
-                "margin" => BoxNodeMap {
-                  "node": ObjectLiteralExpression,
-                  "spreadConditions": undefined,
+                "margin" => {
+                  "column": 19,
+                  "line": 10,
+                  "node": "ObjectLiteralExpression",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ObjectLiteralExpression,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
                   ],
                   "type": "map",
                   "value": Map {
-                    "xs" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "xs" => {
+                      "column": 25,
+                      "line": 10,
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        StringLiteral,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "StringLiteral",
                       ],
                       "type": "literal",
                       "value": "0",
                     },
-                    "lg" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "lg" => {
+                      "column": 33,
+                      "line": 10,
+                      "node": "StringLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        StringLiteral,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "StringLiteral",
                       ],
                       "type": "literal",
                       "value": "40px",
                     },
                   },
                 },
-                "padding" => BoxNodeArray {
-                  "node": ArrayLiteralExpression,
+                "padding" => {
+                  "column": 20,
+                  "line": 11,
+                  "node": "ArrayLiteralExpression",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ArrayLiteralExpression,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ArrayLiteralExpression",
                   ],
                   "type": "array",
                   "value": [
-                    BoxNodeLiteral {
-                      "kind": "number",
-                      "node": NumericLiteral,
+                    {
+                      "column": 21,
+                      "line": 11,
+                      "node": "NumericLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ArrayLiteralExpression,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ArrayLiteralExpression",
                       ],
                       "type": "literal",
                       "value": 12,
                     },
-                    BoxNodeLiteral {
-                      "kind": "number",
-                      "node": NumericLiteral,
+                    {
+                      "column": 25,
+                      "line": 11,
+                      "node": "NumericLiteral",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ArrayLiteralExpression,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ArrayLiteralExpression",
                       ],
                       "type": "literal",
                       "value": 50,
@@ -577,51 +613,55 @@ console.log(
       {
         "css": Set {
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 5,
+              "line": 6,
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "selectors" => BoxNodeMap {
-                  "node": ObjectLiteralExpression,
-                  "spreadConditions": undefined,
+                "selectors" => {
+                  "column": 18,
+                  "line": 7,
+                  "node": "ObjectLiteralExpression",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    ObjectLiteralExpression,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "ObjectLiteralExpression",
                   ],
                   "type": "map",
                   "value": Map {
-                    "&:hover" => BoxNodeMap {
-                      "node": ObjectLiteralExpression,
-                      "spreadConditions": undefined,
+                    "&:hover" => {
+                      "column": 20,
+                      "line": 8,
+                      "node": "ObjectLiteralExpression",
                       "stack": [
-                        CallExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        ObjectLiteralExpression,
+                        "CallExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "ObjectLiteralExpression",
                       ],
                       "type": "map",
                       "value": Map {
-                        "background" => BoxNodeLiteral {
-                          "kind": "string",
-                          "node": StringLiteral,
+                        "background" => {
+                          "column": 23,
+                          "line": 9,
+                          "node": "StringLiteral",
                           "stack": [
-                            CallExpression,
-                            ObjectLiteralExpression,
-                            PropertyAssignment,
-                            ObjectLiteralExpression,
-                            PropertyAssignment,
-                            ObjectLiteralExpression,
-                            PropertyAssignment,
-                            StringLiteral,
+                            "CallExpression",
+                            "ObjectLiteralExpression",
+                            "PropertyAssignment",
+                            "ObjectLiteralExpression",
+                            "PropertyAssignment",
+                            "ObjectLiteralExpression",
+                            "PropertyAssignment",
+                            "StringLiteral",
                           ],
                           "type": "literal",
                           "value": "red.200",
@@ -667,23 +707,25 @@ export function Card({ className }) {
       {
         "css": Set {
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 32,
+              "line": 7,
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {
-                "background" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "background" => {
+                  "column": 50,
+                  "line": 7,
+                  "node": "StringLiteral",
                   "stack": [
-                    CallExpression,
-                    ObjectLiteralExpression,
-                    PropertyAssignment,
-                    StringLiteral,
+                    "CallExpression",
+                    "ObjectLiteralExpression",
+                    "PropertyAssignment",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "white",

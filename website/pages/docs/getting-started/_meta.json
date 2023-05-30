@@ -4,5 +4,6 @@
   "astro": "Using Astro",
   "nextjs": "Using Next.js",
   "storybook": "Using Storybook",
+  "remix": "Using Remix",
   "solidjs": "Using SolidJS"
 }

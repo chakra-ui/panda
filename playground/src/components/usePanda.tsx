@@ -1,8 +1,9 @@
 import { createGenerator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
-import { merge } from 'merge-anything'
 import { config } from '@pandacss/presets'
+import { merge } from 'merge-anything'
 import { useMemo } from 'react'
+
 const evalCode = (code: string, scope: Record<string, unknown>) => {
   const scopeKeys = Object.keys(scope)
   const scopeValues = scopeKeys.map((key) => scope[key])

@@ -5,13 +5,16 @@
   "tasks": [
     {
       "type": "npm",
-      "script": "extension-watch",
+      "script": "extension:watch",
       "problemMatcher": "$tsc-watch",
       "isBackground": true,
       "presentation": {
         "reveal": "never"
       },
-      "group": "build"
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ]
 }
