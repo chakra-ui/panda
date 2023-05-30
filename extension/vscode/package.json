@@ -52,8 +52,7 @@
     "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims",
     "clean": "rm -rf dist",
     "lint": "eslint ./src --ext .ts,.tsx --fix",
-    "publish": "esno ./scripts/publish.ts",
-    "deploy": "vsce publish --no-dependencies",
+    "release": "esno ./scripts/publish.ts",
     "package": "vsce package --pre-release --no-dependencies"
   },
   "devDependencies": {

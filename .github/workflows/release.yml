@@ -3,8 +3,8 @@ name: Publish
 on:
   push:
     paths:
-      - '.changeset/**'
-      - 'packages/**'
+      - ".changeset/**"
+      - "packages/**"
     branches:
       - main
 
@@ -32,6 +32,14 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Build extension
+        run: pnpm extension:build
+
+      - name: Publish extension
+        run: pnpm extension:release
+        env:
+          VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
 
       - name: Release to dev tag
         if: steps.changesets.outputs.published != 'true'

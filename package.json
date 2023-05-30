@@ -27,7 +27,8 @@
     "serve-studio": "npx serve ./sandbox/vite-ts/panda-static",
     "website": "pnpm --filter=./website",
     "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs",
-    "extension:watch": "pnpm --filter=./extension watch"
+    "extension:build": "pnpm --filter=./extension/vscode build",
+    "extension:release": "pnpm --filter=./extension/vscode release"
   },
   "keywords": [],
   "author": "Segun Adebayo <joseshegs@gmail.com>",
