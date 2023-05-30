@@ -1,10 +1,8 @@
 import { logger } from '@pandacss/logger'
 import type { ParserResultType } from '@pandacss/types'
 import { writeFile } from 'fs/promises'
-import { Node } from 'ts-morph'
 import { classifyTokens } from './classify'
 import type { PandaContext } from './create-context'
-import { getNodeRange } from './get-node-range'
 
 import { filesize } from 'filesize'
 import { gzipSizeSync } from 'gzip-size'
@@ -17,7 +15,7 @@ export function analyzeTokens(
   const extractTimeByFilepath = new Map<string, number>()
 
   const includedFiles = ctx.getFiles()
-  includedFiles.map((file) => {
+  includedFiles.forEach((file) => {
     const start = performance.now()
     const result = ctx.project.parseSourceFile(file)
 
@@ -29,8 +27,6 @@ export function analyzeTokens(
       parserResultByFilepath.set(file, result)
       options.onResult?.(file, result)
     }
-
-    return [file, result] as [string, ParserResultType]
   })
 
   const totalMs = Array.from(extractTimeByFilepath.values()).reduce((a, b) => a + b, 0)
@@ -84,17 +80,13 @@ const analyzeResultSerializer = (_key: string, value: any) => {
     return Object.fromEntries(value)
   }
 
-  if (Node.isNode(value)) {
-    return { kind: value.getKindName(), range: getNodeRange(value) }
-  }
-
   return value
 }
 
 export const writeAnalyzeJSON = (fileName: string, result: ReturnType<typeof analyzeTokens>, ctx: PandaContext) => {
   // prevent writing twice the same BoxNode in the output (already serialized in the `byId` map)
   result.details.byInstanceId.forEach((item) => {
-    item.box = { type: item.box.type, node: item.box.getNode(), stack: item.box.getStack() } as any
+    item.box = item.box.toJSON() as any
   })
 
   return writeFile(

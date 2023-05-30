@@ -1,15 +1,3 @@
-@layer reset, base, tokens, recipes, utilities;
-
-@import './global.css';
-
-@import './static.css';
-
-@import './reset.css';
-
-@import './tokens/index.css';
-
-@import './tokens/keyframes.css';
-
 @layer utilities {
   .w_auto {
     width: auto
