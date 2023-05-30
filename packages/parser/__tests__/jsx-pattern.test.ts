@@ -20,11 +20,15 @@ describe('pattern jsx', () => {
         "Stack" => Set {
           {
             "box": {
+              "column": 16,
+              "line": 7,
               "node": "JsxOpeningElement",
               "stack": [],
               "type": "map",
               "value": Map {
                 "align" => {
+                  "column": 36,
+                  "line": 7,
                   "node": "StringLiteral",
                   "stack": [
                     "JsxAttribute",
@@ -34,6 +38,8 @@ describe('pattern jsx', () => {
                   "value": "center",
                 },
                 "marginTop" => {
+                  "column": 55,
+                  "line": 7,
                   "node": "StringLiteral",
                   "stack": [
                     "JsxAttribute",
@@ -43,6 +49,8 @@ describe('pattern jsx', () => {
                   "value": "40px",
                 },
                 "marginBottom" => {
+                  "column": 75,
+                  "line": 7,
                   "node": "StringLiteral",
                   "stack": [
                     "JsxAttribute",

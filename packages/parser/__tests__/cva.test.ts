@@ -50,6 +50,8 @@ describe('ast parser / cva', () => {
         "cva": Set {
           {
             "box": {
+              "column": 23,
+              "line": 4,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -58,6 +60,8 @@ describe('ast parser / cva', () => {
               "type": "map",
               "value": Map {
                 "base" => {
+                  "column": 15,
+                  "line": 5,
                   "node": "ObjectLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -68,6 +72,8 @@ describe('ast parser / cva', () => {
                   "type": "map",
                   "value": Map {
                     "color" => {
+                      "column": 20,
+                      "line": 6,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -81,6 +87,8 @@ describe('ast parser / cva', () => {
                       "value": "red",
                     },
                     "fontSize" => {
+                      "column": 23,
+                      "line": 7,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -96,6 +104,8 @@ describe('ast parser / cva', () => {
                   },
                 },
                 "variants" => {
+                  "column": 19,
+                  "line": 9,
                   "node": "ObjectLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -106,6 +116,8 @@ describe('ast parser / cva', () => {
                   "type": "map",
                   "value": Map {
                     "color" => {
+                      "column": 20,
+                      "line": 10,
                       "node": "ObjectLiteralExpression",
                       "stack": [
                         "CallExpression",
@@ -118,6 +130,8 @@ describe('ast parser / cva', () => {
                       "type": "map",
                       "value": Map {
                         "red" => {
+                          "column": 22,
+                          "line": 11,
                           "node": "ObjectLiteralExpression",
                           "stack": [
                             "CallExpression",
@@ -132,6 +146,8 @@ describe('ast parser / cva', () => {
                           "type": "map",
                           "value": Map {
                             "background" => {
+                              "column": 33,
+                              "line": 12,
                               "node": "StringLiteral",
                               "stack": [
                                 "CallExpression",
@@ -153,6 +169,8 @@ describe('ast parser / cva', () => {
                       },
                     },
                     "size" => {
+                      "column": 19,
+                      "line": 15,
                       "node": "ObjectLiteralExpression",
                       "stack": [
                         "CallExpression",
@@ -165,6 +183,8 @@ describe('ast parser / cva', () => {
                       "type": "map",
                       "value": Map {
                         "sm" => {
+                          "column": 21,
+                          "line": 16,
                           "node": "ObjectLiteralExpression",
                           "stack": [
                             "CallExpression",
@@ -179,6 +199,8 @@ describe('ast parser / cva', () => {
                           "type": "map",
                           "value": Map {
                             "fontSize" => {
+                              "column": 31,
+                              "line": 17,
                               "node": "StringLiteral",
                               "stack": [
                                 "CallExpression",
@@ -198,6 +220,8 @@ describe('ast parser / cva', () => {
                           },
                         },
                         "md" => {
+                          "column": 21,
+                          "line": 19,
                           "node": "ObjectLiteralExpression",
                           "stack": [
                             "CallExpression",
@@ -212,6 +236,8 @@ describe('ast parser / cva', () => {
                           "type": "map",
                           "value": Map {
                             "fontSize" => {
+                              "column": 31,
+                              "line": 20,
                               "node": "StringLiteral",
                               "stack": [
                                 "CallExpression",
@@ -235,6 +261,8 @@ describe('ast parser / cva', () => {
                   },
                 },
                 "compoundVariants" => {
+                  "column": 27,
+                  "line": 24,
                   "node": "ArrayLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -245,6 +273,8 @@ describe('ast parser / cva', () => {
                   "type": "array",
                   "value": [
                     {
+                      "column": 13,
+                      "line": 25,
                       "node": "ObjectLiteralExpression",
                       "stack": [
                         "CallExpression",
@@ -255,6 +285,8 @@ describe('ast parser / cva', () => {
                       "type": "map",
                       "value": Map {
                         "color" => {
+                          "column": 24,
+                          "line": 26,
                           "node": "StringLiteral",
                           "stack": [
                             "CallExpression",
@@ -268,6 +300,8 @@ describe('ast parser / cva', () => {
                           "value": "red",
                         },
                         "size" => {
+                          "column": 23,
+                          "line": 27,
                           "node": "StringLiteral",
                           "stack": [
                             "CallExpression",
@@ -281,6 +315,8 @@ describe('ast parser / cva', () => {
                           "value": "sm",
                         },
                         "css" => {
+                          "column": 22,
+                          "line": 28,
                           "node": "ObjectLiteralExpression",
                           "stack": [
                             "CallExpression",
@@ -293,6 +329,8 @@ describe('ast parser / cva', () => {
                           "type": "map",
                           "value": Map {
                             "fontWeight" => {
+                              "column": 33,
+                              "line": 29,
                               "node": "StringLiteral",
                               "stack": [
                                 "CallExpression",
@@ -312,6 +350,8 @@ describe('ast parser / cva', () => {
                       },
                     },
                     {
+                      "column": 13,
+                      "line": 32,
                       "node": "ObjectLiteralExpression",
                       "stack": [
                         "CallExpression",
@@ -322,6 +362,8 @@ describe('ast parser / cva', () => {
                       "type": "map",
                       "value": Map {
                         "color" => {
+                          "column": 24,
+                          "line": 33,
                           "node": "ArrayLiteralExpression",
                           "stack": [
                             "CallExpression",
@@ -334,6 +376,8 @@ describe('ast parser / cva', () => {
                           "type": "array",
                           "value": [
                             {
+                              "column": 25,
+                              "line": 33,
                               "node": "StringLiteral",
                               "stack": [
                                 "CallExpression",
@@ -347,6 +391,8 @@ describe('ast parser / cva', () => {
                               "value": "red",
                             },
                             {
+                              "column": 32,
+                              "line": 33,
                               "node": "StringLiteral",
                               "stack": [
                                 "CallExpression",
@@ -362,6 +408,8 @@ describe('ast parser / cva', () => {
                           ],
                         },
                         "size" => {
+                          "column": 23,
+                          "line": 34,
                           "node": "ArrayLiteralExpression",
                           "stack": [
                             "CallExpression",
@@ -374,6 +422,8 @@ describe('ast parser / cva', () => {
                           "type": "array",
                           "value": [
                             {
+                              "column": 24,
+                              "line": 34,
                               "node": "StringLiteral",
                               "stack": [
                                 "CallExpression",
@@ -387,6 +437,8 @@ describe('ast parser / cva', () => {
                               "value": "sm",
                             },
                             {
+                              "column": 30,
+                              "line": 34,
                               "node": "StringLiteral",
                               "stack": [
                                 "CallExpression",
@@ -402,6 +454,8 @@ describe('ast parser / cva', () => {
                           ],
                         },
                         "css" => {
+                          "column": 22,
+                          "line": 35,
                           "node": "ObjectLiteralExpression",
                           "stack": [
                             "CallExpression",
@@ -414,6 +468,8 @@ describe('ast parser / cva', () => {
                           "type": "map",
                           "value": Map {
                             "color" => {
+                              "column": 28,
+                              "line": 36,
                               "node": "StringLiteral",
                               "stack": [
                                 "CallExpression",

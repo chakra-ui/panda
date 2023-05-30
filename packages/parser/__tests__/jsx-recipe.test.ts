@@ -29,6 +29,8 @@ describe('recipe jsx', () => {
         "button" => Set {
           {
             "box": {
+              "column": 38,
+              "line": 6,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -45,11 +47,15 @@ describe('recipe jsx', () => {
           },
           {
             "box": {
+              "column": 16,
+              "line": 12,
               "node": "JsxOpeningElement",
               "stack": [],
               "type": "map",
               "value": Map {
                 "size" => {
+                  "column": 29,
+                  "line": 12,
                   "node": "StringLiteral",
                   "stack": [
                     "JsxAttribute",
@@ -59,6 +65,8 @@ describe('recipe jsx', () => {
                   "value": "sm",
                 },
                 "mt" => {
+                  "column": 37,
+                  "line": 12,
                   "node": "StringLiteral",
                   "stack": [
                     "JsxAttribute",
@@ -80,11 +88,15 @@ describe('recipe jsx', () => {
           },
           {
             "box": {
+              "column": 16,
+              "line": 13,
               "node": "JsxOpeningElement",
               "stack": [],
               "type": "map",
               "value": Map {
                 "size" => {
+                  "column": 29,
+                  "line": 13,
                   "node": "StringLiteral",
                   "stack": [
                     "JsxAttribute",
@@ -94,6 +106,8 @@ describe('recipe jsx', () => {
                   "value": "sm",
                 },
                 "variant" => {
+                  "column": 43,
+                  "line": 13,
                   "node": "ObjectLiteralExpression",
                   "stack": [
                     "JsxAttribute",
@@ -103,6 +117,8 @@ describe('recipe jsx', () => {
                   "type": "map",
                   "value": Map {
                     "base" => {
+                      "column": 51,
+                      "line": 13,
                       "node": "StringLiteral",
                       "stack": [
                         "JsxAttribute",
@@ -115,6 +131,8 @@ describe('recipe jsx', () => {
                       "value": "outline",
                     },
                     "md" => {
+                      "column": 66,
+                      "line": 13,
                       "node": "StringLiteral",
                       "stack": [
                         "JsxAttribute",
@@ -144,11 +162,15 @@ describe('recipe jsx', () => {
           },
           {
             "box": {
+              "column": 16,
+              "line": 16,
               "node": "JsxSelfClosingElement",
               "stack": [],
               "type": "map",
               "value": Map {
                 "size" => {
+                  "column": 45,
+                  "line": 16,
                   "node": "StringLiteral",
                   "stack": [
                     "JsxAttribute",

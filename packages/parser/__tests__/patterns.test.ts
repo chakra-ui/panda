@@ -21,6 +21,8 @@ describe('pattern jsx', () => {
         "stack" => Set {
           {
             "box": {
+              "column": 32,
+              "line": 7,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -29,6 +31,8 @@ describe('pattern jsx', () => {
               "type": "map",
               "value": Map {
                 "align" => {
+                  "column": 47,
+                  "line": 7,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -53,6 +57,8 @@ describe('pattern jsx', () => {
         "hstack" => Set {
           {
             "box": {
+              "column": 32,
+              "line": 8,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -61,6 +67,8 @@ describe('pattern jsx', () => {
               "type": "map",
               "value": Map {
                 "justify" => {
+                  "column": 51,
+                  "line": 8,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",

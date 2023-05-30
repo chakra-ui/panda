@@ -4190,11 +4190,15 @@ test('unbox with unresolvable spread', () => {
 
   expect(css).toMatchInlineSnapshot(`
     {
+      "column": 23,
+      "line": 2,
       "node": "CallExpression",
       "stack": [],
       "type": "array",
       "value": [
         {
+          "column": 23,
+          "line": 2,
           "node": "CallExpression",
           "stack": [
             "CallExpression",
@@ -4203,6 +4207,8 @@ test('unbox with unresolvable spread', () => {
           "type": "map",
           "value": Map {
             "color" => {
+              "column": 36,
+              "line": 2,
               "node": "StringLiteral",
               "stack": [
                 "CallExpression",
@@ -4214,6 +4220,8 @@ test('unbox with unresolvable spread', () => {
               "value": "red",
             },
             "backgroundColor" => {
+              "column": 91,
+              "line": 2,
               "node": "StringLiteral",
               "stack": [
                 "CallExpression",
@@ -4247,11 +4255,15 @@ test('unbox with unresolvable spread', () => {
 
   expect(HStack).toMatchInlineSnapshot(`
     {
+      "column": 13,
+      "line": 6,
       "node": "JsxOpeningElement",
       "stack": [],
       "type": "map",
       "value": Map {
         "style" => {
+          "column": 20,
+          "line": 7,
           "node": "ObjectLiteralExpression",
           "stack": [
             "JsxAttribute",
@@ -4261,6 +4273,8 @@ test('unbox with unresolvable spread', () => {
           "type": "map",
           "value": Map {
             "background" => {
+              "column": 29,
+              "line": 8,
               "node": "BinaryExpression",
               "stack": [
                 "JsxAttribute",
@@ -4275,6 +4289,8 @@ test('unbox with unresolvable spread', () => {
           },
         },
         "paddingInline" => {
+          "column": 27,
+          "line": 10,
           "node": "StringLiteral",
           "stack": [
             "JsxAttribute",

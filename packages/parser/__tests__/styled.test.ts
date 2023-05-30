@@ -26,6 +26,8 @@ describe('ast parser / styled', () => {
         "cva": Set {
           {
             "box": {
+              "column": 23,
+              "line": 4,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -34,6 +36,8 @@ describe('ast parser / styled', () => {
               "type": "map",
               "value": Map {
                 "base" => {
+                  "column": 15,
+                  "line": 5,
                   "node": "ObjectLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -44,6 +48,8 @@ describe('ast parser / styled', () => {
                   "type": "map",
                   "value": Map {
                     "color" => {
+                      "column": 20,
+                      "line": 6,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -57,6 +63,8 @@ describe('ast parser / styled', () => {
                       "value": "red",
                     },
                     "fontSize" => {
+                      "column": 23,
+                      "line": 7,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -72,6 +80,8 @@ describe('ast parser / styled', () => {
                   },
                 },
                 "variants" => {
+                  "column": 19,
+                  "line": 9,
                   "node": "ObjectLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -82,6 +92,8 @@ describe('ast parser / styled', () => {
                   "type": "map",
                   "value": Map {
                     "color" => {
+                      "column": 20,
+                      "line": 10,
                       "node": "ObjectLiteralExpression",
                       "stack": [
                         "CallExpression",
@@ -94,6 +106,8 @@ describe('ast parser / styled', () => {
                       "type": "map",
                       "value": Map {
                         "red" => {
+                          "column": 22,
+                          "line": 11,
                           "node": "ObjectLiteralExpression",
                           "stack": [
                             "CallExpression",
@@ -108,6 +122,8 @@ describe('ast parser / styled', () => {
                           "type": "map",
                           "value": Map {
                             "background" => {
+                              "column": 33,
+                              "line": 12,
                               "node": "StringLiteral",
                               "stack": [
                                 "CallExpression",

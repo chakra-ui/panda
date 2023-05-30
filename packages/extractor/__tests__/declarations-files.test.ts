@@ -14,6 +14,8 @@ it('can extract theme with tokens from another package with declaration files', 
     Map {
       "conditions" => [
         {
+          "column": 15,
+          "line": 157,
           "node": "ObjectLiteralExpression",
           "stack": [
             "CallExpression",
@@ -24,6 +26,8 @@ it('can extract theme with tokens from another package with declaration files', 
           "type": "map",
           "value": Map {
             "mobile" => {
+              "column": 8,
+              "line": 158,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -39,6 +43,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "tablet" => {
+              "column": 8,
+              "line": 158,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -54,6 +60,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "desktop" => {
+              "column": 8,
+              "line": 158,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -69,6 +77,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "default" => {
+              "column": 14,
+              "line": 159,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -82,6 +92,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": {},
             },
             "hover" => {
+              "column": 12,
+              "line": 160,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -94,6 +106,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 24,
+                  "line": 160,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -111,6 +125,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "active" => {
+              "column": 13,
+              "line": 161,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -123,6 +139,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 25,
+                  "line": 161,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -140,6 +158,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "focus" => {
+              "column": 12,
+              "line": 162,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -152,6 +172,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 24,
+                  "line": 162,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -169,6 +191,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "highlighted" => {
+              "column": 18,
+              "line": 163,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -181,6 +205,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 30,
+                  "line": 163,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -198,6 +224,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "focusWithin" => {
+              "column": 18,
+              "line": 164,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -210,6 +238,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 30,
+                  "line": 164,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -227,6 +257,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "focusVisible" => {
+              "column": 19,
+              "line": 165,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -239,6 +271,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 31,
+                  "line": 165,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -256,6 +290,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "disabled" => {
+              "column": 15,
+              "line": 166,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -268,6 +304,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 167,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -285,6 +323,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "readOnly" => {
+              "column": 15,
+              "line": 169,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -297,6 +337,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 170,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -314,6 +356,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "before" => {
+              "column": 13,
+              "line": 172,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -326,6 +370,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 25,
+                  "line": 172,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -343,6 +389,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "after" => {
+              "column": 12,
+              "line": 173,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -355,6 +403,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 24,
+                  "line": 173,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -372,6 +422,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "empty" => {
+              "column": 12,
+              "line": 174,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -384,6 +436,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 24,
+                  "line": 174,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -401,6 +455,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "expanded" => {
+              "column": 15,
+              "line": 175,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -413,6 +469,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 27,
+                  "line": 175,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -430,6 +488,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "checked" => {
+              "column": 14,
+              "line": 176,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -442,6 +502,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 26,
+                  "line": 176,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -459,6 +521,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "grabbed" => {
+              "column": 14,
+              "line": 177,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -471,6 +535,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 26,
+                  "line": 177,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -488,6 +554,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "pressed" => {
+              "column": 14,
+              "line": 178,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -500,6 +568,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 26,
+                  "line": 178,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -517,6 +587,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "invalid" => {
+              "column": 14,
+              "line": 179,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -529,6 +601,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 26,
+                  "line": 179,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -546,6 +620,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "valid" => {
+              "column": 12,
+              "line": 180,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -558,6 +634,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 24,
+                  "line": 180,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -575,6 +653,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "loading" => {
+              "column": 14,
+              "line": 181,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -587,6 +667,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 26,
+                  "line": 181,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -604,6 +686,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "selected" => {
+              "column": 15,
+              "line": 182,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -616,6 +700,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 27,
+                  "line": 182,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -633,6 +719,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "hidden" => {
+              "column": 13,
+              "line": 183,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -645,6 +733,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 25,
+                  "line": 183,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -662,6 +752,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "autofill" => {
+              "column": 15,
+              "line": 184,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -674,6 +766,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 27,
+                  "line": 184,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -691,6 +785,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "even" => {
+              "column": 11,
+              "line": 185,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -703,6 +799,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 23,
+                  "line": 185,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -720,6 +818,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "odd" => {
+              "column": 10,
+              "line": 186,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -732,6 +832,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 22,
+                  "line": 186,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -749,6 +851,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "first" => {
+              "column": 12,
+              "line": 187,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -761,6 +865,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 24,
+                  "line": 187,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -778,6 +884,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "last" => {
+              "column": 11,
+              "line": 188,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -790,6 +898,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 23,
+                  "line": 188,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -807,6 +917,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "notFirst" => {
+              "column": 15,
+              "line": 189,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -819,6 +931,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 27,
+                  "line": 189,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -836,6 +950,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "notLast" => {
+              "column": 14,
+              "line": 190,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -848,6 +964,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 26,
+                  "line": 190,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -865,6 +983,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "visited" => {
+              "column": 14,
+              "line": 191,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -877,6 +997,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 26,
+                  "line": 191,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -894,6 +1016,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "activeLink" => {
+              "column": 17,
+              "line": 192,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -906,6 +1030,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 29,
+                  "line": 192,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -923,6 +1049,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "activeStep" => {
+              "column": 17,
+              "line": 193,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -935,6 +1063,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 29,
+                  "line": 193,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -952,6 +1082,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "indeterminate" => {
+              "column": 20,
+              "line": 194,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -964,6 +1096,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 195,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -981,6 +1115,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "groupHover" => {
+              "column": 17,
+              "line": 197,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -993,6 +1129,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 9,
+                  "line": 199,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1010,6 +1148,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "peerHover" => {
+              "column": 16,
+              "line": 201,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1022,6 +1162,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 202,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1039,6 +1181,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "groupFocus" => {
+              "column": 17,
+              "line": 204,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1051,6 +1195,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 9,
+                  "line": 206,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1068,6 +1214,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "peerFocus" => {
+              "column": 16,
+              "line": 208,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1080,6 +1228,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 209,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1097,6 +1247,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "groupFocusVisible" => {
+              "column": 24,
+              "line": 211,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1109,6 +1261,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 212,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1126,6 +1280,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "peerFocusVisible" => {
+              "column": 23,
+              "line": 214,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1138,6 +1294,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 215,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1155,6 +1313,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "groupActive" => {
+              "column": 18,
+              "line": 217,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1167,6 +1327,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 9,
+                  "line": 219,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1184,6 +1346,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "peerActive" => {
+              "column": 17,
+              "line": 221,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1196,6 +1360,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 222,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1213,6 +1379,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "groupDisabled" => {
+              "column": 20,
+              "line": 224,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1225,6 +1393,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 9,
+                  "line": 226,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1242,6 +1412,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "peerDisabled" => {
+              "column": 19,
+              "line": 228,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1254,6 +1426,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 229,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1271,6 +1445,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "groupInvalid" => {
+              "column": 19,
+              "line": 231,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1283,6 +1459,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 9,
+                  "line": 233,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1300,6 +1478,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "peerInvalid" => {
+              "column": 18,
+              "line": 235,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1312,6 +1492,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 236,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1329,6 +1511,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "groupChecked" => {
+              "column": 19,
+              "line": 238,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1341,6 +1525,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 9,
+                  "line": 240,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1358,6 +1544,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "peerChecked" => {
+              "column": 18,
+              "line": 242,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1370,6 +1558,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 243,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1387,6 +1577,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "groupFocusWithin" => {
+              "column": 23,
+              "line": 245,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1399,6 +1591,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 246,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1416,6 +1610,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "peerFocusWithin" => {
+              "column": 22,
+              "line": 248,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1428,6 +1624,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 249,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1445,6 +1643,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "peerPlaceholderShown" => {
+              "column": 27,
+              "line": 251,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1457,6 +1657,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 17,
+                  "line": 252,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1474,6 +1676,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "placeholder" => {
+              "column": 18,
+              "line": 254,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1486,6 +1690,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 30,
+                  "line": 254,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1503,6 +1709,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "placeholderShown" => {
+              "column": 23,
+              "line": 255,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1515,6 +1723,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 35,
+                  "line": 255,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1532,6 +1742,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "fullScreen" => {
+              "column": 17,
+              "line": 256,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1544,6 +1756,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 29,
+                  "line": 256,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1561,6 +1775,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "selection" => {
+              "column": 16,
+              "line": 257,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1573,6 +1789,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 28,
+                  "line": 257,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1590,6 +1808,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "rtl" => {
+              "column": 10,
+              "line": 258,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1602,6 +1822,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 22,
+                  "line": 258,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1619,6 +1841,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "ltr" => {
+              "column": 10,
+              "line": 259,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1631,6 +1855,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 22,
+                  "line": 259,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1648,6 +1874,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "mediaDark" => {
+              "column": 16,
+              "line": 260,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1660,6 +1888,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "@media" => {
+                  "column": 28,
+                  "line": 260,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1677,6 +1907,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "mediaReduceMotion" => {
+              "column": 24,
+              "line": 261,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1689,6 +1921,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "@media" => {
+                  "column": 36,
+                  "line": 261,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1706,6 +1940,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "dark" => {
+              "column": 11,
+              "line": 262,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1718,6 +1954,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 23,
+                  "line": 262,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1735,6 +1973,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "light" => {
+              "column": 12,
+              "line": 263,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1747,6 +1987,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "selector" => {
+                  "column": 24,
+                  "line": 263,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1768,6 +2010,8 @@ it('can extract theme with tokens from another package with declaration files', 
       ],
       "properties" => [
         {
+          "column": 15,
+          "line": 265,
           "node": "ObjectLiteralExpression",
           "stack": [
             "CallExpression",
@@ -1778,6 +2022,8 @@ it('can extract theme with tokens from another package with declaration files', 
           "type": "map",
           "value": Map {
             "boxShadow" => {
+              "column": 21,
+              "line": 79,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -1807,6 +2053,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "textShadow" => {
+              "column": 21,
+              "line": 79,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -1836,6 +2084,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "opacity" => {
+              "column": 14,
+              "line": 268,
               "node": "ObjectLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -1848,6 +2098,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "map",
               "value": Map {
                 "0" => {
+                  "column": 12,
+                  "line": 269,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1863,6 +2115,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "0",
                 },
                 "0.4" => {
+                  "column": 14,
+                  "line": 270,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1878,6 +2132,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "0.6",
                 },
                 "0.6" => {
+                  "column": 14,
+                  "line": 271,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1893,6 +2149,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "0.6",
                 },
                 "1" => {
+                  "column": 12,
+                  "line": 272,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -1910,6 +2168,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "cursor" => {
+              "column": 13,
+              "line": 274,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -1923,6 +2183,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "pointerEvents" => {
+              "column": 20,
+              "line": 275,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -1936,6 +2198,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "userSelect" => {
+              "column": 17,
+              "line": 276,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -1949,6 +2213,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "fontFamily" => {
+              "column": 21,
+              "line": 73,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -1973,6 +2239,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "fontWeight" => {
+              "column": 27,
+              "line": 62,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2003,6 +2271,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "lineHeight" => {
+              "column": 27,
+              "line": 45,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2039,6 +2309,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "letterSpacing" => {
+              "column": 30,
+              "line": 37,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2066,6 +2338,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "textAlign" => {
+              "column": 16,
+              "line": 282,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2079,6 +2353,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "fontStyle" => {
+              "column": 16,
+              "line": 283,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2092,6 +2368,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "textTransform" => {
+              "column": 20,
+              "line": 284,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2105,6 +2383,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "textDecoration" => {
+              "column": 21,
+              "line": 285,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2118,6 +2398,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "position" => {
+              "column": 15,
+              "line": 287,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2131,6 +2413,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "display" => {
+              "column": 14,
+              "line": 288,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2144,6 +2428,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "flexDirection" => {
+              "column": 20,
+              "line": 289,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2157,6 +2443,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "flexShrink" => {
+              "column": 17,
+              "line": 290,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2170,6 +2458,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "flexGrow" => {
+              "column": 15,
+              "line": 291,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2183,6 +2473,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "flex" => {
+              "column": 11,
+              "line": 292,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2196,6 +2488,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "flexWrap" => {
+              "column": 15,
+              "line": 293,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2209,6 +2503,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "justifyContent" => {
+              "column": 21,
+              "line": 294,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2222,6 +2518,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "justifySelf" => {
+              "column": 18,
+              "line": 295,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2235,6 +2533,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "alignItems" => {
+              "column": 17,
+              "line": 296,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2248,6 +2548,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "alignSelf" => {
+              "column": 16,
+              "line": 297,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2261,6 +2563,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "top" => {
+              "column": 10,
+              "line": 298,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2274,6 +2578,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "bottom" => {
+              "column": 13,
+              "line": 299,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2287,6 +2593,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "left" => {
+              "column": 11,
+              "line": 300,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2300,6 +2608,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "right" => {
+              "column": 12,
+              "line": 301,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2313,6 +2623,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "inset" => {
+              "column": 12,
+              "line": 302,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2326,6 +2638,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "width" => {
+              "column": 12,
+              "line": 304,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2339,6 +2653,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "minWidth" => {
+              "column": 15,
+              "line": 305,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2352,6 +2668,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "maxWidth" => {
+              "column": 15,
+              "line": 306,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2365,6 +2683,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "height" => {
+              "column": 13,
+              "line": 307,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2378,6 +2698,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "minHeight" => {
+              "column": 16,
+              "line": 308,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2391,6 +2713,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "maxHeight" => {
+              "column": 16,
+              "line": 309,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2404,6 +2728,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "whiteSpace" => {
+              "column": 17,
+              "line": 310,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2417,6 +2743,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "textOverflow" => {
+              "column": 19,
+              "line": 311,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2430,6 +2758,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "overflow" => {
+              "column": 15,
+              "line": 312,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2443,6 +2773,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "overflowX" => {
+              "column": 16,
+              "line": 313,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2456,6 +2788,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "overflowY" => {
+              "column": 16,
+              "line": 314,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2469,6 +2803,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "visibility" => {
+              "column": 17,
+              "line": 315,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2482,6 +2818,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "verticalAlign" => {
+              "column": 20,
+              "line": 316,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2495,6 +2833,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "borderStyle" => {
+              "column": 18,
+              "line": 320,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -2508,6 +2848,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "borderRadius" => {
+              "column": 19,
+              "line": 25,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2535,6 +2877,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "borderTopLeftRadius" => {
+              "column": 19,
+              "line": 25,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2562,6 +2906,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "borderTopRightRadius" => {
+              "column": 19,
+              "line": 25,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2589,6 +2935,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "borderBottomLeftRadius" => {
+              "column": 19,
+              "line": 25,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2616,6 +2964,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "borderBottomRightRadius" => {
+              "column": 19,
+              "line": 25,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2643,6 +2993,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "color" => {
+              "column": 20,
+              "line": 7,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2680,6 +3032,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "background" => {
+              "column": 20,
+              "line": 7,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2717,6 +3071,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "backgroundColor" => {
+              "column": 20,
+              "line": 7,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2754,6 +3110,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "borderColor" => {
+              "column": 20,
+              "line": 7,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2791,6 +3149,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "borderTopColor" => {
+              "column": 20,
+              "line": 7,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2828,6 +3188,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "borderBottomColor" => {
+              "column": 20,
+              "line": 7,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2865,6 +3227,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "borderLeftColor" => {
+              "column": 20,
+              "line": 7,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2902,6 +3266,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "borderRightColor" => {
+              "column": 20,
+              "line": 7,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2939,6 +3305,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "outlineColor" => {
+              "column": 20,
+              "line": 7,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -2976,6 +3344,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "fill" => {
+              "column": 20,
+              "line": 7,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -3013,6 +3383,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "stroke" => {
+              "column": 20,
+              "line": 7,
               "node": "TypeLiteral",
               "stack": [
                 "CallExpression",
@@ -3050,6 +3422,8 @@ it('can extract theme with tokens from another package with declaration files', 
               },
             },
             "transform" => {
+              "column": 16,
+              "line": 338,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -3063,6 +3437,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "value": true,
             },
             "transformOrigin" => {
+              "column": 22,
+              "line": 339,
               "node": "TrueKeyword",
               "stack": [
                 "CallExpression",
@@ -3080,6 +3456,8 @@ it('can extract theme with tokens from another package with declaration files', 
       ],
       "shorthands" => [
         {
+          "column": 15,
+          "line": 341,
           "node": "ObjectLiteralExpression",
           "stack": [
             "CallExpression",
@@ -3090,6 +3468,8 @@ it('can extract theme with tokens from another package with declaration files', 
           "type": "map",
           "value": Map {
             "d" => {
+              "column": 8,
+              "line": 343,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3102,6 +3482,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 9,
+                  "line": 343,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3117,6 +3499,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "pos" => {
+              "column": 10,
+              "line": 344,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3129,6 +3513,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 11,
+                  "line": 344,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3144,6 +3530,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "t" => {
+              "column": 8,
+              "line": 345,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3156,6 +3544,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 9,
+                  "line": 345,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3171,6 +3561,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "b" => {
+              "column": 8,
+              "line": 346,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3183,6 +3575,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 9,
+                  "line": 346,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3198,6 +3592,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "l" => {
+              "column": 8,
+              "line": 347,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3210,6 +3606,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 9,
+                  "line": 347,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3225,6 +3623,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "r" => {
+              "column": 8,
+              "line": 348,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3237,6 +3637,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 9,
+                  "line": 348,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3252,6 +3654,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "boxSize" => {
+              "column": 14,
+              "line": 349,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3264,6 +3668,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 15,
+                  "line": 349,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3277,6 +3683,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "width",
                 },
                 {
+                  "column": 24,
+                  "line": 349,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3292,6 +3700,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "w" => {
+              "column": 8,
+              "line": 350,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3304,6 +3714,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 9,
+                  "line": 350,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3319,6 +3731,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "h" => {
+              "column": 8,
+              "line": 351,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3331,6 +3745,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 9,
+                  "line": 351,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3346,6 +3762,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "minW" => {
+              "column": 11,
+              "line": 352,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3358,6 +3776,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 12,
+                  "line": 352,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3373,6 +3793,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "maxW" => {
+              "column": 11,
+              "line": 353,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3385,6 +3807,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 12,
+                  "line": 353,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3400,6 +3824,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "minH" => {
+              "column": 11,
+              "line": 354,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3412,6 +3838,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 12,
+                  "line": 354,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3427,6 +3855,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "maxH" => {
+              "column": 11,
+              "line": 355,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3439,6 +3869,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 12,
+                  "line": 355,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3454,6 +3886,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "placeItems" => {
+              "column": 17,
+              "line": 356,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3466,6 +3900,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 18,
+                  "line": 356,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3479,6 +3915,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "justifyContent",
                 },
                 {
+                  "column": 36,
+                  "line": 356,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3494,6 +3932,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "ta" => {
+              "column": 9,
+              "line": 357,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3506,6 +3946,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 357,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3521,6 +3963,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "tt" => {
+              "column": 9,
+              "line": 358,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3533,6 +3977,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 358,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3548,6 +3994,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "fs" => {
+              "column": 9,
+              "line": 359,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3560,6 +4008,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 359,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3575,6 +4025,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "fw" => {
+              "column": 9,
+              "line": 360,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3587,6 +4039,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 360,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3602,6 +4056,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "m" => {
+              "column": 8,
+              "line": 362,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3614,6 +4070,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 9,
+                  "line": 362,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3629,6 +4087,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "mt" => {
+              "column": 9,
+              "line": 363,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3641,6 +4101,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 363,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3656,6 +4118,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "mr" => {
+              "column": 9,
+              "line": 364,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3668,6 +4132,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 364,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3683,6 +4149,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "mb" => {
+              "column": 9,
+              "line": 365,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3695,6 +4163,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 365,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3710,6 +4180,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "ml" => {
+              "column": 9,
+              "line": 366,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3722,6 +4194,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 366,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3737,6 +4211,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "mx" => {
+              "column": 9,
+              "line": 367,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3749,6 +4225,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 367,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3762,6 +4240,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "marginLeft",
                 },
                 {
+                  "column": 24,
+                  "line": 367,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3777,6 +4257,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "my" => {
+              "column": 9,
+              "line": 368,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3789,6 +4271,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 368,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3802,6 +4286,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "marginTop",
                 },
                 {
+                  "column": 23,
+                  "line": 368,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3817,6 +4303,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "ms" => {
+              "column": 9,
+              "line": 369,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3829,6 +4317,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 369,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3844,6 +4334,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "me" => {
+              "column": 9,
+              "line": 370,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3856,6 +4348,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 370,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3871,6 +4365,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "p" => {
+              "column": 8,
+              "line": 371,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3883,6 +4379,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 9,
+                  "line": 371,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3898,6 +4396,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "marginX" => {
+              "column": 14,
+              "line": 372,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3910,6 +4410,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 15,
+                  "line": 372,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3923,6 +4425,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "marginLeft",
                 },
                 {
+                  "column": 29,
+                  "line": 372,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3938,6 +4442,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "marginY" => {
+              "column": 14,
+              "line": 373,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3950,6 +4456,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 15,
+                  "line": 373,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3963,6 +4471,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "marginTop",
                 },
                 {
+                  "column": 28,
+                  "line": 373,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -3978,6 +4488,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "pt" => {
+              "column": 9,
+              "line": 374,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -3990,6 +4502,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 374,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4005,6 +4519,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "pr" => {
+              "column": 9,
+              "line": 375,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4017,6 +4533,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 375,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4032,6 +4550,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "pb" => {
+              "column": 9,
+              "line": 376,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4044,6 +4564,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 376,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4059,6 +4581,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "pl" => {
+              "column": 9,
+              "line": 377,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4071,6 +4595,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 377,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4086,6 +4612,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "px" => {
+              "column": 9,
+              "line": 378,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4098,6 +4626,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 378,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4111,6 +4641,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "paddingLeft",
                 },
                 {
+                  "column": 25,
+                  "line": 378,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4126,6 +4658,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "paddingX" => {
+              "column": 15,
+              "line": 379,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4138,6 +4672,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 16,
+                  "line": 379,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4151,6 +4687,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "paddingLeft",
                 },
                 {
+                  "column": 31,
+                  "line": 379,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4166,6 +4704,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "paddingY" => {
+              "column": 15,
+              "line": 380,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4178,6 +4718,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 16,
+                  "line": 380,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4191,6 +4733,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "paddingTop",
                 },
                 {
+                  "column": 30,
+                  "line": 380,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4206,6 +4750,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "ps" => {
+              "column": 9,
+              "line": 381,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4218,6 +4764,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 381,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4233,6 +4781,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "pe" => {
+              "column": 9,
+              "line": 382,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4245,6 +4795,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 382,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4260,6 +4812,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "py" => {
+              "column": 9,
+              "line": 383,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4272,6 +4826,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 383,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4285,6 +4841,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "paddingTop",
                 },
                 {
+                  "column": 24,
+                  "line": 383,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4300,6 +4858,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "bw" => {
+              "column": 9,
+              "line": 384,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4312,6 +4872,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 384,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4327,6 +4889,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "bx" => {
+              "column": 9,
+              "line": 385,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4339,6 +4903,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 385,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4352,6 +4918,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "borderLeft",
                 },
                 {
+                  "column": 24,
+                  "line": 385,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4367,6 +4935,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "borderX" => {
+              "column": 14,
+              "line": 386,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4379,6 +4949,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 15,
+                  "line": 386,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4392,6 +4964,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "borderLeft",
                 },
                 {
+                  "column": 29,
+                  "line": 386,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4407,6 +4981,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "by" => {
+              "column": 9,
+              "line": 387,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4419,6 +4995,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 387,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4432,6 +5010,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "borderTop",
                 },
                 {
+                  "column": 23,
+                  "line": 387,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4447,6 +5027,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "borderY" => {
+              "column": 14,
+              "line": 388,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4459,6 +5041,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 15,
+                  "line": 388,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4472,6 +5056,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "borderTop",
                 },
                 {
+                  "column": 28,
+                  "line": 388,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4487,6 +5073,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "bg" => {
+              "column": 9,
+              "line": 390,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4499,6 +5087,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 10,
+                  "line": 390,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4514,6 +5104,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "bgColor" => {
+              "column": 14,
+              "line": 391,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4526,6 +5118,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 15,
+                  "line": 391,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4541,6 +5135,8 @@ it('can extract theme with tokens from another package with declaration files', 
               ],
             },
             "borderXColor" => {
+              "column": 19,
+              "line": 392,
               "node": "ArrayLiteralExpression",
               "stack": [
                 "CallExpression",
@@ -4553,6 +5149,8 @@ it('can extract theme with tokens from another package with declaration files', 
               "type": "array",
               "value": [
                 {
+                  "column": 20,
+                  "line": 392,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -4566,6 +5164,8 @@ it('can extract theme with tokens from another package with declaration files', 
                   "value": "borderLeftColor",
                 },
                 {
+                  "column": 39,
+                  "line": 392,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",

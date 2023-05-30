@@ -32,6 +32,8 @@ describe('ast parser', () => {
         "css": Set {
           {
             "box": {
+              "column": 27,
+              "line": 4,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -40,6 +42,8 @@ describe('ast parser', () => {
               "type": "map",
               "value": Map {
                 "color" => {
+                  "column": 20,
+                  "line": 5,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -51,6 +55,8 @@ describe('ast parser', () => {
                   "value": "red",
                 },
                 "fontSize" => {
+                  "column": 23,
+                  "line": 6,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -74,6 +80,8 @@ describe('ast parser', () => {
           },
           {
             "box": {
+              "column": 27,
+              "line": 9,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -82,6 +90,8 @@ describe('ast parser', () => {
               "type": "map",
               "value": Map {
                 "bg" => {
+                  "column": 15,
+                  "line": 10,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -93,6 +103,8 @@ describe('ast parser', () => {
                   "value": "red.300",
                 },
                 "margin" => {
+                  "column": 19,
+                  "line": 11,
                   "node": "ObjectLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -103,6 +115,8 @@ describe('ast parser', () => {
                   "type": "map",
                   "value": Map {
                     "xs" => {
+                      "column": 25,
+                      "line": 11,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -116,6 +130,8 @@ describe('ast parser', () => {
                       "value": "0",
                     },
                     "lg" => {
+                      "column": 33,
+                      "line": 11,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -146,6 +162,8 @@ describe('ast parser', () => {
           },
           {
             "box": {
+              "column": 25,
+              "line": 14,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -154,6 +172,8 @@ describe('ast parser', () => {
               "type": "map",
               "value": Map {
                 "[dir=rtl]" => {
+                  "column": 24,
+                  "line": 15,
                   "node": "ObjectLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -164,6 +184,8 @@ describe('ast parser', () => {
                   "type": "map",
                   "value": Map {
                     "textAlign" => {
+                      "column": 24,
+                      "line": 16,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -179,6 +201,8 @@ describe('ast parser', () => {
                   },
                 },
                 "&[data-state=closed]" => {
+                  "column": 35,
+                  "line": 18,
                   "node": "ObjectLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -189,6 +213,8 @@ describe('ast parser', () => {
                   "type": "map",
                   "value": Map {
                     "animation" => {
+                      "column": 24,
+                      "line": 19,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -202,6 +228,8 @@ describe('ast parser', () => {
                       "value": "exit",
                     },
                     "fadeOut" => {
+                      "column": 22,
+                      "line": 20,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",

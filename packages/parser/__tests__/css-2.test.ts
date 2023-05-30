@@ -21,6 +21,8 @@ describe('ast parser', () => {
         "css": Set {
           {
             "box": {
+              "column": 27,
+              "line": 2,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -29,6 +31,8 @@ describe('ast parser', () => {
               "type": "map",
               "value": Map {
                 "color" => {
+                  "column": 20,
+                  "line": 3,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -40,6 +44,8 @@ describe('ast parser', () => {
                   "value": "red",
                 },
                 "fontSize" => {
+                  "column": 23,
+                  "line": 4,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -63,6 +69,8 @@ describe('ast parser', () => {
           },
           {
             "box": {
+              "column": 27,
+              "line": 7,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -71,6 +79,8 @@ describe('ast parser', () => {
               "type": "map",
               "value": Map {
                 "bg" => {
+                  "column": 15,
+                  "line": 8,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -82,6 +92,8 @@ describe('ast parser', () => {
                   "value": "red.300",
                 },
                 "margin" => {
+                  "column": 19,
+                  "line": 9,
                   "node": "ObjectLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -92,6 +104,8 @@ describe('ast parser', () => {
                   "type": "map",
                   "value": Map {
                     "xs" => {
+                      "column": 25,
+                      "line": 9,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -105,6 +119,8 @@ describe('ast parser', () => {
                       "value": "0",
                     },
                     "lg" => {
+                      "column": 33,
+                      "line": 9,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -120,6 +136,8 @@ describe('ast parser', () => {
                   },
                 },
                 "padding" => {
+                  "column": 20,
+                  "line": 10,
                   "node": "ArrayLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -130,6 +148,8 @@ describe('ast parser', () => {
                   "type": "array",
                   "value": [
                     {
+                      "column": 21,
+                      "line": 10,
                       "node": "NumericLiteral",
                       "stack": [
                         "CallExpression",
@@ -141,6 +161,8 @@ describe('ast parser', () => {
                       "value": 12,
                     },
                     {
+                      "column": 25,
+                      "line": 10,
                       "node": "NumericLiteral",
                       "stack": [
                         "CallExpression",
@@ -196,6 +218,8 @@ describe('ast parser', () => {
         "css": Set {
           {
             "box": {
+              "column": 27,
+              "line": 3,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -204,6 +228,8 @@ describe('ast parser', () => {
               "type": "map",
               "value": Map {
                 "color" => {
+                  "column": 20,
+                  "line": 4,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -215,6 +241,8 @@ describe('ast parser', () => {
                   "value": "red",
                 },
                 "fontSize" => {
+                  "column": 23,
+                  "line": 5,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -238,6 +266,8 @@ describe('ast parser', () => {
           },
           {
             "box": {
+              "column": 27,
+              "line": 8,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -246,6 +276,8 @@ describe('ast parser', () => {
               "type": "map",
               "value": Map {
                 "bg" => {
+                  "column": 15,
+                  "line": 9,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -257,6 +289,8 @@ describe('ast parser', () => {
                   "value": "red.300",
                 },
                 "margin" => {
+                  "column": 19,
+                  "line": 10,
                   "node": "ObjectLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -267,6 +301,8 @@ describe('ast parser', () => {
                   "type": "map",
                   "value": Map {
                     "xs" => {
+                      "column": 25,
+                      "line": 10,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -280,6 +316,8 @@ describe('ast parser', () => {
                       "value": "0",
                     },
                     "lg" => {
+                      "column": 33,
+                      "line": 10,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -295,6 +333,8 @@ describe('ast parser', () => {
                   },
                 },
                 "padding" => {
+                  "column": 20,
+                  "line": 11,
                   "node": "ArrayLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -305,6 +345,8 @@ describe('ast parser', () => {
                   "type": "array",
                   "value": [
                     {
+                      "column": 21,
+                      "line": 11,
                       "node": "NumericLiteral",
                       "stack": [
                         "CallExpression",
@@ -316,6 +358,8 @@ describe('ast parser', () => {
                       "value": 12,
                     },
                     {
+                      "column": 25,
+                      "line": 11,
                       "node": "NumericLiteral",
                       "stack": [
                         "CallExpression",
@@ -371,6 +415,8 @@ describe('ast parser', () => {
         "css": Set {
           {
             "box": {
+              "column": 27,
+              "line": 3,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -379,6 +425,8 @@ describe('ast parser', () => {
               "type": "map",
               "value": Map {
                 "color" => {
+                  "column": 20,
+                  "line": 4,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -390,6 +438,8 @@ describe('ast parser', () => {
                   "value": "red",
                 },
                 "fontSize" => {
+                  "column": 23,
+                  "line": 5,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -413,6 +463,8 @@ describe('ast parser', () => {
           },
           {
             "box": {
+              "column": 27,
+              "line": 8,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -421,6 +473,8 @@ describe('ast parser', () => {
               "type": "map",
               "value": Map {
                 "bg" => {
+                  "column": 15,
+                  "line": 9,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -432,6 +486,8 @@ describe('ast parser', () => {
                   "value": "red.300",
                 },
                 "margin" => {
+                  "column": 19,
+                  "line": 10,
                   "node": "ObjectLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -442,6 +498,8 @@ describe('ast parser', () => {
                   "type": "map",
                   "value": Map {
                     "xs" => {
+                      "column": 25,
+                      "line": 10,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -455,6 +513,8 @@ describe('ast parser', () => {
                       "value": "0",
                     },
                     "lg" => {
+                      "column": 33,
+                      "line": 10,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -470,6 +530,8 @@ describe('ast parser', () => {
                   },
                 },
                 "padding" => {
+                  "column": 20,
+                  "line": 11,
                   "node": "ArrayLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -480,6 +542,8 @@ describe('ast parser', () => {
                   "type": "array",
                   "value": [
                     {
+                      "column": 21,
+                      "line": 11,
                       "node": "NumericLiteral",
                       "stack": [
                         "CallExpression",
@@ -491,6 +555,8 @@ describe('ast parser', () => {
                       "value": 12,
                     },
                     {
+                      "column": 25,
+                      "line": 11,
                       "node": "NumericLiteral",
                       "stack": [
                         "CallExpression",
@@ -548,6 +614,8 @@ console.log(
         "css": Set {
           {
             "box": {
+              "column": 5,
+              "line": 6,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -556,6 +624,8 @@ console.log(
               "type": "map",
               "value": Map {
                 "selectors" => {
+                  "column": 18,
+                  "line": 7,
                   "node": "ObjectLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -566,6 +636,8 @@ console.log(
                   "type": "map",
                   "value": Map {
                     "&:hover" => {
+                      "column": 20,
+                      "line": 8,
                       "node": "ObjectLiteralExpression",
                       "stack": [
                         "CallExpression",
@@ -578,6 +650,8 @@ console.log(
                       "type": "map",
                       "value": Map {
                         "background" => {
+                          "column": 23,
+                          "line": 9,
                           "node": "StringLiteral",
                           "stack": [
                             "CallExpression",
@@ -634,6 +708,8 @@ export function Card({ className }) {
         "css": Set {
           {
             "box": {
+              "column": 32,
+              "line": 7,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -642,6 +718,8 @@ export function Card({ className }) {
               "type": "map",
               "value": Map {
                 "background" => {
+                  "column": 50,
+                  "line": 7,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",

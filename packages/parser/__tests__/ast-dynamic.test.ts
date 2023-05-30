@@ -28,6 +28,8 @@ describe('[dynamic] ast parser', () => {
         "textStyle" => Set {
           {
             "box": {
+              "column": 9,
+              "line": 4,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -36,6 +38,8 @@ describe('[dynamic] ast parser', () => {
               "type": "map",
               "value": Map {
                 "variant" => {
+                  "column": 22,
+                  "line": 5,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
@@ -58,6 +62,8 @@ describe('[dynamic] ast parser', () => {
           },
           {
             "box": {
+              "column": 9,
+              "line": 12,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -66,6 +72,8 @@ describe('[dynamic] ast parser', () => {
               "type": "map",
               "value": Map {
                 "variant" => {
+                  "column": 20,
+                  "line": 13,
                   "node": "ObjectLiteralExpression",
                   "stack": [
                     "CallExpression",
@@ -76,6 +84,8 @@ describe('[dynamic] ast parser', () => {
                   "type": "map",
                   "value": Map {
                     "base" => {
+                      "column": 27,
+                      "line": 13,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -89,6 +99,8 @@ describe('[dynamic] ast parser', () => {
                       "value": "h4",
                     },
                     "md" => {
+                      "column": 37,
+                      "line": 13,
                       "node": "StringLiteral",
                       "stack": [
                         "CallExpression",
@@ -132,6 +144,8 @@ describe('[dynamic] ast parser', () => {
         "layerStyle" => Set {
           {
             "box": {
+              "column": 9,
+              "line": 8,
               "node": "CallExpression",
               "stack": [
                 "CallExpression",
@@ -140,6 +154,8 @@ describe('[dynamic] ast parser', () => {
               "type": "map",
               "value": Map {
                 "variant" => {
+                  "column": 21,
+                  "line": 9,
                   "node": "StringLiteral",
                   "stack": [
                     "CallExpression",
