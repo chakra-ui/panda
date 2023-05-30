@@ -2,6 +2,7 @@ import { logger } from '@pandacss/logger'
 import { Obj, pipe, tap, tryCatch } from 'lil-fp'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
+import { ParserResult } from '@pandacss/parser'
 
 export async function bundleChunks(ctx: PandaContext) {
   const files = ctx.chunks.getFiles()
@@ -22,7 +23,7 @@ export async function writeFileChunk(ctx: PandaContext, file: string) {
 
 export function extractFile(ctx: PandaContext, file: string) {
   const {
-    runtime: { path },
+    runtime: { path, fs },
     config: { cwd },
   } = ctx
   return pipe(
@@ -32,7 +33,11 @@ export function extractFile(ctx: PandaContext, file: string) {
     Obj.bind(
       'result',
       tryCatch(
-        ({ file }) => ctx.project.parseSourceFile(file),
+        ({ file }) => {
+          return file.endsWith('.json')
+            ? ParserResult.fromJson(fs.readFileSync(file))
+            : ctx.project.parseSourceFile(file)
+        },
         (error) => logger.error('file:parse', error),
       ),
     ),

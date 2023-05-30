@@ -38,7 +38,7 @@ describe('extract to css output pipeline', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -166,7 +166,7 @@ describe('extract to css output pipeline', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -225,7 +225,7 @@ describe('extract to css output pipeline', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -297,7 +297,7 @@ describe('extract to css output pipeline', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -356,7 +356,7 @@ describe('extract to css output pipeline', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -487,7 +487,7 @@ describe('extract to css output pipeline', () => {
       },
     }))
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -650,7 +650,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -687,7 +687,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -724,7 +724,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -759,7 +759,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -800,7 +800,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -843,7 +843,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -892,7 +892,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -939,7 +939,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -992,7 +992,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1039,7 +1039,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1092,7 +1092,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1135,7 +1135,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1184,7 +1184,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1235,7 +1235,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1292,7 +1292,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1347,7 +1347,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1408,7 +1408,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1447,7 +1447,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1492,7 +1492,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1521,7 +1521,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1558,7 +1558,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1601,7 +1601,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1650,7 +1650,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1709,7 +1709,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1774,7 +1774,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1817,7 +1817,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1866,7 +1866,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1925,7 +1925,7 @@ describe('preset patterns', () => {
      `
     const { parse, generator } = getFixtureProject(code)
     const result = parse()!
-    expect(result?.getAll().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
         {
           "data": [
