@@ -3,7 +3,7 @@ version: '3.3'
 services:
   db:
     container_name: panda-mysql
-    image: mariadb:10.7.1-focal
+    image: mariadb:10.8.2-focal
     restart: always
     ports:
       - 3310:3306
