@@ -1,0 +1,18 @@
+version: '3.3'
+
+services:
+  db:
+    container_name: panda-mysql
+    image: mariadb:10.7.1-focal
+    restart: always
+    ports:
+      - 3310:3306
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: panda
+    volumes:
+      - panda-mysql:/var/lib/mysql
+
+volumes:
+  panda-mysql:
+    driver: local
