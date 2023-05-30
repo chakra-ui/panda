@@ -3,6 +3,7 @@
   "postcss": "Using PostCSS",
   "astro": "Using Astro",
   "nextjs": "Using Next.js",
+  "vite": "Using Vite",
   "storybook": "Using Storybook",
   "remix": "Using Remix"
 }
