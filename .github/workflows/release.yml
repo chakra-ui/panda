@@ -3,8 +3,8 @@ name: Publish
 on:
   push:
     paths:
-      - '.changeset/**'
-      - 'packages/**'
+      - ".changeset/**"
+      - "packages/**"
     branches:
       - main
 
@@ -24,6 +24,9 @@ jobs:
       - name: Build packages
         run: pnpm build
 
+      - name: Build extension
+        run: pnpm extension:build
+
       - name: Publish packages
         id: changesets
         uses: changesets/action@v1
@@ -32,6 +35,14 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Publish extension
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          cd ./extension/vscode
+          pnpm vsce publish --no-dependencies -p ${{ secrets.VSCE_TOKEN }}
+        env:
+          VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
 
       - name: Release to dev tag
         if: steps.changesets.outputs.published != 'true'
