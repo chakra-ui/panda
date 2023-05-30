@@ -10,23 +10,3 @@
 
 @import './tokens/keyframes.css';
 
-@layer utilities {
-  .w_auto {
-    width: auto
-    }
-
-  .min-w_80px {
-    min-width: 80px
-    }
-
-  .h_40px {
-    height: 40px
-    }
-
-  .mb_2 {
-    margin-bottom: var(--spacing-2)
-    }
-
-  .opacity_0\.1 {
-    opacity: 0.1
-    }}
