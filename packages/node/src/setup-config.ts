@@ -7,7 +7,15 @@ import { join } from 'path'
 import getPackageManager from 'preferred-pm'
 import { findConfig } from './config'
 
-export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
+type SetupOptions = {
+  outExtension?: string
+  jsxFramework?: string
+  force?: boolean
+}
+
+export async function setupConfig(cwd: string, opts: SetupOptions = {}) {
+  const { force, outExtension, jsxFramework } = opts
+
   const configFile = findConfig()
 
   const pmResult = await getPackageManager(cwd)
@@ -28,7 +36,7 @@ export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
        export default defineConfig({
         // Whether to use css reset
         preflight: true,
-        
+        ${outExtension ? `\n // The extension for the emitted JavaScript files\noutExtension: '${outExtension}',` : ''}
         // Where to look for your css declarations
         include: ["./src/**/*.{js,jsx,ts,tsx}", "./pages/**/*.{js,jsx,ts,tsx}"],
         
@@ -37,6 +45,7 @@ export async function setupConfig(cwd: string, { force }: { force?: boolean }) {
         
         // The output directory for your css system
         outdir: "styled-system",
+        ${jsxFramework ? `\n // The JSX framework to use\njsxFramework: '${jsxFramework}'` : ''}
        })
     `
 

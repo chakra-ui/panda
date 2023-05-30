@@ -7,18 +7,19 @@
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "bin": {
-    "panda": "bin.js"
+    "panda": "bin.js",
+    "pandacss": "bin.js"
   },
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./presets": {
+      "types": "./dist/presets.d.ts",
       "import": "./dist/presets.mjs",
-      "require": "./dist/presets.js",
-      "types": "./dist/presets.d.ts"
+      "require": "./dist/presets.js"
     },
     "./postcss": "./postcss.js",
     "./astro": {
@@ -26,13 +27,6 @@
       "types": "./astro.d.ts"
     },
     "./package.json": "./package.json"
-  },
-  "typesVersions": {
-    "*": {
-      "presets": [
-        "./dist/presets.d.ts"
-      ]
-    }
   },
   "sideEffects": false,
   "publishConfig": {
@@ -54,7 +48,8 @@
     "app",
     "bin.js",
     "postcss.js",
-    "astro.mjs"
+    "astro.mjs",
+    "astro.d.ts"
   ],
   "dependencies": {
     "@ark-ui/react": "0.5.0",

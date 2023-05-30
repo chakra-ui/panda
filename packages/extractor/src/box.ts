@@ -66,4 +66,7 @@ export const box = {
   isNumberLiteral(node: BoxNode | undefined): node is BoxNodeLiteral {
     return box.isLiteral(node) && node.kind === 'number'
   },
+  hasValue: (node: BoxNode | undefined): node is BoxNodeLiteral | BoxNodeObject | BoxNodeMap | BoxNodeArray => {
+    return box.isObject(node) || box.isLiteral(node) || box.isMap(node) || box.isArray(node)
+  },
 }

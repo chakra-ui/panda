@@ -64,22 +64,23 @@ type EvalOptions = ReturnType<GetEvaluateOptions>
 const defaultEnv: EvalOptions['environment'] = { preset: 'NONE' }
 
 export function createParser(options: ParserOptions) {
+  const { jsx, importMap, getRecipeByName } = options
+
+  // Create regex for each import map
+  const importRegex = [
+    createImportMatcher(importMap.css, ['css', 'cva']),
+    createImportMatcher(importMap.recipe),
+    createImportMatcher(importMap.pattern),
+  ]
+
+  if (jsx) {
+    importRegex.push(createImportMatcher(importMap.jsx, [jsx.factory, ...jsx.nodes.map((node) => node.name)]))
+  }
+
   return function parse(sourceFile: SourceFile | undefined) {
     if (!sourceFile) return
 
     const filePath = sourceFile.getFilePath()
-    const { jsx, importMap, getRecipeByName } = options
-
-    // Create regex for each import map
-    const importRegex = [
-      createImportMatcher(importMap.css, ['css', 'cva']),
-      createImportMatcher(importMap.recipe),
-      createImportMatcher(importMap.pattern),
-    ]
-
-    if (jsx) {
-      importRegex.push(createImportMatcher(importMap.jsx, [jsx.factory, ...jsx.nodes.map((node) => node.name)]))
-    }
 
     // Get all import declarations
     const imports = getImportDeclarations(sourceFile, {

@@ -28,12 +28,13 @@ describe('recipe jsx', () => {
       Map {
         "button" => Set {
           {
-            "box": BoxNodeMap {
-              "node": CallExpression,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 38,
+              "line": 6,
+              "node": "CallExpression",
               "stack": [
-                CallExpression,
-                ObjectLiteralExpression,
+                "CallExpression",
+                "ObjectLiteralExpression",
               ],
               "type": "map",
               "value": Map {},
@@ -45,28 +46,31 @@ describe('recipe jsx', () => {
             "type": "recipe",
           },
           {
-            "box": BoxNodeMap {
-              "node": JsxOpeningElement,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 16,
+              "line": 12,
+              "node": "JsxOpeningElement",
               "stack": [],
               "type": "map",
               "value": Map {
-                "size" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "size" => {
+                  "column": 29,
+                  "line": 12,
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "sm",
                 },
-                "mt" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "mt" => {
+                  "column": 37,
+                  "line": 12,
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "40px",
@@ -83,54 +87,59 @@ describe('recipe jsx', () => {
             "type": "jsx-recipe",
           },
           {
-            "box": BoxNodeMap {
-              "node": JsxOpeningElement,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 16,
+              "line": 13,
+              "node": "JsxOpeningElement",
               "stack": [],
               "type": "map",
               "value": Map {
-                "size" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "size" => {
+                  "column": 29,
+                  "line": 13,
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "sm",
                 },
-                "variant" => BoxNodeMap {
-                  "node": ObjectLiteralExpression,
-                  "spreadConditions": undefined,
+                "variant" => {
+                  "column": 43,
+                  "line": 13,
+                  "node": "ObjectLiteralExpression",
                   "stack": [
-                    JsxAttribute,
-                    JsxExpression,
-                    ObjectLiteralExpression,
+                    "JsxAttribute",
+                    "JsxExpression",
+                    "ObjectLiteralExpression",
                   ],
                   "type": "map",
                   "value": Map {
-                    "base" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "base" => {
+                      "column": 51,
+                      "line": 13,
+                      "node": "StringLiteral",
                       "stack": [
-                        JsxAttribute,
-                        JsxExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        StringLiteral,
+                        "JsxAttribute",
+                        "JsxExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "StringLiteral",
                       ],
                       "type": "literal",
                       "value": "outline",
                     },
-                    "md" => BoxNodeLiteral {
-                      "kind": "string",
-                      "node": StringLiteral,
+                    "md" => {
+                      "column": 66,
+                      "line": 13,
+                      "node": "StringLiteral",
                       "stack": [
-                        JsxAttribute,
-                        JsxExpression,
-                        ObjectLiteralExpression,
-                        PropertyAssignment,
-                        StringLiteral,
+                        "JsxAttribute",
+                        "JsxExpression",
+                        "ObjectLiteralExpression",
+                        "PropertyAssignment",
+                        "StringLiteral",
                       ],
                       "type": "literal",
                       "value": "solid",
@@ -152,18 +161,20 @@ describe('recipe jsx', () => {
             "type": "jsx-recipe",
           },
           {
-            "box": BoxNodeMap {
-              "node": JsxSelfClosingElement,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 16,
+              "line": 16,
+              "node": "JsxSelfClosingElement",
               "stack": [],
               "type": "map",
               "value": Map {
-                "size" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "size" => {
+                  "column": 45,
+                  "line": 16,
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "50px",

@@ -178,7 +178,7 @@ export type Config = {
   /**
    * The framework to use for generating supercharged elements.
    */
-  jsxFramework?: 'react' | 'solid' | 'preact' | 'vue'
+  jsxFramework?: JsxFramework
   /**
    * The factory name of the element
    * @default 'styled'
@@ -203,6 +203,8 @@ export type Config = {
    */
   outExtension?: 'mjs' | 'js'
 }
+
+type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik'
 
 export type UserConfig = UnwrapExtend<RequiredBy<Config, 'outdir' | 'cwd' | 'include'>>
 

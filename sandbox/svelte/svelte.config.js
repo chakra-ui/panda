@@ -19,7 +19,7 @@ const config = {
     // See https://kit.svelte.dev/docs/adapters for more information about adapters.
     adapter: adapter(),
     alias: {
-      panda: './src/styled-system',
+      'styled-system': './styled-system/*',
     },
   },
 }

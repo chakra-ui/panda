@@ -9,6 +9,7 @@ import {
   setupConfig,
   setupGitIgnore,
   setupPostcss,
+  shipFiles,
   writeAnalyzeJSON,
 } from '@pandacss/node'
 import { compact } from '@pandacss/shared'
@@ -32,8 +33,10 @@ export async function main() {
     .option('-p, --postcss', 'Emit postcss config file')
     .option('--silent', 'Suppress all messages except errors')
     .option('--no-gitignore', "Don't update the .gitignore")
+    .option('--out-extension <ext>', "The extension of the generated js files (default: 'mjs')")
+    .option('--jsx-framework <framework>', 'The jsx framework to use')
     .action(async (flags) => {
-      const { force, postcss, silent, gitignore } = flags
+      const { force, postcss, silent, gitignore, outExtension, jsxFramework } = flags
 
       if (silent) {
         logger.level = 'silent'
@@ -44,7 +47,7 @@ export async function main() {
       const done = logger.time.info('✨ Panda initialized')
 
       if (postcss) await setupPostcss(cwd)
-      await setupConfig(cwd, { force })
+      await setupConfig(cwd, { force, outExtension, jsxFramework })
 
       const ctx = await loadConfigAndCreateContext()
       const msg = await emitArtifacts(ctx)
@@ -179,7 +182,7 @@ export async function main() {
     .command('debug [glob]', 'Debug design token extraction & css generated from files in glob')
     .option('--silent', "Don't print any logs")
     .option('--dry', 'Output debug files in stdout without writing to disk')
-    .option('--outdir [dir]', "Output directory for debug files, default to '.panda/debug'")
+    .option('--outdir [dir]', "Output directory for debug files, default to './styled-system/debug'")
     .action(async (maybeGlob?: string, flags?: { silent?: boolean; dry?: boolean; outdir?: string }) => {
       const { silent, dry = false, outdir: outdirFlag } = flags ?? {}
       if (silent) logger.level = 'silent'
@@ -192,6 +195,28 @@ export async function main() {
       logger.info('cli', `Found config at ${colors.bold(ctx.path)}`)
 
       await debugFiles(ctx, { outdir, dry })
+    })
+
+  cli
+    .command('ship [glob]', 'Ship extract result from files in glob')
+    .option('--silent', "Don't print any logs")
+    .option('--outfile [file]', "Output directory for shipped files, default to './styled-system/panda.json'")
+    .option('-m, --minify', 'Minify generated JSON file')
+    .action(async (maybeGlob?: string, flags?: { silent?: boolean; minify?: boolean; outfile?: string }) => {
+      const { silent, outfile: outfileFlag, minify } = flags ?? {}
+      if (silent) logger.level = 'silent'
+
+      const ctx = await loadConfigAndCreateContext({
+        cwd,
+        config: maybeGlob ? { include: [maybeGlob] } : (undefined as any),
+      })
+      const outfile = path.resolve(cwd, outfileFlag ?? `${ctx.config.outdir}/panda.json`)
+
+      if (minify) {
+        ctx.config.minify = true
+      }
+
+      await shipFiles(ctx, outfile)
     })
 
   cli.help()

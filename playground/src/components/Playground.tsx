@@ -1,15 +1,23 @@
 'use client'
+import { usePanda } from '@/src/components/usePanda'
 import { css } from '@/styled-system/css'
-import { Splitter, SplitterPanel, SplitterResizeTrigger } from '@ark-ui/react'
+import {
+  Splitter,
+  SplitterPanel,
+  SplitterResizeTrigger,
+  TabContent,
+  TabIndicator,
+  TabList,
+  TabTrigger,
+  Tabs,
+} from '@ark-ui/react'
+import { ASTViewer } from './ASTViewer'
 import { Editor } from './Editor'
+import { GeneratedCss } from './GeneratedCss'
 import { LayoutControl } from './LayoutControl'
 import { Preview } from './Preview'
 import { Toolbar } from './Toolbar'
-import { usePlayground, UsePlayGroundProps } from './usePlayground'
-import { usePanda } from '@/src/components/usePanda'
-import { TabContent, TabIndicator, TabList, Tabs, TabTrigger } from '@ark-ui/react'
-import { ASTViewer } from './ASTViewer'
-import { GeneratedCss } from './GeneratedCss'
+import { UsePlayGroundProps, usePlayground } from './usePlayground'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const { layout, setLayout, isPristine, state, setState, share } = usePlayground(props)
@@ -74,15 +82,9 @@ export const Playground = (props: UsePlayGroundProps) => {
                 },
               })}
             >
-              <TabTrigger value="preview">
-                <button>Preview</button>
-              </TabTrigger>
-              <TabTrigger value="ast">
-                <button>AST</button>
-              </TabTrigger>
-              <TabTrigger value="generated">
-                <button>Generated</button>
-              </TabTrigger>
+              <TabTrigger value="preview">Preview</TabTrigger>
+              <TabTrigger value="ast">AST</TabTrigger>
+              <TabTrigger value="generated">Generated</TabTrigger>
               <TabIndicator className={css({ background: 'yellow.400', height: '2px', mb: '-1px' })} />
             </TabList>
             <TabContent value="preview" className={css({ flex: '1', pt: '4' })}>

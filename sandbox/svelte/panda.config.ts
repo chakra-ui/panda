@@ -6,9 +6,8 @@ export default defineConfig({
     logo: 'https://place-hold.it/36x24',
   },
   preflight: true,
-  include: ['./src/**/*.{html,js,svelte,ts}'],
-  exclude: ['./src/styled-system', './src/**/app.*'],
-  outdir: './src/styled-system',
+  include: ['./src/**/*.{js,svelte,ts}'],
+  outdir: 'styled-system',
   theme: {
     semanticTokens: {
       colors: {
@@ -47,7 +46,6 @@ export default defineConfig({
       },
     },
   },
-  jsxFramework: 'react',
   globalCss: {
     '*': {
       fontFamily: 'Inter',

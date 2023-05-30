@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { Builder } = require('@pandacss/node')
 
-const PLUGIN_NAME = 'panda-css'
+const PLUGIN_NAME = 'pandacss'
 
-function postcssPlugin() {
+module.exports = function pandacss() {
   const builder = new Builder()
 
   return {
@@ -38,6 +38,4 @@ function postcssPlugin() {
   }
 }
 
-postcssPlugin.postcss = true
-
-module.exports = postcssPlugin
+module.exports.postcss = true
