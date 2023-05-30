@@ -48,7 +48,8 @@
     "directory": "packages/extension/vscode"
   },
   "scripts": {
-    "build": "tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --external esbuild --minify -d dist --clean --shims",
+    "build:lsp": "pnpm --filter=../language-server build",
+    "build": "pnpm build:lsp && tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --external esbuild --minify -d dist --clean --shims",
     "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims",
     "clean": "rm -rf dist",
     "lint": "eslint ./src --ext .ts,.tsx --fix",
