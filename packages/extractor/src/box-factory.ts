@@ -1,5 +1,6 @@
 import type { Node } from 'ts-morph'
 import type { EvaluatedObjectResult, PrimitiveType } from './types'
+import { getNodeRange } from './get-node-range'
 
 type WithNode = { node: Node; stack: Node[] }
 
@@ -70,6 +71,26 @@ abstract class BoxNodeType<Definition extends BoxNodeDefinition = BoxNodeDefinit
 
   getStack(): Node[] {
     return this.stack
+  }
+
+  getRange = () => getNodeRange(this.node)
+
+  toJSON() {
+    const range = this.getRange()
+
+    return {
+      type: this.type,
+      // @ts-expect-error
+      value: this.value,
+      node: this.node.getKindName(),
+      stack: this.stack.filter(Boolean).map((node) => node.getKindName()),
+      line: range.startLineNumber,
+      column: range.startColumn,
+    }
+  }
+
+  toString() {
+    return JSON.stringify(this.toJSON(), null, 2)
   }
 }
 

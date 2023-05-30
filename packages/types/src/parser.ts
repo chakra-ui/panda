@@ -7,7 +7,7 @@ export type ResultItem = {
   box: BoxNodeMap
 }
 
-export type ParserResult = {
+export type ParserResultType = {
   jsx: Set<ResultItem>
   css: Set<ResultItem>
   cva: Set<ResultItem>
@@ -19,5 +19,13 @@ export type ParserResult = {
   setRecipe: (name: string, result: ResultItem) => void
   setPattern: (name: string, result: ResultItem) => void
   isEmpty: () => boolean
-  getAll: () => Array<ResultItem>
+  toArray: () => Array<ResultItem>
+  toJSON: () => {
+    css: Array<ResultItem>
+    cva: Array<ResultItem>
+    recipe: Record<string, ResultItem[]>
+    pattern: Record<string, ResultItem[]>
+    jsx: Array<ResultItem>
+  }
+  merge: (result: ParserResultType) => ParserResultType
 }

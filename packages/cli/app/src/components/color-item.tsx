@@ -14,6 +14,8 @@ export const ColorItem = ({
   const value = token?.value ?? tokenName
   const reportItem = getReportItemFromTokenName(tokenName)
 
+  if (!reportItem) return null
+
   return (
     <panda.a href={getUtilityLink({ value: reportItem.value })} key={tokenName} {...props}>
       <ColorWrapper

@@ -19,38 +19,42 @@ describe('pattern jsx', () => {
       Map {
         "Stack" => Set {
           {
-            "box": BoxNodeMap {
-              "node": JsxOpeningElement,
-              "spreadConditions": undefined,
+            "box": {
+              "column": 16,
+              "line": 7,
+              "node": "JsxOpeningElement",
               "stack": [],
               "type": "map",
               "value": Map {
-                "align" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "align" => {
+                  "column": 36,
+                  "line": 7,
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "center",
                 },
-                "marginTop" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "marginTop" => {
+                  "column": 55,
+                  "line": 7,
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "40px",
                 },
-                "marginBottom" => BoxNodeLiteral {
-                  "kind": "string",
-                  "node": StringLiteral,
+                "marginBottom" => {
+                  "column": 75,
+                  "line": 7,
+                  "node": "StringLiteral",
                   "stack": [
-                    JsxAttribute,
-                    StringLiteral,
+                    "JsxAttribute",
+                    "StringLiteral",
                   ],
                   "type": "literal",
                   "value": "42px",
