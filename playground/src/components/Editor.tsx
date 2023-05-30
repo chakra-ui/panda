@@ -142,12 +142,8 @@ export const Editor = (props: EditorProps) => {
             },
           })}
         >
-          <TabTrigger value="code">
-            <button>Code</button>
-          </TabTrigger>
-          <TabTrigger value="theme">
-            <button>Theme</button>
-          </TabTrigger>
+          <TabTrigger value="code">Code</TabTrigger>
+          <TabTrigger value="theme">Theme</TabTrigger>
           <TabIndicator className={css({ background: 'yellow.400', height: '2px', mb: '-1px' })} />
         </TabList>
         <TabContent value="code" className={css({ flex: '1', pt: '4' })}>
