@@ -1,0 +1,254 @@
+---
+title: Using Remix
+description: Easily use Panda with Remix with our dedicated integration.
+---
+
+# Using Remix
+
+Easily use Panda with Remix with our dedicated integration.
+
+## Start a new project
+
+<Steps>
+
+### Create Remix project
+
+To get started, we will need to create a new Remix project using the official [Create Remix](https://remix.run/docs/en/main/tutorials/jokes#generating-a-new-remix-project) CLI.
+
+If you don't enter any parameter, the CLI will guide you through the process of creating a new Remix app.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm dlx create-remix@latest
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npx create-remix@latest
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dlx create-remix@latest
+    ```
+  </Tab>
+</Tabs>
+
+You will be asked a few questions, answer them as follows:
+
+```
+? Where would you like to create your app? test-app
+? What type of app do you want to create? Just the basics
+? Where do you want to deploy? Choose Remix App Server if you're unsure; it's easy to change deployment targets. Remix App Server
+? TypeScript or JavaScript? TypeScript
+? Do you want me to run `npm install`? No
+```
+
+> **Note:** You should decline the `npm install` step as we will use a different package manager, i.e. type “n” for the last question.
+
+Enter the newly created directory and install the dependencies.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    cd test-app
+    pnpm install
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    cd test-app
+    npm install
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    cd test-app
+    yarn
+    ```
+  </Tab>
+</Tabs>
+
+### Install Panda
+
+Install panda and create your `panda.config.ts` file.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm install @pandacss/dev
+    pnpm panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install @pandacss/dev
+    npx panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn install @pandacss/dev
+    yarn panda init --postcss
+    ```
+  </Tab>
+</Tabs>
+
+### Update package.json scripts
+
+Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3} filename="package.json"
+{
+  "scripts": {
++    "prepare": "panda codegen",
+    "build": "remix build",
+    "dev": "remix dev",
+    "start": "remix-serve build",
+    "typecheck": "tsc"
+  }
+}
+```
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+### Configure the content
+
+Update the `panda.config.ts` file with the following content:
+
+```js {5, 11} filename="panda.config.ts"
+import { defineConfig } from "@pandacss/dev"
+
+export default defineConfig({
+ // File extension for generated javascript files
+ outExtension: 'js',
+
+ // Whether to use css reset
+ preflight: true,
+
+ // Where to look for your css declarations
+ include: ["./app/routes/**/*.{tsx,jsx}", "./app/components/**/*.{tsx,jsx}"],
+
+ // Files to exclude
+ exclude: [],
+
+ // The output directory for your css system
+ outdir: "styled-system",
+})
+```
+
+> **Note:** We have to explicitly set the `outExtension` to `js` as Remix doesn't support `mjs` files which is the default extension for Panda CSS.
+
+### Configure the entry CSS with layers
+
+Create a new file `app/index.css` and add the following content:
+
+```css filename="app/index.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+Import the `index.css` file in your `app/root.tsx` file and add the `styles` variable to the `links` function.
+
+```tsx filename="app/root.tsx" {11,13}
+import type { LinksFunction } from "@remix-run/node";
+import {
+  Links,
+  LiveReload,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+} from "@remix-run/react";
+
+import styles from './index.css'
+
+export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
+
+export default function App() {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <Outlet />
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
+      </body>
+    </html>
+  );
+}
+```
+
+### Enable PostCSS in Remix
+
+Update the `remix.config.ts` file with the following content:
+
+```js {14} filename="remix.config.ts"
+/** @type {import('@remix-run/dev').AppConfig} */
+module.exports = {
+  ignoredRouteFiles: ["**/.*"],
+  // appDirectory: "app",
+  // assetsBuildDirectory: "public/build",
+  // serverBuildPath: "build/index.js",
+  // publicPath: "/build/",
+  serverModuleFormat: "cjs",
+  future: {
+    v2_errorBoundary: true,
+    v2_meta: true,
+    v2_normalizeFormMethod: true,
+    v2_routeConvention: true,
+    unstable_postcss: true,
+  },
+};
+```
+
+### Start your build process
+
+Run the following command to start your development server.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm run dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dev
+    ```
+  </Tab>
+</Tabs>
+
+### Start using Panda
+
+Now you can start using Panda CSS in your project.
+Here is the snippet of code that you can use in your `app/routes/_index.tsx` file.
+
+```tsx filename="app/routes/_index.tsx"
+import type { V2_MetaFunction } from "@remix-run/node";
+import { css } from "styled-system/css";
+
+export const meta: V2_MetaFunction = () => {
+  return [
+    { title: "New Remix App" },
+    { name: "description", content: "Welcome to Remix!" },
+  ];
+};
+
+export default function Index() {
+  return (
+    <div className={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello 🐼!</div>
+  );
+}
+```
+</Steps>
