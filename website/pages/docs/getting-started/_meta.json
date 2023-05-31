@@ -6,5 +6,6 @@
   "vite": "Using Vite",
   "storybook": "Using Storybook",
   "remix": "Using Remix",
-  "solidjs": "Using SolidJS"
+  "solidjs": "Using SolidJS",
+  "gatsby": "Using Gatsby"
 }
