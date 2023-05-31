@@ -13,26 +13,63 @@ Easily use Panda with Svelte with our dedicated integration.
 
 ### Create Svelte project
 
-To get started, we will need to create a new Svelte project using `react-ts` template.
+To get started, we will need to create a new Svelte project.
 
 <Tabs items={['pnpm', 'npm', 'yarn']}>
   <Tab>
     ```bash
-    pnpm create vite test-app --template react-ts
+    pnpm create svelte@latest test-app
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm create svelte@latest test-app
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn create svelte@latest test-app
+    ```
+  </Tab>
+</Tabs>
+
+You will be asked a few questions, answer them as follows:
+
+```
+┌  Welcome to SvelteKit!
+│
+◇  Which Svelte app template?
+│  Skeleton project
+│
+◇  Add type checking with TypeScript?
+│  Yes, using TypeScript syntax
+│
+◇  Select additional options (use arrow keys/space bar)
+│  ◼ Add ESLint for code linting
+│  ◼ Add Prettier for code formatting
+│  ◻ Add Playwright for browser testing
+│  ◻ Add Vitest for unit testing
+│
+└  Your project is ready!
+```
+
+Enter the newly created directory and install the dependencies.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
     cd test-app
     pnpm install
     ```
   </Tab>
   <Tab>
     ```bash
-    npm create vite@latest test-app -- --template react-ts
     cd test-app
     npm install
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn create vite test-app --template react-ts
     cd test-app
     yarn
     ```
@@ -42,24 +79,24 @@ To get started, we will need to create a new Svelte project using `react-ts` tem
 
 ### Install Panda
 
-Install panda and create your `panda.config.ts` file.
+To install Panda and corresponding dependencies run the following commands:
 
 <Tabs items={['pnpm', 'npm', 'yarn']}>
   <Tab>
     ```bash
-    pnpm install @pandacss/dev
+    pnpm install @pandacss/dev svelte-preprocess postcss --save-dev
     pnpm panda init --postcss
     ```
   </Tab>
   <Tab>
     ```bash
-    npm install @pandacss/dev
+    npm install @pandacss/dev svelte-preprocess postcss --save-dev
     npx panda init --postcss
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn install @pandacss/dev
+    yarn install @pandacss/dev svelte-preprocess postcss --save-dev
     yarn panda init --postcss
     ```
   </Tab>
@@ -73,10 +110,13 @@ Open your `package.json` file and update the `scripts` section as follows:
 {
   "scripts": {
 +    "prepare": "panda codegen",
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"lint": "prettier --plugin-search-dir . --check . && eslint .",
+		"format": "prettier --plugin-search-dir . --write ."
   }
 }
 ```
@@ -84,7 +124,7 @@ Open your `package.json` file and update the `scripts` section as follows:
 
 ### Configure the content
 
-Make sure that all of the paths of your React components are included in the `include` section of the `panda.config.ts` file.
+Make sure that all of the paths of your Svelte components are included in the `include` section of the `panda.config.ts` file.
 
 ```js {8} filename="panda.config.ts"
 import { defineConfig } from "@pandacss/dev"
@@ -94,7 +134,7 @@ export default defineConfig({
  preflight: true,
 
  // Where to look for your css declarations
- include: ["./src/**/*.{js,jsx,ts,tsx}", "./pages/**/*.{js,jsx,ts,tsx}"],
+ include: ['./src/**/*.{js,ts,svelte}'],
 
  // Files to exclude
  exclude: [],
@@ -104,17 +144,79 @@ export default defineConfig({
 })
 ```
 
+### Update Svelte config
+
+To configure Svelte preprocess to use PostCSS and add Panda alias update the `svelte.config.js` file as follows:
+
+```js {3,11-13,21-23} filename="svelte.config.js"
+import adapter from '@sveltejs/adapter-auto';
+import { vitePreprocess } from '@sveltejs/kit/vite';
+import preprocess from 'svelte-preprocess';
+
+/** @type {import('@sveltejs/kit').Config} */
+const config = {
+	// Consult https://kit.svelte.dev/docs/integrations#preprocessors
+	// for more information about preprocessors
+	preprocess: [
+		vitePreprocess(),
+		preprocess({
+			postcss: true
+		})
+	],
+
+	kit: {
+		// adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
+		// If your environment is not supported or you settled on a specific environment, switch out the adapter.
+		// See https://kit.svelte.dev/docs/adapters for more information about adapters.
+		adapter: adapter(),
+		alias: {
+			'styled-system': './styled-system/*'
+		}
+	}
+};
+
+export default config;
+```
+
+### Update Vite config
+
+To be able to import `styled-system` files in your Svelte components you will need to update the `vite.config.js` file as follows:
+
+```js {6-10} filename="vite.config.js"
+import { sveltekit } from '@sveltejs/kit/vite'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [sveltekit()],
+  server: {
+    fs: {
+      allow: ['styled-system'],
+    },
+  },
+})
+```
+
 ### Configure the entry CSS with layers
 
-Add this code to an `src/index.css` file imported in the root component of your project.
+Create the `app.postcss` file in the `src` directory and add the following content:
 
-```css filename="src/index.css"
+```css filename="src/app.postcss"
 @layer reset, base, tokens, recipes, utilities;
 ```
 
-> **Note:** Feel free to remove `src/App.css` file as we don't need it anymore, and make sure to remove the import from the `src/App.tsx` file.
+### Import styles in the layout file
 
-## Start your build process
+Create the `src/routes/+layout.svelte` file and add the following content:
+
+```html {2} filename="src/routes/+layout.svelte"
+<script>
+  import '../app.postcss'
+</script>
+
+<slot />
+```
+
+### Start your build process
 
 Run the following command to start your development server.
 
@@ -139,17 +241,20 @@ Run the following command to start your development server.
 ### Start using Panda
 
 Now you can start using Panda CSS in your project.
-Here is the snippet of code that you can use in your `src/App.tsx` file.
+Here is the snippet of code that you can use in your `src/routes/+page.svelte` file.
 
-```tsx filename="src/App.tsx"
-import { css } from '../styled-system/css';
+```tsx filename="src/routes/+page.svelte"
+<script>
+	import { css } from 'styled-system/css';
+</script>
 
-function App() {
-  return (
-    <div className={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello 🐼!</div>
-  )
-}
-
-export default App;
+<div
+	class={css({
+		fontSize: '2xl',
+		fontWeight: 'bold'
+	})}
+>
+	Hello 🐼!
+</div>
 ```
 </Steps>
