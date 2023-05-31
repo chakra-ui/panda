@@ -1,5 +1,5 @@
 import { PandaExtension } from '../index'
-import { getMarkdownCss, getNodeRange, nodeRangeToVsCodeRange, printTokenValue } from '../tokens/utils'
+import { getMarkdownCss, nodeRangeToVsCodeRange, printTokenValue } from '../tokens/utils'
 import { renderTokenColorPreview } from '../tokens/render-token-color-preview'
 import { generateKeyframeCss } from '../tokens/generate-keyframe-css'
 import { tryCatch } from 'lil-fp/func'
@@ -60,7 +60,7 @@ export function registerHover(extension: PandaExtension) {
 
       const instanceMatch = getClosestInstance(doc, params.position)
       if (instanceMatch && instanceMatch.kind === 'styles') {
-        const range = nodeRangeToVsCodeRange(getNodeRange(instanceMatch.props.getNode()))
+        const range = nodeRangeToVsCodeRange(instanceMatch.props.getRange())
         return { contents: getMarkdownCss(ctx, instanceMatch.styles).withCss, range }
       }
     }, onError),

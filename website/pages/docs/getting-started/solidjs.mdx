@@ -1,0 +1,157 @@
+---
+title: Using SolidJS
+description: Easily use Panda with SolidJS with our dedicated integration.
+---
+
+# Using SolidJS
+
+Easily use Panda with SolidJS with our dedicated integration.
+
+## Start a new project
+
+<Steps>
+
+### Create Vite project
+
+To get started, we will need to create a new SolidJS project using `solidjs/templates/ts` template.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm dlx degit solidjs/templates/ts test-app
+    cd test-app
+    pnpm install
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npx degit solidjs/templates/ts test-app
+    cd test-app
+    npm install
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dlx degit solidjs/templates/ts test-app
+    cd test-app
+    yarn
+    ```
+  </Tab>
+</Tabs>
+
+
+### Install Panda
+
+Install panda and create your `panda.config.ts` file.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm install @pandacss/dev
+    pnpm panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install @pandacss/dev
+    npx panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn install @pandacss/dev
+    yarn panda init --postcss
+    ```
+  </Tab>
+</Tabs>
+
+### Update package.json scripts
+
+Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3} filename="package.json"
+{
+  "scripts": {
++    "prepare": "panda codegen",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  }
+}
+```
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+### Configure the content
+
+Make sure that all of the paths of your SolidJS components are included in the `include` section of the `panda.config.ts` file.
+
+```js {8, 17} filename="panda.config.ts"
+import { defineConfig } from "@pandacss/dev"
+
+export default defineConfig({
+ // Whether to use css reset
+ preflight: true,
+
+ // Where to look for your css declarations
+ include: ["./src/**/*.{js,jsx,ts,tsx}", "./pages/**/*.{js,jsx,ts,tsx}"],
+
+ // Files to exclude
+ exclude: [],
+
+ // The output directory for your css system
+ outdir: "styled-system",
+})
+```
+
+### Configure the entry CSS with layers
+
+Add this code to an `src/index.css` file imported in the root component of your project.
+
+```css filename="src/index.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+> **Note:** Feel free to remove `src/App.module.css` file as we don't need it anymore, and make sure to remove the import from the `src/App.tsx` file.
+
+## Start your build process
+
+Run the following command to start your development server.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm run dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dev
+    ```
+  </Tab>
+</Tabs>
+
+### Start using Panda
+
+Now you can start using Panda CSS in your project.
+Here is the snippet of code that you can use in your `src/App.tsx` file.
+
+```tsx filename="src/App.tsx"
+import type { Component } from 'solid-js';
+import { css } from '../styled-system/css';
+
+const App: Component = () => {
+  return (
+    <div class={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello 🐼!</div>
+  );
+};
+
+export default App;
+```
+
+</Steps>
