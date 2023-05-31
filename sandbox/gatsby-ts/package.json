@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@pandacss/dev": "^0.0.2",
+    "@pandacss/dev": "workspace:*",
     "gatsby": "^5.10.0",
     "gatsby-plugin-pnpm": "^1.2.10",
     "gatsby-plugin-postcss": "^6.10.0",

@@ -716,7 +716,7 @@ importers:
   sandbox/gatsby-ts:
     dependencies:
       '@pandacss/dev':
-        specifier: ^0.0.2
+        specifier: workspace:*
         version: link:../../packages/cli
       gatsby:
         specifier: ^5.10.0
