@@ -16,3 +16,5 @@ export const getNodeRange = (node: Node) => {
     endColumn: endInfo.column,
   }
 }
+
+export type NodeRange = ReturnType<typeof getNodeRange>

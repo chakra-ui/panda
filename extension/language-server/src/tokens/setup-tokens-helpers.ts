@@ -2,7 +2,7 @@ import { CompletionItem, CompletionItemKind, Position, Range } from 'vscode-lang
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { PandaExtensionSetup } from '../setup-builder'
 
-import { Dict, ParserResult, RawCondition, ResultItem, SystemStyleObject } from '@pandacss/types'
+import { Dict, ParserResultType, RawCondition, ResultItem, SystemStyleObject } from '@pandacss/types'
 import { CallExpression, Identifier, JsxOpeningElement, JsxSelfClosingElement, Node, ts } from 'ts-morph'
 
 import {
@@ -29,7 +29,7 @@ import { color2kToVsCodeColor } from './color2k-to-vscode-color'
 import { expandTokenFn } from './expand-token-fn'
 import { isColor } from './is-color'
 import { Token } from './types'
-import { getMarkdownCss, getNodeRange, isObjectLike, nodeRangeToVsCodeRange, printTokenValue } from './utils'
+import { getMarkdownCss, isObjectLike, nodeRangeToVsCodeRange, printTokenValue } from './utils'
 
 type ClosestMatch = {
   range: Range
@@ -160,7 +160,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
           const token = getTokenFromPropValue(ctx, propName, value)
           if (!token) return
 
-          const range = nodeRangeToVsCodeRange(getNodeRange(propNode.getNode()))
+          const range = nodeRangeToVsCodeRange(propNode.getRange())
           onToken?.({ kind: 'token', token, range, propName, propValue: value, propNode })
         })
       })
@@ -170,7 +170,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
   /**
    * Get all the tokens from the document and call a callback on it.
    */
-  function getFileTokens(_doc: TextDocument, parserResult: ParserResult, onToken: OnTokenCallback) {
+  function getFileTokens(_doc: TextDocument, parserResult: ParserResultType, onToken: OnTokenCallback) {
     const ctx = setup.getContext()
     if (!ctx) return
 
@@ -339,7 +339,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
         const maybeToken = getTokenFromPropValue(ctx, propName, String(propValue))
         if (!maybeToken) return
 
-        const range = nodeRangeToVsCodeRange(getNodeRange(propNode.getNode()))
+        const range = nodeRangeToVsCodeRange(propNode.getRange())
         return { kind: 'token', token: maybeToken, range, propName, propValue, propNode } as ClosestTokenMatch
       }
 
@@ -351,7 +351,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
           const propValue = unbox(propNode).raw
           const condition = ctx.conditions.getRaw(propName)
 
-          const range = nodeRangeToVsCodeRange(getNodeRange(propNode.getNode()))
+          const range = nodeRangeToVsCodeRange(propNode.getRange())
           return { kind: 'condition', condition, range, propName, propValue, propNode } as ClosestConditionMatch
         }
       }
