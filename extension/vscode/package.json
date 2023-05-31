@@ -164,13 +164,14 @@
   "scripts": {
     "build:lsp": "pnpm --filter=../language-server build",
     "build": "pnpm build:lsp && tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --external esbuild --minify -d dist --clean --shims",
-    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims --watch . --watch ../language-server/dist/index.js",
+    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims --watch src/index.ts --watch ../language-server/dist/index.js",
     "clean": "rm -rf dist",
     "lint": "eslint ./src --ext .ts,.tsx --fix",
     "release": "esno ./scripts/publish.ts",
     "package": "vsce package --pre-release --no-dependencies"
   },
   "devDependencies": {
+    "@pandacss/dev": "workspace:*",
     "@types/node": "16.x",
     "@types/vscode": "^1.78.0",
     "@vscode/vsce": "^2.19.0",

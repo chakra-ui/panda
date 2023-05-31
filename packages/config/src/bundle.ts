@@ -1,13 +1,22 @@
 import type { Config } from '@pandacss/types'
 import createJITI from 'jiti'
 import { getConfigDependencies } from './get-mod-deps'
+import { logger } from '@pandacss/logger'
 
+let jiti: ReturnType<typeof createJITI> | undefined
 export const bundle = async <T = Config>(filePath: string, cwd: string) => {
-  const jiti = createJITI(cwd, { cache: false, requireCache: false, v8cache: false })
-  const conf = jiti(filePath)
+  let conf
+
+  try {
+    jiti = jiti ?? createJITI(cwd, { esmResolve: true, interopDefault: true })
+    conf = jiti(filePath)
+  } catch {
+    logger.debug('bundle', "Couldn't load config with jiti, trying require: " + filePath)
+    conf = require(filePath)
+  }
 
   return {
-    config: (conf.default ? conf.default : conf) as T,
+    config: (conf.default ?? conf) as T,
     dependencies: Array.from(getConfigDependencies(filePath)),
   } as BundleConfigResult
 }
