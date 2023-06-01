@@ -83,6 +83,13 @@ export const typography: UtilityConfig = {
   wordBreak: {
     className: 'break',
   },
+  textWrap: {
+    className: 'text',
+    values: ['wrap', 'balance', 'nowrap'],
+    transform(value) {
+      return { textWrap: value }
+    },
+  },
   truncate: {
     className: 'truncate',
     values: { type: 'boolean' },

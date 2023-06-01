@@ -37,6 +37,9 @@ const getLiteralValue = (node: BoxNode | undefined, ctx: UnboxContext): LiteralV
     .when(Bool.or(box.isLiteral, box.isObject), (node) => {
       return node.value
     })
+    .when(box.isEmptyInitializer, () => {
+      return true
+    })
     .when(box.isMap, (node) => {
       if (node.spreadConditions) {
         const path = ctx.path

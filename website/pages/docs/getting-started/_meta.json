@@ -7,5 +7,6 @@
   "storybook": "Using Storybook",
   "remix": "Using Remix",
   "solidjs": "Using SolidJS",
-  "gatsby": "Using Gatsby"
+  "gatsby": "Using Gatsby",
+  "svelte": "Using Svelte"
 }

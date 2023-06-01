@@ -570,11 +570,11 @@ export type SystemProperties = {
 	ring?: PropertyValue<'ring'>
 	ringOffset?: PropertyValue<'ringOffset'>
 	w?: PropertyValue<'w'>
+	minW?: PropertyValue<'minW'>
+	maxW?: PropertyValue<'maxW'>
 	h?: PropertyValue<'h'>
 	minH?: PropertyValue<'minH'>
 	maxH?: PropertyValue<'maxH'>
-	minW?: PropertyValue<'minW'>
-	maxW?: PropertyValue<'maxW'>
 	bgPosition?: PropertyValue<'bgPosition'>
 	bgPositionX?: PropertyValue<'bgPositionX'>
 	bgPositionY?: PropertyValue<'bgPositionY'>
@@ -621,6 +621,7 @@ export type SystemProperties = {
 	divideColor?: PropertyValue<'divideColor'>
 	divideStyle?: PropertyValue<'divideStyle'>
 	fontSmoothing?: PropertyValue<'fontSmoothing'>
+	textWrap?: PropertyValue<'textWrap'>
 	truncate?: PropertyValue<'truncate'>
 	backgroundGradient?: PropertyValue<'backgroundGradient'>
 	textGradient?: PropertyValue<'textGradient'>
