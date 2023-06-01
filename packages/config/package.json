@@ -25,8 +25,5 @@
     "escalade": "3.1.1",
     "jiti": "^1.18.2",
     "merge-anything": "^5.1.7"
-  },
-  "devDependencies": {
-    "@pandacss/dev": "workspace:*"
   }
 }
