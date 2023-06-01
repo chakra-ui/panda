@@ -200,3 +200,13 @@ export const Default: Story = {
 ```
 
 </Steps>
+
+### Troubleshooting
+
+If you are having issues with the PostCSS plugin similar to `Cannot find module '@pandacss/dev/postcss'`,
+update the PostCSS config as follows:
+
+```js filename="postcss.config.js"
+module.exports = {
+  plugins: [require('@pandacss/dev/postcss')],
+}
