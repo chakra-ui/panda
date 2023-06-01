@@ -41,6 +41,11 @@
         "command": "panda-css-vscode.show-output",
         "title": "Show panda output",
         "category": "Panda"
+      },
+      {
+        "command": "panda-css-vscode.open-config",
+        "title": "Open current panda config",
+        "category": "Panda"
       }
     ],
     "configuration": {

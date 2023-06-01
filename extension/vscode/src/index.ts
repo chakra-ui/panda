@@ -18,9 +18,10 @@ const debug = false
 export async function activate(context: vscode.ExtensionContext) {
   debug && console.log('activate')
 
-  const loadingStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left)
-  loadingStatusBarItem.text = '🐼 Loading...'
-  loadingStatusBarItem.show()
+  const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left)
+  statusBarItem.text = '🐼 Loading...'
+  statusBarItem.show()
+  statusBarItem.command = 'panda-css-vscode.open-config'
 
   // The server is implemented in node
   const serverModule = context.asAbsolutePath(path.join('dist', 'server.js'))
@@ -39,13 +40,20 @@ export async function activate(context: vscode.ExtensionContext) {
       options: debugOptions,
     },
   }
+  const activeDocument = vscode.window.activeTextEditor?.document
 
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
     documentSelector: docSelector as string[],
     diagnosticCollectionName: 'panda',
     synchronize: {
-      fileEvents: [vscode.workspace.createFileSystemWatcher('**/*/panda.config.ts')],
+      fileEvents: [vscode.workspace.createFileSystemWatcher('**/*/panda.config.{ts,js,cjs,mjs}')],
+    },
+    initializationOptions: () => {
+      return {
+        // configPath: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
+        activeDocumentFilepath: activeDocument?.uri.fsPath,
+      }
     },
   }
 
@@ -65,17 +73,29 @@ export async function activate(context: vscode.ExtensionContext) {
     return defaultValue
   }
 
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (!editor) return
+
+      if (editor.document.uri.scheme !== 'file') return
+      client.sendNotification('$/active-document-changed', {
+        activeDocumentFilepath: editor.document.uri.fsPath,
+      })
+    }),
+  )
+
   debug && console.log('before start')
 
-  registerClientCommands({ context, debug, client, loadingStatusBarItem })
+  registerClientCommands({ context, debug, client, loadingStatusBarItem: statusBarItem })
 
   try {
     // Start the client. This will also launch the server
-    loadingStatusBarItem.text = '🐼 Starting...'
+    statusBarItem.text = '🐼 Starting...'
 
     await client.start()
     debug && console.log('starting...')
-    loadingStatusBarItem.hide()
+    statusBarItem.text = '🐼'
+    statusBarItem.tooltip = 'Open current panda config'
   } catch (err) {
     debug && console.log('error', err)
   }

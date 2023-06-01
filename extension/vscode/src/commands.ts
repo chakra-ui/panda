@@ -32,4 +32,15 @@ export const registerClientCommands = ({
   })
 
   context.subscriptions.push(showOutputCmd)
+
+  const openConfigCmd = vscode.commands.registerCommand('panda-css-vscode.open-config', async () => {
+    const configPath = await client.sendRequest<string>('$/get-config-path')
+    if (!configPath) return
+
+    const configUri = vscode.Uri.file(configPath)
+    const configDoc = await vscode.workspace.openTextDocument(configUri)
+    await vscode.window.showTextDocument(configDoc)
+  })
+
+  context.subscriptions.push(openConfigCmd)
 }

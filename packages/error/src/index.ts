@@ -17,7 +17,7 @@ export class TokenError extends PandaError {
 
 export class ConfigNotFoundError extends PandaError {
   constructor() {
-    const message = `Cannot find config file: panda.config.ts or panda.config.js. Did you forget to run \`panda init\`?`
+    const message = `Cannot find config file: panda.config.ts or panda.config.js/cjs/mjs. Did you forget to run \`panda init\`?`
     super('NO_CONFIG', message)
   }
 }

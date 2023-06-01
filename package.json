@@ -7,7 +7,7 @@
     "playground": "pnpm --filter=./playground",
     "build:playground": "pnpm --filter {./playground}... build",
     "prepare": "husky install && pnpm build-fast",
-    "dev": "pnpm -r --parallel --filter=./packages/** dev",
+    "dev": "pnpm -r --parallel --filter=./packages/** --filter=./extension/** dev",
     "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
     "build": "pnpm -r --parallel --filter=./packages/** --filter=./extension/** build",
     "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
