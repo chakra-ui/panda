@@ -61,7 +61,7 @@ export async function activate(context: vscode.ExtensionContext) {
     defaultValue: any,
     showNotification?: boolean,
   ) => {
-    debug && console.log('handleFailedRequest', { type, token, error, defaultValue, showNotification })
+    console.log('handleFailedRequest', { type, token, error, defaultValue, showNotification })
     return defaultValue
   }
 

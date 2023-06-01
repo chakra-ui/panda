@@ -3,11 +3,7 @@ import { Token } from './types'
 type TokenFnMatch = { token: Token; index: number }
 const tokenRegex = /token\(([^)]+)\)/g
 
-/** @see packages/core/src/plugins/expand-token-fn.ts */
-export const expandTokenFn = (str: string, fn: (tokenName: string) => Token | undefined) => {
-  if (!str.includes('token(')) return []
-
-  const tokens = [] as TokenFnMatch[]
+const matchToken = (str: string, callback: (tokenPath: string, match: RegExpExecArray) => void) => {
   let match: RegExpExecArray | null
 
   while ((match = tokenRegex.exec(str)) != null) {
@@ -15,13 +11,33 @@ export const expandTokenFn = (str: string, fn: (tokenName: string) => Token | un
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean)
-      .forEach((s) => {
-        const token = fn(s)
-        if (token) {
-          tokens.push({ token, index: match!.index })
-        }
-      })
+      .forEach((str) => callback(str, match!))
   }
+}
+
+/** @see packages/core/src/plugins/expand-token-fn.ts */
+export const expandTokenFn = (str: string, fn: (tokenName: string) => Token | undefined) => {
+  if (!str.includes('token(')) return []
+
+  const tokens = [] as TokenFnMatch[]
+  matchToken(str, (tokenPath, match) => {
+    const token = fn(tokenPath)
+    if (token) {
+      tokens.push({ token, index: match.index })
+    }
+  })
 
   return tokens
+}
+
+export const extractTokenPaths = (str: string) => {
+  if (!str.includes('token(')) return []
+
+  const paths = [] as string[]
+
+  matchToken(str, (tokenPath) => {
+    paths.push(tokenPath)
+  })
+
+  return paths
 }

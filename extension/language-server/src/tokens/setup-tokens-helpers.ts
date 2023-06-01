@@ -26,10 +26,11 @@ import { walkObject } from '@pandacss/shared'
 import { Bool } from 'lil-fp'
 import { match } from 'ts-pattern'
 import { color2kToVsCodeColor } from './color2k-to-vscode-color'
-import { expandTokenFn } from './expand-token-fn'
+import { expandTokenFn, extractTokenPaths } from './expand-token-fn'
 import { isColor } from './is-color'
 import { Token } from './types'
 import { getMarkdownCss, isObjectLike, nodeRangeToVsCodeRange, printTokenValue } from './utils'
+import { PandaVSCodeSettings } from '../settings'
 
 type ClosestMatch = {
   range: Range
@@ -383,18 +384,19 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
     })
   }
 
-  const getClosestCompletionList = (doc: TextDocument, position: Position) => {
+  const getClosestCompletionList = async (doc: TextDocument, position: Position) => {
     const ctx = setup.getContext()
     if (!ctx) return
 
     const match = getNodeAtPosition(doc, position)
     if (!match) return
 
+    const settings = await setup.getPandaSettings()
     const { node, stack } = match
 
     return findClosestToken(node, stack, ({ propName, propNode }) => {
       if (!box.isLiteral(propNode)) return undefined
-      return getCompletionFor(ctx, propName, propNode.value)
+      return getCompletionFor(ctx, propName, propNode, settings)
     })
   }
 
@@ -500,8 +502,38 @@ const getTokenFromPropValue = (ctx: PandaContext, prop: string, value: string): 
 const completionCache = new Map<string, CompletionItem[]>()
 const itemCache = new Map<string, CompletionItem>()
 
-const getCompletionFor = (ctx: PandaContext, propName: string, propValue: PrimitiveType) => {
-  const cachePath = propName + '.' + propValue
+const getCompletionFor = (
+  ctx: PandaContext,
+  propName: string,
+  propNode: BoxNodeLiteral,
+  settings: PandaVSCodeSettings,
+) => {
+  const propValue = propNode.value
+
+  let str = String(propValue)
+
+  // also provide completion in string such as: token('colors.blue.300')
+  if (settings['completions.token-fn.enabled'] && str.includes('token(')) {
+    const matches = extractTokenPaths(str)
+    const tokenPath = matches[0] ?? ''
+    const split = tokenPath.split('.')
+
+    // provide completion for token category when token() is empty or partial
+    if (split.length <= 1) {
+      return Array.from(ctx.tokens.categoryMap.keys()).map((category) => {
+        return {
+          label: category,
+          kind: CompletionItemKind.EnumMember,
+          sortText: '-' + category,
+          preselect: true,
+        } as CompletionItem
+      })
+    }
+
+    str = tokenPath.split('.').slice(1).join('.')
+  }
+
+  const cachePath = propName + '.' + str
   const cachedList = completionCache.get(cachePath)
   if (cachedList) return cachedList
 
@@ -514,7 +546,7 @@ const getCompletionFor = (ctx: PandaContext, propName: string, propValue: Primit
 
   const items = [] as CompletionItem[]
   values.forEach((token, name) => {
-    if (!name.includes(String(propValue))) return
+    if (!name.includes(str)) return
 
     const tokenPath = token.name
     const cachedItem = itemCache.get(tokenPath)
@@ -527,8 +559,8 @@ const getCompletionFor = (ctx: PandaContext, propName: string, propValue: Primit
     const completionItem = {
       label: name,
       kind: isColor ? CompletionItemKind.Color : CompletionItemKind.EnumMember,
-      documentation: { kind: 'markdown', value: getMarkdownCss(ctx, { [propName]: token.value }).withCss },
-      labelDetails: { description: printTokenValue(token), detail: `   ${token.extensions.varRef}` },
+      documentation: { kind: 'markdown', value: getMarkdownCss(ctx, { [propName]: token.value }, settings).withCss },
+      labelDetails: { description: printTokenValue(token, settings), detail: `   ${token.extensions.varRef}` },
       sortText: '-' + name,
       preselect: true,
     } as CompletionItem
