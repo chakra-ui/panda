@@ -22,6 +22,7 @@ describe('extract to css output pipeline', () => {
                 outlineColor: "var(--colors-pink-200)",
               })} />
               <panda.div
+                debug
                 p="2"
                 m={{
                   base: "1px",
@@ -69,6 +70,7 @@ describe('extract to css output pipeline', () => {
                   "p": 4,
                 },
               },
+              "debug": true,
               "m": {
                 "_dark": {
                   "_hover": {
@@ -116,6 +118,14 @@ describe('extract to css output pipeline', () => {
         .ring_var\\\\(--colors-pink-200\\\\) {
           outline-color: var(--colors-pink-200)
           }
+
+        .debug_true {
+          outline: 1px solid blue !important;
+          }
+
+        .debug_true>* {
+          outline: 1px solid red !important
+              }
 
         .p_2 {
           padding: var(--spacing-2)

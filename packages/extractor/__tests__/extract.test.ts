@@ -5101,7 +5101,9 @@ it('extract JsxAttribute > Identifier without initializer', () => {
       "Flex": [
         {
           "conditions": [],
-          "raw": {},
+          "raw": {
+            "col": true,
+          },
           "spreadConditions": [],
         },
       ],
