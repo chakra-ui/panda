@@ -2,4 +2,4 @@
 '@pandacss/node': patch
 ---
 
-Fix gitignore setup of CLI
+Fix white space when updating the `.gitignore` file
