@@ -896,6 +896,8 @@ importers:
         specifier: 4.2.0
         version: 4.2.0(typescript@5.0.4)(vite@4.3.5)
 
+  sandbox/qwik-ts/server: {}
+
   sandbox/remix:
     dependencies:
       '@remix-run/node':
