@@ -1,5 +1,15 @@
 # @pandacss/presets
 
+## 0.1.0
+
+### Patch Changes
+
+- bd5c049b: - Update container pattern to use common values
+  - Add `Square` pattern
+  - Remove default `blocklist` from all patterns
+- Updated dependencies [6d81ee9e]
+  - @pandacss/types@0.1.0
+
 ## 0.0.2
 
 ### Patch Changes
