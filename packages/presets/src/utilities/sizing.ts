@@ -33,6 +33,10 @@ const widthValues: PropertyValues = (theme) => ({
 
 const heightValues: PropertyValues = (theme) => ({
   ...theme('sizes'),
+  svh: '100svh',
+  lvh: '100lvh',
+  dvh: '100dvh',
+  screen: '100vh',
   '1/2': '50%',
   '1/3': '33.333333%',
   '2/3': '66.666667%',
@@ -57,54 +61,57 @@ export const sizing: UtilityConfig = {
     values: widthValues,
   },
   inlineSize: {
-    className: 'i',
+    className: 'w',
     values: widthValues,
   },
+
+  minWidth: {
+    shorthand: 'minW',
+    className: 'min-w',
+    values: widthValues,
+  },
+  minInlineSize: {
+    className: 'min-w',
+    values: widthValues,
+  },
+
+  maxWidth: {
+    shorthand: 'maxW',
+    className: 'max-w',
+    values: widthValues,
+  },
+  maxInlineSize: {
+    className: 'max-w',
+    values: widthValues,
+  },
+
   height: {
     shorthand: 'h',
     className: 'h',
     values: heightValues,
   },
   blockSize: {
-    className: 'b',
+    className: 'h',
     values: heightValues,
   },
 
   minHeight: {
     shorthand: 'minH',
     className: 'min-h',
-    values: 'sizes',
+    values: heightValues,
   },
   minBlockSize: {
-    className: 'min-b',
-    values: 'sizes',
+    className: 'min-h',
+    values: heightValues,
   },
+
   maxHeight: {
     shorthand: 'maxH',
     className: 'max-h',
-    values: 'sizes',
+    values: heightValues,
   },
   maxBlockSize: {
     className: 'max-b',
-    values: 'sizes',
-  },
-
-  minWidth: {
-    shorthand: 'minW',
-    className: 'min-w',
-    values: 'sizes',
-  },
-  minInlineSize: {
-    className: 'min-i',
-    values: 'sizes',
-  },
-  maxWidth: {
-    shorthand: 'maxW',
-    className: 'max-w',
-    values: 'sizes',
-  },
-  maxInlineSize: {
-    className: 'max-i',
-    values: 'sizes',
+    values: heightValues,
   },
 }
