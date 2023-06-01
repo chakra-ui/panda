@@ -16,7 +16,7 @@ export const bundle = async <T = Config>(filePath: string, cwd: string) => {
   }
 
   return {
-    config: (conf.default ?? conf) as T,
+    config: Object.assign({}, conf.default ?? conf) as T, // prevent mutating the original config
     dependencies: Array.from(getConfigDependencies(filePath)),
   } as BundleConfigResult
 }

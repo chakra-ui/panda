@@ -114,20 +114,6 @@ type ReportMapsJSON = {
   colorsUsed: Record<string, Array<ReportItem['id']>>
 }
 
-type NodeRange = {
-  startPosition: number
-  startLineNumber: number
-  startColumn: number
-  endPosition: number
-  endLineNumber: number
-  endColumn: number
-}
-
-type MorphNodeJSON = {
-  kind: string
-  range: NodeRange
-}
-
 export type ReportItemJSON = {
   id: number
   from: string
@@ -143,8 +129,10 @@ export type ReportItemJSON = {
   box: {
     type: 'literal' | 'empty-initializer'
     value: string | number | boolean | undefined | null
-    node: MorphNodeJSON
-    stack: MorphNodeJSON[]
+    node: string
+    stack: string[]
+    line: number
+    column: number
   }
 }
 
@@ -152,7 +140,7 @@ export type ReportInstanceItemJSON = Pick<ReportItem, 'from' | 'type' | 'kind' |
   instanceId: number
   contains: Array<ReportItem['id']>
   value: Record<string, any>
-  box: { type: 'map'; value: Record<string, any>; node: MorphNodeJSON; stack: MorphNodeJSON[] }
+  box: { type: 'map'; value: Record<string, any>; node: string; stack: string[]; line: number; column: number }
 }
 
 export type AnalysisReportJSON = {

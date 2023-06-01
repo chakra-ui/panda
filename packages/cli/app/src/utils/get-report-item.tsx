@@ -29,8 +29,7 @@ export const getReportItemFromTokenName = (tokenName: string) => {
 }
 
 export const getReportRelativeFilePath = (filePath: string) => filePath.replace(analysisData.cwd + '/', '')
-export const getReportRange = (reportItem: ReportItemJSON) =>
-  `:${reportItem.box.node.range.startLineNumber}:${reportItem.box.node.range.startColumn}`
+export const getReportRange = (reportItem: ReportItemJSON) => `:${reportItem.box.line}:${reportItem.box.column}`
 
 const openInEditor = (filepath: string, line: number, column: number) => {
   return fetch(`/__open-in-editor?file=${encodeURIComponent(`${filepath}:${line}:${column}`)}`)
@@ -38,9 +37,5 @@ const openInEditor = (filepath: string, line: number, column: number) => {
 
 export const openReportItemInEditor = (reportItem: ReportItemJSON) => {
   console.log(reportItem)
-  return openInEditor(
-    reportItem.filepath,
-    reportItem.box.node.range.startLineNumber,
-    reportItem.box.node.range.startColumn,
-  )
+  return openInEditor(reportItem.filepath, reportItem.box.line, reportItem.box.column)
 }
