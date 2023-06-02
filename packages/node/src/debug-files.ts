@@ -28,9 +28,7 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
       measure()
       if (!result) return
 
-      const list = result.toArray().map((resultItem) => {
-        return 'toJSON' in resultItem.box ? resultItem.box.toJSON() : resultItem
-      })
+      const list = result.toArray().map((resultItem) => resultItem.box?.toJSON?.() ?? resultItem)
       const css = ctx.getParserCss(result)
       if (!css) return
 
