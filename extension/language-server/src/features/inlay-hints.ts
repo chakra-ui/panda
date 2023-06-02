@@ -1,21 +1,31 @@
-import { InlayHint, InlayHintKind } from 'vscode-languageserver'
+import { InlayHint, InlayHintKind, InlayHintParams } from 'vscode-languageserver'
 import { PandaExtension } from '..'
 import { printTokenValue } from '../tokens/utils'
 import { tryCatch } from 'lil-fp/func'
 import { onError } from '../tokens/error'
 
 export function registerInlayHints(context: PandaExtension) {
-  const { connection, documents, loadPandaContext, getContext, parseSourceFile, getFileTokens, getPandaSettings } =
-    context
+  const {
+    connection,
+    documents,
+    documentReady,
+    loadPandaContext,
+    getContext,
+    parseSourceFile,
+    getFileTokens,
+    getPandaSettings,
+  } = context
 
   connection.languages.inlayHint.on(
-    tryCatch(async (params) => {
+    tryCatch(async (params: InlayHintParams) => {
       const settings = await getPandaSettings()
       if (!settings['inlay-hints.enabled']) return
 
+      await documentReady('🐼 inlay hints')
+
       // await when the server starts, then just get the context
       if (!getContext()) {
-        await loadPandaContext()
+        await loadPandaContext(params.textDocument.uri)
       }
 
       const doc = documents.get(params.textDocument.uri)

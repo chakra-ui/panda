@@ -68,7 +68,7 @@ export class Builder {
     }
 
     if (setupCount > 0) {
-      logger.info('postcss', '⚙️ Config changed, reloading')
+      logger.info('builder', '⚙️ Config changed, reloading')
     }
 
     return { isModified: true, modifiedMap: newModified }
@@ -84,8 +84,9 @@ export class Builder {
     return configPath
   }
 
-  async setup() {
-    const configPath = this.getConfigPath()
+  async setup(options: { configPath?: string } = {}) {
+    logger.info('builder', '🚧 Setup')
+    const configPath = options.configPath ?? this.getConfigPath()
     const configDeps = getConfigDependencies(configPath)
 
     const deps = this.checkConfigDeps(configPath, configDeps)

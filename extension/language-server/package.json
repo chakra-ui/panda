@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsup src/index.ts --format cjs --minify -d dist --clean --shims",
-    "dev": "tsup src/index.ts --watch --format cjs -d dist --clean --shims",
+    "dev": "tsup src/index.ts --watch --format cjs -d dist --shims",
     "clean": "rm -rf dist",
     "lint": "eslint ./src --ext .ts,.tsx --fix"
   },
@@ -35,6 +35,10 @@
     "typescript": "^5.0.4",
     "utf8": "^3.0.0",
     "vscode-languageserver": "^8.1.0",
-    "vscode-languageserver-textdocument": "^1.0.8"
+    "vscode-languageserver-textdocument": "^1.0.8",
+    "vscode-uri": "^3.0.7"
+  },
+  "dependencies": {
+    "fast-glob": "^3.2.12"
   }
 }

@@ -9,6 +9,7 @@ export interface PandaVSCodeSettings {
   'hovers.enabled'?: boolean
   'hovers.instances.enabled'?: boolean
   'hovers.tokens.enabled'?: boolean
+  'hovers.tokens.css-preview.enabled'?: boolean
   'hovers.conditions.enabled'?: boolean
   'hovers.semantic-colors.enabled'?: boolean
   'hovers.display.mode'?: 'nested' | 'optimized' | 'minified'

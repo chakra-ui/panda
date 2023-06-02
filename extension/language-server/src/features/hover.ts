@@ -29,9 +29,13 @@ export function registerHover(extension: PandaExtension) {
         if (tokenMatch) {
           if (tokenMatch.kind === 'token') {
             const { token } = tokenMatch
-            const css = getMarkdownCss(ctx, { [tokenMatch.propName]: token.value }, settings).raw
 
-            const contents = [printTokenValue(token, settings), { language: 'css', value: css }]
+            const contents = [printTokenValue(token, settings)] as any[]
+            if (settings['tokens.css-preview.enabled']) {
+              const css = getMarkdownCss(ctx, { [tokenMatch.propName]: token.value }, settings).raw
+              contents.push({ language: 'css', value: css })
+            }
+
             const category = token.extensions.category
 
             if (category === 'colors' && settings['hovers.semantic-colors.enabled']) {

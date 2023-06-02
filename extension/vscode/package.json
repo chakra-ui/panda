@@ -41,6 +41,11 @@
         "command": "panda-css-vscode.show-output",
         "title": "Show panda output",
         "category": "Panda"
+      },
+      {
+        "command": "panda-css-vscode.open-config",
+        "title": "Open current panda config",
+        "category": "Panda"
       }
     ],
     "configuration": {
@@ -60,7 +65,7 @@
         },
         "panda.rem-to-px.enabled": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "title": "Rem to pixels conversion",
           "description": "Enable rem to px conversion"
         },
@@ -78,7 +83,7 @@
         },
         "panda.diagnostics.enabled": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "title": "Diagnostics",
           "description": "Enable all diagnostics"
         },
@@ -103,25 +108,31 @@
         },
         "panda.hovers.instances.enabled": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "title": "Instance hover preview",
           "description": "Enable instance css preview on hover"
         },
         "panda.hovers.tokens.enabled": {
           "type": "boolean",
           "default": true,
-          "title": "Tokens hover preview",
+          "title": "Show token value on hover",
+          "description": "Enable tokens value preview on hover"
+        },
+        "panda.hovers.tokens.css-preview.enabled": {
+          "type": "boolean",
+          "default": false,
+          "title": "Show CSS preview on hover",
           "description": "Enable tokens css preview on hover"
         },
         "panda.hovers.tokens.conditions.enabled": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "title": "Conditions hover preview",
           "description": "Enable conditions css preview on hover"
         },
         "panda.hovers.semantic-colors.enabled": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "title": "Semantic Colors hover preview",
           "description": "Enable semantic colors preview on hover"
         },
@@ -146,11 +157,11 @@
           "type": "boolean",
           "default": true,
           "title": "Inlay hints",
-          "description": "Enable inlay hints next to tokens"
+          "description": "Enable inlay hints next to dimensions related tokens"
         },
         "panda.debug.enabled": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "title": "Debug",
           "description": "Enable debug logs"
         }
@@ -164,13 +175,14 @@
   "scripts": {
     "build:lsp": "pnpm --filter=../language-server build",
     "build": "pnpm build:lsp && tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --external esbuild --minify -d dist --clean --shims",
-    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims --watch . --watch ../language-server/dist/index.js",
+    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims --watch src/index.ts --watch ../language-server/dist/index.js",
     "clean": "rm -rf dist",
     "lint": "eslint ./src --ext .ts,.tsx --fix",
     "release": "esno ./scripts/publish.ts",
     "package": "vsce package --pre-release --no-dependencies"
   },
   "devDependencies": {
+    "@pandacss/dev": "workspace:*",
     "@types/node": "18.x",
     "@types/vscode": "^1.78.0",
     "@vscode/vsce": "^2.19.0",

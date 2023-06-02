@@ -9,6 +9,7 @@ export function registerDiagnostics(context: PandaExtension) {
     connection,
     debug,
     documents,
+    documentReady,
     loadPandaContext,
     getContext,
     parseSourceFile,
@@ -18,6 +19,7 @@ export function registerDiagnostics(context: PandaExtension) {
 
   const updateDocumentDiagnostics = tryCatch(async function (doc: TextDocument) {
     const settings = await getPandaSettings()
+
     if (!settings['diagnostics.enabled']) {
       // this allows us to clear diagnostics
       return connection.sendDiagnostics({
@@ -65,9 +67,11 @@ export function registerDiagnostics(context: PandaExtension) {
 
   // Update diagnostics on document change
   documents.onDidChangeContent(async (params) => {
+    await documentReady('🐼 diagnostics - onDidChangeContent')
+
     // await when the server starts, then just get the context
     if (!getContext()) {
-      await loadPandaContext()
+      await loadPandaContext(params.document.uri)
     }
 
     if (!getContext()) return
@@ -76,7 +80,9 @@ export function registerDiagnostics(context: PandaExtension) {
   })
 
   // Update diagnostics when watched file changes
-  connection.onDidChangeWatchedFiles((_change) => {
+  connection.onDidChangeWatchedFiles(async (_change) => {
+    await documentReady('🐼 diagnostics - onDidChangeWatchedFiles')
+
     const ctx = getContext()
     if (!ctx) return
 
