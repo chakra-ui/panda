@@ -75,7 +75,7 @@ export class ParserResult {
     return this
   }
 
-  static fromJson(json: string) {
+  static fromJSON(json: string) {
     const data = JSON.parse(json)
     const result = new ParserResult()
 

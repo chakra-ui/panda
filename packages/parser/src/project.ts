@@ -48,7 +48,7 @@ export const createProject = ({ getFiles, readFile, parserOptions, ...projectOpt
         }),
       parseSourceFile: (filePath: string) => {
         return filePath.endsWith('.json')
-          ? ParserResult.fromJson(readFile(filePath))
+          ? ParserResult.fromJSON(readFile(filePath))
           : parser(project.getSourceFile(filePath))
       },
     })),
