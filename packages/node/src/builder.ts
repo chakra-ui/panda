@@ -68,7 +68,7 @@ export class Builder {
     }
 
     if (setupCount > 0) {
-      logger.info('builder', '⚙️ Config changed, reloading')
+      logger.debug('builder', '⚙️ Config changed, reloading')
     }
 
     return { isModified: true, modifiedMap: newModified }
@@ -85,7 +85,8 @@ export class Builder {
   }
 
   async setup(options: { configPath?: string } = {}) {
-    logger.info('builder', '🚧 Setup')
+    logger.debug('builder', '🚧 Setup')
+
     const configPath = options.configPath ?? this.getConfigPath()
     const configDeps = getConfigDependencies(configPath)
 
