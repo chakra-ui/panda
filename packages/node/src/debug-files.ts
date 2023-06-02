@@ -1,7 +1,6 @@
 import { colors, logger } from '@pandacss/logger'
 import type { PandaContext } from './create-context'
 import * as nodePath from 'path'
-import { ParserResult } from '@pandacss/parser'
 
 export async function debugFiles(ctx: PandaContext, options: { outdir: string; dry: boolean }) {
   const files = ctx.getFiles()
@@ -24,9 +23,7 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
   await Promise.all(
     files.map(async (file) => {
       const measure = logger.time.debug(`Parsed ${file}`)
-      const result = file.endsWith('.json')
-        ? ParserResult.fromJson(ctx.runtime.fs.readFileSync(file))
-        : ctx.project.parseSourceFile(file)
+      const result = ctx.project.parseSourceFile(file)
 
       measure()
       if (!result) return
