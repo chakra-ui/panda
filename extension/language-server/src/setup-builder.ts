@@ -72,12 +72,10 @@ export function setupBuilder(
 
   async function loadPandaContext(uriOrFilepath: string) {
     const filepath = uriToPath(uriOrFilepath) ?? uriOrFilepath
-    console.log({ uriOrFilepath })
 
     try {
       console.log('🚧 Loading context for:', filepath)
       ref.synchronizing = builderResolver.setup(filepath)
-      console.log(await ref.synchronizing)
       console.log('✅ Loading context done:', filepath)
     } catch (err) {
       // Ignore
@@ -89,7 +87,6 @@ export function setupBuilder(
     ref.synchronizing = false
 
     const builder = builderResolver.get(filepath)
-    console.log(builder)
     if (!builder || !builder.context) return
 
     ref.context = builder.context
