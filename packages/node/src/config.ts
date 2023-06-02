@@ -25,5 +25,7 @@ export async function loadConfigAndCreateContext(options: { cwd?: string; config
     conf.config.cwd = options.cwd
   }
 
+  conf.config.outdir ??= 'styled-system'
+
   return createContext(conf)
 }
