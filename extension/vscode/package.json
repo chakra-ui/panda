@@ -183,7 +183,7 @@
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
-    "@types/node": "16.x",
+    "@types/node": "18.x",
     "@types/vscode": "^1.78.0",
     "@vscode/vsce": "^2.19.0",
     "esno": "^0.16.3",
