@@ -634,7 +634,7 @@ describe('extract to css output pipeline', () => {
           color: var(--colors-blue-500)
           }
 
-        @layer base {
+        @layer _base {
           .button {
             font-size: var(--font-sizes-lg)
               }

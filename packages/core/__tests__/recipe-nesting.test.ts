@@ -54,7 +54,7 @@ function run(value: Record<string, any> = {}) {
 test('[recipe] direct nesting / recipe ruleset', () => {
   expect(run({ variant: 'sm' })).toMatchInlineSnapshot(`
     "@layer recipes {
-        @layer base {
+        @layer _base {
             .text {
                 margin-top: auto;
                 margin-bottom: 0;
@@ -84,7 +84,7 @@ test('[recipe] direct nesting / recipe ruleset', () => {
 
   expect(run({ variant: 'md' })).toMatchInlineSnapshot(`
     "@layer recipes {
-        @layer base {
+        @layer _base {
             .text {
                 margin-top: auto;
                 margin-bottom: 0;

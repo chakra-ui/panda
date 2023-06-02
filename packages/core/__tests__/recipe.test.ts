@@ -5,7 +5,7 @@ describe('recipe ruleset', () => {
   test('should work with basic', () => {
     expect(processRecipe('textStyle', { variant: 'h1' })).toMatchInlineSnapshot(`
       "@layer recipes {
-          @layer base {
+          @layer _base {
               .textStyle {
                   font-family: var(--fonts-mono);
                   & > :not([hidden]) ~ :not([hidden]) {
@@ -19,7 +19,7 @@ describe('recipe ruleset', () => {
 
     expect(processRecipe('textStyle', {})).toMatchInlineSnapshot(`
       "@layer recipes {
-          @layer base {
+          @layer _base {
               .textStyle {
                   font-family: var(--fonts-mono);
                   & > :not([hidden]) ~ :not([hidden]) {
@@ -33,7 +33,7 @@ describe('recipe ruleset', () => {
 
     expect(processRecipe('textStyle', { variant: { base: 'h1', md: 'h2' } })).toMatchInlineSnapshot(`
       "@layer recipes {
-          @layer base {
+          @layer _base {
               .textStyle {
                   font-family: var(--fonts-mono);
                   & > :not([hidden]) ~ :not([hidden]) {
@@ -49,7 +49,7 @@ describe('recipe ruleset', () => {
   test('should work with complex selectors', () => {
     expect(processRecipe('tooltipStyle', {})).toMatchInlineSnapshot(`
       "@layer recipes {
-          @layer base {
+          @layer _base {
               .tooltipStyle {
                   &[data-tooltip].dark, .dark &[data-tooltip], & [data-tooltip].dark, .dark & [data-tooltip] {
                       color: red
@@ -128,7 +128,7 @@ describe('recipe ruleset', () => {
 
     expect(processRecipe('buttonStyle', { variant: 'solid' })).toMatchInlineSnapshot(`
       "@layer recipes {
-          @layer base {
+          @layer _base {
               .buttonStyle {
                   display: inline-flex;
                   align-items: center;
@@ -156,7 +156,7 @@ describe('recipe ruleset', () => {
 
     expect(processRecipe('buttonStyle', { variant: { base: 'solid', lg: 'outline' } })).toMatchInlineSnapshot(`
       "@layer recipes {
-          @layer base {
+          @layer _base {
               .buttonStyle {
                   display: inline-flex;
                   align-items: center;

@@ -191,7 +191,7 @@ export class Recipes {
     return (variant: string, value: string) => {
       if (value === '__ignore__') {
         return {
-          layer: 'base',
+          layer: '_base',
           className: sharedState.classNames.get(name)!,
           styles: sharedState.styles.get(name) ?? {},
         }
