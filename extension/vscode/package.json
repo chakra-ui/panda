@@ -4,6 +4,7 @@
   "displayName": "🐼 Panda CSS",
   "description": "The official Panda plugin for VS Code",
   "version": "0.0.1",
+  "private": true,
   "engines": {
     "vscode": "^1.78.2"
   },
