@@ -32,7 +32,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "@types/react": "^18.2.7",
+    "@types/react": "^18.2.8",
     "prettier": "^2.8.8"
   }
 }
