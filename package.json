@@ -57,7 +57,7 @@
       "git add --all packages/cli/app/"
     ]
   },
-  "packageManager": "^pnpm@8.6.0",
+  "packageManager": "pnpm@8.6.0",
   "pnpm": {
     "overrides": {
       "@types/react": "18.0.17"

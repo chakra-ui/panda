@@ -191,7 +191,7 @@ export async function main() {
         cwd,
         config: maybeGlob ? { include: [maybeGlob] } : (undefined as any),
       })
-      const outdir = path.resolve(cwd, outdirFlag ?? `${ctx.config.outdir}/debug`)
+      const outdir = outdirFlag ?? path.join(...ctx.paths.root, 'debug')
       logger.info('cli', `Found config at ${colors.bold(ctx.path)}`)
 
       await debugFiles(ctx, { outdir, dry })
@@ -210,7 +210,7 @@ export async function main() {
         cwd,
         config: maybeGlob ? { include: [maybeGlob] } : (undefined as any),
       })
-      const outfile = path.resolve(cwd, outfileFlag ?? `${ctx.config.outdir}/panda.json`)
+      const outfile = outfileFlag ?? path.join(...ctx.paths.root, 'debug')
 
       if (minify) {
         ctx.config.minify = true

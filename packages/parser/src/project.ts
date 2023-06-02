@@ -1,6 +1,7 @@
 import { Obj, pipe, tap } from 'lil-fp'
 import { Project as TsProject, type ProjectOptions as TsProjectOptions, ScriptKind } from 'ts-morph'
 import { createParser, type ParserOptions } from './parser'
+import { ParserResult } from './parser-result'
 
 export type ProjectOptions = Partial<TsProjectOptions> & {
   readFile: (filePath: string) => string
@@ -46,7 +47,9 @@ export const createProject = ({ getFiles, readFile, parserOptions, ...projectOpt
           scriptKind: ScriptKind.TSX,
         }),
       parseSourceFile: (filePath: string) => {
-        return parser(project.getSourceFile(filePath))
+        return filePath.endsWith('.json')
+          ? ParserResult.fromJson(readFile(filePath))
+          : parser(project.getSourceFile(filePath))
       },
     })),
 

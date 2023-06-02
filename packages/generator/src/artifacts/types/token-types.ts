@@ -38,10 +38,14 @@ export function generateTokenTypes(ctx: Context) {
   if (tokens.isEmpty) {
     result.add('[token: string]: string')
   } else {
+    const colorPaletteKeys = Object.keys(tokens.colorPalettes)
+    if (colorPaletteKeys.length) {
+      set.add(`export type ColorPalette = ${unionType(Object.keys(tokens.colorPalettes))}`)
+    }
+
     for (const [key, value] of tokens.categoryMap.entries()) {
       const typeName = capitalize(pluralize.singular(key))
       set.add(`export type ${typeName}Token = ${unionType(value.keys())}`)
-      set.add(`export type ColorPalette = ${unionType(Object.keys(tokens.colorPalettes))}`)
       result.add(`\t\t${key}: ${typeName}Token`)
     }
   }

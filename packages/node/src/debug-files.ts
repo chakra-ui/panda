@@ -1,7 +1,6 @@
 import { colors, logger } from '@pandacss/logger'
-import { mkdir, writeFile } from 'fs/promises'
 import type { PandaContext } from './create-context'
-import * as path from 'path'
+import * as nodePath from 'path'
 
 export async function debugFiles(ctx: PandaContext, options: { outdir: string; dry: boolean }) {
   const files = ctx.getFiles()
@@ -11,10 +10,13 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
   ctx.config.minify = false
   ctx.config.optimize = true
 
-  if (!options.dry && options.outdir) {
-    await mkdir(options.outdir, { recursive: true })
-    logger.info('cli', `Writing ${colors.bold(`${options.outdir}/config.json`)}`)
-    await writeFile(`${options.outdir}/config.json`, JSON.stringify(ctx.config, null, 2))
+  const { fs, path } = ctx.runtime
+  const outdir = options.outdir
+
+  if (!options.dry && outdir) {
+    fs.ensureDirSync(outdir)
+    logger.info('cli', `Writing ${colors.bold(`${outdir}/config.json`)}`)
+    await fs.writeFile(`${outdir}/config.json`, JSON.stringify(ctx.config, null, 2))
   }
 
   const filesWithCss = []
@@ -26,19 +28,7 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
       measure()
       if (!result) return
 
-      const list = result.toArray().map((result) => {
-        const node = result.box.getNode()
-        const range = result.box.getRange()
-
-        return {
-          name: result.name,
-          type: result.type,
-          data: result.data,
-          kind: node.getKindName(),
-          line: range.startLineNumber,
-          column: range.startColumn,
-        }
-      })
+      const list = result.toArray().map((resultItem) => resultItem.box?.toJSON?.() ?? resultItem)
       const css = ctx.getParserCss(result)
       if (!css) return
 
@@ -47,20 +37,20 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
         return Promise.resolve()
       }
 
-      if (options.outdir) {
+      if (outdir) {
         filesWithCss.push(file)
-        const parsedPath = path.parse(file)
+        const parsedPath = nodePath.parse(file)
         const relative = path.relative(ctx.config.cwd, parsedPath.dir)
 
         const astJsonPath = `${relative}/${parsedPath.name}.ast.json`.replaceAll(path.sep, '__')
         const cssPath = `${relative}/${parsedPath.name}.css`.replaceAll(path.sep, '__')
 
-        logger.info('cli', `Writing ${colors.bold(`${options.outdir}/${astJsonPath}`)}`)
-        logger.info('cli', `Writing ${colors.bold(`${options.outdir}/${cssPath}`)}`)
+        logger.info('cli', `Writing ${colors.bold(`${outdir}/${astJsonPath}`)}`)
+        logger.info('cli', `Writing ${colors.bold(`${outdir}/${cssPath}`)}`)
 
         return Promise.all([
-          writeFile(`${options.outdir}/${astJsonPath}`, JSON.stringify(list, debugResultSerializer, 2)),
-          writeFile(`${options.outdir}/${cssPath}`, css),
+          fs.writeFile(`${outdir}/${astJsonPath}`, JSON.stringify(list, debugResultSerializer, 2)),
+          fs.writeFile(`${outdir}/${cssPath}`, css),
         ])
       }
     }),

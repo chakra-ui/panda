@@ -164,7 +164,7 @@ export function generateResetCss(scope = '') {
       ${selector}samp,
       ${selector}pre {
         font-size: 1em;
-        --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+        --font-mono-fallback: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New';
         font-family: var(--global-font-mono, var(--font-fallback));
       }
 
