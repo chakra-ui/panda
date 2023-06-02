@@ -39,7 +39,13 @@ export const nodeRuntime: Runtime = {
     },
     glob(opts) {
       if (!opts.include) return []
-      return glob.sync(opts.include, { cwd: opts.cwd, ignore: opts.exclude, absolute: true })
+
+      const ignore = opts.exclude ?? []
+      if (!ignore.length) {
+        ignore.push('**/*.d.ts')
+      }
+
+      return glob.sync(opts.include, { cwd: opts.cwd, ignore, absolute: true })
     },
     writeFile,
     writeFileSync,

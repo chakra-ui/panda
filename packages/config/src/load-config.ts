@@ -35,6 +35,7 @@ export async function bundleConfigFile(options: ConfigFileOptions) {
   logger.debug('config:path', filePath)
 
   const result = await bundle(filePath, cwd)
+  result.config.outdir ??= 'styled-system'
 
   // TODO: Validate config shape
   if (typeof result.config !== 'object') {
