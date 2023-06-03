@@ -1,25 +1,23 @@
 {
   "extends": "../../tsconfig.json",
   "include": ["src"],
+  "exclude": ["node_modules"],
   "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
     "composite": true,
-    "rootDir": "src",
+    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
+    "rootDirs": ["src"],
     "outDir": "dist"
   },
   "references": [
     // dependencies
     { "path": "../config" },
     { "path": "../error" },
-    { "path": "../extractor" },
-    { "path": "../generator" },
-    { "path": "../is-valid-prop" },
     { "path": "../logger" },
-    { "path": "../parser" },
+    { "path": "../node" },
     { "path": "../shared" },
     { "path": "../token-dictionary" },
     { "path": "../types" },
     // devDependencies
-    { "path": "../fixture" }
+    { "path": "../presets" }
   ]
 }

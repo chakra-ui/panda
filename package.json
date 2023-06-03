@@ -18,7 +18,7 @@
     "lint": "eslint packages --ext .ts",
     "prettier": "prettier --check packages",
     "prettier-fix": "prettier --write packages",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b --noEmit",
     "release": "changeset publish",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
     "prepare-studio": "pnpm --filter=./packages/cli app",

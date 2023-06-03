@@ -1,7 +1,15 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src", "index.ts", "__tests__/alias.test.ts"],
+  "include": ["src"],
   "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo"
-  }
+    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
+    "composite": true
+  },
+  "references": [
+    // dependencies
+    { "path": "../shared" },
+    { "path": "../types" },
+    // devDependencies
+    { "path": "../fixture" }
+  ]
 }

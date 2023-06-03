@@ -3,5 +3,6 @@
   "compilerOptions": {
     "jsx": "preserve",
     "jsxImportSource": "solid-js"
-  }
+  },
+  "references": [{ "path": "../../packages/cli" }]
 }

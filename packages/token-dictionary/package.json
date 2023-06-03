@@ -19,8 +19,8 @@
     "dist"
   ],
   "dependencies": {
-    "@pandacss/types": "workspace:*",
     "@pandacss/shared": "workspace:*",
+    "@pandacss/types": "workspace:*",
     "ts-pattern": "4.3.0"
   },
   "devDependencies": {

@@ -26,5 +26,14 @@
     ]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [
+    // dependencies
+    { "path": "../packages/generator" },
+    { "path": "../packages/parser" },
+    { "path": "../packages/presets" },
+    // devDependencies
+    { "path": "../packages/cli" },
+    { "path": "../packages/types" }
+  ]
 }

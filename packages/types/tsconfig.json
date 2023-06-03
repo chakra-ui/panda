@@ -9,8 +9,6 @@
   },
   "references": [
     // dependencies
-    { "path": "../error" },
-    { "path": "../logger" },
-    { "path": "../types" }
+    { "path": "../extractor" }
   ]
 }

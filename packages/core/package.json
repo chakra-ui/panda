@@ -20,9 +20,9 @@
   },
   "dependencies": {
     "@pandacss/error": "workspace:*",
-    "@pandacss/types": "workspace:*",
-    "@pandacss/shared": "workspace:*",
     "@pandacss/logger": "workspace:*",
+    "@pandacss/shared": "workspace:*",
+    "@pandacss/types": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "camelcase-css": "^2.0.1",
     "hookable": "5.5.3",

@@ -1,7 +1,19 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src", "index.ts"],
+  "include": ["src"],
   "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo"
-  }
+    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "references": [
+    // dependencies
+    { "path": "../error" },
+    { "path": "../logger" },
+    { "path": "../shared" },
+    { "path": "../token-dictionary" },
+    // devDependencies
+    { "path": "../fixture" }
+  ]
 }

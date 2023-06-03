@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["src"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
+    "composite": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "references": [
+    // devDependencies
+    { "path": "../../packages/core" },
+    { "path": "../../packages/extractor" },
+    { "path": "../../packages/node" },
+    { "path": "../../packages/shared" }
+  ]
+}

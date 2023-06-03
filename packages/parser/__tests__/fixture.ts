@@ -9,8 +9,7 @@ import {
   utilities,
 } from '@pandacss/fixture'
 import { createGenerator } from '@pandacss/generator'
-import type { LoadConfigResult } from '@pandacss/types'
-import { type UserConfig } from '@pandacss/types'
+import type { LoadConfigResult, UserConfig } from '@pandacss/types'
 import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
 
@@ -55,9 +54,9 @@ function getProject(code: string, options?: <Conf extends UserConfig>(conf: Conf
   })
 }
 
-export function getFixtureProject(code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf) {
+export function getFixtureProject(code: string, options?: (conf: any) => any) {
   const config = options ? options(defaults.config) : defaults.config
-  const generator = createGenerator({ ...defaults, config })
+  const generator = createGenerator({ ...defaults, config }) as any
 
   const project = createProject({
     useInMemoryFileSystem: true,
