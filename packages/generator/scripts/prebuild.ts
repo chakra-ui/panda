@@ -6,12 +6,12 @@ function getEntrypoint(pkg: string, file: string) {
   const isDist = entry.includes('dist')
   const isType = pkg.includes('/types')
   if (isType) {
-    return join(dirname(entry), file)
+    return join(dirname(entry), '../dist', file)
   }
   if (!isDist) {
-    return join(dirname(entry), 'src', file)
+    return join(dirname(entry), '../dist', file)
   }
-  return join(dirname(entry), file)
+  return join(dirname(entry), '../dist', file)
 }
 
 const fileMap = [

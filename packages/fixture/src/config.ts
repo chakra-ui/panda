@@ -1,4 +1,4 @@
-import type { Config } from '@pandacss/types'
+import type { Config, Tokens } from '@pandacss/types'
 import { config as preset } from '@pandacss/presets'
 
 import { semanticTokens } from './semantic-tokens'
@@ -13,10 +13,10 @@ export const conditions = {
   pastelTheme: '[data-color=pastel] &',
 }
 
-export const tokens = {
-  ...preset.theme.tokens,
+export const tokens: Tokens = {
+  ...(preset.theme.tokens as Tokens),
   colors: {
-    ...preset.theme.tokens.colors,
+    ...(preset.theme.tokens as Tokens).colors,
     deep: {
       test: {
         yam: {
@@ -35,7 +35,7 @@ export const tokens = {
   },
 }
 
-export const config = {
+export const config: Config = {
   ...preset,
   theme: {
     ...preset.theme,
@@ -43,4 +43,4 @@ export const config = {
     semanticTokens,
     recipes,
   },
-} satisfies Config
+}

@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "jsx": "preserve",
     "incremental": true,
-    "emitDeclarationOnly": true,
+    // "emitDeclarationOnly": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "target": "esnext",
     "module": "esnext",
@@ -16,7 +16,11 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "baseUrl": ".", // This is important for the path aliases to work
+    "paths": {
+      "@pandacss/*": ["packages/*/src"]
+    }
   },
   "include": ["packages"],
   "types": ["vitest/globals"],
