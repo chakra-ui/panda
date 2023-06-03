@@ -4,70 +4,51 @@ import { logger } from '@pandacss/logger'
 import { compact, mapObject, memo } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type { LoadConfigResult } from '@pandacss/types'
-import { Obj, pipe, tap } from 'lil-fp'
 import postcss from 'postcss'
 
 const helpers = { map: mapObject }
 
-export const getBaseEngine = (conf: LoadConfigResult) =>
-  pipe(
-    conf,
+export const getBaseEngine = (conf: LoadConfigResult) => {
+  const { config } = conf
+  const { theme = {}, prefix, hash } = config
+  const { breakpoints, semanticTokens } = theme
 
-    Obj.bind('configDependencies', ({ dependencies }) => dependencies ?? []),
+  const tokens = new TokenDictionary({ breakpoints, tokens: theme.tokens, semanticTokens, prefix, hash })
+  const utility = new Utility({ prefix, tokens, config: config.utilities })
+  const conditions = new Conditions({ conditions: config.conditions, breakpoints })
 
-    Obj.bind('tokens', ({ config: { theme = {}, prefix, hash } }) => {
-      const { breakpoints, tokens, semanticTokens } = theme
-      return new TokenDictionary({ breakpoints, tokens, semanticTokens, prefix, hash })
-    }),
+  const context = { root: postcss.root(), conditions, utility, hash, helpers }
+  const recipes = new Recipes(theme?.recipes, context)
+  recipes.save() // cache recipes on first run
 
-    tap(({ tokens }) => {
-      logger.debug('generator:tokens', tokens.allNames)
-    }),
+  logger.debug('generator:tokens', tokens.allNames)
 
-    Obj.bind('utility', ({ config: { prefix, utilities, separator }, tokens }) => {
-      return new Utility({ prefix, tokens, config: utilities, separator })
-    }),
+  const { textStyles, layerStyles } = theme ?? {}
+  const compositions = compact({ textStyle: textStyles, layerStyle: layerStyles })
+  assignCompositions({ conditions, utility }, compositions)
 
-    Obj.bind('conditions', ({ config: { conditions, theme } }) => {
-      const { breakpoints } = theme ?? {}
-      return new Conditions({ conditions, breakpoints })
-    }),
+  const createSheet = (options?: Pick<StylesheetOptions, 'content'>) => {
+    const context = { root: postcss.root(), conditions, utility, hash, helpers }
+    return new Stylesheet(context, {
+      content: options?.content,
+      recipes: theme?.recipes,
+    })
+  }
 
-    tap(({ conditions, utility, config: { theme } }) => {
-      logger.debug('generator:conditions', conditions)
+  const properties = Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()]))
+  const propertyMap = new Map(properties.map((prop) => [prop, true]))
+  const isValidProperty = memo((key: string) => {
+    return propertyMap.has(key) || isCssProperty(key)
+  })
 
-      const { textStyles, layerStyles } = theme ?? {}
-      const compositions = compact({ textStyle: textStyles, layerStyle: layerStyles })
-      assignCompositions({ conditions, utility }, compositions)
-    }),
-
-    Obj.bind('recipes', ({ conditions, utility, config: { hash, theme } }) => {
-      const context = { root: postcss.root(), conditions, utility, hash, helpers }
-      const recipes = new Recipes(theme?.recipes, context)
-      recipes.save() // cache recipes on first run
-      return recipes
-    }),
-
-    Obj.bind(
-      'createSheet',
-      ({ conditions, utility, config: { hash, theme } }) =>
-        (options?: Pick<StylesheetOptions, 'content'>) => {
-          const context = { root: postcss.root(), conditions, utility, hash, helpers }
-          return new Stylesheet(context, {
-            content: options?.content,
-            recipes: theme?.recipes,
-          })
-        },
-    ),
-
-    Obj.bind('properties', ({ utility, conditions }) =>
-      Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()])),
-    ),
-
-    Obj.bind('isValidProperty', ({ properties }) => {
-      const propertyMap = new Map(properties.map((prop) => [prop, true]))
-      return memo((key: string) => {
-        return propertyMap.has(key) || isCssProperty(key)
-      })
-    }),
-  )
+  return Object.assign(conf, {
+    configDependencies: conf.dependencies ?? [],
+    tokens,
+    utility,
+    conditions,
+    recipes,
+    createSheet,
+    properties,
+    isValidProperty,
+  })
+}

@@ -1,5 +1,4 @@
 import type { LoadConfigResult } from '@pandacss/types'
-import { Obj, pipe } from 'lil-fp'
 import { generateArtifacts } from './artifacts'
 import { generateFlattenedCss } from './artifacts/css/flat-css'
 import { generateParserCss } from './artifacts/css/parser-css'
@@ -23,16 +22,23 @@ const getImportMap = (outdir: string) => ({
   jsx: `${outdir}/jsx`,
 })
 
-export const createGenerator = (conf: LoadConfigResult) =>
-  pipe(
-    getEngine(defaults(conf)),
-    Obj.assign((ctx) => ({
-      getArtifacts: generateArtifacts(ctx),
-      getCss: generateFlattenedCss(ctx),
-      getParserCss: generateParserCss(ctx),
-      messages: getMessages(ctx),
-    })),
-    Obj.bind('parserOptions', ({ config: { outdir }, jsx, isValidProperty, patterns, recipes }) => ({
+export const createGenerator = (conf: LoadConfigResult) => {
+  const ctx = getEngine(defaults(conf))
+  const {
+    config: { outdir },
+    jsx,
+    isValidProperty,
+    patterns,
+    recipes,
+  } = ctx
+
+  return {
+    ...ctx,
+    getArtifacts: generateArtifacts(ctx),
+    getCss: generateFlattenedCss(ctx),
+    getParserCss: generateParserCss(ctx),
+    messages: getMessages(ctx),
+    parserOptions: {
       importMap: getImportMap(outdir),
       jsx: {
         factory: jsx.factoryName,
@@ -41,7 +47,8 @@ export const createGenerator = (conf: LoadConfigResult) =>
       },
       getRecipeName: recipes.getFnName,
       getRecipeByName: recipes.getConfig,
-    })),
-  )
+    },
+  }
+}
 
 export type Generator = ReturnType<typeof createGenerator>

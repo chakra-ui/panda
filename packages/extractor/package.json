@@ -11,7 +11,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
+    "build": "tsup src/index.ts --format=cjs,esm --shims ",
     "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
     "dev": "pnpm build-fast --watch",
     "format": "prettier --write \"./{src,tests}/**/*\"",

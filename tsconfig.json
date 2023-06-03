@@ -3,11 +3,12 @@
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
     "declaration": true,
+    // "declarationMap": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
     "jsx": "preserve",
     "incremental": true,
-    // "emitDeclarationOnly": true,
+    "emitDeclarationOnly": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "target": "esnext",
     "module": "esnext",
@@ -16,13 +17,34 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "verbatimModuleSyntax": true,
-    "baseUrl": ".", // This is important for the path aliases to work
-    "paths": {
-      "@pandacss/*": ["packages/*/src"]
-    }
+    "verbatimModuleSyntax": true
+    // "baseUrl": ".", // This is important for the path aliases to work
+    // "paths": {
+    //   "@pandacss/*": ["packages/*/src"]
+    // }
   },
   "include": ["packages"],
   "types": ["vitest/globals"],
-  "exclude": ["node_modules", "./packages/cli/app", "./packages/extractor/__tests__/samples"]
+  "exclude": ["node_modules", "./packages/cli/app", "./packages/extractor/__tests__/samples"],
+  "references": [
+    { "path": "./extension/vscode/tsconfig.json" },
+    { "path": "./extension/language-server/tsconfig.json" },
+    { "path": "./packages/cli/tsconfig.build.json" },
+    { "path": "./packages/config/tsconfig.json" },
+    { "path": "./packages/core/tsconfig.json" },
+    { "path": "./packages/error/tsconfig.json" },
+    { "path": "./packages/extractor/tsconfig.json" },
+    { "path": "./packages/fixture/tsconfig.json" },
+    { "path": "./packages/generator/tsconfig.json" },
+    { "path": "./packages/is-valid-prop/tsconfig.json" },
+    { "path": "./packages/logger/tsconfig.json" },
+    { "path": "./packages/node/tsconfig.json" },
+    { "path": "./packages/parser/tsconfig.json" },
+    { "path": "./packages/presets/tsconfig.json" },
+    { "path": "./packages/shared/tsconfig.json" },
+    { "path": "./packages/token-dictionary/tsconfig.json" },
+    { "path": "./packages/types/tsconfig.json" },
+    { "path": "./playground/tsconfig.json" },
+    { "path": "./website/tsconfig.json" }
+  ]
 }

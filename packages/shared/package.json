@@ -11,7 +11,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup --dts",
+    "build": "tsup ",
     "build-fast": "tsup --no-dts",
     "dev": "pnpm build-fast --watch"
   },

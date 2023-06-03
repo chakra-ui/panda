@@ -12,7 +12,7 @@
   },
   "scripts": {
     "mdn": "tsx scripts/prepare.ts",
-    "build": "tsup src/index.ts --format=esm,cjs --dts",
+    "build": "tsup src/index.ts --format=esm,cjs ",
     "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
     "dev": "pnpm build-fast --watch"
   },

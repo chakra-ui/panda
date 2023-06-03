@@ -11,7 +11,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "pnpm tsup src/index.ts --format=esm,cjs --shims --dts",
+    "build": "pnpm tsup src/index.ts --format=esm,cjs --shims ",
     "build-fast": "pnpm tsup src/index.ts --format=esm,cjs --shims --no-dts",
     "dev": "pnpm build-fast --watch"
   },
