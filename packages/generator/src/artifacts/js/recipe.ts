@@ -4,6 +4,8 @@ import type { Context } from '../../engines'
 
 const stringify = (value: any) => JSON.stringify(value, null, 2)
 
+const isBooleanValue = (value: string) => value === 'true' || value === 'false'
+
 export function generateRecipes(ctx: Context) {
   const {
     recipes,
@@ -70,14 +72,22 @@ export function generateRecipes(ctx: Context) {
         ${ctx.file.import('splitProps', '../helpers')}
         ${ctx.file.import('createRecipe', './create-recipe')}
 
-        export const ${name} = createRecipe('${name}', ${stringify(defaultVariants ?? {})}, ${stringify(
+        const ${name}Fn = createRecipe('${name}', ${stringify(defaultVariants ?? {})}, ${stringify(
           compoundVariants ?? [],
         )})
 
-        ${name}.variants = ${stringify(variantKeyMap)}
-        
         const variantKeys = ${stringify(Object.keys(variantKeyMap))}
-        ${name}.splitVariantProps = (props) => splitProps(props, variantKeys)
+
+        function splitVariantProps(props) {
+          return splitProps(props, variantKeys)
+        }
+        
+        export const ${name} = Object.assign(${name}Fn, {
+          __recipe__: true,
+          variantKeys,
+          variantMap: ${stringify(variantKeyMap)},
+          splitVariantProps,
+        })
         `,
 
         dts: outdent`
@@ -86,7 +96,11 @@ export function generateRecipes(ctx: Context) {
 
         type ${upperName}Variant = {
           ${Object.keys(variantKeyMap)
-            .map((key) => `${key}: ${unionType(variantKeyMap[key])}`)
+            .map((key) => {
+              const values = variantKeyMap[key]
+              if (values.every(isBooleanValue)) return `${key}: boolean`
+              return `${key}: ${unionType(values)}`
+            })
             .join('\n')}
         }
 
@@ -101,8 +115,10 @@ export function generateRecipes(ctx: Context) {
         }
 
         interface ${upperName}Recipe {
-          (variants?: ${upperName}VariantProps): string
-          variants: ${upperName}VariantMap
+          __type: ${upperName}VariantProps
+          (props?: ${upperName}VariantProps): string
+          variantMap: ${upperName}VariantMap
+          variantKeys: Array<keyof ${upperName}Variant>
           splitVariantProps<Props extends ${upperName}VariantProps>(props: Props): [${upperName}VariantProps, Pretty<Omit<Props, keyof ${upperName}VariantProps>>]
         }
 

@@ -14,8 +14,14 @@ export type RecipeVariantFn<T extends RecipeVariantRecord> = (props?: RecipeSele
 
 export type RecipeVariantProps<T extends RecipeVariantFn<RecipeVariantRecord>> = Pretty<Parameters<T>[0]>
 
+type RecipeVariantMap<T extends RecipeVariantRecord> = {
+  [K in keyof T]: Array<keyof T[K]>
+}
+
 export type RecipeRuntimeFn<T extends RecipeVariantRecord> = RecipeVariantFn<T> & {
-  variants: (keyof T)[]
+  __type: RecipeSelection<T>
+  variantKeys: (keyof T)[]
+  variantMap: RecipeVariantMap<T>
   resolve: (props: RecipeSelection<T>) => SystemStyleObject
   config: RecipeConfig<T>
   splitVariantProps<Props extends RecipeSelection<T>>(

@@ -57,6 +57,11 @@ export default defineConfig({
               color: 'pink.400',
             },
           },
+          rounded: {
+            true: {
+              borderRadius: 'md',
+            },
+          },
         },
         compoundVariants: [
           {

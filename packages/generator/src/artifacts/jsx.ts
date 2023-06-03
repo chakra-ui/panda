@@ -4,6 +4,7 @@ import { generateQwikJsxFactory, generateQwikJsxPattern, generateQwikJsxTypes } 
 import { generateReactJsxFactory, generateReactJsxPattern, generateReactJsxTypes } from './react-jsx'
 import { generateSolidJsxFactory, generateSolidJsxPattern, generateSolidJsxTypes } from './solid-jsx'
 import { generateVueJsxFactory } from './vue-jsx/jsx'
+import { generateVueJsxPattern } from './vue-jsx/pattern'
 import { generateVueJsxTypes } from './vue-jsx/types'
 
 /* -----------------------------------------------------------------------------
@@ -48,7 +49,7 @@ const patternMap = {
   react: generateReactJsxPattern,
   solid: generateSolidJsxPattern,
   preact: generatePreactJsxPattern,
-  vue: () => [],
+  vue: generateVueJsxPattern,
   qwik: generateQwikJsxPattern,
 }
 

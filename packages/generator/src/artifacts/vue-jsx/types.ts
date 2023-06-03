@@ -11,8 +11,8 @@ export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
 import type { Component, FunctionalComponent } from 'vue'
-import type { JsxStyleProps, JsxHTMLProps } from './system-types'
-import type { RecipeDefinition, RecipeRuntimeFn, RecipeSelection, RecipeVariantRecord } from './recipe'
+import type { Assign, JsxStyleProps, JsxHTMLProps } from './system-types'
+import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
 
 type IntrinsicElement =
   | 'a'
@@ -145,9 +145,20 @@ type IntrinsicElement =
   JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>
   >
 
-  export type ${upperName} = {
-      <T extends ElementType, P extends RecipeVariantRecord = {}>(component: T, recipe?: RecipeDefinition<P> | RecipeRuntimeFn<P>): ${componentName}<T, RecipeSelection<P>>
-    } & { [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}> }
+  type RecipeFn = { __type: any }
+
+  interface JsxFactory {
+    <T extends ElementType>(component: T): ${componentName}<T, {}>
+    <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>): ${componentName}<
+      T,
+      RecipeSelection<P>
+    >
+    <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P): ${componentName}<T, P['__type']>
+  }
+  
+  type JsxElements = { [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}> }
+  
+  export type ${upperName} = JsxFactory & JsxElements
     
   export type ${typeName}<T extends ElementType> = JsxHTMLProps<ComponentProps<T>, JsxStyleProps>
   `,
