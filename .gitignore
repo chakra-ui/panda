@@ -13,6 +13,7 @@ out
 build
 **/buil
 tsconfig.tsbuildinfo
+tsconfig.build.tsbuildinfo
 .DS_Store
 __generated__
 *.env

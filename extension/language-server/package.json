@@ -10,6 +10,7 @@
     "directory": "packages/extension/language-server"
   },
   "scripts": {
+    "build-dts": "tsc -b --emitDeclarationOnly",
     "build": "tsup src/index.ts --format cjs --minify -d dist --clean --shims",
     "dev": "tsup src/index.ts --watch --format cjs -d dist --shims",
     "clean": "rm -rf dist",

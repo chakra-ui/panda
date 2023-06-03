@@ -11,6 +11,7 @@
     "access": "public"
   },
   "scripts": {
+    "build-dts": "tsc -b --emitDeclarationOnly",
     "build": "tsup src/index.ts --format=cjs,esm --shims ",
     "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
     "dev": "pnpm build-fast --watch",

@@ -6,6 +6,7 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "scripts": {
     "prepare": "cp node_modules/csstype/index.d.ts src/csstype.d.ts",
+    "build-dts": "tsc -b --emitDeclarationOnly",
     "build": "tsx scripts/build.ts",
     "build-fast": "tsx scripts/build.ts",
     "dev": "chokidar -c 'pnpm build' src --initial"

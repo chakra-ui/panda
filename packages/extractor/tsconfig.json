@@ -4,7 +4,6 @@
   "exclude": ["node_modules", "./__tests__/npm-bench", "./__tests__/samples"],
   "compilerOptions": {
     "composite": true,
-    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
     "rootDir": "src",
     "outDir": "dist"
   },

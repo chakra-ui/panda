@@ -11,6 +11,7 @@
     "access": "public"
   },
   "scripts": {
+    "build-dts": "tsc -b --emitDeclarationOnly",
     "build": "tsup ",
     "build-fast": "tsup --no-dts",
     "dev": "pnpm build-fast --watch"

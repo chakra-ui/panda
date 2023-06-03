@@ -3,7 +3,6 @@
   "include": ["src"],
   "compilerOptions": {
     "composite": true,
-    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
     "rootDir": "src",
     "outDir": "dist"
   }

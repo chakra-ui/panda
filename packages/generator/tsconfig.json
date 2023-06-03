@@ -3,7 +3,6 @@
   "include": ["src", "src/**/*.json"],
   "compilerOptions": {
     "composite": true,
-    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
     "rootDir": "src",
     "outDir": "dist",
     "resolveJsonModule": true
