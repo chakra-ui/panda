@@ -1,7 +1,8 @@
 {
-  "utility-first": "Utility First",
   "cascade-layers": "Cascade Layers",
   "writing-styles": "Writing Styles",
   "conditional-styles": "Conditional Styles",
+  "patterns": "Patterns",
+  "recipes": "Recipes",
   "style-props": "JSX Style Props"
 }
