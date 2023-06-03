@@ -8,8 +8,9 @@ import { customDocs } from '../utils/custom-docs'
 
 <panda.main display="flex" height="calc(100vh - env(safe-area-inset-bottom))">
   <Stack height="full" minW="60" background="card" overflow="auto" paddingX="4" paddingY="8">
-    <panda.a fontWeight="bold" fontSize="2xl" href="/" display="flex" gap="2"
-      ><customDocs.logo /> {customDocs.title}
+    <panda.a fontWeight="bold" fontSize="2xl" href="/" display="flex" gap="2">
+      <customDocs.logo />
+      {customDocs.title}
     </panda.a>
     <SideNav />
   </Stack>
