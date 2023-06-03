@@ -37,8 +37,8 @@ export const ContextSelect: FC<IContextSelectProps> = ({
   children,
   contexts
 }) => {
-  const rootId = useId();
-  const activeContext = (useRouter().query.context as string) || contexts[0];
+  const rootId = useId()
+  const activeContext = (useRouter().query.context as string) || contexts[0]
 
   return (
     <ContextSelectProvider
@@ -79,21 +79,18 @@ const ContextSelectLink: FC<IContextSelectLinkProps> = ({ context }) => {
         css({
           flex: 1,
           textAlign: 'center',
-          p: 1,
+          px: '1',
+          py: '2',
           cursor: 'pointer',
           borderRadius: 'md',
-          _hover: {
-            bg: 'gray.200'
-          },
+          fontWeight: 'medium',
+          _hover: { bg: 'gray.200' },
           _dark: {
-            _hover: {
-              bg: 'neutral.600'
-            }
+            _hover: { bg: 'neutral.600' }
           },
           '&[aria-selected]': {
             bg: 'yellow.300',
             color: 'black',
-            fontWeight: 'bold',
             borderRadius: 'md',
             _dark: {
               bg: 'yellow.300',
@@ -113,6 +110,7 @@ export const ContextSelectOptions: FC<FlexProps> = props => {
 
   return (
     <Flex
+      mt="4"
       className="nextra-context-select"
       gap={1}
       w="full"

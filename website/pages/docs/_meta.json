@@ -1,7 +1,8 @@
 {
   "index": "Overview",
-  "getting-started": "Getting started",
+  "getting-started": { "title": "Getting started", "display": "hidden" },
   "concepts": "Concepts",
+  "guides": "Guides",
   "tokens": "Tokens",
   "recipe": "Recipes",
   "utilities": "Utilities",

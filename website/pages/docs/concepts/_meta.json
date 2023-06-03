@@ -1,10 +1,7 @@
 {
-  "atomic-styles": "Writing Styles",
-  "cascade-layers": "Cascade layers",
-  "style-props": "Style props",
-  "dynamic-styling": "Dynamic styling",
-  "virtual-color": "Virtual color",
-  "creating-a-preset": "Presets",
-  "custom-font": "Custom font",
-  "static": "Static css"
+  "utility-first": "Utility First",
+  "cascade-layers": "Cascade Layers",
+  "writing-styles": "Writing Styles",
+  "conditional-styles": "Conditional Styles",
+  "style-props": "JSX Style Props"
 }
