@@ -3,7 +3,6 @@
   "include": ["src"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
     "outDir": "dist",
     "rootDir": "src"
   },

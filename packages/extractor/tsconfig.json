@@ -3,7 +3,6 @@
   "include": ["src"],
   "exclude": ["node_modules", "./__tests__/npm-bench", "./__tests__/samples"],
   "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
     "composite": true,
     "rootDir": "src",
     "outDir": "dist"

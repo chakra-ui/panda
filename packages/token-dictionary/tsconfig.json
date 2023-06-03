@@ -2,8 +2,9 @@
   "extends": "../../tsconfig.json",
   "include": ["src"],
   "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
-    "composite": true
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist"
   },
   "references": [
     // dependencies
