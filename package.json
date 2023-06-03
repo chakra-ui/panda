@@ -11,7 +11,7 @@
     "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
     "build-dts": "pnpm -r --parallel --filter=./packages/** build-dts",
     "build": "pnpm -r --parallel --filter=./packages/** --filter=./extension/** build",
-    "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
+    "check": "pnpm build && pnpm build-dts && pnpm lint && pnpm test run",
     "clean": "pnpm -r --parallel exec rm -rf dist .turbo *.log tsconfig.tsbuildinfo",
     "reset": "pnpm -r --parallel exec rm -rf node_modules && rm -rf node_modules",
     "test": "vitest",
