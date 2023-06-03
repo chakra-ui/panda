@@ -4,6 +4,7 @@
   "exclude": ["node_modules"],
   "compilerOptions": {
     "composite": true,
+    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
     "rootDir": "src",
     "outDir": "dist"
   },

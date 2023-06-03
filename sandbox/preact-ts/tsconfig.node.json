@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "composite": true,
+    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
     "module": "ESNext",
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true
