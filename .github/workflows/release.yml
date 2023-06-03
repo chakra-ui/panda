@@ -22,7 +22,7 @@ jobs:
         uses: ./.github/composite-actions/install
 
       - name: Build packages
-        run: pnpm build
+        run: pnpm build && pnpm build-dts
 
       - name: Build extension
         run: pnpm extension:build
