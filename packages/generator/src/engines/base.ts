@@ -41,7 +41,7 @@ export const getBaseEngine = (conf: LoadConfigResult) => {
     return propertyMap.has(key) || isCssProperty(key)
   })
 
-  return Object.assign(conf, {
+  return Object.assign({}, conf, {
     configDependencies: conf.dependencies ?? [],
     tokens,
     utility,
@@ -50,5 +50,16 @@ export const getBaseEngine = (conf: LoadConfigResult) => {
     createSheet,
     properties,
     isValidProperty,
-  })
+  }) as BaseEngine
+}
+
+export type BaseEngine = LoadConfigResult & {
+  configDependencies: string[]
+  tokens: TokenDictionary
+  utility: Utility
+  conditions: Conditions
+  recipes: Recipes
+  createSheet: (options?: Pick<StylesheetOptions, 'content'>) => Stylesheet
+  properties: string[]
+  isValidProperty: (key: string) => boolean
 }

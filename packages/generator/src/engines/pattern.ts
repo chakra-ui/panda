@@ -46,35 +46,37 @@ export const getPatternEngine = (config: UserConfig) => {
     nodes,
     getFnName,
     isEmpty,
-  }
+  } as PatternEngine
 }
 
-// type GetPatternEngine = {
-//   getConfig: (name: string) => AnyPatternConfig
-//   transform: (name: string, data: Dict) => Dict
-//   getNames: (name: string) => {
-//     name: string
-//     upperName: string
-//     dashName: string
-//     styleFnName: string
-//     jsxName: string
-//   }
-//   details: {
-//     name: string
-//     upperName: string
-//     dashName: string
-//     styleFnName: string
-//     jsxName: string
-//     props: string[]
-//     blocklistType: string
-//     config: AnyPatternConfig
-//   }[]
-//   nodes: {
-//     type: 'pattern'
-//     name: string
-//     props: string[]
-//     baseName: string
-//   }[]
-//   getFnName: (jsx: string) => string
-//   isEmpty: () => boolean
-// }
+export type PatternEngine = {
+  getConfig: (name: string) => AnyPatternConfig
+  transform: (name: string, data: Dict) => Dict
+  getNames: (name: string) => {
+    name: string
+    upperName: string
+    dashName: string
+    styleFnName: string
+    jsxName: string
+  }
+  details: {
+    name: string
+    upperName: string
+    dashName: string
+    styleFnName: string
+    jsxName: string
+    props: string[]
+    blocklistType: string
+    config: AnyPatternConfig
+  }[]
+  nodes: JsxPatternNode[]
+  getFnName: (jsx: string) => string
+  isEmpty: () => boolean
+}
+
+export type JsxPatternNode = {
+  type: 'pattern'
+  name: string
+  props: string[]
+  baseName: string
+}

@@ -12,7 +12,7 @@ import {
   ComboboxTrigger,
   ComboboxProps,
 } from '@ark-ui/react'
-import { useState, useEffect, ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 
 export type DataComboboxOption = { value: string; label: string }
 export type DataComboboxProps = {

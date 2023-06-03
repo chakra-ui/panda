@@ -3,10 +3,7 @@
   "include": ["src", "app"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "jsx": "react-jsx",
-    "paths": {
-      "virtual:panda": ["./virtual-panda.d.ts"]
-    }
+    "jsx": "react-jsx"
   },
   "references": [{ "path": "./tsconfig.build.json" }]
 }

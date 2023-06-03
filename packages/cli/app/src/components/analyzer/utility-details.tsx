@@ -3,7 +3,11 @@ import { panda, Wrap } from '../../../styled-system/jsx'
 import { styledLink } from '../../../styled-system/patterns'
 import { analysisData } from '../../utils/analysis-data'
 
-import { getFileLink, getReportRelativeFilePath, SearchableReportItemAttributes } from '../../utils/get-report-item'
+import {
+  getFileLink,
+  getReportRelativeFilePath,
+  type SearchableReportItemAttributes,
+} from '../../utils/get-report-item'
 import { Section } from './section'
 
 import {
@@ -17,8 +21,8 @@ import {
 } from '@ark-ui/react'
 import { createContext } from '../../hooks/create-context'
 
-import { Dispatch, SetStateAction, useState } from 'react'
-import { DataCombobox, DataComboboxOption } from './data-combobox'
+import { type Dispatch, type SetStateAction, useState } from 'react'
+import { DataCombobox, type DataComboboxOption } from './data-combobox'
 import { TextWithCount } from './text-with-count'
 import { TokenSearchCombobox } from '../token-search-combobox'
 import { DataTable } from './data-table'

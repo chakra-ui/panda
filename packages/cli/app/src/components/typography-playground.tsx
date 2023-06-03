@@ -7,7 +7,6 @@ import { TokenContent } from './token-content'
 import { customDocs } from '../utils/custom-docs'
 
 export function TypographyPlayground() {
-  //@ts-expect-error
   const tokenMap = new TokenDictionary(pandaConfig.theme!)
   const tokens = Object.fromEntries(tokenMap.categoryMap)
 

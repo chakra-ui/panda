@@ -60,7 +60,6 @@ const getSemanticTokens = (allTokens: ColorToken[], filterMethod?: (token: Color
 }
 
 export const useColorDocs = () => {
-  //@ts-expect-error
   const tokenDictionary = new TokenDictionary(config.theme!)
   const tokens = Object.fromEntries(tokenDictionary.categoryMap)
   const allTokens = tokenDictionary.allTokens

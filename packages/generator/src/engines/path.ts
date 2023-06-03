@@ -14,5 +14,18 @@ export const getPathEngine = ({ cwd, emitPackage, outdir }: UserConfig) => {
     chunk: get('chunks'),
     outCss: get('styles.css'),
     jsx: get('jsx'),
-  }
+  } as PathEngine
+}
+
+export type PathEngine = {
+  get: (file?: string) => string[]
+  root: string[]
+  css: string[]
+  token: string[]
+  types: string[]
+  recipe: string[]
+  pattern: string[]
+  chunk: string[]
+  outCss: string[]
+  jsx: string[]
 }

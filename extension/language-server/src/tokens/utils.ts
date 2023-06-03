@@ -2,7 +2,7 @@ import { box, type NodeRange } from '@pandacss/extractor'
 import { Bool } from 'lil-fp'
 import { Range } from 'vscode-languageserver'
 
-import { SystemStyleObject } from '@pandacss/types'
+import { type SystemStyleObject } from '@pandacss/types'
 
 import { AtomicRule, optimizeCss } from '@pandacss/core'
 import { type PandaContext } from '@pandacss/node'
@@ -15,8 +15,8 @@ import prettier from 'prettier/standalone'
 import * as utf8 from 'utf8'
 import { match } from 'ts-pattern'
 
-import { Token } from './types'
-import { PandaVSCodeSettings } from '../settings'
+import { type Token } from '@pandacss/token-dictionary'
+import { type PandaVSCodeSettings } from '../settings'
 
 export const isObjectLike = Bool.or(box.isObject, box.isMap)
 

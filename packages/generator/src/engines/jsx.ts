@@ -9,5 +9,13 @@ export const getJsxEngine = (config: UserConfig) => {
     typeName: `HTML${capitalize(jsxFactory!)}Props`,
     componentName: `${capitalize(jsxFactory!)}Component`,
     framework: jsxFramework,
-  }
+  } as JsxEngine
+}
+
+export type JsxEngine = {
+  factoryName: string
+  upperName: string
+  typeName: string
+  componentName: string
+  framework: 'react' | 'solid' | 'preact' | 'vue' | 'qwik' | undefined
 }

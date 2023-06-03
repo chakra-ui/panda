@@ -1,10 +1,10 @@
 import * as path from 'path'
-import vscode, { CancellationToken } from 'vscode'
+import vscode, { type CancellationToken } from 'vscode'
 import {
   LanguageClient,
-  LanguageClientOptions,
-  MessageSignature,
-  ServerOptions,
+  type LanguageClientOptions,
+  type MessageSignature,
+  type ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node'
 import { registerClientCommands } from './commands'

@@ -5,7 +5,6 @@ import { Grid, panda, Stack } from '../../styled-system/jsx'
 import { getSortedSizes } from '../utils/sizes-sort'
 import { TokenGroup } from './token-group'
 
-//@ts-expect-error
 const radii = new TokenDictionary(config.theme!).categoryMap.get('radii')
 
 export function Radii() {

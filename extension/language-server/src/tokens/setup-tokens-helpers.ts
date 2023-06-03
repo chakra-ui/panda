@@ -1,18 +1,18 @@
 import { CompletionItem, CompletionItemKind, Position, Range } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
-import { PandaExtensionSetup } from '../setup-builder'
+import { type PandaExtensionSetup } from '../setup-builder'
 
-import { Dict, ParserResultType, RawCondition, ResultItem, SystemStyleObject } from '@pandacss/types'
-import { CallExpression, Identifier, JsxOpeningElement, JsxSelfClosingElement, Node, ts } from 'ts-morph'
+import { type Dict, type RawCondition, type ResultItem, type SystemStyleObject } from '@pandacss/types'
+import { CallExpression, Identifier, JsxOpeningElement, JsxSelfClosingElement, Node, SourceFile, ts } from 'ts-morph'
 
 import {
-  BoxContext,
+  type BoxContext,
   BoxNodeArray,
   BoxNodeLiteral,
   BoxNodeMap,
   BoxNodeObject,
-  PrimitiveType,
-  Unboxed,
+  type PrimitiveType,
+  type Unboxed,
   box,
   extractCallExpressionArguments,
   extractJsxAttribute,
@@ -22,15 +22,16 @@ import {
   unbox,
 } from '@pandacss/extractor'
 import { type PandaContext } from '@pandacss/node'
+import { type ParserResult } from '@pandacss/parser'
 import { walkObject } from '@pandacss/shared'
+import { type Token } from '@pandacss/token-dictionary'
 import { Bool } from 'lil-fp'
 import { match } from 'ts-pattern'
 import { color2kToVsCodeColor } from './color2k-to-vscode-color'
 import { expandTokenFn, extractTokenPaths } from './expand-token-fn'
 import { isColor } from './is-color'
-import { Token } from './types'
 import { getMarkdownCss, isObjectLike, nodeRangeToVsCodeRange, printTokenValue } from './utils'
-import { PandaVSCodeSettings } from '../settings'
+import { type PandaVSCodeSettings } from '../settings'
 
 type ClosestMatch = {
   range: Range
@@ -53,6 +54,7 @@ type ClosestToken = ClosestTokenMatch | ClosestConditionMatch
 type ClosestInstanceMatch = { name: string }
 type ClosestStylesInstance = { kind: 'styles'; props: BoxNodeMap | BoxNodeObject }
 type ClosestInstance = ClosestInstanceMatch & ClosestStylesInstance
+type ClosestStylesInstanceWithStyles = ClosestInstance & { styles: Dict }
 
 type OnTokenCallback = (args: ClosestToken) => void
 type BoxNodeWithValue = BoxNodeObject | BoxNodeLiteral | BoxNodeMap | BoxNodeArray
@@ -119,7 +121,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
     const ctx = setup.getContext()
     if (!ctx) return
 
-    return ctx.project.getSourceFile(doc.uri)
+    return ctx.project.getSourceFile(doc.uri) as SourceFile | undefined
   }
 
   /**
@@ -132,14 +134,14 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
     const project = ctx.project
 
     project.addSourceFile(doc.uri, doc.getText())
-    return project.parseSourceFile(doc.uri)
+    return project.parseSourceFile(doc.uri) as ParserResult
   }
 
   const createResultTokensGetter = (onToken: OnTokenCallback) => {
     const ctx = setup.getContext()
     if (!ctx)
       return () => {
-        //
+        // ignore
       }
 
     return (result: ResultItem) => {
@@ -171,7 +173,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
   /**
    * Get all the tokens from the document and call a callback on it.
    */
-  function getFileTokens(_doc: TextDocument, parserResult: ParserResultType, onToken: OnTokenCallback) {
+  function getFileTokens(_doc: TextDocument, parserResult: ParserResult, onToken: OnTokenCallback) {
     const ctx = setup.getContext()
     if (!ctx) return
 
@@ -322,7 +324,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
       .otherwise(() => {
         //
         return undefined
-      })
+      }) as Return
   }
 
   const getClosestToken = (doc: TextDocument, position: Position): ClosestToken | undefined => {
@@ -359,7 +361,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
     })
   }
 
-  const getClosestInstance = (doc: TextDocument, position: Position) => {
+  const getClosestInstance = (doc: TextDocument, position: Position): ClosestStylesInstanceWithStyles | undefined => {
     const ctx = setup.getContext()
     if (!ctx) return
 
@@ -379,17 +381,17 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
           name,
           props,
           styles: Object.assign({}, className, css, rest),
-        } as ClosestStylesInstance & { styles: Dict }
+        } as ClosestStylesInstanceWithStyles | undefined
       }
     })
   }
 
   const getClosestCompletionList = async (doc: TextDocument, position: Position) => {
     const ctx = setup.getContext()
-    if (!ctx) return
+    if (!ctx) return []
 
     const match = getNodeAtPosition(doc, position)
-    if (!match) return
+    if (!match) return []
 
     const settings = await setup.getPandaSettings()
     const { node, stack } = match
@@ -408,7 +410,21 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
     getClosestToken,
     getClosestInstance,
     getClosestCompletionList,
-  }
+  } as TokenHelpers
+}
+
+type TokenHelpers = {
+  getSourceFile: (doc: TextDocument) => SourceFile | undefined
+  parseSourceFile: (doc: TextDocument) => ParserResult
+  getFileTokens: (_doc: TextDocument, parserResult: ParserResult, onToken: OnTokenCallback) => void
+  findClosestToken: <Return>(
+    node: Node<ts.Node>,
+    stack: Node<ts.Node>[],
+    onFoundToken: (args: Pick<ClosestToken, 'propName' | 'propNode'>) => Return,
+  ) => Return
+  getClosestToken: (doc: TextDocument, position: Position) => ClosestToken
+  getClosestInstance: (doc: TextDocument, position: Position) => ClosestStylesInstanceWithStyles | undefined
+  getClosestCompletionList: (doc: TextDocument, position: Position) => Promise<CompletionItem[]>
 }
 
 const getDescendantAtPos = (from: Node, pos: number) => {
@@ -507,7 +523,7 @@ const getCompletionFor = (
   propName: string,
   propNode: BoxNodeLiteral,
   settings: PandaVSCodeSettings,
-) => {
+): CompletionItem[] => {
   const propValue = propNode.value
 
   let str = String(propValue)
@@ -539,10 +555,10 @@ const getCompletionFor = (
 
   const utility = ctx.config.utilities?.[propName]
   const category = typeof utility?.values === 'string' && utility?.values
-  if (!category) return
+  if (!category) return []
 
   const values = ctx.tokens.categoryMap.get(category)
-  if (!values) return
+  if (!values) return []
 
   const items = [] as CompletionItem[]
   values.forEach((token, name) => {

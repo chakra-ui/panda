@@ -8,7 +8,7 @@ import {
   getReportRange,
   getReportRelativeFilePath,
   openReportItemInEditor,
-  SearchableReportItemAttributes,
+  type SearchableReportItemAttributes,
 } from '../../utils/get-report-item'
 import { ExternalIcon } from './external-icon'
 import { QuickTooltip } from './quick-tooltip'

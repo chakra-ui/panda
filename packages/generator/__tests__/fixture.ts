@@ -9,6 +9,7 @@ import {
   patterns,
 } from '@pandacss/fixture'
 import { createGenerator } from '../src'
+import { type Context } from '../src/engines'
 
 export const generator = createGenerator({
   dependencies: [],
@@ -33,4 +34,4 @@ export const generator = createGenerator({
     outdir: '',
   },
   path: '',
-})
+}) as unknown as Context
