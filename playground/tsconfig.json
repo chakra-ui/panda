@@ -29,11 +29,11 @@
   "exclude": ["node_modules"],
   "references": [
     // dependencies
-    { "path": "../packages/generator" },
-    { "path": "../packages/parser" },
-    { "path": "../packages/presets" },
+    { "path": "../packages/generator/tsconfig.json" },
+    { "path": "../packages/parser/tsconfig.json" },
+    { "path": "../packages/presets/tsconfig.json" },
     // devDependencies
-    { "path": "../packages/cli" },
-    { "path": "../packages/types" }
+    { "path": "../packages/cli/tsconfig.build.json" },
+    { "path": "../packages/types/tsconfig.json" }
   ]
 }

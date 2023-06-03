@@ -10,6 +10,6 @@
   },
   "references": [
     // dependencies
-    { "path": "../logger" }
+    { "path": "../logger/tsconfig.json" }
   ]
 }

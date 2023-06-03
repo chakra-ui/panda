@@ -9,17 +9,17 @@
   },
   "references": [
     // dependencies
-    { "path": "../config" },
-    { "path": "../error" },
-    { "path": "../extractor" },
-    { "path": "../generator" },
-    { "path": "../is-valid-prop" },
-    { "path": "../logger" },
-    { "path": "../parser" },
-    { "path": "../shared" },
-    { "path": "../token-dictionary" },
-    { "path": "../types" },
+    { "path": "../config/tsconfig.json" },
+    { "path": "../error/tsconfig.json" },
+    { "path": "../extractor/tsconfig.json" },
+    { "path": "../generator/tsconfig.json" },
+    { "path": "../is-valid-prop/tsconfig.json" },
+    { "path": "../logger/tsconfig.json" },
+    { "path": "../parser/tsconfig.json" },
+    { "path": "../shared/tsconfig.json" },
+    { "path": "../token-dictionary/tsconfig.json" },
+    { "path": "../types/tsconfig.json" },
     // devDependencies
-    { "path": "../fixture" }
+    { "path": "./tsconfig.json./fixture" }
   ]
 }

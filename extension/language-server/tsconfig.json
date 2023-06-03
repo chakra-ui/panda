@@ -10,9 +10,9 @@
   },
   "references": [
     // devDependencies
-    { "path": "../../packages/core" },
-    { "path": "../../packages/extractor" },
-    { "path": "../../packages/node" },
-    { "path": "../../packages/shared" }
+    { "path": "../../packages/core/tsconfig.json" },
+    { "path": "../../packages/extractor/tsconfig.json" },
+    { "path": "../../packages/node/tsconfig.json" },
+    { "path": "../../packages/shared/tsconfig.json" }
   ]
 }

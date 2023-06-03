@@ -7,9 +7,9 @@
   },
   "references": [
     // dependencies
-    { "path": "../shared" },
-    { "path": "../types" },
+    { "path": "../shared/tsconfig.json" },
+    { "path": "../types/tsconfig.json" },
     // devDependencies
-    { "path": "../fixture" }
+    { "path": "../fixture/tsconfig.json" }
   ]
 }

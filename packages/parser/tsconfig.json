@@ -9,13 +9,13 @@
   },
   "references": [
     // dependencies
-    { "path": "../extractor" },
-    { "path": "../is-valid-prop" },
-    { "path": "../logger" },
-    { "path": "../shared" },
-    { "path": "../types" },
+    { "path": "../extractor/tsconfig.json" },
+    { "path": "../is-valid-prop/tsconfig.json" },
+    { "path": "../logger/tsconfig.json" },
+    { "path": "../shared/tsconfig.json" },
+    { "path": "../types/tsconfig.json" },
     // devDependencies
-    { "path": "../fixture" },
-    { "path": "../generator" }
+    { "path": "../fixture/tsconfig.json" },
+    { "path": "../generator/tsconfig.json" }
   ]
 }

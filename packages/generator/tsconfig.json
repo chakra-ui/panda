@@ -9,13 +9,13 @@
   },
   "references": [
     // dependencies
-    { "path": "../core" },
-    { "path": "../is-valid-prop" },
-    { "path": "../logger" },
-    { "path": "../shared" },
-    { "path": "../types" },
-    { "path": "../token-dictionary" },
+    { "path": "../core/tsconfig.json" },
+    { "path": "../is-valid-prop/tsconfig.json" },
+    { "path": "../logger/tsconfig.json" },
+    { "path": "../shared/tsconfig.json" },
+    { "path": "../types/tsconfig.json" },
+    { "path": "../token-dictionary/tsconfig.json" },
     // devDependencies
-    { "path": "../fixture" }
+    { "path": "../fixture/tsconfig.json" }
   ]
 }

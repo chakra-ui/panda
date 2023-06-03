@@ -10,14 +10,14 @@
   },
   "references": [
     // dependencies
-    { "path": "../config" },
-    { "path": "../error" },
-    { "path": "../logger" },
-    { "path": "../node" },
-    { "path": "../shared" },
-    { "path": "../token-dictionary" },
-    { "path": "../types" },
+    { "path": "../config/tsconfig.json" },
+    { "path": "../error/tsconfig.json" },
+    { "path": "../logger/tsconfig.json" },
+    { "path": "../node/tsconfig.json" },
+    { "path": "../shared/tsconfig.json" },
+    { "path": "../token-dictionary/tsconfig.json" },
+    { "path": "../types/tsconfig.json" },
     // devDependencies
-    { "path": "../presets" }
+    { "path": "../presets/tsconfig.json" }
   ]
 }

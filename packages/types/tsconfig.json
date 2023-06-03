@@ -9,6 +9,6 @@
   },
   "references": [
     // dependencies
-    { "path": "../extractor" }
+    { "path": "../extractor/tsconfig.json" }
   ]
 }

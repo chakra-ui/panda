@@ -18,5 +18,5 @@
     "jsxImportSource": "preact"
   },
   "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }, { "path": "../../packages/cli" }]
+  "references": [{ "path": "./tsconfig.node.json" }, { "path": "../../packages/cli/tsconfig.build.json" }]
 }

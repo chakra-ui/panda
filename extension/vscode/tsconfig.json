@@ -9,6 +9,6 @@
   },
   "references": [
     // devDependencies
-    { "path": "../../packages/cli" }
+    { "path": "../../packages/cli/tsconfig.build.json" }
   ]
 }

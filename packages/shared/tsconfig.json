@@ -9,6 +9,6 @@
   },
   "references": [
     // dependencies
-    { "path": "../types" }
+    { "path": "../types/tsconfig.json" }
   ]
 }

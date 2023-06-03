@@ -9,8 +9,8 @@
   },
   "references": [
     // dependencies
-    { "path": "../error" },
-    { "path": "../logger" },
-    { "path": "../types" }
+    { "path": "../error/tsconfig.json" },
+    { "path": "../logger/tsconfig.json" },
+    { "path": "../types/tsconfig.json" }
   ]
 }

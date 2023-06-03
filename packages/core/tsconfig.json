@@ -9,11 +9,11 @@
   },
   "references": [
     // dependencies
-    { "path": "../error" },
-    { "path": "../logger" },
-    { "path": "../shared" },
-    { "path": "../token-dictionary" },
+    { "path": "../error/tsconfig.json" },
+    { "path": "../logger/tsconfig.json" },
+    { "path": "../shared/tsconfig.json" },
+    { "path": "../token/tsconfig.json-dictionary" },
     // devDependencies
-    { "path": "../fixture" }
+    { "path": "../fixture/tsconfig.json" }
   ]
 }

@@ -1,5 +1,5 @@
 {
   // https://nuxt.com/docs/guide/concepts/typescript
   "extends": "./.nuxt/tsconfig.json",
-  "references": [{ "path": "../../packages/cli" }]
+  "references": [{ "path": "../../packages/cli/tsconfig.build.json" }]
 }

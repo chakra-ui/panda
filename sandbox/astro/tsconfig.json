@@ -4,5 +4,5 @@
     "jsx": "preserve",
     "jsxImportSource": "solid-js"
   },
-  "references": [{ "path": "../../packages/cli" }]
+  "references": [{ "path": "../../packages/cli/tsconfig.build.json" }]
 }

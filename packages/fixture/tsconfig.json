@@ -9,7 +9,7 @@
   },
   "references": [
     // dependencies
-    { "path": "../presets" },
-    { "path": "../types" }
+    { "path": "../presets/tsconfig.json" },
+    { "path": "../types/tsconfig.json" }
   ]
 }
