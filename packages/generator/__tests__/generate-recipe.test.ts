@@ -64,8 +64,10 @@ describe('generate recipes', () => {
       }
 
       interface TextStyleRecipe {
-        (variants?: TextStyleVariantProps): string
-        variants: TextStyleVariantMap
+        __type: TextStyleVariantProps
+        (props?: TextStyleVariantProps): string
+        variantMap: TextStyleVariantMap
+        variantKeys: Array<keyof TextStyleVariant>
         splitVariantProps<Props extends TextStyleVariantProps>(props: Props): [TextStyleVariantProps, Pretty<Omit<Props, keyof TextStyleVariantProps>>]
       }
 
@@ -74,19 +76,27 @@ describe('generate recipes', () => {
           "js": "import { splitProps } from '../helpers.mjs';
       import { createRecipe } from './create-recipe.mjs';
 
-      export const textStyle = createRecipe('textStyle', {}, [])
-
-      textStyle.variants = {
-        \\"size\\": [
-          \\"h1\\",
-          \\"h2\\"
-        ]
-      }
+      const textStyleFn = createRecipe('textStyle', {}, [])
 
       const variantKeys = [
         \\"size\\"
       ]
-      textStyle.splitVariantProps = (props) => splitProps(props, variantKeys)",
+
+      function splitVariantProps(props) {
+        return splitProps(props, variantKeys)
+      }
+
+      export const textStyle = Object.assign(textStyleFn, {
+        __recipe__: true,
+        variantKeys,
+        variantMap: {
+        \\"size\\": [
+          \\"h1\\",
+          \\"h2\\"
+        ]
+      },
+        splitVariantProps,
+      })",
           "name": "text-style",
         },
         {
@@ -106,8 +116,10 @@ describe('generate recipes', () => {
       }
 
       interface TooltipStyleRecipe {
-        (variants?: TooltipStyleVariantProps): string
-        variants: TooltipStyleVariantMap
+        __type: TooltipStyleVariantProps
+        (props?: TooltipStyleVariantProps): string
+        variantMap: TooltipStyleVariantMap
+        variantKeys: Array<keyof TooltipStyleVariant>
         splitVariantProps<Props extends TooltipStyleVariantProps>(props: Props): [TooltipStyleVariantProps, Pretty<Omit<Props, keyof TooltipStyleVariantProps>>]
       }
 
@@ -116,12 +128,20 @@ describe('generate recipes', () => {
           "js": "import { splitProps } from '../helpers.mjs';
       import { createRecipe } from './create-recipe.mjs';
 
-      export const tooltipStyle = createRecipe('tooltipStyle', {}, [])
-
-      tooltipStyle.variants = {}
+      const tooltipStyleFn = createRecipe('tooltipStyle', {}, [])
 
       const variantKeys = []
-      tooltipStyle.splitVariantProps = (props) => splitProps(props, variantKeys)",
+
+      function splitVariantProps(props) {
+        return splitProps(props, variantKeys)
+      }
+
+      export const tooltipStyle = Object.assign(tooltipStyleFn, {
+        __recipe__: true,
+        variantKeys,
+        variantMap: {},
+        splitVariantProps,
+      })",
           "name": "tooltip-style",
         },
         {
@@ -142,8 +162,10 @@ describe('generate recipes', () => {
       }
 
       interface ButtonStyleRecipe {
-        (variants?: ButtonStyleVariantProps): string
-        variants: ButtonStyleVariantMap
+        __type: ButtonStyleVariantProps
+        (props?: ButtonStyleVariantProps): string
+        variantMap: ButtonStyleVariantMap
+        variantKeys: Array<keyof ButtonStyleVariant>
         splitVariantProps<Props extends ButtonStyleVariantProps>(props: Props): [ButtonStyleVariantProps, Pretty<Omit<Props, keyof ButtonStyleVariantProps>>]
       }
 
@@ -152,12 +174,24 @@ describe('generate recipes', () => {
           "js": "import { splitProps } from '../helpers.mjs';
       import { createRecipe } from './create-recipe.mjs';
 
-      export const buttonStyle = createRecipe('buttonStyle', {
+      const buttonStyleFn = createRecipe('buttonStyle', {
         \\"size\\": \\"md\\",
         \\"variant\\": \\"solid\\"
       }, [])
 
-      buttonStyle.variants = {
+      const variantKeys = [
+        \\"size\\",
+        \\"variant\\"
+      ]
+
+      function splitVariantProps(props) {
+        return splitProps(props, variantKeys)
+      }
+
+      export const buttonStyle = Object.assign(buttonStyleFn, {
+        __recipe__: true,
+        variantKeys,
+        variantMap: {
         \\"size\\": [
           \\"sm\\",
           \\"md\\"
@@ -166,13 +200,9 @@ describe('generate recipes', () => {
           \\"solid\\",
           \\"outline\\"
         ]
-      }
-
-      const variantKeys = [
-        \\"size\\",
-        \\"variant\\"
-      ]
-      buttonStyle.splitVariantProps = (props) => splitProps(props, variantKeys)",
+      },
+        splitVariantProps,
+      })",
           "name": "button-style",
         },
       ]
