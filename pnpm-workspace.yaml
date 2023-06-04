@@ -1,6 +1,6 @@
 packages:
-  - "packages/**"
-  - "sandbox/**"
-  - "playground"
-  - "website"
-  - "extension/**"
+  - 'packages/**'
+  - 'sandbox/*'
+  - 'playground'
+  - 'website'
+  - 'extension/**'
