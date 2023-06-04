@@ -61,4 +61,8 @@ export function registerColorHints(extension: PandaExtension) {
   connection.onColorPresentation(() => {
     return []
   })
+
+  connection.onDidChangeConfiguration(async (_change) => {
+    connection.sendNotification('$/clear-colors')
+  })
 }

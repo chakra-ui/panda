@@ -1,0 +1,28 @@
+{
+  "publisher": "chakra-ui",
+  "name": "panda-css-extension-shared",
+  "displayName": "🐼 Panda CSS",
+  "description": "Shared utilities between extension client & server",
+  "version": "0.0.1",
+  "private": true,
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "repository": {
+    "url": "https://github.com/chakra-ui/panda",
+    "directory": "packages/extension/vscode"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format=esm,cjs --dts",
+    "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
+    "dev": "pnpm build-fast --watch",
+    "clean": "rm -rf dist",
+    "lint": "eslint ./src --ext .ts,.tsx --fix"
+  },
+  "devDependencies": {
+    "tsup": "6.7.0",
+    "typescript": "^5.1.3"
+  },
+  "dependencies": {
+    "@pandacss/shared": "workspace:^"
+  }
+}
