@@ -16,7 +16,7 @@ import * as utf8 from 'utf8'
 import { match } from 'ts-pattern'
 
 import { Token } from './types'
-import { PandaVSCodeSettings } from '../settings'
+import { PandaVSCodeSettings } from 'panda-css-extension-shared'
 
 export const isObjectLike = Bool.or(box.isObject, box.isMap)
 
