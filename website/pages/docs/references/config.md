@@ -3,7 +3,7 @@ title: Configuring Panda
 description: Customize how Panda works via the `panda.config.ts` file in your project.
 ---
 
-# Configuring Panda
+# Config Reference
 
 Customize how Panda works via the `panda.config.ts` file in your project.
 
