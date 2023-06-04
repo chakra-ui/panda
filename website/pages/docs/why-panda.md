@@ -15,31 +15,31 @@ With the release of Server Components and the rise of server-first frameworks, m
 
 > **Fun Fact:** Most CSS-in-JS libraries have a pinned issue on their GitHub repo about "Next app dir" or/and "Server Components" 😅, making the challenge even more obvious.
 
-So, the question is, **is CSS-in-JS dead?** The answer is **no, but it needs to evolve.**
+So, the question is, **is CSS-in-JS dead?** The answer is **no, but it needs to evolve!**
 
 ## The new era of CSS-in-JS
 
-Panda is a new CSS-in-JS library that aims to solve the new challenges of CSS-in-JS in the server-first era. It provides developers with primitives to create, organize, and manage CSS styles in a type-safe and readable manner.
+Panda is a new CSS-in-JS engine that aims to solve the challenges of CSS-in-JS in the server-first era. It provides styling primitives to create, organize, and manage CSS styles in a type-safe and readable manner.
 
-- **Static Analysis:** Panda uses static analysis to parse and analyze your styles at build time, and generate CSS files that can be used in any server-first framework.
+- **Static Analysis:** Panda uses static analysis to parse and analyze your styles at build time, and generate CSS files that can be used in any JavaScript framework.
 
-- **PostCSS:** After static analysis, Panda uses a set of carefully crafted PostCSS plugins to convert the parsed data to atomic css. **This makes Panda compatible with any framework that supports PostCSS.**
+- **PostCSS:** After static analysis, Panda uses a set of PostCSS plugins to convert the parsed data to atomic css at build time. **This makes Panda compatible with any framework that supports PostCSS.**
 
-- **Type-Safety:** Panda combines `csstype` and auto-generates typings to provide type-safety for css properties and design tokens.
+- **Codegen:** Panda generates a lightweight runtime JS code that is used to author styles. **Think of it as an optimized function that joins key-value pairs of an object**. It doesn't generate styles in the browser nor inject styles in the `<head>`.
 
-- **Performance:** Panda is built with performance in mind. It uses a unique approach to generate atomic CSS files that are optimized for performance and readability.
+- **Type-Safety:** Panda combines `csstype` and auto-generated typings to provide type-safety for css properties and design tokens.
 
-- **Codegen:** Panda generates a featherweight runtime JS code that is used to author styles. **Think of the runtime as fast object key-value join function**. It doesn't generate styles in the browser nor inject styles in the `<head>`, that is managed by PostCSS.
+- **Performance:** Panda uses a unique approach to generate atomic CSS files that are optimized for performance and readability.
 
-- **Developer Experience:** Panda provides a great developer experience with a rich set of features like auto-completion, typesafety JSX style props, linting, and more.
+- **Developer Experience:** Panda provides a great developer experience with a rich set of features like recipes, patterns, design tokens, JSX style props, and more.
 
-- **Modern CSS**: Panda uses modern CSS features like cascade layer, css variables, modern css selectors `:where` and `:is` to generate styles.
+- **Modern CSS**: Panda uses modern CSS features like cascade layers, css variables, modern selectors like `:where` and `:is` in generated styles.
 
 ## When to use Panda?
 
 ### Styling engine
 
-If you're building a JavaScript application with a framework that supports PostCSS, Panda is a great choice for you. However, if your framework doesn't support PostCSS, you can use Panda CLI.
+If you're building a JavaScript application with a framework that supports PostCSS, Panda is a great choice for you.
 
 ```jsx
 import { css } from '../styled-system/css'
@@ -70,11 +70,11 @@ function App() {
 }
 ```
 
+> If your framework doesn't support PostCSS, you can use the [Panda CLI](/docs/getting-started/cli)
+
 ### Token generator
 
-Panda has first-class support for design tokens. It provides a way to express raw tokens and semantic tokens for your project. You don't need to use a JavaScript to get this benefit.
-
-Add tokens to the panda config file and generate css variables for your project. Use the generated tokens in your vanilla project or any way you like.
+Panda has first-class support for design tokens. It provides a way to express raw and semantic tokens for your project. The generator can be used to create a set of CSS variables for your design tokens.
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -96,11 +96,7 @@ export default defineConfig({
 })
 ```
 
-```bash
-pnpm panda codegen
-```
-
-This will generate
+Running the `panda codegen` will generate
 
 ```css filename="styled-system/tokens/index.css"
 :root {
@@ -128,6 +124,10 @@ Then you have a set of css variables that you can use in your project.
 
 ## When not to use Panda?
 
-If you're building with HTML and CSS, or a template based framework like PHP, Panda isn't the right fit.
+Panda isn't the right fit for your project if:
 
-We recommend that you use vanilla CSS (which is getting awesome by the day), or other utility based CSS libraries.
+- You're building with HTML and CSS.
+- You're using a template-based framework like PHP.
+- You're looking for an absolute zero JS solution.
+
+In these scenarios, we recommend that you use vanilla CSS (which is getting awesome by the day), or other utility based CSS libraries.

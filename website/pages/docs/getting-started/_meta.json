@@ -6,6 +6,7 @@
   "vite": "Vite",
   "storybook": "Storybook",
   "remix": "Remix",
+  "preact": "Preact",
   "solidjs": "SolidJS",
   "gatsby": "Gatsby",
   "svelte": "Svelte"
