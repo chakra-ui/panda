@@ -1,9 +1,9 @@
 ---
-title: Utility
+title: Utilities
 description: The utility API is a way to create your own CSS properties, map existing properties to a set of values or tokens.
 ---
 
-# Utility - Customization
+# Utilities
 
 The utility API is a way to create your own CSS properties, map existing properties to a set of values or tokens. It's
 like building your own typesafe version of Chakra UI, Tailwind (in JS), or Styled System.
@@ -22,8 +22,8 @@ Here are the properties you need to define or customize a utility:
 
 Let's say we want to create new property `br` that applies a border radius to an element.
 
-```js
-const config = {
+```ts filename="panda.config.ts"
+export default defineConfig({
   utilities: {
     extend: {
       br: {
@@ -35,7 +35,7 @@ const config = {
       }
     }
   }
-}
+})
 ```
 
 Now, we can use the `br` property in our components.
@@ -46,11 +46,11 @@ function App() {
 }
 ```
 
-or using the JSX flavor
+or use in JSX style props
 
 ```jsx
 function App() {
-  return <panda.div br="sm" />
+  return <styled.div br="sm" />
 }
 ```
 
@@ -59,8 +59,8 @@ function App() {
 Let's say we want to create a new property `borderX` that applies a limited set of inline border to an element and
 automatically applies the border color.
 
-```js
-const config = {
+```ts filename="panda.config.ts"
+export default defineConfig({
   utilities: {
     extend: {
       borderX: {
@@ -75,7 +75,7 @@ const config = {
       }
     }
   }
-}
+})
 ```
 
 Now, we can use the `borderX` or `bx` property in our components.
@@ -88,8 +88,8 @@ function App() {
 
 ### Using mapped values
 
-```js
-const config = {
+```ts filename="panda.config.ts"
+export default defineConfig({
   utilities: {
     extend: {
       borderX: {
@@ -104,5 +104,5 @@ const config = {
       }
     }
   }
-}
+})
 ```
