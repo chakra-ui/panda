@@ -44,11 +44,11 @@ export const layout: UtilityConfig = {
     shorthand: 'pos',
   },
   top: {
-    className: 't',
+    className: 'top',
     values: 'spacing',
   },
   left: {
-    className: 'l',
+    className: 'left',
     values: 'spacing',
   },
   insetInline: {
@@ -74,37 +74,19 @@ export const layout: UtilityConfig = {
   insetInlineEnd: {
     className: 'end',
     values: 'spacing',
-    shorthand: 'insetEnd',
+    shorthand: ['insetEnd', 'end'],
   },
   insetInlineStart: {
     className: 'start',
     values: 'spacing',
-    shorthand: 'insetStart',
-  },
-  start: {
-    className: 's',
-    values: 'spacing',
-    transform(value) {
-      return {
-        insetInlineStart: value,
-      }
-    },
+    shorthand: ['insetStart', 'start'],
   },
   right: {
-    className: 'r',
+    className: 'right',
     values: 'spacing',
-  },
-  end: {
-    className: 'e',
-    values: 'spacing',
-    transform(value) {
-      return {
-        insetInlineEnd: value,
-      }
-    },
   },
   bottom: {
-    className: 'b',
+    className: 'bottom',
     values: 'spacing',
   },
   insetX: {

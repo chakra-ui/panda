@@ -10,3 +10,250 @@
 
 @import './tokens/keyframes.css';
 
+@layer utilities {
+  .styles\:text_red\! {
+    color: red !important
+    }
+
+  .styles\:fs_30px\! {
+    font-size: 30px !important
+    }
+
+  .styles\:bg_red\.300 {
+    background: var(--colors-red-300)
+    }
+
+  .styles\:w_20px {
+    width: 20px
+    }
+
+  .styles\:w_70px {
+    width: 70px
+    }
+
+  .styles\:w_50px {
+    width: 50px
+    }
+
+  [dir=rtl] .styles\:rtl\:ml_-4 {
+    margin-left: calc(var(--spacing-4) * -1)
+        }
+
+  .styles\:light\:text_red.light, .light .styles\:light\:text_red {
+    color: red
+        }
+
+  .styles\:dark\:text_green.dark, .dark .styles\:dark\:text_green {
+    color: green
+        }
+
+  .styles\:dark\:opacity_slate400.dark, .dark .styles\:dark\:opacity_slate400 {
+    opacity: slate400
+        }
+
+  .styles\:left_20px,.styles\:\[\&_\>_p\]\:left_20px > p {
+    left: 20px
+        }
+
+  .styles\:\[\&_\>_p\]\:light\:bg_red400 > p.light, .light .styles\:\[\&_\>_p\]\:light\:bg_red400 > p {
+    background: red400
+            }
+
+  .styles\:\[\&_\>_p\]\:dark\:bg_green500 > p.dark, .dark .styles\:\[\&_\>_p\]\:dark\:bg_green500 > p {
+    background: green500
+            }
+
+  [dir=rtl] .styles\:\[\&_\>_p\]\:rtl\:font_sans > p {
+    font: sans
+            }
+
+  .styles\:\[\&\:\:placeholder\]\:left_40px::placeholder {
+    left: 40px
+        }
+
+  .styles\:\[\&\:\:placeholder\]\:bg_red400::placeholder {
+    background: red400
+        }
+
+  .styles\:all_unset {
+    all: unset
+    }
+
+  .styles\:bg_red {
+    background-color: red
+    }
+
+  .styles\:border_none {
+    border: none
+    }
+
+  .styles\:p_\$3_\$3 {
+    padding: $3 $3
+    }
+
+  .styles\:rounded_\$button {
+    border-radius: $button
+    }
+
+  .styles\:fs_\$xsmall {
+    font-size: $xsmall
+    }
+
+  .styles\:cursor_pointer {
+    cursor: pointer
+    }
+
+  .styles\:\[\&_\+_span\]\:ml_\$2 + span {
+    margin-left: $2
+        }
+
+  .test .styles\:\[\.test_\&\]\:bg_blue {
+    background-color: blue
+        }
+
+  .styles\:\[\&_\.my-class\]\:text_red .my-class,.styles\:\[\&_span\]\:text_red span,.styles\:\[\&_kbd\]\:text_red kbd {
+    color: red
+        }
+
+  .styles\:\[\&\:focus\,_\&\:hover\]\:shadow_none:focus, .styles\:\[\&\:focus\,_\&\:hover\]\:shadow_none:hover {
+    box-shadow: none
+        }
+
+  :focus > .styles\:\[\:focus_\>_\&\]\:text_white {
+    color: var(--colors-white)
+        }
+
+  input:hover .styles\:\[input\:hover_\&\]\:bg_red400 {
+    background: red400
+        }
+
+  .styles\:hover\:bg_pink\.400:where(:hover, [data-hover]) {
+    background: var(--colors-pink-400)
+        }
+
+  .styles\:hover\:text_pink\.400:where(:hover, [data-hover]) {
+    color: var(--colors-pink-400)
+        }
+
+  @media screen and (min-width: 640px) {
+    [dir=ltr] .styles\:ltr\:sm\:ml_4 {
+      margin-left: var(--spacing-4)
+        }
+            }
+
+  @media screen and (min-width: 640px) {
+    [dir=rtl] .styles\:sm\:rtl\:top_20px {
+      top: 20px
+        }
+            }
+
+  @media screen and (min-width: 640px) {
+    .styles\:\[\&\:\:placeholder\]\:sm\:text_left::placeholder {
+      text-align: left
+        }
+            }
+
+  @media screen and (min-width: 640px) {
+    .styles\:sm\:hover\:top_50px:where(:hover, [data-hover]) {
+      top: 50px
+        }
+            }
+
+  @media screen and (min-width: 640px) {
+    [dir=ltr] .styles\:\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p:where(:hover, [data-hover]).dark, .dark [dir=ltr] .styles\:\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p:where(:hover, [data-hover]) {
+      font: serif
+                    }
+                        }
+
+  @media screen and (min-width: 640px) {
+    input:hover .styles\:\[input\:hover_\&\]\:sm\:fs_14px {
+      font-size: 14px
+        }
+            }
+
+  @media screen and (min-width: 640px) {
+    .styles\:hover\:sm\:dark\:bg_red\.300:where(:hover, [data-hover]).dark, .dark .styles\:hover\:sm\:dark\:bg_red\.300:where(:hover, [data-hover]) {
+      background: var(--colors-red-300)
+            }
+                }
+
+  @media screen and (min-width: 640px) {
+    .styles\:hover\:disabled\:sm\:bg_red\.300:where(:hover, [data-hover]):where(:disabled, [disabled], [data-disabled]) {
+      background: var(--colors-red-300)
+            }
+                }
+
+  @media screen and (min-width: 640px) {
+    .styles\:sm\:w_60px {
+      width: 60px
+    }
+        }
+
+  @media (min-width: 768px) {
+    .styles\:\[\@media_\(min-width\:_768px\)\]\:\[\&\:hover\]\:bg_yellow:hover {
+      background-color: yellow
+        }
+            }
+
+  @media (min-width: 768px) {
+    .styles\:\[\@media_\(min-width\:_768px\)\]\:bg_green {
+      background-color: green
+    }
+
+    .styles\:\[\@media_\(min-width\:_768px\)\]\:fs_\$small {
+      font-size: $small
+    }
+        }
+
+  @media screen and (min-width: 768px) {
+    .styles\:\[\&_\>_p\]\:md\:left_40px > p {
+      left: 40px
+        }
+            }
+
+  @media screen and (min-width: 768px) {
+    .styles\:md\:left_40px {
+      left: 40px
+    }
+        }
+
+  @media screen and (min-width: 1024px) {
+    input:hover .styles\:\[input\:hover_\&\]\:lg\:fs_18px {
+      font-size: 18px
+        }
+            }
+
+  @media screen and (min-width: 1024px) {
+    .styles\:lg\:top_120px {
+      top: 120px
+    }
+        }
+
+  @media base {
+    .styles\:\[\@media_base\]\:\[\&\:hover\]\:left_40px:hover {
+      left: 40px
+        }
+            }
+
+  @media base {
+    @media screen and (min-width: 640px) {
+      .styles\:\[\@media_base\]\:\[\&\:hover\]\:sm\:text_left:hover {
+        text-align: left
+        }
+                }
+            }
+
+  @media base {
+    .styles\:\[\@media_base\]\:left_40px {
+      left: 40px
+    }
+        }
+
+  @media base {
+    @media screen and (min-width: 640px) {
+      .styles\:\[\@media_base\]\:sm\:text_left {
+        text-align: left
+    }
+            }
+        }
+}
