@@ -92,7 +92,7 @@ export const border: UtilityConfig = {
     transform(value) {
       return {
         borderStartStartRadius: value,
-        borderStartEndRadius: value,
+        borderEndStartRadius: value,
       }
     },
   },
@@ -113,7 +113,7 @@ export const border: UtilityConfig = {
     values: 'radii',
     transform(value) {
       return {
-        borderEndStartRadius: value,
+        borderStartEndRadius: value,
         borderEndEndRadius: value,
       }
     },
