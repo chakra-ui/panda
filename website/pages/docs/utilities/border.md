@@ -18,7 +18,7 @@ Panda provides the css properties for styling borders
 
 ### Specific sides
 
-You can apply border radius on a specific side of an element, using the `border{Left|Right|Top|Bottom}Radius` properties, or the shorthand equivalent.
+Use the `border{Left|Right|Top|Bottom}Radius` properties, or the shorthand equivalent to apply border radius on a specific side of an element.
 
 ```jsx
 <div className={css({ borderTopRadius: 'md' })} />
@@ -30,7 +30,7 @@ You can apply border radius on a specific side of an element, using the `border{
 
 ### Specific corners
 
-To round a specific corner, use the `border{Top|Bottom}{Left|Right}Radius` properties, or the shorthand equivalent.
+Use the `border{Top|Bottom}{Left|Right}Radius` properties, or the shorthand equivalent to round a specific corner.
 
 ```jsx
 <div className={css({ borderTopLeftRadius: 'md' })} />
@@ -79,7 +79,7 @@ Panda also provides the logical properties for border radius, which map to corre
 
 ### Specific sides
 
-You can apply border width on a specific side of an element, using the `border{Left|Right|Top|Bottom}Width` properties.
+Use the `border{Left|Right|Top|Bottom}Width` properties, to apply border width on a specific side of an element.
 
 ```jsx
 <div className={css({ borderTopWidth: '1px' })} />
@@ -123,7 +123,7 @@ The border color utilities are used to set the border color of an element. It re
 
 ### Specific sides
 
-You can apply border color on a specific side of an element, using the `border{Left|Right|Top|Bottom}Color` properties.
+Use the `border{Left|Right|Top|Bottom}Color` properties to apply border color on a specific side of an element.
 
 ```jsx
 <div className={css({ borderTopColor: 'primary' })} />
