@@ -519,7 +519,7 @@ Options for the generated typescript definitions.
 
 ### jsxFramework
 
-**Type**: `'react' | 'solid' | 'preact' | 'vue'`
+**Type**: `'react' | 'solid' | 'preact' | 'vue' | 'qwik'`
 
 Options for the generated typescript definitions.
 
