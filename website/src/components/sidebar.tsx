@@ -556,7 +556,7 @@ export function Sidebar({
             ? css({ md: { display: 'none' } })
             : css({
                 position: 'sticky',
-                alignItems: { base: 'stretch', md: 'flex-start' }
+                alignSelf: { base: 'stretch', md: 'flex-start' }
               }),
           menu
             ? css({ mdDown: { transform: 'translate3d(0,0,0)' } })
