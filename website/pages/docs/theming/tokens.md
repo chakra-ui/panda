@@ -3,169 +3,172 @@ title: Tokens
 description: Design tokens are the platform-agnostic way to manage design decisions in your application or website.
 ---
 
-# Tokens
+# Design Tokens
 
-Design tokens are the platform-agnostic way to manage design decisions in your application or website.
-
-A design token is a collection of attributes that describe any fundamental/atomic visual style. Each attribute is a key-value pair.
+Design tokens are the platform-agnostic way to manage design decisions in your application or website. It is a collection of attributes that describe any fundamental/atomic visual style. Each attribute is a key-value pair.
 
 > Design tokens in Panda are largely influenced by the [W3C Token Format](https://tr.designtokens.org/format/).
-
-Tokens are defined in the `panda.config.(ts|mjs)` file, and can contain the following categories: `colors`, `fonts`, `sizes`, `shadows`, `borders`, `gradients`, and `spacing`.
-
-```js
-// panda.config.ts
-export default defineConfig({
-  theme: {
-    // 👇🏻 Define your tokens here
-    tokens: {}
-  }
-})
-```
-
-Here's an example of a basic token definition:
-
-```js
-const theme = {
-  tokens: {
-    colors: {
-      primary: { value: '#0FEE0F' },
-      secondary: { value: '#EE0F0F' }
-    },
-    fonts: {
-      body: { value: 'system-ui, sans-serif' }
-    },
-    sizes: {
-      small: { value: '12px' },
-      medium: { value: '16px' },
-      large: { value: '24px' }
-    }
-  }
-}
-```
-
-## Defining a Token
 
 A design token consist of the following properties:
 
 - `value`: The value of the token. This can be any valid CSS value.
 - `description`: An optional description of what the token can be used for.
-- `extensions`: An optional metadata to store token-related information (e.g. Figma source, deprecation, etc.).
 
-```js
-const theme = {
-  tokens: {
-    colors: {
-      danger: { value: '#EE0F0F' }
-    }
-  }
-}
-```
+## Core Tokens
 
-Now you can use the defined color when writing styles.
+Tokens are defined in the `panda.config` file under the `theme` key
 
-```js
-import { css } from '../styled-system/css'
-
-const className = css({ color: 'danger' })
-```
-
-### Adding a description
-
-```js {6}
-const theme = {
-  tokens: {
-    colors: {
-      danger: {
-        value: '#EE0F0F',
-        description: 'Color for signyfying errors'
+```js filename="panda.config.ts"
+export default defineConfig({
+  theme: {
+    // 👇🏻 Define your tokens here
+    tokens: {
+      colors: {
+        primary: { value: '#0FEE0F' },
+        secondary: { value: '#EE0F0F' }
+      },
+      fonts: {
+        body: { value: 'system-ui, sans-serif' }
       }
     }
   }
+})
+```
+
+After defining tokens, you can use them in authoring components and styles.
+
+```jsx
+import { css } from '../styled-system/css'
+
+function App() {
+  return (
+    <p
+      className={css({
+        color: 'primary',
+        fontFamily: 'body'
+      })}
+    >
+      Hello World
+    </p>
+  )
 }
 ```
 
-## Semantic or Alias Tokens
+You can also add an optional description to your tokens. This will be used in the autogenerate token documentation.
 
-An alias token is a token that references another token or defines a more specific context. It is often used to
-communicate the intended purpose of a token independent of its raw value.
+```js {6}
+export default defineConfig({
+  theme: {
+    tokens: {
+      colors: {
+        danger: {
+          value: '#EE0F0F',
+          description: 'Color for errors'
+        }
+      }
+    }
+  }
+})
+```
 
-Semantic tokens can reference existing tokens using the `{}` syntax.
+## Semantic Tokens
 
-Let's take a quick example, assuming we've defined the following tokens:
+Semantic tokens are tokens that are designed to be used in a specific context. In most cases, the value of a semantic token references to an existing token.
+
+> To reference a value in a semantic token, use the `{}` syntax.
+
+For example, assuming we've defined the following tokens:
 
 - `red` and `green` are raw tokens that define the color red and green.
 - `danger` and `success` are semantic tokens that reference to the `red` and `green` tokens.
 
 ```js
-const theme = {
-  tokens: {
-    colors: {
-      red: { value: '#EE0F0F' },
-      green: { value: '#0FEE0F' }
-    }
-  },
-  semanticTokens: {
-    colors: {
-      danger: { value: '{colors.red}' },
-      success: { value: '{colors.green}' }
+export default defineConfig({
+  theme: {
+    tokens: {
+      colors: {
+        red: { value: '#EE0F0F' },
+        green: { value: '#0FEE0F' }
+      }
+    },
+    semanticTokens: {
+      colors: {
+        danger: { value: '{colors.red}' },
+        success: { value: '{colors.green}' }
+      }
     }
   }
-}
+})
 ```
 
-## Composite Tokens
+Semantic tokens can also be changed based on the [conditions](/docs/concepts/conditional-styles) like light mode and dark mode.
 
-Composite tokens combine multiple values that follow a pre-defined structure. Take "Shadow" as an example, it comprises of a color, a blur radius, and an x/y offset. We can define it as a composite token like so:
+For example, if you want to a color to change based on light or dark mode automatically.
 
 ```js
-const theme = {
-  tokens: {
-    shadows: {
-      basic: {
-        value: {
-          color: '{colors.shadow}',
-          blur: '2px',
-          offsetX: '2px',
-          offsetY: '4px'
+export default defineConfig({
+  // ...
+  theme: {
+    semanticTokens: {
+      colors: {
+        danger: { value: { base: '{colors.red}', _dark: '{colors.darkred}' } },
+        success: {
+          value: { base: '{colors.green}', _dark: '{colors.darkgreen}' }
         }
       }
     }
   }
-}
+})
 ```
 
-The following token type support composite tokens:
+> NOTE 🚨: The conditions used in semantic tokens most be an at-rule or a parent selector.
 
-### Border Tokens
+## Token Types
 
-You can define the border width, style, and color of a border as separate values.
+Panda supports the following token types:
 
-```js
+### Colors
+
+Colors have meaning and support the purpose of the content, communicating things like hierarchy of information, and
+states. It is mostly defined as a string value or reference to other tokens.
+
+```jsx
 const theme = {
   tokens: {
-    borders: {
-      basic: {
-        value: { width: '1px', style: 'solid', color: '{colors.gray.200}' }
-      }
+    colors: {
+      red: { 100: { value: '#fff1f0' } }
     }
   }
 }
 ```
 
-### Gradient Tokens
+### Gradients
 
-You can define the gradient direction, color stops, and the color mode of a gradient as separate values.
+Gradient tokens represent a smooth transition between two or more colors. Its value can be defined as a string or a
+composite value.
 
-```js
+```ts
+type Gradient =
+  | string
+  | {
+      type: 'linear' | 'radial'
+      placement: string
+      colors: Array<string | { color: string; position: number }>
+    }
+```
+
+```jsx
 const theme = {
   tokens: {
     gradients: {
-      basic: {
+      // string value
+      simple: { value: 'linear-gradient(to right, red, blue)' },
+      // composite value
+      primary: {
         value: {
           type: 'linear',
           placement: 'to right',
-          stops: ['{colors.red}', '{colors.blue}']
+          colors: ['red', 'blue']
         }
       }
     }
@@ -173,9 +176,265 @@ const theme = {
 }
 ```
 
-### Asset Tokens
+### Sizes
 
-You can define image, svg, gif, and video assets as tokens.
+Size tokens represent the width and height of an element. Its value is defined as a string.
+
+```jsx
+const theme = {
+  tokens: {
+    sizes: {
+      sm: { value: '12px' }
+    }
+  }
+}
+```
+
+> Size tokens are typically used in `width`, `height`, `min-width`, `max-width`, `min-height`, `max-height` properties.
+
+### Spacings
+
+Spacing tokens represent the margin and padding of an element. Its value is defined as a string.
+
+```jsx
+const theme = {
+  tokens: {
+    spacings: {
+      sm: { value: '12px' }
+    }
+  }
+}
+```
+
+> Spacing tokens are typically used in `margin`, `padding`, `gap`, `{top|right|bottom|left}` properties.
+
+### Fonts
+
+Font tokens represent the font family of a text element. Its value is defined as a string or an array of strings.
+
+```jsx
+const theme = {
+  tokens: {
+    fonts: {
+      body: { value: 'Inter, sans-serif' },
+      heading: { value: ['Roboto Mono', 'sans-serif'] }
+    }
+  }
+}
+```
+
+> Font tokens are typically used in `font-family` property.
+
+### Font Sizes
+
+Font size tokens represent the size of a text element. Its value is defined as a string.
+
+```jsx
+const theme = {
+  tokens: {
+    fontSizes: {
+      sm: { value: '12px' }
+    }
+  }
+}
+```
+
+> Font size tokens are typically used in `font-size` property.
+
+### Font Weights
+
+Font weight tokens represent the weight of a text element. Its value is defined as a string.
+
+```jsx
+const theme = {
+  tokens: {
+    fontWeights: {
+      bold: { value: '700' }
+    }
+  }
+}
+```
+
+> Font weight tokens are typically used in `font-weight` property.
+
+### Letter Spacings
+
+Letter spacing tokens represent the spacing between letters in a text element. Its value is defined as a string.
+
+```jsx
+const theme = {
+  tokens: {
+    letterSpacings: {
+      wide: { value: '0.1em' }
+    }
+  }
+}
+```
+
+> Letter spacing tokens are typically used in `letter-spacing` property.
+
+### Line Heights
+
+Line height tokens represent the height of a line of text. Its value is defined as a string.
+
+```jsx
+const theme = {
+  tokens: {
+    lineHeights: {
+      normal: { value: '1.5' }
+    }
+  }
+}
+```
+
+> Line height tokens are typically used in `line-height` property.
+
+### Radii
+
+Radii tokens represent the radius of a border. Its value is defined as a string.
+
+```jsx
+const theme = {
+  tokens: {
+    radii: {
+      sm: { value: '4px' }
+    }
+  }
+}
+```
+
+> Radii tokens are typically used in `border-radius` property.
+
+### Borders
+
+A border is a line surrounding a UI element. You can define them as string values or as a composite value
+
+```jsx
+const theme = {
+  tokens: {
+    borders: {
+      // string value
+      subtle: { value: '1px solid red' },
+      // string value with reference to color token
+      danger: { value: '1px solid {colors.red.400}' },
+      // composite value
+      accent: { value: { width: '1px', color: 'red', style: 'solid' } }
+    }
+  }
+}
+```
+
+> Border tokens are typically used in `border`, `border-top`, `border-right`, `border-bottom`, `border-left`, `outline`
+> properties.
+
+### Shadows
+
+Shadow tokens represent the shadow of an element. Its value is defined as a single or multiple values containing a
+string or a composite value.
+
+```ts
+type CompositeShadow = {
+  offsetX: number
+  offsetY: number
+  blur: number
+  spread: number
+  color: string
+  inset?: boolean
+}
+
+type Shadow = string | CompositeShadow | string[] | CompositeShadow[]
+```
+
+```jsx
+const theme = {
+  tokens: {
+    shadows: {
+      // string value
+      subtle: { value: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' },
+      // composite value
+      accent: {
+        value: {
+          offsetX: 0,
+          offsetY: 4,
+          blurRadius: 4,
+          spreadRadius: 0,
+          color: 'rgba(0, 0, 0, 0.1)'
+        }
+      },
+      // multiple string values
+      realistic: {
+        value: [
+          '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+          '0 1px 4px 0 rgba(0, 0, 0, 0.1)'
+        ]
+      }
+    }
+  }
+}
+```
+
+> Shadow tokens are typically used in `box-shadow` property.
+
+### Easings
+
+Easing tokens represent the easing function of an animation or transition. Its value is defined as a string or an array
+of values representing the cubic bezier.
+
+```jsx
+const theme = {
+  tokens: {
+    easings: {
+      // string value
+      easeIn: { value: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+      // array value
+      easeOut: { value: [0.4, 0, 0.2, 1] }
+    }
+  }
+}
+```
+
+> Ease tokens are typically used in `transition-timing-function` property.
+
+### Opacity
+
+Opacity tokens help you set the opacity of an element.
+
+```js
+const theme = {
+  tokens: {
+    opacity: {
+      50: { value: 0.5 }
+    }
+  }
+}
+```
+
+> Opacity tokens are typically used in `opacity` property.
+
+### Z-Index
+
+This token type represents the depth of an element's position on the z-axis.
+
+```jsx
+const theme = {
+  tokens: {
+    zIndices: {
+      modal: { value: 1000 }
+    }
+  }
+}
+```
+
+> Z-index tokens are typically used in `z-index` property.
+
+### Assets
+
+Asset tokens represent a url or svg string. Its value is defined as a string or a composite value.
+
+```ts
+type CompositeAsset = { type: 'url' | 'svg'; value: string }
+type Asset = string | CompositeAsset
+```
 
 ```js
 const theme = {
@@ -192,24 +451,95 @@ const theme = {
 }
 ```
 
-> Good to know: To use asset tokens, apply them to the `background-image` or `list-style-image` CSS properties.
+> Asset tokens are typically used in `background-image` property.
 
-## Conditional Tokens
+### Durations
 
-Semantic tokens can also be changed based on the [conditions](/docs/concepts/conditional-styles). For example, if you want to a color to change based on light or dark mode automatically.
+Duration tokens represent the length of time in milliseconds an animation or animation cycle takes to complete. Its
+value is defined as a string.
 
-> NOTE 🚨: The conditions used in semantic tokens most be an at-rule or a parent selector. To see the list of supported conditions, see [Conditional Styles](/docs/concepts/conditional-styles).
-
-```js
+```jsx
 const theme = {
-  // ...
-  semanticTokens: {
-    colors: {
-      danger: { value: { base: '{colors.red}', _dark: '{colors.darkred}' } },
-      success: {
-        value: { base: '{colors.green}', _dark: '{colors.darkgreen}' }
+  tokens: {
+    durations: {
+      fast: { value: '100ms' }
+    }
+  }
+}
+```
+
+> Duration tokens are typically used in `transition-duration` and `animation-duration` properties.
+
+### Animations
+
+Animation tokens represent a keyframe animation. Its value is defined as a string value.
+
+```jsx
+const theme = {
+  tokens: {
+    animations: {
+      spin: {
+        value: 'spin 1s linear infinite'
       }
     }
   }
 }
+```
+
+> Animation tokens are typically used in `animation` property.
+
+## Token Helpers
+
+To help defining tokens in a type-safe way, you can use the following helpers:
+
+### `defineTokens`
+
+```ts
+import { defineTokens } from '@pandacss/dev'
+
+const theme = {
+  tokens: defineTokens({
+    colors: {
+      primary: { value: '#ff0000' }
+    }
+  })
+}
+```
+
+You can also use this function to define tokens in a separate file:
+
+```ts filename="tokens/colors.ts"
+import { defineTokens } from '@pandacss/dev'
+
+export const colors = defineTokens.colors({
+  primary: { value: '#ff0000' }
+})
+```
+
+### `defineSemanticTokens`
+
+```ts
+import { defineSemanticTokens } from '@pandacss/dev'
+
+const theme = {
+  semanticTokens: defineSemanticTokens({
+    colors: {
+      primary: {
+        value: { _light: '{colors.blue.400}', _dark: '{colors.blue.200}' }
+      }
+    }
+  })
+}
+```
+
+You can also use this function to define tokens in a separate file:
+
+```ts filename="tokens/colors.semantic.ts"
+import { defineSemanticTokens } from '@pandacss/dev'
+
+export const colors = defineSemanticTokens.colors({
+  primary: {
+    value: { _light: '{colors.blue.400}', _dark: '{colors.blue.200}' }
+  }
+})
 ```
