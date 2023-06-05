@@ -179,6 +179,11 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
 
     parserResult.css.forEach(onResult)
     parserResult.jsx.forEach(onResult)
+    parserResult.cva.forEach((item) =>
+      item.data.forEach(({ base }) =>
+        onResult(Object.assign({}, item, { box: item.box.value.get('base'), data: [base] })),
+      ),
+    )
   }
 
   const getNodeAtPosition = (doc: TextDocument, position: Position) => {
