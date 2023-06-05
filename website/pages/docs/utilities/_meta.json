@@ -3,5 +3,6 @@
   "typography": "Typography",
   "border": "Border",
   "display": "Display",
-  "sizing": "Sizing"
+  "sizing": "Sizing",
+  "layout": "Layout"
 }
