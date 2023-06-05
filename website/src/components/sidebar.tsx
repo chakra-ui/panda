@@ -531,7 +531,7 @@ export function Sidebar({
             md: {
               top: 16,
               flexShrink: 0,
-              '& > div': {
+              '& > .nextra-scrollbar': {
                 maskImage: `linear-gradient(to bottom, transparent, #000 20px), linear-gradient(to left, #000 10px, transparent 10px)`
               }
             },
