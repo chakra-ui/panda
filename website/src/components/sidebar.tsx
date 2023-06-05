@@ -582,6 +582,7 @@ export function Sidebar({
                   overflowX: 'hidden',
                   px: '4',
                   py: '10',
+                  flexGrow: 1,
                   md: {
                     h: 'calc(100vh - var(--nextra-navbar-height) - var(--nextra-menu-height))'
                   }
