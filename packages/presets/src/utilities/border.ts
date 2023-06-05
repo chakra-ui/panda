@@ -75,17 +75,17 @@ export const border: UtilityConfig = {
     },
   },
   borderStartStartRadius: {
-    className: 'rounded-start-start',
+    className: 'rounded-ss',
     shorthand: 'roundedStartStart',
     values: 'radii',
   },
   borderStartEndRadius: {
-    className: 'rounded-start-end',
+    className: 'rounded-se',
     shorthand: 'roundedStartEnd',
     values: 'radii',
   },
   borderStartRadius: {
-    className: 'rounded-start',
+    className: 'rounded-s',
     values: 'radii',
     property: 'borderRadius',
     shorthand: 'roundedStart',
@@ -97,17 +97,17 @@ export const border: UtilityConfig = {
     },
   },
   borderEndStartRadius: {
-    className: 'rounded-end-start',
+    className: 'rounded-es',
     shorthand: 'roundedEndStart',
     values: 'radii',
   },
   borderEndEndRadius: {
-    className: 'rounded-end-end',
+    className: 'rounded-ee',
     shorthand: 'roundedEndEnd',
     values: 'radii',
   },
   borderEndRadius: {
-    className: 'rounded-end',
+    className: 'rounded-e',
     shorthand: 'roundedEnd',
     property: 'borderRadius',
     values: 'radii',
@@ -169,11 +169,11 @@ export const border: UtilityConfig = {
     values: 'colors',
   },
   borderInlineEnd: {
-    className: 'border-end',
+    className: 'border-e',
     values: 'borders',
   },
   borderInlineEndColor: {
-    className: 'border-end',
+    className: 'border-e',
     values: 'colors',
   },
   borderTop: {
