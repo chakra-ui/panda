@@ -7,13 +7,11 @@ description: Design tokens are the platform-agnostic way to manage design decisi
 
 Design tokens are the platform-agnostic way to manage design decisions in your application or website.
 
-A design token is a collection of attributes that describe any fundamental/atomic visual style. Each attribute is a
-key-value pair.
+A design token is a collection of attributes that describe any fundamental/atomic visual style. Each attribute is a key-value pair.
 
 > Design tokens in Panda are largely influenced by the [W3C Token Format](https://tr.designtokens.org/format/).
 
-Tokens are defined in the `panda.config.(ts|mjs)` file, and can contain the following categories: `colors`, `fonts`,
-`sizes`, `shadows`, `borders`, `gradients`, and `spacing`.
+Tokens are defined in the `panda.config.(ts|mjs)` file, and can contain the following categories: `colors`, `fonts`, `sizes`, `shadows`, `borders`, `gradients`, and `spacing`.
 
 ```js
 // panda.config.ts
@@ -79,12 +77,12 @@ const theme = {
   tokens: {
     colors: {
       danger: {
-        value: "#EE0F0F",
-        description: "Color for signyfying errors",
-      },
-    },
-  },
-};
+        value: '#EE0F0F',
+        description: 'Color for signyfying errors'
+      }
+    }
+  }
+}
 ```
 
 ## Semantic or Alias Tokens
@@ -116,10 +114,9 @@ const theme = {
 }
 ```
 
-### Composite Tokens
+## Composite Tokens
 
-Composite tokens combine multiple values that follow a pre-defined structure. Take "Shadow" as an example, it comprises
-of a color, a blur radius, and an x/y offset. We can define it as a composite token like so:
+Composite tokens combine multiple values that follow a pre-defined structure. Take "Shadow" as an example, it comprises of a color, a blur radius, and an x/y offset. We can define it as a composite token like so:
 
 ```js
 const theme = {
@@ -140,7 +137,7 @@ const theme = {
 
 The following token type support composite tokens:
 
-#### Border Tokens
+### Border Tokens
 
 You can define the border width, style, and color of a border as separate values.
 
@@ -156,7 +153,7 @@ const theme = {
 }
 ```
 
-#### Gradient Tokens
+### Gradient Tokens
 
 You can define the gradient direction, color stops, and the color mode of a gradient as separate values.
 
@@ -176,7 +173,7 @@ const theme = {
 }
 ```
 
-#### Asset Tokens
+### Asset Tokens
 
 You can define image, svg, gif, and video assets as tokens.
 
@@ -197,13 +194,11 @@ const theme = {
 
 > Good to know: To use asset tokens, apply them to the `background-image` or `list-style-image` CSS properties.
 
-### Conditional Tokens
+## Conditional Tokens
 
-Semantic tokens can also be changed based on the [conditions](/docs/concepts/conditional-styles.mdx). For example, if
-you want to a color to change based on light or dark mode automatically.
+Semantic tokens can also be changed based on the [conditions](/docs/concepts/conditional-styles). For example, if you want to a color to change based on light or dark mode automatically.
 
-> NOTE 🚨: The conditions used in semantic tokens most be an at-rule or a parent selector. To see the list of supported
-> conditions, see [Conditional Styles](/docs/concepts/conditional-styles.mdx).
+> NOTE 🚨: The conditions used in semantic tokens most be an at-rule or a parent selector. To see the list of supported conditions, see [Conditional Styles](/docs/concepts/conditional-styles).
 
 ```js
 const theme = {
@@ -217,23 +212,4 @@ const theme = {
     }
   }
 }
-```
-
-### Composite Values
-
-In CSS, composite values are values that combine two or more individual values into a single value. We can't tokenize
-this values, so we provide a way to reference your design system tokens within these.
-
-```js
-import { css } from '../styled-system/css'
-
-const className = css({ border: 'solid 1px token(colors.red.400)' })
-```
-
-You can also provide a fallback value.
-
-```js
-import { css } from '../styled-system/css'
-
-const className = css({ border: 'solid 1px token(colors.red.400, red)' })
 ```

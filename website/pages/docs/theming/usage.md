@@ -3,7 +3,7 @@ title: Usage
 description: There are various ways to consume Panda tokens depending on your need at that point in time.
 ---
 
-# Consuming tokens
+# Using Tokens
 
 There are various ways to consume Panda tokens depending on your need at that point in time.
 

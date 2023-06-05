@@ -1,9 +1,9 @@
 ---
-title: Token Types
+title: Token Categories
 description: Design tokens in Panda are grouped by categories which inherently maps to the required `$type` field in the [W3C Token Format](#).
 ---
 
-# Token Types
+# Token Categories
 
 Design tokens in Panda are grouped by categories which inherently maps to the required `$type` field in the
 [W3C Token Format](#).
