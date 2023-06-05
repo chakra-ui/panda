@@ -61,7 +61,9 @@ export type RecipeDefinition<T extends RecipeVariantRecord> = {
 
 export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => RecipeRuntimeFn<T>
 
-export type RecipeConfig<T> = RecipeDefinition<T extends RecipeVariantRecord ? T : RecipeVariantRecord> & {
+export type RecipeConfig<T = RecipeVariantRecord> = RecipeDefinition<
+  T extends RecipeVariantRecord ? T : RecipeVariantRecord
+> & {
   /**
    * The name of the recipe.
    */
@@ -78,4 +80,3 @@ export type RecipeConfig<T> = RecipeDefinition<T extends RecipeVariantRecord ? T
    */
   jsx?: Array<string | RegExp>
 }
-export type AnyRecipeConfig = RecipeConfig<RecipeVariantRecord>

@@ -1,8 +1,8 @@
-import type { AnyPatternConfig, PatternConfig } from '@pandacss/types'
+import type { PatternConfig } from '@pandacss/types'
 
 // inlining this function to avoid having to depend on @pandacss/dev
-function definePattern<Pattern>(config: PatternConfig<Pattern>) {
-  return config as AnyPatternConfig
+function definePattern<T>(config: PatternConfig<T>) {
+  return config as PatternConfig
 }
 
 const box = definePattern({

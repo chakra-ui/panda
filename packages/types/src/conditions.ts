@@ -1,5 +1,4 @@
 import type { AnySelector, Selectors } from './selectors'
-import type { Dict, StringKeyOf } from './shared'
 
 export type ConditionType = 'at-rule' | 'parent-nesting' | 'self-nesting' | 'combinator-nesting'
 
@@ -11,11 +10,6 @@ export type ConditionDetails = {
 }
 
 export type RawCondition = ConditionDetails & { raw: string }
-
-export type ExtractConditions<Conditions extends Dict, Breakpoints extends Dict> =
-  | StringKeyOf<Breakpoints>
-  | StringKeyOf<Conditions>
-  | 'base'
 
 /* -----------------------------------------------------------------------------
  * Shadowed export (in CLI): DO NOT REMOVE

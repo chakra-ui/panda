@@ -14,7 +14,7 @@ export type PatternHelpers = {
   map: (value: any, fn: (value: string) => string | undefined) => any
 }
 
-export type PatternConfig<T> = {
+export type PatternConfig<T = PatternProperty> = {
   /**
    * The description of the pattern. This will be used in the JSDoc comment.
    */
@@ -50,5 +50,3 @@ export type PatternConfig<T> = {
    */
   blocklist?: LiteralUnion<CssProperty>[]
 }
-
-export type AnyPatternConfig = PatternConfig<PatternProperty>
