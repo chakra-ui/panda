@@ -1,6 +1,6 @@
-import type { ElementType, ComponentProps } from 'react'
-import type { JsxStyleProps, JsxHTMLProps, Assign } from './system-types'
-import type { RecipeDefinition, RecipeRuntimeFn, RecipeSelection, RecipeVariantRecord } from './recipe'
+import type { ComponentProps, ElementType } from 'react'
+import type { Assign, JsxStyleProps, JsxHTMLProps } from './system-types'
+import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
 
 type Dict = Record<string, unknown>
 
@@ -9,8 +9,19 @@ export type PandaComponent<T extends ElementType, P extends Dict = {}> = {
   displayName?: string
 }
 
-export type Panda = {
-  <T extends ElementType, P extends RecipeVariantRecord = {}>(component: T, recipe?: RecipeDefinition<P> | RecipeRuntimeFn<P>): PandaComponent<T, RecipeSelection<P>>
-} & { [K in keyof JSX.IntrinsicElements]: PandaComponent<K, {}> }
+type RecipeFn = { __type: any }
+
+interface JsxFactory {
+  <T extends ElementType>(component: T): PandaComponent<T, {}>
+  <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>): PandaComponent<
+    T,
+    RecipeSelection<P>
+  >
+  <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P): PandaComponent<T, P['__type']>
+}
+
+type JsxElements = { [K in keyof JSX.IntrinsicElements]: PandaComponent<K, {}> }
+
+export type Panda = JsxFactory & JsxElements
 
 export type HTMLPandaProps<T extends ElementType> = JsxHTMLProps<ComponentProps<T>, JsxStyleProps>

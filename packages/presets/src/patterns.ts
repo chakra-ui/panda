@@ -373,86 +373,45 @@ const float = definePattern({
 const join = definePattern({
   properties: {
     orientation: { type: 'enum', value: ['horizontal', 'vertical'] },
-    scope: { type: 'string' },
   },
   transform(props, { map }) {
-    const { orientation = 'horizontal', scope: _scope, ...rest } = props
-    const scope = _scope ?? '> *'
-
-    function mapSelector(directSelector: string, scopedSelector: string) {
-      return [`& ${directSelector}`, _scope && `& ${scopedSelector}`].filter(Boolean).join(',')
-    }
+    const { orientation = 'horizontal', ...rest } = props
 
     return {
       display: 'inline-flex',
       alignItems: 'stretch',
       flexDirection: map(orientation, (v) => (v === 'vertical' ? 'column' : 'row')),
 
-      '& > :where(*:not(:first-child))': {
-        mt: map(orientation, (v) => (v === 'vertical' ? '-1px' : undefined)),
-        ml: map(orientation, (v) => (v === 'horizontal' ? '-1px' : undefined)),
-        mx: map(orientation, (v) => (v === 'vertical' ? '0' : undefined)),
-        my: map(orientation, (v) => (v === 'horizontal' ? '0' : undefined)),
-      },
-
-      [`& ${scope}:focus`]: {
+      '& > *:focus': {
         isolation: 'isolate',
       },
 
-      // '& *': {
-      //   borderRadius: 'inherit',
-      // },
-
-      [`& :where(& ${scope})`]: {
+      '& > *:not(:first-child):not(:last-child)': {
         borderTopRightRadius: '0',
         borderBottomRightRadius: '0',
         borderBottomLeftRadius: '0',
         borderTopLeftRadius: '0',
       },
 
-      [mapSelector(`${scope}:not(:first-child):not(:last-child)`, `*:not(:first-child):not(:last-child) ${scope}`)]: {
-        borderTopRightRadius: '0',
+      '& > :where(*:not(:first-child))': {
+        mt: map(orientation, (v) => (v === 'vertical' ? '-1px' : '0')),
+        mr: map(orientation, (v) => (v === 'vertical' ? '0' : undefined)),
+        mb: map(orientation, (v) => (v === 'horizontal' ? '0' : undefined)),
+        ml: map(orientation, (v) => (v === 'horizontal' ? '-1px' : '0')),
+      },
+
+      '& > *:first-child:not(:last-child)': {
+        borderBottomLeftRadius: map(orientation, (v) => (v === 'vertical' ? '0' : 'inherit')),
         borderBottomRightRadius: '0',
-        borderBottomLeftRadius: '0',
-        borderTopLeftRadius: '0',
-      },
-
-      [`${mapSelector(
-        `${scope}:first-child:not(:last-child)`,
-        `*:first-child:not(:last-child) ${scope}`,
-      )}, ${mapSelector(
-        `:where(${scope}:last-child:not(:first-child))`,
-        `:where(*:last-child:not(:first-child)  ${scope}`,
-      )}`]: {
-        borderTopRightRadius: '0',
-        borderBottomRightRadius: '0',
-      },
-
-      [`${mapSelector(
-        `:where(${scope}:first-child:not(:last-child))`,
-        `:where(*:first-child:not(:last-child) ${scope}`,
-      )}, ${mapSelector(` ${scope}:last-child:not(:first-child)`, `*:last-child:not(:first-child) ${scope}`)}`]: {
-        borderBottomLeftRadius: '0',
-        borderTopLeftRadius: '0',
-      },
-
-      [mapSelector(`${scope}:first-child:not(:last-child)`, `*:first-child:not(:last-child) ${scope}`)]: {
-        borderBottomLeftRadius: map(orientation, (v) => (v === 'vertical' ? '0' : undefined)),
-        borderBottomRightRadius: '0',
-        borderTopRightRadius: map(orientation, (v) => (v === 'horizontal' ? '0' : undefined)),
-      },
-
-      [mapSelector(`${scope}:first-child:not(:last-child)`, `*:first-child:not(:last-child) ${scope}`)]: {
         borderTopLeftRadius: 'inherit',
-        borderTopRightRadius: map(orientation, (v) => (v === 'vertical' ? 'inherit' : undefined)),
-        borderBottomLeftRadius: map(orientation, (v) => (v === 'horizontal' ? 'inherit' : undefined)),
+        borderTopRightRadius: map(orientation, (v) => (v === 'vertical' ? 'inherit' : '0')),
       },
 
-      [mapSelector(` ${scope}:last-child:not(:first-child)`, `*:last-child:not(:first-child) ${scope}`)]: {
-        borderTopLeftRadius: '0',
-        borderTopRightRadius: map(orientation, (v) => (v === 'vertical' ? '0' : 'inherit')),
+      '& > *:last-child:not(:first-child)': {
         borderBottomLeftRadius: map(orientation, (v) => (v === 'vertical' ? 'inherit' : '0')),
         borderBottomRightRadius: 'inherit',
+        borderTopLeftRadius: '0',
+        borderTopRightRadius: map(orientation, (v) => (v === 'vertical' ? '0' : 'inherit')),
       },
 
       ...rest,
