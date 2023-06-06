@@ -119,7 +119,7 @@ Use the `margin{Start|End}` properties to apply margin on the logical axis of an
 <div className={css({ ms: '8' })} /> // shorthand
 
 <div className={css({ marginEnd: '8' })} />
-<div className={css({ ps: '8' })} /> // shorthand
+<div className={css({ me: '8' })} /> // shorthand
 ```
 
 | Prop                | CSS Property          | Token Category |
