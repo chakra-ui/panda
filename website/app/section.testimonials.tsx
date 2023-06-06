@@ -58,7 +58,14 @@ export const SectionTestimonials = () => {
 
         <Grid columns={{ base: 1, lg: 3 }} gap="6" mt="20">
           {testimonials.map(testimonial => (
-            <Stack gap="8" layerStyle="offShadow" rounded="xl" px="6" py="5">
+            <Stack
+              gap="8"
+              layerStyle="offShadow"
+              shadowColor={{ base: 'black', _dark: 'yellow.300' }}
+              rounded="xl"
+              px="6"
+              py="5"
+            >
               <HStack>
                 <panda.div rounded="lg" w="12" h="12" overflow="hidden">
                   <Image
