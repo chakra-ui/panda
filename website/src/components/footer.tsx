@@ -6,6 +6,7 @@ import { css, cx } from '../../styled-system/css'
 
 export function Footer({ menu }: { menu?: boolean }): ReactElement {
   const config = useConfig()
+
   return (
     <footer
       className={css({
@@ -18,7 +19,6 @@ export function Footer({ menu }: { menu?: boolean }): ReactElement {
         className={cx(
           css({
             mx: 'auto',
-            display: 'flex',
             maxW: '90rem',
             gap: 2,
             py: 2,
@@ -26,7 +26,7 @@ export function Footer({ menu }: { menu?: boolean }): ReactElement {
           }),
           menu && (config.i18n.length > 0 || config.darkMode)
             ? css({ display: 'flex' })
-            : css({ display: 'none' })
+            : css({ display: 'none' }),
         )}
       >
         {config.i18n.length > 0 && <LocaleSwitch options={config.i18n} />}

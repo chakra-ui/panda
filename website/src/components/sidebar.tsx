@@ -531,7 +531,7 @@ export function Sidebar({
             md: {
               top: 16,
               flexShrink: 0,
-              '& > div': {
+              '& > .nextra-scrollbar': {
                 maskImage: `linear-gradient(to bottom, transparent, #000 20px), linear-gradient(to left, #000 10px, transparent 10px)`
               }
             },
@@ -556,7 +556,7 @@ export function Sidebar({
             ? css({ md: { display: 'none' } })
             : css({
                 position: 'sticky',
-                alignItems: { base: 'stretch', md: 'flex-start' }
+                alignSelf: { base: 'stretch', md: 'flex-start' }
               }),
           menu
             ? css({ mdDown: { transform: 'translate3d(0,0,0)' } })
@@ -582,6 +582,7 @@ export function Sidebar({
                   overflowX: 'hidden',
                   px: '4',
                   py: '10',
+                  flexGrow: 1,
                   md: {
                     h: 'calc(100vh - var(--nextra-navbar-height) - var(--nextra-menu-height))'
                   }
