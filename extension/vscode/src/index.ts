@@ -16,7 +16,7 @@ import { type TsLanguageFeaturesApiV0, getTsApi } from './typescript-language-fe
 const docSelector: vscode.DocumentSelector = ['typescript', 'typescriptreact', 'javascript', 'javascriptreact']
 
 let client: LanguageClient
-const debug = true
+const debug = false
 
 export async function activate(context: vscode.ExtensionContext) {
   debug && console.log('activate')
@@ -145,21 +145,50 @@ export async function activate(context: vscode.ExtensionContext) {
       if (editor.document.uri.scheme !== 'file') return
 
       activeDocumentFilepath = editor.document.uri.fsPath
-      client.sendNotification('$/active-document-changed', { activeDocumentFilepath })
+      client.sendNotification('$/panda-active-document-changed', { activeDocumentFilepath })
     }),
   )
 
   context.subscriptions.push(
-    client.onNotification('$/doc-config-path', (notif: { activeDocumentFilepath: string; configPath: string }) => {
-      if (!tsApi) return
-      tsApi.configurePlugin('panda-css-ts-plugin', { type: 'active-doc', data: notif })
+    client.onNotification('$/panda-lsp-ready', async () => {
+      if (!activeDocumentFilepath) return
+
+      try {
+        // no need to await this one
+        client.sendNotification('$/panda-active-document-changed', { activeDocumentFilepath })
+        if (!tsApi) return
+
+        const configPath = await client.sendRequest<string>('$/get-config-path', { activeDocumentFilepath })
+        if (!configPath) return
+
+        tsApi.configurePlugin('panda-css-ts-plugin', {
+          type: 'active-doc',
+          data: { activeDocumentFilepath, configPath },
+        })
+      } catch (err) {
+        debug && console.log('error sending doc notif', err)
+      }
     }),
+  )
+
+  context.subscriptions.push(
+    client.onNotification(
+      '$/panda-doc-config-path',
+      (notif: { activeDocumentFilepath: string; configPath: string }) => {
+        if (!tsApi) return
+
+        tsApi.configurePlugin('panda-css-ts-plugin', { type: 'active-doc', data: notif })
+        debug && console.log({ type: 'active-doc', data: notif })
+      },
+    ),
   )
 
   context.subscriptions.push(
     client.onNotification('$/panda-token-names', (notif: { configPath: string; tokenNames: string[] }) => {
       if (!tsApi) return
+
       tsApi.configurePlugin('panda-css-ts-plugin', { type: 'setup', data: notif })
+      debug && console.log({ type: 'setup', data: notif })
     }),
   )
 

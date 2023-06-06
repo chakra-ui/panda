@@ -179,6 +179,7 @@ export function setupBuilder(
       await Promise.all(validFolders?.map((folder) => setupWorkspaceBuilders(folder)) ?? [])
 
       onReady()
+      connection.sendNotification('$/panda-lsp-ready')
 
       if (activeDocumentFilepath) {
         const ctx = getClosestPandaContext(activeDocumentFilepath)
@@ -192,20 +193,24 @@ export function setupBuilder(
     return { capabilities: serverCapabilities }
   })
 
-  connection.onNotification('$/active-document-changed', (params) => {
+  connection.onNotification('$/panda-active-document-changed', (params) => {
     console.log('📄 Active document:', ref.activeDocumentFilepath)
     ref.activeDocumentFilepath = params.activeDocumentFilepath
 
     const configPath = builderResolver.findConfigDirpath(ref.activeDocumentFilepath, (_, configPath) => configPath)
     if (!configPath) return
 
-    connection.sendNotification('$/doc-config-path', { activeDocumentFilepath: ref.activeDocumentFilepath, configPath })
+    connection.sendNotification('$/panda-doc-config-path', {
+      activeDocumentFilepath: ref.activeDocumentFilepath,
+      configPath,
+    })
   })
 
-  connection.onRequest('$/get-config-path', () => {
-    if (!ref.activeDocumentFilepath) return
+  connection.onRequest('$/get-config-path', ({ activeDocumentFilepath }: { activeDocumentFilepath: string }) => {
+    activeDocumentFilepath ??= ref.activeDocumentFilepath
+    if (!activeDocumentFilepath) return
 
-    return builderResolver.findConfigDirpath(ref.activeDocumentFilepath, (_, configPath) => {
+    return builderResolver.findConfigDirpath(activeDocumentFilepath, (_, configPath) => {
       console.log('config path', configPath)
       return configPath
     })
