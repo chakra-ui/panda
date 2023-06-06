@@ -35,10 +35,15 @@ const tokens = {
 > **Good to know:** The `value` property maps to style objects that will be applied to the element.
 
 ## Usage
+
 Now we can use `layerStyle` property in our components.
 
 ```jsx
 function App() {
-  return <div className={css({ layerStyle: 'container' })} />
+  return (
+    <div className={css({ layerStyle: 'container' })}>
+      <div />
+    </div>
+  )
 }
 ```

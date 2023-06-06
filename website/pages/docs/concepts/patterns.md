@@ -8,10 +8,34 @@ description: Patterns are layout primitives can be used to create robust and res
 Patterns are layout primitives can be used to create robust and responsive layouts with ease. Panda comes with
 predefined patterns like stack, hstack, vstack, wrap, etc. These patterns can be used as functions or JSX elements.
 
-Think of patterns as a set of predefined styles that can be applied to any element to reduce repetition and improve
-readability.
+> Think of patterns as a set of predefined styles to reduce repetition and improve readability. You can override the properties as needed, just like in the `css` function.
 
 ## Predefined Patterns
+
+### Container
+
+The Container pattern is used to create a container with a max-width and center the content.
+
+By default, the container sets the following properties:
+
+- `max-width: 8xl`
+- `mx: auto`
+- `position: relative`
+- `px: { base: 4, md: 6, lg: 8 }`
+
+```tsx
+import { container } from '../styled-system/patterns'
+
+function App() {
+  return (
+    <div className={container()}>
+      <div>First</div>
+      <div>Second</div>
+      <div>Third</div>
+    </div>
+  )
+}
+```
 
 ### Stack
 
@@ -102,6 +126,57 @@ function App() {
 }
 ```
 
+### Aspect Ratio
+
+The Aspect Ratio pattern is used to create a container with a fixed aspect ratio. It is used when displaying images,
+maps, videos and other media.
+
+The `aspectRatio` function accepts the following properties:
+
+- `ratio`: The aspect ratio of the container. Can be a number or a string.
+
+```tsx
+function App() {
+  return (
+    <div className={aspectRatio({ ratio: 16 / 9 })}>
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m1"
+        title="Google map"
+        frameBorder="0"
+      />
+    </div>
+  )
+}
+```
+
+### Flex
+
+The Flex pattern is used to create a flex container and provides some shortcuts for the `flex` property.
+
+The `flex` function accepts the following properties:
+
+- `direction`: The flex direction of the container. Can be `row`, `column`, `row-reverse` or `column-reverse`.
+- `wrap`: Whether to wrap the flex items. The value is a boolean.
+- `align`: An alias for the css `align-items` property.
+- `justify`: An alias for the css `justify-content` property.
+- `basis`: An alias for the css `flex-basis` property.
+- `grow`: An alias for the css `flex-grow` property.
+- `shrink`: An alias for the css `flex-shrink` property.
+
+```tsx
+import { flex } from '../styled-system/patterns'
+
+function App() {
+  return (
+    <div className={flex({ direction: 'row', align: 'center' })}>
+      <div>First</div>
+      <div>Second</div>
+      <div>Third</div>
+    </div>
+  )
+}
+```
+
 ### Center
 
 The Center pattern is used to center the content of a container.
@@ -136,36 +211,11 @@ The `float` function accepts the following properties:
 - `offsetX`: Same as `offset`, but only for the horizontal axis.
 - `offsetY`: Same as `offset`, but only for the vertical axis.
 
-> Consider using either `offset` or `offsetX` and `offsetY`, but not both.
-
 ```tsx
 function App() {
   return (
     <div className={css({ position: 'relative' })}>
       <div className={float({ placement: 'top-start' })}>3</div>
-    </div>
-  )
-}
-```
-
-### Aspect Ratio
-
-The Aspect Ratio pattern is used to create a container with a fixed aspect ratio. It is used when displaying images,
-maps, videos and other media.
-
-The `aspectRatio` function accepts the following properties:
-
-- `ratio`: The aspect ratio of the container. Can be a number or a string.
-
-```tsx
-function App() {
-  return (
-    <div className={aspectRatio({ ratio: 16 / 9 })}>
-      <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m1"
-        title="Google map"
-        frameBorder="0"
-      />
     </div>
   )
 }
@@ -197,28 +247,86 @@ function App() {
 }
 ```
 
-### Container
+#### Grid Item
 
-The Container pattern is used to create a container with a max-width and center the content.
+The Grid Item pattern is used to style the children of a grid container.
 
-By default, the container sets the following properties:
+The `gridItem` function accepts the following properties:
 
-- `max-width: 8xl`
-- `mx: auto`
-- `position: relative`
-- `px: { base: '4', md: '6', lg: '8' }`
-
-> You can override the default properties as needed.
+- `colSpan`: The number of columns the item spans.
+- `rowSpan`: The number of rows the item spans.
+- `rowStart`: The row the item starts at.
+- `rowEnd`: The row the item ends at.
+- `colStart`: The column the item starts at.
+- `colEnd`: The column the item ends at.
 
 ```tsx
+import { grid, gridItem } from '../styled-system/patterns'
+
 function App() {
   return (
-    <div className={container()}>
-      <div>First</div>
+    <div className={grid({ columns: 3, gap: '6' })}>
+      <div className={gridItem({ colSpan: 2 })}>First</div>
       <div>Second</div>
       <div>Third</div>
     </div>
   )
+}
+```
+
+### Divider
+
+The Divider pattern is used to create a horizontal or vertical divider.
+
+The `divider` function accepts the following properties:
+
+- `orientation`: The orientation of the divider. Can be `horizontal` or `vertical`.
+- `thickness`: The thickness of the divider. Can be a sizing token, or arbitrary value.
+- `color`: The color of the divider. Can be a color token, or arbitrary value.
+
+```tsx
+import { divider } from '../styled-system/patterns'
+
+function App() {
+  return (
+    <div classname={stack()}>
+      <button>First</button>
+      <div className={divider({ orientation: 'horizontal' })} />
+      <button>Second</button>
+    </div>
+  )
+}
+```
+
+### Circle
+
+The Circle pattern is used to create a circle.
+
+The `circle` function accepts the following properties:
+
+- `size`: The size of the circle. Can be a sizing token, or arbitrary value.
+
+```jsx
+import { circle } from '../styled-system/patterns'
+
+function App() {
+  return <div className={circle({ size: '12', bg: 'red.300' })} />
+}
+```
+
+### Square
+
+The Square pattern is used to create a square with equal width and height.
+
+The `square` function accepts the following properties:
+
+- `size`: The size of the square. Can be a sizing token, or arbitrary value.
+
+```jsx
+import { square } from '../styled-system/patterns'
+
+function App() {
+  return <div className={square({ size: '12', bg: 'red.300' })} />
 }
 ```
 

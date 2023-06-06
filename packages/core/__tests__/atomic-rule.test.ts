@@ -150,21 +150,21 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .sm\\\\:rtl\\\\:t_20px {
+          .sm\\\\:rtl\\\\:top_20px {
               [dir=rtl] & {
                   @media screen and (min-width: 640px) {
                       top: 20px
                   }
               }
           }
-          .sm\\\\:hover\\\\:t_50px {
+          .sm\\\\:hover\\\\:top_50px {
               &:where(:hover, [data-hover]) {
                   @media screen and (min-width: 640px) {
                       top: 50px
                   }
               }
           }
-          .lg\\\\:t_120px {
+          .lg\\\\:top_120px {
               @media screen and (min-width: 1024px) {
                   top: 120px
               }
@@ -182,10 +182,10 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .l_20px {
+          .left_20px {
               left: 20px
           }
-          .md\\\\:l_40px {
+          .md\\\\:left_40px {
               @media screen and (min-width: 768px) {
                   left: 40px
               }
@@ -209,12 +209,12 @@ describe('atomic / with nesting scope', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[\\\\&_\\\\>_p\\\\]\\\\:l_20px {
+          .\\\\[\\\\&_\\\\>_p\\\\]\\\\:left_20px {
               & > p {
                   left: 20px
               }
           }
-          .\\\\[\\\\&_\\\\>_p\\\\]\\\\:md\\\\:l_40px {
+          .\\\\[\\\\&_\\\\>_p\\\\]\\\\:md\\\\:left_40px {
               & > p {
                   @media screen and (min-width: 768px) {
                       left: 40px
@@ -307,7 +307,7 @@ describe('atomic / with nesting scope', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:l_40px {
+          .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:left_40px {
               &::placeholder {
                   left: 40px
               }
@@ -340,7 +340,7 @@ describe('atomic / with nesting scope', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[\\\\@media_base\\\\]\\\\:l_40px {
+          .\\\\[\\\\@media_base\\\\]\\\\:left_40px {
               @media base {
                   left: 40px
               }
@@ -439,7 +439,7 @@ describe('atomic / with grouped conditions styles', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[\\\\@media_base\\\\]\\\\:\\\\[\\\\&\\\\:hover\\\\]\\\\:l_40px {
+          .\\\\[\\\\@media_base\\\\]\\\\:\\\\[\\\\&\\\\:hover\\\\]\\\\:left_40px {
               &:hover {
                   @media base {
                       left: 40px

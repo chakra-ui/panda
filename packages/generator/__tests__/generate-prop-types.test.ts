@@ -20,9 +20,7 @@ describe('generate property types', () => {
       	insetBlockStart: Tokens[\\"spacing\\"];
       	insetInlineEnd: Tokens[\\"spacing\\"];
       	insetInlineStart: Tokens[\\"spacing\\"];
-      	start: Tokens[\\"spacing\\"];
       	right: Tokens[\\"spacing\\"];
-      	end: Tokens[\\"spacing\\"];
       	bottom: Tokens[\\"spacing\\"];
       	insetX: Tokens[\\"spacing\\"] | CssProperties[\\"insetInline\\"];
       	insetY: Tokens[\\"spacing\\"] | CssProperties[\\"insetBlock\\"];
@@ -214,7 +212,9 @@ describe('generate property types', () => {
         
       	pos: Shorthand<\\"position\\">;
       	insetEnd: Shorthand<\\"insetInlineEnd\\">;
+      	end: Shorthand<\\"insetInlineEnd\\">;
       	insetStart: Shorthand<\\"insetInlineStart\\">;
+      	start: Shorthand<\\"insetInlineStart\\">;
       	flexDir: Shorthand<\\"flexDirection\\">;
       	p: Shorthand<\\"padding\\">;
       	pl: Shorthand<\\"paddingLeft\\">;

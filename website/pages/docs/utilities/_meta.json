@@ -2,5 +2,7 @@
   "background": "Background",
   "typography": "Typography",
   "border": "Border",
-  "display": "Display"
+  "display": "Display",
+  "sizing": "Sizing",
+  "layout": "Layout"
 }

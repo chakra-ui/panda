@@ -537,7 +537,9 @@ export type SystemProperties = {
 	zoom?: PropertyValue<'zoom'>
 	pos?: PropertyValue<'pos'>
 	insetEnd?: PropertyValue<'insetEnd'>
+	end?: PropertyValue<'end'>
 	insetStart?: PropertyValue<'insetStart'>
+	start?: PropertyValue<'start'>
 	flexDir?: PropertyValue<'flexDir'>
 	p?: PropertyValue<'p'>
 	pl?: PropertyValue<'pl'>
@@ -610,8 +612,6 @@ export type SystemProperties = {
 	shadowColor?: PropertyValue<'shadowColor'>
 	x?: PropertyValue<'x'>
 	y?: PropertyValue<'y'>
-	start?: PropertyValue<'start'>
-	end?: PropertyValue<'end'>
 	insetX?: PropertyValue<'insetX'>
 	insetY?: PropertyValue<'insetY'>
 	hideFrom?: PropertyValue<'hideFrom'>
