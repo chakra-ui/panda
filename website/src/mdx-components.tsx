@@ -11,6 +11,11 @@ import { Pre } from './mdx/pre'
 import { Summary } from './mdx/summary'
 import { Table, Td, Th, Tr } from './mdx/table'
 import { Text } from './mdx/text'
+import {
+  RouteSwitch,
+  RouteSwitchContent,
+  RouteSwitchTrigger
+} from './mdx/route-switch'
 
 type Props = {
   isRawLayout?: boolean
@@ -43,6 +48,9 @@ export const getComponents = (props: Props): Components => {
     summary: Summary,
     pre: Pre,
     code: Code,
+    RouteSwitch: RouteSwitch,
+    RouteSwitchTrigger: RouteSwitchTrigger,
+    RouteSwitchContent: RouteSwitchContent,
     ...components
   }
 }
