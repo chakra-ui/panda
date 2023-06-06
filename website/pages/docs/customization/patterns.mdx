@@ -95,20 +95,21 @@ const App = () => {
 
 You can extend the default patterns by using the `patterns.extend` property in the config.
 
-```js
-const config = {
+
+```ts filename="panda.config.ts"
+export default defineConfig({
   patterns: {
     extend: {
       // Extend the default `flex` pattern
       flex: {
         properties: {
           // only allow row and column
-          direction: { type: 'enum', value: ['row', 'column'] }
-        }
-      }
-    }
-  }
-}
+          direction: { type: "enum", value: ["row", "column"] },
+        },
+      },
+    },
+  },
+});
 ```
 
 Then you can run the following command to update the pattern JS code:
