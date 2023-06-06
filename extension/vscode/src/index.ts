@@ -57,9 +57,10 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push({ dispose: clearColors })
 
   const getFreshPandaSettings = () =>
-    getFlattenedSettings(vscode.workspace.getConfiguration('panda') ?? defaultSettings)
+    getFlattenedSettings((vscode.workspace.getConfiguration('panda') as any) ?? defaultSettings)
 
   // Options to control the language client
+  let activeDocumentFilepath = activeDocument?.uri.fsPath
   const clientOptions: LanguageClientOptions = {
     documentSelector: docSelector as string[],
     diagnosticCollectionName: 'panda',
@@ -118,22 +119,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
         return []
       },
-      provideCompletionItem: async (document, position, context, token, next) => {
-        // get current completion list from our LSP
-        const list = await next(document, position, context, token)
-
-        if (list && tsApi) {
-          const completionItems = Array.isArray(list)
-            ? list.map((item) => (item.label as any as ProtocolCompletionItem)?.label)
-            : list.items.map((item) => (item.label as any as ProtocolCompletionItem)?.label)
-
-          // send our provided completion list to the TS plugin
-          // to remove the duplicated built-ins from TS types and only show ours (from the LSP)
-          tsApi.configurePlugin('panda-css-ts-plugin', { completionItems })
-        }
-
-        return list
-      },
     },
   }
 
@@ -160,9 +145,20 @@ export async function activate(context: vscode.ExtensionContext) {
       if (!client.isRunning()) return
       if (editor.document.uri.scheme !== 'file') return
 
-      client.sendNotification('$/active-document-changed', {
-        activeDocumentFilepath: editor.document.uri.fsPath,
-      })
+      activeDocumentFilepath = editor.document.uri.fsPath
+      client.sendNotification('$/active-document-changed', { activeDocumentFilepath })
+    }),
+  )
+
+  context.subscriptions.push(
+    client.onNotification('$/doc-config-path', (notif: { activeDocumentFilepath: string; configPath: string }) => {
+      tsApi.configurePlugin('panda-css-ts-plugin', { type: 'active-doc', data: notif })
+    }),
+  )
+
+  context.subscriptions.push(
+    client.onNotification('$/panda-token-names', (notif: { configPath: string; tokenNames: string[] }) => {
+      tsApi.configurePlugin('panda-css-ts-plugin', { type: 'setup', data: notif })
     }),
   )
 

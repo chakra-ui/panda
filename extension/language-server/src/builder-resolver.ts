@@ -13,6 +13,7 @@ export class BuilderResolver {
   private configDirpathList = new Set<string>()
   private configDirPathByFilepath = new Map<string, string>()
   private configPathByDirpath = new Map<string, string>()
+  private _onSetup: (args: { configPath: string }) => void | undefined
 
   findConfigDirpath<T>(filepath: string, onFound: (configDirPath: string, configPath: string) => T) {
     const cachedDir = this.configDirPathByFilepath.get(filepath)
@@ -67,9 +68,15 @@ export class BuilderResolver {
 
       synchronizing.finally(() => {
         this.synchronizingByConfigDirpath.set(configDirpath, false)
+
+        this._onSetup?.({ configPath })
       })
 
       return synchronizing
     })
+  }
+
+  onSetup(callback: (args: { configPath: string }) => void) {
+    this._onSetup = callback
   }
 }

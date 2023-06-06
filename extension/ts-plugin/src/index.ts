@@ -7,7 +7,6 @@ function init(_modules: { typescript: typeof import('typescript/lib/tsserverlibr
   // const ts = modules.typescript
 
   // Get a list of things to remove from the completion list from the config object.
-  let completionItemsToRemove: string[] = []
 
   function create(info: ts.server.PluginCreateInfo) {
     // Diagnostic logging
@@ -27,7 +26,13 @@ function init(_modules: { typescript: typeof import('typescript/lib/tsserverlibr
       if (!prior) return
 
       const oldLength = prior.entries.length
-      prior.entries = prior.entries.filter((e) => completionItemsToRemove.indexOf(e.name) < 0)
+      const configPath = configPathByDocFilepath.get(fileName)
+      if (!configPath) return prior
+
+      const tokenNames = tokenNamesByConfigPath.get(configPath)
+      if (!tokenNames) return prior
+
+      prior.entries = prior.entries.filter((e) => tokenNames.indexOf(e.name) < 0)
 
       // Sample logging for diagnostic purposes
       if (oldLength !== prior.entries.length) {
@@ -43,10 +48,19 @@ function init(_modules: { typescript: typeof import('typescript/lib/tsserverlibr
     return proxy
   }
 
+  const tokenNamesByConfigPath = new Map<string, string[]>()
+  const configPathByDocFilepath = new Map<string, string>()
   // https://code.visualstudio.com/api/references/contribution-points#contributes.typescriptServerPlugins
-  function onConfigurationChanged(config: any) {
-    completionItemsToRemove = config.completionItems ?? []
-    console.info(`[panda-css-ts-plugin] onConfigurationChanged`, completionItemsToRemove?.length ?? 0)
+  function onConfigurationChanged(event: ConfigEvent) {
+    if (event.type === 'setup') {
+      const { configPath, tokenNames } = event.data
+      tokenNamesByConfigPath.set(configPath, tokenNames)
+    }
+
+    if (event.type === 'active-doc') {
+      const { activeDocumentFilepath, configPath } = event.data
+      configPathByDocFilepath.set(activeDocumentFilepath, configPath)
+    }
   }
 
   return { create, onConfigurationChanged }
@@ -54,3 +68,7 @@ function init(_modules: { typescript: typeof import('typescript/lib/tsserverlibr
 
 // https://code.visualstudio.com/api/references/vscode-api#extensions
 export = init
+
+type ConfigEvent =
+  | { type: 'setup'; data: { configPath: string; tokenNames: string[] } }
+  | { type: 'active-doc'; data: { activeDocumentFilepath: string; configPath: string } }

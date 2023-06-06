@@ -41,6 +41,17 @@ export function setupBuilder(
     onDidChangeConfiguration: (settings: PandaVSCodeSettings) => void
   },
 ) {
+  builderResolver.onSetup(({ configPath }) => {
+    const builder = builderResolver.get(configPath)
+    if (!builder) return
+
+    const ctx = builder.context
+    if (!ctx) return
+
+    const tokenNames = Array.from(new Set(ctx.tokens.allTokens.map((token) => token.path.slice(1).join('.'))))
+    connection.sendNotification('$/panda-token-names', { configPath, tokenNames })
+  })
+
   async function setupWorkspaceBuilders(rootPath: string) {
     console.log('🐼 Setup workspace builders...')
     const configPathList = await glob(`${rootPath}/**/panda.config.{ts,js,cjs,mjs}`, {
@@ -185,7 +196,10 @@ export function setupBuilder(
     console.log('📄 Active document:', ref.activeDocumentFilepath)
     ref.activeDocumentFilepath = params.activeDocumentFilepath
 
-    ref.context
+    const configPath = builderResolver.findConfigDirpath(ref.activeDocumentFilepath, (_, configPath) => configPath)
+    if (!configPath) return
+
+    connection.sendNotification('$/doc-config-path', { activeDocumentFilepath: ref.activeDocumentFilepath, configPath })
   })
 
   connection.onRequest('$/get-config-path', () => {
