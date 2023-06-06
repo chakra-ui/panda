@@ -191,7 +191,7 @@
     "build": "pnpm build:shared && pnpm build:lsp && tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --external esbuild --minify -d dist --clean --shims",
     "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims --watch src/index.ts --watch ../language-server/dist/index.js --watch ../shared/dist/index.js",
     "clean": "rm -rf dist",
-    "lint": "eslint ./src --ext .ts,.tsx --fix",
+    "typecheck": "tsc --noEmit",
     "release": "esno ./scripts/publish.ts",
     "package": "vsce package --pre-release --no-dependencies",
     "build:pkg": "pnpm build && pnpm package"

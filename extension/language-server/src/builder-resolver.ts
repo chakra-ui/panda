@@ -13,7 +13,7 @@ export class BuilderResolver {
   private configDirpathList = new Set<string>()
   private configDirPathByFilepath = new Map<string, string>()
   private configPathByDirpath = new Map<string, string>()
-  private _onSetup: (args: { configPath: string }) => void | undefined
+  private _onSetup: ((args: { configPath: string }) => void) | undefined
 
   findConfigDirpath<T>(filepath: string, onFound: (configDirPath: string, configPath: string) => T) {
     const cachedDir = this.configDirPathByFilepath.get(filepath)

@@ -1,17 +1,16 @@
 import * as path from 'path'
-import { CancellationToken, TextEditorDecorationType } from 'vscode'
+import { type CancellationToken, type TextEditorDecorationType } from 'vscode'
 import * as vscode from 'vscode'
 import {
   LanguageClient,
-  LanguageClientOptions,
-  MessageSignature,
-  ServerOptions,
+  type LanguageClientOptions,
+  type MessageSignature,
+  type ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node'
 import { registerClientCommands } from './commands'
 import { defaultSettings, getFlattenedSettings } from 'panda-css-extension-shared'
-import type ProtocolCompletionItem from 'vscode-languageclient/lib/common/protocolCompletionItem'
-import { TsLanguageFeaturesApiV0, getTsApi } from './typescript-language-features'
+import { type TsLanguageFeaturesApiV0, getTsApi } from './typescript-language-features'
 
 // Client entrypoint
 const docSelector: vscode.DocumentSelector = ['typescript', 'typescriptreact', 'javascript', 'javascriptreact']
@@ -152,12 +151,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     client.onNotification('$/doc-config-path', (notif: { activeDocumentFilepath: string; configPath: string }) => {
+      if (!tsApi) return
       tsApi.configurePlugin('panda-css-ts-plugin', { type: 'active-doc', data: notif })
     }),
   )
 
   context.subscriptions.push(
     client.onNotification('$/panda-token-names', (notif: { configPath: string; tokenNames: string[] }) => {
+      if (!tsApi) return
       tsApi.configurePlugin('panda-css-ts-plugin', { type: 'setup', data: notif })
     }),
   )

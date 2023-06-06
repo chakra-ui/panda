@@ -1,4 +1,9 @@
-import { createConnection, TextDocuments, ProposedFeatures, ServerRequestHandler } from 'vscode-languageserver/node'
+import {
+  createConnection,
+  TextDocuments,
+  ProposedFeatures,
+  type ServerRequestHandler,
+} from 'vscode-languageserver/node'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { setupBuilder } from './setup-builder'
 import { setupTokensHelpers } from './tokens/setup-tokens-helpers'
@@ -18,7 +23,7 @@ const documents = new TextDocuments(TextDocument)
 let isDebug = false
 
 // Deferred promise to wait for extension to have resolved all the workspaces configs
-let resolveDeferred
+let resolveDeferred: (value?: unknown) => void
 const deferred = new Promise((resolve) => {
   resolveDeferred = resolve
 })
@@ -62,7 +67,7 @@ async function documentReady(step: string) {
     debug(step)
   } catch (error) {
     connection.console.error('error on step ' + step)
-    connection.console.error(error)
+    connection.console.error(error as any)
   }
 }
 
@@ -104,6 +109,7 @@ function createConnectionProxy(): Pick<typeof original, ConnectionEvents> {
         const handlers = eventMap.get(prop) ?? []
         eventMap.set(prop, handlers)
 
+        // @ts-ignore
         target[prop].call(target, (...args: any[]) => {
           let result
           handlers.forEach((handler) => {
@@ -117,6 +123,7 @@ function createConnectionProxy(): Pick<typeof original, ConnectionEvents> {
         }
       }
 
+      // @ts-ignore
       return target[prop]
     },
   })

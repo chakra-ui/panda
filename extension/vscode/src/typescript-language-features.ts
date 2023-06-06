@@ -7,7 +7,7 @@ interface TsLanguageFeatures {
 export interface TsLanguageFeaturesApiV0 {
   configurePlugin(pluginId: string, configuration: Record<string, any>): void
   onCompletionAccepted(
-    cb: (item: vscode.CompletionItem & { document: vscode.TextDocument; tsEntry }) => void | Promise<void>,
+    cb: (item: vscode.CompletionItem & { document: vscode.TextDocument; tsEntry: any }) => void | Promise<void>,
   ): void
 }
 

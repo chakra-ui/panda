@@ -76,6 +76,9 @@ importers:
       '@pandacss/shared':
         specifier: workspace:^
         version: link:../../packages/shared
+      '@pandacss/token-dictionary':
+        specifier: workspace:^
+        version: link:../../packages/token-dictionary
       '@pandacss/types':
         specifier: workspace:^
         version: link:../../packages/types
