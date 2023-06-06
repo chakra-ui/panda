@@ -30,7 +30,7 @@ import { expandTokenFn, extractTokenPaths } from './expand-token-fn'
 import { isColor } from './is-color'
 import { Token } from './types'
 import { getMarkdownCss, isObjectLike, nodeRangeToVsCodeRange, printTokenValue } from './utils'
-import { PandaVSCodeSettings } from '../settings'
+import { PandaVSCodeSettings } from 'panda-css-extension-shared'
 
 type ClosestMatch = {
   range: Range
@@ -179,6 +179,11 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
 
     parserResult.css.forEach(onResult)
     parserResult.jsx.forEach(onResult)
+    parserResult.cva.forEach((item) =>
+      item.data.forEach(({ base }) =>
+        onResult(Object.assign({}, item, { box: item.box.value.get('base'), data: [base] })),
+      ),
+    )
   }
 
   const getNodeAtPosition = (doc: TextDocument, position: Position) => {

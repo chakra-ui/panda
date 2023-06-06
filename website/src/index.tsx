@@ -217,7 +217,7 @@ const InnerLayout = ({
 
   return (
     // This makes sure that selectors like `[dir=ltr] .nextra-container` work
-    // before hydration as Tailwind expects the `dir` attribute to exist on the
+    // before hydration as Panda expects the `dir` attribute to exist on the
     // `html` element.
     <div dir={direction}>
       <script
@@ -298,7 +298,7 @@ export { useConfig }
 export type { PartialDocsThemeConfig as DocsThemeConfig }
 export { useMDXComponents } from 'nextra/mdx'
 export { useTheme } from 'next-themes'
-export { Link } from './mdx-components'
+export { Link } from './mdx/link'
 export {
   Bleed,
   Callout,
@@ -315,4 +315,4 @@ export {
   SkipNavLink,
   ThemeSwitch
 } from './components'
-export { Steps } from './nextra-components'
+export { Steps } from './mdx/steps'

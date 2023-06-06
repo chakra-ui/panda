@@ -8,8 +8,8 @@ import {
   FileTree,
   Card,
   Cards
-} from './src' // nextra-theme-docs
-import { Steps } from './src/nextra-components/steps'
+} from './src'
+import { Steps } from './src/mdx/steps'
 import { useRouter } from 'next/router'
 import { css } from './styled-system/css'
 import { Icon } from './theme/icons'
@@ -46,7 +46,7 @@ const config: DocsThemeConfig = {
           width: '100%'
         })}
       >
-        <span>Copyright © 2023</span>
+        <span>Copyright © {new Date().getFullYear()}</span>
         <a
           className={css({ color: 'current', textDecoration: 'none' })}
           href="https://www.adebayosegun.com/"

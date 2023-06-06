@@ -1,10 +1,11 @@
 {
   "index": "Overview",
-  "getting-started": "Getting started",
+  "why-panda": "Why Panda?",
+  "getting-started": "Getting Started",
   "concepts": "Concepts",
-  "tokens": "Tokens",
-  "recipe": "Recipes",
+  "theming": "Theming",
+  "customization": "Customization",
   "utilities": "Utilities",
-  "patterns": "Patterns",
+  "guides": "Guides",
   "references": "References"
 }

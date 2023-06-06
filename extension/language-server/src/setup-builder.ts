@@ -2,8 +2,7 @@ import { Builder } from '@pandacss/node'
 import { Connection, DidChangeConfigurationNotification, TextDocuments } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { serverCapabilities } from './capabilities'
-import { PandaVSCodeSettings, defaultSettings } from './settings'
-import { walkObject } from '@pandacss/shared'
+import { PandaVSCodeSettings, defaultSettings, getFlattenedSettings } from 'panda-css-extension-shared'
 import glob from 'fast-glob'
 import { uriToPath } from './uri-to-path'
 import { BuilderResolver } from './builder-resolver'
@@ -106,7 +105,7 @@ export function setupBuilder(
   }
 
   const getFreshPandaSettings = async () => {
-    return flatten((await connection.workspace.getConfiguration('panda')) ?? defaultSettings)
+    return getFlattenedSettings((await connection.workspace.getConfiguration('panda')) ?? defaultSettings)
   }
 
   /**
@@ -232,13 +231,3 @@ export function setupBuilder(
 }
 
 export type PandaExtensionSetup = ReturnType<typeof setupBuilder>
-
-function flatten(values: Record<string, Record<string, any>>) {
-  const result: Record<string, any> = {}
-
-  walkObject(values, (token, paths) => {
-    result[paths.join('.')] = token
-  })
-
-  return result
-}

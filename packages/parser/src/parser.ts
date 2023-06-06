@@ -6,7 +6,7 @@ import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { getImportDeclarations } from './import'
 import { createParserResult } from './parser-result'
-import type { AnyRecipeConfig } from '@pandacss/types'
+import type { RecipeConfig } from '@pandacss/types'
 
 type ParserPatternNode = {
   name: string
@@ -19,7 +19,7 @@ type ParserRecipeNode = {
   type: 'recipe'
   props: string[]
   baseName: string
-  jsx: AnyRecipeConfig['jsx']
+  jsx: RecipeConfig['jsx']
 }
 
 export type ParserNodeOptions = ParserPatternNode | ParserRecipeNode
@@ -33,7 +33,7 @@ export type ParserOptions = {
     isStyleProp: (prop: string) => boolean
   }
   getRecipeName: (tagName: string) => string
-  getRecipeByName: (name: string) => AnyRecipeConfig | undefined
+  getRecipeByName: (name: string) => RecipeConfig | undefined
 }
 
 // create strict regex from array of strings

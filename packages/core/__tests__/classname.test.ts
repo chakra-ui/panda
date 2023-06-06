@@ -16,13 +16,13 @@ describe('generate classnames', () => {
       css({
         top: { sm: { _rtl: '20px', _hover: '50px' }, lg: '120px' },
       }),
-    ).toMatchInlineSnapshot('"sm:rtl:t_20px sm:hover:t_50px lg:t_120px"')
+    ).toMatchInlineSnapshot('"sm:rtl:top_20px sm:hover:top_50px lg:top_120px"')
 
     expect(
       css({
         left: { base: '20px', md: '40px' },
       }),
-    ).toMatchInlineSnapshot('"l_20px md:l_40px"')
+    ).toMatchInlineSnapshot('"left_20px md:left_40px"')
   })
 
   test('should expand shorthand before processing', () => {

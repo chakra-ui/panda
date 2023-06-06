@@ -3,9 +3,9 @@ title: Using Gatsby
 description: Easily use Panda with Gatsby with our dedicated integration.
 ---
 
-# Using Storybook
+# Using Panda CSS with Gatsby
 
-Easily use Panda with Gatsby with our dedicated integration.
+Setting up Panda CSS in a Gatsby project using PostCSS.
 
 <Steps>
 
@@ -19,8 +19,6 @@ If you don't enter any parameter, the CLI will guide you through the process of 
 ```bash
 npm init gatsby
 ```
-
-> **Note:** If you want to use Gatsby with pnpm use install plugin [gatsby-plugin-pnpm](https://www.gatsbyjs.com/plugins/gatsby-plugin-pnpm/).
 
 You will be asked a few questions, answer them as follows:
 
@@ -53,7 +51,7 @@ npx panda init --postcss
 
 Include the plugin in your `gatsby-config.ts` file. Check out the [official documentation](https://www.gatsbyjs.com/plugins/gatsby-plugin-postcss/) for more information.
 
-```ts {12} filename="gatsby-config.ts"
+```ts {9} filename="gatsby-config.ts"
 import type { GatsbyConfig } from "gatsby"
 
 const config: GatsbyConfig = {
@@ -61,9 +59,6 @@ const config: GatsbyConfig = {
     title: `My Gatsby Site`,
     siteUrl: `https://www.yourdomain.tld`,
   },
-  // More easily incorporate content into your pages through automatic TypeScript type generation and better GraphQL IntelliSense.
-  // If you use VSCode you can also use the GraphQL plugin
-  // Learn more at: https://gatsby.dev/graphql-typegen
   graphqlTypegen: true,
   plugins: [`gatsby-plugin-postcss`],
 }
@@ -94,6 +89,8 @@ Open your `package.json` file and update the `scripts` section as follows:
 
 Make sure that all of the paths of your React components are included in the `include` section of the `panda.config.ts` file.
 
+> If you use [GraphQL Typegen](/docs/how-to/local-development/graphql-typegen/), you'll need to update the `include` to avoid infinite loop due to generated `src/gatsby-types.d.ts`.
+
 ```js {8} filename="panda.config.ts"
 import { defineConfig } from "@pandacss/dev"
 
@@ -102,7 +99,7 @@ export default defineConfig({
  preflight: true,
 
  // Where to look for your css declarations
- include: ["./src/**/*.{js,jsx,ts,tsx}"],
+ include: ["./src/pages/*.{js,jsx,ts,tsx}", "./src/components/**/*.{js,jsx,ts,tsx}"],
 
  // Files to exclude
  exclude: [],

@@ -1,4 +1,4 @@
-import type { AnyRecipeConfig, Dict, SystemStyleObject } from '@pandacss/types'
+import type { RecipeConfig, Dict, SystemStyleObject } from '@pandacss/types'
 import postcss from 'postcss'
 import { AtomicRule } from './atomic-rule'
 import { discardDuplicate, expandCssFunctions, optimizeCss } from './optimize'
@@ -10,7 +10,7 @@ import type { StylesheetContext } from './types'
 
 export type StylesheetOptions = {
   content?: string
-  recipes?: Dict<AnyRecipeConfig>
+  recipes?: Dict<RecipeConfig>
 }
 
 export class Stylesheet {
@@ -61,14 +61,14 @@ export class Stylesheet {
     ruleset.process({ styles: styleObject })
   }
 
-  processRecipe = (config: AnyRecipeConfig, styles: SystemStyleObject) => {
+  processRecipe = (config: RecipeConfig, styles: SystemStyleObject) => {
     this.recipes.process(config.name, { styles })
     config.compoundVariants?.forEach((compoundVariant) => {
       this.processAtomic(compoundVariant.css)
     })
   }
 
-  processAtomicRecipe = (recipe: Pick<AnyRecipeConfig, 'base' | 'variants' | 'compoundVariants'>) => {
+  processAtomicRecipe = (recipe: Pick<RecipeConfig, 'base' | 'variants' | 'compoundVariants'>) => {
     const { base = {}, variants = {}, compoundVariants = [] } = recipe
     this.processAtomic(base)
     for (const variant of Object.values(variants)) {

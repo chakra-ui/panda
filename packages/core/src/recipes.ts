@@ -1,11 +1,11 @@
 import { capitalize, dashCase, memo, splitProps, uncapitalize } from '@pandacss/shared'
-import type { AnyRecipeConfig, Dict, SystemStyleObject } from '@pandacss/types'
+import type { RecipeConfig, Dict, SystemStyleObject } from '@pandacss/types'
 import merge from 'lodash.merge'
 import { AtomicRule, type ProcessOptions } from './atomic-rule'
 import { serializeStyle } from './serialize'
 import type { RecipeNode, StylesheetContext } from './types'
 
-type RecipeValues = Record<string, AnyRecipeConfig>
+type RecipeValues = Record<string, RecipeConfig>
 
 const createRegex = (item: Array<string | RegExp>) => {
   const regex = item.map((item) => (typeof item === 'string' ? item : item.source)).join('|')
@@ -55,7 +55,7 @@ export class Recipes {
     }
   }
 
-  private assignRecipe = (name: string, recipe: AnyRecipeConfig) => {
+  private assignRecipe = (name: string, recipe: RecipeConfig) => {
     const variantKeys = Object.keys(recipe.variants ?? {})
     const jsx = recipe.jsx ?? [capitalize(name)]
     const match = createRegex(jsx)
@@ -101,7 +101,7 @@ export class Recipes {
     return sharedState.configs.get(name)
   })
 
-  getConfig = memo((name: string): AnyRecipeConfig | undefined => {
+  getConfig = memo((name: string): RecipeConfig | undefined => {
     return this.recipes[name]
   })
 
@@ -137,7 +137,7 @@ export class Recipes {
     return recipe.splitProps(props)
   }
 
-  normalize = (config: AnyRecipeConfig) => {
+  normalize = (config: RecipeConfig) => {
     const {
       name,
       jsx = [capitalize(name)],
@@ -148,7 +148,7 @@ export class Recipes {
       compoundVariants = [],
     } = config
 
-    const recipe: Required<AnyRecipeConfig> = {
+    const recipe: Required<RecipeConfig> = {
       jsx,
       name,
       description,

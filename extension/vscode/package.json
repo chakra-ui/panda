@@ -4,6 +4,7 @@
   "displayName": "🐼 Panda CSS",
   "description": "The official Panda plugin for VS Code",
   "version": "0.0.1",
+  "private": true,
   "engines": {
     "vscode": "^1.78.2"
   },
@@ -56,6 +57,12 @@
           "default": true,
           "title": "Color hints",
           "description": "Enable all color hints"
+        },
+        "panda.color-hints.color-preview.enabled": {
+          "type": "boolean",
+          "default": false,
+          "title": "Show color preview on hover",
+          "description": "Enable color picker preview on hover, will still show a color hint if disabled"
         },
         "panda.color-hints.semantic-tokens.enabled": {
           "type": "boolean",
@@ -174,12 +181,14 @@
   },
   "scripts": {
     "build:lsp": "pnpm --filter=../language-server build",
-    "build": "pnpm build:lsp && tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --external esbuild --minify -d dist --clean --shims",
-    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims --watch src/index.ts --watch ../language-server/dist/index.js",
+    "build:shared": "pnpm --filter=../shared build",
+    "build": "pnpm build:shared && pnpm build:lsp && tsup --entry src/index.ts --entry src/server.ts --format cjs --external vscode --external esbuild --minify -d dist --clean --shims",
+    "dev": "tsup --entry src/index.ts --entry src/server.ts --watch --format cjs --external vscode --external esbuild -d dist --clean --shims --watch src/index.ts --watch ../language-server/dist/index.js --watch ../shared/dist/index.js",
     "clean": "rm -rf dist",
     "lint": "eslint ./src --ext .ts,.tsx --fix",
     "release": "esno ./scripts/publish.ts",
-    "package": "vsce package --pre-release --no-dependencies"
+    "package": "vsce package --pre-release --no-dependencies",
+    "build:pkg": "pnpm build && pnpm package"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
@@ -189,6 +198,7 @@
     "esno": "^0.16.3",
     "execa": "7.1.1",
     "fs-extra": "11.1.1",
+    "panda-css-extension-shared": "workspace:^",
     "panda-css-language-server": "workspace:*",
     "tsup": "6.7.0",
     "typescript": "^5.1.3",

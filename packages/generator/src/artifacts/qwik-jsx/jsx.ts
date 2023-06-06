@@ -12,7 +12,7 @@ export function generateQwikJsxFactory(ctx: Context) {
     ${ctx.file.import('isCssProperty', './is-valid-prop')}
     
     function styledFn(Dynamic, configOrCva = {}) {
-      const cvaFn = configOrCva.__cva__ ? configOrCva : cva(configOrCva)
+      const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
       
       const ${componentName} = function ${componentName}(props) {
         const { as: Element = Dynamic, ...restProps } = props
@@ -20,18 +20,25 @@ export function generateQwikJsxFactory(ctx: Context) {
         const [variantProps, styleProps, htmlProps, elementProps] = 
             splitProps(restProps, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
         
+        const { css: cssStyles, ...propStyles } = styleProps
     
-        function classes() {
-          const { css: cssStyles, ...propStyles } = styleProps
+        function recipeClass() {
+          const styles = assignCss(propStyles, cssStyles)
+          return cx(cvaFn(variantProps), css(styles), elementProps.class)
+        }
+    
+        function cvaClass() {
           const cvaStyles = cvaFn.resolve(variantProps)
           const styles = assignCss(cvaStyles, propStyles, cssStyles)
-          return cx(css(styles), elementProps.className)
+          return cx(css(styles), elementProps.class)
         }
+    
+        const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
     
         return h(Element, {
           ...elementProps,
           ...normalizeHTMLProps(htmlProps),
-          className: classes(),
+          class: classes(),
         })
       }
       

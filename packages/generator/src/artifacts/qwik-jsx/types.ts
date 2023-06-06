@@ -11,8 +11,8 @@ export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
 import type { FunctionComponent, QwikIntrinsicElements } from '@builder.io/qwik'
-import type { JsxStyleProps, Assign as _Assign, PatchedHTMLProps } from './system-types'
-import type { RecipeDefinition, RecipeRuntimeFn, RecipeSelection, RecipeVariantRecord } from './recipe'
+import type { Assign as _Assign, JsxStyleProps, PatchedHTMLProps } from './system-types'
+import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
 
 type ElementType = keyof QwikIntrinsicElements | FunctionComponent<any>
 
@@ -42,9 +42,20 @@ type Assign<T, U> = {
 
 export type ${componentName}<T extends ElementType, P extends Dict = {}> = FunctionComponent<Assign<ComponentProps<T>, _Assign<JsxStyleProps, P>>>
 
-export type ${upperName} = {
-  <T extends ElementType, P extends RecipeVariantRecord = {}>(component: T, recipe?: RecipeDefinition<P> | RecipeRuntimeFn<P>): ${componentName}<T, RecipeSelection<P>>
-} & { [K in keyof QwikIntrinsicElements]: ${componentName}<K, {}> }
+type RecipeFn = { __type: any }
+
+interface JsxFactory {
+  <T extends ElementType>(component: T): ${componentName}<T, {}>
+  <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>): ${componentName}<
+    T,
+    RecipeSelection<P>
+  >
+  <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P): ${componentName}<T, P['__type']>
+}
+
+type JsxElements = { [K in keyof QwikIntrinsicElements]: ${componentName}<K, {}> }
+
+export type ${upperName} = JsxFactory & JsxElements
 
 export type ${typeName}<T extends ElementType> = Assign<ComponentProps<T>, JsxStyleProps>
   `,

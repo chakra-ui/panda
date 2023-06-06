@@ -25,14 +25,22 @@ export function generateSolidJsxFactory(ctx: Context) {
           allCssProperties,
           normalizeHTMLProps.keys
         )
-    
-        const classes = () => {
+
+        function recipeClass() {
+          const { css: cssStyles, ...propStyles } = styleProps
+          const styles = assignCss(propStyles, cssStyles)
+          return cx(cvaFn(variantProps), css(styles), localProps.class)
+        }
+        
+        function cvaClass() {
           const { css: cssStyles, ...propStyles } = styleProps
           const cvaStyles = cvaFn.resolve(variantProps)
           const styles = assignCss(cvaStyles, propStyles, cssStyles)
           return cx(css(styles), localProps.class)
         }
     
+        const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
+        
         return createComponent(
           Dynamic,
           mergeProps(

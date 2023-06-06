@@ -1,5 +1,5 @@
 import * as path from 'path'
-import vscode, { CancellationToken } from 'vscode'
+import vscode, { CancellationToken, TextEditorDecorationType } from 'vscode'
 import {
   LanguageClient,
   LanguageClientOptions,
@@ -8,6 +8,7 @@ import {
   TransportKind,
 } from 'vscode-languageclient/node'
 import { registerClientCommands } from './commands'
+import { defaultSettings, getFlattenedSettings } from 'panda-css-extension-shared'
 
 // Client entrypoint
 const docSelector: vscode.DocumentSelector = ['typescript', 'typescriptreact', 'javascript', 'javascriptreact']
@@ -42,6 +43,18 @@ export async function activate(context: vscode.ExtensionContext) {
   }
   const activeDocument = vscode.window.activeTextEditor?.document
 
+  let colorDecorationType: TextEditorDecorationType | undefined
+  const clearColors = () => {
+    if (colorDecorationType) {
+      colorDecorationType.dispose()
+      colorDecorationType = undefined
+    }
+  }
+  context.subscriptions.push({ dispose: clearColors })
+
+  const getFreshPandaSettings = () =>
+    getFlattenedSettings(vscode.workspace.getConfiguration('panda') ?? defaultSettings)
+
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
     documentSelector: docSelector as string[],
@@ -51,9 +64,56 @@ export async function activate(context: vscode.ExtensionContext) {
     },
     initializationOptions: () => {
       return {
-        // configPath: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
         activeDocumentFilepath: activeDocument?.uri.fsPath,
       }
+    },
+    middleware: {
+      async provideDocumentColors(document, token, next) {
+        const settings = getFreshPandaSettings()
+        if (!settings['color-hints.enabled']) return
+        if (settings['color-hints.color-preview.enabled']) return next(document, token)
+
+        if (!colorDecorationType) {
+          colorDecorationType = vscode.window.createTextEditorDecorationType({
+            before: {
+              width: '0.8em',
+              height: '0.8em',
+              contentText: ' ',
+              border: '0.1em solid',
+              margin: '0.1em 0.2em 0',
+            },
+            dark: {
+              before: {
+                borderColor: '#eeeeee',
+              },
+            },
+            light: {
+              before: {
+                borderColor: '#000000',
+              },
+            },
+          })
+        }
+
+        const colors = (await next(document, token)) ?? []
+        vscode.window.visibleTextEditors
+          .find((editor) => editor.document === document)
+          ?.setDecorations(
+            colorDecorationType,
+            colors.map(({ range, color }) => ({
+              range,
+              renderOptions: {
+                before: {
+                  backgroundColor: `rgba(${color.red * 255}, ${color.green * 255}, ${color.blue * 255}, ${
+                    color.alpha
+                  })`,
+                },
+              },
+            })),
+          )
+
+        return []
+      },
     },
   }
 
@@ -72,12 +132,14 @@ export async function activate(context: vscode.ExtensionContext) {
     console.log('handleFailedRequest', { type, token, error, defaultValue, showNotification })
     return defaultValue
   }
+  client.onNotification('$/clear-colors', clearColors)
 
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor((editor) => {
       if (!editor) return
-
+      if (!client.isRunning()) return
       if (editor.document.uri.scheme !== 'file') return
+
       client.sendNotification('$/active-document-changed', {
         activeDocumentFilepath: editor.document.uri.fsPath,
       })

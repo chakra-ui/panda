@@ -1,5 +1,8 @@
 {
-  "00-intro": "Introduction",
-  "01-customization": "Customization",
-  "background": "Background"
+  "background": "Background",
+  "typography": "Typography",
+  "border": "Border",
+  "display": "Display",
+  "sizing": "Sizing",
+  "layout": "Layout"
 }

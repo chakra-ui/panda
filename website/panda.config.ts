@@ -9,14 +9,13 @@ import { globalCss } from './theme/global-css'
 
 export default defineConfig({
   preflight: true,
-  presets: ['@pandacss/dev/presets'],
   // define the content to scan 👇🏻
   include: [
     './src/**/*.{tsx,jsx}',
-    './pages/**/*.{jsx,tsx,mdx}',
+    './pages/**/*.{jsx,tsx}',
     './app/**/*.{jsx,tsx}',
     './bright/**/*.{jsx,ts,tsx}',
-    './theme.config.tsx',
+    './theme.config.tsx'
   ],
   exclude: [],
   outdir: 'styled-system',

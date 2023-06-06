@@ -1,5 +1,4 @@
 {
   "cli": "CLI",
-  "default-style-props": "Default style props",
-  "panda-config": "Panda config"
+  "config": "Config"
 }

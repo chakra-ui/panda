@@ -1,0 +1,59 @@
+---
+title: Conditions
+description: Learn how to customize conditions in your Panda config
+---
+
+# Customizing Conditions
+
+Conditions allow you to apply different styles and behaviors based on specific conditions or states. They provide a way to target specific elements or apply styles in response to certain events or conditions.
+
+## Creating a condition
+
+To create a condition, you can use the conditions property in the config. Let's say we want to create a `groupHover` pseudo condition that applies styles to an element when a parent container with the `group` role is hovered.
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  conditions: {
+    extend: {
+      groupHover: "[role=group]:where(:hover, [data-hover]) &",
+    },
+  },
+});
+```
+
+
+Then you can run the following command to generate the pattern JS code:
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm panda codegen
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm panda codegen
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn panda codegen
+    ```
+  </Tab>
+</Tabs>
+
+Now, we can use the `groupHover` condition in our components.
+
+```jsx
+function App() {
+  return (
+    <div role="group">
+      <span
+        className={css({
+          color: { base: "blue.400", _groupHover: "blue.600" },
+        })}
+      />
+    </div>
+  );
+}
+```

@@ -9,15 +9,13 @@ Panda CSS works out of the box with Next.js. You can use Panda CSS with Next.js 
 
 If you don't have Next.js app installed, you can follow the [Create a Next.js app](#create-a-nextjs-app) section to create a new Next.js app, otherwise you can skip to the [Install Panda CSS](#install-panda-css) section.
 
-import { ContextSelect, ContextSelectOptions, ContextSelectPanel } from '../../../src/nextra-components/context-select'
-
-<ContextSelect contexts={['Using App Router', 'Using Pages Router']}>
+<RouteSwitch values={["app-dir","pages-dir"]}>
 
   ## Start a new project
 
   You can chose between these two options to start a new project:
 
-  <ContextSelectOptions mt="4" />
+  <RouteSwitchTrigger values={["Using App Router", "Using Pages Router"]} />
 
   <Steps>
   ### Create a Next.js app
@@ -46,7 +44,8 @@ import { ContextSelect, ContextSelectOptions, ContextSelectPanel } from '../../.
   </Tabs>
 
   You will be asked a few questions, answer them as follows:
-  <ContextSelectPanel index={0}>
+
+  <RouteSwitchContent value="app-dir">
     ```bash
     ✔ What is your project named? … test-app
     ✔ Would you like to use TypeScript with this project? … Yes
@@ -56,8 +55,8 @@ import { ContextSelect, ContextSelectOptions, ContextSelectPanel } from '../../.
     ✔ Use App Router (recommended)? … Yes
     ✔ Would you like to customize the default import alias? … No
     ```
-  </ContextSelectPanel>
-  <ContextSelectPanel index={1}>
+  </RouteSwitchContent>
+  <RouteSwitchContent value="pages-dir">
     ```bash
     ✔ What is your project named? … test-app
     ✔ Would you like to use TypeScript with this project? … Yes
@@ -67,7 +66,7 @@ import { ContextSelect, ContextSelectOptions, ContextSelectPanel } from '../../.
     ✔ Use App Router (recommended)? … No
     ✔ Would you like to customize the default import alias? … No
     ```
-  </ContextSelectPanel>
+  </RouteSwitchContent>
 
   Enter the newly created directory:
   ```bash
@@ -99,6 +98,18 @@ import { ContextSelect, ContextSelectOptions, ContextSelectPanel } from '../../.
     </Tab>
   </Tabs>
 
+  `panda init --postcss` command will automatically create a `postcss.config.js` file at the root of your project with the following code:
+
+  ```js {3}
+  module.exports = {
+    plugins: {
+      '@pandacss/dev/postcss': {},
+    },
+  }
+  ```
+
+  For advanced configuration follow the Next.js PostCSS guide to set up a custom PostCSS configuration by referring to this [link](https://nextjs.org/docs/pages/building-your-application/configuring/post-css#customizing-plugins).
+
   ### Update package.json scripts
 
   Open your `package.json` file and update the `scripts` section as follows:
@@ -114,50 +125,38 @@ import { ContextSelect, ContextSelectOptions, ContextSelectPanel } from '../../.
     }
   }
   ```
-  - `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+  
+  The `prepare` script that will run codegen after dependency installation. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
 
   ### Configure the entry CSS with layers
 
-  <ContextSelectPanel index={0}>
+  <RouteSwitchContent value="app-dir">
     In your Next.js project, navigate to the `src/app` folder and open `global.css` file. Replace all the content with the following code:
-  </ContextSelectPanel>
-  <ContextSelectPanel index={1}>
+  </RouteSwitchContent>
+  <RouteSwitchContent value="pages-dir">
     In your Next.js project, navigate to the `src/styles` folder and open `globals.css` file. Replace all the content with the following code:
-  </ContextSelectPanel>
+  </RouteSwitchContent>
 
   ```css
      @layer reset, base, tokens, recipes, utilities;
   ```
 
-  <ContextSelectPanel index={0}>
+  <RouteSwitchContent value="app-dir">
     > **Note:** Feel free to remove the `page.module.css` file as we don't need it anymore.
-  </ContextSelectPanel>
-  <ContextSelectPanel index={1}>
+  </RouteSwitchContent>
+  <RouteSwitchContent value="pages-dir">
     > **Note:** Feel free to remove the `Home.module.css` file as we don't need it anymore.
-  </ContextSelectPanel>
+  </RouteSwitchContent>
 
-  ### PostCSS config
-
-  `panda init --postcss` command will automatically create a `postcss.config.js` file in the root of your project with the following code:
-
-  ```js {3}
-  module.exports = {
-    plugins: {
-      '@pandacss/dev/postcss': {},
-    },
-  }
-  ```
-
-  For advanced configuration follow the Next.js PostCSS guide to set up a custom PostCSS configuration by referring to this [link](https://nextjs.org/docs/pages/building-your-application/configuring/post-css#customizing-plugins).
 
   ### Start using Panda
 
-  <ContextSelectPanel index={0}>
+  <RouteSwitchContent value="app-dir">
     We will update the contents of `src/app/page.tsx` with the following snippet that uses Panda CSS:
-  </ContextSelectPanel>
-  <ContextSelectPanel index={1}>
+  </RouteSwitchContent>
+  <RouteSwitchContent value="pages-dir">
     We will update the contents of `src/pages/index.tsx` with the following snippet that uses Panda CSS:
-  </ContextSelectPanel>
+  </RouteSwitchContent>
 
   ```tsx
     import { css } from '../../styled-system/css';
@@ -194,7 +193,7 @@ import { ContextSelect, ContextSelectOptions, ContextSelectPanel } from '../../.
   Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
   </Steps>
-</ContextSelect>
+</RouteSwitch>
 
 ## Troubleshooting
 

@@ -1,4 +1,4 @@
-import type { AnyRecipeConfig, Dict, PatternHelpers } from '@pandacss/types'
+import type { RecipeConfig, Dict, PatternHelpers } from '@pandacss/types'
 import type { Root } from 'postcss'
 import type { Conditions } from './conditions'
 import type { Utility } from './utility'
@@ -56,7 +56,7 @@ export type RecipeNode = {
   /**
    * The transformed recipe config
    */
-  config: AnyRecipeConfig
+  config: RecipeConfig
   /**
    * The function to split the props
    */

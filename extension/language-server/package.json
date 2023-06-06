@@ -4,6 +4,7 @@
   "description": "🐼 The official Panda language server",
   "version": "0.0.1",
   "main": "./dist/index.js",
+  "private": true,
   "repository": {
     "url": "https://github.com/chakra-ui/panda",
     "directory": "packages/extension/language-server"
@@ -26,9 +27,10 @@
     "base-64": "^1.0.0",
     "color2k": "^2.0.2",
     "lil-fp": "1.4.5",
+    "panda-css-extension-shared": "workspace:^",
     "postcss": "^8.4.24",
     "prettier": "^2.8.8",
-    "satori": "^0.9.1",
+    "satori": "^0.10.1",
     "ts-morph": "18.0.0",
     "ts-pattern": "4.3.0",
     "tsup": "6.7.0",
