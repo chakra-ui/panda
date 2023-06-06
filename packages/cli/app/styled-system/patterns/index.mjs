@@ -15,4 +15,5 @@ export * from './wrap.mjs';
 export * from './container.mjs';
 export * from './divider.mjs';
 export * from './float.mjs';
+export * from './join.mjs';
 export * from './styled-link.mjs';
