@@ -1,5 +1,8 @@
+import { flatten } from './flatten'
+
 export interface PandaVSCodeSettings {
   'color-hints.enabled'?: boolean
+  'color-hints.color-preview.enabled'?: boolean
   'color-hints.semantic-tokens.enabled'?: boolean
   'rem-to-px.enabled'?: boolean
   'completions.enabled'?: boolean
@@ -22,3 +25,6 @@ export const defaultSettings: PandaVSCodeSettings = {
   'debug.enabled': false,
   'diagnostics.invalid-token-path': 'warning',
 }
+
+export const getFlattenedSettings = (settings: Record<string, Record<string, any>>) =>
+  flatten(settings) as PandaVSCodeSettings

@@ -30,7 +30,7 @@ import { expandTokenFn, extractTokenPaths } from './expand-token-fn'
 import { isColor } from './is-color'
 import { Token } from './types'
 import { getMarkdownCss, isObjectLike, nodeRangeToVsCodeRange, printTokenValue } from './utils'
-import { PandaVSCodeSettings } from '../settings'
+import { PandaVSCodeSettings } from 'panda-css-extension-shared'
 
 type ClosestMatch = {
   range: Range

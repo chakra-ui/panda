@@ -27,6 +27,7 @@
     "base-64": "^1.0.0",
     "color2k": "^2.0.2",
     "lil-fp": "1.4.5",
+    "panda-css-extension-shared": "workspace:^",
     "postcss": "^8.4.24",
     "prettier": "^2.8.8",
     "satori": "^0.10.0",

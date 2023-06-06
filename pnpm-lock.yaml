@@ -97,6 +97,9 @@ importers:
       lil-fp:
         specifier: 1.4.5
         version: 1.4.5
+      panda-css-extension-shared:
+        specifier: workspace:^
+        version: link:../shared
       postcss:
         specifier: ^8.4.24
         version: 8.4.24
@@ -131,6 +134,19 @@ importers:
         specifier: ^3.0.7
         version: 3.0.7
 
+  extension/shared:
+    dependencies:
+      '@pandacss/shared':
+        specifier: workspace:^
+        version: link:../../packages/shared
+    devDependencies:
+      tsup:
+        specifier: 6.7.0
+        version: 6.7.0(postcss@8.4.24)(typescript@5.1.3)
+      typescript:
+        specifier: ^5.1.3
+        version: 5.1.3
+
   extension/vscode:
     devDependencies:
       '@pandacss/dev':
@@ -154,6 +170,9 @@ importers:
       fs-extra:
         specifier: 11.1.1
         version: 11.1.1
+      panda-css-extension-shared:
+        specifier: workspace:^
+        version: link:../shared
       panda-css-language-server:
         specifier: workspace:*
         version: link:../language-server
@@ -12580,6 +12599,7 @@ packages:
   /deep-extend@0.6.0:
     resolution: {integrity: sha512-LOHxIOaPYdHlJRtCQfDIVZtfw/ufM8+rVj649RIHzcm/vGwQRXFt6OPqIFWsm2XEMrNIEtWR64sY1LEKD2vAOA==}
     engines: {node: '>=4.0.0'}
+    requiresBuild: true
 
   /deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
@@ -23367,6 +23387,7 @@ packages:
   /strip-json-comments@2.0.1:
     resolution: {integrity: sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ==}
     engines: {node: '>=0.10.0'}
+    requiresBuild: true
 
   /strip-json-comments@3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
