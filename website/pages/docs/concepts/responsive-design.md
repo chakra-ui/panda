@@ -7,7 +7,9 @@ description: How to write mobile responsive designs in your CSS in Panda
 
 Responsive design is a fundamental aspect of modern web development, allowing websites and applications to adapt seamlessly to different screen sizes and devices.
 
-Panda provides a comprehensive set of responsive utilities and features to facilitate the creation of responsive layouts. It lets you do this through conditional styles for different breakpoints. Let's say you want to change the font weight of a text on large screens, you can do it like this:
+Panda provides a comprehensive set of responsive utilities and features to facilitate the creation of responsive layouts. It lets you do this through conditional styles for different breakpoints.
+
+Let's say you want to change the font weight of a text on large screens, you can do it like this:
 
 ```jsx
 <span
@@ -20,9 +22,9 @@ Panda provides a comprehensive set of responsive utilities and features to facil
 </span>
 ```
 
-> We use the `@media(min-width)` media query to ensure your interfaces are mobile-first.
+> We uses a mobile-first breakpoint system and leverages min-width media queries `@media(min-width)` when you write responsive styles.
 
-The responsive syntax in Panda relies on the breakpoints that are defined in the Panda config file. Panda provides default breakpoints, which are shown below:
+Panda provides five breakpoints by default:
 
 ```ts
 const breakpoints = {
@@ -36,9 +38,9 @@ const breakpoints = {
 
 ## Overview
 
-### Property based styles
+### Property based modifier
 
-The initial example is effective, but it may be a bit wordy. You can apply the responsive condition directly to the `fontWeight` property, resulting in a more concise syntax:
+Panda allows you apply the responsive condition directly to a style property, resulting in a more concise syntax:
 
 ```diff
 <span
@@ -46,22 +48,6 @@ The initial example is effective, but it may be a bit wordy. You can apply the r
 -   fontWeight: 'medium',
 -   lg: { fontWeight: 'bold' }
 +   fontWeight: { base: 'medium', lg: 'bold' }
-  })}
->
-  Text
-</span>
-```
-
-### Nested styles
-
-You can apply multiple conditions within your responsive conditions.
-
-Let's say you want the text to have a different `fontWeight` when hovered, but only on large screens. You can do it like this:
-
-```jsx
-<span
-  className={css({
-    fontWeight: { base: 'medium', lg: { base: 'bold', _hover: 'extrabold' } }
   })}
 >
   Text
@@ -114,6 +100,7 @@ In order to define custom breakpoints, you can easily accomplish this by passing
 
 ```js filename="panda.config.ts"
 export default defineConfig({
+  // ...
   theme: {
     extend: {
       breakpoints: {
@@ -131,7 +118,3 @@ export default defineConfig({
 ### Hiding elements by breakpoint
 
 If you need to limit the visibility of an element to any breakpoint, Panda provides [display utilities](/docs/utilities/display) to help you achieve this.
-
-### Foldable devices.
-
-Wish you Godspeed on this one. 🚀

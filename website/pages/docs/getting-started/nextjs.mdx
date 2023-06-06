@@ -98,6 +98,18 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
     </Tab>
   </Tabs>
 
+  `panda init --postcss` command will automatically create a `postcss.config.js` file at the root of your project with the following code:
+
+  ```js {3}
+  module.exports = {
+    plugins: {
+      '@pandacss/dev/postcss': {},
+    },
+  }
+  ```
+
+  For advanced configuration follow the Next.js PostCSS guide to set up a custom PostCSS configuration by referring to this [link](https://nextjs.org/docs/pages/building-your-application/configuring/post-css#customizing-plugins).
+
   ### Update package.json scripts
 
   Open your `package.json` file and update the `scripts` section as follows:
@@ -136,19 +148,6 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
     > **Note:** Feel free to remove the `Home.module.css` file as we don't need it anymore.
   </RouteSwitchContent>
 
-  ### PostCSS config
-
-  `panda init --postcss` command will automatically create a `postcss.config.js` file in the root of your project with the following code:
-
-  ```js {3}
-  module.exports = {
-    plugins: {
-      '@pandacss/dev/postcss': {},
-    },
-  }
-  ```
-
-  For advanced configuration follow the Next.js PostCSS guide to set up a custom PostCSS configuration by referring to this [link](https://nextjs.org/docs/pages/building-your-application/configuring/post-css#customizing-plugins).
 
   ### Start using Panda
 
