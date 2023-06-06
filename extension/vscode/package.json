@@ -173,7 +173,13 @@
           "description": "Enable debug logs"
         }
       }
-    }
+    },
+    "typescriptServerPlugins": [
+      {
+        "name": "panda-css-ts-plugin",
+        "enableForWorkspaceTypeScriptVersions": true
+      }
+    ]
   },
   "repository": {
     "url": "https://github.com/chakra-ui/panda",
@@ -204,5 +210,8 @@
     "typescript": "^5.1.3",
     "vscode": "^1.1.37",
     "vscode-languageclient": "^8.1.0"
+  },
+  "dependencies": {
+    "panda-css-ts-plugin": "workspace:^"
   }
 }

@@ -1,5 +1,6 @@
 import * as path from 'path'
-import vscode, { CancellationToken, TextEditorDecorationType } from 'vscode'
+import { CancellationToken, TextEditorDecorationType } from 'vscode'
+import * as vscode from 'vscode'
 import {
   LanguageClient,
   LanguageClientOptions,
@@ -9,12 +10,14 @@ import {
 } from 'vscode-languageclient/node'
 import { registerClientCommands } from './commands'
 import { defaultSettings, getFlattenedSettings } from 'panda-css-extension-shared'
+import type ProtocolCompletionItem from 'vscode-languageclient/lib/common/protocolCompletionItem'
+import { TsLanguageFeaturesApiV0, getTsApi } from './typescript-language-features'
 
 // Client entrypoint
 const docSelector: vscode.DocumentSelector = ['typescript', 'typescriptreact', 'javascript', 'javascriptreact']
 
 let client: LanguageClient
-const debug = false
+const debug = true
 
 export async function activate(context: vscode.ExtensionContext) {
   debug && console.log('activate')
@@ -42,6 +45,7 @@ export async function activate(context: vscode.ExtensionContext) {
     },
   }
   const activeDocument = vscode.window.activeTextEditor?.document
+  let tsApi: TsLanguageFeaturesApiV0 | undefined
 
   let colorDecorationType: TextEditorDecorationType | undefined
   const clearColors = () => {
@@ -114,6 +118,22 @@ export async function activate(context: vscode.ExtensionContext) {
 
         return []
       },
+      provideCompletionItem: async (document, position, context, token, next) => {
+        // get current completion list from our LSP
+        const list = await next(document, position, context, token)
+
+        if (list && tsApi) {
+          const completionItems = Array.isArray(list)
+            ? list.map((item) => (item.label as any as ProtocolCompletionItem)?.label)
+            : list.items.map((item) => (item.label as any as ProtocolCompletionItem)?.label)
+
+          // send our provided completion list to the TS plugin
+          // to remove the duplicated built-ins from TS types and only show ours (from the LSP)
+          tsApi.configurePlugin('panda-css-ts-plugin', { completionItems })
+        }
+
+        return list
+      },
     },
   }
 
@@ -151,6 +171,12 @@ export async function activate(context: vscode.ExtensionContext) {
   registerClientCommands({ context, debug, client, loadingStatusBarItem: statusBarItem })
 
   try {
+    tsApi = await getTsApi()
+  } catch (err) {
+    debug && console.log('error loading TS', err)
+  }
+
+  try {
     // Start the client. This will also launch the server
     statusBarItem.text = '🐼 Starting...'
 
@@ -159,7 +185,7 @@ export async function activate(context: vscode.ExtensionContext) {
     statusBarItem.text = '🐼'
     statusBarItem.tooltip = 'Open current panda config'
   } catch (err) {
-    debug && console.log('error', err)
+    debug && console.log('error starting client', err)
   }
 }
 
