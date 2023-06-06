@@ -1,15 +1,21 @@
 import type { ComponentProps, ReactElement } from 'react'
 import { useCallback, useEffect, useState } from 'react'
-import { CheckIcon, CopyIcon } from '../icons'
-import { Button } from './button'
 import { css } from '../../styled-system/css'
+import { CheckIcon, CopyIcon } from '../icons'
 
-export const CopyToClipboard = ({
-  getValue,
-  ...props
-}: {
+const buttonStyles = css({
+  bg: 'yellow.300',
+  color: 'neutral.800',
+  rounded: 'md',
+  p: '1.5'
+})
+
+type Props = ComponentProps<'button'> & {
   getValue: () => string
-} & ComponentProps<'button'>): ReactElement => {
+}
+
+export const CopyToClipboard = (props: Props): ReactElement => {
+  const { getValue, ...rest } = props
   const [isCopied, setCopied] = useState(false)
 
   useEffect(() => {
@@ -37,13 +43,19 @@ export const CopyToClipboard = ({
     }
   }, [getValue])
 
-  const IconToUse = isCopied ? CheckIcon : CopyIcon
+  const Icon = isCopied ? CheckIcon : CopyIcon
 
   return (
-    <Button onClick={handleClick} title="Copy code" tabIndex={0} {...props}>
-      <IconToUse
+    <button
+      className={buttonStyles}
+      onClick={handleClick}
+      title="Copy code"
+      tabIndex={0}
+      {...rest}
+    >
+      <Icon
         className={css({ pointerEvents: 'none', height: '4', width: '4' })}
       />
-    </Button>
+    </button>
   )
 }

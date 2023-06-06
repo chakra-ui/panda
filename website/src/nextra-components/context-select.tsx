@@ -74,31 +74,28 @@ const ContextSelectLink: FC<IContextSelectLinkProps> = ({ context }) => {
       role="tab"
       tabIndex={isActive ? 0 : -1}
       id={`tab-${rootId}-${context}`}
-      className={[
-        'nextra-context-select-link',
-        css({
-          flex: 1,
-          textAlign: 'center',
-          px: '1',
-          py: '2',
-          cursor: 'pointer',
+      className={css({
+        flex: 1,
+        textAlign: 'center',
+        px: '1',
+        py: '2',
+        cursor: 'pointer',
+        borderRadius: 'md',
+        fontWeight: 'medium',
+        _hover: { bg: 'gray.200' },
+        _dark: {
+          _hover: { bg: 'neutral.600' }
+        },
+        '&[aria-selected]': {
+          bg: 'yellow.300',
+          color: 'black',
           borderRadius: 'md',
-          fontWeight: 'medium',
-          _hover: { bg: 'gray.200' },
           _dark: {
-            _hover: { bg: 'neutral.600' }
-          },
-          '&[aria-selected]': {
             bg: 'yellow.300',
-            color: 'black',
-            borderRadius: 'md',
-            _dark: {
-              bg: 'yellow.300',
-              color: 'black'
-            }
+            color: 'black'
           }
-        })
-      ].join(' ')}
+        }
+      })}
     >
       {context}
     </Link>
