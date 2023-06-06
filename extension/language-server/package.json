@@ -30,7 +30,7 @@
     "panda-css-extension-shared": "workspace:^",
     "postcss": "^8.4.24",
     "prettier": "^2.8.8",
-    "satori": "^0.10.0",
+    "satori": "^0.10.1",
     "ts-morph": "18.0.0",
     "ts-pattern": "4.3.0",
     "tsup": "6.7.0",
