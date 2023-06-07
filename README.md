@@ -1,59 +1,62 @@
-# Panda
+![Write typesafe styles with Panda](.github/assets/banner.png 'Write typesafe styles with Panda')
 
-The universal design system solution for the web
+<p align="center">
+  <br/>
+  <a href="https://panda-css.com">Panda</a> is a universal styling solution for the modern web &mdash;
+  <br/>
+  build time, type safe, and scalable CSS-in-JS
+  <br/><br/>
+</p>
 
 ## Features
 
-- Styled system to generate css utility classes
-- Consume the utilities in a strongly typed `css` function
-- Token management
-  - Analyze token usage across your project
-  - VSCode extension to view tokens in your IDE
-- Token export
-  - css, less, saas variables
-  - json object
-  - js module
-- Quality check
-  - Ensure all engineers use the specified tokens
-  - Checkes css, js{x}, ts{x}, less and sass files for tokens
-- Common layout helpers
-  - stack, flex, grid
-  - visually hidden, no scroll, etc
+- ⚡️ Write style objects or style props, extract them at build time
+- ✨ Modern CSS output — cascade layers `@layer`, css variables and more
+- 🦄 Works with most JS frameworks — or even without one
+- 🚀 Recipes and Variants - Just like Stitches™️ ✨
+- 🎨 High-level design tokens support for simultaneous themes
+- 💪 Type-safe styles and autocomplete (via codegen)
 
-## Getting Started
+<br/>
 
-```sh
-yarn install @pandacss/dev
+---
+
+<p align="center">
+<b>
+🐼 Get a taste of Panda. Try it out for yourself in  {" "}
+ <a href="https://stackblitz.com/edit/vitejs-vite-lfwyue?file=src%2FApp.tsx&terminal=dev">StackBlitz</a>
+</b>
+</p>
+
+---
+
+<br/>
+
+## Documentation
+
+Visit our [official documentation](https://panda-css.com/).
+
+## Install
+
+The **recommended** way to install the latest version of Astro is by running the command below:
+
+```bash
+npm i -D @pandacss/dev
 ```
 
 To scaffold the panda config and postcss
 
-```sh
-pnpm panda init
-# or
-pnpm panda init -p
+```bash
+npx panda init -p
 ```
 
-To run the extract styles, run
+Start the dev server of your project
 
-```sh
-pnpm panda
-# or
-pnpm panda --watch
+```bash
+npm run dev
 ```
 
-When you change the config, you may need to regenerate the system
-
-```sh
-pnpm panda codegen
-```
-
-## Usage
-
-```js
-import { css } from '../styled-system/css'
-import { stack, vstack, hstack } from '../styled-system/patterns'
-```
+Start using panda
 
 ```jsx
 import { css } from '../styled-system/css'
@@ -68,3 +71,22 @@ function Example() {
   )
 }
 ```
+
+## Directory Structure
+
+| Package                                       | Description                                                 |
+| --------------------------------------------- | ----------------------------------------------------------- |
+| [cli](packages/cli)                           | CLI package installed by the end user                       |
+| [core](packages/core)                         | Contains core features of Panda (utility, recipes, etc)     |
+| [config](packages/config)                     | Contains functions for reading and merging the panda config |
+| [extractor](packages/extractor)               | Contains code for fast AST parsing and scanning             |
+| [generator](packages/generator)               | Contains codegen artifacts (js, css, jsx)                   |
+| [parser](packages/parser)                     | Contains code for parsing a source code                     |
+| [is-valid-prop](packages/is-valid-prop)       | Contains code for checking if a prop is a valid css prop    |
+| [node](packages/node)                         | Contains the Node.js API of Panda's features                |
+| [token-dictionary](packages/token-dictionary) | Contains code used to process tokens and semantic tokens    |
+| [shared](packages/shared)                     | Contains shared TS functions                                |
+
+## Support
+
+Having trouble? Get help in the official [Panda Discord](https://panda-css.com/discord).
