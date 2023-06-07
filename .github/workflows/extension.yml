@@ -1,6 +1,8 @@
-name: Publish extension
+name: Publish Extension
 
 on:
+  workflow_dispatch:
+
   push:
     paths:
       - '.changeset/**'
@@ -10,7 +12,7 @@ on:
 
 jobs:
   release:
-    name: Release
+    name: VSCode Marketplace
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,6 +31,6 @@ jobs:
 
       - name: Publish extension
         working-directory: ./extension/vscode
-        run: pnpm vsce publish --no-dependencies -p ${{secrets.VSCE_TOKEN}}
+        run: pnpm vsce publish --pre-release --pat ${{secrets.VSCE_TOKEN}}
         env:
           VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
