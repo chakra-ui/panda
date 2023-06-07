@@ -70,7 +70,7 @@ export const SectionHero = () => {
                 </Link>
               </Stack>
 
-              <CommandPrompt value="npm install @pandacss/dev" />
+              <CommandPrompt value="npm i -D @pandacss/dev" />
             </Stack>
 
             <Image
