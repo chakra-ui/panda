@@ -69,14 +69,14 @@ scheme.
 // use pink and dark mode theme
 <html data-theme="pink" data-color-mode="dark">
   <body>
-    <h1 css={{ color: 'text' }}>Hello World</h1>
+    <h1 className={{ color: 'text' }}>Hello World</h1>
   </body>
 </html>
 
 // use pink and light mode theme
 <html data-theme="pink">
   <body>
-    <h1 css={{ color: 'text' }}>Hello World</h1>
+    <h1 className={{ color: 'text' }}>Hello World</h1>
   </body>
 </html>
 ```

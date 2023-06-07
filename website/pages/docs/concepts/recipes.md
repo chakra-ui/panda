@@ -47,7 +47,11 @@ example of how to use the `button` recipe:
 import { button } from './button'
 
 const Button = () => {
-  return <button css={button({ visual: 'solid', size: 'lg' })}>Click Me</button>
+  return (
+    <button className={button({ visual: 'solid', size: 'lg' })}>
+      Click Me
+    </button>
+  )
 }
 ```
 
@@ -181,7 +185,9 @@ import { button } from './button'
 const Button = () => {
   // will apply size: small, color: primary, css: { border: '2px solid blue' }
   return (
-    <button css={button({ size: 'small', color: 'primary' })}>Click Me</button>
+    <button className={button({ size: 'small', color: 'primary' })}>
+      Click Me
+    </button>
   )
 }
 ```
