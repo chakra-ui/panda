@@ -157,6 +157,10 @@ importers:
         version: 5.1.3
 
   extension/vscode:
+    dependencies:
+      '@pandacss/ts-plugin':
+        specifier: 0.0.1
+        version: link:../ts-plugin
     devDependencies:
       '@pandacss/dev':
         specifier: 0.0.2
@@ -167,9 +171,6 @@ importers:
       '@pandacss/language-server':
         specifier: 0.0.1
         version: link:../language-server
-      '@pandacss/ts-plugin':
-        specifier: 0.0.1
-        version: link:../ts-plugin
       '@types/node':
         specifier: 20.2.5
         version: 20.2.5
