@@ -1,7 +1,9 @@
 import { walkObject } from '@pandacss/shared'
 
-export function flatten(values: Record<string, Record<string, any>>) {
-  const result: Record<string, any> = {}
+type Dict = Record<string, any>
+
+export function flatten(values: Record<string, Dict>) {
+  const result: Dict = {}
 
   walkObject(values, (token, paths) => {
     result[paths.join('.')] = token
