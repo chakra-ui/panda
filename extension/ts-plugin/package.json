@@ -3,7 +3,6 @@
   "displayName": "🐼 Panda CSS",
   "description": "The official Panda plugin for VS Code",
   "version": "0.0.1",
-  "private": true,
   "license": "MIT",
   "main": "./dist/index.js",
   "repository": {
