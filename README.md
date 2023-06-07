@@ -23,7 +23,7 @@
 
 <p align="center">
 <b>
-🐼 Get a taste of Panda. Try it out for yourself in  {" "}
+🐼 Get a taste of Panda. Try it out for yourself in &nbsp;
  <a href="https://stackblitz.com/edit/vitejs-vite-lfwyue?file=src%2FApp.tsx&terminal=dev">StackBlitz</a>
 </b>
 </p>
