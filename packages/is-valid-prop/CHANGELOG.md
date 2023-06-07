@@ -1,5 +1,7 @@
 # @pandacss/is-valid-prop
 
+## 0.1.0
+
 ## 0.0.2
 
 ### Patch Changes

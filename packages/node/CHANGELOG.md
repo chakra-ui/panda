@@ -1,5 +1,23 @@
 # @pandacss/node
 
+## 0.1.0
+
+### Patch Changes
+
+- b8ab0868: Fix white space when updating the `.gitignore` file
+- Updated dependencies [6d81ee9e]
+  - @pandacss/generator@0.1.0
+  - @pandacss/parser@0.1.0
+  - @pandacss/types@0.1.0
+  - @pandacss/config@0.1.0
+  - @pandacss/core@0.1.0
+  - @pandacss/token-dictionary@0.1.0
+  - @pandacss/error@0.1.0
+  - @pandacss/extractor@0.1.0
+  - @pandacss/is-valid-prop@0.1.0
+  - @pandacss/logger@0.1.0
+  - @pandacss/shared@0.1.0
+
 ## 0.0.2
 
 ### Patch Changes

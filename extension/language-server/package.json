@@ -2,7 +2,7 @@
   "name": "panda-css-language-server",
   "displayName": "Panda CSS",
   "description": "🐼 The official Panda language server",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "./dist/index.js",
   "repository": {
     "url": "https://github.com/chakra-ui/panda",
