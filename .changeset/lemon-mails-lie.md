@@ -4,4 +4,4 @@
 '@pandacss/ts-plugin': patch
 ---
 
-publish
+Publish Extension packages.
