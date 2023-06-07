@@ -10,13 +10,32 @@
       "type": "extensionHost",
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}/extension/vscode"],
-      "outFiles": ["${workspaceFolder}/extension/vscode/dist/**/*.js"]
+      "outFiles": ["${workspaceFolder}/extension/vscode/dist/**/*.js"],
+      "env": {
+        "TSS_DEBUG": "9559"
+      }
+    },
+    // See: https://github.com/microsoft/TypeScript/wiki/Debugging-Language-Service-in-VS-Code
+    {
+      "name": "Attach to Server",
+      "type": "node",
+      "request": "attach",
+      "port": 9559,
+      "restart": true,
+      "outFiles": ["${workspaceFolder}/extension/typescript-server-plugin/dist/**/*.js"],
+      "skipFiles": ["<node_internals>/**"]
     },
     {
       "command": "pnpm test ${relativeFile}",
       "name": "Run Vitest",
       "request": "launch",
       "type": "node-terminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Launch Extension + TS Plugin",
+      "configurations": ["Run Extension", "Attach to Server"]
     }
   ]
 }

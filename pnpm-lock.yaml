@@ -65,19 +65,22 @@ importers:
         version: 3.2.12
     devDependencies:
       '@pandacss/core':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/core
       '@pandacss/extractor':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/extractor
       '@pandacss/node':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/node
       '@pandacss/shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/shared
+      '@pandacss/token-dictionary':
+        specifier: workspace:*
+        version: link:../../packages/token-dictionary
       '@pandacss/types':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/types
       '@types/base-64':
         specifier: ^1.0.0
@@ -147,6 +150,12 @@ importers:
         specifier: ^5.1.3
         version: 5.1.3
 
+  extension/ts-plugin:
+    devDependencies:
+      typescript:
+        specifier: ^5.1.3
+        version: 5.1.3
+
   extension/vscode:
     devDependencies:
       '@pandacss/dev':
@@ -176,6 +185,9 @@ importers:
       panda-css-language-server:
         specifier: workspace:*
         version: link:../language-server
+      panda-css-ts-plugin:
+        specifier: workspace:*
+        version: link:../ts-plugin
       tsup:
         specifier: 6.7.0
         version: 6.7.0(postcss@8.4.24)(typescript@5.1.3)

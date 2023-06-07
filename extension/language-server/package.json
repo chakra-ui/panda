@@ -13,14 +13,15 @@
     "build": "tsup src/index.ts --format cjs --minify -d dist --clean --shims",
     "dev": "tsup src/index.ts --watch --format cjs -d dist --shims",
     "clean": "rm -rf dist",
-    "lint": "eslint ./src --ext .ts,.tsx --fix"
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@pandacss/core": "workspace:^",
-    "@pandacss/extractor": "workspace:^",
-    "@pandacss/node": "workspace:^",
-    "@pandacss/shared": "workspace:^",
-    "@pandacss/types": "workspace:^",
+    "@pandacss/core": "workspace:*",
+    "@pandacss/extractor": "workspace:*",
+    "@pandacss/node": "workspace:*",
+    "@pandacss/shared": "workspace:*",
+    "@pandacss/token-dictionary": "workspace:*",
+    "@pandacss/types": "workspace:*",
     "@types/base-64": "^1.0.0",
     "@types/node": "20.x",
     "@types/utf8": "^3.0.1",

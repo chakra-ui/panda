@@ -1,6 +1,6 @@
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
-import { PandaExtension } from '..'
+import { type PandaExtension } from '../index'
 import { tryCatch } from 'lil-fp/func'
 import { onError } from '../tokens/error'
 

@@ -1,4 +1,4 @@
-import { ColorPresentationParams } from 'vscode-languageserver'
+import { type ColorPresentationParams } from 'vscode-languageserver'
 import { parseToRgba } from 'color2k'
 
 export const color2kToVsCodeColor = (value: string) => {
