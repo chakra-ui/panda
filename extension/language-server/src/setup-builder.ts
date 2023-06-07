@@ -221,7 +221,7 @@ export function setupBuilder(
 
     if (hasConfigurationCapability) {
       ref.settings = await getFreshPandaSettings()
-      console.log('🐼 Settings changed', ref.settings)
+      console.log('🐼 Settings changed!', ref.settings)
       onDidChangeConfiguration(ref.settings)
     }
   })

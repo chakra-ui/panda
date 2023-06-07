@@ -31,6 +31,6 @@ jobs:
 
       - name: Publish extension
         working-directory: ./extension/vscode
-        run: pnpm vsce publish --pre-release --pat ${{secrets.VSCE_TOKEN}}
+        run: pnpm vsce publish --pre-release --pat ${{secrets.VSCE_TOKEN}} --noVerify
         env:
           VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
