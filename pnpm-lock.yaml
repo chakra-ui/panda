@@ -67,6 +67,9 @@ importers:
       '@pandacss/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@pandacss/extension-shared':
+        specifier: workspace:^
+        version: link:../shared
       '@pandacss/extractor':
         specifier: workspace:*
         version: link:../../packages/extractor
@@ -100,9 +103,6 @@ importers:
       lil-fp:
         specifier: 1.4.5
         version: 1.4.5
-      panda-css-extension-shared:
-        specifier: workspace:^
-        version: link:../shared
       postcss:
         specifier: ^8.4.24
         version: 8.4.24
@@ -161,6 +161,15 @@ importers:
       '@pandacss/dev':
         specifier: 0.0.2
         version: link:../../packages/cli
+      '@pandacss/extension-shared':
+        specifier: 0.0.1
+        version: link:../shared
+      '@pandacss/language-server':
+        specifier: 0.0.1
+        version: link:../language-server
+      '@pandacss/ts-plugin':
+        specifier: 0.0.1
+        version: link:../ts-plugin
       '@types/node':
         specifier: 20.2.5
         version: 20.2.5
@@ -179,15 +188,6 @@ importers:
       fs-extra:
         specifier: 11.1.1
         version: 11.1.1
-      panda-css-extension-shared:
-        specifier: 0.0.1
-        version: link:../shared
-      panda-css-language-server:
-        specifier: 0.0.1
-        version: link:../language-server
-      panda-css-ts-plugin:
-        specifier: 0.0.1
-        version: link:../ts-plugin
       semver:
         specifier: ^7.5.1
         version: 7.5.1

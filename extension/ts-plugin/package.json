@@ -1,5 +1,5 @@
 {
-  "name": "panda-css-ts-plugin",
+  "name": "@pandacss/ts-plugin",
   "displayName": "🐼 Panda CSS",
   "description": "The official Panda plugin for VS Code",
   "version": "0.0.1",
@@ -9,6 +9,9 @@
   "repository": {
     "url": "https://github.com/chakra-ui/panda",
     "directory": "packages/extension/ts-plugin"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsup src/index.ts --format=cjs --dts",

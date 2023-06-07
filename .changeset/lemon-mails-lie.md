@@ -1,7 +1,7 @@
 ---
-'panda-css-language-server': patch
-'panda-css-extension-shared': patch
-'panda-css-ts-plugin': patch
+'@pandacss/language-server': patch
+'@pandacss/extension-shared': patch
+'@pandacss/ts-plugin': patch
 ---
 
 publish

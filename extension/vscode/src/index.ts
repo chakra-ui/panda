@@ -9,7 +9,7 @@ import {
   TransportKind,
 } from 'vscode-languageclient/node'
 import { registerClientCommands } from './commands'
-import { defaultSettings, getFlattenedSettings } from 'panda-css-extension-shared'
+import { defaultSettings, getFlattenedSettings } from '@pandacss/extension-shared'
 import { type TsLanguageFeaturesApiV0, getTsApi } from './typescript-language-features'
 
 // Client entrypoint
@@ -161,7 +161,7 @@ export async function activate(context: vscode.ExtensionContext) {
         const configPath = await client.sendRequest<string>('$/get-config-path', { activeDocumentFilepath })
         if (!configPath) return
 
-        tsApi.configurePlugin('panda-css-ts-plugin', {
+        tsApi.configurePlugin('@pandacss/ts-plugin', {
           type: 'active-doc',
           data: { activeDocumentFilepath, configPath },
         })
@@ -177,7 +177,7 @@ export async function activate(context: vscode.ExtensionContext) {
       (notif: { activeDocumentFilepath: string; configPath: string }) => {
         if (!tsApi) return
 
-        tsApi.configurePlugin('panda-css-ts-plugin', { type: 'active-doc', data: notif })
+        tsApi.configurePlugin('@pandacss/ts-plugin', { type: 'active-doc', data: notif })
         debug && console.log({ type: 'active-doc', data: notif })
       },
     ),
@@ -187,7 +187,7 @@ export async function activate(context: vscode.ExtensionContext) {
     client.onNotification('$/panda-token-names', (notif: { configPath: string; tokenNames: string[] }) => {
       if (!tsApi) return
 
-      tsApi.configurePlugin('panda-css-ts-plugin', { type: 'setup', data: notif })
+      tsApi.configurePlugin('@pandacss/ts-plugin', { type: 'setup', data: notif })
       debug && console.log({ type: 'setup', data: notif })
     }),
   )

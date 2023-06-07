@@ -10,7 +10,7 @@ function init(_modules: { typescript: typeof import('typescript/lib/tsserverlibr
 
   function create(info: ts.server.PluginCreateInfo) {
     // Diagnostic logging
-    info.project.projectService.logger.info('[panda-css-ts-plugin] init.create ok')
+    info.project.projectService.logger.info('[@pandacss/ts-plugin] init.create ok')
 
     // Set up decorator object
     const proxy: ts.LanguageService = Object.create(null)
@@ -38,7 +38,7 @@ function init(_modules: { typescript: typeof import('typescript/lib/tsserverlibr
       if (oldLength !== prior.entries.length) {
         const entriesRemoved = oldLength - prior.entries.length
         info.project.projectService.logger.info(
-          `[panda-css-ts-plugin] Removed ${entriesRemoved} entries from the completion list`,
+          `[@pandacss/ts-plugin] Removed ${entriesRemoved} entries from the completion list`,
         )
       }
 

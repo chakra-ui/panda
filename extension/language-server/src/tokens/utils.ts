@@ -15,7 +15,7 @@ import prettier from 'prettier/standalone'
 import * as utf8 from 'utf8'
 import { match } from 'ts-pattern'
 
-import { type PandaVSCodeSettings } from 'panda-css-extension-shared'
+import { type PandaVSCodeSettings } from '@pandacss/extension-shared'
 import { type Token } from '@pandacss/token-dictionary'
 
 export const isObjectLike = Bool.or(box.isObject, box.isMap)
