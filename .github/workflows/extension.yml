@@ -26,11 +26,9 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      - name: Build extension
-        run: pnpm extension:build
-
-      - name: Publish extension
+      - name: Publish RC
         working-directory: ./extension/vscode
-        run: pnpm vsce publish --pre-release --pat ${{secrets.VSCE_TOKEN}} --noVerify
+        run: pnpm release
         env:
           VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
+          VSCE_RELEASE_TYPE: rc
