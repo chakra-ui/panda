@@ -1,18 +1,24 @@
 import { CompletionItem, CompletionItemKind, Position, Range } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
-import { PandaExtensionSetup } from '../setup-builder'
+import { type PandaExtensionSetup } from '../setup-builder'
 
-import { Dict, ParserResultType, RawCondition, ResultItem, SystemStyleObject } from '@pandacss/types'
+import {
+  type Dict,
+  type ParserResultType,
+  type RawCondition,
+  type ResultItem,
+  type SystemStyleObject,
+} from '@pandacss/types'
 import { CallExpression, Identifier, JsxOpeningElement, JsxSelfClosingElement, Node, ts } from 'ts-morph'
 
 import {
-  BoxContext,
+  type BoxContext,
   BoxNodeArray,
   BoxNodeLiteral,
   BoxNodeMap,
   BoxNodeObject,
-  PrimitiveType,
-  Unboxed,
+  type PrimitiveType,
+  type Unboxed,
   box,
   extractCallExpressionArguments,
   extractJsxAttribute,
@@ -28,9 +34,9 @@ import { match } from 'ts-pattern'
 import { color2kToVsCodeColor } from './color2k-to-vscode-color'
 import { expandTokenFn, extractTokenPaths } from './expand-token-fn'
 import { isColor } from './is-color'
-import { Token } from './types'
+import { type Token } from '@pandacss/token-dictionary'
 import { getMarkdownCss, isObjectLike, nodeRangeToVsCodeRange, printTokenValue } from './utils'
-import { PandaVSCodeSettings } from 'panda-css-extension-shared'
+import { type PandaVSCodeSettings } from 'panda-css-extension-shared'
 
 type ClosestMatch = {
   range: Range
@@ -544,10 +550,10 @@ const getCompletionFor = (
 
   const utility = ctx.config.utilities?.[propName]
   const category = typeof utility?.values === 'string' && utility?.values
-  if (!category) return
+  if (!category) return []
 
   const values = ctx.tokens.categoryMap.get(category)
-  if (!values) return
+  if (!values) return []
 
   const items = [] as CompletionItem[]
   values.forEach((token, name) => {

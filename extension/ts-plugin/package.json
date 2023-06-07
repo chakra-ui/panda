@@ -1,0 +1,21 @@
+{
+  "name": "panda-css-ts-plugin",
+  "displayName": "🐼 Panda CSS",
+  "description": "The official Panda plugin for VS Code",
+  "version": "0.0.1",
+  "private": true,
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "repository": {
+    "url": "https://github.com/chakra-ui/panda",
+    "directory": "packages/extension/ts-plugin"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format=esm,cjs --dts",
+    "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
+    "dev": "pnpm build-fast --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.3"
+  }
+}

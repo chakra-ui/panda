@@ -1,4 +1,4 @@
-import { ServerCapabilities, TextDocumentSyncKind } from 'vscode-languageserver'
+import { type ServerCapabilities, TextDocumentSyncKind } from 'vscode-languageserver'
 
 export const serverCapabilities: ServerCapabilities = {
   textDocumentSync: TextDocumentSyncKind.Incremental,
