@@ -12,13 +12,10 @@ import {
 import { CallExpression, Identifier, JsxOpeningElement, JsxSelfClosingElement, Node, ts } from 'ts-morph'
 
 import {
-  type BoxContext,
   BoxNodeArray,
   BoxNodeLiteral,
   BoxNodeMap,
   BoxNodeObject,
-  type PrimitiveType,
-  type Unboxed,
   box,
   extractCallExpressionArguments,
   extractJsxAttribute,
@@ -26,17 +23,20 @@ import {
   findIdentifierValueDeclaration,
   maybeBoxNode,
   unbox,
+  type BoxContext,
+  type PrimitiveType,
+  type Unboxed,
 } from '@pandacss/extractor'
 import { type PandaContext } from '@pandacss/node'
 import { walkObject } from '@pandacss/shared'
+import { type Token } from '@pandacss/token-dictionary'
 import { Bool } from 'lil-fp'
+import { type PandaVSCodeSettings } from 'panda-css-extension-shared'
 import { match } from 'ts-pattern'
 import { color2kToVsCodeColor } from './color2k-to-vscode-color'
 import { expandTokenFn, extractTokenPaths } from './expand-token-fn'
 import { isColor } from './is-color'
-import { type Token } from '@pandacss/token-dictionary'
 import { getMarkdownCss, isObjectLike, nodeRangeToVsCodeRange, printTokenValue } from './utils'
-import { type PandaVSCodeSettings } from 'panda-css-extension-shared'
 
 type ClosestMatch = {
   range: Range
@@ -120,7 +120,7 @@ const getNestedBoxProp = (map: BoxNodeMap, path: string[]) => {
   }, map as any)
 }
 
-export function setupTokensHelpers(setup: PandaExtensionSetup) {
+export function setupTokensHelpers(setup: PandaExtensionSetup): any {
   function getSourceFile(doc: TextDocument) {
     const ctx = setup.getContext()
     if (!ctx) return

@@ -7,6 +7,7 @@
   "private": true,
   "license": "MIT",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "repository": {
     "url": "https://github.com/chakra-ui/panda",
     "directory": "packages/extension/vscode"
