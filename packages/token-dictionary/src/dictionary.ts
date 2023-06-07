@@ -40,6 +40,11 @@ function expandBreakpoints(breakpoints?: Record<string, string>) {
   }
 }
 
+function filterDefault(path: string[]) {
+  if (path[0] === 'DEFAULT') return path
+  return path.filter((item) => item !== 'DEFAULT')
+}
+
 export class TokenDictionary {
   allTokens: Token[] = []
   prefix: string | undefined
@@ -69,6 +74,7 @@ export class TokenDictionary {
     walkObject(
       computedTokens,
       (token, path) => {
+        path = filterDefault(path)
         assertTokenFormat(token)
 
         const category = path[0]
@@ -89,6 +95,7 @@ export class TokenDictionary {
     walkObject(
       semanticTokens,
       (token, path) => {
+        path = filterDefault(path)
         assertTokenFormat(token)
 
         const category = path[0]
