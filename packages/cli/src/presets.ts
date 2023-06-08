@@ -1,2 +1,2 @@
-import { config } from '@pandacss/presets'
-export default config
+import presetTheme from '@pandacss/preset-panda'
+export default presetTheme

@@ -1,22 +1,27 @@
+import presetBase from '@pandacss/preset-base'
+import presetPanda from '@pandacss/preset-panda'
 import type { Config } from '@pandacss/types'
-import { config as preset } from '@pandacss/presets'
 
-import { semanticTokens } from './semantic-tokens'
 import { recipes } from './recipes'
+import { semanticTokens } from './semantic-tokens'
 
-export const { theme, utilities, patterns } = preset
-export const { breakpoints, keyframes } = theme
+const { utilities, patterns } = presetBase
+const { theme } = presetPanda
+
+const { breakpoints, keyframes } = theme
+
+export { utilities, patterns, breakpoints, keyframes }
 
 export const conditions = {
-  ...preset.conditions,
+  ...presetBase.conditions,
   materialTheme: '[data-color=material] &',
   pastelTheme: '[data-color=pastel] &',
 }
 
 export const tokens = {
-  ...preset.theme.tokens,
+  ...presetPanda.theme.tokens,
   colors: {
-    ...preset.theme.tokens.colors,
+    ...presetPanda.theme.tokens.colors,
     deep: {
       test: {
         yam: {
@@ -35,12 +40,12 @@ export const tokens = {
   },
 }
 
-export const config = {
-  ...preset,
+export const config: Config = {
+  ...presetBase,
   theme: {
-    ...preset.theme,
+    ...presetPanda.theme,
     tokens,
     semanticTokens,
     recipes,
   },
-} satisfies Config
+}

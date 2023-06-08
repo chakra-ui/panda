@@ -1,6 +1,7 @@
 import { createGenerator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
-import { config } from '@pandacss/presets'
+import presetBase from '@pandacss/preset-base'
+import presetTheme from '@pandacss/preset-panda'
 import { merge } from 'merge-anything'
 import { useMemo } from 'react'
 
@@ -26,14 +27,13 @@ export function usePanda(source: string, theme: string) {
 
   const generator = useMemo(() => {
     const { extend, ...restTheme } = userTheme ?? {}
-    const theme = Object.assign(merge({}, config.theme, extend) || {}, restTheme || {})
+    const theme = Object.assign(merge({}, presetTheme.theme, extend) || {}, restTheme || {})
 
     return createGenerator({
       dependencies: [],
       path: '',
-      //@ts-expect-error - fix types
       config: {
-        ...config,
+        ...presetBase,
         preflight: true,
         theme,
         outdir: 'design-system',
