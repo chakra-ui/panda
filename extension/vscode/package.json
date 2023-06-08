@@ -202,7 +202,7 @@
     "build:pkg": "pnpm build && pnpm vsce:package"
   },
   "dependencies": {
-    "@pandacss/ts-plugin": "0.0.1"
+    "@pandacss/ts-plugin": "0.0.0-dev-20230608163155"
   },
   "devDependencies": {
     "@pandacss/dev": "0.0.2",
