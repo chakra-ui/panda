@@ -1,5 +1,16 @@
 # @pandacss/types
 
+## 0.1.0
+
+### Minor Changes
+
+- 6d81ee9e: - Set default jsx factory to 'styled'
+  - Fix issue where pattern JSX was not being generated correctly when properties are not defined
+
+### Patch Changes
+
+- @pandacss/extractor@0.1.0
+
 ## 0.0.2
 
 ### Patch Changes
