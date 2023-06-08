@@ -36,12 +36,12 @@
 
   :root {
     font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-    font-size: var(--font-sizes-md);
-    line-height: var(--line-heights-normal);
-    font-weight: var(--font-weights-normal);
+    font-size: md;
+    line-height: normal;
+    font-weight: normal;
     color-scheme: light dark;
-    color: var(--colors-text);
-    background: var(--colors-bg);
+    color: text;
+    background: bg;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;

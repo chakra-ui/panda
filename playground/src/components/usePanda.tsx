@@ -33,10 +33,12 @@ export function usePanda(source: string, theme: string) {
       dependencies: [],
       path: '',
       config: {
+        cwd: '',
+        include: [],
+        outdir: 'design-system',
         ...presetBase,
         preflight: true,
         theme,
-        outdir: 'design-system',
       },
     })
   }, [userTheme])

@@ -6,9 +6,9 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "scripts": {
     "prepare": "cp node_modules/csstype/index.d.ts src/csstype.d.ts",
-    "build": "tsx scripts/build.ts",
-    "build-fast": "tsx scripts/build.ts",
-    "dev": "chokidar -c 'pnpm build' src --initial"
+    "build": "tsup src --format=esm,cjs --dts",
+    "build-fast": "tsup src --format=esm,cjs --no-dts",
+    "dev": "pnpm build-fast --watch"
   },
   "sideEffects": false,
   "publishConfig": {
@@ -18,7 +18,6 @@
     "dist"
   ],
   "devDependencies": {
-    "chokidar-cli": "^3.0.0",
     "csstype": "3.1.2"
   },
   "dependencies": {

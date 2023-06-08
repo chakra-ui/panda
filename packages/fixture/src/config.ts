@@ -6,7 +6,7 @@ import { recipes } from './recipes'
 import { semanticTokens } from './semantic-tokens'
 
 const { utilities, patterns } = presetBase
-const { theme } = presetPanda
+const theme = presetPanda.theme
 
 const { breakpoints, keyframes } = theme
 
@@ -19,9 +19,9 @@ export const conditions = {
 }
 
 export const tokens = {
-  ...presetPanda.theme.tokens,
+  ...theme.tokens,
   colors: {
-    ...presetPanda.theme.tokens.colors,
+    ...theme.tokens.colors,
     deep: {
       test: {
         yam: {
@@ -43,7 +43,7 @@ export const tokens = {
 export const config: Config = {
   ...presetBase,
   theme: {
-    ...presetPanda.theme,
+    ...theme,
     tokens,
     semanticTokens,
     recipes,

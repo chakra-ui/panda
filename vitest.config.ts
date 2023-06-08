@@ -8,7 +8,7 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: /^@css-panda\/(.*)$/,
+        find: /^@pandacss\/(.*)$/,
         replacement: path.resolve('./packages/$1/src'),
       },
     ],
