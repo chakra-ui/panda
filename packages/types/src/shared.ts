@@ -10,7 +10,11 @@ export type RequiredBy<T, K extends keyof T> = Partial<Omit<T, K>> & Required<Pi
 
 export type AnyFunction<T = any> = (...args: T[]) => any
 
-export type Extendable<T> = T & { extend?: Partial<T> }
+type DeepPartial<T> = {
+  [P in keyof T]+?: DeepPartial<T[P]>
+}
+
+export type Extendable<T extends Record<any, any>> = T | { extend?: DeepPartial<T> }
 
 type Nullable<T> = T | null | undefined
 
