@@ -17,32 +17,32 @@ type StudioOptions = {
   }
 }
 
-type CoreOptions = {
+type PresetCore = {
   /**
    * The css selectors or media queries shortcuts.
    * @example `{ hover: "&:hover" }`
    */
-  conditions?: Conditions
+  conditions: Conditions
   /**
    * The global styles for your project.
    */
-  globalCss?: GlobalStyleObject
+  globalCss: GlobalStyleObject
   /**
    * The theme configuration for your project.
    */
-  theme?: Theme
+  theme: Theme
   /**
    * The css utility definitions.
    */
-  utilities?: UtilityConfig
+  utilities: UtilityConfig
   /**
    * Common styling or layout patterns for your project.
    */
-  patterns?: Record<string, PatternConfig>
+  patterns: Record<string, PatternConfig>
 }
 
 type ExtendableOptions = {
-  [K in keyof CoreOptions]: Extendable<CoreOptions[K]>
+  [K in keyof PresetCore]?: Extendable<PresetCore[K]>
 }
 
 type FileSystemOptions = {
