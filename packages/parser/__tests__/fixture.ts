@@ -16,7 +16,7 @@ import { getImportDeclarations } from '../src/import'
 
 const staticFilePath = 'test.tsx'
 
-const defaults = {
+const defaults: LoadConfigResult = {
   dependencies: [],
   config: {
     cwd: '',
@@ -41,7 +41,7 @@ const defaults = {
     jsxFactory: 'panda',
   },
   path: '',
-} satisfies LoadConfigResult
+}
 
 function getProject(code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf) {
   const config = options ? options(defaults.config) : defaults.config

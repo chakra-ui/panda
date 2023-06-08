@@ -1,32 +1,78 @@
-/* eslint-disable no-console */
-import { dirname, join } from 'path'
-import { fileURLToPath } from 'url'
-import fs from 'fs-extra'
-import { execa } from 'execa'
+import childProcess from 'child_process'
+import * as semver from 'semver'
+import { config } from 'dotenv'
 
-const dir = typeof __dirname === 'string' ? __dirname : dirname(fileURLToPath(import.meta.url))
-const root = dirname(dir)
+const execaSync = childProcess.execSync
 
-async function publish() {
-  const pkgPath = join(root, 'package.json')
-  const rawJSON = await fs.readFile(pkgPath, 'utf-8')
-  const pkg = JSON.parse(rawJSON)
-  pkg.name = 'panda-css-vscode'
-  await fs.writeJSON(pkgPath, pkg, { spaces: 2 })
+config()
 
-  await execa('npm', ['run', 'build'], { cwd: root, stdio: 'inherit' })
+const { version } = require('../package.json')
 
-  try {
-    console.log('\nPublish to VSCE...\n')
-    await execa('npx', ['vsce', 'publish', '--no-dependencies', '-p', process.env.VSCE_TOKEN!], {
-      cwd: root,
-      stdio: 'inherit',
-    })
-    // console.log('\nPublish to OVSE...\n')
-    // await execa('npx', ['ovsx', 'publish', '--no-dependencies', '-p', process.env.OVSX_TOKEN!], { cwd: root, stdio: 'inherit' })
-  } finally {
-    await fs.writeFile(pkgPath, rawJSON, 'utf-8')
-  }
+const releaseType = process.env.VSCE_RELEASE_TYPE
+
+const tokens = {
+  vscode: releaseType === 'dry-run' ? 'dry-run' : process.env.VSCE_TOKEN,
+  openvsx: releaseType === 'dry-run' ? 'dry-run' : process.env.OVSX_TOKEN,
 }
 
-publish()
+const hasTokens = tokens.vscode !== undefined
+if (!hasTokens) {
+  throw new Error('Cannot publish extension without tokens.')
+}
+
+const today = new Date().getTime().toString().slice(0, 8)
+const currentVersion = semver.valid(version)
+
+if (!currentVersion) {
+  throw new Error('Cannot get the current version number from package.json')
+}
+
+const rcVersion = semver.inc(currentVersion, 'minor')?.replace(/\.\d+$/, `.${today}`)
+if (!rcVersion) {
+  throw new Error("Could not populate the current version number for rc's build.")
+}
+
+const commands = {
+  vscode_package: 'pnpm run vsce:package',
+  vscode_publish: `pnpm vsce publish --packagePath panda.vsix --pat ${process.env.VSCE_TOKEN}`,
+  // rc release: publish to VS Code Marketplace with today's date as patch number
+  vscode_package_rc: `pnpm vsce package ${rcVersion} --pre-release --no-dependencies -o panda.vsix`,
+  vscode_rc: `pnpm vsce publish --pre-release --packagePath panda.vsix --pat ${process.env.VSCE_TOKEN}`,
+  // To publish to the open-vsx registry
+  openvsx_publish: `npx ovsx publish panda.vsix --pat ${process.env.OVSX_TOKEN}`,
+}
+
+console.log('[vsce:package]', commands.vscode_package_rc)
+switch (releaseType) {
+  case 'rc':
+    execaSync(commands.vscode_package_rc, { stdio: 'inherit' })
+    break
+  case 'stable':
+    execaSync(commands.vscode_package, { stdio: 'inherit' })
+    break
+  default:
+    console.log('[vsce:package]', "Skipping 'vsce package' step.")
+}
+
+console.log('[vsce:publish] publishing', rcVersion)
+switch (releaseType) {
+  case 'rc':
+    if (!rcVersion || !semver.valid(rcVersion) || semver.valid(rcVersion) === currentVersion) {
+      throw new Error('Cannot publish rc build with an invalid version number: ' + rcVersion)
+    }
+    execaSync(commands.vscode_rc, { stdio: 'inherit' })
+    break
+
+  case 'stable':
+    execaSync(commands.vscode_rc, { stdio: 'inherit' })
+    execaSync(commands.openvsx_publish, { stdio: 'inherit' })
+    break
+
+  case 'dry-run':
+    console.info('[vsce:publish]', `Current version: ${currentVersion}.`)
+    console.info('[vsce:publish]', `Pre-release version for rc's build: ${rcVersion}.`)
+    break
+
+  default:
+    throw new Error(`Invalid release type: ${releaseType}`)
+}

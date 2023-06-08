@@ -7,7 +7,7 @@ import { CommandPrompt } from './command-prompt'
 const installSteps = [
   {
     title: 'Install Panda in your project',
-    command: 'npm install @pandacss/dev'
+    command: 'npm i -D @pandacss/dev'
   },
   {
     title: 'Run the initialize command',

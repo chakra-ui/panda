@@ -1,5 +1,5 @@
-import { InlayHint, InlayHintKind, InlayHintParams } from 'vscode-languageserver'
-import { PandaExtension } from '..'
+import { InlayHint, InlayHintKind, type InlayHintParams } from 'vscode-languageserver'
+import { type PandaExtension } from '..'
 import { printTokenValue } from '../tokens/utils'
 import { tryCatch } from 'lil-fp/func'
 import { onError } from '../tokens/error'

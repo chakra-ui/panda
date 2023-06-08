@@ -1,7 +1,6 @@
 ---
-'@pandacss/presets': patch
+'@pandacss/preset-base': patch
+'@pandacss/preset-panda': patch
 ---
 
-- Update container pattern to use common values
-- Add `Square` pattern
-- Remove default `blocklist` from all patterns
+Initial release

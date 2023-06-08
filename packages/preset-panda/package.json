@@ -1,7 +1,7 @@
 {
-  "name": "@pandacss/presets",
+  "name": "@pandacss/preset-panda",
   "version": "0.0.2",
-  "description": "Common error messages for css panda",
+  "description": "The preset for PandaCSS that contains the default theme",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",

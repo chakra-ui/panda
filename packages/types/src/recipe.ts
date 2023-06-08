@@ -4,7 +4,7 @@ type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 
 type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
 
-export type RecipeVariantRecord = Record<string, Record<string, SystemStyleObject>>
+export type RecipeVariantRecord = Record<any, Record<any, SystemStyleObject>>
 
 export type RecipeSelection<T extends RecipeVariantRecord> = {
   [K in keyof T]?: StringToBoolean<keyof T[K]>
@@ -29,11 +29,8 @@ export type RecipeRuntimeFn<T extends RecipeVariantRecord> = RecipeVariantFn<T> 
   ): [RecipeSelection<T>, Pretty<Omit<Props, keyof RecipeVariantRecord>>]
 }
 
-export type RecipeCompoundSelection<
-  T extends RecipeVariantRecord,
-  Key extends Exclude<keyof T, 'css'> = Exclude<keyof T, 'css'>,
-> = {
-  [K in Key]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>>
+export type RecipeCompoundSelection<T extends RecipeVariantRecord> = {
+  [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>>
 }
 
 export type RecipeCompoundVariant<T extends RecipeVariantRecord> = RecipeCompoundSelection<T> & {
@@ -61,9 +58,7 @@ export type RecipeDefinition<T extends RecipeVariantRecord> = {
 
 export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => RecipeRuntimeFn<T>
 
-export type RecipeConfig<T = RecipeVariantRecord> = RecipeDefinition<
-  T extends RecipeVariantRecord ? T : RecipeVariantRecord
-> & {
+export type RecipeConfig<T extends RecipeVariantRecord = RecipeVariantRecord> = RecipeDefinition<T> & {
   /**
    * The name of the recipe.
    */

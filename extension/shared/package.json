@@ -1,15 +1,18 @@
 {
   "publisher": "chakra-ui",
-  "name": "panda-css-extension-shared",
+  "name": "@pandacss/extension-shared",
   "displayName": "🐼 Panda CSS",
   "description": "Shared utilities between extension client & server",
   "version": "0.0.1",
-  "private": true,
   "license": "MIT",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "repository": {
     "url": "https://github.com/chakra-ui/panda",
     "directory": "packages/extension/vscode"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsup src/index.ts --format=esm,cjs --dts",
