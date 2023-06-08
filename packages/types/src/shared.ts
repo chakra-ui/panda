@@ -14,11 +14,11 @@ type DeepPartial<T> = {
   [P in keyof T]+?: DeepPartial<T[P]>
 }
 
-export type Extendable<T> = T | { extend?: T | DeepPartial<T> }
+export type Extendable<T extends Record<any, any>> = T | { extend?: DeepPartial<T> }
 
 type Nullable<T> = T | null | undefined
 
-export type UnwrapExtend<T extends Record<string, unknown>> = {
+export type UnwrapExtend<T> = {
   [K in keyof T]: T[K] extends Nullable<Extendable<infer U>> ? U : T[K]
 }
 

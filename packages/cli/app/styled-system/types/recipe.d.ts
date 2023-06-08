@@ -4,7 +4,7 @@ type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 
 type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
 
-export type RecipeVariantRecord = Record<string, Record<string, SystemStyleObject>>
+export type RecipeVariantRecord = Record<any, Record<any, SystemStyleObject>>
 
 export type RecipeSelection<T extends RecipeVariantRecord> = {
   [K in keyof T]?: StringToBoolean<keyof T[K]>
@@ -33,9 +33,9 @@ export type RecipeCompoundSelection<T extends RecipeVariantRecord> = {
   [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>>
 }
 
-export type RecipeCompoundVariant<T extends RecipeVariantRecord> = RecipeVariantRecord extends T
-  ? RecipeCompoundSelection<T> | { css: SystemStyleObject }
-  : RecipeCompoundSelection<T> & { css: SystemStyleObject }
+export type RecipeCompoundVariant<T extends RecipeVariantRecord> = RecipeCompoundSelection<T> & {
+  css: SystemStyleObject
+}
 
 export type RecipeDefinition<T extends RecipeVariantRecord> = {
   /**

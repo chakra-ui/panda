@@ -68,7 +68,7 @@
     "vite": "4.3.9"
   },
   "devDependencies": {
-    "@pandacss/presets": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*",
     "@types/react": "18.2.8",
     "@types/react-dom": "18.2.4",
     "@types/update-notifier": "6.0.4",
