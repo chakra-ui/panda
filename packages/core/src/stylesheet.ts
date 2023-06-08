@@ -64,7 +64,7 @@ export class Stylesheet {
   processRecipe = (config: RecipeConfig, styles: SystemStyleObject) => {
     this.recipes.process(config.name, { styles })
     config.compoundVariants?.forEach((compoundVariant) => {
-      this.processAtomic(compoundVariant.css)
+      this.processAtomic(compoundVariant.css as any)
     })
   }
 
@@ -78,7 +78,7 @@ export class Stylesheet {
     }
 
     compoundVariants.forEach((compoundVariant) => {
-      this.processAtomic(compoundVariant.css)
+      this.processAtomic(compoundVariant.css as any)
     })
   }
 
