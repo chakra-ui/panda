@@ -18,7 +18,7 @@ const fileMap = [
   [
     '@pandacss/types',
     [
-      ['csstype.d.ts'],
+      ['csstype.d.d.ts'],
       ['system-types.d.ts'],
       ['selectors.d.ts'],
       ['recipe.d.ts'],
