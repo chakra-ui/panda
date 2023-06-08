@@ -348,10 +348,12 @@
   --colors-color-palette-900: var(--colors-color-palette-900)
 }
 
-{
-  --colors-text: #000;
-  --colors-bg: #fff;
-  --colors-card: #E2E8F0
-}
+@media (prefers-color-scheme: light) {
+  :where(:root, :host) {
+    --colors-text: #000;
+    --colors-bg: #fff;
+    --colors-card: #E2E8F0
+        }
+    }
   }
   

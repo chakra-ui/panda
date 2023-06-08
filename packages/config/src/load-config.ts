@@ -16,7 +16,7 @@ export async function loadConfigFile(options: ConfigFileOptions) {
 }
 
 export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundleConfigFile>>, cwd: string) {
-  const presets = [require('@pandacss/preset-base')]
+  const presets: any[] = ['@pandacss/preset-base']
 
   if (!result.config.presets) {
     presets.push('@pandacss/dev/presets')

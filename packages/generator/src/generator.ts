@@ -16,7 +16,7 @@ const defaults = (conf: LoadConfigResult): LoadConfigResult => ({
   },
 })
 
-const getImportMap = (outdir = '') => ({
+const getImportMap = (outdir: string) => ({
   css: `${outdir}/css`,
   recipe: `${outdir}/recipes`,
   pattern: `${outdir}/patterns`,

@@ -1,5 +1,5 @@
 @layer utilities {
-  .color_red\.400 {
-    color: red.400
+  .text_red\.400 {
+    color: var(--colors-red-400)
     }
 }
