@@ -1,4 +1,4 @@
-import { PandaExtension } from '../index'
+import { type PandaExtension } from '../index'
 import { getMarkdownCss, nodeRangeToVsCodeRange, printTokenValue } from '../tokens/utils'
 import { renderTokenColorPreview } from '../tokens/render-token-color-preview'
 import { generateKeyframeCss } from '../tokens/generate-keyframe-css'
@@ -31,7 +31,7 @@ export function registerHover(extension: PandaExtension) {
             const { token } = tokenMatch
 
             const contents = [printTokenValue(token, settings)] as any[]
-            if (settings['tokens.css-preview.enabled']) {
+            if (settings['hovers.tokens.css-preview.enabled']) {
               const css = getMarkdownCss(ctx, { [tokenMatch.propName]: token.value }, settings).raw
               contents.push({ language: 'css', value: css })
             }

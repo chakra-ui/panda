@@ -1,9 +1,9 @@
 import { ConfigError, ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
-import { findConfigFile } from './find-config'
-import { getResolvedConfig } from './merge-config'
 import type { LoadConfigResult } from '@pandacss/types'
 import { bundle } from './bundle'
+import { findConfigFile } from './find-config'
+import { getResolvedConfig } from './merge-config'
 
 type ConfigFileOptions = {
   cwd: string
@@ -16,8 +16,15 @@ export async function loadConfigFile(options: ConfigFileOptions) {
 }
 
 export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundleConfigFile>>, cwd: string) {
-  // set default presets
-  result.config.presets ||= ['@pandacss/dev/presets']
+  const presets: any[] = ['@pandacss/preset-base']
+
+  if (!result.config.presets) {
+    presets.push('@pandacss/dev/presets')
+  } else {
+    presets.push(...result.config.presets)
+  }
+
+  result.config.presets = presets
 
   const mergedConfig = await getResolvedConfig(result.config, cwd)
 

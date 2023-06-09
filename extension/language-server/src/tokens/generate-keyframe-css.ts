@@ -1,6 +1,6 @@
 import { toCss } from '@pandacss/core'
 import postcss from 'postcss'
-import { PandaContext } from '@pandacss/node'
+import { type PandaContext } from '@pandacss/node'
 
 /** @see packages/generator/src/artifacts/css/keyframe-css.ts */
 export function generateKeyframeCss(ctx: PandaContext, keyframeName: string) {

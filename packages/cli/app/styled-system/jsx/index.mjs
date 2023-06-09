@@ -1,4 +1,5 @@
 export * from './factory.mjs';
+export * from './styled-link.mjs';
 export * from './box.mjs';
 export * from './flex.mjs';
 export * from './stack.mjs';
@@ -16,4 +17,3 @@ export * from './wrap.mjs';
 export * from './container.mjs';
 export * from './divider.mjs';
 export * from './float.mjs';
-export * from './styled-link.mjs';

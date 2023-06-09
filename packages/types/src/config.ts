@@ -1,4 +1,4 @@
-import type { Conditions as TConditions } from './conditions'
+import type { Conditions } from './conditions'
 import type { PatternConfig } from './pattern'
 import type { Extendable, RequiredBy, UnwrapExtend } from './shared'
 import type { StaticCssOptions } from './static-css'
@@ -17,28 +17,32 @@ type StudioOptions = {
   }
 }
 
-type ExtendableOptions = {
+type PresetCore = {
   /**
    * The css selectors or media queries shortcuts.
    * @example `{ hover: "&:hover" }`
    */
-  conditions?: Extendable<TConditions>
+  conditions: Conditions
   /**
    * The global styles for your project.
    */
-  globalCss?: Extendable<GlobalStyleObject>
+  globalCss: GlobalStyleObject
   /**
    * The theme configuration for your project.
    */
-  theme?: Extendable<Theme>
+  theme: Theme
   /**
    * The css utility definitions.
    */
-  utilities?: Extendable<UtilityConfig>
+  utilities: UtilityConfig
   /**
    * Common styling or layout patterns for your project.
    */
-  patterns?: Extendable<Record<string, PatternConfig>>
+  patterns: Record<string, PatternConfig>
+}
+
+type ExtendableOptions = {
+  [K in keyof PresetCore]?: Extendable<PresetCore[K]>
 }
 
 type FileSystemOptions = {

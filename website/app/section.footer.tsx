@@ -7,7 +7,7 @@ import { ButtonIcon } from '../theme/icons'
 
 export const SectionFooter = () => {
   return (
-    <panda.footer bg="bg.dark">
+    <panda.footer bg={{ base: 'black', _dark: 'gray.700' }}>
       <Container py="10">
         <Flex
           gap="6"

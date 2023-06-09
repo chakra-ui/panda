@@ -1,0 +1,34 @@
+name: Publish Extension
+
+on:
+  workflow_dispatch:
+
+  push:
+    paths:
+      - '.changeset/**'
+      - 'extension/**'
+    branches:
+      - main
+
+jobs:
+  release:
+    name: VSCode Marketplace
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install
+        uses: ./.github/composite-actions/install
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Publish RC
+        working-directory: ./extension/vscode
+        run: pnpm release
+        env:
+          VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
+          VSCE_RELEASE_TYPE: rc

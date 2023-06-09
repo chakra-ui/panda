@@ -1,13 +1,16 @@
 import * as path from 'path'
-import vscode, { CancellationToken } from 'vscode'
+import { type CancellationToken, type TextEditorDecorationType } from 'vscode'
+import * as vscode from 'vscode'
 import {
   LanguageClient,
-  LanguageClientOptions,
-  MessageSignature,
-  ServerOptions,
+  type LanguageClientOptions,
+  type MessageSignature,
+  type ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node'
 import { registerClientCommands } from './commands'
+import { defaultSettings, getFlattenedSettings } from '@pandacss/extension-shared'
+import { type TsLanguageFeaturesApiV0, getTsApi } from './typescript-language-features'
 
 // Client entrypoint
 const docSelector: vscode.DocumentSelector = ['typescript', 'typescriptreact', 'javascript', 'javascriptreact']
@@ -41,8 +44,22 @@ export async function activate(context: vscode.ExtensionContext) {
     },
   }
   const activeDocument = vscode.window.activeTextEditor?.document
+  let tsApi: TsLanguageFeaturesApiV0 | undefined
+
+  let colorDecorationType: TextEditorDecorationType | undefined
+  const clearColors = () => {
+    if (colorDecorationType) {
+      colorDecorationType.dispose()
+      colorDecorationType = undefined
+    }
+  }
+  context.subscriptions.push({ dispose: clearColors })
+
+  const getFreshPandaSettings = () =>
+    getFlattenedSettings((vscode.workspace.getConfiguration('panda') as any) ?? defaultSettings)
 
   // Options to control the language client
+  let activeDocumentFilepath = activeDocument?.uri.fsPath
   const clientOptions: LanguageClientOptions = {
     documentSelector: docSelector as string[],
     diagnosticCollectionName: 'panda',
@@ -51,9 +68,56 @@ export async function activate(context: vscode.ExtensionContext) {
     },
     initializationOptions: () => {
       return {
-        // configPath: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
         activeDocumentFilepath: activeDocument?.uri.fsPath,
       }
+    },
+    middleware: {
+      async provideDocumentColors(document, token, next) {
+        const settings = getFreshPandaSettings()
+        if (!settings['color-hints.enabled']) return
+        if (settings['color-hints.color-preview.enabled']) return next(document, token)
+
+        if (!colorDecorationType) {
+          colorDecorationType = vscode.window.createTextEditorDecorationType({
+            before: {
+              width: '0.8em',
+              height: '0.8em',
+              contentText: ' ',
+              border: '0.1em solid',
+              margin: '0.1em 0.2em 0',
+            },
+            dark: {
+              before: {
+                borderColor: '#eeeeee',
+              },
+            },
+            light: {
+              before: {
+                borderColor: '#000000',
+              },
+            },
+          })
+        }
+
+        const colors = (await next(document, token)) ?? []
+        vscode.window.visibleTextEditors
+          .find((editor) => editor.document === document)
+          ?.setDecorations(
+            colorDecorationType,
+            colors.map(({ range, color }) => ({
+              range,
+              renderOptions: {
+                before: {
+                  backgroundColor: `rgba(${color.red * 255}, ${color.green * 255}, ${color.blue * 255}, ${
+                    color.alpha
+                  })`,
+                },
+              },
+            })),
+          )
+
+        return []
+      },
     },
   }
 
@@ -72,21 +136,71 @@ export async function activate(context: vscode.ExtensionContext) {
     console.log('handleFailedRequest', { type, token, error, defaultValue, showNotification })
     return defaultValue
   }
+  client.onNotification('$/clear-colors', clearColors)
 
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor((editor) => {
       if (!editor) return
-
+      if (!client.isRunning()) return
       if (editor.document.uri.scheme !== 'file') return
-      client.sendNotification('$/active-document-changed', {
-        activeDocumentFilepath: editor.document.uri.fsPath,
-      })
+
+      activeDocumentFilepath = editor.document.uri.fsPath
+      client.sendNotification('$/panda-active-document-changed', { activeDocumentFilepath })
+    }),
+  )
+
+  context.subscriptions.push(
+    client.onNotification('$/panda-lsp-ready', async () => {
+      if (!activeDocumentFilepath) return
+
+      try {
+        // no need to await this one
+        client.sendNotification('$/panda-active-document-changed', { activeDocumentFilepath })
+        if (!tsApi) return
+
+        const configPath = await client.sendRequest<string>('$/get-config-path', { activeDocumentFilepath })
+        if (!configPath) return
+
+        tsApi.configurePlugin('@pandacss/ts-plugin', {
+          type: 'active-doc',
+          data: { activeDocumentFilepath, configPath },
+        })
+      } catch (err) {
+        debug && console.log('error sending doc notif', err)
+      }
+    }),
+  )
+
+  context.subscriptions.push(
+    client.onNotification(
+      '$/panda-doc-config-path',
+      (notif: { activeDocumentFilepath: string; configPath: string }) => {
+        if (!tsApi) return
+
+        tsApi.configurePlugin('@pandacss/ts-plugin', { type: 'active-doc', data: notif })
+        debug && console.log({ type: 'active-doc', data: notif })
+      },
+    ),
+  )
+
+  context.subscriptions.push(
+    client.onNotification('$/panda-token-names', (notif: { configPath: string; tokenNames: string[] }) => {
+      if (!tsApi) return
+
+      tsApi.configurePlugin('@pandacss/ts-plugin', { type: 'setup', data: notif })
+      debug && console.log({ type: 'setup', data: notif })
     }),
   )
 
   debug && console.log('before start')
 
   registerClientCommands({ context, debug, client, loadingStatusBarItem: statusBarItem })
+
+  try {
+    tsApi = await getTsApi()
+  } catch (err) {
+    debug && console.log('error loading TS', err)
+  }
 
   try {
     // Start the client. This will also launch the server
@@ -97,7 +211,7 @@ export async function activate(context: vscode.ExtensionContext) {
     statusBarItem.text = '🐼'
     statusBarItem.tooltip = 'Open current panda config'
   } catch (err) {
-    debug && console.log('error', err)
+    debug && console.log('error starting client', err)
   }
 }
 

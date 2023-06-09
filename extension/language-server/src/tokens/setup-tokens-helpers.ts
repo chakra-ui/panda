@@ -1,18 +1,21 @@
 import { CompletionItem, CompletionItemKind, Position, Range } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
-import { PandaExtensionSetup } from '../setup-builder'
+import { type PandaExtensionSetup } from '../setup-builder'
 
-import { Dict, ParserResultType, RawCondition, ResultItem, SystemStyleObject } from '@pandacss/types'
+import {
+  type Dict,
+  type ParserResultType,
+  type RawCondition,
+  type ResultItem,
+  type SystemStyleObject,
+} from '@pandacss/types'
 import { CallExpression, Identifier, JsxOpeningElement, JsxSelfClosingElement, Node, ts } from 'ts-morph'
 
 import {
-  BoxContext,
   BoxNodeArray,
   BoxNodeLiteral,
   BoxNodeMap,
   BoxNodeObject,
-  PrimitiveType,
-  Unboxed,
   box,
   extractCallExpressionArguments,
   extractJsxAttribute,
@@ -20,17 +23,20 @@ import {
   findIdentifierValueDeclaration,
   maybeBoxNode,
   unbox,
+  type BoxContext,
+  type PrimitiveType,
+  type Unboxed,
 } from '@pandacss/extractor'
 import { type PandaContext } from '@pandacss/node'
 import { walkObject } from '@pandacss/shared'
+import { type Token } from '@pandacss/token-dictionary'
 import { Bool } from 'lil-fp'
+import { type PandaVSCodeSettings } from '@pandacss/extension-shared'
 import { match } from 'ts-pattern'
 import { color2kToVsCodeColor } from './color2k-to-vscode-color'
 import { expandTokenFn, extractTokenPaths } from './expand-token-fn'
 import { isColor } from './is-color'
-import { Token } from './types'
 import { getMarkdownCss, isObjectLike, nodeRangeToVsCodeRange, printTokenValue } from './utils'
-import { PandaVSCodeSettings } from '../settings'
 
 type ClosestMatch = {
   range: Range
@@ -114,7 +120,7 @@ const getNestedBoxProp = (map: BoxNodeMap, path: string[]) => {
   }, map as any)
 }
 
-export function setupTokensHelpers(setup: PandaExtensionSetup) {
+export function setupTokensHelpers(setup: PandaExtensionSetup): any {
   function getSourceFile(doc: TextDocument) {
     const ctx = setup.getContext()
     if (!ctx) return
@@ -544,10 +550,10 @@ const getCompletionFor = (
 
   const utility = ctx.config.utilities?.[propName]
   const category = typeof utility?.values === 'string' && utility?.values
-  if (!category) return
+  if (!category) return []
 
   const values = ctx.tokens.categoryMap.get(category)
-  if (!values) return
+  if (!values) return []
 
   const items = [] as CompletionItem[]
   values.forEach((token, name) => {

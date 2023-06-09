@@ -2,147 +2,203 @@ import { describe, expect, test } from 'vitest'
 import { mergeConfigs } from '../src/merge-config'
 import type { Config } from '@pandacss/types'
 
+const defineConfig = <T extends Config>(config: T) => config
+
 describe('mergeConfigs / theme', () => {
   test('should merge configs', () => {
     const result = mergeConfigs([
-      {
+      defineConfig({
         theme: {
           extend: {
-            colors: {
-              red: 'red',
+            tokens: {
+              colors: {
+                red: { value: 'red' },
+              },
             },
           },
         },
-      } as Config,
-      {
+      }),
+      defineConfig({
         theme: {
           extend: {
-            colors: {
-              blue: 'blue',
+            tokens: {
+              colors: {
+                blue: { value: 'blue' },
+              },
             },
           },
         },
-      } as Config,
+      }) as Config,
     ])
 
-    expect(result).toMatchObject({
-      theme: {
-        colors: {
-          blue: 'blue',
-          red: 'red',
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "theme": {
+          "tokens": {
+            "colors": {
+              "blue": {
+                "value": "blue",
+              },
+              "red": {
+                "value": "red",
+              },
+            },
+          },
         },
-      },
-    })
+      }
+    `)
   })
 
   test('should merge override', () => {
-    const userConfig = {
+    const userConfig = defineConfig({
       theme: {
         extend: {
-          colors: {
-            blue: 'blue',
+          tokens: {
+            colors: {
+              blue: { value: 'blue' },
+            },
           },
         },
       },
-    } as Config
+    })
 
-    const defaultConfig = {
+    const defaultConfig = defineConfig({
       theme: {
-        colors: {
-          red: 'override',
-        },
-      },
-    } as Config
-
-    const result = mergeConfigs([userConfig, defaultConfig])
-
-    expect(result).toMatchObject({
-      theme: {
-        colors: {
-          blue: 'blue',
-          red: 'override',
+        tokens: {
+          colors: {
+            red: { value: 'override' },
+          },
         },
       },
     })
+
+    const result = mergeConfigs([userConfig, defaultConfig])
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "theme": {
+          "tokens": {
+            "colors": {
+              "blue": {
+                "value": "blue",
+              },
+              "red": {
+                "value": "override",
+              },
+            },
+          },
+        },
+      }
+    `)
   })
 
   test('should merge and override', () => {
-    const userConfig = {
+    const userConfig = defineConfig({
       theme: {
-        colors: {
-          pink: 'pink',
-        },
-        extend: {
+        tokens: {
           colors: {
-            blue: 'blue',
+            pink: { value: 'pink' },
           },
         },
-      },
-    } as Config
-
-    const defaultConfig = {
-      theme: {
-        colors: {
-          red: 'override',
-        },
         extend: {
-          colors: {
-            orange: 'orange',
+          tokens: {
+            colors: {
+              blue: { value: 'blue' },
+            },
           },
-        },
-      },
-    } as Config
-
-    const result = mergeConfigs([userConfig, defaultConfig])
-
-    expect(result).toMatchObject({
-      theme: {
-        colors: {
-          blue: 'blue',
-          orange: 'orange',
-          pink: 'pink',
         },
       },
     })
+
+    const defaultConfig = defineConfig({
+      theme: {
+        tokens: {
+          colors: {
+            red: { value: 'override' },
+          },
+        },
+        extend: {
+          tokens: {
+            colors: {
+              orange: { value: 'orange' },
+            },
+          },
+        },
+      },
+    })
+
+    const result = mergeConfigs([userConfig, defaultConfig])
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "theme": {
+          "tokens": {
+            "colors": {
+              "blue": {
+                "value": "blue",
+              },
+              "orange": {
+                "value": "orange",
+              },
+              "pink": {
+                "value": "pink",
+              },
+            },
+          },
+        },
+      }
+    `)
   })
 
   test('non-existing keys', () => {
-    const userConfig = {
+    const userConfig = defineConfig({
       theme: {
         extend: {
-          colors: {
-            blue: 'blue',
+          tokens: {
+            colors: {
+              blue: { value: 'blue' },
+            },
           },
         },
       },
-    } as Config
+    })
 
-    const defaultConfig = {
+    const defaultConfig = defineConfig({
       theme: {
-        fonts: {
-          sans: 'Lato, sans-serif',
-        },
-      },
-    } as Config
-
-    const result = mergeConfigs([userConfig, defaultConfig])
-
-    expect(result).toMatchObject({
-      theme: {
-        fonts: {
-          sans: 'Lato, sans-serif',
-        },
-        colors: {
-          blue: 'blue',
+        tokens: {
+          fonts: {
+            sans: { value: 'Lato, sans-serif' },
+          },
         },
       },
     })
+
+    const result = mergeConfigs([userConfig, defaultConfig])
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "theme": {
+          "tokens": {
+            "colors": {
+              "blue": {
+                "value": "blue",
+              },
+            },
+            "fonts": {
+              "sans": {
+                "value": "Lato, sans-serif",
+              },
+            },
+          },
+        },
+      }
+    `)
   })
 })
 
 describe('mergeConfigs / utilities', () => {
   test('should merge utilities', () => {
-    const userConfig = {
+    const userConfig = defineConfig({
       utilities: {
         extend: {
           backgroundColor: {
@@ -150,16 +206,16 @@ describe('mergeConfigs / utilities', () => {
           },
         },
       },
-    }
+    })
 
-    const defaultConfig = {
+    const defaultConfig = defineConfig({
       utilities: {
         backgroundColor: {
           className: 'bg',
           values: 'colors',
         },
       },
-    }
+    })
 
     const result = mergeConfigs([userConfig, defaultConfig])
 
@@ -176,11 +232,12 @@ describe('mergeConfigs / utilities', () => {
 
 describe('mergeConfigs / recipes', () => {
   test('should merge utilities', () => {
-    const userConfig = {
+    const userConfig = defineConfig({
       theme: {
         extend: {
           recipes: {
             button: {
+              name: 'button',
               variants: {
                 size: {
                   large: { fontSize: 'lg' },
@@ -188,6 +245,7 @@ describe('mergeConfigs / recipes', () => {
               },
             },
             checkbox: {
+              name: 'checkbox',
               variants: {
                 shape: {
                   circle: { rounded: 'full' },
@@ -197,9 +255,9 @@ describe('mergeConfigs / recipes', () => {
           },
         },
       },
-    }
+    })
 
-    const defaultConfig = {
+    const defaultConfig = defineConfig({
       theme: {
         recipes: {
           button: {
@@ -216,6 +274,7 @@ describe('mergeConfigs / recipes', () => {
         extend: {
           recipes: {
             checkbox: {
+              name: 'checkbox',
               variants: {
                 default: {},
               },
@@ -223,7 +282,7 @@ describe('mergeConfigs / recipes', () => {
           },
         },
       },
-    }
+    })
 
     const result = mergeConfigs([userConfig, defaultConfig])
 
@@ -243,6 +302,7 @@ describe('mergeConfigs / recipes', () => {
           },
         },
         "checkbox": {
+          "name": "checkbox",
           "variants": {
             "default": {},
             "shape": {

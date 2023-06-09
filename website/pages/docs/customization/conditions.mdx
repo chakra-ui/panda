@@ -11,16 +11,16 @@ Conditions allow you to apply different styles and behaviors based on specific c
 
 To create a condition, you can use the conditions property in the config. Let's say we want to create a `groupHover` pseudo condition that applies styles to an element when a parent container with the `group` role is hovered.
 
-
-```ts
-const config = {
+```ts filename="panda.config.ts"
+export default defineConfig({
   conditions: {
     extend: {
-      groupHover: "[role=group]:where(:hover, [data-hover]) &"
-    }
-  }
-}
+      groupHover: "[role=group]:where(:hover, [data-hover]) &",
+    },
+  },
+});
 ```
+
 
 Then you can run the following command to generate the pattern JS code:
 

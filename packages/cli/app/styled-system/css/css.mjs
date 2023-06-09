@@ -2,6 +2,7 @@ import { createCss, createMergeCss, hypenateProperty, withoutSpace } from '../he
 import { sortConditions, finalizeConditions } from './conditions.mjs';
 
 const classNameMap = {
+  "borderSlim": "border-slim",
   "aspectRatio": "aspect",
   "boxDecorationBreak": "decoration",
   "zIndex": "z",
@@ -266,7 +267,6 @@ const classNameMap = {
   "stroke": "stroke",
   "srOnly": "sr",
   "debug": "debug",
-  "borderSlim": "border-slim",
   "textStyle": "textStyle"
 }
 

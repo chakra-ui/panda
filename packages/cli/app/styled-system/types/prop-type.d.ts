@@ -3,6 +3,7 @@ import type { CssProperties } from './system-types'
 import type { Tokens } from '../tokens'
 
 type PropertyValueTypes  = {
+	borderSlim: Tokens["colors"];
 	aspectRatio: "square" | "landscape" | "portrait" | "wide" | "ultrawide" | "golden";
 	top: Tokens["spacing"];
 	left: Tokens["spacing"];
@@ -192,7 +193,6 @@ type PropertyValueTypes  = {
 	stroke: Tokens["colors"];
 	srOnly: boolean;
 	debug: boolean;
-	borderSlim: Tokens["colors"];
 	colorPalette: "rose" | "pink" | "fuchsia" | "purple" | "indigo" | "blue" | "sky" | "cyan" | "teal" | "green" | "lime" | "yellow" | "orange" | "red" | "gray" | "slate";
 	textStyle: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "8xl" | "9xl";
 }

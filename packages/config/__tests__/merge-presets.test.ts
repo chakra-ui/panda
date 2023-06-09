@@ -1,10 +1,12 @@
+import type { Config } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
 import { getResolvedConfig } from '../src/merge-config'
-import type { Config } from '@pandacss/types'
+
+const defineConfig = <T extends Config>(config: T) => config
 
 describe('mergeConfigs / presets', () => {
   test('Recursively merge all presets into a single config', async () => {
-    const defaultConfig = {
+    const defaultConfig = defineConfig({
       theme: {
         recipes: {
           button: {
@@ -21,6 +23,7 @@ describe('mergeConfigs / presets', () => {
         extend: {
           recipes: {
             checkbox: {
+              name: 'checkbox',
               variants: {
                 default: {},
               },
@@ -28,13 +31,14 @@ describe('mergeConfigs / presets', () => {
           },
         },
       },
-    } as Config
+    })
 
-    const someLibConfig = {
+    const someLibConfig = defineConfig({
       theme: {
         extend: {
           recipes: {
             button: {
+              name: 'button',
               variants: {
                 kind: {
                   error: { backgroundColor: 'red' },
@@ -42,6 +46,7 @@ describe('mergeConfigs / presets', () => {
               },
             },
             table: {
+              name: 'table',
               variants: {
                 style: {
                   striped: { backgroundColor: 'gray.300' },
@@ -51,13 +56,14 @@ describe('mergeConfigs / presets', () => {
           },
         },
       },
-    } as Config
+    })
 
-    const anotherLibConfig = {
+    const anotherLibConfig = defineConfig({
       theme: {
         extend: {
           recipes: {
             button: {
+              name: 'button',
               variants: {
                 kind: {
                   info: { backgroundColor: 'blue.300' },
@@ -65,6 +71,7 @@ describe('mergeConfigs / presets', () => {
               },
             },
             menu: {
+              name: 'menu',
               variants: {
                 size: {
                   lg: { p: 0 },
@@ -74,10 +81,11 @@ describe('mergeConfigs / presets', () => {
           },
         },
       },
-    } as Config
+    })
 
     const asyncConfig = async () => {
       const boxPromise = Promise.resolve({
+        name: 'box',
         variants: {
           size: {
             lg: { p: 0 },
@@ -86,7 +94,7 @@ describe('mergeConfigs / presets', () => {
       })
 
       const box = await boxPromise
-      return {
+      return defineConfig({
         theme: {
           extend: {
             recipes: {
@@ -94,15 +102,16 @@ describe('mergeConfigs / presets', () => {
             },
           },
         },
-      } as Config
+      })
     }
 
-    const userConfig = {
+    const userConfig = defineConfig({
       presets: [defaultConfig, someLibConfig, anotherLibConfig, asyncConfig()],
       theme: {
         extend: {
           recipes: {
             button: {
+              name: 'button',
               variants: {
                 size: {
                   large: { fontSize: 'lg' },
@@ -110,6 +119,7 @@ describe('mergeConfigs / presets', () => {
               },
             },
             checkbox: {
+              name: 'checkbox',
               variants: {
                 shape: {
                   circle: { rounded: 'full' },
@@ -119,19 +129,16 @@ describe('mergeConfigs / presets', () => {
           },
         },
       },
-    } as Config
+    })
 
     const result = await getResolvedConfig(userConfig, 'src')
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "conditions": {},
-        "globalCss": {},
-        "patterns": {},
-        "presets": [],
         "theme": {
           "recipes": {
             "box": {
+              "name": "box",
               "variants": {
                 "size": {
                   "lg": {
@@ -162,6 +169,7 @@ describe('mergeConfigs / presets', () => {
               },
             },
             "checkbox": {
+              "name": "checkbox",
               "variants": {
                 "default": {},
                 "shape": {
@@ -172,6 +180,7 @@ describe('mergeConfigs / presets', () => {
               },
             },
             "menu": {
+              "name": "menu",
               "variants": {
                 "size": {
                   "lg": {
@@ -181,6 +190,7 @@ describe('mergeConfigs / presets', () => {
               },
             },
             "table": {
+              "name": "table",
               "variants": {
                 "style": {
                   "striped": {
@@ -191,7 +201,6 @@ describe('mergeConfigs / presets', () => {
             },
           },
         },
-        "utilities": {},
       }
     `)
   })

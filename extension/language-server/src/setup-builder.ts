@@ -1,9 +1,8 @@
 import { Builder } from '@pandacss/node'
-import { Connection, DidChangeConfigurationNotification, TextDocuments } from 'vscode-languageserver'
+import { type Connection, DidChangeConfigurationNotification, TextDocuments } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { serverCapabilities } from './capabilities'
-import { PandaVSCodeSettings, defaultSettings } from './settings'
-import { walkObject } from '@pandacss/shared'
+import { type PandaVSCodeSettings, defaultSettings, getFlattenedSettings } from '@pandacss/extension-shared'
 import glob from 'fast-glob'
 import { uriToPath } from './uri-to-path'
 import { BuilderResolver } from './builder-resolver'
@@ -42,6 +41,17 @@ export function setupBuilder(
     onDidChangeConfiguration: (settings: PandaVSCodeSettings) => void
   },
 ) {
+  builderResolver.onSetup(({ configPath }) => {
+    const builder = builderResolver.get(configPath)
+    if (!builder) return
+
+    const ctx = builder.context
+    if (!ctx) return
+
+    const tokenNames = Array.from(new Set(ctx.tokens.allTokens.map((token) => token.path.slice(1).join('.'))))
+    connection.sendNotification('$/panda-token-names', { configPath, tokenNames })
+  })
+
   async function setupWorkspaceBuilders(rootPath: string) {
     console.log('🐼 Setup workspace builders...')
     const configPathList = await glob(`${rootPath}/**/panda.config.{ts,js,cjs,mjs}`, {
@@ -106,7 +116,7 @@ export function setupBuilder(
   }
 
   const getFreshPandaSettings = async () => {
-    return flatten((await connection.workspace.getConfiguration('panda')) ?? defaultSettings)
+    return getFlattenedSettings((await connection.workspace.getConfiguration('panda')) ?? defaultSettings)
   }
 
   /**
@@ -169,6 +179,7 @@ export function setupBuilder(
       await Promise.all(validFolders?.map((folder) => setupWorkspaceBuilders(folder)) ?? [])
 
       onReady()
+      connection.sendNotification('$/panda-lsp-ready')
 
       if (activeDocumentFilepath) {
         const ctx = getClosestPandaContext(activeDocumentFilepath)
@@ -182,17 +193,24 @@ export function setupBuilder(
     return { capabilities: serverCapabilities }
   })
 
-  connection.onNotification('$/active-document-changed', (params) => {
+  connection.onNotification('$/panda-active-document-changed', (params) => {
     console.log('📄 Active document:', ref.activeDocumentFilepath)
     ref.activeDocumentFilepath = params.activeDocumentFilepath
 
-    ref.context
+    const configPath = builderResolver.findConfigDirpath(ref.activeDocumentFilepath, (_, configPath) => configPath)
+    if (!configPath) return
+
+    connection.sendNotification('$/panda-doc-config-path', {
+      activeDocumentFilepath: ref.activeDocumentFilepath,
+      configPath,
+    })
   })
 
-  connection.onRequest('$/get-config-path', () => {
-    if (!ref.activeDocumentFilepath) return
+  connection.onRequest('$/get-config-path', ({ activeDocumentFilepath }: { activeDocumentFilepath: string }) => {
+    activeDocumentFilepath ??= ref.activeDocumentFilepath
+    if (!activeDocumentFilepath) return
 
-    return builderResolver.findConfigDirpath(ref.activeDocumentFilepath, (_, configPath) => {
+    return builderResolver.findConfigDirpath(activeDocumentFilepath, (_, configPath) => {
       console.log('config path', configPath)
       return configPath
     })
@@ -232,13 +250,3 @@ export function setupBuilder(
 }
 
 export type PandaExtensionSetup = ReturnType<typeof setupBuilder>
-
-function flatten(values: Record<string, Record<string, any>>) {
-  const result: Record<string, any> = {}
-
-  walkObject(values, (token, paths) => {
-    result[paths.join('.')] = token
-  })
-
-  return result
-}

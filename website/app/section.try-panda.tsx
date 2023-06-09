@@ -7,7 +7,7 @@ import { CommandPrompt } from './command-prompt'
 const installSteps = [
   {
     title: 'Install Panda in your project',
-    command: 'npm install @pandacss/dev'
+    command: 'npm i -D @pandacss/dev'
   },
   {
     title: 'Run the initialize command',
@@ -21,7 +21,7 @@ const installSteps = [
 
 export const SectionTryPanda = () => {
   return (
-    <panda.section bg="bg.dark">
+    <panda.section bg={{ base: 'black', _dark: 'gray.700' }}>
       <Container pt="28" pb="24">
         <HStack gap="12">
           <panda.div
