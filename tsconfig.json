@@ -20,10 +20,5 @@
   },
   "include": ["packages"],
   "types": ["vitest/globals"],
-  "exclude": [
-    "node_modules",
-    "./packages/cli/app",
-    "./packages/extractor/__tests__/npm-bench",
-    "./packages/extractor/__tests__/samples"
-  ]
+  "exclude": ["node_modules", "./packages/extractor/__tests__/samples"]
 }

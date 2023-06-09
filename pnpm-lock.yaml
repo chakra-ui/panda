@@ -338,12 +338,6 @@ importers:
 
   packages/cli:
     dependencies:
-      '@ark-ui/react':
-        specifier: 0.6.0
-        version: 0.6.0(react-dom@18.2.0)(react@18.2.0)
-      '@astrojs/react':
-        specifier: 2.2.1
-        version: 2.2.1(@types/react-dom@18.2.4)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0)
       '@pandacss/astro':
         specifier: workspace:*
         version: link:../astro
@@ -368,43 +362,22 @@ importers:
       '@pandacss/shared':
         specifier: workspace:*
         version: link:../shared
+      '@pandacss/studio':
+        specifier: workspace:*
+        version: link:../studio
       '@pandacss/token-dictionary':
         specifier: workspace:*
         version: link:../token-dictionary
       '@pandacss/types':
         specifier: workspace:*
         version: link:../types
-      astro:
-        specifier: 2.6.1
-        version: 2.6.1(@types/node@20.2.5)
       cac:
         specifier: 6.7.14
         version: 6.7.14
-      react:
-        specifier: 18.2.0
-        version: 18.2.0
-      react-dom:
-        specifier: 18.2.0
-        version: 18.2.0(react@18.2.0)
-      vite:
-        specifier: 4.3.9
-        version: 4.3.9(@types/node@20.2.5)
     devDependencies:
-      '@types/react':
-        specifier: 18.0.17
-        version: 18.0.17
-      '@types/react-dom':
-        specifier: 18.2.4
-        version: 18.2.4
       '@types/update-notifier':
         specifier: 6.0.4
         version: 6.0.4
-      '@vitejs/plugin-react':
-        specifier: 4.0.0
-        version: 4.0.0(vite@4.3.9)
-      execa:
-        specifier: 7.1.1
-        version: 7.1.1
       kleur:
         specifier: 4.1.5
         version: 4.1.5
@@ -775,6 +748,61 @@ importers:
         version: link:../types
 
   packages/shared: {}
+
+  packages/studio:
+    dependencies:
+      '@ark-ui/react':
+        specifier: 0.6.0
+        version: 0.6.0(react-dom@18.2.0)(react@18.2.0)
+      '@astrojs/react':
+        specifier: 2.2.1
+        version: 2.2.1(@types/react-dom@18.2.4)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0)
+      '@pandacss/config':
+        specifier: workspace:*
+        version: link:../config
+      '@pandacss/logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@pandacss/node':
+        specifier: workspace:*
+        version: link:../node
+      '@pandacss/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@pandacss/token-dictionary':
+        specifier: workspace:*
+        version: link:../token-dictionary
+      '@pandacss/types':
+        specifier: workspace:*
+        version: link:../types
+      astro:
+        specifier: 2.6.1
+        version: 2.6.1(@types/node@20.2.5)
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+      vite:
+        specifier: 4.3.9
+        version: 4.3.9(@types/node@20.2.5)
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:*
+        version: link:../cli
+      '@types/react':
+        specifier: 18.0.17
+        version: 18.0.17
+      '@types/react-dom':
+        specifier: 18.2.4
+        version: 18.2.4
+      '@vitejs/plugin-react':
+        specifier: 4.0.0
+        version: 4.0.0(vite@4.3.9)
+      execa:
+        specifier: 7.1.1
+        version: 7.1.1
 
   packages/token-dictionary:
     dependencies:

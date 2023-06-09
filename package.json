@@ -21,7 +21,7 @@
     "typecheck": "tsc --noEmit",
     "release": "changeset publish",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
-    "prepare-studio": "pnpm --filter=./packages/cli app",
+    "prepare-studio": "pnpm --filter=./packages/studio codegen",
     "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
     "deploy-studio": "pnpm prepare-studio && pnpm build-studio",
     "serve-studio": "npx serve ./sandbox/vite-ts/panda-static",
@@ -52,9 +52,7 @@
   },
   "lint-staged": {
     "packages/**/*.{ts,tsx}": [
-      "pnpm prepare-studio",
-      "pnpm prettier-fix",
-      "git add --all packages/cli/app/"
+      "pnpm prettier-fix"
     ]
   },
   "packageManager": "pnpm@8.6.1",
