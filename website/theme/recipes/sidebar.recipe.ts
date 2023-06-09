@@ -8,7 +8,7 @@ const anatomy = createAnatomy('sidebar', [
   'menu-desktop',
   'menu-mobile',
   'footer',
-  'toggleButton'
+  'toggle-button'
 ])
 
 const parts = defineParts(anatomy.build())
@@ -121,7 +121,7 @@ export const sidebarRecipe = defineRecipe({
       },
 
     },
-    toggleButton: {
+    'toggle-button': {
       mdDown: { display: 'none' },
       h: 7,
       transitionProperty: 'colors',

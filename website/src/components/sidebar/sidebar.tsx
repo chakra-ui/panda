@@ -613,7 +613,7 @@ export function Sidebar({
             {config.sidebar.toggleButton && (
               <button
                 data-scope="sidebar"
-                data-part="toggleButton"
+                data-part="toggle-button"
                 title={showSidebar ? 'Hide sidebar' : 'Show sidebar'}
                 className="nextra-sidebar-toggle-button"
                 onClick={() => {
