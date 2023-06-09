@@ -12,7 +12,7 @@
 
 - ⚡️ Write style objects or style props, extract them at build time
 - ✨ Modern CSS output — cascade layers `@layer`, css variables and more
-- 🦄 Works with most JS frameworks — or even without one
+- 🦄 Works with most JavaScript frameworks
 - 🚀 Recipes and Variants - Just like Stitches™️ ✨
 - 🎨 High-level design tokens support for simultaneous themes
 - 💪 Type-safe styles and autocomplete (via codegen)
@@ -23,7 +23,7 @@
 
 <p align="center">
 <b>
-🐼 Get a taste of Panda. Try it out for yourself in &nbsp;
+🐼 Get a taste of Panda. Try it out for yourself in&nbsp;
  <a href="https://stackblitz.com/edit/vitejs-vite-lfwyue?file=src%2FApp.tsx&terminal=dev">StackBlitz</a>
 </b>
 </p>

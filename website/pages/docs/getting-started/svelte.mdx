@@ -84,19 +84,19 @@ To install Panda and corresponding dependencies run the following commands:
 <Tabs items={['pnpm', 'npm', 'yarn']}>
   <Tab>
     ```bash
-    pnpm install @pandacss/dev svelte-preprocess postcss --save-dev
+    pnpm install -D @pandacss/dev svelte-preprocess postcss
     pnpm panda init --postcss
     ```
   </Tab>
   <Tab>
     ```bash
-    npm install @pandacss/dev svelte-preprocess postcss --save-dev
+    npm install -D @pandacss/dev svelte-preprocess postcss
     npx panda init --postcss
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn add @pandacss/dev svelte-preprocess postcss --save-dev
+    yarn add -D @pandacss/dev svelte-preprocess postcss
     yarn panda init --postcss
     ```
   </Tab>
@@ -243,7 +243,7 @@ Run the following command to start your development server.
 Now you can start using Panda CSS in your project.
 Here is the snippet of code that you can use in your `src/routes/+page.svelte` file.
 
-```html filename="src/routes/+page.svelte"
+```jsx filename="src/routes/+page.svelte"
 <script>
 	import { css } from 'styled-system/css';
 </script>

@@ -5,8 +5,8 @@
   "description": "Shared utilities between extension client & server",
   "version": "0.0.1",
   "license": "MIT",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "repository": {
     "url": "https://github.com/chakra-ui/panda",
     "directory": "packages/extension/vscode"
@@ -14,6 +14,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format=esm,cjs --dts",
     "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",

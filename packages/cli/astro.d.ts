@@ -1,1 +1,2 @@
-export default function pandacss(): { name: string; hooks: any }
+export * from '@pandacss/astro'
+export { default } from '@pandacss/astro'
