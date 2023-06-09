@@ -3,7 +3,7 @@
   "displayName": "Panda CSS",
   "description": "🐼 The official Panda language server",
   "version": "0.0.1",
-  "main": "./dist/index.js",
+  "main": "dist/index.js",
   "repository": {
     "url": "https://github.com/chakra-ui/panda",
     "directory": "packages/extension/language-server"
@@ -17,6 +17,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@pandacss/core": "workspace:*",
     "@pandacss/extractor": "workspace:*",

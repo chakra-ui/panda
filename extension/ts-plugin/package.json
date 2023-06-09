@@ -4,7 +4,7 @@
   "description": "The official Panda plugin for VS Code",
   "version": "0.0.1",
   "license": "MIT",
-  "main": "./dist/index.js",
+  "main": "dist/index.js",
   "type": "commonjs",
   "repository": {
     "url": "https://github.com/chakra-ui/panda",
@@ -13,6 +13,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format=cjs --dts",
     "build-fast": "tsup src/index.ts --format=cjs --no-dts",

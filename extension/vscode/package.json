@@ -31,7 +31,14 @@
     "semantic",
     "w3c"
   ],
-  "main": "./dist/index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "assets",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
   "preview": true,
   "contributes": {
     "commands": [
@@ -197,23 +204,31 @@
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "release": "pnpm build --silent && tsx ./scripts/publish.ts",
-    "vsce:package": "pnpm --silent build && vsce package --no-dependencies -o panda.vsix",
-    "vsce:prerelease": "pnpm --silent build && vsce package patch --pre-release --no-dependencies -o panda.vsix",
-    "build:pkg": "pnpm build && pnpm vsce:package"
+    "vsce:package": "pnpm --silent build && ../vsix-builder/dist/cli-default.js package",
+    "vsce:prerelease": "pnpm --silent build && ../vsix-builder/dist/cli-default.js package patch --pre-release -o panda.vsix"
   },
   "dependencies": {
-    "@pandacss/ts-plugin": "0.0.1"
+    "@pandacss/ts-plugin": "workspace:*",
+    "@pandacss/dev": "workspace:*",
+    "@pandacss/preset-base": "workspace:*"
   },
+  "bundleDependencies": [
+    "@pandacss/ts-plugin",
+    "@pandacss/dev",
+    "@pandacss/preset-base",
+    "@pandacss/ts-plugin"
+  ],
   "devDependencies": {
-    "@pandacss/dev": "0.0.2",
+    "@pandacss/dev": "workspace:*",
+    "@pandacss/extension-shared": "workspace:*",
+    "@pandacss/language-server": "workspace:*",
+    "@pandacss/vsix-builder": "workspace:*",
     "@types/node": "20.2.5",
     "@types/vscode": "^1.78.1",
     "@vscode/vsce": "^2.19.0",
     "dotenv": "^16.1.4",
     "execa": "7.1.1",
     "fs-extra": "11.1.1",
-    "@pandacss/extension-shared": "0.0.1",
-    "@pandacss/language-server": "0.0.1",
     "semver": "^7.5.1",
     "tsup": "6.7.0",
     "typescript": "^5.1.3",
