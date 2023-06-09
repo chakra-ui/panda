@@ -643,6 +643,16 @@ importers:
         specifier: ^8.4.23
         version: 8.4.24
 
+  packages/preset-atlaskit:
+    dependencies:
+      '@pandacss/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      '@atlaskit/tokens':
+        specifier: 1.5.2
+        version: 1.5.2(react@16.14.0)
+
   packages/preset-base:
     dependencies:
       '@pandacss/types':
@@ -1445,6 +1455,38 @@ packages:
     resolution: {integrity: sha512-mHAOApWyjqSe5AQMOUD9rsZJqbMQqe3Wosb1a40JV6Okvyxj1G6GTlthwYadWCymq/lbgwh0PLiY8Fr4eFxtuQ==}
     dependencies:
       undici: 5.22.1
+
+  /@atlaskit/ds-lib@2.2.3(react@16.14.0):
+    resolution: {integrity: sha512-e+qn7miSyHDgMHP2zpHwDufalPKzRiaof9hd5WIskVs0BQpTR1bO2w7YkjMy5cMbYrQ+QYM64eiEv1SaDLCuIQ==}
+    peerDependencies:
+      react: ^16.8.0
+    dependencies:
+      '@babel/runtime': 7.22.3
+      bind-event-listener: 2.1.1
+      react: 16.14.0
+    dev: true
+
+  /@atlaskit/platform-feature-flags@0.2.2:
+    resolution: {integrity: sha512-9wsjb1ii4t4+IWnwC/jBvWpY8/Jqng59KQH/SNEEoBifZrP4vNAH6vpv8+gPeAhFK+2Pqpxr33yC1U4+sreNew==}
+    dependencies:
+      '@babel/runtime': 7.22.3
+    dev: true
+
+  /@atlaskit/tokens@1.5.2(react@16.14.0):
+    resolution: {integrity: sha512-KD57ivGunM/OJVN8pws+qbaq28eju39X7IsJPUgc+TN0TM8eLloC4qH56Hny1MYTDIU/rS4ZGa0EaHbA4wwi7A==}
+    peerDependencies:
+      react: ^16.8.0
+    dependencies:
+      '@atlaskit/ds-lib': 2.2.3(react@16.14.0)
+      '@atlaskit/platform-feature-flags': 0.2.2
+      '@babel/runtime': 7.22.3
+      '@babel/traverse': 7.22.4
+      '@babel/types': 7.22.4
+      bind-event-listener: 2.1.1
+      react: 16.14.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
 
   /@aw-web-design/x-default-browser@1.4.88:
     resolution: {integrity: sha512-AkEmF0wcwYC2QkhK703Y83fxWARttIWXDmQN8+cof8FmFZ5BRhnNXGymeb1S73bOCLfWjYELxtujL56idCN/XA==}
@@ -11129,6 +11171,10 @@ packages:
   /binary-extensions@2.2.0:
     resolution: {integrity: sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==}
     engines: {node: '>=8'}
+
+  /bind-event-listener@2.1.1:
+    resolution: {integrity: sha512-O+a5c0D2se/u2VlBJmPRn45IB6R4mYMh1ok3dWxrIZ2pmLqzggBhb875mbq73508ylzofc0+hT9W41x4Y2s8lg==}
+    dev: true
 
   /bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
@@ -22266,6 +22312,15 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: false
+
+  /react@16.14.0:
+    resolution: {integrity: sha512-0X2CImDkJGApiAlcf0ODKIneSwBPhqJawOa5wCtKbu7ZECrmS26NvtSILynQ66cgkT/RJ4LidJOc3bUESwmU8g==}
+    engines: {node: '>=0.10.0'}
+    dependencies:
+      loose-envify: 1.4.0
+      object-assign: 4.1.1
+      prop-types: 15.8.1
+    dev: true
 
   /react@18.2.0:
     resolution: {integrity: sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==}
