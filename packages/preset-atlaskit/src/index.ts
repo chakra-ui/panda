@@ -5,7 +5,7 @@ import { semanticColors } from './colors/semantic'
 import { radii } from './radii'
 import { semanticShadows } from './shadows'
 import { spacing } from './spacing'
-import { fontWeights, fonts, lineHeights } from './typography'
+import { fontSizes, fontWeights, fonts, letterSpacings, lineHeights } from './typography'
 
 const defineConfig = <T extends Config>(config: T) => config
 
@@ -15,8 +15,10 @@ export const preset = defineConfig({
     tokens: {
       colors: colors,
       radii: radii,
+      fontSizes: fontSizes,
       fontWeights: fontWeights,
       lineHeights: lineHeights,
+      letterSpacings: letterSpacings,
       fonts: fonts,
       spacing: spacing,
     },
