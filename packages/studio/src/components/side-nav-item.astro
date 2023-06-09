@@ -9,18 +9,18 @@ const { href } = Astro.props
 const isActive = Astro.url.pathname.startsWith(href)
 ---
 
-<panda.li>
+<li>
   <panda.a
     display="block"
     href={href}
     paddingY="1.5"
     cursor="pointer"
     fontSize="md"
-    fontWeight="semibold"
+    fontWeight="medium"
     transition="all 0.2s ease"
     aria-current={isActive ? 'page' : undefined}
-    color={{ _hover: 'blue.400', _currentPage: 'blue.400' }}
+    color={{ _hover: 'yellow.300', _currentPage: 'yellow.300' }}
   >
     <slot />
   </panda.a>
-</panda.li>
+</li>

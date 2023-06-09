@@ -10,11 +10,37 @@ export default defineConfig({
   jsxFramework: 'react',
   theme: {
     extend: {
+      tokens: {
+        colors: {
+          neutral: {
+            50: { value: '#fafafa' },
+            100: { value: '#f5f5f5' },
+            200: { value: '#e5e5e5' },
+            300: { value: '#d4d4d4' },
+            400: { value: '#a3a3a3' },
+            500: { value: '#737373' },
+            600: { value: '#525252' },
+            700: { value: '#404040' },
+            800: { value: '#262626' },
+            900: { value: '#171717' },
+            950: { value: '#0a0a0a' },
+          },
+        },
+        assets: {
+          check: {
+            value: {
+              type: 'url',
+              value:
+                'data:image/svg+xml;utf8,%3Csvg%20width%3D%226%22%20height%3D%226%22%20viewBox%3D%220%200%206%206%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200H3V3H0V0Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M3%200H6V3H3V0Z%22%20fill%3D%22white%22/%3E%3Cpath%20d%3D%22M3%203H6V6H3V3Z%22%20fill%3D%22%23E1E1E1%22/%3E%3Cpath%20d%3D%22M0%203H3V6H0V3Z%22%20fill%3D%22white%22/%3E%3C/svg%3E%0A',
+            },
+          },
+        },
+      },
       semanticTokens: {
         colors: {
-          text: { value: { base: '{colors.slate.200}', _osLight: '{colors.black}' } },
-          bg: { value: { base: '{colors.slate.900}', _osLight: '{colors.white}' } },
-          card: { value: { base: '{colors.slate.800}', _osLight: '{colors.slate.200}' } },
+          text: { value: { base: '{colors.neutral.200}', _osLight: '{colors.black}' } },
+          bg: { value: { base: '{colors.neutral.900}', _osLight: '{colors.white}' } },
+          card: { value: { base: '{colors.neutral.800}', _osLight: '{colors.neutral.200}' } },
         },
       },
     },

@@ -11,7 +11,9 @@
     "postbuild": "panda",
     "build-fast": "tsup scripts --format=esm,cjs --no-dts --no-splitting --shims",
     "dev": "pnpm build-fast --watch scripts",
-    "app:dev": "astro dev"
+    "dev:panda": "panda --clean --watch",
+    "dev:astro": "astro dev",
+    "start": "concurrently \"pnpm dev:panda\" \"pnpm dev:astro\""
   },
   "files": [
     "dist",

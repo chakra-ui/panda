@@ -20,11 +20,6 @@ export function TextStyles() {
             <panda.div paddingX="1" paddingY="2.5" key={name}>
               <panda.div borderColor="card">
                 <panda.span fontWeight="medium">{name}</panda.span>
-                <panda.div fontSize="small" flex="auto" marginTop="1.5">
-                  {Object.entries(styles).map(([attr, value], i, arr) => (
-                    <span key={attr}>{`${attr}: ${value}${i === arr.length - 1 ? '' : ', '}`}</span>
-                  ))}
-                </panda.div>
               </panda.div>
               <panda.div flex="auto" marginY="3" style={styles} truncate>
                 {customDocs.title} textStyles are time saving

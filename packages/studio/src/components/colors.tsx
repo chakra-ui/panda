@@ -1,4 +1,4 @@
-import { panda, Stack, Grid } from '../../styled-system/jsx'
+import { panda, Stack, Grid, HStack } from '../../styled-system/jsx'
 import { TokenGroup } from '../components/token-group'
 import { TokenContent } from '../components/token-content'
 import { ColorWrapper } from '../components/color-wrapper'
@@ -6,10 +6,28 @@ import { useColorDocs } from '../hooks/use-color-docs'
 
 const UNCATEGORIZED_ID = 'uncategorized' as const
 
-const extractColor = (col: string) => {
-  const format = /{colors.(.*)}/
-  const result = col.match(format)
-  return `colors.${result?.[1]}`
+// remove initial underscore
+const cleanCondition = (condition: string) => condition.replace(/^_/, '')
+
+function SemanticColorDisplay(props: { value: string; condition: string }) {
+  const { value, condition } = props
+  return (
+    <ColorWrapper height="12" style={{ background: value }}>
+      <panda.span
+        fontWeight="medium"
+        fontSize="sm"
+        minW="5"
+        bg="neutral.800"
+        px="1"
+        py="1"
+        roundedBottomRight="sm"
+        borderWidth="1px"
+        borderColor="neutral.700"
+      >
+        {cleanCondition(condition)}
+      </panda.span>
+    </ColorWrapper>
+  )
 }
 
 export function Colors() {
@@ -19,65 +37,16 @@ export function Colors() {
   const renderSemanticTokens = () => {
     return semanticTokens.map(([name, colors], i) => {
       return (
-        <Stack gap="1" key={i}>
-          <ColorWrapper height="40" borderRadius="xl" style={{ background: colors[colors.extensions.condition].value }}>
-            <panda.span
-              position="absolute"
-              top="50%"
-              right="2"
-              textTransform="uppercase"
-              fontWeight="semibold"
-              fontSize="medium"
-              writingMode="vertical-lr"
-              transform="rotate(180deg)"
-              minW="5"
-            >
-              {colors.extensions.condition}
-            </panda.span>
-            <ColorWrapper height="40" width="80%" borderRadius="lg" style={{ background: colors.base.value }}>
-              <panda.span
-                position="absolute"
-                top="50%"
-                right="2"
-                textTransform="uppercase"
-                fontWeight="semibold"
-                fontSize="medium"
-                writingMode="vertical-lr"
-                transform="rotate(180deg)"
-                minW="5"
-              >
-                Base
-              </panda.span>
-            </ColorWrapper>
-          </ColorWrapper>
-          <span>
-            <panda.span textTransform="capitalize" fontWeight="semibold">
-              {name}
-            </panda.span>
-          </span>
-          {Object.entries<string>(colors.extensions.conditions).map(([cond, val]) => {
-            const isLinked = colors[cond].isReference
-            return (
-              <div key={cond}>
-                <span>
-                  <span>{`${cond}: ${extractColor(val)}`}</span>
-                  {isLinked && (
-                    <panda.span
-                      fontSize="small"
-                      borderRadius="lg"
-                      paddingX="2"
-                      paddingY="0.5"
-                      marginLeft="3"
-                      background="card"
-                      color="white"
-                    >
-                      🔗 alias
-                    </panda.span>
-                  )}
-                </span>
-              </div>
-            )
-          })}
+        <Stack gap="1" key={i} width="full">
+          <HStack gap="1">
+            <SemanticColorDisplay
+              value={colors[colors.extensions.condition].value}
+              condition={colors.extensions.condition}
+            />
+            <SemanticColorDisplay value={colors.base.value} condition="base" />
+          </HStack>
+
+          <panda.span fontWeight="medium">{name}</panda.span>
         </Stack>
       )
     })
@@ -91,9 +60,12 @@ export function Colors() {
               background: color.value,
             }}
           />
-          <panda.div opacity="0.7">{color.value}</panda.div>
-          <panda.div opacity="0.7">{color.extensions.prop}</panda.div>
-          <panda.div opacity="0.7">{color.extensions.varRef}</panda.div>
+          <Stack mt="2" gap="0.5">
+            <panda.div fontWeight="medium">{color.extensions.prop}</panda.div>
+            <panda.div opacity="0.7" fontSize="sm" textTransform="uppercase">
+              {color.value}
+            </panda.div>
+          </Stack>
         </Stack>
       )
     })
@@ -112,7 +84,7 @@ export function Colors() {
         />
       </panda.div>
       <TokenContent>
-        <div>
+        <Stack gap="10">
           {!!categorizedColors.length &&
             categorizedColors.map(([category, colors]) => (
               <div key={category}>
@@ -146,7 +118,7 @@ export function Colors() {
             </div>
           )}
           {!hasResults && <div>No result found! 🐼</div>}
-        </div>
+        </Stack>
       </TokenContent>
     </TokenGroup>
   )
