@@ -204,13 +204,18 @@
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "release": "pnpm build --silent && tsx ./scripts/publish.ts",
-    "vsce:package": "pnpm --silent build && tsx ./scripts/create-vsix-command.ts",
-    "vsce:prerelease": "pnpm --silent build && vsce package patch --pre-release --no-dependencies -o panda.vsix"
+    "vsce:package": "pnpm --silent build && ../vsix-builder/dist/cli-default.js package",
+    "vsce:prerelease": "pnpm --silent build && ../vsix-builder/dist/cli-default.js package patch --pre-release -o panda.vsix"
   },
   "dependencies": {
-    "@pandacss/ts-plugin": "workspace:*"
+    "@pandacss/ts-plugin": "workspace:*",
+    "@pandacss/dev": "workspace:*",
+    "@pandacss/preset-base": "workspace:*"
   },
   "bundleDependencies": [
+    "@pandacss/ts-plugin",
+    "@pandacss/dev",
+    "@pandacss/preset-base",
     "@pandacss/ts-plugin"
   ],
   "devDependencies": {

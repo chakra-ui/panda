@@ -7,7 +7,6 @@ import parseSemver from 'parse-semver'
 import * as path from 'path'
 import * as semver from 'semver'
 import * as url from 'url'
-import urljoin from 'url-join'
 import * as yazl from 'yazl'
 import { type ExtensionKind, type Manifest } from './manifest'
 import * as util from './util'
@@ -315,7 +314,7 @@ function isHostTrusted(url: url.URL): boolean {
   return (url.host && TrustedSVGSources.indexOf(url.host.toLowerCase()) > -1) || isGitHubBadge(url.href)
 }
 
-const Targets = new Set([
+export const Targets = new Set([
   'win32-x64',
   'win32-ia32',
   'win32-arm64',
@@ -628,6 +627,7 @@ class MarkdownProcessor extends BaseProcessor {
   }
 
   async onFile(file: IFile): Promise<IFile> {
+    const urljoin = (await import('url-join')).default
     const filePath = util.normalize(file.path)
 
     if (!this.regexp.test(filePath)) {

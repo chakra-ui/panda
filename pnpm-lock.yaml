@@ -158,13 +158,16 @@ importers:
 
   extension/vscode:
     dependencies:
+      '@pandacss/dev':
+        specifier: workspace:*
+        version: link:../../packages/cli
+      '@pandacss/preset-base':
+        specifier: workspace:*
+        version: link:../../packages/preset-base
       '@pandacss/ts-plugin':
         specifier: workspace:*
         version: link:../ts-plugin
     devDependencies:
-      '@pandacss/dev':
-        specifier: workspace:*
-        version: link:../../packages/cli
       '@pandacss/extension-shared':
         specifier: workspace:*
         version: link:../shared
@@ -243,6 +246,9 @@ importers:
       '@types/yazl':
         specifier: ^2.4.2
         version: 2.4.2
+      cac:
+        specifier: 6.7.14
+        version: 6.7.14
       cheerio:
         specifier: 1.0.0-rc.12
         version: 1.0.0-rc.12

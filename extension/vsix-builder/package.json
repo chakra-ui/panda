@@ -5,6 +5,9 @@
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "vsix-builder": "bin.js"
+  },
   "repository": {
     "url": "https://github.com/chakra-ui/panda",
     "directory": "packages/extension/vsix-builder"
@@ -13,8 +16,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format=cjs --dts",
-    "build-fast": "tsup src/index.ts --format=cjs --no-dts",
+    "build": "tsup src/cli-*.ts src/index.ts --format=cjs --dts --shims --clean",
+    "build-fast": "tsup src/cli-*.ts src/index.ts --format=cjs --no-dts --shims",
     "dev": "pnpm build-fast --watch",
     "clean": "rm -rf dist"
   },
@@ -39,6 +42,7 @@
     "@types/hosted-git-info": "^3.0.2",
     "@types/markdown-it": "^12.2.3",
     "@types/yazl": "^2.4.2",
+    "cac": "6.7.14",
     "cheerio": "1.0.0-rc.12",
     "fast-glob": "^3.2.12",
     "hosted-git-info": "^6.1.1",

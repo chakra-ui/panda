@@ -4,20 +4,25 @@ import packlist from 'npm-packlist'
 import { createDefaultProcessors, processFiles, type IPackageOptions, writeVsix, type IFile } from './vsce/package'
 import type { Manifest } from './vsce/manifest'
 import type { ProjectManifest } from '@pnpm/types'
+import { versionBump } from './vsce/version-bump'
 
 /**
  * @see https://github.com/microsoft/vscode-vsce/blob/c2e71d5bcee680b31d009cf17423d4fb64c1883c/src/package.ts#L1744
  */
-export const createVsix = async (opts: { dir: string; outfile: string; dry?: boolean }, options?: IPackageOptions) => {
-  const { manifest, dir } = await getManifest(opts.dir)
+export const createVsix = async (
+  target: { dir: string; outfile: string; dry?: boolean },
+  options: IPackageOptions = {},
+) => {
+  const { manifest, dir } = await getManifest(target.dir)
   const fileNames = await packlist({ path: dir })
-  const files = fileNames.map((f) => ({ path: `extension/${f}`, localPath: path.join(opts.dir, f) }))
+  const files = fileNames.map((f) => ({ path: `extension/${f}`, localPath: path.join(target.dir, f) }))
 
-  const { outfile } = opts
-  if (opts.dry) {
+  const { outfile } = target
+  if (target.dry) {
     return { manifest, outfile, files, dry: true }
   }
 
+  await versionBump(manifest as Manifest, options)
   const processors = createDefaultProcessors(manifest as Manifest, options)
   const processedFiles = await processFiles(processors, files)
 
