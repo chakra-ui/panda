@@ -15,12 +15,13 @@ import scrollIntoView from 'scroll-into-view-if-needed'
 import { useFSRoute } from 'nextra/hooks'
 import { ArrowRightIcon, ExpandIcon } from 'nextra/icons'
 import type { Item, MenuItem, PageItem } from 'nextra/normalize-pages'
-import { css, cx } from '../../styled-system/css'
-import { useActiveAnchor, useConfig, useMenu } from '../contexts'
-import { renderComponent } from '../utils'
-import { Anchor } from './anchor'
-import { Collapse } from './collapse'
-import { LocaleSwitch } from './locale-switch'
+import { css, cx } from '@/styled-system/css'
+import { sidebar } from '@/styled-system/recipes'
+import { useActiveAnchor, useConfig, useMenu } from '@/contexts'
+import { renderComponent } from '@/utils'
+import { Anchor } from '../anchor'
+import { Collapse } from '../collapse'
+import { LocaleSwitch } from '../locale-switch'
 
 const TreeState: Record<string, boolean> = Object.create(null)
 
@@ -382,10 +383,11 @@ function Menu({
   directories,
   anchors,
   className,
-  onlyCurrentDocs
+  onlyCurrentDocs,
+  ...rest
 }: MenuProps): ReactElement {
   return (
-    <ul className={cx(classes.list, className)}>
+    <ul className={cx(classes.list, className)} {...rest}>
       {directories.map(item =>
         !onlyCurrentDocs || item.isUnderCurrentDocsTree ? (
           item.type === 'menu' ||
@@ -504,54 +506,13 @@ export function Sidebar({
         onClick={() => setMenu(false)}
       />
       <aside
+        data-scope="sidebar"
+        data-part="container"
+        aria-expanded={showSidebar ? 'true' : undefined}
+        ref={containerRef}
         className={cx(
           'nextra-sidebar-container',
-          css({
-            display: 'flex',
-            flexDirection: 'column',
-            mdDown: {
-              _motionReduce: { transitionProperty: 'none' },
-              position: 'fixed',
-              pt: 'var(--nextra-navbar-height)',
-              top: 0,
-              bottom: 0,
-              w: '100%',
-              zIndex: 15,
-              overscrollBehavior: 'contain',
-              backgroundColor: 'white',
-              _dark: { backgroundColor: 'dark' },
-              transition: 'transform 0.8s cubic-bezier(0.52, 0.16, 0.04, 1)',
-              willChange: 'transform, opacity',
-              contain: 'layout style',
-              backfaceVisibility: 'hidden',
-              '& > .nextra-scrollbar': {
-                maskImage: `linear-gradient(to bottom, transparent, #000 20px), linear-gradient(to left, #000 10px, transparent 10px)`
-              }
-            },
-            md: {
-              top: 16,
-              flexShrink: 0,
-              '& > .nextra-scrollbar': {
-                maskImage: `linear-gradient(to bottom, transparent, #000 20px), linear-gradient(to left, #000 10px, transparent 10px)`
-              }
-            },
-            _motionReduce: {
-              transform: 'none'
-            },
-            transform: 'translate3d(0,0,0)',
-            transitionProperty: 'all',
-            transition: 'ease-in-out',
-            _print: { display: 'none' },
-            "& [data-toggle-animation='show'] button": {
-              opacity: 0,
-              animation: 'fadein 1s ease 0.2s forwards'
-            },
-            "& [data-toggle-animation='hide'] button": {
-              opacity: 0,
-              animation: 'fadein2 1s ease 0.2s forwards'
-            }
-          }),
-          showSidebar ? css({ md: { w: 64 } }) : css({ md: { w: 20 } }),
+          sidebar(),
           asPopover
             ? css({ md: { display: 'none' } })
             : css({
@@ -562,9 +523,12 @@ export function Sidebar({
             ? css({ mdDown: { transform: 'translate3d(0,0,0)' } })
             : css({ mdDown: { transform: 'translate3d(-100%,0,0)' } })
         )}
-        ref={containerRef}
       >
-        <div className={css({ px: 4, pt: 4, md: { display: 'none' } })}>
+        <div
+          data-scope="sidebar"
+          data-part="search"
+          className="nextra-sidebar-search"
+        >
           {renderComponent(config.search.component, {
             directories: flatDirectories
           })}
@@ -576,17 +540,10 @@ export function Sidebar({
             }}
           >
             <div
+              data-scope="sidebar"
+              data-part="menu-container"
               className={cx(
-                css({
-                  overflowY: 'auto',
-                  overflowX: 'hidden',
-                  px: '4',
-                  py: '10',
-                  flexGrow: 1,
-                  md: {
-                    h: 'calc(100vh - var(--nextra-navbar-height) - var(--nextra-menu-height))'
-                  }
-                }),
+                'nextra-sidebar-menu-container',
                 showSidebar ? 'nextra-scrollbar' : 'no-scrollbar'
               )}
               ref={sidebarRef}
@@ -595,7 +552,9 @@ export function Sidebar({
               {(!asPopover || !showSidebar) && (
                 <Collapse isOpen={showSidebar} horizontal>
                   <Menu
-                    className={css({ mdDown: { display: 'none' } })}
+                    data-scope="sidebar"
+                    data-part="menu-desktop"
+                    className="nextra-sidebar-menu-desktop"
                     // The sidebar menu, shows only the docs directories.
                     directories={docsDirectories}
                     // When the viewport size is larger than `md`, hide the anchors in
@@ -606,7 +565,9 @@ export function Sidebar({
                 </Collapse>
               )}
               <Menu
-                className={css({ md: { display: 'none' } })}
+                data-scope="sidebar"
+                data-part="menu-mobile"
+                className="nextra-sidebar-menu-mobile"
                 // The mobile dropdown menu, shows all the directories.
                 directories={fullDirectories}
                 // Always show the anchor links on mobile (`md`).
@@ -618,41 +579,14 @@ export function Sidebar({
 
         {hasMenu && (
           <div
-            className={cx(
-              css({
-                position: 'sticky',
-                bottom: 0,
-                bg: 'white',
-                _dark: {
-                  // when banner is showed, sidebar links can be behind menu, set bg color as body bg color
-                  bg: 'dark',
-                  borderColor: 'neutral.800',
-                  shadow: '0 -12px 16px #111'
-                },
-                mx: 4,
-                py: 4,
-                shadow: '0 -12px 16px #fff',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                _moreContrast: {
-                  bg: 'neutral.400',
-                  shadow: 'none',
-                  _dark: {
-                    shadow: 'none'
-                  }
-                }
-              }),
-              showSidebar
-                ? cx(
-                    hasI18n && css({ justifyContent: 'flex-end' }),
-                    css({ borderTopWidth: '1px' })
-                  )
-                : css({ py: 4, flexWrap: 'wrap', justifyContent: 'center' })
-            )}
+            data-scope="sidebar"
+            data-part="footer"
+            data-show-sidebar={showSidebar ? 'true' : undefined}
+            data-has-i18n={hasI18n ? 'true' : undefined}
             data-toggle-animation={
               showToggleAnimation ? (showSidebar ? 'show' : 'hide') : 'off'
             }
+            className="nextra-sidebar-footer"
           >
             {hasI18n && (
               <LocaleSwitch
@@ -678,23 +612,10 @@ export function Sidebar({
             )}
             {config.sidebar.toggleButton && (
               <button
+                data-scope="sidebar"
+                data-part="toggleButton"
                 title={showSidebar ? 'Hide sidebar' : 'Show sidebar'}
-                className={css({
-                  mdDown: { display: 'none' },
-                  h: 7,
-                  transitionProperty: 'colors',
-                  color: 'gray.600',
-                  _dark: { color: 'gray.400' },
-                  px: 2,
-                  _hover: {
-                    color: 'gray.900',
-                    bg: 'gray.100',
-                    _dark: {
-                      color: 'gray.50',
-                      bg: 'rgb(219 234 254 / 0.05)'
-                    }
-                  }
-                })}
+                className="nextra-sidebar-toggle-button"
                 onClick={() => {
                   setSidebar(!showSidebar)
                   setToggleAnimation(true)

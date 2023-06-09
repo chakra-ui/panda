@@ -6,6 +6,7 @@ import { tabsRecipe } from './tabs.recipe'
 import { codeTabsRecipe } from './code-tabs.recipe'
 import { buttonRecipe } from './button.recipe'
 import { inputRecipe } from './input.recipe'
+import { sidebarRecipe } from './sidebar.recipe'
 
 export const recipes = {
   button: buttonRecipe,
@@ -15,5 +16,6 @@ export const recipes = {
   callout: calloutRecipe,
   input: inputRecipe,
   navbar: navbarRecipe,
-  tabs: tabsRecipe
+  tabs: tabsRecipe,
+  sidebar: sidebarRecipe,
 }

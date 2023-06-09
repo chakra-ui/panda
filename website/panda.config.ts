@@ -39,7 +39,7 @@ export default defineConfig({
       dark: '.dark &, [data-theme="dark"] &',
       light: '.light &',
       supportsBackdrop:
-        '@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px)))'
+        '@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px)))',
     }
   },
   staticCss: {
