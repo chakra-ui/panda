@@ -1,0 +1,23 @@
+---
+import { css } from '../../styled-system/css'
+---
+
+<button id="toggle-btn">
+    <span class={css({ srOnly: true })}>Dark theme</span>
+    <span class="icon light">Sun</span>
+    <span class="icon dark">Moon</span>
+</button>
+
+<script>
+    const root = document.documentElement
+    const isDark = () => root.classList.contains('dark')
+
+    const button = document.getElementById('toggle-btn')
+    const setTheme = (dark: boolean) => {
+        root.classList[dark ? 'add' : 'remove']('theme-dark')
+        button?.setAttribute('aria-pressed', String(dark))
+    }
+
+    setTheme(isDark())
+    button?.addEventListener('click', () => setTheme(!isDark()))
+</script>

@@ -8,10 +8,11 @@
 
 <script is:inline>
 const root = document.documentElement
+const storageKey = 'panda:studio:theme'
 
 const theme = (() => {
-    if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-        return localStorage.getItem('theme')
+    if (typeof localStorage !== 'undefined' && localStorage.getItem(storageKey)) {
+        return localStorage.getItem(storageKey)
     }
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
         return 'dark'
@@ -19,5 +20,16 @@ const theme = (() => {
     return 'light'
 })()
 
-root.dataset.theme = theme
+const isDark = theme === 'dark'
+root.classList[isDark ? 'add' : 'remove']('dark')
+root.classList[isDark ? 'remove' : 'add']('light')
+
+if (typeof localStorage !== 'undefined') {
+    // Watch the document element and persist user preference when it changes.
+    const observer = new MutationObserver(() => {
+        const isDark = root.classList.contains('dark')
+        localStorage.setItem(storageKey, isDark ? 'dark' : 'light')
+    })
+    observer.observe(root, { attributes: true, attributeFilter: ['class'] })
+}
 </script>
