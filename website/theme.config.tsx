@@ -39,9 +39,9 @@ const config: DocsThemeConfig = {
   sidebar: {
     toggleButton: true,
   },
-  i18n: [
-    { locale: 'en', text: 'English' },
-  ],
+  // i18n: [
+  //   { locale: 'en', text: 'English' },
+  // ],
   footer: {
     text: (
       <div
