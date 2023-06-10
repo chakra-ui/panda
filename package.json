@@ -52,7 +52,9 @@
   },
   "lint-staged": {
     "packages/**/*.{ts,tsx}": [
-      "pnpm prettier-fix"
+      "pnpm prepare-studio",
+      "pnpm prettier-fix",
+      "git add --all packages/studio/"
     ]
   },
   "packageManager": "pnpm@8.6.1",
