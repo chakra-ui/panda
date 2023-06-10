@@ -3,9 +3,9 @@ name: Publish
 on:
   push:
     paths:
-      - '.changeset/**'
-      - 'packages/**'
-      - 'extension/**'
+      - ".changeset/**"
+      - "packages/**"
+      - "extension/**"
     branches:
       - main
 
@@ -40,7 +40,10 @@ jobs:
       - name: Publish extension
         if: steps.changesets.outputs.published == 'true'
         working-directory: ./extension/vscode
-        run: pnpm release
+        run: |
+          rm -rf node_modules
+          npm i
+          pnpm release
         env:
           VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
           VSCE_RELEASE_TYPE: stable

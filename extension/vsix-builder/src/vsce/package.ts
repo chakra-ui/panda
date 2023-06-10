@@ -434,10 +434,12 @@ class ManifestProcessor extends BaseProcessor {
       return Promise.resolve(file)
     }
 
-    if (this.options.version && !(this.options.updatePackageJson ?? true)) {
+    if (this.options.version && (this.options.updatePackageJson ?? true)) {
+      console.log('Updating package.json version to', this.options.version)
       const contents = await read(file)
       const packageJson = JSON.parse(contents)
       packageJson.version = this.options.version
+      packageJson.bundledDependencies = []
       file = { ...file, contents: JSON.stringify(packageJson, undefined, 2) }
     }
 
@@ -1298,6 +1300,7 @@ export function createDefaultProcessors(manifest: Manifest, options: IPackageOpt
   ]
 }
 export function writeVsix(files: IFile[], packagePath: string): Promise<void> {
+  console.log('Writing VSIX package...')
   return fs.promises
     .unlink(packagePath)
     .catch((err) => (err.code !== 'ENOENT' ? Promise.reject(err) : Promise.resolve(null)))

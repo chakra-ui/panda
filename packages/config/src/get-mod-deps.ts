@@ -48,7 +48,6 @@ function getDeps(opts: GetDepsOptions, fromAlias?: string) {
   if (absoluteFile === null) return // File doesn't exist
 
   if (fromAlias) {
-    console.log({ fromAlias, filename, absoluteFile })
     opts.foundModuleAliases.set(fromAlias, absoluteFile)
   }
 
@@ -86,8 +85,6 @@ function getDeps(opts: GetDepsOptions, fromAlias?: string) {
 
     const filename = resolveTsPathPattern(opts.pathMappings, mod)
     if (!filename) return
-
-    console.log({ mod, filename })
 
     getDeps(Object.assign({}, nextOpts, { filename }), mod)
   })

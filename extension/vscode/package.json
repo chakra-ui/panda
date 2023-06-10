@@ -3,7 +3,7 @@
   "name": "panda-css-vscode",
   "displayName": "🐼 Panda CSS",
   "description": "The official Panda CSS plugin for VS Code",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "private": true,
   "engines": {
     "vscode": "^1.78.2"
@@ -208,21 +208,19 @@
     "vsce:prerelease": "pnpm --silent build && pnpm vsix-builder package patch --pre-release -o panda.vsix"
   },
   "dependencies": {
-    "@pandacss/ts-plugin": "workspace:*",
-    "@pandacss/dev": "workspace:*",
-    "@pandacss/preset-base": "workspace:*"
+    "@pandacss/ts-plugin": "file:../ts-plugin",
+    "@pandacss/dev": "file:../../packages/cli",
+    "@pandacss/preset-base": "file:../../packages/preset-base"
   },
-  "bundleDependencies": [
+  "bundledDependencies": [
     "@pandacss/ts-plugin",
     "@pandacss/dev",
-    "@pandacss/preset-base",
-    "@pandacss/ts-plugin"
+    "@pandacss/preset-base"
   ],
   "devDependencies": {
-    "@pandacss/dev": "workspace:*",
-    "@pandacss/extension-shared": "workspace:*",
-    "@pandacss/language-server": "workspace:*",
-    "@pandacss/vsix-builder": "workspace:*",
+    "@pandacss/extension-shared": "file:../shared",
+    "@pandacss/language-server": "file:../language-server",
+    "@pandacss/vsix-builder": "file:../vsix-builder",
     "@types/node": "20.2.5",
     "@types/vscode": "^1.78.1",
     "@vscode/vsce": "^2.19.0",
