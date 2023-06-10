@@ -2,10 +2,10 @@
 import { Sizes } from '../components/sizes'
 import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
-import { customDocs } from '../utils/custom-docs'
+import { customDocs } from '../lib/custom-docs'
 ---
 
-<Layout title={customDocs.pageTitle}>
+<Layout>
   <Sidebar>
     <Sizes client:load />
   </Sidebar>

@@ -3,7 +3,6 @@ import { Fragment, useState } from 'react'
 import { css } from '../../styled-system/css'
 import { TokenContent } from '../components/token-content'
 import { TokenGroup } from '../components/token-group'
-import { customDocs } from '../utils/custom-docs'
 
 type FontTokensProps = {
   text?: string
@@ -21,14 +20,14 @@ const inputClassname = css({
 })
 
 export function FontTokens(props: FontTokensProps) {
-  const { text: textProp = customDocs.title, largeText = false, token, fontTokens } = props
+  const { text: textProp = 'Hello World', largeText = false, token, fontTokens } = props
   const [text, setText] = useState(textProp)
 
   const values = Array.from(fontTokens.values())
 
   return (
     <TokenGroup>
-      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" zIndex={1}>
+      <panda.div mb="3.5" position="sticky" top="0" boxShadow="lg" zIndex={1}>
         {largeText ? (
           <textarea
             className={inputClassname}

@@ -1,7 +1,7 @@
 import { Grid, panda, Wrap } from '../../../styled-system/jsx'
 import { gridItem, styledLink } from '../../../styled-system/patterns'
-import { getReportItem, getUtilityLink } from '../../utils/get-report-item'
-import { groupBy } from '../../utils/group-in'
+import { getReportItem, getUtilityLink } from '../../lib/get-report-item'
+import { groupBy } from '../../lib/group-in'
 import { Section } from './section'
 import { TextWithCount } from './text-with-count'
 import { TruncatedText } from './truncated-text'
@@ -12,7 +12,7 @@ import { css, cx } from '../../../styled-system/css'
 import { ReportItemLink } from './report-item-link'
 import { SortIcon } from './sort-icon'
 
-const selectOptionClass = css({ padding: '4px 8px', backgroundColor: 'white' })
+const selectOptionClass = css({ padding: '4px 8px', bg: 'white' })
 
 type SortBy = 'property name' | 'tokens count'
 const defaultOption = { label: 'tokens count', value: 'tokens count' as SortBy }

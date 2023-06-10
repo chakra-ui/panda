@@ -1,28 +1,24 @@
-import { walkObject } from '@pandacss/shared'
-import type { Dict, TextStyles as TextStylesType } from '@pandacss/types'
-import { config } from 'virtual:panda'
+import { panda } from '../../styled-system/jsx'
+import context from '../lib/panda.context'
 import { EmptyState } from './empty-state'
 import { TextStylesIcon } from './icons'
-import { panda } from '../../styled-system/jsx'
-import { TokenGroup } from './token-group'
 import { TokenContent } from './token-content'
-import { customDocs } from '../utils/custom-docs'
+import { TokenGroup } from './token-group'
 
 export function TextStyles() {
-  //@ts-expect-error
-  const textStyles = flattenTextStyles(config.theme?.textStyles ?? {})
+  const textStyles = Object.entries(context.textStyles)
 
   return (
     <TokenGroup>
-      <TokenContent divideY="1px" divideColor="card">
-        {textStyles && textStyles?.length !== 0 ? (
+      <TokenContent>
+        {textStyles?.length !== 0 ? (
           textStyles.map(([name, styles]) => (
-            <panda.div paddingX="1" paddingY="2.5" key={name}>
+            <panda.div px="1" py="2.5" key={name}>
               <panda.div borderColor="card">
                 <panda.span fontWeight="medium">{name}</panda.span>
               </panda.div>
-              <panda.div flex="auto" marginY="3" style={styles} truncate>
-                {customDocs.title} textStyles are time saving
+              <panda.div flex="auto" my="3" style={styles} truncate>
+                Panda textStyles are time saving
               </panda.div>
             </panda.div>
           ))
@@ -34,26 +30,4 @@ export function TextStyles() {
       </TokenContent>
     </TokenGroup>
   )
-}
-
-function flattenTextStyles(values: TextStylesType | undefined) {
-  if (!values) return
-
-  const result: Dict = {}
-
-  walkObject(
-    values,
-    (token, paths) => {
-      if (token) {
-        result[paths.join('.')] = token.value
-      }
-    },
-    {
-      stop(v) {
-        return 'value' in v
-      },
-    },
-  )
-
-  return Object.entries(result)
 }

@@ -1,6 +1,6 @@
 import { css, cx } from '../../styled-system/css'
 import { panda, Stack, Wrap } from '../../styled-system/jsx'
-import { analysisData } from '../utils/analysis-data'
+import { analysisData } from '../lib/analysis-data'
 
 import {
   Portal,
@@ -20,8 +20,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@a
 import { stack } from '../../styled-system/patterns/stack'
 
 import { styledLink } from '../../styled-system/patterns'
-import { getReportItem, getUtilityLink, getReportRelativeFilePath, getFileLink } from '../utils/get-report-item'
-import { pick } from '../utils/pick'
+import { getReportItem, getUtilityLink, getReportRelativeFilePath, getFileLink } from '../lib/get-report-item'
+import { pick } from '../lib/pick'
 import { ReportItemLink } from './analyzer/report-item-link'
 import { Section } from './analyzer/section'
 import { TextWithCount } from './analyzer/text-with-count'
@@ -37,7 +37,7 @@ export function TokenAnalyzer() {
   // console.log(analysisData)
 
   return (
-    <div className={css({ width: '100%', paddingY: '20px', debug: false })}>
+    <div className={css({ width: '100%', py: '20px', debug: false })}>
       <panda.div px="24" w="100%">
         <HeadlineSummary />
         <TokenSearchCombobox />
@@ -65,7 +65,7 @@ const formater = new Intl.NumberFormat('en-US', {
 
 const HeadlineSummary = () => {
   return (
-    <Stack mb="4" direction="column" align="center" padding="20px" fontSize="lg">
+    <Stack mb="4" direction="column" align="center" p="20px" fontSize="lg">
       <div>
         <panda.span fontSize="xl" fontWeight="bold">
           {Object.keys(analysisData.details.byId).length}
@@ -96,7 +96,7 @@ const HeadlineSummary = () => {
           <Portal>
             <TooltipPositioner>
               <TooltipContent>
-                <panda.span p="2" backgroundColor="gray.100" border="1px solid rgba(0, 0, 0, 0.1)" rounded="md">
+                <panda.span p="2" bg="gray.100" border="1px solid rgba(0, 0, 0, 0.1)" rounded="md">
                   <panda.span fontSize="lg" fontWeight="bold">
                     {analysisData.fileSizes.normal}
                   </panda.span>{' '}
@@ -150,7 +150,10 @@ const HeadlineSummary = () => {
   )
 }
 
-const selectOptionClass = css({ padding: '4px 8px', backgroundColor: 'white' })
+const selectOptionClass = css({
+  padding: '4px 8px',
+  bg: 'white',
+})
 
 const MostUsedList = () => {
   return (
@@ -366,7 +369,7 @@ const FilesAccordionList = () => {
                                 py="2"
                                 px="4"
                                 transition="all 0.2s ease"
-                                _hover={{ bgColor: 'gray.100' }}
+                                _hover={{ bg: 'gray.100' }}
                               >
                                 <TruncatedText text={key} />
                               </ColorItem>

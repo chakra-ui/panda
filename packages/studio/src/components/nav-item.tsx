@@ -1,5 +1,5 @@
 import { panda } from '../../styled-system/jsx'
-import type { NavItemData } from '../utils/constants'
+import type { NavItemData } from '../lib/constants'
 
 export function NavItem(props: NavItemData) {
   return (
@@ -8,7 +8,7 @@ export function NavItem(props: NavItemData) {
         width="60"
         background="card"
         borderRadius="sm"
-        padding="4"
+        p="4"
         transition="all 0.2s ease"
         _hover={{
           boxShadow: 'lg',
@@ -19,7 +19,7 @@ export function NavItem(props: NavItemData) {
             '& svg': {
               fontWeight: 'normal',
               fontSize: 'xx-large',
-              marginBottom: '6',
+              mb: '6',
               height: '6',
               width: '6',
             },

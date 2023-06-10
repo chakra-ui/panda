@@ -1,20 +1,18 @@
 ---
-import { TokenDictionary } from '@pandacss/token-dictionary'
-import { config } from 'virtual:panda'
 import { FontTokens } from '../components/font-tokens'
 import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
+import { customDocs } from '../lib/custom-docs'
+import context from '../lib/panda.context'
 
-const tokenDictionary = new TokenDictionary(config.theme!)
-const tokens = Object.fromEntries(tokenDictionary.categoryMap)
-import { customDocs } from '../utils/custom-docs'
+const tokens = context.getCategory('lineHeights')
 ---
 
-<Layout title={customDocs.pageTitle}>
+<Layout>
   <Sidebar>
     <FontTokens
       client:load
-      fontTokens={tokens.lineHeights}
+      fontTokens={tokens}
       token="lineHeight"
       largeText
       text={`${customDocs.title} design system lineHeight specifies the vertical distance between two lines of text. You can peveiew this visually here.`}

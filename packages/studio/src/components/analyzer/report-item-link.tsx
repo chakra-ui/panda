@@ -1,7 +1,7 @@
 import type { ReportItemJSON } from '@pandacss/types'
 import { panda } from '../../../styled-system/jsx'
 import { styledLink } from '../../../styled-system/patterns'
-import { analysisData } from '../../utils/analysis-data'
+import { analysisData } from '../../lib/analysis-data'
 import {
   getReportItem,
   getUtilityLink,
@@ -9,7 +9,7 @@ import {
   getReportRelativeFilePath,
   openReportItemInEditor,
   SearchableReportItemAttributes,
-} from '../../utils/get-report-item'
+} from '../../lib/get-report-item'
 import { ExternalIcon } from './external-icon'
 import { QuickTooltip } from './quick-tooltip'
 import { TextWithCount } from './text-with-count'

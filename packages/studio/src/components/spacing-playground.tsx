@@ -1,21 +1,17 @@
-import { useState } from 'react'
-import { getSortedSizes } from '../utils/sizes-sort'
-import { config } from 'virtual:panda'
-import { TokenDictionary } from '@pandacss/token-dictionary'
-import { panda, HStack } from '../../styled-system/jsx'
-import { TokenGroup } from './token-group'
-import { TokenContent } from './token-content'
 import { toPx } from '@pandacss/shared'
+import { useState } from 'react'
+import { HStack, panda } from '../../styled-system/jsx'
+import context from '../lib/panda.context'
+import { getSortedSizes } from '../lib/sizes-sort'
+import { TokenContent } from './token-content'
+import { TokenGroup } from './token-group'
 
 const NUMBER_OF_ITEMS = 3
 
 export function SpacingPlayground() {
-  //@ts-expect-error
-  const tokenDictionary = new TokenDictionary(config.theme!)
-  const tokens = Object.fromEntries(tokenDictionary.categoryMap)
-
-  const { sizes: sizesProp } = tokens
+  const sizesProp = context.getCategory('sizes')
   const values = Array.from(sizesProp.values())
+
   if (typeof sizesProp === 'string') return null
 
   const sizes = getSortedSizes(values)
@@ -46,7 +42,7 @@ export function SpacingPlayground() {
   return (
     <TokenGroup>
       <div>
-        <panda.h3 marginBottom="8" id="gap">
+        <panda.h3 mb="8" id="gap">
           Gap
         </panda.h3>
         <div id="gap-view">
@@ -61,7 +57,7 @@ export function SpacingPlayground() {
               boxShadow="lg"
               background="bg"
             >
-              <panda.span fontWeight="bold" marginY="4">
+              <panda.span fontWeight="bold" my="4">
                 Spacing
               </panda.span>
               <select
@@ -142,7 +138,7 @@ export function SpacingPlayground() {
 
         <hr />
 
-        <panda.h3 marginY="8" id="padding">
+        <panda.h3 my="8" id="padding">
           Padding
         </panda.h3>
         <div id="padding-view">
@@ -157,7 +153,7 @@ export function SpacingPlayground() {
               boxShadow="lg"
               background="bg"
             >
-              <panda.span fontWeight="bold" marginY="4">
+              <panda.span fontWeight="bold" my="4">
                 Spacing
               </panda.span>
               <select
@@ -178,17 +174,17 @@ export function SpacingPlayground() {
             <Section
               title="Horizontal"
               style={{ paddingInline: padding }}
-              padding={padding}
+              p={padding}
               itemBackground="rgb(139 100 246)"
             />
 
             <Section
               title="Vertical"
               style={{ padding: `${padding} 0` }}
-              padding={padding}
+              p={padding}
               itemBackground="rgb(236 72 153)"
             />
-            <Section title="All sides" style={{ padding }} padding={padding} itemBackground="rgb(139 92 246)" />
+            <Section title="All sides" style={{ padding }} p={padding} itemBackground="rgb(139 92 246)" />
           </panda.div>
         </div>
       </div>

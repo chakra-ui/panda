@@ -1,14 +1,15 @@
 ---
 import { Container, panda, Stack } from '../../styled-system/jsx'
 import '../../styled-system/styles.css'
+import { Logo } from '../components/logo'
 import SideNav from '../components/side-nav.astro'
-import { customDocs } from '../utils/custom-docs'
+import context from '../lib/panda.context'
 ---
 
 <panda.main display="flex" height="calc(100vh - env(safe-area-inset-bottom))">
   <Stack height="full" minW="60" overflow="auto" px="12" py="8">
-    <panda.a title={customDocs.title} fontWeight="bold" fontSize="2xl" href="/" display="flex" gap="2">
-      <customDocs.logo />
+    <panda.a title="Token documentation" fontWeight="bold" fontSize="2xl" href="/" display="flex" gap="2">
+      {context.logo ? <panda.img src={context.logo} width="16" alt="logo" /> : <Logo />}
     </panda.a>
     <SideNav />
   </Stack>

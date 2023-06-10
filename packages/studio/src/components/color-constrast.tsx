@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { getContrastPairs, getContrastRatio } from '../utils/color'
+import { HStack, Stack, VStack, panda } from '../../styled-system/jsx'
+import { getContrastPairs, getContrastRatio } from '../lib/color'
+import context from '../lib/panda.context'
 import { ErrorIcon, SuccessIcon } from './icons'
-import { config } from 'virtual:panda'
-import { TokenDictionary } from '@pandacss/token-dictionary'
-import { panda, HStack, VStack, Stack } from '../../styled-system/jsx'
-import { TokenGroup } from './token-group'
 import { TokenContent } from './token-content'
+import { TokenGroup } from './token-group'
 
 function TestScore(props: { score: { WCAG_AA: boolean; WCAG_AAA: boolean }; size: 'regular' | 'large' }) {
   const { score, size } = props
@@ -30,11 +29,7 @@ function TestScore(props: { score: { WCAG_AA: boolean; WCAG_AAA: boolean }; size
 }
 
 export function ColorContrastChecker() {
-  //@ts-expect-error
-  const tokenDictionary = new TokenDictionary(config.theme!)
-  const tokens = Object.fromEntries(tokenDictionary.categoryMap)
-
-  const { colors: colorsMap } = tokens
+  const colorsMap = context.getCategory('colors')
   const values = Array.from(colorsMap.values())
 
   const colors = values
@@ -56,13 +51,13 @@ export function ColorContrastChecker() {
   return (
     <TokenGroup>
       <TokenContent>
-        <HStack gap="3" padding="2">
+        <HStack gap="3" p="2">
           <panda.div
             display="flex"
             flexDirection="column"
             borderSlim="card"
             flex="1"
-            paddingTop="16"
+            pt="16"
             style={{ background: activeForeground }}
           >
             <select value={foreground} onChange={(e: any) => setForeGround(e.currentTarget.value)}>
@@ -78,7 +73,7 @@ export function ColorContrastChecker() {
             flexDirection="column"
             borderSlim="card"
             flex="1"
-            paddingTop="16"
+            pt="16"
             style={{ background: activeBackground }}
           >
             <select value={background} onChange={(e: any) => setBackground(e.currentTarget.value)}>
@@ -95,7 +90,7 @@ export function ColorContrastChecker() {
           justify="center"
           fontWeight="semibold"
           fontSize="2xl"
-          padding="2"
+          p="2"
           outline="none"
           borderSlim="card"
           suppressContentEditableWarning

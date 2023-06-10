@@ -1,5 +1,5 @@
-import { analysisData } from '../utils/analysis-data'
-import { getUtilityLink, getReportRelativeFilePath } from '../utils/get-report-item'
+import { analysisData } from '../lib/analysis-data'
+import { getUtilityLink, getReportRelativeFilePath } from '../lib/get-report-item'
 import { DataCombobox, DataComboboxProps } from './analyzer/data-combobox'
 
 const searchList = new Map<string, string>()

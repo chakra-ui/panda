@@ -93,7 +93,7 @@ export const DataCombobox = ({ options: allOptions, label, ...props }: DataCombo
                     maxHeight: '300px',
                     overflow: 'auto',
                     padding: '4px 8px',
-                    backgroundColor: 'white',
+                    bg: 'white',
                     listStyle: 'none',
                     border: '1px solid token(colors.blue.400, blue)',
                   })}

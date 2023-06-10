@@ -1,9 +1,9 @@
 import { css, cx } from '../../../styled-system/css'
 import { panda, Wrap } from '../../../styled-system/jsx'
 import { styledLink } from '../../../styled-system/patterns'
-import { analysisData } from '../../utils/analysis-data'
+import { analysisData } from '../../lib/analysis-data'
 
-import { getFileLink, getReportRelativeFilePath, SearchableReportItemAttributes } from '../../utils/get-report-item'
+import { getFileLink, getReportRelativeFilePath, SearchableReportItemAttributes } from '../../lib/get-report-item'
 import { Section } from './section'
 
 import {
@@ -15,7 +15,7 @@ import {
   SelectPositioner,
   SelectTrigger,
 } from '@ark-ui/react'
-import { createContext } from '../../hooks/create-context'
+import { createContext } from '../../lib/create-context'
 
 import { Dispatch, SetStateAction, useState } from 'react'
 import { DataCombobox, DataComboboxOption } from './data-combobox'
@@ -224,7 +224,7 @@ const UsedInFiles = () => {
   )
 }
 
-const selectOptionClass = css({ padding: '4px 8px', backgroundColor: 'white' })
+const selectOptionClass = css({ padding: '4px 8px', bg: 'white' })
 
 const ReportItemMatchingFiltersTable = (infos: Infos) => {
   const tokenName = infos.params.value

@@ -2,7 +2,7 @@ import { panda, Stack, Grid, HStack } from '../../styled-system/jsx'
 import { TokenGroup } from '../components/token-group'
 import { TokenContent } from '../components/token-content'
 import { ColorWrapper } from '../components/color-wrapper'
-import { useColorDocs } from '../hooks/use-color-docs'
+import { useColorDocs } from '../lib/use-color-docs'
 
 const UNCATEGORIZED_ID = 'uncategorized' as const
 
@@ -73,11 +73,11 @@ export function Colors() {
 
   return (
     <TokenGroup>
-      <panda.div marginBottom="3.5" position="sticky" top="0" boxShadow="lg" zIndex="1">
+      <panda.div mb="3.5" position="sticky" top="0" boxShadow="lg" zIndex="1">
         <panda.input
           background="card"
           width="full"
-          padding="1"
+          p="1"
           value={filterQuery}
           onChange={(e) => setFilterQuery(e.target.value)}
           placeholder="Filter tokens by text, property or value"
@@ -92,7 +92,7 @@ export function Colors() {
                   {category}
                 </panda.span>
 
-                <Grid gap="4" minChildWidth="13rem" marginY="5" marginX="0" key={category}>
+                <Grid gap="4" minChildWidth="13rem" my="5" mx="0" key={category}>
                   {renderColors(colors)}
                 </Grid>
               </div>
@@ -102,7 +102,7 @@ export function Colors() {
               <panda.span fontWeight="medium" textTransform="capitalize" fontSize="xl">
                 {UNCATEGORIZED_ID}
               </panda.span>
-              <Grid gap="4" minChildWidth="13rem" marginY="5" marginX="0">
+              <Grid gap="4" minChildWidth="13rem" my="5" mx="0">
                 {renderColors(uncategorizedColors)}
               </Grid>
             </div>
@@ -112,7 +112,7 @@ export function Colors() {
               <panda.span fontWeight="medium" textTransform="capitalize" fontSize="xl">
                 Semantic tokens
               </panda.span>
-              <Grid gap="4" minChildWidth="13rem" marginY="5" marginX="0">
+              <Grid gap="4" minChildWidth="13rem" my="5" mx="0">
                 {renderSemanticTokens()}
               </Grid>
             </div>

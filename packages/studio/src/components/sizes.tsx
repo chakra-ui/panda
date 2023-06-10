@@ -1,17 +1,13 @@
 import { toPx } from '@pandacss/shared'
-import { TokenDictionary } from '@pandacss/token-dictionary'
-import { config } from 'virtual:panda'
 import { Grid, panda } from '../../styled-system/jsx'
-import { getSortedSizes } from '../utils/sizes-sort'
+import context from '../lib/panda.context'
+import { getSortedSizes } from '../lib/sizes-sort'
 import { TokenGroup } from './token-group'
 
 export type SizesProps = { sizes: Map<string, any> }
 
 export function Sizes() {
-  //@ts-expect-error
-  const tokenDictionary = new TokenDictionary(config.theme!)
-  const tokens = Object.fromEntries(tokenDictionary.categoryMap)
-  const values = Array.from(tokens.sizes.values())
+  const values = Array.from(context.getCategory('sizes').values())
 
   const sizes = getSortedSizes(values)
 

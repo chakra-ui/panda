@@ -1,12 +1,10 @@
 import { toPx } from '@pandacss/shared'
-import { TokenDictionary } from '@pandacss/token-dictionary'
-import { config } from 'virtual:panda'
 import { Grid, panda, Stack } from '../../styled-system/jsx'
-import { getSortedSizes } from '../utils/sizes-sort'
+import context from '../lib/panda.context'
+import { getSortedSizes } from '../lib/sizes-sort'
 import { TokenGroup } from './token-group'
 
-//@ts-expect-error
-const radii = new TokenDictionary(config.theme!).categoryMap.get('radii')
+const radii = context.getCategory('radii')
 
 export function Radii() {
   return (

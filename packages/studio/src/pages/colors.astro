@@ -2,10 +2,10 @@
 import { Colors } from '../components/colors'
 import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
-import { customDocs } from '../utils/custom-docs'
+import { customDocs } from '../lib/custom-docs'
 ---
 
-<Layout title={customDocs.pageTitle}>
+<Layout>
   <Sidebar>
     <Colors client:load />
   </Sidebar>

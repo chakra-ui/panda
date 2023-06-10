@@ -1,4 +1,3 @@
-import { loadConfigFile } from '@pandacss/config'
 import { analyzeTokens, writeAnalyzeJSON, loadConfigAndCreateContext } from '@pandacss/node'
 
 import { dirname, resolve } from 'path'
@@ -8,7 +7,7 @@ const virtualModuleId = 'virtual:panda'
 const resolvedVirtualModuleId = '\0' + virtualModuleId
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
-const analysisDataFilepath = 'src/utils/analysis.json'
+const analysisDataFilepath = 'src/lib/analysis.json'
 const jsonPath = resolve(_dirname, analysisDataFilepath)
 
 function vitePlugin() {
@@ -40,9 +39,8 @@ function vitePlugin() {
     },
     async load(id) {
       if (id === resolvedVirtualModuleId) {
-        const config = await loadConfigFile({ cwd: process.cwd() })
         return {
-          code: `export const config = ${JSON.stringify(config.config)}`,
+          code: `export const config = ${JSON.stringify(config)}`,
         }
       }
     },

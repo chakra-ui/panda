@@ -1,7 +1,6 @@
 import type { Token } from '@pandacss/types'
-import { config } from 'virtual:panda'
-import { TokenDictionary } from '@pandacss/token-dictionary'
 import { useState } from 'react'
+import context from './panda.context'
 
 type Color = {
   isConditional?: boolean
@@ -59,14 +58,10 @@ const getSemanticTokens = (allTokens: ColorToken[], filterMethod?: (token: Color
     )
 }
 
+const allTokens = context.tokens.allTokens
+const colors = context.getCategory('colors')
+
 export const useColorDocs = () => {
-  //@ts-expect-error
-  const tokenDictionary = new TokenDictionary(config.theme!)
-  const tokens = Object.fromEntries(tokenDictionary.categoryMap)
-  const allTokens = tokenDictionary.allTokens
-
-  const { colors } = tokens
-
   const [filterQuery, setFilterQuery] = useState('')
 
   const filterMethod = (token: ColorToken) => {

@@ -1,6 +1,6 @@
 import { panda } from '../../../styled-system/jsx'
 import type { JsxStyleProps } from '../../../styled-system/types'
-import { truncate } from '../../utils/truncate'
+import { truncate } from '../../lib/truncate'
 import { QuickTooltip } from './quick-tooltip'
 
 export const TruncatedText = ({

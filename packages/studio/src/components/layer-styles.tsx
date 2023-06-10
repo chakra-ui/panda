@@ -1,22 +1,19 @@
-import { walkObject } from '@pandacss/shared'
-import type { Dict, LayerStyles as LayerStylesType } from '@pandacss/types'
-import { config } from 'virtual:panda'
+import { panda } from '../../styled-system/jsx'
+import context from '../lib/panda.context'
 import { EmptyState } from './empty-state'
 import { LayerStylesIcon } from './icons'
-import { panda } from '../../styled-system/jsx'
-import { TokenGroup } from './token-group'
 import { TokenContent } from './token-content'
+import { TokenGroup } from './token-group'
 
 export function LayerStyles() {
-  //@ts-expect-error
-  const layerStyles = flattenLayerStyles(config.theme?.layerStyles ?? {})
+  const layerStyles = Object.entries(context.layerStyles)
 
   return (
     <TokenGroup>
       <TokenContent divideY="1px" divideColor="card">
         {layerStyles && layerStyles?.length !== 0 ? (
           layerStyles.map(([name, styles]) => (
-            <panda.div paddingX="1" paddingY="2.5" key={name}>
+            <panda.div px="1" py="2.5" key={name}>
               <panda.div borderColor="card">
                 <panda.span fontWeight="medium">{name}</panda.span>
                 <panda.div fontSize="small" flex="auto" marginTop="1.5">
@@ -25,8 +22,8 @@ export function LayerStyles() {
                   ))}
                 </panda.div>
               </panda.div>
-              <panda.div paddingX="4" paddingY="2" background="card" marginTop="5">
-                <panda.div flex="auto" marginY="3" height="20" style={styles} />
+              <panda.div px="4" py="2" background="card" marginTop="5">
+                <panda.div flex="auto" my="3" height="20" style={styles} />
               </panda.div>
             </panda.div>
           ))
@@ -38,26 +35,4 @@ export function LayerStyles() {
       </TokenContent>
     </TokenGroup>
   )
-}
-
-function flattenLayerStyles(values: LayerStylesType | undefined) {
-  if (!values) return
-
-  const result: Dict = {}
-
-  walkObject(
-    values,
-    (token, paths) => {
-      if (token) {
-        result[paths.join('.')] = token.value
-      }
-    },
-    {
-      stop(v) {
-        return 'value' in v
-      },
-    },
-  )
-
-  return Object.entries(result)
 }
