@@ -11,7 +11,8 @@ describe('bundle config', () => {
 
   test('should bundle .ts config wits tsconfig path aliases', async () => {
     const filePath = path.resolve(cwd, _dirname, './samples/with-tsconfig-paths/panda.config.ts')
-    expect(await bundle(filePath, cwd)).toMatchInlineSnapshot(`
+    const { config, dependencies } = await bundle(filePath, cwd)
+    expect({ config, dependencies: dependencies.map((dep) => dep.replace(_dirname, '')) }).toMatchInlineSnapshot(`
       {
         "config": {
           "exclude": [],
@@ -37,8 +38,8 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/with-tsconfig-paths/panda.config.ts",
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/with-tsconfig-paths/src/theme/tokens.ts",
+          "/samples/with-tsconfig-paths/panda.config.ts",
+          "/samples/with-tsconfig-paths/src/theme/tokens.ts",
         ],
       }
     `)
@@ -46,7 +47,8 @@ describe('bundle config', () => {
 
   test('should bundle .ts config', async () => {
     const filePath = path.resolve(cwd, _dirname, './samples/ts/panda.config.ts')
-    expect(await bundle(filePath, cwd)).toMatchInlineSnapshot(`
+    const { config, dependencies } = await bundle(filePath, cwd)
+    expect({ config, dependencies: dependencies.map((dep) => dep.replace(_dirname, '')) }).toMatchInlineSnapshot(`
       {
         "config": {
           "exclude": [],
@@ -75,8 +77,8 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/ts/panda.config.ts",
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/common/tokens.ts",
+          "/samples/ts/panda.config.ts",
+          "/samples/common/tokens.ts",
         ],
       }
     `)
@@ -84,7 +86,8 @@ describe('bundle config', () => {
 
   test('should bundle .cts config', async () => {
     const filePath = path.resolve(cwd, _dirname, './samples/cts/panda.config.cts')
-    expect(await bundle(filePath, cwd)).toMatchInlineSnapshot(`
+    const { config, dependencies } = await bundle(filePath, cwd)
+    expect({ config, dependencies: dependencies.map((dep) => dep.replace(_dirname, '')) }).toMatchInlineSnapshot(`
       {
         "config": {
           "exclude": [],
@@ -113,8 +116,8 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/cts/panda.config.cts",
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/common/tokens.ts",
+          "/samples/cts/panda.config.cts",
+          "/samples/common/tokens.ts",
         ],
       }
     `)
@@ -122,7 +125,8 @@ describe('bundle config', () => {
 
   test('should bundle .mts config', async () => {
     const filePath = path.resolve(cwd, _dirname, './samples/mts/panda.config.mts')
-    expect(await bundle(filePath, cwd)).toMatchInlineSnapshot(`
+    const { config, dependencies } = await bundle(filePath, cwd)
+    expect({ config, dependencies: dependencies.map((dep) => dep.replace(_dirname, '')) }).toMatchInlineSnapshot(`
       {
         "config": {
           "exclude": [],
@@ -151,8 +155,8 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/mts/panda.config.mts",
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/common/tokens.ts",
+          "/samples/mts/panda.config.mts",
+          "/samples/common/tokens.ts",
         ],
       }
     `)
@@ -160,7 +164,8 @@ describe('bundle config', () => {
 
   test('should bundle .js config', async () => {
     const filePath = path.resolve(cwd, _dirname, './samples/js/panda.config.js')
-    expect(await bundle(filePath, cwd)).toMatchInlineSnapshot(`
+    const { config, dependencies } = await bundle(filePath, cwd)
+    expect({ config, dependencies: dependencies.map((dep) => dep.replace(_dirname, '')) }).toMatchInlineSnapshot(`
       {
         "config": {
           "exclude": [],
@@ -189,8 +194,8 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/js/panda.config.js",
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/common/tokens.ts",
+          "/samples/js/panda.config.js",
+          "/samples/common/tokens.ts",
         ],
       }
     `)
@@ -198,7 +203,8 @@ describe('bundle config', () => {
 
   test('should bundle .cjs config', async () => {
     const filePath = path.resolve(cwd, _dirname, './samples/cjs/panda.config.cjs')
-    expect(await bundle(filePath, cwd)).toMatchInlineSnapshot(`
+    const { config, dependencies } = await bundle(filePath, cwd)
+    expect({ config, dependencies: dependencies.map((dep) => dep.replace(_dirname, '')) }).toMatchInlineSnapshot(`
       {
         "config": {
           "exclude": [],
@@ -227,8 +233,8 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/cjs/panda.config.cjs",
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/common/tokens.ts",
+          "/samples/cjs/panda.config.cjs",
+          "/samples/common/tokens.ts",
         ],
       }
     `)
@@ -236,7 +242,8 @@ describe('bundle config', () => {
 
   test('should bundle .mjs config', async () => {
     const filePath = path.resolve(cwd, _dirname, './samples/mjs/panda.config.mjs')
-    expect(await bundle(filePath, cwd)).toMatchInlineSnapshot(`
+    const { config, dependencies } = await bundle(filePath, cwd)
+    expect({ config, dependencies: dependencies.map((dep) => dep.replace(_dirname, '')) }).toMatchInlineSnapshot(`
       {
         "config": {
           "exclude": [],
@@ -265,8 +272,8 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/mjs/panda.config.mjs",
-          "/Users/astahmer/dev/open-source/panda/packages/config/__tests__/samples/common/tokens.ts",
+          "/samples/mjs/panda.config.mjs",
+          "/samples/common/tokens.ts",
         ],
       }
     `)
