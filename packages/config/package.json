@@ -22,6 +22,7 @@
     "@pandacss/error": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*",
     "@pandacss/types": "workspace:*",
     "escalade": "3.1.1",
     "jiti": "^1.18.2",

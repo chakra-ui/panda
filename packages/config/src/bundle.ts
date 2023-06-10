@@ -1,7 +1,10 @@
+import { logger } from '@pandacss/logger'
 import type { Config } from '@pandacss/types'
 import createJITI from 'jiti'
+import { createRequire } from 'module'
 import { getConfigDependencies } from './get-mod-deps'
-import { logger } from '@pandacss/logger'
+
+const require = createRequire(import.meta.url)
 
 let jiti: ReturnType<typeof createJITI> | undefined
 export const bundle = async <T = Config>(filePath: string, cwd: string) => {

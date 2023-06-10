@@ -19,7 +19,7 @@ export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundle
   const presets: any[] = ['@pandacss/preset-base']
 
   if (!result.config.presets) {
-    presets.push('@pandacss/dev/presets')
+    presets.push('@pandacss/preset-panda')
   } else {
     presets.push(...result.config.presets)
   }

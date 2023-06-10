@@ -43,7 +43,7 @@ export const FontFamily = () => {
           </HStack>
 
           <Stack>
-            <panda.span fontWeight="semibold">{font.name}</panda.span>
+            <panda.span fontWeight="semibold">{font.extensions.prop}</panda.span>
             <panda.span fontFamily={font.value} opacity="0.7">
               {font.value}
             </panda.span>

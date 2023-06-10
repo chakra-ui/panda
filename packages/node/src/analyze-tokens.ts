@@ -1,11 +1,12 @@
 import { logger } from '@pandacss/logger'
 import type { ParserResultType } from '@pandacss/types'
+import { filesize } from 'filesize'
 import { writeFile } from 'fs/promises'
+import zlib from 'zlib'
 import { classifyTokens } from './classify'
 import type { PandaContext } from './create-context'
 
-import { filesize } from 'filesize'
-import { gzipSizeSync } from 'gzip-size'
+const gzipSizeSync = (code: string | Buffer) => zlib.gzipSync(code, { level: zlib.constants.Z_BEST_COMPRESSION }).length
 
 export function analyzeTokens(
   ctx: PandaContext,
@@ -58,7 +59,6 @@ export function analyzeTokens(
       },
       fileSizes: {
         lineCount: css.split('\n').length,
-        // rulesCount: css.split('{').length - 1, ?
         normal: filesize(Buffer.byteLength(css, 'utf-8')),
         minified: filesize(Buffer.byteLength(minifiedCss, 'utf-8')),
         gzip: {

@@ -1,16 +1,19 @@
 ---
 import '../../styled-system/styles.css'
 import Head from '../components/head.astro'
+import context from '../lib/panda.context'
 ---
 
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <Head />
+    <Fragment set:html={context.inject.head} />
     <meta name="generator" content={Astro.generator} />
     <title>Panda Playground</title>
   </head>
   <body>
+    <Fragment set:html={context.inject.body} />
     <slot />
   </body>
 </html>

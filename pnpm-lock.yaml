@@ -396,6 +396,9 @@ importers:
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../preset-base
+      '@pandacss/preset-panda':
+        specifier: workspace:*
+        version: link:../preset-panda
       '@pandacss/types':
         specifier: workspace:*
         version: link:../types
@@ -678,9 +681,6 @@ importers:
       boxen:
         specifier: ^7.1.0
         version: 7.1.0
-      gzip-size:
-        specifier: ^7.0.0
-        version: 7.0.0
 
   packages/parser:
     dependencies:

@@ -14,15 +14,10 @@ const context = {
   getCategory(category: keyof TokenDataTypes) {
     return this.tokens.categoryMap.get(category)!
   },
-  get textStyles() {
-    return flatten(theme?.textStyles ?? {})
-  },
-  get layerStyles() {
-    return flatten(theme?.layerStyles ?? {})
-  },
-  get logo() {
-    return config.studio?.logo
-  },
+  textStyles: flatten(theme?.textStyles ?? {}),
+  layerStyles: flatten(theme?.layerStyles ?? {}),
+  logo: config.studio?.logo,
+  inject: config.studio?.inject ?? { head: '', body: '' },
 }
 
 export default context
