@@ -37,6 +37,11 @@ export type GetDepsOptions = {
   foundModuleAliases: Map<string, string>
 }
 
+const importRegex = /import[\s\S]*?['"](.{3,}?)['"]/gi
+const importFromRegex = /import[\s\S]*from[\s\S]*?['"](.{3,}?)['"]/gi
+const requireRegex = /require\(['"`](.+)['"`]\)/gi
+const exportRegex = /export[\s\S]*from[\s\S]*?['"](.{3,}?)['"]/gi
+
 function getDeps(opts: GetDepsOptions, fromAlias?: string) {
   const { filename, seen } = opts
 
@@ -57,9 +62,10 @@ function getDeps(opts: GetDepsOptions, fromAlias?: string) {
 
   const contents = fs.readFileSync(absoluteFile, 'utf-8')
   const fileDeps = [
-    ...contents.matchAll(/import[\s\S]*?['"](.{3,}?)['"]/gi),
-    ...contents.matchAll(/import[\s\S]*from[\s\S]*?['"](.{3,}?)['"]/gi),
-    ...contents.matchAll(/require\(['"`](.+)['"`]\)/gi),
+    ...contents.matchAll(importRegex),
+    ...contents.matchAll(importFromRegex),
+    ...contents.matchAll(requireRegex),
+    ...contents.matchAll(exportRegex),
   ]
   if (!fileDeps.length) return // No deps
 

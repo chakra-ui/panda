@@ -45,6 +45,45 @@ describe('bundle config', () => {
     `)
   })
 
+  test('should bundle .ts config wits nested files and barrels', async () => {
+    const filePath = path.resolve(cwd, _dirname, './samples/nested-files/panda.config.ts')
+    const { config, dependencies } = await bundle(filePath, cwd)
+    expect({ config, dependencies: dependencies.map((dep) => dep.replace(_dirname, '')) }).toMatchInlineSnapshot(`
+      {
+        "config": {
+          "exclude": [],
+          "hash": false,
+          "include": [
+            "./src/**/*.{ts,tsx,jsx}",
+          ],
+          "jsxFramework": "react",
+          "preflight": true,
+          "presets": [
+            "@pandacss/dev/presets",
+          ],
+          "theme": {
+            "extend": {
+              "tokens": {
+                "colors": {
+                  "another-color": {
+                    "value": "#76e3ea",
+                  },
+                },
+              },
+            },
+          },
+        },
+        "dependencies": [
+          "/samples/nested-files/panda.config.ts",
+          "/samples/nested-files/src/index.ts",
+          "/samples/nested-files/src/theme/index.ts",
+          "/samples/nested-files/src/theme/tokens.ts",
+          "/samples/nested-files/src/theme/colors.ts",
+        ],
+      }
+    `)
+  })
+
   test('should bundle .ts config', async () => {
     const filePath = path.resolve(cwd, _dirname, './samples/ts/panda.config.ts')
     const { config, dependencies } = await bundle(filePath, cwd)

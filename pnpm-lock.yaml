@@ -479,6 +479,12 @@ importers:
         specifier: workspace:^
         version: link:../../../../cli
 
+  packages/config/__tests__/samples/nested-files:
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:^
+        version: link:../../../../cli
+
   packages/config/__tests__/samples/ts:
     devDependencies:
       '@pandacss/dev':
