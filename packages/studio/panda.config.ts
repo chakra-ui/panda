@@ -38,9 +38,9 @@ export default defineConfig({
       },
       semanticTokens: {
         colors: {
-          text: { value: { base: '{colors.neutral.200}', _osLight: '{colors.black}' } },
-          bg: { value: { base: '{colors.neutral.900}', _osLight: '{colors.white}' } },
-          card: { value: { base: '{colors.neutral.800}', _osLight: '{colors.neutral.200}' } },
+          text: { value: { base: '{colors.neutral.200}', _light: '{colors.black}' } },
+          bg: { value: { base: '{colors.neutral.900}', _light: '{colors.white}' } },
+          card: { value: { base: '{colors.neutral.800}', _light: '{colors.neutral.200}' } },
         },
       },
     },

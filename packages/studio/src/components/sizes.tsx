@@ -1,15 +1,27 @@
 import { toPx } from '@pandacss/shared'
 import { Grid, panda } from '../../styled-system/jsx'
-import context from '../lib/panda.context'
 import { getSortedSizes } from '../lib/sizes-sort'
 import { TokenGroup } from './token-group'
 
 export type SizesProps = { sizes: Map<string, any> }
 
-export function Sizes() {
-  const values = Array.from(context.getCategory('sizes').values())
+const contentRegex = /^(min|max|fit)-content$/
+const unitRegex = /(ch|%)$/
 
-  const sizes = getSortedSizes(values)
+export function Sizes(props: SizesProps) {
+  const { sizes: tokens } = props
+  const values = Array.from(tokens.values())
+
+  const sizes = getSortedSizes(values).filter(
+    (token) =>
+      // remove negative values
+      !token.extensions.isNegative &&
+      // remove auto breakpoints
+      !token.name.includes('breakpoint-') &&
+      // remove fit-content, min-content, max-content, ch, %
+      !contentRegex.test(token.value) &&
+      !unitRegex.test(token.value),
+  )
 
   return (
     <TokenGroup>

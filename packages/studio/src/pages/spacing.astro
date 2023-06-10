@@ -4,11 +4,11 @@ import Layout from '../layouts/Layout.astro'
 import Sidebar from '../layouts/Sidebar.astro'
 import context from '../lib/panda.context'
 
-const tokens = context.getCategory('sizes')
+const tokens = context.getCategory('spacing')
 ---
 
 <Layout>
-  <Sidebar>
-    <Sizes sizes={tokens} client:load />
-  </Sidebar>
+    <Sidebar>
+        <Sizes sizes={tokens} client:load />
+    </Sidebar>
 </Layout>

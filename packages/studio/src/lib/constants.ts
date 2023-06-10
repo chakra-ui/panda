@@ -7,6 +7,7 @@ import {
   LetterSpacingIcon,
   LineHeightIcon,
   SizesIcon,
+  SpacingIcon,
   TextStylesIcon,
   TypographyIcon,
 } from '../components/icons'
@@ -19,6 +20,8 @@ export enum NavKeys {
   FONT_WEIGHTS = 'font-weights',
   FONT_SIZES = 'font-sizes',
   SIZES = 'sizes',
+  SPACING = 'spacing',
+  FONTS = 'fonts',
   TEXT_STYLES = 'text-styles',
   LAYER_STYLES = 'layer-styles',
   TOKEN_ANALYZER = 'token-analyzer',
@@ -41,6 +44,13 @@ export const navItems: NavItemData[] = [
     id: NavKeys.COLORS,
     description: 'A solid color palette for any context',
     icon: ColorIcon,
+    type: 'token',
+  },
+  {
+    label: 'Fonts',
+    id: NavKeys.FONTS,
+    description: 'Preview your pre configured fonts.',
+    icon: FontSizesIcon,
     type: 'token',
   },
   {
@@ -76,6 +86,13 @@ export const navItems: NavItemData[] = [
     id: NavKeys.SIZES,
     description: 'Preview your pre configured sizes.',
     icon: SizesIcon,
+    type: 'token',
+  },
+  {
+    label: 'Spacing',
+    id: NavKeys.SPACING,
+    description: 'Preview your pre configured spacing.',
+    icon: SpacingIcon,
     type: 'token',
   },
   {
