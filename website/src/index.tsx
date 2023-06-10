@@ -11,18 +11,18 @@ import './polyfill'
 import {
   Head,
   NavLinks,
-  Sidebar,
   SkipNavContent,
   Breadcrumb,
-  Banner
-} from './components'
+  Banner,
+  Sidebar,
+} from '@/components'
 import { getComponents } from './mdx-components'
-import { ActiveAnchorProvider, ConfigProvider, useConfig } from './contexts'
+import { ActiveAnchorProvider, ConfigProvider, useConfig } from '@/contexts'
 import type { PageTheme } from 'nextra/normalize-pages'
 import { normalizePages } from 'nextra/normalize-pages'
 import { DEFAULT_LOCALE, PartialDocsThemeConfig } from './constants'
-import { renderComponent } from './utils'
-import { css, cx } from '../styled-system/css'
+import { renderComponent } from '@/utils'
+import { css, cx } from '@/styled-system/css'
 
 interface BodyProps {
   themeContext: PageTheme
