@@ -1,34 +1,12 @@
-import { panda, Stack, Grid, HStack } from '../../styled-system/jsx'
-import { TokenGroup } from '../components/token-group'
-import { TokenContent } from '../components/token-content'
+import { Grid, HStack, Stack, panda } from '../../styled-system/jsx'
 import { ColorWrapper } from '../components/color-wrapper'
+import { TokenContent } from '../components/token-content'
+import { TokenGroup } from '../components/token-group'
 import { useColorDocs } from '../lib/use-color-docs'
+import { Input } from './input'
+import { SemanticColorDisplay } from './semantic-color'
 
 const UNCATEGORIZED_ID = 'uncategorized' as const
-
-// remove initial underscore
-const cleanCondition = (condition: string) => condition.replace(/^_/, '')
-
-function SemanticColorDisplay(props: { value: string; condition: string }) {
-  const { value, condition } = props
-  return (
-    <ColorWrapper height="12" style={{ background: value }}>
-      <panda.span
-        fontWeight="medium"
-        fontSize="sm"
-        minW="5"
-        bg="neutral.800"
-        px="1"
-        py="1"
-        roundedBottomRight="sm"
-        borderWidth="1px"
-        borderColor="neutral.700"
-      >
-        {cleanCondition(condition)}
-      </panda.span>
-    </ColorWrapper>
-  )
-}
 
 export function Colors() {
   const { filterQuery, setFilterQuery, semanticTokens, hasResults, uncategorizedColors, categorizedColors } =
@@ -55,11 +33,7 @@ export function Colors() {
     return values?.map((color, i) => {
       return (
         <Stack gap="1" key={i}>
-          <ColorWrapper
-            style={{
-              background: color.value,
-            }}
-          />
+          <ColorWrapper style={{ background: color.value }} />
           <Stack mt="2" gap="0.5">
             <panda.div fontWeight="medium">{color.extensions.prop}</panda.div>
             <panda.div opacity="0.7" fontSize="sm" textTransform="uppercase">
@@ -73,11 +47,8 @@ export function Colors() {
 
   return (
     <TokenGroup>
-      <panda.div mb="3.5" position="sticky" top="0" boxShadow="lg" zIndex="1">
-        <panda.input
-          background="card"
-          width="full"
-          p="1"
+      <panda.div mb="3.5" position="sticky" top="0" zIndex="1">
+        <Input
           value={filterQuery}
           onChange={(e) => setFilterQuery(e.target.value)}
           placeholder="Filter tokens by text, property or value"

@@ -1,8 +1,8 @@
-import { panda, Stack } from '../../styled-system/jsx'
 import { Fragment, useState } from 'react'
-import { css } from '../../styled-system/css'
+import { HStack, panda, Stack } from '../../styled-system/jsx'
 import { TokenContent } from '../components/token-content'
 import { TokenGroup } from '../components/token-group'
+import { Input, Textarea } from './input'
 
 type FontTokensProps = {
   text?: string
@@ -12,13 +12,6 @@ type FontTokensProps = {
   css?: any
 }
 
-const inputClassname = css({
-  width: 'full',
-  resize: 'vertical',
-  padding: '1',
-  background: 'card',
-})
-
 export function FontTokens(props: FontTokensProps) {
   const { text: textProp = 'Hello World', largeText = false, token, fontTokens } = props
   const [text, setText] = useState(textProp)
@@ -27,10 +20,10 @@ export function FontTokens(props: FontTokensProps) {
 
   return (
     <TokenGroup>
-      <panda.div mb="3.5" position="sticky" top="0" boxShadow="lg" zIndex={1}>
+      <panda.div mb="3.5" position="sticky" top="0" zIndex={1}>
         {largeText ? (
-          <textarea
-            className={inputClassname}
+          <Textarea
+            resize="vertical"
             onChange={(event) => {
               setText(event.currentTarget.value)
             }}
@@ -39,8 +32,7 @@ export function FontTokens(props: FontTokensProps) {
             placeholder="Preview Text"
           />
         ) : (
-          <input
-            className={inputClassname}
+          <Input
             value={text}
             onChange={(event) => {
               setText(event.currentTarget.value)
@@ -54,13 +46,18 @@ export function FontTokens(props: FontTokensProps) {
         {values.map((fontToken) => (
           <Fragment key={fontToken.extensions.prop}>
             <Stack gap="3.5">
-              <div>
-                <panda.span opacity="0.4" className="label" marginRight="1">
-                  {fontToken.extensions.prop}
-                </panda.span>
-                <span>({fontToken.value})</span>
-              </div>
-              <panda.span fontSize="4xl" lineHeight="normal" className="render" style={{ [token]: fontToken.value }}>
+              <HStack gap="1">
+                <panda.span fontWeight="medium">{fontToken.extensions.prop}</panda.span>
+                <panda.span opacity="0.4">({fontToken.value})</panda.span>
+              </HStack>
+              <panda.span
+                fontSize="4xl"
+                lineHeight="normal"
+                className="render"
+                style={{
+                  [token]: fontToken.value,
+                }}
+              >
                 {text}
               </panda.span>
             </Stack>

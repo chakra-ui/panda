@@ -6,13 +6,13 @@ import { TokenContent } from './token-content'
 import { TokenGroup } from './token-group'
 
 export function LayerStyles() {
-  const layerStyles = Object.entries(context.layerStyles)
+  const values = Object.entries(context.layerStyles)
 
   return (
     <TokenGroup>
       <TokenContent divideY="1px" divideColor="card">
-        {layerStyles && layerStyles?.length !== 0 ? (
-          layerStyles.map(([name, styles]) => (
+        {values && values?.length !== 0 ? (
+          values.map(([name, styles]) => (
             <panda.div px="1" py="2.5" key={name}>
               <panda.div borderColor="card">
                 <panda.span fontWeight="medium">{name}</panda.span>

@@ -8,8 +8,7 @@ export function ColorWrapper(props: HTMLPandaProps<'div'>) {
       borderRadius="sm"
       position="relative"
       overflow="hidden"
-      borderWidth="2px"
-      borderColor="neutral.800"
+      shadow="inset"
       _before={{
         content: "''",
         position: 'absolute',

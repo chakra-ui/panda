@@ -116,13 +116,13 @@ export const navItems: NavItemData[] = [
     icon: LayerStylesIcon,
     type: 'token',
   },
-  {
-    label: 'Token analyzer',
-    id: NavKeys.TOKEN_ANALYZER,
-    description: 'Visualize your tokens usage in your app.',
-    icon: LayerStylesIcon,
-    type: 'token',
-  },
+  // {
+  //   label: 'Token analyzer',
+  //   id: NavKeys.TOKEN_ANALYZER,
+  //   description: 'Visualize your tokens usage in your app.',
+  //   icon: LayerStylesIcon,
+  //   type: 'token',
+  // },
   {
     label: 'Typography',
     id: NavKeys.TYPOGRAPHY_PLAYGROUND,

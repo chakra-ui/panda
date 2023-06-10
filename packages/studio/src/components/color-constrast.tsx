@@ -55,7 +55,8 @@ export function ColorContrastChecker() {
           <panda.div
             display="flex"
             flexDirection="column"
-            borderSlim="card"
+            borderWidth="1px"
+            borderColor="card"
             flex="1"
             pt="16"
             style={{ background: activeForeground }}
@@ -71,7 +72,8 @@ export function ColorContrastChecker() {
           <panda.div
             display="flex"
             flexDirection="column"
-            borderSlim="card"
+            borderWidth="1px"
+            borderColor="card"
             flex="1"
             pt="16"
             style={{ background: activeBackground }}
@@ -92,7 +94,8 @@ export function ColorContrastChecker() {
           fontSize="2xl"
           p="2"
           outline="none"
-          borderSlim="card"
+          borderWidth="1px"
+          borderColor="card"
           suppressContentEditableWarning
           contentEditable
           style={{ background: activeBackground, color: activeForeground }}

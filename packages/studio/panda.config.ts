@@ -37,10 +37,24 @@ export default defineConfig({
         },
       },
       semanticTokens: {
+        shadows: {
+          inset: {
+            value: { base: 'inset 0 0 0 1px rgba(0,0,0,0.1)', _dark: 'inset 0 0 0 1px rgba(255,255,255,0.2)' },
+          },
+        },
         colors: {
-          text: { value: { base: '{colors.neutral.200}', _light: '{colors.black}' } },
-          bg: { value: { base: '{colors.neutral.900}', _light: '{colors.white}' } },
-          card: { value: { base: '{colors.neutral.800}', _light: '{colors.neutral.200}' } },
+          text: {
+            value: { base: '{colors.black}', _dark: '{colors.neutral.200}' },
+          },
+          bg: {
+            value: { base: '{colors.white}', _dark: '{colors.neutral.900}' },
+          },
+          card: {
+            value: { base: '{colors.neutral.200}', _dark: '{colors.neutral.800}' },
+          },
+          border: {
+            value: { base: '{colors.neutral.300}', _dark: '{colors.neutral.700}' },
+          },
         },
       },
     },
@@ -61,21 +75,6 @@ export default defineConfig({
       },
     },
   },
-  utilities: {
-    extend: {
-      borderSlim: {
-        className: 'border-slim',
-        values: 'colors',
-        transform(value: any) {
-          return {
-            borderWidth: '1px',
-            borderStyle: 'solid',
-            borderColor: value,
-          }
-        },
-      },
-    },
-  },
   staticCss: {
     css: [
       {
@@ -87,20 +86,15 @@ export default defineConfig({
   },
   globalCss: {
     ':root': {
+      '--global-color-border': 'colors.border',
+      '--global-color-placeholder': 'colors.neutral.500',
       fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif',
       fontSize: 'md',
       lineHeight: 'normal',
       fontWeight: 'normal',
-
       colorScheme: 'light dark',
       color: 'text',
       background: 'bg',
-
-      fontSynthesis: 'none',
-      textRendering: 'optimizeLegibility',
-      WebkitFontSmoothing: 'antialiased',
-      MozOsxFontSmoothing: 'grayscale',
-      WebkitTextSizeAdjust: '100%',
     },
 
     a: {
