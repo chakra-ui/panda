@@ -7,7 +7,6 @@ import {
   LetterSpacingIcon,
   LineHeightIcon,
   SizesIcon,
-  SpacingIcon,
   TextStylesIcon,
   TypographyIcon,
 } from '../components/icons'
@@ -112,13 +111,6 @@ export const navItems: NavItemData[] = [
     id: NavKeys.TYPOGRAPHY_PLAYGROUND,
     description: 'Visually test font styles with any text.',
     icon: TypographyIcon,
-    type: 'playground',
-  },
-  {
-    label: 'Spacing',
-    id: NavKeys.SPACING_PLAYGROUND,
-    description: 'Visually test spacing tokens with real containers.',
-    icon: SpacingIcon,
     type: 'playground',
   },
   {
