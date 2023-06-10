@@ -25,6 +25,11 @@
     "@pandacss/types": "workspace:*",
     "escalade": "3.1.1",
     "jiti": "^1.18.2",
-    "merge-anything": "^5.1.7"
+    "merge-anything": "^5.1.7",
+    "sucrase": "^3.32.0",
+    "tsconfck": "^2.1.1"
+  },
+  "devDependencies": {
+    "pkg-types": "1.0.3"
   }
 }

@@ -204,8 +204,8 @@
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "release": "pnpm build --silent && tsx ./scripts/publish.ts",
-    "vsce:package": "pnpm --silent build && ../vsix-builder/dist/cli-default.js package",
-    "vsce:prerelease": "pnpm --silent build && ../vsix-builder/dist/cli-default.js package patch --pre-release -o panda.vsix"
+    "vsce:package": "pnpm --silent build && pnpm vsix-builder package",
+    "vsce:prerelease": "pnpm --silent build && pnpm vsix-builder package patch --pre-release -o panda.vsix"
   },
   "dependencies": {
     "@pandacss/ts-plugin": "workspace:*",

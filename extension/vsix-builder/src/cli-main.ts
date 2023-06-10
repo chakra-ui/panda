@@ -22,6 +22,7 @@ export async function main() {
     .option('-t, --target <target>', `Target architecture. Valid targets: ${ValidTargets}`)
     .option('--dry', 'List the files that would have been included in the package')
     .action(async (version, flags) => {
+      console.log(`Creating a VSIX for ${pkgJson.name}...`)
       const outfile = flags?.out ?? path.join(cwd, 'panda.vsix')
 
       const start = performance.now()

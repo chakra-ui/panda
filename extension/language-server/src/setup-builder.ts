@@ -54,7 +54,7 @@ export function setupBuilder(
 
   async function setupWorkspaceBuilders(rootPath: string) {
     console.log('🐼 Setup workspace builders...')
-    const configPathList = await glob(`${rootPath}/**/panda.config.{ts,js,cjs,mjs}`, {
+    const configPathList = await glob(`${rootPath}/**/panda.config.{ts,cts,mts,js,cjs,mjs}`, {
       cwd: rootPath,
       onlyFiles: true,
       absolute: true,
@@ -86,6 +86,7 @@ export function setupBuilder(
     try {
       console.log('🚧 Loading context for:', filepath)
       ref.synchronizing = builderResolver.setup(filepath)
+      await ref.synchronizing
       console.log('✅ Loading context done:', filepath)
     } catch (err) {
       // Ignore

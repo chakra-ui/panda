@@ -262,8 +262,8 @@ importers:
         specifier: ^13.0.1
         version: 13.0.1
       mime:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^1.3.4
+        version: 1.6.0
       npm-packlist:
         specifier: ^5.1.3
         version: 5.1.3
@@ -292,6 +292,9 @@ importers:
         specifier: ^2.5.1
         version: 2.5.1
     devDependencies:
+      '@types/mime':
+        specifier: ^1
+        version: 1.3.2
       '@types/npm-packlist':
         specifier: ^3.0.0
         version: 3.0.0
@@ -435,6 +438,58 @@ importers:
       merge-anything:
         specifier: ^5.1.7
         version: 5.1.7
+      sucrase:
+        specifier: ^3.32.0
+        version: 3.32.0
+      tsconfck:
+        specifier: ^2.1.1
+        version: 2.1.1(typescript@5.1.3)
+    devDependencies:
+      pkg-types:
+        specifier: 1.0.3
+        version: 1.0.3
+
+  packages/config/__tests__/samples/cjs:
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:^
+        version: link:../../../../cli
+
+  packages/config/__tests__/samples/cts:
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:^
+        version: link:../../../../cli
+
+  packages/config/__tests__/samples/js:
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:^
+        version: link:../../../../cli
+
+  packages/config/__tests__/samples/mjs:
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:^
+        version: link:../../../../cli
+
+  packages/config/__tests__/samples/mts:
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:^
+        version: link:../../../../cli
+
+  packages/config/__tests__/samples/ts:
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:^
+        version: link:../../../../cli
+
+  packages/config/__tests__/samples/with-tsconfig-paths:
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:^
+        version: link:../../../../cli
 
   packages/core:
     dependencies:
@@ -9311,10 +9366,6 @@ packages:
     resolution: {integrity: sha512-YATxVxgRqNH6nHEIsvg6k2Boc1JHI9ZbH5iWFFv/MTkchz3b1ieGDa5T0a9RznNdI0KhVbdbWSN+KWWrQZRxTw==}
     dev: true
 
-  /@types/mime@3.0.1:
-    resolution: {integrity: sha512-Y4XFY5VJAuw0FgAqPNd6NNoV44jbq9Bz2L7Rh/J6jLTiHBSBJa9fxqQIvkIld4GsoDOcCbvzOUAbLPsSKKg+uA==}
-    dev: true
-
   /@types/minimatch@3.0.5:
     resolution: {integrity: sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==}
     dev: true
@@ -9496,7 +9547,7 @@ packages:
   /@types/serve-static@1.15.1:
     resolution: {integrity: sha512-NUo5XNiAdULrJENtJXZZ3fHtfMolzZwczzBbnAeBbqBwG+LaG6YaJtuwzwGSQZ2wsCrxjEhNNjAkKigy3n8teQ==}
     dependencies:
-      '@types/mime': 3.0.1
+      '@types/mime': 1.3.2
       '@types/node': 20.2.5
     dev: true
 
@@ -10037,14 +10088,14 @@ packages:
       '@vitest/utils': 0.31.4
       concordance: 5.0.4
       p-limit: 4.0.0
-      pathe: 1.1.0
+      pathe: 1.1.1
     dev: false
 
   /@vitest/snapshot@0.31.4:
     resolution: {integrity: sha512-LemvNumL3NdWSmfVAMpXILGyaXPkZbG5tyl6+RQSdcHnTj6hvA49UAI8jzez9oQyE/FWLKRSNqTGzsHuk89LRA==}
     dependencies:
       magic-string: 0.30.0
-      pathe: 1.1.0
+      pathe: 1.1.1
       pretty-format: 27.5.1
     dev: false
 
@@ -20731,7 +20782,7 @@ packages:
     resolution: {integrity: sha512-HT5mcgIQKkOrZecOjOX3DJorTikWXwsBfpcr/MGBkhfWcjiqvnaL/9ppxvIUXfjT6xt4DVIAsN9fMUz1ev4bIw==}
     dependencies:
       acorn: 8.8.2
-      pathe: 1.1.0
+      pathe: 1.1.1
       pkg-types: 1.0.3
       ufo: 1.1.2
 
@@ -22192,10 +22243,10 @@ packages:
 
   /pathe@1.1.0:
     resolution: {integrity: sha512-ODbEPR0KKHqECXW1GoxdDb+AZvULmXjVPy4rt+pGo2+TnjJTIPJQSVS6N63n8T2Ip+syHhbn52OewKicV0373w==}
+    dev: false
 
   /pathe@1.1.1:
     resolution: {integrity: sha512-d+RQGp0MAYTIaDBIMmOfMwz3E+LOZnxx1HZd5R18mmCZY0QBlK0LDZfPc8FW8Ed2DlvsuE6PRjroDY+wg4+j/Q==}
-    dev: true
 
   /pathval@1.1.1:
     resolution: {integrity: sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==}
@@ -22287,7 +22338,7 @@ packages:
     dependencies:
       jsonc-parser: 3.2.0
       mlly: 1.3.0
-      pathe: 1.1.0
+      pathe: 1.1.1
 
   /pkg-up@3.1.0:
     resolution: {integrity: sha512-nDywThFk1i4BQK4twPQ6TA4RT8bDY96yeuCVBWL3ePARCiEKDRSrNGbFIgUJpLp+XeIR65v8ra7WuJOFUBtkMA==}
@@ -26227,7 +26278,6 @@ packages:
         optional: true
     dependencies:
       typescript: 5.1.3
-    dev: true
 
   /tsconfig-paths@3.14.2:
     resolution: {integrity: sha512-o/9iXgCYc5L/JxCHPe3Hvh8Q/2xm5Z+p18PESBU6Ff33695QnCHBEjcytY2q19ua7Mbl/DavtBOLq+oG0RCL+g==}
@@ -27244,7 +27294,7 @@ packages:
       cac: 6.7.14
       debug: 4.3.4
       mlly: 1.3.0
-      pathe: 1.1.0
+      pathe: 1.1.1
       picocolors: 1.0.0
       vite: 4.3.9(@types/node@20.2.5)
     transitivePeerDependencies:
