@@ -8,30 +8,31 @@ import type { PandaContext } from './create-context'
 
 const gzipSizeSync = (code: string | Buffer) => zlib.gzipSync(code, { level: zlib.constants.Z_BEST_COMPRESSION }).length
 
-export function analyzeTokens(
-  ctx: PandaContext,
-  options: { onResult?: (file: string, result: ParserResultType) => void } = {},
-) {
-  const parserResultByFilepath = new Map<string, ParserResultType>()
-  const extractTimeByFilepath = new Map<string, number>()
+type Options = {
+  onResult?: (file: string, result: ParserResultType) => void
+}
 
-  const includedFiles = ctx.getFiles()
-  includedFiles.forEach((file) => {
+export function analyzeTokens(ctx: PandaContext, options: Options = {}) {
+  const filesMap = new Map<string, ParserResultType>()
+  const timesMap = new Map<string, number>()
+
+  const files = ctx.getFiles()
+  files.forEach((file) => {
     const start = performance.now()
     const result = ctx.project.parseSourceFile(file)
 
     const extractMs = performance.now() - start
-    extractTimeByFilepath.set(file, extractMs)
+    timesMap.set(file, extractMs)
     logger.debug('analyze', `Parsed ${file} in ${extractMs}ms`)
 
     if (result) {
-      parserResultByFilepath.set(file, result)
+      filesMap.set(file, result)
       options.onResult?.(file, result)
     }
   })
 
-  const totalMs = Array.from(extractTimeByFilepath.values()).reduce((a, b) => a + b, 0)
-  logger.debug('analyze', `Analyzed ${includedFiles.length} files in ${totalMs.toFixed(2)}ms`)
+  const totalMs = Array.from(timesMap.values()).reduce((a, b) => a + b, 0)
+  logger.debug('analyze', `Analyzed ${files.length} files in ${totalMs.toFixed(2)}ms`)
 
   const minify = ctx.config.minify
   const chunkFiles = ctx.chunks.getFiles()
@@ -47,13 +48,13 @@ export function analyzeTokens(
   ctx.config.minify = minify
 
   const start = performance.now()
-  const analysis = classifyTokens(ctx, parserResultByFilepath)
+  const analysis = classifyTokens(ctx, filesMap)
   const classifyMs = performance.now() - start
 
   return Object.assign(
     {
       duration: {
-        extractTimeByFiles: Object.fromEntries(extractTimeByFilepath.entries()),
+        extractTimeByFiles: Object.fromEntries(timesMap.entries()),
         extractTotal: totalMs,
         classify: classifyMs,
       },

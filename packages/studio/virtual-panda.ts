@@ -13,7 +13,7 @@ const analysisDataFilepath = 'src/lib/analysis.json'
 const jsonPath = resolve(_dirname, analysisDataFilepath)
 
 function vitePlugin(): VitePlugin {
-  let config
+  let config: any
 
   return {
     name: 'vite:panda',
@@ -21,8 +21,8 @@ function vitePlugin(): VitePlugin {
       const ctx = await loadConfigAndCreateContext()
       config = ctx.config
 
-      // const result = analyzeTokens(ctx)
-      // await writeAnalyzeJSON(jsonPath, result, ctx)
+      const result = analyzeTokens(ctx)
+      await writeAnalyzeJSON(jsonPath, result, ctx)
     },
     async configureServer(server) {
       const file = config.path
