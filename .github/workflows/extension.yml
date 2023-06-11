@@ -5,8 +5,8 @@ on:
 
   push:
     paths:
-      - '.changeset/**'
-      - 'extension/**'
+      - ".changeset/**"
+      - "extension/**"
     branches:
       - main
 
@@ -28,7 +28,11 @@ jobs:
 
       - name: Publish RC
         working-directory: ./extension/vscode
-        run: pnpm release
+        run: |
+          pnpm rewrite-deps
+          rm -rf node_modules
+          npm i
+          pnpm release
         env:
           VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
           VSCE_RELEASE_TYPE: rc
