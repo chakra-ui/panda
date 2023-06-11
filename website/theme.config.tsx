@@ -1,16 +1,16 @@
-import React from 'react'
+import { useRouter } from 'next/router'
+import seoConfig from './seo.config'
 import {
-  DocsThemeConfig,
-  Tabs,
-  Tab,
-  useConfig,
   Callout,
-  FileTree,
   Card,
-  Cards
+  Cards,
+  DocsThemeConfig,
+  FileTree,
+  Tab,
+  Tabs,
+  useConfig
 } from './src'
 import { Steps } from './src/mdx/steps'
-import { useRouter } from 'next/router'
 import { css } from './styled-system/css'
 import { Icon } from './theme/icons'
 
@@ -30,10 +30,8 @@ const config: DocsThemeConfig = {
   project: { link: 'https://github.com/chakra-ui/panda' },
   useNextSeoProps() {
     const { route } = useRouter()
-
     if (route === '/') return { titleTemplate: 'Panda – %s' }
-
-    return { titleTemplate: '%s – Panda' }
+    return { titleTemplate: seoConfig.title.template }
   },
   docsRepositoryBase: 'https://github.com/chakra-ui/panda/blob/website/pages',
   sidebar: {
@@ -68,35 +66,27 @@ const config: DocsThemeConfig = {
 
     return (
       <>
-        <link
-          rel="icon"
-          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐼</text></svg>"
-        />
+        {seoConfig.icons.map((icon, index) => (
+          <link key={index} rel={icon.rel} href={icon.url} />
+        ))}
         <meta httpEquiv="Content-Language" content="en" />
         <meta
           name="description"
-          content={
-            meta['description'] ||
-            '🐼 Universal CSS Framework for Design Systems ⚡️'
-          }
+          content={meta['description'] || seoConfig.description}
+        />
+        <meta
+          name="og:title"
+          content={title ? title + ' – Panda' : seoConfig.title.default}
         />
         <meta
           name="og:description"
-          content={
-            meta['description'] ||
-            '🐼 Universal CSS Framework for Design Systems ⚡️'
-          }
+          content={meta['description'] || seoConfig.description}
         />
+        <meta name="og:image" content={seoConfig.openGraph.images} />
+        <meta name="og:url" content={seoConfig.openGraph.url} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@thesegunadebayo" />
-        <meta
-          name="og:title"
-          content={
-            title
-              ? title + ' – Panda'
-              : 'Panda - 🐼 Universal CSS Framework for Design Systems ⚡️'
-          }
-        />
+        <meta name="twitter:site" content={seoConfig.twitter.site} />
+        <meta name="twitter:creator" content={seoConfig.twitter.creator} />
         <meta name="apple-mobile-web-app-title" content="Panda" />
       </>
     )

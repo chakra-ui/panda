@@ -18,7 +18,7 @@ export class Stylesheet {
 
   constructor(private context: StylesheetContext, private options?: StylesheetOptions) {
     const { recipes } = options ?? {}
-    this.recipes = new Recipes(recipes, context)
+    this.recipes = new Recipes(recipes ?? {}, context)
   }
 
   processGlobalCss = (styleObject: Dict) => {

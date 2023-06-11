@@ -43,7 +43,7 @@ export const getBaseEngine = (conf: LoadConfigResult) =>
 
     Obj.bind('recipes', ({ conditions, utility, config: { hash, theme } }) => {
       const context = { root: postcss.root(), conditions, utility, hash, helpers }
-      const recipes = new Recipes(theme?.recipes, context)
+      const recipes = new Recipes(theme?.recipes ?? {}, context)
       recipes.save() // cache recipes on first run
       return recipes
     }),

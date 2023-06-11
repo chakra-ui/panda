@@ -22,10 +22,11 @@ export async function main() {
     .option('-t, --target <target>', `Target architecture. Valid targets: ${ValidTargets}`)
     .option('--dry', 'List the files that would have been included in the package')
     .action(async (version, flags) => {
+      console.log(`Creating a VSIX...`)
       const outfile = flags?.out ?? path.join(cwd, 'panda.vsix')
 
       const start = performance.now()
-      const vsix = await createVsix({ dir: cwd, outfile, dry: false }, { ...flags, version })
+      const vsix = await createVsix({ dir: cwd, outfile, dry: flags?.dry }, { ...flags, version })
       const end = performance.now()
 
       if (!vsix) {
@@ -35,10 +36,13 @@ export async function main() {
       if (vsix.dry) {
         console.log('Dry run, no package created.')
         console.log(`outfile: ${vsix.outfile}`)
-        console.log(`<${vsix.manifest.name}> v${vsix.manifest.version}, with ${vsix.files.length} files :`)
-        vsix.files.forEach((file) => {
-          console.log(`  ${file.path}`)
-        })
+        console.log(`<${vsix.manifest.name}> v${vsix.manifest.version}, with ${vsix.files.length} files`)
+        if (vsix.files.length < 550) {
+          vsix.files.forEach((file) => {
+            console.log(`  ${file.path}`)
+          })
+        }
+
         return
       }
 

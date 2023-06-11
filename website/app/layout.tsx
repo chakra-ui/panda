@@ -1,4 +1,3 @@
-import { Metadata } from 'next'
 import { Fira_Code } from 'next/font/google'
 import localFont from 'next/font/local'
 import { css, cx } from '../styled-system/css'
@@ -6,32 +5,14 @@ import { Flex } from '../styled-system/jsx'
 import '../styles/panda.css'
 import { Navbar } from './navbar'
 
+import seoConfig from '../seo.config'
 import { Providers } from './providers'
 
 type Props = {
   children: React.ReactNode
 }
 
-export const metadata: Metadata = {
-  title: {
-    template: '%s | Panda CSS',
-    default:
-      'Panda CSS  - The fastest way to build beautiful websites in React.'
-  },
-  description: 'The fastest way to build beautiful websites in React.',
-  themeColor: '#F6E458',
-  openGraph: {
-    images: '/og-image.png',
-    url: 'https://panda-css.com'
-  },
-  manifest: '/site.webmanifest',
-  icons: [
-    { rel: 'icon', url: '/favicon.ico' },
-    { rel: 'apple-touch-icon', url: '/apple-touch-icon.png' },
-    { rel: 'mask-icon', url: '/favicon.ico' },
-    { rel: 'image/x-icon', url: '/favicon.ico' }
-  ]
-}
+export const metadata = seoConfig
 
 const MonaSans = localFont({
   src: '../styles/Mona-Sans.woff2',
