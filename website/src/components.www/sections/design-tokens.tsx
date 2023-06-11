@@ -2,9 +2,9 @@ import { css } from '@/styled-system/css'
 import { Box, Circle, Container, Stack, panda } from '@/styled-system/jsx'
 import { button } from '@/styled-system/recipes'
 import { token } from '@/styled-system/tokens'
-import { outdent } from 'outdent'
 import { Icon } from '@/theme/icons'
-import { Code, codeStyle } from '../code/code'
+import { outdent } from 'outdent'
+import { Code, codeStyle } from '../code-highlight/code'
 import { LearnMore } from '../learn-more'
 
 const codeSnippets = {

@@ -2,8 +2,8 @@ import { css } from '@/styled-system/css'
 import { HStack, Stack, VStack, panda } from '@/styled-system/jsx'
 import { Icon, IconType } from '@/theme/icons'
 import { outdent } from 'outdent'
-import { Code } from '../code/code'
-import { tabs } from '../code/tabs.extension'
+import { Code } from '../code-highlight/code'
+import { tabs } from '../code-highlight/tabs.extension'
 
 const codeSnippets = [
   {

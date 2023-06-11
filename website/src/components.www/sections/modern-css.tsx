@@ -1,10 +1,10 @@
-import { outdent } from 'outdent'
-import { Code, codeStyle } from '../code/code'
 import { css } from '@/styled-system/css'
 import { Circle, Container, Flex, Stack, panda } from '@/styled-system/jsx'
 import { button } from '@/styled-system/recipes'
 import { token } from '@/styled-system/tokens'
 import { Icon } from '@/theme/icons'
+import { outdent } from 'outdent'
+import { Code, codeStyle } from '../code-highlight/code'
 import { LearnMore } from '../learn-more'
 
 const codeSnippet = outdent`
