@@ -107,7 +107,6 @@ export function Sidebar({
         </SidebarHeader>
 
         <SidebarBody ref={sidebarRef} showSidebar={showSidebar}>
-
               {/* without asPopover check <Collapse />'s inner.clientWidth on `layout: "raw"` will be 0 and element will not have width on initial loading */}
               {(!asPopover || !showSidebar) && (
                 <Collapse isOpen={showSidebar} horizontal>
@@ -122,7 +121,6 @@ export function Sidebar({
                   />
                 </Collapse>
               )}
-
               <ThreeView
                 className={css({ md: { display: 'none' } })}
                 // The mobile dropdown menu, shows all the directories.
