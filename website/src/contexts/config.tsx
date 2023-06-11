@@ -1,14 +1,13 @@
-import type { ReactElement, ReactNode } from 'react'
-import { createContext, useContext, useState } from 'react'
-import type { PageOpts, PageMapItem, FrontMatter } from 'nextra'
 import { ThemeProvider } from 'next-themes'
-import type { Context } from '../types'
+import type { FrontMatter, PageMapItem, PageOpts } from 'nextra'
+import { metaSchema } from 'nextra/normalize-pages'
+import { createContext, useContext, useState } from 'react'
+import type { ZodError } from 'zod'
+import { DEFAULT_THEME } from '../DEFAULT_THEME'
 import type { DocsThemeConfig } from '../constants'
 import { DEEP_OBJECT_KEYS, themeSchema } from '../constants'
-import { DEFAULT_THEME } from '../DEFAULT_THEME'
-import { metaSchema } from 'nextra/normalize-pages'
+import type { Context } from '../types'
 import { MenuProvider } from './menu'
-import type { ZodError } from 'zod'
 
 type Config<FrontMatterType = FrontMatter> = DocsThemeConfig &
   Pick<
@@ -69,9 +68,9 @@ export const ConfigProvider = ({
   children,
   value: { themeConfig, pageOpts }
 }: {
-  children: ReactNode
+  children: React.ReactNode
   value: Context
-}): ReactElement => {
+}) => {
   const [menu, setMenu] = useState(false)
   // Merge only on first load
   theme ||= {

@@ -1,6 +1,4 @@
-import type { ComponentProps, ReactElement } from 'react'
-
-export function GitHubIcon(props: ComponentProps<'svg'>): ReactElement {
+export function GitHubIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       width="24"

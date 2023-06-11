@@ -1,6 +1,4 @@
 import type { NextraThemeLayoutProps, PageOpts } from 'nextra'
-
-import type { ReactElement, ReactNode } from 'react'
 import { useMemo } from 'react'
 import { useRouter } from 'next/router'
 import 'focus-visible'
@@ -21,15 +19,15 @@ import { ActiveAnchorProvider, ConfigProvider, useConfig } from './contexts'
 import type { PageTheme } from 'nextra/normalize-pages'
 import { normalizePages } from 'nextra/normalize-pages'
 import { DEFAULT_LOCALE, PartialDocsThemeConfig } from './constants'
-import { renderComponent } from './utils'
-import { css, cx } from '../styled-system/css'
+import { renderComponent } from './lib'
+import { css, cx } from '@/styled-system/css'
 
 interface BodyProps {
   themeContext: PageTheme
-  breadcrumb: ReactNode
+  breadcrumb: React.ReactNode
   timestamp?: number
-  navigation: ReactNode
-  children: ReactNode
+  navigation: React.ReactNode
+  children: React.ReactNode
 }
 
 const classes = {
@@ -56,7 +54,7 @@ const Body = ({
   timestamp,
   navigation,
   children
-}: BodyProps): ReactElement => {
+}: BodyProps) => {
   const config = useConfig()
   const mounted = useMounted()
 
@@ -156,7 +154,7 @@ const InnerLayout = ({
   headings,
   timestamp,
   children
-}: PageOpts & { children: ReactNode }): ReactElement => {
+}: PageOpts & { children: React.ReactNode }) => {
   const config = useConfig()
   const { locale = DEFAULT_LOCALE, defaultLocale } = useRouter()
   const fsPath = useFSRoute()
@@ -286,7 +284,7 @@ const InnerLayout = ({
 export default function Layout({
   children,
   ...context
-}: NextraThemeLayoutProps): ReactElement {
+}: NextraThemeLayoutProps) {
   return (
     <ConfigProvider value={context}>
       <InnerLayout {...context.pageOpts}>{children}</InnerLayout>

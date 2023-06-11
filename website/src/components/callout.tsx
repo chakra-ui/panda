@@ -1,7 +1,6 @@
-import type { ReactElement, ReactNode } from 'react'
+import { css } from '@/styled-system/css'
+import { callout as calloutRecipe } from '@/styled-system/recipes'
 import { InformationCircleIcon } from 'nextra/icons'
-import { css } from '../../styled-system/css'
-import { callout as calloutRecipe } from '../../styled-system/recipes'
 
 const TypeToEmoji = {
   default: '💡',
@@ -12,17 +11,14 @@ const TypeToEmoji = {
 
 type CalloutType = keyof typeof TypeToEmoji
 
-type CalloutProps = {
+type Props = {
   type?: CalloutType
-  emoji?: string | ReactElement
-  children: ReactNode
+  emoji?: React.ReactNode
+  children: React.ReactNode
 }
 
-export function Callout({
-  children,
-  type = 'default',
-  emoji = TypeToEmoji[type]
-}: CalloutProps): ReactElement {
+export const Callout = (props: Props) => {
+  const { children, type = 'default', emoji = TypeToEmoji[type] } = props
   return (
     <div
       data-scope="callout"

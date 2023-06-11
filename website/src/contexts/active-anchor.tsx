@@ -1,6 +1,5 @@
-import type { Dispatch, ReactElement, ReactNode, SetStateAction } from 'react'
 import 'intersection-observer'
-import { createContext, useContext, useState, useRef } from 'react'
+import { createContext, useContext, useRef, useState } from 'react'
 import { IS_BROWSER } from '../constants'
 
 type ActiveAnchor = Record<
@@ -15,7 +14,7 @@ type ActiveAnchor = Record<
 
 const ActiveAnchorContext = createContext<ActiveAnchor>({})
 const SetActiveAnchorContext = createContext<
-  Dispatch<SetStateAction<ActiveAnchor>>
+  React.Dispatch<React.SetStateAction<ActiveAnchor>>
 >(v => v)
 
 const IntersectionObserverContext = createContext<IntersectionObserver | null>(
@@ -23,6 +22,7 @@ const IntersectionObserverContext = createContext<IntersectionObserver | null>(
 )
 const slugs = new WeakMap()
 const SlugsContext = createContext<WeakMap<any, any>>(slugs)
+
 // Separate the state as 2 contexts here to avoid
 // re-renders of the content triggered by the state update.
 export const useActiveAnchor = () => useContext(ActiveAnchorContext)
@@ -30,15 +30,17 @@ export const useSetActiveAnchor = () => useContext(SetActiveAnchorContext)
 
 export const useIntersectionObserver = () =>
   useContext(IntersectionObserverContext)
+
 export const useSlugs = () => useContext(SlugsContext)
 
 export const ActiveAnchorProvider = ({
   children
 }: {
-  children: ReactNode
-}): ReactElement => {
+  children: React.ReactNode
+}) => {
   const [activeAnchor, setActiveAnchor] = useState<ActiveAnchor>({})
   const observerRef = useRef<IntersectionObserver | null>(null)
+
   if (IS_BROWSER && !observerRef.current) {
     observerRef.current = new IntersectionObserver(
       entries => {
@@ -92,6 +94,7 @@ export const ActiveAnchorProvider = ({
       }
     )
   }
+
   return (
     <ActiveAnchorContext.Provider value={activeAnchor}>
       <SetActiveAnchorContext.Provider value={setActiveAnchor}>

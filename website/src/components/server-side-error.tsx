@@ -1,16 +1,17 @@
-import type { ReactElement } from 'react'
+import { css } from '@/styled-system/css'
+import { useRouter } from 'next/router'
 import { useMounted } from 'nextra/hooks'
 import { useConfig } from '../contexts'
-import { renderComponent, getGitIssueUrl } from '../utils'
-import { useRouter } from 'next/router'
+import { getGitIssueUrl, renderComponent } from '../lib'
 import { Anchor } from './anchor'
-import { css } from '../../styled-system/css'
 
-export function ServerSideErrorPage(): ReactElement | null {
+export function ServerSideErrorPage() {
   const config = useConfig()
+  const { content, labels } = config.serverSideError
+
   const mounted = useMounted()
   const { asPath } = useRouter()
-  const { content, labels } = config.serverSideError
+
   if (!content) {
     return null
   }

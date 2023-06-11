@@ -1,38 +1,41 @@
 import { outdent } from 'outdent'
-import { Code, codeStyle } from '../bright/code'
-import { css } from '../styled-system/css'
-import { Circle, Container, Flex, Stack, panda } from '../styled-system/jsx'
-import { button } from '../styled-system/recipes'
-import { token } from '../styled-system/tokens'
-import { Icon } from '../theme/icons'
-import { LearnMore } from './learn-more'
+import { Code, codeStyle } from '../code/code'
+import { css } from '@/styled-system/css'
+import { Circle, Container, Flex, Stack, panda } from '@/styled-system/jsx'
+import { button } from '@/styled-system/recipes'
+import { token } from '@/styled-system/tokens'
+import { Icon } from '@/theme/icons'
+import { LearnMore } from '../learn-more'
 
 const codeSnippet = outdent`
-@layer reset, base, tokens, recipes, utilities;
+export const badge = cva({
+  base: {
+    fontWeight: 'medium',
+    px: '3',
+    rounded: 'md',
+  },
+  variants: {
+    status: {
+      default: {
+        color: 'white',
+        bg: 'gray.500',
+      },
+      success: {
+        color: 'white',
+        bg: 'green.500',
+      },
+      warning: {
+        color: 'white',
+        bg: 'yellow.500',
+      },
+    },
+  },
+  defaultVariants: {
+    status: 'default',
+  },
+})`
 
-@layer utilities {
-  .d_flex {
-    display: flex;
-  }
-  
-  .flex_row {
-    flex-direction: row;
-  }
-
-  .mt_2 {
-    margin-top: var(--space-2);
-  }
-  
-  .fs_sm {
-    font-size: var(--fontSizes-sm);
-  }
-  
-  .color_gray.600 {
-    color: var(--color-gray-600);
-  }
-}`
-
-export const SectionModernCss = () => {
+export const SectionRecipes = () => {
   return (
     <panda.section bg="bg.main">
       <Container mb={{ lg: '-10rem' }}>
@@ -48,7 +51,7 @@ export const SectionModernCss = () => {
               className={button({ color: 'white', shape: 'circle' })}
               position="relative"
             >
-              <Icon icon="Css3" />
+              <Icon icon="Recipe" />
               <panda.div
                 position="absolute"
                 top="-2"
@@ -64,25 +67,27 @@ export const SectionModernCss = () => {
 
             <Stack gap="4">
               <panda.h3 textStyle="panda.h3" fontWeight="bold">
-                Generates Modern CSS code at build time
+                Recipes and variants just like Stitches
               </panda.h3>
               <panda.h4
                 textStyle="panda.h4"
                 fontWeight="medium"
                 color="text.muted"
               >
-                Panda uses modern features like cascade layers, :where selectors
-                and css variables to give you best-in-class css output.
+                Panda gives you a robust functions to define recipes and even
+                “cva” to help you design composable component styles.
               </panda.h4>
             </Stack>
 
-            <LearnMore />
+            <panda.div position={{ lg: 'absolute' }} bottom="40" left="0">
+              <LearnMore />
+            </panda.div>
           </Stack>
 
           <panda.div flex="1" maxW={{ lg: '40rem' }} flexShrink="0">
             {/* @ts-expect-error Server Component */}
             <Code
-              lang="css"
+              lang="tsx"
               style={{ borderRadius: token('radii.xl') }}
               codeClassName={codeStyle}
             >

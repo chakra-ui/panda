@@ -1,5 +1,3 @@
-import type { ReactElement } from 'react'
-
 import { SunIcon, MoonIcon } from 'nextra/icons'
 import { useMounted } from 'nextra/hooks'
 import { useTheme } from 'next-themes'
@@ -7,7 +5,7 @@ import { useTheme } from 'next-themes'
 import { Select } from './select'
 import { useConfig } from '../contexts'
 import { z } from 'zod'
-import { css } from '../../styled-system/css'
+import { css } from '@/styled-system/css'
 
 type ThemeSwitchProps = {
   lite?: boolean
@@ -22,10 +20,7 @@ export const themeOptionsSchema = z.strictObject({
 
 type ThemeOptions = z.infer<typeof themeOptionsSchema>
 
-export function ThemeSwitch({
-  lite,
-  className
-}: ThemeSwitchProps): ReactElement {
+export function ThemeSwitch({ lite, className }: ThemeSwitchProps) {
   const { setTheme, resolvedTheme, theme = '' } = useTheme()
   const mounted = useMounted()
   const config = useConfig().themeSwitch

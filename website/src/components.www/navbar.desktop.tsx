@@ -1,7 +1,7 @@
+import { HStack } from '@/styled-system/jsx'
+import { center } from '@/styled-system/patterns'
+import { ButtonIcon, Icon } from '@/theme/icons'
 import Link from 'next/link'
-import { HStack } from '../styled-system/jsx'
-import { center } from '../styled-system/patterns'
-import { ButtonIcon, Icon } from '../theme/icons'
 import { NavLink } from './nav-link'
 import { ThemeSwitchButton } from './theme-switch-button'
 

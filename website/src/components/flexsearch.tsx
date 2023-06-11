@@ -1,12 +1,11 @@
-import type { ReactElement, ReactNode } from 'react'
-import { useState, useCallback } from 'react'
-import { useRouter } from 'next/router'
+import { css, cx } from '@/styled-system/css'
 import FlexSearch from 'flexsearch'
-import { Search } from './search'
-import { HighlightMatches } from './highlight-matches'
+import { useRouter } from 'next/router'
+import { useCallback, useState } from 'react'
 import { DEFAULT_LOCALE } from '../constants'
 import type { SearchResult } from '../types'
-import { css, cx } from '../../styled-system/css'
+import { HighlightMatches } from './highlight-matches'
+import { Search } from './search'
 
 // @ts-expect-error
 type SectionIndex = FlexSearch.Document<
@@ -35,8 +34,8 @@ type Result = {
   _page_rk: number
   _section_rk: number
   route: string
-  prefix: ReactNode
-  children: ReactNode
+  prefix: React.ReactNode
+  children: React.ReactNode
 }
 
 type NextraData = {
@@ -151,11 +150,7 @@ const loadIndexesImpl = async (
   indexes[locale] = [pageIndex, sectionIndex]
 }
 
-export function Flexsearch({
-  className
-}: {
-  className?: string
-}): ReactElement {
+export function Flexsearch({ className }: { className?: string }) {
   const { locale = DEFAULT_LOCALE, basePath } = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
@@ -226,14 +221,6 @@ export function Flexsearch({
                   _dark: {
                     borderColor: 'rgb(from white / 20%)', // white/20
                     color: 'gray.300'
-                  },
-                  _moreContrast: {
-                    borderColor: 'gray.600',
-                    color: 'gray.900',
-                    _dark: {
-                      borderColor: 'gray.50',
-                      color: 'gray.50'
-                    }
                   }
                 })
               )}
@@ -263,9 +250,6 @@ export function Flexsearch({
                       color: 'gray.600',
                       _dark: {
                         color: 'gray.400'
-                      },
-                      _moreContrast: {
-                        color: 'gray.50'
                       }
                     })
                   )}

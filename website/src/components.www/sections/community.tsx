@@ -1,9 +1,9 @@
+import { css, cx } from '@/styled-system/css'
+import { Container, Stack, panda } from '@/styled-system/jsx'
+import { button } from '@/styled-system/recipes'
 import Image from 'next/image'
 import Link from 'next/link'
-import { css, cx } from '../styled-system/css'
-import { Container, Stack, panda } from '../styled-system/jsx'
-import { button } from '../styled-system/recipes'
-import { ButtonIcon } from '../theme/icons'
+import { ButtonIcon } from '@/theme/icons'
 
 export const SectionCommunity = () => {
   return (

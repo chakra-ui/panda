@@ -1,6 +1,9 @@
+import { css, cx } from '@/styled-system/css'
 import { useRouter } from 'next/router'
 import type { Heading } from 'nextra'
-import type { ReactElement } from 'react'
+import { useFSRoute } from 'nextra/hooks'
+import { ArrowRightIcon, ExpandIcon } from 'nextra/icons'
+import type { Item, MenuItem, PageItem } from 'nextra/normalize-pages'
 import {
   createContext,
   memo,
@@ -11,13 +14,8 @@ import {
   useState
 } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
-
-import { useFSRoute } from 'nextra/hooks'
-import { ArrowRightIcon, ExpandIcon } from 'nextra/icons'
-import type { Item, MenuItem, PageItem } from 'nextra/normalize-pages'
-import { css, cx } from '../../styled-system/css'
 import { useActiveAnchor, useConfig, useMenu } from '../contexts'
-import { renderComponent } from '../utils'
+import { renderComponent } from '../lib'
 import { Anchor } from './anchor'
 import { Collapse } from './collapse'
 import { LocaleSwitch } from './locale-switch'
@@ -50,8 +48,7 @@ const classes = {
     wordBreak: 'break-word',
     cursor: 'pointer',
     WebkitTapHighlightColor: 'transparent',
-    WebkitTouchCallout: 'none',
-    _moreContrast: { border: '1px solid' }
+    WebkitTouchCallout: 'none'
   }),
   inactive: css({
     color: 'gray.500',
@@ -63,19 +60,6 @@ const classes = {
         bg: 'rgb(219 234 254 / 0.05)',
         color: 'gray.50'
       }
-    },
-    _moreContrast: {
-      color: 'gray.900',
-      _dark: {
-        color: 'gray.50',
-        _hover: {
-          borderColor: 'gray.50'
-        }
-      },
-      borderColor: 'transparent',
-      _hover: {
-        borderColor: 'gray.900'
-      }
     }
   }),
   active: css({
@@ -83,13 +67,7 @@ const classes = {
     fontWeight: 'semibold',
     color: 'primary.800',
     // _dark: { bg: 'primary.400/10', color: 'primary.600' },
-    _dark: { bgColor: 'rgb(96 165 250 / 0.1)', color: 'primary.600' },
-    _moreContrast: {
-      borderColor: 'primary.500',
-      _dark: {
-        borderColor: 'primary.500'
-      }
-    }
+    _dark: { bgColor: 'rgb(96 165 250 / 0.1)', color: 'primary.600' }
   }),
   list: css({ display: 'flex', flexDirection: 'column', gap: 1 }),
   border: css({
@@ -112,7 +90,7 @@ type FolderProps = {
   anchors: Heading[]
 }
 
-function FolderImpl({ item, anchors }: FolderProps): ReactElement {
+function FolderImpl({ item, anchors }: FolderProps) {
   const routeOriginal = useFSRoute()
   const [route] = routeOriginal.split('#')
   const active = [route, route + '/'].includes(item.route + '/')
@@ -251,7 +229,7 @@ function FolderImpl({ item, anchors }: FolderProps): ReactElement {
   )
 }
 
-function Separator({ title }: { title: string }): ReactElement {
+function Separator({ title }: { title: string }) {
   const config = useConfig()
   return (
     <li
@@ -299,7 +277,7 @@ function File({
 }: {
   item: PageItem | Item
   anchors: Heading[]
-}): ReactElement {
+}) {
   const route = useFSRoute()
   const onFocus = useContext(OnFocusedItemContext)
 
@@ -378,12 +356,7 @@ interface MenuProps {
   onlyCurrentDocs?: boolean
 }
 
-function Menu({
-  directories,
-  anchors,
-  className,
-  onlyCurrentDocs
-}: MenuProps): ReactElement {
+function Menu({ directories, anchors, className, onlyCurrentDocs }: MenuProps) {
   return (
     <ul className={cx(classes.list, className)}>
       {directories.map(item =>
@@ -421,7 +394,7 @@ export function Sidebar({
   asPopover = false,
   headings,
   includePlaceholder
-}: SideBarProps): ReactElement {
+}: SideBarProps) {
   const config = useConfig()
   const { menu, setMenu } = useMenu()
   const router = useRouter()
@@ -634,14 +607,7 @@ export function Sidebar({
                 shadow: '0 -12px 16px #fff',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 2,
-                _moreContrast: {
-                  bg: 'neutral.400',
-                  shadow: 'none',
-                  _dark: {
-                    shadow: 'none'
-                  }
-                }
+                gap: 2
               }),
               showSidebar
                 ? cx(

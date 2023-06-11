@@ -1,10 +1,9 @@
-import type { ComponentProps, ReactElement } from 'react'
 import { useCallback, useRef } from 'react'
-import { css, cva, cx } from '../../styled-system/css'
+import { css, cva, cx } from '@/styled-system/css'
 import { CodeActions } from './code-actions'
 import { CodeFilename } from './code-filename'
 
-type Props = ComponentProps<'pre'> & {
+type Props = React.ComponentProps<'pre'> & {
   filename?: string
   hasCopyCode?: boolean
 }
@@ -34,7 +33,7 @@ const containerStyles = css({
   mt: { base: '6', _first: '0' }
 })
 
-export const Pre = (props: Props): ReactElement => {
+export const Pre = (props: Props) => {
   const { children, className = '', hasCopyCode, filename, ...rest } = props
   const preRef = useRef<HTMLPreElement | null>(null)
 

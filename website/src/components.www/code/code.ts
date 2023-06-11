@@ -1,6 +1,6 @@
+import { css } from '@/styled-system/css'
 import { Code } from 'bright'
-import gruvBoxTheme from '../gruvbox-theme.cjs'
-import { css } from '../styled-system/css'
+import gruvBoxTheme from './gruvbox-theme.cjs'
 
 Code.theme = gruvBoxTheme
 

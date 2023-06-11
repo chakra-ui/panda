@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { css } from '../styled-system/css'
+import { css } from '@/styled-system/css'
 
 export const NavLink = (props: { href: string; children: React.ReactNode }) => {
   const { href, children } = props

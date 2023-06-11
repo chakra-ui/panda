@@ -1,6 +1,4 @@
-import type { ComponentProps, ReactElement } from 'react'
-
-export function GlobeIcon(props: ComponentProps<'svg'>): ReactElement {
+export function GlobeIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       viewBox="2 2 16 16"

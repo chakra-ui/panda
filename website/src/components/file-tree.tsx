@@ -1,6 +1,5 @@
-import { useState, useCallback, createContext, useContext, memo } from 'react'
-import type { ReactElement, ReactNode } from 'react'
-import { css, cx } from '../../styled-system/css'
+import { css, cx } from '@/styled-system/css'
+import { createContext, memo, useCallback, useContext, useState } from 'react'
 
 const ctx = createContext(0)
 
@@ -10,20 +9,20 @@ function useIndent() {
 
 interface FolderProps {
   name: string
-  label?: ReactElement
+  label?
   open?: boolean
   defaultOpen?: boolean
   onToggle?: (open: boolean) => void
-  children: ReactNode
+  children: React.ReactNode
 }
 
 interface FileProps {
   name: string
-  label?: ReactElement
+  label?
   active?: boolean
 }
 
-const Tree = ({ children }: { children: ReactNode }): ReactElement => (
+const Tree = ({ children }: { children: React.ReactNode }) => (
   <div
     className={css({
       marginTop: 6,
@@ -55,7 +54,7 @@ const Tree = ({ children }: { children: ReactNode }): ReactElement => (
   </div>
 )
 
-function Ident(): ReactElement {
+function Ident() {
   const indent = useIndent()
 
   return (
@@ -133,8 +132,7 @@ const File = memo<FileProps>(({ label, name, active }) => (
   <li
     className={cx(
       css({ display: 'flex', listStyle: 'none' }),
-      active &&
-        css({ color: 'primary.600', _moreContrast: { color: 'primary.400' } })
+      active && css({ color: 'primary.600' })
     )}
   >
     <a

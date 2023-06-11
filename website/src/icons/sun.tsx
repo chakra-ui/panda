@@ -1,6 +1,4 @@
-import type { ComponentProps, ReactElement } from 'react'
-
-export function SunIcon(props: ComponentProps<'svg'>): ReactElement {
+export function SunIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       fill="none"

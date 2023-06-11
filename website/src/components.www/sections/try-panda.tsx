@@ -1,8 +1,8 @@
 import Image from 'next/image'
 import { ComponentPropsWithoutRef } from 'react'
-import { css } from '../styled-system/css'
-import { Container, Grid, HStack, Stack, panda } from '../styled-system/jsx'
-import { CommandPrompt } from './command-prompt'
+import { css } from '@/styled-system/css'
+import { Container, Grid, HStack, Stack, panda } from '@/styled-system/jsx'
+import { CommandPrompt } from '../command-prompt'
 
 const installSteps = [
   {

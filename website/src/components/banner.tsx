@@ -1,10 +1,9 @@
-import type { ReactElement } from 'react'
+import { bannerRecipe } from '@/styled-system/recipes'
 import { XIcon } from 'nextra/icons'
 import { useConfig } from '../contexts'
-import { renderComponent } from '../utils'
-import { bannerRecipe } from '../../styled-system/recipes'
+import { renderComponent } from '../lib'
 
-export function Banner(): ReactElement | null {
+export function Banner() {
   const { banner } = useConfig()
   if (!banner.text) {
     return null

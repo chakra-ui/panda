@@ -1,4 +1,4 @@
-import { HStack, panda } from '../styled-system/jsx'
+import { HStack, panda } from '@/styled-system/jsx'
 
 export const CommandPrompt = (props: { value: string }) => {
   const { value } = props

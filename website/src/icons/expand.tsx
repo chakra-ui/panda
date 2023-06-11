@@ -1,10 +1,9 @@
-import type { ComponentProps, ReactElement } from 'react'
-import { css } from '../../styled-system/css'
+import { css } from '@/styled-system/css'
 
 export function ExpandIcon({
   isOpen,
   ...props
-}: { isOpen?: boolean } & ComponentProps<'svg'>): ReactElement {
+}: { isOpen?: boolean } & React.ComponentProps<'svg'>) {
   return (
     <svg
       height="12"

@@ -1,11 +1,10 @@
-import type { ComponentProps, ReactElement } from 'react'
-import { css, cx } from '../../styled-system/css'
+import { css, cx } from '@/styled-system/css'
 
 export function Steps({
   children,
   className,
   ...props
-}: ComponentProps<'div'>): ReactElement {
+}: React.ComponentProps<'div'>) {
   return (
     <div
       className={cx(
@@ -18,7 +17,7 @@ export function Steps({
           _dark: {
             borderColor: 'neutral.800'
           },
-          counterReset: 'step',
+          counterReset: 'step'
         }),
         className
       )}

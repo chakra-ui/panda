@@ -1,20 +1,19 @@
-import type { ReactElement } from 'react'
-import { useMemo, useState } from 'react'
+import { css } from '@/styled-system/css'
 import { matchSorter } from 'match-sorter'
 import type { Item as NormalItem } from 'nextra/normalize-pages'
-import { Search } from './search'
-import { HighlightMatches } from './highlight-matches'
+import { useMemo, useState } from 'react'
 import type { SearchResult } from '../types'
-import { css } from '../../styled-system/css'
+import { HighlightMatches } from './highlight-matches'
+import { Search } from './search'
 
-export function MatchSorterSearch({
-  className,
-  directories
-}: {
+type Props = {
   className?: string
   directories: NormalItem[]
-}): ReactElement {
+}
+
+export function MatchSorterSearch({ className, directories }: Props) {
   const [search, setSearch] = useState('')
+
   const results = useMemo<SearchResult[]>(
     () =>
       // Will need to scrape all the headers from each page and search through them here

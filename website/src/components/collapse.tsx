@@ -1,21 +1,20 @@
-import type { ReactElement, ReactNode } from 'react'
-import { useRef, useEffect } from 'react'
-import { css, cx } from '../../styled-system/css'
+import { css, cx } from '@/styled-system/css'
+import { useEffect, useRef } from 'react'
 
-export function Collapse({
-  children,
-  className,
-  isOpen,
-  horizontal = false
-}: {
-  children: ReactNode
+type Props = {
+  children: React.ReactNode
   className?: string
   isOpen: boolean
   horizontal?: boolean
-}): ReactElement {
+}
+
+export const Collapse = (props: Props) => {
+  const { children, className, isOpen, horizontal = false } = props
+
   const containerRef = useRef<HTMLDivElement>(null)
   const innerRef = useRef<HTMLDivElement>(null)
   const animationRef = useRef(0)
+
   const initialOpen = useRef(isOpen)
   const initialRender = useRef(true)
 

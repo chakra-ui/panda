@@ -1,24 +1,23 @@
-import type { ReactElement, ReactNode } from 'react'
-import { Children, cloneElement } from 'react'
+import { Children, cloneElement, isValidElement } from 'react'
 import { Details } from './details'
 import { Summary } from './summary'
 
-export const findSummary = (children: ReactNode) => {
-  let summary: ReactNode = null
-  const restChildren: ReactNode[] = []
+export const findSummary = (children: React.ReactNode) => {
+  let summary: React.ReactNode = null
+  const childNodes: React.ReactNode[] = []
 
   Children.forEach(children, (child, index) => {
-    if (child && (child as ReactElement).type === Summary) {
+    if (isValidElement(child) && child.type === Summary) {
       summary ||= child
       return
     }
 
     let c = child
+
     if (
       !summary &&
-      child &&
-      typeof child === 'object' &&
-      (child as ReactElement).type !== Details &&
+      isValidElement<React.PropsWithChildren>(child) &&
+      child.type !== Details &&
       'props' in child &&
       child.props
     ) {
@@ -26,13 +25,13 @@ export const findSummary = (children: ReactNode) => {
       summary = result[0]
       c = cloneElement(child, {
         ...child.props,
-        // @ts-ignore
         children: result[1]?.length ? result[1] : undefined,
         key: index
       })
     }
-    restChildren.push(c)
+
+    childNodes.push(c)
   })
 
-  return [summary, restChildren]
+  return [summary, childNodes]
 }

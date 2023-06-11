@@ -1,3 +1,5 @@
+import { css, cx } from '@/styled-system/css'
+import { navbar } from '@/styled-system/recipes'
 import {
   Menu,
   MenuContent,
@@ -6,20 +8,16 @@ import {
   MenuTrigger,
   Portal
 } from '@ark-ui/react'
-import { ArrowRightIcon, MenuIcon } from 'nextra/icons'
-import type { ReactElement, ReactNode } from 'react'
-
 import { useFSRoute } from 'nextra/hooks'
+import { ArrowRightIcon, MenuIcon } from 'nextra/icons'
 import type {
   Item,
   MenuItem as MenuItemData,
   PageItem
 } from 'nextra/normalize-pages'
-import { css, cx } from '../../styled-system/css'
 import { useConfig, useMenu } from '../contexts'
-import { renderComponent } from '../utils'
+import { renderComponent } from '../lib'
 import { Anchor } from './anchor'
-import { navbar } from '../../styled-system/recipes'
 
 export type NavBarProps = {
   flatDirectories: Item[]
@@ -27,15 +25,7 @@ export type NavBarProps = {
 }
 
 const classes = {
-  link: cx(
-    css({
-      textStyle: 'sm',
-      _moreContrast: {
-        color: 'gray.700',
-        _dark: { color: 'gray.100' }
-      }
-    })
-  ),
+  link: css({ textStyle: 'sm' }),
   active: css({
     fontWeight: 'medium'
   }),
@@ -46,16 +36,15 @@ const classes = {
   })
 }
 
-function NavbarMenu({
-  className,
-  menu,
-  children
-}: {
+type NavMenuProps = {
   className?: string
   menu: MenuItemData
-  children: ReactNode
-}): ReactElement {
+  children: React.ReactNode
+}
+
+function NavbarMenu({ className, menu, children }: NavMenuProps) {
   const { items } = menu
+
   const routes = Object.fromEntries(
     (menu.children || []).map(route => [route.name, route])
   )
@@ -68,13 +57,12 @@ function NavbarMenu({
             className={cx(
               className,
               css({
-                ml: -2,
-                display: 'none',
+                ms: '-2',
+                display: { base: 'none', md: 'inline-flex' },
                 alignItems: 'center',
                 whiteSpace: 'nowrap',
                 rounded: 'md',
-                p: 2,
-                md: { display: 'inline-flex' }
+                p: '2'
               }),
               classes.inactive
             )}
@@ -86,23 +74,20 @@ function NavbarMenu({
           <MenuPositioner className={css({ zIndex: 20 })}>
             <MenuContent
               className={css({
-                mt: 1,
-                maxHeight: 64,
+                mt: '1',
+                maxHeight: '64',
                 minWidth: 'full',
                 overflow: 'auto',
                 rounded: 'md',
                 outline: '1px solid',
-                // outlineColor: 'black/5',
-                outlineColor: 'rgb(0 0 0 / 0.05)',
-                bgColor: 'white',
-                py: 1,
+                outlineColor: {
+                  base: 'rgb(0 0 0 / 0.05)',
+                  _dark: 'rgb(255 255 255 / 0.2)'
+                },
+                bg: { base: 'white', _dark: 'neutral.800' },
+                py: '1',
                 textStyle: 'sm',
-                shadow: 'lg',
-                _dark: {
-                  // outlineColor: 'white/20',
-                  outlineColor: 'rgb(255 255 255 / 0.2)',
-                  bgColor: 'neutral.800'
-                }
+                shadow: 'lg'
               })}
               // @ts-ignore
               tabIndex={0}
@@ -116,7 +101,7 @@ function NavbarMenu({
                     className={cx(
                       css({
                         position: 'relative',
-                        display: 'none',
+                        display: { base: 'none', md: 'inline-block' },
                         w: 'full',
                         userSelect: 'none',
                         whiteSpace: 'nowrap',
@@ -126,11 +111,10 @@ function NavbarMenu({
                           color: 'gray.400',
                           _hover: { color: 'gray.100' }
                         },
-                        md: { display: 'inline-block' },
                         py: 1.5,
                         transitionProperty: 'color',
-                        _ltr: { pl: 3, pr: 9 },
-                        _rtl: { pr: 3, pl: 9 }
+                        ps: '3',
+                        pe: '9'
                       })
                     )}
                     newWindow={item.newWindow}
@@ -147,7 +131,7 @@ function NavbarMenu({
   )
 }
 
-export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
+export function Navbar({ flatDirectories, items }: NavBarProps) {
   const config = useConfig()
   const activeRoute = useFSRoute()
   const { menu, setMenu } = useMenu()

@@ -1,19 +1,17 @@
-import type { ReactElement } from 'react'
+import { css, cx } from '@/styled-system/css'
 import {
   Select as ArkSelect,
+  Portal,
   SelectContent,
   SelectOption,
   SelectPositioner,
-  SelectTrigger,
-  Portal,
-  SelectProps
+  SelectTrigger
 } from '@ark-ui/react'
 import { CheckIcon } from 'nextra/icons'
-import { css, cx } from '../../styled-system/css'
 
 type MenuOption = {
-  value: NonNullable<SelectProps['selectedOption']>['value']
-  label: ReactElement | NonNullable<SelectProps['selectedOption']>['label']
+  value: string
+  label: React.ReactNode
 }
 
 interface MenuProps {
@@ -30,7 +28,7 @@ export function Select({
   onChange,
   title,
   className
-}: MenuProps): ReactElement {
+}: MenuProps) {
   return (
     <ArkSelect onChange={onChange}>
       <SelectTrigger
@@ -48,17 +46,18 @@ export function Select({
             _expanded: {
               bg: 'gray.200',
               color: 'gray.900',
-              // _dark: { bg: 'primary.100/10', color: 'gray.50' } // opacity modifier
-              _dark: { bg: 'rgb(219 234 254 / 0.1)', color: 'gray.50' }
+              _dark: {
+                bg: 'rgb(219 234 254 / 0.1)',
+                color: 'gray.50'
+              }
             },
             _hover: {
               bg: 'gray.100',
               color: 'gray.900',
-              // _dark: { bg: 'primary.100/5', color: 'gray.50' }
               _dark: {
                 bg: 'rgb(219 234 254 / 0.1)',
                 color: 'gray.50'
-              } // opacity modifier
+              }
             }
           }),
           className
@@ -73,15 +72,13 @@ export function Select({
             maxHeight: 64,
             overflow: 'auto',
             borderRadius: 'md',
-            outline: '1px',
-            // outlineColor: 'black/5',
+            outlineWidth: '1px',
             outlineColor: 'rgb(0 0 0 / 0.05)',
             bg: 'white',
-            py: 1,
+            py: '1',
             fontSize: 'sm',
             shadow: 'lg',
             _dark: {
-              // outlineColor: 'white/20',
               outlineColor: 'rgb(255 255 255 / 0.2)',
               bg: 'neutral.800'
             }
@@ -99,7 +96,6 @@ export function Select({
                   _hover: {
                     bg: 'primary.50',
                     color: 'primary.600',
-                    // _dark: { bg: 'primary.500/10' }
                     _dark: { bg: 'rgb(59 130 246 / 0.1)' }
                   },
                   position: 'relative',
@@ -107,8 +103,8 @@ export function Select({
                   whiteSpace: 'nowrap',
                   py: 1.5,
                   transitionProperty: 'colors',
-                  _ltr: { pl: 3, pr: 9 },
-                  _rtl: { pr: 3, pl: 9 }
+                  ps: '3',
+                  pe: '9'
                 })}
               >
                 {option.label}
@@ -119,8 +115,7 @@ export function Select({
                       insetY: 0,
                       display: 'flex',
                       alignItems: 'center',
-                      _ltr: { right: 3 },
-                      _rtl: { left: 3 }
+                      insetEnd: '3'
                     })}
                   >
                     <CheckIcon />

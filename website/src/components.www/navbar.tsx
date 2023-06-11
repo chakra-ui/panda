@@ -1,5 +1,5 @@
 'use client'
-import { Box, Container, panda } from '../styled-system/jsx'
+import { Box, Container, panda } from '@/styled-system/jsx'
 import { DesktopNavBar } from './navbar.desktop'
 import { MobileNavBar } from './navbar.mobile'
 

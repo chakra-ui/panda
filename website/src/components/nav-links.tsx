@@ -1,11 +1,10 @@
-import type { ReactElement } from 'react'
+import { css, cx } from '@/styled-system/css'
+import { hstack } from '@/styled-system/patterns'
 import { ArrowRightIcon } from 'nextra/icons'
-import { useConfig } from '../contexts'
 import type { Item } from 'nextra/normalize-pages'
-import { Anchor } from './anchor'
+import { useConfig } from '../contexts'
 import type { DocsThemeConfig } from '../index'
-import { hstack } from '../../styled-system/patterns'
-import { css, cx } from '../../styled-system/css'
+import { Anchor } from './anchor'
 
 interface NavLinkProps {
   currentIndex: number
@@ -30,20 +29,17 @@ const styles = {
   })
 }
 
-export const NavLinks = ({
-  flatDirectories,
-  currentIndex
-}: NavLinkProps): ReactElement | null => {
+export const NavLinks = ({ flatDirectories, currentIndex }: NavLinkProps) => {
   const config = useConfig()
+
   const nav = config.navigation
   const navigation: Exclude<DocsThemeConfig['navigation'], boolean> =
     typeof nav === 'boolean' ? { prev: nav, next: nav } : nav
+
   let prev = navigation.prev && flatDirectories[currentIndex - 1]
   let next = navigation.next && flatDirectories[currentIndex + 1]
 
-  // @ts-ignore
   if (prev && !prev.isUnderCurrentDocsTree) prev = false
-  // @ts-ignore
   if (next && !next.isUnderCurrentDocsTree) next = false
 
   if (!prev && !next) return null

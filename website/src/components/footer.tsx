@@ -1,10 +1,9 @@
-import type { ReactElement } from 'react'
+import { css, cx } from '@/styled-system/css'
 import { useConfig } from '../contexts'
+import { renderComponent } from '../lib'
 import { LocaleSwitch } from './locale-switch'
-import { renderComponent } from '../utils'
-import { css, cx } from '../../styled-system/css'
 
-export function Footer({ menu }: { menu?: boolean }): ReactElement {
+export function Footer({ menu }: { menu?: boolean }) {
   const config = useConfig()
 
   return (
@@ -26,7 +25,7 @@ export function Footer({ menu }: { menu?: boolean }): ReactElement {
           }),
           menu && (config.i18n.length > 0 || config.darkMode)
             ? css({ display: 'flex' })
-            : css({ display: 'none' }),
+            : css({ display: 'none' })
         )}
       >
         {config.i18n.length > 0 && <LocaleSwitch options={config.i18n} />}
@@ -40,7 +39,7 @@ export function Footer({ menu }: { menu?: boolean }): ReactElement {
             display: 'flex',
             maxW: '90rem',
             justifyContent: 'center',
-            py: 12,
+            py: '12',
             color: 'gray.600',
             _dark: { color: 'gray.400' },
             md: { justifyContent: 'flex-start' }

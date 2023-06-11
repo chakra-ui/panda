@@ -1,12 +1,14 @@
+import { codeTabs } from '@/styled-system/recipes'
 import { BrightProps, Code } from 'bright'
-import { CodeTabs, TabsContent, TabsList } from './code-tabs'
-import { codeTabs } from '../styled-system/recipes'
+import { CodeTabs, TabsContent, TabsList } from './tabs'
 
-function TitleBarComponent(brightProps: BrightProps) {
+function TitleBarContent(brightProps: BrightProps) {
   const { subProps, title } = brightProps
+
   const titles = subProps?.length
     ? subProps.map(subProp => subProp.title)
     : [title]
+
   return <TabsList titles={titles as string[]} />
 }
 
@@ -44,6 +46,6 @@ function Content(brightProps: BrightProps) {
 export const tabs = {
   name: 'tabs',
   Root,
-  TitleBarContent: TitleBarComponent,
+  TitleBarContent,
   Pre: Content
 }

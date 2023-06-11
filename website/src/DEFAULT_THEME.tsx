@@ -3,7 +3,7 @@ import { Anchor, Flexsearch, Footer, Navbar, TOC } from './components'
 import { DiscordIcon, GitHubIcon } from 'nextra/icons'
 import { MatchSorterSearch } from './components/match-sorter-search'
 import { useConfig } from './contexts'
-import { useGitEditUrl, getGitIssueUrl } from './utils'
+import { useGitEditUrl, getGitIssueUrl } from './lib'
 import { ThemeSwitch } from './components/theme-switch'
 import {
   DocsThemeConfig,
@@ -11,7 +11,7 @@ import {
   LOADING_LOCALES,
   PLACEHOLDER_LOCALES
 } from './constants'
-import { css } from '../styled-system/css'
+import { css } from '@/styled-system/css'
 
 export const DEFAULT_THEME: DocsThemeConfig = {
   banner: {

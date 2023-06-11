@@ -1,16 +1,17 @@
-import type { ReactElement } from 'react'
+import { css } from '@/styled-system/css'
+import { useRouter } from 'next/router'
 import { useMounted } from 'nextra/hooks'
 import { useConfig } from '../contexts'
-import { renderComponent, getGitIssueUrl } from '../utils'
-import { useRouter } from 'next/router'
+import { getGitIssueUrl, renderComponent } from '../lib'
 import { Anchor } from './anchor'
-import { css } from '../../styled-system/css'
 
-export function NotFoundPage(): ReactElement | null {
+export function NotFoundPage() {
   const config = useConfig()
+  const { content, labels } = config.notFound
+
   const mounted = useMounted()
   const { asPath } = useRouter()
-  const { content, labels } = config.notFound
+
   if (!content) {
     return null
   }

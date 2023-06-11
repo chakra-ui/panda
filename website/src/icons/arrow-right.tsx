@@ -1,9 +1,7 @@
-import type { ComponentProps, ReactElement } from 'react'
-
 export function ArrowRightIcon({
   pathClassName,
   ...props
-}: ComponentProps<'svg'> & { pathClassName?: string }): ReactElement {
+}: React.ComponentProps<'svg'> & { pathClassName?: string }) {
   return (
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}>
       <path

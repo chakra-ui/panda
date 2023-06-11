@@ -6,8 +6,8 @@ import {
   Stack,
   VStack,
   panda
-} from '../styled-system/jsx'
-import { Icon, IconType } from '../theme/icons'
+} from '@/styled-system/jsx'
+import { Icon, IconType } from '@/theme/icons'
 
 export const SectionWorksEverywhere = () => {
   return (

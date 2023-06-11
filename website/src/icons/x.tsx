@@ -1,6 +1,4 @@
-import type { ComponentProps, ReactElement } from 'react'
-
-export function XIcon(props: ComponentProps<'svg'>): ReactElement {
+export function XIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

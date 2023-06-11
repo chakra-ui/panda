@@ -1,4 +1,4 @@
-import { ComponentPropsWithoutRef } from 'react'
+import { css } from '@/styled-system/css'
 import {
   Container,
   Grid,
@@ -6,12 +6,10 @@ import {
   Square,
   Stack,
   panda
-} from '../../styled-system/jsx'
-import { Icon, IconType } from '../../theme/icons'
-
-import articlesJson from './articles.json'
-import { css } from '../../styled-system/css'
+} from '@/styled-system/jsx'
+import { Icon, IconType } from '@/theme/icons'
 import Link from 'next/link'
+import articlesJson from './articles.json'
 
 // type Video = {
 //   title: string
@@ -82,7 +80,7 @@ export const SectionArticleList = () => {
 const ArticleItem = ({
   title,
   ...rest
-}: { icon: IconType; title: string } & ComponentPropsWithoutRef<
+}: { icon: IconType; title: string } & React.ComponentPropsWithoutRef<
   typeof Icon
 >) => (
   <Link href="/">

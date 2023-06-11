@@ -1,8 +1,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { css, cx } from '../styled-system/css'
-import { Container, Stack, VStack, panda } from '../styled-system/jsx'
-import { button } from '../styled-system/recipes'
+import { css, cx } from '@/styled-system/css'
+import { Container, Stack, VStack, panda } from '@/styled-system/jsx'
+import { button } from '@/styled-system/recipes'
 
 export const SectionStartBuilding = () => {
   return (

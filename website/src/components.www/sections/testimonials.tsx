@@ -1,7 +1,7 @@
+import { css } from '@/styled-system/css'
+import { Container, Grid, HStack, Stack, panda } from '@/styled-system/jsx'
+import { Icon } from '@/theme/icons'
 import Image from 'next/image'
-import { css } from '../styled-system/css'
-import { Container, Grid, HStack, Stack, panda } from '../styled-system/jsx'
-import { Icon } from '../theme/icons'
 
 const testimonials: Array<{
   text: string

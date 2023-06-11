@@ -1,6 +1,5 @@
-import type { ComponentProps, ReactElement } from 'react'
+import { css, cva } from '@/styled-system/css'
 import { useEffect, useRef } from 'react'
-import { css, cva } from '../../styled-system/css'
 import { useSetActiveAnchor } from '../contexts'
 import { useIntersectionObserver, useSlugs } from '../contexts/active-anchor'
 
@@ -8,7 +7,7 @@ type HeadingTag = `h${1 | 2 | 3 | 4 | 5 | 6}`
 
 type HeadingContext = { index: number }
 
-type Props = ComponentProps<'h2'> & {
+type Props = React.ComponentProps<'h2'> & {
   tag: HeadingTag
   context: HeadingContext
 }
@@ -32,7 +31,7 @@ const styles = cva({
   }
 })
 
-export function Heading(props: Props): ReactElement {
+export const Heading = (props: Props) => {
   const { tag: Tag, context, children, id, ...rest } = props
 
   const setActiveAnchor = useSetActiveAnchor()

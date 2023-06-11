@@ -1,5 +1,5 @@
+import { css } from '@/styled-system/css'
 import { Fragment, memo } from 'react'
-import { css } from '../../styled-system/css'
 
 type MatchArgs = {
   value?: string

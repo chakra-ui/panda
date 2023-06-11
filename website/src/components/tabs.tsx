@@ -1,21 +1,21 @@
-import { Children, ComponentProps, ReactElement, cloneElement } from 'react'
+import { cx } from '@/styled-system/css'
+import { tabs as tabsRecipe } from '@/styled-system/recipes'
 import {
+  Tabs as ArkTabs,
   TabContent,
   TabIndicator,
   TabList,
-  Tabs as ArkTabs,
   TabTrigger
 } from '@ark-ui/react'
-import { cx } from '../../styled-system/css'
-import { tabs as tabsRecipe } from '../../styled-system/recipes'
+import { Children, cloneElement } from 'react'
 
 export function Tabs({
   items,
   children
 }: {
   items: string[]
-  children: ReactElement
-}): ReactElement {
+  children: React.ReactElement[]
+}) {
   const tabs = Children.map(children, (child, index) =>
     cloneElement(child as any, {
       ...child.props,
@@ -44,10 +44,7 @@ export function Tabs({
   )
 }
 
-export function Tab({
-  children,
-  ...props
-}: ComponentProps<'div'>): ReactElement {
+export function Tab({ children, ...props }: React.ComponentProps<'div'>) {
   return (
     // @ts-ignore
     <TabContent {...props}>{children}</TabContent>

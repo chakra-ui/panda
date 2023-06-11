@@ -1,8 +1,5 @@
-import { css } from '../../styled-system/css'
+import { css } from '@/styled-system/css'
 
-/* -----------------------------------------------------------------------------
- * Code filename
- * -----------------------------------------------------------------------------*/
 const filenameStyles = css({
   position: 'absolute',
   top: '0',

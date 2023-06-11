@@ -1,6 +1,6 @@
 import Marquee from 'react-fast-marquee'
-import { css } from '../styled-system/css'
-import { HStack, panda } from '../styled-system/jsx'
+import { css } from '@/styled-system/css'
+import { HStack, panda } from '@/styled-system/jsx'
 
 const features = [
   'Style props',

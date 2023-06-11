@@ -1,14 +1,14 @@
-import type { ReactElement, KeyboardEvent } from 'react'
-import { Fragment, useCallback, useState, useEffect, useRef } from 'react'
-import { InformationCircleIcon, SpinnerIcon } from 'nextra/icons'
-import { useMounted } from 'nextra/hooks'
-import { Input } from './input'
-import { Anchor } from './anchor'
-import { renderComponent, renderString } from '../utils'
-import { useConfig, useMenu } from '../contexts'
+import { css, cx } from '@/styled-system/css'
 import { useRouter } from 'next/router'
+import { useMounted } from 'nextra/hooks'
+import { InformationCircleIcon, SpinnerIcon } from 'nextra/icons'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { useConfig, useMenu } from '../contexts'
+import { renderComponent, renderString } from '../lib'
 import type { SearchResult } from '../types'
-import { css, cx } from '../../styled-system/css'
+import { Anchor } from './anchor'
+import { Input } from './input'
+import { Kbd } from './kbd'
 
 type SearchProps = {
   className?: string
@@ -32,15 +32,17 @@ export function Search({
   loading,
   error,
   results
-}: SearchProps): ReactElement {
+}: SearchProps) {
   const [show, setShow] = useState(false)
-  const config = useConfig()
   const [active, setActive] = useState(0)
+  const [focused, setFocused] = useState(false)
+
+  const config = useConfig()
   const router = useRouter()
   const { setMenu } = useMenu()
+
   const input = useRef<HTMLInputElement>(null)
   const ulRef = useRef<HTMLUListElement>(null)
-  const [focused, setFocused] = useState(false)
 
   useEffect(() => {
     setActive(0)
@@ -92,7 +94,7 @@ export function Search({
   )
 
   const handleKeyDown = useCallback(
-    function <T>(e: KeyboardEvent<T>) {
+    function <T>(e: React.KeyboardEvent<T>) {
       switch (e.key) {
         case 'ArrowDown': {
           if (active + 1 < results.length) {
@@ -142,54 +144,11 @@ export function Search({
   const renderList = show && Boolean(value)
 
   const icon = (
-    <kbd
-      className={cx(
-        css({
-          opacity: mounted && (!show || Boolean(value)) ? '1' : '0',
-          pointerEvents: renderList ? 'auto' : 'none',
-          transitionProperty: 'opacity',
-          position: 'absolute',
-          my: 1.5,
-          userSelect: 'none',
-          _ltr: { right: 1.5 },
-          _rtl: { left: 1.5 },
-          height: 5,
-          borderRadius: 'md',
-          backgroundColor: 'white',
-          px: 1.5,
-          fontFamily: 'mono',
-          fontSize: '10px',
-          fontWeight: 'medium',
-          color: 'gray.500',
-          border: '1px solid rgb(243 244 246 / 0.2)',
-          // borderColor: 'gray.100/20',
-          // _dark: { bgColor: 'dark/50' },
-          _dark: { bgColor: 'rgb(17 17 17 / 0.2)' },
-          _moreContrast: {
-            borderColor: 'current',
-            color: 'current',
-            _dark: { borderColor: 'current' }
-          },
-          alignItems: 'center',
-          gap: 1
-        }),
-        value
-          ? css({
-              zIndex: 20,
-              display: 'flex',
-              cursor: 'pointer',
-              _hover: { opacity: 0.7 }
-            })
-          : css({
-              pointerEvents: 'none',
-              display: 'none',
-              sm: { display: 'flex' }
-            })
-      )}
-      title={value ? 'Clear' : undefined}
-      onClick={() => {
-        onChange('')
-      }}
+    <Kbd
+      mounted={mounted}
+      value={value}
+      className={cx(css({ pointerEvents: renderList ? 'auto' : 'none' }))}
+      onClick={() => onChange('')}
     >
       {value && focused
         ? 'ESC'
@@ -201,7 +160,7 @@ export function Search({
           ) : (
             'CTRL K'
           ))}
-    </kbd>
+    </Kbd>
   )
 
   return (
@@ -260,17 +219,17 @@ export function Search({
             css({
               border: '1px solid rgb(243 244 246 / 0.2)',
               // borderColor: 'gray.100/20',
-              backgroundColor: 'white',
+              bg: 'white',
               color: 'gray.100',
-              _dark: { borderColor: 'neutral.800', bgColor: 'neutral.900' },
+              _dark: { borderColor: 'neutral.800', bg: 'neutral.900' },
               position: 'absolute',
               top: 'full',
               zIndex: 20,
-              mt: 2,
+              mt: '2',
               overflow: 'auto',
               overscrollBehavior: 'contain',
               borderRadius: 'xl',
-              py: 2.5,
+              py: '2.5',
               boxShadow: 'xl',
               maxHeight:
                 'min(calc(50vh - 11rem - env(safe-area-inset-bottom)), 400px)',
@@ -278,14 +237,8 @@ export function Search({
                 maxHeight:
                   'min(calc(100vh - 5rem - env(safe-area-inset-bottom)), 400px)'
               },
-              insetX: 0,
-              _ltr: { left: 'auto' },
-              _rtl: { right: 'auto' },
-              _moreContrast: {
-                border: '1px',
-                borderColor: 'gray.900',
-                _dark: { borderColor: 'gray.50' }
-              }
+              insetEnd: '0',
+              insetStart: 'auto'
             }),
             overlayClassName
           )}
@@ -300,8 +253,8 @@ export function Search({
                 display: 'flex',
                 userSelect: 'none',
                 justifyContent: 'center',
-                gap: 2,
-                py: 8,
+                gap: '2',
+                py: '8',
                 textAlign: 'center',
                 textStyle: 'sm',
                 color: 'red.500'
@@ -343,19 +296,16 @@ export function Search({
                     css({
                       mx: 2.5,
                       overflowWrap: 'break-word',
-                      borderRadius: 'md',
-                      _moreContrast: { border: '1px' }
+                      borderRadius: 'md'
                     }),
                     i === active
                       ? css({
-                          // bg: 'primary.500/10',
                           bg: 'rgb(59 130 246 / 0.1)',
                           color: 'primary.600',
                           _dark: { borderColor: 'primary.500' }
                         })
                       : css({
                           color: 'gray.800',
-                          _moreContrast: { borderColor: 'transparent' },
                           _dark: { color: 'gray.300' }
                         })
                   )}

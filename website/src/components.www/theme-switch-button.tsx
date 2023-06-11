@@ -1,11 +1,10 @@
 'use client'
 
+import { css } from '@/styled-system/css'
+import { HStack } from '@/styled-system/jsx'
+import { ButtonIcon } from '@/theme/icons'
 import { useTheme } from 'next-themes'
 import { useMounted } from 'nextra/hooks'
-
-import { css } from '../styled-system/css'
-import { HStack } from '../styled-system/jsx'
-import { ButtonIcon } from '../theme/icons'
 
 function useThemeSwitch() {
   const theme = useTheme()

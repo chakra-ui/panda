@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { css } from '../styled-system/css'
-import { hstack } from '../styled-system/patterns'
-import { ButtonIcon } from '../theme/icons'
+import { css } from '@/styled-system/css'
+import { hstack } from '@/styled-system/patterns'
+import { ButtonIcon } from '@/theme/icons'
 
 export function LearnMore() {
   return (

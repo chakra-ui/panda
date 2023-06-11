@@ -1,8 +1,7 @@
 'use client'
 
+import { css } from '@/styled-system/css'
 import { TabContent, TabList, Tabs, TabTrigger } from '@ark-ui/react'
-import React from 'react'
-import { css } from '../styled-system/css'
 
 export function TabsList({ titles }: { titles: string[] }) {
   return (

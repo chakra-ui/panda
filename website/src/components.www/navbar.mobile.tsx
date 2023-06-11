@@ -1,4 +1,8 @@
 'use client'
+import { css } from '@/styled-system/css'
+import { Center, HStack, Stack } from '@/styled-system/jsx'
+import { center } from '@/styled-system/patterns'
+import { ButtonIcon, Icon } from '@/theme/icons'
 import {
   Dialog,
   DialogBackdrop,
@@ -9,10 +13,6 @@ import {
 } from '@ark-ui/react'
 import Link from 'next/link'
 import { MenuIcon } from 'nextra/icons'
-import { css } from '../styled-system/css'
-import { Center, HStack, Stack } from '../styled-system/jsx'
-import { center } from '../styled-system/patterns'
-import { ButtonIcon, Icon } from '../theme/icons'
 import { NavLink } from './nav-link'
 import { ThemeSwitchIconButton } from './theme-switch-button'
 

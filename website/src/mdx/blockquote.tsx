@@ -1,5 +1,4 @@
-import { ComponentProps } from 'react'
-import { css } from '../../styled-system/css'
+import { css } from '@/styled-system/css'
 
 const styles = css({
   mt: { base: '6', _first: '0' },
@@ -10,6 +9,6 @@ const styles = css({
   paddingStart: '6'
 })
 
-export function Blockquote(props: ComponentProps<'blockquote'>) {
+export function Blockquote(props: React.ComponentProps<'blockquote'>) {
   return <blockquote className={styles} {...props} />
 }

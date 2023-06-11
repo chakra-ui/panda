@@ -1,19 +1,17 @@
-import type { ReactElement } from 'react'
-import { useEffect, useRef, useMemo } from 'react'
+import { css, cx } from '@/styled-system/css'
 import type { Heading } from 'nextra'
+import { useEffect, useMemo, useRef } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
-
-import { renderComponent } from '../utils'
-import { useConfig, useActiveAnchor } from '../contexts'
+import { useActiveAnchor, useConfig } from '../contexts'
+import { renderComponent } from '../lib'
 import { Anchor } from './anchor'
-import { css, cx } from '../../styled-system/css'
 
 export type TOCProps = {
   headings: Heading[]
   filePath: string
 }
 
-export function TOC({ headings, filePath }: TOCProps): ReactElement {
+export function TOC({ headings, filePath }: TOCProps) {
   const activeAnchor = useActiveAnchor()
   const config = useConfig()
   const tocRef = useRef<HTMLDivElement>(null)
@@ -59,10 +57,6 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
     _dark: {
       color: 'gray.400',
       _hover: { color: 'gray.100' }
-    },
-    _moreContrast: {
-      color: 'gray.800',
-      _dark: { color: 'gray.50' }
     }
   })
 
@@ -115,8 +109,7 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
                     css({ display: 'inline-block' }),
                     activeAnchor[id]?.isActive
                       ? css({
-                          color: 'primary.600',
-                          _moreContrast: { color: 'primary.600!' }
+                          color: 'primary.600'
                         })
                       : css({
                           color: 'gray.500',
@@ -125,16 +118,7 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
                             color: 'gray.400',
                             _hover: { color: 'gray.300' }
                           }
-                        }),
-                    css({
-                      _moreContrast: {
-                        color: 'gray.900',
-                        textDecoration: 'underline',
-                        w: 'full',
-                        overflowWrap: 'break-word',
-                        _dark: { color: 'gray.50' }
-                      }
-                    })
+                        })
                   )}
                 >
                   {config.toc.headingComponent?.({
@@ -170,14 +154,7 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
                 flexDirection: 'column',
                 alignItems: 'flex-start',
                 gap: 2,
-                pb: 8,
-                _moreContrast: {
-                  border: '1px solid token(colors.neutral.400)',
-                  shadow: 'none',
-                  _dark: {
-                    borderColor: 'neutral.400'
-                  }
-                }
+                pb: 8
               })
           )}
         >

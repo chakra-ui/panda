@@ -1,10 +1,9 @@
-import type { ReactElement } from 'react'
-import { useRouter } from 'next/router'
-import { Select } from './select'
-import type { DocsThemeConfig } from '../constants'
-import { GlobeIcon } from 'nextra/icons'
+import { css } from '@/styled-system/css'
 import { addBasePath } from 'next/dist/client/add-base-path'
-import { css } from '../../styled-system/css'
+import { useRouter } from 'next/router'
+import { GlobeIcon } from 'nextra/icons'
+import type { DocsThemeConfig } from '../constants'
+import { Select } from './select'
 
 interface LocaleSwitchProps {
   options: NonNullable<DocsThemeConfig['i18n']>
@@ -12,13 +11,9 @@ interface LocaleSwitchProps {
   className?: string
 }
 
-export function LocaleSwitch({
-  options,
-  lite,
-  className
-}: LocaleSwitchProps): ReactElement {
+export function LocaleSwitch({ options, lite, className }: LocaleSwitchProps) {
   const { locale, asPath } = useRouter()
-  const selected = options.find(l => locale === l.locale)
+  const selected = options.find(option => locale === option.locale)
   return (
     <Select
       title="Change language"

@@ -1,16 +1,17 @@
+import { css } from '@/styled-system/css'
 import type { Item } from 'nextra/normalize-pages'
-import type { ReactElement } from 'react'
-import { css } from '../../styled-system/css'
 
-export function Breadcrumb({
-  activePath
-}: {
+const styles = css({
+  fontWeight: 'semibold',
+  color: 'blue.500',
+  mb: '6'
+})
+
+type Props = {
   activePath: Item[]
-}): ReactElement {
+}
+
+export const Breadcrumb = ({ activePath }: Props) => {
   const currentPath = activePath[1]
-  return (
-    <p className={css({ fontWeight: 'semibold', color: 'blue.500', mb: '6' })}>
-      {currentPath.title}
-    </p>
-  )
+  return <p className={styles}>{currentPath.title}</p>
 }

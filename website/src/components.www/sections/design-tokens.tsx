@@ -1,11 +1,11 @@
+import { css } from '@/styled-system/css'
+import { Box, Circle, Container, Stack, panda } from '@/styled-system/jsx'
+import { button } from '@/styled-system/recipes'
+import { token } from '@/styled-system/tokens'
 import { outdent } from 'outdent'
-import { Code, codeStyle } from '../bright/code'
-import { css } from '../styled-system/css'
-import { Box, Circle, Container, Stack, panda } from '../styled-system/jsx'
-import { button } from '../styled-system/recipes'
-import { token } from '../styled-system/tokens'
-import { Icon } from '../theme/icons'
-import { LearnMore } from './learn-more'
+import { Icon } from '@/theme/icons'
+import { Code, codeStyle } from '../code/code'
+import { LearnMore } from '../learn-more'
 
 const codeSnippets = {
   coreTokens: outdent`

@@ -1,8 +1,8 @@
 import Image from 'next/image'
-import { Container, Grid, HStack, Stack, panda } from '../../styled-system/jsx'
-import { input } from '../../styled-system/recipes'
-import { Icon } from '../../theme/icons'
-import { css } from '../../styled-system/css'
+import { Container, Grid, HStack, Stack, panda } from '@/styled-system/jsx'
+import { input } from '@/styled-system/recipes'
+import { Icon } from '@/theme/icons'
+import { css } from '@/styled-system/css'
 
 const featureItems = [
   {

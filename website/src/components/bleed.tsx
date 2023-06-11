@@ -1,42 +1,27 @@
-import type { ReactElement, ReactNode } from 'react'
-import { css, cx } from '../../styled-system/css'
+import { cva, cx } from '@/styled-system/css'
+import type { ReactNode } from 'react'
 
-export function Bleed({
-  full,
-  children
-}: {
+const styles = cva({
+  base: {
+    position: 'relative',
+    mx: { base: '-6', md: '-8', '2xl': '-24' },
+    mt: '-6'
+  },
+  variants: {
+    full: {
+      true: {
+        ms: { xl: 'calc(50% - 50vw + 16rem)' },
+        me: { xl: 'calc(50% - 50vw)' }
+      }
+    }
+  }
+})
+
+type Props = {
   full: boolean
   children: ReactNode
-}): ReactElement {
-  return (
-    <div
-      className={cx(
-        'nextra-bleed',
-        css({
-          position: 'relative',
-          mx: -6,
-          mt: -6,
-          md: { mx: -8 },
-          '2xl': { mx: -24 }
-        }),
-        full &&
-          css({
-            _ltr: {
-              xl: {
-                ml: 'calc(50% - 50vw + 16rem)',
-                mr: 'calc(50% - 50vw)'
-              }
-            },
-            _rtl: {
-              xl: {
-                ml: 'calc(50% - 50vw)',
-                mr: 'calc(50% - 50vw + 16rem)'
-              }
-            }
-          })
-      )}
-    >
-      {children}
-    </div>
-  )
+}
+
+export const Bleed = ({ full, children }: Props) => {
+  return <div className={cx('nextra-bleed', styles({ full }))}>{children}</div>
 }

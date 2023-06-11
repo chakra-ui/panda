@@ -1,6 +1,4 @@
-import type { ComponentProps, ReactElement } from 'react'
-
-export function MoonIcon(props: ComponentProps<'svg'>): ReactElement {
+export function MoonIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       fill="none"

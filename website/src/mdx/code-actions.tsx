@@ -1,4 +1,4 @@
-import { css, cva } from '../../styled-system/css'
+import { css, cva } from '@/styled-system/css'
 import { WordWrapIcon } from '../icons'
 import { CopyToClipboard } from './copy-to-clipboard'
 

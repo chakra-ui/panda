@@ -1,9 +1,8 @@
-import type { Dispatch, SetStateAction } from 'react'
-import { useContext, createContext } from 'react'
+import { createContext, useContext } from 'react'
 
 interface Menu {
   menu: boolean
-  setMenu: Dispatch<SetStateAction<boolean>>
+  setMenu: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const MenuContext = createContext<Menu>({

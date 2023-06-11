@@ -1,5 +1,4 @@
-import type { ComponentProps } from 'react'
-import { css, cva } from '../../styled-system/css'
+import { css, cva } from '@/styled-system/css'
 
 const listStyles = cva({
   base: {
@@ -18,14 +17,14 @@ const listStyles = cva({
   }
 })
 
-export function UnorderedList(props: ComponentProps<'ul'>) {
+export function UnorderedList(props: React.ComponentProps<'ul'>) {
   return <ul className={listStyles({ type: 'ul' })} {...props} />
 }
 
-export function OrderedList(props: ComponentProps<'ol'>) {
+export function OrderedList(props: React.ComponentProps<'ol'>) {
   return <ol className={listStyles({ type: 'ol' })} {...props} />
 }
 
-export function ListItem(props: ComponentProps<'li'>) {
+export function ListItem(props: React.ComponentProps<'li'>) {
   return <li className={css({ my: '2' })} {...props} />
 }
