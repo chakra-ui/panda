@@ -18,10 +18,10 @@ The Container pattern is used to create a container with a max-width and center 
 
 By default, the container sets the following properties:
 
-- `max-width: 8xl`
-- `mx: auto`
+- `maxWidth: 8xl`
+- `marginX: auto`
 - `position: relative`
-- `px: { base: 4, md: 6, lg: 8 }`
+- `paddingX: { base: 4, md: 6, lg: 8 }`
 
 ```tsx
 import { container } from '../styled-system/patterns'
