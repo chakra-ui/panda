@@ -1,8 +1,8 @@
 import { Anchor } from '@/components/anchor'
 import { Collapse } from '@/components/collapse'
-import { classes } from '@/components/docs/menu/classes'
-import { Menu } from '@/components/docs/menu/menu'
-import { FocusedItemContext, FolderLevelContext } from '@/components/docs/menu/menu-context'
+import { classes } from './classes'
+import { ThreeViewMenu } from './threeview-menu'
+import { FocusedItemContext, FolderLevelContext } from './threeview-context'
 import { useConfig, useMenu } from '@/contexts'
 import { ArrowRightIcon } from '@/icons'
 import { css, cx } from '@/styled-system/css'
@@ -10,7 +10,7 @@ import { renderComponent } from '@/utils'
 import { Heading } from 'nextra'
 import { useFSRoute } from 'nextra/hooks'
 import { Item, MenuItem, PageItem } from 'nextra/normalize-pages'
-import { ReactElement, memo, useContext, useEffect, useState } from 'react'
+import { FC, memo, useContext, useEffect, useState } from 'react'
 
 const TreeState: Record<string, boolean> = Object.create(null)
 
@@ -19,7 +19,7 @@ type FolderProps = {
   anchors: Heading[]
 }
 
-function FolderImpl({ item, anchors }: FolderProps): ReactElement {
+const FolderImpl: FC<FolderProps> = ({ item, anchors }) => {
   const routeOriginal = useFSRoute()
   const [route] = routeOriginal.split('#')
   const active = [route, route + '/'].includes(item.route + '/')
@@ -147,10 +147,9 @@ function FolderImpl({ item, anchors }: FolderProps): ReactElement {
 
       <Collapse className={css({ ps: '0', pt: '1' })} isOpen={open}>
         {Array.isArray(item.children) ? (
-          <Menu
+          <ThreeViewMenu
             className={cx(classes.border, css({ ms: '3' }))}
             directories={item.children}
-            base={item.route}
             anchors={anchors}
           />
         ) : null}
@@ -159,7 +158,7 @@ function FolderImpl({ item, anchors }: FolderProps): ReactElement {
   )
 }
 
-export const Folder = memo(function FolderInner(props: FolderProps) {
+export const ThreeViewFolder = memo((props: FolderProps) => {
   const level = useContext(FolderLevelContext)
 
   return (
@@ -168,3 +167,7 @@ export const Folder = memo(function FolderInner(props: FolderProps) {
     </FolderLevelContext.Provider>
   )
 })
+
+if (process.env.NODE_ENV === 'development') {
+  ThreeViewFolder.displayName = 'ThreeViewFolder'
+}

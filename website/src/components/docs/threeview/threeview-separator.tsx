@@ -1,9 +1,11 @@
+import { FC } from "react"
 import { css, cx } from "@/styled-system/css"
-import { ReactElement } from "react"
 import { useConfig } from '@/contexts'
 import { renderComponent } from '@/utils'
 
-export function Separator({ title }: { title: string }): ReactElement {
+export interface IThreeViewSeparator { title: string }
+
+export const ThreeViewSeparator: FC<IThreeViewSeparator> = ({ title }) => {
   const config = useConfig()
 
   return (

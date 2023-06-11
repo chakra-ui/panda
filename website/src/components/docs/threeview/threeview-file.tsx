@@ -1,22 +1,24 @@
 import { css, cx } from "@/styled-system/css"
-import { OnFocusedItemContext } from "./menu-context"
-import { Separator } from "./menu-separator"
+import { OnFocusedItemContext } from "./threeview-context"
+import { ThreeViewSeparator } from "./threeview-separator"
 import { useActiveAnchor, useConfig, useMenu } from "@/contexts"
 import { Heading } from "nextra"
 import { useFSRoute } from "nextra/hooks"
 import { Item, PageItem } from "nextra/normalize-pages"
-import { ReactElement, useContext } from "react"
+import { FC, useContext } from "react"
 import { classes } from "./classes"
 import { Anchor } from "@/components/anchor"
 import { renderComponent } from "@/utils"
 
-export function File({
-  item,
-  anchors
-}: {
+export interface ThreeviewFileProps {
   item: PageItem | Item
   anchors: Heading[]
-}): ReactElement {
+}
+
+export const ThreeViewFile: FC<ThreeviewFileProps> = ({
+  item,
+  anchors
+}) => {
   const route = useFSRoute()
   const onFocus = useContext(OnFocusedItemContext)
 
@@ -27,7 +29,7 @@ export function File({
   const config = useConfig()
 
   if (item.type === 'separator') {
-    return <Separator title={item.title} />
+    return <ThreeViewSeparator title={item.title} />
   }
 
   return (

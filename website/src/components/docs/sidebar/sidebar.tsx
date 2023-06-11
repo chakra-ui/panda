@@ -8,7 +8,7 @@ import type { Item, PageItem } from 'nextra/normalize-pages'
 import { css, cx } from '@/styled-system/css'
 import { useConfig, useMenu } from '@/contexts'
 import { renderComponent } from '@/utils'
-import { Menu, Collapse, IconButton } from '@/components'
+import { ThreeView, Collapse, IconButton } from '@/components'
 import { LocaleSwitch } from '../../locale-switch'
 import { SidebarBackdrop } from './sidebar-backdrop'
 import { SidebarContainer } from './sidebar-container'
@@ -111,7 +111,7 @@ export function Sidebar({
               {/* without asPopover check <Collapse />'s inner.clientWidth on `layout: "raw"` will be 0 and element will not have width on initial loading */}
               {(!asPopover || !showSidebar) && (
                 <Collapse isOpen={showSidebar} horizontal>
-                  <Menu
+                  <ThreeView
                     className={css({ mdDown: { display: 'none' } })}
                     // The sidebar menu, shows only the docs directories.
                     directories={docsDirectories}
@@ -122,7 +122,7 @@ export function Sidebar({
                   />
                 </Collapse>
               )}
-              <Menu
+              <ThreeView
                 className={css({ md: { display: 'none' } })}
                 // The mobile dropdown menu, shows all the directories.
                 directories={fullDirectories}
