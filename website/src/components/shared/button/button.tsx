@@ -51,7 +51,19 @@ export const buttonStyle = cva({
         },
         _active: {
           bg: 'gray.200'
-        }
+        },
+        _dark: {
+          color: 'gray.50',
+          _hover: {
+            bg: 'whiteAlpha.200',
+            _disabled: {
+              bg: 'whiteAlpha.200'
+            }
+          },
+          _active: {
+            bg: 'whiteAlpha.300'
+          },
+        },
       },
       outline: {},
       link: {},

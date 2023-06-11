@@ -1,8 +1,8 @@
 import { Anchor } from '@/components/anchor'
 import { Collapse } from '@/components/collapse'
-import { classes } from './classes'
 import { ThreeViewMenu } from './threeview-menu'
 import { FocusedItemContext, FolderLevelContext } from './threeview-context'
+import { threeViewLinkStyle } from './threeview-link'
 import { useConfig, useMenu } from '@/contexts'
 import { ArrowRightIcon } from '@/icons'
 import { css, cx } from '@/styled-system/css'
@@ -74,7 +74,7 @@ const FolderImpl: FC<FolderProps> = ({ item, anchors }) => {
   const ComponentToUse = isLink ? Anchor : 'button'
 
   return (
-    <li className={cx(open && 'open', active && 'active')}>
+    <li>
       {/* TODO: replace with shared Button */}
       <ComponentToUse
         href={isLink ? item.route : undefined}
@@ -86,8 +86,7 @@ const FolderImpl: FC<FolderProps> = ({ item, anchors }) => {
             gap: 2
           }),
           !isLink && css({ textAlign: 'left', width: '100%' }),
-          classes.link,
-          active ? classes.active : classes.inactive
+          threeViewLinkStyle({ active })
         )}
         onClick={e => {
           const clickedToggleIcon = ['svg', 'path'].includes(
@@ -148,7 +147,6 @@ const FolderImpl: FC<FolderProps> = ({ item, anchors }) => {
       <Collapse className={css({ ps: '0', pt: '1' })} isOpen={open}>
         {Array.isArray(item.children) ? (
           <ThreeViewMenu
-            className={css({ ms: '3' })}
             directories={item.children}
             anchors={anchors}
           />

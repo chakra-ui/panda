@@ -4,6 +4,9 @@ import { RecipeVariantProps, cva } from '@/styled-system/css'
 const threeViewListStyle = cva({
   base: {
     position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 1,
   },
   variants: {
     root: {
@@ -14,16 +17,20 @@ const threeViewListStyle = cva({
           width: '1px',
           bg: 'gray.200',
           content: "''",
-          _dark: { bg: 'neutral.800' }
+          _dark: {
+            bg: 'neutral.800'
+          }
         },
         _ltr: {
           pl: 3,
+          ms: 3,
           _before: {
             left: 0
           }
         },
         _rtl: {
           pr: 3,
+          me: 3,
           _before: {
             right: 0
           }
