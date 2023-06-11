@@ -66,7 +66,7 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
 
     if (type === 'pattern') {
       const pattern = ctx.patterns.getConfig(from.toLowerCase())
-      const patternProp = pattern.properties[propName]
+      const patternProp = pattern?.properties?.[propName]
       if (!patternProp) return false
 
       if (patternProp.type === 'boolean' || patternProp.type === 'number') {
