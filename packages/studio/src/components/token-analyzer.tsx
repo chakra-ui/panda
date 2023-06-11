@@ -28,7 +28,7 @@ import { TextWithCount } from './analyzer/text-with-count'
 import { TruncatedText } from './analyzer/truncated-text'
 import { ByCategory } from './analyzer/category-utilities'
 import { ColorItem } from './color-item'
-import { TokenSearchCombobox } from './token-search-combobox'
+import { TokenSearchCombobox } from './analyzer/token-search-combobox'
 import { useState } from 'react'
 import { SortIcon } from './analyzer/sort-icon'
 

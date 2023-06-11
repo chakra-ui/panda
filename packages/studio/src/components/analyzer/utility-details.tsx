@@ -1,11 +1,3 @@
-import { css, cx } from '../../../styled-system/css'
-import { panda, Wrap } from '../../../styled-system/jsx'
-import { styledLink } from '../../../styled-system/patterns'
-import { analysisData } from '../../lib/analysis-data'
-
-import { getFileLink, getReportRelativeFilePath, SearchableReportItemAttributes } from '../../lib/get-report-item'
-import { Section } from './section'
-
 import {
   Portal,
   Select,
@@ -15,15 +7,22 @@ import {
   SelectPositioner,
   SelectTrigger,
 } from '@ark-ui/react'
-import { createContext } from '../../lib/create-context'
+import { useState } from 'react'
 
-import { Dispatch, SetStateAction, useState } from 'react'
-import { DataCombobox, DataComboboxOption } from './data-combobox'
-import { TextWithCount } from './text-with-count'
-import { TokenSearchCombobox } from '../token-search-combobox'
+import { css, cx } from '../../../styled-system/css'
+import { Wrap, panda } from '../../../styled-system/jsx'
+import { styledLink } from '../../../styled-system/patterns'
+
+import { analysisData } from '../../lib/analysis-data'
+import { createContext } from '../../lib/create-context'
+import { getFileLink, getReportRelativeFilePath, type SearchableReportItemAttributes } from '../../lib/get-report-item'
+import { TokenSearchCombobox } from './token-search-combobox'
+import { DataCombobox, type DataComboboxOption } from './data-combobox'
 import { DataTable } from './data-table'
 import { getReportInfosFrom } from './get-report-infos-from'
 import { reportItemColumns } from './report-item-columns'
+import { Section } from './section'
+import { TextWithCount } from './text-with-count'
 
 export const UtilityDetails = () => {
   const search = new URLSearchParams(window.location.search)
@@ -66,7 +65,7 @@ export const UtilityDetails = () => {
 }
 
 type Infos = ReturnType<typeof getReportInfosFrom>
-const [DetailsProvider, useDetails] = createContext<[Infos, Dispatch<SetStateAction<Infos['params']>>]>({
+const [DetailsProvider, useDetails] = createContext<[Infos, React.Dispatch<React.SetStateAction<Infos['params']>>]>({
   name: 'UtilityDetailsContext',
 })
 

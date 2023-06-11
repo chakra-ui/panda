@@ -1,6 +1,6 @@
-import { analysisData } from '../lib/analysis-data'
-import { getUtilityLink, getReportRelativeFilePath } from '../lib/get-report-item'
-import { DataCombobox, DataComboboxProps } from './analyzer/data-combobox'
+import { analysisData } from '../../lib/analysis-data'
+import { getUtilityLink, getReportRelativeFilePath } from '../../lib/get-report-item'
+import { DataCombobox, type DataComboboxProps } from './data-combobox'
 
 const searchList = new Map<string, string>()
 const tokenNames = Object.keys(analysisData.details.globalMaps.byTokenName)

@@ -6,7 +6,7 @@ import { analysisData } from '../../lib/analysis-data'
 import { getReportItem, getUtilityLink, getReportRelativeFilePath } from '../../lib/get-report-item'
 import { ByCategory } from './category-utilities'
 import { ColorItem } from '../color-item'
-import { TokenSearchCombobox } from '../token-search-combobox'
+import { TokenSearchCombobox } from './token-search-combobox'
 import { TextWithCount } from './text-with-count'
 import { TruncatedText } from './truncated-text'
 

@@ -3,6 +3,12 @@
     width: var(--sizes-full);
   }
 
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
   .max-h_300px {
     max-height: 300px;
   }

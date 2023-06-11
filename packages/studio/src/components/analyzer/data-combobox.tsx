@@ -1,6 +1,3 @@
-import { css } from '../../../styled-system/css'
-import { panda } from '../../../styled-system/jsx'
-import { Portal } from '@ark-ui/react'
 import {
   Combobox,
   ComboboxContent,
@@ -10,16 +7,25 @@ import {
   ComboboxOption,
   ComboboxPositioner,
   ComboboxTrigger,
-  ComboboxProps,
+  Portal,
 } from '@ark-ui/react'
-import { useState, useEffect, ReactNode } from 'react'
+import { useEffect, useState } from 'react'
+import { css } from '../../../styled-system/css'
+import { panda } from '../../../styled-system/jsx'
 
-export type DataComboboxOption = { value: string; label: string }
+export type DataComboboxOption = {
+  value: string
+  label: string
+}
+
 export type DataComboboxProps = {
-  options: Array<DataComboboxOption>
-  label?: ReactNode
+  options: DataComboboxOption[]
+  label?: React.ReactNode
+  placeholder?: string
   filterFn?: (value: string) => DataComboboxOption[]
-} & ComboboxProps
+  defaultValue?: string
+  onSelect?: (option: any) => void
+}
 
 export const DataCombobox = ({ options: allOptions, label, ...props }: DataComboboxProps) => {
   const [options, setOptions] = useState(allOptions)
@@ -33,12 +39,8 @@ export const DataCombobox = ({ options: allOptions, label, ...props }: DataCombo
   }, [allOptions])
 
   return (
-    <Combobox
-      openOnClick
-      // defaultValue={props.defaultValue} // TODO not acting as "selected"
-      {...props}
-    >
-      {(state) => {
+    <Combobox openOnClick {...props}>
+      {(state: any) => {
         return (
           <>
             <ComboboxControl>

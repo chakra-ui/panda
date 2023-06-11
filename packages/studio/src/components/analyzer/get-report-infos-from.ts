@@ -1,6 +1,6 @@
 import type { ReportItemJSON } from '@pandacss/types'
 import { analysisData } from '../../lib/analysis-data'
-import { getReportItem, SearchableReportItemAttributes } from '../../lib/get-report-item'
+import { getReportItem, type SearchableReportItemAttributes } from '../../lib/get-report-item'
 
 export const getReportInfosFrom = (params: SearchableReportItemAttributes) => {
   let byTokenName: Array<ReportItemJSON['id']> = []
