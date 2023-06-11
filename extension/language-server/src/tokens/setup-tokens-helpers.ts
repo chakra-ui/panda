@@ -9,7 +9,7 @@ import {
   type ResultItem,
   type SystemStyleObject,
 } from '@pandacss/types'
-import { CallExpression, Identifier, JsxOpeningElement, JsxSelfClosingElement, Node, ts } from 'ts-morph'
+import { CallExpression, Identifier, JsxOpeningElement, JsxSelfClosingElement, Node, SourceFile, ts } from 'ts-morph'
 
 import {
   BoxNodeArray,
@@ -126,7 +126,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
     const ctx = setup.getContext()
     if (!ctx) return
 
-    return ctx.project.getSourceFile(doc.uri)
+    return ctx.project.getSourceFile(doc.uri) as SourceFile | undefined
   }
 
   /**

@@ -154,6 +154,10 @@ importers:
         version: 5.1.3
 
   extension/ts-plugin:
+    dependencies:
+      '@pandacss/extension-shared':
+        specifier: workspace:^
+        version: link:../shared
     devDependencies:
       typescript:
         specifier: ^5.1.3
@@ -458,7 +462,7 @@ importers:
         version: 5.1.7
       tsconfck:
         specifier: ^2.1.1
-        version: 2.1.1
+        version: 2.1.1(typescript@5.1.3)
     devDependencies:
       pkg-types:
         specifier: 1.0.3
@@ -26269,17 +26273,6 @@ packages:
     resolution: {integrity: sha512-FZIXf1ksVyLcfr7M317jbB67XFJhOO1YqdTcuGaq9q5jLUoTikukZ+98TPjKiP2jC5CgmYdWWYs0s2nLSU0/1A==}
     dev: false
 
-  /tsconfck@2.1.1:
-    resolution: {integrity: sha512-ZPCkJBKASZBmBUNqGHmRhdhM8pJYDdOXp4nRgj/O0JwUwsMq50lCDRQP/M5GBNAA0elPrq4gAeu4dkaVCuKWww==}
-    engines: {node: ^14.13.1 || ^16 || >=18}
-    hasBin: true
-    peerDependencies:
-      typescript: ^4.3.5 || ^5.0.0
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dev: false
-
   /tsconfck@2.1.1(typescript@5.1.3):
     resolution: {integrity: sha512-ZPCkJBKASZBmBUNqGHmRhdhM8pJYDdOXp4nRgj/O0JwUwsMq50lCDRQP/M5GBNAA0elPrq4gAeu4dkaVCuKWww==}
     engines: {node: ^14.13.1 || ^16 || >=18}
@@ -26291,7 +26284,6 @@ packages:
         optional: true
     dependencies:
       typescript: 5.1.3
-    dev: true
 
   /tsconfig-paths@3.14.2:
     resolution: {integrity: sha512-o/9iXgCYc5L/JxCHPe3Hvh8Q/2xm5Z+p18PESBU6Ff33695QnCHBEjcytY2q19ua7Mbl/DavtBOLq+oG0RCL+g==}
