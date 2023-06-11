@@ -523,15 +523,16 @@ const getCompletionFor = (
   const propValue = propNode.value
 
   let str = String(propValue)
+  let category: string | undefined
 
   // also provide completion in string such as: token('colors.blue.300')
   if (settings['completions.token-fn.enabled'] && str.includes('token(')) {
     const matches = extractTokenPaths(str)
     const tokenPath = matches[0] ?? ''
-    const split = tokenPath.split('.')
+    const split = tokenPath.split('.').filter(Boolean)
 
     // provide completion for token category when token() is empty or partial
-    if (split.length <= 1) {
+    if (split.length < 1) {
       return Array.from(ctx.tokens.categoryMap.keys()).map((category) => {
         return {
           label: category,
@@ -543,14 +544,22 @@ const getCompletionFor = (
     }
 
     str = tokenPath.split('.').slice(1).join('.')
+    category = split[0]
   }
 
   const cachePath = propName + '.' + str
   const cachedList = completionCache.get(cachePath)
   if (cachedList) return cachedList
 
-  const utility = ctx.config.utilities?.[propName]
-  const category = typeof utility?.values === 'string' && utility?.values
+  // token(colors.red.300) -> category = "colors"
+  // color="red.300" -> no category, need to find it
+  if (!category) {
+    const utility = ctx.config.utilities?.[propName]
+    if (typeof utility?.values === 'string' && utility?.values) {
+      category = utility.values
+    }
+  }
+
   if (!category) return []
 
   const values = ctx.tokens.categoryMap.get(category)
@@ -558,7 +567,7 @@ const getCompletionFor = (
 
   const items = [] as CompletionItem[]
   values.forEach((token, name) => {
-    if (!name.includes(str)) return
+    if (str && !name.includes(str)) return
 
     const tokenPath = token.name
     const cachedItem = itemCache.get(tokenPath)
