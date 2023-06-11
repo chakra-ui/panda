@@ -6,9 +6,11 @@ type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
 
 export type RecipeVariantRecord = Record<any, Record<any, SystemStyleObject>>
 
-export type RecipeSelection<T extends RecipeVariantRecord> = {
-  [K in keyof T]?: StringToBoolean<keyof T[K]>
-}
+export type RecipeSelection<T extends RecipeVariantRecord> = any extends T
+  ? {}
+  : {
+      [K in keyof T]?: StringToBoolean<keyof T[K]>
+    }
 
 export type RecipeVariantFn<T extends RecipeVariantRecord> = (props?: RecipeSelection<T>) => string
 
