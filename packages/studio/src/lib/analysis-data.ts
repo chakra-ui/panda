@@ -1,7 +1,8 @@
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type { AnalysisReportJSON } from '@pandacss/types'
 
-import { default as analysisData } from './analysis.json'
+//@ts-ignore
+import analysisData from './analysis.json' assert { type: 'json' }
 
 const typedData = analysisData as any as AnalysisReportJSON
 export { typedData as analysisData }
