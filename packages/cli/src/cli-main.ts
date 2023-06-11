@@ -13,12 +13,12 @@ import {
   writeAnalyzeJSON,
 } from '@pandacss/node'
 import { compact } from '@pandacss/shared'
+import { buildStudio, previewStudio, serveStudio } from '@pandacss/studio'
 import { cac } from 'cac'
 import { readFileSync } from 'fs'
 import path, { join } from 'path'
 import updateNotifier from 'update-notifier'
 import packageJson from '../package.json' assert { type: 'json' }
-import { buildStudio, previewStudio, serveStudio } from './studio'
 
 export async function main() {
   const cli = cac('panda')

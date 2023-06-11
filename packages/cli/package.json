@@ -36,11 +36,7 @@
     "build": "tsup src --format=esm,cjs --dts --no-splitting --shims",
     "postbuild": "pnpm app:gen",
     "build-fast": "tsup src --format=esm,cjs --no-dts --no-splitting --shims",
-    "dev": "pnpm build-fast --watch src",
-    "css": "dist/cli-default.js",
-    "app": "cd app && ../dist/cli-default.js --clean",
-    "app:dev": "cd app && ../dist/cli-default.js --watch",
-    "app:gen": "cd app && ../dist/cli-default.js codegen --clean"
+    "dev": "pnpm build-fast --watch src"
   },
   "files": [
     "dist",
@@ -52,11 +48,10 @@
     "astro.mjs"
   ],
   "dependencies": {
-    "@ark-ui/react": "0.6.0",
-    "@astrojs/react": "2.2.1",
     "@pandacss/config": "workspace:*",
     "@pandacss/postcss": "workspace:*",
     "@pandacss/astro": "workspace:*",
+    "@pandacss/studio": "workspace:*",
     "@pandacss/error": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
@@ -64,18 +59,10 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "astro": "2.6.1",
-    "cac": "6.7.14",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "vite": "4.3.9"
+    "cac": "6.7.14"
   },
   "devDependencies": {
-    "@types/react": "18.2.8",
-    "@types/react-dom": "18.2.4",
     "@types/update-notifier": "6.0.4",
-    "@vitejs/plugin-react": "4.0.0",
-    "execa": "7.1.1",
     "kleur": "4.1.5",
     "update-notifier": "6.0.2"
   }

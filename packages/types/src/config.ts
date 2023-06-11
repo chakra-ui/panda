@@ -12,8 +12,17 @@ type StudioOptions = {
    * @default { title: 'Panda', logo: '🐼' }
    */
   studio?: {
-    title?: string
+    /**
+     * The logo url for the design system studio.
+     */
     logo?: string
+    /**
+     * Used to inject custom html into the head or body of the studio
+     */
+    inject?: {
+      head?: string
+      body?: string
+    }
   }
 }
 

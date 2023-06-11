@@ -18,7 +18,7 @@
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
     "@sveltejs/adapter-auto": "^2.1.0",
-    "@sveltejs/kit": "^1.20.1",
+    "@sveltejs/kit": "^1.20.2",
     "@typescript-eslint/eslint-plugin": "^5.59.9",
     "@typescript-eslint/parser": "^5.59.9",
     "eslint": "^8.42.0",

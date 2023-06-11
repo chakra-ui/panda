@@ -1,0 +1,11 @@
+---
+import { TextStyles } from '../components/text-styles'
+import Layout from '../layouts/Layout.astro'
+import Sidebar from '../layouts/Sidebar.astro'
+---
+
+<Layout>
+  <Sidebar title="Text Styles">
+    <TextStyles client:load />
+  </Sidebar>
+</Layout>
