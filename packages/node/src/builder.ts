@@ -88,7 +88,7 @@ export class Builder {
     logger.debug('builder', '🚧 Setup')
 
     const configPath = options.configPath ?? this.getConfigPath()
-    const configDeps = getConfigDependencies(configPath)
+    const { deps: configDeps } = getConfigDependencies(configPath)
 
     const deps = this.checkConfigDeps(configPath, configDeps)
 

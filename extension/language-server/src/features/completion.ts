@@ -19,7 +19,6 @@ export function registerCompletion(extension: PandaExtension) {
       }
 
       // TODO recipe
-      // TODO token(xxx.yyy.zzz) paths in strings
       const matches = await getClosestCompletionList(doc, params.position)
       if (!matches?.length) {
         return

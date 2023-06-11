@@ -9,7 +9,7 @@ import {
   type ResultItem,
   type SystemStyleObject,
 } from '@pandacss/types'
-import { CallExpression, Identifier, JsxOpeningElement, JsxSelfClosingElement, Node, ts } from 'ts-morph'
+import { CallExpression, Identifier, JsxOpeningElement, JsxSelfClosingElement, Node, SourceFile, ts } from 'ts-morph'
 
 import {
   BoxNodeArray,
@@ -29,6 +29,7 @@ import {
 } from '@pandacss/extractor'
 import { type PandaContext } from '@pandacss/node'
 import { walkObject } from '@pandacss/shared'
+import { type ParserResult } from '@pandacss/parser'
 import { type Token } from '@pandacss/token-dictionary'
 import { Bool } from 'lil-fp'
 import { type PandaVSCodeSettings } from '@pandacss/extension-shared'
@@ -120,12 +121,12 @@ const getNestedBoxProp = (map: BoxNodeMap, path: string[]) => {
   }, map as any)
 }
 
-export function setupTokensHelpers(setup: PandaExtensionSetup): any {
+export function setupTokensHelpers(setup: PandaExtensionSetup) {
   function getSourceFile(doc: TextDocument) {
     const ctx = setup.getContext()
     if (!ctx) return
 
-    return ctx.project.getSourceFile(doc.uri)
+    return ctx.project.getSourceFile(doc.uri) as SourceFile | undefined
   }
 
   /**
@@ -138,7 +139,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup): any {
     const project = ctx.project
 
     project.addSourceFile(doc.uri, doc.getText())
-    return project.parseSourceFile(doc.uri)
+    return project.parseSourceFile(doc.uri) as ParserResult
   }
 
   const createResultTokensGetter = (onToken: OnTokenCallback) => {
@@ -522,15 +523,16 @@ const getCompletionFor = (
   const propValue = propNode.value
 
   let str = String(propValue)
+  let category: string | undefined
 
   // also provide completion in string such as: token('colors.blue.300')
   if (settings['completions.token-fn.enabled'] && str.includes('token(')) {
     const matches = extractTokenPaths(str)
     const tokenPath = matches[0] ?? ''
-    const split = tokenPath.split('.')
+    const split = tokenPath.split('.').filter(Boolean)
 
     // provide completion for token category when token() is empty or partial
-    if (split.length <= 1) {
+    if (split.length < 1) {
       return Array.from(ctx.tokens.categoryMap.keys()).map((category) => {
         return {
           label: category,
@@ -542,14 +544,22 @@ const getCompletionFor = (
     }
 
     str = tokenPath.split('.').slice(1).join('.')
+    category = split[0]
   }
 
   const cachePath = propName + '.' + str
   const cachedList = completionCache.get(cachePath)
   if (cachedList) return cachedList
 
-  const utility = ctx.config.utilities?.[propName]
-  const category = typeof utility?.values === 'string' && utility?.values
+  // token(colors.red.300) -> category = "colors"
+  // color="red.300" -> no category, need to find it
+  if (!category) {
+    const utility = ctx.config.utilities?.[propName]
+    if (typeof utility?.values === 'string' && utility?.values) {
+      category = utility.values
+    }
+  }
+
   if (!category) return []
 
   const values = ctx.tokens.categoryMap.get(category)
@@ -557,7 +567,7 @@ const getCompletionFor = (
 
   const items = [] as CompletionItem[]
   values.forEach((token, name) => {
-    if (!name.includes(str)) return
+    if (str && !name.includes(str)) return
 
     const tokenPath = token.name
     const cachedItem = itemCache.get(tokenPath)

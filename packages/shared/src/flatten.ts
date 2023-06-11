@@ -7,7 +7,9 @@ export function flatten(values: Record<string, Record<string, any>>, stop?: Walk
   walkObject(
     values,
     (token, paths) => {
-      result[paths.join('.')] = token.value
+      if (token) {
+        result[paths.join('.')] = token.value
+      }
     },
     {
       stop:

@@ -72,9 +72,10 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     },
     middleware: {
+      // emulate color hints with decorators to prevent the built-in vscode ColorPicker from showing on hover
       async provideDocumentColors(document, token, next) {
         const settings = getFreshPandaSettings()
-        if (!settings['color-hints.enabled']) return
+        if (!settings['color-hints.enabled']) return next(document, token)
         if (settings['color-hints.color-preview.enabled']) return next(document, token)
 
         if (!colorDecorationType) {
@@ -138,6 +139,8 @@ export async function activate(context: vscode.ExtensionContext) {
   }
   client.onNotification('$/clear-colors', clearColors)
 
+  // synchronize the active document with the extension LSP
+  // so that we can retrieve the corresponding configPath (xxx/yyy/panda.config.ts)
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor((editor) => {
       if (!editor) return
@@ -149,6 +152,22 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
   )
 
+  // synchronize the extension settings with the TS server plugin
+  // so that we can disable removing built-ins from the completion list if the user has disabled completions in the settings
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration(() => {
+      if (!tsApi) return
+
+      const settings = getFreshPandaSettings()
+      tsApi.configurePlugin('@pandacss/ts-plugin', {
+        type: 'update-settings',
+        data: settings,
+      })
+    }),
+  )
+
+  // send initial config to the TS server plugin
+  // so that it doesn't have to wait for the first file to be opened or settings to be changed
   context.subscriptions.push(
     client.onNotification('$/panda-lsp-ready', async () => {
       if (!activeDocumentFilepath) return
@@ -165,12 +184,20 @@ export async function activate(context: vscode.ExtensionContext) {
           type: 'active-doc',
           data: { activeDocumentFilepath, configPath },
         })
+
+        const settings = getFreshPandaSettings()
+        tsApi.configurePlugin('@pandacss/ts-plugin', {
+          type: 'update-settings',
+          data: settings,
+        })
       } catch (err) {
         debug && console.log('error sending doc notif', err)
       }
     }),
   )
 
+  // synchronize the active document + its config path with the TS server plugin
+  // so that it can remove the corresponding built-ins tokens names from the completion list
   context.subscriptions.push(
     client.onNotification(
       '$/panda-doc-config-path',
@@ -183,6 +210,7 @@ export async function activate(context: vscode.ExtensionContext) {
     ),
   )
 
+  // synchronize token names by configPath to the TS server plugin
   context.subscriptions.push(
     client.onNotification('$/panda-token-names', (notif: { configPath: string; tokenNames: string[] }) => {
       if (!tsApi) return
