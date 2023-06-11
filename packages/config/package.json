@@ -29,11 +29,9 @@
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/types": "workspace:*",
     "bundle-n-require": "^1.0.1",
-    "bundle-require": "^4.0.1",
     "escalade": "3.1.1",
     "jiti": "^1.18.2",
     "merge-anything": "^5.1.7",
-    "sucrase": "^3.32.0",
     "tsconfck": "^2.1.1"
   },
   "devDependencies": {

@@ -25,6 +25,7 @@
     "@pandacss/extension-shared": "workspace:*",
     "@pandacss/extractor": "workspace:*",
     "@pandacss/node": "workspace:*",
+    "@pandacss/parser": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",

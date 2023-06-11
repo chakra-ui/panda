@@ -29,6 +29,7 @@ import {
 } from '@pandacss/extractor'
 import { type PandaContext } from '@pandacss/node'
 import { walkObject } from '@pandacss/shared'
+import { type ParserResult } from '@pandacss/parser'
 import { type Token } from '@pandacss/token-dictionary'
 import { Bool } from 'lil-fp'
 import { type PandaVSCodeSettings } from '@pandacss/extension-shared'
@@ -120,7 +121,7 @@ const getNestedBoxProp = (map: BoxNodeMap, path: string[]) => {
   }, map as any)
 }
 
-export function setupTokensHelpers(setup: PandaExtensionSetup): any {
+export function setupTokensHelpers(setup: PandaExtensionSetup) {
   function getSourceFile(doc: TextDocument) {
     const ctx = setup.getContext()
     if (!ctx) return
@@ -138,7 +139,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup): any {
     const project = ctx.project
 
     project.addSourceFile(doc.uri, doc.getText())
-    return project.parseSourceFile(doc.uri)
+    return project.parseSourceFile(doc.uri) as ParserResult
   }
 
   const createResultTokensGetter = (onToken: OnTokenCallback) => {
