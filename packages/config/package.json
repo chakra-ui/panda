@@ -18,14 +18,23 @@
   "files": [
     "dist"
   ],
+  "bundledDependencies": [
+    "@pandacss/preset-base",
+    "@pandacss/preset-panda"
+  ],
   "dependencies": {
     "@pandacss/error": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/types": "workspace:*",
+    "bundle-n-require": "^1.0.1",
     "escalade": "3.1.1",
     "jiti": "^1.18.2",
-    "merge-anything": "^5.1.7"
+    "merge-anything": "^5.1.7",
+    "tsconfck": "^2.1.1"
+  },
+  "devDependencies": {
+    "pkg-types": "1.0.3"
   }
 }

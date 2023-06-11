@@ -23,30 +23,30 @@ export async function versionBump(manifest: Manifest, options: IVersionBumpOptio
     return
   }
 
-  const cwd = options.cwd ?? process.cwd()
-
   if (manifest.version === options.version) {
     return
   }
 
-  switch (options.version) {
-    case 'major':
-    case 'minor':
-    case 'patch':
-      break
-    case 'premajor':
-    case 'preminor':
-    case 'prepatch':
-    case 'prerelease':
-    case 'from-git':
-      return Promise.reject(`Not supported: ${options.version}`)
-    default:
-      if (!semver.valid(options.version)) {
-        return Promise.reject(`Invalid version ${options.version}`)
-      }
+  // update the manifest object
+  const manifestVersion = manifest.version
+  const today = new Date().getTime().toString().slice(0, 8)
+  const currentVersion = semver.valid(manifestVersion)
+
+  if (!currentVersion) {
+    throw new Error('Cannot get the current version number from package.json')
   }
 
-  let command = `npm version ${options.version}`
+  const rcVersion = semver.inc(currentVersion, 'minor')?.replace(/\.\d+$/, `.${today}`)
+  if (!rcVersion) {
+    throw new Error("Could not populate the current version number for rc's build.")
+  }
+
+  if (rcVersion) {
+    manifest.version = rcVersion
+    console.log(`Bumped version from ${manifestVersion} to ${rcVersion}`)
+  }
+
+  let command = `npm version ${rcVersion}`
 
   if (options.commitMessage) {
     command = `${command} -m "${options.commitMessage}"`
@@ -57,6 +57,7 @@ export async function versionBump(manifest: Manifest, options: IVersionBumpOptio
   }
 
   // call `npm version` to do our dirty work
+  const cwd = options.cwd ?? process.cwd()
   const { stdout, stderr } = await promisify(cp.exec)(command, { cwd })
 
   if (!process.env['VSCE_TESTS']) {

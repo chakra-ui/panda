@@ -1,0 +1,9 @@
+{
+  "include": ["src", "panda.config.ts"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
