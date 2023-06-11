@@ -2,9 +2,9 @@ import { css, cx } from '@/styled-system/css'
 import { hstack } from '@/styled-system/patterns'
 import { ArrowRightIcon } from 'nextra/icons'
 import type { Item } from 'nextra/normalize-pages'
-import { useConfig } from '../contexts'
 import type { DocsThemeConfig } from '../index'
 import { Anchor } from './anchor'
+import { useConfig } from './contexts'
 
 interface NavLinkProps {
   currentIndex: number

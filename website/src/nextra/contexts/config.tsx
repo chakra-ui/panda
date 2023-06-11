@@ -1,12 +1,11 @@
+import { DEFAULT_THEME } from '@/DEFAULT_THEME'
+import { DEEP_OBJECT_KEYS, DocsThemeConfig, themeSchema } from '@/constants'
+import { Context } from '@/types'
 import { ThemeProvider } from 'next-themes'
 import type { FrontMatter, PageMapItem, PageOpts } from 'nextra'
 import { metaSchema } from 'nextra/normalize-pages'
 import { createContext, useContext, useState } from 'react'
 import type { ZodError } from 'zod'
-import { DEFAULT_THEME } from '../DEFAULT_THEME'
-import type { DocsThemeConfig } from '../constants'
-import { DEEP_OBJECT_KEYS, themeSchema } from '../constants'
-import type { Context } from '../types'
 import { MenuProvider } from './menu'
 
 type Config<FrontMatterType = FrontMatter> = DocsThemeConfig &

@@ -1,7 +1,10 @@
 import { css, cva } from '@/styled-system/css'
 import { useEffect, useRef } from 'react'
-import { useSetActiveAnchor } from '../contexts'
-import { useIntersectionObserver, useSlugs } from '../contexts/active-anchor'
+import { useSetActiveAnchor } from '../nextra/contexts'
+import {
+  useIntersectionObserver,
+  useSlugs
+} from '../nextra/contexts/active-anchor'
 
 type HeadingTag = `h${1 | 2 | 3 | 4 | 5 | 6}`
 

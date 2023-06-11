@@ -2,9 +2,9 @@ import { css, cx } from '@/styled-system/css'
 import type { Heading } from 'nextra'
 import { useEffect, useMemo, useRef } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
-import { useActiveAnchor, useConfig } from '../contexts'
-import { renderComponent } from '../lib'
+import { renderComponent } from './lib'
 import { Anchor } from './anchor'
+import { useActiveAnchor, useConfig } from './contexts'
 
 export type TOCProps = {
   headings: Heading[]

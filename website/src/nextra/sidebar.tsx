@@ -14,10 +14,10 @@ import {
   useState
 } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
-import { useActiveAnchor, useConfig, useMenu } from '../contexts'
-import { renderComponent } from '../lib'
+import { renderComponent } from './lib'
 import { Anchor } from './anchor'
 import { Collapse } from './collapse'
+import { useActiveAnchor, useConfig, useMenu } from './contexts'
 import { LocaleSwitch } from './locale-switch'
 
 const TreeState: Record<string, boolean> = Object.create(null)

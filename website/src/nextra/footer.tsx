@@ -1,6 +1,6 @@
 import { css, cx } from '@/styled-system/css'
-import { useConfig } from '../contexts'
-import { renderComponent } from '../lib'
+import { renderComponent } from './lib'
+import { useConfig } from './contexts'
 import { LocaleSwitch } from './locale-switch'
 
 export function Footer({ menu }: { menu?: boolean }) {

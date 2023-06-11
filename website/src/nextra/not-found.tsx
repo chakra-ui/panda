@@ -1,13 +1,13 @@
 import { css } from '@/styled-system/css'
 import { useRouter } from 'next/router'
 import { useMounted } from 'nextra/hooks'
-import { useConfig } from '../contexts'
-import { getGitIssueUrl, renderComponent } from '../lib'
+import { getGitIssueUrl, renderComponent } from './lib'
 import { Anchor } from './anchor'
+import { useConfig } from './contexts'
 
-export function ServerSideErrorPage() {
+export function NotFoundPage() {
   const config = useConfig()
-  const { content, labels } = config.serverSideError
+  const { content, labels } = config.notFound
 
   const mounted = useMounted()
   const { asPath } = useRouter()
@@ -21,16 +21,13 @@ export function ServerSideErrorPage() {
       <Anchor
         href={getGitIssueUrl({
           repository: config.docsRepositoryBase,
-          title: `Got server-side error in \`${
-            mounted ? asPath : ''
-          }\` url. Please fix!`,
+          title: `Found broken \`${mounted ? asPath : ''}\` link. Please fix!`,
           labels
         })}
         newWindow
         className={css({
           color: 'primary.600',
-          textDecorationLine: 'underline',
-          textDecorationThickness: 'from-font',
+          textDecoration: 'from-font',
           textUnderlinePosition: 'from-font'
         })}
       >

@@ -2,7 +2,7 @@ import { css } from '@/styled-system/css'
 import NextLink from 'next/link'
 import next from 'next/package.json'
 import { forwardRef } from 'react'
-import { useConfig } from '../contexts'
+import { useConfig } from './contexts'
 
 export type AnchorProps = Omit<React.ComponentProps<'a'>, 'ref'> & {
   newWindow?: boolean

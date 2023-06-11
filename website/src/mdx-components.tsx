@@ -1,5 +1,5 @@
 import type { Components } from 'nextra/mdx'
-import { FrameworkCards } from './components/framework-card'
+import { FrameworkCards } from './nextra/framework-card'
 import type { DocsThemeConfig } from './constants'
 import { Blockquote } from './mdx/blockquote'
 import { Code } from './mdx/code'

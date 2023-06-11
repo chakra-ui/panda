@@ -115,7 +115,7 @@ export const FrameworkCard = (props: Props) => {
 
 export const FrameworkCards = () => {
   return (
-    <div className={grid({ columns: 3, gap: '8', my: '8' })}>
+    <div className={grid({ columns: 3, gap: '8', mt: '8', mb: '16' })}>
       {Object.keys(logoMap).map(framework => (
         <FrameworkCard
           key={framework}

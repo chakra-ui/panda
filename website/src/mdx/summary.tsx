@@ -1,5 +1,5 @@
 import { css } from '@/styled-system/css'
-import { useDetails } from '../contexts'
+import { useDetails } from '../nextra/contexts'
 
 const styles = css({
   display: 'flex',

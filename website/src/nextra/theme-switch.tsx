@@ -1,11 +1,10 @@
-import { SunIcon, MoonIcon } from 'nextra/icons'
-import { useMounted } from 'nextra/hooks'
-import { useTheme } from 'next-themes'
-
-import { Select } from './select'
-import { useConfig } from '../contexts'
-import { z } from 'zod'
 import { css } from '@/styled-system/css'
+import { useTheme } from 'next-themes'
+import { useMounted } from 'nextra/hooks'
+import { MoonIcon, SunIcon } from 'nextra/icons'
+import { z } from 'zod'
+import { useConfig } from './contexts'
+import { Select } from './select'
 
 type ThemeSwitchProps = {
   lite?: boolean

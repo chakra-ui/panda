@@ -1,26 +1,30 @@
-import type { NextraThemeLayoutProps, PageOpts } from 'nextra'
-import { useMemo } from 'react'
-import { useRouter } from 'next/router'
 import 'focus-visible'
+import { useRouter } from 'next/router'
+import type { NextraThemeLayoutProps, PageOpts } from 'nextra'
+import { useFSRoute, useMounted } from 'nextra/hooks'
 import { MDXProvider } from 'nextra/mdx'
-import { useMounted, useFSRoute } from 'nextra/hooks'
+import { useMemo } from 'react'
 
-import './polyfill'
-import {
-  Head,
-  NavLinks,
-  Sidebar,
-  SkipNavContent,
-  Breadcrumb,
-  Banner
-} from './components'
-import { getComponents } from './mdx-components'
-import { ActiveAnchorProvider, ConfigProvider, useConfig } from './contexts'
+import { css, cx } from '@/styled-system/css'
 import type { PageTheme } from 'nextra/normalize-pages'
 import { normalizePages } from 'nextra/normalize-pages'
 import { DEFAULT_LOCALE, PartialDocsThemeConfig } from './constants'
-import { renderComponent } from './lib'
-import { css, cx } from '@/styled-system/css'
+import { renderComponent } from './nextra/lib'
+import { getComponents } from './mdx-components'
+import {
+  Banner,
+  Breadcrumb,
+  Head,
+  NavLinks,
+  Sidebar,
+  SkipNavContent
+} from './nextra'
+import {
+  ActiveAnchorProvider,
+  ConfigProvider,
+  useConfig
+} from './nextra/contexts'
+import './resize-polyfill'
 
 interface BodyProps {
   themeContext: PageTheme
@@ -292,25 +296,25 @@ export default function Layout({
   )
 }
 
-export { useConfig }
-export type { PartialDocsThemeConfig as DocsThemeConfig }
-export { useMDXComponents } from 'nextra/mdx'
 export { useTheme } from 'next-themes'
+export { useMDXComponents } from 'nextra/mdx'
 export { Link } from './mdx/link'
+export { Steps } from './mdx/steps'
 export {
   Bleed,
   Callout,
-  Collapse,
-  NotFoundPage,
-  ServerSideErrorPage,
-  Tabs,
-  Tab,
-  Cards,
   Card,
+  Cards,
+  Collapse,
   FileTree,
   Navbar,
+  NotFoundPage,
+  ServerSideErrorPage,
   SkipNavContent,
   SkipNavLink,
+  Tab,
+  Tabs,
   ThemeSwitch
-} from './components'
-export { Steps } from './mdx/steps'
+} from './nextra'
+export { useConfig }
+export type { PartialDocsThemeConfig as DocsThemeConfig }

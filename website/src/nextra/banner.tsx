@@ -1,7 +1,7 @@
 import { bannerRecipe } from '@/styled-system/recipes'
 import { XIcon } from 'nextra/icons'
-import { useConfig } from '../contexts'
-import { renderComponent } from '../lib'
+import { renderComponent } from './lib'
+import { useConfig } from './contexts'
 
 export function Banner() {
   const { banner } = useConfig()

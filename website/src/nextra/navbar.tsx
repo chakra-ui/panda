@@ -15,9 +15,9 @@ import type {
   MenuItem as MenuItemData,
   PageItem
 } from 'nextra/normalize-pages'
-import { useConfig, useMenu } from '../contexts'
-import { renderComponent } from '../lib'
+import { renderComponent } from './lib'
 import { Anchor } from './anchor'
+import { useConfig, useMenu } from './contexts'
 
 export type NavBarProps = {
   flatDirectories: Item[]

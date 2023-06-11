@@ -1,7 +1,7 @@
 import { css } from '@/styled-system/css'
 import { useEffect, useState } from 'react'
-import { Collapse } from '../components'
-import { DetailsProvider } from '../contexts'
+import { Collapse } from '../nextra'
+import { DetailsProvider } from '../nextra/contexts'
 import { findSummary } from './find-summary'
 
 const styles = css({

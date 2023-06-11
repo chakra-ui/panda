@@ -3,7 +3,7 @@ import { NextSeo } from 'next-seo'
 import { useTheme } from 'next-themes'
 import NextHead from 'next/head'
 import { useMounted } from 'nextra/hooks'
-import { useConfig } from '../contexts'
+import { useConfig } from './contexts'
 
 export function Head() {
   const config = useConfig()

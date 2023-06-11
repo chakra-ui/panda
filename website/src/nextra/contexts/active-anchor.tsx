@@ -1,6 +1,6 @@
+import { IS_BROWSER } from '@/constants'
 import 'intersection-observer'
 import { createContext, useContext, useRef, useState } from 'react'
-import { IS_BROWSER } from '../constants'
 
 type ActiveAnchor = Record<
   string,
