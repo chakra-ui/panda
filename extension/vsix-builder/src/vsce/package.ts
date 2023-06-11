@@ -435,10 +435,8 @@ class ManifestProcessor extends BaseProcessor {
     }
 
     if (this.options.version && (this.options.updatePackageJson ?? true)) {
-      console.log('Updating package.json version to', this.options.version)
       const contents = await read(file)
       const packageJson = JSON.parse(contents)
-      packageJson.version = this.options.version
       packageJson.bundledDependencies = []
       file = { ...file, contents: JSON.stringify(packageJson, undefined, 2) }
     }

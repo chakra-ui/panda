@@ -23,6 +23,7 @@ export const createVsix = async (
   }
 
   await versionBump(manifest as Manifest, options)
+
   const processors = createDefaultProcessors(manifest as Manifest, options)
   const processedFiles = await processFiles(processors, files)
 
