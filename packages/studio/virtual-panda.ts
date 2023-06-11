@@ -1,5 +1,6 @@
-import { analyzeTokens, writeAnalyzeJSON, loadConfigAndCreateContext, findConfig } from '@pandacss/node'
+import { analyzeTokens, findConfig, loadConfigAndCreateContext, writeAnalyzeJSON } from '@pandacss/node'
 import type { AstroIntegration } from 'astro'
+import { stringify } from 'javascript-stringify'
 import type { Plugin as VitePlugin } from 'vite'
 
 import { dirname, resolve } from 'path'
@@ -42,7 +43,7 @@ function vitePlugin(): VitePlugin {
     async load(id) {
       if (id === resolvedVirtualModuleId) {
         return {
-          code: `export const config = ${JSON.stringify(config)}`,
+          code: `export const config = ${stringify(config)}`,
         }
       }
     },

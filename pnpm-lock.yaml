@@ -778,6 +778,9 @@ importers:
       astro:
         specifier: 2.6.1
         version: 2.6.1(@types/node@20.2.5)
+      javascript-stringify:
+        specifier: 2.1.0
+        version: 2.1.0
       react:
         specifier: 18.2.0
         version: 18.2.0
