@@ -1,0 +1,11 @@
+---
+import { Colors } from '../components/colors'
+import Layout from '../layouts/Layout.astro'
+import Sidebar from '../layouts/Sidebar.astro'
+---
+
+<Layout>
+  <Sidebar title="Colors">
+    <Colors client:load />
+  </Sidebar>
+</Layout>

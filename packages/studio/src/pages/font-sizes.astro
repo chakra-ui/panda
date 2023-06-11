@@ -1,0 +1,15 @@
+---
+import { FontTokens } from '../components/font-tokens'
+import Layout from '../layouts/Layout.astro'
+import Sidebar from '../layouts/Sidebar.astro'
+
+import context from '../lib/panda.context'
+
+const fontSizes = context.getCategory('fontSizes')
+---
+
+<Layout>
+  <Sidebar title="Font Sizes">
+    <FontTokens client:load fontTokens={fontSizes} token="fontSize" />
+  </Sidebar>
+</Layout>

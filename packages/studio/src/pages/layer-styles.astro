@@ -1,0 +1,11 @@
+---
+import { LayerStyles } from '../components/layer-styles'
+import Layout from '../layouts/Layout.astro'
+import Sidebar from '../layouts/Sidebar.astro'
+---
+
+<Layout>
+  <Sidebar title="Layer Styles">
+    <LayerStyles client:load />
+  </Sidebar>
+</Layout>
