@@ -56,17 +56,17 @@ export const classes = {
   }),
   // This is inlined in the component.
   // list: css({ display: 'flex', flexDirection: 'column', gap: 1 }),
-  border: css({
-    position: 'relative',
-    _before: {
-      position: 'absolute',
-      insetY: 1,
-      width: '1px',
-      bg: 'gray.200',
-      content: "''",
-      _dark: { bg: 'neutral.800' }
-    },
-    _ltr: { pl: 3, _before: { left: 0 } },
-    _rtl: { pr: 3, _before: { right: 0 } }
-  })
+  // border: css({
+  //   position: 'relative',
+  //   _before: {
+  //     position: 'absolute',
+  //     insetY: 1,
+  //     width: '1px',
+  //     bg: 'gray.200',
+  //     content: "''",
+  //     _dark: { bg: 'neutral.800' }
+  //   },
+  //   _ltr: { pl: 3, _before: { left: 0 } },
+  //   _rtl: { pr: 3, _before: { right: 0 } }
+  // })
 }

@@ -122,6 +122,7 @@ export function Sidebar({
                   />
                 </Collapse>
               )}
+
               <ThreeView
                 className={css({ md: { display: 'none' } })}
                 // The mobile dropdown menu, shows all the directories.

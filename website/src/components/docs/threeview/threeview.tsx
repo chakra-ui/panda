@@ -2,7 +2,9 @@ import { FC, useState } from 'react'
 import { FocusedItemContext, OnFocusedItemContext } from './threeview-context'
 import { ThreeViewMenu, type IThreeViewMenuProps } from './threeview-menu'
 
-export const ThreeView: FC<IThreeViewMenuProps> = (props) => {
+export type ThreeViewProps = Omit<IThreeViewMenuProps, 'root'>;
+
+export const ThreeView: FC<ThreeViewProps> = (props) => {
   const [focused, setFocused] = useState<null | string>(null)
 
   return (
@@ -12,7 +14,7 @@ export const ThreeView: FC<IThreeViewMenuProps> = (props) => {
           setFocused(item)
         }}
       >
-        <ThreeViewMenu {...props} />
+        <ThreeViewMenu root {...props} />
       </OnFocusedItemContext.Provider>
     </FocusedItemContext.Provider>
   )

@@ -1,15 +1,16 @@
 import { FC } from 'react'
-import { panda } from '@/styled-system/jsx'
 import type { Heading } from 'nextra'
 import type { Item, PageItem } from 'nextra/normalize-pages'
 import { ThreeViewFile } from './threeview-file'
 import { ThreeViewFolder } from './threeview-folder'
+import { ThreeViewList } from './threeview-list'
 
 export interface IThreeViewMenuProps {
   directories: PageItem[] | Item[]
   anchors: Heading[]
   className?: string
   onlyCurrentDocs?: boolean
+  root?: boolean
 }
 
 export const ThreeViewMenu: FC<IThreeViewMenuProps> = ({
@@ -19,7 +20,7 @@ export const ThreeViewMenu: FC<IThreeViewMenuProps> = ({
   ...rest
 }) => {
   return (
-    <panda.ul display="flex" flexDirection="column" gap={1} {...rest}>
+    <ThreeViewList {...rest}>
       {directories.map(item =>
         !onlyCurrentDocs || item.isUnderCurrentDocsTree ? (
           item.type === 'menu' ||
@@ -30,6 +31,6 @@ export const ThreeViewMenu: FC<IThreeViewMenuProps> = ({
           )
         ) : null
       )}
-    </panda.ul>
+    </ThreeViewList>
   )
 }

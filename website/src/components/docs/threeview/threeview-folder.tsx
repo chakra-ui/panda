@@ -148,7 +148,7 @@ const FolderImpl: FC<FolderProps> = ({ item, anchors }) => {
       <Collapse className={css({ ps: '0', pt: '1' })} isOpen={open}>
         {Array.isArray(item.children) ? (
           <ThreeViewMenu
-            className={cx(classes.border, css({ ms: '3' }))}
+            className={css({ ms: '3' })}
             directories={item.children}
             anchors={anchors}
           />
