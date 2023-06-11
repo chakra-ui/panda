@@ -18,9 +18,9 @@
   "files": [
     "dist",
     "src",
-    "studio",
+    "public",
     "styled-system",
-    "virtual-panda.mjs"
+    "*.ts"
   ],
   "keywords": [
     "panda",
