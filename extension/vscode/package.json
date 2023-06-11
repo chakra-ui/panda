@@ -208,19 +208,21 @@
     "vsce:prerelease": "pnpm --silent build && pnpm vsix-builder package patch --pre-release -o panda.vsix"
   },
   "dependencies": {
-    "@pandacss/ts-plugin": "file:../ts-plugin",
-    "@pandacss/dev": "file:../../packages/cli",
-    "@pandacss/preset-base": "file:../../packages/preset-base"
+    "@pandacss/ts-plugin": "workspace:*",
+    "@pandacss/dev": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*"
   },
   "bundledDependencies": [
     "@pandacss/ts-plugin",
     "@pandacss/dev",
-    "@pandacss/preset-base"
+    "@pandacss/preset-base",
+    "@pandacss/preset-panda"
   ],
   "devDependencies": {
-    "@pandacss/extension-shared": "file:../shared",
-    "@pandacss/language-server": "file:../language-server",
-    "@pandacss/vsix-builder": "file:../vsix-builder",
+    "@pandacss/extension-shared": "workspace:*",
+    "@pandacss/language-server": "workspace:*",
+    "@pandacss/vsix-builder": "workspace:*",
     "@types/node": "20.2.5",
     "@types/vscode": "^1.78.1",
     "@vscode/vsce": "^2.19.0",

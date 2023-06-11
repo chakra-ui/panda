@@ -16,7 +16,7 @@ import { type TsLanguageFeaturesApiV0, getTsApi } from './typescript-language-fe
 const docSelector: vscode.DocumentSelector = ['typescript', 'typescriptreact', 'javascript', 'javascriptreact']
 
 let client: LanguageClient
-const debug = false
+const debug = true
 
 export async function activate(context: vscode.ExtensionContext) {
   debug && console.log('activate')

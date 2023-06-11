@@ -16,15 +16,27 @@ export async function loadConfigFile(options: ConfigFileOptions) {
 }
 
 export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundleConfigFile>>, cwd: string) {
-  const presets: any[] = ['@pandacss/preset-base']
+  const presets = new Set<any>()
+  presets.add(require('@pandacss/preset-base').default)
 
   if (!result.config.presets) {
-    presets.push('@pandacss/dev/presets')
+    presets.add(require('@pandacss/preset-panda').default)
   } else {
-    presets.push(...result.config.presets)
+    result.config.presets.forEach((preset: any) => {
+      if (typeof preset === 'string' && preset.startsWith('@pandacss')) {
+        try {
+          const mod = require(preset).default
+          presets.add(mod)
+        } catch (error) {
+          logger.error('bundle', `Failed to load preset "${preset}"`)
+        }
+      } else {
+        presets.add(preset)
+      }
+    })
   }
 
-  result.config.presets = presets
+  result.config.presets = Array.from(presets)
 
   const mergedConfig = await getResolvedConfig(result.config, cwd)
 

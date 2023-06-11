@@ -38,8 +38,9 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/samples/with-tsconfig-paths/panda.config.ts",
-          "/samples/with-tsconfig-paths/src/theme/tokens.ts",
+          "packages/cli/dist/index.mjs",
+          "packages/config/__tests__/samples/with-tsconfig-paths/src/theme/tokens.ts",
+          "packages/config/__tests__/samples/with-tsconfig-paths/panda.config.ts",
         ],
       }
     `)
@@ -74,11 +75,98 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/samples/nested-files/panda.config.ts",
-          "/samples/nested-files/src/index.ts",
-          "/samples/nested-files/src/theme/index.ts",
-          "/samples/nested-files/src/theme/tokens.ts",
-          "/samples/nested-files/src/theme/colors.ts",
+          "packages/cli/dist/index.mjs",
+          "packages/config/__tests__/samples/nested-files/src/theme/colors.ts",
+          "packages/config/__tests__/samples/nested-files/src/theme/tokens.ts",
+          "packages/config/__tests__/samples/nested-files/src/theme/index.ts",
+          "packages/config/__tests__/samples/nested-files/src/index.ts",
+          "packages/config/__tests__/samples/nested-files/panda.config.ts",
+        ],
+      }
+    `)
+  })
+
+  test('should bundle .ts config with different preset loading methods', async () => {
+    const filePath = path.resolve(cwd, _dirname, './samples/with-preset/panda.config.ts')
+    const { config, dependencies } = await bundle(filePath, cwd)
+    expect({ config, dependencies: dependencies.map((dep) => dep.replace(_dirname, '')) }).toMatchInlineSnapshot(`
+      {
+        "config": {
+          "exclude": [],
+          "hash": false,
+          "include": [
+            "./src/**/*.{ts,tsx,jsx}",
+          ],
+          "jsxFramework": "react",
+          "preflight": true,
+          "presets": [
+            "@pandacss/dev/presets",
+            {
+              "theme": {
+                "extend": {
+                  "semanticTokens": {
+                    "colors": {
+                      "inverted": {
+                        "default": {
+                          "value": {
+                            "_dark": "{colors.black}",
+                            "base": "white",
+                          },
+                        },
+                      },
+                      "placeholder": {
+                        "value": {
+                          "_dark": "{colors.gray.400}",
+                          "base": "{colors.gray.600}",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              "requiredPreset": {
+                "theme": {
+                  "extend": {
+                    "semanticTokens": {
+                      "colors": {
+                        "muted": {
+                          "value": {
+                            "_dark": "{colors.gray.400}",
+                            "base": "{colors.gray.500}",
+                          },
+                        },
+                        "subtle": {
+                          "value": {
+                            "_dark": "{colors.gray.500}",
+                            "base": "{colors.gray.400}",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ],
+          "theme": {
+            "extend": {
+              "tokens": {
+                "colors": {
+                  "color-primary": {
+                    "value": "#000",
+                  },
+                },
+              },
+            },
+          },
+        },
+        "dependencies": [
+          "packages/cli/dist/index.mjs",
+          "packages/config/__tests__/samples/with-preset/src/ts-import-preset.ts",
+          "packages/config/__tests__/samples/with-preset/src/required-preset.ts",
+          "packages/config/__tests__/samples/with-preset/panda.config.ts",
         ],
       }
     `)
@@ -116,8 +204,9 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/samples/ts/panda.config.ts",
-          "/samples/common/tokens.ts",
+          "packages/cli/dist/index.mjs",
+          "packages/config/__tests__/samples/common/tokens.ts",
+          "packages/config/__tests__/samples/ts/panda.config.ts",
         ],
       }
     `)
@@ -155,8 +244,9 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/samples/cts/panda.config.cts",
-          "/samples/common/tokens.ts",
+          "packages/cli/dist/index.mjs",
+          "packages/config/__tests__/samples/common/tokens.ts",
+          "packages/config/__tests__/samples/cts/panda.config.cts",
         ],
       }
     `)
@@ -194,8 +284,9 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/samples/mts/panda.config.mts",
-          "/samples/common/tokens.ts",
+          "packages/cli/dist/index.mjs",
+          "packages/config/__tests__/samples/common/tokens.ts",
+          "packages/config/__tests__/samples/mts/panda.config.mts",
         ],
       }
     `)
@@ -233,8 +324,9 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/samples/js/panda.config.js",
-          "/samples/common/tokens.ts",
+          "packages/cli/dist/index.mjs",
+          "packages/config/__tests__/samples/common/tokens.ts",
+          "packages/config/__tests__/samples/js/panda.config.js",
         ],
       }
     `)
@@ -272,8 +364,9 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/samples/cjs/panda.config.cjs",
-          "/samples/common/tokens.ts",
+          "packages/cli/dist/index.js",
+          "packages/config/__tests__/samples/common/tokens.ts",
+          "packages/config/__tests__/samples/cjs/panda.config.cjs",
         ],
       }
     `)
@@ -311,8 +404,9 @@ describe('bundle config', () => {
           },
         },
         "dependencies": [
-          "/samples/mjs/panda.config.mjs",
-          "/samples/common/tokens.ts",
+          "packages/cli/dist/index.mjs",
+          "packages/config/__tests__/samples/common/tokens.ts",
+          "packages/config/__tests__/samples/mjs/panda.config.mjs",
         ],
       }
     `)
