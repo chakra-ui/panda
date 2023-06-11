@@ -1,0 +1,34 @@
+{
+  "name": "@pandacss/astro",
+  "version": "0.0.2",
+  "type": "module",
+  "description": "Astro integration for Panda CSS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "scripts": {
+    "build": "tsup --dts",
+    "build-fast": "tsup --no-dts",
+    "dev": "pnpm build-fast --watch"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@pandacss/postcss": "workspace:*",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.24",
+    "postcss-load-config": "^4.0.1"
+  },
+  "devDependencies": {
+    "astro": "2.6.3",
+    "vite": "^4.3.9"
+  },
+  "peerDependencies": {
+    "astro": ">=2.x"
+  }
+}

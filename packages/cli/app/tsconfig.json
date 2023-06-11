@@ -1,9 +1,0 @@
-{
-  "extends": "astro/tsconfigs/strict",
-  "compilerOptions": {
-    "paths": {
-      "virtual:panda": ["../virtual-panda.d.ts"]
-    },
-    "jsx": "react-jsx"
-  }
-}

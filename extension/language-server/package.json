@@ -3,34 +3,38 @@
   "displayName": "Panda CSS",
   "description": "🐼 The official Panda language server",
   "version": "0.0.1",
-  "main": "./dist/index.js",
+  "main": "dist/index.js",
   "repository": {
     "url": "https://github.com/chakra-ui/panda",
     "directory": "packages/extension/language-server"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs --minify -d dist --clean --shims",
-    "dev": "tsup src/index.ts --watch --format cjs -d dist --shims",
+    "build": "tsup src/index.ts --format cjs --minify -d dist --clean --shims --external esbuild --external @pandacss/preset-base --external @pandacss/preset-panda",
+    "dev": "tsup src/index.ts --watch --format cjs -d dist --shims --external esbuild --external @pandacss/preset-base --external @pandacss/preset-panda",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
   },
   "publishConfig": {
     "access": "public"
   },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@pandacss/core": "workspace:*",
+    "@pandacss/extension-shared": "workspace:*",
     "@pandacss/extractor": "workspace:*",
     "@pandacss/node": "workspace:*",
+    "@pandacss/parser": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@types/base-64": "^1.0.0",
-    "@types/node": "20.2.5",
+    "@types/node": "20.3.0",
     "@types/utf8": "^3.0.1",
     "base-64": "^1.0.0",
     "color2k": "^2.0.2",
     "lil-fp": "1.4.5",
-    "@pandacss/extension-shared": "workspace:^",
     "postcss": "^8.4.24",
     "prettier": "^2.8.8",
     "satori": "^0.10.1",

@@ -13,7 +13,13 @@ type ExtendableConfig = Extendable<Config>
  */
 function getExtends(items: ExtendableRecord[]) {
   return items.reduce((merged, { extend }) => {
+    if (!extend) return merged
+
     return mergeWith(merged, extend, (originalValue: any, newValue: any) => {
+      if (newValue === undefined) {
+        return originalValue ?? []
+      }
+
       if (originalValue === undefined) {
         return [newValue]
       }

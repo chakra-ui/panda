@@ -10,6 +10,8 @@ export function Button({ children }) {
           color: 'white',
           fontSize: '40px',
           fontFamily: 'sans-serif',
+          px: '4',
+          rounded: 'md',
         })}
       >
         {children}

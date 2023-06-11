@@ -38,13 +38,13 @@ Install panda and create your `panda.config.ts` file.
 <Tabs items={['npm', 'yarn']}>
   <Tab>
     ```bash
-    npm install @pandacss/dev
+    npm install -D @pandacss/dev
     npx panda init --postcss
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn add @pandacss/dev
+    yarn add -D @pandacss/dev
     yarn panda init --postcss
     ```
   </Tab>
@@ -72,20 +72,14 @@ Open your `package.json` file and update the `scripts` section as follows:
 
 Make sure that all of the paths of your Preact components are included in the `include` section of the `panda.config.ts` file.
 
-```js {8, 17} filename="panda.config.ts"
+```js {6} filename="panda.config.ts"
 import { defineConfig } from "@pandacss/dev"
 
 export default defineConfig({
- // Whether to use css reset
  preflight: true,
-
  // Where to look for your css declarations
  include: ["./src/**/*.{js,jsx,ts,tsx}", "./pages/**/*.{js,jsx,ts,tsx}"],
-
- // Files to exclude
  exclude: [],
-
- // The output directory for your css system
  outdir: "styled-system",
 })
 ```

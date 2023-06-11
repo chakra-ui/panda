@@ -43,7 +43,7 @@ Install Panda CSS and `gatsby-plugin-postcss` to your project.
 After that run the `panda init` command to setup Panda CSS in your project.
 
 ```bash
-npm install @pandacss/dev postcss gatsby-plugin-postcss
+npm install -D @pandacss/dev postcss gatsby-plugin-postcss
 npx panda init --postcss
 ```
 
@@ -91,20 +91,14 @@ Make sure that all of the paths of your React components are included in the `in
 
 > If you use [GraphQL Typegen](/docs/how-to/local-development/graphql-typegen/), you'll need to update the `include` to avoid infinite loop due to generated `src/gatsby-types.d.ts`.
 
-```js {8} filename="panda.config.ts"
+```js {6} filename="panda.config.ts"
 import { defineConfig } from "@pandacss/dev"
 
 export default defineConfig({
- // Whether to use css reset
  preflight: true,
-
  // Where to look for your css declarations
  include: ["./src/pages/*.{js,jsx,ts,tsx}", "./src/components/**/*.{js,jsx,ts,tsx}"],
-
- // Files to exclude
  exclude: [],
-
- // The output directory for your css system
  outdir: "styled-system",
 })
 ```

@@ -1,0 +1,62 @@
+{
+  "name": "@pandacss/vsix-builder",
+  "description": "Forked version of @vscode/vsce to support pnpm symlinks",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "vsix-builder": "bin.js"
+  },
+  "repository": {
+    "url": "https://github.com/chakra-ui/panda",
+    "directory": "packages/extension/vsix-builder"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/cli-*.ts src/index.ts --format=cjs --dts --shims --clean",
+    "build-fast": "tsup src/cli-*.ts src/index.ts --format=cjs --no-dts --shims",
+    "dev": "pnpm build-fast --watch",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/mime": "^1",
+    "@types/npm-packlist": "^3.0.0",
+    "@types/read": "^0.0.29",
+    "@types/tar-stream": "^2.2.2",
+    "@types/xml2js": "^0.4.11",
+    "@types/yauzl": "^2.10.0",
+    "tsup": "6.7.0",
+    "typescript": "^5.1.3"
+  },
+  "dependencies": {
+    "@npmcli/arborist": "^6.2.9",
+    "@pnpm/cli-utils": "^2.0.9",
+    "@pnpm/config": "^18.4.0",
+    "@pnpm/error": "^5.0.1",
+    "@pnpm/exportable-manifest": "^5.0.2",
+    "@pnpm/logger": "^5.0.0",
+    "@pnpm/package-bins": "^8.0.1",
+    "@pnpm/types": "^9.1.0",
+    "@types/hosted-git-info": "^3.0.2",
+    "@types/markdown-it": "^12.2.3",
+    "@types/yazl": "^2.4.2",
+    "cac": "6.7.14",
+    "cheerio": "1.0.0-rc.12",
+    "fast-glob": "^3.2.12",
+    "hosted-git-info": "^6.1.1",
+    "markdown-it": "^13.0.1",
+    "mime": "^1.3.4",
+    "npm-packlist": "^5.1.3",
+    "parse-semver": "^1.1.1",
+    "read": "^2.1.0",
+    "semver": "^7.5.1",
+    "tar-stream": "^3.0.0",
+    "url-join": "^5.0.0",
+    "xml2js": "^0.6.0",
+    "yauzl": "^2.10.0",
+    "yazl": "^2.5.1"
+  }
+}

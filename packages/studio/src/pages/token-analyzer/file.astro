@@ -1,0 +1,11 @@
+---
+import { FileDetails } from '../../components/analyzer/file-details'
+import Layout from '../../layouts/Layout.astro'
+import Sidebar from '../../layouts/Sidebar.astro'
+---
+
+<Layout>
+  <Sidebar title="Token Analyzer - Files">
+    <FileDetails client:only />
+  </Sidebar>
+</Layout>

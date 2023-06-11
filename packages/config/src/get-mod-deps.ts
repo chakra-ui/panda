@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { resolveTsPathPattern, type PathMapping } from './ts-config-paths-mappings'
 
 const jsExtensions = ['.js', '.cjs', '.mjs']
 
@@ -26,41 +27,101 @@ function resolveWithExtension(file: string, extensions: string[]) {
   return null
 }
 
-function* getDeps(filename: string, base: string, seen: Set<string>, ext = path.extname(filename)): any {
+export type GetDepsOptions = {
+  filename: string
+  ext: string
+  cwd: string
+  seen: Set<string>
+  baseUrl: string | undefined
+  pathMappings: PathMapping[]
+  foundModuleAliases: Map<string, string>
+}
+
+const importRegex = /import[\s\S]*?['"](.{3,}?)['"]/gi
+const importFromRegex = /import[\s\S]*from[\s\S]*?['"](.{3,}?)['"]/gi
+const requireRegex = /require\(['"`](.+)['"`]\)/gi
+const exportRegex = /export[\s\S]*from[\s\S]*?['"](.{3,}?)['"]/gi
+
+function getDeps(opts: GetDepsOptions, fromAlias?: string) {
+  const { filename, seen } = opts
+
   // Try to find the file
   const absoluteFile = resolveWithExtension(
-    path.resolve(base, filename),
-    jsExtensions.includes(ext) ? jsResolutionOrder : tsResolutionOrder,
+    path.resolve(opts.cwd, filename),
+    jsExtensions.includes(opts.ext) ? jsResolutionOrder : tsResolutionOrder,
   )
   if (absoluteFile === null) return // File doesn't exist
+
+  if (fromAlias) {
+    opts.foundModuleAliases.set(fromAlias, absoluteFile)
+  }
 
   // Prevent infinite loops when there are circular dependencies
   if (seen.has(absoluteFile)) return // Already seen
   seen.add(absoluteFile)
 
-  // Mark the file as a dependency
-  yield absoluteFile
-
-  // Resolve new base for new imports/requires
-  base = path.dirname(absoluteFile)
-  ext = path.extname(absoluteFile)
-
   const contents = fs.readFileSync(absoluteFile, 'utf-8')
+  const fileDeps = [
+    ...contents.matchAll(importRegex),
+    ...contents.matchAll(importFromRegex),
+    ...contents.matchAll(requireRegex),
+    ...contents.matchAll(exportRegex),
+  ]
+  if (!fileDeps.length) return // No deps
 
-  // Find imports/requires
-  for (const match of [
-    ...contents.matchAll(/import[\s\S]*?['"](.{3,}?)['"]/gi),
-    ...contents.matchAll(/import[\s\S]*from[\s\S]*?['"](.{3,}?)['"]/gi),
-    ...contents.matchAll(/require\(['"`](.+)['"`]\)/gi),
-  ]) {
-    // Bail out if it's not a relative file
-    if (!match[1].startsWith('.')) continue
-
-    yield* getDeps(match[1], base, seen, ext)
+  const nextOpts: Omit<GetDepsOptions, 'filename'> = {
+    // Resolve new base for new imports/requires
+    cwd: path.dirname(absoluteFile),
+    ext: path.extname(absoluteFile),
+    seen,
+    baseUrl: opts.baseUrl,
+    pathMappings: opts.pathMappings,
+    foundModuleAliases: opts.foundModuleAliases,
   }
+
+  fileDeps.forEach((match) => {
+    const mod = match[1]
+
+    if (mod[0] === '.') {
+      getDeps(Object.assign({}, nextOpts, { filename: mod }))
+      return
+    }
+
+    if (!opts.pathMappings) return
+
+    const filename = resolveTsPathPattern(opts.pathMappings, mod)
+    if (!filename) return
+
+    getDeps(Object.assign({}, nextOpts, { filename }), mod)
+  })
 }
 
-export function getConfigDependencies(filePath: string): Set<string> {
-  if (filePath === null) return new Set()
-  return new Set(getDeps(filePath, path.dirname(filePath), new Set()))
+export type GetConfigDependenciesTsOptions = {
+  baseUrl?: string | undefined
+  pathMappings: PathMapping[]
+}
+
+export function getConfigDependencies(
+  filePath: string,
+  tsOptions: GetConfigDependenciesTsOptions = { pathMappings: [] },
+) {
+  if (filePath === null) return { deps: new Set<string>(), aliases: new Map<string, string>() }
+
+  const foundModuleAliases = new Map<string, string>()
+  const deps = new Set<string>()
+
+  // Add the file itself as a dependency
+  deps.add(filePath)
+
+  getDeps({
+    filename: filePath,
+    ext: path.extname(filePath),
+    cwd: path.dirname(filePath),
+    seen: deps,
+    baseUrl: tsOptions.baseUrl,
+    pathMappings: tsOptions.pathMappings ?? [],
+    foundModuleAliases: foundModuleAliases,
+  })
+
+  return { deps, aliases: foundModuleAliases }
 }

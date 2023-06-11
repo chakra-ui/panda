@@ -1,0 +1,7 @@
+{
+  "name": "panda-config-test-mjs",
+  "private": true,
+  "devDependencies": {
+    "@pandacss/dev": "workspace:^"
+  }
+}

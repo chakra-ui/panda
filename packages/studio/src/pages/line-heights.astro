@@ -1,0 +1,21 @@
+---
+import { FontTokens } from '../components/font-tokens'
+import Layout from '../layouts/Layout.astro'
+import Sidebar from '../layouts/Sidebar.astro'
+
+import context from '../lib/panda.context'
+
+const tokens = context.getCategory('lineHeights')
+---
+
+<Layout>
+  <Sidebar title="Line Heights">
+    <FontTokens
+      client:load
+      fontTokens={tokens}
+      token="lineHeight"
+      largeText
+      text={`Panda design system lineHeight specifies the vertical distance between two lines of text. You can peveiew this visually here.`}
+    />
+  </Sidebar>
+</Layout>

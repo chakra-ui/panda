@@ -1,4 +1,5 @@
 import type { Components } from 'nextra/mdx'
+import { FrameworkCards } from './components/framework-card'
 import type { DocsThemeConfig } from './constants'
 import { Blockquote } from './mdx/blockquote'
 import { Code } from './mdx/code'
@@ -8,14 +9,14 @@ import { createHeadings } from './mdx/heading'
 import { A, Link } from './mdx/link'
 import { ListItem, OrderedList, UnorderedList } from './mdx/list'
 import { Pre } from './mdx/pre'
-import { Summary } from './mdx/summary'
-import { Table, Td, Th, Tr } from './mdx/table'
-import { Text } from './mdx/text'
 import {
   RouteSwitch,
   RouteSwitchContent,
   RouteSwitchTrigger
 } from './mdx/route-switch'
+import { Summary } from './mdx/summary'
+import { Table, Td, Th, Tr } from './mdx/table'
+import { Text } from './mdx/text'
 
 type Props = {
   isRawLayout?: boolean
@@ -51,6 +52,7 @@ export const getComponents = (props: Props): Components => {
     RouteSwitch: RouteSwitch,
     RouteSwitchTrigger: RouteSwitchTrigger,
     RouteSwitchContent: RouteSwitchContent,
+    FrameworkCards: FrameworkCards,
     ...components
   }
 }

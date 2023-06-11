@@ -21,7 +21,7 @@
     "typecheck": "tsc --noEmit",
     "release": "changeset publish",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
-    "prepare-studio": "pnpm --filter=./packages/cli app",
+    "prepare-studio": "pnpm --filter=./packages/studio codegen",
     "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
     "deploy-studio": "pnpm prepare-studio && pnpm build-studio",
     "serve-studio": "npx serve ./sandbox/vite-ts/panda-static",
@@ -37,10 +37,10 @@
   "dependencies": {
     "@changesets/changelog-github": "0.4.8",
     "@changesets/cli": "2.26.1",
-    "@types/node": "20.2.5",
+    "@types/node": "20.3.0",
     "@typescript-eslint/eslint-plugin": "5.59.9",
     "@typescript-eslint/parser": "5.59.9",
-    "concurrently": "^8.1.0",
+    "concurrently": "^8.2.0",
     "husky": "8.0.3",
     "lint-staged": "13.2.2",
     "prettier": "2.8.8",
@@ -48,13 +48,14 @@
     "tsup": "6.7.0",
     "tsx": "3.12.7",
     "typescript": "5.1.3",
-    "vitest": "0.31.4"
+    "vitest": "0.31.4",
+    "vite-tsconfig-paths": "4.2.0"
   },
   "lint-staged": {
     "packages/**/*.{ts,tsx}": [
       "pnpm prepare-studio",
       "pnpm prettier-fix",
-      "git add --all packages/cli/app/"
+      "git add --all packages/studio/"
     ]
   },
   "packageManager": "pnpm@8.6.1",

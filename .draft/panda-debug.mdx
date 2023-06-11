@@ -1,0 +1,96 @@
+## CLI Commands
+
+Panda comes with built-in commands to help you develop and debug your app.
+
+| Command                                            | Description                                                                                                                                                                                                                                                   |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`studio`](/docs/references/cli.mdx#panda-studio)   | Runs built-in documentation for tokens defined in your project. This will be useful for your team to communicate design decisions in your own way, and share information effectively. <br /> More on that [here](/docs/tokens/02-visualization.mdx). |
+| [`analyze`](/docs/references/cli.mdx#panda-analyze) | Analyze design token usage in your project, this will be automatically used by the `studio` command and available in the studio's [Token Analyzer page](/docs/tokens/02-visualization.mdx#token-analyzer)                                                     |
+| [`debug`](/docs/references/cli.mdx#panda-debug)     | Debug design token extraction & css generated from files                                                                                                                                                                                                      |
+
+### Debugging
+
+Panda comes with a built-in debug command to help you debug your app. This can be useful to understand how Panda is
+extracting styles from your code and generating CSS.
+
+By default it will scan & output debug files for the entire project depending on your `include` and `exclude` options
+from your config file.
+
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm panda debug
+    # You can also debug a specific file or folder
+    # using the optional glob argument
+    pnpm panda debug src/components/Button.tsx
+    pnpm panda debug "./src/components/**"
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npx panda debug
+    # # You can also debug a specific file or folder
+    # using the optional glob argument
+    npx panda debug src/components/Button.tsx
+    npx panda debug "./src/components/**"
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn panda debug
+    # # You can also debug a specific file or folder
+    # using the optional glob argument
+    yarn panda debug src/components/Button.tsx
+    yarn panda debug "./src/components/**"
+    ```
+  </Tab>
+</Tabs>
+
+This would generate a `debug` folder in your `config.outdir` folder with the following structure:
+
+<FileTree>
+  <FileTree.Folder name="styled-system" defaultOpen>
+    <FileTree.Folder name="debug" defaultOpen>
+      <FileTree.File name="src__components__Button.ast.json" />
+      <FileTree.File name="src__components__Button.css" />
+    </FileTree.Folder>
+  </FileTree.Folder>
+</FileTree>
+
+`*.ast.json` files will look like:
+
+```json
+[
+  {
+    "name": "css",
+    "type": "object",
+    "data": [
+      {
+        "transitionProperty": "all",
+        "opacity": "0.5",
+        "border": "1px solid",
+        "borderColor": "black",
+        "color": "gray.600",
+        "_hover": {
+          "color": "gray.900"
+        },
+        "rounded": "md",
+        "p": "1.5",
+        "_dark": {
+          "borderColor": "rgba(255, 255, 255, 0.1)",
+          "color": "gray.400",
+          "_hover": {
+            "color": "gray.50"
+          }
+        }
+      }
+    ],
+    "kind": "CallExpression",
+    "line": 13,
+    "column": 9
+  }
+]
+```
+
+And the `css` file associated would just contain the styles generated from the extraction process on that file.

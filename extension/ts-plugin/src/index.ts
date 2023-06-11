@@ -1,4 +1,7 @@
 import type ts from 'typescript/lib/tsserverlibrary'
+import { type PandaVSCodeSettings } from '@pandacss/extension-shared'
+
+const { defaultSettings } = require('@pandacss/extension-shared')
 
 /**
  * @see https://github.com/microsoft/TypeScript/wiki/Writing-a-Language-Service-Plugin#decorator-creation
@@ -32,6 +35,8 @@ function init(_modules: { typescript: typeof import('typescript/lib/tsserverlibr
       const tokenNames = tokenNamesByConfigPath.get(configPath)
       if (!tokenNames) return prior
 
+      if (!settings['completions.enabled']) return prior
+
       prior.entries = prior.entries.filter((e) => tokenNames.indexOf(e.name) < 0)
 
       // Sample logging for diagnostic purposes
@@ -50,6 +55,8 @@ function init(_modules: { typescript: typeof import('typescript/lib/tsserverlibr
 
   const tokenNamesByConfigPath = new Map<string, string[]>()
   const configPathByDocFilepath = new Map<string, string>()
+  let settings = defaultSettings as PandaVSCodeSettings
+
   // https://code.visualstudio.com/api/references/contribution-points#contributes.typescriptServerPlugins
   function onConfigurationChanged(event: ConfigEvent) {
     if (event.type === 'setup') {
@@ -60,6 +67,10 @@ function init(_modules: { typescript: typeof import('typescript/lib/tsserverlibr
     if (event.type === 'active-doc') {
       const { activeDocumentFilepath, configPath } = event.data
       configPathByDocFilepath.set(activeDocumentFilepath, configPath)
+    }
+
+    if (event.type === 'update-settings') {
+      settings = event.data
     }
   }
 
@@ -72,3 +83,4 @@ export = init
 type ConfigEvent =
   | { type: 'setup'; data: { configPath: string; tokenNames: string[] } }
   | { type: 'active-doc'; data: { activeDocumentFilepath: string; configPath: string } }
+  | { type: 'update-settings'; data: PandaVSCodeSettings }

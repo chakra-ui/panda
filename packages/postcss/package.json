@@ -1,0 +1,25 @@
+{
+  "name": "@pandacss/postcss",
+  "version": "0.0.2",
+  "description": "PostCSS integration for Panda CSS",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "scripts": {
+    "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
+    "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
+    "dev": "pnpm build-fast --watch"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@pandacss/node": "workspace:*",
+    "postcss": "^8.4.24"
+  }
+}

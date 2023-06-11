@@ -1,0 +1,56 @@
+---
+import { css } from '../../styled-system/css'
+import { hstack } from '../../styled-system/patterns'
+import { SunIcon } from '../icons/sun'
+import { MoonIcon } from '../icons/moon'
+
+const buttonStyles = hstack({
+    rounded: 'md',
+    gap: '3',
+    px: '2',
+    py: '2',
+    borderWidth: '1px',
+    alignSelf: 'flex-start',
+    color: 'inherit',
+})
+
+const iconStyles = css({
+    cursor: 'pointer',
+    '&.active': {
+        color: 'yellow.300',
+    },
+})
+---
+
+<button id="toggle-btn" class={buttonStyles}>
+    <span class={css({ srOnly: true })}>Dark theme</span>
+    <span class:list={[iconStyles, 'light']}>
+        <SunIcon />
+    </span>
+    <span class:list={[iconStyles, 'dark']}>
+        <MoonIcon />
+    </span>
+</button>
+
+<script>
+    const root = document.documentElement
+    const isDark = () => root.classList.contains('dark')
+
+    const button = document.getElementById('toggle-btn')
+
+    const setTheme = (dark: boolean) => {
+        root.classList[dark ? 'add' : 'remove']('dark')
+        root.classList[dark ? 'remove' : 'add']('light')
+        button?.setAttribute('aria-pressed', String(dark))
+
+        const darkIcon = button?.querySelector<HTMLElement>('.dark')
+        const lightIcon = button?.querySelector<HTMLElement>('.light')
+
+        darkIcon?.classList[dark ? 'add' : 'remove']('active')
+        lightIcon?.classList[dark ? 'remove' : 'add']('active')
+    }
+
+    setTheme(isDark())
+
+    button?.addEventListener('click', () => setTheme(!isDark()))
+</script>

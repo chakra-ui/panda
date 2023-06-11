@@ -5,6 +5,17 @@ import { bundle } from './bundle'
 import { findConfigFile } from './find-config'
 import { getResolvedConfig } from './merge-config'
 
+import { preset as presetBase } from '@pandacss/preset-base'
+import { preset as presetPanda } from '@pandacss/preset-panda'
+
+const bundledPresets = {
+  '@pandacss/preset-base': presetBase,
+  '@pandacss/preset-panda': presetPanda,
+  '@pandacss/dev/presets': presetPanda,
+}
+const bundledPresetsNames = Object.keys(bundledPresets)
+const isBundledPreset = (preset: string): preset is keyof typeof bundledPresets => bundledPresetsNames.includes(preset)
+
 type ConfigFileOptions = {
   cwd: string
   file?: string
@@ -16,15 +27,22 @@ export async function loadConfigFile(options: ConfigFileOptions) {
 }
 
 export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundleConfigFile>>, cwd: string) {
-  const presets: any[] = ['@pandacss/preset-base']
+  const presets = new Set<any>()
+  presets.add(presetBase)
 
   if (!result.config.presets) {
-    presets.push('@pandacss/dev/presets')
+    presets.add(presetPanda)
   } else {
-    presets.push(...result.config.presets)
+    result.config.presets.forEach((preset: any) => {
+      if (typeof preset === 'string' && isBundledPreset(preset)) {
+        presets.add(bundledPresets[preset])
+      } else {
+        presets.add(preset)
+      }
+    })
   }
 
-  result.config.presets = presets
+  result.config.presets = Array.from(presets)
 
   const mergedConfig = await getResolvedConfig(result.config, cwd)
 
