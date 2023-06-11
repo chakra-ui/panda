@@ -1,5 +1,5 @@
-import { Navbar } from '@/components.www/navbar'
-import { Providers } from '@/components.www/providers'
+import { Navbar } from '@/components/navbar'
+import { Providers } from '@/components/providers'
 import { css, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { Fira_Code } from 'next/font/google'
