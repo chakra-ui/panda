@@ -110,6 +110,9 @@ export function getConfigDependencies(
   const foundModuleAliases = new Map<string, string>()
   const deps = new Set<string>()
 
+  // Add the file itself as a dependency
+  deps.add(filePath)
+
   getDeps({
     filename: filePath,
     ext: path.extname(filePath),
