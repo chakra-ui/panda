@@ -1,13 +1,12 @@
-import { css } from '@/styled-system/css'
-import { FC } from 'react'
+import { panda } from '@/styled-system/jsx'
 
-export const SidebarPlaceholder: FC = () => (
-  <div
-    className={css({
-      xl: { display: 'none' },
-      h: 0,
-      w: 64,
-      flexShrink: 0
-    })}
-  />
-)
+export const SidebarPlaceholder = panda('div', {
+  base: {
+    h: 0,
+    w: 64,
+    flexShrink: 0,
+    xl: {
+      display: 'none'
+    }
+  }
+})

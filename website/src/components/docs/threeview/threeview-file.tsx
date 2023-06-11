@@ -1,5 +1,4 @@
 import { FC, useContext } from 'react'
-import { css } from '@/styled-system/css'
 import { panda } from '@/styled-system/jsx'
 import { OnFocusedItemContext } from './threeview-context'
 import { ThreeViewSeparator } from './threeview-separator'
@@ -11,6 +10,10 @@ import { Anchor } from '@/components/anchor'
 import { renderComponent } from '@/utils'
 import { ThreeViewList } from './threeview-list'
 import { ThreeViewLink, threeViewLinkStyle } from './threeview-link'
+
+/* -----------------------------------------------------------------------------
+ * ThreeView Heading Anchor
+ * -----------------------------------------------------------------------------*/
 
 interface IThreeViewHeadingAnchorProps {
   heading: Heading
@@ -27,14 +30,12 @@ const ThreeViewHeadingAnchor: FC<IThreeViewHeadingAnchorProps> = ({
     <ThreeViewLink
       href={`#${id}`}
       active={activeAnchor[id]?.isActive}
-      className={css({
-        display: 'flex',
-        gap: 2,
-        _before: {
-          opacity: 0.25,
-          content: '"#"'
-        }
-      })}
+      display="flex"
+      gap={2}
+      _before={{
+        opacity: 0.25,
+        content: '"#"'
+      }}
       onClick={() => {
         setMenu(false)
       }}
@@ -43,6 +44,10 @@ const ThreeViewHeadingAnchor: FC<IThreeViewHeadingAnchorProps> = ({
     </ThreeViewLink>
   )
 }
+
+/* -----------------------------------------------------------------------------
+ * ThreeView File
+ * -----------------------------------------------------------------------------*/
 
 export interface ThreeViewFileProps {
   item: PageItem | Item
@@ -54,7 +59,9 @@ export const ThreeViewFile: FC<ThreeViewFileProps> = ({ item, anchors }) => {
   const onFocus = useContext(OnFocusedItemContext)
 
   // It is possible that the item doesn't have any route - for example an external link.
-  const active = Boolean(item.route && [route, route + '/'].includes(item.route + '/'))
+  const active = Boolean(
+    item.route && [route, route + '/'].includes(item.route + '/')
+  )
 
   const { setMenu } = useMenu()
   const config = useConfig()
@@ -64,15 +71,11 @@ export const ThreeViewFile: FC<ThreeViewFileProps> = ({ item, anchors }) => {
   }
 
   return (
-    <panda.li
-      display="flex"
-      flexDirection="column"
-      gap={1}
-    >
+    <panda.li display="flex" flexDirection="column" gap={1}>
       <Anchor
         href={(item as PageItem).href || item.route}
         newWindow={(item as PageItem).newWindow}
-        className={threeViewLinkStyle({active})}
+        className={threeViewLinkStyle({ active })}
         onClick={() => {
           setMenu(false)
         }}

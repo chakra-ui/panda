@@ -14,12 +14,16 @@ import { FC, memo, useContext, useEffect, useState } from 'react'
 
 const TreeState: Record<string, boolean> = Object.create(null)
 
-type FolderProps = {
+/* -----------------------------------------------------------------------------
+ * ThreeView Folder Implementation
+ * -----------------------------------------------------------------------------*/
+
+type ThreeViewFolderImplProps = {
   item: PageItem | MenuItem | Item
   anchors: Heading[]
 }
 
-const FolderImpl: FC<FolderProps> = ({ item, anchors }) => {
+const ThreeViewFolderImpl: FC<ThreeViewFolderImplProps> = ({ item, anchors }) => {
   const routeOriginal = useFSRoute()
   const [route] = routeOriginal.split('#')
   const active = [route, route + '/'].includes(item.route + '/')
@@ -156,12 +160,16 @@ const FolderImpl: FC<FolderProps> = ({ item, anchors }) => {
   )
 }
 
-export const ThreeViewFolder = memo((props: FolderProps) => {
+/* -----------------------------------------------------------------------------
+ * ThreeView Folder
+ * -----------------------------------------------------------------------------*/
+
+export const ThreeViewFolder = memo((props: ThreeViewFolderImplProps) => {
   const level = useContext(FolderLevelContext)
 
   return (
     <FolderLevelContext.Provider value={level + 1}>
-      <FolderImpl {...props} />
+      <ThreeViewFolderImpl {...props} />
     </FolderLevelContext.Provider>
   )
 })

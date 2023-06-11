@@ -18,7 +18,7 @@ const threeViewListStyle = cva({
           bg: 'gray.200',
           content: "''",
           _dark: {
-            bg: 'neutral.800'
+            bg: 'whiteAlpha.200'
           }
         },
         _ltr: {
