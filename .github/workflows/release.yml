@@ -41,6 +41,7 @@ jobs:
         if: steps.changesets.outputs.published == 'true'
         working-directory: ./extension/vscode
         run: |
+          pnpm rewrite-deps
           rm -rf node_modules
           npm i
           pnpm release

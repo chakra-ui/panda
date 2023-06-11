@@ -203,15 +203,16 @@
     "dev": "tsup --watch src/index.ts --watch ../language-server/dist/index.js --watch ../shared/dist/index.js",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
+    "rewrite-deps": "tsx ./scripts/rewrite-workspace-dependencies.ts",
     "release": "pnpm build --silent && tsx ./scripts/publish.ts",
     "vsce:package": "pnpm --silent build && pnpm vsix-builder package",
     "vsce:prerelease": "pnpm --silent build && pnpm vsix-builder package patch --pre-release -o panda.vsix"
   },
   "dependencies": {
-    "@pandacss/ts-plugin": "workspace:*",
     "@pandacss/dev": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
-    "@pandacss/preset-panda": "workspace:*"
+    "@pandacss/preset-panda": "workspace:*",
+    "@pandacss/ts-plugin": "workspace:*"
   },
   "bundledDependencies": [
     "@pandacss/ts-plugin",
@@ -223,6 +224,8 @@
     "@pandacss/extension-shared": "workspace:*",
     "@pandacss/language-server": "workspace:*",
     "@pandacss/vsix-builder": "workspace:*",
+    "@pnpm/find-workspace-dir": "^6.0.1",
+    "@pnpm/find-workspace-packages": "^6.0.9",
     "@types/node": "20.2.5",
     "@types/vscode": "^1.78.1",
     "@vscode/vsce": "^2.19.0",
