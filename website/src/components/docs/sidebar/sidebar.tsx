@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router'
 import type { Heading } from 'nextra'
-import type { ReactElement } from 'react'
+import type { FC, ReactElement, ReactNode } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { ExpandIcon } from 'nextra/icons'
@@ -17,6 +17,45 @@ import { SidebarHeader } from './sidebar-header'
 import { SidebarBody } from './sidebar-body'
 import { SidebarFooter } from './sidebar-footer'
 
+/* -----------------------------------------------------------------------------
+ * ThemeSwitch Container
+ * -----------------------------------------------------------------------------*/
+
+interface IThemeSwitchContainer {
+  showSidebar: boolean
+  hasI18n: boolean
+  children: ReactNode
+}
+
+const ThemeSwitchContainer: FC<IThemeSwitchContainer> = ({
+  children,
+  showSidebar,
+  hasI18n
+}) => (
+  <div
+    className={
+      showSidebar && !hasI18n
+        ? css({ flex: 1, display: 'flex', flexDirection: 'column' })
+        : undefined
+    }
+  >
+    {children}
+  </div>
+)
+
+/* -----------------------------------------------------------------------------
+ * Body classes
+ * -----------------------------------------------------------------------------*/
+
+const hiddenClass = css({
+  overflow: 'hidden',
+  md: { overflow: 'auto' }
+})
+
+/* -----------------------------------------------------------------------------
+ * Sidebar
+ * -----------------------------------------------------------------------------*/
+
 interface SideBarProps {
   docsDirectories: PageItem[]
   flatDirectories: Item[]
@@ -25,11 +64,6 @@ interface SideBarProps {
   headings: Heading[]
   includePlaceholder: boolean
 }
-
-const hiddenClass = css({
-  overflow: 'hidden',
-  md: { overflow: 'auto' }
-})
 
 export function Sidebar({
   docsDirectories,
@@ -87,8 +121,8 @@ export function Sidebar({
   }, [router.asPath, setMenu])
 
   const hasI18n = config.i18n.length > 0
-  const hasColorModeSwitcher = config.darkMode
-  const hasFooter = hasColorModeSwitcher || hasI18n
+  const hasThemeSwitch = config.darkMode
+  const hasFooter = hasThemeSwitch || hasI18n
 
   return (
     <>
@@ -107,27 +141,27 @@ export function Sidebar({
         </SidebarHeader>
 
         <SidebarBody ref={sidebarRef} showSidebar={showSidebar}>
-              {/* without asPopover check <Collapse />'s inner.clientWidth on `layout: "raw"` will be 0 and element will not have width on initial loading */}
-              {(!asPopover || !showSidebar) && (
-                <Collapse isOpen={showSidebar} horizontal>
-                  <ThreeView
-                    className={css({ mdDown: { display: 'none' } })}
-                    // The sidebar menu, shows only the docs directories.
-                    directories={docsDirectories}
-                    // When the viewport size is larger than `md`, hide the anchors in
-                    // the sidebar when `floatTOC` is enabled.
-                    anchors={config.toc.float ? [] : anchors}
-                    onlyCurrentDocs
-                  />
-                </Collapse>
-              )}
+          {/* without asPopover check <Collapse />'s inner.clientWidth on `layout: "raw"` will be 0 and element will not have width on initial loading */}
+          {(!asPopover || !showSidebar) && (
+            <Collapse isOpen={showSidebar} horizontal>
               <ThreeView
-                className={css({ md: { display: 'none' } })}
-                // The mobile dropdown menu, shows all the directories.
-                directories={fullDirectories}
-                // Always show the anchor links on mobile (`md`).
-                anchors={anchors}
+                className={css({ mdDown: { display: 'none' } })}
+                // The sidebar menu, shows only the docs directories.
+                directories={docsDirectories}
+                // When the viewport size is larger than `md`, hide the anchors in
+                // the sidebar when `floatTOC` is enabled.
+                anchors={config.toc.float ? [] : anchors}
+                onlyCurrentDocs
               />
+            </Collapse>
+          )}
+          <ThreeView
+            className={css({ md: { display: 'none' } })}
+            // The mobile dropdown menu, shows all the directories.
+            directories={fullDirectories}
+            // Always show the anchor links on mobile (`md`).
+            anchors={anchors}
+          />
         </SidebarBody>
 
         {hasFooter && (
@@ -145,18 +179,12 @@ export function Sidebar({
                 )}
               />
             )}
-            {hasColorModeSwitcher && (
-              <div
-                className={
-                  showSidebar && !hasI18n
-                    ? css({ flex: 1, display: 'flex', flexDirection: 'column' })
-                    : undefined
-                }
-              >
+            {hasThemeSwitch && (
+              <ThemeSwitchContainer showSidebar={showSidebar} hasI18n={hasI18n}>
                 {renderComponent(config.themeSwitch.component, {
                   lite: !showSidebar || hasI18n
                 })}
-              </div>
+              </ThemeSwitchContainer>
             )}
             {config.sidebar.toggleButton && (
               <IconButton
