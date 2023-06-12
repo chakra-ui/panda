@@ -192,13 +192,7 @@ function FolderImpl({ item, anchors }: FolderProps) {
             height: '18px',
             minWidth: '18px',
             borderRadius: 'sm',
-            p: '0.5',
-            _hover: {
-              // bg: 'gray.800/5',
-              bg: 'rgb(31 41 55 / 0.5)',
-              // _dark: { bg: 'gray.100/5' }
-              _dark: { bg: 'rgb(243 244 246 / 0.05)' }
-            }
+            p: '0.5'
           })}
           pathClassName={cx(
             css({

@@ -2,5 +2,6 @@
   "patterns": "Patterns",
   "conditions": "Conditions",
   "utilities": "Utilities",
-  "presets": "Presets"
+  "presets": "Presets",
+  "theme": "Theme"
 }
