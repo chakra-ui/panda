@@ -1,0 +1,114 @@
+---
+title: Theme
+description: Customizing the default theme
+---
+
+# Theme
+
+Panda comes with a default theme that is used to generate the utilities for your project. You can customize this theme
+
+## Tokens
+
+### Colors
+
+Use the `colors` key in the theme section of your Panda config file to customize the default color values.
+
+> We recommend using numeric ranges from `50` to `900`
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      colors: {
+        brand: { value: '#EA8433' }
+      }
+    }
+  }
+})
+```
+
+Panda comes with a handful of colors picked from the amazing Tailwind color palette
+
+<TokenDocs type="colors" />
+
+### Spacing
+
+Use the `spacing` key in the theme section of your Panda config file to customize the default spacing values.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      spacing: {
+        gutter: { value: '32px' }
+      }
+    }
+  }
+})
+```
+
+Panda ships with the following spacing tokens by default:
+
+<TokenDocs type="spacing" />
+
+### Border Radius
+
+Use the `radii` key in the theme section of your Panda config file to customize the default border radius values.
+
+<TokenDocs type="radii" />
+
+### Sizing
+
+// TODO
+
+### Fonts
+
+Use the `fonts` key in the theme object to customize the default font families.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      fonts: {
+        marketing: { value: 'Inter Variable' }
+      }
+    }
+  }
+})
+```
+
+Panda ships with the following font families tokens by default:
+
+<TokenDocs type="fonts" />
+
+### Font Sizes
+
+Use the `fontSizes` key in the theme object to customize the default font sizes.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      fontSizes: {
+        big: { value: '80px' }
+      }
+    }
+  }
+})
+```
+
+Panda ships with the following font size tokens by default:
+
+<TokenDocs type="fontSizes" />
+
+## Breakpoints
+
+## Keyframes

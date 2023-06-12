@@ -6,7 +6,9 @@ import { sizes } from './sizes'
 import { spacing } from './spacing'
 import { fonts, fontSizes, fontWeights, letterSpacings, lineHeights } from './typography'
 
-export const tokens: Tokens = {
+const defineTokens = <T extends Tokens>(v: T) => v
+
+export const tokens = defineTokens({
   easings: {
     default: { value: 'cubic-bezier(0.4, 0, 0.2, 1)' },
     linear: { value: 'linear' },
@@ -52,4 +54,4 @@ export const tokens: Tokens = {
   spacing,
   sizes,
   animations,
-}
+})
