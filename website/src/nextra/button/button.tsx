@@ -128,7 +128,9 @@ export type ButtonProps = ButtonVariants &
 
 export const Button = (props: ButtonProps) => {
   const {
+    // @ts-expect-error
     variant,
+    // @ts-expect-error
     size,
     href,
     leftIcon,

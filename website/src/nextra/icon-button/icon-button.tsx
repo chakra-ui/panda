@@ -7,6 +7,7 @@ export type IconButtonProps = HTMLPandaProps<'button'> &
 ButtonVariants & { icon?: React.ReactElement; 'aria-label': string }
 
 export const IconButton = (props: IconButtonProps) => {
+  // @ts-expect-error
   const { icon, variant, size, children, className, ...rest } = props
 
   const element = icon || children
