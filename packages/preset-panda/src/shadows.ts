@@ -1,13 +1,3 @@
-export const dropShadows = {
-  xs: { value: '0 1px 1px rgb(0 0 0 / 0.05)' },
-  sm: { value: ['0 1px 2px rgb(0 0 0 / 0.1)', '0 1px 1px rgb(0 0 0 / 0.06)'] },
-  md: { value: ['0 4px 3px rgb(0 0 0 / 0.07)', '0 2px 2px rgb(0 0 0 / 0.06)'] },
-  lg: { value: ['0 10px 8px rgb(0 0 0 / 0.04)', '0 4px 3px rgb(0 0 0 / 0.1)'] },
-  xl: { value: ['0 20px 13px rgb(0 0 0 / 0.03)', '0 8px 5px rgb(0 0 0 / 0.08)'] },
-  '2xl': { value: '0 25px 25px rgb(0 0 0 / 0.15)' },
-  none: { value: '0 0 #0000' },
-}
-
 export const shadows = {
   xs: { value: '0 1px 2px 0 rgb(0 0 0 / 0.05)' },
   sm: { value: ['0 1px 3px 0 rgb(0 0 0 / 0.1)', '0 1px 2px -1px rgb(0 0 0 / 0.1)'] },

@@ -39,7 +39,6 @@ export const tokens: Tokens = {
   letterSpacings,
   fontSizes,
   shadows,
-  // dropShadows,
   colors,
   blurs: {
     sm: { value: '4px' },
