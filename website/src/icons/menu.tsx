@@ -1,6 +1,4 @@
-import type { ComponentProps, ReactElement } from 'react'
-
-export function MenuIcon(props: ComponentProps<'svg'>): ReactElement {
+export function MenuIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       fill="none"

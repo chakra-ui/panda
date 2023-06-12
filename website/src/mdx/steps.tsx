@@ -1,5 +1,4 @@
-import type { ComponentProps, ReactElement } from 'react'
-import { css, cx } from '../../styled-system/css'
+import { css, cx } from '@/styled-system/css'
 
 const styles = css({
   ms: '4',
@@ -31,7 +30,7 @@ const styles = css({
   }
 })
 
-export function Steps(props: ComponentProps<'div'>): ReactElement {
+export const Steps = (props: React.ComponentProps<'div'>) => {
   const { children, className, ...rest } = props
   return (
     <div className={cx('nextra-steps', styles, className)} {...rest}>

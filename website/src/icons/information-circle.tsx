@@ -1,8 +1,4 @@
-import type { ComponentProps, ReactElement } from 'react'
-
-export function InformationCircleIcon(
-  props: ComponentProps<'svg'>
-): ReactElement {
+export function InformationCircleIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

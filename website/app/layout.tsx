@@ -1,12 +1,12 @@
+import { Navbar } from '@/components/navbar'
+import { Providers } from '@/components/providers'
+import { css, cx } from '@/styled-system/css'
+import { Flex } from '@/styled-system/jsx'
 import { Fira_Code } from 'next/font/google'
 import localFont from 'next/font/local'
-import { css, cx } from '../styled-system/css'
-import { Flex } from '../styled-system/jsx'
-import '../styles/panda.css'
-import { Navbar } from './navbar'
-
 import seoConfig from '../seo.config'
-import { Providers } from './providers'
+
+import '../styles/panda.css'
 
 type Props = {
   children: React.ReactNode

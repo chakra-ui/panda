@@ -1,8 +1,7 @@
-import type { ComponentProps, ReactElement } from 'react'
+import { css } from '@/styled-system/css'
 import { useEffect, useState } from 'react'
-import { css } from '../../styled-system/css'
-import { Collapse } from '../components'
-import { DetailsProvider } from '../contexts'
+import { Collapse } from '../nextra'
+import { DetailsProvider } from '../nextra/contexts'
 import { findSummary } from './find-summary'
 
 const styles = css({
@@ -16,13 +15,14 @@ const styles = css({
   shadow: 'sm'
 })
 
-export const Details = (props: ComponentProps<'details'>): ReactElement => {
+export const Details = (props: React.ComponentProps<'details'>) => {
   const { children, open, ...rest } = props
   const [openState, setOpen] = useState(!!open)
   const [summary, restChildren] = findSummary(children)
 
   // To animate the close animation we have to delay the DOM node state here.
   const [delayedOpenState, setDelayedOpenState] = useState(openState)
+
   useEffect(() => {
     if (openState) {
       setDelayedOpenState(true)

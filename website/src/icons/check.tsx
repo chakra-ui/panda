@@ -1,6 +1,4 @@
-import type { ComponentProps, ReactElement } from 'react'
-
-export function CheckIcon(props: ComponentProps<'svg'>): ReactElement {
+export function CheckIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       viewBox="0 0 20 20"

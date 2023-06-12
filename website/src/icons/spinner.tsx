@@ -1,7 +1,6 @@
-import type { ComponentProps, ReactElement } from 'react'
-import { css } from '../../styled-system/css'
+import { css } from '@/styled-system/css'
 
-export function SpinnerIcon(props: ComponentProps<'svg'>): ReactElement {
+export function SpinnerIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

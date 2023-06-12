@@ -1,6 +1,6 @@
-import { SectionFooter } from '../section.footer'
-import { SectionArticleList } from './section.article-list'
-import { SectionLearn } from './section.learn'
+import { SectionArticleList } from '@/components/sections/article-list'
+import { SectionFooter } from '@/components/sections/footer'
+import { SectionLearn } from '@/components/sections/learn'
 
 export default function Page() {
   return (

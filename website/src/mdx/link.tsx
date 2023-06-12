@@ -1,6 +1,6 @@
-import { css, cx } from '../../styled-system/css'
-import { Anchor } from '../components'
-import type { AnchorProps } from '../components/anchor'
+import { css, cx } from '@/styled-system/css'
+import { Anchor } from '../nextra'
+import type { AnchorProps } from '../nextra/anchor'
 
 const EXTERNAL_HREF_REGEX = /https?:\/\//
 

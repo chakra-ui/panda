@@ -1,8 +1,8 @@
+import { css, cva } from '@/styled-system/css'
+import { flex } from '@/styled-system/patterns'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { ReactNode, createContext, useContext, useId } from 'react'
-import { css, cva } from '../../styled-system/css'
-import { flex } from '../../styled-system/patterns'
+import { createContext, useContext, useId } from 'react'
 
 /* -----------------------------------------------------------------------------
  * Context Setup
@@ -33,7 +33,7 @@ const useRouteSwitch = () => {
  * -----------------------------------------------------------------------------*/
 
 export interface RouteSwitchProps {
-  children: ReactNode
+  children: React.ReactNode
   values: string[]
 }
 
@@ -85,7 +85,10 @@ const linkStyles = cva({
   }
 })
 
-const RouteSwitchLink = (props: { value: string; children: ReactNode }) => {
+const RouteSwitchLink = (props: {
+  value: string
+  children: React.ReactNode
+}) => {
   const { value, children } = props
   const router = useRouter()
   const { isActive, rootId } = useRouteSwitch()
@@ -148,7 +151,7 @@ export const RouteSwitchTrigger = (props: TriggerProps) => {
 
 export interface ContentProps {
   value: string
-  children: ReactNode
+  children: React.ReactNode
 }
 
 export const RouteSwitchContent = (props: ContentProps) => {

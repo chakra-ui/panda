@@ -1,5 +1,4 @@
-import type { ComponentProps } from 'react'
-import { css, cx } from '../../styled-system/css'
+import { css, cx } from '@/styled-system/css'
 
 /* -----------------------------------------------------------------------------
  * Table
@@ -15,7 +14,7 @@ const tableStyles = css({
 export const Table = ({
   className = '',
   ...props
-}: ComponentProps<'table'>) => (
+}: React.ComponentProps<'table'>) => (
   <table
     className={cx('nextra-scrollbar', tableStyles, className)}
     {...props}
@@ -35,7 +34,10 @@ const thStyles = css({
   fontWeight: 'semibold'
 })
 
-export const Th = ({ className = '', ...props }: ComponentProps<'th'>) => (
+export const Th = ({
+  className = '',
+  ...props
+}: React.ComponentProps<'th'>) => (
   <th className={cx(thStyles, className)} {...props} />
 )
 
@@ -53,7 +55,10 @@ const trStyles = css({
   }
 })
 
-export const Tr = ({ className = '', ...props }: ComponentProps<'tr'>) => (
+export const Tr = ({
+  className = '',
+  ...props
+}: React.ComponentProps<'tr'>) => (
   <tr className={cx(trStyles, className)} {...props} />
 )
 
@@ -69,6 +74,9 @@ const tdStyles = css({
   py: '2'
 })
 
-export const Td = ({ className = '', ...props }: ComponentProps<'td'>) => (
+export const Td = ({
+  className = '',
+  ...props
+}: React.ComponentProps<'td'>) => (
   <td className={cx(tdStyles, className)} {...props} />
 )

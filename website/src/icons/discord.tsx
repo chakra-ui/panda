@@ -1,6 +1,4 @@
-import type { ComponentProps, ReactElement } from 'react'
-
-export function DiscordIcon(props: ComponentProps<'svg'>): ReactElement {
+export function DiscordIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       width="24"

@@ -1,5 +1,4 @@
-import type { ComponentProps, ReactElement } from 'react'
-import { cva, cx } from '../../styled-system/css'
+import { cva, cx } from '@/styled-system/css'
 
 const styles = cva({
   base: {
@@ -25,7 +24,7 @@ const styles = cva({
   }
 })
 
-export const Code = (props: ComponentProps<'code'>): ReactElement => {
+export const Code = (props: React.ComponentProps<'code'>): JSX.Element => {
   const { className = '', ...rest } = props
   const hasLineNumbers = 'data-line-numbers' in props
   return (

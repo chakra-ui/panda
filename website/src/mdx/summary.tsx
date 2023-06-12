@@ -1,6 +1,5 @@
-import type { ComponentProps, ReactElement } from 'react'
-import { css } from '../../styled-system/css'
-import { useDetails } from '../contexts'
+import { css } from '@/styled-system/css'
+import { useDetails } from '../nextra/contexts'
 
 const styles = css({
   display: 'flex',
@@ -27,7 +26,7 @@ const styles = css({
   }
 })
 
-export const Summary = (props: ComponentProps<'summary'>): ReactElement => {
+export const Summary = (props: React.ComponentProps<'summary'>) => {
   const setOpen = useDetails()
   return (
     <summary
