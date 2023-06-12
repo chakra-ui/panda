@@ -1,5 +1,5 @@
 export function splitBy(value: string, separator = ',') {
-  const result = []
+  const result: any[] = []
   let current = ''
   let depth = 0
   for (let i = 0; i < value.length; i++) {
