@@ -1,8 +1,8 @@
 import { FC } from 'react'
 import { cva } from '@/styled-system/css'
 import { panda } from '@/styled-system/jsx'
-import { useConfig } from '@/contexts'
-import { renderComponent } from '@/utils'
+import { useConfig } from '@/nextra/contexts'
+import { renderComponent } from '@/nextra/lib'
 
 /* -----------------------------------------------------------------------------
  * ThreeView Separator Container
