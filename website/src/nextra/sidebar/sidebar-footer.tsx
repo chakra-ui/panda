@@ -27,11 +27,11 @@ export const SidebarFooter: FC<ISidebarFooterProps> = ({
           // when banner is showed, sidebar links can be behind menu, set bg color as body bg color
           bg: 'dark',
           borderColor: 'neutral.800',
-          shadow: '0 -12px 16px token(colors.black)'
+          shadow: '0 0 #0000, 0 0 #0000, 0 -12px 16px #111'
         },
         mx: 4,
         py: 4,
-        shadow: '0 -12px 16px token(colors.white)',
+        shadow: '0 0 #0000, 0 0 #0000, 0 -12px 16px #fff',
         display: 'flex',
         alignItems: 'center',
         gap: 2,
