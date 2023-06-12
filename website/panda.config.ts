@@ -11,10 +11,9 @@ export default defineConfig({
   preflight: true,
   // define the content to scan 👇🏻
   include: [
-    './src/**/*.{tsx,jsx}',
+    './src/**/*.{tsx,ts,jsx}',
     './pages/**/*.{jsx,tsx}',
     './app/**/*.{jsx,tsx}',
-    './bright/**/*.{jsx,ts,tsx}',
     './theme.config.tsx'
   ],
   exclude: [],
