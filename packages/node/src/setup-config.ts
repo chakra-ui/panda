@@ -31,22 +31,27 @@ export async function setupConfig(cwd: string, opts: SetupOptions = {}) {
     logger.warn('init:config', messages.configExists(cmd))
   } else {
     const content = outdent`
-       import { defineConfig } from "@pandacss/dev"
+import { defineConfig } from "@pandacss/dev"
 
-       export default defineConfig({
-        // Whether to use css reset
-        preflight: true,
-        ${outExtension ? `\n // The extension for the emitted JavaScript files\noutExtension: '${outExtension}',` : ''}
-        // Where to look for your css declarations
-        include: ["./src/**/*.{js,jsx,ts,tsx}", "./pages/**/*.{js,jsx,ts,tsx}"],
-        
-        // Files to exclude
-        exclude: [],
-        
-        // The output directory for your css system
-        outdir: "styled-system",
-        ${jsxFramework ? `\n // The JSX framework to use\njsxFramework: '${jsxFramework}'` : ''}
-       })
+export default defineConfig({
+    // Whether to use css reset
+    preflight: true,
+    ${outExtension ? `\n // The extension for the emitted JavaScript files\noutExtension: '${outExtension}',` : ''}
+    // Where to look for your css declarations
+    include: ["./src/**/*.{js,jsx,ts,tsx}", "./pages/**/*.{js,jsx,ts,tsx}"],
+
+    // Files to exclude
+    exclude: [],
+
+    // Useful for theme customization
+    theme: {
+      extend: {}
+    },
+
+    // The output directory for your css system
+    outdir: "styled-system",
+    ${jsxFramework ? `\n // The JSX framework to use\njsxFramework: '${jsxFramework}'` : ''}
+})
     `
 
     await writeFile(join(cwd, file), content)
@@ -58,11 +63,11 @@ export async function setupPostcss(cwd: string) {
   logger.info('init:postcss', `creating postcss config file: ${quote('postcss.config.cjs')}`)
 
   const content = outdent`
-  module.exports = {
-    plugins: {
-      '@pandacss/dev/postcss': {},
-    },
-  }
+module.exports = {
+  plugins: {
+    '@pandacss/dev/postcss': {},
+  },
+}
   `
 
   await writeFile(join(cwd, 'postcss.config.cjs'), content)
