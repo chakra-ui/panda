@@ -13,7 +13,7 @@ export const ButtonIcon = (props: HTMLPandaProps<'span'>) => {
     : children
 
   return (
-    <panda.span data-scope="docsButton" data-part="icon" {...rest}>
+    <panda.span {...rest}>
       {_children}
     </panda.span>
   )
