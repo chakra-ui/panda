@@ -1,4 +1,3 @@
-'use client'
 import NextLink, { type LinkProps } from 'next/link'
 import { ButtonContent, ButtonContentProps } from './button-content'
 import { type RecipeVariantProps, cva, cx } from '@/styled-system/css'

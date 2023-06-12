@@ -1,4 +1,3 @@
-'use client'
 import { ButtonVariants, buttonStyles } from '@/nextra/button'
 import { css, cx } from '@/styled-system/css'
 import { panda, type HTMLPandaProps } from '@/styled-system/jsx'
