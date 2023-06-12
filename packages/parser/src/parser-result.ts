@@ -75,8 +75,8 @@ export class ParserResult {
     return this
   }
 
-  static fromJSON(json: string) {
-    const data = JSON.parse(json)
+  static fromJSON(json: string | ParserResultJson) {
+    const data = typeof json === 'string' ? JSON.parse(json) : json
     const result = new ParserResult()
 
     result.css = new Set(data.css)
@@ -88,5 +88,7 @@ export class ParserResult {
     return result
   }
 }
+
+export type ParserResultJson = ReturnType<ParserResult['toJSON']>
 
 export const createParserResult = () => new ParserResult()

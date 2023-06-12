@@ -2,9 +2,13 @@ import { logger } from '@pandacss/logger'
 import { Obj, pipe, tap, tryCatch } from 'lil-fp'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
+import type { ParserResultJson } from '@pandacss/parser'
 
 export async function bundleChunks(ctx: PandaContext) {
   const files = ctx.chunks.getFiles()
+
+  await writeIncrementalBuildInfo(ctx)
+
   return ctx.output.write({
     dir: ctx.paths.root,
     files: [{ file: 'styles.css', code: ctx.getCss({ files }) }],
@@ -16,6 +20,8 @@ export async function writeFileChunk(ctx: PandaContext, file: string) {
   logger.debug('chunk:write', `File: ${path.relative(ctx.config.cwd, file)}`)
   const css = extractFile(ctx, file)
   if (!css) return
+  if (!ctx.config.chunks) return
+
   const artifact = ctx.chunks.getArtifact(file, css)
   return ctx.output.write(artifact)
 }
@@ -43,10 +49,6 @@ export function extractFile(ctx: PandaContext, file: string) {
   )
 }
 
-export function extractFiles(ctx: PandaContext) {
-  return Promise.all(ctx.getFiles().map((file) => writeFileChunk(ctx, file)))
-}
-
 const randomWords = ['Sweet', 'Divine', 'Pandalicious', 'Super']
 const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
 
@@ -70,7 +72,29 @@ export async function emitAndExtract(ctx: PandaContext) {
 }
 
 export async function extractCss(ctx: PandaContext) {
-  await extractFiles(ctx)
+  const files = ctx.getFiles()
+  const time = logger.time.info('Extracted css from files')
+  await Promise.all(files.map((file) => writeFileChunk(ctx, file)))
   await bundleChunks(ctx)
-  return ctx.messages.buildComplete(ctx.getFiles().length)
+  time()
+  return ctx.messages.buildComplete(files.length)
+}
+
+export const writeIncrementalBuildInfo = (ctx: PandaContext) => {
+  const { incremental } = ctx.config
+  if (!incremental) return
+
+  const { path } = ctx.runtime
+  logger.debug('incremental:write', `${path.relative(ctx.config.cwd, path.join(...ctx.paths.root))}`)
+
+  const resultMap = ctx.project.getBuildInfoMap()
+  const buildInfo = {} as Record<string, { hash: string; result: ParserResultJson }>
+  resultMap.forEach((info, file) => {
+    buildInfo[path.relative(ctx.config.cwd, file)] = { hash: info.hash, result: info.result.toJSON() }
+  })
+
+  return ctx.output.write({
+    dir: ctx.paths.root,
+    files: [{ file: 'panda.buildinfo.json', code: JSON.stringify(buildInfo, null, 2) }],
+  })
 }

@@ -8,9 +8,13 @@ export function handleError(error: any) {
   if (error.frame) {
     console.error(colors.red(error.message))
     console.error(colors.dim(error.frame))
-  } else {
+  } else if (error.stack) {
     console.error(colors.red(error.message))
+    console.error(colors.dim(error.stack))
+  } else {
+    console.error(colors.red(error))
   }
+
   process.exitCode = 1
   if (!isMainThread && parentPort) {
     parentPort.postMessage('error')

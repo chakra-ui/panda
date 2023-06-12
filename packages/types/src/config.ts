@@ -99,6 +99,18 @@ type FileSystemOptions = {
    * @default 'info'
    */
   logLevel?: 'debug' | 'info' | 'warn' | 'error' | 'silent'
+  /**
+   * Persist a panda.buildinfo.json cache to disk to speed up subsequent builds.
+   * Enabling this option can speed up the initial build process.
+   * @default false
+   */
+  incremental?: boolean
+  /**
+   * Whether to persist each file corresponding css to the `chunks` directory.
+   * Mostly useful for debugging purposes.
+   * @default false
+   */
+  chunks?: boolean
 }
 
 type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik'

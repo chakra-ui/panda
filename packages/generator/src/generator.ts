@@ -32,8 +32,9 @@ export const createGenerator = (conf: LoadConfigResult) =>
       getParserCss: generateParserCss(ctx),
       messages: getMessages(ctx),
     })),
-    Obj.bind('parserOptions', ({ config: { outdir }, jsx, isValidProperty, patterns, recipes }) => ({
+    Obj.bind('parserOptions', ({ config: { outdir }, paths, jsx, isValidProperty, patterns, recipes }) => ({
       importMap: getImportMap(outdir),
+      buildInfoPath: paths.root.concat('panda.buildinfo.json'),
       jsx: {
         factory: jsx.factoryName,
         isStyleProp: isValidProperty,

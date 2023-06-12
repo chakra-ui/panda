@@ -23,11 +23,15 @@ export const createContext = (conf: LoadConfigResult) =>
       return fs.glob({ include, exclude, cwd })
     }),
 
-    Obj.bind('project', ({ getFiles, runtime: { fs }, parserOptions }) => {
+    Obj.bind('project', ({ config, getFiles, runtime: { fs, path }, parserOptions }) => {
       return createProject({
         getFiles,
         readFile: fs.readFileSync,
+        exists: fs.existsSync,
+        path,
+        cwd: config.cwd,
         parserOptions,
+        incremental: conf.config.incremental,
       })
     }),
 

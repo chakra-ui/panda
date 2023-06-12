@@ -99,6 +99,33 @@ Related: [`config.hash`](/docs/references/panda-config.mdx#hash)
 
 ---
 
+#### `--incremental`
+
+Persist a panda.buildinfo.json cache to disk to speed up subsequent builds.
+Enabling this option can speed up the initial build process.
+
+Related: [`config.incremental`](/docs/references/panda-config.mdx#incremental)
+
+---
+
+#### `--chunks`
+
+Whether to persist each file corresponding css to the `chunks` directory.
+Mostly useful for debugging purposes.
+
+Related: [`config.chunks`](/docs/references/panda-config.mdx#chunks)
+
+---
+
+#### `--incremental`
+
+Persist a panda.buildinfo.json cache to disk to speed up subsequent builds.
+Enabling this option can speed up the initial build process.
+
+Related: [`config.incremental`](/docs/references/panda-config.mdx#incremental)
+
+---
+
 ## `panda codegen`
 
 Generate a new css utilities for your project based on the configuraion file.

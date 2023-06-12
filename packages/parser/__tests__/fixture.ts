@@ -9,7 +9,7 @@ import {
   utilities,
 } from '@pandacss/fixture'
 import { createGenerator } from '@pandacss/generator'
-import type { LoadConfigResult } from '@pandacss/types'
+import type { LoadConfigResult, Runtime } from '@pandacss/types'
 import { type UserConfig } from '@pandacss/types'
 import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
@@ -51,7 +51,17 @@ function getProject(code: string, options?: <Conf extends UserConfig>(conf: Conf
     useInMemoryFileSystem: true,
     getFiles: () => [staticFilePath],
     readFile: () => code,
+    exists: () => true,
+    path: {
+      join(...paths: string[]) {
+        return paths.join('/')
+      },
+      relative: (_from: string, to: string) => {
+        return to
+      },
+    } as any as Runtime['path'],
     parserOptions: generator.parserOptions,
+    cwd: config.cwd,
   })
 }
 
@@ -63,7 +73,17 @@ export function getFixtureProject(code: string, options?: <Conf extends UserConf
     useInMemoryFileSystem: true,
     getFiles: () => [staticFilePath],
     readFile: () => code,
+    exists: () => true,
+    path: {
+      join(...paths: string[]) {
+        return paths.join('/')
+      },
+      relative: (_from: string, to: string) => {
+        return to
+      },
+    } as any as Runtime['path'],
     parserOptions: generator.parserOptions,
+    cwd: config.cwd,
   })
 
   return { parse: () => project.parseSourceFile(staticFilePath), generator }

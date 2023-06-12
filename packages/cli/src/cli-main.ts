@@ -108,6 +108,8 @@ export async function main() {
     .option('--clean', 'Clean output directory')
     .option('--hash', 'Hash the generated classnames to make them shorter')
     .option('--emitTokensOnly', 'Whether to only emit the `tokens` directory')
+    .option('--incremental', 'Persist a panda.buildinfo.json cache to disk to speed up subsequent builds.')
+    .option('--chunks', 'Whether to persist each file corresponding css to the `chunks` directory.')
     .action(async (files: string[], flags) => {
       const { config: configPath, silent, ...rest } = flags
       if (silent) logger.level = 'silent'

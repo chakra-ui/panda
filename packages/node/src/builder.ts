@@ -7,7 +7,7 @@ import { resolve } from 'path'
 import type { Message, Root } from 'postcss'
 import { findConfig, loadConfigAndCreateContext } from './config'
 import { type PandaContext } from './create-context'
-import { emitArtifacts, extractFile } from './extract'
+import { emitArtifacts, extractFile, writeIncrementalBuildInfo } from './extract'
 import { parseDependency } from './parse-dependency'
 import { getConfigDependencies } from '@pandacss/config'
 
@@ -173,9 +173,10 @@ export class Builder {
   async extract() {
     const ctx = this.getContextOrThrow()
 
-    const done = logger.time.info('Extracted in')
+    const done = logger.time.info('Extracted files in')
 
     await Promise.all(ctx.getFiles().map((file) => this.extractFile(ctx, file)))
+    await writeIncrementalBuildInfo(ctx)
 
     done()
   }

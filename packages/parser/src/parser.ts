@@ -27,6 +27,7 @@ const isNodeRecipe = (node: ParserNodeOptions): node is ParserRecipeNode => node
 
 export type ParserOptions = {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string>
+  buildInfoPath: string[]
   jsx?: {
     factory: string
     nodes: ParserNodeOptions[]

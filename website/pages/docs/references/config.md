@@ -579,3 +579,33 @@ The log level for the built-in logger.
   "logLevel": "info"
 }
 ```
+
+### incremental
+
+**Type**: boolean
+
+**Default**: `false`
+
+Persist a panda.buildinfo.json cache to disk to speed up subsequent builds.
+Enabling this option can speed up the initial build process.
+
+```json
+{
+  "incremental": true
+}
+```
+
+### chunks
+
+**Type**: boolean
+
+**Default**: `false`
+
+Whether to persist each file corresponding css to the `chunks` directory.
+Mostly useful for debugging purposes.
+
+```json
+{
+  "chunks": false
+}
+```
