@@ -11,10 +11,10 @@ export const ButtonContent = (props: PropsWithChildren<ButtonContentProps>) => {
   const { leftIcon, rightIcon, children } = props
   return (
     <>
-      {leftIcon && <ButtonIcon mr="var(--icon-spacing)">{leftIcon}</ButtonIcon>}
+      {leftIcon && <ButtonIcon>{leftIcon}</ButtonIcon>}
       {children}
       {rightIcon && (
-        <ButtonIcon ml="var(--icon-spacing)">{rightIcon}</ButtonIcon>
+        <ButtonIcon>{rightIcon}</ButtonIcon>
       )}
     </>
   )
