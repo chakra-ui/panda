@@ -4,12 +4,11 @@ import { cardRecipe } from './card.recipe'
 import { navbarRecipe } from './navbar.recipe'
 import { tabsRecipe } from './tabs.recipe'
 import { codeTabsRecipe } from './code-tabs.recipe'
-import { buttonRecipe, docsButtonRecipe } from './button.recipe'
+import { buttonRecipe } from './button.recipe'
 import { inputRecipe } from './input.recipe'
 
 export const recipes = {
   button: buttonRecipe,
-  docsButton: docsButtonRecipe,
   banner: bannerRecipe,
   codeTabs: codeTabsRecipe,
   card: cardRecipe,
