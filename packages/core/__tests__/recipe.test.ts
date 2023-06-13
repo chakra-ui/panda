@@ -9,8 +9,8 @@ describe('recipe ruleset', () => {
               .textStyle {
                   font-family: var(--fonts-mono);
                   & > :not([hidden]) ~ :not([hidden]) {
-                      border-left-width: 20px;
-                      border-right-width: 0px
+                      border-inline-start-width: 20px;
+                      border-inline-end-width: 0px
                   }
               }
           }
@@ -23,8 +23,8 @@ describe('recipe ruleset', () => {
               .textStyle {
                   font-family: var(--fonts-mono);
                   & > :not([hidden]) ~ :not([hidden]) {
-                      border-left-width: 20px;
-                      border-right-width: 0px
+                      border-inline-start-width: 20px;
+                      border-inline-end-width: 0px
                   }
               }
           }
@@ -37,8 +37,8 @@ describe('recipe ruleset', () => {
               .textStyle {
                   font-family: var(--fonts-mono);
                   & > :not([hidden]) ~ :not([hidden]) {
-                      border-left-width: 20px;
-                      border-right-width: 0px
+                      border-inline-start-width: 20px;
+                      border-inline-end-width: 0px
                   }
               }
           }
