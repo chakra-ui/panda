@@ -1,4 +1,4 @@
-import { calc, cssVar } from '@pandacss/shared'
+import { calc, cssVar, toPx } from '@pandacss/shared'
 import type { TokenDictionary, TokenMiddleware } from './dictionary'
 import { Token } from './token'
 
@@ -33,6 +33,23 @@ export const addNegativeTokens: TokenMiddleware = {
       }
 
       dictionary.allTokens.push(node)
+    })
+  },
+}
+
+const units = new Set(['spacing', 'sizes', 'borderWidths', 'fontSizes', 'radii'])
+
+export const addPixelUnit: TokenMiddleware = {
+  enforce: 'post',
+  transform(dictionary: TokenDictionary) {
+    const tokens = dictionary.filter((token) => {
+      return units.has(token.extensions.category!) && !token.extensions.isNegative
+    })
+
+    tokens.forEach((token) => {
+      token.setExtensions({
+        pixelValue: toPx(token.value),
+      })
     })
   },
 }
@@ -83,4 +100,4 @@ export const removeEmptyTokens: TokenMiddleware = {
   },
 }
 
-export const middlewares = [addNegativeTokens, addVirtualPalette, removeEmptyTokens]
+export const middlewares = [addNegativeTokens, addVirtualPalette, removeEmptyTokens, addPixelUnit]

@@ -17,6 +17,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "4px",
           "prop": "1",
           "var": "--spacing-1",
           "varRef": "var(--spacing-1)",
@@ -35,6 +36,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "8px",
           "prop": "2",
           "var": "--spacing-2",
           "varRef": "var(--spacing-2)",
@@ -53,6 +55,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "12px",
           "prop": "3",
           "var": "--spacing-3",
           "varRef": "var(--spacing-3)",
@@ -71,6 +74,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "16px",
           "prop": "4",
           "var": "--spacing-4",
           "varRef": "var(--spacing-4)",
@@ -89,6 +93,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "20px",
           "prop": "5",
           "var": "--spacing-5",
           "varRef": "var(--spacing-5)",
@@ -107,6 +112,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "24px",
           "prop": "6",
           "var": "--spacing-6",
           "varRef": "var(--spacing-6)",
@@ -125,6 +131,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "28px",
           "prop": "7",
           "var": "--spacing-7",
           "varRef": "var(--spacing-7)",
@@ -143,6 +150,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "32px",
           "prop": "8",
           "var": "--spacing-8",
           "varRef": "var(--spacing-8)",
@@ -161,6 +169,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "36px",
           "prop": "9",
           "var": "--spacing-9",
           "varRef": "var(--spacing-9)",
@@ -179,6 +188,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "40px",
           "prop": "10",
           "var": "--spacing-10",
           "varRef": "var(--spacing-10)",
@@ -197,6 +207,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "44px",
           "prop": "11",
           "var": "--spacing-11",
           "varRef": "var(--spacing-11)",
@@ -215,6 +226,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "48px",
           "prop": "12",
           "var": "--spacing-12",
           "varRef": "var(--spacing-12)",
@@ -233,6 +245,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "56px",
           "prop": "14",
           "var": "--spacing-14",
           "varRef": "var(--spacing-14)",
@@ -251,6 +264,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "64px",
           "prop": "16",
           "var": "--spacing-16",
           "varRef": "var(--spacing-16)",
@@ -269,6 +283,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "80px",
           "prop": "20",
           "var": "--spacing-20",
           "varRef": "var(--spacing-20)",
@@ -287,6 +302,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "96px",
           "prop": "24",
           "var": "--spacing-24",
           "varRef": "var(--spacing-24)",
@@ -305,6 +321,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "112px",
           "prop": "28",
           "var": "--spacing-28",
           "varRef": "var(--spacing-28)",
@@ -323,6 +340,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "128px",
           "prop": "32",
           "var": "--spacing-32",
           "varRef": "var(--spacing-32)",
@@ -341,6 +359,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "144px",
           "prop": "36",
           "var": "--spacing-36",
           "varRef": "var(--spacing-36)",
@@ -359,6 +378,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "160px",
           "prop": "40",
           "var": "--spacing-40",
           "varRef": "var(--spacing-40)",
@@ -377,6 +397,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "176px",
           "prop": "44",
           "var": "--spacing-44",
           "varRef": "var(--spacing-44)",
@@ -395,6 +416,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "192px",
           "prop": "48",
           "var": "--spacing-48",
           "varRef": "var(--spacing-48)",
@@ -413,6 +435,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "208px",
           "prop": "52",
           "var": "--spacing-52",
           "varRef": "var(--spacing-52)",
@@ -431,6 +454,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "224px",
           "prop": "56",
           "var": "--spacing-56",
           "varRef": "var(--spacing-56)",
@@ -449,6 +473,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "240px",
           "prop": "60",
           "var": "--spacing-60",
           "varRef": "var(--spacing-60)",
@@ -467,6 +492,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "256px",
           "prop": "64",
           "var": "--spacing-64",
           "varRef": "var(--spacing-64)",
@@ -485,6 +511,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "288px",
           "prop": "72",
           "var": "--spacing-72",
           "varRef": "var(--spacing-72)",
@@ -503,6 +530,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "320px",
           "prop": "80",
           "var": "--spacing-80",
           "varRef": "var(--spacing-80)",
@@ -521,6 +549,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "384px",
           "prop": "96",
           "var": "--spacing-96",
           "varRef": "var(--spacing-96)",
@@ -539,6 +568,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "2px",
           "prop": "0.5",
           "var": "--spacing-0\\\\.5",
           "varRef": "var(--spacing-0\\\\.5)",
@@ -557,6 +587,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "6px",
           "prop": "1.5",
           "var": "--spacing-1\\\\.5",
           "varRef": "var(--spacing-1\\\\.5)",
@@ -575,6 +606,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "10px",
           "prop": "2.5",
           "var": "--spacing-2\\\\.5",
           "varRef": "var(--spacing-2\\\\.5)",
@@ -593,6 +625,7 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "14px",
           "prop": "3.5",
           "var": "--spacing-3\\\\.5",
           "varRef": "var(--spacing-3\\\\.5)",
@@ -615,6 +648,7 @@ test('should work with default fixture', () => {
             "base": "{spacing.4}",
             "lg": "{spacing.5}",
           },
+          "pixelValue": "16px",
           "prop": "gutter",
           "var": "--spacing-gutter",
           "varRef": "var(--spacing-gutter)",
@@ -637,6 +671,7 @@ test('should work with default fixture', () => {
             "base": "{spacing.4}",
             "lg": "{spacing.5}",
           },
+          "pixelValue": "20px",
           "prop": "gutter",
           "var": "--spacing-gutter",
           "varRef": "var(--spacing-gutter)",
