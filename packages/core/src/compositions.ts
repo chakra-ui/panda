@@ -2,7 +2,7 @@ import { flatten } from '@pandacss/shared'
 import type { Dict, PropertyConfig } from '@pandacss/types'
 import { type SerializeContext, serializeStyle } from './serialize'
 
-export function assignCompositions(ctx: SerializeContext, compositions: Dict) {
+export function assignCompositions(compositions: Dict, ctx: SerializeContext) {
   for (const [key, values] of Object.entries(compositions)) {
     const flatValues = flatten(values ?? {})
 
