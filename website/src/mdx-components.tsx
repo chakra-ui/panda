@@ -1,5 +1,4 @@
 import type { Components } from 'nextra/mdx'
-import { FrameworkCards } from './nextra/framework-card'
 import type { DocsThemeConfig } from './constants'
 import { Blockquote } from './mdx/blockquote'
 import { Code } from './mdx/code'
@@ -17,6 +16,8 @@ import {
 import { Summary } from './mdx/summary'
 import { Table, Td, Th, Tr } from './mdx/table'
 import { Text } from './mdx/text'
+import { TokenDocs } from './mdx/token-docs'
+import { FrameworkCards } from './nextra/framework-card'
 
 type Props = {
   isRawLayout?: boolean
@@ -53,6 +54,7 @@ export const getComponents = (props: Props): Components => {
     RouteSwitchTrigger: RouteSwitchTrigger,
     RouteSwitchContent: RouteSwitchContent,
     FrameworkCards: FrameworkCards,
+    TokenDocs: TokenDocs,
     ...components
   }
 }
