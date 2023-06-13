@@ -143,7 +143,6 @@ export const Button = (props: ButtonProps) => {
       <NextLink legacyBehavior href={href} passHref>
         <panda.a
           className={cx(buttonStyles({ variant, size }), className)}
-          data-scope="button"
           {...rest}
         >
           <ButtonContent leftIcon={leftIcon} rightIcon={rightIcon}>
@@ -157,7 +156,6 @@ export const Button = (props: ButtonProps) => {
   return (
     <panda.button
       className={cx(buttonStyles({ variant, size }), className)}
-      data-scope="button"
       {...rest}
     >
       <ButtonContent leftIcon={leftIcon} rightIcon={rightIcon}>
