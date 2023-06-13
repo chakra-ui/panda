@@ -17,6 +17,34 @@ const TreeState: Record<string, boolean> = Object.create(null)
  * TreeView Folder Implementation
  * -----------------------------------------------------------------------------*/
 
+const arrowRightIconStyles = css({
+  height: '18px',
+  minWidth: '18px',
+  borderRadius: 'sm',
+  p: '0.5',
+  _hover: {
+    bg: 'blackAlpha.200',
+    _dark: {
+      bg: 'whiteAlpha.200'
+    }
+  },
+  '& path': {
+    transformOrigin: 'center',
+    transitionProperty: 'transform',
+    _rtl: {
+      transform: 'rotate(-180deg)'
+    }
+  },
+  '&[data-open="true"] path': {
+    _ltr: {
+      transform: 'rotate(90deg)'
+    },
+    _rtl: {
+      transform: 'rotate(-270deg)'
+    }
+  }
+})
+
 type TreeViewFolderImplProps = {
   item: PageItem | MenuItem | Item
   anchors: Heading[]
@@ -78,7 +106,6 @@ const TreeViewFolderImpl: FC<TreeViewFolderImplProps> = ({ item, anchors }) => {
 
   return (
     <li>
-      {/* TODO: replace with shared Button */}
       <ComponentToUse
         href={isLink ? item.route : undefined}
         className={cx(
@@ -119,40 +146,12 @@ const TreeViewFolderImpl: FC<TreeViewFolderImplProps> = ({ item, anchors }) => {
           type: item.type,
           route: item.route
         })}
-        <ArrowRightIcon
-          className={css({
-            height: '18px',
-            minWidth: '18px',
-            borderRadius: 'sm',
-            p: '0.5',
-            _hover: {
-              // bg: 'gray.800/5',
-              bg: 'rgb(31 41 55 / 0.5)',
-              // _dark: { bg: 'gray.100/5' }
-              _dark: { bg: 'rgb(243 244 246 / 0.05)' }
-            }
-          })}
-          pathClassName={cx(
-            css({
-              transformOrigin: 'center',
-              transitionProperty: 'transform',
-              _rtl: { transform: 'rotate(-180deg)' }
-            }),
-            open &&
-              css({
-                _ltr: { transform: 'rotate(90deg)' },
-                _rtl: { transform: 'rotate(-270deg)' }
-              })
-          )}
-        />
+        <ArrowRightIcon data-open={open} className={arrowRightIconStyles} />
       </ComponentToUse>
 
       <Collapse className={css({ ps: '0', pt: '1' })} isOpen={open}>
         {Array.isArray(item.children) ? (
-          <TreeViewMenu
-            directories={item.children}
-            anchors={anchors}
-          />
+          <TreeViewMenu directories={item.children} anchors={anchors} />
         ) : null}
       </Collapse>
     </li>
