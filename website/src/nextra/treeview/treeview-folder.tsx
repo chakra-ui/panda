@@ -1,7 +1,7 @@
 import { Anchor, Collapse } from '@/nextra'
-import { ThreeViewMenu } from './threeview-menu'
-import { FocusedItemContext, FolderLevelContext } from './threeview-context'
-import { threeViewLinkStyle } from './threeview-link'
+import { TreeViewMenu } from './treeview-menu'
+import { FocusedItemContext, FolderLevelContext } from './treeview-context'
+import { threeViewLinkStyle } from './treeview-link'
 import { useConfig, useMenu } from '@/nextra/contexts'
 import { ArrowRightIcon } from '@/icons'
 import { css, cx } from '@/styled-system/css'
@@ -14,15 +14,15 @@ import { FC, memo, useContext, useEffect, useState } from 'react'
 const TreeState: Record<string, boolean> = Object.create(null)
 
 /* -----------------------------------------------------------------------------
- * ThreeView Folder Implementation
+ * TreeView Folder Implementation
  * -----------------------------------------------------------------------------*/
 
-type ThreeViewFolderImplProps = {
+type TreeViewFolderImplProps = {
   item: PageItem | MenuItem | Item
   anchors: Heading[]
 }
 
-const ThreeViewFolderImpl: FC<ThreeViewFolderImplProps> = ({ item, anchors }) => {
+const TreeViewFolderImpl: FC<TreeViewFolderImplProps> = ({ item, anchors }) => {
   const routeOriginal = useFSRoute()
   const [route] = routeOriginal.split('#')
   const active = [route, route + '/'].includes(item.route + '/')
@@ -149,7 +149,7 @@ const ThreeViewFolderImpl: FC<ThreeViewFolderImplProps> = ({ item, anchors }) =>
 
       <Collapse className={css({ ps: '0', pt: '1' })} isOpen={open}>
         {Array.isArray(item.children) ? (
-          <ThreeViewMenu
+          <TreeViewMenu
             directories={item.children}
             anchors={anchors}
           />
@@ -160,19 +160,19 @@ const ThreeViewFolderImpl: FC<ThreeViewFolderImplProps> = ({ item, anchors }) =>
 }
 
 /* -----------------------------------------------------------------------------
- * ThreeView Folder
+ * TreeView Folder
  * -----------------------------------------------------------------------------*/
 
-export const ThreeViewFolder = memo((props: ThreeViewFolderImplProps) => {
+export const TreeViewFolder = memo((props: TreeViewFolderImplProps) => {
   const level = useContext(FolderLevelContext)
 
   return (
     <FolderLevelContext.Provider value={level + 1}>
-      <ThreeViewFolderImpl {...props} />
+      <TreeViewFolderImpl {...props} />
     </FolderLevelContext.Provider>
   )
 })
 
 if (process.env.NODE_ENV === 'development') {
-  ThreeViewFolder.displayName = 'ThreeViewFolder'
+  TreeViewFolder.displayName = 'TreeViewFolder'
 }

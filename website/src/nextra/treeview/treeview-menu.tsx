@@ -1,11 +1,11 @@
 import { FC } from 'react'
 import type { Heading } from 'nextra'
 import type { Item, PageItem } from 'nextra/normalize-pages'
-import { ThreeViewFile } from './threeview-file'
-import { ThreeViewFolder } from './threeview-folder'
-import { ThreeViewList } from './threeview-list'
+import { TreeViewFile } from './treeview-file'
+import { TreeViewFolder } from './treeview-folder'
+import { TreeViewList } from './treeview-list'
 
-export interface IThreeViewMenuProps {
+export interface ITreeViewMenuProps {
   directories: PageItem[] | Item[]
   anchors: Heading[]
   className?: string
@@ -13,24 +13,24 @@ export interface IThreeViewMenuProps {
   root?: boolean
 }
 
-export const ThreeViewMenu: FC<IThreeViewMenuProps> = ({
+export const TreeViewMenu: FC<ITreeViewMenuProps> = ({
   directories,
   anchors,
   onlyCurrentDocs,
   ...rest
 }) => {
   return (
-    <ThreeViewList {...rest}>
+    <TreeViewList {...rest}>
       {directories.map(item =>
         !onlyCurrentDocs || item.isUnderCurrentDocsTree ? (
           item.type === 'menu' ||
           (item.children && (item.children.length || !item.withIndexPage)) ? (
-            <ThreeViewFolder key={item.name} item={item} anchors={anchors} />
+            <TreeViewFolder key={item.name} item={item} anchors={anchors} />
           ) : (
-            <ThreeViewFile key={item.name} item={item} anchors={anchors} />
+            <TreeViewFile key={item.name} item={item} anchors={anchors} />
           )
         ) : null
       )}
-    </ThreeViewList>
+    </TreeViewList>
   )
 }

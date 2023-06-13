@@ -64,8 +64,8 @@ export const threeViewLinkStyle = cva({
   }
 })
 
-export type ThreeViewLinkVariants = RecipeVariantProps<
+export type TreeViewLinkVariants = RecipeVariantProps<
   typeof threeViewLinkStyle
 >
 
-export const ThreeViewLink = panda('a', threeViewLinkStyle)
+export const TreeViewLink = panda('a', threeViewLinkStyle)

@@ -5,7 +5,7 @@ import { useConfig } from '@/nextra/contexts'
 import { renderComponent } from '@/nextra/lib'
 
 /* -----------------------------------------------------------------------------
- * ThreeView Separator Container
+ * TreeView Separator Container
  * -----------------------------------------------------------------------------*/
 
 const threeViewSeparatorContainerStyles = cva({
@@ -36,13 +36,13 @@ const threeViewSeparatorContainerStyles = cva({
   }
 })
 
-const ThreeViewSeparatorContainer = panda('li', threeViewSeparatorContainerStyles)
+const TreeViewSeparatorContainer = panda('li', threeViewSeparatorContainerStyles)
 
 /* -----------------------------------------------------------------------------
- * ThreeView Separator Hr
+ * TreeView Separator Hr
  * -----------------------------------------------------------------------------*/
 
-const ThreeViewSeparatorHr = () => (
+const TreeViewSeparatorHr = () => (
   <panda.hr
     mx={2}
     borderTopWidth="1px"
@@ -54,18 +54,18 @@ const ThreeViewSeparatorHr = () => (
 )
 
 /* -----------------------------------------------------------------------------
- * ThreeView Separator
+ * TreeView Separator
  * -----------------------------------------------------------------------------*/
 
-export interface IThreeViewSeparator {
+export interface ITreeViewSeparator {
   title: string
 }
 
-export const ThreeViewSeparator: FC<IThreeViewSeparator> = ({ title }) => {
+export const TreeViewSeparator: FC<ITreeViewSeparator> = ({ title }) => {
   const config = useConfig()
 
   return (
-    <ThreeViewSeparatorContainer withTitle={Boolean(title)}>
+    <TreeViewSeparatorContainer withTitle={Boolean(title)}>
       {title ? (
         renderComponent(config.sidebar.titleComponent, {
           title,
@@ -73,8 +73,8 @@ export const ThreeViewSeparator: FC<IThreeViewSeparator> = ({ title }) => {
           route: ''
         })
       ) : (
-        <ThreeViewSeparatorHr />
+        <TreeViewSeparatorHr />
       )}
-    </ThreeViewSeparatorContainer>
+    </TreeViewSeparatorContainer>
   )
 }

@@ -1,10 +1,10 @@
 import { FC, useState } from 'react'
-import { FocusedItemContext, OnFocusedItemContext } from './threeview-context'
-import { ThreeViewMenu, type IThreeViewMenuProps } from './threeview-menu'
+import { FocusedItemContext, OnFocusedItemContext } from './treeview-context'
+import { TreeViewMenu, type ITreeViewMenuProps } from './treeview-menu'
 
-export type ThreeViewProps = Omit<IThreeViewMenuProps, 'root'>;
+export type TreeViewProps = Omit<ITreeViewMenuProps, 'root'>;
 
-export const ThreeView: FC<ThreeViewProps> = (props) => {
+export const TreeView: FC<TreeViewProps> = (props) => {
   const [focused, setFocused] = useState<null | string>(null)
 
   return (
@@ -14,7 +14,7 @@ export const ThreeView: FC<ThreeViewProps> = (props) => {
           setFocused(item)
         }}
       >
-        <ThreeViewMenu root {...props} />
+        <TreeViewMenu root {...props} />
       </OnFocusedItemContext.Provider>
     </FocusedItemContext.Provider>
   )

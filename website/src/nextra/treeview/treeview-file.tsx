@@ -1,25 +1,25 @@
 import { FC, useContext } from 'react'
 import { panda } from '@/styled-system/jsx'
-import { OnFocusedItemContext } from './threeview-context'
-import { ThreeViewSeparator } from './threeview-separator'
+import { OnFocusedItemContext } from './treeview-context'
+import { TreeViewSeparator } from './treeview-separator'
 import { useActiveAnchor, useConfig, useMenu } from '@/nextra/contexts'
 import { Heading } from 'nextra'
 import { useFSRoute } from 'nextra/hooks'
 import { Item, PageItem } from 'nextra/normalize-pages'
 import { Anchor } from '@/nextra'
 import { renderComponent } from '@/nextra/lib'
-import { ThreeViewList } from './threeview-list'
-import { ThreeViewLink, threeViewLinkStyle } from './threeview-link'
+import { TreeViewList } from './treeview-list'
+import { TreeViewLink, threeViewLinkStyle } from './treeview-link'
 
 /* -----------------------------------------------------------------------------
- * ThreeView Heading Anchor
+ * TreeView Heading Anchor
  * -----------------------------------------------------------------------------*/
 
-interface IThreeViewHeadingAnchorProps {
+interface ITreeViewHeadingAnchorProps {
   heading: Heading
 }
 
-const ThreeViewHeadingAnchor: FC<IThreeViewHeadingAnchorProps> = ({
+const TreeViewHeadingAnchor: FC<ITreeViewHeadingAnchorProps> = ({
   heading
 }) => {
   const { id, value } = heading
@@ -27,7 +27,7 @@ const ThreeViewHeadingAnchor: FC<IThreeViewHeadingAnchorProps> = ({
   const { setMenu } = useMenu()
 
   return (
-    <ThreeViewLink
+    <TreeViewLink
       href={`#${id}`}
       active={activeAnchor[id]?.isActive}
       display="flex"
@@ -41,20 +41,20 @@ const ThreeViewHeadingAnchor: FC<IThreeViewHeadingAnchorProps> = ({
       }}
     >
       {value}
-    </ThreeViewLink>
+    </TreeViewLink>
   )
 }
 
 /* -----------------------------------------------------------------------------
- * ThreeView File
+ * TreeView File
  * -----------------------------------------------------------------------------*/
 
-export interface ThreeViewFileProps {
+export interface TreeViewFileProps {
   item: PageItem | Item
   anchors: Heading[]
 }
 
-export const ThreeViewFile: FC<ThreeViewFileProps> = ({ item, anchors }) => {
+export const TreeViewFile: FC<TreeViewFileProps> = ({ item, anchors }) => {
   const route = useFSRoute()
   const onFocus = useContext(OnFocusedItemContext)
 
@@ -67,7 +67,7 @@ export const ThreeViewFile: FC<ThreeViewFileProps> = ({ item, anchors }) => {
   const config = useConfig()
 
   if (item.type === 'separator') {
-    return <ThreeViewSeparator title={item.title} />
+    return <TreeViewSeparator title={item.title} />
   }
 
   return (
@@ -94,13 +94,13 @@ export const ThreeViewFile: FC<ThreeViewFileProps> = ({ item, anchors }) => {
       </Anchor>
 
       {active && anchors.length > 0 && (
-        <ThreeViewList>
+        <TreeViewList>
           {anchors.map(heading => (
             <li key={heading.id}>
-              <ThreeViewHeadingAnchor heading={heading} />
+              <TreeViewHeadingAnchor heading={heading} />
             </li>
           ))}
-        </ThreeViewList>
+        </TreeViewList>
       )}
     </panda.li>
   )
