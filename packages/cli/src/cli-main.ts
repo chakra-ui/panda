@@ -170,11 +170,6 @@ export async function main() {
         return
       }
 
-      // single file bundle is not supported yet
-      // if (flags?.html && typeof flags.html === 'string') {
-      //   return
-      // }
-
       logger.info('cli', `Found ${result.details.byId.size} token used in ${result.details.byFilePathMaps.size} files`)
     })
 
