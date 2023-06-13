@@ -842,7 +842,7 @@ importers:
         version: 0.6.0(react-dom@18.2.0)(react@18.2.0)
       '@astrojs/react':
         specifier: 2.2.1
-        version: 2.2.1(@types/react-dom@18.2.4)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0)
+        version: 2.2.1(@types/react-dom@18.2.5)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0)
       '@pandacss/config':
         specifier: workspace:*
         version: link:../config
@@ -884,8 +884,8 @@ importers:
         specifier: 18.0.17
         version: 18.0.17
       '@types/react-dom':
-        specifier: 18.2.4
-        version: 18.2.4
+        specifier: 18.2.5
+        version: 18.2.5
       '@vitejs/plugin-react':
         specifier: 4.0.0
         version: 4.0.0(vite@4.3.9)
@@ -1022,8 +1022,8 @@ importers:
         specifier: 18.0.17
         version: 18.0.17
       '@types/react-dom':
-        specifier: 18.2.4
-        version: 18.2.4
+        specifier: 18.2.5
+        version: 18.2.5
       eslint:
         specifier: 8.42.0
         version: 8.42.0
@@ -1093,8 +1093,8 @@ importers:
         specifier: 18.0.17
         version: 18.0.17
       '@types/react-dom':
-        specifier: 18.2.4
-        version: 18.2.4
+        specifier: 18.2.5
+        version: 18.2.5
       eslint:
         specifier: 8.42.0
         version: 8.42.0
@@ -1126,8 +1126,8 @@ importers:
         specifier: 18.0.17
         version: 18.0.17
       '@types/react-dom':
-        specifier: 18.2.4
-        version: 18.2.4
+        specifier: 18.2.5
+        version: 18.2.5
       eslint:
         specifier: 8.42.0
         version: 8.42.0
@@ -1413,8 +1413,8 @@ importers:
         specifier: 18.0.17
         version: 18.0.17
       '@types/react-dom':
-        specifier: 18.2.4
-        version: 18.2.4
+        specifier: 18.2.5
+        version: 18.2.5
       '@vitejs/plugin-react':
         specifier: 4.0.0
         version: 4.0.0(vite@4.3.9)
@@ -1635,7 +1635,7 @@ packages:
     dependencies:
       prismjs: 1.29.0
 
-  /@astrojs/react@2.2.1(@types/react-dom@18.2.4)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0):
+  /@astrojs/react@2.2.1(@types/react-dom@18.2.5)(@types/react@18.0.17)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-nq5Zr8iWdwjSp5fh1NReaCplwsnL4w5PXAY5XWu1jE/frxEfF/ycGHrrhwWW0uJHX9G+kUtmQLR0GBhlR4FmAw==}
     engines: {node: '>=16.12.0'}
     peerDependencies:
@@ -1647,7 +1647,7 @@ packages:
       '@babel/core': 7.22.1
       '@babel/plugin-transform-react-jsx': 7.22.3(@babel/core@7.22.1)
       '@types/react': 18.0.17
-      '@types/react-dom': 18.2.4
+      '@types/react-dom': 18.2.5
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     transitivePeerDependencies:
@@ -11046,6 +11046,12 @@ packages:
 
   /@types/react-dom@18.2.4:
     resolution: {integrity: sha512-G2mHoTMTL4yoydITgOGwWdWMVd8sNgyEP85xVmMKAPUBwQWm9wBPQUmvbeF4V3WBY1P7mmL4BkjQ0SqUpf1snw==}
+    dependencies:
+      '@types/react': 18.0.17
+    dev: true
+
+  /@types/react-dom@18.2.5:
+    resolution: {integrity: sha512-sRQsOS/sCLnpQhR4DSKGTtWFE3FZjpQa86KPVbhUqdYMRZ9FEFcfAytKhR/vUG2rH1oFbOOej6cuD7MFSobDRQ==}
     dependencies:
       '@types/react': 18.0.17
 
