@@ -50,6 +50,16 @@ To scaffold the panda config and postcss
 npx panda init -p
 ```
 
+Setup and import the entry CSS file
+
+```css
+@layer reset, base, tokens, recipes, utilities;
+```
+
+```jsx
+import 'path/to/entry.css'
+```
+
 Start the dev server of your project
 
 ```bash
