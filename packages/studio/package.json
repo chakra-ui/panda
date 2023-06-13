@@ -5,7 +5,10 @@
   "main": "dist/studio.js",
   "module": "dist/studio.mjs",
   "types": "dist/studio.d.ts",
-  "private": true,
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "codegen": "panda",
     "build": "tsup scripts --format=esm,cjs --dts --no-splitting --shims",
