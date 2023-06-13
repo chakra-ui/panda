@@ -223,7 +223,14 @@ const UsedInFiles = () => {
   )
 }
 
-const selectOptionClass = css({ padding: '4px 8px', bg: 'white' })
+const selectOptionClass = css({
+  padding: '4px 8px',
+  rounded: 'md',
+  '& li': {
+    cursor: 'pointer',
+    _hover: { opacity: 0.8 },
+  },
+})
 
 const ReportItemMatchingFiltersTable = (infos: Infos) => {
   const tokenName = infos.params.value
@@ -252,7 +259,7 @@ const ReportItemMatchingFiltersTable = (infos: Infos) => {
                   Found ({infos[value].length}) matches{' '}
                 </panda.span>
               }
-              bg="gray.50"
+              bg="card"
             >
               <DataTable list={infos[value]} columns={columns} />
               <>
