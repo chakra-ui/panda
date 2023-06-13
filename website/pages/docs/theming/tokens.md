@@ -111,7 +111,9 @@ export default defineConfig({
   theme: {
     semanticTokens: {
       colors: {
-        danger: { value: { base: '{colors.red}', _dark: '{colors.darkred}' } },
+        danger: {
+          value: { base: '{colors.red}', _dark: '{colors.darkred}' }
+        },
         success: {
           value: { base: '{colors.green}', _dark: '{colors.darkgreen}' }
         }
@@ -121,7 +123,7 @@ export default defineConfig({
 })
 ```
 
-> NOTE 🚨: The conditions used in semantic tokens most be an at-rule or a parent selector.
+> NOTE 🚨: The conditions used in semantic tokens most be a at-rule or parent selector [condition](/docs/concepts/conditional-styles#reference).
 
 ## Token Types
 
