@@ -3,7 +3,7 @@ import { grid, hstack, square } from '@/styled-system/patterns'
 import { Token } from '@pandacss/token-dictionary'
 
 export const ColorGrid = ({ tokens }: { tokens: Token[] }) => (
-  <div className={grid({ columns: 3, gap: '2' })}>
+  <div className={grid({ columns: 3, gap: '2', fontSize: 'sm' })}>
     {tokens.map((token, index) => (
       <div key={index} className={hstack()}>
         <div
@@ -11,10 +11,10 @@ export const ColorGrid = ({ tokens }: { tokens: Token[] }) => (
           style={{ background: token.extensions.varRef }}
         />
         <div>
-          <div>{token.extensions.prop}</div>
-          <div className={css({ opacity: '0.6', fontSize: 'sm' })}>
-            {token.value}
+          <div className={css({ fontWeight: 'medium' })}>
+            {token.extensions.prop}
           </div>
+          <div className={css({ opacity: '0.6' })}>{token.value}</div>
         </div>
       </div>
     ))}

@@ -24,9 +24,9 @@ const styles = cva({
   },
   variants: {
     tag: {
-      h1: { mt: 2, fontSize: '4xl', fontWeight: 'bold' },
-      h2: { mt: '10', fontSize: '3xl' },
-      h3: { mt: '8', fontSize: '2xl' },
+      h1: { mt: '2', fontSize: '4xl', fontWeight: 'bold' },
+      h2: { mt: '12', fontSize: '3xl' },
+      h3: { mt: '10', fontSize: '2xl' },
       h4: { mt: '8', fontSize: 'xl' },
       h5: { mt: '8', fontSize: 'lg' },
       h6: { mt: '8', fontSize: 'base' }

@@ -5,7 +5,7 @@ import { defaultColors } from './query'
 
 export const Colors = () => {
   return (
-    <div className={stack({ gap: '8', fontSize: 'sm' })}>
+    <div className={stack({ gap: '8' })}>
       {defaultColors.map(color => (
         <div key={color.key} className={stack()}>
           <p
