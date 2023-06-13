@@ -18,10 +18,10 @@
     "dist"
   ],
   "devDependencies": {
+    "@pandacss/extractor": "workspace:*",
+    "@pandacss/token-dictionary": "workspace:*",
     "chokidar-cli": "^3.0.0",
-    "csstype": "3.1.2"
-  },
-  "dependencies": {
-    "@pandacss/extractor": "workspace:*"
+    "csstype": "3.1.2",
+    "hookable": "5.5.3"
   }
 }

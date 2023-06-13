@@ -27,6 +27,7 @@ export async function generate(config: Config, configPath?: string) {
     configWatcher.on('change', async () => {
       logger.info('config:change', 'Config changed, restarting...')
       await loadCtx()
+      await ctxRef.current.hooks.callHook('config:change', ctxRef.current.config)
       return build(ctxRef.current)
     })
 

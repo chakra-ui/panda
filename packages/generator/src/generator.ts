@@ -1,4 +1,4 @@
-import type { LoadConfigResult } from '@pandacss/types'
+import type { ConfigResultWithHooks } from '@pandacss/types'
 import { Obj, pipe } from 'lil-fp'
 import { generateArtifacts } from './artifacts'
 import { generateFlattenedCss } from './artifacts/css/flat-css'
@@ -6,7 +6,7 @@ import { generateParserCss } from './artifacts/css/parser-css'
 import { getEngine } from './engines'
 import { getMessages } from './messages'
 
-const defaults = (conf: LoadConfigResult): LoadConfigResult => ({
+const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
   ...conf,
   config: {
     cssVarRoot: ':where(:root, :host)',
@@ -23,7 +23,7 @@ const getImportMap = (outdir: string) => ({
   jsx: `${outdir}/jsx`,
 })
 
-export const createGenerator = (conf: LoadConfigResult) =>
+export const createGenerator = (conf: ConfigResultWithHooks) =>
   pipe(
     getEngine(defaults(conf)),
     Obj.assign((ctx) => ({

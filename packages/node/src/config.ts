@@ -1,7 +1,8 @@
 import { loadConfigFile } from '@pandacss/config'
-import type { Config } from '@pandacss/types'
+import type { Config, ConfigResultWithHooks, PandaHooks } from '@pandacss/types'
 import { lookItUpSync } from 'look-it-up'
 import { createContext } from './create-context'
+import { createDebugger, createHooks } from 'hookable'
 
 const configs = ['.ts', '.js', '.mjs', '.cjs']
 
@@ -15,6 +16,8 @@ export function findConfig() {
 }
 
 export async function loadConfigAndCreateContext(options: { cwd?: string; config?: Config; configPath?: string } = {}) {
+  const hooks = createHooks<PandaHooks>()
+
   const { cwd = process.cwd(), config, configPath } = options
   const conf = await loadConfigFile({ cwd, file: configPath })
 
@@ -27,5 +30,15 @@ export async function loadConfigAndCreateContext(options: { cwd?: string; config
 
   conf.config.outdir ??= 'styled-system'
 
-  return createContext(conf)
+  // Register user hooks
+  if (conf.config.hooks) {
+    hooks.addHooks(conf.config.hooks)
+  }
+
+  await hooks.callHook('config:resolved', conf)
+  if (conf.config.logLevel === 'debug') {
+    createDebugger(hooks, { tag: 'panda' })
+  }
+
+  return createContext({ ...conf, hooks } as ConfigResultWithHooks)
 }

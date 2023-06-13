@@ -1,8 +1,11 @@
 import type { Generator } from '@pandacss/generator'
-import type { Artifact } from '@pandacss/types'
+import type { Artifact, PandaHookable } from '@pandacss/types'
 import type { Runtime } from '@pandacss/types/src/runtime'
 
-export const getOutputEngine = ({ paths, runtime: { path, fs } }: Generator & { runtime: Runtime }) => ({
+export const getOutputEngine = ({
+  paths,
+  runtime: { path, fs },
+}: Generator & { runtime: Runtime; hooks: PandaHookable }) => ({
   empty() {
     fs.rmDirSync(path.join(...paths.root))
   },

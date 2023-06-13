@@ -9,6 +9,7 @@ import {
   patterns,
 } from '@pandacss/fixture'
 import { createGenerator } from '../src'
+import { createHooks } from 'hookable'
 
 export const generator = createGenerator({
   dependencies: [],
@@ -33,4 +34,5 @@ export const generator = createGenerator({
     outdir: '',
   },
   path: '',
+  hooks: createHooks(),
 })

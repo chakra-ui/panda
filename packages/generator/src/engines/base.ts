@@ -10,7 +10,7 @@ import {
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { compact, mapObject, memo } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import type { LoadConfigResult } from '@pandacss/types'
+import type { ConfigResultWithHooks } from '@pandacss/types'
 import { isBool, isStr } from 'lil-fp'
 import postcss from 'postcss'
 
@@ -18,7 +18,7 @@ const helpers = {
   map: mapObject,
 }
 
-export const getBaseEngine = (conf: LoadConfigResult) => {
+export const getBaseEngine = (conf: ConfigResultWithHooks) => {
   const { config } = conf
   const theme = config.theme ?? {}
 

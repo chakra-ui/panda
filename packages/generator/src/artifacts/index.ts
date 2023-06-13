@@ -221,7 +221,7 @@ function setupResetCss(ctx: Context): Artifact {
   const { preflight } = ctx.config
   if (!preflight) return
   const scope = isObject(preflight) ? preflight.scope : undefined
-  const code = generateResetCss(scope)
+  const code = generateResetCss(ctx, scope)
   return { files: [{ file: 'reset.css', code }] }
 }
 

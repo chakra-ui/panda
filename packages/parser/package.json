@@ -27,7 +27,8 @@
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",
-    "@pandacss/generator": "workspace:*"
+    "@pandacss/generator": "workspace:*",
+    "hookable": "5.5.3"
   },
   "files": [
     "dist"

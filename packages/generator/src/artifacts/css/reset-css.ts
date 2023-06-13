@@ -1,8 +1,10 @@
+import type { Context } from '../../engines'
+
 const css = String.raw
 
-export function generateResetCss(scope = '') {
+export function generateResetCss(ctx: Context, scope = '') {
   const selector = scope ? `${scope} ` : ''
-  return css`
+  const output = css`
     @layer reset {
       ${selector}* {
         margin: 0;
@@ -195,4 +197,7 @@ export function generateResetCss(scope = '') {
       }
     }
   `
+
+  ctx.hooks.callHook('generator:css', 'reset.css', output)
+  return output
 }
