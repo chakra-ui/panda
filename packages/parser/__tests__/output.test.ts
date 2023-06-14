@@ -1,6 +1,15 @@
 import { describe, test, expect } from 'vitest'
 import { getFixtureProject } from './fixture'
 
+const run = (code: string) => {
+  const { parse, generator } = getFixtureProject(code)
+  const result = parse()!
+  return {
+    json: result?.toArray().map(({ box, ...item }) => item),
+    css: generator.getParserCss(result)!,
+  }
+}
+
 describe('extract to css output pipeline', () => {
   test('basic usage', () => {
     const code = `
@@ -37,9 +46,8 @@ describe('extract to css output pipeline', () => {
         )
        }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -88,8 +96,8 @@ describe('extract to css output pipeline', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_blue\\\\.100 {
           color: var(--colors-blue-100)
@@ -174,9 +182,9 @@ describe('extract to css output pipeline', () => {
         )
        }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -193,8 +201,8 @@ describe('extract to css output pipeline', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_blue\\\\.100 {
           color: var(--colors-blue-100)
@@ -233,9 +241,8 @@ describe('extract to css output pipeline', () => {
         )
        }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -265,8 +272,8 @@ describe('extract to css output pipeline', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:text_green\\\\.100 {
           color: var(--colors-green-100)
@@ -305,9 +312,8 @@ describe('extract to css output pipeline', () => {
         )
        }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -324,8 +330,8 @@ describe('extract to css output pipeline', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .color-palette_blue {
           --colors-color-palette-50: var(--colors-blue-50);
@@ -364,9 +370,8 @@ describe('extract to css output pipeline', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -388,8 +393,8 @@ describe('extract to css output pipeline', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .flex_column {
           flex-direction: column
@@ -658,9 +663,8 @@ describe('preset patterns', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -673,8 +677,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_blue\\\\.100 {
           color: var(--colors-blue-100)
@@ -695,9 +699,8 @@ describe('preset patterns', () => {
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -710,8 +713,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_blue\\\\.100 {
           color: var(--colors-blue-100)
@@ -732,9 +735,8 @@ describe('preset patterns', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -745,8 +747,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -767,9 +769,8 @@ describe('preset patterns', () => {
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -782,8 +783,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -808,9 +809,8 @@ describe('preset patterns', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -821,8 +821,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -851,9 +851,8 @@ describe('preset patterns', () => {
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -866,8 +865,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -900,9 +899,8 @@ describe('preset patterns', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -913,8 +911,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -947,9 +945,8 @@ describe('preset patterns', () => {
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -962,8 +959,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -1000,9 +997,8 @@ describe('preset patterns', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1013,8 +1009,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -1047,9 +1043,8 @@ describe('preset patterns', () => {
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1062,8 +1057,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -1100,9 +1095,8 @@ describe('preset patterns', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1113,8 +1107,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .self_stretch {
           align-self: stretch
@@ -1131,6 +1125,160 @@ describe('preset patterns', () => {
     `)
   })
 
+  test('linkOverlay, linkBox', () => {
+    const code = `
+      import { linkOverlay, linkBox } from ".panda/patterns"
+
+      function Button() {
+        return (
+          <div className={linkBox()}>
+              <a className={linkOverlay()}>Click me</a>
+          </div>
+        )
+      }
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "linkBox",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "linkOverlay",
+          "type": "pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .pos_relative {
+          position: relative
+          }
+
+        .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:pos_relative :where(a, abbr) {
+          position: relative
+              }
+
+        .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:z_1 :where(a, abbr) {
+          z-index: 1
+              }
+
+        .pos_static {
+          position: static
+          }
+
+        .before\\\\:content_\\\\\\"\\\\\\"::before {
+          content: \\"\\"
+              }
+
+        .before\\\\:d_block::before {
+          display: block
+              }
+
+        .before\\\\:pos_absolute::before {
+          position: absolute
+              }
+
+        .before\\\\:cursor_inherit::before {
+          cursor: inherit
+              }
+
+        .before\\\\:inset_0::before {
+          inset: 0
+              }
+
+        .before\\\\:z_0::before {
+          z-index: 0
+              }
+      }"
+    `)
+  })
+
+  test('jsx linkOverlay, linkBox', () => {
+    const code = `
+      import { LinkBox, LinkOverlay } from ".panda/jsx"
+
+      function Button() {
+        return (
+          <LinkBox>
+              <LinkOverlay>Click me</LinkOverlay>
+          </LinkBox>
+        )
+      }
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "LinkBox",
+          "type": "jsx-pattern",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "LinkOverlay",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .pos_relative {
+          position: relative
+          }
+
+        .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:pos_relative :where(a, abbr) {
+          position: relative
+              }
+
+        .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:z_1 :where(a, abbr) {
+          z-index: 1
+              }
+
+        .pos_static {
+          position: static
+          }
+
+        .before\\\\:content_\\\\\\"\\\\\\"::before {
+          content: \\"\\"
+              }
+
+        .before\\\\:d_block::before {
+          display: block
+              }
+
+        .before\\\\:pos_absolute::before {
+          position: absolute
+              }
+
+        .before\\\\:cursor_inherit::before {
+          cursor: inherit
+              }
+
+        .before\\\\:inset_0::before {
+          inset: 0
+              }
+
+        .before\\\\:z_0::before {
+          z-index: 0
+              }
+      }"
+    `)
+  })
+
   test('jsx spacer', () => {
     const code = `
       import { Spacer } from ".panda/jsx"
@@ -1143,9 +1291,8 @@ describe('preset patterns', () => {
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1158,8 +1305,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .self_stretch {
           align-self: stretch
@@ -1192,9 +1339,8 @@ describe('preset patterns', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1205,8 +1351,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -1243,9 +1389,8 @@ describe('preset patterns', () => {
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1258,8 +1403,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -1288,56 +1433,67 @@ describe('preset patterns', () => {
     `)
   })
 
-  test('absoluteCenter', () => {
+  test('float', () => {
     const code = `
-      import { absoluteCenter } from ".panda/patterns"
+      import { float } from ".panda/patterns"
 
       function Button() {
         return (
           <div>
-              <div className={absoluteCenter()}>Click me</div>
+              <div className={float()}>Click me</div>
           </div>
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
             {},
           ],
-          "name": "absoluteCenter",
+          "name": "float",
           "type": "pattern",
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .d_inline-flex {
+          display: inline-flex
+          }
+
+        .justify_center {
+          justify-content: center
+          }
+
+        .items_center {
+          align-items: center
+          }
+
         .pos_absolute {
           position: absolute
           }
 
-        .inset-t_50\\\\% {
-          inset-block-start: 50%
+        .inset-t_0 {
+          inset-block-start: 0
           }
 
-        .start_50\\\\% {
-          inset-inline-start: 50%
+        .inset-b_auto {
+          inset-block-end: auto
           }
 
-        .transform_translate\\\\(-50\\\\%\\\\,_-50\\\\%\\\\) {
-          transform: translate(-50%, -50%)
+        .start_auto {
+          inset-inline-start: auto
           }
 
-        .max-w_100\\\\% {
-          max-width: 100%
+        .end_0 {
+          inset-inline-end: 0
           }
 
-        .max-h_100\\\\% {
-          max-height: 100%
+        .translate_50\\\\%_-50\\\\% {
+          translate: 50% -50%
           }
       }"
     `)
@@ -1345,19 +1501,18 @@ describe('preset patterns', () => {
 
   test('jsx absoluteCenter', () => {
     const code = `
-      import { AbsoluteCenter } from ".panda/jsx"
+      import { Float } from ".panda/jsx"
 
       function Button() {
         return (
           <div>
-              <AbsoluteCenter color="blue.100">Click me</div>
+              <Float color="blue.100">Click me</div>
           </div>
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1365,36 +1520,48 @@ describe('preset patterns', () => {
               "color": "blue.100",
             },
           ],
-          "name": "AbsoluteCenter",
+          "name": "Float",
           "type": "jsx-pattern",
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .d_inline-flex {
+          display: inline-flex
+          }
+
+        .justify_center {
+          justify-content: center
+          }
+
+        .items_center {
+          align-items: center
+          }
+
         .pos_absolute {
           position: absolute
           }
 
-        .inset-t_50\\\\% {
-          inset-block-start: 50%
+        .inset-t_0 {
+          inset-block-start: 0
           }
 
-        .start_50\\\\% {
-          inset-inline-start: 50%
+        .inset-b_auto {
+          inset-block-end: auto
           }
 
-        .transform_translate\\\\(-50\\\\%\\\\,_-50\\\\%\\\\) {
-          transform: translate(-50%, -50%)
+        .start_auto {
+          inset-inline-start: auto
           }
 
-        .max-w_100\\\\% {
-          max-width: 100%
+        .end_0 {
+          inset-inline-end: 0
           }
 
-        .max-h_100\\\\% {
-          max-height: 100%
+        .translate_50\\\\%_-50\\\\% {
+          translate: 50% -50%
           }
 
         .text_blue\\\\.100 {
@@ -1416,9 +1583,8 @@ describe('preset patterns', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1429,8 +1595,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_grid {
           display: grid
@@ -1455,9 +1621,8 @@ describe('preset patterns', () => {
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1470,8 +1635,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_grid {
           display: grid
@@ -1500,9 +1665,8 @@ describe('preset patterns', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1513,8 +1677,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot('""')
+
+    expect(result.css).toMatchInlineSnapshot('""')
   })
 
   test('jsx gridItem', () => {
@@ -1529,9 +1693,8 @@ describe('preset patterns', () => {
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1544,8 +1707,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .text_blue\\\\.100 {
           color: var(--colors-blue-100)
@@ -1566,9 +1729,8 @@ describe('preset patterns', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1579,8 +1741,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -1609,9 +1771,8 @@ describe('preset patterns', () => {
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1624,8 +1785,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -1658,9 +1819,8 @@ describe('preset patterns', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1671,8 +1831,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .pos_relative {
           position: relative
@@ -1717,9 +1877,8 @@ describe('preset patterns', () => {
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1732,8 +1891,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .pos_relative {
           position: relative
@@ -1782,9 +1941,8 @@ describe('preset patterns', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1795,8 +1953,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -1825,9 +1983,8 @@ describe('preset patterns', () => {
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1840,8 +1997,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .d_flex {
           display: flex
@@ -1874,9 +2031,8 @@ describe('preset patterns', () => {
         )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1887,8 +2043,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .overflow_hidden {
           overflow: hidden
@@ -1933,9 +2089,8 @@ describe('preset patterns', () => {
           )
       }
      `
-    const { parse, generator } = getFixtureProject(code)
-    const result = parse()!
-    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
       [
         {
           "data": [
@@ -1948,8 +2103,8 @@ describe('preset patterns', () => {
         },
       ]
     `)
-    const css = generator.getParserCss(result)!
-    expect(css).toMatchInlineSnapshot(`
+
+    expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
         .overflow_hidden {
           overflow: hidden

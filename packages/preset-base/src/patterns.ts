@@ -1,8 +1,8 @@
 import type { PatternConfig } from '@pandacss/types'
 
 // inlining this function to avoid having to depend on @pandacss/dev
-function definePattern<T>(config: PatternConfig<T>) {
-  return config as PatternConfig
+function definePattern<T extends PatternConfig>(config: T) {
+  return config
 }
 
 const box = definePattern({
@@ -143,26 +143,6 @@ const square = definePattern({
       flex: '0 0 auto',
       width: size,
       height: size,
-      ...rest,
-    }
-  },
-})
-
-const absoluteCenter = definePattern({
-  properties: {
-    axis: { type: 'enum', value: ['x', 'y', 'both'] },
-  },
-  transform(props, { map }) {
-    const { axis = 'both', ...rest } = props
-    return {
-      position: 'absolute',
-      insetBlockStart: map(axis, (v) => (v === 'x' ? 'auto' : '50%')),
-      insetInlineStart: map(axis, (v) => (v === 'y' ? 'auto' : '50%')),
-      transform: map(axis, (v) =>
-        v === 'both' ? 'translate(-50%, -50%)' : v === 'x' ? 'translateX(-50%)' : 'translateY(-50%)',
-      ),
-      maxWidth: '100%',
-      maxHeight: '100%',
       ...rest,
     }
   },
@@ -310,6 +290,40 @@ const divider = definePattern({
   },
 })
 
+const linkBox = definePattern({
+  properties: {},
+  transform(props) {
+    return {
+      position: 'relative',
+      '& :where(a, abbr)': {
+        position: 'relative',
+        zIndex: '1',
+      },
+      ...props,
+    }
+  },
+})
+
+const linkOverlay = definePattern({
+  jsxElement: 'a',
+  properties: {},
+  transform(props) {
+    return {
+      position: 'static',
+      _before: {
+        content: '""',
+        display: 'block',
+        position: 'absolute',
+        cursor: 'inherit',
+        inset: '0',
+        zIndex: '0',
+        ...props['_before'],
+      },
+      ...props,
+    }
+  },
+})
+
 type Dict = Record<string, any>
 
 const float = definePattern({
@@ -380,7 +394,8 @@ export const patterns = {
   square,
   circle,
   center,
-  absoluteCenter,
+  linkBox,
+  linkOverlay,
   aspectRatio,
   grid,
   gridItem,

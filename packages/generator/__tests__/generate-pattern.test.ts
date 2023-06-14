@@ -349,40 +349,76 @@ test('should generate pattern', () => {
     import type { Properties } from '../types/csstype'
     import type { Tokens } from '../tokens'
 
-    export type AbsoluteCenterProperties = {
-       axis?: ConditionalValue<\\"x\\" | \\"y\\" | \\"both\\">
+    export type LinkBoxProperties = {
+       
     }
 
 
-    type AbsoluteCenterOptions = AbsoluteCenterProperties & Omit<SystemStyleObject, keyof AbsoluteCenterProperties >
+    type LinkBoxOptions = LinkBoxProperties & Omit<SystemStyleObject, keyof LinkBoxProperties >
 
 
-    export declare function absoluteCenter(options?: AbsoluteCenterOptions): string
+    export declare function linkBox(options?: LinkBoxOptions): string
     ",
         "js": "import { mapObject } from '../helpers.mjs';
     import { css } from '../css/index.mjs';
 
-    const absoluteCenterConfig = {
-    transform(props, { map }) {
-      const { axis = \\"both\\", ...rest } = props;
+    const linkBoxConfig = {
+    transform(props) {
       return {
-        position: \\"absolute\\",
-        insetBlockStart: map(axis, (v) => v === \\"x\\" ? \\"auto\\" : \\"50%\\"),
-        insetInlineStart: map(axis, (v) => v === \\"y\\" ? \\"auto\\" : \\"50%\\"),
-        transform: map(
-          axis,
-          (v) => v === \\"both\\" ? \\"translate(-50%, -50%)\\" : v === \\"x\\" ? \\"translateX(-50%)\\" : \\"translateY(-50%)\\"
-        ),
-        maxWidth: \\"100%\\",
-        maxHeight: \\"100%\\",
-        ...rest
+        position: \\"relative\\",
+        \\"& :where(a, abbr)\\": {
+          position: \\"relative\\",
+          zIndex: \\"1\\"
+        },
+        ...props
       };
     }}
 
-    export const getAbsoluteCenterStyle = (styles = {}) => absoluteCenterConfig.transform(styles, { map: mapObject })
+    export const getLinkBoxStyle = (styles = {}) => linkBoxConfig.transform(styles, { map: mapObject })
 
-    export const absoluteCenter = (styles) => css(getAbsoluteCenterStyle(styles))",
-        "name": "absolute-center",
+    export const linkBox = (styles) => css(getLinkBoxStyle(styles))",
+        "name": "link-box",
+      },
+      {
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { Properties } from '../types/csstype'
+    import type { Tokens } from '../tokens'
+
+    export type LinkOverlayProperties = {
+       
+    }
+
+
+    type LinkOverlayOptions = LinkOverlayProperties & Omit<SystemStyleObject, keyof LinkOverlayProperties >
+
+
+    export declare function linkOverlay(options?: LinkOverlayOptions): string
+    ",
+        "js": "import { mapObject } from '../helpers.mjs';
+    import { css } from '../css/index.mjs';
+
+    const linkOverlayConfig = {
+    transform(props) {
+      return {
+        position: \\"static\\",
+        _before: {
+          content: '\\"\\"',
+          display: \\"block\\",
+          position: \\"absolute\\",
+          cursor: \\"inherit\\",
+          inset: \\"0\\",
+          zIndex: \\"0\\",
+          ...props[\\"_before\\"]
+        },
+        ...props
+      };
+    }}
+
+    export const getLinkOverlayStyle = (styles = {}) => linkOverlayConfig.transform(styles, { map: mapObject })
+
+    export const linkOverlay = (styles) => css(getLinkOverlayStyle(styles))",
+        "name": "link-overlay",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
