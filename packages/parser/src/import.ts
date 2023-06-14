@@ -1,10 +1,18 @@
 import { memo } from '@pandacss/shared'
-import type { SourceFile } from 'ts-morph'
+import type { ImportDeclaration, SourceFile } from 'ts-morph'
 
 type ImportResult = {
   name: string
   alias: string
   mod: string
+}
+
+const getModuleSpecifierValue = (node: ImportDeclaration) => {
+  try {
+    return node.getModuleSpecifierValue()
+  } catch {
+    return
+  }
 }
 
 export function getImportDeclarations(
@@ -17,7 +25,7 @@ export function getImportDeclarations(
   const result: ImportResult[] = []
 
   file.getImportDeclarations().forEach((node) => {
-    const source = node.getModuleSpecifierValue()
+    const source = getModuleSpecifierValue(node)
     if (!source) return
 
     const specifiers = node.getNamedImports()
