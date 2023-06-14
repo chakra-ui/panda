@@ -18,15 +18,15 @@ const testimonials: Array<{
   {
     author: 'Abraham A.',
     avatar: '/profiles/anubra.png',
-    text: "Been using @panda__css for a week on an actual product and I've never had such a smooth collaboration, shared vocabulary, and mutual understanding with our designer. Setting up tokens and being very systematic and constrained about the UI we build has never been easier.",
-    username: '@anubra'
+    text: "🐼 Excited to share my love for @panda_css! It's revolutionized my styling process by seamlessly integrating CSS in JS without any runtime overhead. Say goodbye to complexity and hello to efficiency! 🎨 Highly recommend trying it out!",
+    username: '@anubra266'
   },
   {
-    author: 'Nabeel Ben',
+    author: 'Ivica B.',
     avatar:
       'https://images.unsplash.com/photo-1595085610896-fb31cfd5d4b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDJ8fHByb2ZpbGUlMjBwaG90b3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60',
     text: 'I have been using @panda__css for a few weeks now and I am loving it. It is so easy to use and the documentation is great. I am using it with @reactjs and @typescript and it is a great combo.',
-    username: '@nabeel_ben'
+    username: '@ivica'
   }
 ]
 
