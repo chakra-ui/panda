@@ -111,7 +111,7 @@ const Component = props => {
   return (
     <div 
       style={{
-        // ✅ Good: Generate CSS custom property for the token
+        // ✅ Good: Dynamically generate CSS custom property from the token
         color: token.var(`colors.${props.color}`) 
       }}
     >
@@ -122,6 +122,7 @@ const Component = props => {
 
 const App = () => {
   const [runtimeColor, setRuntimeColor] = useState('yellow.300')
+  
   return <Component color={runtimeColor} />
 }
 ```
