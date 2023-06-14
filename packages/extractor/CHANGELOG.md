@@ -1,5 +1,11 @@
 # @pandacss/extractor
 
+## 0.3.0
+
+### Patch Changes
+
+- @pandacss/logger@0.3.0
+
 ## 0.0.2
 
 ### Patch Changes
