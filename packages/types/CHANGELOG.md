@@ -1,5 +1,12 @@
 # @pandacss/types
 
+## 0.3.0
+
+### Minor Changes
+
+- 6d81ee9e: - Set default jsx factory to 'styled'
+  - Fix issue where pattern JSX was not being generated correctly when properties are not defined
+
 ## 0.0.2
 
 ### Patch Changes

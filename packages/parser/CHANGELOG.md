@@ -1,5 +1,21 @@
 # @pandacss/parser
 
+## 0.3.0
+
+### Minor Changes
+
+- 6d81ee9e: - Set default jsx factory to 'styled'
+  - Fix issue where pattern JSX was not being generated correctly when properties are not defined
+
+### Patch Changes
+
+- Updated dependencies [6d81ee9e]
+  - @pandacss/types@0.3.0
+  - @pandacss/extractor@0.3.0
+  - @pandacss/is-valid-prop@0.3.0
+  - @pandacss/logger@0.3.0
+  - @pandacss/shared@0.3.0
+
 ## 0.0.2
 
 ### Patch Changes
