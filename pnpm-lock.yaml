@@ -962,6 +962,9 @@ importers:
       '@textea/json-viewer':
         specifier: 3.0.0
         version: 3.0.0(@emotion/react@11.11.0)(@emotion/styled@11.11.0)(@mui/material@5.13.3)(react-dom@18.2.0)(react@18.2.0)
+      hookable:
+        specifier: 5.5.3
+        version: 5.5.3
       merge-anything:
         specifier: 5.1.7
         version: 5.1.7
