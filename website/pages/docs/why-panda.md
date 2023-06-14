@@ -82,14 +82,16 @@ export default defineConfig({
   theme: {
     tokens: {
       colors: {
-        gray50: '#F9FAFB',
-        gray100: '#F3F4F6'
+        gray50: { value: '#F9FAFB' },
+        gray100: { value: '#F3F4F6' }
       }
     },
     semanticTokens: {
       colors: {
-        primary: '{colors.gray50}',
-        success: { _light: '{colors.green500}', _dark: '{colors.green200}' }
+        primary: { value: '{colors.gray50}' },
+        success: {
+          value: { _light: '{colors.green500}', _dark: '{colors.green200}' }
+        }
       }
     }
   }
