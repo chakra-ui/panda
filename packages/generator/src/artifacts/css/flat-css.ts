@@ -24,10 +24,10 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
     content: resolve
       ? [
           generateGlobalCss(ctx),
-          generateStaticCss(ctx),
-          generateResetCss(),
-          generateTokenCss(ctx),
-          generateKeyframeCss(ctx),
+          staticCss && generateStaticCss(ctx),
+          preflight && generateResetCss(),
+          !ctx.tokens.isEmpty && generateTokenCss(ctx),
+          keyframes && generateKeyframeCss(ctx),
         ]
           .filter(Boolean)
           .join('\n\n')
