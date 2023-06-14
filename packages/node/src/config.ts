@@ -1,8 +1,8 @@
 import { loadConfigFile } from '@pandacss/config'
 import type { Config, ConfigResultWithHooks, PandaHooks } from '@pandacss/types'
+import { createDebugger, createHooks } from 'hookable'
 import { lookItUpSync } from 'look-it-up'
 import { createContext } from './create-context'
-import { createDebugger, createHooks } from 'hookable'
 
 const configs = ['.ts', '.js', '.mjs', '.cjs']
 

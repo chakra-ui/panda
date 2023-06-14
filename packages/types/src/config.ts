@@ -14,6 +14,10 @@ type StudioOptions = {
    */
   studio?: {
     /**
+     * The output directory for the design system studio when the build command is run.
+     */
+    outdir?: string
+    /**
      * The logo url for the design system studio.
      */
     logo?: string

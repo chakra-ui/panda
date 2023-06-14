@@ -124,7 +124,9 @@ export async function main() {
     .option('--outdir', 'Output directory for static files')
     .action(async (flags) => {
       const { build, preview, outdir } = flags
-      const outDir = outdir || path.join(process.cwd(), 'panda-static')
+
+      const ctx = await loadConfigAndCreateContext()
+      const outDir = outdir || ctx.studio.outdir
 
       if (preview) {
         await previewStudio({ outDir })

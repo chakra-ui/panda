@@ -90,8 +90,14 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     return propertyMap.has(key) || isCssProperty(key)
   })
 
+  const studio = {
+    outdir: `${config.outdir}-studio`,
+    ...conf.config.studio,
+  }
+
   return {
     ...conf,
+    studio,
     hash,
     prefix,
     tokens,
