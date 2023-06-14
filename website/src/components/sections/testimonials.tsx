@@ -23,9 +23,8 @@ const testimonials: Array<{
   },
   {
     author: 'Ivica B.',
-    avatar:
-      'https://images.unsplash.com/photo-1595085610896-fb31cfd5d4b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDJ8fHByb2ZpbGUlMjBwaG90b3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60',
-    text: 'I have been using @panda__css for a few weeks now and I am loving it. It is so easy to use and the documentation is great. I am using it with @reactjs and @typescript and it is a great combo.',
+    avatar: '/profiles/ivica-b.png',
+    text: 'Panda CSS has completely transformed the way I approach styling in my projects. It harnesses the remarkable performance benefits of utility classes and takes it to a whole new level. With Panda, I can enjoy the lightning-fast performance while experiencing a significant enhancement in readability and DX. It’s like having the best of both worlds in a single styling engine.',
     username: '@ivica'
   }
 ]
