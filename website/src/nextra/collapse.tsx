@@ -14,7 +14,6 @@ export const Collapse = (props: Props) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const innerRef = useRef<HTMLDivElement>(null)
   const animationRef = useRef(0)
-
   const initialOpen = useRef(isOpen)
   const initialRender = useRef(true)
 
@@ -64,21 +63,29 @@ export const Collapse = (props: Props) => {
       className={css({
         transform: 'translateZ(0)',
         overflow: 'hidden',
-        transitionProperty: 'all',
-        transition: 'ease-in-out',
-        _motionReduce: { transitionProperty: 'none' }
+        transition: 'all',
+        _motionReduce: {
+          transitionProperty: 'none'
+        }
       })}
       style={initialOpen.current || horizontal ? undefined : { height: 0 }}
     >
       <div
         ref={innerRef}
+        data-open={isOpen}
         className={cx(
           css({
             transitionProperty: 'opacity',
-            transitionDuration: '500ms',
-            transition: 'ease-in-out',
-            _motionReduce: { transitionProperty: 'none' },
-            opacity: isOpen ? 1 : 0
+            transition: 'opacity 500ms ease-in-out',
+            _motionReduce: {
+              transitionProperty: 'none'
+            },
+            '&[data-open="false"]': {
+              opacity: 0,
+            },
+            '&[data-open="true"]': {
+              opacity: 1,
+            }
           }),
           className
         )}

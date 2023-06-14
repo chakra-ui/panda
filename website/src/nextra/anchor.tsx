@@ -58,4 +58,6 @@ export const Anchor = forwardRef<HTMLAnchorElement, AnchorProps>(function (
   )
 })
 
-Anchor.displayName = 'Anchor'
+if (process.env.NODE_ENV === 'development') {
+  Anchor.displayName = 'Anchor'
+}

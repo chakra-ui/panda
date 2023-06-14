@@ -47,12 +47,12 @@ export function Select({
               bg: 'gray.200',
               color: 'gray.900',
               _dark: {
-                bg: 'rgb(219 234 254 / 0.1)',
-                color: 'gray.50'
+                color: 'gray.50',
+                bg: 'whiteAlpha.300'
               }
             },
             _hover: {
-              bg: 'gray.100',
+              bg: 'blackAlpha.200',
               color: 'gray.900',
               _dark: {
                 bg: 'rgb(219 234 254 / 0.1)',
@@ -92,11 +92,16 @@ export function Select({
                 label={option.label as any}
                 className={css({
                   color: 'gray.800',
-                  _dark: { color: 'gray.100' },
+                  _dark: {
+                    color: 'gray.100'
+                  },
                   _hover: {
-                    bg: 'primary.50',
-                    color: 'primary.600',
-                    _dark: { bg: 'rgb(59 130 246 / 0.1)' }
+                    bg: 'yellow.200',
+                    color: 'black',
+                    _dark: {
+                      bg: 'yellow.300',
+                      color: 'black'
+                    }
                   },
                   position: 'relative',
                   cursor: 'pointer',
