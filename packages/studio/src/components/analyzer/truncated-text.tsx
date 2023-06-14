@@ -12,7 +12,7 @@ export const TruncatedText = ({
     return (
       <QuickTooltip
         tooltip={
-          <panda.span p="2" bgColor="white" border="1px solid rgba(0, 0, 0, 0.1)">
+          <panda.span p="2" bgColor="card" border="1px solid rgba(0, 0, 0, 0.1)">
             {truncate(text, 80)}
           </panda.span>
         }
@@ -22,5 +22,5 @@ export const TruncatedText = ({
     )
   }
 
-  return text as unknown as JSX.Element
+  return <panda.span {...props}>{text}</panda.span>
 }

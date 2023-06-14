@@ -1,12 +1,208 @@
 @layer utilities {
-  .w_full {
-    width: var(--sizes-full);
+  .m_4 {
+    margin: var(--spacing-4);
   }
 
   .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
     &[data-highlighted] {
       outline: 1px solid var(--colors-blue-400, blue);
     }
+  }
+
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .hover\:border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &:where(:hover, [data-hover]) {
+      border: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .bg_white {
+    background: var(--colors-white);
+  }
+
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .focus\:border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &:where(:focus, [data-focus]) {
+      border: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    border: 1px solid var(--colors-blue-400, blue);
+  }
+
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .focus\:border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &:where(:focus, [data-focus]) {
+      border: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .focus\:border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &:where(:focus, [data-focus]) {
+      border: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .border_1px_solid_token\(colors\.border\,_blue\) {
+    border: 1px solid var(--colors-border, blue);
+  }
+
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .focus\:border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &:where(:focus, [data-focus]) {
+      border: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .focus\:border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &:where(:focus, [data-focus]) {
+      border: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .transition_all_\.2s_ease {
+    transition: all 0.2s ease;
+  }
+
+  .focus\:border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &:where(:focus, [data-focus]) {
+      border: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .transition_outline_\.2s_ease {
+    transition: outline 0.2s ease;
+  }
+
+  .focus\:border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &:where(:focus, [data-focus]) {
+      border: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .focus\:border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &:where(:focus, [data-focus]) {
+      border: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .highlighted\:opacity_0\.8 {
+    &[data-highlighted] {
+      opacity: 0.8;
+    }
+  }
+
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .focus\:border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &:where(:focus, [data-focus]) {
+      border: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .highlighted\:bg_border {
+    &[data-highlighted] {
+      background: var(--colors-border);
+    }
+  }
+
+  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &[data-highlighted] {
+      outline: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .focus\:border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &:where(:focus, [data-focus]) {
+      border: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .highlighted\:bg_border {
+    &[data-highlighted] {
+      background: var(--colors-border);
+    }
+  }
+
+  .focus\:border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &:where(:focus, [data-focus]) {
+      border: 1px solid var(--colors-blue-400, blue);
+    }
+  }
+
+  .w_full {
+    width: var(--sizes-full);
+  }
+
+  .p_2 {
+    padding: var(--spacing-2);
   }
 
   .max-h_300px {
@@ -17,21 +213,29 @@
     overflow: auto;
   }
 
-  .bg_white {
-    background: var(--colors-white);
+  .bg_card {
+    background: var(--colors-card);
   }
 
   .list-style_none {
     list-style: none;
   }
 
+  .rounded_md {
+    border-radius: var(--radii-md);
+  }
+
+  .border_1px_solid_token\(colors\.border\) {
+    border: 1px solid var(--colors-border);
+  }
+
   .p_4px_8px {
     padding: 4px 8px;
   }
 
-  .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\) {
+  .highlighted\:bg_border {
     &[data-highlighted] {
-      outline: 1px solid var(--colors-blue-400, blue);
+      background: var(--colors-border);
     }
   }
 
@@ -43,8 +247,10 @@
     display: flex;
   }
 
-  .border_1px_solid_token\(colors\.blue\.400\,_blue\) {
-    border: 1px solid var(--colors-blue-400, blue);
+  .focus\:border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    &:where(:focus, [data-focus]) {
+      border: 1px solid var(--colors-blue-400, blue);
+    }
   }
 
   .mr_-2 {

@@ -3,6 +3,7 @@ import { createProject } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
 import { merge } from 'merge-anything'
+import { createHooks } from 'hookable'
 import { useMemo } from 'react'
 
 const evalCode = (code: string, scope: Record<string, unknown>) => {
@@ -32,6 +33,7 @@ export function usePanda(source: string, theme: string) {
     return createGenerator({
       dependencies: [],
       path: '',
+      hooks: createHooks(),
       config: {
         cwd: '',
         include: [],
@@ -49,6 +51,7 @@ export function usePanda(source: string, theme: string) {
       parserOptions: generator.parserOptions,
       getFiles: () => ['code.tsx'],
       readFile: (file) => (file === 'code.tsx' ? source : ''),
+      hooks: generator.hooks,
     })
 
     const parserResult = project.parseSourceFile('code.tsx')

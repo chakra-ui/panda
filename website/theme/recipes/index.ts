@@ -15,5 +15,5 @@ export const recipes = {
   callout: calloutRecipe,
   input: inputRecipe,
   navbar: navbarRecipe,
-  tabs: tabsRecipe
+  tabs: tabsRecipe,
 }

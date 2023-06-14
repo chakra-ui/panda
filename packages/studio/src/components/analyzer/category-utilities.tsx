@@ -1,4 +1,4 @@
-import { Grid, panda, Wrap } from '../../../styled-system/jsx'
+import { Grid, panda, Stack, Wrap } from '../../../styled-system/jsx'
 import { gridItem, styledLink } from '../../../styled-system/patterns'
 import { getReportItem, getUtilityLink } from '../../lib/get-report-item'
 import { groupBy } from '../../lib/group-in'
@@ -121,11 +121,11 @@ const CategoryUtilities = ({
     })
 
   return (
-    <panda.div key={category} p="4" bg="gray.50" className={className}>
+    <Stack key={category} p="4" bg="card" color="text" gap="2" className={className}>
       <panda.h4>
         <panda.a className={styledLink({})} href={getUtilityLink({ category })}>
           <TextWithCount count={values.length}>
-            <TruncatedText text={category} />
+            <TruncatedText text={category} fontWeight="semibold" />
           </TextWithCount>
         </panda.a>
       </panda.h4>
@@ -141,6 +141,6 @@ const CategoryUtilities = ({
           )
         })}
       </Wrap>
-    </panda.div>
+    </Stack>
   )
 }

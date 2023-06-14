@@ -152,7 +152,11 @@ const HeadlineSummary = () => {
 
 const selectOptionClass = css({
   padding: '4px 8px',
-  bg: 'white',
+  rounded: 'md',
+  '& li': {
+    cursor: 'pointer',
+    _hover: { opacity: 0.8 },
+  },
 })
 
 const MostUsedList = () => {
@@ -169,7 +173,7 @@ const MostUsedList = () => {
                 </SelectTrigger>
               </>
             }
-            bg="gray.50"
+            bg="card"
           >
             {mostUsedByName[selectedOption?.value as keyof typeof mostUsedByName]}
             <>
@@ -231,7 +235,7 @@ const ColorPalette = () => {
   return (
     <Section
       title={<TextWithCount count={analysisData.stats.mostUseds.colors.length}>Color palette</TextWithCount>}
-      bg="gray.50"
+      bg="card"
     >
       <Wrap gap="2" fontSize="sm">
         {analysisData.stats.mostUseds.colors.map(({ key, count }) => (
@@ -241,7 +245,8 @@ const ColorPalette = () => {
             py="2"
             px="4"
             transition="all 0.2s ease"
-            _hover={{ bgColor: 'gray.100' }}
+            rounded="md"
+            _hover={{ bgColor: 'border' }}
           >
             <TextWithCount count={count}>
               <TruncatedText text={key} />
@@ -281,14 +286,14 @@ const FilesAccordionList = () => {
                 <SelectTrigger>
                   <panda.button display="flex" alignItems="center">
                     Sort by {selectedOption?.label}
-                    <panda.div w="26px" ml="2">
+                    <panda.div w="26px" ml="2" color="text">
                       <SortIcon />
                     </panda.div>
                   </panda.button>
                 </SelectTrigger>
                 <Portal>
                   <SelectPositioner>
-                    <SelectContent className={cx(selectOptionClass, css({ listStyle: 'none' }))}>
+                    <SelectContent className={cx(selectOptionClass, css({ listStyle: 'none', bg: 'card' }))}>
                       <SelectOption className={selectOptionClass} value="name" label="name" />
                       <SelectOption className={selectOptionClass} value="tokens count" label="tokens count" />
                       <SelectOption className={selectOptionClass} value="file path" label="file path" />
@@ -301,7 +306,7 @@ const FilesAccordionList = () => {
         </panda.div>
       }
     >
-      <Accordion className={stack({ gap: '2', px: '2', fontSize: 'sm', width: 'full', debug: false })} multiple>
+      <Accordion className={stack({ gap: '2', px: '2', fontSize: 'sm', width: 'full' })} multiple>
         {sorted.map(([filepath, reportItemIdList]) => {
           const values = reportItemIdList.map(getReportItem)
           const localMaps =
@@ -314,17 +319,17 @@ const FilesAccordionList = () => {
               key={filepath}
               value={filepath}
               className={css({
-                p: '4',
                 width: 'full',
                 rounded: 'md',
-                _hover: { bgColor: 'gray.50' },
+                bg: 'card',
+                _hover: { opacity: '0.8' },
                 cursor: 'pointer',
               })}
             >
               {(props) => (
                 <>
-                  <AccordionTrigger>
-                    <panda.button display="flex" bg="none" w="full" p="2" cursor="pointer">
+                  <AccordionTrigger asChild>
+                    <panda.button display="flex" bg="none" w="full" pt="6" pl="6" pr="4" cursor="pointer">
                       <panda.a
                         className={styledLink({})}
                         href={getFileLink({ filepath })}
@@ -342,7 +347,7 @@ const FilesAccordionList = () => {
                       <panda.span ml="2">{props.isOpen ? '▲' : '▼'}</panda.span>
                     </panda.button>
                   </AccordionTrigger>
-                  <AccordionContent className={css({ p: '2' })}>
+                  <AccordionContent className={css({ p: '6', cursor: 'default' })}>
                     <panda.div>
                       <panda.h5>Utilities</panda.h5>
                       <Wrap gap="2" mt="4">

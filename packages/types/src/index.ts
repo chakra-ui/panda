@@ -10,6 +10,7 @@ export type {
 export type { CompositionStyles, LayerStyles, TextStyles } from './composition'
 export type { ConditionDetails, ConditionType, Conditions, RawCondition } from './conditions'
 export type { Config, LoadConfigResult, Preset, UserConfig } from './config'
+export type { ConfigResultWithHooks, PandaHooks, PandaHookable } from './hooks'
 export type { ParserResultType, ResultItem } from './parser'
 export type { Part, Parts } from './parts'
 export type { PatternConfig, PatternHelpers, PatternProperty } from './pattern'

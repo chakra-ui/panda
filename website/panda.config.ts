@@ -38,7 +38,7 @@ export default defineConfig({
       dark: '.dark &, [data-theme="dark"] &',
       light: '.light &',
       supportsBackdrop:
-        '@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px)))'
+        '@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px)))',
     }
   },
   staticCss: {
@@ -65,6 +65,10 @@ export default defineConfig({
       layerStyles,
       keyframes: {
         fadein: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' }
+        },
+        fadein2: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' }
         },

@@ -26,5 +26,7 @@ export const generateStaticCss = (ctx: Context) => {
     })
   })
 
-  return sheet.toCss({ optimize })
+  const output = sheet.toCss({ optimize })
+  ctx.hooks.callHook('generator:css', 'static.css', output)
+  return output
 }

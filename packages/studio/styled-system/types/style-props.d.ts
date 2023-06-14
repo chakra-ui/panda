@@ -606,15 +606,8 @@ export type SystemProperties = {
 	roundedEndEnd?: PropertyValue<'roundedEndEnd'>
 	roundedEnd?: PropertyValue<'roundedEnd'>
 	borderX?: PropertyValue<'borderX'>
-	borderXWidth?: PropertyValue<'borderXWidth'>
 	borderXColor?: PropertyValue<'borderXColor'>
-	borderY?: PropertyValue<'borderY'>
-	borderYWidth?: PropertyValue<'borderYWidth'>
 	borderYColor?: PropertyValue<'borderYColor'>
-	borderStart?: PropertyValue<'borderStart'>
-	borderStartColor?: PropertyValue<'borderStartColor'>
-	borderEnd?: PropertyValue<'borderEnd'>
-	borderEndColor?: PropertyValue<'borderEndColor'>
 	shadow?: PropertyValue<'shadow'>
 	shadowColor?: PropertyValue<'shadowColor'>
 	x?: PropertyValue<'x'>
