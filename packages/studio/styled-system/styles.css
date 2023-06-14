@@ -19,16 +19,44 @@
     grid-column: span 2;
   }
 
-  .max-h_300px {
-    max-height: 300px;
+  .m_4 {
+    margin: var(--spacing-4);
+  }
+
+  .border_1px_solid_token\(colors\.blue\.400\,_blue\) {
+    border: 1px solid var(--colors-blue-400, blue);
+  }
+
+  .border_1px_solid_token\(colors\.border\,_blue\) {
+    border: 1px solid var(--colors-border, blue);
+  }
+
+  .transition_all_\.2s_ease {
+    transition: all 0.2s ease;
+  }
+
+  .transition_outline_\.2s_ease {
+    transition: outline 0.2s ease;
+  }
+
+  .highlighted\:opacity_0\.8[data-highlighted] {
+    opacity: 0.8;
   }
 
   .highlighted\:ring_1px_solid_token\(colors\.blue\.400\,_blue\)[data-highlighted] {
     outline: 1px solid var(--colors-blue-400, blue);
   }
 
-  .border_1px_solid_token\(colors\.blue\.400\,_blue\) {
-    border: 1px solid var(--colors-blue-400, blue);
+  .max-h_300px {
+    max-height: 300px;
+  }
+
+  .border_1px_solid_token\(colors\.border\) {
+    border: 1px solid var(--colors-border);
+  }
+
+  .highlighted\:bg_border[data-highlighted] {
+    background: var(--colors-border);
   }
 
   .mr_-2 {
@@ -41,6 +69,10 @@
 
   .shrink_0 {
     flex-shrink: 0;
+  }
+
+  .border_border {
+    border: border;
   }
 
   .text_red\.400 {
@@ -65,6 +97,14 @@
 
   .bg_white {
     background-color: var(--colors-white);
+  }
+
+  .bg_card {
+    background-color: var(--colors-card);
+  }
+
+  .bg_gray\.50 {
+    background: var(--colors-gray-50);
   }
 
   .p_16 {
@@ -584,20 +624,40 @@
     padding-block: 20px;
   }
 
-  .p_4px_8px {
-    padding: 4px 8px;
+  .p_4 {
+    padding: var(--spacing-4);
+  }
+
+  .debug_true {
+    outline: 1px solid blue !important;
+  }
+
+  .debug_true > * {
+    outline: 1px solid red !important;
   }
 
   .bg_white {
     background: var(--colors-white);
   }
 
+  .p_4px_8px {
+    padding: 4px 8px;
+  }
+
+  .\[\&_li\]\:cursor_pointer li {
+    cursor: pointer;
+  }
+
   .list-style_none {
     list-style: none;
   }
 
-  .p_4 {
-    padding: var(--spacing-4);
+  .p_6 {
+    padding: var(--spacing-6);
+  }
+
+  .cursor_default {
+    cursor: default;
   }
 
   .px_24 {
@@ -612,6 +672,10 @@
     width: 26px;
   }
 
+  .text_text {
+    color: var(--colors-text);
+  }
+
   .ml_auto {
     margin-left: auto;
   }
@@ -624,16 +688,16 @@
     font-size: var(--font-sizes-xl);
   }
 
+  .p_2 {
+    padding: var(--spacing-2);
+  }
+
   .bg_gray\.100 {
     background: var(--colors-gray-100);
   }
 
   .border_1px_solid_rgba\(0\,_0\,_0\,_0\.1\) {
     border: 1px solid rgba(0, 0, 0, 0.1);
-  }
-
-  .rounded_md {
-    border-radius: var(--radii-md);
   }
 
   .fs_md {
@@ -648,12 +712,12 @@
     display: inline-block;
   }
 
-  .bg_gray\.50 {
-    background: var(--colors-gray-50);
-  }
-
   .p_0 {
     padding: 0;
+  }
+
+  .rounded_md {
+    border-radius: var(--radii-md);
   }
 
   .py_2 {
@@ -668,8 +732,16 @@
     background: none;
   }
 
-  .p_2 {
-    padding: var(--spacing-2);
+  .pt_6 {
+    padding-top: var(--spacing-6);
+  }
+
+  .pl_6 {
+    padding-left: var(--spacing-6);
+  }
+
+  .pr_4 {
+    padding-right: var(--spacing-4);
   }
 
   .mb_4 {
@@ -888,6 +960,14 @@
     outline-color: var(--colors-neutral-400);
   }
 
+  .focus\:border_1px_solid_token\(colors\.blue\.400\,_blue\):where(:focus, [data-focus]) {
+    border: 1px solid var(--colors-blue-400, blue);
+  }
+
+  .hover\:border_1px_solid_token\(colors\.blue\.400\,_blue\):where(:hover, [data-hover]) {
+    border: 1px solid var(--colors-blue-400, blue);
+  }
+
   .hover\:shadow_lg:where(:hover, [data-hover]) {
     box-shadow: var(--shadows-lg);
   }
@@ -896,12 +976,24 @@
     color: var(--colors-yellow-300);
   }
 
+  .hover\:bg_bg:where(:hover, [data-hover]) {
+    background: var(--colors-bg);
+  }
+
   .hover\:bg_gray\.50:where(:hover, [data-hover]) {
     background-color: var(--colors-gray-50);
   }
 
   .hover\:bg_gray\.100:where(:hover, [data-hover]) {
     background-color: var(--colors-gray-100);
+  }
+
+  .hover\:opacity_0\.8:where(:hover, [data-hover]) {
+    opacity: 0.8;
+  }
+
+  .hover\:bg_border:where(:hover, [data-hover]) {
+    background-color: var(--colors-border);
   }
 
   .hover\:bg_gray\.100:where(:hover, [data-hover]) {
@@ -922,6 +1014,10 @@
 
   .\[\&\:hover\]\:shadow_lg:hover {
     box-shadow: var(--shadows-lg);
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 li:where(:hover, [data-hover]) {
+    opacity: 0.8;
   }
 
   @media screen and (min-width: 768px) {

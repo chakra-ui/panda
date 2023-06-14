@@ -39,7 +39,7 @@ export const DataCombobox = ({ options: allOptions, label, ...props }: DataCombo
   }, [allOptions])
 
   return (
-    <Combobox openOnClick {...props}>
+    <Combobox openOnClick {...props} className={css({ m: 4 })}>
       {(state: any) => {
         return (
           <>
@@ -50,11 +50,16 @@ export const DataCombobox = ({ options: allOptions, label, ...props }: DataCombo
                     <panda.span fontWeight="bold">{label}</panda.span>
                   </ComboboxLabel>
                 )}
-                <panda.div display="flex" border="1px solid token(colors.blue.400, blue)">
+                <panda.div
+                  display="flex"
+                  _focus={{
+                    border: '1px solid token(colors.blue.400, blue)',
+                  }}
+                >
                   <ComboboxInput
                     defaultValue={props.defaultValue}
                     placeholder={props.placeholder ?? 'Search...'}
-                    className={css({ width: 'full' })}
+                    className={css({ width: 'full', p: 2 })}
                     onChange={(e) => {
                       const value = e.target.value
                       if (!value) {
@@ -95,9 +100,10 @@ export const DataCombobox = ({ options: allOptions, label, ...props }: DataCombo
                     maxHeight: '300px',
                     overflow: 'auto',
                     padding: '4px 8px',
-                    bg: 'white',
+                    bg: 'card',
                     listStyle: 'none',
-                    border: '1px solid token(colors.blue.400, blue)',
+                    rounded: 'md',
+                    border: '1px solid token(colors.border)',
                   })}
                 >
                   {/* TODO virtualization */}
@@ -109,7 +115,7 @@ export const DataCombobox = ({ options: allOptions, label, ...props }: DataCombo
                       className={css({
                         padding: '4px 8px',
                         _highlighted: {
-                          outline: '1px solid token(colors.blue.400, blue)',
+                          bg: 'border',
                         },
                       })}
                     />
