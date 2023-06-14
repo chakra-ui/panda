@@ -10,18 +10,16 @@ const testimonials: Array<{
   avatar: string
 }> = [
   {
-    author: 'Jess Truss',
-    avatar:
-      'https://images.unsplash.com/photo-1619895862022-09114b41f16f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8cHJvZmlsZSUyMHBob3RvfGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60',
-    text: 'Of all the libraries I’ve built design systems with: SC, emotion, xstyled, styled-system, theme-ui etc., @panda__css has been the most ergonomic and enjoyable. Took a look at the roadmap and it looks like it’s getting even better.',
-    username: '@jess__truss'
+    author: 'Alex S.',
+    avatar: '/profiles/alex-s.png',
+    text: 'Working with Panda CSS has been a delightful experience. The seamless styling it offers is impressive, providing a native CSS-like experience but with added benefits like typesafety, JIT styles, and recipe variants. Plus, you can use it anywhere!',
+    username: '@astahmer_dev'
   },
   {
-    author: 'Dann',
-    avatar:
-      'https://images.unsplash.com/photo-1584673392125-f91e13c6a3cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fHByb2ZpbGUlMjBwaG90b3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60',
+    author: 'Abraham A.',
+    avatar: '/profiles/anubra.png',
     text: "Been using @panda__css for a week on an actual product and I've never had such a smooth collaboration, shared vocabulary, and mutual understanding with our designer. Setting up tokens and being very systematic and constrained about the UI we build has never been easier.",
-    username: '@dan_best'
+    username: '@anubra'
   },
   {
     author: 'Nabeel Ben',
