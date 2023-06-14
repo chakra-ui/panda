@@ -20,7 +20,15 @@ import { css } from '../styled-system/css'
 
 const App = () => {
   const [color, setColor] = useState('red.300')
-  return <div className={css({ color })} />
+
+  return (
+    <div 
+      className={css({ 
+        // ❌ Avoid: Panda can't determine the value of color at build-time
+        color 
+      })} 
+    />
+  )
 }
 ```
 
@@ -30,14 +38,31 @@ The example above will not work because Panda can't determine the value of `colo
 
 Panda supports a [`staticCss`](/docs/guides/static) option in the config you can use to pre-generate some styles ahead of time.
 
-```tsx filename="styled.config.ts"
+```tsx filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   staticCss: {
-    css: [{ properties: { color: ['red.300'] } }]
+    css: [{ 
+      properties: {
+        // ✅ Good: Pre-generate the styles for the color
+        color: ['red.300'] 
+      } 
+    }]
   }
 })
+```
+
+```tsx filename="Button.tsx"
+import { useState } from 'react'
+import { styled } from '../styled-system/jsx'
+
+export const Button = () => {
+  const [color, setColor] = useState('red.300')
+
+  // ✅ Good: This will work because `red.300` is pre-generated using `staticCss` config
+  return <styled.button color={color} />
+}
 ```
 
 ### Using `token()`
@@ -51,10 +76,16 @@ import { token } from '../styled-system/tokens'
 const Component = props => {
   return (
     <div
-      // store the value in a CSS custom property
-      className={css({ color: 'var(--color)' })}
-      // handle the runtime value in the style attribute
-      style={{ '--color': token(`colors.${props.color}`) }}
+      
+      className={css({
+        // ✅ Good: Store the value in a CSS custom property
+        color: 'var(--color)' 
+      })}
+      
+      style={{
+        // ✅ Good: Handle the runtime value in the style attribute
+        '--color': token(`colors.${props.color}`)
+      }}
     >
       Dynamic color with runtime value
     </div>
@@ -64,6 +95,7 @@ const Component = props => {
 // App.tsx
 const App = () => {
   const [runtimeColor, setRuntimeColor] = useState('pink.300')
+
   return <Component color={runtimeColor} />
 }
 ```
@@ -77,7 +109,12 @@ import { token } from '../styled-system/tokens'
 
 const Component = props => {
   return (
-    <div style={{ color: token.var(`colors.${props.color}`) }}>
+    <div 
+      style={{
+        // ✅ Good: Dynamically generate CSS custom property from the token
+        color: token.var(`colors.${props.color}`) 
+      }}
+    >
       Dynamic color with runtime value
     </div>
   )
@@ -85,6 +122,7 @@ const Component = props => {
 
 const App = () => {
   const [runtimeColor, setRuntimeColor] = useState('yellow.300')
+  
   return <Component color={runtimeColor} />
 }
 ```
@@ -115,7 +153,20 @@ const App = () => {
 }
 ```
 
-As long as all prop-value pairs are statically extractable, Panda will automatically generate the CSS.
+As long as all prop-value pairs are statically extractable, Panda will automatically generate the CSS, so avoid using runtime values:
+
+```tsx filename="App.tsx"
+const App = () => {
+  const [color, setColor] = useState('blue.300')
+
+  // ❌ Avoid: Panda can't determine the value of color at build-time
+  return (
+    <Card color={color}>
+      <p>Some content</p>
+    </Card>
+  )
+}
+```
 
 ## Runtime conditions
 
@@ -192,6 +243,7 @@ Here's a short list of things to avoid:
 ```tsx
 import { css } from './styled-system/css'
 
+// ✅ Good: All values are statically extractable
 const mainColor = 'red.300'
 const sizes = { sm: '12px', md: '16px', '2xl': '42px' }
 
@@ -222,8 +274,8 @@ const colorByType = {
 const Section = () => {
   const [type, setType] = useState('primary')
 
-  // since only "gray.100" is statically extractable here
-  // ❌ this will not work as expected, the color CSS won't be generated
+  // ❌ Avoid: since only "gray.100" is statically extractable here
+  // This will not work as expected, the color CSS won't be generated
   return (
     <section className={css({ color: colorByType[type] ?? 'gray.100' })}>
       ❌ Will not be extracted
@@ -250,8 +302,13 @@ const sectionRecipe = cva({
 
 const Section = () => {
   const [type, setType] = useState('primary')
-  // ✅ this will work as expected
-  return <section className={sectionRecipe({ type })}>✅ With a recipe</section>
+
+  // ✅ Good: This will work as expected
+  return (
+    <section className={sectionRecipe({ type })}>
+      ✅ With a recipe
+    </section>
+  )
 }
 ```
 
@@ -272,25 +329,25 @@ All of this with complete type-safety and without having to make drastic changes
 ### What you can do
 
 ```tsx
-// conditional styles
+// ✅ Good: Conditional styles
 <styled.div color={{ base: "red.100", md: "red.200" }} />
 
-// arbitrary value
+// ✅ Good: Arbitrary value
 <styled.div color="#121qsd" />
 
-// arbitrary selector
+// ✅ Good: Arbitrary selector
 <styled.div css={{ ["&[data-thing] > span": { color: "red.100" } }} />
 
-// runtime value (with config.`staticCss`)
+// ✅ Good: Runtime value (with config.`staticCss`)
 const Button = () => {
   const [color, setColor] = useState('red.300')
   return <styled.button color={color} />
 }
 
-// runtime condition
+// ✅ Good: Runtime condition
 <styled.div color={{ base: "red.100", md: isHovered ? "red.200" : "red.300" }} />
 
-// referenced value
+// ✅ Good: Referenced value
 <styled.div color={mainColor} />
 
 ```
@@ -298,13 +355,13 @@ const Button = () => {
 ### What you can't do
 
 ```tsx
-// runtime value (without config.`staticCss`)
+// ❌ Avoid: Runtime value (without config.`staticCss`)
 const Button = () => {
   const [color, setColor] = useState('red.300')
   return <styled.button color={color} />
 }
 
-// referenced value (not statically analyzable or from another file)
+// ❌ Avoid: Referenced value (not statically analyzable or from another file)
 <styled.div color={getColor()} />
 <styled.div color={colors[getColorName()]} />
 <styled.div color={colors[colorFromAnotherFile]} />
