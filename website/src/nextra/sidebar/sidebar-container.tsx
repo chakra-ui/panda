@@ -42,7 +42,6 @@ const sidebarContainerStyles = cva({
     },
     transform: 'translate3d(0,0,0)',
     transitionProperty: 'all',
-    transition: 'ease-in-out',
     _print: {
       display: 'none'
     }
