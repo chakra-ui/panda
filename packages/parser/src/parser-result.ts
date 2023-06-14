@@ -6,6 +6,7 @@ export class ParserResult {
   cva = new Set<ResultItem>()
   recipe = new Map<string, Set<ResultItem>>()
   pattern = new Map<string, Set<ResultItem>>()
+  filePath: string | undefined
 
   set(name: 'cva' | 'css', result: ResultItem) {
     this[name].add({ type: 'object', ...result })
@@ -37,6 +38,11 @@ export class ParserResult {
       this.pattern.size === 0 &&
       this.jsx.size === 0
     )
+  }
+
+  setFilePath(filePath: string) {
+    this.filePath = filePath
+    return this
   }
 
   toArray() {

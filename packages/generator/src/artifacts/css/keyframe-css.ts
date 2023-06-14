@@ -22,5 +22,7 @@ export function generateKeyframeCss(ctx: Context) {
     nodes: root.nodes,
   })
 
-  return rule.toString()
+  const output = rule.toString()
+  ctx.hooks.callHook('generator:css', 'keyframes.css', output)
+  return output
 }

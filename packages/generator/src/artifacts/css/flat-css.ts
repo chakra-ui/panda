@@ -25,7 +25,7 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
       ? [
           generateGlobalCss(ctx),
           staticCss && generateStaticCss(ctx),
-          preflight && generateResetCss(),
+          preflight && generateResetCss(ctx),
           !ctx.tokens.isEmpty && generateTokenCss(ctx),
           keyframes && generateKeyframeCss(ctx),
         ]

@@ -13,12 +13,14 @@ export type ParserResultType = {
   cva: Set<ResultItem>
   recipe: Map<string, Set<ResultItem>>
   pattern: Map<string, Set<ResultItem>>
+  filePath: string | undefined
   set: (name: 'cva' | 'css', result: ResultItem) => void
   setCva: (result: ResultItem) => void
   setJsx: (result: ResultItem) => void
   setRecipe: (name: string, result: ResultItem) => void
   setPattern: (name: string, result: ResultItem) => void
   isEmpty: () => boolean
+  setFilePath: (filePath: string) => ParserResultType
   toArray: () => Array<ResultItem>
   toJSON: () => {
     css: Array<ResultItem>

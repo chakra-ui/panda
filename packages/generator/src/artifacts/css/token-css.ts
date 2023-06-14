@@ -46,10 +46,13 @@ export function generateTokenCss(ctx: Context) {
 
   const css = results.join('\n\n')
 
-  return `@layer tokens {
+  const output = `@layer tokens {
     ${prettifyCss(cleanupSelectors(css, root))}
   }
   `
+
+  ctx.hooks.callHook('generator:css', 'tokens.css', output)
+  return output
 }
 
 function getDeepestRule(root: string, selectors: string[]) {

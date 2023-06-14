@@ -93,10 +93,12 @@ export class Builder {
     const deps = this.checkConfigDeps(configPath, configDeps)
 
     if (deps.isModified) {
-      return this.setupContext({
+      await this.setupContext({
         configPath,
         depsModifiedMap: deps.modifiedMap,
       })
+      const updatedCtx = this.context!
+      await updatedCtx.hooks.callHook('config:change', updatedCtx.config)
     }
 
     const cache = configCache.get(configPath)

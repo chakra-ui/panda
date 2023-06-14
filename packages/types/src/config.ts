@@ -1,4 +1,5 @@
 import type { Conditions } from './conditions'
+import type { PandaHooks } from './hooks'
 import type { PatternConfig } from './pattern'
 import type { Extendable, RequiredBy, UnwrapExtend } from './shared'
 import type { StaticCssOptions } from './static-css'
@@ -193,13 +194,18 @@ type PresetOptions = {
   presets?: (string | Preset | Promise<Preset>)[]
 }
 
+type HooksOptions = {
+  hooks?: Partial<PandaHooks>
+}
+
 export type Config = StudioOptions &
   ExtendableOptions &
   CssgenOptions &
   CodegenOptions &
   FileSystemOptions &
   JsxOptions &
-  PresetOptions
+  PresetOptions &
+  HooksOptions
 
 export type Preset = ExtendableOptions & PresetOptions
 

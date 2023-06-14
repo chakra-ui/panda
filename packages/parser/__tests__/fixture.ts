@@ -9,10 +9,11 @@ import {
   utilities,
 } from '@pandacss/fixture'
 import { createGenerator } from '@pandacss/generator'
-import type { LoadConfigResult } from '@pandacss/types'
+import type { LoadConfigResult, PandaHooks } from '@pandacss/types'
 import { type UserConfig } from '@pandacss/types'
 import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
+import { createHooks } from 'hookable'
 
 const staticFilePath = 'test.tsx'
 
@@ -45,25 +46,29 @@ const defaults: LoadConfigResult = {
 
 function getProject(code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf) {
   const config = options ? options(defaults.config) : defaults.config
-  const generator = createGenerator({ ...defaults, config })
+  const hooks = createHooks<PandaHooks>()
+  const generator = createGenerator({ ...defaults, config, hooks })
 
   return createProject({
     useInMemoryFileSystem: true,
     getFiles: () => [staticFilePath],
     readFile: () => code,
     parserOptions: generator.parserOptions,
+    hooks,
   })
 }
 
 export function getFixtureProject(code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf) {
   const config = options ? options(defaults.config) : defaults.config
-  const generator = createGenerator({ ...defaults, config })
+  const hooks = createHooks<PandaHooks>()
+  const generator = createGenerator({ ...defaults, config, hooks })
 
   const project = createProject({
     useInMemoryFileSystem: true,
     getFiles: () => [staticFilePath],
     readFile: () => code,
     parserOptions: generator.parserOptions,
+    hooks,
   })
 
   return { parse: () => project.parseSourceFile(staticFilePath), generator }

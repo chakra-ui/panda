@@ -21,11 +21,11 @@
   ],
   "dependencies": {
     "@pandacss/core": "workspace:*",
-    "@pandacss/logger": "workspace:*",
     "@pandacss/is-valid-prop": "workspace:*",
+    "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
-    "@pandacss/types": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
+    "@pandacss/types": "workspace:*",
     "javascript-stringify": "2.1.0",
     "lil-fp": "1.4.5",
     "outdent": " ^0.8.0",
@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",
-    "@types/pluralize": "0.0.29"
+    "@types/pluralize": "0.0.29",
+    "hookable": "5.5.3"
   }
 }

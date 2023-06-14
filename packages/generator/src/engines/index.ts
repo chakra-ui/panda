@@ -1,10 +1,10 @@
-import type { LoadConfigResult } from '@pandacss/types'
+import type { ConfigResultWithHooks } from '@pandacss/types'
 import { getBaseEngine } from './base'
 import { getJsxEngine } from './jsx'
 import { getPathEngine } from './path'
 import { getPatternEngine } from './pattern'
 
-export const getEngine = (conf: LoadConfigResult) => ({
+export const getEngine = (conf: ConfigResultWithHooks) => ({
   ...getBaseEngine(conf),
   patterns: getPatternEngine(conf.config),
   jsx: getJsxEngine(conf.config),

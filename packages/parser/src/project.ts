@@ -2,10 +2,12 @@ import { Obj, pipe, tap } from 'lil-fp'
 import { Project as TsProject, type ProjectOptions as TsProjectOptions, ScriptKind } from 'ts-morph'
 import { createParser, type ParserOptions } from './parser'
 import { ParserResult } from './parser-result'
+import type { PandaHookable } from '@pandacss/types'
 
 export type ProjectOptions = Partial<TsProjectOptions> & {
   readFile: (filePath: string) => string
   getFiles: () => string[]
+  hooks: PandaHookable
   parserOptions: ParserOptions
 }
 
@@ -23,7 +25,7 @@ const createTsProject = (options: Partial<TsProjectOptions>) =>
     },
   })
 
-export const createProject = ({ getFiles, readFile, parserOptions, ...projectOptions }: ProjectOptions) =>
+export const createProject = ({ getFiles, readFile, parserOptions, hooks, ...projectOptions }: ProjectOptions) =>
   pipe(
     {
       project: createTsProject(projectOptions),
@@ -47,9 +49,26 @@ export const createProject = ({ getFiles, readFile, parserOptions, ...projectOpt
           scriptKind: ScriptKind.TSX,
         }),
       parseSourceFile: (filePath: string) => {
-        return filePath.endsWith('.json')
-          ? ParserResult.fromJSON(readFile(filePath))
-          : parser(project.getSourceFile(filePath))
+        if (filePath.endsWith('.json')) {
+          const content = readFile(filePath)
+
+          hooks.callHook('parser:before', filePath, content)
+          const result = ParserResult.fromJSON(content).setFilePath(filePath)
+          hooks.callHook('parser:after', filePath, result)
+
+          return result
+        }
+
+        const sourceFile = project.getSourceFile(filePath)
+        if (!sourceFile) return
+
+        const content = sourceFile.getText()
+
+        hooks.callHook('parser:before', filePath, content)
+        const result = parser(sourceFile)?.setFilePath(filePath)
+        hooks.callHook('parser:after', filePath, result)
+
+        return result
       },
     })),
 

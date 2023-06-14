@@ -1,18 +1,18 @@
 import { createGenerator, type Generator } from '@pandacss/generator'
 import { createProject, type Project } from '@pandacss/parser'
-import type { LoadConfigResult } from '@pandacss/types'
+import type { ConfigResultWithHooks, PandaHookable } from '@pandacss/types'
 import type { Runtime } from '@pandacss/types/src/runtime'
 import { Obj, pipe, tap } from 'lil-fp'
 import { getChunkEngine } from './chunk-engine'
 import { nodeRuntime } from './node-runtime'
 import { getOutputEngine } from './output-engine'
 
-export const createContext = (conf: LoadConfigResult) =>
+export const createContext = (conf: ConfigResultWithHooks) =>
   pipe(
     conf,
     createGenerator,
 
-    Obj.assign({ runtime: nodeRuntime }),
+    Obj.assign({ runtime: nodeRuntime, hooks: conf.hooks }),
 
     tap(({ config, runtime }) => {
       config.cwd ||= runtime.cwd()
@@ -27,6 +27,7 @@ export const createContext = (conf: LoadConfigResult) =>
       return createProject({
         getFiles,
         readFile: fs.readFileSync,
+        hooks: conf.hooks,
         parserOptions,
       })
     }),
@@ -38,6 +39,7 @@ export const createContext = (conf: LoadConfigResult) =>
 
 export type PandaContext = Generator & {
   runtime: Runtime
+  hooks: PandaHookable
   project: Project
   getFiles: () => string[]
   chunks: ReturnType<typeof getChunkEngine>
