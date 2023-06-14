@@ -195,7 +195,7 @@ type PresetOptions = {
 }
 
 type HooksOptions = {
-  hooks?: PandaHooks
+  hooks?: Partial<PandaHooks>
 }
 
 export type Config = StudioOptions &
