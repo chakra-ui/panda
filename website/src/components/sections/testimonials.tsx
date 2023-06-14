@@ -24,7 +24,7 @@ const testimonials: Array<{
   {
     author: 'Ivica B.',
     avatar: '/profiles/ivica-b.png',
-    text: 'Panda CSS has completely transformed the way I approach styling in my projects. It harnesses the remarkable performance benefits of utility classes and takes it to a whole new level. With Panda, I can enjoy the lightning-fast performance while experiencing a significant enhancement in readability and DX. It’s like having the best of both worlds in a single styling engine.',
+    text: 'Panda CSS has completely transformed the way I approach styling in my projects. By harnessing the remarkable performance benefits of Utility Classes and the ease of use that CSS-in-JS provides, I experience a significant enhancement in readability and DX. It’s like having the best of both worlds in a single styling engine.',
     username: '@ivica'
   }
 ]
