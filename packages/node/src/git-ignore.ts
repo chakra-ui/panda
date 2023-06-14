@@ -12,7 +12,7 @@ export function setupGitIgnore(ctx: PandaContext) {
   
   ## Panda
   ${outdir}
-  ${ctx.studio.outdir}-static
+  ${ctx.studio.outdir}
   `
 
   const file = lookItUpSync('.gitignore')

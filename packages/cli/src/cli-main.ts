@@ -126,7 +126,7 @@ export async function main() {
       const { build, preview, outdir } = flags
 
       const ctx = await loadConfigAndCreateContext()
-      const outDir = outdir || ctx.studio.outdir
+      const outDir = path.resolve(outdir || ctx.studio.outdir)
 
       if (preview) {
         await previewStudio({ outDir })
