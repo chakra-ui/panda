@@ -111,7 +111,9 @@ export default defineConfig({
   theme: {
     semanticTokens: {
       colors: {
-        danger: { value: { base: '{colors.red}', _dark: '{colors.darkred}' } },
+        danger: {
+          value: { base: '{colors.red}', _dark: '{colors.darkred}' }
+        },
         success: {
           value: { base: '{colors.green}', _dark: '{colors.darkgreen}' }
         }
@@ -121,7 +123,50 @@ export default defineConfig({
 })
 ```
 
-> NOTE 🚨: The conditions used in semantic tokens most be an at-rule or a parent selector.
+> NOTE 🚨: The conditions used in semantic tokens most be a at-rule or parent selector [condition](/docs/concepts/conditional-styles#reference).
+
+## Token Nesting
+
+Tokens can be nested to create a hierarchy of tokens. This is useful when you want to group tokens together.
+
+> Tip: You can use the `DEFAULT` key to define the default value of a nested token.
+
+```js
+export default defineConfig({
+  // ...
+  theme: {
+    semanticTokens: {
+      colors: {
+        bg: {
+          DEFAULT: { value: '{colors.gray.100}' },
+          muted: { value: '{colors.gray.100}' }
+        }
+      }
+    }
+  }
+})
+```
+
+This allows the use of the `bg` token in the following ways:
+
+```jsx
+import { css } from '../styled-system/css'
+
+function App() {
+  return (
+    <div
+      className={css({
+        // 👇🏻 This will use the `DEFAULT` value
+        bg: 'bg',
+        // 👇🏻 This will use the `muted` value
+        color: 'bg.muted'
+      })}
+    >
+      Hello World
+    </div>
+  )
+}
+```
 
 ## Token Types
 

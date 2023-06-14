@@ -34,3 +34,9 @@ export const defaultFontSizes = dictionary.filter({
 export const defaultFonts = dictionary.filter({
   extensions: { category: 'fonts' }
 })
+
+export const defaultBreakpoints = preset.theme.breakpoints
+
+export const defaultShadows = dictionary.filter({
+  extensions: { category: 'shadows' }
+})

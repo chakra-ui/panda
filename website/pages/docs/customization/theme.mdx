@@ -7,11 +7,33 @@ description: Customizing the default theme
 
 Panda comes with a default theme that is used to generate the utilities for your project. You can customize this theme
 
+## Breakpoints
+
+Use the `breakpoints` key in the `theme` section of your Panda config file to customize the default breakpoints.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      breakpoints: {
+        '3xl': { value: '1800px' }
+      }
+    }
+  }
+})
+```
+
+Panda ships with the following breakpoints by default:
+
+<TokenDocs type="breakpoints" />
+
 ## Tokens
 
 ### Colors
 
-Use the `colors` key in the theme section of your Panda config file to customize the default color values.
+Use the `colors` key in the `token` section of your Panda config file to customize the default color values.
 
 > We recommend using numeric ranges from `50` to `900`
 
@@ -21,8 +43,10 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   theme: {
     extend: {
-      colors: {
-        brand: { value: '#EA8433' }
+      tokens: {
+        colors: {
+          brand: { value: '#EA8433' }
+        }
       }
     }
   }
@@ -43,8 +67,10 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   theme: {
     extend: {
-      spacing: {
-        gutter: { value: '32px' }
+      tokens: {
+        spacing: {
+          gutter: { value: '32px' }
+        }
       }
     }
   }
@@ -61,9 +87,17 @@ Use the `radii` key in the theme section of your Panda config file to customize 
 
 <TokenDocs type="radii" />
 
+### Shadows
+
+Use the `shadows` key in the theme section of your Panda config file to customize the default box shadows values.
+
+Panda ships with the following breakpoints by default:
+
+<TokenDocs type="shadows" />
+
 ### Sizing
 
-// TODO
+> Work in progress
 
 ### Fonts
 
@@ -75,8 +109,10 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   theme: {
     extend: {
-      fonts: {
-        marketing: { value: 'Inter Variable' }
+      tokens: {
+        fonts: {
+          marketing: { value: 'Inter Variable' }
+        }
       }
     }
   }
@@ -97,8 +133,10 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   theme: {
     extend: {
-      fontSizes: {
-        big: { value: '80px' }
+      tokens: {
+        fontSizes: {
+          big: { value: '80px' }
+        }
       }
     }
   }
@@ -109,6 +147,6 @@ Panda ships with the following font size tokens by default:
 
 <TokenDocs type="fontSizes" />
 
-## Breakpoints
-
 ## Keyframes
+
+> Work in progress

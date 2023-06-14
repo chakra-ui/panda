@@ -5,7 +5,7 @@ import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
 
 function css(obj: ProcessOptions) {
   const ctx = createContext()
-  assignCompositions(ctx, compositions)
+  assignCompositions(compositions, ctx)
   const ruleset = new AtomicRule(ctx)
   ruleset.process(obj)
   return ruleset.toCss()
@@ -14,7 +14,7 @@ function css(obj: ProcessOptions) {
 describe('compositions', () => {
   test('should assign composition', () => {
     const ctx = createContext()
-    assignCompositions(ctx, compositions)
+    assignCompositions(compositions, ctx)
     const result = ctx.utility.transform('textStyle', 'headline.h2')
     expect(result).toMatchInlineSnapshot(`
       {

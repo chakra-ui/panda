@@ -130,7 +130,7 @@ type CssgenOptions = {
    * The namespace prefix for the generated css classes and css variables.
    * @default ''
    */
-  prefix?: string
+  prefix?: string | { cssVar: string; className: string }
   /**
    * The value separator used in the generated class names.
    * @default '_'
@@ -174,7 +174,7 @@ type CodegenOptions = {
    * This is useful if want to shorten the class names.
    * @default false
    */
-  hash?: boolean
+  hash?: boolean | { cssVar: boolean; className: boolean }
   /**
    * Options for the generated typescript definitions.
    */

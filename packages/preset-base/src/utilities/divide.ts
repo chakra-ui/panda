@@ -7,8 +7,8 @@ export const divide: UtilityConfig = {
     transform(value) {
       return {
         '& > :not([hidden]) ~ :not([hidden])': {
-          borderLeftWidth: value,
-          borderRightWidth: '0px',
+          borderInlineStartWidth: value,
+          borderInlineEndWidth: '0px',
         },
       }
     },

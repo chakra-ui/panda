@@ -22,6 +22,7 @@ const styles = cva({
     display: 'flex',
     gap: '1',
     position: 'absolute',
+    zIndex: '1',
     m: '3',
     right: '0'
   },

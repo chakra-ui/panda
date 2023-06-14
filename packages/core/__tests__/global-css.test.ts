@@ -48,8 +48,8 @@ describe('Global css', () => {
           }
 
         .btn:hover > :not([hidden]) ~ :not([hidden]) {
-          border-left-width: 40px;
-          border-right-width: 0px;
+          border-inline-start-width: 40px;
+          border-inline-end-width: 0px;
           }
 
         .btn:hover > span {

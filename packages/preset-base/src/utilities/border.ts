@@ -131,6 +131,11 @@ export const border: UtilityConfig = {
     values: 'borders',
     shorthand: 'borderX',
   },
+  borderInlineWidth: {
+    className: 'border-x',
+    values: 'borderWidths',
+    shorthand: 'borderXWidth',
+  },
   borderInlineColor: {
     className: 'border-x',
     values: 'colors',
@@ -139,6 +144,12 @@ export const border: UtilityConfig = {
   borderBlock: {
     className: 'border-y',
     values: 'borders',
+    shorthand: 'borderY',
+  },
+  borderBlockWidth: {
+    className: 'border-y',
+    values: 'borderWidths',
+    shorthand: 'borderYWidth',
   },
   borderBlockColor: {
     className: 'border-y',
@@ -156,9 +167,12 @@ export const border: UtilityConfig = {
   borderInlineStart: {
     className: 'border-s',
     values: 'borders',
+    shorthand: 'borderStart',
   },
   borderInlineStartColor: {
     className: 'border-s',
+    values: 'colors',
+    shorthand: 'borderStartColor',
   },
   borderRight: {
     className: 'border-r',
@@ -171,10 +185,12 @@ export const border: UtilityConfig = {
   borderInlineEnd: {
     className: 'border-e',
     values: 'borders',
+    shorthand: 'borderEnd',
   },
   borderInlineEndColor: {
     className: 'border-e',
     values: 'colors',
+    shorthand: 'borderEndColor',
   },
   borderTop: {
     className: 'border-t',

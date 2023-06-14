@@ -1,73 +1,106 @@
-import { Conditions, Recipes, Stylesheet, Utility, assignCompositions, type StylesheetOptions } from '@pandacss/core'
+import {
+  Conditions,
+  Recipes,
+  Stylesheet,
+  Utility,
+  assignCompositions,
+  type StylesheetContext,
+  type StylesheetOptions,
+} from '@pandacss/core'
 import { isCssProperty } from '@pandacss/is-valid-prop'
-import { logger } from '@pandacss/logger'
 import { compact, mapObject, memo } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
 import type { LoadConfigResult } from '@pandacss/types'
-import { Obj, pipe, tap } from 'lil-fp'
+import { isBool, isStr } from 'lil-fp'
 import postcss from 'postcss'
 
-const helpers = { map: mapObject }
+const helpers = {
+  map: mapObject,
+}
 
-export const getBaseEngine = (conf: LoadConfigResult) =>
-  pipe(
-    conf,
+export const getBaseEngine = (conf: LoadConfigResult) => {
+  const { config } = conf
+  const theme = config.theme ?? {}
 
-    Obj.bind('configDependencies', ({ dependencies }) => dependencies ?? []),
+  const hash = {
+    tokens: isBool(config.hash) ? config.hash : config.hash?.cssVar,
+    className: isBool(config.hash) ? config.hash : config.hash?.className,
+  }
 
-    Obj.bind('tokens', ({ config: { theme = {}, prefix, hash } }) => {
-      const { breakpoints, tokens, semanticTokens } = theme
-      return new TokenDictionary({ breakpoints, tokens, semanticTokens, prefix, hash })
-    }),
+  const prefix = {
+    tokens: isStr(config.prefix) ? config.prefix : config.prefix?.cssVar,
+    className: isStr(config.prefix) ? config.prefix : config.prefix?.className,
+  }
 
-    tap(({ tokens }) => {
-      logger.debug('generator:tokens', tokens.allNames)
-    }),
+  const tokens = new TokenDictionary({
+    breakpoints: theme.breakpoints,
+    tokens: theme.tokens,
+    semanticTokens: theme.semanticTokens,
+    prefix: prefix.tokens,
+    hash: hash.tokens,
+  })
 
-    Obj.bind('utility', ({ config: { prefix, utilities, separator }, tokens }) => {
-      return new Utility({ prefix, tokens, config: utilities, separator })
-    }),
+  const utility = new Utility({
+    prefix: prefix.className,
+    tokens: tokens,
+    config: config.utilities,
+    separator: config.separator,
+  })
 
-    Obj.bind('conditions', ({ config: { conditions, theme } }) => {
-      const { breakpoints } = theme ?? {}
-      return new Conditions({ conditions, breakpoints })
-    }),
+  const conditions = new Conditions({
+    conditions: config.conditions,
+    breakpoints: config.theme?.breakpoints,
+  })
 
-    tap(({ conditions, utility, config: { theme } }) => {
-      logger.debug('generator:conditions', conditions)
+  const { textStyles, layerStyles } = theme
 
-      const { textStyles, layerStyles } = theme ?? {}
-      const compositions = compact({ textStyle: textStyles, layerStyle: layerStyles })
-      assignCompositions({ conditions, utility }, compositions)
-    }),
+  const compositions = compact({
+    textStyle: textStyles,
+    layerStyle: layerStyles,
+  })
 
-    Obj.bind('recipes', ({ conditions, utility, config: { hash, theme } }) => {
-      const context = { root: postcss.root(), conditions, utility, hash, helpers }
-      const recipes = new Recipes(theme?.recipes ?? {}, context)
-      recipes.save() // cache recipes on first run
-      return recipes
-    }),
+  const compositionContext = { conditions, utility }
+  assignCompositions(compositions, compositionContext)
 
-    Obj.bind(
-      'createSheet',
-      ({ conditions, utility, config: { hash, theme } }) =>
-        (options?: Pick<StylesheetOptions, 'content'>) => {
-          const context = { root: postcss.root(), conditions, utility, hash, helpers }
-          return new Stylesheet(context, {
-            content: options?.content,
-            recipes: theme?.recipes,
-          })
-        },
-    ),
+  const createSheetContext = (): StylesheetContext => ({
+    root: postcss.root(),
+    conditions,
+    utility,
+    hash: hash.className,
+    helpers,
+  })
 
-    Obj.bind('properties', ({ utility, conditions }) =>
-      Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()])),
-    ),
+  const createSheet = (options?: Pick<StylesheetOptions, 'content'>) => {
+    const sheetContext = createSheetContext()
+    return new Stylesheet(sheetContext, {
+      content: options?.content,
+      recipes: theme?.recipes,
+    })
+  }
 
-    Obj.bind('isValidProperty', ({ properties }) => {
-      const propertyMap = new Map(properties.map((prop) => [prop, true]))
-      return memo((key: string) => {
-        return propertyMap.has(key) || isCssProperty(key)
-      })
-    }),
-  )
+  const recipeContext = createSheetContext()
+  const recipes = new Recipes(theme?.recipes ?? {}, recipeContext)
+  // cache recipes on first run
+  recipes.save()
+
+  const properties = Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()]))
+  const propertyMap = new Map(properties.map((prop) => [prop, true]))
+
+  const isValidProperty = memo((key: string) => {
+    return propertyMap.has(key) || isCssProperty(key)
+  })
+
+  return {
+    ...conf,
+    hash,
+    prefix,
+    tokens,
+    utility,
+    properties,
+    isValidProperty,
+    recipes,
+    conditions,
+    createSheetContext,
+    createSheet,
+  }
+}

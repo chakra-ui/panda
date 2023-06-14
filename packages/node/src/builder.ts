@@ -1,3 +1,4 @@
+import { getConfigDependencies } from '@pandacss/config'
 import { discardDuplicate, mergeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
@@ -9,7 +10,6 @@ import { findConfig, loadConfigAndCreateContext } from './config'
 import { type PandaContext } from './create-context'
 import { emitArtifacts, extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
-import { getConfigDependencies } from '@pandacss/config'
 
 type ContentData = {
   fileCssMap: Map<string, string>

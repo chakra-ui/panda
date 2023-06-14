@@ -1,9 +1,9 @@
+import type { Context } from '../../engines'
 import { generateGlobalCss } from './global-css'
 import { generateKeyframeCss } from './keyframe-css'
 import { generateResetCss } from './reset-css'
 import { generateStaticCss } from './static-css'
 import { generateTokenCss } from './token-css'
-import type { Context } from '../../engines'
 
 export const generateFlattenedCss = (ctx: Context) => (options: { files: string[]; resolve?: boolean }) => {
   const { files, resolve } = options

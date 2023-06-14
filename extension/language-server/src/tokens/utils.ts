@@ -6,14 +6,13 @@ import { type SystemStyleObject } from '@pandacss/types'
 
 import { AtomicRule, optimizeCss } from '@pandacss/core'
 import { type PandaContext } from '@pandacss/node'
-import { mapObject, toPx } from '@pandacss/shared'
+import { toPx } from '@pandacss/shared'
 import * as base64 from 'base-64'
 
-import postcss from 'postcss'
 import parserCSS from 'prettier/parser-postcss'
 import prettier from 'prettier/standalone'
-import * as utf8 from 'utf8'
 import { match } from 'ts-pattern'
+import * as utf8 from 'utf8'
 
 import { type PandaVSCodeSettings } from '@pandacss/extension-shared'
 import { type Token } from '@pandacss/token-dictionary'
@@ -25,15 +24,6 @@ export const nodeRangeToVsCodeRange = (range: NodeRange) =>
     { line: range.startLineNumber - 1, character: range.startColumn - 1 },
     { line: range.endLineNumber - 1, character: range.endColumn - 1 },
   )
-
-const helpers = { map: mapObject }
-export const makeSheetCtx = (ctx: PandaContext) => ({
-  root: postcss.root(),
-  conditions: ctx.conditions,
-  utility: ctx.utility,
-  hash: ctx.config.hash,
-  helpers,
-})
 
 function getPrettiedCSS(css: string) {
   return prettier.format(css, {
@@ -56,7 +46,8 @@ export const getMarkdownCss = (ctx: PandaContext, styles: SystemStyleObject, set
     ctx.config.hash = true
   }
 
-  const rule = new AtomicRule(makeSheetCtx(ctx))
+  const context = ctx.createSheetContext()
+  const rule = new AtomicRule(context)
   rule.process({ styles })
 
   const css = match(mode ?? 'optimized')
@@ -64,6 +55,7 @@ export const getMarkdownCss = (ctx: PandaContext, styles: SystemStyleObject, set
     .with('optimized', () => optimizeCss(rule.toCss()))
     .with('minified', () => optimizeCss(rule.toCss(), { minify: true }))
     .run()
+
   const raw = getPrettiedCSS(css)
   const withCss = '```css' + '\n' + raw + '\n' + '```'
 
