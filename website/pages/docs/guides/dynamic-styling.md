@@ -158,7 +158,7 @@ As long as all prop-value pairs are statically extractable, Panda will automatic
 const App = () => {
   const [color, setColor] = useState('blue.300')
 
-    // ❌ Avoid: Panda can't determine the value of color at build-time
+  // ❌ Avoid: Panda can't determine the value of color at build-time
   return (
     <Card color={color}>
       <p>Some content</p>
