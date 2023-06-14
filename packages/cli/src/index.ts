@@ -21,11 +21,11 @@ export function defineConfig(config: Config) {
   return config
 }
 
-export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): RecipeConfig {
+export function defineRecipe<T extends RecipeVariantRecord>(config: RecipeConfig<T>): RecipeConfig {
   return config as RecipeConfig
 }
 
-export function definePattern<T>(config: PatternConfig<T>) {
+export function definePattern<T extends PatternConfig>(config: T) {
   return config as PatternConfig
 }
 

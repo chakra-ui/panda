@@ -1,7 +1,7 @@
-import type { LoadConfigResult, UserConfig } from './config'
-import type { Hookable, HookKeys } from 'hookable'
-import type { ParserResultType } from './parser'
 import type { TokenDictionary } from '@pandacss/token-dictionary'
+import type { HookKeys, Hookable } from 'hookable'
+import type { LoadConfigResult, UserConfig } from './config'
+import type { ParserResultType } from './parser'
 
 type MaybeAsyncReturn = Promise<void> | void
 
