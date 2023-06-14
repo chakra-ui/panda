@@ -38,7 +38,7 @@ The example above will not work because Panda can't determine the value of `colo
 
 Panda supports a [`staticCss`](/docs/guides/static) option in the config you can use to pre-generate some styles ahead of time.
 
-```tsx filename="styled.config.ts"
+```tsx filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
@@ -60,7 +60,7 @@ import { styled } from '../styled-system/jsx'
 export const Button = () => {
   const [color, setColor] = useState('red.300')
 
-  // ✅ Good: This will work because `red.300` is pre-generated
+  // ✅ Good: This will work because `red.300` is pre-generated using `staticCss` config
   return <styled.button color={color} />
 }
 ```
