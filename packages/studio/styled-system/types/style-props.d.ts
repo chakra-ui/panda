@@ -666,8 +666,6 @@ export type SystemProperties = {
 	scaleY?: PropertyValue<'scaleY'>
 	translateX?: PropertyValue<'translateX'>
 	translateY?: PropertyValue<'translateY'>
-	skewX?: PropertyValue<'skewX'>
-	skewY?: PropertyValue<'skewY'>
 	scrollbar?: PropertyValue<'scrollbar'>
 	scrollMarginX?: PropertyValue<'scrollMarginX'>
 	scrollMarginY?: PropertyValue<'scrollMarginY'>

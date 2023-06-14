@@ -152,7 +152,8 @@ type PropertyValueTypes  = {
 	transitionProperty: "all" | "none" | "opacity" | "shadow" | "transform" | "base" | "background" | "colors";
 	animation: Tokens["animations"];
 	animationDelay: Tokens["durations"];
-	transform: "auto" | "auto-gpu";
+	scale: "auto" | CssProperties["scale"];
+	translate: "auto" | CssProperties["translate"];
 	translateX: Tokens["spacing"] | "1/2" | "1/3" | "2/3" | "1/4" | "2/4" | "3/4" | "full";
 	translateY: Tokens["spacing"] | "1/2" | "1/3" | "2/3" | "1/4" | "2/4" | "3/4" | "full";
 	accentColor: Tokens["colors"];

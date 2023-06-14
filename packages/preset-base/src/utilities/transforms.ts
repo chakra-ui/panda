@@ -1,42 +1,14 @@
 import type { UtilityConfig } from '@pandacss/types'
 
-const transformTemplate = [
-  'rotate(var(--rotate))',
-  'scaleX(var(--scale-x))',
-  'scaleY(var(--scale-y))',
-  'skewX(var(--skew-x))',
-  'skewY(var(--skew-y))',
-]
-
-export const baseTransformTemplate = [
-  'translateX(var(--translate-x))',
-  'translateY(var(--translate-y))',
-  ...transformTemplate,
-].join(' ')
-
-export const gpuTransformTemplate = [
-  'translate3d(var(--translate-x), var(--translate-y), 0)',
-  ...transformTemplate,
-].join(' ')
-
 export const transforms: UtilityConfig = {
-  transform: {
-    className: 'transform',
-    values: {
-      auto: baseTransformTemplate,
-      'auto-gpu': gpuTransformTemplate,
-    },
-  },
   transformOrigin: {
     className: 'origin',
   },
   scale: {
     className: 'scale',
-    transform(value) {
-      return {
-        '--scale-x': value,
-        '--scale-y': value,
-      }
+    property: 'scale',
+    values: {
+      auto: 'var(--scale-x) var(--scale-y)',
     },
   },
   scaleX: {
@@ -55,12 +27,11 @@ export const transforms: UtilityConfig = {
       }
     },
   },
-  rotate: {
-    className: 'rotate',
-    transform(value) {
-      return {
-        '--rotate': value,
-      }
+  translate: {
+    className: 'translate',
+    property: 'translate',
+    values: {
+      auto: 'var(--translate-x) var(--translate-y)',
     },
   },
   translateX: {
@@ -102,22 +73,6 @@ export const transforms: UtilityConfig = {
     transform(value) {
       return {
         '--translate-y': value,
-      }
-    },
-  },
-  skewX: {
-    className: 'skew-x',
-    transform(value) {
-      return {
-        '--skew-x': value,
-      }
-    },
-  },
-  skewY: {
-    className: 'skew-y',
-    transform(value) {
-      return {
-        '--skew-y': value,
       }
     },
   },
