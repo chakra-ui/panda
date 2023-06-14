@@ -1,5 +1,6 @@
 import { Navbar } from '@/components/navbar'
 import { Providers } from '@/components/providers'
+import { SectionFooter } from '@/components/sections/footer'
 import { css, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { Fira_Code } from 'next/font/google'
@@ -43,6 +44,7 @@ export default function RootLayout(props: Props) {
         <Providers>
           <Navbar />
           <Flex direction="column">{children}</Flex>
+          <SectionFooter />
         </Providers>
       </body>
     </html>

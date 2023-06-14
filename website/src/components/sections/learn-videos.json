@@ -1,0 +1,79 @@
+{
+  "intro": {
+    "title": "Introduction",
+    "data": [
+      {
+        "title": "What is Panda CSS?",
+        "url": "#",
+        "duration": "1m",
+        "thumbnail": "/videos/what-is-panda.png"
+      },
+      {
+        "title": "Installation and Setup",
+        "url": "#",
+        "duration": "2m",
+        "thumbnail": "/videos/installation-and-setup.png"
+      }
+    ]
+  },
+
+  "recipes": {
+    "title": "Recipes",
+    "data": [
+      {
+        "title": "Introduction to Recipes",
+        "url": "#",
+        "duration": "1m 34s",
+        "thumbnail": "/videos/introduction-to-recipes.png"
+      },
+      {
+        "title": "Using Recipes",
+        "url": "#",
+        "duration": "1m",
+        "thumbnail": "/videos/using-recipes.png"
+      },
+      {
+        "title": "Converting Recipes to JSX",
+        "url": "#",
+        "duration": "1m 7s",
+        "thumbnail": "/videos/converting-recipes-to-jsx.png"
+      }
+    ]
+  },
+
+  "patterns": {
+    "title": "Patterns",
+    "data": [
+      {
+        "title": "Introduction to Patterns",
+        "url": "#",
+        "duration": "1m",
+        "thumbnail": "/videos/introduction-to-patterns.png"
+      },
+      {
+        "title": "Stack, HStack & VStack",
+        "url": "#",
+        "duration": "2m",
+        "thumbnail": "/videos/stack-hstack-vstack.png"
+      },
+      {
+        "title": "Container, Grid & Wrap",
+        "url": "#",
+        "duration": "1m",
+        "thumbnail": "/videos/container-grid-wrap.png"
+      },
+      {
+        "title": "Center, Circle & Square",
+        "url": "#",
+        "duration": "1m",
+        "thumbnail": "/videos/center-circle-square.png"
+      },
+      {
+        "title": "Patterns as JSX",
+        "url": "#",
+        "duration": "1m 30s",
+        "thumbnail": "/videos/patterns-as-jsx.png"
+      }
+    ]
+  }
+}
