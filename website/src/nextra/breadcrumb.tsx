@@ -3,8 +3,15 @@ import type { Item } from 'nextra/normalize-pages'
 
 const styles = css({
   fontWeight: 'semibold',
-  color: 'blue.500',
-  mb: '6'
+  color: 'black',
+  bg: 'yellow.200',
+  mb: '6',
+  display: 'inline-block',
+  rounded: 'md',
+  px: 2,
+  _dark: {
+    bg: 'yellow.300',
+  }
 })
 
 type Props = {
