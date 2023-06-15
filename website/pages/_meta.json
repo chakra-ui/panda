@@ -16,5 +16,10 @@
     "type": "page",
     "href": "https://panda-playground.vercel.app/",
     "newWindow": true
+  },
+  "learn": {
+    "title": "Learn",
+    "type": "page",
+    "href": "/learn"
   }
 }

@@ -22,12 +22,6 @@ const arrowRightIconStyles = css({
   minWidth: '18px',
   borderRadius: 'sm',
   p: '0.5',
-  _hover: {
-    bg: 'blackAlpha.200',
-    _dark: {
-      bg: 'whiteAlpha.200'
-    }
-  },
   '& path': {
     transformOrigin: 'center',
     transitionProperty: 'transform',

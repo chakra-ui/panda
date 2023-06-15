@@ -19,7 +19,7 @@
     "build": "tsup src/cli-*.ts src/index.ts --format=cjs --dts --shims --clean",
     "build-fast": "tsup src/cli-*.ts src/index.ts --format=cjs --no-dts --shims",
     "dev": "pnpm build-fast --watch",
-    "clean": "rm -rf dist"
+    "clean": "rimraf dist"
   },
   "devDependencies": {
     "@types/mime": "^1",

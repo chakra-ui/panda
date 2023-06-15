@@ -201,7 +201,7 @@
     "build:all": "pnpm build:shared && pnpm build:lsp && pnpm build:ts-plugin",
     "build": "pnpm build:all && tsup",
     "dev": "tsup --watch src/index.ts --watch ../language-server/dist/index.js --watch ../shared/dist/index.js",
-    "clean": "rm -rf dist",
+    "clean": "rimraf dist",
     "typecheck": "tsc --noEmit",
     "rewrite-deps": "tsx ./scripts/rewrite-workspace-dependencies.ts",
     "release": "pnpm build --silent && tsx ./scripts/publish.ts",
