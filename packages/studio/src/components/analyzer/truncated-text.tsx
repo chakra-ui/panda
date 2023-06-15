@@ -17,7 +17,9 @@ export const TruncatedText = ({
           </panda.span>
         }
       >
-        <panda.span {...props}>{text.substring(0, characters) + '...'}</panda.span>
+        <panda.span color="text" {...props}>
+          {text.substring(0, characters) + '...'}
+        </panda.span>
       </QuickTooltip>
     )
   }

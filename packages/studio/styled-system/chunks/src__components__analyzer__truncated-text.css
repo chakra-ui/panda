@@ -1,20 +1,4 @@
 @layer utilities {
-  .font_bold {
-    font-weight: var(--font-weights-bold);
-  }
-
-  .font_medium {
-    font-weight: var(--font-weights-medium);
-  }
-
-  .font_semibold {
-    font-weight: var(--font-weights-semibold);
-  }
-
-  .bg_white {
-    background-color: var(--colors-white);
-  }
-
   .p_2 {
     padding: var(--spacing-2);
   }
@@ -25,5 +9,9 @@
 
   .border_1px_solid_rgba\(0\,_0\,_0\,_0\.1\) {
     border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .text_text {
+    color: var(--colors-text);
   }
 }

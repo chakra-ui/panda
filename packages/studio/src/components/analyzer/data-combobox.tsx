@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from 'react'
 import { css } from '../../../styled-system/css'
 import { panda } from '../../../styled-system/jsx'
+import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '../icons'
 
 export type DataComboboxOption = {
   value: string
@@ -52,14 +53,20 @@ export const DataCombobox = ({ options: allOptions, label, ...props }: DataCombo
                 )}
                 <panda.div
                   display="flex"
-                  _focus={{
-                    border: '1px solid token(colors.blue.400, blue)',
-                  }}
+                  rounded="sm"
+                  border="solid 1px"
+                  borderColor={{ base: 'border', _focusWithin: { base: 'yellow.200', _dark: 'yellow.300' } }}
                 >
                   <ComboboxInput
                     defaultValue={props.defaultValue}
                     placeholder={props.placeholder ?? 'Search...'}
-                    className={css({ width: 'full', p: 2 })}
+                    className={css({
+                      width: 'full',
+                      p: 2,
+                      color: 'text',
+                      bg: 'transparent',
+                      _focus: { outline: 'none' },
+                    })}
                     onChange={(e) => {
                       const value = e.target.value
                       if (!value) {
@@ -74,20 +81,27 @@ export const DataCombobox = ({ options: allOptions, label, ...props }: DataCombo
                   />
                   {state.selectedValue && (
                     <panda.span
+                      display="flex"
                       px="2"
-                      mr="-2"
                       cursor="pointer"
                       userSelect="none"
-                      fontSize="lg"
-                      fontWeight="bold"
                       onClick={() => state.clearValue()}
+                      alignItems="center"
                     >
-                      X
+                      <XMarkIcon />
                     </panda.span>
                   )}
                   <ComboboxTrigger>
-                    <panda.span ml="auto" px="2" cursor="pointer">
-                      {state.isOpen ? '▲' : '▼'}
+                    <panda.span
+                      ml="auto"
+                      p="2"
+                      display="flex"
+                      cursor="pointer"
+                      borderLeft="solid 1px"
+                      borderColor="border"
+                      color="text"
+                    >
+                      {state.isOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
                     </panda.span>
                   </ComboboxTrigger>
                 </panda.div>
@@ -104,6 +118,7 @@ export const DataCombobox = ({ options: allOptions, label, ...props }: DataCombo
                     listStyle: 'none',
                     rounded: 'md',
                     border: '1px solid token(colors.border)',
+                    shadow: 'sm',
                   })}
                 >
                   {/* TODO virtualization */}
@@ -114,6 +129,8 @@ export const DataCombobox = ({ options: allOptions, label, ...props }: DataCombo
                       label={option.label}
                       className={css({
                         padding: '4px 8px',
+                        rounded: 'md',
+                        wordWrap: 'break-word',
                         _highlighted: {
                           bg: 'border',
                         },

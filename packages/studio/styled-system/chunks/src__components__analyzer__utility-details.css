@@ -1,20 +1,6 @@
 @layer utilities {
-  .\[\&_li\]\:cursor_pointer {
-    & li {
-      cursor: pointer;
-    }
-  }
-
-  .\[\&_li\]\:cursor_pointer {
-    & li {
-      cursor: pointer;
-    }
-  }
-
-  .\[\&_li\]\:cursor_pointer {
-    & li {
-      cursor: pointer;
-    }
+  .p_4px_8px {
+    padding: 4px 8px;
   }
 
   .rounded_md {
@@ -24,66 +10,6 @@
   .\[\&_li\]\:cursor_pointer {
     & li {
       cursor: pointer;
-    }
-  }
-
-  .p_4px_8px {
-    padding: 4px 8px;
-  }
-
-  .bg_white {
-    background: var(--colors-white);
-  }
-
-  .hover\:opacity_1 {
-    &:where(:hover, [data-hover]) {
-      opacity: 1;
-    }
-  }
-
-  .hover\:border-b_black {
-    &:where(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black);
-    }
-  }
-
-  .hover\:opacity_1 {
-    &:where(:hover, [data-hover]) {
-      opacity: 1;
-    }
-  }
-
-  .hover\:border-b_black {
-    &:where(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black);
-    }
-  }
-
-  .hover\:opacity_1 {
-    &:where(:hover, [data-hover]) {
-      opacity: 1;
-    }
-  }
-
-  .hover\:border-b_black {
-    &:where(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black);
-    }
-  }
-
-  .bg_gray\.50 {
-    background: var(--colors-gray-50);
-  }
-
-  .hover\:opacity_1 {
-    &:where(:hover, [data-hover]) {
-      opacity: 1;
-    }
-  }
-
-  .hover\:border-b_black {
-    &:where(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black);
     }
   }
 
@@ -200,30 +126,6 @@
   .hover\:border-b_black {
     &:where(:hover, [data-hover]) {
       border-bottom-color: var(--colors-black);
-    }
-  }
-
-  .\[\&_li\]\:hover\:opacity_0\.8 {
-    & li {
-      &:where(:hover, [data-hover]) {
-        opacity: 0.8;
-      }
-    }
-  }
-
-  .\[\&_li\]\:hover\:opacity_0\.8 {
-    & li {
-      &:where(:hover, [data-hover]) {
-        opacity: 0.8;
-      }
-    }
-  }
-
-  .\[\&_li\]\:hover\:opacity_0\.8 {
-    & li {
-      &:where(:hover, [data-hover]) {
-        opacity: 0.8;
-      }
     }
   }
 

@@ -1,4 +1,8 @@
 @layer utilities {
+  .font_semibold {
+    font-weight: var(--font-weights-semibold);
+  }
+
   .text_capitalize {
     text-transform: capitalize;
   }
@@ -75,12 +79,16 @@
     flex-direction: row;
   }
 
+  .grid-cols_repeat\(auto-fit\,_minmax\(13rem\,_1fr\)\) {
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+
   .d_grid {
     display: grid;
   }
 
-  .grid-cols_repeat\(auto-fit\,_minmax\(13rem\,_1fr\)\) {
-    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  .grid-cols_repeat\(auto-fit\,_minmax\(30rem\,_1fr\)\) {
+    grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
   }
 
   .gap_4 {

@@ -249,7 +249,7 @@ const ReportItemMatchingFiltersTable = (infos: Infos) => {
               title={
                 <>
                   <SelectLabel>By </SelectLabel>
-                  <SelectTrigger>
+                  <SelectTrigger asChild>
                     <button>{selectedOption?.label}</button>
                   </SelectTrigger>
                 </>

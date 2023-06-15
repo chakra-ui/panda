@@ -78,7 +78,7 @@ export const ReportItemOpenInEditorLink = ({ withRange, ...reportItem }: ReportI
       </panda.a>
       <QuickTooltip
         tooltip={
-          <panda.span p="2" bgColor="card" border="border">
+          <panda.span p="2" bgColor="card" border="1px solid token(colors.border)" shadow="sm" rounded="md">
             Click to open in editor
           </panda.span>
         }

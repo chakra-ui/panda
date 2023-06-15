@@ -3,14 +3,6 @@
     height: var(--sizes-12);
   }
 
-  .font_medium {
-    font-weight: var(--font-weights-medium);
-  }
-
-  .fs_sm {
-    font-size: var(--font-sizes-sm);
-  }
-
   .min-w_5 {
     min-width: var(--sizes-5);
   }
@@ -41,5 +33,33 @@
 
   .border_neutral\.700 {
     border-color: var(--colors-neutral-700);
+  }
+
+  .font_medium {
+    font-weight: var(--font-weights-medium);
+  }
+
+  .opacity_0\.7 {
+    opacity: 0.7;
+  }
+
+  .fs_sm {
+    font-size: var(--font-sizes-sm);
+  }
+
+  .text_uppercase {
+    text-transform: uppercase;
+  }
+
+  .d_flex {
+    display: flex;
+  }
+
+  .flex_column {
+    flex-direction: column;
+  }
+
+  .w_full {
+    width: var(--sizes-full);
   }
 }
