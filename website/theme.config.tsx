@@ -55,7 +55,8 @@ const config: DocsThemeConfig = {
           display: 'flex',
           justifyContent: 'space-between',
           gap: '4',
-          width: '100%'
+          width: '100%',
+          fontSize: 'sm'
         })}
       >
         <span>Copyright © {new Date().getFullYear()}</span>
@@ -63,7 +64,7 @@ const config: DocsThemeConfig = {
           className={css({ color: 'current', textDecoration: 'none' })}
           href="https://www.adebayosegun.com/"
         >
-          Proudly made in 🇳🇬 by Segun Adebayo
+          Proudly made by the Chakra team
         </a>
       </div>
     )

@@ -245,7 +245,11 @@ export function Navbar({ flatDirectories, items }: NavBarProps) {
           <Anchor
             data-scope="navbar"
             data-part="project-link"
-            className={css({ p: 2, color: 'currentColor' })}
+            className={css({
+              p: 2,
+              color: 'currentColor',
+              '& svg': { width: '4' }
+            })}
             href={config.project.link}
             newWindow
           >
