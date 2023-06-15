@@ -200,7 +200,7 @@ const InnerLayout = ({
       )
     ) : (
       <nav
-        className={cx(classes.toc, css({ px: 4 }))}
+        className={cx(classes.toc)}
         aria-label="table of contents"
       >
         {renderComponent(config.toc.component, {

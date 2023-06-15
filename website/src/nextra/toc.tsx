@@ -66,11 +66,10 @@ export function TOC({ headings, filePath }: TOCProps) {
       className={cx(
         'nextra-scrollbar',
         css({
-          ms: '4',
           position: 'sticky',
           top: '16',
           overflowY: 'auto',
-          pe: 4,
+          px: 8,
           pt: 6,
           textStyle: 'sm',
           hyphens: 'auto',
@@ -101,15 +100,45 @@ export function TOC({ headings, filePath }: TOCProps) {
                   className={cx(
                     {
                       2: css({ fontWeight: 'medium' }),
-                      3: css({ ps: '4' }),
-                      4: css({ ps: '8' }),
-                      5: css({ ps: '12' }),
-                      6: css({ ps: '16' })
+                      3: css({ ms: '4' }),
+                      4: css({ ms: '8' }),
+                      5: css({ ms: '12' }),
+                      6: css({ ms: '16' })
                     }[depth as Exclude<typeof depth, 1>],
                     css({ display: 'inline-block' }),
                     activeAnchor[id]?.isActive
                       ? css({
-                          color: 'primary.600'
+                          color: 'black',
+                          position: 'relative',
+                          _before: {
+                            content: '""',
+                            display: 'block',
+                            position: 'absolute',
+                            inset: '0 -10px 0 -10px',
+                            bg: 'yellow.200',
+                            rounded: 'md',
+                            zIndex: -1,
+                            _dark: {
+                              bg: 'yellow.300'
+                            }
+                          },
+                          _after: {
+                            content: '"🐼"',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'absolute',
+                            top: '50%',
+                            left: '-6',
+                            w: '6',
+                            h: '6',
+                            transform: 'translateY(-50%)',
+                            bg: 'yellow.200',
+                            rounded: 'full',
+                            _dark: {
+                              bg: 'yellow.300'
+                            }
+                          }
                         })
                       : css({
                           color: 'gray.500',

@@ -14,7 +14,10 @@ const styles = css({
       w: '8',
       borderWidth: '4px',
       borderColor: { base: 'white', _dark: 'rgba(17,17,17,1)' },
-      bg: 'yellow.300',
+      bg: 'yellow.200',
+      _dark: {
+        bg: 'yellow.300'
+      },
       position: 'absolute',
       textAlign: 'center',
       textIndent: '-1px',

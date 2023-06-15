@@ -73,8 +73,11 @@ const linkStyles = cva({
   variants: {
     selected: {
       true: {
-        bg: 'yellow.300',
-        color: 'gray.800'
+        bg: 'yellow.200',
+        color: 'gray.800',
+        _dark: {
+          bg: 'yellow.300',
+        }
       },
       false: {
         _hover: {

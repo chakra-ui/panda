@@ -28,7 +28,7 @@ const styles = cva({
   },
   variants: {
     hasFilename: {
-      true: { top: '2' },
+      true: { top: '9' },
       false: { top: '0' }
     }
   }
@@ -55,7 +55,7 @@ export const CodeActions = (props: CodeActionsProps) => {
           className={css({ pointerEvents: 'none', h: '4', w: '4' })}
         />
       </button>
-      {hasCopyCode && <CopyToClipboard getValue={getClipboardValue} />}
+      {hasCopyCode && <CopyToClipboard getValue={getClipboardValue}/>}
     </div>
   )
 }
