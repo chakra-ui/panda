@@ -40,9 +40,9 @@ jobs:
           - os: ubuntu-latest
             target: alpine-x64
             npm_config_arch: x64
-          - os: macos-latest
-            target: darwin-arm64
-            npm_config_arch: x64
+          # - os: macos-latest
+          #   target: darwin-arm64
+          #   npm_config_arch: x64
           - os: macos-latest
             target: darwin-arm64
             npm_config_arch: arm64
