@@ -45,8 +45,10 @@ export const SectionFooter = () => {
               className={css({ color: 'yellow.400' })}
             />
           </Link>
-          {/* TODO fix links */}
-          <Link href="/docs" className={button({ color: 'ghost.white' })}>
+          <Link
+            href="https://discord.gg/VQrkpsgSx7"
+            className={button({ color: 'ghost.white' })}
+          >
             Discord{' '}
             <ButtonIcon
               icon="ExternalLink"

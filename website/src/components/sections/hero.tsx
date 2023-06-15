@@ -17,6 +17,7 @@ export const SectionHero = () => {
             fontWeight="medium"
             maxW="4xl"
             mb="24"
+            hideBelow="md"
           >
             CSS-in-JS with build time generated styles, RSC compatible,
             multi-variant support, and best-in-class developer experience
@@ -37,7 +38,7 @@ export const SectionHero = () => {
 
                 <panda.h1
                   color="text.headline"
-                  fontSize={{ base: '8.5rem', sm: '12rem', lg: '14.5rem' }}
+                  fontSize={{ base: '7rem', sm: '12rem', lg: '14.5rem' }}
                   fontWeight="bold"
                   letterSpacing="tighter"
                   lineHeight="1"

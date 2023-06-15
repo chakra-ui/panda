@@ -41,7 +41,7 @@ export const SectionCommunity = () => {
           </Stack>
 
           <Link
-            href="/docs/getting-started"
+            href="https://discord.gg/VQrkpsgSx7"
             className={cx(
               button({ size: 'lg' }),
               css({
