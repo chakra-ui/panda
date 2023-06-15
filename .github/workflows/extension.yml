@@ -9,11 +9,45 @@ on:
       - "extension/**"
     branches:
       - main
+      - ci/extension-multiplatform
 
 jobs:
   release:
     name: VSCode Marketplace
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: win32-x64
+            npm_config_arch: x64
+          - os: windows-latest
+            target: win32-ia32
+            npm_config_arch: ia32
+          - os: windows-latest
+            target: win32-arm64
+            npm_config_arch: arm
+          - os: ubuntu-latest
+            target: linux-x64
+            npm_config_arch: x64
+          - os: ubuntu-latest
+            target: linux-arm64
+            npm_config_arch: arm64
+          - os: ubuntu-latest
+            target: linux-armhf
+            npm_config_arch: arm
+          - os: ubuntu-latest
+            target: alpine-x64
+            npm_config_arch: x64
+          - os: macos-latest
+            target: darwin-x64
+            npm_config_arch: x64
+          - os: macos-latest
+            target: darwin-arm64
+            npm_config_arch: arm64
+          - os: ubuntu-latest
+            target: universal
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -36,3 +70,4 @@ jobs:
         env:
           VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
           VSCE_RELEASE_TYPE: rc
+          VSCE_TARGET: ${{ matrix.target }}
