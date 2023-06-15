@@ -1,15 +1,715 @@
 @layer utilities {
-  .p_4px_8px {
-    padding: 4px 8px;
-  }
-
-  .rounded_md {
-    border-radius: var(--radii-md);
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
   }
 
   .\[\&_li\]\:cursor_pointer {
     & li {
       cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .p_4px_8px {
+    padding: 4px 8px;
+  }
+
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .self_flex-end {
+    align-self: flex-end;
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .mt_2 {
+    margin-top: var(--spacing-2);
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .d_block {
+    display: block;
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .w_48 {
+    width: var(--sizes-48);
+  }
+
+  .h_48 {
+    height: var(--sizes-48);
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .w_24 {
+    width: var(--sizes-24);
+  }
+
+  .h_24 {
+    height: var(--sizes-24);
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .self_center {
+    align-self: center;
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .m_4 {
+    margin: var(--spacing-4);
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .fs_lg {
+    font-size: var(--font-sizes-lg);
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .ml_autp {
+    margin-left: autp;
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .p_2 {
+    padding: var(--spacing-2);
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .font_semibold {
+    font-weight: var(--font-weights-semibold);
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_0\.8 {
+    &:where(:hover, [data-hover]) {
+      opacity: 0.8;
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .px_4 {
+    padding-inline: var(--spacing-4);
+  }
+
+  .hover\:opacity_0\.8 {
+    &:where(:hover, [data-hover]) {
+      opacity: 0.8;
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_0\.8 {
+    &:where(:hover, [data-hover]) {
+      opacity: 0.8;
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
     }
   }
 
@@ -49,24 +749,8 @@
     margin-top: var(--spacing-1);
   }
 
-  .d_block {
-    display: block;
-  }
-
-  .self_flex-end {
-    align-self: flex-end;
-  }
-
-  .mt_2 {
-    margin-top: var(--spacing-2);
-  }
-
-  .select_none {
-    user-select: none;
-  }
-
-  .fs_lg {
-    font-size: var(--font-sizes-lg);
+  .gap_2 {
+    gap: var(--spacing-2);
   }
 
   .fs_md {
@@ -81,8 +765,38 @@
     margin-left: auto;
   }
 
+  .select_none {
+    user-select: none;
+  }
+
   .bg_card {
     background: var(--colors-card);
+  }
+
+  .px_3 {
+    padding-inline: var(--spacing-3);
+  }
+
+  .py_2 {
+    padding-block: var(--spacing-2);
+  }
+
+  .rounded_md {
+    border-radius: var(--radii-md);
+  }
+
+  .hover\:opacity_0\.8 {
+    &:where(:hover, [data-hover]) {
+      opacity: 0.8;
+    }
+  }
+
+  .w_16 {
+    width: var(--sizes-16);
+  }
+
+  .h_16 {
+    height: var(--sizes-16);
   }
 
   .d_flex {
@@ -126,6 +840,286 @@
   .hover\:border-b_black {
     &:where(:hover, [data-hover]) {
       border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
     }
   }
 

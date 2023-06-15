@@ -10,7 +10,7 @@ import {
 import { useState } from 'react'
 
 import { css, cx } from '../../../styled-system/css'
-import { Wrap, panda } from '../../../styled-system/jsx'
+import { Flex, Wrap, panda } from '../../../styled-system/jsx'
 import { styledLink } from '../../../styled-system/patterns'
 
 import { analysisData } from '../../lib/analysis-data'
@@ -23,6 +23,7 @@ import { getReportInfosFrom } from './get-report-infos-from'
 import { reportItemColumns } from './report-item-columns'
 import { Section } from './section'
 import { TextWithCount } from './text-with-count'
+import { XMarkIcon } from '../icons'
 
 export const UtilityDetails = () => {
   const search = new URLSearchParams(window.location.search)
@@ -110,7 +111,34 @@ const UtilityFilters = () => {
 
   return (
     <panda.div mb="4">
-      <panda.h3>Filters</panda.h3>
+      <Flex>
+        <panda.h3>Filters</panda.h3>
+        {infos.hasParam && (
+          <panda.button
+            ml="auto"
+            cursor="pointer"
+            userSelect="none"
+            bg="card"
+            px="3"
+            py="2"
+            rounded="md"
+            _hover={{ opacity: 0.8 }}
+            onClick={() => {
+              updateSearchParam('value', undefined)
+              updateSearchParam('category', undefined)
+              updateSearchParam('propName', undefined)
+              updateSearchParam('from', undefined)
+              updateSearchParam('filepath', undefined)
+              setParams({})
+              setResetKey((k) => k + 1)
+            }}
+          >
+            <panda.span display="flex" gap="2" alignItems="center">
+              <XMarkIcon width="16" height="16" /> Clear filters
+            </panda.span>
+          </panda.button>
+        )}
+      </Flex>
       <Wrap key={resetKey}>
         <DataCombobox
           label="Token name"
@@ -157,28 +185,6 @@ const UtilityFilters = () => {
           }}
           defaultValue={String(infos.params.filepath ?? '')}
         />
-        {infos.hasParam && (
-          <panda.span
-            display="block"
-            alignSelf="flex-end"
-            mt="2"
-            cursor="pointer"
-            userSelect="none"
-            fontSize="lg"
-            fontWeight="bold"
-            onClick={() => {
-              updateSearchParam('value', undefined)
-              updateSearchParam('category', undefined)
-              updateSearchParam('propName', undefined)
-              updateSearchParam('from', undefined)
-              updateSearchParam('filepath', undefined)
-              setParams({})
-              setResetKey((k) => k + 1)
-            }}
-          >
-            [X] Clear filters
-          </panda.span>
-        )}
       </Wrap>
     </panda.div>
   )

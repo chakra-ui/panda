@@ -238,7 +238,7 @@ export function ChevronDownIcon() {
   )
 }
 
-export function XMarkIcon() {
+export function XMarkIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -248,6 +248,7 @@ export function XMarkIcon() {
       stroke="currentColor"
       width="12"
       height="12"
+      {...props}
     >
       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
     </svg>
