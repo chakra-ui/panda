@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format cjs --minify -d dist --clean --shims --external esbuild --external @pandacss/preset-base --external @pandacss/preset-panda",
     "dev": "tsup src/index.ts --watch --format cjs -d dist --shims --external esbuild --external @pandacss/preset-base --external @pandacss/preset-panda",
-    "clean": "rm -rf dist",
+    "clean": "rimraf dist",
     "typecheck": "tsc --noEmit"
   },
   "publishConfig": {
