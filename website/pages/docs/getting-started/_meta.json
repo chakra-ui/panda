@@ -4,10 +4,11 @@
   "astro": "Astro",
   "nextjs": "Next.js",
   "vite": "Vite",
-  "storybook": "Storybook",
+  "qwik": "Qwik",
   "remix": "Remix",
   "preact": "Preact",
   "solidjs": "SolidJS",
   "gatsby": "Gatsby",
-  "svelte": "Svelte"
+  "svelte": "Svelte",
+  "storybook": "Storybook"
 }

@@ -1,15 +1,16 @@
+import { AstroLogo } from '@/icons/astro'
+import { GatsbyLogo } from '@/icons/gatsby'
+import { NextjsLogo } from '@/icons/nextjs'
+import { PreactLogo } from '@/icons/preact'
+import { QwikLogo } from '@/icons/qwik'
+import { RemixLogo } from '@/icons/remix'
+import { SolidjsLogo } from '@/icons/solid'
+import { StorybookLogo } from '@/icons/storybook'
+import { SvelteLogo } from '@/icons/svelte'
+import { ViteLogo } from '@/icons/vite'
 import { css } from '@/styled-system/css'
 import { grid, hstack, square } from '@/styled-system/patterns'
 import Link from 'next/link'
-import { AstroLogo } from '../icons/astro'
-import { GatsbyLogo } from '../icons/gatsby'
-import { NextjsLogo } from '../icons/nextjs'
-import { PreactLogo } from '../icons/preact'
-import { RemixLogo } from '../icons/remix'
-import { SolidjsLogo } from '../icons/solid'
-import { StorybookLogo } from '../icons/storybook'
-import { SvelteLogo } from '../icons/svelte'
-import { ViteLogo } from '../icons/vite'
 
 const logoMap = {
   nextjs: {
@@ -64,6 +65,12 @@ const logoMap = {
     href: '/docs/getting-started/remix',
     description:
       'Remix is a React framework for building full-stack Web applications.'
+  },
+  qwik: {
+    name: 'Qwik',
+    logo: QwikLogo,
+    href: '/docs/getting-started/qwik',
+    description: 'Build instantly-interactive web apps without effort.'
   },
   storybook: {
     name: 'Storybook',

@@ -1,0 +1,148 @@
+---
+title: Using Qwik
+description: Easily use Panda with Qwik with our dedicated integration.
+---
+
+# Using Panda CSS with Preact
+
+Setting up Panda CSS in a Qwik project using PostCSS.
+
+## Start a new project
+
+<Steps>
+
+### Create Qwik project
+
+To get started, we will need to create a new Preact project using `typescript` template.
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+  <Tab>
+    ```bash
+    npx create qwik@latest
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    pnpm create qwik@latest
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn create qwik
+    ```
+  </Tab>
+</Tabs>
+
+
+### Install Panda
+
+Install panda and create your `panda.config.ts` file.
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+  <Tab>
+    ```bash
+    npm install -D @pandacss/dev
+    npx panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    pnpm add -D @pandacss/dev
+    pnpm panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn add -D @pandacss/dev
+    yarn panda init --postcss
+    ```
+  </Tab>
+</Tabs>
+
+### Update package.json scripts
+
+Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3} filename="package.json"
+{
+  "scripts": {
++    "prepare": "panda codegen",
+    "build": "qwik build",
+    "build.client": "vite build",
+    "build.preview": "vite build --ssr src/entry.preview.tsx",
+  }
+}
+```
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+### Configure the content
+
+Make sure that all of the paths of your Preact components are included in the `include` section of the `panda.config.ts` file.
+
+```js {6} filename="panda.config.ts"
+import { defineConfig } from "@pandacss/dev"
+
+export default defineConfig({
+ preflight: true,
+ // Where to look for your css declarations
+ include: ["./src/**/*.{js,jsx,ts,tsx}", "./pages/**/*.{js,jsx,ts,tsx}"],
+ exclude: [],
+ outdir: "styled-system",
+})
+```
+
+### Configure the entry CSS with layers
+
+Add this code to an `src/style/index.css` file imported in the root component of your project.
+
+```css filename="src/global.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+## Start your build process
+
+Run the following command to start your development server.
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+  <Tab>
+    ```bash
+    npm run dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    pnpm dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dev
+    ```
+  </Tab>
+</Tabs>
+
+### Start using Panda
+
+Now you can start using Panda CSS in your project.
+
+```tsx filename="src/routes/layout.tsx"
+import { component$, Slot } from '@builder.io/qwik'
+import { routeLoader$ } from '@builder.io/qwik-city'
+import { css } from 'styled-system/css'
+
+export const useServerTimeLoader = routeLoader$(() => {
+  return {
+    date: new Date().toISOString(),
+  }
+})
+
+export default component$(() => {
+  return (
+    <div class={css({ p: '10', bg: 'gray.900', h: 'dvh' })}>
+       <Slot />
+    </div>
+  )
+})
+```
+
+</Steps>
