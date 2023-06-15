@@ -30,12 +30,20 @@ const config: DocsThemeConfig = {
   project: { link: 'https://github.com/chakra-ui/panda' },
   useNextSeoProps() {
     const { route } = useRouter()
-    if (route === '/') return { titleTemplate: 'Panda – %s' }
-    return { titleTemplate: seoConfig.title.template }
+    const { url, images } = seoConfig.openGraph
+
+    if (route === '/') {
+      return { titleTemplate: 'Panda – %s' }
+    }
+
+    return {
+      titleTemplate: seoConfig.title.template,
+      openGraph: { url, images: [{ url: images }] }
+    }
   },
   docsRepositoryBase: 'https://github.com/chakra-ui/panda/blob/website/pages',
   sidebar: {
-    toggleButton: true,
+    toggleButton: true
   },
   // i18n: [
   //   { locale: 'en', text: 'English' },
