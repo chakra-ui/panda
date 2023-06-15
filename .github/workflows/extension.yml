@@ -46,8 +46,6 @@ jobs:
           - os: macos-latest
             target: darwin-arm64
             npm_config_arch: arm64
-          - os: ubuntu-latest
-            target: universal
     steps:
       - name: Checkout
         uses: actions/checkout@v3
