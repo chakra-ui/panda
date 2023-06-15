@@ -74,7 +74,7 @@ export function Sidebar({
   includePlaceholder
 }: SideBarProps): ReactElement {
   const config = useConfig()
-  const { menu, setMenu } = useMenu()
+  const { menu: isMobileMenuOpen, setMenu: setIsMobileMenuOpen } = useMenu()
   const router = useRouter()
   const [showSidebar, setSidebar] = useState(true)
   const [showToggleAnimation, setToggleAnimation] = useState(false)
@@ -84,7 +84,7 @@ export function Sidebar({
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (menu) {
+    if (isMobileMenuOpen) {
       document.body.classList.add(...hiddenClass.split(' '))
     } else {
       document.body.classList.remove(...hiddenClass.split(' '))
@@ -92,12 +92,16 @@ export function Sidebar({
     return () => {
       document.body.classList.remove(...hiddenClass.split(' '))
     }
-  }, [menu])
+  }, [isMobileMenuOpen])
 
   useEffect(() => {
-    const activeElement = sidebarRef.current?.querySelector('li.active')
+    const activeElements = sidebarRef.current?.querySelectorAll('li.active')
 
-    if (activeElement && (window.innerWidth > 767 || menu)) {
+    if (activeElements?.length && (window.innerWidth > 767 || isMobileMenuOpen)) {
+      // there is two menus in the DOM, first one rendered is desktop and second one is mobile
+      // so we need to get active element from the right menu
+      const activeElement = isMobileMenuOpen ? activeElements[1] : activeElements[0];
+
       const scroll = () => {
         scrollIntoView(activeElement, {
           block: 'center',
@@ -106,33 +110,36 @@ export function Sidebar({
           boundary: containerRef.current
         })
       }
-      if (menu) {
+
+      if (isMobileMenuOpen) {
         // needs for mobile since menu has transition transform
         setTimeout(scroll, 300)
       } else {
         scroll()
       }
     }
-  }, [menu])
+  }, [isMobileMenuOpen])
 
   // Always close mobile nav when route was changed (e.g. logo click)
   useEffect(() => {
-    setMenu(false)
-  }, [router.asPath, setMenu])
+    setIsMobileMenuOpen(false)
+  }, [router.asPath, setIsMobileMenuOpen])
 
   const hasI18n = config.i18n.length > 0
   const hasThemeSwitch = config.darkMode
   const hasFooter = hasThemeSwitch || hasI18n
 
+  console.log(hasI18n)
+
   return (
     <>
       {includePlaceholder && asPopover ? <SidebarPlaceholder /> : null}
-      <SidebarBackdrop isMobileMenuOpen={menu} onClick={() => setMenu(false)} />
+      <SidebarBackdrop isMobileMenuOpen={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(false)} />
       <SidebarContainer
         ref={containerRef}
         showSidebar={showSidebar}
         isPopover={asPopover}
-        isMobileMenuOpen={menu}
+        isMobileMenuOpen={isMobileMenuOpen}
       >
         <SidebarHeader>
           {renderComponent(config.search.component, {
@@ -141,11 +148,16 @@ export function Sidebar({
         </SidebarHeader>
 
         <SidebarBody ref={sidebarRef} showSidebar={showSidebar}>
-          {/* without asPopover check <Collapse />'s inner.clientWidth on `layout: "raw"` will be 0 and element will not have width on initial loading */}
+          {/**
+           * Desktop Menu
+           *
+           * Without asPopover check <Collapse />'s inner.clientWidth on `layout: "raw"` will be 0
+           * and element will not have width on initial loading.
+           */}
           {(!asPopover || !showSidebar) && (
             <Collapse isOpen={showSidebar} horizontal>
               <TreeView
-                className={css({ mdDown: { display: 'none' } })}
+                className={css({ smDown: { display: 'none' } })}
                 // The sidebar menu, shows only the docs directories.
                 directories={docsDirectories}
                 // When the viewport size is larger than `md`, hide the anchors in
@@ -155,6 +167,8 @@ export function Sidebar({
               />
             </Collapse>
           )}
+
+          {/* Mobile Menu */}
           <TreeView
             className={css({ md: { display: 'none' } })}
             // The mobile dropdown menu, shows all the directories.
@@ -190,7 +204,7 @@ export function Sidebar({
               <IconButton
                 aria-label={showSidebar ? 'Hide sidebar' : 'Show sidebar'}
                 title={showSidebar ? 'Hide sidebar' : 'Show sidebar'}
-                mdDown={{ display: 'none' }}
+                smDown={{ display: 'none' }}
                 size="xs"
                 variant="ghost"
                 onClick={() => {
