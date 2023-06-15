@@ -170,6 +170,44 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('empty rules', () => {
+    const code = `
+    import { SectionLearn } from '@/components/sections/learn'
+    import { SectionVideos } from '@/components/sections/learn-video'
+
+    export default function Page() {
+      return (
+        <>
+          <SectionLearn />
+          <SectionVideos />
+        </>
+      )
+    }
+
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "SectionLearn",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "SectionVideos",
+          "type": "jsx",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot('""')
+  })
+
   test('runtime conditions', () => {
     const code = `
       import { css } from ".panda/css"
@@ -617,7 +655,8 @@ describe('extract to css output pipeline', () => {
 
         .gap_10px {
           gap: 10px
-          }}
+          }
+      }
 
       @layer recipes {
         .button--size_md {

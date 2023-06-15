@@ -100,6 +100,8 @@ export class AtomicRule {
       }
     })
 
+    if (this.root.nodes.length === 0) return
+
     const atRule = postcss.atRule({
       name: 'layer',
       params: this.layer,
