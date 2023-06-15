@@ -41,7 +41,7 @@ jobs:
             target: alpine-x64
             npm_config_arch: x64
           - os: macos-latest
-            target: darwin-x64
+            target: darwin-arm64
             npm_config_arch: x64
           - os: macos-latest
             target: darwin-arm64
@@ -64,7 +64,7 @@ jobs:
         working-directory: ./extension/vscode
         run: |
           pnpm rewrite-deps
-          rm -rf node_modules
+          pnpm clean
           npm i
           pnpm release
         env:

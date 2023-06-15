@@ -3,9 +3,9 @@ name: Publish
 on:
   push:
     paths:
-      - '.changeset/**'
-      - 'packages/**'
-      - 'extension/**'
+      - ".changeset/**"
+      - "packages/**"
+      - "extension/**"
     branches:
       - main
 
@@ -37,17 +37,17 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
-      # - name: Publish extension
-      #   if: steps.changesets.outputs.published == 'true'
-      #   working-directory: ./extension/vscode
-      #   run: |
-      #     pnpm rewrite-deps
-      #     rm -rf node_modules
-      #     npm i
-      #     pnpm release
-      #   env:
-      #     VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
-      #     VSCE_RELEASE_TYPE: stable
+      - name: Publish extension
+        if: steps.changesets.outputs.published == 'true'
+        working-directory: ./extension/vscode
+        run: |
+          pnpm rewrite-deps
+          rimraf node_modules
+          npm i
+          pnpm release
+        env:
+          VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
+          VSCE_RELEASE_TYPE: stable
 
       - name: Release to dev tag
         if: steps.changesets.outputs.published != 'true'
