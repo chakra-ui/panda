@@ -40,7 +40,7 @@ export const SectionStartBuilding = () => {
               justify={{ sm: 'center' }}
             >
               <Link
-                href="/docs/getting-started/cli"
+                href="/docs"
                 className={cx(
                   button({ color: 'main', size: 'lg' }),
                   css({ w: { base: '100%', sm: '240px' } })

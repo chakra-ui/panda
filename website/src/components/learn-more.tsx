@@ -3,11 +3,12 @@ import { css } from '@/styled-system/css'
 import { hstack } from '@/styled-system/patterns'
 import { ButtonIcon } from '@/theme/icons'
 
-export function LearnMore() {
+export function LearnMore({ href = '/learn' }: { href?: string }) {
   return (
     <Link
-      href="/learn"
+      href={href}
       className={hstack({
+        alignSelf: 'flex-start',
         textStyle: 'panda.h4',
         fontWeight: 'bold',
         flexShrink: '0'

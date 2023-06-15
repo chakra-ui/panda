@@ -11,7 +11,7 @@ import { Icon, IconType } from '@/theme/icons'
 
 export const SectionWorksEverywhere = () => {
   return (
-    <panda.section>
+    <section>
       <Container pt="32" pb="48">
         <VStack gap="20">
           <panda.h2 textStyle="panda.h2" fontWeight="bold" textAlign="center">
@@ -71,7 +71,7 @@ export const SectionWorksEverywhere = () => {
           </VStack>
         </VStack>
       </Container>
-    </panda.section>
+    </section>
   )
 }
 
