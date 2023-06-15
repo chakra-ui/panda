@@ -129,8 +129,6 @@ export function Sidebar({
   const hasThemeSwitch = config.darkMode
   const hasFooter = hasThemeSwitch || hasI18n
 
-  console.log(hasI18n)
-
   return (
     <>
       {includePlaceholder && asPopover ? <SidebarPlaceholder /> : null}
