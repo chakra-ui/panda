@@ -204,6 +204,7 @@
     "clean": "rimraf dist node_modules",
     "typecheck": "tsc --noEmit",
     "rewrite-deps": "tsx ./scripts/rewrite-workspace-dependencies.ts",
+    "override-esbuild": "tsx ./scripts/override-esbuild-with-wasm.ts",
     "release": "pnpm build --silent && tsx ./scripts/publish.ts",
     "vsce:package": "pnpm --silent build && pnpm vsix-builder package"
   },
