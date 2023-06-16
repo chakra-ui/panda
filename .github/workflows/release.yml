@@ -91,19 +91,9 @@ jobs:
           - os: macos-latest
             target: darwin-x64
             npm_config_arch: x64
-
-          # Github runners dont support arm64 on macos
-          # https://github.com/actions/runner-images/issues/2187
-
-          # unless self-hosted but
-          # https://github.com/medic/cht-core/issues/8277#issuecomment-1568021046
-          # > GitHub recommends only utilizing self-hosted runners with private repositories.
-          # > Allowing self-hosted runners on public repositories and allowing workflows on public forks
-          # > introduces a significant security risk.
-
-          # - os: macos-latest
-          #   target: darwin-arm64
-          #   npm_config_arch: arm64
+          - os: macos-latest
+            target: darwin-arm64
+            npm_config_arch: arm64
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -122,6 +112,11 @@ jobs:
       - name: Prepare npm install
         working-directory: ./extension/vscode
         run: pnpm rewrite-deps && pnpm clean
+
+      - name: Overrides esbuild
+        working-directory: ./extension/vscode
+        if: contains(matrix.target, 'darwin-arm64')
+        run: pnpm override-esbuild
 
       - name: Install with npm
         working-directory: ./extension/vscode
