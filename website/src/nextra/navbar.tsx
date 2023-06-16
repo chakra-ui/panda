@@ -235,8 +235,8 @@ export function Navbar({ flatDirectories, items }: NavBarProps) {
         {renderComponent(config.search.component, {
           directories: flatDirectories,
           className: css({
-            display: 'none',
-            md: { display: 'inline-block' },
+            display: 'inline-block',
+            hideBelow: 'sm',
             minW: '200px'
           })
         })}
@@ -280,8 +280,15 @@ export function Navbar({ flatDirectories, items }: NavBarProps) {
         >
           <MenuIcon className={cx(menu && 'open')} />
         </button>
-        {config.darkMode &&
-          renderComponent(config.themeSwitch.component, { lite: true })}
+
+        <div
+          className={css({
+            hideBelow: 'sm'
+          })}
+        >
+          {config.darkMode &&
+            renderComponent(config.themeSwitch.component, { lite: true })}
+        </div>
       </nav>
     </div>
   )

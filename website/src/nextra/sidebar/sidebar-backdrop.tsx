@@ -1,15 +1,32 @@
-import { css } from '@/styled-system/css'
+import { cva } from '@/styled-system/css'
 import { FC } from 'react'
 
-const sidebarBackdropOpenStyles = css({
-  position: 'fixed',
-  inset: 0,
-  zIndex: 10,
-  backgroundColor: 'blackAlpha.600'
-})
+const sidebarBackdropStyles = cva({
+  base: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 10,
+    backgroundColor: 'blackAlpha.600',
+    transition: 'opacity 0.8s ease-in-out',
+    opacity: 0,
+    pointerEvents: 'none',
+    md: {
+      display: 'none'
+    }
+  },
+  variants: {
+    isOpen: {
+      true: {
+        opacity: 1,
+        pointerEvents: 'auto',
 
-const sidebarBackdropClosedStyles = css({
-  backgroundColor: 'transparent'
+      },
+      false: {
+        opacity: 0,
+        pointerEvents: 'none'
+      }
+    }
+  }
 })
 
 export interface ISidebarBackdrop {
@@ -22,9 +39,7 @@ export const SidebarBackdrop: FC<ISidebarBackdrop> = ({
   ...rest
 }) => (
   <div
-    className={
-      isMobileMenuOpen ? sidebarBackdropOpenStyles : sidebarBackdropClosedStyles
-    }
+    className={sidebarBackdropStyles({ isOpen: isMobileMenuOpen })}
     {...rest}
   />
 )

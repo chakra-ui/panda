@@ -1,5 +1,4 @@
 import { cx, cva } from '@/styled-system/css'
-import { panda } from '@/styled-system/jsx'
 import { ReactElement, ReactNode } from 'react'
 import { forwardRef } from 'react'
 
@@ -7,7 +6,7 @@ const sidebarContainerStyles = cva({
   base: {
     display: 'flex',
     flexDirection: 'column',
-    mdDown: {
+    smDown: {
       _motionReduce: {
         transitionProperty: 'none'
       },
@@ -30,7 +29,7 @@ const sidebarContainerStyles = cva({
         maskImage: `linear-gradient(to bottom, transparent, #000 20px), linear-gradient(to left, #000 10px, transparent 10px)`
       }
     },
-    md: {
+    sm: {
       top: 16,
       flexShrink: 0,
       '& > .nextra-scrollbar': {
@@ -71,12 +70,12 @@ const sidebarContainerStyles = cva({
     },
     isMobileMenuOpen: {
       true: {
-        mdDown: {
+        smDown: {
           transform: 'translate3d(0,0,0)'
         }
       },
       false: {
-        mdDown: {
+        smDown: {
           transform: 'translate3d(-100%,0,0)'
         }
       }
@@ -100,7 +99,7 @@ export const SidebarContainer = forwardRef<
     { showSidebar, isPopover, isMobileMenuOpen, className, ...rest },
     ref
   ): ReactElement => (
-    <panda.aside
+    <aside
       className={cx(
         sidebarContainerStyles({
           showSidebar,
