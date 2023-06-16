@@ -17,10 +17,7 @@ const sidebarContainerStyles = cva({
       w: '100%',
       zIndex: 15,
       overscrollBehavior: 'contain',
-      backgroundColor: 'white',
-      _dark: {
-        backgroundColor: 'dark'
-      },
+      bg: { base: 'white', _dark: 'dark' },
       transition: 'transform 0.8s cubic-bezier(0.52, 0.16, 0.04, 1)',
       willChange: 'transform, opacity',
       contain: 'layout style',

@@ -70,8 +70,8 @@ export function TOC({ headings, filePath }: TOCProps) {
           position: 'sticky',
           top: '16',
           overflowY: 'auto',
-          pe: 4,
-          pt: 6,
+          pe: '4',
+          pt: '8',
           textStyle: 'sm',
           hyphens: 'auto',
           maxHeight:
