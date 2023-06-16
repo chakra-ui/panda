@@ -1,5 +1,24 @@
 # @pandacss/dev
 
+## 0.3.1
+
+### Patch Changes
+
+- efd79d83: Baseline release for the launch
+- Updated dependencies [efd79d83]
+- Updated dependencies [22ec328e]
+  - @pandacss/astro@0.3.1
+  - @pandacss/config@0.3.1
+  - @pandacss/error@0.3.1
+  - @pandacss/logger@0.3.1
+  - @pandacss/node@0.3.1
+  - @pandacss/postcss@0.3.1
+  - @pandacss/preset-panda@0.3.1
+  - @pandacss/shared@0.3.1
+  - @pandacss/studio@0.3.1
+  - @pandacss/token-dictionary@0.3.1
+  - @pandacss/types@0.3.1
+
 ## 0.3.0
 
 ### Patch Changes
