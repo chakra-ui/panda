@@ -15,19 +15,19 @@ Install panda and create your `panda.config.ts` file.
 <Tabs items={['pnpm', 'npm', 'yarn']}>
   <Tab>
     ```bash
-    pnpm install -D @pandacss/dev postcss autoprefixer
+    pnpm install -D @pandacss/dev postcss
     pnpm panda init -p
     ```
   </Tab>
   <Tab>
     ```bash
-    npm install -D @pandacss/dev postcss autoprefixer
+    npm install -D @pandacss/dev postcss
     npx panda init -p
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn add -D @pandacss/dev postcss autoprefixer
+    yarn add -D @pandacss/dev postcss
     yarn panda init -p
     ```
   </Tab>
@@ -40,8 +40,7 @@ Add panda and autoprefixer to your `postcss.config.cjs` file, or wherever PostCS
 ```js
 module.exports = {
   plugins: {
-    '@pandacss/dev/postcss': {},
-    autoprefixer: {}
+    '@pandacss/dev/postcss': {}
   }
 }
 ```

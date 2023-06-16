@@ -4,7 +4,7 @@ import lessons from './learn-videos.json' assert { type: 'json' }
 
 export const SectionVideos = () => {
   return (
-    <panda.section mt="-20">
+    <panda.section mt={{ base: '-10', lg: '-20' }}>
       <Container
         pt="10"
         pb="40"
@@ -22,7 +22,10 @@ export const SectionVideos = () => {
               >
                 {title}
               </panda.h3>
-              <Grid columns={{ base: 1, md: 3 }} gap={{ base: '4', md: '8' }}>
+              <Grid
+                columns={{ base: 1, sm: 2, md: 3 }}
+                gap={{ base: '4', md: '8' }}
+              >
                 {data.map(video => (
                   <LearnVideoItem
                     key={video.url}
