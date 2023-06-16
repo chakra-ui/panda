@@ -30,6 +30,11 @@ export function Head() {
         {...config.useNextSeoProps?.()}
       />
       <NextHead>
+        <script
+          defer
+          data-domain="panda-css.com"
+          src="https://plausible.io/js/script.js"
+        />
         {config.faviconGlyph ? (
           <link
             rel="icon"
