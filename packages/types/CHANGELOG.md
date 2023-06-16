@@ -1,5 +1,11 @@
 # @pandacss/types
 
+## 0.3.1
+
+### Patch Changes
+
+- efd79d83: Baseline release for the launch
+
 ## 0.3.0
 
 ### Minor Changes
