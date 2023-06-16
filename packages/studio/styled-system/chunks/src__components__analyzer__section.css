@@ -1,29 +1,29 @@
 @layer utilities {
   .w_full {
-    width: var(--sizes-full);
-  }
+    width: var(--sizes-full)
+    }
 
   .rounded_md {
-    border-radius: var(--radii-md);
-  }
+    border-radius: var(--radii-md)
+    }
 
   .d_flex {
-    display: flex;
-  }
+    display: flex
+    }
 
   .flex_column {
-    flex-direction: column;
-  }
+    flex-direction: column
+    }
 
   .gap_4 {
-    gap: var(--spacing-4);
-  }
+    gap: var(--spacing-4)
+    }
 
   .p_4 {
-    padding: var(--spacing-4);
-  }
+    padding: var(--spacing-4)
+    }
 
   .w_100\% {
-    width: 100%;
-  }
+    width: 100%
+    }
 }

@@ -3,12 +3,20 @@
     padding: var(--spacing-2);
   }
 
-  .bg_white {
-    background-color: var(--colors-white);
+  .bg_card {
+    background-color: var(--colors-card);
   }
 
-  .border_1px_solid_rgba\(0\,_0\,_0\,_0\.1\) {
-    border: 1px solid rgba(0, 0, 0, 0.1);
+  .border_1px_solid_token\(colors\.border\) {
+    border: 1px solid var(--colors-border);
+  }
+
+  .shadow_sm {
+    box-shadow: var(--shadows-sm);
+  }
+
+  .rounded_md {
+    border-radius: var(--radii-md);
   }
 
   .mr_2 {

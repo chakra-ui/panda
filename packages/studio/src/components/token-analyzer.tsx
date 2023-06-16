@@ -152,6 +152,7 @@ const HeadlineSummary = () => {
 
 const selectOptionClass = css({
   padding: '4px 8px',
+  bg: 'card',
   rounded: 'md',
   '& li': {
     cursor: 'pointer',
@@ -284,16 +285,16 @@ const FilesAccordionList = () => {
             {({ selectedOption }) => (
               <>
                 <SelectTrigger>
-                  <panda.button display="flex" alignItems="center">
+                  <panda.button display="flex" alignItems="center" cursor="pointer" _hover={{ opacity: 0.6 }}>
                     Sort by {selectedOption?.label}
-                    <panda.div w="26px" ml="2" color="text">
+                    <panda.div w="5" ml="2" color="text">
                       <SortIcon />
                     </panda.div>
                   </panda.button>
                 </SelectTrigger>
                 <Portal>
                   <SelectPositioner>
-                    <SelectContent className={cx(selectOptionClass, css({ listStyle: 'none', bg: 'card' }))}>
+                    <SelectContent className={cx(selectOptionClass, css({ listStyle: 'none' }))}>
                       <SelectOption className={selectOptionClass} value="name" label="name" />
                       <SelectOption className={selectOptionClass} value="tokens count" label="tokens count" />
                       <SelectOption className={selectOptionClass} value="file path" label="file path" />
@@ -329,7 +330,7 @@ const FilesAccordionList = () => {
               {(props) => (
                 <>
                   <AccordionTrigger asChild>
-                    <panda.button display="flex" bg="none" w="full" pt="6" pl="6" pr="4" cursor="pointer">
+                    <panda.button display="flex" bg="none" w="full" pt="6" pl="6" pr="4" cursor="pointer" color="text">
                       <panda.a
                         className={styledLink({})}
                         href={getFileLink({ filepath })}
@@ -374,7 +375,8 @@ const FilesAccordionList = () => {
                                 py="2"
                                 px="4"
                                 transition="all 0.2s ease"
-                                _hover={{ bg: 'gray.100' }}
+                                _hover={{ bg: 'border' }}
+                                rounded="md"
                               >
                                 <TruncatedText text={key} />
                               </ColorItem>
