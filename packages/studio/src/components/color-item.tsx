@@ -28,7 +28,7 @@ export const ColorItem = ({
       {children}
 
       {tokenName !== value && (
-        <panda.div opacity={0.1}>
+        <panda.div opacity={0.7}>
           <panda.span>{value}</panda.span>
         </panda.div>
       )}

@@ -12,7 +12,15 @@ import { css, cx } from '../../../styled-system/css'
 import { ReportItemLink } from './report-item-link'
 import { SortIcon } from './sort-icon'
 
-const selectOptionClass = css({ padding: '4px 8px', bg: 'white' })
+const selectOptionClass = css({
+  padding: '4px 8px',
+  bg: 'card',
+  rounded: 'md',
+  '& li': {
+    cursor: 'pointer',
+    _hover: { opacity: 0.8 },
+  },
+})
 
 type SortBy = 'property name' | 'tokens count'
 const defaultOption = { label: 'tokens count', value: 'tokens count' as SortBy }
@@ -40,9 +48,9 @@ export const ByCategory = ({ byCategory }: { byCategory: Record<string, number[]
             {({ selectedOption }) => (
               <>
                 <SelectTrigger>
-                  <panda.button display="flex" alignItems="center">
+                  <panda.button display="flex" alignItems="center" cursor="pointer" _hover={{ opacity: 0.6 }}>
                     Sort by {selectedOption?.label}
-                    <panda.div w="26px" ml="2">
+                    <panda.div w="26px" ml="2" color="text">
                       <SortIcon />
                     </panda.div>
                   </panda.button>
@@ -121,7 +129,7 @@ const CategoryUtilities = ({
     })
 
   return (
-    <Stack key={category} p="4" bg="card" color="text" gap="2" className={className}>
+    <Stack key={category} p="4" bg="card" color="text" rounded="md" gap="2" className={className}>
       <panda.h4>
         <panda.a className={styledLink({})} href={getUtilityLink({ category })}>
           <TextWithCount count={values.length}>

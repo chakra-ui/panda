@@ -29,7 +29,7 @@ export const reportItemColumns = [
           {!item.isKnown && (
             <QuickTooltip
               tooltip={
-                <panda.span p="2" bgColor="white" border="1px solid rgba(0, 0, 0, 0.1)">
+                <panda.span p="2" bgColor="card" border="1px solid token(colors.border)" shadow="sm" rounded="md">
                   unknown token
                 </panda.span>
               }
