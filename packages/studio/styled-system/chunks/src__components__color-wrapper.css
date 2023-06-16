@@ -1,73 +1,73 @@
 @layer utilities {
   .w_full {
-    width: var(--sizes-full)
-    }
+    width: var(--sizes-full);
+  }
 
   .h_10 {
-    height: var(--sizes-10)
-    }
+    height: var(--sizes-10);
+  }
 
   .rounded_sm {
-    border-radius: var(--radii-sm)
-    }
+    border-radius: var(--radii-sm);
+  }
 
   .pos_relative {
-    position: relative
-    }
+    position: relative;
+  }
 
   .overflow_hidden {
-    overflow: hidden
-    }
+    overflow: hidden;
+  }
 
   .shadow_inset {
-    box-shadow: var(--shadows-inset)
-    }
+    box-shadow: var(--shadows-inset);
+  }
 
   .before\:content_\'\' {
     &::before {
-      content: ''
-        }
+      content: '';
     }
+  }
 
   .before\:pos_absolute {
     &::before {
-      position: absolute
-        }
+      position: absolute;
     }
+  }
 
   .before\:rounded_sm {
     &::before {
-      border-radius: var(--radii-sm)
-        }
+      border-radius: var(--radii-sm);
     }
+  }
 
   .before\:w_100\% {
     &::before {
-      width: 100%
-        }
+      width: 100%;
     }
+  }
 
   .before\:h_100\% {
     &::before {
-      height: 100%
-        }
+      height: 100%;
     }
+  }
 
   .before\:bg_24px {
     &::before {
-      background-size: 24px
-        }
+      background-size: 24px;
     }
+  }
 
   .before\:z_-1 {
     &::before {
-      z-index: -1
-        }
+      z-index: -1;
     }
+  }
 
   .before\:bg-img_check {
     &::before {
-      background-image: var(--assets-check)
-        }
+      background-image: var(--assets-check);
     }
+  }
 }
