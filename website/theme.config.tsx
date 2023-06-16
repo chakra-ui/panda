@@ -41,7 +41,7 @@ const config: DocsThemeConfig = {
       openGraph: { url, images: [{ url: images }] }
     }
   },
-  docsRepositoryBase: 'https://github.com/chakra-ui/panda/blob/website/pages',
+  docsRepositoryBase: 'https://github.com/chakra-ui/panda/tree/main/website',
   sidebar: {
     toggleButton: true
   },
