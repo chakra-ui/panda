@@ -106,7 +106,7 @@ const features: Array<{ title: string; description: string; icon: IconType }> =
 
 export const SectionCssInJS = () => {
   return (
-    <panda.section bg="black" py="12rem" color="white" mt="2px">
+    <panda.section bg="black" pt="10rem" pb="12rem" color="white" mt="2px">
       <panda.div maxW="8xl" mx="auto" px={{ base: '4', md: '6', lg: '8' }}>
         <VStack gap="16">
           <panda.h2

@@ -23,6 +23,7 @@ export default function MyApp({ Component, pageProps }) {
       <style jsx global>
         {`
           :root {
+            font-size: 0.9em;
             --font-mona-sans: ${MonaSans.style.fontFamily};
             --font-fira-code: ${FiraCode.style.fontFamily};
           }
