@@ -153,13 +153,7 @@ export function Search({
       {value && focused
         ? 'ESC'
         : mounted &&
-          (navigator.userAgent.includes('Macintosh') ? (
-            <>
-              <span className={css({ textStyle: 'xs' })}>⌘</span>K
-            </>
-          ) : (
-            'CTRL K'
-          ))}
+          (navigator.userAgent.includes('Macintosh') ? '⌘K' : 'CTRL K')}
     </Kbd>
   )
 

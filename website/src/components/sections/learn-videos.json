@@ -4,13 +4,13 @@
     "data": [
       {
         "title": "What is Panda CSS?",
-        "url": "#",
+        "url": "https://youtu.be/mVmR-TtStT4",
         "duration": "1m",
         "thumbnail": "/videos/what-is-panda.png"
       },
       {
         "title": "Installation and Setup",
-        "url": "#",
+        "url": "https://youtu.be/FloU4qVsrxY",
         "duration": "2m",
         "thumbnail": "/videos/installation-and-setup.png"
       }
@@ -22,19 +22,19 @@
     "data": [
       {
         "title": "Introduction to Recipes",
-        "url": "#",
+        "url": "https://youtu.be/oQ3YxBpFOI0",
         "duration": "1m 34s",
         "thumbnail": "/videos/introduction-to-recipes.png"
       },
       {
         "title": "Using Recipes",
-        "url": "#",
+        "url": "https://youtu.be/9YVNOhbyGuc",
         "duration": "1m",
         "thumbnail": "/videos/using-recipes.png"
       },
       {
         "title": "Converting Recipes to JSX",
-        "url": "#",
+        "url": "https://youtu.be/o9Mov2mqkwE",
         "duration": "1m 7s",
         "thumbnail": "/videos/converting-recipes-to-jsx.png"
       }
@@ -46,31 +46,31 @@
     "data": [
       {
         "title": "Introduction to Patterns",
-        "url": "#",
+        "url": "https://youtu.be/2EB5w7cZuy0",
         "duration": "1m",
         "thumbnail": "/videos/introduction-to-patterns.png"
       },
       {
         "title": "Stack, HStack & VStack",
-        "url": "#",
+        "url": "https://youtu.be/rZSc37RTp2k",
         "duration": "2m",
         "thumbnail": "/videos/stack-hstack-vstack.png"
       },
       {
         "title": "Container, Grid & Wrap",
-        "url": "#",
+        "url": "https://youtu.be/Y4eXZjLTIU8",
         "duration": "1m",
         "thumbnail": "/videos/container-grid-wrap.png"
       },
       {
         "title": "Center, Circle & Square",
-        "url": "#",
+        "url": "https://youtu.be/R0dRJpRqPZk",
         "duration": "1m",
         "thumbnail": "/videos/center-circle-square.png"
       },
       {
         "title": "Patterns as JSX",
-        "url": "#",
+        "url": "https://youtu.be/IvVXnuKA6dY",
         "duration": "1m 30s",
         "thumbnail": "/videos/patterns-as-jsx.png"
       }

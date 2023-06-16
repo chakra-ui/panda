@@ -14,7 +14,7 @@ export const tabsRecipe = defineRecipe({
     },
     tablist: {
       position: 'relative',
-      mt: 4,
+      mt: '4',
       display: 'flex',
       w: 'max',
       minW: 'full',
@@ -23,12 +23,13 @@ export const tabsRecipe = defineRecipe({
       _dark: { borderColor: 'neutral.800' }
     },
     trigger: {
-      mr: 2,
       roundedTop: 'md',
-      p: 2,
+      p: '2',
       fontWeight: 'medium',
       lineHeight: '1.25rem',
       transitionProperty: 'colors',
+      whiteSpace: 'nowrap',
+      me: '2',
       mb: '-0.5',
       userSelect: 'none',
       borderBottom: '2px solid',
@@ -56,7 +57,7 @@ export const tabsRecipe = defineRecipe({
     },
     content: {
       rounded: 'md',
-      pt: 6
+      pt: '6'
     }
   })
 })
