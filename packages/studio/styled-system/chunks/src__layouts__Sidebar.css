@@ -67,10 +67,6 @@
     min-width: var(--sizes-60);
   }
 
-  .overflow_auto {
-    overflow: auto;
-  }
-
   .px_12 {
     padding-inline: var(--spacing-12);
   }
@@ -97,6 +93,10 @@
 
   .w_full {
     width: var(--sizes-full);
+  }
+
+  .overflow_auto {
+    overflow: auto;
   }
 
   .md\:px_6 {

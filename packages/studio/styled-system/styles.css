@@ -39,12 +39,44 @@
     background: var(--colors-border);
   }
 
-  .border_solid_1px {
-    border: solid 1px;
+  .isolation_isolate {
+    isolation: isolate;
   }
 
   .border-l_solid_1px {
     border-left: solid 1px;
+  }
+
+  .expanded\:transform_rotate\(180deg\):where([aria-expanded='true'], [data-expanded]) {
+    transform: rotate(180deg);
+  }
+
+  .transition_all_\.2s_ease {
+    transition: all 0.2s ease;
+  }
+
+  .top_0px {
+    top: 0px;
+  }
+
+  .right_0px {
+    right: 0px;
+  }
+
+  .pos_absolute {
+    position: absolute;
+  }
+
+  .z_2 {
+    z-index: 2;
+  }
+
+  .break_break-word {
+    word-break: break-word;
+  }
+
+  .grid-cols_80px_repeat\(auto-fit\,_minmax\(30px\,_1fr\)\) {
+    grid-template-columns: 80px repeat(auto-fit, minmax(30px, 1fr));
   }
 
   .max-w_14px {
@@ -880,10 +912,6 @@
     min-width: var(--sizes-60);
   }
 
-  .overflow_auto {
-    overflow: auto;
-  }
-
   .px_12 {
     padding-inline: var(--spacing-12);
   }
@@ -912,13 +940,8 @@
     width: var(--sizes-full);
   }
 
-  .focusWithin\:border_yellow\.200:focus-within {
-    border-color: var(--colors-yellow-200);
-  }
-
-  .focusWithin\:dark\:border_yellow\.300:focus-within.dark,
-  .dark .focusWithin\:dark\:border_yellow\.300:focus-within {
-    border-color: var(--colors-yellow-300);
+  .overflow_auto {
+    overflow: auto;
   }
 
   .focusWithin\:outline-style_solid:focus-within {
@@ -935,11 +958,6 @@
 
   .focusWithin\:ring_neutral\.400:focus-within {
     outline-color: var(--colors-neutral-400);
-  }
-
-  .focus\:ring_none:where(:focus, [data-focus]) {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
   }
 
   .hover\:bg_gray\.100:where(:hover, [data-hover]) {

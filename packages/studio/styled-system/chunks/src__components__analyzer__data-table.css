@@ -1,4 +1,8 @@
 @layer utilities {
+  .break_break-word {
+    word-break: break-word;
+  }
+
   .font_bold {
     font-weight: var(--font-weights-bold);
   }
@@ -13,6 +17,10 @@
 
   .d_grid {
     display: grid;
+  }
+
+  .grid-cols_80px_repeat\(auto-fit\,_minmax\(30px\,_1fr\)\) {
+    grid-template-columns: 80px repeat(auto-fit, minmax(30px, 1fr));
   }
 
   .gap_10px {
