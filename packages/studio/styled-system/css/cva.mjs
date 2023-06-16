@@ -1,5 +1,5 @@
-import { compact, splitProps } from '../helpers.mjs';
-import { css, mergeCss } from './css.mjs';
+import { compact, splitProps } from '../helpers.mjs'
+import { css, mergeCss } from './css.mjs'
 
 export function cva(config) {
   const { base = {}, variants = {}, defaultVariants = {}, compoundVariants = [] } = config
@@ -19,7 +19,7 @@ export function cva(config) {
   function cvaFn(props) {
     return css(resolve(props))
   }
-  
+
   const variantKeys = Object.keys(variants)
 
   function splitVariantProps(props) {
@@ -60,4 +60,4 @@ export function assertCompoundVariant(name, compoundVariants, variants, prop) {
   if (compoundVariants.length > 0 && typeof variants[prop] === 'object') {
     throw new Error(`[recipe:${name}:${prop}] Conditions are not supported when using compound variants.`)
   }
-}    
+}
