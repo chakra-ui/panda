@@ -31,12 +31,15 @@ export async function main() {
     .command('init', "Initialize the panda's config file")
     .option('-f, --force', 'Force overwrite existing config file')
     .option('-p, --postcss', 'Emit postcss config file')
+    .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .option('--silent', 'Suppress all messages except errors')
     .option('--no-gitignore', "Don't update the .gitignore")
     .option('--out-extension <ext>', "The extension of the generated js files (default: 'mjs')")
     .option('--jsx-framework <framework>', 'The jsx framework to use')
     .action(async (flags) => {
       const { force, postcss, silent, gitignore, outExtension, jsxFramework } = flags
+
+      const cwd = path.resolve(flags.cwd)
 
       if (silent) {
         logger.level = 'silent'
@@ -49,7 +52,7 @@ export async function main() {
       if (postcss) await setupPostcss(cwd)
       await setupConfig(cwd, { force, outExtension, jsxFramework })
 
-      const ctx = await loadConfigAndCreateContext()
+      const ctx = await loadConfigAndCreateContext({ cwd })
       const msg = await emitArtifacts(ctx)
 
       if (gitignore) {
@@ -98,7 +101,7 @@ export async function main() {
     })
     .option('-o, --outdir <dir>', 'Output directory', { default: 'styled-system' })
     .option('-m, --minify', 'Minify generated code')
-    .option('--cwd <cwd>', 'Current working directory', { default: process.cwd() })
+    .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .option('-w, --watch', 'Watch files and rebuild')
     .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('-c, --config <path>', 'Path to panda config file')
