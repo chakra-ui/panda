@@ -1,5 +1,5 @@
-name: "Install"
-description: "Sets up Node.js and runs install"
+name: 'Install'
+description: 'Sets up Node.js and runs install'
 
 runs:
   using: composite
@@ -12,8 +12,8 @@ runs:
       uses: actions/setup-node@v3
       with:
         node-version: 16.x
-        registry-url: "https://registry.npmjs.org"
-        cache: "pnpm"
+        registry-url: 'https://registry.npmjs.org'
+        cache: 'pnpm'
 
     - name: Setup Git User
       shell: bash
@@ -23,4 +23,4 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: pnpm install --ignore-scripts
+      run: pnpm install
