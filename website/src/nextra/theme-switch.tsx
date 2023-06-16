@@ -55,7 +55,9 @@ export function ThemeSwitch({ lite, className }: ThemeSwitchProps) {
             })}
           >
             <IconToUse />
-            <span className={lite ? css({ display: 'none' }) : ''}>
+            <span
+              className={lite ? css({ md: { display: 'none' } }) : undefined}
+            >
               {mounted ? options[theme as keyof typeof options] : options.light}
             </span>
           </div>

@@ -10,7 +10,8 @@ export const SectionLearn = () => (
           <Stack gap="2">
             <panda.h1
               color="text.headline"
-              textStyle="panda.h1"
+              letterSpacing="tight"
+              textStyle={{ base: '8xl', md: 'panda.h1' }}
               fontWeight="bold"
             >
               Learn.

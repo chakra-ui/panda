@@ -99,4 +99,21 @@ function Example() {
 
 ## Support
 
-Having trouble? Get help in the official [Panda Discord](https://panda-css.com/discord).
+Having trouble? Get help in the official [Panda Discord](https://discord.gg/VQrkpsgSx7).
+
+## Acknowledgement
+
+The development of Panda was only possible due to the inspiration and ideas from these amazing projects.
+
+- [Chakra UI](https://chakra-ui.com/)
+- [Vanilla Extract](https://vanilla-extract.style/)
+- [Stitches](https://stitches.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Styled System](https://styled-system.com/)
+- [Theme UI](https://theme-ui.com/)
+- [Linaria](https://linaria.dev/)
+- [Uno CSS](unocss.dev)
+
+## License
+
+MIT License © 2023-Present [Segun Adebayo](https://github.com/segunadebayo)

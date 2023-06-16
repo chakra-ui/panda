@@ -3,9 +3,10 @@ import { ReactNode, forwardRef } from 'react'
 
 const sidebarBodyStyles = css({
   overflowY: 'auto',
+  overscrollBehavior: 'contain',
   overflowX: 'hidden',
   px: '4',
-  py: '4',
+  py: '10',
   flexGrow: 1,
   md: {
     h: 'calc(100vh - var(--nextra-navbar-height) - var(--nextra-menu-height))'

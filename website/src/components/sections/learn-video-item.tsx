@@ -25,11 +25,12 @@ export const LearnVideoItem = (props: Props) => {
         position="relative"
       >
         <Image
-          fill
-          style={{ objectFit: 'cover' }}
+          width="400"
+          height="240"
           className={css({
-            transition: 'transform 0.2s ease-in-out',
-            _groupHover: { transform: 'auto', scale: '1.05' }
+            objectFit: 'cover',
+            transition: 'scale 0.2s ease-in-out',
+            _groupHover: { scale: '1.05' }
           })}
           src={thumbnail}
           alt={title}

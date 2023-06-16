@@ -71,7 +71,12 @@ export const TreeViewFile: FC<TreeViewFileProps> = ({ item, anchors }) => {
   }
 
   return (
-    <panda.li display="flex" flexDirection="column" gap={1}>
+    <panda.li
+      display="flex"
+      flexDirection="column"
+      gap={1}
+      className={active ? 'active' : undefined}
+    >
       <Anchor
         href={(item as PageItem).href || item.route}
         newWindow={(item as PageItem).newWindow}
