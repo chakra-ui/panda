@@ -1,7 +1,8 @@
 {
+  "design-system": "Design System",
+  "multiple-themes": "Multiple Themes",
+  "fonts": "Custom Fonts",
   "dynamic-styling": "Dynamic Styles",
-  "virtual-color": "Virtual Color",
-  "fonts": "Using Fonts",
   "static": "Static Generator",
-  "multiple-themes": "Multiple Themes"
+  "virtual-color": "Virtual Color"
 }
