@@ -9,8 +9,7 @@ export function DataTable<T>({ list, columns }: { list: T[]; columns: ReadonlyAr
   return (
     <panda.div>
       <Grid
-        style={{ gridTemplateColumns: `80px repeat(auto-fit, minmax(30px, 1fr))` }}
-        // gridTemplateColumns="repeat(auto-fit, minmax(30px, 1fr))"
+        gridTemplateColumns="80px repeat(auto-fit, minmax(30px, 1fr))"
         w="full"
         fontWeight="bold"
         fontSize="lg"
@@ -23,15 +22,12 @@ export function DataTable<T>({ list, columns }: { list: T[]; columns: ReadonlyAr
       <panda.div className={flex({ direction: 'column', gap: '2' })}>
         {list.map((item, index) => {
           return (
-            <Grid
-              style={{ gridTemplateColumns: `80px repeat(auto-fit, minmax(30px, 1fr))` }}
-              // gridTemplateColumns="repeat(auto-fit, minmax(30px, 1fr))"
-              w="full"
-              key={index}
-            >
+            <Grid gridTemplateColumns="80px repeat(auto-fit, minmax(30px, 1fr))" w="full" key={index}>
               {columns.map((column) => {
                 return (
-                  <panda.div key={column.accessor}>{column.cell?.(item) ?? (item as any)[column.accessor]}</panda.div>
+                  <panda.div key={column.accessor} wordBreak="break-word">
+                    {column.cell?.(item) ?? (item as any)[column.accessor]}
+                  </panda.div>
                 )
               })}
             </Grid>

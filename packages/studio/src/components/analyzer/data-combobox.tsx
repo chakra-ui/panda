@@ -11,8 +11,9 @@ import {
 } from '@ark-ui/react'
 import { useEffect, useState } from 'react'
 import { css } from '../../../styled-system/css'
-import { panda } from '../../../styled-system/jsx'
-import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '../icons'
+import { Flex, panda } from '../../../styled-system/jsx'
+import { ChevronDownIcon, XMarkIcon } from '../icons'
+import { inputRecipe } from '../input'
 
 export type DataComboboxOption = {
   value: string
@@ -45,28 +46,17 @@ export const DataCombobox = ({ options: allOptions, label, ...props }: DataCombo
         return (
           <>
             <ComboboxControl>
-              <panda.div display="flex" flexDirection="column">
+              <panda.div display="flex" flexDirection="column" gap="2">
                 {label && (
                   <ComboboxLabel>
                     <panda.span fontWeight="bold">{label}</panda.span>
                   </ComboboxLabel>
                 )}
-                <panda.div
-                  display="flex"
-                  rounded="sm"
-                  border="solid 1px"
-                  borderColor={{ base: 'border', _focusWithin: { base: 'yellow.200', _dark: 'yellow.300' } }}
-                >
+                <panda.div display="flex" position="relative" isolation="isolate">
                   <ComboboxInput
                     defaultValue={props.defaultValue}
                     placeholder={props.placeholder ?? 'Search...'}
-                    className={css({
-                      width: 'full',
-                      p: 2,
-                      color: 'text',
-                      bg: 'transparent',
-                      _focus: { outline: 'none' },
-                    })}
+                    className={inputRecipe()}
                     onChange={(e) => {
                       const value = e.target.value
                       if (!value) {
@@ -79,31 +69,47 @@ export const DataCombobox = ({ options: allOptions, label, ...props }: DataCombo
                       setOptions(filterFn(value))
                     }}
                   />
-                  {state.selectedValue && (
-                    <panda.span
-                      display="flex"
-                      px="2"
-                      cursor="pointer"
-                      userSelect="none"
-                      onClick={() => state.clearValue()}
-                      alignItems="center"
-                    >
-                      <XMarkIcon />
-                    </panda.span>
-                  )}
-                  <ComboboxTrigger>
-                    <panda.span
-                      ml="auto"
-                      p="2"
-                      display="flex"
-                      cursor="pointer"
-                      borderLeft="solid 1px"
-                      borderColor="border"
-                      color="text"
-                    >
-                      {state.isOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                    </panda.span>
-                  </ComboboxTrigger>
+                  <Flex
+                    top="0px"
+                    right="0px"
+                    align="center"
+                    justify="center"
+                    position="absolute"
+                    zIndex="2"
+                    height="full"
+                  >
+                    {state.selectedValue && (
+                      <panda.span
+                        display="flex"
+                        px="2"
+                        cursor="pointer"
+                        userSelect="none"
+                        onClick={() => state.clearValue()}
+                        alignItems="center"
+                      >
+                        <XMarkIcon />
+                      </panda.span>
+                    )}
+                    <ComboboxTrigger>
+                      <panda.span
+                        ml="auto"
+                        p="2"
+                        display="flex"
+                        cursor="pointer"
+                        borderLeft="solid 1px"
+                        borderColor="border"
+                        color="text"
+                      >
+                        <panda.span
+                          data-expanded={state.isOpen ? '' : undefined}
+                          transform={{ _expanded: 'rotate(180deg)' }}
+                          transition="all .2s ease"
+                        >
+                          <ChevronDownIcon />
+                        </panda.span>
+                      </panda.span>
+                    </ComboboxTrigger>
+                  </Flex>
                 </panda.div>
               </panda.div>
             </ComboboxControl>

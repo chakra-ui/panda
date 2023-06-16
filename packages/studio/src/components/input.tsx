@@ -1,7 +1,7 @@
 import { cva } from '../../styled-system/css'
 import { panda } from '../../styled-system/jsx'
 
-const recipe = cva({
+export const inputRecipe = cva({
   base: {
     bg: 'transparent',
     width: 'full',
@@ -22,6 +22,6 @@ const recipe = cva({
   variants: {},
 })
 
-export const Input = panda('input', recipe)
+export const Input = panda('input', inputRecipe)
 
-export const Textarea = panda('textarea', recipe)
+export const Textarea = panda('textarea', inputRecipe)
