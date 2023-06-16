@@ -1,30 +1,27 @@
 @layer base {
   :root {
-    --made-with-panda: '🐼';
-  }
+    --made-with-panda: '🐼'
+    }
 
-  *,
-  *::before,
-  *::after,
-  ::backdrop {
-    --blur: ;
-    --brightness: ;
-    --contrast: ;
-    --grayscale: ;
-    --hue-rotate: ;
-    --invert: ;
-    --saturate: ;
-    --sepia: ;
-    --drop-shadow: ;
-    --backdrop-blur: ;
-    --backdrop-brightness: ;
-    --backdrop-contrast: ;
-    --backdrop-grayscale: ;
-    --backdrop-hue-rotate: ;
-    --backdrop-invert: ;
-    --backdrop-opacity: ;
-    --backdrop-saturate: ;
-    --backdrop-sepia: ;
+  *, *::before, *::after, ::backdrop {
+    --blur:   ;
+    --brightness:   ;
+    --contrast:   ;
+    --grayscale:   ;
+    --hue-rotate:   ;
+    --invert:   ;
+    --saturate:   ;
+    --sepia:   ;
+    --drop-shadow:   ;
+    --backdrop-blur:   ;
+    --backdrop-brightness:   ;
+    --backdrop-contrast:   ;
+    --backdrop-grayscale:   ;
+    --backdrop-hue-rotate:   ;
+    --backdrop-invert:   ;
+    --backdrop-opacity:   ;
+    --backdrop-saturate:   ;
+    --backdrop-sepia:   ;
     --scroll-snap-strictness: proximity;
     --border-spacing-x: 0;
     --border-spacing-y: 0;
@@ -34,8 +31,8 @@
     --skew-x: 0;
     --skew-y: 0;
     --scale-x: 1;
-    --scale-y: 1;
-  }
+    --scale-y: 1
+    }
 
   :root {
     --global-color-border: var(--colors-border);
@@ -46,16 +43,16 @@
     font-weight: var(--font-weights-normal);
     color-scheme: light dark;
     color: var(--colors-text);
-    background: var(--colors-bg);
-  }
+    background: var(--colors-bg)
+    }
 
   a {
     color: unset;
-    text-decoration: none;
-  }
+    text-decoration: none
+    }
 
   body {
     margin: 0;
-    min-height: 100vh;
-  }
+    min-height: 100vh
+    }
 }

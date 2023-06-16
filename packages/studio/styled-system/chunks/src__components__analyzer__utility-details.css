@@ -1,393 +1,149 @@
 @layer utilities {
-  .\[\&_li\]\:cursor_pointer {
-    & li {
-      cursor: pointer;
-    }
-  }
-
-  .\[\&_li\]\:cursor_pointer {
-    & li {
-      cursor: pointer;
-    }
-  }
-
-  .\[\&_li\]\:cursor_pointer {
-    & li {
-      cursor: pointer;
-    }
-  }
-
-  .\[\&_li\]\:cursor_pointer {
-    & li {
-      cursor: pointer;
-    }
-  }
-
-  .\[\&_li\]\:cursor_pointer {
-    & li {
-      cursor: pointer;
-    }
-  }
-
-  .\[\&_li\]\:cursor_pointer {
-    & li {
-      cursor: pointer;
-    }
-  }
-
-  .\[\&_li\]\:cursor_pointer {
-    & li {
-      cursor: pointer;
-    }
-  }
-
   .p_4px_8px {
-    padding: 4px 8px;
-  }
+    padding: 4px 8px
+    }
 
   .\[\&_li\]\:cursor_pointer {
     & li {
-      cursor: pointer;
+      cursor: pointer
+        }
     }
-  }
-
-  .hover\:opacity_0\.8 {
-    &:where(:hover, [data-hover]) {
-      opacity: 0.8;
-    }
-  }
-
-  .hover\:opacity_1 {
-    &:where(:hover, [data-hover]) {
-      opacity: 1;
-    }
-  }
-
-  .hover\:border-b_black {
-    &:where(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black);
-    }
-  }
-
-  .hover\:opacity_0\.8 {
-    &:where(:hover, [data-hover]) {
-      opacity: 0.8;
-    }
-  }
-
-  .gap-y_1 {
-    column-gap: var(--spacing-1);
-  }
-
-  .hover\:opacity_1 {
-    &:where(:hover, [data-hover]) {
-      opacity: 1;
-    }
-  }
-
-  .hover\:border-b_black {
-    &:where(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black);
-    }
-  }
-
-  .hover\:opacity_0\.8 {
-    &:where(:hover, [data-hover]) {
-      opacity: 0.8;
-    }
-  }
-
-  .gap-y_5 {
-    column-gap: var(--spacing-5);
-  }
-
-  .hover\:opacity_1 {
-    &:where(:hover, [data-hover]) {
-      opacity: 1;
-    }
-  }
-
-  .hover\:border-b_black {
-    &:where(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black);
-    }
-  }
-
-  .hover\:opacity_0\.8 {
-    &:where(:hover, [data-hover]) {
-      opacity: 0.8;
-    }
-  }
-
-  .gap_4 {
-    gap: var(--spacing-4);
-  }
-
-  .hover\:opacity_1 {
-    &:where(:hover, [data-hover]) {
-      opacity: 1;
-    }
-  }
-
-  .hover\:border-b_black {
-    &:where(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black);
-    }
-  }
-
-  .hover\:opacity_0\.8 {
-    &:where(:hover, [data-hover]) {
-      opacity: 0.8;
-    }
-  }
-
-  .gap_14 {
-    gap: var(--spacing-14);
-  }
-
-  .hover\:opacity_1 {
-    &:where(:hover, [data-hover]) {
-      opacity: 1;
-    }
-  }
-
-  .hover\:border-b_black {
-    &:where(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black);
-    }
-  }
-
-  .hover\:opacity_0\.8 {
-    &:where(:hover, [data-hover]) {
-      opacity: 0.8;
-    }
-  }
-
-  .gap-y_14 {
-    column-gap: var(--spacing-14);
-  }
-
-  .hover\:opacity_1 {
-    &:where(:hover, [data-hover]) {
-      opacity: 1;
-    }
-  }
-
-  .hover\:border-b_black {
-    &:where(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black);
-    }
-  }
-
-  .hover\:opacity_0\.8 {
-    &:where(:hover, [data-hover]) {
-      opacity: 0.8;
-    }
-  }
-
-  .hover\:opacity_1 {
-    &:where(:hover, [data-hover]) {
-      opacity: 1;
-    }
-  }
-
-  .hover\:border-b_black {
-    &:where(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black);
-    }
-  }
 
   .list-style_none {
-    list-style: none;
-  }
+    list-style: none
+    }
 
   .p_4 {
-    padding: var(--spacing-4);
-  }
+    padding: var(--spacing-4)
+    }
 
   .mt_4 {
-    margin-top: var(--spacing-4);
-  }
+    margin-top: var(--spacing-4)
+    }
 
   .justify_center {
-    justify-content: center;
-  }
+    justify-content: center
+    }
 
   .fs_xl {
-    font-size: var(--font-sizes-xl);
-  }
+    font-size: var(--font-sizes-xl)
+    }
 
   .p_16 {
-    padding: var(--spacing-16);
-  }
+    padding: var(--spacing-16)
+    }
 
   .mb_4 {
-    margin-bottom: var(--spacing-4);
-  }
+    margin-bottom: var(--spacing-4)
+    }
 
   .flex_column {
-    flex-direction: column;
-  }
+    flex-direction: column
+    }
 
   .mt_1 {
-    margin-top: var(--spacing-1);
-  }
+    margin-top: var(--spacing-1)
+    }
 
   .gap_2 {
-    gap: var(--spacing-2);
-  }
+    gap: var(--spacing-2)
+    }
 
   .fs_md {
-    font-size: var(--font-sizes-md);
-  }
+    font-size: var(--font-sizes-md)
+    }
 
   .font_bold {
-    font-weight: var(--font-weights-bold);
-  }
+    font-weight: var(--font-weights-bold)
+    }
 
   .ml_auto {
-    margin-left: auto;
-  }
+    margin-left: auto
+    }
 
   .select_none {
-    user-select: none;
-  }
+    user-select: none
+    }
 
   .bg_card {
-    background: var(--colors-card);
-  }
+    background: var(--colors-card)
+    }
 
   .px_3 {
-    padding-inline: var(--spacing-3);
-  }
+    padding-inline: var(--spacing-3)
+    }
 
   .py_2 {
-    padding-block: var(--spacing-2);
-  }
+    padding-block: var(--spacing-2)
+    }
 
   .rounded_md {
-    border-radius: var(--radii-md);
-  }
+    border-radius: var(--radii-md)
+    }
 
   .hover\:opacity_0\.8 {
     &:where(:hover, [data-hover]) {
-      opacity: 0.8;
+      opacity: 0.8
+        }
     }
-  }
 
   .w_16 {
-    width: var(--sizes-16);
-  }
+    width: var(--sizes-16)
+    }
 
   .h_16 {
-    height: var(--sizes-16);
-  }
+    height: var(--sizes-16)
+    }
 
   .d_flex {
-    display: flex;
-  }
+    display: flex
+    }
 
   .flex-wrap_wrap {
-    flex-wrap: wrap;
-  }
+    flex-wrap: wrap
+    }
 
   .gap_10px {
-    gap: 10px;
-  }
+    gap: 10px
+    }
 
   .d_inline-flex {
-    display: inline-flex;
-  }
+    display: inline-flex
+    }
 
   .items_center {
-    align-items: center;
-  }
+    align-items: center
+    }
 
   .opacity_0\.5 {
-    opacity: 0.5;
-  }
+    opacity: 0.5
+    }
 
   .border-b_1px_solid_transparent {
-    border-bottom: 1px solid transparent;
-  }
+    border-bottom: 1px solid transparent
+    }
 
   .cursor_pointer {
-    cursor: pointer;
-  }
+    cursor: pointer
+    }
 
   .hover\:opacity_1 {
     &:where(:hover, [data-hover]) {
-      opacity: 1;
+      opacity: 1
+        }
     }
-  }
 
   .hover\:border-b_black {
     &:where(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black);
+      border-bottom-color: var(--colors-black)
+        }
     }
-  }
 
   .\[\&_li\]\:hover\:opacity_0\.8 {
     & li {
       &:where(:hover, [data-hover]) {
-        opacity: 0.8;
-      }
+        opacity: 0.8
+            }
+        }
     }
-  }
-
-  .\[\&_li\]\:hover\:opacity_0\.8 {
-    & li {
-      &:where(:hover, [data-hover]) {
-        opacity: 0.8;
-      }
-    }
-  }
-
-  .\[\&_li\]\:hover\:opacity_0\.8 {
-    & li {
-      &:where(:hover, [data-hover]) {
-        opacity: 0.8;
-      }
-    }
-  }
-
-  .\[\&_li\]\:hover\:opacity_0\.8 {
-    & li {
-      &:where(:hover, [data-hover]) {
-        opacity: 0.8;
-      }
-    }
-  }
-
-  .\[\&_li\]\:hover\:opacity_0\.8 {
-    & li {
-      &:where(:hover, [data-hover]) {
-        opacity: 0.8;
-      }
-    }
-  }
-
-  .\[\&_li\]\:hover\:opacity_0\.8 {
-    & li {
-      &:where(:hover, [data-hover]) {
-        opacity: 0.8;
-      }
-    }
-  }
-
-  .\[\&_li\]\:hover\:opacity_0\.8 {
-    & li {
-      &:where(:hover, [data-hover]) {
-        opacity: 0.8;
-      }
-    }
-  }
-
-  .\[\&_li\]\:hover\:opacity_0\.8 {
-    & li {
-      &:where(:hover, [data-hover]) {
-        opacity: 0.8;
-      }
-    }
-  }
 }

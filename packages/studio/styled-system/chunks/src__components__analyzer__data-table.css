@@ -1,76 +1,44 @@
 @layer utilities {
-  .debug_true {
-    & > * {
-      outline: 1px solid red !important;
-    }
-  }
-
-  .debug_true {
-    & > * {
-      outline: 1px solid red !important;
-    }
-  }
-
-  .debug_true {
-    & > * {
-      outline: 1px solid red !important;
-    }
-  }
-
-  .debug_true {
-    & > * {
-      outline: 1px solid red !important;
-    }
-  }
-
-  .debug_true {
-    outline: 1px solid blue !important;
-    & > * {
-      outline: 1px solid red !important;
-    }
-  }
-
   .break_break-word {
-    word-break: break-word;
-  }
+    word-break: break-word
+    }
 
   .font_bold {
-    font-weight: var(--font-weights-bold);
-  }
+    font-weight: var(--font-weights-bold)
+    }
 
   .fs_lg {
-    font-size: var(--font-sizes-lg);
-  }
+    font-size: var(--font-sizes-lg)
+    }
 
   .mb_2 {
-    margin-bottom: var(--spacing-2);
-  }
+    margin-bottom: var(--spacing-2)
+    }
 
   .d_grid {
-    display: grid;
-  }
+    display: grid
+    }
 
   .grid-cols_80px_repeat\(auto-fit\,_minmax\(30px\,_1fr\)\) {
-    grid-template-columns: 80px repeat(auto-fit, minmax(30px, 1fr));
-  }
+    grid-template-columns: 80px repeat(auto-fit, minmax(30px, 1fr))
+    }
 
   .gap_10px {
-    gap: 10px;
-  }
+    gap: 10px
+    }
 
   .w_full {
-    width: var(--sizes-full);
-  }
+    width: var(--sizes-full)
+    }
 
   .d_flex {
-    display: flex;
-  }
+    display: flex
+    }
 
   .flex_column {
-    flex-direction: column;
-  }
+    flex-direction: column
+    }
 
   .gap_2 {
-    gap: var(--spacing-2);
-  }
-}
+    gap: var(--spacing-2)
+    }}

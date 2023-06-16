@@ -1,17 +1,16 @@
 @layer utilities {
   .p_2 {
-    padding: var(--spacing-2);
-  }
+    padding: var(--spacing-2)
+    }
 
   .bg_card {
-    background-color: var(--colors-card);
-  }
+    background-color: var(--colors-card)
+    }
 
   .border_1px_solid_rgba\(0\,_0\,_0\,_0\.1\) {
-    border: 1px solid rgba(0, 0, 0, 0.1);
-  }
+    border: 1px solid rgba(0, 0, 0, 0.1)
+    }
 
   .text_text {
-    color: var(--colors-text);
-  }
-}
+    color: var(--colors-text)
+    }}

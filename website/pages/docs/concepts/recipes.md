@@ -14,9 +14,17 @@ A recipe consists of four properties:
 - `compoundVariants`: The different combinations of variants for the component
 - `defaultVariants`: The default variant values for the component
 
+> **Credit:** This API was inspired by [Stitches](https://stitches.dev/), [Vanilla Extract](https://vanilla-extract.style/), and [Class Variant Authority](https://cva.style/).
+
 ## Atomic Recipe (or cva)
 
-### Define recipe
+Atomic recipes are a way to create multi-variant atomic styles with a type-safe runtime API.
+
+They are defined using the `cva` function which was inspired by [Class Variant Authority](https://cva.style/). The `cva` function which takes an object as its argument.
+
+> **Note:** `cva` is not the same as [Class Variant Authority](https://cva.style/). The `cva` from Panda is a purpose-built function for creating atomic recipes that are connected to your design tokens and utilities.
+
+### Defining the recipe
 
 ```jsx
 import { cva } from '../styled-system/css'

@@ -1,5 +1,11 @@
 # @pandacss/ts-plugin
 
+## 0.3.1
+
+### Patch Changes
+
+- @pandacss/extension-shared@0.3.1
+
 ## 0.3.0
 
 ### Patch Changes

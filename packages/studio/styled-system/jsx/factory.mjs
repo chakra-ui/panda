@@ -1,11 +1,11 @@
 import { createElement, forwardRef, useMemo } from 'react'
-import { css, cx, cva, assignCss } from '../css/index.mjs'
-import { splitProps, normalizeHTMLProps } from '../helpers.mjs'
-import { isCssProperty } from './is-valid-prop.mjs'
+import { css, cx, cva, assignCss } from '../css/index.mjs';
+import { splitProps, normalizeHTMLProps } from '../helpers.mjs';
+import { isCssProperty } from './is-valid-prop.mjs';
 
 function styledFn(Dynamic, configOrCva = {}) {
   const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
-
+  
   const PandaComponent = forwardRef(function PandaComponent(props, ref) {
     const { as: Element = Dynamic, ...restProps } = props
 
@@ -18,7 +18,7 @@ function styledFn(Dynamic, configOrCva = {}) {
       const styles = assignCss(propStyles, cssStyles)
       return cx(cvaFn(variantProps), css(styles), elementProps.className)
     }
-
+    
     function cvaClass() {
       const { css: cssStyles, ...propStyles } = styleProps
       const cvaStyles = cvaFn.resolve(variantProps)
@@ -35,7 +35,7 @@ function styledFn(Dynamic, configOrCva = {}) {
       className: classes(),
     })
   })
-
+  
   PandaComponent.displayName = `panda.${Dynamic}`
   return PandaComponent
 }
