@@ -9,11 +9,22 @@ on:
       - "extension/**"
     branches:
       - main
-      - ci/extension-multiplatform
 
 jobs:
+  create_timestamp:
+    runs-on: ubuntu-latest
+
+    outputs:
+      timestamp: ${{ steps.set_timestamp.outputs.timestamp }}
+
+    steps:
+      - name: Set Timestamp
+        id: set_timestamp
+        run: |
+          echo "::set-output name=timestamp::$(date +'%s' | cut -c1-8)"
   release:
     name: VSCode Marketplace
+    needs: create_timestamp
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -40,12 +51,22 @@ jobs:
           - os: ubuntu-latest
             target: alpine-x64
             npm_config_arch: x64
+          - os: macos-latest
+            target: darwin-x64
+            npm_config_arch: x64
+
+          # Github runners dont support arm64 on macos
+          # https://github.com/actions/runner-images/issues/2187
+
+          # unless self-hosted but
+          # https://github.com/medic/cht-core/issues/8277#issuecomment-1568021046
+          # > GitHub recommends only utilizing self-hosted runners with private repositories.
+          # > Allowing self-hosted runners on public repositories and allowing workflows on public forks
+          # > introduces a significant security risk.
+
           # - os: macos-latest
           #   target: darwin-arm64
-          #   npm_config_arch: x64
-          - os: macos-latest
-            target: darwin-arm64
-            npm_config_arch: arm64
+          #   npm_config_arch: arm64
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -58,14 +79,26 @@ jobs:
       - name: Build packages
         run: pnpm build
 
+      - name: Set Environment Variable
+        run: echo "VSCE_RELEASE_VERSION=$(date +'%s' | cut -c1-8)" >> $GITHUB_ENV
+
+      - name: Prepare npm install
+        working-directory: ./extension/vscode
+        run: pnpm rewrite-deps && pnpm clean
+
+      - name: Install with npm
+        working-directory: ./extension/vscode
+        run: |
+          npm i --ignore-scripts
+        env:
+          npm_config_arch: ${{ matrix.npm_config_arch }}
+
       - name: Publish RC
         working-directory: ./extension/vscode
         run: |
-          pnpm rewrite-deps
-          pnpm clean
-          npm i
           pnpm release
         env:
           VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
+          VSCE_RELEASE_VERSION: ${{ needs.create_timestamp.outputs.timestamp }}
           VSCE_RELEASE_TYPE: rc
           VSCE_TARGET: ${{ matrix.target }}

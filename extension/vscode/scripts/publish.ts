@@ -21,7 +21,7 @@ if (!hasTokens) {
   throw new Error('Cannot publish extension without tokens.')
 }
 
-const today = new Date().getTime().toString().slice(0, 8)
+const today = process.env.VSCE_RELEASE_VERSION ?? new Date().getTime().toString().slice(0, 8)
 const currentVersion = semver.valid(version)
 
 if (!currentVersion) {

@@ -199,7 +199,7 @@
     "build:shared": "pnpm --filter=../shared build",
     "build:ts-plugin": "pnpm --filter=../ts-plugin build",
     "build:all": "pnpm build:shared && pnpm build:lsp && pnpm build:ts-plugin",
-    "build": "pnpm build:all && tsup",
+    "build": "tsup",
     "dev": "tsup --watch src/index.ts --watch ../language-server/dist/index.js --watch ../shared/dist/index.js",
     "clean": "rimraf dist node_modules",
     "typecheck": "tsc --noEmit",
