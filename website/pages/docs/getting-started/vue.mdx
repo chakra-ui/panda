@@ -141,14 +141,32 @@ Run the following command to start your development server.
 Now you can start using Panda CSS in your project.
 Here is the snippet of code that you can use in your `src/App.vue` file.
 
-```vue filename="src/App.vue"
-<script setup lang="ts">
-import { css } from '../styled-system/css';
-</script>
+<Tabs items={['SFC', 'JSX']}>
+  <Tab>
+    ```vue filename="src/App.vue"
+    <script setup lang="ts">
+    import { css } from '../styled-system/css';
+    </script>
 
-<template>
-  <div :class="css({ fontSize: '2xl', fontWeight: 'bold' })">Hello 🐼!</div>
-</template>
-```
+    <template>
+      <div :class="css({ fontSize: '2xl', fontWeight: 'bold' })">Hello 🐼!</div>
+    </template>
+    ```
+  </Tab>
+  <Tab>
+    ```tsx filename="src/App.tsx"
+    import { defineComponent, h } from 'vue';
+    import { css } from '../styled-system/css';
+
+    export default defineComponent({
+      setup() {
+        return () => (
+          <div class={css({ fontSize: '2xl', fontWeight: 'bold' })}>Hello 🐼!</div>
+        )
+      }
+    })
+    ```
+  </Tab>
+</Tabs>
 
 </Steps>
