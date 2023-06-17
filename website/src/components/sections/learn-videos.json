@@ -13,6 +13,12 @@
         "url": "https://youtu.be/FloU4qVsrxY",
         "duration": "2m",
         "thumbnail": "/videos/installation-and-setup.png"
+      },
+      {
+        "title": "Build a Card Component",
+        "url": "https://youtu.be/pAxK_kFGvI8",
+        "duration": "5m",
+        "thumbnail": "/videos/building-with-panda.png"
       }
     ]
   },
