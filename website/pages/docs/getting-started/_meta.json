@@ -10,5 +10,6 @@
   "solidjs": "SolidJS",
   "gatsby": "Gatsby",
   "svelte": "Svelte",
-  "storybook": "Storybook"
+  "storybook": "Storybook",
+  "vue": "Vue"
 }
