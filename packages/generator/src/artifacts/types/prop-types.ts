@@ -11,6 +11,8 @@ export function generatePropTypes(ctx: Context) {
 
   const result: string[] = [
     outdent`
+    /* eslint-disable */
+
     import type { ConditionalValue } from './conditions';
     import type { CssProperties } from './system-types'
     import type { Tokens } from '../tokens'
