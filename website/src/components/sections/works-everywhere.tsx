@@ -45,7 +45,7 @@ export const SectionWorksEverywhere = () => {
             <HStack gap="12">
               <ProjectLogo icon="PostCSSLogo" title="PostCSS" height="45" />
               <ProjectLogo icon="AstroLogo" title="Astro" />
-              <ProjectLogo icon="StoryBookLogo" title="StoryBook" height="39" />
+              <ProjectLogo icon="StorybookLogo" title="Storybook" height="39" />
             </HStack>
           </Stack>
 

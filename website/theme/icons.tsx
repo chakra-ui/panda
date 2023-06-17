@@ -428,7 +428,7 @@ const AstroLogo = (props: ComponentPropsWithoutRef<'svg'>) => (
   </svg>
 )
 
-const StoryBookLogo = (props: ComponentPropsWithoutRef<'svg'>) => (
+const StorybookLogo = (props: ComponentPropsWithoutRef<'svg'>) => (
   <svg
     width="33"
     height="40"
@@ -494,7 +494,7 @@ const icons = {
   PostCSSLogo,
   ViteLogo,
   NextJsLogo,
-  StoryBookLogo,
+  StorybookLogo,
   MagnifyingGlass
 }
 
