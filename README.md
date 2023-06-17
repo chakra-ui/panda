@@ -112,7 +112,7 @@ The development of Panda was only possible due to the inspiration and ideas from
 - [Class Variant Authority](https://cva.style/) - for inspiring the `cva` name
 - [Styled System](https://styled-system.com/) - for the initial idea of Styled Props
 - [Linaria](https://linaria.dev/) - for inspiring the initial atomic css strategy
-- [Uno CSS](unocss.dev) - for inspiring the studio and astro integration
+- [Uno CSS](https://unocss.dev) - for inspiring the studio and astro integration
 
 ## License
 
