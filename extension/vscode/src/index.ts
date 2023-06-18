@@ -1,4 +1,3 @@
-import * as path from 'path'
 import { type CancellationToken, type TextEditorDecorationType } from 'vscode'
 import * as vscode from 'vscode'
 import {
@@ -8,6 +7,7 @@ import {
   type ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node'
+import { join } from 'pathe'
 import { registerClientCommands } from './commands'
 import { defaultSettings, getFlattenedSettings } from '@pandacss/extension-shared'
 import { type TsLanguageFeaturesApiV0, getTsApi } from './typescript-language-features'
@@ -27,7 +27,7 @@ export async function activate(context: vscode.ExtensionContext) {
   statusBarItem.command = 'panda-css-vscode.open-config'
 
   // The server is implemented in node
-  const serverModule = context.asAbsolutePath(path.join('dist', 'server.js'))
+  const serverModule = context.asAbsolutePath(join('dist', 'server.js'))
 
   // The debug options for the server
   // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging

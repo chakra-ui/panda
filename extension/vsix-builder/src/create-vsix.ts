@@ -1,9 +1,9 @@
-import path from 'path'
 import { readProjectManifest } from '@pnpm/cli-utils'
-import packlist from 'npm-packlist'
-import { createDefaultProcessors, processFiles, type IPackageOptions, writeVsix, type IFile } from './vsce/package'
-import type { Manifest } from './vsce/manifest'
 import type { ProjectManifest } from '@pnpm/types'
+import packlist from 'npm-packlist'
+import { join } from 'pathe'
+import type { Manifest } from './vsce/manifest'
+import { createDefaultProcessors, processFiles, writeVsix, type IFile, type IPackageOptions } from './vsce/package'
 import { versionBump } from './vsce/version-bump'
 
 /**
@@ -15,7 +15,7 @@ export const createVsix = async (
 ) => {
   const { manifest, dir } = await getManifest(target.dir)
   const fileNames = await packlist({ path: dir })
-  const files = fileNames.map((f) => ({ path: `extension/${f}`, localPath: path.join(target.dir, f) }))
+  const files = fileNames.map((f) => ({ path: `extension/${f}`, localPath: join(target.dir, f) }))
 
   const { outfile } = target
   if (target.dry) {
@@ -37,7 +37,7 @@ const getManifest = async (packageDir: string) => {
   const { manifest: entryManifest, fileName: manifestFileName } = await readProjectManifest(packageDir, {})
 
   const dir = entryManifest.publishConfig?.directory
-    ? path.join(packageDir, entryManifest.publishConfig.directory)
+    ? join(packageDir, entryManifest.publishConfig.directory)
     : packageDir
   const manifest = packageDir !== dir ? (await readProjectManifest(dir, {})).manifest : entryManifest
 

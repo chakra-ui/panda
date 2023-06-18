@@ -12,7 +12,7 @@ import {
   writeFile,
   writeFileSync,
 } from 'fs-extra'
-import { dirname, extname, isAbsolute, join, relative, sep } from 'path'
+import { dirname, extname, isAbsolute, join, relative, sep } from 'pathe'
 
 export const nodeRuntime: Runtime = {
   cwd() {

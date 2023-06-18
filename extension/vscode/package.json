@@ -212,7 +212,8 @@
     "@pandacss/dev": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
-    "@pandacss/ts-plugin": "workspace:*"
+    "@pandacss/ts-plugin": "workspace:*",
+    "pathe": "1.1.1"
   },
   "bundledDependencies": [
     "@pandacss/ts-plugin",
