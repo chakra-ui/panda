@@ -6,6 +6,7 @@ import { Radii } from '@/components/token-docs/radii'
 import { Keyframes } from '@/components/token-docs/keyframes'
 import { Shadows } from '@/components/token-docs/shadows'
 import { Spacings } from '@/components/token-docs/spacings'
+import { Sizings } from '@/components/token-docs/sizings'
 import { css } from '@/styled-system/css'
 import { Fragment } from 'react'
 
@@ -21,7 +22,8 @@ const typeMap = {
   fonts: Fonts,
   breakpoints: Breakpoints,
   shadows: Shadows,
-  keyframes: Keyframes
+  keyframes: Keyframes,
+  sizing: Sizings
 }
 
 export const TokenDocs = (props: Props) => {
