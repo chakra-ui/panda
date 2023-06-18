@@ -18,10 +18,6 @@
   "files": [
     "dist"
   ],
-  "bundledDependencies": [
-    "@pandacss/preset-base",
-    "@pandacss/preset-panda"
-  ],
   "dependencies": {
     "@pandacss/error": "workspace:*",
     "@pandacss/logger": "workspace:*",
