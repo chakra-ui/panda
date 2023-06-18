@@ -97,8 +97,8 @@ export class Builder {
         configPath,
         depsModifiedMap: deps.modifiedMap,
       })
-      const updatedCtx = this.context!
-      await updatedCtx.hooks.callHook('config:change', updatedCtx.config)
+      const ctx = this.context!
+      await ctx.hooks.callHook('config:change', ctx.config)
     }
 
     const cache = configCache.get(configPath)
