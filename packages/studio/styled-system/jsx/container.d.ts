@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { FunctionComponent } from 'react'
 import type { ContainerProperties } from '../patterns/container'
 import type { HTMLPandaProps } from '../types/jsx'

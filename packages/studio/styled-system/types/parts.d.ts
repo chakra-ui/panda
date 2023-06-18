@@ -1,3 +1,4 @@
+/* eslint-disable */
 export type Part = {
   selector: string
 }

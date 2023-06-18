@@ -2,8 +2,6 @@ import { outdent } from 'outdent'
 
 export const generateTypesEntry = () => ({
   global: outdent`
-    /* eslint-disable */
-
     import type { RecipeVariantRecord, RecipeConfig } from './recipe'
     import type { Parts } from './parts'
     import type { PatternConfig } from './pattern'
@@ -21,16 +19,12 @@ export const generateTypesEntry = () => ({
     }
     `,
   index: outdent`
-    /* eslint-disable */
-
     import './global'
     export type { ConditionalValue } from './conditions'
     export type { GlobalStyleObject, JsxStyleProps, SystemStyleObject } from './system-types'
 
     `,
   helpers: outdent`
-  /* eslint-disable */
-
   export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
   `,
 })

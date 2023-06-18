@@ -5,8 +5,6 @@ import type { Context } from '../../engines'
 export function generateStyleProps(ctx: Context) {
   const props = new Set(allCssProperties.concat(ctx.utility.keys()))
   return outdent`
-    /* eslint-disable */
-
     import type { ConditionalValue } from './conditions'
     import type { PropertyValue } from './prop-type'
     import type { Token } from '../tokens'

@@ -1,5 +1,4 @@
 /* eslint-disable */
-
 import type { ConditionalValue } from './conditions'
 import type { PropertyValue } from './prop-type'
 import type { Token } from '../tokens'

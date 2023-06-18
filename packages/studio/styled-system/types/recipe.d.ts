@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { SystemStyleObject } from './system-types'
 
 type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
