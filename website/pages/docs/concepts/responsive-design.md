@@ -22,7 +22,7 @@ Let's say you want to change the font weight of a text on large screens, you can
 </span>
 ```
 
-> We uses a mobile-first breakpoint system and leverages min-width media queries `@media(min-width)` when you write responsive styles.
+> Panda uses a mobile-first breakpoint system and leverages min-width media queries `@media(min-width)` when you write responsive styles.
 
 Panda provides five breakpoints by default:
 
