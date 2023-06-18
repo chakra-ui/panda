@@ -23,6 +23,15 @@ export const defaultSpacings = dictionary
   )
   .sort((a, b) => parseFloat(a.value) - parseFloat(b.value))
 
+export const defaultSizings = dictionary
+  .filter(
+    ({ extensions, value }) =>
+      !defaultSpacings.find(s => s.value === value) &&
+      extensions.category === 'sizes' &&
+      !extensions.isNegative
+  )
+  .sort((a, b) => parseFloat(a.value) - parseFloat(b.value))
+
 export const defaultBorderRadius = dictionary.filter({
   extensions: { category: 'radii' }
 })
