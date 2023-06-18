@@ -5,7 +5,9 @@ import { generator } from './fixture'
 describe('generate property types', () => {
   test('should ', () => {
     expect(generatePropTypes(generator)).toMatchInlineSnapshot(`
-      "import type { ConditionalValue } from './conditions';
+      "/* eslint-disable */
+
+      import type { ConditionalValue } from './conditions';
       import type { CssProperties } from './system-types'
       import type { Tokens } from '../tokens'
 
