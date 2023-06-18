@@ -40,3 +40,5 @@ export const defaultBreakpoints = preset.theme.breakpoints
 export const defaultShadows = dictionary.filter({
   extensions: { category: 'shadows' }
 })
+
+export const defaultKeyframes = preset.theme.keyframes

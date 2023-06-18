@@ -3,6 +3,7 @@ import { Colors } from '@/components/token-docs/colors'
 import { FontSizes } from '@/components/token-docs/font-sizes'
 import { Fonts } from '@/components/token-docs/fonts'
 import { Radii } from '@/components/token-docs/radii'
+import { Keyframes } from '@/components/token-docs/keyframes'
 import { Shadows } from '@/components/token-docs/shadows'
 import { Spacings } from '@/components/token-docs/spacings'
 import { css } from '@/styled-system/css'
@@ -19,7 +20,8 @@ const typeMap = {
   fontSizes: FontSizes,
   fonts: Fonts,
   breakpoints: Breakpoints,
-  shadows: Shadows
+  shadows: Shadows,
+  keyframes: Keyframes
 }
 
 export const TokenDocs = (props: Props) => {
