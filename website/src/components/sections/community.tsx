@@ -11,8 +11,8 @@ export const SectionCommunity = () => {
       <panda.div
         display={{ base: 'none', md: 'block' }}
         position="absolute"
-        bottom="-56%"
-        right="-2%"
+        top="2%"
+        right="-16%"
         pointerEvents="none"
       >
         <Image
