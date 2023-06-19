@@ -8,9 +8,9 @@
   "redwood": "Redwood",
   "qwik": "Qwik",
   "vite": "Vite",
+  "vue": "Vue",
   "preact": "Preact",
   "solidjs": "Solid.js",
   "svelte": "Svelte",
-  "storybook": "Storybook",
-  "vue": "Vue"
+  "storybook": "Storybook"
 }
