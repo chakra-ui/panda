@@ -3,13 +3,13 @@
   "postcss": "PostCSS",
   "astro": "Astro",
   "nextjs": "Next.js",
-  "vite": "Vite",
-  "qwik": "Qwik",
   "remix": "Remix",
-  "preact": "Preact",
-  "solidjs": "SolidJS",
   "gatsby": "Gatsby",
+  "redwood": "Redwood",
+  "qwik": "Qwik",
+  "vite": "Vite",
+  "preact": "Preact",
+  "solidjs": "Solid.js",
   "svelte": "Svelte",
-  "storybook": "Storybook",
-  "redwood": "Redwood"
+  "storybook": "Storybook"
 }
