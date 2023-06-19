@@ -98,9 +98,9 @@ would result in:
 
 **Type**: `'_' | '=' | '-'`
 
-**Default**: `true`
+**Default**: `'_'`
 
-Whether to enable css reset styles.
+The separator for the generated css classes.
 
 ```json
 {
