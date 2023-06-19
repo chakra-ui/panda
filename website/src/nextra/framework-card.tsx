@@ -3,6 +3,7 @@ import { GatsbyLogo } from '@/icons/gatsby'
 import { NextjsLogo } from '@/icons/nextjs'
 import { PreactLogo } from '@/icons/preact'
 import { QwikLogo } from '@/icons/qwik'
+import { RedwoodLogo } from '@/icons/redwood'
 import { RemixLogo } from '@/icons/remix'
 import { SolidjsLogo } from '@/icons/solid'
 import { StorybookLogo } from '@/icons/storybook'
@@ -71,6 +72,13 @@ const logoMap = {
     logo: QwikLogo,
     href: '/docs/getting-started/qwik',
     description: 'Build instantly-interactive web apps without effort.'
+  },
+  redwood: {
+    name: 'Redwood',
+    logo: RedwoodLogo,
+    href: '/docs/getting-started/redwood',
+    description:
+      'Redwood is a full-stack JavaScript framework for the JAMstack. It brings together the best of React and GraphQL, with conventions to make your life easier.'
   },
   storybook: {
     name: 'Storybook',

@@ -1,0 +1,165 @@
+---
+title: Using Redwood
+description: Easily use Panda with Redwood.js with our dedicated integration.
+---
+
+# Using Panda CSS with Redwood
+
+Setting up Panda CSS in a Redwood project using PostCSS.
+
+> Redwood uses `yarn` as its primary package manager.
+
+## Start a new project
+
+<Steps>
+
+### Create Redwood project
+
+To get started, we will need to create a new Redwood project using `typescript` template.
+
+```bash
+yarn create redwood-app app
+```
+
+Respond to the prompts as follows:
+
+```bash
+✔ Compatibility checks passed
+✔ Select your preferred language · TypeScript
+✔ Do you want to initialize a git repo? · no / Yes
+✔ Enter a commit message · Initial commit
+✔ Do you want to run yarn install? · no / Yes
+✔ Project files created
+✔ Initialized a git repo with commit message "Initial commit"
+✔ Installed node modules
+✔ Generated types
+```
+
+### Install Panda
+
+Install panda and generate the `panda.config.ts` and `postcss.config.js` file.
+
+```bash
+cd web
+yarn add -D @pandacss/dev postcss postcss-loader
+yarn panda init --postcss
+```
+
+### Move to config folder
+
+Redwood uses a `config` folder for all of the configuration files. Move the `panda.config.ts` and `postcss.config.js` files to the `config` folder.
+
+```bash
+mv panda.config.ts postcss.config.js config/
+```
+
+### Update configs
+
+Update the postcss config file to use the `panda.config.ts` file.
+
+```diff filename="web/config/postcss.config.js"
++ const path = require('path')
+
+module.exports = {
+  plugins: {
+    "@pandacss/dev/postcss": {
++      configPath: path.resolve(__dirname, 'panda.config.ts'),
+   },
+  },
+}
+```
+
+Update the tsconfig file to include the `styled-system` folder.
+
+```json {6} filename="web/tsconfig.json"
+{
+   // ...
+  "compilerOptions": {
+    "paths": {
+      // ...
+      "styled-system/*": ["./styled-system/*"]
+    }
+  }
+}
+```
+
+### Update package.json scripts
+
+Open the `web/package.json` file and update the `scripts` section as follows:
+
+```diff {3} filename="web/package.json"
+{
+  "scripts": {
++    "prepare": "panda codegen"
+  }
+}
+```
+
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+### Configure the content
+
+Make sure that all of the paths of your Redwood components are included in the `include` section of the `panda.config.ts` file.
+
+```js {5} filename="web/config/panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  preflight: true,
+  include: ['./src/**/*.{js,jsx,ts,tsx}'],
+  exclude: [],
+  outdir: 'styled-system'
+})
+```
+
+### Configure the entry CSS with layers
+
+Add this code to an `src/style/index.css` file imported in the root component of your project.
+
+```css filename="web/src/index.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+## Start your build process
+
+Run the following command to start your development server.
+
+```bash
+yarn rw dev
+```
+
+### Start using Panda
+
+Now you can start using Panda CSS in your project.
+
+```tsx filename="web/src/pages/HomePage/HomePage.tsx"
+import { css } from 'styled-system/css'
+import { stack } from 'styled-system/patterns'
+import { Link, routes } from '@redwoodjs/router'
+import { MetaTags } from '@redwoodjs/web'
+
+const HomePage = () => {
+  return (
+    <>
+      <MetaTags title="Home" description="Home page" />
+
+      <div
+        className={stack({
+          bg: { base: 'red.300', _hover: 'red.500' },
+          py: '12',
+          px: '8'
+        })}
+      >
+        <h1 className={css({ fontSize: '4xl', fontWeight: 'bold' })}>
+          HomePage
+        </h1>
+        <p>Hello World</p>
+      </div>
+    </>
+  )
+}
+
+export default HomePage
+```
+
+</Steps>

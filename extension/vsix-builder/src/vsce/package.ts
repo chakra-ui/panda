@@ -4,7 +4,7 @@ import * as GitHost from 'hosted-git-info'
 import markdownit from 'markdown-it'
 import mime from 'mime'
 import parseSemver from 'parse-semver'
-import * as path from 'path'
+import { join, extname, normalize } from 'pathe'
 import * as semver from 'semver'
 import * as url from 'url'
 import * as yazl from 'yazl'
@@ -671,7 +671,7 @@ class MarkdownProcessor extends BaseProcessor {
           return `${isImage}[${title}](${link})`
         }
 
-        return `${isImage}[${title}](${urljoin(prefix, path.posix.normalize(link))})`
+        return `${isImage}[${title}](${urljoin(prefix, normalize(link))})`
       }
 
       // Replace Markdown links with urls
@@ -692,7 +692,7 @@ class MarkdownProcessor extends BaseProcessor {
           return all
         }
 
-        return all.replace(link, urljoin(prefix, path.posix.normalize(link)))
+        return all.replace(link, urljoin(prefix, normalize(link)))
       })
 
       if ((this.gitHubIssueLinking && this.isGitHub) || (this.gitLabIssueLinking && this.isGitLab)) {
@@ -867,7 +867,7 @@ class LicenseProcessor extends BaseProcessor {
       let normalizedPath = util.normalize(file.path)
 
       if (this.filter(normalizedPath)) {
-        if (!path.extname(normalizedPath)) {
+        if (!extname(normalizedPath)) {
           file.path += '.txt'
           normalizedPath += '.txt'
         }
@@ -898,10 +898,10 @@ class LaunchEntryPointProcessor extends BaseProcessor {
   constructor(manifest: Manifest) {
     super(manifest)
     if (manifest.main) {
-      this.entryPoints.add(util.normalize(path.join('extension', this.appendJSExt(manifest.main))))
+      this.entryPoints.add(util.normalize(join('extension', this.appendJSExt(manifest.main))))
     }
     if (manifest.browser) {
-      this.entryPoints.add(util.normalize(path.join('extension', this.appendJSExt(manifest.browser))))
+      this.entryPoints.add(util.normalize(join('extension', this.appendJSExt(manifest.browser))))
     }
   }
 
@@ -934,7 +934,7 @@ class IconProcessor extends BaseProcessor {
   constructor(manifest: Manifest) {
     super(manifest)
 
-    this.icon = manifest.icon && path.posix.normalize(`extension/${manifest.icon}`)
+    this.icon = manifest.icon && normalize(`extension/${manifest.icon}`)
     delete this.vsix.icon
   }
 
@@ -1238,7 +1238,7 @@ async function toContentTypes(files: IFile[]): Promise<string> {
   const mimetypes = new Map<string, string>(defaultMimetypes)
 
   for (const file of files) {
-    const ext = path.extname(file.path).toLowerCase()
+    const ext = extname(file.path).toLowerCase()
 
     if (ext) {
       mimetypes.set(ext, mime.lookup(ext))

@@ -88,7 +88,7 @@ Panda is built with TypeScript and provides type safety for all style properties
 const styles = css({ bg: '|' })
 ```
 
-> You can also set `strict: true` in the panda config to only allow token value and prevent custom or raw CSS values.
+> You can also set `strictTokens: true` in the panda config to only allow token value and prevent custom or raw CSS values.
 
 ### Numeric values
 

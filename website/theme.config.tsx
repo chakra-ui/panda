@@ -38,7 +38,7 @@ const config: DocsThemeConfig = {
 
     return {
       titleTemplate: seoConfig.title.template,
-      openGraph: { url, images: [{ url: images }] }
+      openGraph: { url, images: [{ url: `${url}${images}` }] }
     }
   },
   docsRepositoryBase: 'https://github.com/chakra-ui/panda/tree/main/website',

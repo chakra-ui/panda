@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { FunctionComponent } from 'react'
 import type { WrapProperties } from '../patterns/wrap'
 import type { HTMLPandaProps } from '../types/jsx'

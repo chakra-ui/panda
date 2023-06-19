@@ -6,9 +6,9 @@ const seoConfig = defineMetadata({
   title: {
     template: '%s - Panda CSS',
     default:
-      'Panda CSS - The fastest way to build beautiful websites in React.'
+      'Panda CSS - Build modern websites using build time and type-safe CSS-in-JS'
   },
-  description: 'The fastest way to build beautiful websites in React.',
+  description: 'Build modern websites using build time and type-safe CSS-in-JS',
   themeColor: '#F6E458',
   openGraph: {
     images: '/og-image.png',

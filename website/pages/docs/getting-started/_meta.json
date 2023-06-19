@@ -11,5 +11,6 @@
   "gatsby": "Gatsby",
   "svelte": "Svelte",
   "storybook": "Storybook",
-  "vue": "Vue"
+  "vue": "Vue",
+  "redwood": "Redwood"
 }

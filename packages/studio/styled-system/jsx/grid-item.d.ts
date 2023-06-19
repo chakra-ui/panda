@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { FunctionComponent } from 'react'
 import type { GridItemProperties } from '../patterns/grid-item'
 import type { HTMLPandaProps } from '../types/jsx'

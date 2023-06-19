@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { FunctionComponent } from 'react'
 import type { VstackProperties } from '../patterns/vstack'
 import type { HTMLPandaProps } from '../types/jsx'

@@ -327,8 +327,7 @@ import { defineConfig } from '@pandacss/dev'
 import { buttonRecipe } from './button.recipe'
 
 export default defineConfig({
-  include: ['src/**/*.tsx'],
-  outdir: 'styled-system',
+  //...
   jsxFramework: 'react',
   theme: {
     extend: {

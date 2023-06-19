@@ -263,5 +263,15 @@ export const generateArtifacts = (ctx: Context) => (): Artifact[] => {
     setupStaticCss(ctx),
     setupResetCss(ctx),
     setupPackageJson(ctx),
-  ].filter(Boolean)
+  ]
+    .filter(Boolean)
+    .map((artifact) => {
+      const files = artifact?.files ?? []
+      files.forEach((file) => {
+        if (file.file.endsWith('.d.ts')) {
+          file.code = `/* eslint-disable */\n${file.code}`
+        }
+      })
+      return artifact
+    })
 }

@@ -1,8 +1,9 @@
-import { RecipeVariantRecord, RecipeConfig } from './recipe'
-import { Parts } from './parts'
-import { PatternConfig } from './pattern'
-import { GlobalStyleObject, SystemStyleObject } from './system-types'
-import { CompositionStyles } from './composition'
+/* eslint-disable */
+import type { RecipeVariantRecord, RecipeConfig } from './recipe'
+import type { Parts } from './parts'
+import type { PatternConfig } from './pattern'
+import type { GlobalStyleObject, SystemStyleObject } from './system-types'
+import type { CompositionStyles } from './composition'
 
 declare module '@pandacss/dev' {
   export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): RecipeConfig

@@ -97,7 +97,28 @@ Panda ships with the following breakpoints by default:
 
 ### Sizing
 
-> Work in progress
+
+Use the `sizes` key in the theme section of your Panda config file to customize the default sizing values.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        sizes: {
+          icon: { value: '24px' }
+        }
+      }
+    }
+  }
+})
+```
+
+Panda ships with the following sizing tokens by default, in addition with the values from the default Panda [spacing](#spacing) tokens:
+
+<TokenDocs type="sizing" />
 
 ### Fonts
 
@@ -149,4 +170,29 @@ Panda ships with the following font size tokens by default:
 
 ## Keyframes
 
-> Work in progress
+Use the `keyframes` key in the `theme` section of your Panda config file to customize the default breakpoints.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      keyframes: {
+        fadein: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' }
+        },
+        fadeout: {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' }
+        }
+      }
+    }
+  }
+})
+```
+
+Panda ships with the following keyframes by default:
+
+<TokenDocs type="keyframes" />

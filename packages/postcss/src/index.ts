@@ -8,11 +8,10 @@ const PLUGIN_NAME = 'pandacss'
 
 const interopDefault = (obj: any) => (obj && obj.__esModule ? obj.default : obj)
 
-export const loadConfig = () => {
-  return interopDefault(require('@pandacss/postcss'))
-}
+export const loadConfig = () => interopDefault(require('@pandacss/postcss'))
 
-export const pandacss: PluginCreator<{}> = () => {
+export const pandacss: PluginCreator<{ configPath?: string }> = (options = {}) => {
+  const { configPath } = options
   const builder = new Builder()
 
   return {
@@ -24,7 +23,7 @@ export const pandacss: PluginCreator<{}> = () => {
           return
         }
 
-        await builder.setup()
+        await builder.setup({ configPath })
         await builder.extract()
 
         builder.registerDependency((dep) => {

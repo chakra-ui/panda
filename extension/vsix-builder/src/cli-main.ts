@@ -1,6 +1,6 @@
 import { cac } from 'cac'
 import fs from 'fs'
-import path from 'path'
+import { join } from 'pathe'
 import { createVsix } from './create-vsix'
 import { Targets } from './vsce/package'
 
@@ -23,7 +23,7 @@ export async function main() {
     .option('--dry', 'List the files that would have been included in the package')
     .action(async (version, flags) => {
       console.log(`Creating a VSIX...`)
-      const outfile = flags?.out ?? path.join(cwd, 'panda.vsix')
+      const outfile = flags?.out ?? join(cwd, 'panda.vsix')
 
       const start = performance.now()
       const vsix = await createVsix({ dir: cwd, outfile, dry: flags?.dry }, { ...flags, version })

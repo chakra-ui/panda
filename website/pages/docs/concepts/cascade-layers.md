@@ -14,7 +14,7 @@ define styles in a modular way, using CSS rules that are scoped to specific comp
 
 ## Layer Types
 
-Panda supports three types of cascade layers out of the box:
+Panda supports five types of cascade layers out of the box:
 
 - `@layer reset` - The reset layer is used to reset the default styles of HTML elements. This is used when
   `preflight: true` is set in the config. You can also use this layer to add your own reset styles.

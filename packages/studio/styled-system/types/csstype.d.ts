@@ -1,3 +1,4 @@
+/* eslint-disable */
 export {};
 
 export type PropertyValue<TValue> = TValue extends Array<infer AValue>
