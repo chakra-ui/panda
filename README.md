@@ -38,7 +38,7 @@ Visit our [official documentation](https://panda-css.com/).
 
 ## Install
 
-The **recommended** way to install the latest version of Astro is by running the command below:
+The **recommended** way to install the latest version of Panda is by running the command below:
 
 ```bash
 npm i -D @pandacss/dev
