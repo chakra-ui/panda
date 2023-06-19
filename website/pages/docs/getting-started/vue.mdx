@@ -1,0 +1,194 @@
+---
+title: Using Vue
+description: Easily use Panda with Vue with our dedicated integration.
+---
+
+# Using Panda CSS with Vue
+
+Setting up Panda CSS in a Vue project using PostCSS.
+
+## Start a new project
+
+<Steps>
+
+### Create Vite project
+
+To get started, we will need to create a new Vue project using the official [scaffolding tool](https://github.com/vuejs/create-vue).
+
+If you don't enter any parameter, the CLI will guide you through the process of creating a new Vue app.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm create vue@latest
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm create vue@latest
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn create vue@latest
+    ```
+  </Tab>
+</Tabs>
+
+You will be asked a few questions, answer them as follows:
+
+```bash
+Vue.js - The Progressive JavaScript Framework
+
+✔ Project name: … test-app
+✔ Add TypeScript? … Yes
+✔ Add JSX Support? … Yes
+✔ Add Vue Router for Single Page Application development? … No / Yes
+✔ Add Pinia for state management? … No / Yes
+✔ Add Vitest for Unit Testing? … No / Yes
+✔ Add an End-to-End Testing Solution? › No
+✔ Add ESLint for code quality? … No / Yes
+✔ Add Prettier for code formatting? … No / Yes
+```
+
+> **Note:** Panda can only work in Vue JSX syntax since it parses only JS(X)/TS(X) files for now.
+
+Enter the newly created directory and install the dependencies.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    cd test-app
+    pnpm install
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    cd test-app
+    npm install
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    cd test-app
+    yarn
+    ```
+  </Tab>
+</Tabs>
+
+### Install Panda
+
+Install panda and create your `panda.config.ts` file.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm install -D @pandacss/dev
+    pnpm panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install -D @pandacss/dev
+    npx panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn add -D @pandacss/dev
+    yarn panda init --postcss
+    ```
+  </Tab>
+</Tabs>
+
+### Update package.json scripts
+
+Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3} filename="package.json"
+{
+  "scripts": {
++    "prepare": "panda codegen",
+    "dev": "vite",
+    "build": "run-p type-check build-only",
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
+  }
+}
+```
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+### Configure the content
+
+Make sure that all of the paths of your Vue components are included in the `include` section of the `panda.config.ts` file.
+
+```js {8, 17} filename="panda.config.ts"
+import { defineConfig } from "@pandacss/dev"
+
+export default defineConfig({
+ // Whether to use css reset
+ preflight: true,
+
+ // Where to look for your css declarations
+ include: ["./src/**/*.{js,jsx,ts,tsx}", "./pages/**/*.{js,jsx,ts,tsx}"],
+
+ // Files to exclude
+ exclude: [],
+
+ // The output directory for your css system
+ outdir: "styled-system",
+})
+```
+
+### Configure the entry CSS with layers
+
+Add this code to an `src/style.css` file imported in the root component of your project.
+
+```css filename="src/style.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+## Start your build process
+
+Run the following command to start your development server.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm run dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dev
+    ```
+  </Tab>
+</Tabs>
+
+### Start using Panda
+
+Now you can start using Panda CSS in your project.
+Here is the snippet of code that you can use in your `src/App.tsx` file.
+
+```tsx filename="src/App.tsx"
+import { defineComponent } from 'vue';
+import { css } from '../styled-system/css';
+
+export default defineComponent({
+  setup() {
+    return () => (
+      <div class={css({ fontSize: '2xl', fontWeight: 'bold' })}>Hello 🐼!</div>
+    )
+  }
+})
+```
+
+> **Note:** Make sure to replace the root component inside `src/main.ts` with `src/App.tsx`.
+
+</Steps>

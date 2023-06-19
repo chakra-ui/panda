@@ -58,7 +58,7 @@ Whether to only emit the `tokens` directory
 
 ```json
 {
-  "emitTokensOnly": true
+  "emitTokensOnly": false
 }
 ```
 
@@ -553,7 +553,7 @@ Ex:
 
 **Type**: `Partial<Studio>`
 
-**Default**: `true`
+**Default**: `{ title: 'Panda', logo: '🐼' }`
 
 Used to customize the design system studio
 
