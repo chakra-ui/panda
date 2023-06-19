@@ -3,8 +3,7 @@ import { Providers } from '@/components/providers'
 import { SectionFooter } from '@/components/sections/footer'
 import { css, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
-import { Fira_Code } from 'next/font/google'
-import localFont from 'next/font/local'
+import { fontClassName } from 'styles/fonts'
 import seoConfig from '../seo.config'
 
 import '../styles/panda.css'
@@ -15,27 +14,13 @@ type Props = {
 
 export const metadata = seoConfig
 
-const MonaSans = localFont({
-  src: '../styles/Mona-Sans.woff2',
-  display: 'swap',
-  variable: '--font-mona-sans'
-})
-
-const FiraCode = Fira_Code({
-  weight: ['400', '500', '700'],
-  display: 'swap',
-  subsets: ['latin'],
-  variable: '--font-fira-code'
-})
-
 export default function RootLayout(props: Props) {
   const { children } = props
   return (
     <html
       lang="en"
       className={cx(
-        MonaSans.variable,
-        FiraCode.variable,
+        fontClassName,
         css({ overflowX: 'hidden', fontFamily: 'body', fontSize: '0.9em' })
       )}
       suppressHydrationWarning
