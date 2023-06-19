@@ -1,5 +1,15 @@
 # @pandacss/parser
 
+## 0.3.2
+
+### Patch Changes
+
+- @pandacss/extractor@0.3.2
+- @pandacss/is-valid-prop@0.3.2
+- @pandacss/logger@0.3.2
+- @pandacss/shared@0.3.2
+- @pandacss/types@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes

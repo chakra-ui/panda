@@ -1,5 +1,23 @@
 # @pandacss/postcss
 
+## 0.3.2
+
+### Patch Changes
+
+- 24b78f7c: Add support for setting config path in postcss
+
+  ```js
+  module.exports = {
+    plugins: [
+      require('@pandacss/postcss')({
+        configPath: './path/to/panda.config.js',
+      }),
+    ],
+  }
+  ```
+
+  - @pandacss/node@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes

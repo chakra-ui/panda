@@ -1,5 +1,30 @@
 # @pandacss/dev
 
+## 0.3.2
+
+### Patch Changes
+
+- c8bee958: Add support for config path in cli commands via the `--config` or `-c` flag.
+
+  ```bash
+  panda init --config ./pandacss.config.js
+  ```
+
+- Updated dependencies [24b78f7c]
+- Updated dependencies [9822d79a]
+- Updated dependencies [65d3423f]
+  - @pandacss/postcss@0.3.2
+  - @pandacss/config@0.3.2
+  - @pandacss/studio@0.3.2
+  - @pandacss/astro@0.3.2
+  - @pandacss/node@0.3.2
+  - @pandacss/error@0.3.2
+  - @pandacss/logger@0.3.2
+  - @pandacss/preset-panda@0.3.2
+  - @pandacss/shared@0.3.2
+  - @pandacss/token-dictionary@0.3.2
+  - @pandacss/types@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes
