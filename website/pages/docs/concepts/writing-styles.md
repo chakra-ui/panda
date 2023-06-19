@@ -172,14 +172,18 @@ For example, to create a hover style, you can use the `_hover` pseudo prop.
 Sometimes you might want to insert global css like adding additional resets or font faces. Global styles in Panda can be added to the `panda.config.ts` using the `globalCss` property.
 
 ```js filename="panda.config.ts"
+import { defineConfig, defineGlobalStyles } from '@pandacss/dev'
+
+const globalCss = defineGlobalStyles({
+  'html, body': {
+    color: 'gray.900',
+    lineHeight: '1.5'
+  }
+})
+
 export default defineConfig({
   // ...
-  globalCss: {
-    'html, body': {
-      color: 'gray.900',
-      lineHeight: '1.5'
-    }
-  }
+  globalCss
 })
 ```
 
