@@ -1,5 +1,16 @@
 # @pandacss/config
 
+## 0.3.2
+
+### Patch Changes
+
+- 9822d79a: Remove `bundledDependencies` from `package.json` to fix NPM resolution
+  - @pandacss/error@0.3.2
+  - @pandacss/logger@0.3.2
+  - @pandacss/preset-base@0.3.2
+  - @pandacss/preset-panda@0.3.2
+  - @pandacss/types@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes
