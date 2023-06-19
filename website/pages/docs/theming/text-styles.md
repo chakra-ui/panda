@@ -79,12 +79,13 @@ function App() {
 
 ## Best Practices
 
-To ensure the consistency of your design system, it's important to avoid adding layout properties (margin, padding,
-etc.) or color properties (background, colors, etc.) to the text styles.
+### Avoid layout properties
 
-### Naming text styles
+To ensure the consistency of your design system, avoid applying layout properties (like margin, padding, etc.) or color properties (background, colors, etc.) to the text styles.
 
-In practice, we recommend using the same text style names used by designers on your team. Here are common ideas on how to name text styles:
+### Naming conventions
+
+We recommend using the same text style names used by designers on your team. Here are common ideas on how to name text styles:
 
 - Sized-based naming system (`xs`, `sm`, `md`, `lg`, `xl`)
 - Semantic naming system that corresponds to respective html tags in production (`caption`, `paragraph`, `h1`, `h2`)
