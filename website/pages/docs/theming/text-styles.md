@@ -15,36 +15,59 @@ Text styles allows you to define textual css properties. The common peoperties a
 - Text Decoration (strikethrough and underline)
 - Text Transform (uppercase, lowercase, and capitalization)
 
-Text styles are defined in the `textStyles` property of the tokens.
+## Defining text styles
+
+Text styles are defined in the `textStyles` property of the theme.
 
 Here's an example of a text style:
 
-```js
-const tokens = {
-  textStyles: {
-    body: {
-      description: 'The body text style - used in paragraphs',
-      value: {
-        fontFamily: 'Inter',
-        fontWeight: '500',
-        fontSize: '16',
-        lineHeight: '24',
-        letterSpacing: '0',
-        textDecoration: 'None',
-        textTransform: 'None'
-      }
+```js filename="text-styles.ts"
+import { defineTextStyles } from '@pandacss/dev'
+
+const textStyles = defineTextStyles({
+  body: {
+    description: 'The body text style - used in paragraphs',
+    value: {
+      fontFamily: 'Inter',
+      fontWeight: '500',
+      fontSize: '16',
+      lineHeight: '24',
+      letterSpacing: '0',
+      textDecoration: 'None',
+      textTransform: 'None'
     }
   }
-}
+})
 ```
 
 > **Good to know:** The `value` property maps to style objects that will be applied to the text.
 
-## Usage
+## Update the config
+
+To use the text styles, we need to update the `config` object in the `panda.config.ts` file.
+
+```js filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { textStyles } from './text-styles'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      textStyles
+    }
+  }
+})
+```
+
+This should automatically update the generated theme the specified `textStyles`. If this doesn't happen, you can run the `panda codegen` command.
+
+## Using text styles
 
 Now we can use `textStyle` property in our components.
 
 ```jsx
+import { css } from '../styled-system/css'
+
 function App() {
   return (
     <p className={css({ textStyle: 'body' })}>
