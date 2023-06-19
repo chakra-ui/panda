@@ -58,7 +58,7 @@ Whether to only emit the `tokens` directory
 
 ```json
 {
-  "emitTokensOnly": true
+  "emitTokensOnly": false
 }
 ```
 
