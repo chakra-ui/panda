@@ -13,7 +13,7 @@ Setting up Panda CSS in a Vue project using PostCSS.
 
 ### Create Vite project
 
-To get started, we will need to create a new Vue project using the official [create-vue](https://github.com/vuejs/create-vue) CLI.
+To get started, we will need to create a new Vue project using the official [scaffolding tool](https://github.com/vuejs/create-vue).
 
 If you don't enter any parameter, the CLI will guide you through the process of creating a new Vue app.
 
@@ -110,9 +110,10 @@ Open your `package.json` file and update the `scripts` section as follows:
   "scripts": {
 +    "prepare": "panda codegen",
     "dev": "vite",
-    "build": "vue-tsc && vite build",
-    "lint": "eslint src --ext ts,tsx,vue --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "build": "run-p type-check build-only",,
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   }
 }
 ```
