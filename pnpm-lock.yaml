@@ -839,8 +839,8 @@ importers:
         version: link:../types
     devDependencies:
       '@atlaskit/tokens':
-        specifier: 1.5.2
-        version: 1.5.2(react@16.14.0)
+        specifier: 1.6.0
+        version: 1.6.0(react@16.14.0)
 
   packages/preset-base:
     dependencies:
@@ -1733,16 +1733,16 @@ packages:
       '@babel/runtime': 7.22.3
     dev: true
 
-  /@atlaskit/tokens@1.5.2(react@16.14.0):
-    resolution: {integrity: sha512-KD57ivGunM/OJVN8pws+qbaq28eju39X7IsJPUgc+TN0TM8eLloC4qH56Hny1MYTDIU/rS4ZGa0EaHbA4wwi7A==}
+  /@atlaskit/tokens@1.6.0(react@16.14.0):
+    resolution: {integrity: sha512-KjyIVzv2g3d/Q2JLLvR95YnLt6rNY5Yk5F0jwMsoDSVl4OIsDdUNIFLxTTr01EQUkJLQ79c/AZfwCtRcTyXeGw==}
     peerDependencies:
       react: ^16.8.0
     dependencies:
       '@atlaskit/ds-lib': 2.2.3(react@16.14.0)
       '@atlaskit/platform-feature-flags': 0.2.2
       '@babel/runtime': 7.22.3
-      '@babel/traverse': 7.22.4
-      '@babel/types': 7.22.4
+      '@babel/traverse': 7.22.5
+      '@babel/types': 7.22.5
       bind-event-listener: 2.1.1
       react: 16.14.0
     transitivePeerDependencies:
@@ -1930,7 +1930,7 @@ packages:
     resolution: {integrity: sha512-duORpUiYrEpzKIop6iNbjnwKLAKnJ47csTyRACyEmWj0QdUrm5aqNJGHSSEQSUAvNW0ojX0dOmK9dZduvkfeXA==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@babel/types': 7.22.4
+      '@babel/types': 7.22.5
 
   /@babel/helper-builder-binary-assignment-operator-visitor@7.22.3:
     resolution: {integrity: sha512-ahEoxgqNoYXm0k22TvOke48i1PkavGu0qGCmcq9ugi6gnmvKNaMjKBSrZTnWUi1CFEeNAUiVba0Wtzm03aSkJg==}
@@ -2153,7 +2153,7 @@ packages:
     resolution: {integrity: sha512-orajc5T2PsRYUN3ZryCEFeMDYwyw09c/pZeaQEZPH0MpKzSvn3e0uXsDBu3k03VI+9DBiRo+l22BfKTpKwa/Wg==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@babel/types': 7.22.4
+      '@babel/types': 7.22.5
     dev: true
 
   /@babel/helper-module-imports@7.22.5:
@@ -2270,10 +2270,6 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       '@babel/types': 7.22.5
-
-  /@babel/helper-string-parser@7.21.5:
-    resolution: {integrity: sha512-5pTUx3hAJaZIdW99sJ6ZUUgWq/Y+Hja7TowEnLNMm1VivRgZQL3vpBY3qUACVsvw+yQU6+YgfBVmcbLaZtrA1w==}
-    engines: {node: '>=6.9.0'}
 
   /@babel/helper-string-parser@7.22.5:
     resolution: {integrity: sha512-mM4COjgZox8U+JcXQwPijIZLElkgEpO5rsERVDJTc2qfCDfERyob6k5WegS14SX18IIjv+XD+GrqNumY5JRCDw==}
@@ -5413,7 +5409,7 @@ packages:
     resolution: {integrity: sha512-Tx9x3UBHTTsMSW85WB2kphxYQVvrZ/t1FxD88IpSgIjiUJlCm9z+xWIDwyo1vffTwSqteqyznB8ZE9vYYk16zA==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@babel/helper-string-parser': 7.21.5
+      '@babel/helper-string-parser': 7.22.5
       '@babel/helper-validator-identifier': 7.22.5
       to-fast-properties: 2.0.0
 
@@ -10721,7 +10717,7 @@ packages:
   /@types/babel__generator@7.6.4:
     resolution: {integrity: sha512-tFkciB9j2K755yrTALxD44McOrk+gfpIpvC3sxHjRawj6PfnQxrse4Clq5y/Rq+G3mrBurMax/lG8Qn2t9mSsg==}
     dependencies:
-      '@babel/types': 7.22.4
+      '@babel/types': 7.22.5
 
   /@types/babel__template@7.4.1:
     resolution: {integrity: sha512-azBFKemX6kMg5Io+/rdGT0dkGreboUVR0Cdm3fz9QJWpaQGJRQXl7C+6hOTCZcMll7KFyEQpgbYI2lHdsS4U7g==}
@@ -10732,7 +10728,7 @@ packages:
   /@types/babel__traverse@7.20.0:
     resolution: {integrity: sha512-TBOjqAGf0hmaqRwpii5LLkJLg7c6OMm4nHLmpsUxwk9bBHtoTC6dAHdVWdGv4TBxj2CZOZY8Xfq8WmfoVi7n4Q==}
     dependencies:
-      '@babel/types': 7.22.4
+      '@babel/types': 7.22.5
 
   /@types/base-64@1.0.0:
     resolution: {integrity: sha512-AvCJx/HrfYHmOQRFdVvgKMplXfzTUizmh0tz9GFTpDePWgCY4uoKll84zKlaRoeiYiCr7c9ZnqSTzkl0BUVD6g==}
@@ -13622,7 +13618,7 @@ packages:
       '@babel/core': 7.22.1
       '@babel/helper-module-imports': 7.18.6
       '@babel/plugin-syntax-jsx': 7.21.4(@babel/core@7.22.1)
-      '@babel/types': 7.22.4
+      '@babel/types': 7.22.5
       html-entities: 2.3.3
       validate-html-nesting: 1.2.2
     dev: true
@@ -13635,7 +13631,7 @@ packages:
       '@babel/core': 7.22.5
       '@babel/helper-module-imports': 7.18.6
       '@babel/plugin-syntax-jsx': 7.21.4(@babel/core@7.22.5)
-      '@babel/types': 7.22.4
+      '@babel/types': 7.22.5
       html-entities: 2.3.3
       validate-html-nesting: 1.2.2
     dev: false
@@ -27297,9 +27293,9 @@ packages:
     peerDependencies:
       solid-js: ^1.3
     dependencies:
-      '@babel/generator': 7.22.3
+      '@babel/generator': 7.22.5
       '@babel/helper-module-imports': 7.21.4
-      '@babel/types': 7.22.4
+      '@babel/types': 7.22.5
       solid-js: 1.7.6
     dev: true
 
