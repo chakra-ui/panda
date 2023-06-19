@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Nothing yet 😀
+
 ## [0.3.2]
 
 ### Added
