@@ -62,7 +62,7 @@ export const conditions = {
   autofill: '&:autofill',
   inRange: '&:in-range',
   outOfRange: '&:out-of-range',
-  placeholder: '&:placeholder',
+  placeholder: '&::placeholder',
   placeholderShown: '&:placeholder-shown',
   pressed: '&:where([aria-pressed=true], [data-pressed])',
   selected: '&:where([aria-selected=true], [data-selected])',
