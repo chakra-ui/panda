@@ -5,12 +5,12 @@
   "nextjs": "Next.js",
   "remix": "Remix",
   "gatsby": "Gatsby",
+  "redwood": "Redwood",
   "qwik": "Qwik",
   "vite": "Vite",
   "preact": "Preact",
   "solidjs": "Solid.js",
   "svelte": "Svelte",
   "storybook": "Storybook",
-  "redwood": "Redwood",
   "vue": "Vue"
 }
