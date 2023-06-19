@@ -11,5 +11,6 @@
   "preact": "Preact",
   "solidjs": "Solid.js",
   "svelte": "Svelte",
-  "storybook": "Storybook"
+  "storybook": "Storybook",
+  "vue": "Vue"
 }
