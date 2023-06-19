@@ -388,6 +388,28 @@ The generated css is registered under the `recipe` [cascade layer](/docs/concept
 }
 ```
 
+### Responsive and Conditional variants
+
+Recipes created in the config have a **special** feature; they can be applied based on a specific breakpoints or conditions.
+
+Here's how to tweak the size variant of the button recipe based on breakpoints.
+
+```jsx
+import { button } from '../styled-system/recipes'
+
+function App() {
+  return (
+    <div>
+      <button class={button({ size: { base: 'sm', md: 'lg' } })}>
+        Click me
+      </button>
+    </div>
+  )
+}
+```
+
+> In most cases, we don't recommend applying conditional variants inline. Ideally, you might want to render different views for your responsive breakpoints.
+
 ### TypeScript Guide
 
 Every recipe ships a type interface for its accepted variants. You can import them from the `styled-system/recipes` entrypoint.
