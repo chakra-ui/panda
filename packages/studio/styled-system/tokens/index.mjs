@@ -1,4 +1,8 @@
 const tokens = {
+  'borders.none': {
+    value: 'none',
+    variable: 'var(--borders-none)',
+  },
   'easings.default': {
     value: 'cubic-bezier(0.4, 0, 0.2, 1)',
     variable: 'var(--easings-default)',
@@ -288,6 +292,10 @@ const tokens = {
     value: '64px',
     variable: 'var(--blurs-3xl)',
   },
+  'spacing.0': {
+    value: '0rem',
+    variable: 'var(--spacing-0)',
+  },
   'spacing.1': {
     value: '0.25rem',
     variable: 'var(--spacing-1)',
@@ -419,6 +427,10 @@ const tokens = {
   'spacing.3.5': {
     value: '0.875rem',
     variable: 'var(--spacing-3\\.5)',
+  },
+  'sizes.0': {
+    value: '0rem',
+    variable: 'var(--sizes-0)',
   },
   'sizes.1': {
     value: '0.25rem',
@@ -1400,6 +1412,10 @@ const tokens = {
   'colors.border': {
     value: 'var(--colors-border)',
     variable: 'var(--colors-border)',
+  },
+  'spacing.-0': {
+    value: 'calc(var(--spacing-0) * -1)',
+    variable: 'var(--spacing-0)',
   },
   'spacing.-1': {
     value: 'calc(var(--spacing-1) * -1)',
