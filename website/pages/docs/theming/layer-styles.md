@@ -42,18 +42,18 @@ To use the text styles, we need to update the `config` object in the `panda.conf
 
 ```js filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
-import { textStyles } from './text-styles'
+import { layerStyles } from './layer-styles'
 
 export default defineConfig({
   theme: {
     extend: {
-      textStyles
+      layerStyles
     }
   }
 })
 ```
 
-This should automatically update the generated theme the specified `textStyles`. If this doesn't happen, you can run the `panda codegen` command.
+This should automatically update the generated theme the specified `layerStyles`. If this doesn't happen, you can run the `panda codegen` command.
 
 ## Using layer styles
 
