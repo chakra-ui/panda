@@ -1413,10 +1413,6 @@ const tokens = {
     value: 'var(--colors-border)',
     variable: 'var(--colors-border)',
   },
-  'spacing.-0': {
-    value: 'calc(var(--spacing-0) * -1)',
-    variable: 'var(--spacing-0)',
-  },
   'spacing.-1': {
     value: 'calc(var(--spacing-1) * -1)',
     variable: 'var(--spacing-1)',
