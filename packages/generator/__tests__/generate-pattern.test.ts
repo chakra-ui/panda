@@ -440,17 +440,27 @@ test('should generate pattern', () => {
     import { css } from '../css/index.mjs';
 
     const aspectRatioConfig = {
-    transform(props) {
-      const { ratio, ...rest } = props;
+    transform(props, { map }) {
+      const { ratio = 4 / 3, ...rest } = props;
       return {
-        aspectRatio: ratio,
-        overflow: \\"hidden\\",
-        display: \\"flex\\",
-        justifyContent: \\"center\\",
-        alignItems: \\"center\\",
-        \\"&>img, &>video\\": {
+        _before: {
+          height: 0,
+          content: \`\\"\\"\`,
+          display: \\"block\\",
+          paddingBottom: map(ratio, (r) => \`\${1 / r * 100}%\`),
+          ...rest[\\"_before\\"]
+        },
+        \\"&>*\\": {
+          display: \\"flex\\",
+          justifyContent: \\"center\\",
+          alignItems: \\"center\\",
+          overflow: \\"hidden\\",
+          position: \\"absolute\\",
+          inset: \\"0\\",
           width: \\"100%\\",
-          height: \\"100%\\",
+          height: \\"100%\\"
+        },
+        \\"&>img, &>video\\": {
           objectFit: \\"cover\\"
         },
         ...rest

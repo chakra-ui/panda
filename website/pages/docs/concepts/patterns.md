@@ -131,6 +131,8 @@ function App() {
 The Aspect Ratio pattern is used to create a container with a fixed aspect ratio. It is used when displaying images,
 maps, videos and other media.
 
+> **Note:** In most cases, we recommend using the `aspectRatio` property instead of the pattern.
+
 The `aspectRatio` function accepts the following properties:
 
 - `ratio`: The aspect ratio of the container. Can be a number or a string.

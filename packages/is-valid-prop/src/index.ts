@@ -220,7 +220,6 @@ const allCssProperties = [
   'clip',
   'clipPath',
   'color',
-  'printColorAdjust',
   'colorScheme',
   'columnCount',
   'columnFill',
@@ -238,6 +237,9 @@ const allCssProperties = [
   'containIntrinsicHeight',
   'containIntrinsicInlineSize',
   'containIntrinsicWidth',
+  'container',
+  'containerName',
+  'containerType',
   'content',
   'contentVisibility',
   'counterIncrement',
@@ -262,6 +264,7 @@ const allCssProperties = [
   'fontKerning',
   'fontLanguageOverride',
   'fontOpticalSizing',
+  'fontPalette',
   'fontVariationSettings',
   'fontSize',
   'fontSizeAdjust',
@@ -273,6 +276,7 @@ const allCssProperties = [
   'fontVariantAlternates',
   'fontVariantCaps',
   'fontVariantEastAsian',
+  'fontVariantEmoji',
   'fontVariantLigatures',
   'fontVariantNumeric',
   'fontVariantPosition',
@@ -416,6 +420,7 @@ const allCssProperties = [
   'paddingLeft',
   'paddingRight',
   'paddingTop',
+  'page',
   'pageBreakAfter',
   'pageBreakBefore',
   'pageBreakInside',
@@ -427,6 +432,7 @@ const allCssProperties = [
   'placeSelf',
   'pointerEvents',
   'position',
+  'printColorAdjust',
   'quotes',
   'resize',
   'right',
@@ -518,6 +524,7 @@ const allCssProperties = [
   'unicodeBidi',
   'userSelect',
   'verticalAlign',
+  'viewTransitionName',
   'visibility',
   'whiteSpace',
   'widows',
@@ -542,8 +549,10 @@ function memo<T>(fn: (value: string) => T): (value: string) => T {
   }
 }
 
+const selectorRegex = /&|@/
+
 const isCssProperty = memo((prop: string) => {
-  return properties.has(prop) || prop.startsWith('--')
+  return properties.has(prop) || prop.startsWith('--') || selectorRegex.test(prop)
 })
 
 export { isCssProperty, allCssProperties }

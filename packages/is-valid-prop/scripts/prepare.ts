@@ -38,8 +38,10 @@ writeFileSync(
     }
   }
 
+  const selectorRegex = /&|@/
+
   const isCssProperty = memo((prop: string) => {
-    return properties.has(prop) || prop.startsWith('--')
+    return properties.has(prop) || prop.startsWith('--') || selectorRegex.test(prop)
   })
 
   export { isCssProperty, allCssProperties }

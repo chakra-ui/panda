@@ -2085,27 +2085,51 @@ describe('preset patterns', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .overflow_hidden {
-          overflow: hidden
-          }
+        .before\\\\:h_0::before {
+          height: 0
+              }
 
-        .d_flex {
+        .before\\\\:content_\\\\\\"\\\\\\"::before {
+          content: \\"\\"
+              }
+
+        .before\\\\:d_block::before {
+          display: block
+              }
+
+        .before\\\\:pb_75\\\\%::before {
+          padding-bottom: 75%
+              }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:d_flex>* {
           display: flex
-          }
+              }
 
-        .justify_center {
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:justify_center>* {
           justify-content: center
-          }
+              }
 
-        .items_center {
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:items_center>* {
           align-items: center
-          }
+              }
 
-        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:w_100\\\\%>img, .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:w_100\\\\%>video {
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:overflow_hidden>* {
+          overflow: hidden
+              }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:pos_absolute>* {
+          position: absolute
+              }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:inset_0>* {
+          inset: 0
+              }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:w_100\\\\%>* {
           width: 100%
               }
 
-        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:h_100\\\\%>img, .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:h_100\\\\%>video {
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:h_100\\\\%>* {
           height: 100%
               }
 
@@ -2145,27 +2169,51 @@ describe('preset patterns', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .overflow_hidden {
-          overflow: hidden
-          }
+        .before\\\\:h_0::before {
+          height: 0
+              }
 
-        .d_flex {
+        .before\\\\:content_\\\\\\"\\\\\\"::before {
+          content: \\"\\"
+              }
+
+        .before\\\\:d_block::before {
+          display: block
+              }
+
+        .before\\\\:pb_75\\\\%::before {
+          padding-bottom: 75%
+              }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:d_flex>* {
           display: flex
-          }
+              }
 
-        .justify_center {
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:justify_center>* {
           justify-content: center
-          }
+              }
 
-        .items_center {
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:items_center>* {
           align-items: center
-          }
+              }
 
-        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:w_100\\\\%>img, .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:w_100\\\\%>video {
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:overflow_hidden>* {
+          overflow: hidden
+              }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:pos_absolute>* {
+          position: absolute
+              }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:inset_0>* {
+          inset: 0
+              }
+
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:w_100\\\\%>* {
           width: 100%
               }
 
-        .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:h_100\\\\%>img, .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:h_100\\\\%>video {
+        .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:h_100\\\\%>* {
           height: 100%
               }
 
