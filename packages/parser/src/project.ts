@@ -3,6 +3,7 @@ import { Project as TsProject, type ProjectOptions as TsProjectOptions, ScriptKi
 import { createParser, type ParserOptions } from './parser'
 import { ParserResult } from './parser-result'
 import type { PandaHookable } from '@pandacss/types'
+import { vueToTsx } from './vue-to-tsx'
 
 export type ProjectOptions = Partial<TsProjectOptions> & {
   readFile: (filePath: string) => string
@@ -63,6 +64,12 @@ export const createProject = ({ getFiles, readFile, parserOptions, hooks, ...pro
         if (!sourceFile) return
 
         const content = sourceFile.getText()
+        const transformed = transformFile(filePath, content)
+
+        // update SourceFile AST if content is different (.vue, .svelte)
+        if (content !== transformed) {
+          sourceFile.replaceWithText(transformed)
+        }
 
         hooks.callHook('parser:before', filePath, content)
         const result = parser(sourceFile)?.setFilePath(filePath)
@@ -94,3 +101,11 @@ export const createProject = ({ getFiles, readFile, parserOptions, hooks, ...pro
   )
 
 export type Project = ReturnType<typeof createProject>
+
+const transformFile = (filePath: string, content: string) => {
+  if (filePath.endsWith('.vue')) {
+    return vueToTsx(content)
+  }
+
+  return content
+}

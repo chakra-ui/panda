@@ -21,7 +21,9 @@
     "@pandacss/logger": "workspace:*",
     "@pandacss/shared": "workspace:*",
     "@pandacss/types": "workspace:*",
+    "@vue/compiler-sfc": "^3.3.4",
     "lil-fp": "1.4.5",
+    "magic-string": "^0.30.0",
     "ts-morph": "18.0.0",
     "ts-pattern": "4.3.0"
   },
