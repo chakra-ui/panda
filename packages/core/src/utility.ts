@@ -8,6 +8,7 @@ export type UtilityOptions = {
   tokens: TokenDictionary
   separator?: string
   prefix?: string
+  shorthands?: boolean
 }
 
 export class Utility {
@@ -66,14 +67,23 @@ export class Utility {
   prefix = ''
 
   constructor(options: UtilityOptions) {
-    const { tokens, config = {}, separator, prefix } = options
+    const { tokens, config = {}, separator, prefix, shorthands } = options
 
     this.tokens = tokens
     this.config = config
-    if (separator) this.separator = separator
-    if (prefix) this.prefix = prefix
 
-    this.assignShorthands()
+    if (separator) {
+      this.separator = separator
+    }
+
+    if (prefix) {
+      this.prefix = prefix
+    }
+
+    if (shorthands) {
+      this.assignShorthands()
+    }
+
     this.assignColorPaletteProperty()
 
     this.assignProperties()

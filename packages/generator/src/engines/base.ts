@@ -45,6 +45,7 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     tokens: tokens,
     config: config.utilities,
     separator: config.separator,
+    shorthands: config.shorthands,
   })
 
   const conditions = new Conditions({

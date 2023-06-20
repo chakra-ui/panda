@@ -189,6 +189,11 @@ type CodegenOptions = {
    * @default 'true'
    */
   gitignore?: boolean
+  /**
+   * Whether to generate disabled shorthand properties
+   * @default 'true'
+   */
+  shorthands?: boolean
 }
 
 type PresetOptions = {

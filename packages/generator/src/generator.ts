@@ -12,6 +12,7 @@ const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
     cssVarRoot: ':where(:root, :host)',
     jsxFactory: 'styled',
     outExtension: 'mjs',
+    shorthands: true,
     ...conf.config,
   },
 })
