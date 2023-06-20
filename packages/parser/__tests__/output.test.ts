@@ -2085,9 +2085,9 @@ describe('preset patterns', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .before\\\\:h_0::before {
-          height: 0
-              }
+        .pos_relative {
+          position: relative
+          }
 
         .before\\\\:content_\\\\\\"\\\\\\"::before {
           content: \\"\\"
@@ -2095,6 +2095,10 @@ describe('preset patterns', () => {
 
         .before\\\\:d_block::before {
           display: block
+              }
+
+        .before\\\\:h_0::before {
+          height: 0
               }
 
         .before\\\\:pb_75\\\\%::before {
@@ -2169,9 +2173,9 @@ describe('preset patterns', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .before\\\\:h_0::before {
-          height: 0
-              }
+        .pos_relative {
+          position: relative
+          }
 
         .before\\\\:content_\\\\\\"\\\\\\"::before {
           content: \\"\\"
@@ -2179,6 +2183,10 @@ describe('preset patterns', () => {
 
         .before\\\\:d_block::before {
           display: block
+              }
+
+        .before\\\\:h_0::before {
+          height: 0
               }
 
         .before\\\\:pb_75\\\\%::before {

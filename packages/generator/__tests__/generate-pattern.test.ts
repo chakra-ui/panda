@@ -443,12 +443,12 @@ test('should generate pattern', () => {
     transform(props, { map }) {
       const { ratio = 4 / 3, ...rest } = props;
       return {
+        position: \\"relative\\",
         _before: {
-          height: 0,
           content: \`\\"\\"\`,
           display: \\"block\\",
-          paddingBottom: map(ratio, (r) => \`\${1 / r * 100}%\`),
-          ...rest[\\"_before\\"]
+          height: \\"0\\",
+          paddingBottom: map(ratio, (r) => \`\${1 / r * 100}%\`)
         },
         \\"&>*\\": {
           display: \\"flex\\",
