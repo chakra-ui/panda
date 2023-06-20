@@ -25,6 +25,7 @@ export const createContext = ({ hash, prefix }: ContextOptions = {}): Stylesheet
     config: mocks.utilities,
     tokens,
     prefix,
+    shorthands: true,
   })
 
   return {

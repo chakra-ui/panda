@@ -282,7 +282,7 @@ const divider = definePattern({
       '--thickness': thickness,
       width: map(orientation, (v) => (v === 'vertical' ? undefined : '100%')),
       height: map(orientation, (v) => (v === 'horizontal' ? undefined : '100%')),
-      borderInlineStartWidth: map(orientation, (v) => (v === 'horizontal' ? 'var(--thickness)' : undefined)),
+      borderBlockEndWidth: map(orientation, (v) => (v === 'horizontal' ? 'var(--thickness)' : undefined)),
       borderInlineEndWidth: map(orientation, (v) => (v === 'vertical' ? 'var(--thickness)' : undefined)),
       borderColor: color,
       ...rest,
