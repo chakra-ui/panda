@@ -213,5 +213,11 @@ export const interactivity: UtilityConfig = {
   },
   userSelect: {
     className: 'select',
+    transform(value) {
+      return {
+        WebkitUserSelect: value,
+        userSelect: value,
+      }
+    },
   },
 }

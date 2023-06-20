@@ -14,6 +14,12 @@ export const layout: UtilityConfig = {
   },
   boxDecorationBreak: {
     className: 'decoration',
+    transform(value) {
+      return {
+        boxDecorationBreak: value,
+        WebkitBoxDecorationBreak: value,
+      }
+    },
   },
   zIndex: {
     className: 'z',

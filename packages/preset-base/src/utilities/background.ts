@@ -21,6 +21,12 @@ export const background: UtilityConfig = {
   backgroundClip: {
     shorthand: 'bgClip',
     className: 'bg-clip',
+    transform(value) {
+      return {
+        backgroundClip: value,
+        WebkitBackgroundClip: value,
+      }
+    },
   },
   background: {
     shorthand: 'bg',

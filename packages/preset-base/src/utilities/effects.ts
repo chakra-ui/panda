@@ -124,6 +124,12 @@ export const effects: UtilityConfig = {
         'var(--backdrop-sepia)',
       ].join(' '),
     },
+    transform(value) {
+      return {
+        backdropFilter: value,
+        WebkitBackdropFilter: value,
+      }
+    },
   },
   backdropBlur: {
     className: 'backdrop-blur',

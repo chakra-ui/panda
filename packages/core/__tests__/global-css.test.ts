@@ -109,6 +109,7 @@ describe('Global css', () => {
           }
 
         html.dragging-ew {
+          -webkit-user-select: none !important;
           user-select: none !important;
           }
 

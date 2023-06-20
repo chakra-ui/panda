@@ -17,6 +17,7 @@ import { tables } from './tables'
 import { transforms } from './transforms'
 import { transitions } from './transitions'
 import { typography } from './typography'
+import { polyfill } from './polyfill'
 
 export const utilities: UtilityConfig = Object.assign(
   {},
@@ -38,4 +39,5 @@ export const utilities: UtilityConfig = Object.assign(
   interactivity,
   svg,
   helpers,
+  polyfill,
 )
