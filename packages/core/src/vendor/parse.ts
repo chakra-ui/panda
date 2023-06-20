@@ -5,6 +5,7 @@ import postcss, { Container, type Parser } from 'postcss'
 const IMPORTANT = /\s*!important\s*$/i
 
 const UNITLESS = {
+  'aspect-ratio': true,
   'box-flex': true,
   'box-flex-group': true,
   'column-count': true,
