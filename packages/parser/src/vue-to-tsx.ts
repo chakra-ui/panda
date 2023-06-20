@@ -37,30 +37,35 @@ const NodeTypes = {
 } as const
 
 export const vueToTsx = (code: string) => {
-  const parsed = parse(code)
-  const fileStr = new MagicString(code)
+  try {
+    const parsed = parse(code)
+    console.log(parsed)
+    const fileStr = new MagicString(code)
 
-  parsed.descriptor.template!.ast.children.forEach((node) => {
-    if (node.type === NodeTypes.ELEMENT) {
-      node.props.forEach((prop) => {
-        if (
-          prop.type === NodeTypes.DIRECTIVE &&
-          prop.exp?.type === NodeTypes.SIMPLE_EXPRESSION &&
-          prop.arg?.type === NodeTypes.SIMPLE_EXPRESSION
-        ) {
-          fileStr.update(prop.loc.start.offset, prop.loc.end.offset, `${prop.arg.content}={${prop.exp.content}}`)
-        }
-      })
-    }
-  })
+    parsed.descriptor.template!.ast.children.forEach((node) => {
+      if (node.type === NodeTypes.ELEMENT) {
+        node.props.forEach((prop) => {
+          if (
+            prop.type === NodeTypes.DIRECTIVE &&
+            prop.exp?.type === NodeTypes.SIMPLE_EXPRESSION &&
+            prop.arg?.type === NodeTypes.SIMPLE_EXPRESSION
+          ) {
+            fileStr.update(prop.loc.start.offset, prop.loc.end.offset, `${prop.arg.content}={${prop.exp.content}}`)
+          }
+        })
+      }
+    })
 
-  const templateStart = code.indexOf('<template')
-  const templateEnd = code.indexOf('</template>') + '</template>'.length
-  const scriptContent = (parsed.descriptor.scriptSetup ?? parsed.descriptor.script)?.content + '\n'
+    const templateStart = code.indexOf('<template')
+    const templateEnd = code.indexOf('</template>') + '</template>'.length
+    const scriptContent = (parsed.descriptor.scriptSetup ?? parsed.descriptor.script)?.content + '\n'
 
-  const transformed = new MagicString(
-    `${scriptContent}\nconst render = ${fileStr.snip(templateStart, templateEnd).toString()}`,
-  )
+    const transformed = new MagicString(
+      `${scriptContent}\nconst render = ${fileStr.snip(templateStart, templateEnd).toString()}`,
+    )
 
-  return transformed.toString()
+    return transformed.toString()
+  } catch (err) {
+    return ''
+  }
 }
