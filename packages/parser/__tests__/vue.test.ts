@@ -55,7 +55,7 @@ describe('extract Vue templates', () => {
                       return { style, style2 };
                   },
               };
-
+            
 
       const render = <template>
                 <h1 class={style}>using class binding</h1>
@@ -143,7 +143,7 @@ describe('extract Vue templates', () => {
 
               let style = css({ color: 'green.400' })
               let style2 = css({ color: 'purple.400' })
-
+          
 
       const render = <template>
               <h1 class={style}>using class binding</h1>
@@ -241,7 +241,7 @@ describe('extract Vue templates', () => {
                     }
                 },
             }
-
+          
 
       const render = <template>
             <h1 class={style}>using class binding</h1>
