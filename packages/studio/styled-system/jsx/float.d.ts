@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { FunctionComponent } from 'react'
 import type { FloatProperties } from '../patterns/float'
 import type { HTMLPandaProps } from '../types/jsx'

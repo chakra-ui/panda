@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { CssProperty, SystemStyleObject } from './system-types'
 import type { TokenCategory } from '../tokens'
 

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { AnySelector, Selectors } from './selectors'
 
 export type Conditions = {

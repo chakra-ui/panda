@@ -1,4 +1,3 @@
-/* eslint-disable */
 export * from './factory'
 export * from './box'
 export * from './flex'

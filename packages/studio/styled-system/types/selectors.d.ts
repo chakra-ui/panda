@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { Pseudos } from './csstype'
 
 type AriaAttributes =

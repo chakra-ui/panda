@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { ConditionalValue, Conditions, Nested } from './conditions'
 import type { PropertiesFallback } from './csstype'
 import type { SystemProperties, CssVarProperties } from './style-props'
