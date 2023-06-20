@@ -4,6 +4,7 @@ import { createParser, type ParserOptions } from './parser'
 import { ParserResult } from './parser-result'
 import type { PandaHookable } from '@pandacss/types'
 import { vueToTsx } from './vue-to-tsx'
+import { svelteToTsx } from './svelte-to-tsx'
 
 export type ProjectOptions = Partial<TsProjectOptions> & {
   readFile: (filePath: string) => string
@@ -105,6 +106,10 @@ export type Project = ReturnType<typeof createProject>
 const transformFile = (filePath: string, content: string) => {
   if (filePath.endsWith('.vue')) {
     return vueToTsx(content)
+  }
+
+  if (filePath.endsWith('.svelte')) {
+    return svelteToTsx(content)
   }
 
   return content
