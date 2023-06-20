@@ -9,7 +9,7 @@ Design tokens are the platform-agnostic way to manage design decisions in your a
 
 > Design tokens in Panda are largely influenced by the [W3C Token Format](https://tr.designtokens.org/format/).
 
-A design token consist of the following properties:
+A design token consists of the following properties:
 
 - `value`: The value of the token. This can be any valid CSS value.
 - `description`: An optional description of what the token can be used for.
@@ -101,9 +101,9 @@ export default defineConfig({
 })
 ```
 
-Semantic tokens can also be changed based on the [conditions](/docs/concepts/conditional-styles) like light mode and dark mode.
+Semantic tokens can also be changed based on the [conditions](/docs/concepts/conditional-styles) like light and dark modes.
 
-For example, if you want to a color to change based on light or dark mode automatically.
+For example, if you want a color to change automatically based on light or dark mode.
 
 ```js
 export default defineConfig({
@@ -123,7 +123,7 @@ export default defineConfig({
 })
 ```
 
-> NOTE 🚨: The conditions used in semantic tokens most be a at-rule or parent selector [condition](/docs/concepts/conditional-styles#reference).
+> NOTE 🚨: The conditions used in semantic tokens must be an at-rule or parent selector [condition](/docs/concepts/conditional-styles#reference).
 
 ## Token Nesting
 
@@ -251,7 +251,7 @@ const theme = {
 }
 ```
 
-> Spacing tokens are typically used in `margin`, `padding`, `gap`, `{top|right|bottom|left}` properties.
+> Spacing tokens are typically used in `margin`, `padding`, `gap`, and `{top|right|bottom|left}` properties.
 
 ### Fonts
 
@@ -374,7 +374,7 @@ const theme = {
 
 ### Shadows
 
-Shadow tokens represent the shadow of an element. Its value is defined as a single or multiple values containing a
+Shadow tokens represent the shadow of an element. Its value is defined as single or multiple values containing a
 string or a composite value.
 
 ```ts
