@@ -1,4 +1,9 @@
-import type { UtilityConfig } from '@pandacss/types'
+import type { UtilityConfig, PropertyValues } from '@pandacss/types'
+
+const marginValues: PropertyValues = (theme) => ({
+  auto: 'auto',
+  ...theme('spacing'),
+})
 
 export const spacing: UtilityConfig = {
   padding: {
@@ -58,54 +63,54 @@ export const spacing: UtilityConfig = {
   marginLeft: {
     className: 'ml',
     shorthand: 'ml',
-    values: 'spacing',
+    values: marginValues,
   },
   marginRight: {
     className: 'mr',
     shorthand: 'mr',
-    values: 'spacing',
+    values: marginValues,
   },
   marginTop: {
     className: 'mt',
     shorthand: 'mt',
-    values: 'spacing',
+    values: marginValues,
   },
   marginBottom: {
     className: 'mb',
     shorthand: 'mb',
-    values: 'spacing',
+    values: marginValues,
   },
   margin: {
     className: 'm',
     shorthand: 'm',
-    values: 'spacing',
+    values: marginValues,
   },
   marginBlock: {
     className: 'my',
-    values: 'spacing',
+    values: marginValues,
     shorthand: ['my', 'marginY'],
   },
   marginBlockEnd: {
     className: 'mb',
-    values: 'spacing',
+    values: marginValues,
   },
   marginBlockStart: {
     className: 'mt',
-    values: 'spacing',
+    values: marginValues,
   },
   marginInline: {
     className: 'mx',
-    values: 'spacing',
+    values: marginValues,
     shorthand: ['mx', 'marginX'],
   },
   marginInlineEnd: {
     className: 'me',
     shorthand: ['me', 'marginEnd'],
-    values: 'spacing',
+    values: marginValues,
   },
   marginInlineStart: {
     className: 'ms',
     shorthand: ['ms', 'marginStart'],
-    values: 'spacing',
+    values: marginValues,
   },
 }

@@ -1,6 +1,7 @@
 import type { UtilityConfig, PropertyValues } from '@pandacss/types'
 
 const widthValues: PropertyValues = (theme) => ({
+  auto: 'auto',
   ...theme('sizes'),
   '1/2': '50%',
   '1/3': '33.333333%',
@@ -32,6 +33,7 @@ const widthValues: PropertyValues = (theme) => ({
 })
 
 const heightValues: PropertyValues = (theme) => ({
+  auto: 'auto',
   ...theme('sizes'),
   svh: '100svh',
   lvh: '100lvh',

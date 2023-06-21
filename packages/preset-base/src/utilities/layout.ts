@@ -4,6 +4,7 @@ export const layout: UtilityConfig = {
   aspectRatio: {
     className: 'aspect',
     values: {
+      auto: 'auto',
       square: '1 / 1',
       landscape: '4 / 3',
       portrait: '3 / 4',
@@ -67,7 +68,10 @@ export const layout: UtilityConfig = {
   },
   inset: {
     className: 'inset',
-    values: 'spacing',
+    values: (theme) => ({
+      auto: 'auto',
+      ...theme('spacing'),
+    }),
   },
   insetBlockEnd: {
     className: 'inset-b',
