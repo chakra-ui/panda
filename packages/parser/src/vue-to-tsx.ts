@@ -39,7 +39,6 @@ const NodeTypes = {
 export const vueToTsx = (code: string) => {
   try {
     const parsed = parse(code)
-    console.log(parsed)
     const fileStr = new MagicString(code)
 
     parsed.descriptor.template!.ast.children.forEach((node) => {
