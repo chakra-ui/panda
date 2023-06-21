@@ -14,6 +14,10 @@ export const addNegativeTokens: TokenMiddleware = {
       const originalPath = [...token.path]
       const originalVar = cssVar(originalPath.join('-'), { prefix, hash })
 
+      if (token.value === '0rem') {
+        return
+      }
+
       const node = token.clone()
       node.setExtensions({
         isNegative: true,

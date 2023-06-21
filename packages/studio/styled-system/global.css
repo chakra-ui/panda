@@ -55,7 +55,7 @@
   }
 
   body {
-    margin: 0;
+    margin: var(--spacing-0);
     min-height: 100vh;
   }
 }
