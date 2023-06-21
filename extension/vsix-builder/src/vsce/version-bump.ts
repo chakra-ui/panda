@@ -36,7 +36,7 @@ export async function versionBump(manifest: Manifest, options: IVersionBumpOptio
     throw new Error('Cannot get the current version number from package.json')
   }
 
-  const rcVersion = semver.inc(currentVersion, 'minor')?.replace(/\.\d+$/, `.${today}`)
+  const rcVersion = options.version ?? semver.inc(currentVersion, 'minor')?.replace(/\.\d+$/, `.${today}`)
   if (!rcVersion) {
     throw new Error("Could not populate the current version number for rc's build.")
   }

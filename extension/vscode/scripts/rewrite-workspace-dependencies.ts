@@ -29,6 +29,11 @@ const main = async () => {
   Object.entries(pkgJson.dependencies ?? {}).forEach(rewritePackageVersion(pkgJson.dependencies ?? {}))
   Object.entries(pkgJson.devDependencies ?? {}).forEach(rewritePackageVersion(pkgJson.devDependencies ?? {}))
 
+  // @ts-expect-error
+  pkgJson.overrides = {
+    esbuild: 'npm:esbuild-wasm@latest',
+  }
+
   fs.writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2))
 }
 main()
