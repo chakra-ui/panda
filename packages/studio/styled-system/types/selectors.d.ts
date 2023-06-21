@@ -53,5 +53,7 @@ type DataAttributes =
 type AttributeSelector = `&${Pseudos | DataAttributes | AriaAttributes}`
 type ParentSelector = `${DataAttributes | AriaAttributes} &`
 
-export type AnySelector = `${string}&` | `&${string}`
+type AtRuleType = 'media' | 'layer' | 'container' | 'supports' | 'page'
+
+export type AnySelector = `${string}&` | `&${string}` | `@${AtRuleType}${string}`
 export type Selectors = AttributeSelector | ParentSelector
