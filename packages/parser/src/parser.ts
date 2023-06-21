@@ -214,6 +214,9 @@ export function createParser(options: ParserOptions) {
           return true
         },
       },
+      taggedTemplates: {
+        matchTaggedTemplate: (tag) => matchFn(tag.fnName),
+      },
       getEvaluateOptions: (node) => ({ node: node as any, environment: defaultEnv }),
       flags: { skipTraverseFiles: true },
     })
@@ -228,41 +231,57 @@ export function createParser(options: ParserOptions) {
         match(name)
           .when(css.match, (name: 'css' | 'cva') => {
             result.queryList.forEach((query) => {
-              collector.set(name, {
-                name,
-                box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
-                data: combineResult(unbox(query.box.value[0])),
-              })
+              if (query.kind === 'call-expression') {
+                collector.set(name, {
+                  name,
+                  box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
+                  data: combineResult(unbox(query.box.value[0])),
+                })
+              } else if (query.kind === 'tagged-template') {
+                // TODO
+              }
             })
           })
           // stack({ ... })
           .when(isValidPattern, (name) => {
             result.queryList.forEach((query) => {
-              collector.setPattern(name, {
-                name,
-                box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
-                data: combineResult(unbox(query.box.value[0])),
-              })
+              if (query.kind === 'call-expression') {
+                collector.setPattern(name, {
+                  name,
+                  box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
+                  data: combineResult(unbox(query.box.value[0])),
+                })
+              } else if (query.kind === 'tagged-template') {
+                // TODO
+              }
             })
           })
           // button({ ... })
           .when(isValidRecipe, (name) => {
             result.queryList.forEach((query) => {
-              collector.setRecipe(name, {
-                name,
-                box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
-                data: combineResult(unbox(query.box.value[0])),
-              })
+              if (query.kind === 'call-expression') {
+                collector.setRecipe(name, {
+                  name,
+                  box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
+                  data: combineResult(unbox(query.box.value[0])),
+                })
+              } else if (query.kind === 'tagged-template') {
+                // TODO
+              }
             })
           })
           // panda("span", { ... }) or panda("div", badge)
           .when(isValidStyleFn, () => {
             result.queryList.forEach((query) => {
-              collector.setCva({
-                name,
-                box: (query.box.value[1] as BoxNodeMap) ?? fallback(query.box),
-                data: combineResult(unbox(query.box.value[1])),
-              })
+              if (query.kind === 'call-expression') {
+                collector.setCva({
+                  name,
+                  box: (query.box.value[1] as BoxNodeMap) ?? fallback(query.box),
+                  data: combineResult(unbox(query.box.value[1])),
+                })
+              } else if (query.kind === 'tagged-template') {
+                // TODO
+              }
             })
           })
           .when(
