@@ -14,10 +14,12 @@ import type {
   ExtractedComponentResult,
   ExtractedFunctionInstance,
   ExtractedFunctionResult,
+  ExtractedTaggedTemplateInstance,
   MatchFnPropArgs,
   MatchPropArgs,
 } from './types'
 import { getComponentName } from './utils'
+import { maybeBoxNode } from './maybe-box-node'
 
 type JsxElement = JsxOpeningElement | JsxSelfClosingElement
 type Component = { name: string; props: MapTypeValue; conditionals: BoxNodeConditional[] }
@@ -26,7 +28,7 @@ type ComponentMap = Map<JsxElement, Component>
 const isImportOrExport = Bool.or(Node.isImportDeclaration, Node.isExportDeclaration)
 
 export const extract = ({ ast, ...ctx }: ExtractOptions) => {
-  const { components, functions } = ctx
+  const { components, functions, taggedTemplates } = ctx
 
   /** contains all the extracted nodes from this ast parsing */
   const byName: ExtractResultByName = new Map()
@@ -196,7 +198,28 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
         ),
       )
 
-      const query = { name: fnName, box: box.array(nodeList, node, []) } as ExtractedFunctionInstance
+      const query = {
+        kind: 'call-expression',
+        name: fnName,
+        box: box.array(nodeList, node, []),
+      } as ExtractedFunctionInstance
+      fnResultMap.queryList.push(query)
+    }
+
+    if (taggedTemplates && Node.isTaggedTemplateExpression(node)) {
+      const fnName = node.getTag().getText()
+      if (!taggedTemplates.matchTaggedTemplate({ taggedTemplateNode: node, fnName })) return
+
+      if (!byName.has(fnName)) {
+        byName.set(fnName, { kind: 'function', nodesByProp: new Map(), queryList: [] })
+      }
+
+      const fnResultMap = byName.get(fnName)! as ExtractedFunctionResult
+      const query = {
+        kind: 'tagged-template',
+        name: fnName,
+        box: maybeBoxNode(node, [], ctx),
+      } as ExtractedTaggedTemplateInstance
       fnResultMap.queryList.push(query)
     }
   })
