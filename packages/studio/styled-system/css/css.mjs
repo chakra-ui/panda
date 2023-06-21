@@ -265,6 +265,14 @@ const classNameMap = {
   stroke: 'stroke',
   srOnly: 'sr',
   debug: 'debug',
+  appearance: 'appearance',
+  backfaceVisibility: 'backface',
+  clipPath: 'clip-path',
+  hyphens: 'hyphens',
+  mask: 'mask',
+  maskImage: 'mask-image',
+  maskSize: 'mask-size',
+  textSizeAdjust: 'text-size-adjust',
   textStyle: 'textStyle',
 }
 

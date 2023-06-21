@@ -1,5 +1,4 @@
 /* eslint-disable */
-
 import type { RecipeVariantRecord, RecipeConfig } from './recipe'
 import type { Parts } from './parts'
 import type { PatternConfig } from './pattern'
