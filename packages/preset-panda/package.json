@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/preset-panda",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "The preset for PandaCSS that contains the default theme",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

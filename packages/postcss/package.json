@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/postcss",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "PostCSS integration for Panda CSS",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

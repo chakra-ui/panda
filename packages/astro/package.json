@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/astro",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "type": "module",
   "description": "Astro integration for Panda CSS",
   "main": "dist/index.js",

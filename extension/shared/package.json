@@ -3,7 +3,7 @@
   "name": "@pandacss/extension-shared",
   "displayName": "🐼 Panda CSS",
   "description": "Shared utilities between extension client & server",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
