@@ -56,7 +56,7 @@ export type JsxStyleProps = SystemProperties &
     css?: SystemStyleObject
   }
 
-type Assign<T, U> = Omit<T, keyof U> & U
+export type Assign<T, U> = Omit<T, keyof U> & U
 
 export type PatchedHTMLProps = {
   htmlSize?: string | number

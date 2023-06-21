@@ -1,11 +1,11 @@
 ---
 title: CLI Reference
-description: You can use the Command-Line Interface (CLI) provided by Astro to develop, build, and preview your project from a terminal window.
+description: You can use the Command-Line Interface (CLI) provided by Panda to develop, build, and preview your project from a terminal window.
 ---
 
 # CLI Reference
 
-You can use the Command-Line Interface (CLI) provided by Astro to develop, build, and preview your project from a
+You can use the Command-Line Interface (CLI) provided by Panda to develop, build, and preview your project from a
 terminal window.
 
 ## `panda init`
@@ -41,61 +41,61 @@ Run the extract process to generate static css from your project.
 
 The output directory for the generated css utilities
 
-Related: [`config.outdir`](/docs/references/panda-config.mdx#outdir)
+Related: [`config.outdir`](/docs/references/config.mdx#outdir)
 
 #### `--minify`
 
 Whether to minify the generated css
 
-Related: [`config.minify`](/docs/references/panda-config.mdx#minify)
+Related: [`config.minify`](/docs/references/config.mdx#minify)
 
 #### `--cwd`
 
 The current working directory
 
-Related: [`config.cwd`](/docs/references/panda-config.mdx#cwd)
+Related: [`config.cwd`](/docs/references/config.mdx#cwd)
 
 #### `--watch, -w`
 
 Whether to watch for changes in the project
 
-Related: [`config.watch`](/docs/references/panda-config.mdx#watch)
+Related: [`config.watch`](/docs/references/config.mdx#watch)
 
 #### `--poll`
 
 Whether to poll for file changes.
 
-Related: [`config.poll`](/docs/references/panda-config.mdx#poll)
+Related: [`config.poll`](/docs/references/config.mdx#poll)
 
 #### `--config`
 
 The path to the config file
 
-Related: [`config`](/docs/references/panda-config.mdx)
+Related: [`config`](/docs/references/config.mdx)
 
 #### `--preflight`
 
 Whether to emit the preflight or reset css
 
-Related: [`config.preflight`](/docs/references/panda-config.mdx#preflight)
+Related: [`config.preflight`](/docs/references/config.mdx#preflight)
 
 #### `--emitTokensOnly`
 
 Whether to only emit the `tokens` directory
 
-Related: [`config.emitTokensOnly`](/docs/references/panda-config.mdx#emitTokensOnly)
+Related: [`config.emitTokensOnly`](/docs/references/config.mdx#emitTokensOnly)
 
 #### `--clean`
 
 Whether to clean the output directory before emitting
 
-Related: [`config.clean`](/docs/references/panda-config.mdx#clean)
+Related: [`config.clean`](/docs/references/config.mdx#clean)
 
 #### `--hash`
 
 Whether to hash the output classnames
 
-Related: [`config.hash`](/docs/references/panda-config.mdx#hash)
+Related: [`config.hash`](/docs/references/config.mdx#hash)
 
 ---
 
@@ -109,13 +109,13 @@ Generate a new css utilities for your project based on the configuraion file.
 
 Whether to clean the output directory before emitting
 
-Related: [`config.clean`](/docs/references/panda-config.mdx#clean)
+Related: [`config.clean`](/docs/references/config.mdx#clean)
 
 #### `--silent`
 
 Whether to suppress all output
 
-Related: [`config.logLevel`](/docs/references/panda-config.mdx#log-level)
+Related: [`config.logLevel`](/docs/references/config.mdx#log-level)
 
 ## `panda analyze`
 
@@ -133,7 +133,7 @@ Output analyze report in given JSON filepath.
 
 Whether to suppress all output
 
-Related: [`config.logLevel`](/docs/references/panda-config.mdx#log-level)
+Related: [`config.logLevel`](/docs/references/config.mdx#log-level)
 
 ## `panda debug`
 

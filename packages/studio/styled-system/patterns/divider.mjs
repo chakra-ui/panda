@@ -8,7 +8,7 @@ const dividerConfig = {
       '--thickness': thickness,
       width: map(orientation, (v) => (v === 'vertical' ? void 0 : '100%')),
       height: map(orientation, (v) => (v === 'horizontal' ? void 0 : '100%')),
-      borderInlineStartWidth: map(orientation, (v) => (v === 'horizontal' ? 'var(--thickness)' : void 0)),
+      borderBlockEndWidth: map(orientation, (v) => (v === 'horizontal' ? 'var(--thickness)' : void 0)),
       borderInlineEndWidth: map(orientation, (v) => (v === 'vertical' ? 'var(--thickness)' : void 0)),
       borderColor: color,
       ...rest,

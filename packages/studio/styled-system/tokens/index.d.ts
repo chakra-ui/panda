@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { Token } from './tokens'
 
 export declare const token: {

@@ -1,12 +1,10 @@
 import type { PatternConfig } from '@pandacss/types'
 
-// inlining this function to avoid having to depend on @pandacss/dev
 function definePattern<T extends PatternConfig>(config: T) {
   return config
 }
 
 const box = definePattern({
-  properties: {},
   transform(props) {
     return props
   },
@@ -220,7 +218,6 @@ const wrap = definePattern({
 })
 
 const container = definePattern({
-  properties: {},
   transform(props) {
     return {
       position: 'relative',
@@ -301,7 +298,6 @@ const divider = definePattern({
 })
 
 const linkBox = definePattern({
-  properties: {},
   transform(props) {
     return {
       position: 'relative',
@@ -316,7 +312,6 @@ const linkBox = definePattern({
 
 const linkOverlay = definePattern({
   jsxElement: 'a',
-  properties: {},
   transform(props) {
     return {
       position: 'static',

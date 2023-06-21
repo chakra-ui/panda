@@ -3,9 +3,9 @@ name: Publish
 on:
   push:
     paths:
-      - ".changeset/**"
-      - "packages/**"
-      - "extension/**"
+      - '.changeset/**'
+      - 'packages/**'
+      - 'extension/**'
     branches:
       - main
 
@@ -24,9 +24,6 @@ jobs:
 
       - name: Build packages
         run: pnpm build
-
-      # - name: Build extension
-      #   run: pnpm extension:build
 
       - name: Publish packages
         id: changesets

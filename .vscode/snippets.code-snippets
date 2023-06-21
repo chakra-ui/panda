@@ -1,0 +1,8 @@
+{
+  "Changelog": {
+    "scope": "markdown",
+    "prefix": "clog",
+    "body": ["## [$1]", "", "", "### Fixed", "", "", "### Added", "", "$2", "### Changed", "", "$3"],
+    "description": "Add a changelog entry"
+  }
+}

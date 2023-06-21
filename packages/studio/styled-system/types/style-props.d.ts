@@ -1,5 +1,4 @@
 /* eslint-disable */
-
 import type { ConditionalValue } from './conditions'
 import type { PropertyValue } from './prop-type'
 import type { Token } from '../tokens'
@@ -228,7 +227,6 @@ export type SystemProperties = {
 	clip?: PropertyValue<'clip'>
 	clipPath?: PropertyValue<'clipPath'>
 	color?: PropertyValue<'color'>
-	printColorAdjust?: PropertyValue<'printColorAdjust'>
 	colorScheme?: PropertyValue<'colorScheme'>
 	columnCount?: PropertyValue<'columnCount'>
 	columnFill?: PropertyValue<'columnFill'>
@@ -246,6 +244,9 @@ export type SystemProperties = {
 	containIntrinsicHeight?: PropertyValue<'containIntrinsicHeight'>
 	containIntrinsicInlineSize?: PropertyValue<'containIntrinsicInlineSize'>
 	containIntrinsicWidth?: PropertyValue<'containIntrinsicWidth'>
+	container?: PropertyValue<'container'>
+	containerName?: PropertyValue<'containerName'>
+	containerType?: PropertyValue<'containerType'>
 	content?: PropertyValue<'content'>
 	contentVisibility?: PropertyValue<'contentVisibility'>
 	counterIncrement?: PropertyValue<'counterIncrement'>
@@ -270,6 +271,7 @@ export type SystemProperties = {
 	fontKerning?: PropertyValue<'fontKerning'>
 	fontLanguageOverride?: PropertyValue<'fontLanguageOverride'>
 	fontOpticalSizing?: PropertyValue<'fontOpticalSizing'>
+	fontPalette?: PropertyValue<'fontPalette'>
 	fontVariationSettings?: PropertyValue<'fontVariationSettings'>
 	fontSize?: PropertyValue<'fontSize'>
 	fontSizeAdjust?: PropertyValue<'fontSizeAdjust'>
@@ -281,6 +283,7 @@ export type SystemProperties = {
 	fontVariantAlternates?: PropertyValue<'fontVariantAlternates'>
 	fontVariantCaps?: PropertyValue<'fontVariantCaps'>
 	fontVariantEastAsian?: PropertyValue<'fontVariantEastAsian'>
+	fontVariantEmoji?: PropertyValue<'fontVariantEmoji'>
 	fontVariantLigatures?: PropertyValue<'fontVariantLigatures'>
 	fontVariantNumeric?: PropertyValue<'fontVariantNumeric'>
 	fontVariantPosition?: PropertyValue<'fontVariantPosition'>
@@ -424,6 +427,7 @@ export type SystemProperties = {
 	paddingLeft?: PropertyValue<'paddingLeft'>
 	paddingRight?: PropertyValue<'paddingRight'>
 	paddingTop?: PropertyValue<'paddingTop'>
+	page?: PropertyValue<'page'>
 	pageBreakAfter?: PropertyValue<'pageBreakAfter'>
 	pageBreakBefore?: PropertyValue<'pageBreakBefore'>
 	pageBreakInside?: PropertyValue<'pageBreakInside'>
@@ -435,6 +439,7 @@ export type SystemProperties = {
 	placeSelf?: PropertyValue<'placeSelf'>
 	pointerEvents?: PropertyValue<'pointerEvents'>
 	position?: PropertyValue<'position'>
+	printColorAdjust?: PropertyValue<'printColorAdjust'>
 	quotes?: PropertyValue<'quotes'>
 	resize?: PropertyValue<'resize'>
 	right?: PropertyValue<'right'>
@@ -526,6 +531,7 @@ export type SystemProperties = {
 	unicodeBidi?: PropertyValue<'unicodeBidi'>
 	userSelect?: PropertyValue<'userSelect'>
 	verticalAlign?: PropertyValue<'verticalAlign'>
+	viewTransitionName?: PropertyValue<'viewTransitionName'>
 	visibility?: PropertyValue<'visibility'>
 	whiteSpace?: PropertyValue<'whiteSpace'>
 	widows?: PropertyValue<'widows'>

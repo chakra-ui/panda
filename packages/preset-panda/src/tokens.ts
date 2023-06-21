@@ -1,6 +1,7 @@
 import type { Tokens } from '@pandacss/types'
 import { colors } from './colors'
 import { animations } from './keyframes'
+import { borders } from './borders'
 import { shadows } from './shadows'
 import { sizes } from './sizes'
 import { spacing } from './spacing'
@@ -9,6 +10,7 @@ import { fonts, fontSizes, fontWeights, letterSpacings, lineHeights } from './ty
 const defineTokens = <T extends Tokens>(v: T) => v
 
 export const tokens = defineTokens({
+  borders,
   easings: {
     default: { value: 'cubic-bezier(0.4, 0, 0.2, 1)' },
     linear: { value: 'linear' },

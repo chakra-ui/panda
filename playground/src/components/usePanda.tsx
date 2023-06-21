@@ -37,7 +37,7 @@ export function usePanda(source: string, theme: string) {
       config: {
         cwd: '',
         include: [],
-        outdir: 'design-system',
+        outdir: 'styled-system',
         ...presetBase,
         preflight: true,
         theme,

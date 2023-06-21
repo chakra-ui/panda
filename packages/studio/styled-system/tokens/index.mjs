@@ -793,43 +793,43 @@ const tokens = {
     variable: 'var(--colors-fuchsia-900)',
   },
   'colors.purple.50': {
-    value: '#f5f3ff',
+    value: '#faf5ff',
     variable: 'var(--colors-purple-50)',
   },
   'colors.purple.100': {
-    value: '#ede9fe',
+    value: '#f3e8ff',
     variable: 'var(--colors-purple-100)',
   },
   'colors.purple.200': {
-    value: '#ddd6fe',
+    value: '#e9d5ff',
     variable: 'var(--colors-purple-200)',
   },
   'colors.purple.300': {
-    value: '#c4b5fd',
+    value: '#d8b4fe',
     variable: 'var(--colors-purple-300)',
   },
   'colors.purple.400': {
-    value: '#a78bfa',
+    value: '#c084fc',
     variable: 'var(--colors-purple-400)',
   },
   'colors.purple.500': {
-    value: '#8b5cf6',
+    value: '#a855f7',
     variable: 'var(--colors-purple-500)',
   },
   'colors.purple.600': {
-    value: '#7c3aed',
+    value: '#9333ea',
     variable: 'var(--colors-purple-600)',
   },
   'colors.purple.700': {
-    value: '#6d28d9',
+    value: '#7e22ce',
     variable: 'var(--colors-purple-700)',
   },
   'colors.purple.800': {
-    value: '#5b21b6',
+    value: '#6b21a8',
     variable: 'var(--colors-purple-800)',
   },
   'colors.purple.900': {
-    value: '#4c1d95',
+    value: '#581c87',
     variable: 'var(--colors-purple-900)',
   },
   'colors.indigo.50': {
@@ -1033,43 +1033,43 @@ const tokens = {
     variable: 'var(--colors-teal-900)',
   },
   'colors.green.50': {
-    value: '#ecfdf5',
+    value: '#f0fdf4',
     variable: 'var(--colors-green-50)',
   },
   'colors.green.100': {
-    value: '#d1fae5',
+    value: '#dcfce7',
     variable: 'var(--colors-green-100)',
   },
   'colors.green.200': {
-    value: '#a7f3d0',
+    value: '#bbf7d0',
     variable: 'var(--colors-green-200)',
   },
   'colors.green.300': {
-    value: '#6ee7b7',
+    value: '#86efac',
     variable: 'var(--colors-green-300)',
   },
   'colors.green.400': {
-    value: '#34d399',
+    value: '#4ade80',
     variable: 'var(--colors-green-400)',
   },
   'colors.green.500': {
-    value: '#10b981',
+    value: '#22c55e',
     variable: 'var(--colors-green-500)',
   },
   'colors.green.600': {
-    value: '#059669',
+    value: '#16a34a',
     variable: 'var(--colors-green-600)',
   },
   'colors.green.700': {
-    value: '#047857',
+    value: '#15803d',
     variable: 'var(--colors-green-700)',
   },
   'colors.green.800': {
-    value: '#065f46',
+    value: '#166534',
     variable: 'var(--colors-green-800)',
   },
   'colors.green.900': {
-    value: '#064e3b',
+    value: '#14532d',
     variable: 'var(--colors-green-900)',
   },
   'colors.lime.50': {
@@ -1113,43 +1113,43 @@ const tokens = {
     variable: 'var(--colors-lime-900)',
   },
   'colors.yellow.50': {
-    value: '#fffbeb',
+    value: '#fefce8',
     variable: 'var(--colors-yellow-50)',
   },
   'colors.yellow.100': {
-    value: '#fef3c7',
+    value: '#fef9c3',
     variable: 'var(--colors-yellow-100)',
   },
   'colors.yellow.200': {
-    value: '#fde68a',
+    value: '#fef08a',
     variable: 'var(--colors-yellow-200)',
   },
   'colors.yellow.300': {
-    value: '#fcd34d',
+    value: '#fde047',
     variable: 'var(--colors-yellow-300)',
   },
   'colors.yellow.400': {
-    value: '#fbbf24',
+    value: '#facc15',
     variable: 'var(--colors-yellow-400)',
   },
   'colors.yellow.500': {
-    value: '#f59e0b',
+    value: '#eab308',
     variable: 'var(--colors-yellow-500)',
   },
   'colors.yellow.600': {
-    value: '#d97706',
+    value: '#ca8a04',
     variable: 'var(--colors-yellow-600)',
   },
   'colors.yellow.700': {
-    value: '#b45309',
+    value: '#a16207',
     variable: 'var(--colors-yellow-700)',
   },
   'colors.yellow.800': {
-    value: '#92400e',
+    value: '#854d0e',
     variable: 'var(--colors-yellow-800)',
   },
   'colors.yellow.900': {
-    value: '#78350f',
+    value: '#713f12',
     variable: 'var(--colors-yellow-900)',
   },
   'colors.orange.50': {
@@ -1273,27 +1273,27 @@ const tokens = {
     variable: 'var(--colors-gray-900)',
   },
   'colors.slate.50': {
-    value: '#F8FAFC',
+    value: '#f8fafc',
     variable: 'var(--colors-slate-50)',
   },
   'colors.slate.100': {
-    value: '#F1F5F9',
+    value: '#f1f5f9',
     variable: 'var(--colors-slate-100)',
   },
   'colors.slate.200': {
-    value: '#E2E8F0',
+    value: '#e2e8f0',
     variable: 'var(--colors-slate-200)',
   },
   'colors.slate.300': {
-    value: '#CBD5E1',
+    value: '#cbd5e1',
     variable: 'var(--colors-slate-300)',
   },
   'colors.slate.400': {
-    value: '#94A3B8',
+    value: '#94a3b8',
     variable: 'var(--colors-slate-400)',
   },
   'colors.slate.500': {
-    value: '#64748B',
+    value: '#64748b',
     variable: 'var(--colors-slate-500)',
   },
   'colors.slate.600': {
@@ -1305,11 +1305,11 @@ const tokens = {
     variable: 'var(--colors-slate-700)',
   },
   'colors.slate.800': {
-    value: '#1E293B',
+    value: '#1e293b',
     variable: 'var(--colors-slate-800)',
   },
   'colors.slate.900': {
-    value: '#0F172A',
+    value: '#0f172a',
     variable: 'var(--colors-slate-900)',
   },
   'colors.neutral.50': {

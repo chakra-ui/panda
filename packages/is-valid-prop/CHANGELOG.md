@@ -1,5 +1,11 @@
 # @pandacss/is-valid-prop
 
+## 0.4.0
+
+### Patch Changes
+
+- 54a8913c: Fix issue where patterns that include css selectors doesn't work in JSX
+
 ## 0.3.2
 
 ## 0.3.1

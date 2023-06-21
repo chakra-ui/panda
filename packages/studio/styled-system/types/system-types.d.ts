@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { ConditionalValue, Conditions, Nested } from './conditions'
 import type { PropertiesFallback } from './csstype'
 import type { SystemProperties, CssVarProperties } from './style-props'
@@ -56,7 +57,7 @@ export type JsxStyleProps = SystemProperties &
     css?: SystemStyleObject
   }
 
-type Assign<T, U> = Omit<T, keyof U> & U
+export type Assign<T, U> = Omit<T, keyof U> & U
 
 export type PatchedHTMLProps = {
   htmlSize?: string | number

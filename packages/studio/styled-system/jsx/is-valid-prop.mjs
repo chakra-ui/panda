@@ -348,6 +348,14 @@ var userGenerated = [
   'stroke',
   'srOnly',
   'debug',
+  'appearance',
+  'backfaceVisibility',
+  'clipPath',
+  'hyphens',
+  'mask',
+  'maskImage',
+  'maskSize',
+  'textSizeAdjust',
   'colorPalette',
   'textStyle',
   '_hover',
@@ -682,7 +690,6 @@ var allCssProperties = [
   'clip',
   'clipPath',
   'color',
-  'printColorAdjust',
   'colorScheme',
   'columnCount',
   'columnFill',
@@ -700,6 +707,9 @@ var allCssProperties = [
   'containIntrinsicHeight',
   'containIntrinsicInlineSize',
   'containIntrinsicWidth',
+  'container',
+  'containerName',
+  'containerType',
   'content',
   'contentVisibility',
   'counterIncrement',
@@ -724,6 +734,7 @@ var allCssProperties = [
   'fontKerning',
   'fontLanguageOverride',
   'fontOpticalSizing',
+  'fontPalette',
   'fontVariationSettings',
   'fontSize',
   'fontSizeAdjust',
@@ -735,6 +746,7 @@ var allCssProperties = [
   'fontVariantAlternates',
   'fontVariantCaps',
   'fontVariantEastAsian',
+  'fontVariantEmoji',
   'fontVariantLigatures',
   'fontVariantNumeric',
   'fontVariantPosition',
@@ -878,6 +890,7 @@ var allCssProperties = [
   'paddingLeft',
   'paddingRight',
   'paddingTop',
+  'page',
   'pageBreakAfter',
   'pageBreakBefore',
   'pageBreakInside',
@@ -889,6 +902,7 @@ var allCssProperties = [
   'placeSelf',
   'pointerEvents',
   'position',
+  'printColorAdjust',
   'quotes',
   'resize',
   'right',
@@ -980,6 +994,7 @@ var allCssProperties = [
   'unicodeBidi',
   'userSelect',
   'verticalAlign',
+  'viewTransitionName',
   'visibility',
   'whiteSpace',
   'widows',
@@ -1001,7 +1016,8 @@ function memo(fn) {
     return cache[arg]
   }
 }
+var selectorRegex = /&|@/
 var isCssProperty = memo((prop) => {
-  return properties.has(prop) || prop.startsWith('--')
+  return properties.has(prop) || prop.startsWith('--') || selectorRegex.test(prop)
 })
 export { allCssProperties, isCssProperty }

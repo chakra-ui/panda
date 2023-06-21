@@ -17,6 +17,25 @@ test('should work with default fixture', () => {
         "extensions": {
           "category": "spacing",
           "condition": "base",
+          "pixelValue": "0px",
+          "prop": "0",
+          "var": "--spacing-0",
+          "varRef": "var(--spacing-0)",
+        },
+        "name": "spacing.0",
+        "originalValue": "0rem",
+        "path": [
+          "spacing",
+          "0",
+        ],
+        "type": "dimension",
+        "value": "0rem",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "spacing",
+          "condition": "base",
           "pixelValue": "4px",
           "prop": "1",
           "var": "--spacing-1",
@@ -1503,6 +1522,9 @@ test('should work with default fixture', () => {
 
   expect(formats.getFlattenedValues(dictionary)).toMatchInlineSnapshot(`
     Map {
+      "borders" => Map {
+        "none" => "var(--borders-none)",
+      },
       "easings" => Map {
         "default" => "var(--easings-default)",
         "linear" => "var(--easings-linear)",
@@ -1788,6 +1810,7 @@ test('should work with default fixture', () => {
         "3xl" => "var(--blurs-3xl)",
       },
       "spacing" => Map {
+        "0" => "var(--spacing-0)",
         "1" => "var(--spacing-1)",
         "2" => "var(--spacing-2)",
         "3" => "var(--spacing-3)",
@@ -1858,6 +1881,7 @@ test('should work with default fixture', () => {
         "-gutter" => "calc(var(--spacing-gutter) * -1)",
       },
       "sizes" => Map {
+        "0" => "var(--sizes-0)",
         "1" => "var(--sizes-1)",
         "2" => "var(--sizes-2)",
         "3" => "var(--sizes-3)",

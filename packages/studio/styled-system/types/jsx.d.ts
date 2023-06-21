@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { ComponentProps, ElementType } from 'react'
 import type { Assign, JsxStyleProps, JsxHTMLProps } from './system-types'
 import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
