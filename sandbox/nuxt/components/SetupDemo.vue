@@ -2,7 +2,6 @@
 import { css } from '../styled-system/css'
 
 let style = css({ color: 'green.400' })
-let style2 = css({ color: 'purple.400' })
 </script>
 
 <template>
@@ -12,7 +11,7 @@ let style2 = css({ color: 'purple.400' })
 </template>
 
 <style scoped>
-button {
+.style3 {
   font-weight: bold;
 }
 </style>
