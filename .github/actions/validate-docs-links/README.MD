@@ -1,6 +1,10 @@
+Adapted from:
+https://github.com/vercel/next.js/tree/f6998e30a815e976173501a62e6e481f92699d81/.github/actions/validate-docs-links
+
 # GitHub Action for Validating Documentation Links
 
-This action ensures that internal links in `.mdx` files in the `/docs/` directory are valid. It runs on every pull request that includes changes to these files.
+This action ensures that internal links in `.mdx` files in the `/website/page/docs/` directory are valid. It runs on
+every pull request that includes changes to these files.
 
 The action is triggered by the workflow defined in `.github/workflows/validate-docs-links.yml`.
 

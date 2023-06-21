@@ -9,6 +9,7 @@ import GithubSlugger from 'github-slugger'
 import matter from 'gray-matter'
 import * as github from '@actions/github'
 import type { Node, Data } from 'unist'
+import { findWorkspaceDir } from '@pnpm/find-workspace-dir'
 
 /**
  * This script validates internal links in /docs including internal, hash,
@@ -49,24 +50,25 @@ interface Comment {
   id: number
 }
 
-const DOCS_PATH = '/docs/'
-const EXCLUDED_PATHS = ['/docs/messages/']
+const DOCS_PATH = '/website/pages/docs/getting-started'
+const EXCLUDED_PATHS = [] as string[]
 const EXCLUDED_HASHES = ['top']
 const COMMENT_TAG = '<!-- LINK_CHECKER_COMMENT -->'
 
+const withComment = Boolean(process.env.VALIDATE_LINKS_ADD_COMMENT)
+
 const { context, getOctokit } = github
-const octokit = getOctokit(process.env.GITHUB_TOKEN!)
+const octokit = withComment ? getOctokit(process.env.GITHUB_TOKEN!) : undefined
 const { owner, repo } = context.repo
-const pullRequest = context.payload.pull_request!
-const sha = pullRequest.head.sha
+const sha = context.payload.pull_request?.head.sha
+
+const githubUrl = 'https://github.com/chakra-ui/panda/'
+const docUrl = sha ? `${githubUrl}/blob/${sha}` : `${githubUrl}/tree/main`
 
 const slugger = new GithubSlugger()
 
 // Recursively traverses DOCS_PATH and collects all .mdx files
-async function getMdxFiles(
-  dir: string,
-  fileList: string[] = []
-): Promise<string[]> {
+async function getMdxFiles(dir: string, fileList: string[] = []): Promise<string[]> {
   const files = await fs.readdir(dir)
 
   for (const file of files) {
@@ -122,9 +124,7 @@ let documentMap: Map<string, Document>
 
 // Create a map of documents with their relative paths as keys and
 // document content and metadata as values
-async function prepareDocumentMapEntry(
-  filePath: string
-): Promise<[string, Document]> {
+async function prepareDocumentMapEntry(filePath: string): Promise<[string, Document]> {
   const relativePath = path.relative('.' + DOCS_PATH, filePath)
 
   // Remove prefixed numbers used for ordering from the path
@@ -151,9 +151,7 @@ function validateInternalLink(errors: Errors, href: string): void {
     errors.brokenLinks.push(`${DOCS_PATH}${link}${hash ? '#' + hash : ''}`)
   } else if (hash && !EXCLUDED_HASHES.includes(hash)) {
     // Account for documents that pull their content from another document
-    const sourceDoc = docExists.source
-      ? documentMap.get(docExists.source)
-      : undefined
+    const sourceDoc = docExists.source ? documentMap.get(docExists.source) : undefined
 
     // Check if the hash link points to an existing section within the document
     const hashExists = (sourceDoc || docExists).headings.includes(hash)
@@ -207,10 +205,7 @@ function traverseTreeAndValidateLinks(tree: any, doc: Document): Errors {
 
       if (!href) return
 
-      if (
-        href.startsWith(DOCS_PATH) &&
-        !EXCLUDED_PATHS.some((excludedPath) => href.startsWith(excludedPath))
-      ) {
+      if (href.startsWith(DOCS_PATH) && !EXCLUDED_PATHS.some((excludedPath) => href.startsWith(excludedPath))) {
         validateInternalLink(errors, href)
       } else if (href.startsWith('#')) {
         validateHashLink(errors, href, doc)
@@ -225,7 +220,7 @@ function traverseTreeAndValidateLinks(tree: any, doc: Document): Errors {
 }
 
 async function findBotComment(): Promise<Comment | undefined> {
-  const { data: comments } = await octokit.rest.issues.listComments({
+  const { data: comments } = await octokit!.rest.issues.listComments({
     owner,
     repo,
     issue_number: context.payload.pull_request?.number!,
@@ -234,11 +229,8 @@ async function findBotComment(): Promise<Comment | undefined> {
   return comments.find((c) => c.body?.includes(COMMENT_TAG))
 }
 
-async function updateComment(
-  comment: string,
-  botComment: Comment
-): Promise<string> {
-  const { data } = await octokit.rest.issues.updateComment({
+async function updateComment(comment: string, botComment: Comment): Promise<string> {
+  const { data } = await octokit!.rest.issues.updateComment({
     owner,
     repo,
     comment_id: botComment.id,
@@ -249,7 +241,7 @@ async function updateComment(
 }
 
 async function createComment(comment: string): Promise<string> {
-  const { data } = await octokit.rest.issues.createComment({
+  const { data } = await octokit!.rest.issues.createComment({
     owner,
     repo,
     issue_number: context.payload.pull_request?.number!,
@@ -260,19 +252,16 @@ async function createComment(comment: string): Promise<string> {
 }
 
 const formatTableRow = (link: string, docPath: string) => {
-  return `| ${link} | [/${docPath}](https://github.com/vercel/next.js/blob/${sha}/${docPath}) | \n`
+  return `| ${link} | [/${docPath}](${docUrl}/${docPath}) | \n`
 }
 
-async function createCommitStatus(
-  errorsExist: boolean,
-  commentUrl?: string
-): Promise<void> {
+async function createCommitStatus(errorsExist: boolean, commentUrl?: string): Promise<void> {
   const state = errorsExist ? 'failure' : 'success'
   const description = errorsExist
     ? 'This PR introduces broken links to the docs. Click details for a list.'
     : 'All broken links are now fixed, thank you!'
 
-  await octokit.rest.repos.createCommitStatus({
+  await octokit!.rest.repos.createCommitStatus({
     owner,
     repo,
     sha,
@@ -285,18 +274,15 @@ async function createCommitStatus(
 
 // Main function that triggers link validation across all .mdx files
 async function validateAllInternalLinks(): Promise<void> {
-  const mdxFilePaths = await getMdxFiles('.' + DOCS_PATH)
+  const cwd = sha ? '.' : await findWorkspaceDir(process.cwd())
+  const mdxFilePaths = await getMdxFiles(cwd + DOCS_PATH)
 
-  documentMap = new Map(
-    await Promise.all(mdxFilePaths.map(prepareDocumentMapEntry))
-  )
+  documentMap = new Map(await Promise.all(mdxFilePaths.map(prepareDocumentMapEntry)))
 
-  const docProcessingPromises = Array.from(documentMap.values()).map(
-    async (doc) => {
-      const tree = (await markdownProcessor.process(doc.body)).contents
-      return traverseTreeAndValidateLinks(tree, doc)
-    }
-  )
+  const docProcessingPromises = Array.from(documentMap.values()).map(async (doc) => {
+    const tree = (await markdownProcessor.process(doc.body)).contents
+    return traverseTreeAndValidateLinks(tree, doc)
+  })
 
   const allErrors = await Promise.all(docProcessingPromises)
 
@@ -344,8 +330,16 @@ async function validateAllInternalLinks(): Promise<void> {
       errors.brokenLinks.length > 0 ||
       errors.brokenHashes.length > 0 ||
       errors.brokenSourceLinks.length > 0 ||
-      errors.brokenRelatedLinks.length > 0
+      errors.brokenRelatedLinks.length > 0,
   )
+
+  if (!withComment) {
+    if (!errorsExist) {
+      console.log('✅ All links are valid')
+    }
+
+    throw new Error(errorComment)
+  }
 
   const botComment = await findBotComment()
 
