@@ -42,7 +42,7 @@ export const getPatternEngine = (config: UserConfig) => {
       return Object.entries(patterns).map(([name, pattern]) => ({
         type: 'pattern' as const,
         name: pattern.jsx ?? capitalize(name),
-        props: Object.keys(pattern.properties),
+        props: Object.keys(pattern?.properties ?? {}),
         baseName: name,
       }))
     }),
