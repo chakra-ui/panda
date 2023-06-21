@@ -19,7 +19,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     intialState
       ? intialState
       : {
-          code: `import { css } from 'design-system/css'
+          code: `import { css } from 'styled-system/css'
 
 export const App = () => {
   return (
