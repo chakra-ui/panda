@@ -489,7 +489,10 @@ describe('extract to css output pipeline', () => {
 
       function App () {
         return (
-          <Button>Click me</Button>
+          <>
+            <Button>Click me</Button>
+            <Input />
+          </>
         )
       }
      `
@@ -530,13 +533,20 @@ describe('extract to css output pipeline', () => {
             },
           ],
           "name": "panda.input",
-          "type": "recipe",
+          "type": "cva",
         },
         {
           "data": [
             {},
           ],
           "name": "Button",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Input",
           "type": "jsx",
         },
       ]
@@ -558,6 +568,14 @@ describe('extract to css output pipeline', () => {
 
         .bg_green\\\\.900 {
           background: var(--colors-green-900)
+          }
+
+        .text_blue\\\\.100 {
+          color: var(--colors-blue-100)
+          }
+
+        .bg_blue\\\\.900 {
+          background: var(--colors-blue-900)
           }
       }"
     `)

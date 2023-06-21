@@ -269,7 +269,7 @@ export function createParser(options: ParserOptions) {
             (name) => jsx && name.startsWith(jsxFactoryAlias),
             (name) => {
               result.queryList.forEach((query) => {
-                collector.setRecipe(name, {
+                collector.setCva({
                   name,
                   box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                   data: combineResult(unbox(query.box.value[0])),
