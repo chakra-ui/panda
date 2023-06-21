@@ -70,6 +70,7 @@
   }
 
   .select_none {
+    -webkit-user-select: none;
     user-select: none;
   }
 
