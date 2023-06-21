@@ -3,9 +3,9 @@ name: Publish
 on:
   push:
     paths:
-      - '.changeset/**'
-      - 'packages/**'
-      - 'extension/**'
+      - ".changeset/**"
+      - "packages/**"
+      - "extension/**"
     branches:
       - main
 
@@ -37,18 +37,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
-      # - name: Publish extension
-      #   if: steps.changesets.outputs.published == 'true'
-      #   working-directory: ./extension/vscode
-      #   run: |
-      #     pnpm rewrite-deps
-      #     rm -rf node_modules
-      #     npm i
-      #     pnpm release
-      #   env:
-      #     VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
-      #     VSCE_RELEASE_TYPE: stable
-
       - name: Release to dev tag
         if: steps.changesets.outputs.published != 'true'
         run: |
@@ -58,3 +46,94 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+  create_timestamp:
+    runs-on: ubuntu-latest
+
+    outputs:
+      timestamp: ${{ steps.set_timestamp.outputs.timestamp }}
+
+    steps:
+      - name: Set Timestamp
+        id: set_timestamp
+        run: |
+          echo "::set-output name=timestamp::$(date +'%s' | cut -c1-8)"
+
+  release-extension:
+    name: VSCode Marketplace
+    needs: create_timestamp
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: win32-x64
+            npm_config_arch: x64
+          - os: windows-latest
+            target: win32-ia32
+            npm_config_arch: ia32
+          - os: windows-latest
+            target: win32-arm64
+            npm_config_arch: arm
+          - os: ubuntu-latest
+            target: linux-x64
+            npm_config_arch: x64
+          - os: ubuntu-latest
+            target: linux-arm64
+            npm_config_arch: arm64
+          - os: ubuntu-latest
+            target: linux-armhf
+            npm_config_arch: arm
+          - os: ubuntu-latest
+            target: alpine-x64
+            npm_config_arch: x64
+          - os: macos-latest
+            target: darwin-x64
+            npm_config_arch: x64
+          - os: macos-latest
+            target: darwin-arm64
+            npm_config_arch: arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install
+        uses: ./.github/composite-actions/install
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Set Environment Variable
+        run: echo "VSCE_RELEASE_VERSION=$(date +'%s' | cut -c1-8)" >> $GITHUB_ENV
+
+      - name: Prepare npm install
+        working-directory: ./extension/vscode
+        run: pnpm rewrite-deps && pnpm clean
+
+      - name: Overrides esbuild
+        working-directory: ./extension/vscode
+        if: contains(matrix.target, 'darwin-arm64')
+        run: pnpm override-esbuild
+
+      - name: Install with npm
+        working-directory: ./extension/vscode
+        run: |
+          npm i --ignore-scripts
+        env:
+          npm_config_arch: ${{ matrix.npm_config_arch }}
+
+      - name: Publish extension
+        if: steps.changesets.outputs.published == 'true'
+        working-directory: ./extension/vscode
+        run: |
+          pnpm rewrite-deps
+          pnpm clean
+          npm i
+          pnpm release
+        env:
+          VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
+          VSCE_RELEASE_VERSION: ${{ needs.create_timestamp.outputs.timestamp }}
+          VSCE_RELEASE_TYPE: stable

@@ -71,7 +71,7 @@ export function getFixtureProject(code: string, options?: <Conf extends UserConf
     hooks,
   })
 
-  return { parse: () => project.parseSourceFile(staticFilePath), generator }
+  return { parse: (filePath = staticFilePath) => project.parseSourceFile(filePath), generator, project }
 }
 
 export function importParser(code: string, option: { name: string; module: string }) {
