@@ -152,3 +152,35 @@ Output directory for debug files, default to '../styled-system/debug'
 #### `--silent`
 
 Whether to suppress all output
+
+## `panda ship`
+
+Ship extract result from files in glob
+
+Related: [`Design system: Shipping components`](/docs/guides/design-system#shipping-components)
+
+#### `--outfile`
+
+Filepath for the JSON extract result, defaults to './{config.outdir}/panda.json'
+
+> `panda ship --outfile dist/panda.json`
+
+#### `--minify`
+
+Whether to minify generated JSON file
+
+#### `--config`
+
+Path to panda config file
+
+Related: [`config`](/docs/references/config.md)
+
+#### `--cwd`
+
+Current working directory
+
+Related: [`config.cwd`](/docs/references/config.md#cwd)
+
+#### `--silent`
+
+Whether to suppress all output

@@ -5,7 +5,7 @@ description: How to set up Panda in a design system project
 
 # Using Panda in a Design System
 
-Panda is a great fit for design systems. Using the presets, you to build a library of reusable layout patterns, tokens, and recipes that can be used across multiple projects.
+Panda is a great fit for design systems. Using the presets, you can build a library of reusable layout patterns, tokens, and recipes that can be used across multiple projects.
 
 Let's say you have a monorepo with `app` and `design-system` that matches the following structure:
 
@@ -160,10 +160,88 @@ pnpm panda codegen
 
 You can now import the generated artifacts in your project:
 
-```tsx filename="app/src/app.tsx"
+```tsx filename="app/src/main.tsx"
 import { css } from 'style-engine/css'
 
 export default function App() {
   return <div className={css({ fontSize: 'lg' })}>Hello World</div>
 }
 ```
+
+## Shipping components
+
+Until now, we've learnt to easily share theme tokens across projects using presets. But what about components?
+For example, let's say you have a `Button` component in the design system:
+
+```tsx filename="design-system/src/Button.tsx"
+import { css } from 'style-engine/css'
+
+export function Button({ children }) {
+  return <button className={css({ color: "blue.300", fontSize: "xl", fontWeight: "bold" })}>{children}</button>
+}
+```
+
+If you try to import this component in the app, you will notice that even though the utilities classes are correclty attached to the button in the DOM, there is no corresponding CSS generated.
+This is because when you run the `panda` process in your app, it is not aware that the `Button` component is using any tokens.
+
+```tsx filename="app/src/main.tsx"
+import { Button } from '@acme-org/design-system'
+
+export default function App() {
+  return <Button>Click me !</Button>
+}
+```
+
+To fix this, you could include the design system source files within the `panda.config.ts` of your app:
+
+```ts filename="app/panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  include: [
+    './src/**/*.{ts,tsx,jsx}',
+    './node_modules/@acme-org/design-system/src/**/*.{ts,tsx,jsx}'
+  ],
+})
+```
+
+But this is not ideal performance-wise, as it will search for all tokens usage in those static files on each build.
+You might not even have access to the source files if you are using someone else's library published on npm.
+
+Instead, as a design system author, you should run the following command:
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm panda ship --outfile dist/panda.json
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm panda ship --outfile dist/panda.json
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn panda ship --outfile dist/panda.json
+    ```
+  </Tab>
+</Tabs>
+
+This will generate a file containing all of the tokens usage extracted from your design system components.
+This file should be published alongside the rest of your design system files so that consumers can then include this file in their `panda.config.ts`:
+
+```ts filename="app/panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+ // ...
+  include: [
+    './src/**/*.{ts,tsx,jsx}',
+    './node_modules/@acme-org/design-system/dist/panda.json'
+  ],
+})
+```
+
+You should now see the correct styles applied to the button in your app ! 🎉

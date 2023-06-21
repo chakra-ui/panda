@@ -268,8 +268,8 @@ export async function main() {
   cli
     .command('ship [glob]', 'Ship extract result from files in glob')
     .option('--silent', "Don't print any logs")
-    .option('--outfile [file]', "Output directory for shipped files, default to './styled-system/panda.json'")
-    .option('-m, --minify', 'Minify generated JSON file')
+    .option('--outfile [file]', "Filepath for the JSON extract result, defaults to './{config.outdir}/panda.json'")
+    .option('-m, --minify', 'Whether to minify generated JSON file')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(
