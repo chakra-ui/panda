@@ -1,5 +1,40 @@
 # @pandacss/generator
 
+## 0.4.0
+
+### Minor Changes
+
+- 5b344b9c: Add support for disabling shorthand props
+
+  ```ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    // ...
+    shorthands: false,
+  })
+  ```
+
+### Patch Changes
+
+- 54a8913c: Fix issue where patterns that include css selectors doesn't work in JSX
+- a48e5b00: Add support for watch mode in codegen command via the `--watch` or `-w` flag.
+
+  ```bash
+  panda codegen --watch
+  ```
+
+- Updated dependencies [2a1e9386]
+- Updated dependencies [54a8913c]
+- Updated dependencies [c7b42325]
+- Updated dependencies [5b344b9c]
+  - @pandacss/core@0.4.0
+  - @pandacss/is-valid-prop@0.4.0
+  - @pandacss/types@0.4.0
+  - @pandacss/token-dictionary@0.4.0
+  - @pandacss/logger@0.4.0
+  - @pandacss/shared@0.4.0
+
 ## 0.3.2
 
 ### Patch Changes

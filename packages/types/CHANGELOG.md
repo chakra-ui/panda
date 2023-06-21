@@ -1,5 +1,24 @@
 # @pandacss/types
 
+## 0.4.0
+
+### Minor Changes
+
+- 5b344b9c: Add support for disabling shorthand props
+
+  ```ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    // ...
+    shorthands: false,
+  })
+  ```
+
+### Patch Changes
+
+- c7b42325: Add types for supported at-rules (`@media`, `@layer`, `@container`, `@supports`, and `@page`)
+
 ## 0.3.2
 
 ## 0.3.1

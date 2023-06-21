@@ -1,5 +1,32 @@
 # @pandacss/dev
 
+## 0.4.0
+
+### Patch Changes
+
+- 8991b1e4: - Experimental support for `.vue` files and better `.svelte` support
+  - Fix issue where the `panda ship` command does not write to the correct path
+- a48e5b00: Add support for watch mode in codegen command via the `--watch` or `-w` flag.
+
+  ```bash
+  panda codegen --watch
+  ```
+
+- Updated dependencies [d00eb17c]
+- Updated dependencies [c7b42325]
+- Updated dependencies [5b344b9c]
+  - @pandacss/studio@0.4.0
+  - @pandacss/types@0.4.0
+  - @pandacss/config@0.4.0
+  - @pandacss/node@0.4.0
+  - @pandacss/preset-panda@0.4.0
+  - @pandacss/token-dictionary@0.4.0
+  - @pandacss/postcss@0.4.0
+  - @pandacss/astro@0.4.0
+  - @pandacss/error@0.4.0
+  - @pandacss/logger@0.4.0
+  - @pandacss/shared@0.4.0
+
 ## 0.3.2
 
 ### Patch Changes

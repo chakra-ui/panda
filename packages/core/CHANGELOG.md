@@ -1,5 +1,31 @@
 # @pandacss/core
 
+## 0.4.0
+
+### Minor Changes
+
+- 5b344b9c: Add support for disabling shorthand props
+
+  ```ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    // ...
+    shorthands: false,
+  })
+  ```
+
+### Patch Changes
+
+- 2a1e9386: Fix issue where aspect ratio css property adds `px`
+- Updated dependencies [c7b42325]
+- Updated dependencies [5b344b9c]
+  - @pandacss/types@0.4.0
+  - @pandacss/token-dictionary@0.4.0
+  - @pandacss/error@0.4.0
+  - @pandacss/logger@0.4.0
+  - @pandacss/shared@0.4.0
+
 ## 0.3.2
 
 ### Patch Changes
