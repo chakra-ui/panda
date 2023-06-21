@@ -31,7 +31,7 @@ export type PatternConfig<T extends PatternProperties = PatternProperties> = {
   /**
    * The properties of the pattern.
    */
-  properties: T
+  properties?: T
   /**
    * The css object this pattern will generate.
    */
