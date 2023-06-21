@@ -334,7 +334,7 @@ describe('extract to css output pipeline', () => {
                   }
 
         .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0 + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0:where(:hover, [data-hover]) {
-          margin: 0
+          margin: var(--spacing-0)
                   }
       }"
     `)
@@ -1231,7 +1231,7 @@ describe('preset patterns', () => {
               }
 
         .before\\\\:inset_0::before {
-          inset: 0
+          inset: var(--spacing-0)
               }
 
         .before\\\\:z_0::before {
@@ -1308,7 +1308,7 @@ describe('preset patterns', () => {
               }
 
         .before\\\\:inset_0::before {
-          inset: 0
+          inset: var(--spacing-0)
               }
 
         .before\\\\:z_0::before {
@@ -1516,7 +1516,7 @@ describe('preset patterns', () => {
           }
 
         .inset-t_0 {
-          inset-block-start: 0
+          inset-block-start: var(--spacing-0)
           }
 
         .inset-b_auto {
@@ -1528,7 +1528,7 @@ describe('preset patterns', () => {
           }
 
         .end_0 {
-          inset-inline-end: 0
+          inset-inline-end: var(--spacing-0)
           }
 
         .translate_50\\\\%_-50\\\\% {
@@ -1584,7 +1584,7 @@ describe('preset patterns', () => {
           }
 
         .inset-t_0 {
-          inset-block-start: 0
+          inset-block-start: var(--spacing-0)
           }
 
         .inset-b_auto {
@@ -1596,7 +1596,7 @@ describe('preset patterns', () => {
           }
 
         .end_0 {
-          inset-inline-end: 0
+          inset-inline-end: var(--spacing-0)
           }
 
         .translate_50\\\\%_-50\\\\% {
@@ -2098,7 +2098,7 @@ describe('preset patterns', () => {
               }
 
         .before\\\\:h_0::before {
-          height: 0
+          height: var(--sizes-0)
               }
 
         .before\\\\:pb_75\\\\%::before {
@@ -2126,7 +2126,7 @@ describe('preset patterns', () => {
               }
 
         .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:inset_0>* {
-          inset: 0
+          inset: var(--spacing-0)
               }
 
         .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:w_100\\\\%>* {
@@ -2186,7 +2186,7 @@ describe('preset patterns', () => {
               }
 
         .before\\\\:h_0::before {
-          height: 0
+          height: var(--sizes-0)
               }
 
         .before\\\\:pb_75\\\\%::before {
@@ -2214,7 +2214,7 @@ describe('preset patterns', () => {
               }
 
         .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:inset_0>* {
-          inset: 0
+          inset: var(--spacing-0)
               }
 
         .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:w_100\\\\%>* {

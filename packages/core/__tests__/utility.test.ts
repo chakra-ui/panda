@@ -365,6 +365,7 @@ describe('Utility', () => {
         "(backgroundColor = colorPalette.heading)" => "bg_colorPalette.heading",
         "(display = flex)" => "d_flex",
         "(display = inline-flex)" => "d_inline-flex",
+        "(margin = 0)" => "m_0",
         "(margin = 1)" => "m_1",
         "(margin = 2)" => "m_2",
         "(margin = 3)" => "m_3",
@@ -1035,6 +1036,9 @@ describe('Utility', () => {
         },
         "(display = inline-flex)" => {
           "display": "inline-flex",
+        },
+        "(margin = 0)" => {
+          "margin": "var(--spacing-0)",
         },
         "(margin = 1)" => {
           "margin": "var(--spacing-1)",

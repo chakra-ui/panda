@@ -57,8 +57,8 @@ test('[recipe] direct nesting / recipe ruleset', () => {
         @layer _base {
             .text {
                 margin-top: auto;
-                margin-bottom: 0;
-                padding-top: 0;
+                margin-bottom: var(--spacing-0);
+                padding-top: var(--spacing-0);
                 object-pos: center;
             }
         }
@@ -87,8 +87,8 @@ test('[recipe] direct nesting / recipe ruleset', () => {
         @layer _base {
             .text {
                 margin-top: auto;
-                margin-bottom: 0;
-                padding-top: 0;
+                margin-bottom: var(--spacing-0);
+                padding-top: var(--spacing-0);
                 object-pos: center
             }
         }
