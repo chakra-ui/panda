@@ -1,11 +1,11 @@
 ---
 title: CLI Reference
-description: You can use the Command-Line Interface (CLI) provided by Astro to develop, build, and preview your project from a terminal window.
+description: You can use the Command-Line Interface (CLI) provided by Panda to develop, build, and preview your project from a terminal window.
 ---
 
 # CLI Reference
 
-You can use the Command-Line Interface (CLI) provided by Astro to develop, build, and preview your project from a
+You can use the Command-Line Interface (CLI) provided by Panda to develop, build, and preview your project from a
 terminal window.
 
 ## `panda init`
