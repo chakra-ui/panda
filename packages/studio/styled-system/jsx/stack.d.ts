@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { FunctionComponent } from 'react'
 import type { StackProperties } from '../patterns/stack'
 import type { HTMLPandaProps } from '../types/jsx'

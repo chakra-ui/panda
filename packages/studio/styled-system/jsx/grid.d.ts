@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { FunctionComponent } from 'react'
 import type { GridProperties } from '../patterns/grid'
 import type { HTMLPandaProps } from '../types/jsx'

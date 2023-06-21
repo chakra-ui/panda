@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { FunctionComponent } from 'react'
 import type { AspectRatioProperties } from '../patterns/aspect-ratio'
 import type { HTMLPandaProps } from '../types/jsx'

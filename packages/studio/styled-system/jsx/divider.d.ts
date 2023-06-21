@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { FunctionComponent } from 'react'
 import type { DividerProperties } from '../patterns/divider'
 import type { HTMLPandaProps } from '../types/jsx'

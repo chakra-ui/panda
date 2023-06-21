@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { FunctionComponent } from 'react'
 import type { StyledLinkProperties } from '../patterns/styled-link'
 import type { HTMLPandaProps } from '../types/jsx'
