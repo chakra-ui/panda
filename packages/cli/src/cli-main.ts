@@ -17,6 +17,7 @@ import { buildStudio, previewStudio, serveStudio } from '@pandacss/studio'
 import { cac } from 'cac'
 import { readFileSync } from 'fs'
 import { join, resolve } from 'pathe'
+import { debounce } from 'perfect-debounce'
 import updateNotifier from 'update-notifier'
 
 export async function main() {
@@ -72,9 +73,11 @@ export async function main() {
     .option('--silent', "Don't print any logs")
     .option('--clean', 'Clean the output directory before generating')
     .option('-c, --config <path>', 'Path to panda config file')
+    .option('-w, --watch', 'Watch files and rebuild')
+    .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (flags) => {
-      const { silent, clean, configPath } = flags
+      const { silent, clean, configPath, watch, poll } = flags
 
       const cwd = resolve(flags.cwd)
 
@@ -82,15 +85,32 @@ export async function main() {
         logger.level = 'silent'
       }
 
-      const ctx = await loadConfigAndCreateContext({
-        cwd,
-        config: { clean },
-        configPath,
-      })
+      function loadContext() {
+        return loadConfigAndCreateContext({ cwd, config: { clean }, configPath })
+      }
+
+      let ctx = await loadContext()
 
       const msg = await emitArtifacts(ctx)
-
       logger.log(msg)
+
+      if (watch) {
+        logger.info('ctx:watch', ctx.messages.configWatch())
+        const watcher = ctx.runtime.fs.watch({
+          include: ctx.dependencies,
+          cwd,
+          poll,
+        })
+
+        const onChange = debounce(async () => {
+          logger.info('ctx:change', 'config changed, rebuilding...')
+          ctx = await loadContext()
+          await emitArtifacts(ctx)
+          logger.info('ctx:updated', 'config rebuilt ✅')
+        })
+
+        watcher.on('change', onChange)
+      }
     })
 
   cli

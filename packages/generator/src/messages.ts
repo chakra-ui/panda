@@ -81,6 +81,11 @@ export const watch = () =>
   Watching for file changes...
   `
 
+export const configWatch = () =>
+  outdent`
+  Watching for config file changes...
+  `
+
 export const buildComplete = (count: number) =>
   outdent`
   Successfully extracted css from ${count} file(s) ✨
@@ -94,4 +99,5 @@ export const getMessages = (ctx: Context) => ({
   noExtract,
   watch,
   buildComplete,
+  configWatch,
 })
