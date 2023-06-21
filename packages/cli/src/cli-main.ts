@@ -270,7 +270,7 @@ export async function main() {
           config: maybeGlob ? { include: [maybeGlob] } : undefined,
         })
 
-        const outfile = outfileFlag ?? join(...ctx.paths.root, 'debug')
+        const outfile = outfileFlag ?? join(...ctx.paths.root, `${ctx.config.outdir}/panda.json`)
 
         if (minify) {
           ctx.config.minify = true
