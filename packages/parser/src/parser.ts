@@ -265,6 +265,18 @@ export function createParser(options: ParserOptions) {
               })
             })
           })
+          .when(
+            (name) => jsx && name.startsWith(jsxFactoryAlias),
+            (name) => {
+              result.queryList.forEach((query) => {
+                collector.setCva({
+                  name,
+                  box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
+                  data: combineResult(unbox(query.box.value[0])),
+                })
+              })
+            },
+          )
           .otherwise(() => {
             //
           })

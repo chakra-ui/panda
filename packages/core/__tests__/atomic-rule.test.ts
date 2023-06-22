@@ -528,7 +528,7 @@ describe('atomic / with direct nesting', () => {
               background-color: red
           }
           .border_none {
-              border: none
+              border: var(--borders-none)
           }
           .p_\\\\$3_\\\\$3 {
               padding: $3 $3

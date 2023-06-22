@@ -1,4 +1,4 @@
-import { isBaseCondition, isObject, walkObject } from '@pandacss/shared'
+import { isBaseCondition, isObject, toHash, walkObject } from '@pandacss/shared'
 import { getReferences, hasReference } from './utils'
 
 /**
@@ -72,6 +72,13 @@ export class Token {
     this.extensions = data.extensions ?? {}
     this.extensions.condition = data.extensions?.condition ?? 'base'
     this.setType()
+  }
+
+  /**
+   * The unique identifier of the token.
+   */
+  get id() {
+    return toHash(`${this.name}-${this.extensions.condition}-${this.value}`)
   }
 
   /**

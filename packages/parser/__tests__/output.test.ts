@@ -334,7 +334,7 @@ describe('extract to css output pipeline', () => {
                   }
 
         .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0 + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0:where(:hover, [data-hover]) {
-          margin: 0
+          margin: var(--spacing-0)
                   }
       }"
     `)
@@ -456,6 +456,126 @@ describe('extract to css output pipeline', () => {
 
         .flex_row {
           flex-direction: row
+          }
+      }"
+    `)
+  })
+
+  test('cva and factory recipes', () => {
+    const code = `
+      import { panda } from ".panda/jsx"
+      import { cva } from ".panda/css"
+
+      const buttonRecipe = cva({
+        base: {
+          color: "red.100",
+          bg: "red.900",
+        }
+      })
+
+      const Button = panda('button', {
+        base: {
+          color: "green.100",
+          bg: "green.900",
+        }
+      })
+
+      const Input = panda.input({
+        base: {
+          color: "blue.100",
+          bg: "blue.900",
+        }
+      })
+
+      function App () {
+        return (
+          <>
+            <Button>Click me</Button>
+            <Input />
+          </>
+        )
+      }
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "base": {
+                "bg": "red.900",
+                "color": "red.100",
+              },
+            },
+          ],
+          "name": "cva",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "base": {
+                "bg": "green.900",
+                "color": "green.100",
+              },
+            },
+          ],
+          "name": "panda",
+          "type": "cva",
+        },
+        {
+          "data": [
+            {
+              "base": {
+                "bg": "blue.900",
+                "color": "blue.100",
+              },
+            },
+          ],
+          "name": "panda.input",
+          "type": "cva",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Button",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Input",
+          "type": "jsx",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_red\\\\.100 {
+          color: var(--colors-red-100)
+          }
+
+        .bg_red\\\\.900 {
+          background: var(--colors-red-900)
+          }
+
+        .text_green\\\\.100 {
+          color: var(--colors-green-100)
+          }
+
+        .bg_green\\\\.900 {
+          background: var(--colors-green-900)
+          }
+
+        .text_blue\\\\.100 {
+          color: var(--colors-blue-100)
+          }
+
+        .bg_blue\\\\.900 {
+          background: var(--colors-blue-900)
           }
       }"
     `)
@@ -1231,7 +1351,7 @@ describe('preset patterns', () => {
               }
 
         .before\\\\:inset_0::before {
-          inset: 0
+          inset: var(--spacing-0)
               }
 
         .before\\\\:z_0::before {
@@ -1308,7 +1428,7 @@ describe('preset patterns', () => {
               }
 
         .before\\\\:inset_0::before {
-          inset: 0
+          inset: var(--spacing-0)
               }
 
         .before\\\\:z_0::before {
@@ -1516,7 +1636,7 @@ describe('preset patterns', () => {
           }
 
         .inset-t_0 {
-          inset-block-start: 0
+          inset-block-start: var(--spacing-0)
           }
 
         .inset-b_auto {
@@ -1528,7 +1648,7 @@ describe('preset patterns', () => {
           }
 
         .end_0 {
-          inset-inline-end: 0
+          inset-inline-end: var(--spacing-0)
           }
 
         .translate_50\\\\%_-50\\\\% {
@@ -1584,7 +1704,7 @@ describe('preset patterns', () => {
           }
 
         .inset-t_0 {
-          inset-block-start: 0
+          inset-block-start: var(--spacing-0)
           }
 
         .inset-b_auto {
@@ -1596,7 +1716,7 @@ describe('preset patterns', () => {
           }
 
         .end_0 {
-          inset-inline-end: 0
+          inset-inline-end: var(--spacing-0)
           }
 
         .translate_50\\\\%_-50\\\\% {
@@ -2098,7 +2218,7 @@ describe('preset patterns', () => {
               }
 
         .before\\\\:h_0::before {
-          height: 0
+          height: var(--sizes-0)
               }
 
         .before\\\\:pb_75\\\\%::before {
@@ -2126,7 +2246,7 @@ describe('preset patterns', () => {
               }
 
         .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:inset_0>* {
-          inset: 0
+          inset: var(--spacing-0)
               }
 
         .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:w_100\\\\%>* {
@@ -2186,7 +2306,7 @@ describe('preset patterns', () => {
               }
 
         .before\\\\:h_0::before {
-          height: 0
+          height: var(--sizes-0)
               }
 
         .before\\\\:pb_75\\\\%::before {
@@ -2214,7 +2334,7 @@ describe('preset patterns', () => {
               }
 
         .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:inset_0>* {
-          inset: 0
+          inset: var(--spacing-0)
               }
 
         .\\\\[\\\\&\\\\>\\\\*\\\\]\\\\:w_100\\\\%>* {

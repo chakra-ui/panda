@@ -291,7 +291,7 @@ import { divider } from '../styled-system/patterns'
 
 function App() {
   return (
-    <div classname={stack()}>
+    <div className={stack()}>
       <button>First</button>
       <div className={divider({ orientation: 'horizontal' })} />
       <button>Second</button>

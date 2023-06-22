@@ -9,6 +9,7 @@ describe('generator', () => {
     expect(css).toMatchInlineSnapshot(`
       "@layer tokens {
           :where(html) {
+        --borders-none: none;
         --easings-default: cubic-bezier(0.4, 0, 0.2, 1);
         --easings-linear: linear;
         --easings-in: cubic-bezier(0.4, 0, 1, 1);
@@ -248,6 +249,7 @@ describe('generator', () => {
         --blurs-xl: 24px;
         --blurs-2xl: 40px;
         --blurs-3xl: 64px;
+        --spacing-0: 0rem;
         --spacing-1: 0.25rem;
         --spacing-2: 0.5rem;
         --spacing-3: 0.75rem;
@@ -281,6 +283,7 @@ describe('generator', () => {
         --spacing-1\\\\.5: 0.375rem;
         --spacing-2\\\\.5: 0.625rem;
         --spacing-3\\\\.5: 0.875rem;
+        --sizes-0: 0rem;
         --sizes-1: 0.25rem;
         --sizes-2: 0.5rem;
         --sizes-3: 0.75rem;

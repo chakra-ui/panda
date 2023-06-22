@@ -211,6 +211,7 @@ Panda provides a `RecipeVariantProps` type utility that can be used to infer the
 This is useful when you want to use the recipe in JSX and want to get type safety for the variants.
 
 ```tsx
+import { styled } from '../styled-system/jsx'
 import { cva, type RecipeVariantProps } from '../styled-system/css'
 
 const buttonStyle = cva({
@@ -232,7 +233,7 @@ const buttonStyle = cva({
 
 export type ButtonVariants = RecipeVariantProps<typeof buttonStyle> // { size?: 'small' | 'large' }
 
-export const Button = panda('button', buttonStyle)
+export const Button = styled('button', buttonStyle)
 ```
 
 ### Usage in JSX

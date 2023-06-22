@@ -28,11 +28,11 @@ export async function loadConfigFile(options: ConfigFileOptions) {
 
 export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundleConfigFile>>, cwd: string) {
   const presets = new Set<any>()
-  presets.add(presetBase)
+  if (!result.config.eject) {
+    presets.add(presetBase)
+  }
 
-  if (!result.config.presets) {
-    presets.add(presetPanda)
-  } else {
+  if (result.config.presets) {
     result.config.presets.forEach((preset: any) => {
       if (typeof preset === 'string' && isBundledPreset(preset)) {
         presets.add(bundledPresets[preset])
@@ -40,6 +40,8 @@ export async function resolveConfigFile(result: Awaited<ReturnType<typeof bundle
         presets.add(preset)
       }
     })
+  } else if (!result.config.eject) {
+    presets.add(presetPanda)
   }
 
   result.config.presets = Array.from(presets)

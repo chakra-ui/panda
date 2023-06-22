@@ -2,7 +2,6 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   studio: {
-    title: 'Chakra UI',
     logo: 'https://place-hold.it/36x24',
   },
   preflight: true,

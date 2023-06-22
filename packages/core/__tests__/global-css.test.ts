@@ -126,8 +126,8 @@ describe('Global css', () => {
 
         #corner {
           position: fixed;
-          right: 0;
-          bottom: 0;
+          right: var(--spacing-0);
+          bottom: var(--spacing-0);
           cursor: nwse-resize;
           }
 
@@ -189,11 +189,11 @@ describe('Global css', () => {
     expect(sheet).toMatchInlineSnapshot(`
       "@layer base {
         p {
-          margin: 0;
+          margin: var(--spacing-0);
           }
 
         p ~ p {
-          margin-top: 0;
+          margin-top: var(--spacing-0);
           }
       }"
     `)
@@ -212,7 +212,7 @@ describe('Global css', () => {
     expect(sheet).toMatchInlineSnapshot(`
       "@layer base {
         body > p, body > ul {
-          margin: 0;
+          margin: var(--spacing-0);
           }
 
         body > p ~ body > p, body > ul ~ body > ul {

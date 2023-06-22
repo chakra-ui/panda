@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/dev",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "The user facing package for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -48,23 +48,29 @@
     "astro.mjs"
   ],
   "dependencies": {
-    "@pandacss/config": "workspace:*",
-    "@pandacss/postcss": "workspace:*",
     "@pandacss/astro": "workspace:*",
-    "@pandacss/studio": "workspace:*",
+    "@pandacss/config": "workspace:*",
     "@pandacss/error": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
+    "@pandacss/postcss": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/shared": "workspace:*",
+    "@pandacss/studio": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "cac": "6.7.14",
-    "pathe": "1.1.1"
+    "pathe": "1.1.1",
+    "perfect-debounce": "^1.0.0"
   },
   "devDependencies": {
     "@types/update-notifier": "6.0.4",
     "kleur": "4.1.5",
     "update-notifier": "6.0.2"
+  },
+  "peerDependenciesMeta": {
+    "astro": {
+      "optional": true
+    }
   }
 }
