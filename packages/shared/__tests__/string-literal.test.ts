@@ -39,7 +39,7 @@ const css_obj = createCss({
   },
 })
 
-const css: typeof String.raw = (str) => {
+const css = (str: any) => {
   return css_obj(astish(str[0] as string))
 }
 
