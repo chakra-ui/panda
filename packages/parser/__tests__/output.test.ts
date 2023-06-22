@@ -810,7 +810,7 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
-  test.only('extractor:eval hook', () => {
+  test('extractor:eval hook', () => {
     const isFunctionMadeFromDefineParts = (expr: Identifier) => {
       const declaration = findIdentifierValueDeclaration(expr, [], {})
       if (!Node.isVariableDeclaration(declaration)) return

@@ -6230,7 +6230,7 @@ it('handles root spread conditional', () => {
   `)
 })
 
-it.only('allows customizing eval', () => {
+it('allows customizing eval', () => {
   const isFunctionMadeFromDefineParts = (expr: Identifier) => {
     const declaration = findIdentifierValueDeclaration(expr, [], {})
     if (!Node.isVariableDeclaration(declaration)) return
