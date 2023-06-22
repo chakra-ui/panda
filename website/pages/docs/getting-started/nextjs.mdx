@@ -288,7 +288,9 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
 
 ## Troubleshooting
 
-Sometimes Next.js caches PostCSS generated styles and you need to clear the cache. To do that, delete the `.next` folder and restart your development server.
+### I don't see any styles
+
+Sometimes Next.js caches PostCSS generated styles and when that happens you need to clear the cache. To do that, delete the `.next` folder and restart your development server.
 
 You can also update you `package.json` scripts to delete the `.next` folder before each build:
 
@@ -301,7 +303,12 @@ You can also update you `package.json` scripts to delete the `.next` folder befo
 }
 ```
 
-## Troubleshooting
+This is a known issue with Next.js and you can track the progress here:
+- [vercel/next.js#39410](https://github.com/vercel/next.js/issues/39410)
+- [vercel/next.js#48748](https://github.com/vercel/next.js/issues/48748)
+- [vercel/next.js#47533](https://github.com/vercel/next.js/issues/47533)
+
+### I don't see any import autocomplete in my IDE
 
 If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your `tsconfig.json` file:
 
