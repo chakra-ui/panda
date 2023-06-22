@@ -86,7 +86,7 @@ export type ComponentMatchers = {
 }
 
 export type BoxContext = {
-  getEvaluateOptions?: (node: Expression, stack: Node[]) => EvaluateOptions
+  getEvaluateOptions?: (node: Expression, stack: Node[]) => Partial<EvaluateOptions> | undefined
   canEval?: (node: Expression, stack: Node[]) => boolean
   flags?: {
     skipEvaluate?: boolean

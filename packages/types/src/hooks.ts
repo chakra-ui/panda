@@ -1,9 +1,12 @@
+import type { BoxContext } from '@pandacss/extractor'
 import type { TokenDictionary } from '@pandacss/token-dictionary'
 import type { HookKeys, Hookable } from 'hookable'
 import type { LoadConfigResult, UserConfig } from './config'
 import type { ParserResultType } from './parser'
+import type { Node } from 'ts-morph'
 
 type MaybeAsyncReturn = Promise<void> | void
+type EvaluateOptions = ReturnType<NonNullable<BoxContext['getEvaluateOptions']>>
 
 export interface PandaHooks {
   /**
@@ -22,6 +25,10 @@ export interface PandaHooks {
    * Called after reading the file content but before parsing it.
    */
   'parser:before': (file: string, content: string) => void
+  /**
+   * Called before evaluating a node with ts-evaluator, can provide an object of EvaluateOptions
+   */
+  'extractor:eval': (node: Node) => EvaluateOptions
   /**
    * Called after the file styles are extracted and processed into the resulting ParserResult object.
    */

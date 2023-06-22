@@ -28,7 +28,7 @@ export const createContext = (conf: ConfigResultWithHooks) =>
         getFiles,
         readFile: fs.readFileSync,
         hooks: conf.hooks,
-        parserOptions,
+        parserOptions: Object.assign({}, parserOptions, { hooks: conf.hooks }),
       })
     }),
 

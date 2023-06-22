@@ -1,10 +1,11 @@
-import { SourceFile } from 'ts-morph'
+import { Identifier, Node, SourceFile } from 'ts-morph'
 import { afterEach, expect, it } from 'vitest'
 import type { ComponentMatchers, ExtractOptions } from '../src/types'
 import { createProject, getTestExtract } from './create-project'
 import { unbox } from '../src/unbox'
 // @ts-ignore
 import { default as ExtractSample } from './samples/ExtractSample?raw'
+import { findIdentifierValueDeclaration } from '../src/find-identifier-value-declaration'
 
 const project = createProject()
 
@@ -6223,6 +6224,66 @@ it('handles root spread conditional', () => {
               "color": "facebook.100",
             },
           ],
+        },
+      ],
+    }
+  `)
+})
+
+it.only('allows customizing eval', () => {
+  const isFunctionMadeFromDefineParts = (expr: Identifier) => {
+    const declaration = findIdentifierValueDeclaration(expr, [], {})
+    if (!Node.isVariableDeclaration(declaration)) return
+
+    const initializer = declaration.getInitializer()
+    if (!Node.isCallExpression(initializer)) return
+
+    const fromFunctionName = initializer.getExpression().getText()
+    return fromFunctionName === 'defineParts'
+  }
+
+  expect(
+    extractFromCode(
+      `
+    const parts = defineParts(checkboxAnatomy.build());
+    const checkbox = cva({
+      base: parts({
+        root: {},
+        control: {
+          background: 'primary',
+        },
+      }),
+    });
+`,
+      {
+        functionNameList: ['cva'],
+        getEvaluateOptions(node) {
+          if (!Node.isCallExpression(node)) return
+          const expr = node.getExpression()
+
+          if (!Node.isIdentifier(expr)) return
+          if (!isFunctionMadeFromDefineParts(expr)) return
+
+          return { environment: { extra: { parts: (obj: any) => obj } } }
+        },
+      },
+    ),
+  ).toMatchInlineSnapshot(`
+    {
+      "cva": [
+        {
+          "conditions": [],
+          "raw": [
+            {
+              "base": {
+                "control": {
+                  "background": "primary",
+                },
+                "root": {},
+              },
+            },
+          ],
+          "spreadConditions": [],
         },
       ],
     }

@@ -1,8 +1,11 @@
 import { describe, test, expect } from 'vitest'
 import { getFixtureProject } from './fixture'
+import type { UserConfig } from '@pandacss/types'
+import { findIdentifierValueDeclaration } from '@pandacss/extractor'
+import { Identifier, Node } from 'ts-morph'
 
-const run = (code: string) => {
-  const { parse, generator } = getFixtureProject(code)
+const run = (code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf) => {
+  const { parse, generator } = getFixtureProject(code, options)
   const result = parse()!
   return {
     json: result?.toArray().map(({ box, ...item }) => item),
@@ -802,6 +805,71 @@ describe('extract to css output pipeline', () => {
           .button {
             font-size: var(--font-sizes-lg)
               }
+          }
+      }"
+    `)
+  })
+
+  test.only('extractor:eval hook', () => {
+    const isFunctionMadeFromDefineParts = (expr: Identifier) => {
+      const declaration = findIdentifierValueDeclaration(expr, [], {})
+      if (!Node.isVariableDeclaration(declaration)) return
+
+      const initializer = declaration.getInitializer()
+      if (!Node.isCallExpression(initializer)) return
+
+      const fromFunctionName = initializer.getExpression().getText()
+      return fromFunctionName === 'defineParts'
+    }
+
+    const code = `
+    const parts = defineParts(checkboxAnatomy.build());
+    const checkbox = cva({
+      base: parts({
+        root: {},
+        control: {
+          background: 'primary',
+        },
+      }),
+    });
+     `
+    const result = run(code, (conf) => ({
+      ...conf,
+      hooks: {
+        'extractor:eval': (node) => {
+          if (!Node.isCallExpression(node)) return
+          const expr = node.getExpression()
+
+          if (!Node.isIdentifier(expr)) return
+          if (!isFunctionMadeFromDefineParts(expr)) return
+
+          return { environment: { extra: { parts: (obj: any) => obj } } }
+        },
+      },
+    }))
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "base": {
+                "control": {
+                  "background": "primary",
+                },
+                "root": {},
+              },
+            },
+          ],
+          "name": "cva",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .control\\\\:bg_primary {
+          background: var(--colors-primary)
           }
       }"
     `)

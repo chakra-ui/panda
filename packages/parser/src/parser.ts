@@ -6,7 +6,7 @@ import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { getImportDeclarations } from './import'
 import { createParserResult } from './parser-result'
-import type { RecipeConfig } from '@pandacss/types'
+import type { PandaHookable, RecipeConfig } from '@pandacss/types'
 
 type ParserPatternNode = {
   name: string
@@ -34,6 +34,7 @@ export type ParserOptions = {
   }
   getRecipeName: (tagName: string) => string
   getRecipeByName: (name: string) => RecipeConfig | undefined
+  hooks: PandaHookable
 }
 
 // create strict regex from array of strings
@@ -61,7 +62,7 @@ type GetEvaluateOptions = NonNullable<Parameters<typeof extract>['0']['getEvalua
 
 type EvalOptions = ReturnType<GetEvaluateOptions>
 
-const defaultEnv: EvalOptions['environment'] = { preset: 'NONE' }
+const defaultEnv: NonNullable<EvalOptions>['environment'] = { preset: 'NONE' }
 
 export function createParser(options: ParserOptions) {
   const { jsx, importMap, getRecipeByName } = options
@@ -214,7 +215,18 @@ export function createParser(options: ParserOptions) {
           return true
         },
       },
-      getEvaluateOptions: (node) => ({ node: node as any, environment: defaultEnv }),
+      getEvaluateOptions: (node) => {
+        // @ts-ignore
+        // make the return of the hook synchronous using `callHookWith` (instead of using `callHook`)
+        const [result] = options.hooks.callHookWith((hooks) => hooks.map((hook) => hook(node)), 'extractor:eval', node)
+
+        // allow overriding the current evaluation options using a config hook
+        if (result) {
+          return result
+        }
+
+        return { environment: defaultEnv }
+      },
       flags: { skipTraverseFiles: true },
     })
 

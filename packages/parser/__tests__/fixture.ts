@@ -45,29 +45,25 @@ const defaults: LoadConfigResult = {
 }
 
 function getProject(code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf) {
-  const config = options ? options(defaults.config) : defaults.config
-  const hooks = createHooks<PandaHooks>()
-  const generator = createGenerator({ ...defaults, config, hooks })
-
-  return createProject({
-    useInMemoryFileSystem: true,
-    getFiles: () => [staticFilePath],
-    readFile: () => code,
-    parserOptions: generator.parserOptions,
-    hooks,
-  })
+  return getFixtureProject(code, options).project
 }
 
 export function getFixtureProject(code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf) {
   const config = options ? options(defaults.config) : defaults.config
   const hooks = createHooks<PandaHooks>()
+
+  // Register user hooks
+  if (config.hooks) {
+    hooks.addHooks(config.hooks)
+  }
+
   const generator = createGenerator({ ...defaults, config, hooks })
 
   const project = createProject({
     useInMemoryFileSystem: true,
     getFiles: () => [staticFilePath],
     readFile: () => code,
-    parserOptions: generator.parserOptions,
+    parserOptions: Object.assign(generator.parserOptions, { hooks }),
     hooks,
   })
 
