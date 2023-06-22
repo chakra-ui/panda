@@ -269,7 +269,7 @@ export function createParser(options: ParserOptions) {
             (name) => jsx && name.startsWith(jsxFactoryAlias),
             (name) => {
               result.queryList.forEach((query) => {
-                collector.setCva({
+                collector.set('css', {
                   name,
                   box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                   data: combineResult(unbox(query.box.value[0])),

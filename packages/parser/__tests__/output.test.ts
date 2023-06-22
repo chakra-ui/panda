@@ -481,10 +481,8 @@ describe('extract to css output pipeline', () => {
       })
 
       const Input = panda.input({
-        base: {
-          color: "blue.100",
-          bg: "blue.900",
-        }
+        color: "blue.100",
+        bg: "blue.900",
       })
 
       function App () {
@@ -499,6 +497,16 @@ describe('extract to css output pipeline', () => {
     const result = run(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
+        {
+          "data": [
+            {
+              "bg": "blue.900",
+              "color": "blue.100",
+            },
+          ],
+          "name": "panda.input",
+          "type": "object",
+        },
         {
           "data": [
             {
@@ -525,18 +533,6 @@ describe('extract to css output pipeline', () => {
         },
         {
           "data": [
-            {
-              "base": {
-                "bg": "blue.900",
-                "color": "blue.100",
-              },
-            },
-          ],
-          "name": "panda.input",
-          "type": "cva",
-        },
-        {
-          "data": [
             {},
           ],
           "name": "Button",
@@ -554,6 +550,14 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .text_blue\\\\.100 {
+          color: var(--colors-blue-100)
+          }
+
+        .bg_blue\\\\.900 {
+          background: var(--colors-blue-900)
+          }
+
         .text_red\\\\.100 {
           color: var(--colors-red-100)
           }
@@ -568,14 +572,6 @@ describe('extract to css output pipeline', () => {
 
         .bg_green\\\\.900 {
           background: var(--colors-green-900)
-          }
-
-        .text_blue\\\\.100 {
-          color: var(--colors-blue-100)
-          }
-
-        .bg_blue\\\\.900 {
-          background: var(--colors-blue-900)
           }
       }"
     `)
