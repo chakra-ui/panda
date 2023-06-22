@@ -18,15 +18,15 @@ describe('astish', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
+        "-webkit-align-items": "center",
         "@container (min-inline-width: 600px)": {
           "background": "pink",
         },
         "@media (min-width: 400)": {
           "color": "red",
-          "justifyContent": "center",
+          "justify-content": "center",
         },
-        "WebkitAlignItems": "center",
-        "alignItems": "center",
+        "align-items": "center",
         "display": "flex",
       }
     `)

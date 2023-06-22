@@ -39,7 +39,9 @@ const css_obj = createCss({
   },
 })
 
-const css: typeof String.raw = (str) => css_obj(astish(str[0]))
+const css: typeof String.raw = (str) => {
+  return css_obj(astish(str[0] as string))
+}
 
 describe('string literal [shared]', () => {
   test('should convert', () => {
