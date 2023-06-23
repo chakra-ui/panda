@@ -381,7 +381,8 @@ describe('extract to css output pipeline', () => {
           --colors-color-palette-600: var(--colors-blue-600);
           --colors-color-palette-700: var(--colors-blue-700);
           --colors-color-palette-800: var(--colors-blue-800);
-          --colors-color-palette-900: var(--colors-blue-900)
+          --colors-color-palette-900: var(--colors-blue-900);
+          --colors-color-palette-950: var(--colors-blue-950)
           }
 
         .bg_colorPalette\\\\.100 {

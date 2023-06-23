@@ -326,6 +326,10 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"#881337\\",
         \\"variable\\": \\"var(--colors-rose-900)\\"
       },
+      \\"colors.rose.950\\": {
+        \\"value\\": \\"#4c0519\\",
+        \\"variable\\": \\"var(--colors-rose-950)\\"
+      },
       \\"colors.pink.50\\": {
         \\"value\\": \\"#fdf2f8\\",
         \\"variable\\": \\"var(--colors-pink-50)\\"
@@ -365,6 +369,10 @@ test('[dts] should generate package', () => {
       \\"colors.pink.900\\": {
         \\"value\\": \\"#831843\\",
         \\"variable\\": \\"var(--colors-pink-900)\\"
+      },
+      \\"colors.pink.950\\": {
+        \\"value\\": \\"#500724\\",
+        \\"variable\\": \\"var(--colors-pink-950)\\"
       },
       \\"colors.fuchsia.50\\": {
         \\"value\\": \\"#fdf4ff\\",
@@ -406,6 +414,10 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"#701a75\\",
         \\"variable\\": \\"var(--colors-fuchsia-900)\\"
       },
+      \\"colors.fuchsia.950\\": {
+        \\"value\\": \\"#4a044e\\",
+        \\"variable\\": \\"var(--colors-fuchsia-950)\\"
+      },
       \\"colors.purple.50\\": {
         \\"value\\": \\"#faf5ff\\",
         \\"variable\\": \\"var(--colors-purple-50)\\"
@@ -445,6 +457,54 @@ test('[dts] should generate package', () => {
       \\"colors.purple.900\\": {
         \\"value\\": \\"#581c87\\",
         \\"variable\\": \\"var(--colors-purple-900)\\"
+      },
+      \\"colors.purple.950\\": {
+        \\"value\\": \\"#3b0764\\",
+        \\"variable\\": \\"var(--colors-purple-950)\\"
+      },
+      \\"colors.violet.50\\": {
+        \\"value\\": \\"#f5f3ff\\",
+        \\"variable\\": \\"var(--colors-violet-50)\\"
+      },
+      \\"colors.violet.100\\": {
+        \\"value\\": \\"#ede9fe\\",
+        \\"variable\\": \\"var(--colors-violet-100)\\"
+      },
+      \\"colors.violet.200\\": {
+        \\"value\\": \\"#ddd6fe\\",
+        \\"variable\\": \\"var(--colors-violet-200)\\"
+      },
+      \\"colors.violet.300\\": {
+        \\"value\\": \\"#c4b5fd\\",
+        \\"variable\\": \\"var(--colors-violet-300)\\"
+      },
+      \\"colors.violet.400\\": {
+        \\"value\\": \\"#a78bfa\\",
+        \\"variable\\": \\"var(--colors-violet-400)\\"
+      },
+      \\"colors.violet.500\\": {
+        \\"value\\": \\"#8b5cf6\\",
+        \\"variable\\": \\"var(--colors-violet-500)\\"
+      },
+      \\"colors.violet.600\\": {
+        \\"value\\": \\"#7c3aed\\",
+        \\"variable\\": \\"var(--colors-violet-600)\\"
+      },
+      \\"colors.violet.700\\": {
+        \\"value\\": \\"#6d28d9\\",
+        \\"variable\\": \\"var(--colors-violet-700)\\"
+      },
+      \\"colors.violet.800\\": {
+        \\"value\\": \\"#5b21b6\\",
+        \\"variable\\": \\"var(--colors-violet-800)\\"
+      },
+      \\"colors.violet.900\\": {
+        \\"value\\": \\"#4c1d95\\",
+        \\"variable\\": \\"var(--colors-violet-900)\\"
+      },
+      \\"colors.violet.950\\": {
+        \\"value\\": \\"#2e1065\\",
+        \\"variable\\": \\"var(--colors-violet-950)\\"
       },
       \\"colors.indigo.50\\": {
         \\"value\\": \\"#eef2ff\\",
@@ -486,6 +546,10 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"#312e81\\",
         \\"variable\\": \\"var(--colors-indigo-900)\\"
       },
+      \\"colors.indigo.950\\": {
+        \\"value\\": \\"#1e1b4b\\",
+        \\"variable\\": \\"var(--colors-indigo-950)\\"
+      },
       \\"colors.blue.50\\": {
         \\"value\\": \\"#eff6ff\\",
         \\"variable\\": \\"var(--colors-blue-50)\\"
@@ -525,6 +589,10 @@ test('[dts] should generate package', () => {
       \\"colors.blue.900\\": {
         \\"value\\": \\"#1e3a8a\\",
         \\"variable\\": \\"var(--colors-blue-900)\\"
+      },
+      \\"colors.blue.950\\": {
+        \\"value\\": \\"#172554\\",
+        \\"variable\\": \\"var(--colors-blue-950)\\"
       },
       \\"colors.sky.50\\": {
         \\"value\\": \\"#f0f9ff\\",
@@ -566,6 +634,10 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"#0c4a6e\\",
         \\"variable\\": \\"var(--colors-sky-900)\\"
       },
+      \\"colors.sky.950\\": {
+        \\"value\\": \\"#082f49\\",
+        \\"variable\\": \\"var(--colors-sky-950)\\"
+      },
       \\"colors.cyan.50\\": {
         \\"value\\": \\"#ecfeff\\",
         \\"variable\\": \\"var(--colors-cyan-50)\\"
@@ -605,6 +677,10 @@ test('[dts] should generate package', () => {
       \\"colors.cyan.900\\": {
         \\"value\\": \\"#164e63\\",
         \\"variable\\": \\"var(--colors-cyan-900)\\"
+      },
+      \\"colors.cyan.950\\": {
+        \\"value\\": \\"#083344\\",
+        \\"variable\\": \\"var(--colors-cyan-950)\\"
       },
       \\"colors.teal.50\\": {
         \\"value\\": \\"#f0fdfa\\",
@@ -646,6 +722,54 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"#134e4a\\",
         \\"variable\\": \\"var(--colors-teal-900)\\"
       },
+      \\"colors.teal.950\\": {
+        \\"value\\": \\"#042f2e\\",
+        \\"variable\\": \\"var(--colors-teal-950)\\"
+      },
+      \\"colors.emerald.50\\": {
+        \\"value\\": \\"#ecfdf5\\",
+        \\"variable\\": \\"var(--colors-emerald-50)\\"
+      },
+      \\"colors.emerald.100\\": {
+        \\"value\\": \\"#d1fae5\\",
+        \\"variable\\": \\"var(--colors-emerald-100)\\"
+      },
+      \\"colors.emerald.200\\": {
+        \\"value\\": \\"#a7f3d0\\",
+        \\"variable\\": \\"var(--colors-emerald-200)\\"
+      },
+      \\"colors.emerald.300\\": {
+        \\"value\\": \\"#6ee7b7\\",
+        \\"variable\\": \\"var(--colors-emerald-300)\\"
+      },
+      \\"colors.emerald.400\\": {
+        \\"value\\": \\"#34d399\\",
+        \\"variable\\": \\"var(--colors-emerald-400)\\"
+      },
+      \\"colors.emerald.500\\": {
+        \\"value\\": \\"#10b981\\",
+        \\"variable\\": \\"var(--colors-emerald-500)\\"
+      },
+      \\"colors.emerald.600\\": {
+        \\"value\\": \\"#059669\\",
+        \\"variable\\": \\"var(--colors-emerald-600)\\"
+      },
+      \\"colors.emerald.700\\": {
+        \\"value\\": \\"#047857\\",
+        \\"variable\\": \\"var(--colors-emerald-700)\\"
+      },
+      \\"colors.emerald.800\\": {
+        \\"value\\": \\"#065f46\\",
+        \\"variable\\": \\"var(--colors-emerald-800)\\"
+      },
+      \\"colors.emerald.900\\": {
+        \\"value\\": \\"#064e3b\\",
+        \\"variable\\": \\"var(--colors-emerald-900)\\"
+      },
+      \\"colors.emerald.950\\": {
+        \\"value\\": \\"#022c22\\",
+        \\"variable\\": \\"var(--colors-emerald-950)\\"
+      },
       \\"colors.green.50\\": {
         \\"value\\": \\"#f0fdf4\\",
         \\"variable\\": \\"var(--colors-green-50)\\"
@@ -685,6 +809,10 @@ test('[dts] should generate package', () => {
       \\"colors.green.900\\": {
         \\"value\\": \\"#14532d\\",
         \\"variable\\": \\"var(--colors-green-900)\\"
+      },
+      \\"colors.green.950\\": {
+        \\"value\\": \\"#052e16\\",
+        \\"variable\\": \\"var(--colors-green-950)\\"
       },
       \\"colors.lime.50\\": {
         \\"value\\": \\"#f7fee7\\",
@@ -726,6 +854,10 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"#365314\\",
         \\"variable\\": \\"var(--colors-lime-900)\\"
       },
+      \\"colors.lime.950\\": {
+        \\"value\\": \\"#1a2e05\\",
+        \\"variable\\": \\"var(--colors-lime-950)\\"
+      },
       \\"colors.yellow.50\\": {
         \\"value\\": \\"#fefce8\\",
         \\"variable\\": \\"var(--colors-yellow-50)\\"
@@ -765,6 +897,54 @@ test('[dts] should generate package', () => {
       \\"colors.yellow.900\\": {
         \\"value\\": \\"#713f12\\",
         \\"variable\\": \\"var(--colors-yellow-900)\\"
+      },
+      \\"colors.yellow.950\\": {
+        \\"value\\": \\"#422006\\",
+        \\"variable\\": \\"var(--colors-yellow-950)\\"
+      },
+      \\"colors.amber.50\\": {
+        \\"value\\": \\"#fffbeb\\",
+        \\"variable\\": \\"var(--colors-amber-50)\\"
+      },
+      \\"colors.amber.100\\": {
+        \\"value\\": \\"#fef3c7\\",
+        \\"variable\\": \\"var(--colors-amber-100)\\"
+      },
+      \\"colors.amber.200\\": {
+        \\"value\\": \\"#fde68a\\",
+        \\"variable\\": \\"var(--colors-amber-200)\\"
+      },
+      \\"colors.amber.300\\": {
+        \\"value\\": \\"#fcd34d\\",
+        \\"variable\\": \\"var(--colors-amber-300)\\"
+      },
+      \\"colors.amber.400\\": {
+        \\"value\\": \\"#fbbf24\\",
+        \\"variable\\": \\"var(--colors-amber-400)\\"
+      },
+      \\"colors.amber.500\\": {
+        \\"value\\": \\"#f59e0b\\",
+        \\"variable\\": \\"var(--colors-amber-500)\\"
+      },
+      \\"colors.amber.600\\": {
+        \\"value\\": \\"#d97706\\",
+        \\"variable\\": \\"var(--colors-amber-600)\\"
+      },
+      \\"colors.amber.700\\": {
+        \\"value\\": \\"#b45309\\",
+        \\"variable\\": \\"var(--colors-amber-700)\\"
+      },
+      \\"colors.amber.800\\": {
+        \\"value\\": \\"#92400e\\",
+        \\"variable\\": \\"var(--colors-amber-800)\\"
+      },
+      \\"colors.amber.900\\": {
+        \\"value\\": \\"#78350f\\",
+        \\"variable\\": \\"var(--colors-amber-900)\\"
+      },
+      \\"colors.amber.950\\": {
+        \\"value\\": \\"#451a03\\",
+        \\"variable\\": \\"var(--colors-amber-950)\\"
       },
       \\"colors.orange.50\\": {
         \\"value\\": \\"#fff7ed\\",
@@ -806,6 +986,10 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"#7c2d12\\",
         \\"variable\\": \\"var(--colors-orange-900)\\"
       },
+      \\"colors.orange.950\\": {
+        \\"value\\": \\"#431407\\",
+        \\"variable\\": \\"var(--colors-orange-950)\\"
+      },
       \\"colors.red.50\\": {
         \\"value\\": \\"#fef2f2\\",
         \\"variable\\": \\"var(--colors-red-50)\\"
@@ -845,6 +1029,142 @@ test('[dts] should generate package', () => {
       \\"colors.red.900\\": {
         \\"value\\": \\"#7f1d1d\\",
         \\"variable\\": \\"var(--colors-red-900)\\"
+      },
+      \\"colors.red.950\\": {
+        \\"value\\": \\"#450a0a\\",
+        \\"variable\\": \\"var(--colors-red-950)\\"
+      },
+      \\"colors.neutral.50\\": {
+        \\"value\\": \\"#fafafa\\",
+        \\"variable\\": \\"var(--colors-neutral-50)\\"
+      },
+      \\"colors.neutral.100\\": {
+        \\"value\\": \\"#f5f5f5\\",
+        \\"variable\\": \\"var(--colors-neutral-100)\\"
+      },
+      \\"colors.neutral.200\\": {
+        \\"value\\": \\"#e5e5e5\\",
+        \\"variable\\": \\"var(--colors-neutral-200)\\"
+      },
+      \\"colors.neutral.300\\": {
+        \\"value\\": \\"#d4d4d4\\",
+        \\"variable\\": \\"var(--colors-neutral-300)\\"
+      },
+      \\"colors.neutral.400\\": {
+        \\"value\\": \\"#a3a3a3\\",
+        \\"variable\\": \\"var(--colors-neutral-400)\\"
+      },
+      \\"colors.neutral.500\\": {
+        \\"value\\": \\"#737373\\",
+        \\"variable\\": \\"var(--colors-neutral-500)\\"
+      },
+      \\"colors.neutral.600\\": {
+        \\"value\\": \\"#525252\\",
+        \\"variable\\": \\"var(--colors-neutral-600)\\"
+      },
+      \\"colors.neutral.700\\": {
+        \\"value\\": \\"#404040\\",
+        \\"variable\\": \\"var(--colors-neutral-700)\\"
+      },
+      \\"colors.neutral.800\\": {
+        \\"value\\": \\"#262626\\",
+        \\"variable\\": \\"var(--colors-neutral-800)\\"
+      },
+      \\"colors.neutral.900\\": {
+        \\"value\\": \\"#171717\\",
+        \\"variable\\": \\"var(--colors-neutral-900)\\"
+      },
+      \\"colors.neutral.950\\": {
+        \\"value\\": \\"#0a0a0a\\",
+        \\"variable\\": \\"var(--colors-neutral-950)\\"
+      },
+      \\"colors.stone.50\\": {
+        \\"value\\": \\"#fafaf9\\",
+        \\"variable\\": \\"var(--colors-stone-50)\\"
+      },
+      \\"colors.stone.100\\": {
+        \\"value\\": \\"#f5f5f4\\",
+        \\"variable\\": \\"var(--colors-stone-100)\\"
+      },
+      \\"colors.stone.200\\": {
+        \\"value\\": \\"#e7e5e4\\",
+        \\"variable\\": \\"var(--colors-stone-200)\\"
+      },
+      \\"colors.stone.300\\": {
+        \\"value\\": \\"#d6d3d1\\",
+        \\"variable\\": \\"var(--colors-stone-300)\\"
+      },
+      \\"colors.stone.400\\": {
+        \\"value\\": \\"#a8a29e\\",
+        \\"variable\\": \\"var(--colors-stone-400)\\"
+      },
+      \\"colors.stone.500\\": {
+        \\"value\\": \\"#78716c\\",
+        \\"variable\\": \\"var(--colors-stone-500)\\"
+      },
+      \\"colors.stone.600\\": {
+        \\"value\\": \\"#57534e\\",
+        \\"variable\\": \\"var(--colors-stone-600)\\"
+      },
+      \\"colors.stone.700\\": {
+        \\"value\\": \\"#44403c\\",
+        \\"variable\\": \\"var(--colors-stone-700)\\"
+      },
+      \\"colors.stone.800\\": {
+        \\"value\\": \\"#292524\\",
+        \\"variable\\": \\"var(--colors-stone-800)\\"
+      },
+      \\"colors.stone.900\\": {
+        \\"value\\": \\"#1c1917\\",
+        \\"variable\\": \\"var(--colors-stone-900)\\"
+      },
+      \\"colors.stone.950\\": {
+        \\"value\\": \\"#0c0a09\\",
+        \\"variable\\": \\"var(--colors-stone-950)\\"
+      },
+      \\"colors.zinc.50\\": {
+        \\"value\\": \\"#fafafa\\",
+        \\"variable\\": \\"var(--colors-zinc-50)\\"
+      },
+      \\"colors.zinc.100\\": {
+        \\"value\\": \\"#f4f4f5\\",
+        \\"variable\\": \\"var(--colors-zinc-100)\\"
+      },
+      \\"colors.zinc.200\\": {
+        \\"value\\": \\"#e4e4e7\\",
+        \\"variable\\": \\"var(--colors-zinc-200)\\"
+      },
+      \\"colors.zinc.300\\": {
+        \\"value\\": \\"#d4d4d8\\",
+        \\"variable\\": \\"var(--colors-zinc-300)\\"
+      },
+      \\"colors.zinc.400\\": {
+        \\"value\\": \\"#a1a1aa\\",
+        \\"variable\\": \\"var(--colors-zinc-400)\\"
+      },
+      \\"colors.zinc.500\\": {
+        \\"value\\": \\"#71717a\\",
+        \\"variable\\": \\"var(--colors-zinc-500)\\"
+      },
+      \\"colors.zinc.600\\": {
+        \\"value\\": \\"#52525b\\",
+        \\"variable\\": \\"var(--colors-zinc-600)\\"
+      },
+      \\"colors.zinc.700\\": {
+        \\"value\\": \\"#3f3f46\\",
+        \\"variable\\": \\"var(--colors-zinc-700)\\"
+      },
+      \\"colors.zinc.800\\": {
+        \\"value\\": \\"#27272a\\",
+        \\"variable\\": \\"var(--colors-zinc-800)\\"
+      },
+      \\"colors.zinc.900\\": {
+        \\"value\\": \\"#18181b\\",
+        \\"variable\\": \\"var(--colors-zinc-900)\\"
+      },
+      \\"colors.zinc.950\\": {
+        \\"value\\": \\"#09090b\\",
+        \\"variable\\": \\"var(--colors-zinc-950)\\"
       },
       \\"colors.gray.50\\": {
         \\"value\\": \\"#f9fafb\\",
@@ -886,6 +1206,10 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"#111827\\",
         \\"variable\\": \\"var(--colors-gray-900)\\"
       },
+      \\"colors.gray.950\\": {
+        \\"value\\": \\"#030712\\",
+        \\"variable\\": \\"var(--colors-gray-950)\\"
+      },
       \\"colors.slate.50\\": {
         \\"value\\": \\"#f8fafc\\",
         \\"variable\\": \\"var(--colors-slate-50)\\"
@@ -925,6 +1249,10 @@ test('[dts] should generate package', () => {
       \\"colors.slate.900\\": {
         \\"value\\": \\"#0f172a\\",
         \\"variable\\": \\"var(--colors-slate-900)\\"
+      },
+      \\"colors.slate.950\\": {
+        \\"value\\": \\"#020617\\",
+        \\"variable\\": \\"var(--colors-slate-950)\\"
       },
       \\"colors.deep.test.yam\\": {
         \\"value\\": \\"%555\\",
@@ -1569,6 +1897,10 @@ test('[dts] should generate package', () => {
       \\"colors.colorPalette.900\\": {
         \\"value\\": \\"var(--colors-color-palette-900)\\",
         \\"variable\\": \\"var(--colors-color-palette-900)\\"
+      },
+      \\"colors.colorPalette.950\\": {
+        \\"value\\": \\"var(--colors-color-palette-950)\\",
+        \\"variable\\": \\"var(--colors-color-palette-950)\\"
       },
       \\"colors.colorPalette.yam\\": {
         \\"value\\": \\"var(--colors-color-palette-yam)\\",
