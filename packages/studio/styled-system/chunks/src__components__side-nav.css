@@ -24,7 +24,7 @@
   }
 
   .p_0 {
-    padding: 0;
+    padding: var(--spacing-0);
   }
 
   .my_2 {
@@ -32,7 +32,7 @@
   }
 
   .mx_0 {
-    margin-inline: 0;
+    margin-inline: var(--spacing-0);
   }
 
   .d_flex {
