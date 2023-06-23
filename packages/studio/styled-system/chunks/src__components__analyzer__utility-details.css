@@ -5,6 +5,12 @@
     }
   }
 
+  .\[\&_li\]\:cursor_pointer {
+    & li {
+      cursor: pointer;
+    }
+  }
+
   .p_4px_8px {
     padding: 4px 8px;
   }
@@ -12,6 +18,24 @@
   .\[\&_li\]\:cursor_pointer {
     & li {
       cursor: pointer;
+    }
+  }
+
+  .hover\:opacity_0\.8 {
+    &:where(:hover, [data-hover]) {
+      opacity: 0.8;
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
     }
   }
 
@@ -161,6 +185,14 @@
   .hover\:border-b_black {
     &:where(:hover, [data-hover]) {
       border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 {
+    & li {
+      &:where(:hover, [data-hover]) {
+        opacity: 0.8;
+      }
     }
   }
 
