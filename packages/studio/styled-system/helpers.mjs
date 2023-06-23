@@ -3,6 +3,18 @@ function isObject(value) {
   return typeof value === 'object' && value != null && !Array.isArray(value)
 }
 
+// src/astish.ts
+var newRule = /(?:([\u0080-\uFFFF\w-%@]+) *:? *([^{;]+?);|([^;}{]*?) *{)|(}\s*)/g
+var ruleClean = /\/\*[^]*?\*\/|\s\s+|\n/g
+var astish = (val, tree = [{}]) => {
+  const block = newRule.exec(val.replace(ruleClean, ''))
+  if (!block) return tree[0]
+  if (block[4]) tree.shift()
+  else if (block[3]) tree.unshift((tree[0][block[3]] = tree[0][block[3]] || {}))
+  else tree[0][block[1]] = block[2]
+  return astish(val, tree)
+}
+
 // src/compact.ts
 function compact(value) {
   return Object.fromEntries(Object.entries(value ?? {}).filter(([_, value2]) => value2 !== void 0))
@@ -175,6 +187,28 @@ function createMergeCss(context) {
   return { mergeCss, assignCss }
 }
 
+// src/memo.ts
+var memo = (fn) => {
+  const cache = /* @__PURE__ */ new Map()
+  const get = (...args) => {
+    const key = JSON.stringify(args)
+    if (cache.has(key)) {
+      return cache.get(key)
+    }
+    const result = fn(...args)
+    cache.set(key, result)
+    return result
+  }
+  return get
+}
+
+// src/hypenate.ts
+var dashCaseRegex = /[A-Z]/g
+var hypenateProperty = memo((property) => {
+  if (property.startsWith('--')) return property
+  return property.replace(dashCaseRegex, (match) => `-${match.toLowerCase()}`)
+})
+
 // src/normalize-html.ts
 var htmlProps = ['htmlSize', 'htmlTranslate', 'htmlWidth', 'htmlHeight']
 function convert(key) {
@@ -203,29 +237,8 @@ function splitProps(props, ...keys) {
   const fn = (key) => split(Array.isArray(key) ? key : dKeys.filter(key))
   return keys.map(fn).concat(split(dKeys))
 }
-
-// src/memo.ts
-var memo = (fn) => {
-  const cache = /* @__PURE__ */ new Map()
-  const get = (...args) => {
-    const key = JSON.stringify(args)
-    if (cache.has(key)) {
-      return cache.get(key)
-    }
-    const result = fn(...args)
-    cache.set(key, result)
-    return result
-  }
-  return get
-}
-
-// src/hypenate.ts
-var dashCaseRegex = /[A-Z]/g
-var hypenateProperty = memo((property) => {
-  if (property.startsWith('--')) return property
-  return property.replace(dashCaseRegex, (match) => `-${match.toLowerCase()}`)
-})
 export {
+  astish,
   compact,
   createCss,
   createMergeCss,

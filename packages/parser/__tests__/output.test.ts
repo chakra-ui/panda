@@ -208,6 +208,180 @@ describe('extract to css output pipeline', () => {
     expect(result.css).toMatchInlineSnapshot('""')
   })
 
+  test('string literal - factory', () => {
+    const code = `
+    import { panda } from ".panda/jsx"
+
+    const baseStyle = panda.div\`
+        background: transparent;
+        border-radius: 3px;
+        border: 1px solid var(--accent-color);
+        color: token(colors.blue.100);
+        display: inline-block;
+        margin: 0.5rem 1rem;
+        padding: 0.5rem 0;
+        transition: all 200ms ease-in-out;
+        width: 11rem;
+        &:hover {
+          filter: brightness(0.85);
+          &:disabled {
+            filter: brightness(1);
+          }
+        }
+        @media (min-width: 768px) {
+          padding: 1rem 0;
+          &:disabled {
+            filter: brightness(1);
+          }
+        }
+    \`
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              " &:hover": {
+                " &:disabled": {
+                  "filter": "brightness(1)",
+                },
+                "filter": "brightness(0.85)",
+              },
+              "@media (min-width: 768px)": {
+                " &:disabled": {
+                  "filter": "brightness(1)",
+                },
+                "padding": "1rem 0",
+              },
+              "background": "transparent",
+              "border": "1px solid var(--accent-color)",
+              "border-radius": "3px",
+              "color": "token(colors.blue.100)",
+              "display": "inline-block",
+              "margin": "0.5rem 1rem",
+              "padding": "0.5rem 0",
+              "transition": "all 200ms ease-in-out",
+              "width": "11rem",
+            },
+          ],
+          "name": "panda.div",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bg_transparent {
+          background: var(--colors-transparent)
+          }
+
+        .border-radius_3px {
+          border-radius: 3px
+          }
+
+        .border_1px_solid_var\\\\(--accent-color\\\\) {
+          border: 1px solid var(--accent-color)
+          }
+
+        .text_token\\\\(colors\\\\.blue\\\\.100\\\\) {
+          color: var(--colors-blue-100)
+          }
+
+        .d_inline-block {
+          display: inline-block
+          }
+
+        .m_0\\\\.5rem_1rem {
+          margin: 0.5rem 1rem
+          }
+
+        .p_0\\\\.5rem_0 {
+          padding: 0.5rem 0
+          }
+
+        .transition_all_200ms_ease-in-out {
+          transition: all 200ms ease-in-out
+          }
+
+        .w_11rem {
+          width: 11rem
+          }
+
+        .\\\\[\\\\&\\\\:hover\\\\]\\\\:filter_brightness\\\\(0\\\\.85\\\\):hover {
+          filter: brightness(0.85)
+              }
+
+        .\\\\[\\\\&\\\\:hover\\\\]\\\\:\\\\[\\\\&\\\\:disabled\\\\]\\\\:filter_brightness\\\\(1\\\\):hover:disabled {
+          filter: brightness(1)
+                  }
+
+        @media (min-width: 768px) {
+          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:\\\\[\\\\&\\\\:disabled\\\\]\\\\:filter_brightness\\\\(1\\\\):disabled {
+            filter: brightness(1)
+              }
+                  }
+
+        @media (min-width: 768px) {
+          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:p_1rem_0 {
+            padding: 1rem 0
+          }
+              }
+      }"
+    `)
+  })
+
+  test('string literal - css', () => {
+    const code = `
+    import { css } from ".panda/css"
+
+    const className = css\`
+        background: transparent;
+        border-radius: 3px;
+        border: 1px solid var(--accent-color);
+        color: token(colors.blue.100);
+    \`
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "background": "transparent",
+              "border": "1px solid var(--accent-color)",
+              "border-radius": "3px",
+              "color": "token(colors.blue.100)",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bg_transparent {
+          background: var(--colors-transparent)
+          }
+
+        .border-radius_3px {
+          border-radius: 3px
+          }
+
+        .border_1px_solid_var\\\\(--accent-color\\\\) {
+          border: 1px solid var(--accent-color)
+          }
+
+        .text_token\\\\(colors\\\\.blue\\\\.100\\\\) {
+          color: var(--colors-blue-100)
+          }
+      }"
+    `)
+  })
+
   test('runtime conditions', () => {
     const code = `
       import { css } from ".panda/css"

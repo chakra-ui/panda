@@ -8,7 +8,9 @@ import { generateResetCss } from './css/reset-css'
 import { generateStaticCss } from './css/static-css'
 import { generateTokenCss } from './css/token-css'
 import { generateConditions } from './js/conditions'
+import { generateStringLiteralConditions } from './js/conditions.string-literal'
 import { generateCssFn } from './js/css-fn'
+import { generateStringLiteralCssFn } from './js/css-fn.string-literal'
 import { generateCvaFn } from './js/cva'
 import { generateCx } from './js/cx'
 import { generateHelpers } from './js/helpers'
@@ -84,8 +86,8 @@ function setupTypes(ctx: Context): Artifact {
 }
 
 function setupCss(ctx: Context): Artifact {
-  const code = generateCssFn(ctx)
-  const conditions = generateConditions(ctx)
+  const code = ctx.isStringLiteralSyntax ? generateStringLiteralCssFn(ctx) : generateCssFn(ctx)
+  const conditions = ctx.isStringLiteralSyntax ? generateStringLiteralConditions(ctx) : generateConditions(ctx)
   return {
     dir: ctx.paths.css,
     files: [
@@ -97,6 +99,8 @@ function setupCss(ctx: Context): Artifact {
 }
 
 function setupCva(ctx: Context): Artifact {
+  if (ctx.isStringLiteralSyntax) return
+
   const code = generateCvaFn(ctx)
   return {
     dir: ctx.paths.css,
@@ -141,6 +145,8 @@ function setupRecipes(ctx: Context): Artifact {
 }
 
 function setupPatterns(ctx: Context): Artifact {
+  if (ctx.isStringLiteralSyntax) return
+
   const files = generatePattern(ctx)
   if (!files) return
 
@@ -185,7 +191,7 @@ function setupJsx(ctx: Context): Artifact {
     files: [
       ...patterns.map((file) => ({ file: ctx.file.ext(file.name), code: file.js })),
       ...patterns.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
-      { file: ctx.file.ext('is-valid-prop'), code: isValidProp.js },
+      { file: ctx.file.ext('is-valid-prop'), code: isValidProp?.js },
       { file: 'factory.d.ts', code: types.jsxFactory },
       { file: ctx.file.ext('factory'), code: factory?.js },
       { file: 'index.d.ts', code: index.dts },
@@ -199,12 +205,12 @@ function setupCssIndex(ctx: Context): Artifact {
     js: outdent`
   ${ctx.file.export('./css')}
   ${ctx.file.export('./cx')}
-  ${ctx.file.export('./cva')}
+  ${ctx.isStringLiteralSyntax ? '' : ctx.file.export('./cva')}
  `,
     dts: outdent`
   export * from './css'
   export * from './cx'
-  export * from './cva'
+  ${ctx.isStringLiteralSyntax ? '' : `export * from './cva'`}
   `,
   }
 
