@@ -1,4 +1,4 @@
-import { BoxNodeMap, extract, unbox, type BoxNode, type Unboxed } from '@pandacss/extractor'
+import { BoxNodeMap, extract, unbox, type BoxNode, type Unboxed, box } from '@pandacss/extractor'
 import { logger } from '@pandacss/logger'
 import { astish, memo } from '@pandacss/shared'
 import type { SourceFile } from 'ts-morph'
@@ -6,7 +6,7 @@ import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { getImportDeclarations } from './import'
 import { createParserResult } from './parser-result'
-import type { RecipeConfig } from '@pandacss/types'
+import type { RecipeConfig, ResultItem } from '@pandacss/types'
 
 type ParserPatternNode = {
   name: string
@@ -24,6 +24,9 @@ type ParserRecipeNode = {
 
 export type ParserNodeOptions = ParserPatternNode | ParserRecipeNode
 const isNodeRecipe = (node: ParserNodeOptions): node is ParserRecipeNode => node.type === 'recipe'
+
+const cvaProps = ['compoundVariants', 'defaultVariants', 'variants', 'base']
+const isCva = (map: BoxNodeMap['value']) => cvaProps.some((prop) => map.has(prop))
 
 export type ParserOptions = {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string>
@@ -273,15 +276,30 @@ export function createParser(options: ParserOptions) {
             })
           })
           // panda("span", { ... }) or panda("div", badge)
+          // or panda("span", { color: "red.100", ... })
+          // or panda('span')` color: red; `
           .when(isValidStyleFn, () => {
             result.queryList.forEach((query) => {
               if (query.kind === 'call-expression' && query.box.value[1]) {
-                collector.setCva({
+                const map = query.box.value[1]
+                const result: ResultItem = {
                   name,
-                  box: (query.box.value[1] as BoxNodeMap) ?? fallback(query.box),
-                  data: combineResult(unbox(query.box.value[1])),
-                })
+                  box: (map as BoxNodeMap) ?? fallback(query.box),
+                  data: combineResult(unbox(map)),
+                }
+
+                // CallExpression factory inline recipe
+                // panda("span", { base: {}, variants: { ... } })
+                if (box.isMap(map) && isCva(map.value)) {
+                  collector.setCva(result)
+                } else {
+                  // CallExpression factory css
+                  // panda("span", { color: "red.100", ... })
+                  collector.set('css', result)
+                }
               } else if (query.kind === 'tagged-template') {
+                // TaggedTemplateExpression factory css
+                // panda('span')` color: red; `
                 const obj = astish(query.box.value as string)
                 collector.set('css', {
                   name,
@@ -295,11 +313,22 @@ export function createParser(options: ParserOptions) {
           .when(isFactory, (name) => {
             result.queryList.forEach((query) => {
               if (query.kind === 'call-expression') {
-                collector.setCva({
+                const map = query.box.value[0]
+                const result: ResultItem = {
                   name,
-                  box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
-                  data: combineResult(unbox(query.box.value[0])),
-                })
+                  box: (map as BoxNodeMap) ?? fallback(query.box),
+                  data: combineResult(unbox(map)),
+                }
+
+                // PropertyAccess factory inline recipe
+                // panda.span({ base: {}, variants: { ... } })
+                if (box.isMap(map) && isCva(map.value)) {
+                  collector.setCva(result)
+                } else {
+                  // PropertyAccess factory css
+                  // panda.span({ ... })
+                  collector.set('css', result)
+                }
               } else if (query.kind === 'tagged-template') {
                 const obj = astish(query.box.value as string)
                 collector.set('css', {

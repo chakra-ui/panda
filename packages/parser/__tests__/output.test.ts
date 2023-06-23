@@ -664,36 +664,117 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('factory css', () => {
+    const code = `
+    import { panda } from ".panda/jsx"
+
+    // PropertyAccess factory css
+    panda.div({
+      color: "red.100",
+    })
+
+    // CallExpression factory css
+    panda("div", {
+        color: "yellow.100",
+    })
+
+    // TaggedTemplateExpression factory css
+    panda.div\`
+      color: var(--colors-purple-100);
+    \`
+   `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "color": "red.100",
+            },
+          ],
+          "name": "panda.div",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "color": "var(--colors-purple-100)",
+            },
+          ],
+          "name": "panda.div",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "color": "yellow.100",
+            },
+          ],
+          "name": "panda",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_red\\\\.100 {
+          color: var(--colors-red-100)
+          }
+
+        .text_var\\\\(--colors-purple-100\\\\) {
+          color: var(--colors-purple-100)
+          }
+
+        .text_yellow\\\\.100 {
+          color: var(--colors-yellow-100)
+          }
+      }"
+    `)
+  })
+
   test('cva and factory recipes', () => {
     const code = `
       import { panda } from ".panda/jsx"
       import { cva } from ".panda/css"
 
-      const buttonRecipe = cva({
-        base: {
-          color: "red.100",
-          bg: "red.900",
-        }
-      })
-
-      const Button = panda('button', {
-        base: {
-          color: "green.100",
-          bg: "green.900",
-        }
-      })
-
-      const Input = panda.input({
+      // PropertyAccess factory inline recipe
+      panda.div({
         base: {
           color: "blue.100",
-          bg: "blue.900",
+        },
+        variants: {
+          //
+        }
+      })
+
+      // CallExpression factory inline recipe
+      panda("div", {
+        base: {
+          color: "green.100",
+        },
+        variants: {
+          //
+        }
+      })
+
+      // PropertyAccess factory + cva
+      panda.div(cva({
+        base: {
+          color: "rose.100",
+        },
+      }))
+
+      const buttonRecipe = cva({
+        base: {
+          color: "sky.100",
+          bg: "red.900",
         }
       })
 
       function App () {
         return (
           <>
-            <Button>Click me</Button>
             <Input />
           </>
         )
@@ -704,10 +785,40 @@ describe('extract to css output pipeline', () => {
       [
         {
           "data": [
+            {},
+          ],
+          "name": "panda.div",
+          "type": "object",
+        },
+        {
+          "data": [
             {
               "base": {
-                "bg": "red.900",
-                "color": "red.100",
+                "color": "blue.100",
+              },
+              "variants": {},
+            },
+          ],
+          "name": "panda.div",
+          "type": "cva",
+        },
+        {
+          "data": [
+            {
+              "base": {
+                "color": "green.100",
+              },
+              "variants": {},
+            },
+          ],
+          "name": "panda",
+          "type": "cva",
+        },
+        {
+          "data": [
+            {
+              "base": {
+                "color": "rose.100",
               },
             },
           ],
@@ -718,32 +829,13 @@ describe('extract to css output pipeline', () => {
           "data": [
             {
               "base": {
-                "bg": "green.900",
-                "color": "green.100",
+                "bg": "red.900",
+                "color": "sky.100",
               },
             },
           ],
-          "name": "panda",
-          "type": "cva",
-        },
-        {
-          "data": [
-            {
-              "base": {
-                "bg": "blue.900",
-                "color": "blue.100",
-              },
-            },
-          ],
-          "name": "panda.input",
-          "type": "cva",
-        },
-        {
-          "data": [
-            {},
-          ],
-          "name": "Button",
-          "type": "jsx",
+          "name": "cva",
+          "type": "object",
         },
         {
           "data": [
@@ -757,28 +849,24 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_red\\\\.100 {
-          color: var(--colors-red-100)
-          }
-
-        .bg_red\\\\.900 {
-          background: var(--colors-red-900)
+        .text_blue\\\\.100 {
+          color: var(--colors-blue-100)
           }
 
         .text_green\\\\.100 {
           color: var(--colors-green-100)
           }
 
-        .bg_green\\\\.900 {
-          background: var(--colors-green-900)
+        .text_rose\\\\.100 {
+          color: var(--colors-rose-100)
           }
 
-        .text_blue\\\\.100 {
-          color: var(--colors-blue-100)
+        .text_sky\\\\.100 {
+          color: var(--colors-sky-100)
           }
 
-        .bg_blue\\\\.900 {
-          background: var(--colors-blue-900)
+        .bg_red\\\\.900 {
+          background: var(--colors-red-900)
           }
       }"
     `)
