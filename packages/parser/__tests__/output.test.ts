@@ -635,6 +635,126 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('cva and factory recipes', () => {
+    const code = `
+      import { panda } from ".panda/jsx"
+      import { cva } from ".panda/css"
+
+      const buttonRecipe = cva({
+        base: {
+          color: "red.100",
+          bg: "red.900",
+        }
+      })
+
+      const Button = panda('button', {
+        base: {
+          color: "green.100",
+          bg: "green.900",
+        }
+      })
+
+      const Input = panda.input({
+        base: {
+          color: "blue.100",
+          bg: "blue.900",
+        }
+      })
+
+      function App () {
+        return (
+          <>
+            <Button>Click me</Button>
+            <Input />
+          </>
+        )
+      }
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "base": {
+                "bg": "red.900",
+                "color": "red.100",
+              },
+            },
+          ],
+          "name": "cva",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "base": {
+                "bg": "green.900",
+                "color": "green.100",
+              },
+            },
+          ],
+          "name": "panda",
+          "type": "cva",
+        },
+        {
+          "data": [
+            {
+              "base": {
+                "bg": "blue.900",
+                "color": "blue.100",
+              },
+            },
+          ],
+          "name": "panda.input",
+          "type": "cva",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Button",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Input",
+          "type": "jsx",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_red\\\\.100 {
+          color: var(--colors-red-100)
+          }
+
+        .bg_red\\\\.900 {
+          background: var(--colors-red-900)
+          }
+
+        .text_green\\\\.100 {
+          color: var(--colors-green-100)
+          }
+
+        .bg_green\\\\.900 {
+          background: var(--colors-green-900)
+          }
+
+        .text_blue\\\\.100 {
+          color: var(--colors-blue-100)
+          }
+
+        .bg_blue\\\\.900 {
+          background: var(--colors-blue-900)
+          }
+      }"
+    `)
+  })
+
   test('should extract config recipes', () => {
     const code = `
        import { panda, Stack } from ".panda/jsx"
