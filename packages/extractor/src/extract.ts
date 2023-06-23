@@ -207,7 +207,9 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
     }
 
     if (taggedTemplates && Node.isTaggedTemplateExpression(node)) {
-      const fnName = node.getTag().getText()
+      const tag = node.getTag()
+      // styled('span')`...` or styled.span`...`
+      const fnName = Node.isCallExpression(tag) ? tag.getExpression().getText() : tag.getText()
       if (!taggedTemplates.matchTaggedTemplate({ taggedTemplateNode: node, fnName })) return
 
       if (!byName.has(fnName)) {

@@ -100,6 +100,7 @@ export function createParser(options: ParserOptions) {
     const isValidPattern = imports.createMatch(importMap.pattern)
     const isValidRecipe = imports.createMatch(importMap.recipe)
     const isValidStyleFn = (name: string) => name === jsx?.factory
+    const isFactory = (name: string) => jsx && name.startsWith(jsx.factory)
 
     const jsxFactoryAlias = jsx ? imports.getAlias(jsx.factory) : 'panda'
     const jsxPatternNodes = new RegExp(
@@ -274,36 +275,41 @@ export function createParser(options: ParserOptions) {
           // panda("span", { ... }) or panda("div", badge)
           .when(isValidStyleFn, () => {
             result.queryList.forEach((query) => {
-              if (query.kind === 'call-expression') {
+              if (query.kind === 'call-expression' && query.box.value[1]) {
                 collector.setCva({
                   name,
                   box: (query.box.value[1] as BoxNodeMap) ?? fallback(query.box),
                   data: combineResult(unbox(query.box.value[1])),
                 })
+              } else if (query.kind === 'tagged-template') {
+                const obj = astish(query.box.value as string)
+                collector.set('css', {
+                  name,
+                  box: query.box ?? fallback(query.box),
+                  data: [obj],
+                })
               }
             })
           })
-          .when(
-            (name) => jsx && name.startsWith(jsxFactoryAlias),
-            (name) => {
-              result.queryList.forEach((query) => {
-                if (query.kind === 'call-expression') {
-                  collector.setCva({
-                    name,
-                    box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
-                    data: combineResult(unbox(query.box.value[0])),
-                  })
-                } else if (query.kind === 'tagged-template') {
-                  const obj = astish(query.box.value as string)
-                  collector.set('css', {
-                    name,
-                    box: query.box ?? fallback(query.box),
-                    data: [obj],
-                  })
-                }
-              })
-            },
-          )
+          // panda.span({ ... }) or panda.div` ...`
+          .when(isFactory, (name) => {
+            result.queryList.forEach((query) => {
+              if (query.kind === 'call-expression') {
+                collector.setCva({
+                  name,
+                  box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
+                  data: combineResult(unbox(query.box.value[0])),
+                })
+              } else if (query.kind === 'tagged-template') {
+                const obj = astish(query.box.value as string)
+                collector.set('css', {
+                  name,
+                  box: query.box ?? fallback(query.box),
+                  data: [obj],
+                })
+              }
+            })
+          })
           .otherwise(() => {
             //
           })

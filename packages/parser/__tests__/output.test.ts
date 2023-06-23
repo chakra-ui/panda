@@ -212,6 +212,14 @@ describe('extract to css output pipeline', () => {
     const code = `
     import { panda } from ".panda/jsx"
 
+    const Example = panda('span')\`
+      color: lightgreen;
+
+      & > strong {
+        color: hotpink;
+      }
+    \`
+
     const baseStyle = panda.div\`
         background: transparent;
         border-radius: 3px;
@@ -239,6 +247,18 @@ describe('extract to css output pipeline', () => {
     const result = run(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
+        {
+          "data": [
+            {
+              " & > strong": {
+                "color": "hotpink",
+              },
+              "color": "lightgreen",
+            },
+          ],
+          "name": "panda",
+          "type": "object",
+        },
         {
           "data": [
             {
@@ -273,6 +293,14 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .text_lightgreen {
+          color: lightgreen
+          }
+
+        .\\\\[\\\\&_\\\\>_strong\\\\]\\\\:text_hotpink > strong {
+          color: hotpink
+              }
+
         .bg_transparent {
           background: var(--colors-transparent)
           }
