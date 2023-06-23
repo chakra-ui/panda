@@ -1,6 +1,6 @@
 import { BoxNodeMap, extract, unbox, type BoxNode, type Unboxed } from '@pandacss/extractor'
 import { logger } from '@pandacss/logger'
-import { memo } from '@pandacss/shared'
+import { astish, memo } from '@pandacss/shared'
 import type { SourceFile } from 'ts-morph'
 import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
@@ -238,7 +238,12 @@ export function createParser(options: ParserOptions) {
                   data: combineResult(unbox(query.box.value[0])),
                 })
               } else if (query.kind === 'tagged-template') {
-                // TODO
+                const obj = astish(query.box.value as string)
+                collector.set(name, {
+                  name,
+                  box: query.box ?? fallback(query.box),
+                  data: [obj],
+                })
               }
             })
           })
@@ -251,8 +256,6 @@ export function createParser(options: ParserOptions) {
                   box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                   data: combineResult(unbox(query.box.value[0])),
                 })
-              } else if (query.kind === 'tagged-template') {
-                // TODO
               }
             })
           })
@@ -265,8 +268,6 @@ export function createParser(options: ParserOptions) {
                   box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                   data: combineResult(unbox(query.box.value[0])),
                 })
-              } else if (query.kind === 'tagged-template') {
-                // TODO
               }
             })
           })
@@ -279,11 +280,30 @@ export function createParser(options: ParserOptions) {
                   box: (query.box.value[1] as BoxNodeMap) ?? fallback(query.box),
                   data: combineResult(unbox(query.box.value[1])),
                 })
-              } else if (query.kind === 'tagged-template') {
-                // TODO
               }
             })
           })
+          .when(
+            (name) => jsx && name.startsWith(jsxFactoryAlias),
+            (name) => {
+              result.queryList.forEach((query) => {
+                if (query.kind === 'call-expression') {
+                  collector.setCva({
+                    name,
+                    box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
+                    data: combineResult(unbox(query.box.value[0])),
+                  })
+                } else if (query.kind === 'tagged-template') {
+                  const obj = astish(query.box.value as string)
+                  collector.set('css', {
+                    name,
+                    box: query.box ?? fallback(query.box),
+                    data: [obj],
+                  })
+                }
+              })
+            },
+          )
           .otherwise(() => {
             //
           })

@@ -161,6 +161,11 @@ type CssgenOptions = {
    * Used to generate css utility classes for your project.
    */
   staticCss?: StaticCssOptions
+  /**
+   * The css syntax kind to use
+   * @default 'object-literal'
+   */
+  syntaxKind?: 'template-literal' | 'object-literal'
 }
 
 type CodegenOptions = {
