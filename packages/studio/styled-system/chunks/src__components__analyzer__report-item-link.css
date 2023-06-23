@@ -3,6 +3,54 @@
     display: flex;
   }
 
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
+  .hover\:opacity_1 {
+    &:where(:hover, [data-hover]) {
+      opacity: 1;
+    }
+  }
+
+  .hover\:border-b_black {
+    &:where(:hover, [data-hover]) {
+      border-bottom-color: var(--colors-black);
+    }
+  }
+
   .pos_relative {
     position: relative;
   }
