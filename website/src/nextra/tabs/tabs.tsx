@@ -45,9 +45,12 @@ export function Tabs(props: ITabProps) {
   )
 }
 
-export function Tab({ children, ...props }: React.ComponentProps<'div'>) {
+export interface ITabProps extends React.ComponentProps<'div'> {
+  value: string
+}
+
+export function Tab({ children, ...props }: ITabProps) {
   return (
-    // @ts-ignore
     <TabContent {...props}>{children}</TabContent>
   )
 }
