@@ -1,5 +1,5 @@
 import Frame, { FrameContextConsumer } from 'react-frame-component'
-import { LiveError, LivePreview, LiveProvider } from 'react-live'
+import { LiveProvider, LiveError, LivePreview } from 'react-live-runner'
 import { useIsClient } from 'usehooks-ts'
 import { Flex } from '@/styled-system/jsx'
 
@@ -51,7 +51,7 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
                 .replaceAll(/export /g, '')
                 .concat('\nrender(<App />)')}
               scope={(window as any)?.panda}
-              noInline
+              // noInline
             >
               <LiveError />
               <LivePreview />
