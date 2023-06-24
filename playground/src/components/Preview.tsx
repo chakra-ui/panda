@@ -51,7 +51,6 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
                 .replaceAll(/export /g, '')
                 .concat('\nrender(<App />)')}
               scope={(window as any)?.panda}
-              // noInline
             >
               <LiveError />
               <LivePreview />
