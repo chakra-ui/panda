@@ -165,7 +165,7 @@ type CssgenOptions = {
    * The css syntax kind to use
    * @default 'object-literal'
    */
-  syntaxKind?: 'template-literal' | 'object-literal'
+  syntax?: 'template-literal' | 'object-literal'
 }
 
 type CodegenOptions = {

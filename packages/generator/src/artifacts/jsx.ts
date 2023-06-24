@@ -39,7 +39,7 @@ const typesStringLiteralMap = {
 
 export function generateJsxTypes(ctx: Context) {
   if (!ctx.jsx.framework) return
-  const type = ctx.isStringLiteralSyntax ? typesStringLiteralMap[ctx.jsx.framework] : typesMap[ctx.jsx.framework]
+  const type = ctx.isTemplateLiteralSyntax ? typesStringLiteralMap[ctx.jsx.framework] : typesMap[ctx.jsx.framework]
   return type?.(ctx)
 }
 
@@ -65,7 +65,9 @@ const factoryStringLiteralMap = {
 
 export function generateJsxFactory(ctx: Context) {
   if (!ctx.jsx.framework) return
-  const factory = ctx.isStringLiteralSyntax ? factoryStringLiteralMap[ctx.jsx.framework] : factoryMap[ctx.jsx.framework]
+  const factory = ctx.isTemplateLiteralSyntax
+    ? factoryStringLiteralMap[ctx.jsx.framework]
+    : factoryMap[ctx.jsx.framework]
   return factory?.(ctx)
 }
 
@@ -82,7 +84,7 @@ const patternMap = {
 }
 
 export function generateJsxPatterns(ctx: Context) {
-  if (ctx.isStringLiteralSyntax) return []
+  if (ctx.isTemplateLiteralSyntax) return []
   if (ctx.patterns.isEmpty() && !ctx.jsx.framework) return []
   return patternMap[ctx.jsx.framework!](ctx)
 }

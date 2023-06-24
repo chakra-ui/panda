@@ -13,7 +13,7 @@ const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
     jsxFactory: 'styled',
     outExtension: 'mjs',
     shorthands: true,
-    syntaxKind: 'object-literal',
+    syntax: 'object-literal',
     ...conf.config,
   },
 })

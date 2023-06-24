@@ -2,7 +2,7 @@ import isValidPropJson from '../generated/is-valid-prop.mjs.json' assert { type:
 import type { Context } from '../../engines'
 
 export function generateisValidProp(ctx: Context) {
-  if (ctx.isStringLiteralSyntax) return
+  if (ctx.isTemplateLiteralSyntax) return
   let content = isValidPropJson.content
   content = content.replace(
     'var userGenerated = []',

@@ -86,8 +86,8 @@ function setupTypes(ctx: Context): Artifact {
 }
 
 function setupCss(ctx: Context): Artifact {
-  const code = ctx.isStringLiteralSyntax ? generateStringLiteralCssFn(ctx) : generateCssFn(ctx)
-  const conditions = ctx.isStringLiteralSyntax ? generateStringLiteralConditions(ctx) : generateConditions(ctx)
+  const code = ctx.isTemplateLiteralSyntax ? generateStringLiteralCssFn(ctx) : generateCssFn(ctx)
+  const conditions = ctx.isTemplateLiteralSyntax ? generateStringLiteralConditions(ctx) : generateConditions(ctx)
   return {
     dir: ctx.paths.css,
     files: [
@@ -99,7 +99,7 @@ function setupCss(ctx: Context): Artifact {
 }
 
 function setupCva(ctx: Context): Artifact {
-  if (ctx.isStringLiteralSyntax) return
+  if (ctx.isTemplateLiteralSyntax) return
 
   const code = generateCvaFn(ctx)
   return {
@@ -145,7 +145,7 @@ function setupRecipes(ctx: Context): Artifact {
 }
 
 function setupPatterns(ctx: Context): Artifact {
-  if (ctx.isStringLiteralSyntax) return
+  if (ctx.isTemplateLiteralSyntax) return
 
   const files = generatePattern(ctx)
   if (!files) return
@@ -205,12 +205,12 @@ function setupCssIndex(ctx: Context): Artifact {
     js: outdent`
   ${ctx.file.export('./css')}
   ${ctx.file.export('./cx')}
-  ${ctx.isStringLiteralSyntax ? '' : ctx.file.export('./cva')}
+  ${ctx.isTemplateLiteralSyntax ? '' : ctx.file.export('./cva')}
  `,
     dts: outdent`
   export * from './css'
   export * from './cx'
-  ${ctx.isStringLiteralSyntax ? '' : `export * from './cva'`}
+  ${ctx.isTemplateLiteralSyntax ? '' : `export * from './cva'`}
   `,
   }
 
