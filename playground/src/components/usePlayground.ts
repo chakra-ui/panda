@@ -3,7 +3,7 @@ import { Layout } from './LayoutControl'
 
 export type State = {
   code: string
-  theme: string
+  config: string
 }
 
 export type UsePlayGroundProps = {
@@ -35,9 +35,10 @@ export const App = () => {
   )
 }
 `,
-          theme: `export const theme = {
-  extend: {},
-}`,
+          config: `export const config = {
+  theme: { extend: {} },
+};
+`,
           view: 'code',
         },
   )

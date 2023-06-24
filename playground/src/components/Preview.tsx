@@ -27,6 +27,7 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
       css,
       cva,
       cx,
+      token,
       ${patternNames.map((name) => `${name},`).join('\n')}
     };
   </script>

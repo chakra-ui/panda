@@ -25,7 +25,7 @@ const editorOptions = {
 export const Editor = (props: EditorProps) => {
   const { onChange, value, artifacts } = props
 
-  const handleChange = (content = '', id: 'code' | 'theme') => {
+  const handleChange = (content = '', id: 'code' | 'config') => {
     onChange({
       ...value,
       [id]: content,
@@ -143,7 +143,7 @@ export const Editor = (props: EditorProps) => {
           })}
         >
           <TabTrigger value="code">Code</TabTrigger>
-          <TabTrigger value="theme">Theme</TabTrigger>
+          <TabTrigger value="theme">Config</TabTrigger>
           <TabIndicator className={css({ background: 'yellow.400', height: '2px', mb: '-1px' })} />
         </TabList>
         <TabContent value="code" className={css({ flex: '1', pt: '4' })}>
@@ -158,8 +158,8 @@ export const Editor = (props: EditorProps) => {
         </TabContent>
         <TabContent value="theme" className={css({ flex: '1' })}>
           <MonacoEditor
-            value={value.theme}
-            onChange={(e) => handleChange(e, 'theme')}
+            value={value.config}
+            onChange={(e) => handleChange(e, 'config')}
             language="typescript"
             path="config.ts"
             options={editorOptions}
