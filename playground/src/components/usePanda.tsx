@@ -41,7 +41,6 @@ export function usePanda(source: string, config: string) {
         outdir: 'styled-system',
         ...presetBase,
         preflight: true,
-        jsxFramework: 'react',
         ...config,
       },
     })
