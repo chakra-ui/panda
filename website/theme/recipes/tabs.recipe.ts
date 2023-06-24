@@ -59,5 +59,18 @@ export const tabsRecipe = defineRecipe({
       rounded: 'md',
       pt: '6'
     }
-  })
+  }),
+  variants: {
+    variant: {
+      code: parts({
+        tablist: {
+          borderBottom: 'none',
+          mb: '0',
+        },
+        trigger: {
+          bg: 'red'
+        }
+      })
+    }
+  }
 })

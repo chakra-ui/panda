@@ -1,5 +1,5 @@
 import { cx } from '@/styled-system/css'
-import { tabs as tabsRecipe } from '@/styled-system/recipes'
+import { TabsVariantProps, tabs as tabsRecipe } from '@/styled-system/recipes'
 import {
   Tabs as ArkTabs,
   TabContent,
@@ -8,26 +8,21 @@ import {
   TabTrigger
 } from '@ark-ui/react'
 import { Children, cloneElement } from 'react'
+import { IUseTabsProps, useTabs } from './use-tabs'
 
-export function Tabs({
-  items,
-  children
-}: {
-  items: string[]
+export interface ITabProps extends TabsVariantProps, IUseTabsProps {
   children: React.ReactElement[]
-}) {
-  const tabs = Children.map(children, (child, index) =>
-    cloneElement(child as any, {
-      ...child.props,
-      key: index,
-      value: items[index]
-    })
-  )
+}
+
+export function Tabs(props: ITabProps) {
+  const { items, children, variant } = props
+  const { value, onChange } = useTabs(props)
 
   return (
     <ArkTabs
-      defaultValue={items[0]}
-      className={cx('nextra-scrollbar', tabsRecipe())}
+      value={value}
+      onChange={onChange}
+      className={cx('nextra-scrollbar', tabsRecipe({ variant }))}
     >
       <TabList>
         {items.map((item, index) => {
@@ -39,7 +34,13 @@ export function Tabs({
         })}
         <TabIndicator />
       </TabList>
-      {tabs}
+      {Children.map(children, (child, index) =>
+        cloneElement(child as any, {
+          ...child.props,
+          key: index,
+          value: items[index]
+        })
+      )}
     </ArkTabs>
   )
 }
