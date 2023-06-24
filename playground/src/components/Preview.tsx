@@ -35,7 +35,7 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
 </html>`
 
   return (
-    <Flex px="6" py="4" flex="1" align="stretch">
+    <Flex px="6" py="4" align="stretch" h="full">
       <Frame
         key={initialContent}
         initialContent={initialContent}

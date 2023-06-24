@@ -18,7 +18,6 @@ import { LayoutControl } from './LayoutControl'
 import { Preview } from './Preview'
 import { Toolbar } from './Toolbar'
 import { UsePlayGroundProps, usePlayground } from './usePlayground'
-import { flex } from '@/styled-system/patterns'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const { layout, setLayout, isPristine, state, setState, share } = usePlayground(props)
@@ -88,7 +87,7 @@ export const Playground = (props: UsePlayGroundProps) => {
               <TabTrigger value="generated">Generated</TabTrigger>
               <TabIndicator className={css({ background: 'yellow.400', height: '2px', mb: '-1px' })} />
             </TabList>
-            <TabContent value="preview" className={flex({ flex: '1', pt: '4' })}>
+            <TabContent value="preview" className={css({ flex: '1', pt: '4' })}>
               <Preview source={state.code} previewCss={previewCss} previewJs={previewJs} patternNames={patternNames} />
             </TabContent>
             <TabContent value="ast" className={css({ flex: '1', minHeight: 0 })}>
