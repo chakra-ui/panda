@@ -72,8 +72,7 @@
   }
 
   .ring_none {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
+    outline: var(--borders-none);
   }
 
   .border-width_1px {
