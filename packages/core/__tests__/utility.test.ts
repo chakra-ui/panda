@@ -7,7 +7,7 @@ describe('Utility', () => {
   test('should resolve hideFrom and hideBelow', () => {
     const utility = new Utility({
       tokens: new TokenDictionary({
-        breakpoints: { sm: '640px', md: '768px', lg: '1024px', xl: '1280px' },
+        breakpoints: { sm: '640px', md: '768px', lg: '1024px', xl: '1280px', '2xl': '1536px' },
       }),
       config: {
         hideFrom: {
@@ -42,10 +42,12 @@ describe('Utility', () => {
         "(hideFrom = md)" => "hide_md",
         "(hideFrom = lg)" => "hide_lg",
         "(hideFrom = xl)" => "hide_xl",
+        "(hideFrom = 2xl)" => "hide_2xl",
         "(hideBelow = sm)" => "show_sm",
         "(hideBelow = md)" => "show_md",
         "(hideBelow = lg)" => "show_lg",
         "(hideBelow = xl)" => "show_xl",
+        "(hideBelow = 2xl)" => "show_2xl",
       }
     `)
 
@@ -71,6 +73,11 @@ describe('Utility', () => {
             "display": "none",
           },
         },
+        "(hideFrom = 2xl)" => {
+          "@breakpoint 2xl": {
+            "display": "none",
+          },
+        },
         "(hideBelow = sm)" => {
           "@breakpoint smDown": {
             "display": "none",
@@ -88,6 +95,11 @@ describe('Utility', () => {
         },
         "(hideBelow = xl)" => {
           "@breakpoint xlDown": {
+            "display": "none",
+          },
+        },
+        "(hideBelow = 2xl)" => {
+          "@breakpoint 2xlDown": {
             "display": "none",
           },
         },
