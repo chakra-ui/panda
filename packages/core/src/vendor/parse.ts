@@ -16,6 +16,7 @@ const UNITLESS = {
   'flex-negative': true,
   'font-weight': true,
   'line-clamp': true,
+  '-webkit-line-clamp': true,
   'line-height': true,
   opacity: true,
   order: true,

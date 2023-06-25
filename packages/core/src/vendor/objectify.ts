@@ -2,6 +2,7 @@ import camelcase from 'camelcase-css'
 import type { AtRule, Container } from 'postcss'
 
 const UNITLESS = {
+  aspectRatio: true,
   boxFlex: true,
   boxFlexGroup: true,
   columnCount: true,
