@@ -1,4 +1,5 @@
 export * from './assert'
+export * from './astish'
 export * from './calc'
 export * from './capitalize'
 export * from './classname'

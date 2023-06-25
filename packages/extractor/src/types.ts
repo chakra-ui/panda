@@ -9,8 +9,9 @@ import type {
   PropertyAssignment,
   ShorthandPropertyAssignment,
   SourceFile,
+  TaggedTemplateExpression,
 } from 'ts-morph'
-import type { BoxNode, BoxNodeArray, BoxNodeMap } from './box-factory'
+import type { BoxNode, BoxNodeArray, BoxNodeLiteral, BoxNodeMap } from './box-factory'
 
 export type PrimitiveType = string | number | boolean | null | undefined
 
@@ -26,14 +27,22 @@ export type ExtractResultKind = 'component' | 'function'
 
 export type ExtractedFunctionInstance = {
   name: string
+  kind: 'call-expression'
   fromNode: () => CallExpression
   box: BoxNodeArray
+}
+
+export type ExtractedTaggedTemplateInstance = {
+  name: string
+  kind: 'tagged-template'
+  fromNode: () => TaggedTemplateExpression
+  box: BoxNodeLiteral
 }
 
 export type ExtractedFunctionResult = {
   kind: 'function'
   nodesByProp: Map<string, BoxNode[]>
-  queryList: ExtractedFunctionInstance[]
+  queryList: Array<ExtractedFunctionInstance | ExtractedTaggedTemplateInstance>
 }
 
 export type ExtractedComponentInstance = {
@@ -85,6 +94,12 @@ export type ComponentMatchers = {
   matchProp: (prop: Pick<MatchTagArgs, 'tagName' | 'tagNode'> & MatchPropArgs) => boolean
 }
 
+export type MatchTaggedTemplateArgs = {
+  fnName: string
+  taggedTemplateNode: TaggedTemplateExpression
+}
+export type MatchTaggedTemplate = (tag: MatchTaggedTemplateArgs) => boolean
+
 export type BoxContext = {
   getEvaluateOptions?: (node: Expression, stack: Node[]) => EvaluateOptions
   canEval?: (node: Expression, stack: Node[]) => boolean
@@ -99,4 +114,7 @@ export type ExtractOptions = BoxContext & {
   ast: SourceFile
   components?: ComponentMatchers
   functions?: FunctionMatchers
+  taggedTemplates?: {
+    matchTaggedTemplate: MatchTaggedTemplate
+  }
 }

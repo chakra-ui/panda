@@ -8,6 +8,7 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
     setupFiles: ['tests-setup.ts'],
+    hideSkippedTests: true,
   },
   resolve: {
     alias: [
