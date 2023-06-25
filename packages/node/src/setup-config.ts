@@ -1,5 +1,6 @@
-import { logger, quote } from '@pandacss/logger'
 import { messages } from '@pandacss/generator'
+import { logger, quote } from '@pandacss/logger'
+import type { Config } from '@pandacss/types'
 import { writeFile } from 'fs-extra'
 import { lookItUpSync } from 'look-it-up'
 import { outdent } from 'outdent'
@@ -7,14 +8,12 @@ import { join } from 'path'
 import getPackageManager from 'preferred-pm'
 import { findConfig } from './config'
 
-type SetupOptions = {
-  outExtension?: string
-  jsxFramework?: string
+type SetupOptions = Partial<Config> & {
   force?: boolean
 }
 
 export async function setupConfig(cwd: string, opts: SetupOptions = {}) {
-  const { force, outExtension, jsxFramework } = opts
+  const { force, outExtension, jsxFramework, syntax } = opts
 
   const configFile = findConfig()
 
@@ -51,6 +50,7 @@ export default defineConfig({
     // The output directory for your css system
     outdir: "styled-system",
     ${jsxFramework ? `\n // The JSX framework to use\njsxFramework: '${jsxFramework}'` : ''}
+    ${syntax ? `\n // The CSS Syntax to use to use\nsyntax: '${syntax}'` : ''}
 })
     `
 

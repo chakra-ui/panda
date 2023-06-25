@@ -37,8 +37,9 @@ export async function main() {
     .option('--no-gitignore', "Don't update the .gitignore")
     .option('--out-extension <ext>', "The extension of the generated js files (default: 'mjs')")
     .option('--jsx-framework <framework>', 'The jsx framework to use')
+    .option('--syntax <syntax>', 'The css syntax preference')
     .action(async (flags) => {
-      const { force, postcss, silent, gitignore, outExtension, jsxFramework, config: configPath } = flags
+      const { force, postcss, silent, gitignore, outExtension, jsxFramework, config: configPath, syntax } = flags
 
       const cwd = resolve(flags.cwd)
 
@@ -54,7 +55,7 @@ export async function main() {
         await setupPostcss(cwd)
       }
 
-      await setupConfig(cwd, { force, outExtension, jsxFramework })
+      await setupConfig(cwd, { force, outExtension, jsxFramework, syntax })
 
       const ctx = await loadConfigAndCreateContext({ cwd, configPath })
       const msg = await emitArtifacts(ctx)
