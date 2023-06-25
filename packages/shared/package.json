@@ -17,5 +17,11 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "cssesc": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/cssesc": "^3.0.0"
+  }
 }
