@@ -23,6 +23,7 @@ export const artifactsGenerated = (ctx: Context) => {
     ${tick} ${quote(outdir, '/tokens')}: the css variables and js function to query your tokens
     `,
       !patterns.isEmpty() &&
+        !ctx.isTemplateLiteralSyntax &&
         outdent`
     ${tick} ${quote(outdir, '/patterns')}: functions to implement apply common layout patterns
     `,
