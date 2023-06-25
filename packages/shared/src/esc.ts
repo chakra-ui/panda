@@ -7,7 +7,7 @@ export function esc(str: string) {
   // Option A
   const classNameA = cssesc(str, { isIdentifier: true })
 
-  // Option C
+  // Option B
   let classNameB = str
   if (/^\d/.test(str)) {
     const leadingDigit = str.charAt(0)
