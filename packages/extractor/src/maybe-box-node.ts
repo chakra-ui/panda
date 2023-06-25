@@ -133,6 +133,11 @@ export function maybeBoxNode(
         return cache(box.literal(value, node, stack))
       })
 
+      // css`font-size: 1.5em;`
+      .when(Node.isTaggedTemplateExpression, (node) => {
+        return cache(maybeBoxNode(node.getTemplate(), stack, ctx))
+      })
+
       // <ColorBox color={colors[staticColor]} /> or <ColorBox color={colors["brand"]} />
       .when(Node.isElementAccessExpression, (node) => {
         return cache(getElementAccessedExpressionValue(node, stack, ctx))
