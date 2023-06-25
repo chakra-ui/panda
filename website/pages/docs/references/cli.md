@@ -21,6 +21,12 @@ Initialize panda in a project. This process will:
 
 Whether to emit a [postcss](https://postcss.org/) config file
 
+#### `--config, -c`
+
+Path to panda config file
+
+Related: [`config`](/docs/references/config)
+
 #### `--force, -f`
 
 Whether to overwrite existing files
@@ -41,61 +47,61 @@ Run the extract process to generate static css from your project.
 
 The output directory for the generated css utilities
 
-Related: [`config.outdir`](/docs/references/config.mdx#outdir)
+Related: [`config.outdir`](/docs/references/config#outdir)
 
 #### `--minify`
 
 Whether to minify the generated css
 
-Related: [`config.minify`](/docs/references/config.mdx#minify)
+Related: [`config.minify`](/docs/references/config#minify)
 
 #### `--cwd`
 
 The current working directory
 
-Related: [`config.cwd`](/docs/references/config.mdx#cwd)
+Related: [`config.cwd`](/docs/references/config#cwd)
 
 #### `--watch, -w`
 
 Whether to watch for changes in the project
 
-Related: [`config.watch`](/docs/references/config.mdx#watch)
+Related: [`config.watch`](/docs/references/config#watch)
 
 #### `--poll`
 
 Whether to poll for file changes.
 
-Related: [`config.poll`](/docs/references/config.mdx#poll)
+Related: [`config.poll`](/docs/references/config#poll)
 
 #### `--config`
 
 The path to the config file
 
-Related: [`config`](/docs/references/config.mdx)
+Related: [`config`](/docs/references/config.md)
 
 #### `--preflight`
 
 Whether to emit the preflight or reset css
 
-Related: [`config.preflight`](/docs/references/config.mdx#preflight)
+Related: [`config.preflight`](/docs/references/config#preflight)
 
 #### `--emitTokensOnly`
 
 Whether to only emit the `tokens` directory
 
-Related: [`config.emitTokensOnly`](/docs/references/config.mdx#emitTokensOnly)
+Related: [`config.emitTokensOnly`](/docs/references/config#emitTokensOnly)
 
 #### `--clean`
 
 Whether to clean the output directory before emitting
 
-Related: [`config.clean`](/docs/references/config.mdx#clean)
+Related: [`config.clean`](/docs/references/config#clean)
 
 #### `--hash`
 
 Whether to hash the output classnames
 
-Related: [`config.hash`](/docs/references/config.mdx#hash)
+Related: [`config.hash`](/docs/references/config#hash)
 
 ---
 
@@ -109,13 +115,85 @@ Generate a new css utilities for your project based on the configuraion file.
 
 Whether to clean the output directory before emitting
 
-Related: [`config.clean`](/docs/references/config.mdx#clean)
+Related: [`config.clean`](/docs/references/config#clean)
+
+#### `--config, -c`
+
+Path to panda config file
+
+Related: [`config`](/docs/references/config.md)
+
+#### `--cwd, -c`
+
+Current working directory
+
+Related: [`config.cwd`](/docs/references/config#cwd)
 
 #### `--silent`
 
 Whether to suppress all output
 
-Related: [`config.logLevel`](/docs/references/config.mdx#log-level)
+Related: [`config.logLevel`](/docs/references/config#log-level)
+
+## `panda cssgen`
+
+Generate the css from files
+
+### Flags
+
+#### `--clean`
+
+Whether to clean the output directory before emitting
+
+Related: [`config.clean`](/docs/references/config#clean)
+
+#### `--config, -c`
+
+Path to panda config file
+
+Related: [`config`](/docs/references/config.md)
+
+#### `--cwd, -c`
+
+Current working directory
+
+Related: [`config.cwd`](/docs/references/config#cwd)
+
+#### `--silent`
+
+Whether to suppress all output
+
+Related: [`config.logLevel`](/docs/references/config#log-level)
+
+## `panda studio`
+
+Realtime documentation for your design tokens
+
+### Flags
+
+#### `--build`
+
+Build
+
+#### `--preview`
+
+Preview
+
+#### `--outdir`
+
+Output directory for static files
+
+#### `--config, -c`
+
+Path to panda config file
+
+Related: [`config`](/docs/references/config.md)
+
+#### `--cwd, -c`
+
+Current working directory
+
+Related: [`config.cwd`](/docs/references/config#cwd)
 
 ## `panda analyze`
 
@@ -133,7 +211,19 @@ Output analyze report in given JSON filepath.
 
 Whether to suppress all output
 
-Related: [`config.logLevel`](/docs/references/config.mdx#log-level)
+Related: [`config.logLevel`](/docs/references/config#log-level)
+
+#### `--config, -c`
+
+Path to panda config file
+
+Related: [`config`](/docs/references/config.md)
+
+#### `--cwd, -c`
+
+Current working directory
+
+Related: [`config.cwd`](/docs/references/config#cwd)
 
 ## `panda debug`
 
@@ -152,3 +242,15 @@ Output directory for debug files, default to '../styled-system/debug'
 #### `--silent`
 
 Whether to suppress all output
+
+#### `--config, -c`
+
+Path to panda config file
+
+Related: [`config`](/docs/references/config.md)
+
+#### `--cwd, -c`
+
+Current working directory
+
+Related: [`config.cwd`](/docs/references/config#cwd)
