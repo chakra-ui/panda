@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
-## [0.4.0]
+## [0.4.0] - 2023-06-19
 
 ### Fixed
 
@@ -43,7 +43,7 @@ See the [Changesets](./.changeset) for the latest changes.
 - Add `auto` value where neccessary to base utilities.
 - Add `0` value to default spacing tokens to allow for `strictTokens` mode.
 
-## [0.3.2]
+## [0.3.2] - 2023-06-16
 
 ### Added
 
@@ -69,6 +69,6 @@ See the [Changesets](./.changeset) for the latest changes.
 
 - Remove `bundledDependencies` from `package.json` to fix NPM resolution
 
-## [0.3.1]
+## [0.3.1] - 2023-06-16
 
 Baseline Release 🎉
