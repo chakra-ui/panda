@@ -29,15 +29,17 @@ your `panda.config.ts` file.
 import { definePreset } from "@pandacss/dev";
 
 export default definePreset({
-  tokens: {
-    colors: {
-      rose: {
-        50: { value: "#fff1f2" },
-        // ...
-        800: { value: "#9f2233" },
+  theme: {
+    tokens: {
+      colors: {
+        rose: {
+          50: { value: "#fff1f2" },
+          // ...
+          800: { value: "#9f2233" },
+        },
       },
     },
-  },
+  }
 });
 ```
 
@@ -63,11 +65,13 @@ export default async function myPreset() {
   const roseColors = await getRoseColors();
 
   return definePreset({
-    tokens: {
-      colors: {
-        rose: roseColors,
+    theme: {
+      tokens: {
+        colors: {
+          rose: roseColors,
+        },
       },
-    },
+    }
   });
 }
 ```

@@ -5,8 +5,7 @@ on:
 
   push:
     paths:
-      - ".changeset/**"
-      - "extension/**"
+      - 'extension/**'
     branches:
       - main
 

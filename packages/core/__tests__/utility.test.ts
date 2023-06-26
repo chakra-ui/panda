@@ -151,16 +151,22 @@ describe('Utility', () => {
           "pink",
           "fuchsia",
           "purple",
+          "violet",
           "indigo",
           "blue",
           "sky",
           "cyan",
           "teal",
+          "emerald",
           "green",
           "lime",
           "yellow",
+          "amber",
           "orange",
           "red",
+          "neutral",
+          "stone",
+          "zinc",
           "gray",
           "slate",
           "deep.test",
@@ -187,6 +193,7 @@ describe('Utility', () => {
         "(backgroundColor = rose.700)" => "bg_rose.700",
         "(backgroundColor = rose.800)" => "bg_rose.800",
         "(backgroundColor = rose.900)" => "bg_rose.900",
+        "(backgroundColor = rose.950)" => "bg_rose.950",
         "(backgroundColor = pink.50)" => "bg_pink.50",
         "(backgroundColor = pink.100)" => "bg_pink.100",
         "(backgroundColor = pink.200)" => "bg_pink.200",
@@ -197,6 +204,7 @@ describe('Utility', () => {
         "(backgroundColor = pink.700)" => "bg_pink.700",
         "(backgroundColor = pink.800)" => "bg_pink.800",
         "(backgroundColor = pink.900)" => "bg_pink.900",
+        "(backgroundColor = pink.950)" => "bg_pink.950",
         "(backgroundColor = fuchsia.50)" => "bg_fuchsia.50",
         "(backgroundColor = fuchsia.100)" => "bg_fuchsia.100",
         "(backgroundColor = fuchsia.200)" => "bg_fuchsia.200",
@@ -207,6 +215,7 @@ describe('Utility', () => {
         "(backgroundColor = fuchsia.700)" => "bg_fuchsia.700",
         "(backgroundColor = fuchsia.800)" => "bg_fuchsia.800",
         "(backgroundColor = fuchsia.900)" => "bg_fuchsia.900",
+        "(backgroundColor = fuchsia.950)" => "bg_fuchsia.950",
         "(backgroundColor = purple.50)" => "bg_purple.50",
         "(backgroundColor = purple.100)" => "bg_purple.100",
         "(backgroundColor = purple.200)" => "bg_purple.200",
@@ -217,6 +226,18 @@ describe('Utility', () => {
         "(backgroundColor = purple.700)" => "bg_purple.700",
         "(backgroundColor = purple.800)" => "bg_purple.800",
         "(backgroundColor = purple.900)" => "bg_purple.900",
+        "(backgroundColor = purple.950)" => "bg_purple.950",
+        "(backgroundColor = violet.50)" => "bg_violet.50",
+        "(backgroundColor = violet.100)" => "bg_violet.100",
+        "(backgroundColor = violet.200)" => "bg_violet.200",
+        "(backgroundColor = violet.300)" => "bg_violet.300",
+        "(backgroundColor = violet.400)" => "bg_violet.400",
+        "(backgroundColor = violet.500)" => "bg_violet.500",
+        "(backgroundColor = violet.600)" => "bg_violet.600",
+        "(backgroundColor = violet.700)" => "bg_violet.700",
+        "(backgroundColor = violet.800)" => "bg_violet.800",
+        "(backgroundColor = violet.900)" => "bg_violet.900",
+        "(backgroundColor = violet.950)" => "bg_violet.950",
         "(backgroundColor = indigo.50)" => "bg_indigo.50",
         "(backgroundColor = indigo.100)" => "bg_indigo.100",
         "(backgroundColor = indigo.200)" => "bg_indigo.200",
@@ -227,6 +248,7 @@ describe('Utility', () => {
         "(backgroundColor = indigo.700)" => "bg_indigo.700",
         "(backgroundColor = indigo.800)" => "bg_indigo.800",
         "(backgroundColor = indigo.900)" => "bg_indigo.900",
+        "(backgroundColor = indigo.950)" => "bg_indigo.950",
         "(backgroundColor = blue.50)" => "bg_blue.50",
         "(backgroundColor = blue.100)" => "bg_blue.100",
         "(backgroundColor = blue.200)" => "bg_blue.200",
@@ -237,6 +259,7 @@ describe('Utility', () => {
         "(backgroundColor = blue.700)" => "bg_blue.700",
         "(backgroundColor = blue.800)" => "bg_blue.800",
         "(backgroundColor = blue.900)" => "bg_blue.900",
+        "(backgroundColor = blue.950)" => "bg_blue.950",
         "(backgroundColor = sky.50)" => "bg_sky.50",
         "(backgroundColor = sky.100)" => "bg_sky.100",
         "(backgroundColor = sky.200)" => "bg_sky.200",
@@ -247,6 +270,7 @@ describe('Utility', () => {
         "(backgroundColor = sky.700)" => "bg_sky.700",
         "(backgroundColor = sky.800)" => "bg_sky.800",
         "(backgroundColor = sky.900)" => "bg_sky.900",
+        "(backgroundColor = sky.950)" => "bg_sky.950",
         "(backgroundColor = cyan.50)" => "bg_cyan.50",
         "(backgroundColor = cyan.100)" => "bg_cyan.100",
         "(backgroundColor = cyan.200)" => "bg_cyan.200",
@@ -257,6 +281,7 @@ describe('Utility', () => {
         "(backgroundColor = cyan.700)" => "bg_cyan.700",
         "(backgroundColor = cyan.800)" => "bg_cyan.800",
         "(backgroundColor = cyan.900)" => "bg_cyan.900",
+        "(backgroundColor = cyan.950)" => "bg_cyan.950",
         "(backgroundColor = teal.50)" => "bg_teal.50",
         "(backgroundColor = teal.100)" => "bg_teal.100",
         "(backgroundColor = teal.200)" => "bg_teal.200",
@@ -267,6 +292,18 @@ describe('Utility', () => {
         "(backgroundColor = teal.700)" => "bg_teal.700",
         "(backgroundColor = teal.800)" => "bg_teal.800",
         "(backgroundColor = teal.900)" => "bg_teal.900",
+        "(backgroundColor = teal.950)" => "bg_teal.950",
+        "(backgroundColor = emerald.50)" => "bg_emerald.50",
+        "(backgroundColor = emerald.100)" => "bg_emerald.100",
+        "(backgroundColor = emerald.200)" => "bg_emerald.200",
+        "(backgroundColor = emerald.300)" => "bg_emerald.300",
+        "(backgroundColor = emerald.400)" => "bg_emerald.400",
+        "(backgroundColor = emerald.500)" => "bg_emerald.500",
+        "(backgroundColor = emerald.600)" => "bg_emerald.600",
+        "(backgroundColor = emerald.700)" => "bg_emerald.700",
+        "(backgroundColor = emerald.800)" => "bg_emerald.800",
+        "(backgroundColor = emerald.900)" => "bg_emerald.900",
+        "(backgroundColor = emerald.950)" => "bg_emerald.950",
         "(backgroundColor = green.50)" => "bg_green.50",
         "(backgroundColor = green.100)" => "bg_green.100",
         "(backgroundColor = green.200)" => "bg_green.200",
@@ -277,6 +314,7 @@ describe('Utility', () => {
         "(backgroundColor = green.700)" => "bg_green.700",
         "(backgroundColor = green.800)" => "bg_green.800",
         "(backgroundColor = green.900)" => "bg_green.900",
+        "(backgroundColor = green.950)" => "bg_green.950",
         "(backgroundColor = lime.50)" => "bg_lime.50",
         "(backgroundColor = lime.100)" => "bg_lime.100",
         "(backgroundColor = lime.200)" => "bg_lime.200",
@@ -287,6 +325,7 @@ describe('Utility', () => {
         "(backgroundColor = lime.700)" => "bg_lime.700",
         "(backgroundColor = lime.800)" => "bg_lime.800",
         "(backgroundColor = lime.900)" => "bg_lime.900",
+        "(backgroundColor = lime.950)" => "bg_lime.950",
         "(backgroundColor = yellow.50)" => "bg_yellow.50",
         "(backgroundColor = yellow.100)" => "bg_yellow.100",
         "(backgroundColor = yellow.200)" => "bg_yellow.200",
@@ -297,6 +336,18 @@ describe('Utility', () => {
         "(backgroundColor = yellow.700)" => "bg_yellow.700",
         "(backgroundColor = yellow.800)" => "bg_yellow.800",
         "(backgroundColor = yellow.900)" => "bg_yellow.900",
+        "(backgroundColor = yellow.950)" => "bg_yellow.950",
+        "(backgroundColor = amber.50)" => "bg_amber.50",
+        "(backgroundColor = amber.100)" => "bg_amber.100",
+        "(backgroundColor = amber.200)" => "bg_amber.200",
+        "(backgroundColor = amber.300)" => "bg_amber.300",
+        "(backgroundColor = amber.400)" => "bg_amber.400",
+        "(backgroundColor = amber.500)" => "bg_amber.500",
+        "(backgroundColor = amber.600)" => "bg_amber.600",
+        "(backgroundColor = amber.700)" => "bg_amber.700",
+        "(backgroundColor = amber.800)" => "bg_amber.800",
+        "(backgroundColor = amber.900)" => "bg_amber.900",
+        "(backgroundColor = amber.950)" => "bg_amber.950",
         "(backgroundColor = orange.50)" => "bg_orange.50",
         "(backgroundColor = orange.100)" => "bg_orange.100",
         "(backgroundColor = orange.200)" => "bg_orange.200",
@@ -307,6 +358,7 @@ describe('Utility', () => {
         "(backgroundColor = orange.700)" => "bg_orange.700",
         "(backgroundColor = orange.800)" => "bg_orange.800",
         "(backgroundColor = orange.900)" => "bg_orange.900",
+        "(backgroundColor = orange.950)" => "bg_orange.950",
         "(backgroundColor = red.50)" => "bg_red.50",
         "(backgroundColor = red.100)" => "bg_red.100",
         "(backgroundColor = red.200)" => "bg_red.200",
@@ -317,6 +369,40 @@ describe('Utility', () => {
         "(backgroundColor = red.700)" => "bg_red.700",
         "(backgroundColor = red.800)" => "bg_red.800",
         "(backgroundColor = red.900)" => "bg_red.900",
+        "(backgroundColor = red.950)" => "bg_red.950",
+        "(backgroundColor = neutral.50)" => "bg_neutral.50",
+        "(backgroundColor = neutral.100)" => "bg_neutral.100",
+        "(backgroundColor = neutral.200)" => "bg_neutral.200",
+        "(backgroundColor = neutral.300)" => "bg_neutral.300",
+        "(backgroundColor = neutral.400)" => "bg_neutral.400",
+        "(backgroundColor = neutral.500)" => "bg_neutral.500",
+        "(backgroundColor = neutral.600)" => "bg_neutral.600",
+        "(backgroundColor = neutral.700)" => "bg_neutral.700",
+        "(backgroundColor = neutral.800)" => "bg_neutral.800",
+        "(backgroundColor = neutral.900)" => "bg_neutral.900",
+        "(backgroundColor = neutral.950)" => "bg_neutral.950",
+        "(backgroundColor = stone.50)" => "bg_stone.50",
+        "(backgroundColor = stone.100)" => "bg_stone.100",
+        "(backgroundColor = stone.200)" => "bg_stone.200",
+        "(backgroundColor = stone.300)" => "bg_stone.300",
+        "(backgroundColor = stone.400)" => "bg_stone.400",
+        "(backgroundColor = stone.500)" => "bg_stone.500",
+        "(backgroundColor = stone.600)" => "bg_stone.600",
+        "(backgroundColor = stone.700)" => "bg_stone.700",
+        "(backgroundColor = stone.800)" => "bg_stone.800",
+        "(backgroundColor = stone.900)" => "bg_stone.900",
+        "(backgroundColor = stone.950)" => "bg_stone.950",
+        "(backgroundColor = zinc.50)" => "bg_zinc.50",
+        "(backgroundColor = zinc.100)" => "bg_zinc.100",
+        "(backgroundColor = zinc.200)" => "bg_zinc.200",
+        "(backgroundColor = zinc.300)" => "bg_zinc.300",
+        "(backgroundColor = zinc.400)" => "bg_zinc.400",
+        "(backgroundColor = zinc.500)" => "bg_zinc.500",
+        "(backgroundColor = zinc.600)" => "bg_zinc.600",
+        "(backgroundColor = zinc.700)" => "bg_zinc.700",
+        "(backgroundColor = zinc.800)" => "bg_zinc.800",
+        "(backgroundColor = zinc.900)" => "bg_zinc.900",
+        "(backgroundColor = zinc.950)" => "bg_zinc.950",
         "(backgroundColor = gray.50)" => "bg_gray.50",
         "(backgroundColor = gray.100)" => "bg_gray.100",
         "(backgroundColor = gray.200)" => "bg_gray.200",
@@ -327,6 +413,7 @@ describe('Utility', () => {
         "(backgroundColor = gray.700)" => "bg_gray.700",
         "(backgroundColor = gray.800)" => "bg_gray.800",
         "(backgroundColor = gray.900)" => "bg_gray.900",
+        "(backgroundColor = gray.950)" => "bg_gray.950",
         "(backgroundColor = slate.50)" => "bg_slate.50",
         "(backgroundColor = slate.100)" => "bg_slate.100",
         "(backgroundColor = slate.200)" => "bg_slate.200",
@@ -337,6 +424,7 @@ describe('Utility', () => {
         "(backgroundColor = slate.700)" => "bg_slate.700",
         "(backgroundColor = slate.800)" => "bg_slate.800",
         "(backgroundColor = slate.900)" => "bg_slate.900",
+        "(backgroundColor = slate.950)" => "bg_slate.950",
         "(backgroundColor = deep.test.yam)" => "bg_deep.test.yam",
         "(backgroundColor = deep.test.pool.poller)" => "bg_deep.test.pool.poller",
         "(backgroundColor = deep.test.pool.tall)" => "bg_deep.test.pool.tall",
@@ -357,6 +445,7 @@ describe('Utility', () => {
         "(backgroundColor = colorPalette.700)" => "bg_colorPalette.700",
         "(backgroundColor = colorPalette.800)" => "bg_colorPalette.800",
         "(backgroundColor = colorPalette.900)" => "bg_colorPalette.900",
+        "(backgroundColor = colorPalette.950)" => "bg_colorPalette.950",
         "(backgroundColor = colorPalette.yam)" => "bg_colorPalette.yam",
         "(backgroundColor = colorPalette.poller)" => "bg_colorPalette.poller",
         "(backgroundColor = colorPalette.tall)" => "bg_colorPalette.tall",
@@ -440,16 +529,22 @@ describe('Utility', () => {
         "(colorPalette = pink)" => "color-palette_pink",
         "(colorPalette = fuchsia)" => "color-palette_fuchsia",
         "(colorPalette = purple)" => "color-palette_purple",
+        "(colorPalette = violet)" => "color-palette_violet",
         "(colorPalette = indigo)" => "color-palette_indigo",
         "(colorPalette = blue)" => "color-palette_blue",
         "(colorPalette = sky)" => "color-palette_sky",
         "(colorPalette = cyan)" => "color-palette_cyan",
         "(colorPalette = teal)" => "color-palette_teal",
+        "(colorPalette = emerald)" => "color-palette_emerald",
         "(colorPalette = green)" => "color-palette_green",
         "(colorPalette = lime)" => "color-palette_lime",
         "(colorPalette = yellow)" => "color-palette_yellow",
+        "(colorPalette = amber)" => "color-palette_amber",
         "(colorPalette = orange)" => "color-palette_orange",
         "(colorPalette = red)" => "color-palette_red",
+        "(colorPalette = neutral)" => "color-palette_neutral",
+        "(colorPalette = stone)" => "color-palette_stone",
+        "(colorPalette = zinc)" => "color-palette_zinc",
         "(colorPalette = gray)" => "color-palette_gray",
         "(colorPalette = slate)" => "color-palette_slate",
         "(colorPalette = deep.test)" => "color-palette_deep.test",
@@ -503,6 +598,9 @@ describe('Utility', () => {
         "(backgroundColor = rose.900)" => {
           "backgroundColor": "var(--colors-rose-900)",
         },
+        "(backgroundColor = rose.950)" => {
+          "backgroundColor": "var(--colors-rose-950)",
+        },
         "(backgroundColor = pink.50)" => {
           "backgroundColor": "var(--colors-pink-50)",
         },
@@ -532,6 +630,9 @@ describe('Utility', () => {
         },
         "(backgroundColor = pink.900)" => {
           "backgroundColor": "var(--colors-pink-900)",
+        },
+        "(backgroundColor = pink.950)" => {
+          "backgroundColor": "var(--colors-pink-950)",
         },
         "(backgroundColor = fuchsia.50)" => {
           "backgroundColor": "var(--colors-fuchsia-50)",
@@ -563,6 +664,9 @@ describe('Utility', () => {
         "(backgroundColor = fuchsia.900)" => {
           "backgroundColor": "var(--colors-fuchsia-900)",
         },
+        "(backgroundColor = fuchsia.950)" => {
+          "backgroundColor": "var(--colors-fuchsia-950)",
+        },
         "(backgroundColor = purple.50)" => {
           "backgroundColor": "var(--colors-purple-50)",
         },
@@ -592,6 +696,42 @@ describe('Utility', () => {
         },
         "(backgroundColor = purple.900)" => {
           "backgroundColor": "var(--colors-purple-900)",
+        },
+        "(backgroundColor = purple.950)" => {
+          "backgroundColor": "var(--colors-purple-950)",
+        },
+        "(backgroundColor = violet.50)" => {
+          "backgroundColor": "var(--colors-violet-50)",
+        },
+        "(backgroundColor = violet.100)" => {
+          "backgroundColor": "var(--colors-violet-100)",
+        },
+        "(backgroundColor = violet.200)" => {
+          "backgroundColor": "var(--colors-violet-200)",
+        },
+        "(backgroundColor = violet.300)" => {
+          "backgroundColor": "var(--colors-violet-300)",
+        },
+        "(backgroundColor = violet.400)" => {
+          "backgroundColor": "var(--colors-violet-400)",
+        },
+        "(backgroundColor = violet.500)" => {
+          "backgroundColor": "var(--colors-violet-500)",
+        },
+        "(backgroundColor = violet.600)" => {
+          "backgroundColor": "var(--colors-violet-600)",
+        },
+        "(backgroundColor = violet.700)" => {
+          "backgroundColor": "var(--colors-violet-700)",
+        },
+        "(backgroundColor = violet.800)" => {
+          "backgroundColor": "var(--colors-violet-800)",
+        },
+        "(backgroundColor = violet.900)" => {
+          "backgroundColor": "var(--colors-violet-900)",
+        },
+        "(backgroundColor = violet.950)" => {
+          "backgroundColor": "var(--colors-violet-950)",
         },
         "(backgroundColor = indigo.50)" => {
           "backgroundColor": "var(--colors-indigo-50)",
@@ -623,6 +763,9 @@ describe('Utility', () => {
         "(backgroundColor = indigo.900)" => {
           "backgroundColor": "var(--colors-indigo-900)",
         },
+        "(backgroundColor = indigo.950)" => {
+          "backgroundColor": "var(--colors-indigo-950)",
+        },
         "(backgroundColor = blue.50)" => {
           "backgroundColor": "var(--colors-blue-50)",
         },
@@ -652,6 +795,9 @@ describe('Utility', () => {
         },
         "(backgroundColor = blue.900)" => {
           "backgroundColor": "var(--colors-blue-900)",
+        },
+        "(backgroundColor = blue.950)" => {
+          "backgroundColor": "var(--colors-blue-950)",
         },
         "(backgroundColor = sky.50)" => {
           "backgroundColor": "var(--colors-sky-50)",
@@ -683,6 +829,9 @@ describe('Utility', () => {
         "(backgroundColor = sky.900)" => {
           "backgroundColor": "var(--colors-sky-900)",
         },
+        "(backgroundColor = sky.950)" => {
+          "backgroundColor": "var(--colors-sky-950)",
+        },
         "(backgroundColor = cyan.50)" => {
           "backgroundColor": "var(--colors-cyan-50)",
         },
@@ -712,6 +861,9 @@ describe('Utility', () => {
         },
         "(backgroundColor = cyan.900)" => {
           "backgroundColor": "var(--colors-cyan-900)",
+        },
+        "(backgroundColor = cyan.950)" => {
+          "backgroundColor": "var(--colors-cyan-950)",
         },
         "(backgroundColor = teal.50)" => {
           "backgroundColor": "var(--colors-teal-50)",
@@ -743,6 +895,42 @@ describe('Utility', () => {
         "(backgroundColor = teal.900)" => {
           "backgroundColor": "var(--colors-teal-900)",
         },
+        "(backgroundColor = teal.950)" => {
+          "backgroundColor": "var(--colors-teal-950)",
+        },
+        "(backgroundColor = emerald.50)" => {
+          "backgroundColor": "var(--colors-emerald-50)",
+        },
+        "(backgroundColor = emerald.100)" => {
+          "backgroundColor": "var(--colors-emerald-100)",
+        },
+        "(backgroundColor = emerald.200)" => {
+          "backgroundColor": "var(--colors-emerald-200)",
+        },
+        "(backgroundColor = emerald.300)" => {
+          "backgroundColor": "var(--colors-emerald-300)",
+        },
+        "(backgroundColor = emerald.400)" => {
+          "backgroundColor": "var(--colors-emerald-400)",
+        },
+        "(backgroundColor = emerald.500)" => {
+          "backgroundColor": "var(--colors-emerald-500)",
+        },
+        "(backgroundColor = emerald.600)" => {
+          "backgroundColor": "var(--colors-emerald-600)",
+        },
+        "(backgroundColor = emerald.700)" => {
+          "backgroundColor": "var(--colors-emerald-700)",
+        },
+        "(backgroundColor = emerald.800)" => {
+          "backgroundColor": "var(--colors-emerald-800)",
+        },
+        "(backgroundColor = emerald.900)" => {
+          "backgroundColor": "var(--colors-emerald-900)",
+        },
+        "(backgroundColor = emerald.950)" => {
+          "backgroundColor": "var(--colors-emerald-950)",
+        },
         "(backgroundColor = green.50)" => {
           "backgroundColor": "var(--colors-green-50)",
         },
@@ -772,6 +960,9 @@ describe('Utility', () => {
         },
         "(backgroundColor = green.900)" => {
           "backgroundColor": "var(--colors-green-900)",
+        },
+        "(backgroundColor = green.950)" => {
+          "backgroundColor": "var(--colors-green-950)",
         },
         "(backgroundColor = lime.50)" => {
           "backgroundColor": "var(--colors-lime-50)",
@@ -803,6 +994,9 @@ describe('Utility', () => {
         "(backgroundColor = lime.900)" => {
           "backgroundColor": "var(--colors-lime-900)",
         },
+        "(backgroundColor = lime.950)" => {
+          "backgroundColor": "var(--colors-lime-950)",
+        },
         "(backgroundColor = yellow.50)" => {
           "backgroundColor": "var(--colors-yellow-50)",
         },
@@ -832,6 +1026,42 @@ describe('Utility', () => {
         },
         "(backgroundColor = yellow.900)" => {
           "backgroundColor": "var(--colors-yellow-900)",
+        },
+        "(backgroundColor = yellow.950)" => {
+          "backgroundColor": "var(--colors-yellow-950)",
+        },
+        "(backgroundColor = amber.50)" => {
+          "backgroundColor": "var(--colors-amber-50)",
+        },
+        "(backgroundColor = amber.100)" => {
+          "backgroundColor": "var(--colors-amber-100)",
+        },
+        "(backgroundColor = amber.200)" => {
+          "backgroundColor": "var(--colors-amber-200)",
+        },
+        "(backgroundColor = amber.300)" => {
+          "backgroundColor": "var(--colors-amber-300)",
+        },
+        "(backgroundColor = amber.400)" => {
+          "backgroundColor": "var(--colors-amber-400)",
+        },
+        "(backgroundColor = amber.500)" => {
+          "backgroundColor": "var(--colors-amber-500)",
+        },
+        "(backgroundColor = amber.600)" => {
+          "backgroundColor": "var(--colors-amber-600)",
+        },
+        "(backgroundColor = amber.700)" => {
+          "backgroundColor": "var(--colors-amber-700)",
+        },
+        "(backgroundColor = amber.800)" => {
+          "backgroundColor": "var(--colors-amber-800)",
+        },
+        "(backgroundColor = amber.900)" => {
+          "backgroundColor": "var(--colors-amber-900)",
+        },
+        "(backgroundColor = amber.950)" => {
+          "backgroundColor": "var(--colors-amber-950)",
         },
         "(backgroundColor = orange.50)" => {
           "backgroundColor": "var(--colors-orange-50)",
@@ -863,6 +1093,9 @@ describe('Utility', () => {
         "(backgroundColor = orange.900)" => {
           "backgroundColor": "var(--colors-orange-900)",
         },
+        "(backgroundColor = orange.950)" => {
+          "backgroundColor": "var(--colors-orange-950)",
+        },
         "(backgroundColor = red.50)" => {
           "backgroundColor": "var(--colors-red-50)",
         },
@@ -892,6 +1125,108 @@ describe('Utility', () => {
         },
         "(backgroundColor = red.900)" => {
           "backgroundColor": "var(--colors-red-900)",
+        },
+        "(backgroundColor = red.950)" => {
+          "backgroundColor": "var(--colors-red-950)",
+        },
+        "(backgroundColor = neutral.50)" => {
+          "backgroundColor": "var(--colors-neutral-50)",
+        },
+        "(backgroundColor = neutral.100)" => {
+          "backgroundColor": "var(--colors-neutral-100)",
+        },
+        "(backgroundColor = neutral.200)" => {
+          "backgroundColor": "var(--colors-neutral-200)",
+        },
+        "(backgroundColor = neutral.300)" => {
+          "backgroundColor": "var(--colors-neutral-300)",
+        },
+        "(backgroundColor = neutral.400)" => {
+          "backgroundColor": "var(--colors-neutral-400)",
+        },
+        "(backgroundColor = neutral.500)" => {
+          "backgroundColor": "var(--colors-neutral-500)",
+        },
+        "(backgroundColor = neutral.600)" => {
+          "backgroundColor": "var(--colors-neutral-600)",
+        },
+        "(backgroundColor = neutral.700)" => {
+          "backgroundColor": "var(--colors-neutral-700)",
+        },
+        "(backgroundColor = neutral.800)" => {
+          "backgroundColor": "var(--colors-neutral-800)",
+        },
+        "(backgroundColor = neutral.900)" => {
+          "backgroundColor": "var(--colors-neutral-900)",
+        },
+        "(backgroundColor = neutral.950)" => {
+          "backgroundColor": "var(--colors-neutral-950)",
+        },
+        "(backgroundColor = stone.50)" => {
+          "backgroundColor": "var(--colors-stone-50)",
+        },
+        "(backgroundColor = stone.100)" => {
+          "backgroundColor": "var(--colors-stone-100)",
+        },
+        "(backgroundColor = stone.200)" => {
+          "backgroundColor": "var(--colors-stone-200)",
+        },
+        "(backgroundColor = stone.300)" => {
+          "backgroundColor": "var(--colors-stone-300)",
+        },
+        "(backgroundColor = stone.400)" => {
+          "backgroundColor": "var(--colors-stone-400)",
+        },
+        "(backgroundColor = stone.500)" => {
+          "backgroundColor": "var(--colors-stone-500)",
+        },
+        "(backgroundColor = stone.600)" => {
+          "backgroundColor": "var(--colors-stone-600)",
+        },
+        "(backgroundColor = stone.700)" => {
+          "backgroundColor": "var(--colors-stone-700)",
+        },
+        "(backgroundColor = stone.800)" => {
+          "backgroundColor": "var(--colors-stone-800)",
+        },
+        "(backgroundColor = stone.900)" => {
+          "backgroundColor": "var(--colors-stone-900)",
+        },
+        "(backgroundColor = stone.950)" => {
+          "backgroundColor": "var(--colors-stone-950)",
+        },
+        "(backgroundColor = zinc.50)" => {
+          "backgroundColor": "var(--colors-zinc-50)",
+        },
+        "(backgroundColor = zinc.100)" => {
+          "backgroundColor": "var(--colors-zinc-100)",
+        },
+        "(backgroundColor = zinc.200)" => {
+          "backgroundColor": "var(--colors-zinc-200)",
+        },
+        "(backgroundColor = zinc.300)" => {
+          "backgroundColor": "var(--colors-zinc-300)",
+        },
+        "(backgroundColor = zinc.400)" => {
+          "backgroundColor": "var(--colors-zinc-400)",
+        },
+        "(backgroundColor = zinc.500)" => {
+          "backgroundColor": "var(--colors-zinc-500)",
+        },
+        "(backgroundColor = zinc.600)" => {
+          "backgroundColor": "var(--colors-zinc-600)",
+        },
+        "(backgroundColor = zinc.700)" => {
+          "backgroundColor": "var(--colors-zinc-700)",
+        },
+        "(backgroundColor = zinc.800)" => {
+          "backgroundColor": "var(--colors-zinc-800)",
+        },
+        "(backgroundColor = zinc.900)" => {
+          "backgroundColor": "var(--colors-zinc-900)",
+        },
+        "(backgroundColor = zinc.950)" => {
+          "backgroundColor": "var(--colors-zinc-950)",
         },
         "(backgroundColor = gray.50)" => {
           "backgroundColor": "var(--colors-gray-50)",
@@ -923,6 +1258,9 @@ describe('Utility', () => {
         "(backgroundColor = gray.900)" => {
           "backgroundColor": "var(--colors-gray-900)",
         },
+        "(backgroundColor = gray.950)" => {
+          "backgroundColor": "var(--colors-gray-950)",
+        },
         "(backgroundColor = slate.50)" => {
           "backgroundColor": "var(--colors-slate-50)",
         },
@@ -952,6 +1290,9 @@ describe('Utility', () => {
         },
         "(backgroundColor = slate.900)" => {
           "backgroundColor": "var(--colors-slate-900)",
+        },
+        "(backgroundColor = slate.950)" => {
+          "backgroundColor": "var(--colors-slate-950)",
         },
         "(backgroundColor = deep.test.yam)" => {
           "backgroundColor": "var(--colors-deep-test-yam)",
@@ -1012,6 +1353,9 @@ describe('Utility', () => {
         },
         "(backgroundColor = colorPalette.900)" => {
           "backgroundColor": "var(--colors-color-palette-900)",
+        },
+        "(backgroundColor = colorPalette.950)" => {
+          "backgroundColor": "var(--colors-color-palette-950)",
         },
         "(backgroundColor = colorPalette.yam)" => {
           "backgroundColor": "var(--colors-color-palette-yam)",
@@ -1263,6 +1607,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-rose-700)",
           "--colors-color-palette-800": "var(--colors-rose-800)",
           "--colors-color-palette-900": "var(--colors-rose-900)",
+          "--colors-color-palette-950": "var(--colors-rose-950)",
         },
         "(colorPalette = pink)" => {
           "--colors-color-palette-100": "var(--colors-pink-100)",
@@ -1275,6 +1620,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-pink-700)",
           "--colors-color-palette-800": "var(--colors-pink-800)",
           "--colors-color-palette-900": "var(--colors-pink-900)",
+          "--colors-color-palette-950": "var(--colors-pink-950)",
         },
         "(colorPalette = fuchsia)" => {
           "--colors-color-palette-100": "var(--colors-fuchsia-100)",
@@ -1287,6 +1633,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-fuchsia-700)",
           "--colors-color-palette-800": "var(--colors-fuchsia-800)",
           "--colors-color-palette-900": "var(--colors-fuchsia-900)",
+          "--colors-color-palette-950": "var(--colors-fuchsia-950)",
         },
         "(colorPalette = purple)" => {
           "--colors-color-palette-100": "var(--colors-purple-100)",
@@ -1299,6 +1646,20 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-purple-700)",
           "--colors-color-palette-800": "var(--colors-purple-800)",
           "--colors-color-palette-900": "var(--colors-purple-900)",
+          "--colors-color-palette-950": "var(--colors-purple-950)",
+        },
+        "(colorPalette = violet)" => {
+          "--colors-color-palette-100": "var(--colors-violet-100)",
+          "--colors-color-palette-200": "var(--colors-violet-200)",
+          "--colors-color-palette-300": "var(--colors-violet-300)",
+          "--colors-color-palette-400": "var(--colors-violet-400)",
+          "--colors-color-palette-50": "var(--colors-violet-50)",
+          "--colors-color-palette-500": "var(--colors-violet-500)",
+          "--colors-color-palette-600": "var(--colors-violet-600)",
+          "--colors-color-palette-700": "var(--colors-violet-700)",
+          "--colors-color-palette-800": "var(--colors-violet-800)",
+          "--colors-color-palette-900": "var(--colors-violet-900)",
+          "--colors-color-palette-950": "var(--colors-violet-950)",
         },
         "(colorPalette = indigo)" => {
           "--colors-color-palette-100": "var(--colors-indigo-100)",
@@ -1311,6 +1672,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-indigo-700)",
           "--colors-color-palette-800": "var(--colors-indigo-800)",
           "--colors-color-palette-900": "var(--colors-indigo-900)",
+          "--colors-color-palette-950": "var(--colors-indigo-950)",
         },
         "(colorPalette = blue)" => {
           "--colors-color-palette-100": "var(--colors-blue-100)",
@@ -1323,6 +1685,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-blue-700)",
           "--colors-color-palette-800": "var(--colors-blue-800)",
           "--colors-color-palette-900": "var(--colors-blue-900)",
+          "--colors-color-palette-950": "var(--colors-blue-950)",
         },
         "(colorPalette = sky)" => {
           "--colors-color-palette-100": "var(--colors-sky-100)",
@@ -1335,6 +1698,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-sky-700)",
           "--colors-color-palette-800": "var(--colors-sky-800)",
           "--colors-color-palette-900": "var(--colors-sky-900)",
+          "--colors-color-palette-950": "var(--colors-sky-950)",
         },
         "(colorPalette = cyan)" => {
           "--colors-color-palette-100": "var(--colors-cyan-100)",
@@ -1347,6 +1711,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-cyan-700)",
           "--colors-color-palette-800": "var(--colors-cyan-800)",
           "--colors-color-palette-900": "var(--colors-cyan-900)",
+          "--colors-color-palette-950": "var(--colors-cyan-950)",
         },
         "(colorPalette = teal)" => {
           "--colors-color-palette-100": "var(--colors-teal-100)",
@@ -1359,6 +1724,20 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-teal-700)",
           "--colors-color-palette-800": "var(--colors-teal-800)",
           "--colors-color-palette-900": "var(--colors-teal-900)",
+          "--colors-color-palette-950": "var(--colors-teal-950)",
+        },
+        "(colorPalette = emerald)" => {
+          "--colors-color-palette-100": "var(--colors-emerald-100)",
+          "--colors-color-palette-200": "var(--colors-emerald-200)",
+          "--colors-color-palette-300": "var(--colors-emerald-300)",
+          "--colors-color-palette-400": "var(--colors-emerald-400)",
+          "--colors-color-palette-50": "var(--colors-emerald-50)",
+          "--colors-color-palette-500": "var(--colors-emerald-500)",
+          "--colors-color-palette-600": "var(--colors-emerald-600)",
+          "--colors-color-palette-700": "var(--colors-emerald-700)",
+          "--colors-color-palette-800": "var(--colors-emerald-800)",
+          "--colors-color-palette-900": "var(--colors-emerald-900)",
+          "--colors-color-palette-950": "var(--colors-emerald-950)",
         },
         "(colorPalette = green)" => {
           "--colors-color-palette-100": "var(--colors-green-100)",
@@ -1371,6 +1750,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-green-700)",
           "--colors-color-palette-800": "var(--colors-green-800)",
           "--colors-color-palette-900": "var(--colors-green-900)",
+          "--colors-color-palette-950": "var(--colors-green-950)",
         },
         "(colorPalette = lime)" => {
           "--colors-color-palette-100": "var(--colors-lime-100)",
@@ -1383,6 +1763,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-lime-700)",
           "--colors-color-palette-800": "var(--colors-lime-800)",
           "--colors-color-palette-900": "var(--colors-lime-900)",
+          "--colors-color-palette-950": "var(--colors-lime-950)",
         },
         "(colorPalette = yellow)" => {
           "--colors-color-palette-100": "var(--colors-yellow-100)",
@@ -1395,6 +1776,20 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-yellow-700)",
           "--colors-color-palette-800": "var(--colors-yellow-800)",
           "--colors-color-palette-900": "var(--colors-yellow-900)",
+          "--colors-color-palette-950": "var(--colors-yellow-950)",
+        },
+        "(colorPalette = amber)" => {
+          "--colors-color-palette-100": "var(--colors-amber-100)",
+          "--colors-color-palette-200": "var(--colors-amber-200)",
+          "--colors-color-palette-300": "var(--colors-amber-300)",
+          "--colors-color-palette-400": "var(--colors-amber-400)",
+          "--colors-color-palette-50": "var(--colors-amber-50)",
+          "--colors-color-palette-500": "var(--colors-amber-500)",
+          "--colors-color-palette-600": "var(--colors-amber-600)",
+          "--colors-color-palette-700": "var(--colors-amber-700)",
+          "--colors-color-palette-800": "var(--colors-amber-800)",
+          "--colors-color-palette-900": "var(--colors-amber-900)",
+          "--colors-color-palette-950": "var(--colors-amber-950)",
         },
         "(colorPalette = orange)" => {
           "--colors-color-palette-100": "var(--colors-orange-100)",
@@ -1407,6 +1802,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-orange-700)",
           "--colors-color-palette-800": "var(--colors-orange-800)",
           "--colors-color-palette-900": "var(--colors-orange-900)",
+          "--colors-color-palette-950": "var(--colors-orange-950)",
         },
         "(colorPalette = red)" => {
           "--colors-color-palette-100": "var(--colors-red-100)",
@@ -1419,6 +1815,46 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-red-700)",
           "--colors-color-palette-800": "var(--colors-red-800)",
           "--colors-color-palette-900": "var(--colors-red-900)",
+          "--colors-color-palette-950": "var(--colors-red-950)",
+        },
+        "(colorPalette = neutral)" => {
+          "--colors-color-palette-100": "var(--colors-neutral-100)",
+          "--colors-color-palette-200": "var(--colors-neutral-200)",
+          "--colors-color-palette-300": "var(--colors-neutral-300)",
+          "--colors-color-palette-400": "var(--colors-neutral-400)",
+          "--colors-color-palette-50": "var(--colors-neutral-50)",
+          "--colors-color-palette-500": "var(--colors-neutral-500)",
+          "--colors-color-palette-600": "var(--colors-neutral-600)",
+          "--colors-color-palette-700": "var(--colors-neutral-700)",
+          "--colors-color-palette-800": "var(--colors-neutral-800)",
+          "--colors-color-palette-900": "var(--colors-neutral-900)",
+          "--colors-color-palette-950": "var(--colors-neutral-950)",
+        },
+        "(colorPalette = stone)" => {
+          "--colors-color-palette-100": "var(--colors-stone-100)",
+          "--colors-color-palette-200": "var(--colors-stone-200)",
+          "--colors-color-palette-300": "var(--colors-stone-300)",
+          "--colors-color-palette-400": "var(--colors-stone-400)",
+          "--colors-color-palette-50": "var(--colors-stone-50)",
+          "--colors-color-palette-500": "var(--colors-stone-500)",
+          "--colors-color-palette-600": "var(--colors-stone-600)",
+          "--colors-color-palette-700": "var(--colors-stone-700)",
+          "--colors-color-palette-800": "var(--colors-stone-800)",
+          "--colors-color-palette-900": "var(--colors-stone-900)",
+          "--colors-color-palette-950": "var(--colors-stone-950)",
+        },
+        "(colorPalette = zinc)" => {
+          "--colors-color-palette-100": "var(--colors-zinc-100)",
+          "--colors-color-palette-200": "var(--colors-zinc-200)",
+          "--colors-color-palette-300": "var(--colors-zinc-300)",
+          "--colors-color-palette-400": "var(--colors-zinc-400)",
+          "--colors-color-palette-50": "var(--colors-zinc-50)",
+          "--colors-color-palette-500": "var(--colors-zinc-500)",
+          "--colors-color-palette-600": "var(--colors-zinc-600)",
+          "--colors-color-palette-700": "var(--colors-zinc-700)",
+          "--colors-color-palette-800": "var(--colors-zinc-800)",
+          "--colors-color-palette-900": "var(--colors-zinc-900)",
+          "--colors-color-palette-950": "var(--colors-zinc-950)",
         },
         "(colorPalette = gray)" => {
           "--colors-color-palette-100": "var(--colors-gray-100)",
@@ -1431,6 +1867,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-gray-700)",
           "--colors-color-palette-800": "var(--colors-gray-800)",
           "--colors-color-palette-900": "var(--colors-gray-900)",
+          "--colors-color-palette-950": "var(--colors-gray-950)",
         },
         "(colorPalette = slate)" => {
           "--colors-color-palette-100": "var(--colors-slate-100)",
@@ -1443,6 +1880,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-slate-700)",
           "--colors-color-palette-800": "var(--colors-slate-800)",
           "--colors-color-palette-900": "var(--colors-slate-900)",
+          "--colors-color-palette-950": "var(--colors-slate-950)",
         },
         "(colorPalette = deep.test)" => {
           "--colors-color-palette-yam": "var(--colors-deep-test-yam)",
@@ -1526,6 +1964,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-rose-700)",
           "--colors-color-palette-800": "var(--colors-rose-800)",
           "--colors-color-palette-900": "var(--colors-rose-900)",
+          "--colors-color-palette-950": "var(--colors-rose-950)",
         },
         "(colorPalette = pink)" => {
           "--colors-color-palette-100": "var(--colors-pink-100)",
@@ -1538,6 +1977,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-pink-700)",
           "--colors-color-palette-800": "var(--colors-pink-800)",
           "--colors-color-palette-900": "var(--colors-pink-900)",
+          "--colors-color-palette-950": "var(--colors-pink-950)",
         },
         "(colorPalette = fuchsia)" => {
           "--colors-color-palette-100": "var(--colors-fuchsia-100)",
@@ -1550,6 +1990,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-fuchsia-700)",
           "--colors-color-palette-800": "var(--colors-fuchsia-800)",
           "--colors-color-palette-900": "var(--colors-fuchsia-900)",
+          "--colors-color-palette-950": "var(--colors-fuchsia-950)",
         },
         "(colorPalette = purple)" => {
           "--colors-color-palette-100": "var(--colors-purple-100)",
@@ -1562,6 +2003,20 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-purple-700)",
           "--colors-color-palette-800": "var(--colors-purple-800)",
           "--colors-color-palette-900": "var(--colors-purple-900)",
+          "--colors-color-palette-950": "var(--colors-purple-950)",
+        },
+        "(colorPalette = violet)" => {
+          "--colors-color-palette-100": "var(--colors-violet-100)",
+          "--colors-color-palette-200": "var(--colors-violet-200)",
+          "--colors-color-palette-300": "var(--colors-violet-300)",
+          "--colors-color-palette-400": "var(--colors-violet-400)",
+          "--colors-color-palette-50": "var(--colors-violet-50)",
+          "--colors-color-palette-500": "var(--colors-violet-500)",
+          "--colors-color-palette-600": "var(--colors-violet-600)",
+          "--colors-color-palette-700": "var(--colors-violet-700)",
+          "--colors-color-palette-800": "var(--colors-violet-800)",
+          "--colors-color-palette-900": "var(--colors-violet-900)",
+          "--colors-color-palette-950": "var(--colors-violet-950)",
         },
         "(colorPalette = indigo)" => {
           "--colors-color-palette-100": "var(--colors-indigo-100)",
@@ -1574,6 +2029,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-indigo-700)",
           "--colors-color-palette-800": "var(--colors-indigo-800)",
           "--colors-color-palette-900": "var(--colors-indigo-900)",
+          "--colors-color-palette-950": "var(--colors-indigo-950)",
         },
         "(colorPalette = blue)" => {
           "--colors-color-palette-100": "var(--colors-blue-100)",
@@ -1586,6 +2042,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-blue-700)",
           "--colors-color-palette-800": "var(--colors-blue-800)",
           "--colors-color-palette-900": "var(--colors-blue-900)",
+          "--colors-color-palette-950": "var(--colors-blue-950)",
         },
         "(colorPalette = sky)" => {
           "--colors-color-palette-100": "var(--colors-sky-100)",
@@ -1598,6 +2055,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-sky-700)",
           "--colors-color-palette-800": "var(--colors-sky-800)",
           "--colors-color-palette-900": "var(--colors-sky-900)",
+          "--colors-color-palette-950": "var(--colors-sky-950)",
         },
         "(colorPalette = cyan)" => {
           "--colors-color-palette-100": "var(--colors-cyan-100)",
@@ -1610,6 +2068,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-cyan-700)",
           "--colors-color-palette-800": "var(--colors-cyan-800)",
           "--colors-color-palette-900": "var(--colors-cyan-900)",
+          "--colors-color-palette-950": "var(--colors-cyan-950)",
         },
         "(colorPalette = teal)" => {
           "--colors-color-palette-100": "var(--colors-teal-100)",
@@ -1622,6 +2081,20 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-teal-700)",
           "--colors-color-palette-800": "var(--colors-teal-800)",
           "--colors-color-palette-900": "var(--colors-teal-900)",
+          "--colors-color-palette-950": "var(--colors-teal-950)",
+        },
+        "(colorPalette = emerald)" => {
+          "--colors-color-palette-100": "var(--colors-emerald-100)",
+          "--colors-color-palette-200": "var(--colors-emerald-200)",
+          "--colors-color-palette-300": "var(--colors-emerald-300)",
+          "--colors-color-palette-400": "var(--colors-emerald-400)",
+          "--colors-color-palette-50": "var(--colors-emerald-50)",
+          "--colors-color-palette-500": "var(--colors-emerald-500)",
+          "--colors-color-palette-600": "var(--colors-emerald-600)",
+          "--colors-color-palette-700": "var(--colors-emerald-700)",
+          "--colors-color-palette-800": "var(--colors-emerald-800)",
+          "--colors-color-palette-900": "var(--colors-emerald-900)",
+          "--colors-color-palette-950": "var(--colors-emerald-950)",
         },
         "(colorPalette = green)" => {
           "--colors-color-palette-100": "var(--colors-green-100)",
@@ -1634,6 +2107,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-green-700)",
           "--colors-color-palette-800": "var(--colors-green-800)",
           "--colors-color-palette-900": "var(--colors-green-900)",
+          "--colors-color-palette-950": "var(--colors-green-950)",
         },
         "(colorPalette = lime)" => {
           "--colors-color-palette-100": "var(--colors-lime-100)",
@@ -1646,6 +2120,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-lime-700)",
           "--colors-color-palette-800": "var(--colors-lime-800)",
           "--colors-color-palette-900": "var(--colors-lime-900)",
+          "--colors-color-palette-950": "var(--colors-lime-950)",
         },
         "(colorPalette = yellow)" => {
           "--colors-color-palette-100": "var(--colors-yellow-100)",
@@ -1658,6 +2133,20 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-yellow-700)",
           "--colors-color-palette-800": "var(--colors-yellow-800)",
           "--colors-color-palette-900": "var(--colors-yellow-900)",
+          "--colors-color-palette-950": "var(--colors-yellow-950)",
+        },
+        "(colorPalette = amber)" => {
+          "--colors-color-palette-100": "var(--colors-amber-100)",
+          "--colors-color-palette-200": "var(--colors-amber-200)",
+          "--colors-color-palette-300": "var(--colors-amber-300)",
+          "--colors-color-palette-400": "var(--colors-amber-400)",
+          "--colors-color-palette-50": "var(--colors-amber-50)",
+          "--colors-color-palette-500": "var(--colors-amber-500)",
+          "--colors-color-palette-600": "var(--colors-amber-600)",
+          "--colors-color-palette-700": "var(--colors-amber-700)",
+          "--colors-color-palette-800": "var(--colors-amber-800)",
+          "--colors-color-palette-900": "var(--colors-amber-900)",
+          "--colors-color-palette-950": "var(--colors-amber-950)",
         },
         "(colorPalette = orange)" => {
           "--colors-color-palette-100": "var(--colors-orange-100)",
@@ -1670,6 +2159,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-orange-700)",
           "--colors-color-palette-800": "var(--colors-orange-800)",
           "--colors-color-palette-900": "var(--colors-orange-900)",
+          "--colors-color-palette-950": "var(--colors-orange-950)",
         },
         "(colorPalette = red)" => {
           "--colors-color-palette-100": "var(--colors-red-100)",
@@ -1682,6 +2172,46 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-red-700)",
           "--colors-color-palette-800": "var(--colors-red-800)",
           "--colors-color-palette-900": "var(--colors-red-900)",
+          "--colors-color-palette-950": "var(--colors-red-950)",
+        },
+        "(colorPalette = neutral)" => {
+          "--colors-color-palette-100": "var(--colors-neutral-100)",
+          "--colors-color-palette-200": "var(--colors-neutral-200)",
+          "--colors-color-palette-300": "var(--colors-neutral-300)",
+          "--colors-color-palette-400": "var(--colors-neutral-400)",
+          "--colors-color-palette-50": "var(--colors-neutral-50)",
+          "--colors-color-palette-500": "var(--colors-neutral-500)",
+          "--colors-color-palette-600": "var(--colors-neutral-600)",
+          "--colors-color-palette-700": "var(--colors-neutral-700)",
+          "--colors-color-palette-800": "var(--colors-neutral-800)",
+          "--colors-color-palette-900": "var(--colors-neutral-900)",
+          "--colors-color-palette-950": "var(--colors-neutral-950)",
+        },
+        "(colorPalette = stone)" => {
+          "--colors-color-palette-100": "var(--colors-stone-100)",
+          "--colors-color-palette-200": "var(--colors-stone-200)",
+          "--colors-color-palette-300": "var(--colors-stone-300)",
+          "--colors-color-palette-400": "var(--colors-stone-400)",
+          "--colors-color-palette-50": "var(--colors-stone-50)",
+          "--colors-color-palette-500": "var(--colors-stone-500)",
+          "--colors-color-palette-600": "var(--colors-stone-600)",
+          "--colors-color-palette-700": "var(--colors-stone-700)",
+          "--colors-color-palette-800": "var(--colors-stone-800)",
+          "--colors-color-palette-900": "var(--colors-stone-900)",
+          "--colors-color-palette-950": "var(--colors-stone-950)",
+        },
+        "(colorPalette = zinc)" => {
+          "--colors-color-palette-100": "var(--colors-zinc-100)",
+          "--colors-color-palette-200": "var(--colors-zinc-200)",
+          "--colors-color-palette-300": "var(--colors-zinc-300)",
+          "--colors-color-palette-400": "var(--colors-zinc-400)",
+          "--colors-color-palette-50": "var(--colors-zinc-50)",
+          "--colors-color-palette-500": "var(--colors-zinc-500)",
+          "--colors-color-palette-600": "var(--colors-zinc-600)",
+          "--colors-color-palette-700": "var(--colors-zinc-700)",
+          "--colors-color-palette-800": "var(--colors-zinc-800)",
+          "--colors-color-palette-900": "var(--colors-zinc-900)",
+          "--colors-color-palette-950": "var(--colors-zinc-950)",
         },
         "(colorPalette = gray)" => {
           "--colors-color-palette-100": "var(--colors-gray-100)",
@@ -1694,6 +2224,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-gray-700)",
           "--colors-color-palette-800": "var(--colors-gray-800)",
           "--colors-color-palette-900": "var(--colors-gray-900)",
+          "--colors-color-palette-950": "var(--colors-gray-950)",
         },
         "(colorPalette = slate)" => {
           "--colors-color-palette-100": "var(--colors-slate-100)",
@@ -1706,6 +2237,7 @@ describe('Utility', () => {
           "--colors-color-palette-700": "var(--colors-slate-700)",
           "--colors-color-palette-800": "var(--colors-slate-800)",
           "--colors-color-palette-900": "var(--colors-slate-900)",
+          "--colors-color-palette-950": "var(--colors-slate-950)",
         },
         "(colorPalette = deep.test)" => {
           "--colors-color-palette-yam": "var(--colors-deep-test-yam)",
@@ -1736,16 +2268,22 @@ describe('Utility', () => {
         "(colorPalette = pink)" => "color-palette_pink",
         "(colorPalette = fuchsia)" => "color-palette_fuchsia",
         "(colorPalette = purple)" => "color-palette_purple",
+        "(colorPalette = violet)" => "color-palette_violet",
         "(colorPalette = indigo)" => "color-palette_indigo",
         "(colorPalette = blue)" => "color-palette_blue",
         "(colorPalette = sky)" => "color-palette_sky",
         "(colorPalette = cyan)" => "color-palette_cyan",
         "(colorPalette = teal)" => "color-palette_teal",
+        "(colorPalette = emerald)" => "color-palette_emerald",
         "(colorPalette = green)" => "color-palette_green",
         "(colorPalette = lime)" => "color-palette_lime",
         "(colorPalette = yellow)" => "color-palette_yellow",
+        "(colorPalette = amber)" => "color-palette_amber",
         "(colorPalette = orange)" => "color-palette_orange",
         "(colorPalette = red)" => "color-palette_red",
+        "(colorPalette = neutral)" => "color-palette_neutral",
+        "(colorPalette = stone)" => "color-palette_stone",
+        "(colorPalette = zinc)" => "color-palette_zinc",
         "(colorPalette = gray)" => "color-palette_gray",
         "(colorPalette = slate)" => "color-palette_slate",
         "(colorPalette = deep.test)" => "color-palette_deep.test",

@@ -6,7 +6,45 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
-## [0.4.0]
+## [0.5.0] - 2023-06-26
+
+### Fixed
+
+- Fix issue where escaping classname doesn't work when class starts with number.
+
+### Added
+
+- Add support for tagged template literal version.
+
+  This features is pure css approach to writing styles, and can be a great way to migrate from styled-components and
+  emotion.
+
+  Set the `syntax` option to `template-literal` in the panda config to enable this feature.
+
+  ```js
+  // panda.config.ts
+  export default defineConfig({
+    //...
+    syntax: 'template-literal',
+  })
+  ```
+
+  > For existing projects, you might need to run the `panda codegen --clean`
+
+  You can also use the `--syntax` option to specify the syntax type when using the CLI.
+
+  ```sh
+  panda init -p --syntax template-literal
+  ```
+
+To get autocomplete for token variables, consider using the
+[CSS Var Autocomplete](https://marketplace.visualstudio.com/items?itemName=phoenisx.cssvar) extension.
+
+### Changed
+
+- Update the default color palette to match Tailwind's new palette.
+
+## [0.4.0] - 2023-06-19
 
 ### Fixed
 
@@ -43,7 +81,7 @@ See the [Changesets](./.changeset) for the latest changes.
 - Add `auto` value where neccessary to base utilities.
 - Add `0` value to default spacing tokens to allow for `strictTokens` mode.
 
-## [0.3.2]
+## [0.3.2] - 2023-06-16
 
 ### Added
 
@@ -69,6 +107,6 @@ See the [Changesets](./.changeset) for the latest changes.
 
 - Remove `bundledDependencies` from `package.json` to fix NPM resolution
 
-## [0.3.1]
+## [0.3.1] - 2023-06-16
 
 Baseline Release 🎉

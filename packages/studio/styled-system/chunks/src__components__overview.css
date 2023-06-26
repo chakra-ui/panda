@@ -108,7 +108,31 @@
   }
 
   .p_0 {
-    padding: 0;
+    padding: var(--spacing-0);
+  }
+
+  .\[\&\:hover\]\:bg_\#4049f0 {
+    &:hover {
+      background: #4049f0;
+    }
+  }
+
+  .\[\&\:hover\]\:shadow_lg {
+    &:hover {
+      box-shadow: var(--shadows-lg);
+    }
+  }
+
+  .\[\&\:hover\]\:bg_\#4049f0 {
+    &:hover {
+      background: #4049f0;
+    }
+  }
+
+  .\[\&\:hover\]\:shadow_lg {
+    &:hover {
+      box-shadow: var(--shadows-lg);
+    }
   }
 
   .\[\&\:hover\]\:bg_\#4049f0 {

@@ -15,17 +15,17 @@ import {
 import { compact } from '@pandacss/shared'
 import { buildStudio, previewStudio, serveStudio } from '@pandacss/studio'
 import { cac } from 'cac'
-import { readFileSync } from 'fs'
 import { join, resolve } from 'pathe'
 import { debounce } from 'perfect-debounce'
 import updateNotifier from 'update-notifier'
+import { name, version } from '../package.json'
 
 export async function main() {
+  updateNotifier({ pkg: { name, version }, distTag: 'latest' }).notify()
+
   const cli = cac('panda')
 
   const cwd = process.cwd()
-  const pkgPath = join(__dirname, '../package.json')
-  const pkgJson = JSON.parse(readFileSync(pkgPath, 'utf8'))
 
   cli
     .command('init', "Initialize the panda's config file")
@@ -37,8 +37,9 @@ export async function main() {
     .option('--no-gitignore', "Don't update the .gitignore")
     .option('--out-extension <ext>', "The extension of the generated js files (default: 'mjs')")
     .option('--jsx-framework <framework>', 'The jsx framework to use')
+    .option('--syntax <syntax>', 'The css syntax preference')
     .action(async (flags) => {
-      const { force, postcss, silent, gitignore, outExtension, jsxFramework, config: configPath } = flags
+      const { force, postcss, silent, gitignore, outExtension, jsxFramework, config: configPath, syntax } = flags
 
       const cwd = resolve(flags.cwd)
 
@@ -46,7 +47,7 @@ export async function main() {
         logger.level = 'silent'
       }
 
-      logger.info('cli', `Panda v${pkgJson.version}\n`)
+      logger.info('cli', `Panda v${version}\n`)
 
       const done = logger.time.info('✨ Panda initialized')
 
@@ -54,7 +55,7 @@ export async function main() {
         await setupPostcss(cwd)
       }
 
-      await setupConfig(cwd, { force, outExtension, jsxFramework })
+      await setupConfig(cwd, { force, outExtension, jsxFramework, syntax })
 
       const ctx = await loadConfigAndCreateContext({ cwd, configPath })
       const msg = await emitArtifacts(ctx)
@@ -302,10 +303,8 @@ export async function main() {
 
   cli.help()
 
-  cli.version(pkgJson.version)
+  cli.version(version)
 
   cli.parse(process.argv, { run: false })
   await cli.runMatchedCommand()
-
-  updateNotifier({ pkg: pkgJson, distTag: 'latest' }).notify()
 }

@@ -3,6 +3,7 @@
   "include": ["src", "index.ts"],
   "compilerOptions": {
     "module": "CommonJS",
-    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo"
+    "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo",
+    "verbatimModuleSyntax": false
   }
 }
