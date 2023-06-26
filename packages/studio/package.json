@@ -35,7 +35,7 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@ark-ui/react": "0.6.0",
+    "@ark-ui/react": "0.7.0",
     "@astrojs/react": "2.2.1",
     "@pandacss/types": "workspace:*",
     "@pandacss/config": "workspace:*",
@@ -43,7 +43,7 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
-    "astro": "2.6.4",
+    "astro": "2.7.0",
     "javascript-stringify": "2.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -51,9 +51,9 @@
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
-    "@types/react": "18.2.12",
-    "@types/react-dom": "18.2.5",
-    "@vitejs/plugin-react": "4.0.0",
+    "@types/react": "18.2.14",
+    "@types/react-dom": "18.2.6",
+    "@vitejs/plugin-react": "4.0.1",
     "execa": "7.1.1"
   }
 }
