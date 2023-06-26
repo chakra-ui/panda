@@ -1,5 +1,13 @@
 # @pandacss/preset-panda
 
+## 0.5.0
+
+### Patch Changes
+
+- 3a87cff8: Update the color palette to match Tailwind's new palette.
+- Updated dependencies [ead9eaa3]
+  - @pandacss/types@0.5.0
+
 ## 0.4.0
 
 ### Patch Changes

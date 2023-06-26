@@ -1,5 +1,46 @@
 # @pandacss/generator
 
+## 0.5.0
+
+### Minor Changes
+
+- ead9eaa3: Add support for tagged template literal version.
+
+  This features is pure css approach to writing styles, and can be a great way to migrate from styled-components and
+  emotion.
+
+  Set the `syntax` option to `template-literal` in the panda config to enable this feature.
+
+  ```js
+  // panda.config.ts
+  export default defineConfig({
+    //...
+    syntax: 'template-literal',
+  })
+  ```
+
+  > For existing projects, you might need to run the `panda codegen --clean`
+
+  You can also use the `--syntax` option to specify the syntax type when using the CLI.
+
+  ```sh
+  panda init -p --syntax template-literal
+  ```
+
+  To get autocomplete for token variables, consider using the
+  [CSS Var Autocomplete](https://marketplace.visualstudio.com/items?itemName=phoenisx.cssvar) extension.
+
+### Patch Changes
+
+- Updated dependencies [60df9bd1]
+- Updated dependencies [ead9eaa3]
+  - @pandacss/shared@0.5.0
+  - @pandacss/types@0.5.0
+  - @pandacss/core@0.5.0
+  - @pandacss/token-dictionary@0.5.0
+  - @pandacss/is-valid-prop@0.5.0
+  - @pandacss/logger@0.5.0
+
 ## 0.4.0
 
 ### Minor Changes

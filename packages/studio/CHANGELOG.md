@@ -1,5 +1,19 @@
 # @pandacss/studio
 
+## 0.5.0
+
+### Patch Changes
+
+- 3a87cff8: Update the color palette to match Tailwind's new palette.
+- Updated dependencies [60df9bd1]
+- Updated dependencies [ead9eaa3]
+  - @pandacss/shared@0.5.0
+  - @pandacss/types@0.5.0
+  - @pandacss/node@0.5.0
+  - @pandacss/token-dictionary@0.5.0
+  - @pandacss/config@0.5.0
+  - @pandacss/logger@0.5.0
+
 ## 0.4.0
 
 ### Patch Changes
