@@ -2,13 +2,15 @@ import { logger } from '@pandacss/logger'
 import { Obj, pipe, tap, tryCatch } from 'lil-fp'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
+import { writeFile } from 'fs/promises'
 
 export async function bundleChunks(ctx: PandaContext) {
   const files = ctx.chunks.getFiles()
-  return ctx.output.write({
+  await ctx.output.write({
     dir: ctx.paths.root,
     files: [{ file: 'styles.css', code: ctx.getCss({ files }) }],
   })
+  return files
 }
 
 export async function writeFileChunk(ctx: PandaContext, file: string) {
@@ -71,6 +73,11 @@ export async function emitAndExtract(ctx: PandaContext) {
 
 export async function extractCss(ctx: PandaContext) {
   await extractFiles(ctx)
-  await bundleChunks(ctx)
-  return ctx.messages.buildComplete(ctx.getFiles().length)
+  return bundleChunks(ctx)
+}
+
+export async function bundleCss(ctx: PandaContext, outfile: string) {
+  const files = ctx.chunks.getFiles()
+  await writeFile(outfile, ctx.getCss({ files, resolve: true }))
+  return files
 }
