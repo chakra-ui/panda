@@ -20,6 +20,8 @@ import updateNotifier from 'update-notifier'
 import { name, version } from '../package.json'
 
 export async function main() {
+  updateNotifier({ pkg: { name, version }, distTag: 'latest' }).notify()
+
   const cli = cac('panda')
 
   const cwd = process.cwd()
@@ -284,6 +286,4 @@ export async function main() {
 
   cli.parse(process.argv, { run: false })
   await cli.runMatchedCommand()
-
-  updateNotifier({ pkg: { name, version }, distTag: 'latest' }).notify()
 }
