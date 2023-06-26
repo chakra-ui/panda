@@ -3,9 +3,9 @@ import { defineParts, defineRecipe } from '@pandacss/dev'
 
 const parts = defineParts(tabsAnatomy.build())
 
-export const tabsRecipe = defineRecipe({
-  name: 'tabs',
-  description: 'A tabs style',
+export const nextraTabsRecipe = defineRecipe({
+  name: 'nextraTabs',
+  description: 'A nextra documentation tabs style',
   base: parts({
     root: {
       overflowX: 'auto',
@@ -18,9 +18,11 @@ export const tabsRecipe = defineRecipe({
       display: 'flex',
       w: 'max',
       minW: 'full',
-      borderBottom: '1px solid token(colors.gray.200)',
+      borderBottom: '1px solid token(colors.neutral.200)',
       pb: '1px',
-      _dark: { borderColor: 'neutral.800' }
+      _dark: {
+        borderColor: 'neutral.800'
+      }
     },
     trigger: {
       roundedTop: 'md',
@@ -34,43 +36,30 @@ export const tabsRecipe = defineRecipe({
       userSelect: 'none',
       borderBottom: '2px solid',
       borderColor: 'transparent',
-      color: 'gray.600',
+      color: 'neutral.600',
       _hover: {
-        borderColor: 'gray.200'
+        borderColor: 'neutral.200'
       },
       _dark: {
-        borderColor: 'neutral.800',
+        borderColor: 'transparent',
         color: 'neutral.200',
         _hover: {
           color: 'white'
         }
       },
       _selected: {
-        borderColor: 'primary.500',
-        color: 'primary.600'
+        borderColor: 'neutral.500',
+        color: 'neutral.600'
       }
     },
     indicator: {
       height: '2px',
       bottom: '-1px',
-      background: 'primary.600'
+      background: 'neutral.600'
     },
     content: {
       rounded: 'md',
       pt: '6'
     }
-  }),
-  variants: {
-    variant: {
-      code: parts({
-        tablist: {
-          borderBottom: 'none',
-          mb: '0',
-        },
-        trigger: {
-          bg: 'red'
-        }
-      })
-    }
-  }
+  })
 })
