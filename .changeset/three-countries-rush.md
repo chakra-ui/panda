@@ -3,4 +3,4 @@
 'panda-css-vscode': patch
 ---
 
-Fix extension build after adding pathe
+Fix issue where extension build fails due to the use of `pathe`
