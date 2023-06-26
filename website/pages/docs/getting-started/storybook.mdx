@@ -60,6 +60,22 @@ Install panda and create your `panda.config.ts` file.
   </Tab>
 </Tabs>
 
+### Update package.json scripts
+
+  Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3} filename="web/package.json"
+{
+  "scripts": {
++    "prepare": "panda codegen"
+  }
+}
+```
+
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
+
 ### Configure the content
 
 Make sure that all of the paths of your Storybook components are included in the `include` section of the `panda.config.ts` file.

@@ -66,6 +66,26 @@ export default defineConfig({
 })
 ```
 
+  ### Update package.json scripts
+
+  Open your `package.json` file and update the `scripts` section as follows:
+
+  ```diff {3}
+  {
+    "scripts": {
+  +    "prepare": "panda codegen",
+      "dev": "astro dev",
+      "start": "astro start",
+      "build": "astro build",
+      "preview": "astro preview"
+    }
+  }
+  ```
+
+    The `prepare` script that will run codegen after dependency installation. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+  > This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
+
 ### Configure the entry CSS with layers
 
 Add this code to an `index.css` file imported in the root component of your project.
