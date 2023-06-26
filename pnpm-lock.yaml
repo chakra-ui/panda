@@ -160,11 +160,10 @@ importers:
         version: 5.1.3
 
   extension/ts-plugin:
-    dependencies:
+    devDependencies:
       '@pandacss/extension-shared':
         specifier: workspace:^
         version: link:../shared
-    devDependencies:
       typescript:
         specifier: ^5.1.3
         version: 5.1.3
