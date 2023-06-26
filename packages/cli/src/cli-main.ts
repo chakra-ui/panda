@@ -1,6 +1,7 @@
 import { colors, logger } from '@pandacss/logger'
 import {
   analyzeTokens,
+  bundleCss,
   debugFiles,
   emitArtifacts,
   extractCss,
@@ -58,13 +59,13 @@ export async function main() {
       await setupConfig(cwd, { force, outExtension, jsxFramework, syntax })
 
       const ctx = await loadConfigAndCreateContext({ cwd, configPath })
-      const msg = await emitArtifacts(ctx)
+      const { msg, box } = await emitArtifacts(ctx)
 
       if (gitignore) {
         setupGitIgnore(ctx)
       }
 
-      logger.log(msg)
+      logger.log(msg + box)
 
       done()
     })
@@ -92,7 +93,7 @@ export async function main() {
 
       let ctx = await loadContext()
 
-      const msg = await emitArtifacts(ctx)
+      const { msg } = await emitArtifacts(ctx)
       logger.log(msg)
 
       if (watch) {
@@ -119,9 +120,10 @@ export async function main() {
     .option('--silent', "Don't print any logs")
     .option('--clean', 'Clean the chunks before generating')
     .option('-c, --config <path>', 'Path to panda config file')
+    .option('--outfile [file]', "Output file for extracted css, default to './styled-system/styles.css'")
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (flags) => {
-      const { silent, clean, config: configPath } = flags
+      const { silent, clean, config: configPath, outfile } = flags
 
       const cwd = resolve(flags.cwd)
 
@@ -138,9 +140,17 @@ export async function main() {
         ctx.chunks.empty()
       }
 
-      const msg = await extractCss(ctx)
+      if (outfile) {
+        const outPath = resolve(cwd, outfile)
 
-      logger.log(msg)
+        const { msg } = await bundleCss(ctx, outPath)
+        logger.info('css:emit', msg)
+        //
+      } else {
+        //
+        const { msg } = await extractCss(ctx)
+        logger.info('css:emit', msg)
+      }
     })
 
   cli
@@ -269,7 +279,10 @@ export async function main() {
   cli
     .command('ship [glob]', 'Ship extract result from files in glob')
     .option('--silent', "Don't print any logs")
-    .option('--outfile [file]', "Output directory for shipped files, default to './styled-system/panda.json'")
+    .option(
+      '--outfile [file]',
+      "Output path for the build info file, default to './styled-system/panda.buildinfo.json'",
+    )
     .option('-m, --minify', 'Minify generated JSON file')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
@@ -291,7 +304,7 @@ export async function main() {
           config: maybeGlob ? { include: [maybeGlob] } : undefined,
         })
 
-        const outfile = outfileFlag ?? join(...ctx.paths.root, 'panda.json')
+        const outfile = outfileFlag ?? join(...ctx.paths.root, 'panda.buildinfo.json')
 
         if (minify) {
           ctx.config.minify = true
