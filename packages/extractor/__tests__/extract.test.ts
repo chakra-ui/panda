@@ -6292,3 +6292,29 @@ it('handles root tagged template literals', () => {
     }
   `)
 })
+
+it('handles operation tokens', () => {
+  expect(
+    extractFromCode(
+      `<>
+  <AspectRatio ratio={1 / 2} asterisk={1 *5} exp={1**4} minus={5 -1} />
+  `,
+      { tagNameList: ['AspectRatio'] },
+    ),
+  ).toMatchInlineSnapshot(`
+    {
+      "AspectRatio": [
+        {
+          "conditions": [],
+          "raw": {
+            "asterisk": "1 *5",
+            "exp": "1**4",
+            "minus": "5 -1",
+            "ratio": "1 / 2",
+          },
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})
