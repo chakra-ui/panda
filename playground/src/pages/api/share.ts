@@ -6,7 +6,7 @@ import { prisma } from '../../client/prisma'
 
 const schema = z.object({
   code: z.string(),
-  theme: z.string(),
+  config: z.string(),
 })
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) =>

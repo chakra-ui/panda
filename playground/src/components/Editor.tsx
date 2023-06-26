@@ -143,7 +143,7 @@ export const Editor = (props: EditorProps) => {
           })}
         >
           <TabTrigger value="code">Code</TabTrigger>
-          <TabTrigger value="theme">Config</TabTrigger>
+          <TabTrigger value="config">Config</TabTrigger>
           <TabIndicator className={css({ background: 'yellow.400', height: '2px', mb: '-1px' })} />
         </TabList>
         <TabContent value="code" className={css({ flex: '1', pt: '4' })}>
@@ -156,7 +156,7 @@ export const Editor = (props: EditorProps) => {
             onMount={onCodeEditorMount}
           />
         </TabContent>
-        <TabContent value="theme" className={css({ flex: '1' })}>
+        <TabContent value="config" className={css({ flex: '1' })}>
           <MonacoEditor
             value={value.config}
             onChange={(e) => handleChange(e, 'config')}
