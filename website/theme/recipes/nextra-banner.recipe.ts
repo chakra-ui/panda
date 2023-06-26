@@ -10,9 +10,9 @@ const anatomy = createAnatomy('banner', [
 
 const parts = defineParts(anatomy.build())
 
-export const bannerRecipe = defineRecipe({
-  name: 'bannerRecipe',
-  description: 'A banner style',
+export const nextraBannerRecipe = defineRecipe({
+  name: 'nextraBannerRecipe',
+  description: 'A nextra banner style',
   base: parts({
     root: {
       position: 'sticky',
@@ -42,7 +42,7 @@ export const bannerRecipe = defineRecipe({
           }
         }
       },
-      color: 'slate.50',
+      color: 'gray.50',
       bg: 'neutral.900',
       _dark: {
         color: 'white',
@@ -65,7 +65,7 @@ export const bannerRecipe = defineRecipe({
       w: 8,
       h: 8,
       opacity: 0.8,
-      color: 'slate.50',
+      color: 'gray.50',
       _dark: { color: 'white' },
       _hover: { opacity: 1 }
     },

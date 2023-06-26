@@ -1,4 +1,3 @@
-import { bannerRecipe } from './banner.recipe'
 import { calloutRecipe } from './callout.recipe'
 import { cardRecipe } from './card.recipe'
 import { navbarRecipe } from './navbar.recipe'
@@ -6,10 +5,11 @@ import { tabsRecipe } from './tabs.recipe'
 import { codeTabsRecipe } from './code-tabs.recipe'
 import { buttonRecipe } from './button.recipe'
 import { inputRecipe } from './input.recipe'
+import { nextraBannerRecipe } from './nextra-banner.recipe'
 
 export const recipes = {
   button: buttonRecipe,
-  banner: bannerRecipe,
+  nextraBanner: nextraBannerRecipe,
   codeTabs: codeTabsRecipe,
   card: cardRecipe,
   callout: calloutRecipe,
