@@ -15,17 +15,17 @@ import {
 import { compact } from '@pandacss/shared'
 import { buildStudio, previewStudio, serveStudio } from '@pandacss/studio'
 import { cac } from 'cac'
-import { readFileSync } from 'fs'
 import { join, resolve } from 'pathe'
 import { debounce } from 'perfect-debounce'
 import updateNotifier from 'update-notifier'
+import { name, version } from '../package.json'
 
 export async function main() {
+  updateNotifier({ pkg: { name, version }, distTag: 'latest' }).notify()
+
   const cli = cac('panda')
 
   const cwd = process.cwd()
-  const pkgPath = join(__dirname, '../package.json')
-  const pkgJson = JSON.parse(readFileSync(pkgPath, 'utf8'))
 
   cli
     .command('init', "Initialize the panda's config file")
@@ -47,7 +47,7 @@ export async function main() {
         logger.level = 'silent'
       }
 
-      logger.info('cli', `Panda v${pkgJson.version}\n`)
+      logger.info('cli', `Panda v${version}\n`)
 
       const done = logger.time.info('✨ Panda initialized')
 
@@ -303,10 +303,8 @@ export async function main() {
 
   cli.help()
 
-  cli.version(pkgJson.version)
+  cli.version(version)
 
   cli.parse(process.argv, { run: false })
   await cli.runMatchedCommand()
-
-  updateNotifier({ pkg: pkgJson, distTag: 'latest' }).notify()
 }
