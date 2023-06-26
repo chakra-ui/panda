@@ -22,6 +22,8 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
   const { config } = conf
   const theme = config.theme ?? {}
 
+  const isTemplateLiteralSyntax = config.syntax === 'template-literal'
+
   const hash = {
     tokens: isBool(config.hash) ? config.hash : config.hash?.cssVar,
     className: isBool(config.hash) ? config.hash : config.hash?.className,
@@ -43,13 +45,13 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
   const utility = new Utility({
     prefix: prefix.className,
     tokens: tokens,
-    config: config.utilities,
+    config: isTemplateLiteralSyntax ? {} : config.utilities,
     separator: config.separator,
     shorthands: config.shorthands,
   })
 
   const conditions = new Conditions({
-    conditions: config.conditions,
+    conditions: isTemplateLiteralSyntax ? {} : config.conditions,
     breakpoints: config.theme?.breakpoints,
   })
 
@@ -98,6 +100,7 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
 
   return {
     ...conf,
+    isTemplateLiteralSyntax,
     studio,
     hash,
     prefix,

@@ -1,6 +1,7 @@
 import { colors, logger } from '@pandacss/logger'
 import {
   analyzeTokens,
+  bundleCss,
   debugFiles,
   emitArtifacts,
   extractCss,
@@ -15,17 +16,17 @@ import {
 import { compact } from '@pandacss/shared'
 import { buildStudio, previewStudio, serveStudio } from '@pandacss/studio'
 import { cac } from 'cac'
-import { readFileSync } from 'fs'
 import { join, resolve } from 'pathe'
 import { debounce } from 'perfect-debounce'
 import updateNotifier from 'update-notifier'
+import { name, version } from '../package.json'
 
 export async function main() {
+  updateNotifier({ pkg: { name, version }, distTag: 'latest' }).notify()
+
   const cli = cac('panda')
 
   const cwd = process.cwd()
-  const pkgPath = join(__dirname, '../package.json')
-  const pkgJson = JSON.parse(readFileSync(pkgPath, 'utf8'))
 
   cli
     .command('init', "Initialize the panda's config file")
@@ -37,8 +38,9 @@ export async function main() {
     .option('--no-gitignore', "Don't update the .gitignore")
     .option('--out-extension <ext>', "The extension of the generated js files (default: 'mjs')")
     .option('--jsx-framework <framework>', 'The jsx framework to use')
+    .option('--syntax <syntax>', 'The css syntax preference')
     .action(async (flags) => {
-      const { force, postcss, silent, gitignore, outExtension, jsxFramework, config: configPath } = flags
+      const { force, postcss, silent, gitignore, outExtension, jsxFramework, config: configPath, syntax } = flags
 
       const cwd = resolve(flags.cwd)
 
@@ -46,7 +48,7 @@ export async function main() {
         logger.level = 'silent'
       }
 
-      logger.info('cli', `Panda v${pkgJson.version}\n`)
+      logger.info('cli', `Panda v${version}\n`)
 
       const done = logger.time.info('✨ Panda initialized')
 
@@ -54,16 +56,16 @@ export async function main() {
         await setupPostcss(cwd)
       }
 
-      await setupConfig(cwd, { force, outExtension, jsxFramework })
+      await setupConfig(cwd, { force, outExtension, jsxFramework, syntax })
 
       const ctx = await loadConfigAndCreateContext({ cwd, configPath })
-      const msg = await emitArtifacts(ctx)
+      const { msg, box } = await emitArtifacts(ctx)
 
       if (gitignore) {
         setupGitIgnore(ctx)
       }
 
-      logger.log(msg)
+      logger.log(msg + box)
 
       done()
     })
@@ -91,7 +93,7 @@ export async function main() {
 
       let ctx = await loadContext()
 
-      const msg = await emitArtifacts(ctx)
+      const { msg } = await emitArtifacts(ctx)
       logger.log(msg)
 
       if (watch) {
@@ -118,9 +120,10 @@ export async function main() {
     .option('--silent', "Don't print any logs")
     .option('--clean', 'Clean the chunks before generating')
     .option('-c, --config <path>', 'Path to panda config file')
+    .option('--outfile [file]', "Output file for extracted css, default to './styled-system/styles.css'")
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (flags) => {
-      const { silent, clean, config: configPath } = flags
+      const { silent, clean, config: configPath, outfile } = flags
 
       const cwd = resolve(flags.cwd)
 
@@ -137,9 +140,17 @@ export async function main() {
         ctx.chunks.empty()
       }
 
-      const msg = await extractCss(ctx)
+      if (outfile) {
+        const outPath = resolve(cwd, outfile)
 
-      logger.log(msg)
+        const { msg } = await bundleCss(ctx, outPath)
+        logger.info('css:emit', msg)
+        //
+      } else {
+        //
+        const { msg } = await extractCss(ctx)
+        logger.info('css:emit', msg)
+      }
     })
 
   cli
@@ -268,7 +279,10 @@ export async function main() {
   cli
     .command('ship [glob]', 'Ship extract result from files in glob')
     .option('--silent', "Don't print any logs")
-    .option('--outfile [file]', "Output directory for shipped files, default to './styled-system/panda.json'")
+    .option(
+      '--outfile [file]',
+      "Output path for the build info file, default to './styled-system/panda.buildinfo.json'",
+    )
     .option('-m, --minify', 'Minify generated JSON file')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
@@ -290,7 +304,7 @@ export async function main() {
           config: maybeGlob ? { include: [maybeGlob] } : undefined,
         })
 
-        const outfile = outfileFlag ?? join(...ctx.paths.root, 'panda.json')
+        const outfile = outfileFlag ?? join(...ctx.paths.root, 'panda.buildinfo.json')
 
         if (minify) {
           ctx.config.minify = true
@@ -302,10 +316,8 @@ export async function main() {
 
   cli.help()
 
-  cli.version(pkgJson.version)
+  cli.version(version)
 
   cli.parse(process.argv, { run: false })
   await cli.runMatchedCommand()
-
-  updateNotifier({ pkg: pkgJson, distTag: 'latest' }).notify()
 }

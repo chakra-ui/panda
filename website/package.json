@@ -5,12 +5,12 @@
   "private": true,
   "scripts": {
     "prepare": "panda codegen",
-    "dev": "next dev",
+    "dev": "rm -rf .next && next dev",
     "build": "next build",
     "start": "next start"
   },
   "dependencies": {
-    "@ark-ui/react": "0.6.0",
+    "@ark-ui/react": "0.7.0",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "bright": "^0.8.2",
@@ -19,10 +19,10 @@
     "git-url-parse": "^13.1.0",
     "intersection-observer": "^0.12.2",
     "match-sorter": "^6.3.1",
-    "next": "13.4.6",
-    "next-seo": "^6.0.0",
+    "next": "13.4.7",
+    "next-seo": "^6.1.0",
     "next-themes": "^0.2.1",
-    "nextra": "^2.7.1",
+    "nextra": "^2.8.0",
     "outdent": " ^0.8.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
-    "@types/react": "^18.2.12",
+    "@types/react": "^18.2.14",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.24",
     "prettier": "^2.8.8"

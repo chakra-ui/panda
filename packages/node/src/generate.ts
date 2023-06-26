@@ -6,7 +6,7 @@ import { bundleChunks, emitAndExtract, writeFileChunk } from './extract'
 import { loadContext } from './load-context'
 
 async function build(ctx: PandaContext) {
-  const msg = await emitAndExtract(ctx)
+  const { msg } = await emitAndExtract(ctx)
   logger.info('css:emit', msg)
 }
 

@@ -23,6 +23,7 @@ export const artifactsGenerated = (ctx: Context) => {
     ${tick} ${quote(outdir, '/tokens')}: the css variables and js function to query your tokens
     `,
       !patterns.isEmpty() &&
+        !ctx.isTemplateLiteralSyntax &&
         outdent`
     ${tick} ${quote(outdir, '/patterns')}: functions to implement apply common layout patterns
     `,
@@ -32,7 +33,7 @@ export const artifactsGenerated = (ctx: Context) => {
       `,
       jsx.framework &&
         outdent`
-      ${tick} ${quote(outdir, '/jsx')}: style prop powered elements for ${jsx.framework}
+      ${tick} ${quote(outdir, '/jsx')}: styled jsx elements for ${jsx.framework}
       `,
       '\n',
     ]
