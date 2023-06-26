@@ -3,4 +3,4 @@
 '@pandacss/studio': patch
 ---
 
-Fix color palette
+Update the color palette to match Tailwind's new palette.
