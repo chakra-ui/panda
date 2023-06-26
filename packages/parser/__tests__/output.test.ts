@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import { getFixtureProject } from './fixture'
-import { TSConfig, UserConfig } from '@pandacss/types'
+import type { TSConfig, UserConfig } from '@pandacss/types'
 
 const run = (code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf, tsconfig?: TSConfig) => {
   const { parse, generator } = getFixtureProject(code, options, tsconfig)

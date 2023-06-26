@@ -1,4 +1,4 @@
-import type { ConfigResultWithHooks } from '@pandacss/types'
+import type { ConfigResultWithHooks, TSConfig as _TSConfig } from '@pandacss/types'
 import { getBaseEngine } from './base'
 import { getJsxEngine } from './jsx'
 import { getPathEngine } from './path'
