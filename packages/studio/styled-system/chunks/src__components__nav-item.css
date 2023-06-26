@@ -11,6 +11,12 @@
     }
   }
 
+  .hover\:shadow_lg {
+    &:where(:hover, [data-hover]) {
+      box-shadow: var(--shadows-lg);
+    }
+  }
+
   .w_60 {
     width: var(--sizes-60);
   }
@@ -34,6 +40,36 @@
   .hover\:shadow_lg {
     &:where(:hover, [data-hover]) {
       box-shadow: var(--shadows-lg);
+    }
+  }
+
+  .\[\&_svg\]\:font_normal {
+    & svg {
+      font-weight: var(--font-weights-normal);
+    }
+  }
+
+  .\[\&_svg\]\:fs_xx-large {
+    & svg {
+      font-size: xx-large;
+    }
+  }
+
+  .\[\&_svg\]\:mb_6 {
+    & svg {
+      margin-bottom: var(--spacing-6);
+    }
+  }
+
+  .\[\&_svg\]\:h_6 {
+    & svg {
+      height: var(--sizes-6);
+    }
+  }
+
+  .\[\&_svg\]\:w_6 {
+    & svg {
+      width: var(--sizes-6);
     }
   }
 
