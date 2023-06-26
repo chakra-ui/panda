@@ -3,7 +3,7 @@
   "name": "panda-css-vscode",
   "displayName": "🐼 Panda CSS",
   "description": "The official Panda CSS plugin for VS Code",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "private": true,
   "engines": {
     "vscode": "^1.67.0"
@@ -206,7 +206,7 @@
     "rewrite-deps": "tsx ./scripts/rewrite-workspace-dependencies.ts",
     "override-esbuild": "tsx ./scripts/override-esbuild-with-wasm.ts",
     "release": "pnpm build --silent && tsx ./scripts/publish.ts",
-    "vsce:package": "pnpm --silent build && pnpm vsix-builder package"
+    "local:build": "pnpm rewrite-deps && pnpm clean && pnpm override-esbuild && npm i --ignore-scripts && pnpm build:all && pnpm build && pnpm vsix-builder package"
   },
   "dependencies": {
     "@pandacss/dev": "workspace:*",
@@ -219,7 +219,8 @@
     "@pandacss/ts-plugin",
     "@pandacss/dev",
     "@pandacss/preset-base",
-    "@pandacss/preset-panda"
+    "@pandacss/preset-panda",
+    "pathe"
   ],
   "devDependencies": {
     "@pandacss/extension-shared": "workspace:*",

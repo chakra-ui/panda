@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/parser",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "The static parser for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -24,7 +24,6 @@
     "@vue/compiler-sfc": "^3.3.4",
     "lil-fp": "1.4.5",
     "magic-string": "^0.30.0",
-    "svelte": "^4.0.0",
     "ts-morph": "18.0.0",
     "ts-pattern": "4.3.0"
   },
