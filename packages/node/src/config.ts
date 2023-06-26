@@ -2,6 +2,7 @@ import { loadConfigFile } from '@pandacss/config'
 import type { Config, ConfigResultWithHooks, PandaHooks } from '@pandacss/types'
 import { createDebugger, createHooks } from 'hookable'
 import { lookItUpSync } from 'look-it-up'
+import { parse } from 'tsconfck'
 import { createContext } from './create-context'
 
 const configs = ['.ts', '.js', '.mjs', '.cjs']
@@ -26,6 +27,12 @@ export async function loadConfigAndCreateContext(options: { cwd?: string; config
   }
   if (options.cwd) {
     conf.config.cwd = options.cwd
+  }
+
+  const tsconfigResult = await parse(conf.path, { root: cwd, resolveWithEmptyIfConfigNotFound: true })
+  if (tsconfigResult) {
+    conf.tsconfig = tsconfigResult.tsconfig
+    conf.tsconfigFile = tsconfigResult.tsconfigFile
   }
 
   conf.config.outdir ??= 'styled-system'

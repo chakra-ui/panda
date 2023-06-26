@@ -48,7 +48,8 @@
     "postcss": "8.4.24",
     "preferred-pm": "^3.0.3",
     "ts-morph": "18.0.0",
-    "ts-pattern": "4.3.0"
+    "ts-pattern": "4.3.0",
+    "tsconfck": "^2.1.1"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",

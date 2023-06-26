@@ -9,13 +9,13 @@ import {
   utilities,
 } from '@pandacss/fixture'
 import { createGenerator } from '@pandacss/generator'
-import type { LoadConfigResult, PandaHooks } from '@pandacss/types'
+import type { LoadConfigResult, PandaHooks, TSConfig } from '@pandacss/types'
 import { type UserConfig } from '@pandacss/types'
 import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
 import { createHooks } from 'hookable'
 
-const staticFilePath = 'test.tsx'
+const staticFilePath = 'app/src/test.tsx'
 
 const defaults: LoadConfigResult = {
   dependencies: [],
@@ -58,12 +58,17 @@ function getProject(code: string, options?: <Conf extends UserConfig>(conf: Conf
   })
 }
 
-export function getFixtureProject(code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf) {
+export function getFixtureProject(
+  code: string,
+  options?: <Conf extends UserConfig>(conf: Conf) => Conf,
+  tsconfig?: TSConfig,
+) {
   const config = options ? options(defaults.config) : defaults.config
   const hooks = createHooks<PandaHooks>()
-  const generator = createGenerator({ ...defaults, config, hooks })
+  const generator = createGenerator({ ...defaults, config, hooks, tsconfig })
 
   const project = createProject({
+    ...tsconfig,
     useInMemoryFileSystem: true,
     getFiles: () => [staticFilePath],
     readFile: () => code,
