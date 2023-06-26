@@ -10,14 +10,16 @@ export async function bundleChunks(ctx: PandaContext) {
     dir: ctx.paths.root,
     files: [{ file: 'styles.css', code: ctx.getCss({ files }) }],
   })
-  return files
+  return { files, msg: ctx.messages.buildComplete(files.length) }
 }
 
 export async function writeFileChunk(ctx: PandaContext, file: string) {
   const { path } = ctx.runtime
   logger.debug('chunk:write', `File: ${path.relative(ctx.config.cwd, file)}`)
+
   const css = extractFile(ctx, file)
   if (!css) return
+
   const artifact = ctx.chunks.getArtifact(file, css)
   return ctx.output.write(artifact)
 }
@@ -55,19 +57,20 @@ const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)
 export async function emitArtifacts(ctx: PandaContext) {
   if (ctx.config.clean) ctx.output.empty()
   await Promise.all(ctx.getArtifacts().map(ctx.output.write))
-  return (
-    ctx.messages.artifactsGenerated() +
-    createBox({
+  return {
+    box: createBox({
       content: ctx.messages.codegenComplete(),
       title: `🐼 ${pickRandom(randomWords)}! ✨`,
-    })
-  )
+    }),
+    msg: ctx.messages.artifactsGenerated(),
+  }
 }
 
 export async function emitAndExtract(ctx: PandaContext) {
   await emitArtifacts(ctx)
-  if (ctx.config.emitTokensOnly) return 'Successfully rebuilt the css variables and js function to query your tokens ✨'
-
+  if (ctx.config.emitTokensOnly) {
+    return { files: [], msg: 'Successfully rebuilt the css variables and js function to query your tokens ✨' }
+  }
   return extractCss(ctx)
 }
 
@@ -79,5 +82,5 @@ export async function extractCss(ctx: PandaContext) {
 export async function bundleCss(ctx: PandaContext, outfile: string) {
   const files = ctx.chunks.getFiles()
   await writeFile(outfile, ctx.getCss({ files, resolve: true }))
-  return files
+  return { files, msg: ctx.messages.buildComplete(files.length) }
 }

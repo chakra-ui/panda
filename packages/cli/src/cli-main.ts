@@ -59,13 +59,13 @@ export async function main() {
       await setupConfig(cwd, { force, outExtension, jsxFramework, syntax })
 
       const ctx = await loadConfigAndCreateContext({ cwd, configPath })
-      const msg = await emitArtifacts(ctx)
+      const { msg, box } = await emitArtifacts(ctx)
 
       if (gitignore) {
         setupGitIgnore(ctx)
       }
 
-      logger.log(msg)
+      logger.log(msg + box)
 
       done()
     })
@@ -93,7 +93,7 @@ export async function main() {
 
       let ctx = await loadContext()
 
-      const msg = await emitArtifacts(ctx)
+      const { msg } = await emitArtifacts(ctx)
       logger.log(msg)
 
       if (watch) {
@@ -140,16 +140,17 @@ export async function main() {
         ctx.chunks.empty()
       }
 
-      let files: string[] = []
       if (outfile) {
         const outPath = resolve(cwd, outfile)
-        files = await bundleCss(ctx, outPath)
-      } else {
-        files = await extractCss(ctx)
-      }
 
-      const msg = ctx.messages.buildComplete(files.length)
-      logger.log(msg)
+        const { msg } = await bundleCss(ctx, outPath)
+        logger.info('css:emit', msg)
+        //
+      } else {
+        //
+        const { msg } = await extractCss(ctx)
+        logger.info('css:emit', msg)
+      }
     })
 
   cli
