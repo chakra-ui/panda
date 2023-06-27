@@ -1,4 +1,4 @@
-import { bannerRecipe } from '@/styled-system/recipes'
+import { nextraBannerRecipe } from '@/styled-system/recipes'
 import { XIcon } from 'nextra/icons'
 import { renderComponent } from './lib'
 import { useConfig } from './contexts'
@@ -15,7 +15,7 @@ export function Banner() {
   return (
     <>
       <script dangerouslySetInnerHTML={{ __html: hideBannerScript }} />
-      <div data-scope="banner" data-part="root" className={bannerRecipe({})}>
+      <div data-scope="banner" data-part="root" className={nextraBannerRecipe({})}>
         <div data-scope="banner" data-part="content">
           {renderComponent(banner.text)}
         </div>
