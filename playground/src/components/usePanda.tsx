@@ -81,7 +81,7 @@ export function usePanda(source: string, config: string) {
         )
         return acc.concat(artifactCss)
       },
-      [{ code: previewCss, file: 'styles.css' }] as CssFileArtifact[],
+      [{ code: parsedCss, file: 'styles.css' }] as CssFileArtifact[],
     )
 
     const patternNames = Object.keys(generator.config.patterns ?? {})

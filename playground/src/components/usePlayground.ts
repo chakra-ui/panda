@@ -14,6 +14,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   const { intialState } = props
   const [layout, setLayout] = useState<Layout>('horizontal')
   const [isPristine, setIsPristine] = useState(true)
+  const [isSharing, setIsSharing] = useState(false)
 
   const [state, setState] = useState(
     intialState
@@ -42,7 +43,8 @@ export const App = () => {
           view: 'code',
         },
   )
-  const share = async () =>
+  const share = async () => {
+    setIsSharing(true)
     fetch('/api/share', {
       method: 'POST',
       headers: {
@@ -54,7 +56,9 @@ export const App = () => {
       .then(({ data }) => {
         history.pushState({ id: data.id }, '', data.id)
         setIsPristine(true)
+        setIsSharing(false)
       })
+  }
 
   return {
     isPristine,
@@ -66,5 +70,6 @@ export const App = () => {
       setState(newState)
     },
     share,
+    isSharing,
   }
 }

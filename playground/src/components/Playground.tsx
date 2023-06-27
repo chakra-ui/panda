@@ -20,7 +20,7 @@ import { Toolbar } from './Toolbar'
 import { UsePlayGroundProps, usePlayground } from './usePlayground'
 
 export const Playground = (props: UsePlayGroundProps) => {
-  const { layout, setLayout, isPristine, state, setState, share } = usePlayground(props)
+  const { layout, setLayout, isPristine, state, setState, share, isSharing } = usePlayground(props)
   const panda = usePanda(state.code, state.config)
   const { previewCss, previewJs, artifacts, patternNames } = panda
 
@@ -37,11 +37,12 @@ export const Playground = (props: UsePlayGroundProps) => {
             _disabled: {
               bg: 'yellow.100',
             },
+            cursor: 'pointer',
           })}
           onClick={share}
-          disabled={isPristine}
+          disabled={isPristine || isSharing}
         >
-          Share
+          {isSharing ? 'Saving...' : 'Share'}
         </button>
         <LayoutControl value={layout} onChange={setLayout} />
       </Toolbar>
