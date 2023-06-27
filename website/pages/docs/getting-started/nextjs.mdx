@@ -320,3 +320,15 @@ If you're not getting import autocomplete in your IDE, you may need to include t
   "include":  ["src", "styled-system"]
 }
 ```
+
+### Codegen fails using es5
+
+If you run into any error related to "Transforming const to the configured target environment ("es5") is not supported yet", update your tsconfig to use es6 or higher:
+
+```json filename="tsconfig.json"
+{
+  "compilerOptions": {
+    "target": "es6",
+  }
+}
+```
