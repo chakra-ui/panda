@@ -4,7 +4,7 @@ import { defineParts, defineRecipe } from '@pandacss/dev'
 const parts = defineParts(tabsAnatomy.build())
 
 export const nextraTabsRecipe = defineRecipe({
-  name: 'nextraTabsRecipe',
+  name: 'nextraTabs',
   description: 'A nextra documentation tabs style',
   base: parts({
     root: {
@@ -36,20 +36,15 @@ export const nextraTabsRecipe = defineRecipe({
       userSelect: 'none',
       borderBottom: '2px solid',
       borderColor: 'transparent',
-      color: 'neutral.600',
       _hover: {
         borderColor: 'neutral.200'
       },
       _dark: {
         borderColor: 'transparent',
-        color: 'neutral.200',
-        _hover: {
-          color: 'white'
-        }
+        color: 'neutral.200'
       },
       _selected: {
-        borderColor: 'neutral.500',
-        color: 'neutral.600'
+        borderColor: 'neutral.500'
       }
     },
     indicator: {

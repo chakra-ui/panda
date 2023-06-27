@@ -1,5 +1,5 @@
 import { cx } from '@/styled-system/css'
-import { nextraTabsRecipe, NextraTabsVariantProps } from '@/styled-system/recipes'
+import { nextraTabs } from '@/styled-system/recipes'
 import {
   Tabs as ArkTabs,
   TabContent,
@@ -10,7 +10,7 @@ import {
 import { Children, cloneElement } from 'react'
 import { IUseTabsProps, useTabs } from './use-tabs'
 
-export interface ITabProps extends NextraTabsVariantProps, IUseTabsProps {
+export interface ITabProps extends IUseTabsProps {
   children: React.ReactElement[]
 }
 
@@ -22,7 +22,7 @@ export function Tabs(props: ITabProps) {
     <ArkTabs
       value={value}
       onChange={onChange}
-      className={cx('nextra-scrollbar', nextraTabsRecipe())}
+      className={cx('nextra-scrollbar', nextraTabs())}
     >
       <TabList>
         {items.map((item, index) => {
