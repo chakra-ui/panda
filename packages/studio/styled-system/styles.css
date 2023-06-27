@@ -27,14 +27,6 @@
     margin: var(--spacing-4);
   }
 
-  .expanded\:transform_rotate\(180deg\):where([aria-expanded='true'], [data-expanded]) {
-    transform: rotate(180deg);
-  }
-
-  .transition_all_\.2s_ease {
-    transition: all 0.2s ease;
-  }
-
   .max-h_300px {
     max-height: 300px;
   }
@@ -348,11 +340,6 @@
     gap: var(--spacing-3\.5);
   }
 
-  .dark\:text_neutral\.300.dark,
-  .dark .dark\:text_neutral\.300 {
-    color: var(--colors-neutral-300);
-  }
-
   .bg_transparent {
     background: var(--colors-transparent);
   }
@@ -513,10 +500,6 @@
 
   .text_uppercase {
     text-transform: uppercase;
-  }
-
-  .currentPage\:text_yellow\.300[aria-current='page'] {
-    color: var(--colors-yellow-300);
   }
 
   .d_block {
