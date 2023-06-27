@@ -12,23 +12,24 @@ const evalCode = (code: string, scope: Record<string, unknown>) => {
   return new Function(...scopeKeys, code)(...scopeValues)
 }
 
-export function usePanda(source: string, theme: string) {
-  const userTheme = useMemo(() => {
-    const codeTrimmed = theme
+export function usePanda(source: string, config: string) {
+  const userConfig = useMemo(() => {
+    const codeTrimmed = config
       .replaceAll(/export /g, '')
       .trim()
       .replace(/;$/, '')
 
     try {
-      return evalCode(`return (() => {${codeTrimmed}; return theme})()`, {})
+      return evalCode(`return (() => {${codeTrimmed}; return config})()`, {})
     } catch (e) {
       return null
     }
-  }, [theme])
+  }, [config])
 
   const generator = useMemo(() => {
-    const { extend, ...restTheme } = userTheme ?? {}
-    const theme = Object.assign(merge({}, presetTheme.theme, extend) || {}, restTheme || {})
+    const theme = Object.assign(merge({}, presetTheme.theme, userConfig?.theme?.extend) || {}, {})
+
+    const config = { ...(userConfig ?? {}), theme }
 
     return createGenerator({
       dependencies: [],
@@ -40,10 +41,10 @@ export function usePanda(source: string, theme: string) {
         outdir: 'styled-system',
         ...presetBase,
         preflight: true,
-        theme,
+        ...config,
       },
     })
-  }, [userTheme])
+  }, [userConfig])
 
   return useMemo(() => {
     const project = createProject({
@@ -55,7 +56,6 @@ export function usePanda(source: string, theme: string) {
     })
 
     const parserResult = project.parseSourceFile('code.tsx')
-    console.log(parserResult)
     const parsedCss = parserResult ? generator.getParserCss(parserResult) ?? '' : ''
     const artifacts = generator.getArtifacts() ?? []
 
@@ -81,7 +81,7 @@ export function usePanda(source: string, theme: string) {
         )
         return acc.concat(artifactCss)
       },
-      [{ code: previewCss, file: 'styles.css' }] as CssFileArtifact[],
+      [{ code: parsedCss, file: 'styles.css' }] as CssFileArtifact[],
     )
 
     const patternNames = Object.keys(generator.config.patterns ?? {})

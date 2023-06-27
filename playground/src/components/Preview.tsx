@@ -1,5 +1,5 @@
 import Frame, { FrameContextConsumer } from 'react-frame-component'
-import { LiveError, LivePreview, LiveProvider } from 'react-live'
+import { LiveProvider, LiveError, LivePreview } from 'react-live-runner'
 import { useIsClient } from 'usehooks-ts'
 import { Flex } from '@/styled-system/jsx'
 
@@ -27,6 +27,7 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
       css,
       cva,
       cx,
+      token,
       ${patternNames.map((name) => `${name},`).join('\n')}
     };
   </script>
@@ -34,7 +35,7 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
 </html>`
 
   return (
-    <Flex px="6" py="4" flex="1" align="stretch">
+    <Flex px="6" py="4" align="stretch" h="full">
       <Frame
         key={initialContent}
         initialContent={initialContent}
@@ -50,7 +51,6 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
                 .replaceAll(/export /g, '')
                 .concat('\nrender(<App />)')}
               scope={(window as any)?.panda}
-              noInline
             >
               <LiveError />
               <LivePreview />

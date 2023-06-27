@@ -46,7 +46,7 @@ export const GeneratedCss = ({ cssArtifacts }: { cssArtifacts: CssFileArtifact[]
           })}
         >
           {cssArtifacts.map((artifact) => (
-            <TabTrigger key={artifact.file} value={artifact.file}>
+            <TabTrigger key={artifact.file} value={artifact.file} asChild>
               <panda.button whiteSpace="nowrap">
                 {artifact.file === 'index.css'
                   ? artifact.dir?.slice(1).concat(artifact.file)?.join('/')
