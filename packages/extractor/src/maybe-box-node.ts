@@ -50,6 +50,13 @@ const isLogicalSyntax = (op: SyntaxKind) =>
   op === ts.SyntaxKind.InstanceOfKeyword ||
   op === ts.SyntaxKind.InKeyword
 
+const isOperationSyntax = (op: SyntaxKind) =>
+  op === ts.SyntaxKind.AsteriskToken ||
+  op === ts.SyntaxKind.SlashToken ||
+  op === ts.SyntaxKind.PercentToken ||
+  op === ts.SyntaxKind.AsteriskAsteriskToken ||
+  op === ts.SyntaxKind.MinusToken
+
 const canReturnWhenTrueInLogicalExpression = (op: ts.SyntaxKind) => {
   return op === ts.SyntaxKind.BarBarToken || op === ts.SyntaxKind.QuestionQuestionToken
 }
@@ -214,6 +221,9 @@ export function maybeBoxNode(
               canReturnWhenTrue: canReturnWhenTrueInLogicalExpression(op),
             } as const
             return cache(maybeResolveConditionalExpression(exprObject, ctx))
+          })
+          .when(isOperationSyntax, () => {
+            return cache(box.literal(node.getText(), node, stack))
           })
           .otherwise(() => undefined)
       })
