@@ -143,15 +143,15 @@ describe('extract to css output pipeline', () => {
           margin: 1px
           }
 
-        .hover\\\\:text_\\\\#2ecc71:where(:hover, [data-hover]) {
+        .hover\\\\:text_\\\\#2ecc71:is(:hover, [data-hover]) {
           color: #2ecc71
               }
 
-        .hover\\\\:bg_var\\\\(--some-bg\\\\):where(:hover, [data-hover]) {
+        .hover\\\\:bg_var\\\\(--some-bg\\\\):is(:hover, [data-hover]) {
           background-color: var(--some-bg)
               }
 
-        [data-theme=dark] .margin\\\\:dark\\\\:hover\\\\:m_-2:where(:hover, [data-hover]), .dark .margin\\\\:dark\\\\:hover\\\\:m_-2:where(:hover, [data-hover]), .margin\\\\:dark\\\\:hover\\\\:m_-2:where(:hover, [data-hover]).dark, .margin\\\\:dark\\\\:hover\\\\:m_-2:where(:hover, [data-hover])[data-theme=dark] {
+        [data-theme=dark] .margin\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]), .dark .margin\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]), .margin\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]).dark, .margin\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover])[data-theme=dark] {
           margin: calc(var(--spacing-2) * -1)
                   }
 
@@ -535,7 +535,7 @@ describe('extract to css output pipeline', () => {
           content: \\"👋\\"
                   }
 
-        .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0 + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0:where(:hover, [data-hover]) {
+        .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0 + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0:is(:hover, [data-hover]) {
           margin: var(--spacing-0)
                   }
       }"
@@ -591,7 +591,7 @@ describe('extract to css output pipeline', () => {
           background: var(--colors-color-palette-100)
           }
 
-        .hover\\\\:text_colorPalette\\\\.300:where(:hover, [data-hover]) {
+        .hover\\\\:text_colorPalette\\\\.300:is(:hover, [data-hover]) {
           color: var(--colors-color-palette-300)
               }
       }"

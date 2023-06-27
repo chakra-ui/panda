@@ -94,7 +94,7 @@ describe('recipe ruleset', () => {
           "variant": {
             "outline": {
               "&": {
-                "&:where(:hover, [data-hover])": {
+                "&:is(:hover, [data-hover])": {
                   "backgroundColor": "blue",
                   "color": "var(--colors-white)",
                 },
@@ -110,7 +110,7 @@ describe('recipe ruleset', () => {
             },
             "solid": {
               "&": {
-                "&:where(:hover, [data-hover])": {
+                "&:is(:hover, [data-hover])": {
                   "backgroundColor": "darkblue",
                 },
                 "&[data-disabled]": {
@@ -143,7 +143,7 @@ describe('recipe ruleset', () => {
           .buttonStyle--variant_solid {
               background-color: blue;
               color: var(--colors-white);
-              &:where(:hover, [data-hover]) {
+              &:is(:hover, [data-hover]) {
                   background-color: darkblue
               }
               &[data-disabled] {
@@ -171,7 +171,7 @@ describe('recipe ruleset', () => {
           .buttonStyle--variant_solid {
               background-color: blue;
               color: var(--colors-white);
-              &:where(:hover, [data-hover]) {
+              &:is(:hover, [data-hover]) {
                   background-color: darkblue
               }
               &[data-disabled] {
@@ -184,7 +184,7 @@ describe('recipe ruleset', () => {
                   background-color: var(--colors-transparent);
                   border: 1px solid blue;
                   color: blue;
-                  &:where(:hover, [data-hover]) {
+                  &:is(:hover, [data-hover]) {
                       background-color: blue;
                       color: var(--colors-white)
                   }
