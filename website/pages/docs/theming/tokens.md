@@ -80,7 +80,7 @@ Semantic tokens are tokens that are designed to be used in a specific context. I
 For example, assuming we've defined the following tokens:
 
 - `red` and `green` are raw tokens that define the color red and green.
-- `danger` and `success` are semantic tokens that reference to the `red` and `green` tokens.
+- `danger` and `success` are semantic tokens that reference the `red` and `green` tokens.
 
 ```js
 export default defineConfig({
