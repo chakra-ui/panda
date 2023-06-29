@@ -31,4 +31,9 @@ describe('astish', () => {
       }
     `)
   })
+
+  // @ts-ignore
+  // can happen if a value is unresolvable in the static analysis step
+  // ex: css`${someVar}`
+  astish(undefined)
 })
