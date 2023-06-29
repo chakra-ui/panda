@@ -10,7 +10,7 @@ import {
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { compact, mapObject, memo } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import type { ConfigResultWithHooks } from '@pandacss/types'
+import type { ConfigResultWithHooks, TSConfig as _TSConfig } from '@pandacss/types'
 import { isBool, isStr } from 'lil-fp'
 import postcss from 'postcss'
 

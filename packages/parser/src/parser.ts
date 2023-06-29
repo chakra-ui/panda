@@ -105,7 +105,7 @@ export function createParser(options: ParserOptions) {
     const isValidStyleFn = (name: string) => name === jsx?.factory
     const isFactory = (name: string) => jsx && name.startsWith(jsx.factory)
 
-    const jsxFactoryAlias = jsx ? imports.getAlias(jsx.factory) : 'panda'
+    const jsxFactoryAlias = jsx ? imports.getAlias(jsx.factory) : 'styled'
     const jsxPatternNodes = new RegExp(
       `^(${jsx?.nodes.map((node) => node.type === 'pattern' && node.name).join('|')})$`,
     )

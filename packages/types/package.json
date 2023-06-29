@@ -22,6 +22,7 @@
     "@pandacss/token-dictionary": "workspace:*",
     "chokidar-cli": "^3.0.0",
     "csstype": "3.1.2",
-    "hookable": "5.5.3"
+    "hookable": "5.5.3",
+    "pkg-types": "1.0.3"
   }
 }

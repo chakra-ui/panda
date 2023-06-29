@@ -1,3 +1,4 @@
+import type { TSConfig } from 'pkg-types'
 import type { Conditions } from './conditions'
 import type { PandaHooks } from './hooks'
 import type { PatternConfig } from './pattern'
@@ -6,6 +7,8 @@ import type { StaticCssOptions } from './static-css'
 import type { GlobalStyleObject } from './system-types'
 import type { Theme } from './theme'
 import type { UtilityConfig } from './utility'
+
+export type { TSConfig }
 
 type StudioOptions = {
   /**
@@ -230,8 +233,10 @@ export type Preset = ExtendableOptions & PresetOptions
 
 export type UserConfig = UnwrapExtend<RequiredBy<Config, 'outdir' | 'cwd' | 'include'>>
 
-export type LoadConfigResult = {
+export interface LoadConfigResult {
   path: string
   config: UserConfig
+  tsconfig?: TSConfig
+  tsconfigFile?: string
   dependencies: string[]
 }

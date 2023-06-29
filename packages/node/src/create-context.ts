@@ -25,6 +25,7 @@ export const createContext = (conf: ConfigResultWithHooks) =>
 
     Obj.bind('project', ({ getFiles, runtime: { fs }, parserOptions }) => {
       return createProject({
+        ...conf.tsconfig,
         getFiles,
         readFile: fs.readFileSync,
         hooks: conf.hooks,
