@@ -47,8 +47,7 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
         isStyleProp: isValidProperty,
         nodes: [...patterns.nodes, ...recipes.nodes],
       },
-      getRecipeName: recipes.getFnName,
-      getRecipeByName: recipes.getConfig,
+      getRecipesByJsxName: recipes.filter,
     },
   }
 }

@@ -260,10 +260,28 @@ describe('extract to css output pipeline', () => {
         },
         {
           "data": [
+            {
+              "variant": "sm",
+            },
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
             {},
           ],
           "name": "blueRecipe",
           "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "variant": "sm",
+            },
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
         },
       ]
     `)
