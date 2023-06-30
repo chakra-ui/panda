@@ -4,7 +4,7 @@ import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
 import { createHooks } from 'hookable'
 import { useMemo } from 'react'
-import { mergeConfigs } from '@/src/lib/mergeConfigs'
+import { getResolvedConfig } from '@/src/lib/merge-config'
 
 const evalCode = (code: string, scope: Record<string, unknown>) => {
   const scopeKeys = Object.keys(scope)
@@ -27,19 +27,19 @@ export function usePanda(source: string, config: string) {
   }, [config])
 
   const generator = useMemo(() => {
-    const config = mergeConfigs([presetBase, presetTheme, userConfig])
+    const config = getResolvedConfig({
+      cwd: '',
+      include: [],
+      outdir: 'styled-system',
+      preflight: true,
+      presets: [presetBase, presetTheme, userConfig],
+    })
 
     return createGenerator({
       dependencies: [],
       path: '',
       hooks: createHooks(),
-      config: {
-        cwd: '',
-        include: [],
-        outdir: 'styled-system',
-        preflight: true,
-        ...config,
-      },
+      config: config as any,
     })
   }, [userConfig])
 
