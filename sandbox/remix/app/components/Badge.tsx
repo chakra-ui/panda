@@ -1,4 +1,4 @@
-import { panda } from 'styled-system/jsx'
+import { styled } from 'styled-system/jsx'
 import { cva } from 'styled-system/css'
 
 export const badge = cva({
@@ -31,4 +31,4 @@ export const badge = cva({
   },
 })
 
-export const Badge = panda('span', badge)
+export const Badge = styled('span', badge)
