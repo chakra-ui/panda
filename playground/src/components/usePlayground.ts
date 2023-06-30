@@ -40,7 +40,6 @@ export const App = () => {
   theme: { extend: {} },
 };
 `,
-          view: 'code',
         },
   )
   const share = async () => {

@@ -1,10 +1,11 @@
 import { css } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { Artifact } from '@pandacss/types'
-import { TabContent, TabIndicator, TabList, Tabs, TabTrigger } from '@ark-ui/react'
+
 import MonacoEditor, { OnMount } from '@monaco-editor/react'
 import { State } from './usePlayground'
-import { useCallback } from 'react'
+import { useCallback, useRef, useState } from 'react'
+import { useUpdateEffect } from 'usehooks-ts'
 
 type EditorProps = {
   value: State
@@ -24,6 +25,8 @@ const editorOptions = {
 
 export const Editor = (props: EditorProps) => {
   const { onChange, value, artifacts } = props
+  const [activeTab, setActiveTab] = useState<keyof State>('code')
+  const monacoRef = useRef<Parameters<OnMount>[1]>()
 
   const handleChange = (content = '', id: 'code' | 'config') => {
     onChange({
@@ -78,10 +81,8 @@ export const Editor = (props: EditorProps) => {
     })
   }, [])
 
-  const onCodeEditorMount: OnMount = useCallback(
-    async (editor, monaco) => {
-      await configureEditor(editor, monaco)
-
+  const setupLibs = useCallback(
+    (monaco: Parameters<OnMount>[1]) => {
       const libs = artifacts.flatMap((artifact) => {
         if (!artifact) return []
         return artifact.files.map((file) => ({
@@ -91,8 +92,18 @@ export const Editor = (props: EditorProps) => {
       })
 
       for (const lib of libs) {
-        monaco.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath)
+        monaco?.languages.typescript.typescriptDefaults.addExtraLib(lib.content, lib.filePath)
       }
+    },
+    [artifacts],
+  )
+
+  const onCodeEditorMount: OnMount = useCallback(
+    async (editor, monaco) => {
+      monacoRef.current = monaco
+
+      configureEditor(editor, monaco)
+      setupLibs(monaco)
 
       const reactTypesVersion = '18.0.27'
       const typeSources = [
@@ -118,13 +129,17 @@ export const Editor = (props: EditorProps) => {
         }),
       )
     },
-    [artifacts, configureEditor],
+    [configureEditor, setupLibs],
   )
+
+  useUpdateEffect(() => {
+    setupLibs(monacoRef.current!)
+  }, [artifacts])
 
   return (
     <Flex flex="1" direction="column" align="flex-start">
-      <Tabs defaultValue="code" className={css({ flex: '1', width: 'full', display: 'flex', flexDirection: 'column' })}>
-        <TabList
+      <div className={css({ flex: '1', width: 'full', display: 'flex', flexDirection: 'column' })}>
+        <div
           className={css({
             px: '6',
             borderBottomWidth: '1px',
@@ -136,37 +151,32 @@ export const Editor = (props: EditorProps) => {
               bg: 'transparent',
               fontWeight: 'medium',
               color: 'gray.500',
+              borderBottom: 'solid 2px transparent',
+              cursor: 'pointer',
               _selected: {
-                color: 'gray.900',
+                borderBottomColor: 'yellow.400',
               },
             },
           })}
         >
-          <TabTrigger value="code">Code</TabTrigger>
-          <TabTrigger value="config">Config</TabTrigger>
-          <TabIndicator className={css({ background: 'yellow.400', height: '2px', mb: '-1px' })} />
-        </TabList>
-        <TabContent value="code" className={css({ flex: '1', pt: '4' })}>
+          <button data-selected={activeTab === 'code' ? '' : undefined} onClick={() => setActiveTab('code')}>
+            Code
+          </button>
+          <button data-selected={activeTab === 'config' ? '' : undefined} onClick={() => setActiveTab('config')}>
+            Config
+          </button>
+        </div>
+        <div className={css({ flex: '1', pt: '4' })}>
           <MonacoEditor
-            value={value.code}
-            onChange={(e) => handleChange(e, 'code')}
+            value={value[activeTab]}
+            onChange={(e) => handleChange(e, activeTab)}
             language="typescript"
-            path="code.tsx"
+            path={activeTab === 'code' ? 'code.tsx' : 'config.ts'}
             options={editorOptions}
             onMount={onCodeEditorMount}
           />
-        </TabContent>
-        <TabContent value="config" className={css({ flex: '1' })}>
-          <MonacoEditor
-            value={value.config}
-            onChange={(e) => handleChange(e, 'config')}
-            language="typescript"
-            path="config.ts"
-            options={editorOptions}
-            onMount={configureEditor}
-          />
-        </TabContent>
-      </Tabs>
+        </div>
+      </div>
     </Flex>
   )
 }
