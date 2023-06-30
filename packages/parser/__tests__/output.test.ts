@@ -179,6 +179,114 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('multiple recipes on 1 component', () => {
+    const code = `
+    import { button, pinkRecipe, greenRecipe, blueRecipe } from ".panda/recipes"
+
+    const ComponentWithMultipleRecipes = ({ variant }) => {
+      return <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }))}>Hello</button>
+    }
+
+
+    export default function Page() {
+      return (
+        <>
+          <ComponentWithMultipleRecipes variant="sm" />
+        </>
+      )
+    }
+     `
+    const result = run(code, (conf) => ({
+      ...conf,
+      theme: {
+        recipes: {
+          pinkRecipe: {
+            name: 'pinkRecipe',
+            jsx: ['ComponentWithMultipleRecipes'],
+            base: { color: 'pink.100' },
+            variants: {
+              variant: {
+                small: { fontSize: 'sm' },
+              },
+            },
+          },
+          greenRecipe: {
+            name: 'greenRecipe',
+            jsx: ['ComponentWithMultipleRecipes'],
+            base: { color: 'green.100' },
+            variants: {
+              variant: {
+                small: { fontSize: 'sm' },
+              },
+            },
+          },
+          blueRecipe: {
+            name: 'blueRecipe',
+            jsx: ['ComponentWithMultipleRecipes'],
+            base: { color: 'blue.100' },
+            variants: {
+              variant: {
+                small: { fontSize: 'sm' },
+              },
+            },
+          },
+        },
+      },
+    }))
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "pinkRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "variant": "sm",
+            },
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "greenRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "blueRecipe",
+          "type": "recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          .pinkRecipe {
+            color: pink.100
+              }
+
+          .greenRecipe {
+            color: green.100
+              }
+
+          .blueRecipe {
+            color: blue.100
+              }
+          }
+      }"
+    `)
+  })
+
   test('empty rules', () => {
     const code = `
     import { SectionLearn } from '@/components/sections/learn'
