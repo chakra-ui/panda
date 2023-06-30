@@ -319,5 +319,15 @@ export async function main() {
   cli.version(version)
 
   cli.parse(process.argv, { run: false })
-  await cli.runMatchedCommand()
+  try {
+    await cli.runMatchedCommand()
+  } catch (error) {
+    logger.error('cli', error)
+
+    if (logger.isDebug) {
+      console.error(error)
+    }
+
+    process.exit(1)
+  }
 }
