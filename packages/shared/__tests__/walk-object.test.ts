@@ -76,7 +76,7 @@ describe('walk object', () => {
     `)
   })
 
-  test('should not overwrite keys if next value is nullish', () => {
+  test('should not set prop with nullish value', () => {
     const shorthands = {
       flexDir: 'flexDirection',
     }
@@ -94,7 +94,7 @@ describe('walk object', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "flexDirection": undefined,
+        "flexDirection": "row",
       }
     `)
   })
