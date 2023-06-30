@@ -6318,3 +6318,27 @@ it('handles operation tokens', () => {
     }
   `)
 })
+
+it('resolves shorthands identifier ShorthandPropertyAssignment', () => {
+  expect(
+    extractFromCode(
+      `const color = "red.100";
+      css({ color })`,
+      { functionNameList: ['css'] },
+    ),
+  ).toMatchInlineSnapshot(`
+    {
+      "css": [
+        {
+          "conditions": [],
+          "raw": [
+            {
+              "color": "red.100",
+            },
+          ],
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})
