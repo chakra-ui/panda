@@ -34,6 +34,13 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
 </body>
 </html>`
 
+  const defaultExportName = extractDefaultExportedFunctionName(source) ?? 'App'
+  const transformed = source
+    .replaceAll(/import.*/g, '')
+    .replaceAll(/export default /g, '')
+    .replaceAll(/export /g, '')
+    .concat(`\nrender(<${defaultExportName} />)`)
+
   return (
     <Flex px="6" py="4" align="stretch" h="full">
       <Frame
@@ -45,13 +52,7 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
       >
         <FrameContextConsumer>
           {({ window }) => (
-            <LiveProvider
-              code={source
-                .replaceAll(/import.*/g, '')
-                .replaceAll(/export /g, '')
-                .concat('\nrender(<App />)')}
-              scope={(window as any)?.panda}
-            >
+            <LiveProvider code={transformed} scope={(window as any)?.panda}>
               <LiveError />
               <LivePreview />
             </LiveProvider>
@@ -60,4 +61,24 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
       </Frame>
     </Flex>
   )
+}
+
+const defaultFunctionRegex = /export\s+default\s+function\s+(\w+)/
+function extractDefaultExportedFunctionName(code: string) {
+  const match = code.match(defaultFunctionRegex)
+  if (match && match[1]) {
+    return match[1]
+  } else {
+    return extractDefaultArrowFunctionName(code)
+  }
+}
+
+const defaultArrowFnIdentifierRegex = /export\s+default\s+(\w+)/
+function extractDefaultArrowFunctionName(code: string) {
+  const match = code.match(defaultArrowFnIdentifierRegex)
+  if (match && match[1]) {
+    return match[1]
+  } else {
+    return null // Default function name not found
+  }
 }
