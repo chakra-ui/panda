@@ -244,7 +244,7 @@ Spacing tokens represent the margin and padding of an element. Its value is defi
 ```jsx
 const theme = {
   tokens: {
-    spacings: {
+    spacing: {
       sm: { value: '12px' }
     }
   }

@@ -1,9 +1,3 @@
-/**
- * This file is a modified version of the `merge-config.ts` file from the panda config package
- * https://github.com/chakra-ui/panda/blob/main/packages/config/src/merge-config.ts
- * All it does is remove the methods that only work in a node environment
- */
-
 import type { Config } from '@pandacss/types'
 import { mergeAndConcat } from 'merge-anything'
 import { bundle } from './bundle'
