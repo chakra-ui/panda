@@ -75,4 +75,27 @@ describe('walk object', () => {
       }
     `)
   })
+
+  test('should not overwrite keys if next value is nullish', () => {
+    const shorthands = {
+      flexDir: 'flexDirection',
+    }
+
+    const obj = {
+      flexDir: 'row',
+      flexDirection: undefined,
+    }
+
+    const result = walkObject(obj, (value) => value, {
+      getKey(prop) {
+        return shorthands[prop] ?? prop
+      },
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "flexDirection": undefined,
+      }
+    `)
+  })
 })
