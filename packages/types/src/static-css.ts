@@ -17,10 +17,12 @@ type CssRule = {
   responsive?: boolean
 }
 
-type RecipeRule = {
-  conditions?: string[]
-  responsive?: boolean
-} & { [variant: string]: boolean | string[] }
+type RecipeRule =
+  | '*'
+  | ({
+      conditions?: string[]
+      responsive?: boolean
+    } & { [variant: string]: boolean | string[] })
 
 export type StaticCssOptions = {
   /**

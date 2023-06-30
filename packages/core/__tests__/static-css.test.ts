@@ -145,4 +145,57 @@ describe('static-css', () => {
       }
     `)
   })
+
+  test('using * as RecipeRule', () => {
+    expect(
+      getStaticCss({
+        css: [],
+        recipes: {
+          buttonStyle: ['*'],
+        },
+      })(ctx),
+    ).toMatchInlineSnapshot(`
+      {
+        "css": [],
+        "recipes": [
+          {
+            "buttonStyle": {
+              "size": {
+                "base": "sm",
+                "md": "sm",
+                "sm": "sm",
+              },
+            },
+          },
+          {
+            "buttonStyle": {
+              "size": {
+                "base": "md",
+                "md": "md",
+                "sm": "md",
+              },
+            },
+          },
+          {
+            "buttonStyle": {
+              "variant": {
+                "base": "primary",
+                "md": "primary",
+                "sm": "primary",
+              },
+            },
+          },
+          {
+            "buttonStyle": {
+              "variant": {
+                "base": "secondary",
+                "md": "secondary",
+                "sm": "secondary",
+              },
+            },
+          },
+        ],
+      }
+    `)
+  })
 })
