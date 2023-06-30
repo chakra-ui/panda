@@ -31,22 +31,12 @@ describe('[dynamic] ast parser', () => {
               "column": 9,
               "line": 4,
               "node": "CallExpression",
-              "stack": [
-                "CallExpression",
-                "ObjectLiteralExpression",
-              ],
               "type": "map",
               "value": Map {
                 "variant" => {
                   "column": 22,
                   "line": 5,
                   "node": "StringLiteral",
-                  "stack": [
-                    "CallExpression",
-                    "ObjectLiteralExpression",
-                    "PropertyAssignment",
-                    "StringLiteral",
-                  ],
                   "type": "literal",
                   "value": "h1",
                 },
@@ -65,36 +55,18 @@ describe('[dynamic] ast parser', () => {
               "column": 9,
               "line": 12,
               "node": "CallExpression",
-              "stack": [
-                "CallExpression",
-                "ObjectLiteralExpression",
-              ],
               "type": "map",
               "value": Map {
                 "variant" => {
                   "column": 20,
                   "line": 13,
                   "node": "ObjectLiteralExpression",
-                  "stack": [
-                    "CallExpression",
-                    "ObjectLiteralExpression",
-                    "PropertyAssignment",
-                    "ObjectLiteralExpression",
-                  ],
                   "type": "map",
                   "value": Map {
                     "base" => {
                       "column": 27,
                       "line": 13,
                       "node": "StringLiteral",
-                      "stack": [
-                        "CallExpression",
-                        "ObjectLiteralExpression",
-                        "PropertyAssignment",
-                        "ObjectLiteralExpression",
-                        "PropertyAssignment",
-                        "StringLiteral",
-                      ],
                       "type": "literal",
                       "value": "h4",
                     },
@@ -102,14 +74,6 @@ describe('[dynamic] ast parser', () => {
                       "column": 37,
                       "line": 13,
                       "node": "StringLiteral",
-                      "stack": [
-                        "CallExpression",
-                        "ObjectLiteralExpression",
-                        "PropertyAssignment",
-                        "ObjectLiteralExpression",
-                        "PropertyAssignment",
-                        "StringLiteral",
-                      ],
                       "type": "literal",
                       "value": "h5",
                     },
@@ -147,22 +111,12 @@ describe('[dynamic] ast parser', () => {
               "column": 9,
               "line": 8,
               "node": "CallExpression",
-              "stack": [
-                "CallExpression",
-                "ObjectLiteralExpression",
-              ],
               "type": "map",
               "value": Map {
                 "variant" => {
                   "column": 21,
                   "line": 9,
                   "node": "StringLiteral",
-                  "stack": [
-                    "CallExpression",
-                    "ObjectLiteralExpression",
-                    "PropertyAssignment",
-                    "StringLiteral",
-                  ],
                   "type": "literal",
                   "value": "raised",
                 },
