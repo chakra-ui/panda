@@ -17,6 +17,8 @@ describe('extract to css output pipeline', () => {
       import { panda } from ".panda/jsx"
       import { css } from ".panda/css"
 
+      const color = "red.100";
+
        function Button() {
          return (
             <div marginTop="55555px">
@@ -35,6 +37,7 @@ describe('extract to css output pipeline', () => {
                 debug
                 p="2"
                 m={{
+                  color,
                   base: "1px",
                   sm: "4px",
                   _dark: { _hover: { m: -2 } }
@@ -87,6 +90,7 @@ describe('extract to css output pipeline', () => {
                   },
                 },
                 "base": "1px",
+                "color": "red.100",
                 "sm": "4px",
               },
               "p": "2",
@@ -138,6 +142,10 @@ describe('extract to css output pipeline', () => {
 
         .p_2 {
           padding: var(--spacing-2)
+          }
+
+        .margin\\\\:text_red\\\\.100 {
+          color: var(--colors-red-100)
           }
 
         .m_1px {
