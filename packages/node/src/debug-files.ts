@@ -28,12 +28,11 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
       measure()
       if (!result) return
 
-      const list = result.toArray().map((resultItem) => resultItem.box?.toJSON?.() ?? resultItem)
       const css = ctx.getParserCss(result)
       if (!css) return
 
       if (options.dry) {
-        console.log({ path: file, ast: list, code: css })
+        console.log({ path: file, ast: result, code: css })
         return Promise.resolve()
       }
 
@@ -49,7 +48,7 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
         logger.info('cli', `Writing ${colors.bold(`${outdir}/${cssPath}`)}`)
 
         return Promise.all([
-          fs.writeFile(`${outdir}/${astJsonPath}`, JSON.stringify(list, debugResultSerializer, 2)),
+          fs.writeFile(`${outdir}/${astJsonPath}`, JSON.stringify(result.toJSON(), null, 2)),
           fs.writeFile(`${outdir}/${cssPath}`, css),
         ])
       }
@@ -58,16 +57,4 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
 
   logger.info('cli', `Found ${colors.bold(`${filesWithCss.length}/${files.length}`)} files using Panda`)
   measureTotal()
-}
-
-const debugResultSerializer = (_key: string, value: any) => {
-  if (value instanceof Set) {
-    return Array.from(value)
-  }
-
-  if (value instanceof Map) {
-    return Object.fromEntries(value)
-  }
-
-  return value
 }

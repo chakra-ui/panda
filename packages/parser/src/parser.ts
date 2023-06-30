@@ -100,12 +100,13 @@ export function createParser(options: ParserOptions) {
     )
 
     const [css] = importRegex
+    const jsxFactoryAlias = jsx ? imports.getAlias(jsx.factory) : 'styled'
+
     const isValidPattern = imports.createMatch(importMap.pattern)
     const isValidRecipe = imports.createMatch(importMap.recipe)
     const isValidStyleFn = (name: string) => name === jsx?.factory
-    const isFactory = (name: string) => jsx && name.startsWith(jsx.factory)
+    const isFactory = (name: string) => Boolean(jsx && name.startsWith(jsxFactoryAlias))
 
-    const jsxFactoryAlias = jsx ? imports.getAlias(jsx.factory) : 'styled'
     const jsxPatternNodes = new RegExp(
       `^(${jsx?.nodes.map((node) => node.type === 'pattern' && node.name).join('|')})$`,
     )
@@ -169,12 +170,7 @@ export function createParser(options: ParserOptions) {
       // ignore fragments
       if (!tagName) return false
 
-      return (
-        components.has(tagName) ||
-        isUpperCase(tagName) ||
-        tagName.startsWith(jsxFactoryAlias) ||
-        isJsxTagRecipe(tagName)
-      )
+      return components.has(tagName) || isUpperCase(tagName) || isFactory(tagName) || isJsxTagRecipe(tagName)
     })
 
     const matchTagProp = memo((tagName: string, propName: string) => {
@@ -197,7 +193,7 @@ export function createParser(options: ParserOptions) {
 
     const matchFn = memo((fnName: string) => {
       if (recipes.has(fnName) || patterns.has(fnName)) return true
-      if (fnName === cvaAlias || fnName === cssAlias || fnName.startsWith(jsxFactoryAlias)) return true
+      if (fnName === cvaAlias || fnName === cssAlias || isFactory(fnName)) return true
       return functions.has(fnName)
     })
 
@@ -229,7 +225,7 @@ export function createParser(options: ParserOptions) {
 
     extractResultByName.forEach((result, alias) => {
       const name = imports.getName(alias)
-      logger.debug(`ast:${name}`, { filePath, result, alias })
+      logger.debug(`ast:${name}`, name !== alias ? { kind: result.kind, alias } : { kind: result.kind })
 
       if (result.kind === 'function') {
         match(name)
@@ -349,27 +345,19 @@ export function createParser(options: ParserOptions) {
           //
           const data = combineResult(unbox(query.box))
 
-          logger.debug(`ast:jsx:${name}`, { filePath, result: data })
-
           match(name)
-            .when(
-              (name) => jsx && name.startsWith(jsxFactoryAlias),
-              (name) => {
-                collector.setJsx({ name, box: query.box, type: 'jsx-factory', data })
-              },
-            )
+            .when(isFactory, (name) => {
+              collector.setJsx({ name, box: query.box, type: 'jsx-factory', data })
+            })
             .when(
               (name) => jsxPatternNodes.test(name),
               (name) => {
                 collector.setPattern(name, { type: 'jsx-pattern', name, box: query.box, data })
               },
             )
-            .when(
-              (name) => recipeJsxLists.string.has(name) || recipeJsxLists.regex.some((regex) => regex.test(name)),
-              (name) => {
-                collector.setRecipe(getRecipeName(name), { type: 'jsx-recipe', name, box: query.box, data })
-              },
-            )
+            .when(isJsxTagRecipe, (name) => {
+              collector.setRecipe(getRecipeName(name), { type: 'jsx-recipe', name, box: query.box, data })
+            })
             .otherwise(() => {
               collector.setJsx({ name, box: query.box, type: 'jsx', data })
             })

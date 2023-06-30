@@ -4193,29 +4193,18 @@ test('unbox with unresolvable spread', () => {
       "column": 23,
       "line": 2,
       "node": "CallExpression",
-      "stack": [],
       "type": "array",
       "value": [
         {
           "column": 23,
           "line": 2,
           "node": "CallExpression",
-          "stack": [
-            "CallExpression",
-            "ObjectLiteralExpression",
-          ],
           "type": "map",
           "value": Map {
             "color" => {
               "column": 36,
               "line": 2,
               "node": "StringLiteral",
-              "stack": [
-                "CallExpression",
-                "ObjectLiteralExpression",
-                "PropertyAssignment",
-                "StringLiteral",
-              ],
               "type": "literal",
               "value": "red",
             },
@@ -4223,14 +4212,6 @@ test('unbox with unresolvable spread', () => {
               "column": 91,
               "line": 2,
               "node": "StringLiteral",
-              "stack": [
-                "CallExpression",
-                "ObjectLiteralExpression",
-                "SpreadAssignment",
-                "ObjectLiteralExpression",
-                "PropertyAssignment",
-                "StringLiteral",
-              ],
               "type": "literal",
               "value": "blue.100",
             },
@@ -4258,31 +4239,18 @@ test('unbox with unresolvable spread', () => {
       "column": 13,
       "line": 6,
       "node": "JsxOpeningElement",
-      "stack": [],
       "type": "map",
       "value": Map {
         "style" => {
           "column": 20,
           "line": 7,
           "node": "ObjectLiteralExpression",
-          "stack": [
-            "JsxAttribute",
-            "JsxExpression",
-            "ObjectLiteralExpression",
-          ],
           "type": "map",
           "value": Map {
             "background" => {
               "column": 29,
               "line": 8,
               "node": "BinaryExpression",
-              "stack": [
-                "JsxAttribute",
-                "JsxExpression",
-                "ObjectLiteralExpression",
-                "PropertyAssignment",
-                "BinaryExpression",
-              ],
               "type": "conditional",
               "value": undefined,
             },
@@ -4292,10 +4260,6 @@ test('unbox with unresolvable spread', () => {
           "column": 27,
           "line": 10,
           "node": "StringLiteral",
-          "stack": [
-            "JsxAttribute",
-            "StringLiteral",
-          ],
           "type": "literal",
           "value": "4",
         },

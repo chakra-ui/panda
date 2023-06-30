@@ -32,10 +32,6 @@ describe('recipe jsx', () => {
               "column": 38,
               "line": 6,
               "node": "CallExpression",
-              "stack": [
-                "CallExpression",
-                "ObjectLiteralExpression",
-              ],
               "type": "map",
               "value": Map {
                 "variant" => {
@@ -81,17 +77,12 @@ describe('recipe jsx', () => {
               "column": 16,
               "line": 12,
               "node": "JsxOpeningElement",
-              "stack": [],
               "type": "map",
               "value": Map {
                 "size" => {
                   "column": 29,
                   "line": 12,
                   "node": "StringLiteral",
-                  "stack": [
-                    "JsxAttribute",
-                    "StringLiteral",
-                  ],
                   "type": "literal",
                   "value": "sm",
                 },
@@ -99,10 +90,6 @@ describe('recipe jsx', () => {
                   "column": 37,
                   "line": 12,
                   "node": "StringLiteral",
-                  "stack": [
-                    "JsxAttribute",
-                    "StringLiteral",
-                  ],
                   "type": "literal",
                   "value": "40px",
                 },
@@ -122,17 +109,12 @@ describe('recipe jsx', () => {
               "column": 16,
               "line": 13,
               "node": "JsxOpeningElement",
-              "stack": [],
               "type": "map",
               "value": Map {
                 "size" => {
                   "column": 29,
                   "line": 13,
                   "node": "StringLiteral",
-                  "stack": [
-                    "JsxAttribute",
-                    "StringLiteral",
-                  ],
                   "type": "literal",
                   "value": "sm",
                 },
@@ -140,24 +122,12 @@ describe('recipe jsx', () => {
                   "column": 43,
                   "line": 13,
                   "node": "ObjectLiteralExpression",
-                  "stack": [
-                    "JsxAttribute",
-                    "JsxExpression",
-                    "ObjectLiteralExpression",
-                  ],
                   "type": "map",
                   "value": Map {
                     "base" => {
                       "column": 51,
                       "line": 13,
                       "node": "StringLiteral",
-                      "stack": [
-                        "JsxAttribute",
-                        "JsxExpression",
-                        "ObjectLiteralExpression",
-                        "PropertyAssignment",
-                        "StringLiteral",
-                      ],
                       "type": "literal",
                       "value": "outline",
                     },
@@ -165,13 +135,6 @@ describe('recipe jsx', () => {
                       "column": 66,
                       "line": 13,
                       "node": "StringLiteral",
-                      "stack": [
-                        "JsxAttribute",
-                        "JsxExpression",
-                        "ObjectLiteralExpression",
-                        "PropertyAssignment",
-                        "StringLiteral",
-                      ],
                       "type": "literal",
                       "value": "solid",
                     },
@@ -196,17 +159,12 @@ describe('recipe jsx', () => {
               "column": 16,
               "line": 16,
               "node": "JsxSelfClosingElement",
-              "stack": [],
               "type": "map",
               "value": Map {
                 "size" => {
                   "column": 45,
                   "line": 16,
                   "node": "StringLiteral",
-                  "stack": [
-                    "JsxAttribute",
-                    "StringLiteral",
-                  ],
                   "type": "literal",
                   "value": "50px",
                 },

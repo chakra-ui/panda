@@ -23,17 +23,12 @@ describe('pattern jsx', () => {
               "column": 16,
               "line": 7,
               "node": "JsxOpeningElement",
-              "stack": [],
               "type": "map",
               "value": Map {
                 "align" => {
                   "column": 36,
                   "line": 7,
                   "node": "StringLiteral",
-                  "stack": [
-                    "JsxAttribute",
-                    "StringLiteral",
-                  ],
                   "type": "literal",
                   "value": "center",
                 },
@@ -41,10 +36,6 @@ describe('pattern jsx', () => {
                   "column": 55,
                   "line": 7,
                   "node": "StringLiteral",
-                  "stack": [
-                    "JsxAttribute",
-                    "StringLiteral",
-                  ],
                   "type": "literal",
                   "value": "40px",
                 },
@@ -52,10 +43,6 @@ describe('pattern jsx', () => {
                   "column": 75,
                   "line": 7,
                   "node": "StringLiteral",
-                  "stack": [
-                    "JsxAttribute",
-                    "StringLiteral",
-                  ],
                   "type": "literal",
                   "value": "42px",
                 },
