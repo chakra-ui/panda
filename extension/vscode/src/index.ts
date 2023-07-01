@@ -13,7 +13,15 @@ import { defaultSettings, getFlattenedSettings } from '@pandacss/extension-share
 import { type TsLanguageFeaturesApiV0, getTsApi } from './typescript-language-features'
 
 // Client entrypoint
-const docSelector: vscode.DocumentSelector = ['typescript', 'typescriptreact', 'javascript', 'javascriptreact']
+const docSelector: vscode.DocumentSelector = [
+  'typescript',
+  'typescriptreact',
+  'javascript',
+  'javascriptreact',
+  'astro',
+  'svelte',
+  'vue',
+]
 
 let client: LanguageClient
 const debug = false
