@@ -106,8 +106,14 @@ export const Editor = (props: EditorProps) => {
       setupLibs(monaco)
 
       // Get panda types
-      const res = await fetch('https://unpkg.com/@pandacss/types@latest/?meta=true')
-      const data = await res.json()
+      type Files = { path: string; files: Files }[]
+      async function fetchPandaTypes(): Promise<{ files: Files }> {
+        const response = await fetch('https://unpkg.com/@pandacss/types@latest/?meta=true')
+        const data = await response.json()
+        return data
+      }
+
+      const data = await fetchPandaTypes()
 
       const distFiles = data.files.find((f) => f.path === '/dist')?.files ?? []
       const distFIleNames = distFiles.map((f) => f.path.replace('/dist/', ''))
