@@ -1,18 +1,18 @@
 import { css, cx } from 'styled-system/css'
 import { circle, vstack } from 'styled-system/patterns'
-import { Stack, panda, Circle, HStack } from 'styled-system/jsx'
+import { Stack, styled, Circle, HStack } from 'styled-system/jsx'
 import { button } from 'styled-system/recipes'
 import { Button } from 'app/components/Button'
 import { badge, Badge } from 'app/components/Badge'
 
-export default function Index() {
+export function Index() {
   return (
     <div className={css({ paddingY: '40px', debug: true })}>
       <Button
         aria-label="Hello World"
         variant="danger"
         size={{ base: 'sm', md: 'md' }}
-        css={{ color: 'yellow', transform: 'auto', scale: '1.1', x: '40px' }}
+        css={{ color: 'yellow', transform: 'auto', scale: '1.1' }}
       >
         Hello wow
       </Button>
@@ -23,9 +23,9 @@ export default function Index() {
         </Circle>
         <HStack gap="40px" debug>
           <div>Element 1</div>
-          <panda.div color="red" fontWeight="bold" fontSize="50px">
+          <styled.div color="red" fontWeight="bold" fontSize="50px">
             Element 2
-          </panda.div>
+          </styled.div>
         </HStack>
       </Stack>
       <div className={css({ maxWidth: '840px', marginX: 'auto', textAlign: 'center' })}>
@@ -43,7 +43,7 @@ export default function Index() {
             to build your React applications.
           </p>
 
-          <div className={css({ marginTop: '40px', display: 'inline-flex', spaceX: '4' })}>
+          <div className={css({ marginTop: '40px', display: 'inline-flex' })}>
             <button
               className={css({
                 height: '40px',

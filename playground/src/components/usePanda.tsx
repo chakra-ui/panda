@@ -82,7 +82,7 @@ export function usePanda(source: string, config: string) {
     )
 
     const patternNames = Object.keys(generator.config.patterns ?? {})
-    return {
+    const panda = {
       parserResult,
       parsedCss,
       previewCss,
@@ -91,6 +91,8 @@ export function usePanda(source: string, config: string) {
       artifacts,
       cssArtifacts,
     }
+    console.log(panda) // <-- useful for debugging purposes, don't remove
+    return panda
   }, [source, generator])
 }
 
