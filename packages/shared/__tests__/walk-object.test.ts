@@ -88,6 +88,7 @@ describe('walk object', () => {
 
     const result = walkObject(obj, (value) => value, {
       getKey(prop) {
+        // @ts-ignore
         return shorthands[prop] ?? prop
       },
     })
