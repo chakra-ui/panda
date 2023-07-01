@@ -174,8 +174,6 @@ export function createParser(options: ParserOptions) {
     })
 
     const matchTagProp = memo((tagName: string, propName: string) => {
-      if (propertiesMap.size === 0) return true // = allow all
-
       if (
         Boolean(components.get(tagName)?.has(propName)) ||
         options.jsx?.isStyleProp(propName) ||
