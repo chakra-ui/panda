@@ -105,6 +105,18 @@ export const Editor = (props: EditorProps) => {
       configureEditor(editor, monaco)
       setupLibs(monaco)
 
+      // Get panda types
+      const res = await fetch('https://unpkg.com/@pandacss/types@latest/?meta=true')
+      const data = await res.json()
+
+      const distFiles = data.files.find((f) => f.path === '/dist')?.files ?? []
+      const distFIleNames = distFiles.map((f) => f.path.replace('/dist/', ''))
+
+      const pandaTypeSources = distFIleNames.map((dts) => ({
+        url: `https://unpkg.com/@pandacss/types@latest/dist/${dts}`,
+        filePath: `file:///node_modules/@pandacss/types/${dts}`,
+      }))
+
       const reactTypesVersion = '18.0.27'
       const typeSources = [
         {
@@ -119,6 +131,11 @@ export const Editor = (props: EditorProps) => {
           url: `https://unpkg.com/@types/react@${reactTypesVersion}/global.d.ts`,
           filePath: 'file:///node_modules/@types/react/global.d.ts',
         },
+        {
+          url: `https://unpkg.com/@pandacss/dev@latest/dist/index.d.ts`,
+          filePath: 'file:///node_modules/@pandacss/dev/index.d.ts',
+        },
+        ...pandaTypeSources,
       ]
 
       await Promise.allSettled(

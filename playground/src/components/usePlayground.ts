@@ -36,9 +36,12 @@ export const App = () => {
   )
 }
 `,
-          config: `export const config = {
+          config: `import { defineConfig } from '@pandacss/dev';
+
+export const config = defineConfig({
   theme: { extend: {} },
-};
+});
+          
 `,
         },
   )

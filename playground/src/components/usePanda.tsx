@@ -32,7 +32,7 @@ export function usePanda(source: string, config: string) {
       include: [],
       outdir: 'styled-system',
       preflight: true,
-      presets: [presetBase, presetTheme, userConfig],
+      presets: [presetBase, presetTheme, userConfig ?? {}],
     })
 
     return createGenerator({
