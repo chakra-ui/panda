@@ -11,9 +11,9 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
 
   const unresolved = [
     '@layer reset, base, tokens, recipes, utilities;',
+    preflight && "@import './reset.css';",
     "@import './global.css';",
     staticCss && "@import './static.css';",
-    preflight && "@import './reset.css';",
     !ctx.tokens.isEmpty && "@import './tokens/index.css';",
     keyframes && "@import './tokens/keyframes.css';",
   ]
