@@ -17,6 +17,9 @@ export type WalkObjectOptions = {
   getKey?(prop: string): string
 }
 
+type Nullable<T> = T | null | undefined
+const isNotNullish = <T>(element: Nullable<T>): element is T => element != null
+
 export function walkObject<T, K>(
   target: T,
   predicate: Predicate<K>,
@@ -33,7 +36,11 @@ export function walkObject<T, K>(
         if (stop?.(value, childPath)) {
           return predicate(value, path)
         }
-        result[key] = inner(child, childPath)
+
+        const next = inner(child, childPath)
+        if (isNotNullish(next)) {
+          result[key] = next
+        }
       }
       return result
     }
