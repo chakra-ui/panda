@@ -1,5 +1,5 @@
 'use client'
-import { usePanda } from '@/src/components/usePanda'
+import { usePanda } from '@/src/hooks/usePanda'
 import { css } from '@/styled-system/css'
 import {
   Splitter,
@@ -17,7 +17,7 @@ import { GeneratedCss } from './GeneratedCss'
 import { LayoutControl } from './LayoutControl'
 import { Preview } from './Preview'
 import { Toolbar } from './Toolbar'
-import { UsePlayGroundProps, usePlayground } from './usePlayground'
+import { UsePlayGroundProps, usePlayground } from '@/src/hooks/usePlayground'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const { layout, setLayout, isPristine, state, setState, share, isSharing } = usePlayground(props)

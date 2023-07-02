@@ -3,7 +3,7 @@ import { Stack, panda } from '@/styled-system/jsx'
 import { hstack } from '@/styled-system/patterns'
 import type { ResultItem } from '@pandacss/types'
 import { JsonViewer } from '@textea/json-viewer'
-import { usePanda } from './usePanda'
+import { usePanda } from '../hooks/usePanda'
 
 export const ASTViewer = (props: { parserResult: ReturnType<typeof usePanda>['parserResult'] }) => {
   if (!props.parserResult) return null

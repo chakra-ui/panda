@@ -3,7 +3,7 @@ import { panda, Stack } from '@/styled-system/jsx'
 import { TabIndicator, TabList, Tabs, TabTrigger } from '@ark-ui/react'
 import MonacoEditor from '@monaco-editor/react'
 import { useState } from 'react'
-import { CssFileArtifact } from './usePanda'
+import { CssFileArtifact } from '../hooks/usePanda'
 
 const editorOptions = {
   minimap: { enabled: false },

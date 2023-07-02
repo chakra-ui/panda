@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Layout } from './LayoutControl'
+import { Layout } from '../components/LayoutControl'
 
 export type State = {
   code: string
@@ -36,11 +36,13 @@ export const App = () => {
   )
 }
 `,
-          config: `export const config = {
+          config: `import { defineConfig } from '@pandacss/dev';
+
+export const config = defineConfig({
   theme: { extend: {} },
-};
+});
+          
 `,
-          view: 'code',
         },
   )
   const share = async () => {
