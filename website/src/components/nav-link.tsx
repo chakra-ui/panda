@@ -12,7 +12,7 @@ export const NavLink = (props: Props) => {
   return (
     <Link
       href={href}
-      target={isExternal ? '_blank' : '_self'}
+      target={isExternal ? '_blank' : undefined}
       rel={isExternal ? 'noopener' : undefined}
       className={css({
         px: '2',
