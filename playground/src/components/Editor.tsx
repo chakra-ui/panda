@@ -33,10 +33,12 @@ export const Editor = (props: PandaEditorProps) => {
               bg: 'transparent',
               fontWeight: 'medium',
               color: 'gray.500',
-              borderBottom: 'solid 2px transparent',
+              borderBottomWidth: '2px',
+              borderBottomColor: 'transparent',
               cursor: 'pointer',
               _selected: {
                 borderBottomColor: 'yellow.400',
+                color: 'gray.900',
               },
             },
           })}
