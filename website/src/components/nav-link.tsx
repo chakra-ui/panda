@@ -1,11 +1,19 @@
 import Link from 'next/link'
 import { css } from '@/styled-system/css'
 
-export const NavLink = (props: { href: string; children: React.ReactNode }) => {
-  const { href, children } = props
+type Props = {
+  href: string
+  isExternal?: boolean
+  children: React.ReactNode
+}
+
+export const NavLink = (props: Props) => {
+  const { href, isExternal, children } = props
   return (
     <Link
       href={href}
+      target={isExternal ? '_blank' : undefined}
+      rel={isExternal ? 'noopener' : undefined}
       className={css({
         px: '2',
         py: '1',
