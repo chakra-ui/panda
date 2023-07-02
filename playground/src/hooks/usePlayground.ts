@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Layout } from './LayoutControl'
+import { Layout } from '../components/LayoutControl'
 
 export type State = {
   code: string
