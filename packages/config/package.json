@@ -11,8 +11,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "pnpm tsup src/index.ts --format=esm,cjs --shims --dts",
-    "build-fast": "pnpm tsup src/index.ts --format=esm,cjs --shims --no-dts",
+    "build": "pnpm tsup src/index.ts src/merge.ts --format=esm,cjs --shims --dts",
+    "build-fast": "pnpm tsup src/index.ts src/merge-configs.ts --format=esm,cjs --shims --no-dts",
     "dev": "pnpm build-fast --watch"
   },
   "files": [
@@ -32,5 +32,18 @@
   },
   "devDependencies": {
     "pkg-types": "1.0.3"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    },
+    "./merge": {
+      "types": "./dist/merge.d.ts",
+      "require": "./dist/merge.js",
+      "import": "./dist/merge.mjs"
+    },
+    "./package.json": "./package.json"
   }
 }
