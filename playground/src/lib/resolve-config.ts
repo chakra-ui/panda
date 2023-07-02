@@ -30,8 +30,6 @@ export function getResolvedConfig(config: ExtendableConfig) {
       presets.unshift(...(preset.presets ?? []))
     }
   }
-  console.log('configs', configs)
-  console.log('configs_merge', mergeConfigs(configs))
   return mergeConfigs(configs) as Config
 }
 
