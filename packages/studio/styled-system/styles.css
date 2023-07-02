@@ -1,10 +1,10 @@
 @layer reset, base, tokens, recipes, utilities;
 
+@import './reset.css';
+
 @import './global.css';
 
 @import './static.css';
-
-@import './reset.css';
 
 @import './tokens/index.css';
 
