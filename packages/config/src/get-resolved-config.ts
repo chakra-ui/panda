@@ -1,6 +1,6 @@
 import type { Config } from '@pandacss/types'
 import { bundle } from './bundle'
-import { mergeConfigs } from './merge'
+import { mergeConfigs } from './merge-config'
 
 type Extendable<T> = T & { extend?: T }
 type ExtendableConfig = Extendable<Config>

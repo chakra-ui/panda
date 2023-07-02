@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { resolveTsPathPattern, type PathMapping } from './ts-config-paths-mappings'
+import { resolveTsPathPattern, type PathMapping } from './ts-config-paths'
 
 const jsExtensions = ['.js', '.cjs', '.mjs']
 

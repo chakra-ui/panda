@@ -1,1 +1,1 @@
-export * from './src/merge.ts'
+export * from './src/merge-config.ts'
