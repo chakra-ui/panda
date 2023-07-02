@@ -75,4 +75,28 @@ describe('walk object', () => {
       }
     `)
   })
+
+  test('should not set prop with nullish value', () => {
+    const shorthands = {
+      flexDir: 'flexDirection',
+    }
+
+    const obj = {
+      flexDir: 'row',
+      flexDirection: undefined,
+    }
+
+    const result = walkObject(obj, (value) => value, {
+      getKey(prop) {
+        // @ts-ignore
+        return shorthands[prop] ?? prop
+      },
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "flexDirection": "row",
+      }
+    `)
+  })
 })
