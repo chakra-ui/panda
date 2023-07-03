@@ -13,7 +13,7 @@ const evalCode = (code: string, scope: Record<string, unknown>) => {
 }
 
 function findPandacssDevImports(code: string) {
-  const importRegex = /import\s*{([^}]+)}\s*from\s*['"]@pandacss\/dev['"];/g
+  const importRegex = /import\s*{([^}]+)}\s*from\s*['"]@pandacss\/dev['"]/g
   const matches = code.match(importRegex)
 
   if (matches) {
