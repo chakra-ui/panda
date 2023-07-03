@@ -2,6 +2,8 @@ import { createGenerator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
+import * as pandaDefs from '@pandacss/dev'
+
 import { createHooks } from 'hookable'
 import { useMemo } from 'react'
 import { getResolvedConfig } from '@/src/lib/resolve-config'
@@ -12,24 +14,6 @@ const evalCode = (code: string, scope: Record<string, unknown>) => {
   return new Function(...scopeKeys, code)(...scopeValues)
 }
 
-function findPandacssDevImports(code: string) {
-  const importRegex = /import\s*{([^}]+)}\s*from\s*['"]@pandacss\/dev['"]/g
-  const matches = code.match(importRegex)
-
-  if (matches) {
-    const importedItems: string[] = []
-    matches.forEach((match) => {
-      const items = match.match(/import\s*{([^}]+)}/)?.[1]
-      if (!items) return
-      const itemsList = items.split(',').map((item) => item.trim())
-      importedItems.push(...itemsList)
-    })
-    return importedItems
-  }
-
-  return []
-}
-
 export function usePanda(source: string, config: string) {
   const userConfig = useMemo(() => {
     const codeTrimmed = config
@@ -38,12 +22,9 @@ export function usePanda(source: string, config: string) {
       .trim()
       .replace(/;$/, '')
 
-    const pandaDevImports = findPandacssDevImports(config)
-      .map((def) => `function ${def}(arg){return arg}`)
-      .join(';\n')
-
     try {
-      return evalCode(`return (() => {${`${pandaDevImports};\n${codeTrimmed}`}; return config})()`, {})
+      console.log('first', `return (() => {${codeTrimmed}; return config})()`)
+      return evalCode(`return (() => {${codeTrimmed}; return config})()`, pandaDefs)
     } catch (e) {
       return null
     }
