@@ -44,7 +44,7 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
-    "astro": "2.7.0",
+    "astro": "2.7.2",
     "javascript-stringify": "2.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
