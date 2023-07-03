@@ -4,7 +4,7 @@
 '@pandacss/core': patch
 ---
 
-Feat: `config.staticCss` recipes can now just use [`*`] to generate all variants
+Add feature where `config.staticCss.recipes` can now use [`*`] to generate all variants of a recipe.
 
 before:
 
