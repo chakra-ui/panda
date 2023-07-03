@@ -81,5 +81,6 @@ export const createLogger = (conf: Config = {}) => {
       info: timing('info'),
       debug: timing('debug'),
     },
+    isDebug: Boolean(conf.isDebug),
   }
 }
