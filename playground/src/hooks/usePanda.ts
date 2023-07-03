@@ -12,15 +12,38 @@ const evalCode = (code: string, scope: Record<string, unknown>) => {
   return new Function(...scopeKeys, code)(...scopeValues)
 }
 
+function findPandacssDevImports(code: string) {
+  const importRegex = /import\s*{([^}]+)}\s*from\s*['"]@pandacss\/dev['"];/g
+  const matches = code.match(importRegex)
+
+  if (matches) {
+    const importedItems: string[] = []
+    matches.forEach((match) => {
+      const items = match.match(/import\s*{([^}]+)}/)?.[1]
+      if (!items) return
+      const itemsList = items.split(',').map((item) => item.trim())
+      importedItems.push(...itemsList)
+    })
+    return importedItems
+  }
+
+  return []
+}
+
 export function usePanda(source: string, config: string) {
   const userConfig = useMemo(() => {
     const codeTrimmed = config
       .replaceAll(/export /g, '')
+      .replaceAll(/import\s*{[^}]+}\s*from\s*['"][^'"]+['"];\n*/g, '')
       .trim()
       .replace(/;$/, '')
 
+    const pandaDevImports = findPandacssDevImports(config)
+      .map((def) => `function ${def}(arg){return arg}`)
+      .join(';\n')
+
     try {
-      return evalCode(`return (() => {${codeTrimmed}; return config})()`, {})
+      return evalCode(`return (() => {${`${pandaDevImports};\n${codeTrimmed}`}; return config})()`, {})
     } catch (e) {
       return null
     }
