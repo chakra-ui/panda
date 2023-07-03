@@ -23,7 +23,6 @@ export function usePanda(source: string, config: string) {
       .replace(/;$/, '')
 
     try {
-      console.log('first', `return (() => {${codeTrimmed}; return config})()`)
       return evalCode(`return (() => {${codeTrimmed}; return config})()`, pandaDefs)
     } catch (e) {
       return null
