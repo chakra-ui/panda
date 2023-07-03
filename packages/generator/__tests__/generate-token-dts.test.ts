@@ -8,6 +8,8 @@ test('[dts] should generate package', () => {
 
     export type ColorPalette = \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"button\\" | \\"button.card\\"
 
+    export type ColorPaletteValue = ColorPalette | (\`\${ColorPalette}!\`)
+
     export type BorderToken = \\"none\\"
 
     export type EasingToken = \\"default\\" | \\"linear\\" | \\"in\\" | \\"out\\" | \\"in-out\\"
