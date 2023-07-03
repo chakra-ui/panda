@@ -24,7 +24,8 @@
     "src",
     "public",
     "styled-system",
-    "*.ts"
+    "*.ts",
+    "*.mjs"
   ],
   "keywords": [
     "panda",
