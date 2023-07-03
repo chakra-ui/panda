@@ -217,6 +217,53 @@ describe('extract to css output pipeline', () => {
     expect(result.css).toMatchInlineSnapshot('""')
   })
 
+  test('recipe key shouldnt matter', () => {
+    const code = `
+    import { button } from ".panda/recipes"
+
+    <div className={button()} />
+     `
+    const result = run(code, (conf) => ({
+      ...conf,
+      theme: {
+        recipes: {
+          buttonRecipeWithKeyNotMatchingName: {
+            name: 'button',
+            description: 'The styles for the Button component',
+            base: {
+              display: 'flex',
+              bg: 'red.200',
+              color: 'white',
+            },
+          },
+        },
+      },
+    }))
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "button",
+          "type": "recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          .button {
+            display: flex;
+            background: red.200;
+            color: white
+              }
+          }
+      }"
+    `)
+  })
+
   test('string literal - factory', () => {
     const code = `
     import { panda } from ".panda/jsx"

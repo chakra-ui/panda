@@ -50,8 +50,8 @@ export class Recipes {
   }
 
   save = () => {
-    for (const [name, recipe] of Object.entries(this.recipes)) {
-      this.assignRecipe(name, this.normalize(recipe))
+    for (const recipe of Object.values(this.recipes)) {
+      this.assignRecipe(recipe.name, this.normalize(recipe))
     }
   }
 
@@ -80,7 +80,7 @@ export class Recipes {
 
   assignRules = () => {
     if (!this.context) return
-    for (const name of Object.keys(this.recipes)) {
+    for (const name of Object.values(this.recipes).map((recipe) => recipe.name)) {
       this.rules.set(name, this.createRule(name))
     }
   }
@@ -102,7 +102,7 @@ export class Recipes {
   })
 
   getConfig = memo((name: string): RecipeConfig | undefined => {
-    return this.recipes[name]
+    return Object.values(this.recipes).find((recipe) => recipe.name === name)
   })
 
   find = memo((name: string) => {
