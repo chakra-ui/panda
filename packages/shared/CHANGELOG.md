@@ -1,5 +1,42 @@
 # @pandacss/shared
 
+## 0.5.1
+
+### Patch Changes
+
+- c0335cf4: Fix the `astish` shared function when using `config.syntax: 'template-literal'`
+
+  ex: css`${someVar}`
+
+  if a value is unresolvable in the static analysis step, it would be interpreted as `undefined`, and `astish` would
+  throw:
+
+  > TypeError: Cannot read properties of undefined (reading 'replace')
+
+- 762fd0c9: Fix issue where the `walkObject` shared helper would set an object key to a nullish value
+
+  Example:
+
+  ```ts
+  const shorthands = {
+    flexDir: 'flexDirection',
+  }
+
+  const obj = {
+    flexDir: 'row',
+    flexDirection: undefined,
+  }
+
+  const result = walkObject(obj, (value) => value, {
+    getKey(prop) {
+      return shorthands[prop] ?? prop
+    },
+  })
+  ```
+
+  This would set the `flexDirection` to `row` (using `getKey`) and then set the `flexDirection` property again, this
+  time to `undefined`, since it existed in the original object
+
 ## 0.5.0
 
 ### Minor Changes

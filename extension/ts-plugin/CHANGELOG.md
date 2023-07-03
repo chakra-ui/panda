@@ -1,5 +1,11 @@
 # @pandacss/ts-plugin
 
+## 0.5.1
+
+### Patch Changes
+
+- 91b2dbf0: Fix issue where extension build fails due to the use of `pathe`
+
 ## 0.5.0
 
 ### Patch Changes

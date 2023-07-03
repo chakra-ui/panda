@@ -1,5 +1,14 @@
 # @pandacss/logger
 
+## 0.5.1
+
+### Patch Changes
+
+- f9247e52: Provide better error logs:
+
+  - full stacktrace when using PANDA_DEBUG
+  - specific CssSyntaxError to better spot the error
+
 ## 0.5.0
 
 ## 0.4.0

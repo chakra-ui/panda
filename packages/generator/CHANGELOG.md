@@ -1,5 +1,66 @@
 # @pandacss/generator
 
+## 0.5.1
+
+### Patch Changes
+
+- 53fb0708: Fix `config.staticCss` by filtering types on getPropertyKeys
+
+  It used to throw because of them:
+
+  ```bash
+  <css input>:33:21: Missed semicolon
+   ELIFECYCLE  Command failed with exit code 1.
+  ```
+
+  ```css
+  @layer utilities {
+      .m_type\:Tokens\[\"spacing\"\] {
+          margin: type:Tokens["spacing"]
+      }
+  }
+  ```
+
+- 1ed239cd: Add feature where `config.staticCss.recipes` can now use [`*`] to generate all variants of a recipe.
+
+  before:
+
+  ```ts
+  staticCss: {
+    recipes: {
+      button: [{ size: ['*'], shape: ['*'] }]
+    }
+  }
+  ```
+
+  now:
+
+  ```ts
+  staticCss: {
+    recipes: {
+      button: ['*']
+    }
+  }
+  ```
+
+- 78ed6ed4: Fix issue where using a nested outdir like `src/styled-system` with a baseUrl like `./src` would result on
+  parser NOT matching imports like `import { container } from "styled-system/patterns";` cause it would expect the full
+  path `src/styled-system`
+- b8f8c2a6: Fix reset.css (generated when config has `preflight: true`) import order, always place it first so that it
+  can be easily overriden
+- Updated dependencies [8c670d60]
+- Updated dependencies [c0335cf4]
+- Updated dependencies [762fd0c9]
+- Updated dependencies [f9247e52]
+- Updated dependencies [1ed239cd]
+- Updated dependencies [78ed6ed4]
+  - @pandacss/types@0.5.1
+  - @pandacss/shared@0.5.1
+  - @pandacss/logger@0.5.1
+  - @pandacss/core@0.5.1
+  - @pandacss/token-dictionary@0.5.1
+  - @pandacss/is-valid-prop@0.5.1
+
 ## 0.5.0
 
 ### Minor Changes

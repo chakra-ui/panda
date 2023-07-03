@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/preset-base",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "The base preset for Panda CSS that contains the conditions and utilities",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
