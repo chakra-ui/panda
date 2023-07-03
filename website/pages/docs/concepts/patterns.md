@@ -337,8 +337,10 @@ function App() {
 To use the pattern in JSX, you need to set the `jsxFramework` property in the config. When this is set, Panda will emit
 files for JSX elements based on the framework.
 
-Every pattern can be used as a JSX element and imported from the `/jsx` entrypoint. The pattern name is the same as the
-function name, but in PascalCase.
+Every pattern can be used as a JSX element and imported from the `/jsx` entrypoint. By default, the pattern name is the
+function name in PascalCase. You can override both the component name (with the `jsx` config property) and the element rendered (with the `jsxElement` config property).
+
+Learn more about pattern customization [here](/docs/customization/patterns).
 
 ```tsx
 import { VStack, Center } from '../styled-system/jsx'

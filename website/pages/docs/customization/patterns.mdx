@@ -13,8 +13,9 @@ A pattern accepts the following parameters:
 - `description` - The description of the pattern
 - `properties` - The list of properties that the pattern accepts.
 - `transform` - The function that accepts the properties and returns a css object
-- `jsx` - The JSX element that will be generated (when `jsxFramework` is set). Defaults to the pascal-case version of
+- `jsx` - The name of the JSX component that will be generated (when `jsxFramework` is set). Defaults to the pascal-case version of
   the pattern name.
+- `jsxElement` - The actual JSX element that will be rendered (when `jsxFramework` is set). Defaults to `div`.
 - `blocklist` - The list of properties that are not allowed to be used in the pattern. Can be used to ensure strict
   typings when using the pattern.
 
