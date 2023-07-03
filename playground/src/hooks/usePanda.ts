@@ -2,6 +2,8 @@ import { createGenerator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
+import * as pandaDefs from '@pandacss/dev'
+
 import { createHooks } from 'hookable'
 import { useMemo } from 'react'
 import { getResolvedConfig } from '@/src/lib/resolve-config'
@@ -16,11 +18,12 @@ export function usePanda(source: string, config: string) {
   const userConfig = useMemo(() => {
     const codeTrimmed = config
       .replaceAll(/export /g, '')
+      .replaceAll(/import\s*{[^}]+}\s*from\s*['"][^'"]+['"];\n*/g, '')
       .trim()
       .replace(/;$/, '')
 
     try {
-      return evalCode(`return (() => {${codeTrimmed}; return config})()`, {})
+      return evalCode(`return (() => {${codeTrimmed}; return config})()`, pandaDefs)
     } catch (e) {
       return null
     }
