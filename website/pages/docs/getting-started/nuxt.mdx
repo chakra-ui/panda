@@ -1,0 +1,251 @@
+---
+title: Using Nuxt
+description: Easily use Panda with Nuxt with the vue integration.
+---
+
+# Using Panda CSS with Nuxt
+
+Setting up Panda CSS in a Nuxt project using PostCSS.
+
+## Start a new project
+
+<Steps>
+
+### Create Nuxt project
+
+To get started, we will need to create a new Nuxt project using npx.  
+For this example we'll be using the nuxt content template
+
+<Tabs items={['npx', 'pnpm']}>
+  <Tab>
+    ```bash
+    npx nuxi@latest init test-app -t content
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    pnpm dlx nuxi@latest init test-app -t content
+    ```
+  </Tab>
+</Tabs>
+
+Enter the newly created directory and install the dependencies.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    cd test-app
+    pnpm install --shamefully-hoist
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    cd test-app
+    npm install
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    cd test-app
+    yarn
+    ```
+  </Tab>
+</Tabs>
+
+### Install Panda
+
+Install panda and create your `panda.config.ts` file.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm install -D @pandacss/dev
+    pnpm panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install -D @pandacss/dev
+    npx panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn add -D @pandacss/dev
+    yarn panda init
+    ```
+  </Tab>
+</Tabs>
+
+### Update package.json scripts
+
+Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3} filename="package.json"
+{
+  "scripts": {
++    "prepare": "panda codegen",
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview"
+  }
+}
+```
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
+
+### Configure the content
+
+Make sure that all of the paths of your Vue components are included in the `include` section of the `panda.config.ts` file.
+
+```js {8, 17} filename="panda.config.ts"
+import { defineConfig } from "@pandacss/dev"
+
+export default defineConfig({
+ // Whether to use css reset
+ preflight: true,
+
+ // Where to look for your css declarations
+ include: ['./components/**/*.{js,jsx,ts,tsx,vue}'],
+
+ // Files to exclude
+ exclude: [],
+
+ // The output directory for your css system
+ outdir: "styled-system",
+})
+```
+
+### Configure the entry CSS with layers
+
+Add this code to an `assets/css/panda-css.css` file.
+
+```css filename="assets/css/panda-css.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+### Configure Nuxt
+
+Next we're going to add to the nuxt configuration within the `nuxt.config.ts` file
+
+```js {1-2, 7-19}  filename="nuxt.config.ts"
+import { createResolver } from '@nuxt/kit'
+const { resolve } = createResolver(import.meta.url)
+
+export default defineNuxtConfig({
+  modules: ['@nuxt/content'],
+
+  alias: {
+    '#pandacss': resolve('./styled-system')
+  },
+
+  css: [
+    '@/assets/css/panda-css.css',
+  ],
+
+  postcss: {
+    plugins: {
+      '@pandacss/dev/postcss': {},
+    }
+  }
+})
+```
+
+With the above we've performed the following:
+
+  * imported the global css file '@/assets/css/panda-css.css' at the root of the system.
+  * created an alias that points to the `styled-system` directory.
+  * added panda into the postcss plugins section.
+
+## Start your build process
+
+Run the following command to start your development server.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm run dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dev
+    ```
+  </Tab>
+</Tabs>
+
+### Start using Panda
+
+Now you can start using Panda CSS in your project.
+
+First lets create a component.  
+This example we're using an alias of '#pandacss' as specified within the nuxt configuration.
+
+Here is the snippet of code for the `components/content/Testcomp.vue` file.
+
+```xml filename="components/Testcomp.vue"
+<script setup lang="ts">
+import { css } from "#pandacss/css";
+</script>
+
+<template>
+  <div :class="css({ fontSize: '5xl', fontWeight: 'bold' })">Hello 🐼!</div>
+</template>
+```
+
+For nuxt conent any components defined within the `components/content/` subdirectory are available within markdown.
+Nuxt uses the [MDC](https://content.nuxtjs.org/guide/writing/mdc) syntax to embed components within markdown.  
+Finally we're going to add the component to the bottom of the index page `content/index.md`
+
+```filename="content/index.md"
+:testcomp
+```
+
+</Steps>
+
+## Optional
+
+### Update of panda configuration during development
+
+If you wish to update the panda css configuration or tokens while running in development mode.
+One way to do this is via the use of concurrently
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm install -D concurrently
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install -D concurrently
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn add -D concurrently
+    ```
+  </Tab>
+</Tabs>
+
+Then makes some changes to `package.json`
+
+```json filename="package.json"
+{
+  "scripts": {
+    "prepare": "panda codegen",
+    "build": "pnpm prepare --clean && nuxt build",
+    "dev": "concurrently \"pnpm prepare -w\" \"nuxt dev\"",
+    "generate": "pnpm prepare --clean && nuxt generate",
+    "preview": "nuxt preview"
+  }
+}
+```
+
