@@ -181,7 +181,7 @@ export default defineConfig({
 
 This approach is similar to the previous one, but instead of shipping the source code, you ship the Panda build info file.
 
-The build info file is a JSON file that contains the information about the static extraction result. It can be used by Panda to generate CSS classes without the need for parsing the source code.
+The build info file is a JSON file that **only** contains the information about the static extraction result, you still need to ship your app build/dist by yourself. It can be used by Panda to generate CSS classes without the need for parsing the source code. The buildinfo file does
 
 Convert the `styled-system` directory to a package by setting the `emitPackage` and `outdir` properties. This will inform Panda to emit the code artifacts to the `node_modules`.
 
