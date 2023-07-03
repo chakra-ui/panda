@@ -1,7 +1,7 @@
 /* eslint-disable */
 import type { ConditionalValue } from './conditions';
 import type { CssProperties } from './system-types'
-import type { Tokens } from '../tokens'
+import type { ColorPaletteValue, Tokens } from '../tokens'
 
 type PropertyValueTypes  = {
 	aspectRatio: "auto" | "square" | "landscape" | "portrait" | "wide" | "ultrawide" | "golden";
@@ -197,7 +197,7 @@ type PropertyValueTypes  = {
 	stroke: Tokens["colors"];
 	srOnly: boolean;
 	debug: boolean;
-	colorPalette: "rose" | "pink" | "fuchsia" | "purple" | "violet" | "indigo" | "blue" | "sky" | "cyan" | "teal" | "emerald" | "green" | "lime" | "yellow" | "amber" | "orange" | "red" | "stone" | "zinc" | "gray" | "slate" | "neutral";
+	colorPalette: ColorPaletteValue;
 	textStyle: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "8xl" | "9xl";
 }
 

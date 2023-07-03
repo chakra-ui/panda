@@ -13,7 +13,7 @@ export function generatePropTypes(ctx: Context) {
     outdent`
     import type { ConditionalValue } from './conditions';
     import type { CssProperties } from './system-types'
-    import type { Tokens } from '../tokens'
+    import type { ColorPaletteValue, Tokens } from '../tokens'
 
     type PropertyValueTypes  = {`,
   ]

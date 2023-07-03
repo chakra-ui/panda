@@ -3,6 +3,8 @@ export type Token = "borders.none" | "easings.default" | "easings.linear" | "eas
 
 export type ColorPalette = "rose" | "pink" | "fuchsia" | "purple" | "violet" | "indigo" | "blue" | "sky" | "cyan" | "teal" | "emerald" | "green" | "lime" | "yellow" | "amber" | "orange" | "red" | "stone" | "zinc" | "gray" | "slate" | "neutral"
 
+export type ColorPaletteValue = ColorPalette | (`${ColorPalette}!`)
+
 export type BorderToken = "none"
 
 export type EasingToken = "default" | "linear" | "in" | "out" | "in-out"

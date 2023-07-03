@@ -28,7 +28,8 @@ function App() {
               <button
                 className={css({
                   height: '40px',
-                  background: 'red.200',
+                  background: 'red.200!',
+                  colorPalette: 'red!',
                   color: 'red.500',
                   borderRadius: '8px',
                   paddingX: '24px',

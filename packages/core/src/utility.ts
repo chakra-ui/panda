@@ -84,10 +84,10 @@ export class Utility {
       this.assignShorthands()
     }
 
-    this.assignColorPaletteProperty()
-
     this.assignProperties()
     this.assignPropertyTypes()
+
+    this.assignColorPaletteProperty()
   }
 
   register = (property: string, config: PropertyConfig) => {
@@ -117,6 +117,8 @@ export class Utility {
         return values[value]
       },
     }
+
+    this.types.set('colorPalette', new Set(['type:ColorPaletteValue']))
   }
 
   resolveShorthand = (prop: string) => {
