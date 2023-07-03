@@ -1,5 +1,47 @@
 # @pandacss/parser
 
+## 0.5.1
+
+### Patch Changes
+
+- 09ebaf2e: Fix svelte parsing when using Typescript or `<script context=module>` or multiple `<script>`s
+- 78ed6ed4: Fix issue where using a nested outdir like `src/styled-system` with a baseUrl like `./src` would result on
+  parser NOT matching imports like `import { container } from "styled-system/patterns";` cause it would expect the full
+  path `src/styled-system`
+- a3d760ce: Do not allow all JSX properties to be extracted if none provided, rely on the `isStyleProp` fn instead
+
+  This fixes cases when :
+
+  - `eject: true` and only the `@pandacss/preset-base` is used (or none)
+  - some non-styling JSX prop is extracted leading to an incorrect CSS rule being generated, ex:
+
+  ```sh
+  🐼 info [cli] Writing /Users/astahmer/dev/reproductions/remix-panda/styled-system/debug/app__routes___index.css
+  🐼 error [serializer:css] Failed to serialize CSS: CssSyntaxError: <css input>:28:19: Missed semicolon
+
+    26 |     }
+    27 |     .src_https\:\/\/akmweb\.viztatech\.com\/web\/svnres\/file\/50_e4bb32c9ea75c5de397f2dc17a3cf186\.jpg {
+  > 28 |         src: https://akmweb.viztatech.com/web/svnres/file/50_e4bb32c9ea75c5de397f2dc17a3cf186.jpg
+       |                   ^
+    29 |     }
+    30 | }
+  ```
+
+- Updated dependencies [6f03ead3]
+- Updated dependencies [8c670d60]
+- Updated dependencies [c0335cf4]
+- Updated dependencies [762fd0c9]
+- Updated dependencies [f9247e52]
+- Updated dependencies [1ed239cd]
+- Updated dependencies [78ed6ed4]
+- Updated dependencies [e48b130a]
+- Updated dependencies [d9bc63e7]
+  - @pandacss/extractor@0.5.1
+  - @pandacss/types@0.5.1
+  - @pandacss/shared@0.5.1
+  - @pandacss/logger@0.5.1
+  - @pandacss/is-valid-prop@0.5.1
+
 ## 0.5.0
 
 ### Minor Changes

@@ -1,5 +1,43 @@
 # @pandacss/dev
 
+## 0.5.1
+
+### Patch Changes
+
+- 5b09ab3b: Add support for `--outfile` flag in the `cssgen` command.
+
+  ```bash
+  panda cssgen --outfile dist/styles.css
+  ```
+
+- f9247e52: Provide better error logs:
+
+  - full stacktrace when using PANDA_DEBUG
+  - specific CssSyntaxError to better spot the error
+
+- Updated dependencies [773565c4]
+- Updated dependencies [5b09ab3b]
+- Updated dependencies [8c670d60]
+- Updated dependencies [33198907]
+- Updated dependencies [c0335cf4]
+- Updated dependencies [762fd0c9]
+- Updated dependencies [f9247e52]
+- Updated dependencies [1ed239cd]
+- Updated dependencies [78ed6ed4]
+- Updated dependencies [e48b130a]
+- Updated dependencies [1a2c0e2b]
+  - @pandacss/studio@0.5.1
+  - @pandacss/node@0.5.1
+  - @pandacss/types@0.5.1
+  - @pandacss/config@0.5.1
+  - @pandacss/shared@0.5.1
+  - @pandacss/logger@0.5.1
+  - @pandacss/postcss@0.5.1
+  - @pandacss/preset-panda@0.5.1
+  - @pandacss/token-dictionary@0.5.1
+  - @pandacss/astro@0.5.1
+  - @pandacss/error@0.5.1
+
 ## 0.5.0
 
 ### Patch Changes

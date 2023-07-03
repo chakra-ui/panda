@@ -3,7 +3,7 @@
   "name": "panda-css-vscode",
   "displayName": "🐼 Panda CSS",
   "description": "The official Panda CSS plugin for VS Code",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "private": true,
   "engines": {
     "vscode": "^1.67.0"

@@ -1,5 +1,36 @@
 # @pandacss/types
 
+## 0.5.1
+
+### Patch Changes
+
+- 8c670d60: Remove `breakpoints` from Tokens type
+- 1ed239cd: Add feature where `config.staticCss.recipes` can now use [`*`] to generate all variants of a recipe.
+
+  before:
+
+  ```ts
+  staticCss: {
+    recipes: {
+      button: [{ size: ['*'], shape: ['*'] }]
+    }
+  }
+  ```
+
+  now:
+
+  ```ts
+  staticCss: {
+    recipes: {
+      button: ['*']
+    }
+  }
+  ```
+
+- 78ed6ed4: Fix issue where using a nested outdir like `src/styled-system` with a baseUrl like `./src` would result on
+  parser NOT matching imports like `import { container } from "styled-system/patterns";` cause it would expect the full
+  path `src/styled-system`
+
 ## 0.5.0
 
 ### Minor Changes

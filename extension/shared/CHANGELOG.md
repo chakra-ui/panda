@@ -1,5 +1,13 @@
 # @pandacss/extension-shared
 
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies [c0335cf4]
+- Updated dependencies [762fd0c9]
+  - @pandacss/shared@0.5.1
+
 ## 0.5.0
 
 ### Patch Changes

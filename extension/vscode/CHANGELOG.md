@@ -1,5 +1,19 @@
 # panda-css-vscode
 
+## 0.2.6
+
+### Patch Changes
+
+- e116cbb8: Enable extension in .astro/svelte/vue files
+- 91b2dbf0: Fix issue where extension build fails due to the use of `pathe`
+- Updated dependencies [5b09ab3b]
+- Updated dependencies [f9247e52]
+- Updated dependencies [91b2dbf0]
+  - @pandacss/dev@0.5.1
+  - @pandacss/ts-plugin@0.5.1
+  - @pandacss/preset-base@0.5.1
+  - @pandacss/preset-panda@0.5.1
+
 ## 0.2.5
 
 ### Patch Changes

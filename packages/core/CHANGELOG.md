@@ -1,5 +1,48 @@
 # @pandacss/core
 
+## 0.5.1
+
+### Patch Changes
+
+- f9247e52: Provide better error logs:
+
+  - full stacktrace when using PANDA_DEBUG
+  - specific CssSyntaxError to better spot the error
+
+- 1ed239cd: Add feature where `config.staticCss.recipes` can now use [`*`] to generate all variants of a recipe.
+
+  before:
+
+  ```ts
+  staticCss: {
+    recipes: {
+      button: [{ size: ['*'], shape: ['*'] }]
+    }
+  }
+  ```
+
+  now:
+
+  ```ts
+  staticCss: {
+    recipes: {
+      button: ['*']
+    }
+  }
+  ```
+
+- Updated dependencies [8c670d60]
+- Updated dependencies [c0335cf4]
+- Updated dependencies [762fd0c9]
+- Updated dependencies [f9247e52]
+- Updated dependencies [1ed239cd]
+- Updated dependencies [78ed6ed4]
+  - @pandacss/types@0.5.1
+  - @pandacss/shared@0.5.1
+  - @pandacss/logger@0.5.1
+  - @pandacss/token-dictionary@0.5.1
+  - @pandacss/error@0.5.1
+
 ## 0.5.0
 
 ### Patch Changes
