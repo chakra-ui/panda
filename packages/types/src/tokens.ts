@@ -83,7 +83,6 @@ export type TokenDataTypes = {
   animations: string
   blurs: string
   gradients: string | Gradient
-  breakpoints: string
   assets: string | Asset
 }
 

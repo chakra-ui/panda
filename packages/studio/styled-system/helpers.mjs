@@ -73,6 +73,7 @@ function mergeProps(...sources) {
 }
 
 // src/walk-object.ts
+var isNotNullish = (element) => element != null
 function walkObject(target, predicate, options = {}) {
   const { stop, getKey } = options
   function inner(value, path = []) {
@@ -84,7 +85,10 @@ function walkObject(target, predicate, options = {}) {
         if (stop?.(value, childPath)) {
           return predicate(value, path)
         }
-        result[key] = inner(child, childPath)
+        const next = inner(child, childPath)
+        if (isNotNullish(next)) {
+          result[key] = next
+        }
       }
       return result
     }
