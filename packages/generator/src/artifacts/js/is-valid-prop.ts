@@ -1,5 +1,6 @@
 import isValidPropJson from '../generated/is-valid-prop.mjs.json' assert { type: 'json' }
 import type { Context } from '../../engines'
+import { outdent } from 'outdent'
 
 export function generateisValidProp(ctx: Context) {
   if (ctx.isTemplateLiteralSyntax) return
@@ -10,5 +11,11 @@ export function generateisValidProp(ctx: Context) {
   )
   return {
     js: content,
+    ts: outdent`
+    declare const allCssProperties: string[];
+    declare const isCssProperty: (value: string) => boolean;
+
+    export { allCssProperties, isCssProperty };
+    `,
   }
 }
