@@ -80,6 +80,7 @@ export async function extractCss(ctx: PandaContext) {
 }
 
 export async function bundleCss(ctx: PandaContext, outfile: string) {
+  await extractFiles(ctx)
   const files = ctx.chunks.getFiles()
   await writeFile(outfile, ctx.getCss({ files, resolve: true }))
   return { files, msg: ctx.messages.buildComplete(files.length) }
