@@ -57,17 +57,17 @@ export class Stylesheet {
     this.context.root.append(output)
   }
 
-  processAtomic = (...styleObject: SystemStyleObject[]) => {
+  processAtomic = (...styleObject: (SystemStyleObject | undefined)[]) => {
     const ruleset = new AtomicRule(this.context)
     styleObject.forEach((styles) => {
+      if (!styles) return
       ruleset.process({ styles })
     })
   }
 
   processStyleProps = (styleObject: SystemStyleObject & { css?: SystemStyleObject }) => {
-    const cssObject = styleObject.css ?? {}
-    delete styleObject.css
-    this.processAtomic(styleObject, cssObject)
+    const { css: cssObject, ...restStyles } = styleObject
+    this.processAtomic(restStyles, cssObject)
   }
 
   processRecipe = (config: RecipeConfig, styles: SystemStyleObject) => {
