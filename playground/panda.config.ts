@@ -13,7 +13,7 @@ export default defineConfig({
         border: {
           default: {
             value: {
-              base: '{colors.gray.300}',
+              base: 'rgb(235, 235, 235)',
               _dark: 'rgba(255, 255, 255, 0.05)',
             },
           },

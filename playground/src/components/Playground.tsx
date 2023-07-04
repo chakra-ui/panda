@@ -81,7 +81,7 @@ export const Playground = (props: UsePlayGroundProps) => {
                   py: '3',
                   bg: 'transparent',
                   fontWeight: 'medium',
-                  color: 'gray.500',
+                  color: { base: 'gray.500', _dark: 'gray.400' },
                   _selected: {
                     color: { base: 'gray.900', _dark: 'white' },
                   },

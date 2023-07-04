@@ -29,6 +29,7 @@ export const GeneratedCss = ({ cssArtifacts }: { cssArtifacts: CssFileArtifact[]
           className={css({
             px: '6',
             borderBottomWidth: '1px',
+            borderBottomColor: 'border.default',
             display: 'flex',
             alignItems: 'flex-end',
             overflow: 'auto',
@@ -38,9 +39,9 @@ export const GeneratedCss = ({ cssArtifacts }: { cssArtifacts: CssFileArtifact[]
               py: '3',
               bg: 'transparent',
               fontWeight: 'medium',
-              color: 'gray.500',
+              color: { base: 'gray.500', _dark: 'gray.400' },
               _selected: {
-                color: 'gray.900',
+                color: { base: 'gray.900', _dark: 'white' },
               },
             },
           })}

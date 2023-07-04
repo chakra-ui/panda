@@ -33,7 +33,7 @@ export const Editor = (props: PandaEditorProps) => {
               py: '3',
               bg: 'transparent',
               fontWeight: 'medium',
-              color: 'gray.500',
+              color: { base: 'gray.500', _dark: 'gray.400' },
               borderBottomWidth: '2px',
               borderBottomColor: 'transparent',
 
