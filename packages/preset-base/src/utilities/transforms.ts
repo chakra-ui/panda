@@ -7,6 +7,7 @@ const positiveFractions = {
   '1/4': '25%',
   '2/4': '50%',
   '3/4': '75%',
+  full: '100%',
 }
 const negativeFractions = Object.fromEntries(
   Object.entries(positiveFractions).map(([key, value]) => [`-${key}`, `-${value}`]),
@@ -54,7 +55,6 @@ export const transforms: UtilityConfig = {
       return {
         ...theme('spacing'),
         ...fractions,
-        full: '100%',
       }
     },
     transform(value) {
@@ -70,7 +70,6 @@ export const transforms: UtilityConfig = {
       return {
         ...theme('spacing'),
         ...fractions,
-        full: '100%',
       }
     },
     transform(value) {
