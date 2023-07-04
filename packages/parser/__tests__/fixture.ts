@@ -186,3 +186,16 @@ export function jsxRecipeParser(code: string) {
   const data = project.parseSourceFile(staticFilePath)!
   return data.recipe
 }
+
+export const parseAndExtract = (
+  code: string,
+  options?: <Conf extends UserConfig>(conf: Conf) => Conf,
+  tsconfig?: TSConfig,
+) => {
+  const { parse, generator } = getFixtureProject(code, options, tsconfig)
+  const result = parse()!
+  return {
+    json: result?.toArray().flatMap(({ box, ...item }) => item),
+    css: generator.getParserCss(result)!,
+  }
+}

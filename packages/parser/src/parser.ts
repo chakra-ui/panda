@@ -108,7 +108,10 @@ export function createParser(options: ParserOptions) {
     const isFactory = (name: string) => Boolean(jsx && name.startsWith(jsxFactoryAlias))
 
     const jsxPatternNodes = new RegExp(
-      `^(${jsx?.nodes.map((node) => node.type === 'pattern' && node.name).join('|')})$`,
+      `^(${jsx?.nodes
+        .filter((node) => node.type === 'pattern')
+        .map((node) => node.name)
+        .join('|')})$`,
     )
 
     const recipes = new Set<string>()

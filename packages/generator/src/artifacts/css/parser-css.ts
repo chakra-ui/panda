@@ -1,14 +1,13 @@
 import { logger } from '@pandacss/logger'
-import type { Dict, ParserResultType } from '@pandacss/types'
+import type { ParserResultType } from '@pandacss/types'
 import { pipe, tap, tryCatch } from 'lil-fp/func'
-import { match, P } from 'ts-pattern'
+import { P, match } from 'ts-pattern'
 import type { Context } from '../../engines'
-
-const flattenStyles = (data: Dict) => Object.assign({}, data, { css: undefined }, data.css ?? {}) as Dict
 
 export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
   pipe(
     { ...ctx, sheet: ctx.createSheet(), result },
+
     tap(({ sheet, result, patterns, recipes }) => {
       result.css.forEach((css) => {
         css.data.forEach((data) => {
@@ -24,7 +23,7 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
 
       result.jsx.forEach((jsx) => {
         jsx.data.forEach((data) => {
-          sheet.processAtomic(flattenStyles(data))
+          sheet.processStyleProps(data)
         })
       })
 
@@ -38,8 +37,8 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
               // treat recipe jsx like regular recipe + atomic
               .with({ type: 'jsx-recipe', name: P.string }, ({ name }) => {
                 recipe.data.forEach((data) => {
-                  const [recipeProps, styleProps] = recipes.splitProps(name, flattenStyles(data))
-                  sheet.processAtomic(styleProps)
+                  const [recipeProps, styleProps] = recipes.splitProps(name, data)
+                  sheet.processStyleProps(styleProps)
                   sheet.processRecipe(recipeConfig, recipeProps)
                 })
               })
@@ -62,8 +61,8 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
               .with({ type: 'jsx-pattern', name: P.string }, ({ name }) => {
                 pattern.data.forEach((data) => {
                   const fnName = patterns.getFnName(name)
-                  const styleProps = patterns.transform(fnName, flattenStyles(data))
-                  sheet.processAtomic(styleProps)
+                  const styleProps = patterns.transform(fnName, data)
+                  sheet.processStyleProps(styleProps)
                 })
               })
               .otherwise(() => {
