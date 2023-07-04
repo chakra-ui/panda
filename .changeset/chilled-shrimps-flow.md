@@ -2,4 +2,4 @@
 '@pandacss/node': patch
 ---
 
-Extract files to chunks before bundling them into a CSS out file
+Fix issue where `panda cssgen --outfile` doesn't extract files to chunks before bundling them into the css out file
