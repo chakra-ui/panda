@@ -12,10 +12,9 @@ export function generateisValidProp(ctx: Context) {
   return {
     js: content,
     dts: outdent`
-    declare const allCssProperties: string[];
     declare const isCssProperty: (value: string) => boolean;
 
-    export { allCssProperties, isCssProperty };
+    export { isCssProperty };
     `,
   }
 }
