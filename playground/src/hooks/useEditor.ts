@@ -1,9 +1,12 @@
-import { OnMount, OnChange } from '@monaco-editor/react'
-import { useCallback, useRef, useState } from 'react'
+import { OnMount, OnChange, BeforeMount } from '@monaco-editor/react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useUpdateEffect } from 'usehooks-ts'
 
 import { Artifact } from '@pandacss/types'
 import { State } from './usePlayground'
+
+import { pandaTheme } from '../lib/gruvbox-theme'
+import { useTheme } from 'next-themes'
 
 export type PandaEditorProps = {
   value: State
@@ -13,6 +16,7 @@ export type PandaEditorProps = {
 
 export function useEditor(props: PandaEditorProps) {
   const { onChange, value, artifacts } = props
+  const { resolvedTheme } = useTheme()
 
   const [activeTab, setActiveTab] = useState<keyof State>('code')
   const monacoRef = useRef<Parameters<OnMount>[1]>()
@@ -100,8 +104,18 @@ export function useEditor(props: PandaEditorProps) {
     }))
   }, [])
 
+  const onBeforeMount: BeforeMount = (monaco) => {
+    monaco.editor.defineTheme('panda-dark', pandaTheme)
+  }
+
+  useEffect(() => {
+    monacoRef.current?.editor.setTheme(resolvedTheme === 'dark' ? 'panda-dark' : 'vs')
+  }, [monacoRef, resolvedTheme])
+
   const onCodeEditorMount: OnMount = useCallback(
     async (editor, monaco) => {
+      if (resolvedTheme === 'dark') monaco.editor.setTheme('panda-dark')
+
       monacoRef.current = monaco
 
       configureEditor(editor, monaco)
@@ -155,6 +169,7 @@ export function useEditor(props: PandaEditorProps) {
   return {
     activeTab,
     setActiveTab,
+    onBeforeMount,
     onCodeEditorChange,
     onCodeEditorMount,
   }

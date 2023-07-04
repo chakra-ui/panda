@@ -2,6 +2,7 @@ import Frame, { FrameContextConsumer } from 'react-frame-component'
 import { LiveProvider, LiveError, LivePreview } from 'react-live-runner'
 import { useIsClient } from 'usehooks-ts'
 import { Flex } from '@/styled-system/jsx'
+import { useTheme } from 'next-themes'
 
 export type PreviewProps = {
   previewCss?: string
@@ -11,6 +12,7 @@ export type PreviewProps = {
 }
 export const Preview = ({ previewCss = '', previewJs = '', patternNames, source }: PreviewProps) => {
   const isClient = useIsClient()
+  const { resolvedTheme } = useTheme()
   // prevent false positive for server-side rendering
   if (!isClient) {
     return null
@@ -19,7 +21,7 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
   const initialContent = `<!DOCTYPE html>
 <html>
 <head></head>
-<body>
+<body class="${resolvedTheme}">
   <div></div>
   <script type="module">
     ${previewJs}
@@ -42,7 +44,7 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
     .concat(`\nrender(<${defaultExportName} />)`)
 
   return (
-    <Flex px="6" py="4" align="stretch" h="full">
+    <Flex align="stretch" h="full">
       <Frame
         key={initialContent}
         initialContent={initialContent}
