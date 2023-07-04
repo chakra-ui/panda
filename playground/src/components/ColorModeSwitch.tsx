@@ -6,7 +6,6 @@ export const ColorModeSwitch = () => {
   const [mounted, setMounted] = useState(false)
   const theme = useTheme()
 
-  // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
     setMounted(true)
   }, [])
