@@ -11,7 +11,7 @@ export function generateisValidProp(ctx: Context) {
   )
   return {
     js: content,
-    ts: outdent`
+    dts: outdent`
     declare const allCssProperties: string[];
     declare const isCssProperty: (value: string) => boolean;
 

@@ -182,7 +182,7 @@ function setupJsx(ctx: Context): Artifact {
   `,
     dts: outdent`
   export * from './factory'
-  ${isValidProp?.ts ? `export * from './is-valid-prop'` : ''}
+  ${isValidProp?.dts ? `export * from './is-valid-prop'` : ''}
   ${outdent.string(patterns.map((file) => `export * from './${file.name}'`).join('\n'))}
   export type { ${ctx.jsx.typeName} } from '../types/jsx'
     `,
@@ -194,7 +194,7 @@ function setupJsx(ctx: Context): Artifact {
       ...patterns.map((file) => ({ file: ctx.file.ext(file.name), code: file.js })),
       ...patterns.map((file) => ({ file: `${file.name}.d.ts`, code: file.dts })),
       { file: ctx.file.ext('is-valid-prop'), code: isValidProp?.js },
-      { file: 'is-valid-prop.d.ts', code: isValidProp?.ts },
+      { file: 'is-valid-prop.d.ts', code: isValidProp?.dts },
       { file: 'factory.d.ts', code: types.jsxFactory },
       { file: ctx.file.ext('factory'), code: factory?.js },
       { file: 'index.d.ts', code: index.dts },
