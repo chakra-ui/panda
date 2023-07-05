@@ -20,7 +20,11 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
 
   const initialContent = `<!DOCTYPE html>
 <html>
-<head></head>
+<head>
+  <script>
+  !function(){try{var d=document.documentElement,c=d.classList;c.remove('light','dark');var e=localStorage.getItem('theme');if(e){c.add(e|| '')}else{c.add('dark');}if(e==='light'||e==='dark'||!e)d.style.colorScheme=e||'dark'}catch(t){}}();
+  </script>
+</head>
 <body class="${resolvedTheme}">
   <div></div>
   <script type="module">
