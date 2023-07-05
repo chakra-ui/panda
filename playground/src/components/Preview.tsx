@@ -21,11 +21,17 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
   const initialContent = `<!DOCTYPE html>
 <html>
 <head>
-  <script>
-  !function(){try{var d=document.documentElement,c=d.classList;c.remove('light','dark');var e=localStorage.getItem('theme');if(e){c.add(e|| '')}else{c.add('dark');}if(e==='light'||e==='dark'||!e)d.style.colorScheme=e||'dark'}catch(t){}}();
-  </script>
+<script>
+  window.__theme = '${resolvedTheme}'
+  !function(){try{var d=document.documentElement,c=d.classList;c.remove('light','dark');var e=window.__theme;if(e){c.add(e|| '')}else{c.add('dark');}if(e==='light'||e==='dark'||!e)d.style.colorScheme=e||'dark'}catch(t){}}();
+</script>
+
+<style>
+  *{-webkit-transition:none!important;-moz-transition:none!important;-o-transition:none!important;-ms-transition:none!important;transition:none!important}
+  </style>
 </head>
-<body class="${resolvedTheme}">
+<body>
+
   <div></div>
   <script type="module">
     ${previewJs}
