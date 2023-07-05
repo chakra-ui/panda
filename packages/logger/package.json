@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/logger",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "The core css panda library",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

@@ -3,7 +3,7 @@ import { panda, Stack } from '@/styled-system/jsx'
 import { TabIndicator, TabList, Tabs, TabTrigger } from '@ark-ui/react'
 import MonacoEditor from '@monaco-editor/react'
 import { useState } from 'react'
-import { CssFileArtifact } from './usePanda'
+import { CssFileArtifact } from '../hooks/usePanda'
 
 const editorOptions = {
   minimap: { enabled: false },
@@ -29,6 +29,7 @@ export const GeneratedCss = ({ cssArtifacts }: { cssArtifacts: CssFileArtifact[]
           className={css({
             px: '6',
             borderBottomWidth: '1px',
+            borderBottomColor: 'border.default',
             display: 'flex',
             alignItems: 'flex-end',
             overflow: 'auto',
@@ -38,15 +39,15 @@ export const GeneratedCss = ({ cssArtifacts }: { cssArtifacts: CssFileArtifact[]
               py: '3',
               bg: 'transparent',
               fontWeight: 'medium',
-              color: 'gray.500',
+              color: { base: 'gray.500', _dark: 'gray.400' },
               _selected: {
-                color: 'gray.900',
+                color: { base: 'gray.900', _dark: 'white' },
               },
             },
           })}
         >
           {cssArtifacts.map((artifact) => (
-            <TabTrigger key={artifact.file} value={artifact.file}>
+            <TabTrigger key={artifact.file} value={artifact.file} asChild>
               <panda.button whiteSpace="nowrap">
                 {artifact.file === 'index.css'
                   ? artifact.dir?.slice(1).concat(artifact.file)?.join('/')

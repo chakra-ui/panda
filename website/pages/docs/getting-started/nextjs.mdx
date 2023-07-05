@@ -25,7 +25,7 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
 
   If you don't enter any parameter, the CLI will guide you through the process of creating a new Next.js app.
 
-  <Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tabs items={['pnpm', 'npm', 'yarn']} variant="code">
     <Tab>
       ```bash
       pnpm dlx create-next-app@latest --use-pnpm
@@ -127,6 +127,8 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
   ```
 
   The `prepare` script that will run codegen after dependency installation. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+  
+  > This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
 
   ### Configure the content
 
@@ -316,5 +318,17 @@ If you're not getting import autocomplete in your IDE, you may need to include t
 {
   // ...
   "include":  ["src", "styled-system"]
+}
+```
+
+### Codegen fails using es5
+
+If you run into any error related to "Transforming const to the configured target environment ("es5") is not supported yet", update your tsconfig to use es6 or higher:
+
+```json filename="tsconfig.json"
+{
+  "compilerOptions": {
+    "target": "es6",
+  }
 }
 ```

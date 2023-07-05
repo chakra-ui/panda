@@ -1,5 +1,5 @@
 import type { RecipeConfig, Dict, SystemStyleObject } from '@pandacss/types'
-import postcss from 'postcss'
+import postcss, { CssSyntaxError } from 'postcss'
 import { AtomicRule } from './atomic-rule'
 import { discardDuplicate, expandCssFunctions, optimizeCss } from './optimize'
 import { Recipes } from './recipes'
@@ -7,6 +7,7 @@ import { safeParse } from './safe-parse'
 import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
+import { logger } from '@pandacss/logger'
 
 export type StylesheetOptions = {
   content?: string
@@ -56,9 +57,17 @@ export class Stylesheet {
     this.context.root.append(output)
   }
 
-  processAtomic = (styleObject: SystemStyleObject) => {
+  processAtomic = (...styleObject: (SystemStyleObject | undefined)[]) => {
     const ruleset = new AtomicRule(this.context)
-    ruleset.process({ styles: styleObject })
+    styleObject.forEach((styles) => {
+      if (!styles) return
+      ruleset.process({ styles })
+    })
+  }
+
+  processStyleProps = (styleObject: SystemStyleObject & { css?: SystemStyleObject }) => {
+    const { css: cssObject, ...restStyles } = styleObject
+    this.processAtomic(restStyles, cssObject)
   }
 
   processRecipe = (config: RecipeConfig, styles: SystemStyleObject) => {
@@ -83,25 +92,39 @@ export class Stylesheet {
   }
 
   toCss = ({ optimize = false, minify }: { optimize?: boolean; minify?: boolean } = {}) => {
-    const {
-      conditions: { breakpoints },
-      utility,
-    } = this.context
+    try {
+      const {
+        conditions: { breakpoints },
+        utility,
+      } = this.context
 
-    breakpoints.expandScreenAtRule(this.context.root)
-    expandCssFunctions(this.context.root, { token: utility.getToken })
+      breakpoints.expandScreenAtRule(this.context.root)
+      expandCssFunctions(this.context.root, { token: utility.getToken })
 
-    let css = this.context.root.toString()
+      let css = this.context.root.toString()
 
-    if (optimize) {
-      css = optimizeCss(css, { minify })
+      if (optimize) {
+        css = optimizeCss(css, { minify })
+      }
+
+      if (this.options?.content) {
+        css = `${this.options.content}\n\n${css}`
+      }
+
+      return optimize ? discardDuplicate(css) : css
+    } catch (error) {
+      if (error instanceof CssSyntaxError) {
+        logger.error('sheet', error.message)
+        error.plugin && logger.error('sheet', `By plugin: ${error.plugin}:`)
+
+        if (error.source) {
+          logger.error('sheet', `Line ${error.line}:${error.column}, in:`)
+          logger.error('sheet', error.source)
+        }
+      }
+
+      throw error
     }
-
-    if (this.options?.content) {
-      css = `${this.options.content}\n\n${css}`
-    }
-
-    return optimize ? discardDuplicate(css) : css
   }
 
   append = (...css: string[]) => {

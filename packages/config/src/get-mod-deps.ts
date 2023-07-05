@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { resolveTsPathPattern, type PathMapping } from './ts-config-paths-mappings'
+import { resolveTsPathPattern, type PathMapping } from './ts-config-paths'
 
 const jsExtensions = ['.js', '.cjs', '.mjs']
 
@@ -57,7 +57,7 @@ function getDeps(opts: GetDepsOptions, fromAlias?: string) {
   }
 
   // Prevent infinite loops when there are circular dependencies
-  if (seen.has(absoluteFile)) return // Already seen
+  if (seen.size > 1 && seen.has(absoluteFile)) return // Already seen
   seen.add(absoluteFile)
 
   const contents = fs.readFileSync(absoluteFile, 'utf-8')

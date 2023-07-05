@@ -83,7 +83,6 @@ abstract class BoxNodeType<Definition extends BoxNodeDefinition = BoxNodeDefinit
       // @ts-expect-error
       value: this.value,
       node: this.node.getKindName(),
-      stack: this.stack.filter(Boolean).map((node) => node.getKindName()),
       line: range.startLineNumber,
       column: range.startColumn,
     }

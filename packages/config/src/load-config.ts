@@ -3,7 +3,7 @@ import { logger } from '@pandacss/logger'
 import type { LoadConfigResult } from '@pandacss/types'
 import { bundle } from './bundle'
 import { findConfigFile } from './find-config'
-import { getResolvedConfig } from './merge-config'
+import { getResolvedConfig } from './get-resolved-config'
 
 import { preset as presetBase } from '@pandacss/preset-base'
 import { preset as presetPanda } from '@pandacss/preset-panda'

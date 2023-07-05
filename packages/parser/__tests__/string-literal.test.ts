@@ -27,7 +27,6 @@ describe('ast parser / string literal', () => {
               "column": 32,
               "line": 4,
               "node": "NoSubstitutionTemplateLiteral",
-              "stack": [],
               "type": "literal",
               "value": " background: transparent; border-radius: 3px; border: 1px solid var(--accent-color); color: var(--accent-color); display: inline-block; margin: 0.5rem 1rem; padding: 0.5rem 0; transition: all 200ms ease-in-out; width: 11rem; ",
             },

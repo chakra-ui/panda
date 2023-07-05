@@ -1,8 +1,9 @@
 import { describe, test, expect } from 'vitest'
 import { getFixtureProject } from './fixture'
+import type { TSConfig, UserConfig } from '@pandacss/types'
 
-const run = (code: string) => {
-  const { parse, generator } = getFixtureProject(code)
+const run = (code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf, tsconfig?: TSConfig) => {
+  const { parse, generator } = getFixtureProject(code, options, tsconfig)
   const result = parse()!
   return {
     json: result?.toArray().map(({ box, ...item }) => item),
@@ -15,6 +16,8 @@ describe('extract to css output pipeline', () => {
     const code = `
       import { panda } from ".panda/jsx"
       import { css } from ".panda/css"
+
+      const color = "red.100";
 
        function Button() {
          return (
@@ -34,6 +37,7 @@ describe('extract to css output pipeline', () => {
                 debug
                 p="2"
                 m={{
+                  color,
                   base: "1px",
                   sm: "4px",
                   _dark: { _hover: { m: -2 } }
@@ -86,6 +90,7 @@ describe('extract to css output pipeline', () => {
                   },
                 },
                 "base": "1px",
+                "color": "red.100",
                 "sm": "4px",
               },
               "p": "2",
@@ -139,19 +144,23 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-2)
           }
 
+        .margin\\\\:text_red\\\\.100 {
+          color: var(--colors-red-100)
+          }
+
         .m_1px {
           margin: 1px
           }
 
-        .hover\\\\:text_\\\\#2ecc71:where(:hover, [data-hover]) {
+        .hover\\\\:text_\\\\#2ecc71:is(:hover, [data-hover]) {
           color: #2ecc71
               }
 
-        .hover\\\\:bg_var\\\\(--some-bg\\\\):where(:hover, [data-hover]) {
+        .hover\\\\:bg_var\\\\(--some-bg\\\\):is(:hover, [data-hover]) {
           background-color: var(--some-bg)
               }
 
-        [data-theme=dark] .margin\\\\:dark\\\\:hover\\\\:m_-2:where(:hover, [data-hover]), .dark .margin\\\\:dark\\\\:hover\\\\:m_-2:where(:hover, [data-hover]), .margin\\\\:dark\\\\:hover\\\\:m_-2:where(:hover, [data-hover]).dark, .margin\\\\:dark\\\\:hover\\\\:m_-2:where(:hover, [data-hover])[data-theme=dark] {
+        [data-theme=dark] .margin\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]), .dark .margin\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]), .margin\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]).dark, .margin\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover])[data-theme=dark] {
           margin: calc(var(--spacing-2) * -1)
                   }
 
@@ -535,7 +544,7 @@ describe('extract to css output pipeline', () => {
           content: \\"👋\\"
                   }
 
-        .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0 + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0:where(:hover, [data-hover]) {
+        .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0 + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:hover\\\\:m_0:is(:hover, [data-hover]) {
           margin: var(--spacing-0)
                   }
       }"
@@ -591,7 +600,7 @@ describe('extract to css output pipeline', () => {
           background: var(--colors-color-palette-100)
           }
 
-        .hover\\\\:text_colorPalette\\\\.300:where(:hover, [data-hover]) {
+        .hover\\\\:text_colorPalette\\\\.300:is(:hover, [data-hover]) {
           color: var(--colors-color-palette-300)
               }
       }"
@@ -2643,6 +2652,169 @@ describe('preset patterns', () => {
         .text_blue\\\\.100 {
           color: var(--colors-blue-100)
           }
+      }"
+    `)
+  })
+
+  test('nested outdir + tsconfig.compilerOptions.baseUrl importMap behaviour', () => {
+    const code = `
+    import { css } from "../styled-system/css";
+    import { container } from "../styled-system/patterns";
+
+    export default function App() {
+      return (
+        <div
+          className={container({
+            page: "A4",
+            width: {
+              _print: "210mm",
+            },
+            height: {
+              _print: "297mm",
+              base: "600px",
+            },
+            display: "flex",
+            margin: "auto",
+            flexDir: {
+              _print: "row",
+              base: "column",
+              sm: "row",
+            },
+          })}
+        >
+          <div className={css({ flex: 2 })}>aaa</div>
+          <div className={css({ flex: 1 })}>bbb</div>
+        </div>
+      );
+    }
+
+     `
+    const result = run(code, (config) => ({ ...config, outdir: 'src/styled-system', cwd: 'app' }), {
+      compilerOptions: { baseUrl: 'app/src' },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "flex": 2,
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "flex": 1,
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "display": "flex",
+              "flexDir": {
+                "_print": "row",
+                "base": "column",
+                "sm": "row",
+              },
+              "height": {
+                "_print": "297mm",
+                "base": "600px",
+              },
+              "margin": "auto",
+              "page": "A4",
+              "width": {
+                "_print": "210mm",
+              },
+            },
+          ],
+          "name": "container",
+          "type": "pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .flex_2 {
+          flex: 2
+          }
+
+        .flex_1 {
+          flex: 1 1 0%
+          }
+
+        .pos_relative {
+          position: relative
+          }
+
+        .max-w_8xl {
+          max-width: var(--sizes-8xl)
+          }
+
+        .mx_auto {
+          margin-inline: auto
+          }
+
+        .px_4 {
+          padding-inline: var(--spacing-4)
+          }
+
+        .page_A4 {
+          page: A4
+          }
+
+        .h_600px {
+          height: 600px
+          }
+
+        .d_flex {
+          display: flex
+          }
+
+        .m_auto {
+          margin: auto
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        @media screen and (min-width: 640px) {
+          .sm\\\\:flex_row {
+            flex-direction: row
+          }
+              }
+
+        @media screen and (min-width: 768px) {
+          .md\\\\:px_6 {
+            padding-inline: var(--spacing-6)
+          }
+              }
+
+        @media screen and (min-width: 1024px) {
+          .lg\\\\:px_8 {
+            padding-inline: var(--spacing-8)
+          }
+              }
+
+        @media print {
+          .print\\\\:w_210mm {
+            width: 210mm
+          }
+
+          .print\\\\:h_297mm {
+            height: 297mm
+          }
+
+          .print\\\\:flex_row {
+            flex-direction: row
+          }
+              }
       }"
     `)
   })

@@ -33,7 +33,7 @@ export const artifactsGenerated = (ctx: Context) => {
       `,
       jsx.framework &&
         outdent`
-      ${tick} ${quote(outdir, '/jsx')}: style prop powered elements for ${jsx.framework}
+      ${tick} ${quote(outdir, '/jsx')}: styled jsx elements for ${jsx.framework}
       `,
       '\n',
     ]

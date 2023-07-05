@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Layout } from './LayoutControl'
+import { Layout } from '../components/LayoutControl'
 
 export type State = {
   code: string
-  theme: string
+  config: string
 }
 
 export type UsePlayGroundProps = {
@@ -14,6 +14,7 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   const { intialState } = props
   const [layout, setLayout] = useState<Layout>('horizontal')
   const [isPristine, setIsPristine] = useState(true)
+  const [isSharing, setIsSharing] = useState(false)
 
   const [state, setState] = useState(
     intialState
@@ -35,13 +36,22 @@ export const App = () => {
   )
 }
 `,
-          theme: `export const theme = {
-  extend: {},
-}`,
-          view: 'code',
+          config: `import { defineConfig } from '@pandacss/dev';
+
+export const config = defineConfig({
+  theme: { extend: {} },
+  globalCss: {
+    body: {
+      bg: { _dark: '#2C2C2C' },
+    },
+  },
+});    
+          
+`,
         },
   )
-  const share = async () =>
+  const share = async () => {
+    setIsSharing(true)
     fetch('/api/share', {
       method: 'POST',
       headers: {
@@ -53,7 +63,9 @@ export const App = () => {
       .then(({ data }) => {
         history.pushState({ id: data.id }, '', data.id)
         setIsPristine(true)
+        setIsSharing(false)
       })
+  }
 
   return {
     isPristine,
@@ -65,5 +77,6 @@ export const App = () => {
       setState(newState)
     },
     share,
+    isSharing,
   }
 }

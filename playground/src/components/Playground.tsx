@@ -1,5 +1,5 @@
 'use client'
-import { usePanda } from '@/src/components/usePanda'
+import { usePanda } from '@/src/hooks/usePanda'
 import { css } from '@/styled-system/css'
 import {
   Splitter,
@@ -17,11 +17,12 @@ import { GeneratedCss } from './GeneratedCss'
 import { LayoutControl } from './LayoutControl'
 import { Preview } from './Preview'
 import { Toolbar } from './Toolbar'
-import { UsePlayGroundProps, usePlayground } from './usePlayground'
+import { UsePlayGroundProps, usePlayground } from '@/src/hooks/usePlayground'
+import { ColorModeSwitch } from '@/src/components/ColorModeSwitch'
 
 export const Playground = (props: UsePlayGroundProps) => {
-  const { layout, setLayout, isPristine, state, setState, share } = usePlayground(props)
-  const panda = usePanda(state.code, state.theme)
+  const { layout, setLayout, isPristine, state, setState, share, isSharing } = usePlayground(props)
+  const panda = usePanda(state.code, state.config)
   const { previewCss, previewJs, artifacts, patternNames } = panda
 
   return (
@@ -34,16 +35,20 @@ export const Playground = (props: UsePlayGroundProps) => {
             borderRadius: 'lg',
             fontWeight: 'semibold',
             bg: 'yellow.300',
+            color: { _dark: 'black' },
             _disabled: {
-              bg: 'yellow.100',
+              opacity: 0.5,
+              cursor: 'not-allowed',
             },
+            cursor: 'pointer',
           })}
           onClick={share}
-          disabled={isPristine}
+          disabled={isPristine || isSharing}
         >
-          Share
+          {isSharing ? 'Saving...' : 'Share'}
         </button>
         <LayoutControl value={layout} onChange={setLayout} />
+        <ColorModeSwitch />
       </Toolbar>
       <Splitter
         size={[
@@ -56,8 +61,8 @@ export const Playground = (props: UsePlayGroundProps) => {
         <SplitterPanel id="editor" className={css({ display: 'flex', alignItems: 'stretch' })}>
           <Editor value={state} onChange={setState} artifacts={artifacts} />
         </SplitterPanel>
-        <SplitterResizeTrigger id="editor:preview">
-          <div className={css({ background: 'gray.300', minWidth: '1px', minHeight: '1px' })} />
+        <SplitterResizeTrigger id="editor:preview" asChild>
+          <div className={css({ background: 'border.default', minWidth: '1px', minHeight: '1px' })} />
         </SplitterResizeTrigger>
         <SplitterPanel id="preview" className={css({ display: 'flex', alignItems: 'stretch' })}>
           <Tabs
@@ -68,6 +73,7 @@ export const Playground = (props: UsePlayGroundProps) => {
               className={css({
                 px: '6',
                 borderBottomWidth: '1px',
+                borderColor: 'border.default',
                 display: 'flex',
                 alignItems: 'flex-end',
                 gap: '3',
@@ -75,9 +81,9 @@ export const Playground = (props: UsePlayGroundProps) => {
                   py: '3',
                   bg: 'transparent',
                   fontWeight: 'medium',
-                  color: 'gray.500',
+                  color: { base: 'gray.500', _dark: 'gray.400' },
                   _selected: {
-                    color: 'gray.900',
+                    color: { base: 'gray.900', _dark: 'white' },
                   },
                 },
               })}
@@ -87,7 +93,7 @@ export const Playground = (props: UsePlayGroundProps) => {
               <TabTrigger value="generated">Generated</TabTrigger>
               <TabIndicator className={css({ background: 'yellow.400', height: '2px', mb: '-1px' })} />
             </TabList>
-            <TabContent value="preview" className={css({ flex: '1', pt: '4' })}>
+            <TabContent value="preview" className={css({ flex: '1' })}>
               <Preview source={state.code} previewCss={previewCss} previewJs={previewJs} patternNames={patternNames} />
             </TabContent>
             <TabContent value="ast" className={css({ flex: '1', minHeight: 0 })}>

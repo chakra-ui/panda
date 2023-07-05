@@ -1,14 +1,14 @@
 ---
 title: Using PostCSS
-description: Installing Panda as a PostCSS plugin is the most seamless way to integrate it with build tools like webpack, Rollup, Vite, and Parcel.
+description: Installing Panda as a PostCSS plugin is the recommended way to integrate it with your project.
 ---
 
 # Using PostCSS
 
-Installing Panda as a PostCSS plugin is the most seamless way to integrate it with build tools like webpack, Rollup,
-Vite, and Parcel.
+Installing Panda as a PostCSS plugin is the recommended way to integrate it with your project.
 
-## Install Panda
+<Steps>
+### Install Panda
 
 Install panda and create your `panda.config.ts` file.
 
@@ -33,7 +33,7 @@ Install panda and create your `panda.config.ts` file.
   </Tab>
 </Tabs>
 
-## Add Panda to your PostCSS config
+### Add Panda to your PostCSS config
 
 Add panda and autoprefixer to your `postcss.config.cjs` file, or wherever PostCSS is configured in your project.
 
@@ -45,7 +45,7 @@ module.exports = {
 }
 ```
 
-## Configure the content
+### Configure the content
 
 Add your panda config to your `panda.config.js` file, or wherver panda is configured in your project.
 
@@ -60,7 +60,24 @@ export default defineConfig({
 })
 ```
 
-## Configure the entry CSS with layers
+  ### Update package.json scripts
+
+  Open your `package.json` file and update the `scripts` section as follows:
+
+  ```diff {3}
+  {
+    "scripts": {
+  +    "prepare": "panda codegen",
+    }
+  }
+  ```
+
+  The `prepare` script that will run codegen after dependency installation. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+  > This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
+
+
+### Configure the entry CSS with layers
 
 Add this code to an `index.css` file imported in the root component of your project.
 
@@ -68,7 +85,7 @@ Add this code to an `index.css` file imported in the root component of your proj
 @layer reset, base, tokens, recipes, utilities;
 ```
 
-## Start your build process
+### Start your build process
 
 Run your build process with `npm run dev` or whatever command is configured in your package.json file.
 
@@ -90,7 +107,7 @@ Run your build process with `npm run dev` or whatever command is configured in y
   </Tab>
 </Tabs>
 
-## Start using Panda
+### Start using Panda
 
 Use the generated style utilities in your code and panda will extract them to the generated CSS file.
 
@@ -99,5 +116,18 @@ import { css } from './styled-system/css'
 
 export function App() {
   return <div className={css({ bg: 'red.400' })} />
+}
+```
+
+  </Steps>
+
+## Troubleshooting
+
+If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your `tsconfig.json` file:
+
+```json filename="tsconfig.json"
+{
+  // ...
+  "include":  ["src", "styled-system"]
 }
 ```

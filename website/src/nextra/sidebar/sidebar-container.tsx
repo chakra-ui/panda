@@ -33,9 +33,6 @@ const sidebarContainerStyles = cva({
         maskImage: `linear-gradient(to bottom, transparent, #000 20px), linear-gradient(to left, #000 10px, transparent 10px)`
       }
     },
-    _motionReduce: {
-      transform: 'none'
-    },
     transform: 'translate3d(0,0,0)',
     transitionProperty: 'all',
     _print: {

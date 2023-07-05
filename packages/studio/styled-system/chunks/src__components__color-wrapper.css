@@ -95,6 +95,54 @@
     }
   }
 
+  .before\:content_\'\' {
+    &::before {
+      content: '';
+    }
+  }
+
+  .before\:pos_absolute {
+    &::before {
+      position: absolute;
+    }
+  }
+
+  .before\:rounded_sm {
+    &::before {
+      border-radius: var(--radii-sm);
+    }
+  }
+
+  .before\:w_100\% {
+    &::before {
+      width: 100%;
+    }
+  }
+
+  .before\:h_100\% {
+    &::before {
+      height: 100%;
+    }
+  }
+
+  .before\:bg_24px {
+    &::before {
+      background-size: 24px;
+    }
+  }
+
+  .before\:z_-1 {
+    &::before {
+      z-index: -1;
+    }
+  }
+
+  .before\:bg-img_check {
+    &::before {
+      background-image: var(--assets-check);
+    }
+  }
+
   .w_full {
     width: var(--sizes-full);
   }

@@ -40,6 +40,17 @@ export const getObjectLiteralExpressionPropPairs = (
         return
       }
 
+      if (Node.isShorthandPropertyAssignment(property)) {
+        const initializer = property.getNameNode()
+        stack.push(initializer)
+
+        const maybeValue = maybeBoxNode(initializer, stack, ctx)
+        if (maybeValue) {
+          extractedPropValues.push([propName.toString(), maybeValue])
+          return
+        }
+      }
+
       const init = property.getInitializer()
       if (!init) return
 

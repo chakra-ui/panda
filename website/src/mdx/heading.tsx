@@ -20,7 +20,10 @@ const styles = cva({
     fontWeight: 'semibold',
     fontFamily: 'heading',
     letterSpacing: 'tight',
-    color: { base: 'slate.900', _dark: 'slate.100' }
+    color: {
+      base: 'gray.900',
+      _dark: 'gray.100'
+    }
   },
   variants: {
     tag: {

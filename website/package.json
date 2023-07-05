@@ -5,12 +5,12 @@
   "private": true,
   "scripts": {
     "prepare": "panda codegen",
-    "dev": "next dev",
+    "dev": "rm -rf .next && next dev",
     "build": "next build",
     "start": "next start"
   },
   "dependencies": {
-    "@ark-ui/react": "0.7.0",
+    "@ark-ui/react": "0.7.2",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "bright": "^0.8.2",

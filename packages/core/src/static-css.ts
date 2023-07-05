@@ -43,7 +43,13 @@ export function getStaticCss(options: StaticCssOptions) {
     })
 
     Object.entries(recipes).forEach(([recipe, rules]) => {
-      rules.forEach((rule) => {
+      rules.forEach((recipeRule) => {
+        let rule = recipeRule
+
+        if (rule === '*') {
+          rule = { conditions: [], responsive: true, ...ctx.getRecipeKeys(recipe) }
+        }
+
         const { conditions: _conditions, responsive, ...variants } = rule
         const conditions = _conditions || []
         if (responsive) {
@@ -53,7 +59,13 @@ export function getStaticCss(options: StaticCssOptions) {
         Object.entries(variants).forEach(([variant, values]) => {
           if (!Array.isArray(values)) return
 
-          const computedValues = values.flatMap((value) => (value === '*' ? ctx.getRecipeKeys(recipe)[variant] : value))
+          const computedValues = values.flatMap((value) => {
+            if (value === '*') {
+              return ctx.getRecipeKeys(recipe)[variant]
+            }
+
+            return value
+          })
 
           computedValues.forEach((value) => {
             const conditionalValues = conditions.reduce(

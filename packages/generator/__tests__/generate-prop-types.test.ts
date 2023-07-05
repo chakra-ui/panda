@@ -161,8 +161,8 @@ describe('generate property types', () => {
       	animationDelay: Tokens[\\"durations\\"];
       	scale: \\"auto\\" | CssProperties[\\"scale\\"];
       	translate: \\"auto\\" | CssProperties[\\"translate\\"];
-      	translateX: Tokens[\\"spacing\\"] | \\"1/2\\" | \\"1/3\\" | \\"2/3\\" | \\"1/4\\" | \\"2/4\\" | \\"3/4\\" | \\"full\\";
-      	translateY: Tokens[\\"spacing\\"] | \\"1/2\\" | \\"1/3\\" | \\"2/3\\" | \\"1/4\\" | \\"2/4\\" | \\"3/4\\" | \\"full\\";
+      	translateX: Tokens[\\"spacing\\"] | \\"1/2\\" | \\"1/3\\" | \\"2/3\\" | \\"1/4\\" | \\"2/4\\" | \\"3/4\\" | \\"full\\" | \\"-1/2\\" | \\"-1/3\\" | \\"-2/3\\" | \\"-1/4\\" | \\"-2/4\\" | \\"-3/4\\" | \\"-full\\";
+      	translateY: Tokens[\\"spacing\\"] | \\"1/2\\" | \\"1/3\\" | \\"2/3\\" | \\"1/4\\" | \\"2/4\\" | \\"3/4\\" | \\"full\\" | \\"-1/2\\" | \\"-1/3\\" | \\"-2/3\\" | \\"-1/4\\" | \\"-2/4\\" | \\"-3/4\\" | \\"-full\\";
       	accentColor: Tokens[\\"colors\\"];
       	caretColor: Tokens[\\"colors\\"];
       	scrollbar: \\"visible\\" | \\"hidden\\";

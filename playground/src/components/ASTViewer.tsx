@@ -1,9 +1,10 @@
-import { cva } from '@/styled-system/css'
+import { css, cva } from '@/styled-system/css'
 import { Stack, panda } from '@/styled-system/jsx'
 import { hstack } from '@/styled-system/patterns'
 import type { ResultItem } from '@pandacss/types'
 import { JsonViewer } from '@textea/json-viewer'
-import { usePanda } from './usePanda'
+import { usePanda } from '../hooks/usePanda'
+import { useTheme } from 'next-themes'
 
 export const ASTViewer = (props: { parserResult: ReturnType<typeof usePanda>['parserResult'] }) => {
   if (!props.parserResult) return null
@@ -27,7 +28,7 @@ const resultType = cva({
   },
   variants: {
     type: {
-      object: { bg: 'gray.100' },
+      object: { bg: 'gray.100', color: 'gray.700' },
       cva: { bg: 'gray.300' },
       jsx: { bg: 'blue.300' },
       'jsx-factory': { bg: 'blue.100' },
@@ -45,6 +46,7 @@ const resultType = cva({
 
 const ResultItemRow = (props: { result: ResultItem }) => {
   const { result } = props
+  const { resolvedTheme } = useTheme()
   return (
     <Stack>
       <panda.div className={hstack()}>
@@ -52,7 +54,18 @@ const ResultItemRow = (props: { result: ResultItem }) => {
         <span className={resultType({ name: result.name as 'cva' | 'css' })}>{result.name}</span>
         <panda.span ml="auto">(l{getReportRange(result)})</panda.span>
       </panda.div>
-      <JsonViewer value={unwrapArray(result.data)} />
+      <JsonViewer
+        className={css({
+          '&.json-viewer-theme-dark': {
+            bg: 'transparent !important',
+          },
+          '& data-object-start, .data-object-end': {
+            color: { _dark: 'white' },
+          },
+        })}
+        theme={resolvedTheme as any}
+        value={unwrapArray(result.data)}
+      />
     </Stack>
   )
 }

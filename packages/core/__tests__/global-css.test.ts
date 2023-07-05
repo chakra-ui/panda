@@ -39,11 +39,11 @@ describe('Global css', () => {
           width: 40px;
           }
 
-        .btn:where(:focus, [data-focus]) {
+        .btn:is(:focus, [data-focus]) {
           color: var(--colors-red-200);
           }
 
-        .btn:where(:focus, [data-focus]):where(:hover, [data-hover]) {
+        .btn:is(:focus, [data-focus]):is(:hover, [data-hover]) {
           background-color: var(--colors-red-400);
           }
 
@@ -135,7 +135,7 @@ describe('Global css', () => {
           width: 100%;
           }
 
-        html.dragging-ew:where(:hover, [data-hover]) {
+        html.dragging-ew:is(:hover, [data-hover]) {
           color: red;
           }
       }"

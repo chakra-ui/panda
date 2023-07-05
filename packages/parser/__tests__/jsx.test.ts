@@ -23,17 +23,12 @@ describe('jsx', () => {
             "column": 16,
             "line": 7,
             "node": "JsxOpeningElement",
-            "stack": [],
             "type": "map",
             "value": Map {
               "marginTop" => {
                 "column": 40,
                 "line": 7,
                 "node": "StringLiteral",
-                "stack": [
-                  "JsxAttribute",
-                  "StringLiteral",
-                ],
                 "type": "literal",
                 "value": "40px",
               },
@@ -41,10 +36,6 @@ describe('jsx', () => {
                 "column": 60,
                 "line": 7,
                 "node": "StringLiteral",
-                "stack": [
-                  "JsxAttribute",
-                  "StringLiteral",
-                ],
                 "type": "literal",
                 "value": "42px",
               },
@@ -64,17 +55,12 @@ describe('jsx', () => {
             "column": 16,
             "line": 8,
             "node": "JsxOpeningElement",
-            "stack": [],
             "type": "map",
             "value": Map {
               "bg" => {
                 "column": 30,
                 "line": 8,
                 "node": "StringLiteral",
-                "stack": [
-                  "JsxAttribute",
-                  "StringLiteral",
-                ],
                 "type": "literal",
                 "value": "red.200",
               },
@@ -113,17 +99,12 @@ describe('jsx', () => {
             "column": 16,
             "line": 7,
             "node": "JsxOpeningElement",
-            "stack": [],
             "type": "map",
             "value": Map {
               "marginTop" => {
                 "column": 41,
                 "line": 7,
                 "node": "StringLiteral",
-                "stack": [
-                  "JsxAttribute",
-                  "StringLiteral",
-                ],
                 "type": "literal",
                 "value": "40px",
               },
@@ -131,10 +112,6 @@ describe('jsx', () => {
                 "column": 61,
                 "line": 7,
                 "node": "StringLiteral",
-                "stack": [
-                  "JsxAttribute",
-                  "StringLiteral",
-                ],
                 "type": "literal",
                 "value": "42px",
               },
@@ -154,17 +131,12 @@ describe('jsx', () => {
             "column": 16,
             "line": 8,
             "node": "JsxOpeningElement",
-            "stack": [],
             "type": "map",
             "value": Map {
               "bg" => {
                 "column": 31,
                 "line": 8,
                 "node": "StringLiteral",
-                "stack": [
-                  "JsxAttribute",
-                  "StringLiteral",
-                ],
                 "type": "literal",
                 "value": "red.200",
               },
@@ -204,31 +176,18 @@ describe('jsx', () => {
             "column": 16,
             "line": 8,
             "node": "JsxOpeningElement",
-            "stack": [],
             "type": "map",
             "value": Map {
               "marginTop" => {
                 "column": 41,
                 "line": 8,
                 "node": "ObjectLiteralExpression",
-                "stack": [
-                  "JsxAttribute",
-                  "JsxExpression",
-                  "ObjectLiteralExpression",
-                ],
                 "type": "map",
                 "value": Map {
                   "sm" => {
                     "column": 46,
                     "line": 8,
                     "node": "StringLiteral",
-                    "stack": [
-                      "JsxAttribute",
-                      "JsxExpression",
-                      "ObjectLiteralExpression",
-                      "PropertyAssignment",
-                      "StringLiteral",
-                    ],
                     "type": "literal",
                     "value": "40px",
                   },
@@ -236,28 +195,12 @@ describe('jsx', () => {
                     "column": 58,
                     "line": 8,
                     "node": "ObjectLiteralExpression",
-                    "stack": [
-                      "JsxAttribute",
-                      "JsxExpression",
-                      "ObjectLiteralExpression",
-                      "PropertyAssignment",
-                      "ObjectLiteralExpression",
-                    ],
                     "type": "map",
                     "value": Map {
                       "rtl" => {
                         "column": 64,
                         "line": 8,
                         "node": "StringLiteral",
-                        "stack": [
-                          "JsxAttribute",
-                          "JsxExpression",
-                          "ObjectLiteralExpression",
-                          "PropertyAssignment",
-                          "ObjectLiteralExpression",
-                          "PropertyAssignment",
-                          "StringLiteral",
-                        ],
                         "type": "literal",
                         "value": "40px",
                       },
@@ -269,10 +212,6 @@ describe('jsx', () => {
                 "column": 87,
                 "line": 8,
                 "node": "StringLiteral",
-                "stack": [
-                  "JsxAttribute",
-                  "StringLiteral",
-                ],
                 "type": "literal",
                 "value": "42px",
               },
@@ -297,17 +236,12 @@ describe('jsx', () => {
             "column": 16,
             "line": 9,
             "node": "JsxOpeningElement",
-            "stack": [],
             "type": "map",
             "value": Map {
               "bg" => {
                 "column": 30,
                 "line": 9,
                 "node": "StringLiteral",
-                "stack": [
-                  "JsxAttribute",
-                  "StringLiteral",
-                ],
                 "type": "literal",
                 "value": "red.200",
               },
@@ -346,18 +280,12 @@ describe('jsx', () => {
             "column": 16,
             "line": 8,
             "node": "JsxOpeningElement",
-            "stack": [],
             "type": "map",
             "value": Map {
               "marginLeft" => {
                 "column": 53,
                 "line": 8,
                 "node": "StringLiteral",
-                "stack": [
-                  "JsxAttribute",
-                  "JsxExpression",
-                  "ConditionalExpression",
-                ],
                 "type": "literal",
                 "value": "40px",
               },
@@ -365,10 +293,6 @@ describe('jsx', () => {
                 "column": 83,
                 "line": 8,
                 "node": "StringLiteral",
-                "stack": [
-                  "JsxAttribute",
-                  "StringLiteral",
-                ],
                 "type": "literal",
                 "value": "42px",
               },
@@ -408,31 +332,18 @@ describe('jsx', () => {
             "column": 16,
             "line": 8,
             "node": "JsxOpeningElement",
-            "stack": [],
             "type": "map",
             "value": Map {
               "css" => {
                 "column": 32,
                 "line": 8,
                 "node": "ObjectLiteralExpression",
-                "stack": [
-                  "JsxAttribute",
-                  "JsxExpression",
-                  "ObjectLiteralExpression",
-                ],
                 "type": "map",
                 "value": Map {
                   "bg" => {
                     "column": 38,
                     "line": 8,
                     "node": "StringLiteral",
-                    "stack": [
-                      "JsxAttribute",
-                      "JsxExpression",
-                      "ObjectLiteralExpression",
-                      "PropertyAssignment",
-                      "StringLiteral",
-                    ],
                     "type": "literal",
                     "value": "red.200",
                   },
@@ -486,17 +397,12 @@ describe('jsx', () => {
             "column": 13,
             "line": 8,
             "node": "JsxSelfClosingElement",
-            "stack": [],
             "type": "map",
             "value": Map {
               "backgroundImage" => {
                 "column": 31,
                 "line": 9,
                 "node": "StringLiteral",
-                "stack": [
-                  "JsxAttribute",
-                  "StringLiteral",
-                ],
                 "type": "literal",
                 "value": "linear-gradient( 135deg, hsla(0, 0%, 100%, 0.75) 10%, transparent 0, transparent 50%, hsla(0, 0%, 100%, 0.75) 0, hsla(0, 0%, 100%, 0.75) 60%, transparent 0, transparent )",
               },

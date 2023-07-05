@@ -2,7 +2,7 @@
   "name": "@pandacss/language-server",
   "displayName": "Panda CSS",
   "description": "🐼 The official Panda language server",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "main": "dist/index.js",
   "repository": {
     "url": "https://github.com/chakra-ui/panda",
@@ -30,7 +30,7 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@types/base-64": "^1.0.0",
-    "@types/node": "20.3.1",
+    "@types/node": "20.3.3",
     "@types/utf8": "^3.0.1",
     "base-64": "^1.0.0",
     "color2k": "^2.0.2",

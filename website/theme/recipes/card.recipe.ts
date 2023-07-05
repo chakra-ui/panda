@@ -99,7 +99,7 @@ export const cardRecipe = defineRecipe({
             }
           },
           _hover: {
-            bgColor: 'slate.50',
+            bgColor: 'gray.50',
             boxShadow: 'md'
           }
         },

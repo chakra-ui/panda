@@ -36,7 +36,7 @@ export function generateCvaFn(ctx: Context) {
 
       return Object.assign(cvaFn, {
         __cva__: true,
-        variants: variantMap,
+        variantMap,
         variantKeys,
         resolve,
         config,

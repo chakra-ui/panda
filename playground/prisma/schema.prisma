@@ -10,6 +10,6 @@ datasource db {
 model Session {
   id        String   @id @default(cuid())
   code      String   @db.Text
-  theme     String   @db.Text
+  config    String   @db.Text
   createdAt DateTime @default(now())
 }

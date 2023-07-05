@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/studio",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "The automated token documentation for Panda CSS",
   "main": "dist/studio.js",
   "module": "dist/studio.mjs",
@@ -24,7 +24,8 @@
     "src",
     "public",
     "styled-system",
-    "*.ts"
+    "*.ts",
+    "*.mjs"
   ],
   "keywords": [
     "panda",
@@ -35,7 +36,7 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@ark-ui/react": "0.7.0",
+    "@ark-ui/react": "0.7.2",
     "@astrojs/react": "2.2.1",
     "@pandacss/types": "workspace:*",
     "@pandacss/config": "workspace:*",
@@ -43,7 +44,7 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
-    "astro": "2.7.0",
+    "astro": "2.7.2",
     "javascript-stringify": "2.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",

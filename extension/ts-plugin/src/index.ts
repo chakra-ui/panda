@@ -1,7 +1,5 @@
 import type ts from 'typescript/lib/tsserverlibrary'
-import { type PandaVSCodeSettings } from '@pandacss/extension-shared'
-
-const { defaultSettings } = require('@pandacss/extension-shared')
+import { defaultSettings, type PandaVSCodeSettings } from '@pandacss/extension-shared'
 
 /**
  * @see https://github.com/microsoft/TypeScript/wiki/Writing-a-Language-Service-Plugin#decorator-creation
@@ -28,7 +26,6 @@ function init(_modules: { typescript: typeof import('typescript/lib/tsserverlibr
       const prior = info.languageService.getCompletionsAtPosition(fileName, position, options)
       if (!prior) return
 
-      const oldLength = prior.entries.length
       const configPath = configPathByDocFilepath.get(fileName)
       if (!configPath) return prior
 
@@ -39,7 +36,7 @@ function init(_modules: { typescript: typeof import('typescript/lib/tsserverlibr
 
       prior.entries = prior.entries.filter((e) => tokenNames.indexOf(e.name) < 0)
 
-      // Sample logging for diagnostic purposes
+      const oldLength = prior.entries.length
       if (oldLength !== prior.entries.length) {
         const entriesRemoved = oldLength - prior.entries.length
         info.project.projectService.logger.info(

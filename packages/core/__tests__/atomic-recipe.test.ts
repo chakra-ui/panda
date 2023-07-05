@@ -76,7 +76,7 @@ describe('Atomic recipe', () => {
           background-color: var(--colors-red-500)
           }
 
-        .hover\\\\:text_green:where(:hover, [data-hover]) {
+        .hover\\\\:text_green:is(:hover, [data-hover]) {
           color: green
               }
       }"

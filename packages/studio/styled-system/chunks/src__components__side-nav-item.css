@@ -23,6 +23,18 @@
     }
   }
 
+  .hover\:text_yellow\.300 {
+    &:where(:hover, [data-hover]) {
+      color: var(--colors-yellow-300);
+    }
+  }
+
+  .currentPage\:text_yellow\.300 {
+    &[aria-current='page'] {
+      color: var(--colors-yellow-300);
+    }
+  }
+
   .d_block {
     display: block;
   }

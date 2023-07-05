@@ -1,13 +1,16 @@
 ---
 title: Panda CLI
-description: The simplest and fastest way to use Panda is with the Panda CLI tool.
+description: An alternative way to use Panda is by running the Panda CLI tool.
 ---
 
 # Panda CLI
 
-The quickest way to use Panda from scratch is by using the Panda CLI tool.
+An alternative way to use Panda is by running the Panda CLI tool.
 
-## Install Panda
+
+  <Steps>
+
+### Install Panda
 
 <Tabs items={['pnpm', 'npm', 'yarn']}>
   <Tab>
@@ -30,7 +33,7 @@ The quickest way to use Panda from scratch is by using the Panda CLI tool.
   </Tab>
 </Tabs>
 
-## Configure the content
+### Configure the content
 
 Add the paths to all of your JavaScript or TypeScript code where you intend to use panda.
 
@@ -45,7 +48,24 @@ export default defineConfig({
 })
 ```
 
-## Import the generated CSS
+  ### Update package.json scripts
+
+  Open your `package.json` file and update the `scripts` section as follows:
+
+  ```diff {3}
+  {
+    "scripts": {
+  +    "prepare": "panda codegen",
+    }
+  }
+  ```
+
+  The `prepare` script that will run codegen after dependency installation. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+  > This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
+
+
+### Import the generated CSS
 
 For each Panda run, it emits the generated CSS at the `styled-system/styles.css` file path. Import this file at the root component of your project.
 
@@ -57,7 +77,7 @@ export function App() {
 }
 ```
 
-## Start the Panda build process
+### Start the Panda build process
 
 Run the CLI tool to scan your JavaScript and TypeScript files for style properties and call expressions.
 
@@ -91,9 +111,10 @@ Run the CLI tool to scan your JavaScript and TypeScript files for style properti
   </Tab>
 </Tabs>
 
-## Start using Panda
+### Start using Panda
 
-Use the generated style utilities in your code and panda will extract them to the generated CSS file.
+Use the generated style utilities in your code and panda will extract them to the generated CSS file. Then run your build process.
+
 
 ```jsx
 import { css } from './styled-system/css'
@@ -102,6 +123,8 @@ export function App() {
   return <div className={css({ bg: 'red.400' })} />
 }
 ```
+
+</Steps>
 
 ## Troubleshooting
 

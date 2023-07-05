@@ -6,6 +6,40 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [0.5.1] - 2023-07-02
+
+### Fixed
+
+- Fix issue where `panda studio` command doesn't work outside of panda's monorepo.
+
+- Fix parser issue where operation tokens like `1/2` was not detected.
+
+- Improved Svelte file parsing algorithm to support more edge cases.
+
+- Improved config dependency and imported file detection.
+
+### Added
+
+- Add support for `--outfile` flag in the `cssgen` command.
+
+```bash
+panda cssgen --outfile dist/styles.css
+```
+
+- Add feature where `config.staticCss.recipes` can now use [`*`] to generate all variants of a recipe.
+
+```ts
+staticCss: {
+  recipes: {
+    button: ['*']
+  }
+}
+```
+
+### Changed
+
+- Refactored all conditions to use `:is` selector to improve specificity and reduce the reliance on css order.
+
 ## [0.5.0] - 2023-06-26
 
 ### Fixed

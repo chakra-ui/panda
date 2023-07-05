@@ -6,9 +6,8 @@ export default {
   name: 'CompositionApiDemo',
   setup() {
     const style = ref(css({ color: 'green.400' }))
-    const style2 = ref(css({ color: 'purple.400' }))
 
-    return { style, style2 }
+    return { style }
   },
   methods: {
     css,
@@ -23,7 +22,7 @@ export default {
 </template>
 
 <style scoped>
-button {
+.style3 {
   font-weight: bold;
 }
 </style>

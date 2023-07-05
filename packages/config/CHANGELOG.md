@@ -1,5 +1,27 @@
 # @pandacss/config
 
+## 0.5.1
+
+### Patch Changes
+
+- 33198907: Create separate entrypoint for merge configs
+
+  ```ts
+  import { mergeConfigs } from '@pandacss/config/merge'
+  ```
+
+- 1a2c0e2b: Fix `panda.config.xxx` file dependencies detection when using the builder (= with PostCSS or with the VSCode
+  extension). It will now also properly resolve tsconfig path aliases.
+- Updated dependencies [8c670d60]
+- Updated dependencies [f9247e52]
+- Updated dependencies [1ed239cd]
+- Updated dependencies [78ed6ed4]
+  - @pandacss/types@0.5.1
+  - @pandacss/logger@0.5.1
+  - @pandacss/preset-base@0.5.1
+  - @pandacss/preset-panda@0.5.1
+  - @pandacss/error@0.5.1
+
 ## 0.5.0
 
 ### Patch Changes

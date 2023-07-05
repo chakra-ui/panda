@@ -158,7 +158,7 @@ describe('atomic / with basic style object', () => {
               }
           }
           .sm\\\\:hover\\\\:top_50px {
-              &:where(:hover, [data-hover]) {
+              &:is(:hover, [data-hover]) {
                   @media screen and (min-width: 640px) {
                       top: 50px
                   }
@@ -244,7 +244,7 @@ describe('atomic / with nesting scope', () => {
           }
           .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif {
               & > p {
-                  &:where(:hover, [data-hover]) {
+                  &:is(:hover, [data-hover]) {
                       [dir=ltr] & {
                            &.dark, .dark & {
                               @media screen and (min-width: 640px) {
@@ -368,7 +368,7 @@ describe('atomic / with grouped conditions styles', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           .hover\\\\:bg_pink\\\\.400 {
-              &:where(:hover, [data-hover]) {
+              &:is(:hover, [data-hover]) {
                   background: var(--colors-pink-400)
               }
           }
@@ -386,7 +386,7 @@ describe('atomic / with grouped conditions styles', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           .hover\\\\:sm\\\\:dark\\\\:bg_red\\\\.300 {
-              &:where(:hover, [data-hover]) {
+              &:is(:hover, [data-hover]) {
                    &.dark, .dark & {
                       @media screen and (min-width: 640px) {
                           background: var(--colors-red-300)
@@ -395,7 +395,7 @@ describe('atomic / with grouped conditions styles', () => {
               }
           }
           .hover\\\\:text_pink\\\\.400 {
-              &:where(:hover, [data-hover]) {
+              &:is(:hover, [data-hover]) {
                   color: var(--colors-pink-400)
               }
           }
@@ -413,8 +413,8 @@ describe('atomic / with grouped conditions styles', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           .hover\\\\:disabled\\\\:sm\\\\:bg_red\\\\.300 {
-              &:where(:hover, [data-hover]) {
-                  &:where(:disabled, [disabled], [data-disabled]) {
+              &:is(:hover, [data-hover]) {
+                  &:is(:disabled, [disabled], [data-disabled]) {
                       @media screen and (min-width: 640px) {
                           background: var(--colors-red-300)
                       }

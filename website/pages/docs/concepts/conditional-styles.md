@@ -63,6 +63,52 @@ Panda includes a set of common pseudo states that you can use to style your comp
 - Media Query: `sm`, `md`, `lg`, `xl`, `2xl`
 - Data Attribute Selector: `_horizontal`, `_vertical`, `_portrait`, `_landscape`
 
+## Arbitrary selectors
+
+What if you want need a one-off selector that is not defined in your config's conditions ? You can use the `css` function to generate classes for arbitrary selectors:
+
+```tsx
+import { css } from './styled-system/css'
+
+const App = () => {
+  return (
+    <div
+      className={css({
+        '&[data-state=closed]': { color: 'red.300' },
+        '& > *': { margin: '2' }
+      })}
+    />
+  )
+}
+```
+
+This also works with the supported at-rules (`@media`, `@layer`, `@container`, `@supports`, and `@page`):
+
+```tsx
+import { css } from './styled-system/css'
+
+const App = () => {
+  return (
+    <div className={css({ display: 'flex', containerType: 'size' })}>
+      <div
+        className={css({
+          '@media (min-width: 768px)': {
+            color: 'red.300'
+          },
+          '@container (min-width: 10px)': {
+            color: 'green.300'
+          },
+          '@supports (display: flex)': {
+            fontSize: '3xl',
+            color: 'blue.300'
+          }
+        })}
+      />
+    </div>
+  )
+}
+```
+
 ## Pseudo Classes
 
 ### Hover, Active, Focus, and Disabled
@@ -355,92 +401,92 @@ You can style an element based on its `aria-{state}=true` attribute using the co
 
 Here's a list of all the condition shortcuts you can use in Panda:
 
-| Condition name         | Selector                                                              |
-| ---------------------- | --------------------------------------------------------------------- |
-| \_hover                | `&:where(:hover, [data-hover])`                                       |
-| \_focus                | `&:where(:focus, [data-focus])`                                       |
-| \_focusWithin          | `&:focus-within`                                                      |
-| \_focusVisible         | `&:where(:focus-visible, [data-focus-visible])`                       |
-| \_disabled             | `&:where(:disabled, [disabled], [data-disabled])`                     |
-| \_active               | `&:where(:active, [data-active])`                                     |
-| \_visited              | `&:visited`                                                           |
-| \_target               | `&:target`                                                            |
-| \_readOnly             | `&:where(:read-only, [data-read-only])`                               |
-| \_readWrite            | `&:read-write`                                                        |
-| \_empty                | `&:where(:empty, [data-empty])`                                       |
-| \_checked              | `&:where(:checked, [data-checked], [aria-checked=true])`              |
-| \_enabled              | `&:enabled`                                                           |
-| \_expanded             | `&:where([aria-expanded=true], [data-expanded])`                      |
-| \_highlighted          | `&[data-highlighted]`                                                 |
-| \_before               | `&::before`                                                           |
-| \_after                | `&::after`                                                            |
-| \_firstLetter          | `&::first-letter`                                                     |
-| \_firstLine            | `&::first-line`                                                       |
-| \_marker               | `&::marker`                                                           |
-| \_selection            | `&::selection`                                                        |
-| \_file                 | `&::file-selector-button`                                             |
-| \_backdrop             | `&::backdrop`                                                         |
-| \_first                | `&:first-child`                                                       |
-| \_last                 | `&:last-child`                                                        |
-| \_only                 | `&:only-child`                                                        |
-| \_even                 | `&:even`                                                              |
-| \_odd                  | `&:odd`                                                               |
-| \_firstOfType          | `&:first-of-type`                                                     |
-| \_lastOfType           | `&:last-of-type`                                                      |
-| \_onlyOfType           | `&:only-of-type`                                                      |
-| \_peerFocus            | `.peer:where(:focus, [data-focus]) ~ &`                               |
-| \_peerHover            | `.peer:where(:hover, [data-hover]) ~ &`                               |
-| \_peerActive           | `.peer:where(:active, [data-active]) ~ &`                             |
-| \_peerFocusWithin      | `.peer:focus-within ~ &`                                              |
-| \_peerFocusVisible     | `.peer:where(:focus-visible, [data-focus-visible]) ~ &`               |
-| \_peerDisabled         | `.peer:where(:disabled, [disabled], [data-disabled]) ~ &`             |
-| \_peerChecked          | `.peer:where(:checked, [data-checked], [aria-checked=true]) ~ &`      |
-| \_peerInvalid          | `.peer:where(:invalid, [data-invalid], [aria-invalid=true]) ~ &`      |
-| \_peerExpanded         | `.peer:where([aria-expanded=true], [data-expanded]) ~ &`              |
-| \_peerPlaceholderShown | `.peer:placeholder-shown ~ &`                                         |
-| \_groupFocus           | `.group:where(:focus, [data-focus]) &`                                |
-| \_groupHover           | `.group:where(:hover, [data-hover]) &`                                |
-| \_groupActive          | `.group:where(:active, [data-active]) &`                              |
-| \_groupFocusWithin     | `.group:focus-within &`                                               |
-| \_groupFocusVisible    | `.group:where(:focus-visible, [data-focus-visible]) &`                |
-| \_groupDisabled        | `.group:where(:disabled, [disabled], [data-disabled]) &`              |
-| \_groupChecked         | `.group:where(:checked, [data-checked], [aria-checked=true]) &`       |
-| \_groupExpanded        | `.group:where([aria-expanded=true], [data-expanded]) &`               |
-| \_groupInvalid         | `.group:invalid &`                                                    |
-| \_indeterminate        | `&:where(:indeterminate, [data-indeterminate], [aria-checked=mixed])` |
-| \_required             | `&:required`                                                          |
-| \_valid                | `&:where(:valid, [data-valid])`                                       |
-| \_invalid              | `&:where(:invalid, [data-invalid])`                                   |
-| \_autofill             | `&:autofill`                                                          |
-| \_inRange              | `&:in-range`                                                          |
-| \_outOfRange           | `&:out-of-range`                                                      |
-| \_placeholder          | `&:placeholder`                                                       |
-| \_placeholderShown     | `&:placeholder-shown`                                                 |
-| \_pressed              | `&:where([aria-pressed=true], [data-pressed])`                        |
-| \_selected             | `&:where([aria-selected=true], [data-selected])`                      |
-| \_default              | `&:default`                                                           |
-| \_optional             | `&:optional`                                                          |
-| \_open                 | `&[open]`                                                             |
-| \_fullscreen           | `&:fullscreen`                                                        |
-| \_loading              | `&:where([data-loading], [aria-busy=true])`                           |
-| \_currentPage          | `&[aria-current=page]`                                                |
-| \_currentStep          | `&[aria-current=step]`                                                |
-| \_motionReduce         | `@media (prefers-reduced-motion: reduce)`                             |
-| \_motionSafe           | `@media (prefers-reduced-motion: no-preference)`                      |
-| \_print                | `@media print`                                                        |
-| \_landscape            | `@media (orientation: landscape)`                                     |
-| \_portrait             | `@media (orientation: portrait)`                                      |
-| \_dark                 | `&.dark, .dark &`                                                     |
-| \_light                | `&.light, .light &`                                                   |
-| \_osDark               | `@media (prefers-color-scheme: dark)`                                 |
-| \_osLight              | `@media (prefers-color-scheme: light)`                                |
-| \_highConstrast        | `@media (forced-colors: active)`                                      |
-| \_lessContrast         | `@media (prefers-contrast: less)`                                     |
-| \_moreContrast         | `@media (prefers-contrast: more)`                                     |
-| \_ltr                  | `[dir=ltr] &`                                                         |
-| \_rtl                  | `[dir=rtl] &`                                                         |
-| \_scrollbar            | `&::-webkit-scrollbar`                                                |
-| \_scrollbarThumb       | `&::-webkit-scrollbar-thumb`                                          |
-| \_scrollbarTrack       | `&::-webkit-scrollbar-track`                                          |
-| \_horizontal           | `&[data-orientation=horizontal]`                                      |
-| \_vertical             | `&[data-orientation=vertical]`                                        |
+| Condition name         | Selector                                                           |
+| ---------------------- | ------------------------------------------------------------------ |
+| \_hover                | `&:is(:hover, [data-hover])`                                       |
+| \_focus                | `&:is(:focus, [data-focus])`                                       |
+| \_focusWithin          | `&:focus-within`                                                   |
+| \_focusVisible         | `&:is(:focus-visible, [data-focus-visible])`                       |
+| \_disabled             | `&:is(:disabled, [disabled], [data-disabled])`                     |
+| \_active               | `&:is(:active, [data-active])`                                     |
+| \_visited              | `&:visited`                                                        |
+| \_target               | `&:target`                                                         |
+| \_readOnly             | `&:is(:read-only, [data-read-only])`                               |
+| \_readWrite            | `&:read-write`                                                     |
+| \_empty                | `&:is(:empty, [data-empty])`                                       |
+| \_checked              | `&:is(:checked, [data-checked], [aria-checked=true])`              |
+| \_enabled              | `&:enabled`                                                        |
+| \_expanded             | `&:is([aria-expanded=true], [data-expanded])`                      |
+| \_highlighted          | `&[data-highlighted]`                                              |
+| \_before               | `&::before`                                                        |
+| \_after                | `&::after`                                                         |
+| \_firstLetter          | `&::first-letter`                                                  |
+| \_firstLine            | `&::first-line`                                                    |
+| \_marker               | `&::marker`                                                        |
+| \_selection            | `&::selection`                                                     |
+| \_file                 | `&::file-selector-button`                                          |
+| \_backdrop             | `&::backdrop`                                                      |
+| \_first                | `&:first-child`                                                    |
+| \_last                 | `&:last-child`                                                     |
+| \_only                 | `&:only-child`                                                     |
+| \_even                 | `&:even`                                                           |
+| \_odd                  | `&:odd`                                                            |
+| \_firstOfType          | `&:first-of-type`                                                  |
+| \_lastOfType           | `&:last-of-type`                                                   |
+| \_onlyOfType           | `&:only-of-type`                                                   |
+| \_peerFocus            | `.peer:is(:focus, [data-focus]) ~ &`                               |
+| \_peerHover            | `.peer:is(:hover, [data-hover]) ~ &`                               |
+| \_peerActive           | `.peer:is(:active, [data-active]) ~ &`                             |
+| \_peerFocusWithin      | `.peer:focus-within ~ &`                                           |
+| \_peerFocusVisible     | `.peer:is(:focus-visible, [data-focus-visible]) ~ &`               |
+| \_peerDisabled         | `.peer:is(:disabled, [disabled], [data-disabled]) ~ &`             |
+| \_peerChecked          | `.peer:is(:checked, [data-checked], [aria-checked=true]) ~ &`      |
+| \_peerInvalid          | `.peer:is(:invalid, [data-invalid], [aria-invalid=true]) ~ &`      |
+| \_peerExpanded         | `.peer:is([aria-expanded=true], [data-expanded]) ~ &`              |
+| \_peerPlaceholderShown | `.peer:placeholder-shown ~ &`                                      |
+| \_groupFocus           | `.group:is(:focus, [data-focus]) &`                                |
+| \_groupHover           | `.group:is(:hover, [data-hover]) &`                                |
+| \_groupActive          | `.group:is(:active, [data-active]) &`                              |
+| \_groupFocusWithin     | `.group:focus-within &`                                            |
+| \_groupFocusVisible    | `.group:is(:focus-visible, [data-focus-visible]) &`                |
+| \_groupDisabled        | `.group:is(:disabled, [disabled], [data-disabled]) &`              |
+| \_groupChecked         | `.group:is(:checked, [data-checked], [aria-checked=true]) &`       |
+| \_groupExpanded        | `.group:is([aria-expanded=true], [data-expanded]) &`               |
+| \_groupInvalid         | `.group:invalid &`                                                 |
+| \_indeterminate        | `&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed])` |
+| \_required             | `&:required`                                                       |
+| \_valid                | `&:is(:valid, [data-valid])`                                       |
+| \_invalid              | `&:is(:invalid, [data-invalid])`                                   |
+| \_autofill             | `&:autofill`                                                       |
+| \_inRange              | `&:in-range`                                                       |
+| \_outOfRange           | `&:out-of-range`                                                   |
+| \_placeholder          | `&:placeholder`                                                    |
+| \_placeholderShown     | `&:placeholder-shown`                                              |
+| \_pressed              | `&:is([aria-pressed=true], [data-pressed])`                        |
+| \_selected             | `&:is([aria-selected=true], [data-selected])`                      |
+| \_default              | `&:default`                                                        |
+| \_optional             | `&:optional`                                                       |
+| \_open                 | `&[open]`                                                          |
+| \_fullscreen           | `&:fullscreen`                                                     |
+| \_loading              | `&:is([data-loading], [aria-busy=true])`                           |
+| \_currentPage          | `&[aria-current=page]`                                             |
+| \_currentStep          | `&[aria-current=step]`                                             |
+| \_motionReduce         | `@media (prefers-reduced-motion: reduce)`                          |
+| \_motionSafe           | `@media (prefers-reduced-motion: no-preference)`                   |
+| \_print                | `@media print`                                                     |
+| \_landscape            | `@media (orientation: landscape)`                                  |
+| \_portrait             | `@media (orientation: portrait)`                                   |
+| \_dark                 | `&.dark, .dark &`                                                  |
+| \_light                | `&.light, .light &`                                                |
+| \_osDark               | `@media (prefers-color-scheme: dark)`                              |
+| \_osLight              | `@media (prefers-color-scheme: light)`                             |
+| \_highConstrast        | `@media (forced-colors: active)`                                   |
+| \_lessContrast         | `@media (prefers-contrast: less)`                                  |
+| \_moreContrast         | `@media (prefers-contrast: more)`                                  |
+| \_ltr                  | `[dir=ltr] &`                                                      |
+| \_rtl                  | `[dir=rtl] &`                                                      |
+| \_scrollbar            | `&::-webkit-scrollbar`                                             |
+| \_scrollbarThumb       | `&::-webkit-scrollbar-thumb`                                       |
+| \_scrollbarTrack       | `&::-webkit-scrollbar-track`                                       |
+| \_horizontal           | `&[data-orientation=horizontal]`                                   |
+| \_vertical             | `&[data-orientation=vertical]`                                     |

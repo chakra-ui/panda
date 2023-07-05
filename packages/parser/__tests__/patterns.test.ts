@@ -24,22 +24,12 @@ describe('pattern jsx', () => {
               "column": 32,
               "line": 7,
               "node": "CallExpression",
-              "stack": [
-                "CallExpression",
-                "ObjectLiteralExpression",
-              ],
               "type": "map",
               "value": Map {
                 "align" => {
                   "column": 47,
                   "line": 7,
                   "node": "StringLiteral",
-                  "stack": [
-                    "CallExpression",
-                    "ObjectLiteralExpression",
-                    "PropertyAssignment",
-                    "StringLiteral",
-                  ],
                   "type": "literal",
                   "value": "center",
                 },
@@ -60,22 +50,12 @@ describe('pattern jsx', () => {
               "column": 32,
               "line": 8,
               "node": "CallExpression",
-              "stack": [
-                "CallExpression",
-                "ObjectLiteralExpression",
-              ],
               "type": "map",
               "value": Map {
                 "justify" => {
                   "column": 51,
                   "line": 8,
                   "node": "StringLiteral",
-                  "stack": [
-                    "CallExpression",
-                    "ObjectLiteralExpression",
-                    "PropertyAssignment",
-                    "StringLiteral",
-                  ],
                   "type": "literal",
                   "value": "flex-end",
                 },

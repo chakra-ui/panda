@@ -51,8 +51,6 @@ Vue.js - The Progressive JavaScript Framework
 ✔ Add Prettier for code formatting? … No / Yes
 ```
 
-> **Note:** Panda can only work in Vue JSX syntax since it parses only JS(X)/TS(X) files for now.
-
 Enter the newly created directory and install the dependencies.
 
 <Tabs items={['pnpm', 'npm', 'yarn']}>
@@ -112,12 +110,13 @@ Open your `package.json` file and update the `scripts` section as follows:
     "dev": "vite",
     "build": "run-p type-check build-only",
     "preview": "vite preview",
-    "build-only": "vite build",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
+    "build-only": "vite build"
   }
 }
 ```
 - `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
 
 ### Configure the content
 
@@ -131,7 +130,7 @@ export default defineConfig({
  preflight: true,
 
  // Where to look for your css declarations
- include: ["./src/**/*.{js,jsx,ts,tsx}", "./pages/**/*.{js,jsx,ts,tsx}"],
+ include: ['./src/**/*.{js,jsx,ts,tsx,vue}'],
 
  // Files to exclude
  exclude: [],
@@ -143,9 +142,9 @@ export default defineConfig({
 
 ### Configure the entry CSS with layers
 
-Add this code to an `src/style.css` file imported in the root component of your project.
+Add this code to an `src/index.css` file and import it in the root component of your project.
 
-```css filename="src/style.css"
+```css filename="src/index.css"
 @layer reset, base, tokens, recipes, utilities;
 ```
 
@@ -174,21 +173,16 @@ Run the following command to start your development server.
 ### Start using Panda
 
 Now you can start using Panda CSS in your project.
-Here is the snippet of code that you can use in your `src/App.tsx` file.
+Here is the snippet of code that you can use in your `src/App.vue` file.
 
-```tsx filename="src/App.tsx"
-import { defineComponent } from 'vue';
-import { css } from '../styled-system/css';
+```md filename="src/App.vue"
+<script setup lang="ts">
+import { css } from "../styled-system/css";
+</script>
 
-export default defineComponent({
-  setup() {
-    return () => (
-      <div class={css({ fontSize: '2xl', fontWeight: 'bold' })}>Hello 🐼!</div>
-    )
-  }
-})
+<template>
+  <div :class="css({ fontSize: '5xl', fontWeight: 'bold' })">Hello 🐼!</div>
+</template>
 ```
-
-> **Note:** Make sure to replace the root component inside `src/main.ts` with `src/App.tsx`.
 
 </Steps>

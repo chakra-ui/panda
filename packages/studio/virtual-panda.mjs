@@ -1,7 +1,5 @@
 import { analyzeTokens, findConfig, loadConfigAndCreateContext, writeAnalyzeJSON } from '@pandacss/node'
-import type { AstroIntegration } from 'astro'
 import { stringify } from 'javascript-stringify'
-import type { Plugin as VitePlugin } from 'vite'
 
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
@@ -13,8 +11,11 @@ const _dirname = dirname(fileURLToPath(import.meta.url))
 const analysisDataFilepath = 'src/lib/analysis.json'
 const jsonPath = resolve(_dirname, analysisDataFilepath)
 
-function vitePlugin(): VitePlugin {
-  let config: any
+/**
+ * @returns import('vite').VitePlugin
+ */
+function vitePlugin() {
+  let config
 
   return {
     name: 'vite:panda',
@@ -50,7 +51,10 @@ function vitePlugin(): VitePlugin {
   }
 }
 
-const virtualPanda = (): AstroIntegration => ({
+/**
+ * @returns import('astro').AstroIntegration
+ */
+const virtualPanda = () => ({
   name: 'virtual:panda',
   hooks: {
     'astro:config:setup': ({ updateConfig, addWatchFile }) => {

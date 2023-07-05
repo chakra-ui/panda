@@ -2,9 +2,11 @@ import { createGenerator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
-import { merge } from 'merge-anything'
+import * as pandaDefs from '@pandacss/dev'
+
 import { createHooks } from 'hookable'
 import { useMemo } from 'react'
+import { getResolvedConfig } from '@/src/lib/resolve-config'
 
 const evalCode = (code: string, scope: Record<string, unknown>) => {
   const scopeKeys = Object.keys(scope)
@@ -12,38 +14,40 @@ const evalCode = (code: string, scope: Record<string, unknown>) => {
   return new Function(...scopeKeys, code)(...scopeValues)
 }
 
-export function usePanda(source: string, theme: string) {
-  const userTheme = useMemo(() => {
-    const codeTrimmed = theme
+export function usePanda(source: string, config: string) {
+  const userConfig = useMemo(() => {
+    const codeTrimmed = config
       .replaceAll(/export /g, '')
+      .replaceAll(/import\s*{[^}]+}\s*from\s*['"][^'"]+['"];\n*/g, '')
       .trim()
       .replace(/;$/, '')
 
     try {
-      return evalCode(`return (() => {${codeTrimmed}; return theme})()`, {})
+      return evalCode(`return (() => {${codeTrimmed}; return config})()`, pandaDefs)
     } catch (e) {
       return null
     }
-  }, [theme])
+  }, [config])
 
   const generator = useMemo(() => {
-    const { extend, ...restTheme } = userTheme ?? {}
-    const theme = Object.assign(merge({}, presetTheme.theme, extend) || {}, restTheme || {})
+    const { presets, ...restConfig } = userConfig ?? {}
+
+    const config = getResolvedConfig({
+      cwd: '',
+      include: [],
+      outdir: 'styled-system',
+      preflight: true,
+      presets: [presetBase, presetTheme, ...(presets ?? [])],
+      ...restConfig,
+    })
 
     return createGenerator({
       dependencies: [],
       path: '',
       hooks: createHooks(),
-      config: {
-        cwd: '',
-        include: [],
-        outdir: 'styled-system',
-        ...presetBase,
-        preflight: true,
-        theme,
-      },
+      config: config as any,
     })
-  }, [userTheme])
+  }, [userConfig])
 
   return useMemo(() => {
     const project = createProject({
@@ -55,7 +59,6 @@ export function usePanda(source: string, theme: string) {
     })
 
     const parserResult = project.parseSourceFile('code.tsx')
-    console.log(parserResult)
     const parsedCss = parserResult ? generator.getParserCss(parserResult) ?? '' : ''
     const artifacts = generator.getArtifacts() ?? []
 
@@ -81,11 +84,11 @@ export function usePanda(source: string, theme: string) {
         )
         return acc.concat(artifactCss)
       },
-      [{ code: previewCss, file: 'styles.css' }] as CssFileArtifact[],
+      [{ code: parsedCss, file: 'styles.css' }] as CssFileArtifact[],
     )
 
     const patternNames = Object.keys(generator.config.patterns ?? {})
-    return {
+    const panda = {
       parserResult,
       parsedCss,
       previewCss,
@@ -94,6 +97,8 @@ export function usePanda(source: string, theme: string) {
       artifacts,
       cssArtifacts,
     }
+    console.log(panda) // <-- useful for debugging purposes, don't remove
+    return panda
   }, [source, generator])
 }
 
