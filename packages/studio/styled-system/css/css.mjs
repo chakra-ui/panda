@@ -36,7 +36,7 @@ const classNameMap = {
   flexGrow: 'grow',
   flexShrink: 'shrink',
   gridTemplateColumns: 'grid-cols',
-  gridTemplateRows: 'grid-cols',
+  gridTemplateRows: 'grid-rows',
   gridColumn: 'col-span',
   gridRow: 'row-span',
   gridColumnStart: 'col-start',
