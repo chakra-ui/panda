@@ -74,7 +74,7 @@ export const flexGrid: UtilityConfig = {
     },
   },
   gridTemplateRows: {
-    className: 'grid-cols',
+    className: 'grid-rows',
     values: {
       '1': 'repeat(1, minmax(0, 1fr))',
       '2': 'repeat(2, minmax(0, 1fr))',
