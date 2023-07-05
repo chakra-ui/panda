@@ -8,13 +8,20 @@ export default defineConfig({
   outdir: 'styled-system',
   jsxFactory: 'panda',
   theme: {
-    semanticTokens: {
-      colors: {
-        border: {
-          default: {
-            value: {
-              base: 'rgb(235, 235, 235)',
-              _dark: 'rgba(255, 255, 255, 0.05)',
+    extend: {
+      tokens: {
+        colors: {
+          primary: { value: '#F6E458' },
+        },
+      },
+      semanticTokens: {
+        colors: {
+          border: {
+            default: {
+              value: {
+                base: 'rgb(235, 235, 235)',
+                _dark: 'rgba(255, 255, 255, 0.05)',
+              },
             },
           },
         },
