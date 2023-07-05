@@ -2,16 +2,19 @@ import { cx } from '@/styled-system/css'
 import { Inter } from '@next/font/google'
 import type { PropsWithChildren } from 'react'
 import '../styles/globals.css'
+import { Providers } from '@/src/components/providers'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 const RootLayout = (props: PropsWithChildren) => (
-  <html lang="en" className={cx(inter.variable)}>
+  <html lang="en" className={cx(inter.variable)} suppressHydrationWarning>
     <head>
       <meta charSet="utf-8" />
       <meta content="width=device-width, initial-scale=1" name="viewport" />
     </head>
-    <body>{props.children}</body>
+    <body>
+      <Providers>{props.children}</Providers>
+    </body>
   </html>
 )
 

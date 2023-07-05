@@ -2,6 +2,7 @@ import Frame, { FrameContextConsumer } from 'react-frame-component'
 import { LiveProvider, LiveError, LivePreview } from 'react-live-runner'
 import { useIsClient } from 'usehooks-ts'
 import { Flex } from '@/styled-system/jsx'
+import { useTheme } from 'next-themes'
 
 export type PreviewProps = {
   previewCss?: string
@@ -11,6 +12,7 @@ export type PreviewProps = {
 }
 export const Preview = ({ previewCss = '', previewJs = '', patternNames, source }: PreviewProps) => {
   const isClient = useIsClient()
+  const { resolvedTheme } = useTheme()
   // prevent false positive for server-side rendering
   if (!isClient) {
     return null
@@ -18,8 +20,18 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
 
   const initialContent = `<!DOCTYPE html>
 <html>
-<head></head>
+<head>
+<script>
+  window.__theme = '${resolvedTheme}'
+  !function(){try{var d=document.documentElement,c=d.classList;c.remove('light','dark');var e=window.__theme;if(e){c.add(e|| '')}else{c.add('dark');}if(e==='light'||e==='dark'||!e)d.style.colorScheme=e||'dark'}catch(t){}}();
+</script>
+
+<style>
+  *{-webkit-transition:none!important;-moz-transition:none!important;-o-transition:none!important;-ms-transition:none!important;transition:none!important}
+  </style>
+</head>
 <body>
+
   <div></div>
   <script type="module">
     ${previewJs}
@@ -42,7 +54,7 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
     .concat(`\nrender(<${defaultExportName} />)`)
 
   return (
-    <Flex px="6" py="4" align="stretch" h="full">
+    <Flex align="stretch" h="full">
       <Frame
         key={initialContent}
         initialContent={initialContent}

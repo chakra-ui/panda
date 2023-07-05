@@ -19,7 +19,7 @@ export const LayoutControl = (props: LayoutControlProps) => {
     <RadioGroup
       value={value}
       onChange={({ value }) => onChange(value as Layout)}
-      className={css({ display: 'flex', gap: 3 })}
+      className={css({ display: 'flex', gap: 3, ml: 'auto' })}
     >
       {options.map((option, id) => (
         <Radio key={id} value={option.id} style={{ fontWeight: option.id === value ? 'bold' : 'inherit' }}>

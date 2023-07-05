@@ -7,6 +7,20 @@ export default defineConfig({
   exclude: [],
   outdir: 'styled-system',
   jsxFactory: 'panda',
+  theme: {
+    semanticTokens: {
+      colors: {
+        border: {
+          default: {
+            value: {
+              base: 'rgb(235, 235, 235)',
+              _dark: 'rgba(255, 255, 255, 0.05)',
+            },
+          },
+        },
+      },
+    },
+  },
   globalCss: {
     html: {
       lineHeight: 1.5,
@@ -25,6 +39,7 @@ export default defineConfig({
       maxHeight: '100%',
       _dark: {
         colorScheme: 'dark',
+        bg: '#282828',
       },
     },
     '*, *::before, *::after': {
