@@ -9,6 +9,7 @@
   "qwik": "Qwik",
   "vite": "Vite",
   "vue": "Vue",
+  "nuxt": "Nuxt",
   "preact": "Preact",
   "solidjs": "Solid.js",
   "svelte": "Svelte",

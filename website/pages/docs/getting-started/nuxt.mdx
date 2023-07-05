@@ -1,0 +1,198 @@
+---
+title: Using Nuxt
+description: Easily use Panda with Nuxt with the vue integration.
+---
+
+# Using Panda CSS with Nuxt
+
+Setting up Panda CSS in a Nuxt project using PostCSS.
+
+## Start a new project
+
+<Steps>
+
+### Create Nuxt project
+
+To get started, we will need to create a new Nuxt project using npx.  
+
+<Tabs items={['npx', 'pnpm']}>
+  <Tab>
+    ```bash
+    npx nuxi@latest init test-app
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    pnpm dlx nuxi@latest init test-app
+    ```
+  </Tab>
+</Tabs>
+
+Enter the newly created directory and install the dependencies.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    cd test-app
+    pnpm install
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    cd test-app
+    npm install
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    cd test-app
+    yarn install
+    ```
+  </Tab>
+</Tabs>
+
+### Install Panda
+
+Install panda and create your `panda.config.ts` file.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm install -D @pandacss/dev
+    pnpm panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install -D @pandacss/dev
+    npx panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn add -D @pandacss/dev
+    yarn panda init
+    ```
+  </Tab>
+</Tabs>
+
+### Update package.json scripts
+
+Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3} filename="package.json"
+{
+  "scripts": {
++    "prepare": "panda codegen",
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview"
+  }
+}
+```
+- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+
+> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
+
+### Configure the content
+
+Make sure that all of the paths of your Vue components are included in the `include` section of the `panda.config.ts` file.
+
+```js {8, 17} filename="panda.config.ts"
+import { defineConfig } from "@pandacss/dev"
+
+export default defineConfig({
+ // Whether to use css reset
+ preflight: true,
+
+ // Where to look for your css declarations
+ include: ["./components/**/*.{js,jsx,ts,tsx,vue}", "./pages/**/*.{js,jsx,ts,tsx,vue}"],
+
+ // Files to exclude
+ exclude: [],
+
+ // The output directory for your css system
+ outdir: "styled-system",
+})
+```
+
+### Configure the entry CSS with layers
+
+Add this code to an `assets/css/global.css` file.
+
+```css filename="assets/css/global.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+### Configure Nuxt
+
+Add the following configuration to the `nuxt.config.ts` file
+
+```js {1-2, 5-17}  filename="nuxt.config.ts"
+import { createResolver } from '@nuxt/kit'
+const { resolve } = createResolver(import.meta.url)
+
+export default defineNuxtConfig({
+  alias: {
+    'styled-system': resolve('./styled-system')
+  },
+
+  css: [
+    '@/assets/css/global.css',
+  ],
+
+  postcss: {
+    plugins: {
+      '@pandacss/dev/postcss': {},
+    }
+  }
+})
+```
+
+With the above we've performed the following:
+
+  * imported the global css file '@/assets/css/global.css' at the root of the system.
+  * created an alias that points to the `styled-system` directory.
+  * added panda into the postcss plugins section.
+
+## Start your build process
+
+Run the following command to start your development server.
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab>
+    ```bash
+    pnpm dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm run dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn dev
+    ```
+  </Tab>
+</Tabs>
+
+### Start using Panda
+
+Now you can start using Panda CSS in your project.
+
+As an example here is a snippet of code for a `components/Demo.vue` file.
+
+```xml filename="components/Demo.vue"
+<script setup lang="ts">
+import { css } from "styled-system/css";
+</script>
+
+<template>
+  <div :class="css({ fontSize: '5xl', fontWeight: 'bold' })">Hello 🐼!</div>
+</template>
+```
+
+</Steps>
+
