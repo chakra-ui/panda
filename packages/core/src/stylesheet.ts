@@ -1,4 +1,5 @@
-import type { RecipeConfig, Dict, SystemStyleObject } from '@pandacss/types'
+import { logger } from '@pandacss/logger'
+import type { Dict, RecipeConfig, SystemStyleObject } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
 import { AtomicRule } from './atomic-rule'
 import { discardDuplicate, expandCssFunctions, optimizeCss } from './optimize'
@@ -7,7 +8,6 @@ import { safeParse } from './safe-parse'
 import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
-import { logger } from '@pandacss/logger'
 
 export type StylesheetOptions = {
   content?: string

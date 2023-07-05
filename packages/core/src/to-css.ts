@@ -1,8 +1,8 @@
 import type { Dict } from '@pandacss/types'
 import postcss from 'postcss'
 import postcssNested from 'postcss-nested'
+import { postCssJs } from './post-css-js'
 import { safeParse } from './safe-parse'
-import { postCssJs } from './vendor'
 
 export function toCss(styles: Dict, { important }: { important?: boolean } = {}) {
   const result = postcss([

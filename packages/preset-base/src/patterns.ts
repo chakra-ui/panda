@@ -187,7 +187,9 @@ const gridItem = definePattern({
     return {
       gridColumn: colSpan != null ? map(colSpan, spanFn) : undefined,
       gridRow: rowSpan != null ? map(rowSpan, spanFn) : undefined,
+      gridColumnStart: colStart,
       gridColumnEnd: colEnd,
+      gridRowStart: rowStart,
       gridRowEnd: rowEnd,
       ...rest,
     }

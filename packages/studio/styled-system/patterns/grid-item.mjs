@@ -8,7 +8,9 @@ const gridItemConfig = {
     return {
       gridColumn: colSpan != null ? map(colSpan, spanFn) : void 0,
       gridRow: rowSpan != null ? map(rowSpan, spanFn) : void 0,
+      gridColumnStart: colStart,
       gridColumnEnd: colEnd,
+      gridRowStart: rowStart,
       gridRowEnd: rowEnd,
       ...rest,
     }

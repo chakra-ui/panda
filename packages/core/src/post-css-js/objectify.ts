@@ -1,39 +1,10 @@
-import camelcase from 'camelcase-css'
+import { camelCaseProperty } from '@pandacss/shared'
 import type { AtRule, Container } from 'postcss'
-
-const UNITLESS = {
-  aspectRatio: true,
-  boxFlex: true,
-  boxFlexGroup: true,
-  columnCount: true,
-  flex: true,
-  flexGrow: true,
-  flexPositive: true,
-  flexShrink: true,
-  flexNegative: true,
-  fontWeight: true,
-  lineClamp: true,
-  WebkitLineClamp: true,
-  lineHeight: true,
-  opacity: true,
-  order: true,
-  orphans: true,
-  tabSize: true,
-  widows: true,
-  zIndex: true,
-  zoom: true,
-  fillOpacity: true,
-  strokeDashoffset: true,
-  strokeOpacity: true,
-  strokeWidth: true,
-}
+import { unitlessProperties } from '../unitless'
 
 function atRule(node: AtRule) {
-  if (typeof node.nodes === 'undefined') {
-    return true
-  } else {
-    return objectify(node)
-  }
+  if (typeof node.nodes === 'undefined') return true
+  return objectify(node)
 }
 
 export function objectify(node: Container) {
@@ -64,10 +35,10 @@ export function objectify(node: Container) {
       if (child.prop[0] === '-' && child.prop[1] === '-') {
         name = child.prop
       } else {
-        name = camelcase(child.prop)
+        name = camelCaseProperty(child.prop)
       }
       let value = child.value as string | number
-      if (!isNaN(Number(value)) && UNITLESS[name as keyof typeof UNITLESS]) {
+      if (!isNaN(Number(value)) && unitlessProperties.has(name)) {
         value = parseFloat(child.value)
       }
       if (child.important) value += ' !important'

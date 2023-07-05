@@ -24,7 +24,6 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
-    "camelcase-css": "^2.0.1",
     "hookable": "5.5.3",
     "postcss": "8.4.24",
     "postcss-nested": "6.0.1",
