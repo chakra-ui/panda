@@ -9,10 +9,11 @@ This guide outlines the steps needed to migrate your project from Stitches to Pa
 
 > **Disclaimer:** This isn't about comparing which one is best. Panda and Stitches are two different CSS-in-JS solutions with design decisions.
 
-Here are some similarities and differences between the two libraries.
+Here are some similarities between the two libraries.
 
 - Panda uses the object literal syntax to define styles. It also supports the shorthand syntax for the `margin` and `padding` properties.
 - Panda supports the `variants`, `defaultVariants` and `compoundVariants` APIs.
+- Panda supports design tokens and themes.
 - Panda supports all the variants of nested selectors (attribute, class, pseudo, descendant, child, sibling selectors and more). It also requires the use of the `&` to chain selectors.
 
 ## css function
