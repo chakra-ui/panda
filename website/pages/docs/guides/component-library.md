@@ -100,7 +100,7 @@ This approach comes with a few downsides:
 
 ## Use Panda as external package
 
-### Ship the src files
+### Include the src files
 
 **Library code**
 
@@ -179,9 +179,9 @@ export default defineConfig({
 
 ### Ship the build info file
 
-This approach is similar to the previous one, but instead of shipping the source code, you ship the Panda build info file.
+This approach is similar to the previous one, but instead of shipping the source code, you ship the Panda build info file. This will have **the exact same end-result** as adding the sources files in the `include`, but it will allow you not to ship the source code.
 
-The build info file is a JSON file that **only** contains the information about the static extraction result, you still need to ship your app build/dist by yourself. It can be used by Panda to generate CSS classes without the need for parsing the source code. The buildinfo file does
+The build info file is a JSON file that **only** contains the information about the static extraction result, you still need to ship your app build/dist by yourself. It can be used by Panda to generate CSS classes without the need for parsing the source code.
 
 Convert the `styled-system` directory to a package by setting the `emitPackage` and `outdir` properties. This will inform Panda to emit the code artifacts to the `node_modules`.
 
@@ -255,10 +255,12 @@ export default defineConfig({
 
 ## Recommendations
 
-- Library Code uses Panda and App Code uses Panda, use [ship build info](#ship-the-build-info-file) approach
-- Library Code uses Panda and App Code might not use Panda, use the [static css](#ship-a-static-css-file) file approach
-- Library Code and App Code in a monorepo, use the [ship src files](#ship-the-src-files) approach
-- Library Code ships only tokens, patterns or recipes, use the [ship preset](#ship-a-panda-preset) approach
+- Library Code shouldn't be published on npm and App code uses Panda, use [ship build info](#ship-the-build-info-file) approach
+- App code might not use Panda, use the [static css](#ship-a-static-css-file) file approach
+- App code lives in an internal monorepo, use the [include src files](#include-the-src-files) approach
+- Library code doesn't ship components but only ships tokens, patterns or recipes, use the [ship preset](#ship-a-panda-preset) approach
+
+> ⚠️ If you use the `include src files` or `ship build info` approach, you might also need to ship a `preset` if your library code has any custom tokens, patterns or recipes.
 
 ## Troubleshooting
 
