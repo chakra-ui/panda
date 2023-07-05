@@ -78,12 +78,14 @@ export const ByCategory = ({ byCategory }: { byCategory: Record<string, number[]
         {keys.map((category) => (
           <CategoryUtilities key={category} category={category} byCategory={byCategory} sortedBy={sortedBy} />
         ))}
-        <CategoryUtilities
-          className={gridItem({ colSpan: 2 })}
-          category="unknown"
-          byCategory={byCategory}
-          sortedBy={sortedBy}
-        />
+        {unknown ? (
+          <CategoryUtilities
+            className={gridItem({ colSpan: 2 })}
+            category="unknown"
+            byCategory={byCategory}
+            sortedBy={sortedBy}
+          />
+        ) : null}
       </Grid>
     </Section>
   )
