@@ -357,6 +357,38 @@ File extension for generated javascript files.
 }
 ```
 
+### syntax
+
+**Type**: `'object-literal' | 'template-literal'`
+
+**Default**: `object-literal`
+
+Decides which syntax to use when writing CSS. For existing projects, you might need to run the `panda codegen --clean`.
+
+```json
+{
+  "syntax": "template-literal"
+}
+```
+
+Ex object-literal:
+
+```tsx
+const styles = css({
+    backgroundColor: 'gainsboro',
+    padding: '10px 15px'
+})
+```
+
+Ex template-literal:
+
+```tsx
+const Container = styled.div`
+    background-color: gainsboro;
+    padding: 10px 15px;
+`;
+```
+
 ## Design token options
 
 ### cssVarRoot
