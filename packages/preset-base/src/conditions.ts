@@ -27,8 +27,8 @@ export const conditions = {
   first: '&:first-child',
   last: '&:last-child',
   only: '&:only-child',
-  even: '&:even',
-  odd: '&:odd',
+  even: '&:nth-child(even)',
+  odd: '&:nth-child(odd)',
 
   firstOfType: '&:first-of-type',
   lastOfType: '&:last-of-type',
