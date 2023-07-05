@@ -16,6 +16,8 @@ Here are some similarities between the two libraries.
 - Panda supports design tokens and themes.
 - Panda supports all the variants of nested selectors (attribute, class, pseudo, descendant, child, sibling selectors and more). It also requires the use of the `&` to chain selectors.
 
+Below are some of the differences between the two libraries.
+
 ## css function
 
 In Stitches, the `css` function is used to author both regular style objects and variant style objects.
