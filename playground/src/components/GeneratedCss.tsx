@@ -8,6 +8,7 @@ import { CssFileArtifact } from '../hooks/usePanda'
 const editorOptions = {
   minimap: { enabled: false },
   fontSize: 14,
+  readOnly: true,
   quickSuggestions: {
     strings: true,
     other: true,
@@ -19,7 +20,7 @@ export const GeneratedCss = ({ cssArtifacts }: { cssArtifacts: CssFileArtifact[]
   const content = cssArtifacts.find((file) => file.file === activeTab)?.code ?? ''
 
   return (
-    <Stack p="4" h="full" overflow="auto">
+    <Stack h="full" overflow="auto">
       <Tabs
         defaultValue={activeTab}
         className={css({ flex: '1', width: 'full', display: 'flex', flexDirection: 'column' })}
@@ -48,7 +49,7 @@ export const GeneratedCss = ({ cssArtifacts }: { cssArtifacts: CssFileArtifact[]
         >
           {cssArtifacts.map((artifact) => (
             <TabTrigger key={artifact.file} value={artifact.file} asChild>
-              <panda.button whiteSpace="nowrap">
+              <panda.button whiteSpace="nowrap" fontSize="sm">
                 {artifact.file === 'index.css'
                   ? artifact.dir?.slice(1).concat(artifact.file)?.join('/')
                   : artifact.file}
