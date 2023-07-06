@@ -24,7 +24,7 @@ Here's an example of a text style:
 ```js filename="text-styles.ts"
 import { defineTextStyles } from '@pandacss/dev'
 
-const textStyles = defineTextStyles({
+export const textStyles = defineTextStyles({
   body: {
     description: 'The body text style - used in paragraphs',
     value: {
