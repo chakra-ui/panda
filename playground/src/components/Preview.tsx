@@ -30,6 +30,7 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
 
   <script type="module">
 
+  //* This is just listening for the color mode change event and applying the class to the html element
   window.parent.postMessage({action:"getColorMode"},"*"),window.addEventListener("message",(function(e){e.data.colorMode&&function(e){switch(e){case"light":document.querySelector("html").classList.add("light"),document.querySelector("html").classList.remove("dark");break;case"dark":document.querySelector("html").classList.add("dark"),document.querySelector("html").classList.remove("light")}}(e.data.colorMode)}));
 
 </script>
