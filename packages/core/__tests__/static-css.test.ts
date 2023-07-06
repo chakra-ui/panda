@@ -198,4 +198,100 @@ describe('static-css', () => {
       }
     `)
   })
+
+  test('using * in CssRule', () => {
+    expect(
+      getStaticCss({
+        css: [{ properties: { margin: ['*'] } }],
+      })(ctx),
+    ).toMatchInlineSnapshot(`
+      {
+        "css": [
+          {
+            "margin": "20px",
+          },
+          {
+            "margin": "40px",
+          },
+        ],
+        "recipes": [],
+      }
+    `)
+  })
+
+  test('using * in CssRule with responsive: true', () => {
+    expect(
+      getStaticCss({
+        css: [{ properties: { padding: ['*'] }, responsive: true }],
+      })(ctx),
+    ).toMatchInlineSnapshot(`
+      {
+        "css": [
+          {
+            "padding": {
+              "base": "20px",
+              "md": "20px",
+              "sm": "20px",
+            },
+          },
+          {
+            "padding": {
+              "base": "40px",
+              "md": "40px",
+              "sm": "40px",
+            },
+          },
+          {
+            "padding": {
+              "base": "60px",
+              "md": "60px",
+              "sm": "60px",
+            },
+          },
+        ],
+        "recipes": [],
+      }
+    `)
+  })
+
+  test('using * in CssRule with responsive: true and conditions list', () => {
+    expect(
+      getStaticCss({
+        css: [{ properties: { color: ['*'] }, responsive: true, conditions: ['hover', 'focus'] }],
+      })(ctx),
+    ).toMatchInlineSnapshot(`
+      {
+        "css": [
+          {
+            "color": {
+              "_focus": "red.200",
+              "_hover": "red.200",
+              "base": "red.200",
+              "md": "red.200",
+              "sm": "red.200",
+            },
+          },
+          {
+            "color": {
+              "_focus": "blue.200",
+              "_hover": "blue.200",
+              "base": "blue.200",
+              "md": "blue.200",
+              "sm": "blue.200",
+            },
+          },
+          {
+            "color": {
+              "_focus": "green.200",
+              "_hover": "green.200",
+              "base": "green.200",
+              "md": "green.200",
+              "sm": "green.200",
+            },
+          },
+        ],
+        "recipes": [],
+      }
+    `)
+  })
 })
