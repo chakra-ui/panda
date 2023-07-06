@@ -1,5 +1,5 @@
 import { Moon, Sun } from '@/src/components/icons'
-import { circle } from '@/styled-system/patterns'
+import { css } from '@/styled-system/css'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 
@@ -27,7 +27,7 @@ export const ColorModeSwitch = () => {
     <button
       title={`Switch to ${isDark ? 'Light' : 'Dark'} mode`}
       onClick={toggleTheme}
-      className={circle({ cursor: 'pointer', p: '2', bg: { base: 'gray.100', _dark: '#3A3A3AFF' } })}
+      className={css({ borderRadius: 'sm', cursor: 'pointer', p: '2', bg: { base: 'gray.100', _dark: '#3A3A3AFF' } })}
     >
       <IconToUse />
     </button>

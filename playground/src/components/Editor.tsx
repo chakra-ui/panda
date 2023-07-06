@@ -6,6 +6,7 @@ import { Segment, SegmentControl, SegmentGroup, SegmentIndicator, SegmentInput, 
 
 import { PandaEditorProps, useEditor } from '../hooks/useEditor'
 import { Code, Palette } from './icons'
+import { flex } from '@/styled-system/patterns'
 
 const EDITOR_OPTIONS: EditorProps['options'] = {
   minimap: { enabled: false },
@@ -77,13 +78,16 @@ export const Editor = (props: PandaEditorProps) => {
               aria-label={option.label}
             >
               <SegmentLabel
-                className={css({
+                className={flex({
+                  gap: '2',
+                  px: '2',
+                  align: 'center',
                   alignSelf: 'center',
                   color: { base: 'text.default', _checked: 'black' },
                   transition: 'color 170ms ease-in-out',
                 })}
               >
-                {option.icon}
+                {option.icon} {option.label}
               </SegmentLabel>
               <SegmentInput />
               <SegmentControl />

@@ -16,6 +16,7 @@ import { AccountTree, ChevronUpIcon, Computer } from './icons'
 import { ASTViewer } from '@/src/components/ASTViewer'
 import { usePanda } from '@/src/hooks/usePanda'
 import { GeneratedCss } from '@/src/components/GeneratedCss'
+import { flex } from '@/styled-system/patterns'
 
 type ArtifactsPanelType = {
   panda: ReturnType<typeof usePanda>
@@ -29,7 +30,7 @@ const tabs = [
   },
   {
     id: 'generated',
-    label: 'Generated',
+    label: 'CSS',
     icon: <Computer />,
   },
 ]
@@ -111,13 +112,16 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
               >
                 <SegmentLabel
                   data-expanded={open ? '' : undefined}
-                  className={css({
+                  className={flex({
+                    gap: '2',
+                    px: '2',
+                    align: 'center',
                     alignSelf: 'center',
                     color: { base: 'text.default', _checked: { _expanded: 'black' } },
                     transition: 'color 170ms ease-in-out',
                   })}
                 >
-                  {option.icon}
+                  {option.icon} {option.label}
                 </SegmentLabel>
                 <SegmentInput />
                 <SegmentControl />
@@ -133,7 +137,7 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
             <ChevronUpIcon />
           </panda.span>
         </Flex>
-        <Stack flex="auto" px="6">
+        <Stack flex="auto">
           {activeTab === 'ast' && <ASTViewer parserResult={props.panda.parserResult} />}
           {/* Using visible cause it's better to let the monaco editor be loader with the others */}
           <GeneratedCss cssArtifacts={props.panda.cssArtifacts} visible={activeTab === 'generated' && open} />

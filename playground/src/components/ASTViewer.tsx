@@ -49,7 +49,7 @@ const ResultItemRow = (props: { result: ResultItem }) => {
   const { result } = props
   const { resolvedTheme } = useTheme()
   return (
-    <Stack>
+    <Stack px="6">
       <panda.div className={hstack()}>
         <span className={resultType({ type: result.type })}>{result.type}</span>{' '}
         <span className={resultType({ name: result.name as 'cva' | 'css' })}>{result.name}</span>

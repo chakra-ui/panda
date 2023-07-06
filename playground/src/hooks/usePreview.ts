@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useTheme } from 'next-themes'
 
 export function usePreview() {
   const [contentRef, setContentRef] = useState<HTMLIFrameElement | null>(null)
 
-  const doc = contentRef?.contentDocument
-
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+
   useEffect(() => {
     setIsMounted(true)
     if (contentRef?.contentDocument) {
@@ -18,6 +18,28 @@ export function usePreview() {
       contentRef?.removeEventListener('DOMContentLoaded', handleLoad)
     }
   }, [contentRef])
+
+  const { resolvedTheme } = useTheme()
+
+  useEffect(() => {
+    if (!contentRef?.contentDocument || !resolvedTheme) return
+
+    const sender = () => {
+      contentRef?.contentWindow?.postMessage({ colorMode: resolvedTheme }, '*')
+    }
+
+    sender()
+
+    const listener = window.addEventListener('message', function (event) {
+      if (event.data.action === 'getColorMode') {
+        sender()
+      }
+    })
+
+    return () => {
+      window.removeEventListener('message', listener as any)
+    }
+  }, [resolvedTheme, contentRef])
 
   const handleLoad = () => {
     clearInterval(loadCheck)
@@ -33,7 +55,7 @@ export function usePreview() {
     handleLoad()
   }, 500)
 
-  const isReady = isMounted && !!doc
+  const isReady = isMounted && !!contentRef?.contentDocument
 
-  return { handleLoad, doc, contentRef, setContentRef, iframeLoaded, isReady }
+  return { handleLoad, contentRef, setContentRef, iframeLoaded, isReady }
 }

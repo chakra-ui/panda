@@ -104,10 +104,8 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
               cursor: 'pointer',
               display: 'flex',
               borderRadius: 'xl',
-              borderWidth: '1px',
-              borderColor: { base: 'border.badge', _checked: 'transparent' },
               bg: { _hover: 'rgba(255, 255, 255, 0.10)' },
-              transition: 'border-color 170ms ease-in-out',
+              transition: 'background 170ms ease-in-out',
             })}
             key={artifact.file}
             value={artifact.file}

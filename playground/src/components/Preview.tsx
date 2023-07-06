@@ -1,6 +1,5 @@
 import { LiveProvider, LiveError, useLiveContext } from 'react-live-runner'
 import { useIsClient } from 'usehooks-ts'
-import { useTheme } from 'next-themes'
 import { createPortal } from 'react-dom'
 import { usePreview } from '@/src/hooks/usePreview'
 
@@ -12,9 +11,8 @@ export type PreviewProps = {
 }
 export const Preview = ({ previewCss = '', previewJs = '', patternNames, source }: PreviewProps) => {
   const isClient = useIsClient()
-  const { resolvedTheme } = useTheme()
 
-  const { handleLoad, doc, contentRef, setContentRef, iframeLoaded, isReady } = usePreview()
+  const { handleLoad, contentRef, setContentRef, iframeLoaded, isReady } = usePreview()
 
   // prevent false positive for server-side rendering
   if (!isClient) {
@@ -33,6 +31,8 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
       </LiveProvider>
     )
 
+    const doc = contentRef?.contentDocument
+
     return [
       doc?.head && createPortal(<style>{previewCss}</style>, doc.head),
       doc?.body && createPortal(contents, doc.body),
@@ -42,15 +42,6 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
   const srcDoc = `<!DOCTYPE html>
   <html>
   <head>
-  <script>
-    window.__theme = '${resolvedTheme}'
-    !function(){try{var d=document.documentElement,c=d.classList;c.remove('light','dark');var e=window.__theme;if(e){c.add(e|| '')}else{c.add('dark');}if(e==='light'||e==='dark'||!e)d.style.colorScheme=e||'dark'}catch(t){}}();
-  </script>
-  
-  <style>
-    *{-webkit-transition:none!important;-moz-transition:none!important;-o-transition:none!important;-ms-transition:none!important;transition:none!important}
-    </style>
-
     <script type="module">
     ${previewJs}
     ;window.panda = {
@@ -63,6 +54,9 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
   </script>
   </head>
   <body>
+  <script type="module">
+  window.parent.postMessage({action:"getColorMode"},"*"),window.addEventListener("message",(function(e){if(e.data.colorMode)switch(e.data.colorMode){case"light":document.querySelector("html").classList.add("light"),document.querySelector("html").classList.remove("dark");break;case"dark":document.querySelector("html").classList.add("dark"),document.querySelector("html").classList.remove("light")}}));
+</script>
   
   </body>
   </html>`
