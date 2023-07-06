@@ -6,7 +6,7 @@ layout: none
 
 # Frequently Asked Questions
 
-Here's a list of frequently asked questions and how to resolve common issues in Panda.
+Here's a list of frequently asked questions (FAQ) and how to resolve common issues in Panda.
 
 ### Why are my styles not applied?
 
@@ -38,7 +38,7 @@ import { button, type ButtonVariantProps } from '../styled-system/recipes'
 
 ---
 
-You can get an [`atomic recipe`](/concepts/recipes#atomic-recipe) properties types by using `XXXVariantProps`. Let's say you have a `atomic recipe` named `button`, you can get its type like this:
+You can get an [`atomic recipe`](/concepts/recipes#atomic-recipe) properties types by using `RecipeVariantProps`. Let's say you have a `atomic recipe` named `button`, you can get its type like this:
 
 ```ts
 import { cva, type RecipeVariantProps } from '../styled-system/css'
@@ -105,12 +105,12 @@ Just like the `node_modules` folder, you most likely don't want to commit the `s
 
 When running `pnpm panda`, here's what's happening under the hood:
 
-- Load Panda context:
+- **Load Panda context**:
   - Find and evaluate app config, merge result with presets.
   - Create panda context: prepare code generator from config, parse user's file as AST.
-- Generating artifacts:
+- **Generating artifacts**:
   - Write lightweight JS runtime and types to output directory
-- Extracting used styles in app code:
+- **Extracting used styles in app code**:
   - Run parser on each user's file: identify and extract styles, compute CSS, write to styles.css.
 
 ---
@@ -125,6 +125,8 @@ In such a case, check the [`outExtension`](/references/config#outextension) in y
 
 When using `emitPackage: true` with yarn PnP, set the `nodeLinker` to 'node-modules' in your `.yarnrc.yml`. This tells Yarn to use the traditional way of linking dependencies, which can solve compatibility issues.
 
+---
+
 ### Why does importing `styled` not exist?
 
 You should use [`config.jsxFramework`](/concepts/style-props#configure-jsx) when you need to import styled components. You can then use the [`jsxFactory`](/references/config#jsxfactory) option to set the name of the factory component.
@@ -134,6 +136,8 @@ You should use [`config.jsxFramework`](/concepts/style-props#configure-jsx) when
 ### Why is my preset overriding the base one, even after adding it to the array?
 
 You might have forgotten to include the `extend` keyword in your config. Without `extend`, your preset will completely replace the base one, instead of merging with it.
+
+---
 
 ### Why is my base condition not working in this example?
 
@@ -145,15 +149,11 @@ You used `_base` instead of `base`, there is no underscore `_`.
 
 ---
 
-### Why is the recipes functionality not working? The classes are generated but the css is not, even when I build the app and check the generated css file.
+### Why are my recipes not working? The classes are generated but the css is not, even when I build the app and check the generated css file.
 
 Check that each recipe "key" matches the "name" in the recipe. This ensures that the correct CSS is generated for the classes.
 
----
-
-### What's the difference between using `export const preset = defineConfig()` as in `preset-panda` and `export const preset = definePreset()` as in `preset-base` and in the `panda-monorepo` example?
-
-The `definePreset` will only show you the config keys that will be merged, the rest will be ignored. This allows you to control what parts of your configuration are being used.
+If you use recipes from a library package, check that your app's `panda.config` is also importing those recipes directly or using a preset.
 
 ---
 
@@ -162,10 +162,13 @@ The `definePreset` will only show you the config keys that will be merged, the r
 `defineConfig` is intended to be used in your app config, and will show you all the config keys that are available.
 `definePreset` will only show you the config keys that will be merged into an app's config, the rest will be ignored.
 
+---
+
 ### How can I completely override the default tokens?.
 
-If you want to completely override all of the default presets theme tokens, you can omit the `extends` keyword from your `theme` config object.
-If you want to keep some of the defaults, you can install the `@pandacss/preset-panda` package, import it, then specifically pick what you need in there (or use the JS spread operator `...` and override the other keys).
+If you want to **completely override all** of the default presets theme tokens, you can omit the `extends` keyword from your `theme` config object.
+
+If you want to **keep some of the defaults**, you can install the `@pandacss/preset-panda` package, import it, then specifically pick what you need in there (or use the JS spread operator `...` and override the other keys).
 
 ---
 
@@ -189,6 +192,8 @@ This contrasts with [Atomic recipes](/concepts/recipes#atomic-recipe) (cva), whi
 
 When dealing with simple use cases, or if you need code colocation, or even avoiding dynamic styling, atomic recipes shine by providing all style variants. Config recipes are preferred for design system components, delivering leaner CSS with only the styles used. Choose according to your component needs.
 
+---
+
 ### Why does the panda codegen command fails ?
 
 If you run into any error related to "Transforming const to the configured target environment ("es5") is not supported yet", update your tsconfig to use es6 or higher:
@@ -201,19 +206,25 @@ If you run into any error related to "Transforming const to the configured targe
 }
 ```
 
-### Can I set an alpha on a token color?
+---
 
-Currently, setting an alpha on a token color like `css({ color: "blue-200/40" })` is not possible. We are planning to implement this feature using the `color-mix` function.
+### Can I set an alpha / add an opacity modifier on a color?
+
+Currently, setting an alpha on a color like `css({ color: "blue.200/40" })` is not possible. We are planning to implement this feature using the `color-mix` function.
 
 However, note that `color-mix` is a CSS native function and is not yet supported in all browsers. You can follow the discussion about this topic on this [GitHub link](https://github.com/chakra-ui/panda/discussions/862).
 
+---
+
 ### How can I generate all possible CSS variants at build time?
 
-While it's possible to generate all variants, even unused ones, by using [`config.staticCss`](https://panda-css.com/docs/guides/dynamic-styling#using-static-css), it's generally not recommended to use it for more than a few values. However, keep in mind this approach compromises one of Panda's strengths: lean, usage-based CSS generation.
+While it's possible to generate all variants, even unused ones, by using [`config.staticCss`](https://panda-css.com/docs/guides/dynamic-styling#using-static-css), it's generally **not recommended** to use it for more than a few values. However, keep in mind this approach compromises one of Panda's strengths: lean, usage-based CSS generation.
+
+---
 
 ### Can I use one-off media query and other at rules?
 
-Yes, you can! You can apply one-off media queries and other at rules (such as @container, @supports) in your CSS as shown below:
+Yes, you can! You can apply one-off media queries and other at rules (such as `@container`, `@supports`) in your CSS as shown below:
 
 ```javascript
 css({
