@@ -1,7 +1,8 @@
-import Frame, { FrameContextConsumer } from 'react-frame-component'
-import { LiveProvider, LiveError, LivePreview } from 'react-live-runner'
+import { LiveProvider, LiveError, useLiveContext } from 'react-live-runner'
 import { useIsClient } from 'usehooks-ts'
 import { useTheme } from 'next-themes'
+import { ReactEventHandler, useReducer, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 export type PreviewProps = {
   previewCss?: string
@@ -12,27 +13,38 @@ export type PreviewProps = {
 export const Preview = ({ previewCss = '', previewJs = '', patternNames, source }: PreviewProps) => {
   const isClient = useIsClient()
   const { resolvedTheme } = useTheme()
+  const [contentRef, setContentRef] = useState<HTMLIFrameElement | null>(null)
+  const doc = contentRef?.contentWindow?.document
+  const mountNode = doc?.body
+  const insertionPoint = doc?.head
+
+  const [, forceUpdate] = useReducer((x) => x + 1, 0)
+  const updateFrame: ReactEventHandler<HTMLIFrameElement> = () => {
+    //*Reload Iframe on every rerender
+    forceUpdate()
+  }
+
   // prevent false positive for server-side rendering
   if (!isClient) {
     return null
   }
 
-  const initialContent = `<!DOCTYPE html>
-<html>
-<head>
-<script>
-  window.__theme = '${resolvedTheme}'
-  !function(){try{var d=document.documentElement,c=d.classList;c.remove('light','dark');var e=window.__theme;if(e){c.add(e|| '')}else{c.add('dark');}if(e==='light'||e==='dark'||!e)d.style.colorScheme=e||'dark'}catch(t){}}();
-</script>
-
-<style>
-  *{-webkit-transition:none!important;-moz-transition:none!important;-o-transition:none!important;-ms-transition:none!important;transition:none!important}
+  const srcDoc = `<!DOCTYPE html>
+  <html>
+  <head>
+  <style>
+  ${previewCss}
   </style>
-</head>
-<body>
+  <script>
+    window.__theme = '${resolvedTheme}'
+    !function(){try{var d=document.documentElement,c=d.classList;c.remove('light','dark');var e=window.__theme;if(e){c.add(e|| '')}else{c.add('dark');}if(e==='light'||e==='dark'||!e)d.style.colorScheme=e||'dark'}catch(t){}}();
+  </script>
+  
+  <style>
+    *{-webkit-transition:none!important;-moz-transition:none!important;-o-transition:none!important;-ms-transition:none!important;transition:none!important}
+    </style>
 
-  <div style="height: 100%;"></div>
-  <script type="module">
+    <script type="module">
     ${previewJs}
     ;window.panda = {
       css,
@@ -42,8 +54,11 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
       ${patternNames.map((name) => `${name},`).join('\n')}
     };
   </script>
-</body>
-</html>`
+  </head>
+  <body>
+  
+  </body>
+  </html>`
 
   const defaultExportName = extractDefaultExportedFunctionName(source) ?? 'App'
   const transformed = source
@@ -53,23 +68,24 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
     .concat(`\nrender(<${defaultExportName} />)`)
 
   return (
-    <Frame
-      key={initialContent}
-      initialContent={initialContent}
-      head={<style>{previewCss}</style>}
-      width="100%"
-      allow="none"
-    >
-      <FrameContextConsumer>
-        {({ window }) => (
-          <LiveProvider code={transformed} scope={(window as any)?.panda}>
+    <iframe key={srcDoc} srcDoc={srcDoc} ref={setContentRef} allow="none" width="100%" onLoad={updateFrame}>
+      {insertionPoint &&
+        mountNode &&
+        createPortal(
+          <LiveProvider code={transformed} scope={(contentRef?.contentWindow as any)?.panda}>
             <LiveError />
-            <LivePreview style={{ height: '100%' }} />
-          </LiveProvider>
+            <LivePreview />
+          </LiveProvider>,
+          mountNode,
         )}
-      </FrameContextConsumer>
-    </Frame>
+    </iframe>
   )
+}
+
+function LivePreview() {
+  const { element } = useLiveContext()
+
+  return element
 }
 
 const defaultFunctionRegex = /export\s+default\s+function\s+(\w+)/

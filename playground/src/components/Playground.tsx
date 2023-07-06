@@ -64,7 +64,7 @@ export const Playground = (props: UsePlayGroundProps) => {
           </Splitter>
         </SplitterPanel>
         <SplitterResizeTrigger id="left:preview" asChild>
-          <div className={css({ background: 'border.default', minWidth: '1px', minHeight: '1px' })} />
+          <div className={css({ background: 'border.default', minWidth: '2px', minHeight: '2px' })} />
         </SplitterResizeTrigger>
         <SplitterPanel id="preview" className={css({ display: 'flex', flex: 'auto' })}>
           <Preview source={state.code} previewCss={previewCss} previewJs={previewJs} patternNames={patternNames} />

@@ -41,11 +41,11 @@ export const App = () => {
 export const config = defineConfig({
   theme: { extend: {} },
   globalCss: {
-    body: {
-      bg: { _dark: '#2C2C2C' },
-    },
     html: {
       h: 'full',
+    },
+    body: {
+      bg: { _dark: '#2C2C2C' },
     },
   },
 });    

@@ -84,8 +84,9 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
         onChange={(e) => (console.log(e), setActiveTab(e.value as any))}
       >
         <SegmentIndicator
+          data-expanded={visible ? '' : undefined}
           className={css({
-            background: 'primary',
+            background: { base: 'transparent', _expanded: 'primary' },
             zIndex: '1',
             boxShadow: 'xs',
             borderRadius: 'xl',

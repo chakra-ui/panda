@@ -136,7 +136,7 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
         <Stack flex="auto" px="6">
           {activeTab === 'ast' && <ASTViewer parserResult={props.panda.parserResult} />}
           {/* Using visible cause it's better to let the monaco editor be loader with the others */}
-          <GeneratedCss cssArtifacts={props.panda.cssArtifacts} visible={activeTab === 'generated'} />
+          <GeneratedCss cssArtifacts={props.panda.cssArtifacts} visible={activeTab === 'generated' && open} />
         </Stack>
       </SplitterPanel>
     </>
