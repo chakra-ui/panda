@@ -1,53 +1,21 @@
 // Fork of post-css-js: https://github.com/postcss/postcss-js/blob/main/parser.js
 
+import { hypenateProperty } from '@pandacss/shared'
 import postcss, { Container, type Parser } from 'postcss'
+import { unitlessProperties } from '../unitless'
 
 const IMPORTANT = /\s*!important\s*$/i
-
-const UNITLESS = {
-  'aspect-ratio': true,
-  'box-flex': true,
-  'box-flex-group': true,
-  'column-count': true,
-  flex: true,
-  'flex-grow': true,
-  'flex-positive': true,
-  'flex-shrink': true,
-  'flex-negative': true,
-  'font-weight': true,
-  'line-clamp': true,
-  '-webkit-line-clamp': true,
-  'line-height': true,
-  opacity: true,
-  order: true,
-  orphans: true,
-  'tab-size': true,
-  widows: true,
-  'z-index': true,
-  zoom: true,
-  'fill-opacity': true,
-  'stroke-dashoffset': true,
-  'stroke-opacity': true,
-  'stroke-width': true,
-}
-
-const dashifyWordRegex = /([A-Z])/g
-const dashifySecondRegex = /^ms-/
-
-function dashify(str: string) {
-  return str.replace(dashifyWordRegex, '-$1').replace(dashifySecondRegex, '-ms-').toLowerCase()
-}
 
 function decl(parent: Container, name: string, value: any) {
   if (value === false || value == null) return
   const isCssVar = name.startsWith('--')
 
   if (!isCssVar) {
-    name = dashify(name)
+    name = hypenateProperty(name)
   }
 
   if (typeof value === 'number') {
-    if (value === 0 || UNITLESS[name as keyof typeof UNITLESS] || isCssVar) {
+    if (value === 0 || unitlessProperties.has(name) || isCssVar) {
       value = value.toString()
     } else {
       value = `${value}px`
@@ -74,6 +42,8 @@ function atRule(parent: Container, parts: RegExpMatchArray | null, value: string
   parent.push(node)
 }
 
+const AT_RULE = /@(\S+)(\s+([\W\w]*)\s*)?/
+
 function parse(obj: Record<string, any>, parent: Container) {
   let name, value, node
   for (name in obj) {
@@ -81,7 +51,7 @@ function parse(obj: Record<string, any>, parent: Container) {
     if (value === null || typeof value === 'undefined') {
       continue
     } else if (name[0] === '@') {
-      const parts = name.match(/@(\S+)(\s+([\W\w]*)\s*)?/)
+      const parts = name.match(AT_RULE)
       if (Array.isArray(value)) {
         for (const i of value) {
           atRule(parent, parts, i)
@@ -109,6 +79,4 @@ const postCssPlugin = (obj: Record<string, any>) => {
   return root
 }
 
-const impl = postCssPlugin as Parser
-
-export { impl as parser }
+export const parser = postCssPlugin as Parser

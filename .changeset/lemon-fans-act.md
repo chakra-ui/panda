@@ -1,6 +1,7 @@
 ---
-"@pandacss/preset-base": patch
-"@pandacss/studio": patch
+'@pandacss/preset-base': patch
 ---
 
-fix: grid rows typo
+- Fix issue where `gridRows` has the wrong `className`
+
+- Fix issue where `gridItem` pattern did not use the `colStart` and `rowStart` values
