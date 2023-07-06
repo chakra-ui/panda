@@ -1,4 +1,4 @@
-import { capitalize, dashCase, memo, splitProps, uncapitalize } from '@pandacss/shared'
+import { capitalize, dashCase, memo, splitProps } from '@pandacss/shared'
 import type { RecipeConfig, Dict, SystemStyleObject } from '@pandacss/types'
 import merge from 'lodash.merge'
 import { AtomicRule, type ProcessOptions } from './atomic-rule'
@@ -105,15 +105,12 @@ export class Recipes {
     return this.recipes[name]
   })
 
-  find = memo((name: string) => {
-    for (const node of sharedState.configs.values()) {
-      if (node.match.test(name)) return node
-    }
+  find = memo((jsxName: string) => {
+    return this.details.find((node) => node.match.test(jsxName))
   })
 
-  getFnName = memo((jsxName: string) => {
-    const recipe = this.find(jsxName)
-    return recipe?.name ?? uncapitalize(jsxName)
+  filter = memo((jsxName: string) => {
+    return this.details.filter((node) => node.match.test(jsxName))
   })
 
   get details() {
