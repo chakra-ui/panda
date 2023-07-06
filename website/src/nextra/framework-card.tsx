@@ -17,63 +17,63 @@ import Link from 'next/link'
 const logoMap = {
   nextjs: {
     name: 'Next.js',
-    href: '/docs/getting-started/nextjs',
+    href: '/docs/installation/nextjs',
     logo: NextjsLogo
   },
   gatsby: {
     name: 'Gatsby',
     logo: GatsbyLogo,
-    href: '/docs/getting-started/gatsby'
+    href: '/docs/installation/gatsby'
   },
   solid: {
     name: 'Solid',
     logo: SolidjsLogo,
-    href: '/docs/getting-started/solidjs'
+    href: '/docs/installation/solidjs'
   },
   vite: {
     name: 'Vite',
     logo: ViteLogo,
-    href: '/docs/getting-started/vite'
+    href: '/docs/installation/vite'
   },
   preact: {
     name: 'Preact',
     logo: PreactLogo,
-    href: '/docs/getting-started/preact'
+    href: '/docs/installation/preact'
   },
   svelte: {
     name: 'Svelte',
     logo: SvelteLogo,
-    href: '/docs/getting-started/svelte'
+    href: '/docs/installation/svelte'
   },
   astro: {
     name: 'Astro',
     logo: AstroLogo,
-    href: '/docs/getting-started/astro'
+    href: '/docs/installation/astro'
   },
   remix: {
     name: 'Remix',
     logo: RemixLogo,
-    href: '/docs/getting-started/remix'
+    href: '/docs/installation/remix'
   },
   qwik: {
     name: 'Qwik',
     logo: QwikLogo,
-    href: '/docs/getting-started/qwik'
+    href: '/docs/installation/qwik'
   },
   redwood: {
     name: 'Redwood',
     logo: RedwoodLogo,
-    href: '/docs/getting-started/redwood'
+    href: '/docs/installation/redwood'
   },
   vue: {
     name: 'Vue',
     logo: VueLogo,
-    href: '/docs/getting-started/vue'
+    href: '/docs/installation/vue'
   },
   storybook: {
     name: 'Storybook',
     logo: StorybookLogo,
-    href: '/docs/getting-started/storybook'
+    href: '/docs/installation/storybook'
   }
 }
 

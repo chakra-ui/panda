@@ -82,7 +82,7 @@ const Body = ({
           textStyle: 'xs',
           color: 'gray.500',
           _dark: { color: 'gray.400' },
-          textAlign: { _ltr: 'right', _rtl: 'left' }
+          textAlign: 'start'
         })}
       >
         {renderComponent(config.gitTimestamp, { timestamp: date })}

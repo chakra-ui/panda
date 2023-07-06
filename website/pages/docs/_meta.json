@@ -1,10 +1,8 @@
 {
-  "index": "Overview",
-  "why-panda": "Why Panda?",
-  "getting-started": "Getting Started",
-  "faq": "Frequently Asked Questions",
-  "migration": "Migration",
+  "overview": "Overview",
+  "installation": "Installation",
   "concepts": "Concepts",
+  "migration": "Migration",
   "theming": "Theming",
   "customization": "Customization",
   "utilities": "Utilities",
