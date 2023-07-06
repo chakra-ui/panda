@@ -14,6 +14,32 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
 
   const { handleLoad, contentRef, setContentRef, iframeLoaded, isReady } = usePreview()
 
+  const srcDoc = `<!DOCTYPE html>
+  <html>
+  <head>
+    <script type="module">
+    ${previewJs}
+    ;window.panda = {
+      css,
+      cva,
+      cx,
+      token,
+      ${patternNames.map((name) => `${name},`).join('\n')}
+    };
+  </script>
+
+  <script type="module">
+
+  window.parent.postMessage({action:"getColorMode"},"*"),window.addEventListener("message",(function(e){e.data.colorMode&&function(e){switch(e){case"light":document.querySelector("html").classList.add("light"),document.querySelector("html").classList.remove("dark");break;case"dark":document.querySelector("html").classList.add("dark"),document.querySelector("html").classList.remove("light")}}(e.data.colorMode)}));
+
+</script>
+
+  </head>
+  <body>
+  
+  </body>
+  </html>`
+
   // prevent false positive for server-side rendering
   if (!isClient) {
     return null
@@ -39,28 +65,6 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
     ]
   }
 
-  const srcDoc = `<!DOCTYPE html>
-  <html>
-  <head>
-    <script type="module">
-    ${previewJs}
-    ;window.panda = {
-      css,
-      cva,
-      cx,
-      token,
-      ${patternNames.map((name) => `${name},`).join('\n')}
-    };
-  </script>
-  </head>
-  <body>
-  <script type="module">
-  window.parent.postMessage({action:"getColorMode"},"*"),window.addEventListener("message",(function(e){if(e.data.colorMode)switch(e.data.colorMode){case"light":document.querySelector("html").classList.add("light"),document.querySelector("html").classList.remove("dark");break;case"dark":document.querySelector("html").classList.add("dark"),document.querySelector("html").classList.remove("light")}}));
-</script>
-  
-  </body>
-  </html>`
-
   const defaultExportName = extractDefaultExportedFunctionName(source) ?? 'App'
   const transformed = source
     .replaceAll(/import.*/g, '')
@@ -69,7 +73,7 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
     .concat(`\nrender(<${defaultExportName} />)`)
 
   return (
-    <iframe key={srcDoc} srcDoc={srcDoc} ref={setContentRef} allow="none" width="100%" onLoad={handleLoad}>
+    <iframe srcDoc={srcDoc} ref={setContentRef} allow="none" width="100%" onLoad={handleLoad}>
       {iframeLoaded && renderContent()}
     </iframe>
   )
