@@ -1,8 +1,8 @@
 import { LiveProvider, LiveError, useLiveContext } from 'react-live-runner'
 import { useIsClient } from 'usehooks-ts'
 import { useTheme } from 'next-themes'
-import { ReactEventHandler, useReducer, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { usePreview } from '@/src/hooks/usePreview'
 
 export type PreviewProps = {
   previewCss?: string
@@ -13,28 +13,35 @@ export type PreviewProps = {
 export const Preview = ({ previewCss = '', previewJs = '', patternNames, source }: PreviewProps) => {
   const isClient = useIsClient()
   const { resolvedTheme } = useTheme()
-  const [contentRef, setContentRef] = useState<HTMLIFrameElement | null>(null)
-  const doc = contentRef?.contentWindow?.document
-  const mountNode = doc?.body
-  const insertionPoint = doc?.head
 
-  const [, forceUpdate] = useReducer((x) => x + 1, 0)
-  const updateFrame: ReactEventHandler<HTMLIFrameElement> = () => {
-    //*Reload Iframe on every rerender
-    forceUpdate()
-  }
+  const { handleLoad, doc, contentRef, setContentRef, iframeLoaded, isReady } = usePreview()
 
   // prevent false positive for server-side rendering
   if (!isClient) {
     return null
   }
 
+  function renderContent() {
+    if (!isReady) {
+      return null
+    }
+
+    const contents = (
+      <LiveProvider code={transformed} scope={(contentRef?.contentWindow as any)?.panda}>
+        <LiveError />
+        <LivePreview />
+      </LiveProvider>
+    )
+
+    return [
+      doc?.head && createPortal(<style>{previewCss}</style>, doc.head),
+      doc?.body && createPortal(contents, doc.body),
+    ]
+  }
+
   const srcDoc = `<!DOCTYPE html>
   <html>
   <head>
-  <style>
-  ${previewCss}
-  </style>
   <script>
     window.__theme = '${resolvedTheme}'
     !function(){try{var d=document.documentElement,c=d.classList;c.remove('light','dark');var e=window.__theme;if(e){c.add(e|| '')}else{c.add('dark');}if(e==='light'||e==='dark'||!e)d.style.colorScheme=e||'dark'}catch(t){}}();
@@ -68,16 +75,8 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
     .concat(`\nrender(<${defaultExportName} />)`)
 
   return (
-    <iframe key={srcDoc} srcDoc={srcDoc} ref={setContentRef} allow="none" width="100%" onLoad={updateFrame}>
-      {insertionPoint &&
-        mountNode &&
-        createPortal(
-          <LiveProvider code={transformed} scope={(contentRef?.contentWindow as any)?.panda}>
-            <LiveError />
-            <LivePreview />
-          </LiveProvider>,
-          mountNode,
-        )}
+    <iframe key={srcDoc} srcDoc={srcDoc} ref={setContentRef} allow="none" width="100%" onLoad={handleLoad}>
+      {iframeLoaded && renderContent()}
     </iframe>
   )
 }
