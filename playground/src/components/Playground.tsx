@@ -1,24 +1,14 @@
 'use client'
 import { usePanda } from '@/src/hooks/usePanda'
 import { css } from '@/styled-system/css'
-import {
-  Splitter,
-  SplitterPanel,
-  SplitterResizeTrigger,
-  TabContent,
-  TabIndicator,
-  TabList,
-  TabTrigger,
-  Tabs,
-} from '@ark-ui/react'
-import { ASTViewer } from './ASTViewer'
+import { Splitter, SplitterPanel, SplitterResizeTrigger } from '@ark-ui/react'
 import { Editor } from './Editor'
-import { GeneratedCss } from './GeneratedCss'
 import { LayoutControl } from './LayoutControl'
 import { Preview } from './Preview'
 import { Toolbar } from './Toolbar'
 import { UsePlayGroundProps, usePlayground } from '@/src/hooks/usePlayground'
 import { ColorModeSwitch } from '@/src/components/ColorModeSwitch'
+import { ArtifactsPanel } from '@/src/components/ArtifactsPanel'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const { layout, setLayout, isPristine, state, setState, share, isSharing } = usePlayground(props)
@@ -52,57 +42,32 @@ export const Playground = (props: UsePlayGroundProps) => {
       </Toolbar>
       <Splitter
         size={[
-          { id: 'editor', size: 50 },
+          { id: 'left', size: 50 },
           { id: 'preview', size: 50 },
         ]}
         orientation={layout}
         className={css({ flex: '1' })}
       >
-        <SplitterPanel id="editor" className={css({ display: 'flex', alignItems: 'stretch' })}>
-          <Editor value={state} onChange={setState} artifacts={artifacts} />
+        <SplitterPanel id="left" className={css({ display: 'flex', alignItems: 'stretch' })}>
+          <Splitter
+            size={[
+              { id: 'editor', size: 50, minSize: 5 },
+              { id: 'artifacts', size: 50 },
+            ]}
+            orientation="vertical"
+          >
+            <SplitterPanel id="editor" className={css({ display: 'flex', alignItems: 'stretch' /*  minH: '12' */ })}>
+              <Editor value={state} onChange={setState} artifacts={artifacts} />
+            </SplitterPanel>
+
+            <ArtifactsPanel panda={panda} />
+          </Splitter>
         </SplitterPanel>
-        <SplitterResizeTrigger id="editor:preview" asChild>
+        <SplitterResizeTrigger id="left:preview" asChild>
           <div className={css({ background: 'border.default', minWidth: '1px', minHeight: '1px' })} />
         </SplitterResizeTrigger>
-        <SplitterPanel id="preview" className={css({ display: 'flex', alignItems: 'stretch' })}>
-          <Tabs
-            defaultValue="preview"
-            className={css({ flex: '1', width: 'full', display: 'flex', flexDirection: 'column' })}
-          >
-            <TabList
-              className={css({
-                px: '6',
-                borderBottomWidth: '1px',
-                borderColor: 'border.default',
-                display: 'flex',
-                alignItems: 'flex-end',
-                gap: '3',
-                '& button': {
-                  py: '3',
-                  bg: 'transparent',
-                  fontWeight: 'medium',
-                  color: { base: 'gray.500', _dark: 'gray.400' },
-                  _selected: {
-                    color: { base: 'gray.900', _dark: 'white' },
-                  },
-                },
-              })}
-            >
-              <TabTrigger value="preview">Preview</TabTrigger>
-              <TabTrigger value="ast">AST</TabTrigger>
-              <TabTrigger value="generated">Generated</TabTrigger>
-              <TabIndicator className={css({ background: 'yellow.400', height: '2px', mb: '-1px' })} />
-            </TabList>
-            <TabContent value="preview" className={css({ flex: '1' })}>
-              <Preview source={state.code} previewCss={previewCss} previewJs={previewJs} patternNames={patternNames} />
-            </TabContent>
-            <TabContent value="ast" className={css({ flex: '1', minHeight: 0 })}>
-              <ASTViewer parserResult={panda.parserResult} />
-            </TabContent>
-            <TabContent value="generated" className={css({ flex: '1', minHeight: 0 })}>
-              <GeneratedCss cssArtifacts={panda.cssArtifacts} />
-            </TabContent>
-          </Tabs>
+        <SplitterPanel id="preview" className={css({ display: 'flex', flex: 'auto' })}>
+          <Preview source={state.code} previewCss={previewCss} previewJs={previewJs} patternNames={patternNames} />
         </SplitterPanel>
       </Splitter>
     </>

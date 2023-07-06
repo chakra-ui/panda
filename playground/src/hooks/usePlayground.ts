@@ -44,6 +44,9 @@ export const config = defineConfig({
     body: {
       bg: { _dark: '#2C2C2C' },
     },
+    html: {
+      h: 'full',
+    },
   },
 });    
           

@@ -1,7 +1,6 @@
 import Frame, { FrameContextConsumer } from 'react-frame-component'
 import { LiveProvider, LiveError, LivePreview } from 'react-live-runner'
 import { useIsClient } from 'usehooks-ts'
-import { Flex } from '@/styled-system/jsx'
 import { useTheme } from 'next-themes'
 
 export type PreviewProps = {
@@ -32,7 +31,7 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
 </head>
 <body>
 
-  <div></div>
+  <div style="height: 100%;"></div>
   <script type="module">
     ${previewJs}
     ;window.panda = {
@@ -54,24 +53,22 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
     .concat(`\nrender(<${defaultExportName} />)`)
 
   return (
-    <Flex align="stretch" h="full">
-      <Frame
-        key={initialContent}
-        initialContent={initialContent}
-        head={<style>{previewCss}</style>}
-        width="100%"
-        allow="none"
-      >
-        <FrameContextConsumer>
-          {({ window }) => (
-            <LiveProvider code={transformed} scope={(window as any)?.panda}>
-              <LiveError />
-              <LivePreview />
-            </LiveProvider>
-          )}
-        </FrameContextConsumer>
-      </Frame>
-    </Flex>
+    <Frame
+      key={initialContent}
+      initialContent={initialContent}
+      head={<style>{previewCss}</style>}
+      width="100%"
+      allow="none"
+    >
+      <FrameContextConsumer>
+        {({ window }) => (
+          <LiveProvider code={transformed} scope={(window as any)?.panda}>
+            <LiveError />
+            <LivePreview style={{ height: '100%' }} />
+          </LiveProvider>
+        )}
+      </FrameContextConsumer>
+    </Frame>
   )
 }
 

@@ -23,6 +23,21 @@ export default defineConfig({
                 _dark: 'rgba(255, 255, 255, 0.05)',
               },
             },
+
+            badge: {
+              value: {
+                base: 'rgb(235, 235, 235)',
+                _dark: 'rgba(255, 255, 255, 0.30)',
+              },
+            },
+          },
+          text: {
+            default: {
+              value: {
+                base: '#778597',
+                _dark: '#FFFFFF4D',
+              },
+            },
           },
         },
       },
