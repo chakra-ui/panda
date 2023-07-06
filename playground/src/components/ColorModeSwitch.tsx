@@ -1,5 +1,4 @@
 import { Moon, Sun } from '@/src/components/icons'
-import { css } from '@/styled-system/css'
 import { circle } from '@/styled-system/patterns'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'

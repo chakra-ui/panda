@@ -19,15 +19,15 @@ export default defineConfig({
           border: {
             default: {
               value: {
-                base: 'rgb(235, 235, 235)',
-                _dark: 'rgba(255, 255, 255, 0.05)',
+                base: '#EBEBEB',
+                _dark: '#FFFFFF0D',
               },
             },
 
             badge: {
               value: {
-                base: 'rgb(235, 235, 235)',
-                _dark: 'rgba(255, 255, 255, 0.30)',
+                base: '#EBEBEB',
+                _dark: '#FFFFFF4D',
               },
             },
           },
