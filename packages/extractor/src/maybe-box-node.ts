@@ -800,6 +800,12 @@ const maybeDefinitionValue = (def: Node, stack: Node[], ctx: BoxContext): BoxNod
       // since ts-evaluator will throw an error
       return box.unresolvable(def, stack)
     }
+
+    // { position = "absolute", ...props }
+    const initializer = unwrapExpression(init)
+    const innerStack = [...stack, initializer]
+    const maybeValue = maybeBoxNode(initializer, innerStack, ctx)
+    if (maybeValue) return maybeValue
   }
 }
 

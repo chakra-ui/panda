@@ -19,10 +19,12 @@ describe('extract to css output pipeline', () => {
 
       const color = "red.100";
 
-       function Button() {
+       function Button({ position = "relative", inset: aliasedInset = 0, ...props }) {
          return (
             <div marginTop="55555px">
               <div className={css({
+                position,
+                inset: aliasedInset,
                 color: "blue.100",
                 backgroundImage: \`url("https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true")\`,
                 border: "1px solid token(colors.yellow.100)",
@@ -64,7 +66,9 @@ describe('extract to css output pipeline', () => {
               "border": "1px solid token(colors.yellow.100)",
               "boxShadow": "0 0 0 4px var(--shadow)",
               "color": "blue.100",
+              "inset": 0,
               "outlineColor": "var(--colors-pink-200)",
+              "position": "relative",
             },
           ],
           "name": "css",
@@ -104,6 +108,14 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .pos_relative {
+          position: relative
+          }
+
+        .inset_0 {
+          inset: var(--spacing-0)
+          }
+
         .text_blue\\\\.100 {
           color: var(--colors-blue-100)
           }

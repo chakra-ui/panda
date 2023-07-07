@@ -206,11 +206,12 @@ var memo = (fn) => {
   return get
 }
 
-// src/hypenate.ts
-var dashCaseRegex = /[A-Z]/g
+// src/hypenate-property.ts
+var wordRegex = /([A-Z])/g
+var msRegex = /^ms-/
 var hypenateProperty = memo((property) => {
   if (property.startsWith('--')) return property
-  return property.replace(dashCaseRegex, (match) => `-${match.toLowerCase()}`)
+  return property.replace(wordRegex, '-$1').replace(msRegex, '-ms-').toLowerCase()
 })
 
 // src/normalize-html.ts
