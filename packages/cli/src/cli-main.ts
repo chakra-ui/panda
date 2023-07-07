@@ -79,7 +79,7 @@ export async function main() {
     .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (flags) => {
-      const { silent, clean, configPath, watch, poll } = flags
+      const { silent, clean, config: configPath, watch, poll } = flags
 
       const cwd = resolve(flags.cwd)
 
@@ -219,45 +219,9 @@ export async function main() {
     .option('--silent', "Don't print any logs")
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
-    .action(async (maybeGlob?: string, flags: { silent?: boolean; json?: string; cwd?: string } = {}) => {
-      const { silent } = flags
-
-      const cwd = resolve(flags.cwd!)
-
-      if (silent) {
-        logger.level = 'silent'
-      }
-
-      const ctx = await loadConfigAndCreateContext({
-        cwd,
-        config: maybeGlob ? { include: [maybeGlob] } : undefined,
-      })
-
-      const result = analyzeTokens(ctx, {
-        onResult(file) {
-          logger.info('cli', `Analyzed ${colors.bold(file)}`)
-        },
-      })
-
-      if (flags?.json && typeof flags.json === 'string') {
-        await writeAnalyzeJSON(flags.json, result, ctx)
-        logger.info('cli', `JSON report saved to ${flags.json}`)
-        return
-      }
-
-      logger.info('cli', `Found ${result.details.byId.size} token used in ${result.details.byFilePathMaps.size} files`)
-    })
-
-  cli
-    .command('debug [glob]', 'Debug design token extraction & css generated from files in glob')
-    .option('--silent', "Don't print any logs")
-    .option('--dry', 'Output debug files in stdout without writing to disk')
-    .option('--outdir [dir]', "Output directory for debug files, default to './styled-system/debug'")
-    .option('-c, --config <path>', 'Path to panda config file')
-    .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(
-      async (maybeGlob?: string, flags: { silent?: boolean; dry?: boolean; outdir?: string; cwd?: string } = {}) => {
-        const { silent, dry = false, outdir: outdirFlag } = flags ?? {}
+      async (maybeGlob?: string, flags: { silent?: boolean; json?: string; cwd?: string; config?: string } = {}) => {
+        const { silent, config: configPath } = flags
 
         const cwd = resolve(flags.cwd!)
 
@@ -268,6 +232,52 @@ export async function main() {
         const ctx = await loadConfigAndCreateContext({
           cwd,
           config: maybeGlob ? { include: [maybeGlob] } : undefined,
+          configPath,
+        })
+
+        const result = analyzeTokens(ctx, {
+          onResult(file) {
+            logger.info('cli', `Analyzed ${colors.bold(file)}`)
+          },
+        })
+
+        if (flags?.json && typeof flags.json === 'string') {
+          await writeAnalyzeJSON(flags.json, result, ctx)
+          logger.info('cli', `JSON report saved to ${flags.json}`)
+          return
+        }
+
+        logger.info(
+          'cli',
+          `Found ${result.details.byId.size} token used in ${result.details.byFilePathMaps.size} files`,
+        )
+      },
+    )
+
+  cli
+    .command('debug [glob]', 'Debug design token extraction & css generated from files in glob')
+    .option('--silent', "Don't print any logs")
+    .option('--dry', 'Output debug files in stdout without writing to disk')
+    .option('--outdir [dir]', "Output directory for debug files, default to './styled-system/debug'")
+    .option('-c, --config <path>', 'Path to panda config file')
+    .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .action(
+      async (
+        maybeGlob?: string,
+        flags: { silent?: boolean; dry?: boolean; outdir?: string; cwd?: string; config?: string } = {},
+      ) => {
+        const { silent, dry = false, outdir: outdirFlag, config: configPath } = flags ?? {}
+
+        const cwd = resolve(flags.cwd!)
+
+        if (silent) {
+          logger.level = 'silent'
+        }
+
+        const ctx = await loadConfigAndCreateContext({
+          cwd,
+          config: maybeGlob ? { include: [maybeGlob] } : undefined,
+          configPath,
         })
 
         const outdir = outdirFlag ?? join(...ctx.paths.root, 'debug')
@@ -289,9 +299,9 @@ export async function main() {
     .action(
       async (
         maybeGlob?: string,
-        flags: { silent?: boolean; minify?: boolean; outfile?: string; cwd?: string } = {},
+        flags: { silent?: boolean; minify?: boolean; outfile?: string; cwd?: string; config?: string } = {},
       ) => {
-        const { silent, outfile: outfileFlag, minify } = flags
+        const { silent, outfile: outfileFlag, minify, config: configPath } = flags
 
         const cwd = resolve(flags.cwd!)
 
@@ -302,6 +312,7 @@ export async function main() {
         const ctx = await loadConfigAndCreateContext({
           cwd,
           config: maybeGlob ? { include: [maybeGlob] } : undefined,
+          configPath,
         })
 
         const outfile = outfileFlag ?? join(...ctx.paths.root, 'panda.buildinfo.json')
