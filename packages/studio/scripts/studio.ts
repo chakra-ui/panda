@@ -1,23 +1,28 @@
 import { colors, logger } from '@pandacss/logger'
 import { execa } from 'execa'
-import { join } from 'path'
+import { join } from 'node:path'
+import { createRequire } from 'node:module'
 
 export type BuildOpts = {
   outDir: string
 }
 
-const astroBin = join(__dirname, '../node_modules/.bin/astro')
+const require = createRequire(import.meta.url)
+const astroBin = require.resolve('astro')
 const appPath = join(__dirname, '..')
 
 export async function buildStudio({ outDir }: BuildOpts) {
   process.env.ASTRO_OUT_DIR = outDir
-  const { stdout } = await execa(astroBin, ['build', '--root', appPath])
+  const { stdout } = await execa(astroBin, ['build', '--root', appPath], {
+    cwd: appPath,
+  })
   logger.log(stdout)
 }
 
 export async function serveStudio() {
   const result = execa(astroBin, ['dev', '--root', appPath], {
     stdio: 'inherit',
+    cwd: appPath,
   })
   result.stdout?.pipe(process.stdout)
   result.stderr?.pipe(process.stderr)
@@ -27,6 +32,7 @@ export async function previewStudio({ outDir }: BuildOpts) {
   process.env.ASTRO_OUT_DIR = outDir
   const result = execa(astroBin, ['preview', '--root', appPath], {
     stdio: 'inherit',
+    cwd: appPath,
   })
   result.stdout?.pipe(process.stdout)
   result.stderr?.pipe(process.stderr)
