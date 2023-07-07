@@ -5630,3 +5630,41 @@ it('resolves shorthands identifier ShorthandPropertyAssignment', () => {
     }
   `)
 })
+
+it('resolves identifier pointing to default value on parameters JsxExpression > Identifier > BindingElement > StringLiteral', () => {
+  expect(
+    extractFromCode(
+      `import { styled, HTMLStyledProps } from "../styled-system/jsx";
+
+      type PositionedProps = HTMLStyledProps<"div">;
+
+      export const Positioned: React.FC<PositionedProps> = ({
+        children,
+        position = "absolute",
+        inset = 0,
+        ...rest
+      }) => (
+        <styled.div position={position} inset={inset} {...rest}>
+          {children}
+        </styled.div>
+      );
+
+      export default Positioned;
+      `,
+      { tagNameList: ['styled.div'] },
+    ),
+  ).toMatchInlineSnapshot(`
+    {
+      "styled.div": [
+        {
+          "conditions": [],
+          "raw": {
+            "inset": 0,
+            "position": "absolute",
+          },
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})
