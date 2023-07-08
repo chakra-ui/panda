@@ -1,9 +1,33 @@
 import type { UtilityConfig } from '@pandacss/types'
 
+const createTransition = (value: string) => ({
+  transitionProperty: `var(--transition-prop, ${value})`,
+  transitionTimingFunction: 'var(--transition-easing, cubic-bezier(0.4, 0, 0.2, 1))',
+  transitionDuration: 'var(--transition-duration, 150ms)',
+})
+
+const transitionMap: Record<string, any> = {
+  all: createTransition('all'),
+  common: createTransition(
+    'color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter',
+  ),
+  background: createTransition('background, background-color'),
+  colors: createTransition('color, background-color, border-color, outline-color, text-decoration-color, fill, stroke'),
+  opacity: createTransition('opacity'),
+  shadow: createTransition('box-shadow'),
+  transform: createTransition('transform'),
+}
+
 export const transitions: UtilityConfig = {
   transitionTimingFunction: {
     className: 'ease',
     values: 'easings',
+    transform(value: string) {
+      return {
+        '--transition-easing': value,
+        transitionTimingFunction: value,
+      }
+    },
   },
   transitionDelay: {
     className: 'delay',
@@ -12,18 +36,27 @@ export const transitions: UtilityConfig = {
   transitionDuration: {
     className: 'duration',
     values: 'durations',
+    transform(value: string) {
+      return {
+        '--transition-duration': value,
+        transitionDuration: value,
+      }
+    },
   },
   transitionProperty: {
     className: 'transition',
-    values: {
-      all: 'all',
-      none: 'none',
-      opacity: 'opacity',
-      shadow: 'box-shadow',
-      transform: 'transform',
-      base: 'color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter',
-      background: 'background, background-color',
-      colors: 'color, background-color, border-color, outline-color, text-decoration-color, fill, stroke',
+    transform(value) {
+      return {
+        '--transition-prop': value,
+        transitionProperty: value,
+      }
+    },
+  },
+  transition: {
+    className: 'transition',
+    values: Object.keys(transitionMap),
+    transform(value: string) {
+      return transitionMap[value] ?? { transition: value }
     },
   },
   animation: {

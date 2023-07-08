@@ -211,6 +211,7 @@ const classNameMap = {
   transitionDelay: 'delay',
   transitionDuration: 'duration',
   transitionProperty: 'transition',
+  transition: 'transition',
   animation: 'animation',
   animationDelay: 'animation-delay',
   transformOrigin: 'origin',

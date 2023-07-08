@@ -294,6 +294,7 @@ var userGenerated = [
   'transitionDelay',
   'transitionDuration',
   'transitionProperty',
+  'transition',
   'animation',
   'animationDelay',
   'transformOrigin',
