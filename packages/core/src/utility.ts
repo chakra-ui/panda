@@ -151,7 +151,7 @@ export class Utility {
   /**
    * Get all the possible values for the defined property
    */
-  private getPropertyValues = (config: PropertyConfig, resolveFn?: (key: string) => string) => {
+  public getPropertyValues = (config: PropertyConfig, resolveFn?: (key: string) => string) => {
     const { values } = config
 
     // convert `theme('spacing') => Tokens["spacing"]` to avoid too much type values

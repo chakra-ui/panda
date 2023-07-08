@@ -12,16 +12,30 @@ const withNextra = nextra({
 })
 
 export default withNextra({
+  async redirects() {
+    return [
+      {
+        source: '/(docs|docs/getting-started)',
+        destination: '/docs/overview/getting-started',
+        permanent: true
+      },
+      {
+        source: '/discord',
+        destination: 'https://discord.gg/VQrkpsgSx7',
+        permanent: true
+      },
+      {
+        source: '/play',
+        destination: 'https://play.panda-css.com',
+        permanent: true
+      }
+    ]
+  },
   reactStrictMode: true,
   swcMinify: true,
   images: {
     domains: ['images.unsplash.com']
   }
-  // Other Next.js configurations
-  // i18n: {
-  //   locales: ["default", "en", "de"],
-  //   defaultLocale: "default",
-  // },
 })
 
 process.on('unhandledRejection', error => {

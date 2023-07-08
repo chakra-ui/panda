@@ -70,7 +70,7 @@ function App() {
 }
 ```
 
-> If your framework doesn't support PostCSS, you can use the [Panda CLI](/docs/getting-started/cli)
+> If your framework doesn't support PostCSS, you can use the [Panda CLI](/docs/installation/cli)
 
 ### Token generator
 

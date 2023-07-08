@@ -10,8 +10,15 @@ export const generateStaticCss = (ctx: Context) => {
 
   const results = fn({
     breakpoints: Object.keys(theme.breakpoints ?? {}),
-    getPropertyKeys: (prop: string) =>
-      utility.getPropertyKeys(prop).filter((key) => !key.startsWith('type:') && !key.startsWith('CssProperties:')),
+    getPropertyKeys: (prop: string) => {
+      const propConfig = utility.config[prop]
+      if (!propConfig) return []
+
+      const values = utility.getPropertyValues(propConfig)
+      if (!values) return []
+
+      return Object.keys(values)
+    },
     getRecipeKeys: (recipe) => recipes.details.find((detail) => detail.config.name === recipe)?.variantKeyMap ?? {},
   })
 

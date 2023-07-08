@@ -19,10 +19,12 @@ describe('extract to css output pipeline', () => {
 
       const color = "red.100";
 
-       function Button() {
+       function Button({ position = "relative", inset: aliasedInset = 0, ...props }) {
          return (
             <div marginTop="55555px">
               <div className={css({
+                position,
+                inset: aliasedInset,
                 color: "blue.100",
                 backgroundImage: \`url("https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/media/logo-colored@2x.png?raw=true")\`,
                 border: "1px solid token(colors.yellow.100)",
@@ -64,7 +66,9 @@ describe('extract to css output pipeline', () => {
               "border": "1px solid token(colors.yellow.100)",
               "boxShadow": "0 0 0 4px var(--shadow)",
               "color": "blue.100",
+              "inset": 0,
               "outlineColor": "var(--colors-pink-200)",
+              "position": "relative",
             },
           ],
           "name": "css",
@@ -104,6 +108,14 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .pos_relative {
+          position: relative
+          }
+
+        .inset_0 {
+          inset: var(--spacing-0)
+          }
+
         .text_blue\\\\.100 {
           color: var(--colors-blue-100)
           }
@@ -175,6 +187,132 @@ describe('extract to css output pipeline', () => {
             padding: var(--spacing-4)
           }
               }
+      }"
+    `)
+  })
+
+  test('multiple recipes on 1 component', () => {
+    const code = `
+    import { button, pinkRecipe, greenRecipe, blueRecipe } from ".panda/recipes"
+
+    const ComponentWithMultipleRecipes = ({ variant }) => {
+      return <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }))}>Hello</button>
+    }
+
+
+    export default function Page() {
+      return (
+        <>
+          <ComponentWithMultipleRecipes variant="sm" />
+        </>
+      )
+    }
+     `
+    const result = run(code, (conf) => ({
+      ...conf,
+      theme: {
+        recipes: {
+          pinkRecipe: {
+            name: 'pinkRecipe',
+            jsx: ['ComponentWithMultipleRecipes'],
+            base: { color: 'pink.100' },
+            variants: {
+              variant: {
+                small: { fontSize: 'sm' },
+              },
+            },
+          },
+          greenRecipe: {
+            name: 'greenRecipe',
+            jsx: ['ComponentWithMultipleRecipes'],
+            base: { color: 'green.100' },
+            variants: {
+              variant: {
+                small: { fontSize: 'sm' },
+              },
+            },
+          },
+          blueRecipe: {
+            name: 'blueRecipe',
+            jsx: ['ComponentWithMultipleRecipes'],
+            base: { color: 'blue.100' },
+            variants: {
+              variant: {
+                small: { fontSize: 'sm' },
+              },
+            },
+          },
+        },
+      },
+    }))
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "pinkRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "variant": "sm",
+            },
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "greenRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "variant": "sm",
+            },
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "blueRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "variant": "sm",
+            },
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer _base {
+          .pinkRecipe {
+            color: pink.100
+              }
+
+          .greenRecipe {
+            color: green.100
+              }
+
+          .blueRecipe {
+            color: blue.100
+              }
+          }
       }"
     `)
   })

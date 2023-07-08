@@ -35,8 +35,7 @@ export type ParserOptions = {
     nodes: ParserNodeOptions[]
     isStyleProp: (prop: string) => boolean
   }
-  getRecipeName: (tagName: string) => string
-  getRecipeByName: (name: string) => RecipeConfig | undefined
+  getRecipesByJsxName: (jsxName: string) => RecipeConfig[]
 }
 
 // create strict regex from array of strings
@@ -67,7 +66,7 @@ type EvalOptions = ReturnType<GetEvaluateOptions>
 const defaultEnv: EvalOptions['environment'] = { preset: 'NONE' }
 
 export function createParser(options: ParserOptions) {
-  const { jsx, importMap, getRecipeByName } = options
+  const { jsx, importMap, getRecipesByJsxName } = options
 
   // Create regex for each import map
   const importRegex = [
@@ -163,7 +162,6 @@ export function createParser(options: ParserOptions) {
       })
     }
 
-    const getRecipeName = memo(options.getRecipeName)
     const isJsxTagRecipe = memo(
       (tagName: string) =>
         recipeJsxLists.string.has(tagName) || recipeJsxLists.regex.some((regex) => regex.test(tagName)),
@@ -185,8 +183,8 @@ export function createParser(options: ParserOptions) {
         return true
 
       if (isJsxTagRecipe(tagName)) {
-        const recipe = getRecipeByName(getRecipeName(tagName))
-        return recipe != null && !!recipePropertiesByName.get(recipe.name)?.has(propName)
+        const recipeList = getRecipesByJsxName(tagName)
+        return recipeList.some((recipe) => recipePropertiesByName.get(recipe.name)?.has(propName))
       }
 
       return false
@@ -357,7 +355,10 @@ export function createParser(options: ParserOptions) {
               },
             )
             .when(isJsxTagRecipe, (name) => {
-              collector.setRecipe(getRecipeName(name), { type: 'jsx-recipe', name, box: query.box, data })
+              const recipeList = getRecipesByJsxName(name)
+              recipeList.map((recipe) => {
+                collector.setRecipe(recipe.name, { type: 'jsx-recipe', name, box: query.box, data })
+              })
             })
             .otherwise(() => {
               collector.setJsx({ name, box: query.box, type: 'jsx', data })
