@@ -3,4 +3,4 @@
 '@pandacss/core': patch
 ---
 
-Fix staticCss not generating all variants in the array of `css` rules
+Fix issue where `staticCss` did not generate all variants in the array of `css` rules

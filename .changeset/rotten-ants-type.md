@@ -2,4 +2,4 @@
 '@pandacss/dev': patch
 ---
 
-Fix CLI --config argument for cssgen/ship/analyze/debug commands
+Fix issue where `--config` flag doesn't work for most commands.

@@ -4,4 +4,4 @@
 '@pandacss/core': patch
 ---
 
-Refactor parser to support extracting css prop in JSX elements correctly.
+Refactor parser to support extracting `css` prop in JSX elements correctly.
