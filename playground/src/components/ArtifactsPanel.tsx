@@ -1,6 +1,6 @@
 import React from 'react'
 import { css, cva } from '@/styled-system/css'
-import { panda, Flex, Stack } from '@/styled-system/jsx'
+import { panda, Flex } from '@/styled-system/jsx'
 import {
   Segment,
   SegmentControl,
@@ -128,11 +128,9 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
             <ChevronUpIcon />
           </panda.span>
         </Flex>
-        <Stack flex="auto">
-          {activeTab === 'ast' && <ASTViewer parserResult={props.panda.parserResult} />}
-          {/* Using visible cause it's better to let the monaco editor be loader with the others */}
-          <GeneratedCss cssArtifacts={props.panda.cssArtifacts} visible={activeTab === 'generated' && open} />
-        </Stack>
+        {activeTab === 'ast' && <ASTViewer parserResult={props.panda.parserResult} />}
+        {/* Using visible cause it's better to let the monaco editor be loader with the others */}
+        <GeneratedCss cssArtifacts={props.panda.cssArtifacts} visible={activeTab === 'generated' && open} />
       </SplitterPanel>
     </>
   )
@@ -144,7 +142,6 @@ const artifactsPanel = cva({
     minH: '12',
     background: { _dark: '#262626' },
     zIndex: '3',
-    transition: 'flex-grow .2s ease-out',
   },
   variants: {
     open: {
