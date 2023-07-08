@@ -18,23 +18,22 @@ export const nextraTabsRecipe = defineRecipe({
       display: 'flex',
       w: 'max',
       minW: 'full',
-      borderBottom: '1px solid token(colors.neutral.200)',
+      borderBottomWidth: '1px',
+      borderColor: 'neutral.200',
       pb: '1px',
-      _dark: {
-        borderColor: 'neutral.800'
-      }
+      _dark: { borderColor: 'neutral.800' }
     },
     trigger: {
       roundedTop: 'md',
       p: '2',
       fontWeight: 'medium',
       lineHeight: '1.25rem',
-      transitionProperty: 'colors',
+      transition: 'colors',
       whiteSpace: 'nowrap',
       me: '2',
       mb: '-0.5',
       userSelect: 'none',
-      borderBottom: '2px solid',
+      borderBottomWidth: '2px',
       borderColor: 'transparent',
       _hover: {
         borderColor: 'neutral.200'

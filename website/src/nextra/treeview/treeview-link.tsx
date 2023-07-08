@@ -8,7 +8,7 @@ export const threeViewLinkStyle = cva({
     px: 2,
     py: 1.5,
     textStyle: 'sm',
-    transitionProperty: 'colors',
+    transition: 'colors',
     wordBreak: 'break-word',
     cursor: 'pointer',
     WebkitTapHighlightColor: 'transparent',
@@ -64,8 +64,6 @@ export const threeViewLinkStyle = cva({
   }
 })
 
-export type TreeViewLinkVariants = RecipeVariantProps<
-  typeof threeViewLinkStyle
->
+export type TreeViewLinkVariants = RecipeVariantProps<typeof threeViewLinkStyle>
 
 export const TreeViewLink = panda('a', threeViewLinkStyle)

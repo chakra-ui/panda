@@ -44,7 +44,7 @@ export const transitions: UtilityConfig = {
     },
   },
   transitionProperty: {
-    className: 'transition',
+    className: 'transition-prop',
     transform(value) {
       return {
         '--transition-prop': value,

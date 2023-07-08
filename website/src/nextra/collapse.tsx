@@ -65,7 +65,7 @@ export const Collapse = (props: Props) => {
         overflow: 'hidden',
         transition: 'all',
         _motionReduce: {
-          transitionProperty: 'none'
+          transition: 'none'
         }
       })}
       style={initialOpen.current || horizontal ? undefined : { height: 0 }}
@@ -75,16 +75,15 @@ export const Collapse = (props: Props) => {
         data-open={isOpen}
         className={cx(
           css({
-            transitionProperty: 'opacity',
             transition: 'opacity 500ms ease-in-out',
             _motionReduce: {
-              transitionProperty: 'none'
+              transition: 'none'
             },
             '&[data-open="false"]': {
-              opacity: 0,
+              opacity: 0
             },
             '&[data-open="true"]': {
-              opacity: 1,
+              opacity: 1
             }
           }),
           className

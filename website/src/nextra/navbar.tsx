@@ -112,7 +112,7 @@ function NavbarMenu({ className, menu, children }: NavMenuProps) {
                           _hover: { color: 'gray.100' }
                         },
                         py: 1.5,
-                        transitionProperty: 'color',
+                        transition: 'colors',
                         ps: '3',
                         pe: '9'
                       })
@@ -188,7 +188,7 @@ export function Navbar({ flatDirectories, items }: NavBarProps) {
                   data-part="menu-link-icon"
                   pathClassName={css({
                     transformOrigin: 'center',
-                    transitionProperty: 'transform',
+                    transition: 'transform',
                     transform: 'rotate(0deg)'
                   })}
                 />

@@ -2,7 +2,7 @@ import { cva, cx } from '@/styled-system/css'
 
 const styles = cva({
   base: {
-    transitionProperty: 'opacity',
+    transition: 'opacity',
     position: 'absolute',
     my: '1.5',
     userSelect: 'none',

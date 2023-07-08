@@ -210,7 +210,7 @@ const classNameMap = {
   transitionTimingFunction: 'ease',
   transitionDelay: 'delay',
   transitionDuration: 'duration',
-  transitionProperty: 'transition',
+  transitionProperty: 'transition-prop',
   transition: 'transition',
   animation: 'animation',
   animationDelay: 'animation-delay',

@@ -6,16 +6,16 @@ const styles = css({
   alignItems: 'center',
   cursor: 'pointer',
   listStyle: 'none',
-  p: 1,
-  transitionProperty: 'colors',
+  p: '1',
+  transition: 'colors',
   _hover: {
     bg: 'gray.100',
     _dark: { bg: 'neutral.800' }
   },
   _before: {
-    mr: 1,
+    mr: '1',
     display: 'inline-block',
-    transitionProperty: 'transform',
+    transition: 'transform',
     content: "''",
     _dark: { filter: 'invert(1)' }
   },

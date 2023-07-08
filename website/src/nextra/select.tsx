@@ -41,7 +41,7 @@ export function Select({
             fontSize: 'xs',
             fontWeight: 'medium',
             color: 'gray.600',
-            transitionProperty: 'colors',
+            transition: 'colors',
             _dark: { color: 'gray.400' },
             _expanded: {
               bg: 'gray.200',
@@ -107,7 +107,7 @@ export function Select({
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
                   py: 1.5,
-                  transitionProperty: 'colors',
+                  transition: 'colors',
                   ps: '3',
                   pe: '9'
                 })}
