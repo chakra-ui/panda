@@ -1,5 +1,21 @@
 # @pandacss/extractor
 
+## 0.6.0
+
+### Patch Changes
+
+- 21295f2e: Resolve identifier default value from parameter, code like `position` and `inset` here:
+
+  ```tsx
+  export const Positioned: React.FC<PositionedProps> = ({ children, position = 'absolute', inset = 0, ...rest }) => (
+    <styled.div position={position} inset={inset} {...rest}>
+      {children}
+    </styled.div>
+  )
+  ```
+
+  - @pandacss/logger@0.6.0
+
 ## 0.5.1
 
 ### Patch Changes
