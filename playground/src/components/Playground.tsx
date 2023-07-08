@@ -9,6 +9,7 @@ import { Toolbar } from './Toolbar'
 import { UsePlayGroundProps, usePlayground } from '@/src/hooks/usePlayground'
 import { ColorModeSwitch } from '@/src/components/ColorModeSwitch'
 import { ArtifactsPanel } from '@/src/components/ArtifactsPanel'
+import { splitter } from '@/styled-system/recipes'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const { layout, setLayout, isPristine, state, setState, share, isSharing } = usePlayground(props)
@@ -46,17 +47,18 @@ export const Playground = (props: UsePlayGroundProps) => {
           { id: 'preview', size: 50 },
         ]}
         orientation={layout}
-        className={css({ flex: '1' })}
+        className={splitter()}
       >
-        <SplitterPanel id="left" className={css({ display: 'flex', alignItems: 'stretch' })}>
+        <SplitterPanel id="left">
           <Splitter
             size={[
               { id: 'editor', size: 50, minSize: 5 },
               { id: 'artifacts', size: 50 },
             ]}
             orientation="vertical"
+            className={splitter()}
           >
-            <SplitterPanel id="editor" className={css({ display: 'flex', alignItems: 'stretch' /*  minH: '12' */ })}>
+            <SplitterPanel id="editor">
               <Editor value={state} onChange={setState} artifacts={artifacts} />
             </SplitterPanel>
 
@@ -64,9 +66,9 @@ export const Playground = (props: UsePlayGroundProps) => {
           </Splitter>
         </SplitterPanel>
         <SplitterResizeTrigger id="left:preview" asChild>
-          <div className={css({ background: 'border.default', minWidth: '2px', minHeight: '2px' })} />
+          <div />
         </SplitterResizeTrigger>
-        <SplitterPanel id="preview" className={css({ display: 'flex', flex: 'auto' })}>
+        <SplitterPanel id="preview">
           <Preview source={state.code} previewCss={previewCss} previewJs={previewJs} patternNames={patternNames} />
         </SplitterPanel>
       </Splitter>

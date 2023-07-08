@@ -46,16 +46,7 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
   return (
     <>
       <SplitterResizeTrigger id="editor:artifacts" asChild hidden={!open}>
-        <div
-          className={css({
-            background: 'border.default',
-            minWidth: '1px',
-            minHeight: '2px',
-            '&[hidden]': {
-              display: 'none',
-            },
-          })}
-        />
+        <div />
       </SplitterResizeTrigger>
       <SplitterPanel id="artifacts" className={artifactsPanel({ open })}>
         <Flex
@@ -132,7 +123,7 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
             data-expanded={open ? '' : undefined}
             transform={{ _expanded: 'rotate(180deg)' }}
             transition="all .2s ease"
-            color={{ _expanded: 'primary' }}
+            color={{ _expanded: { _dark: 'primary' } }}
           >
             <ChevronUpIcon />
           </panda.span>
@@ -149,13 +140,11 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
 
 const artifactsPanel = cva({
   base: {
-    display: 'flex',
     flexDir: 'column',
-    alignItems: 'stretch',
     minH: '12',
-    flex: 'auto',
     background: { _dark: '#262626' },
     zIndex: '3',
+    transition: 'flex-grow .2s ease-out',
   },
   variants: {
     open: {
