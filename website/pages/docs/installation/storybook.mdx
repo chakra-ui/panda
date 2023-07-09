@@ -60,6 +60,20 @@ Install panda and create your `panda.config.ts` file.
   </Tab>
 </Tabs>
 
+> If you are using Storybook with the Vite builder, you will have to update your
+> PostCSS config file to use the array syntax for the plugins instead of the
+> object syntax.
+> Simply change `postcss.config.[c]js`:
+>
+> ```diff {3} filename="postcss.config.js"
+> module.exports = {
+> -  plugins: {
+> -   '@pandacss/dev/postcss': {}
+> -  }
+> +  plugins: [require('@pandacss/dev/postcss')()]
+> }
+> ```
+
 ### Update package.json scripts
 
   Open your `package.json` file and update the `scripts` section as follows:
