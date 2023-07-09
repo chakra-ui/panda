@@ -24,7 +24,7 @@ export const splitter = defineRecipe({
         position: 'absolute',
         top: 0,
         left: 0,
-        zIndex: 3,
+        zIndex: 4,
       },
 
       _vertical: {
