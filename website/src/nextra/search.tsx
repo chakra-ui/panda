@@ -203,7 +203,7 @@ export function Search({
         className={css({
           opacity: renderList ? '1' : '0',
           pointerEvents: renderList ? 'auto' : 'none',
-          transitionProperty: 'opacity'
+          transition: 'opacity'
         })}
       >
         <ul

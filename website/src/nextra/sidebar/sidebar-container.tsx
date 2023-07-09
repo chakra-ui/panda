@@ -8,7 +8,7 @@ const sidebarContainerStyles = cva({
     flexDirection: 'column',
     smDown: {
       _motionReduce: {
-        transitionProperty: 'none'
+        transition: 'none'
       },
       position: 'fixed',
       pt: 'var(--nextra-navbar-height)',
@@ -34,7 +34,7 @@ const sidebarContainerStyles = cva({
       }
     },
     transform: 'translate3d(0,0,0)',
-    transitionProperty: 'all',
+    transition: 'all',
     _print: {
       display: 'none'
     }

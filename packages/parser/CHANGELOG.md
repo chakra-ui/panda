@@ -1,5 +1,67 @@
 # @pandacss/parser
 
+## 0.6.0
+
+### Patch Changes
+
+- 5bd88c41: Fix JSX recipe extraction when multiple recipes were used on the same component, ex:
+
+  ```tsx
+  const ComponentWithMultipleRecipes = ({ variant }) => {
+    return (
+      <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }))}>Hello</button>
+    )
+  }
+  ```
+
+  Given a `panda.config.ts` with recipes each including a common `jsx` tag name, such as:
+
+  ```ts
+  recipes: {
+      pinkRecipe: {
+          name: 'pinkRecipe',
+          jsx: ['ComponentWithMultipleRecipes'],
+          base: { color: 'pink.100' },
+          variants: {
+              variant: {
+              small: { fontSize: 'sm' },
+              },
+          },
+      },
+      greenRecipe: {
+          name: 'greenRecipe',
+          jsx: ['ComponentWithMultipleRecipes'],
+          base: { color: 'green.100' },
+          variants: {
+              variant: {
+              small: { fontSize: 'sm' },
+              },
+          },
+      },
+      blueRecipe: {
+          name: 'blueRecipe',
+          jsx: ['ComponentWithMultipleRecipes'],
+          base: { color: 'blue.100' },
+          variants: {
+              variant: {
+              small: { fontSize: 'sm' },
+              },
+          },
+      },
+  },
+  ```
+
+  Only the first matching recipe would be noticed and have its CSS generated, now this will properly generate the CSS
+  for each of them
+
+- b50675ca: Refactor parser to support extracting `css` prop in JSX elements correctly.
+- Updated dependencies [21295f2e]
+  - @pandacss/extractor@0.6.0
+  - @pandacss/types@0.6.0
+  - @pandacss/is-valid-prop@0.6.0
+  - @pandacss/logger@0.6.0
+  - @pandacss/shared@0.6.0
+
 ## 0.5.1
 
 ### Patch Changes

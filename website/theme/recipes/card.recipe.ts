@@ -17,13 +17,13 @@ export const cardRecipe = defineRecipe({
         justifyContent: 'flex-start',
         overflow: 'hidden',
         borderRadius: 'lg',
-        border: '1px solid token(colors.gray.200)',
+        borderWidth: '1px',
+        borderColor: 'gray.200',
         color: 'currentColor',
         textDecorationLine: 'none',
         boxShadow: 'md',
         boxShadowColor: 'gray.100',
-        transitionProperty: 'all',
-        transitionDuration: '200ms',
+        transition: 'all',
         _hover: {
           boxShadowColor: 'gray.100',
           borderColor: 'gray.300'
@@ -70,9 +70,9 @@ export const cardRecipe = defineRecipe({
         width: '33px',
         height: '33px',
         border: '4px solid white',
-        backgroundColor: 'gray.100',
+        bg: 'gray.100',
         _dark: {
-          backgroundColor: 'neutral.800'
+          bg: 'neutral.800'
         },
         borderRadius: '9999px',
         color: 'neutral.400',
@@ -95,7 +95,7 @@ export const cardRecipe = defineRecipe({
             borderColor: 'neutral.800',
             _hover: {
               borderColor: 'neutral.700',
-              backgroundColor: 'neutral.900'
+              bg: 'neutral.900'
             }
           },
           _hover: {
@@ -116,11 +116,11 @@ export const cardRecipe = defineRecipe({
           boxShadow: 'md',
           _dark: {
             borderColor: 'neutral.700',
-            backgroundColor: 'gray.100',
+            bg: 'gray.100',
             color: 'gray.50',
             _hover: {
               borderColor: 'neutral.500',
-              backgroundColor: 'neutral.700'
+              bg: 'neutral.700'
             }
           },
           _hover: {

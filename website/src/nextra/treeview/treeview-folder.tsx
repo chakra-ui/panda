@@ -24,7 +24,7 @@ const arrowRightIconStyles = css({
   p: '0.5',
   '& path': {
     transformOrigin: 'center',
-    transitionProperty: 'transform',
+    transition: 'transform',
     _rtl: {
       transform: 'rotate(-180deg)'
     }

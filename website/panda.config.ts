@@ -20,19 +20,6 @@ export default defineConfig({
   outdir: 'styled-system',
   jsxFramework: 'react',
   jsxFactory: 'panda',
-  utilities: {
-    extend: {
-      transitionProperty: {
-        transform(value) {
-          return {
-            transitionProperty: value,
-            transitionDuration: '.15s',
-            transitionTimingFunction: 'cubic-bezier(.4,0,.2,1)'
-          }
-        }
-      }
-    }
-  },
   conditions: {
     extend: {
       dark: '.dark &, [data-theme="dark"] &',

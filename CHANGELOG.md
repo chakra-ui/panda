@@ -6,6 +6,27 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [0.6.0] - 2023-07-08
+
+### Fixed
+
+- Fix type issue with the `definePattern` function
+- Fix issue where `panda cssgen --outfile` doesn't extract files to chunks before bundling them into the css out file
+- Fix issue where `gridRows` has the wrong `className`
+- Fix issue where `gridItem` pattern did not use the `colStart` and `rowStart` values
+- Fix issue where unitless grid properties were converted to pixel values
+- Fix issue where `_even` and `_odd` map to incorrect selectors
+- Fix issue where `--config` flag doesn't work for most commands.
+- Fix issue where `css` prop was not extracted correctly in JSX elements
+
+### Added
+
+- Add negative fraction values to `translateX` and `translateY` utilities
+- Export `isCssProperty` helper function from `styled-system/jsx` entrypoint
+- Add support for using multiple config rcipes in the same component
+
+### Changed
+
 ## [0.5.1] - 2023-07-02
 
 ### Fixed

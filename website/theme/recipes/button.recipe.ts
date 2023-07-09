@@ -17,7 +17,7 @@ export const buttonRecipe = defineRecipe({
     border: '3px solid var(--border-color, black)',
     boxShadow: '4px 4px 0px 0px var(--shadow-color, black)',
     borderRadius: '13px',
-    transitionProperty: 'all',
+    transition: 'all',
     '&:is(a, button)': {
       _hover: {
         boxShadow: '6px 6px 0px 0px var(--shadow-color, black)'

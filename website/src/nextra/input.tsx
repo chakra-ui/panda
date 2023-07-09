@@ -19,7 +19,7 @@ const styles = {
     rounded: 'lg',
     px: 3,
     py: 2,
-    transitionProperty: 'colors',
+    transition: 'colors',
     textStyle: 'md',
     lineHeight: 'tight',
     md: {

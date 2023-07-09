@@ -1,5 +1,25 @@
 # @pandacss/dev
 
+## 0.6.0
+
+### Patch Changes
+
+- 21f1326b: Fix issue where `--config` flag doesn't work for most commands.
+- Updated dependencies [032c152a]
+- Updated dependencies [239fe41a]
+- Updated dependencies [76419e3e]
+  - @pandacss/node@0.6.0
+  - @pandacss/studio@0.6.0
+  - @pandacss/postcss@0.6.0
+  - @pandacss/config@0.6.0
+  - @pandacss/types@0.6.0
+  - @pandacss/astro@0.6.0
+  - @pandacss/token-dictionary@0.6.0
+  - @pandacss/error@0.6.0
+  - @pandacss/logger@0.6.0
+  - @pandacss/preset-panda@0.6.0
+  - @pandacss/shared@0.6.0
+
 ## 0.5.1
 
 ### Patch Changes

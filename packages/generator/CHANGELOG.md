@@ -1,5 +1,88 @@
 # @pandacss/generator
 
+## 0.6.0
+
+### Patch Changes
+
+- cd912f35: Fix `definePattern` module overriden type, was missing an `extends` constraint which lead to a type error:
+
+  ```
+  styled-system/types/global.d.ts:14:58 - error TS2344: Type 'T' does not satisfy the constraint 'PatternProperties'.
+
+  14   export function definePattern<T>(config: PatternConfig<T>): PatternConfig
+                                                              ~
+
+    styled-system/types/global.d.ts:14:33
+      14   export function definePattern<T>(config: PatternConfig<T>): PatternConfig
+                                         ~
+      This type parameter might need an `extends PatternProperties` constraint.
+
+  ```
+
+- dc4e80f7: Export `isCssProperty` helper function from styled-system/jsx
+- 5bd88c41: Fix JSX recipe extraction when multiple recipes were used on the same component, ex:
+
+  ```tsx
+  const ComponentWithMultipleRecipes = ({ variant }) => {
+    return (
+      <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }))}>Hello</button>
+    )
+  }
+  ```
+
+  Given a `panda.config.ts` with recipes each including a common `jsx` tag name, such as:
+
+  ```ts
+  recipes: {
+      pinkRecipe: {
+          name: 'pinkRecipe',
+          jsx: ['ComponentWithMultipleRecipes'],
+          base: { color: 'pink.100' },
+          variants: {
+              variant: {
+              small: { fontSize: 'sm' },
+              },
+          },
+      },
+      greenRecipe: {
+          name: 'greenRecipe',
+          jsx: ['ComponentWithMultipleRecipes'],
+          base: { color: 'green.100' },
+          variants: {
+              variant: {
+              small: { fontSize: 'sm' },
+              },
+          },
+      },
+      blueRecipe: {
+          name: 'blueRecipe',
+          jsx: ['ComponentWithMultipleRecipes'],
+          base: { color: 'blue.100' },
+          variants: {
+              variant: {
+              small: { fontSize: 'sm' },
+              },
+          },
+      },
+  },
+  ```
+
+  Only the first matching recipe would be noticed and have its CSS generated, now this will properly generate the CSS
+  for each of them
+
+- ef1dd676: Fix issue where `staticCss` did not generate all variants in the array of `css` rules
+- b50675ca: Refactor parser to support extracting `css` prop in JSX elements correctly.
+- Updated dependencies [12c900ee]
+- Updated dependencies [5bd88c41]
+- Updated dependencies [ef1dd676]
+- Updated dependencies [b50675ca]
+  - @pandacss/core@0.6.0
+  - @pandacss/types@0.6.0
+  - @pandacss/token-dictionary@0.6.0
+  - @pandacss/is-valid-prop@0.6.0
+  - @pandacss/logger@0.6.0
+  - @pandacss/shared@0.6.0
+
 ## 0.5.1
 
 ### Patch Changes

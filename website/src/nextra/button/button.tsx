@@ -8,8 +8,7 @@ export const buttonStyles = cva({
     lineHeight: '1.2',
     borderRadius: 'md',
     fontWeight: 'semibold',
-    transitionProperty: 'common',
-    transitionDuration: 'normal',
+    transition: 'common',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -25,7 +24,7 @@ export const buttonStyles = cva({
       _disabled: {
         bg: 'initial'
       }
-    },
+    }
   },
   variants: {
     variant: {
@@ -89,28 +88,28 @@ export const buttonStyles = cva({
         minW: 12,
         fontSize: 'lg',
         px: 6,
-        gap: 2,
+        gap: 2
       },
       md: {
         h: 10,
         minW: 10,
         fontSize: 'md',
         px: 4,
-        gap: 2,
+        gap: 2
       },
       sm: {
         h: 8,
         minW: 8,
         fontSize: 'sm',
         px: 3,
-        gap: 2,
+        gap: 2
       },
       xs: {
         h: 7,
         minW: 6,
         fontSize: 'xs',
         px: 2,
-        gap: 2,
+        gap: 2
       }
     }
   },
