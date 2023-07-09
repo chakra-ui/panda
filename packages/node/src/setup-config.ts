@@ -13,7 +13,7 @@ type SetupOptions = Partial<Config> & {
 }
 
 export async function setupConfig(cwd: string, opts: SetupOptions = {}) {
-  const { force, outExtension, jsxFramework, syntax } = opts
+  const { force, outExtension, jsxFramework, syntax, gitignore } = opts
 
   const configFile = findConfig()
 
@@ -51,6 +51,9 @@ export default defineConfig({
     outdir: "styled-system",
     ${jsxFramework ? `\n // The JSX framework to use\njsxFramework: '${jsxFramework}'` : ''}
     ${syntax ? `\n // The CSS Syntax to use to use\nsyntax: '${syntax}'` : ''}
+
+    // Whether to update the .gitignore file.
+    gitignore: ${gitignore}
 })
     `
 

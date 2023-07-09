@@ -40,7 +40,7 @@ export async function main() {
     .option('--jsx-framework <framework>', 'The jsx framework to use')
     .option('--syntax <syntax>', 'The css syntax preference')
     .action(async (flags) => {
-      const { force, postcss, silent, gitignore, outExtension, jsxFramework, config: configPath, syntax } = flags
+      const { force, postcss, silent, noGitignore, outExtension, jsxFramework, config: configPath, syntax } = flags
 
       const cwd = resolve(flags.cwd)
 
@@ -56,12 +56,12 @@ export async function main() {
         await setupPostcss(cwd)
       }
 
-      await setupConfig(cwd, { force, outExtension, jsxFramework, syntax })
+      await setupConfig(cwd, { force, outExtension, jsxFramework, syntax, gitignore: !noGitignore })
 
       const ctx = await loadConfigAndCreateContext({ cwd, configPath })
       const { msg, box } = await emitArtifacts(ctx)
 
-      if (gitignore) {
+      if (!noGitignore) {
         setupGitIgnore(ctx)
       }
 
