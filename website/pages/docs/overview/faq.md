@@ -10,7 +10,7 @@ Here's a list of frequently asked questions (FAQ) and how to resolve common issu
 
 ### Why are my styles not applied?
 
-Check that the [`@layer` rules](/concepts/cascade-layers#layer-css) are set and the corresponding `.css` file is included. [If you're not using `postcss`](/docs/installation/cli), ensure that `styled-system/styles.css` is imported and that the `panda` command has been run (or is running with `--watch`).
+Check that the [`@layer` rules](/docs/concepts/cascade-layers#layer-css) are set and the corresponding `.css` file is included. [If you're not using `postcss`](/docs/installation/cli), ensure that `styled-system/styles.css` is imported and that the `panda` command has been run (or is running with `--watch`).
 
 ---
 
@@ -30,7 +30,7 @@ If you're not getting import autocomplete in your IDE, you may need to include t
 
 ### How do I get a type with each recipe properties ?
 
-You can get a [`config recipe`](/concepts/recipes#config-recipe) properties types by using `XXXVariantProps`. Let's say you have a `config recipe` named `button`, you can import its type like this:
+You can get a [`config recipe`](/docs/concepts/recipes#config-recipe) properties types by using `XXXVariantProps`. Let's say you have a `config recipe` named `button`, you can import its type like this:
 
 ```ts
 import { button, type ButtonVariantProps } from '../styled-system/recipes'
@@ -38,7 +38,7 @@ import { button, type ButtonVariantProps } from '../styled-system/recipes'
 
 ---
 
-You can get an [`atomic recipe`](/concepts/recipes#atomic-recipe) properties types by using `RecipeVariantProps`. Let's say you have a `atomic recipe` named `button`, you can get its type like this:
+You can get an [`atomic recipe`](/docs/concepts/recipes#atomic-recipe) properties types by using `RecipeVariantProps`. Let's say you have a `atomic recipe` named `button`, you can get its type like this:
 
 ```ts
 import { cva, type RecipeVariantProps } from '../styled-system/css'
@@ -77,7 +77,7 @@ The same `xxx.splitVariantProps` method is available for both `config recipes` a
 
 ### How do I reference a token value or css var?
 
-You can reference a token value or it's associated css variable using the [`token` function](/theming/usage#vanilla-js). This function allows you to access and use the values stored in your theme tokens at runtime.
+You can reference a token value or it's associated css variable using the [`token` function](/docs/theming/usage#vanilla-js). This function allows you to access and use the values stored in your theme tokens at runtime.
 
 ```tsx
 import { token } from '../styled-system/tokens'
@@ -117,7 +117,7 @@ When running `pnpm panda`, here's what's happening under the hood:
 
 ### I'm seeing a "Could not resolve xxx" error with esbuild/tsup. What should I do?
 
-In such a case, check the [`outExtension`](/references/config#outextension) in your `panda.config` and set it to "js". This will ensure your modules are resolved correctly.
+In such a case, check the [`outExtension`](/docs/references/config#outextension) in your `panda.config` and set it to "js". This will ensure your modules are resolved correctly.
 
 ---
 
@@ -129,7 +129,7 @@ When using `emitPackage: true` with yarn PnP, set the `nodeLinker` to 'node-modu
 
 ### Why does importing `styled` not exist?
 
-You should use [`config.jsxFramework`](/concepts/style-props#configure-jsx) when you need to import styled components. You can then use the [`jsxFactory`](/references/config#jsxfactory) option to set the name of the factory component.
+You should use [`config.jsxFramework`](/docs/concepts/style-props#configure-jsx) when you need to import styled components. You can then use the [`jsxFactory`](/references/config#jsxfactory) option to set the name of the factory component.
 
 ---
 
@@ -174,21 +174,21 @@ If you want to **keep some of the defaults**, you can install the `@pandacss/pre
 
 ### How do I make a design system / component library with Panda?
 
-There is a detailed guide on how to do this [here](/guides/component-library).
+There is a detailed guide on how to do this [here](/docs/guides/component-library).
 
 ---
 
 ### Can I use dynamic styles with Panda?
 
-Yes, you can use dynamic styles with Panda. More on that [here](/guides/dynamic-styling#runtime-conditions).
+Yes, you can use dynamic styles with Panda. More on that [here](/docs/guides/dynamic-styling#runtime-conditions).
 
 ---
 
 ### Should I use atomic or config recipes ?
 
-[Config recipes](/concepts/recipes#config-recipe) are generated just in time, meaning that only the recipes and variants you use will exist in the generated CSS, regardless of the number of recipes in the config.
+[Config recipes](/docs/concepts/recipes#config-recipe) are generated just in time, meaning that only the recipes and variants you use will exist in the generated CSS, regardless of the number of recipes in the config.
 
-This contrasts with [Atomic recipes](/concepts/recipes#atomic-recipe) (cva), which generates all of the variants regardless of what was used in your code. The reason for this difference is that all `config.recipes` are known at the start of the panda process when we evaluate your config. In contrast, the CVA recipes are scattered throughout your code. To get all of them and find their usage across your code, we would need to scan your app code multiple times, which would not be ideal performance-wise.
+This contrasts with [Atomic recipes](/docs/concepts/recipes#atomic-recipe) (cva), which generates all of the variants regardless of what was used in your code. The reason for this difference is that all `config.recipes` are known at the start of the panda process when we evaluate your config. In contrast, the CVA recipes are scattered throughout your code. To get all of them and find their usage across your code, we would need to scan your app code multiple times, which would not be ideal performance-wise.
 
 When dealing with simple use cases, or if you need code colocation, or even avoiding dynamic styling, atomic recipes shine by providing all style variants. Config recipes are preferred for design system components, delivering leaner CSS with only the styles used. Choose according to your component needs.
 
