@@ -141,9 +141,13 @@ type IntrinsicElement =
     ? Props
     : never
 
-  type ${componentName}<T extends ElementType, P extends Dict = {}> = FunctionalComponent<
+  export type ${componentName}<T extends ElementType, P extends Dict = {}> = FunctionalComponent<
   JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>
   >
+
+  export type ${upperName}RecipeVariantProps<C> = C extends ${componentName}<any, infer P>
+  ? P
+  : never;
 
   type RecipeFn = { __type: any }
 

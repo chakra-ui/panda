@@ -10,6 +10,10 @@ export type PandaComponent<T extends ElementType, P extends Dict = {}> = {
   displayName?: string
 }
 
+export type PandaRecipeVariantProps<C> = C extends PandaComponent<any, infer P>
+  ? P
+  : never;
+
 type RecipeFn = { __type: any }
 
 interface JsxFactory {

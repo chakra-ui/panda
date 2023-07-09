@@ -236,6 +236,34 @@ export type ButtonVariants = RecipeVariantProps<typeof buttonStyle> // { size?: 
 export const Button = styled('button', buttonStyle)
 ```
 
+When using `styled` with a jsx factory that accepts variants, you can skip the intermediate use of `cva` with the `StyledRecipeVariantProps` type utility:
+
+```tsx
+import { styled, type StyledRecipeVariantProps } from '../styled-system/jsx'
+import { cva } from '../styled-system/css'
+
+export const Button = styled('button', {
+  base: {
+    color: 'red',
+    textAlign: 'center'
+  },
+  variants: {
+    size: {
+      small: {
+        fontSize: '1rem'
+      },
+      large: {
+        fontSize: '2rem'
+      }
+    }
+  }
+})
+
+export type ButtonVariants = StyledRecipeVariantProps<typeof Button> // { size?: 'small' | 'large' }
+```
+
+If you've modified your `jsxFactory` this type utility will be renamed.
+
 ### Usage in JSX
 
 You can create a JSX component from any existing atomic recipe by using the `styled` function from the `/jsx` entrypoint.

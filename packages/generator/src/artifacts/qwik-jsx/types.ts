@@ -42,6 +42,10 @@ type Assign<T, U> = {
 
 export type ${componentName}<T extends ElementType, P extends Dict = {}> = FunctionComponent<Assign<ComponentProps<T>, _Assign<JsxStyleProps, P>>>
 
+export type  ${upperName}RecipeVariantProps<C> = C extends ${componentName}<any, infer P>
+  ? P
+  : never;
+
 type RecipeFn = { __type: any }
 
 interface JsxFactory {
