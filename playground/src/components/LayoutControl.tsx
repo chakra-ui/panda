@@ -1,8 +1,9 @@
-import { HorizontalSplit, VerticalSplit } from '@/src/components/icons'
-import { css } from '@/styled-system/css'
+import { HorizontalSplit, PreviewLayout, VerticalSplit } from '@/src/components/icons'
+import { css, cx } from '@/styled-system/css'
 import { Segment, SegmentControl, SegmentGroup, SegmentIndicator, SegmentInput, SegmentLabel } from '@ark-ui/react'
+import { segmentGroup } from '@/styled-system/recipes'
 
-export type Layout = 'horizontal' | 'vertical'
+export type Layout = 'horizontal' | 'vertical' | 'preview'
 export type LayoutControlProps = {
   value: Layout
   onChange: (layout: Layout) => void
@@ -13,56 +14,35 @@ export const LayoutControl = (props: LayoutControlProps) => {
   const options = [
     { id: 'horizontal', label: 'Horizontal', icon: <HorizontalSplit /> },
     { id: 'vertical', label: 'Vertical', icon: <VerticalSplit /> },
-    // { id: 'desktop', label: 'Desktop' },
-    // { id: 'mobile', label: 'Mobile' },
+    { id: 'preview', label: 'Preview', icon: <PreviewLayout /> },
+    // { id: 'responsive', label: 'Responsive' },
   ]
   return (
     <SegmentGroup
-      className={css({
-        display: 'flex',
-        alignItems: 'center',
-        gap: '2',
-        p: '1',
-        ml: 'auto',
-        bg: { base: 'gray.100', _dark: '#3A3A3AFF' },
-        borderRadius: 'sm',
-      })}
+      className={cx(
+        segmentGroup(),
+        css({
+          gap: '2',
+          p: '1',
+          bg: { base: 'gray.100', _dark: '#3A3A3AFF' },
+          borderRadius: 'sm',
+        }),
+      )}
       value={value}
       onChange={(e) => onChange(e.value as any)}
     >
-      <SegmentIndicator
-        className={css({
-          background: 'primary',
-          zIndex: '0',
-          boxShadow: 'xs',
-          borderRadius: 'sm',
-        })}
-      />
+      <SegmentIndicator />
       {options.map((option, id) => (
         <Segment
           className={css({
-            zIndex: '1',
-            position: 'relative',
-            fontWeight: 'semibold',
-            color: '#FFFFFF4D',
             p: '1',
-            cursor: 'pointer',
-            display: 'flex',
           })}
           key={id}
           value={option.id}
           aria-label={option.label}
           title={option.label}
         >
-          <SegmentLabel
-            className={css({
-              alignSelf: 'center',
-              color: { base: 'text.default', _checked: 'black' },
-              transition: 'color 170ms ease-in-out',
-            })}
-          >
-            {option.icon}
-          </SegmentLabel>
+          <SegmentLabel>{option.icon}</SegmentLabel>
           <SegmentInput />
           <SegmentControl />
         </Segment>

@@ -1,12 +1,11 @@
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
+import { segmentGroup } from '@/styled-system/recipes'
 
 import MonacoEditor, { EditorProps } from '@monaco-editor/react'
 import { Segment, SegmentControl, SegmentGroup, SegmentIndicator, SegmentInput, SegmentLabel } from '@ark-ui/react'
 
 import { PandaEditorProps, useEditor } from '../hooks/useEditor'
-import { Code, Palette } from './icons'
-import { flex } from '@/styled-system/patterns'
 
 const EDITOR_OPTIONS: EditorProps['options'] = {
   minimap: { enabled: false },
@@ -25,12 +24,10 @@ const tabs = [
   {
     id: 'code',
     label: 'Code',
-    icon: <Code />,
   },
   {
     id: 'config',
     label: 'Config',
-    icon: <Palette />,
   },
 ]
 
@@ -41,53 +38,24 @@ export const Editor = (props: PandaEditorProps) => {
     <Flex flex="1" direction="column" align="flex-start">
       <div className={css({ flex: '1', width: 'full', display: 'flex', flexDirection: 'column' })}>
         <SegmentGroup
-          className={css({
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4',
-            px: '1',
-            pl: '6',
-            py: '2',
-            borderBottomWidth: '1px',
-            borderBottomColor: 'border.default',
-          })}
+          className={cx(
+            segmentGroup(),
+            css({
+              pl: '6',
+            }),
+          )}
           value={activeTab}
           onChange={(e) => setActiveTab(e.value as any)}
         >
-          <SegmentIndicator
-            className={css({
-              background: 'primary',
-              zIndex: '0',
-              boxShadow: 'xs',
-              borderRadius: 'md',
-            })}
-          />
+          <SegmentIndicator />
           {tabs.map((option, id) => (
-            <Segment
-              className={css({
-                zIndex: '1',
-                position: 'relative',
-                fontWeight: 'semibold',
-                color: '#FFFFFF4D',
-                p: '1',
-                cursor: 'pointer',
-                display: 'flex',
-              })}
-              key={id}
-              value={option.id}
-              aria-label={option.label}
-            >
+            <Segment key={id} value={option.id} aria-label={option.label}>
               <SegmentLabel
-                className={flex({
-                  gap: '2',
-                  px: '2',
-                  align: 'center',
-                  alignSelf: 'center',
-                  color: { base: 'text.default', _checked: 'black' },
-                  transition: 'color 170ms ease-in-out',
+                className={css({
+                  px: 2,
                 })}
               >
-                {option.icon} {option.label}
+                {option.label}
               </SegmentLabel>
               <SegmentInput />
               <SegmentControl />

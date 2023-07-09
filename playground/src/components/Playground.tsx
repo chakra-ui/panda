@@ -12,7 +12,19 @@ import { ArtifactsPanel } from '@/src/components/ArtifactsPanel'
 import { splitter } from '@/styled-system/recipes'
 
 export const Playground = (props: UsePlayGroundProps) => {
-  const { layout, setLayout, isPristine, state, setState, share, isSharing } = usePlayground(props)
+  const {
+    layout,
+    layoutValue,
+    isPreviewMode,
+    panels,
+    onResizePanels,
+    switchLayout,
+    isPristine,
+    state,
+    setState,
+    share,
+    isSharing,
+  } = usePlayground(props)
   const panda = usePanda(state.code, state.config)
   const { previewCss, previewJs, artifacts, patternNames } = panda
 
@@ -38,17 +50,10 @@ export const Playground = (props: UsePlayGroundProps) => {
         >
           {isSharing ? 'Saving...' : 'Share'}
         </button>
-        <LayoutControl value={layout} onChange={setLayout} />
+        <LayoutControl value={layoutValue} onChange={switchLayout} />
         <ColorModeSwitch />
       </Toolbar>
-      <Splitter
-        size={[
-          { id: 'left', size: 50 },
-          { id: 'preview', size: 50 },
-        ]}
-        orientation={layout}
-        className={splitter()}
-      >
+      <Splitter size={panels} onResize={onResizePanels} orientation={layout} className={splitter()}>
         <SplitterPanel id="left">
           <Splitter
             size={[
@@ -65,10 +70,10 @@ export const Playground = (props: UsePlayGroundProps) => {
             <ArtifactsPanel panda={panda} />
           </Splitter>
         </SplitterPanel>
-        <SplitterResizeTrigger id="left:preview" asChild>
+        <SplitterResizeTrigger id="left:preview" asChild disabled={isPreviewMode}>
           <div />
         </SplitterResizeTrigger>
-        <SplitterPanel id="preview">
+        <SplitterPanel id="preview" className={css({ zIndex: 2 })}>
           <Preview source={state.code} previewCss={previewCss} previewJs={previewJs} patternNames={patternNames} />
         </SplitterPanel>
       </Splitter>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { css, cva } from '@/styled-system/css'
+import { css, cva, cx } from '@/styled-system/css'
 import { panda, Flex } from '@/styled-system/jsx'
 import {
   Segment,
@@ -11,12 +11,12 @@ import {
   SplitterResizeTrigger,
   SplitterPanel,
 } from '@ark-ui/react'
+import { segmentGroup } from '@/styled-system/recipes'
 
-import { AccountTree, ChevronUpIcon, Computer } from './icons'
+import { ChevronUpIcon } from './icons'
 import { ASTViewer } from '@/src/components/ASTViewer'
 import { usePanda } from '@/src/hooks/usePanda'
 import { GeneratedCss } from '@/src/components/GeneratedCss'
-import { flex } from '@/styled-system/patterns'
 
 type ArtifactsPanelType = {
   panda: ReturnType<typeof usePanda>
@@ -26,12 +26,10 @@ const tabs = [
   {
     id: 'ast',
     label: 'AST',
-    icon: <AccountTree />,
   },
   {
     id: 'generated',
     label: 'CSS',
-    icon: <Computer />,
   },
 ]
 
@@ -63,15 +61,8 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
           zIndex={2}
         >
           <SegmentGroup
-            className={css({
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4',
-              px: '1',
-              py: '2',
-              borderBottomWidth: '1px',
-              borderBottomColor: 'border.default',
-            })}
+            data-expanded={open ? '' : undefined}
+            className={cx(segmentGroup(), 'group')}
             value={activeTab}
             onClick={(e) => {
               if (open) e.stopPropagation()
@@ -79,40 +70,30 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
             onChange={(e) => setActiveTab(e.value as any)}
           >
             <SegmentIndicator
-              data-expanded={open ? '' : undefined}
               className={css({
-                background: { base: 'transparent', _expanded: 'primary' },
-                zIndex: '0',
-                boxShadow: 'xs',
-                borderRadius: 'md',
+                background: { base: 'transparent', _groupExpanded: 'primary' },
               })}
             />
             {tabs.map((option, id) => (
               <Segment
-                className={css({
-                  zIndex: '1',
-                  position: 'relative',
-                  fontWeight: 'semibold',
-                  color: '#FFFFFF4D',
-                  p: '1',
-                  cursor: 'pointer',
-                  display: 'flex',
-                })}
                 key={id}
                 value={option.id}
+                data-expanded={open ? '' : undefined}
+                className={css({
+                  '&:not([data-expanded])': {
+                    bg: { base: 'gray.100', _dark: '#1d1e1fc4' },
+                    shadow: 'sm',
+                    rounded: 'md',
+                  },
+                })}
               >
                 <SegmentLabel
-                  data-expanded={open ? '' : undefined}
-                  className={flex({
-                    gap: '2',
+                  className={css({
                     px: '2',
-                    align: 'center',
-                    alignSelf: 'center',
-                    color: { base: 'text.default', _checked: { _expanded: 'black' } },
-                    transition: 'color 170ms ease-in-out',
+                    color: { _checked: { base: { base: 'inherit', _hover: 'text.default' }, _groupExpanded: 'black' } },
                   })}
                 >
-                  {option.icon} {option.label}
+                  {option.label}
                 </SegmentLabel>
                 <SegmentInput />
                 <SegmentControl />
