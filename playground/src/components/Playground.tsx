@@ -73,7 +73,7 @@ export const Playground = (props: UsePlayGroundProps) => {
         <SplitterResizeTrigger id="left:preview" asChild disabled={isPreviewMode}>
           <div />
         </SplitterResizeTrigger>
-        <SplitterPanel id="preview" className={css({ zIndex: 2 })}>
+        <SplitterPanel id="preview" className={css({ zIndex: 3 })}>
           <Preview source={state.code} previewCss={previewCss} previewJs={previewJs} patternNames={patternNames} />
         </SplitterPanel>
       </Splitter>
