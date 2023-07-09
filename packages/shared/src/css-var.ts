@@ -1,6 +1,6 @@
 import { toHash } from './hash'
 
-const escRegex = /[.*+?^${}()|[\]\\]/g
+const escRegex = /[.*+?^${}()|[\]\\/]/g
 function esc(string: string) {
   return string.replace(escRegex, '\\$&')
 }
