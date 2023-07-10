@@ -223,7 +223,7 @@ export function maybeBoxNode(
             return cache(maybeResolveConditionalExpression(exprObject, ctx))
           })
           .when(isOperationSyntax, () => {
-            return cache(box.literal(node.getText(), node, stack))
+            return cache(box.literal(safeEvaluateNode(node, stack, ctx), node, stack))
           })
           .otherwise(() => undefined)
       })
