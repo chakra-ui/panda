@@ -25,7 +25,7 @@
     "@pandacss/logger": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "hookable": "5.5.3",
-    "postcss": "8.4.24",
+    "postcss": "8.4.25",
     "postcss-nested": "6.0.1",
     "postcss-discard-empty": "^6.0.0",
     "postcss-normalize-whitespace": "^6.0.0",
