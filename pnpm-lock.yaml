@@ -916,8 +916,8 @@ importers:
         specifier: 18.2.6
         version: 18.2.6
       '@vitejs/plugin-react':
-        specifier: 4.0.1
-        version: 4.0.1(vite@4.3.9)
+        specifier: 4.0.3
+        version: 4.0.3(vite@4.3.9)
       execa:
         specifier: 7.1.1
         version: 7.1.1
@@ -1462,8 +1462,8 @@ importers:
         specifier: 18.2.6
         version: 18.2.6
       '@vitejs/plugin-react':
-        specifier: 4.0.1
-        version: 4.0.1(vite@4.3.9)
+        specifier: 4.0.3
+        version: 4.0.3(vite@4.3.9)
       postcss:
         specifier: 8.4.24
         version: 8.4.24
@@ -10885,8 +10885,8 @@ packages:
       resolve: 1.22.2
     dev: false
 
-  /@vitejs/plugin-react@4.0.1(vite@4.3.9):
-    resolution: {integrity: sha512-g25lL98essfeSj43HJ0o4DMp0325XK0ITkxpgChzJU/CyemgyChtlxfnRbjfwxDGCTRxTiXtQAsdebQXKMRSOA==}
+  /@vitejs/plugin-react@4.0.3(vite@4.3.9):
+    resolution: {integrity: sha512-pwXDog5nwwvSIzwrvYYmA2Ljcd/ZNlcsSG2Q9CNDBwnsd55UGAyr2doXtB5j+2uymRCnCfExlznzzSFbBRcoCg==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: ^4.2.0
@@ -13042,8 +13042,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001491
-      electron-to-chromium: 1.4.413
+      caniuse-lite: 1.0.30001505
+      electron-to-chromium: 1.4.434
       node-releases: 2.0.12
       update-browserslist-db: 1.0.11(browserslist@4.21.7)
 
@@ -15325,9 +15325,6 @@ packages:
     dependencies:
       jake: 10.8.7
     dev: true
-
-  /electron-to-chromium@1.4.413:
-    resolution: {integrity: sha512-Gd+/OAhRca06dkVxIQo/W7dr6Nmk9cx6lQdZ19GvFp51k5B/lUAokm6SJfNkdV8kFLsC3Z4sLTyEHWCnB1Efbw==}
 
   /electron-to-chromium@1.4.434:
     resolution: {integrity: sha512-5Gvm09UZTQRaWrimRtWRO5rvaX6Kpk5WHAPKDa7A4Gj6NIPuJ8w8WNpnxCXdd+CJJt6RBU6tUw0KyULoW6XuHw==}
