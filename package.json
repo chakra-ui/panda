@@ -42,7 +42,7 @@
     "@typescript-eslint/parser": "5.60.0",
     "concurrently": "^8.2.0",
     "husky": "8.0.3",
-    "lint-staged": "13.2.2",
+    "lint-staged": "13.2.3",
     "prettier": "2.8.8",
     "ts-morph": "18.0.0",
     "tsup": "7.1.0",
