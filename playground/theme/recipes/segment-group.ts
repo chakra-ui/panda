@@ -9,8 +9,6 @@ export const segmentGroup = defineRecipe({
     gap: '4',
     px: '1',
     py: '2',
-    borderBottomWidth: '1px',
-    borderBottomColor: 'border.default',
 
     '& [data-part="indicator"]': {
       background: 'primary',

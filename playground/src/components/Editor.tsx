@@ -42,6 +42,7 @@ export const Editor = (props: PandaEditorProps) => {
             segmentGroup(),
             css({
               pl: '6',
+              borderBottomWidth: '1px',
             }),
           )}
           value={activeTab}

@@ -78,7 +78,6 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
           pl: '6',
           py: '2',
           borderBottomWidth: '1px',
-          borderBottomColor: 'border.default',
         })}
         value={activeTab}
         onChange={(e) => (console.log(e), setActiveTab(e.value as any))}

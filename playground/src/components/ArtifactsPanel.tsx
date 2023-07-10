@@ -56,7 +56,6 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
           align="center"
           justify="space-between"
           borderBottomWidth="1px"
-          borderBottomColor="border.default"
           onClick={handleClick}
           zIndex={2}
         >
@@ -129,7 +128,6 @@ const artifactsPanel = cva({
       false: {
         maxH: '12',
         borderTopWidth: '1px',
-        borderTopColor: 'border.default',
       },
     },
   },

@@ -68,7 +68,7 @@ export default defineConfig({
       },
     },
     '*, *::before, *::after': {
-      borderColor: 'gray.300',
+      borderColor: 'border.default',
       borderStyle: 'solid',
     },
   },

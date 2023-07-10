@@ -24,8 +24,7 @@ const resultType = cva({
     px: '2',
     borderRadius: 'lg',
     fontWeight: 'semibold',
-    border: '1px solid',
-    borderColor: 'border.default',
+    borderWidth: '1px',
   },
   variants: {
     type: {
