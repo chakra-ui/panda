@@ -32,6 +32,12 @@ describe('extract Vue templates', () => {
           <h1 :class="style">using class binding</h1>
           <p :class="css({ color: 'red.500' })">using inline styles</p>
           <span class="style3">using actual class</span>
+          <div :class="css({ color: 'red', fontWeight: 'bold' })">
+            <p>depth 1 children</p>
+            <div :class="css({ color: 'green' })">
+              <p>depth 2 children</p>
+            </div>
+          </div>
       </template>
 
       <style scoped>
@@ -61,6 +67,12 @@ describe('extract Vue templates', () => {
                 <h1 class={style}>using class binding</h1>
                 <p class={css({ color: 'red.500' })}>using inline styles</p>
                 <span class=\\"style3\\">using actual class</span>
+                <div class={css({ color: 'red', fontWeight: 'bold' })}>
+                  <p>depth 1 children</p>
+                  <div class={css({ color: 'green' })}>
+                    <p>depth 2 children</p>
+                  </div>
+                </div>
             </template>"
     `)
 
@@ -94,6 +106,25 @@ describe('extract Vue templates', () => {
           "name": "css",
           "type": "object",
         },
+        {
+          "data": [
+            {
+              "color": "red",
+              "fontWeight": "bold",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "color": "green",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
       ]
     `)
 
@@ -109,6 +140,18 @@ describe('extract Vue templates', () => {
 
         .text_red\\\\.500 {
           color: var(--colors-red-500)
+          }
+
+        .text_red {
+          color: red
+          }
+
+        .font_bold {
+          font-weight: var(--font-weights-bold)
+          }
+
+        .text_green {
+          color: green
           }
       }"
     `)
@@ -127,6 +170,12 @@ describe('extract Vue templates', () => {
         <h1 :class="style">using class binding</h1>
         <p :class="css({ color: 'red.500' })">using inline styles</p>
         <span class="style3">using actual class</span>
+        <div :class="css({ color: 'red', fontWeight: 'bold' })">
+            <p>depth 1 children</p>
+            <div :class="css({ color: 'green' })">
+              <p>depth 2 children</p>
+            </div>
+          </div>
         </template>
 
     <style scoped>
@@ -149,6 +198,12 @@ describe('extract Vue templates', () => {
               <h1 class={style}>using class binding</h1>
               <p class={css({ color: 'red.500' })}>using inline styles</p>
               <span class=\\"style3\\">using actual class</span>
+              <div class={css({ color: 'red', fontWeight: 'bold' })}>
+                  <p>depth 1 children</p>
+                  <div class={css({ color: 'green' })}>
+                    <p>depth 2 children</p>
+                  </div>
+                </div>
               </template>"
     `)
 
@@ -182,6 +237,25 @@ describe('extract Vue templates', () => {
           "name": "css",
           "type": "object",
         },
+        {
+          "data": [
+            {
+              "color": "red",
+              "fontWeight": "bold",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "color": "green",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
       ]
     `)
 
@@ -197,6 +271,18 @@ describe('extract Vue templates', () => {
 
         .text_red\\\\.500 {
           color: var(--colors-red-500)
+          }
+
+        .text_red {
+          color: red
+          }
+
+        .font_bold {
+          font-weight: var(--font-weights-bold)
+          }
+
+        .text_green {
+          color: green
           }
       }"
     `)
@@ -223,6 +309,12 @@ describe('extract Vue templates', () => {
       <h1 :class="style">using class binding</h1>
       <p :class="css({ color: 'red.500' })">using inline styles</p>
       <span class="style3">using actual class</span>
+      <div :class="css({ color: 'red', fontWeight: 'bold' })">
+        <p>depth 1 children</p>
+        <div :class="css({ color: 'green' })">
+          <p>depth 2 children</p>
+        </div>
+      </div>
     </template>
      `
 
@@ -247,6 +339,12 @@ describe('extract Vue templates', () => {
             <h1 class={style}>using class binding</h1>
             <p class={css({ color: 'red.500' })}>using inline styles</p>
             <span class=\\"style3\\">using actual class</span>
+            <div class={css({ color: 'red', fontWeight: 'bold' })}>
+              <p>depth 1 children</p>
+              <div class={css({ color: 'green' })}>
+                <p>depth 2 children</p>
+              </div>
+            </div>
           </template>"
     `)
 
@@ -280,6 +378,25 @@ describe('extract Vue templates', () => {
           "name": "css",
           "type": "object",
         },
+        {
+          "data": [
+            {
+              "color": "red",
+              "fontWeight": "bold",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "color": "green",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
       ]
     `)
 
@@ -295,6 +412,18 @@ describe('extract Vue templates', () => {
 
         .text_red\\\\.500 {
           color: var(--colors-red-500)
+          }
+
+        .text_red {
+          color: red
+          }
+
+        .font_bold {
+          font-weight: var(--font-weights-bold)
+          }
+
+        .text_green {
+          color: green
           }
       }"
     `)
