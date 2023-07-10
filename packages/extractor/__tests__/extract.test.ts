@@ -5595,10 +5595,10 @@ it('handles operation tokens', () => {
         {
           "conditions": [],
           "raw": {
-            "asterisk": "1 *5",
-            "exp": "1**4",
-            "minus": "5 -1",
-            "ratio": "1 / 2",
+            "asterisk": 5,
+            "exp": 1,
+            "minus": 4,
+            "ratio": 0.5,
           },
           "spreadConditions": [],
         },
