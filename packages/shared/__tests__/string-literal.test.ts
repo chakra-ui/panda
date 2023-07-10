@@ -46,11 +46,14 @@ const css = (str: any) => {
 describe('string literal [shared]', () => {
   test('should convert', () => {
     expect(css`
-      font: 12px/1.5 Helvetica, Arial, sans-serif;
+      font:
+        12px/1.5 Helvetica,
+        Arial,
+        sans-serif;
       color: red;
       &:hover {
         color: blue;
       }
-    `).toMatchInlineSnapshot('"font_12px/1.5_Helvetica,_Arial,_sans-serif color_red [&:hover]:color_blue"')
+    `).toMatchInlineSnapshot('"font_12px/1.5_Helvetica,Arial,sans-serif color_red [&:hover]:color_blue"')
   })
 })

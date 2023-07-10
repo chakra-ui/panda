@@ -7,24 +7,24 @@
   *::before,
   *::after,
   ::backdrop {
-    --blur: ;
-    --brightness: ;
-    --contrast: ;
-    --grayscale: ;
-    --hue-rotate: ;
-    --invert: ;
-    --saturate: ;
-    --sepia: ;
-    --drop-shadow: ;
-    --backdrop-blur: ;
-    --backdrop-brightness: ;
-    --backdrop-contrast: ;
-    --backdrop-grayscale: ;
-    --backdrop-hue-rotate: ;
-    --backdrop-invert: ;
-    --backdrop-opacity: ;
-    --backdrop-saturate: ;
-    --backdrop-sepia: ;
+    --blur:   ;
+    --brightness:   ;
+    --contrast:   ;
+    --grayscale:   ;
+    --hue-rotate:   ;
+    --invert:   ;
+    --saturate:   ;
+    --sepia:   ;
+    --drop-shadow:   ;
+    --backdrop-blur:   ;
+    --backdrop-brightness:   ;
+    --backdrop-contrast:   ;
+    --backdrop-grayscale:   ;
+    --backdrop-hue-rotate:   ;
+    --backdrop-invert:   ;
+    --backdrop-opacity:   ;
+    --backdrop-saturate:   ;
+    --backdrop-sepia:   ;
     --scroll-snap-strictness: proximity;
     --border-spacing-x: 0;
     --border-spacing-y: 0;

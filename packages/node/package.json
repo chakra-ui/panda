@@ -31,7 +31,7 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "chokidar": "^3.5.3",
-    "fast-glob": "^3.2.12",
+    "fast-glob": "^3.3.0",
     "file-size": "^1.0.0",
     "filesize": "^10.0.7",
     "fs-extra": "11.1.1",
@@ -45,10 +45,10 @@
     "pathe": "^1.1.1",
     "pkg-types": "1.0.3",
     "pluralize": "8.0.0",
-    "postcss": "8.4.24",
+    "postcss": "8.4.25",
     "preferred-pm": "^3.0.3",
     "ts-morph": "18.0.0",
-    "ts-pattern": "4.3.0",
+    "ts-pattern": "5.0.1",
     "tsconfck": "^2.1.1"
   },
   "devDependencies": {
@@ -57,7 +57,7 @@
     "@types/glob-parent": "^5.1.1",
     "@types/is-glob": "^4.0.2",
     "@types/lodash.merge": "4.6.7",
-    "@types/pluralize": "0.0.29",
-    "boxen": "^7.1.0"
+    "@types/pluralize": "0.0.30",
+    "boxen": "^7.1.1"
   }
 }

@@ -33,7 +33,10 @@ export class Recipes {
    */
   rules: Map<string, AtomicRule> = new Map()
 
-  constructor(private recipes: RecipeValues = {}, private context?: StylesheetContext) {
+  constructor(
+    private recipes: RecipeValues = {},
+    private context?: StylesheetContext,
+  ) {
     this.assignRules()
   }
 

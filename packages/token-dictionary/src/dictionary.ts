@@ -213,10 +213,13 @@ export class TokenDictionary {
       const references = this.getReferences(token.value)
 
       token.setExtensions({
-        references: references.reduce((object, reference) => {
-          object[reference.name] = reference
-          return object
-        }, {} as Record<string, any>),
+        references: references.reduce(
+          (object, reference) => {
+            object[reference.name] = reference
+            return object
+          },
+          {} as Record<string, any>,
+        ),
       })
     })
 

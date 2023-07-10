@@ -25,7 +25,7 @@
     "@pandacss/logger": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "hookable": "5.5.3",
-    "postcss": "8.4.24",
+    "postcss": "8.4.25",
     "postcss-nested": "6.0.1",
     "postcss-discard-empty": "^6.0.0",
     "postcss-normalize-whitespace": "^6.0.0",
@@ -33,7 +33,7 @@
     "postcss-merge-rules": "^6.0.1",
     "postcss-selector-parser": "^6.0.13",
     "autoprefixer": "10.4.14",
-    "ts-pattern": "4.3.0",
+    "ts-pattern": "5.0.1",
     "lodash.merge": "4.6.2"
   },
   "devDependencies": {

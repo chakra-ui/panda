@@ -39,7 +39,7 @@
     "@pandacss/types": "workspace:*",
     "bundle-n-require": "^1.0.1",
     "escalade": "3.1.1",
-    "jiti": "^1.18.2",
+    "jiti": "^1.19.1",
     "merge-anything": "^5.1.7",
     "tsconfck": "^2.1.1"
   },

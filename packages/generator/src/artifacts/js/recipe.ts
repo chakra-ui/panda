@@ -110,8 +110,8 @@ export function generateRecipes(ctx: Context) {
 
         export type ${upperName}VariantProps = {
           [key in keyof ${upperName}Variant]?: ${
-          compoundVariants?.length ? `${upperName}Variant[key]` : `ConditionalValue<${upperName}Variant[key]>`
-        }
+            compoundVariants?.length ? `${upperName}Variant[key]` : `ConditionalValue<${upperName}Variant[key]>`
+          }
         }
 
         interface ${upperName}Recipe {
