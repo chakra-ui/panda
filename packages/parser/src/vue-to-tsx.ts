@@ -1,5 +1,6 @@
 import { parse } from '@vue/compiler-sfc'
 import MagicString from 'magic-string'
+import type { BaseElementNode } from '@vue/compiler-core'
 
 /**
  * @see https://github.com/vuejs/core/blob/d2c3d8b70b2df6e16f053a7ac58e6b04e7b2078f/packages/compiler-core/src/ast.ts#L28-L60
@@ -41,19 +42,27 @@ export const vueToTsx = (code: string) => {
     const parsed = parse(code)
     const fileStr = new MagicString(code)
 
-    parsed.descriptor.template!.ast.children.forEach((node) => {
-      if (node.type === NodeTypes.ELEMENT) {
-        node.props.forEach((prop) => {
-          if (
-            prop.type === NodeTypes.DIRECTIVE &&
-            prop.exp?.type === NodeTypes.SIMPLE_EXPRESSION &&
-            prop.arg?.type === NodeTypes.SIMPLE_EXPRESSION
-          ) {
-            fileStr.update(prop.loc.start.offset, prop.loc.end.offset, `${prop.arg.content}={${prop.exp.content}}`)
-          }
-        })
+    const rewriteProp = (prop: BaseElementNode['props'][number]) => {
+      if (
+        prop.type === NodeTypes.DIRECTIVE &&
+        prop.exp?.type === NodeTypes.SIMPLE_EXPRESSION &&
+        prop.arg?.type === NodeTypes.SIMPLE_EXPRESSION
+      ) {
+        fileStr.update(prop.loc.start.offset, prop.loc.end.offset, `${prop.arg.content}={${prop.exp.content}}`)
       }
-    })
+    }
+
+    const stack = [...parsed.descriptor.template!.ast.children]
+    // recursion-free traversal
+    while (stack.length) {
+      const node = stack.pop()
+      if (!node) continue
+
+      if (node.type === NodeTypes.ELEMENT) {
+        node.props.forEach(rewriteProp)
+        node.children.forEach((child) => stack.push(child))
+      }
+    }
 
     const templateStart = code.indexOf('<template')
     const templateEnd = code.indexOf('</template>') + '</template>'.length
