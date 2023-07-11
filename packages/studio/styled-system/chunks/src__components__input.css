@@ -123,6 +123,37 @@
     }
   }
 
+  .dark\:text_neutral\.300 {
+    &.dark,
+    .dark & {
+      color: var(--colors-neutral-300);
+    }
+  }
+
+  .focusWithin\:outline-style_solid {
+    &:focus-within {
+      outline-style: solid;
+    }
+  }
+
+  .focusWithin\:ring_2px {
+    &:focus-within {
+      outline-width: 2px;
+    }
+  }
+
+  .focusWithin\:ring_2px {
+    &:focus-within {
+      outline-offset: 2px;
+    }
+  }
+
+  .focusWithin\:ring_neutral\.400 {
+    &:focus-within {
+      outline-color: var(--colors-neutral-400);
+    }
+  }
+
   .bg_transparent {
     background: var(--colors-transparent);
   }

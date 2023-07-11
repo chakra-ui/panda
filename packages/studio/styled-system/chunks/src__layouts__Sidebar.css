@@ -158,4 +158,16 @@
       padding-inline: var(--spacing-8);
     }
   }
+
+  .md\:px_6 {
+    @media screen and (min-width: 768px) {
+      padding-inline: var(--spacing-6);
+    }
+  }
+
+  .lg\:px_8 {
+    @media screen and (min-width: 1024px) {
+      padding-inline: var(--spacing-8);
+    }
+  }
 }
