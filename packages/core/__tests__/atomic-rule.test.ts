@@ -123,17 +123,17 @@ describe('atomic / with basic style object', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
           .light\\\\:text_red {
-               &.light, .light & {
+              &.light, .light & {
                   color: red
               }
           }
           .dark\\\\:text_green {
-               &.dark, .dark & {
+              &.dark, .dark & {
                   color: green
               }
           }
           .dark\\\\:opacity_slate400 {
-               &.dark, .dark & {
+              &.dark, .dark & {
                   opacity: slate400
               }
           }
@@ -223,14 +223,14 @@ describe('atomic / with nesting scope', () => {
           }
           .\\\\[\\\\&_\\\\>_p\\\\]\\\\:light\\\\:bg_red400 {
               & > p {
-                   &.light, .light & {
+                  &.light, .light & {
                       background: red400
                   }
               }
           }
           .\\\\[\\\\&_\\\\>_p\\\\]\\\\:dark\\\\:bg_green500 {
               & > p {
-                   &.dark, .dark & {
+                  &.dark, .dark & {
                       background: green500
                   }
               }
@@ -244,9 +244,9 @@ describe('atomic / with nesting scope', () => {
           }
           .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif {
               & > p {
-                  &:is(:hover, [data-hover]) {
-                      [dir=ltr] & {
-                           &.dark, .dark & {
+                  &.dark, .dark & {
+                      &:is(:hover, [data-hover]) {
+                          [dir=ltr] & {
                               @media screen and (min-width: 640px) {
                                   font: serif
                               }
@@ -387,7 +387,7 @@ describe('atomic / with grouped conditions styles', () => {
       "@layer utilities {
           .hover\\\\:sm\\\\:dark\\\\:bg_red\\\\.300 {
               &:is(:hover, [data-hover]) {
-                   &.dark, .dark & {
+                  &.dark, .dark & {
                       @media screen and (min-width: 640px) {
                           background: var(--colors-red-300)
                       }

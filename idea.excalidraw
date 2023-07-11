@@ -3793,14 +3793,14 @@
       "updated": 1669224477349,
       "link": null,
       "locked": false,
-      "text": "css({ bg: { dark: { base: \"red.300\", highConstrast: \"red.400\" } } })",
+      "text": "css({ bg: { dark: { base: \"red.300\", highContrast: \"red.400\" } } })",
       "fontSize": 20,
       "fontFamily": 1,
       "textAlign": "left",
       "verticalAlign": "top",
       "baseline": 18,
       "containerId": null,
-      "originalText": "css({ bg: { dark: { base: \"red.300\", highConstrast: \"red.400\" } } })"
+      "originalText": "css({ bg: { dark: { base: \"red.300\", highContrast: \"red.400\" } } })"
     },
     {
       "id": "eAHg8HS3vh95gGRLoN9_T",

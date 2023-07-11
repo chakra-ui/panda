@@ -39,6 +39,18 @@
     }
   }
 
+  .highlighted\:bg_border {
+    &[data-highlighted] {
+      background: var(--colors-border);
+    }
+  }
+
+  .expanded\:transform_rotate\(180deg\) {
+    &:where([aria-expanded='true'], [data-expanded]) {
+      transform: rotate(180deg);
+    }
+  }
+
   .transition_all_\.2s_ease {
     transition: all 0.2s ease;
   }
@@ -139,7 +151,7 @@
   }
 
   .expanded\:transform_rotate\(180deg\) {
-    &:where([aria-expanded='true'], [data-expanded]) {
+    &:is([aria-expanded='true'], [data-expanded]) {
       transform: rotate(180deg);
     }
   }

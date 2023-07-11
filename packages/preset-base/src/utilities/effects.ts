@@ -47,7 +47,7 @@ export const effects: UtilityConfig = {
     className: 'contrast',
     transform(value) {
       return {
-        '--contrast': `constrast(${value})`,
+        '--contrast': `contrast(${value})`,
       }
     },
   },
@@ -152,7 +152,7 @@ export const effects: UtilityConfig = {
     className: 'backdrop-contrast',
     transform(value) {
       return {
-        '--backdrop-contrast': `constrast(${value})`,
+        '--backdrop-contrast': `contrast(${value})`,
       }
     },
   },

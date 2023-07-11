@@ -256,13 +256,13 @@ Let's say your app is dark by default, but you want to allow users to switch to 
 
 The `prefers-contrast` media feature is used to detect if the user has requested the system use a high or low contrast theme.
 
-Use the `_highConstrast` and `_lessContrast` modifiers to style an element based on the user's color contrast preference:
+Use the `_highContrast` and `_lessContrast` modifiers to style an element based on the user's color contrast preference:
 
 ```jsx
 <div
   className={css({
     bg: 'white',
-    _highConstrast: { bg: 'black' }
+    _highContrast: { bg: 'black' }
   })}
 >
   Hello
@@ -480,7 +480,7 @@ Here's a list of all the condition shortcuts you can use in Panda:
 | \_light                | `&.light, .light &`                                                |
 | \_osDark               | `@media (prefers-color-scheme: dark)`                              |
 | \_osLight              | `@media (prefers-color-scheme: light)`                             |
-| \_highConstrast        | `@media (forced-colors: active)`                                   |
+| \_highContrast         | `@media (forced-colors: active)`                                   |
 | \_lessContrast         | `@media (prefers-contrast: less)`                                  |
 | \_moreContrast         | `@media (prefers-contrast: more)`                                  |
 | \_ltr                  | `[dir=ltr] &`                                                      |

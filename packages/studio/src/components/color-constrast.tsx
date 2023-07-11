@@ -46,7 +46,7 @@ export function ColorContrastChecker() {
   const activeBackground = (colors.find((col) => col.label === background)?.value || background) as string
 
   const wcag = getContrastPairs(activeForeground, activeBackground)
-  const constrastRatio = getContrastRatio(activeForeground, activeBackground)
+  const contrastRatio = getContrastRatio(activeForeground, activeBackground)
 
   return (
     <TokenGroup>
@@ -106,7 +106,7 @@ export function ColorContrastChecker() {
         <div>
           <VStack textAlign="center" gap="2.5">
             <panda.span fontWeight="bold" fontSize="4xl">
-              {constrastRatio ? `${constrastRatio?.toFixed(2).replace(/[.,]00$/, '')}:1` : ':'}
+              {contrastRatio ? `${contrastRatio?.toFixed(2).replace(/[.,]00$/, '')}:1` : ':'}
             </panda.span>
             <panda.span fontWeight="semibold" opacity="0.5">
               Contrast ratio
