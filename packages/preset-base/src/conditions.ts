@@ -1,4 +1,4 @@
-export const conditions = {
+const positiveConditions = {
   hover: '&:is(:hover, [data-hover])',
   focus: '&:is(:focus, [data-focus])',
   focusWithin: '&:focus-within',
@@ -100,4 +100,31 @@ export const conditions = {
 
   horizontal: '&[data-orientation=horizontal]',
   vertical: '&[data-orientation=vertical]',
+}
+
+const negativeConditions = Object.entries(positiveConditions).reduce(
+  (notConditions, [key, condition]) => {
+    if (!condition.startsWith('&') || condition.includes(',')) {
+      return notConditions
+    }
+
+    const negativeCondition = `&:not(${condition.slice(1)})`
+
+    return {
+      ...notConditions,
+      [`not${key.charAt(0).toUpperCase() + key.slice(1)}`]: negativeCondition,
+    }
+  },
+  // Those are specific cases that can't be handled by the loop above.
+  {
+    notDark: '&:not(.dark), :not(.dark) &',
+    notLight: '&:not(.light), :not(.light) &',
+    notLtr: ':not([dir=ltr]) &',
+    notRtl: ':not([dir=rtl]) &',
+  },
+)
+
+export const conditions = {
+  ...positiveConditions,
+  ...negativeConditions,
 }
