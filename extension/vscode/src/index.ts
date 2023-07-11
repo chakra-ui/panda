@@ -18,9 +18,10 @@ const docSelector: vscode.DocumentSelector = [
   'typescriptreact',
   'javascript',
   'javascriptreact',
-  'astro',
-  'svelte',
-  'vue',
+  // TODO re-enable whenever we figured out how to map transformed file AST nodes to their original positions
+  // 'astro',
+  // 'svelte',
+  // 'vue',
 ]
 
 let client: LanguageClient

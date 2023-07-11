@@ -36,7 +36,7 @@
     "color2k": "^2.0.2",
     "lil-fp": "1.4.5",
     "postcss": "^8.4.25",
-    "prettier": "^3.0.0",
+    "prettier": "2.8.8",
     "satori": "^0.10.1",
     "ts-morph": "18.0.0",
     "ts-pattern": "5.0.1",
