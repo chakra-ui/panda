@@ -42,7 +42,7 @@ export const box = {
     return new BoxNodeUnresolvable({ type: 'unresolvable', node, stack })
   },
   /**
-   * box.type === “object” -> object that was resolved using ts-evaluator , most likely from a
+   * box.type === “object” -> object that was resolved using ts-evaluator, most likely from a
    * complex condition OR a simple CallExpression eval result, we don’t have access to individual
    * AST nodes here so we need the distinction
    */
@@ -54,7 +54,7 @@ export const box = {
   },
   /**
    * box.type === “map” -> basically any object that was statically analyzable, we store each
-   * prop+value in a Map
+   * prop + value in a Map
    */
   isMap(value: BoxNode | undefined): value is BoxNodeMap {
     return value?.type === 'map'
