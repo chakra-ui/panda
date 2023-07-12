@@ -2,4 +2,4 @@
 '@pandacss/shared': patch
 ---
 
-Make cssVar be able to handle slash as token name
+Fix issue where slash could not be used in token name
