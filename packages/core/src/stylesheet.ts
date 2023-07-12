@@ -17,10 +17,7 @@ export type StylesheetOptions = {
 export class Stylesheet {
   private recipes: Recipes
 
-  constructor(
-    private context: StylesheetContext,
-    private options?: StylesheetOptions,
-  ) {
+  constructor(private context: StylesheetContext, private options?: StylesheetOptions) {
     const { recipes } = options ?? {}
     this.recipes = new Recipes(recipes ?? {}, context)
   }
