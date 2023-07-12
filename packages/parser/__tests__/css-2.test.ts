@@ -509,7 +509,7 @@ export function Card({ className }) {
     `)
   })
 
-  test.only('issue #1022: should extract css when using spread syntax on the child', () => {
+  test('issue #1022: should extract css when using spread syntax on the child', () => {
     const result = parseAndExtract(
       `import { css } from '../styled-system/jsx';
 
