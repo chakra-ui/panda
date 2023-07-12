@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { cssParser } from './fixture'
+import { cssParser, parseAndExtract } from './fixture'
 
 describe('ast parser', () => {
   test('[without import] should not parse', () => {
@@ -506,6 +506,49 @@ export function Card({ className }) {
           },
         },
       }
+    `)
+  })
+
+  test.only('issue #1022: should extract css when using spread syntax on the child', () => {
+    const result = parseAndExtract(
+      `import { css } from '../styled-system/jsx';
+
+      const meta: MetaProps = {
+        title: 'hello world:',
+      };
+
+      export const App = () => {
+        return (
+          <div
+            className={css({
+              color: 'red.400',
+              maxW: '1000px',
+            })}
+          >
+            <Meta {...meta} />
+          </div>
+        );
+      };
+
+      type MetaProps = {
+        title: string;
+      };
+      const Meta: React.FC<MetaProps> = ({ title }) => {
+        return <div>{title}</div>;
+      };
+      `,
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_red\\.400 {
+          color: var(--colors-red-400)
+        }
+
+        .max-w_1000px {
+          max-width: 1000px
+        }
+      }"
     `)
   })
 })
