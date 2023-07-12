@@ -41,6 +41,8 @@ export class Builder {
    */
   context: PandaContext | undefined
 
+  configDependencies: Set<string> = new Set()
+
   writeFileCss(file: string, css: string) {
     const oldCss = this.fileCssMap?.get(file) ?? ''
     const newCss = mergeCss(oldCss, css)
@@ -104,6 +106,7 @@ export class Builder {
       }
     }
     const { deps: configDeps } = getConfigDependencies(configPath, tsOptions)
+    this.configDependencies = configDeps
 
     const deps = this.checkConfigDeps(configPath, configDeps)
 
@@ -243,6 +246,10 @@ export class Builder {
     }
 
     for (const file of ctx.dependencies) {
+      fn({ type: 'dependency', file: resolve(file) })
+    }
+
+    for (const file of this.configDependencies) {
       fn({ type: 'dependency', file: resolve(file) })
     }
   }
