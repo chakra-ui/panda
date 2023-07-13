@@ -4,7 +4,7 @@ import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { existsSync } from 'fs'
 import { statSync } from 'fs-extra'
-import { resolve } from 'path'
+import { dirname, resolve } from 'path'
 import type { Message, Root } from 'postcss'
 import { findConfig, loadConfigAndCreateContext } from './config'
 import { type PandaContext } from './create-context'
@@ -105,7 +105,10 @@ export class Builder {
         }
       }
     }
-    const { deps: configDeps } = getConfigDependencies(configPath, tsOptions)
+    const { deps: foundDeps } = getConfigDependencies(configPath, tsOptions)
+    const cwd = this.context?.config.cwd ?? dirname(configPath)
+
+    const configDeps = new Set([...foundDeps, ...(this.context?.dependencies ?? []).map((file) => resolve(cwd, file))])
     this.configDependencies = configDeps
 
     const deps = this.checkConfigDeps(configPath, configDeps)
