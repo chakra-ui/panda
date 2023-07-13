@@ -106,7 +106,7 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
           }
 
           mapValue.forEach((propValue, propName) => {
-            if (isMap ? true : matchProp({ propName, propNode: node as any })) {
+            if (matchProp({ propName, propNode: node as any })) {
               component.props.set(propName, propValue)
               boxByProp.set(propName, (boxByProp.get(propName) ?? []).concat(propValue))
             }
