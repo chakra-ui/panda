@@ -11,6 +11,14 @@
 @import './tokens/keyframes.css';
 
 @layer utilities {
+  .font_12px\/1\.5_Helvetica\,_Arial\,_sans-serif {
+    font: 12px/1.5 Helvetica, Arial, sans-serif;
+  }
+
+  .text_red {
+    color: red;
+  }
+
   .w_26px {
     width: 26px;
   }
@@ -994,6 +1002,10 @@
 
   .hover\:border-b_black:where(:hover, [data-hover]) {
     border-bottom-color: var(--colors-black);
+  }
+
+  .\[\&\:hover\]\:text_blue:hover {
+    color: blue;
   }
 
   .\[\&\:hover\]\:bg_\#4049f0:hover {
