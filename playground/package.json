@@ -35,7 +35,7 @@
     "next-themes": "^0.2.1",
     "os-browserify": "0.3.0",
     "path-browserify": "1.0.1",
-    "prettier": "3.0.0",
+    "prettier": "^2.8.8",
     "prism-react-renderer": "2.0.6",
     "prisma": "4.16.2",
     "react": "18.2.0",

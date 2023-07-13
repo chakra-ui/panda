@@ -2,4 +2,4 @@
 '@pandacss/node': patch
 ---
 
-Fix postcss HMR when importing files in the panda.config file
+Fix issue where hot module reloading is inconsistent in the PostCSS plugin when external files are changed

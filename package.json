@@ -43,7 +43,7 @@
     "concurrently": "^8.2.0",
     "husky": "8.0.3",
     "lint-staged": "13.2.3",
-    "prettier": "3.0.0",
+    "prettier": "^2.8.8",
     "ts-morph": "18.0.0",
     "tsup": "7.1.0",
     "tsx": "3.12.7",
