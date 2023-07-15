@@ -6,6 +6,7 @@ import MonacoEditor, { EditorProps } from '@monaco-editor/react'
 import { Segment, SegmentControl, SegmentGroup, SegmentIndicator, SegmentInput, SegmentLabel } from '@ark-ui/react'
 
 import { PandaEditorProps, useEditor } from '../hooks/useEditor'
+import { FormatCode } from '@/src/components/icons'
 
 const EDITOR_OPTIONS: EditorProps['options'] = {
   minimap: { enabled: false },
@@ -32,7 +33,8 @@ const tabs = [
 ]
 
 export const Editor = (props: PandaEditorProps) => {
-  const { activeTab, setActiveTab, onBeforeMount, onCodeEditorChange, onCodeEditorMount } = useEditor(props)
+  const { activeTab, setActiveTab, onBeforeMount, onCodeEditorChange, onCodeEditorMount, onCodeEditorFormat } =
+    useEditor(props)
 
   return (
     <Flex flex="1" direction="column" align="flex-start">
@@ -41,8 +43,9 @@ export const Editor = (props: PandaEditorProps) => {
           className={cx(
             segmentGroup(),
             css({
-              pl: '6',
               borderBottomWidth: '1px',
+              pl: '6',
+              pr: '4',
             }),
           )}
           value={activeTab}
@@ -62,8 +65,27 @@ export const Editor = (props: PandaEditorProps) => {
               <SegmentControl />
             </Segment>
           ))}
+
+          <button
+            className={css({
+              ml: 'auto',
+              borderRadius: 'sm',
+              cursor: 'pointer',
+              p: '1',
+              color: 'text.default',
+              _hover: {
+                color: { base: 'gray.700', _dark: 'gray.100' },
+                bg: { base: 'gray.100', _dark: '#3A3A3AFF' },
+              },
+              transition: 'all 0.2s ease-in-out',
+            })}
+            title="Format code"
+            onClick={onCodeEditorFormat}
+          >
+            <FormatCode />
+          </button>
         </SegmentGroup>
-        <div className={css({ flex: '1' })}>
+        <div className={css({ flex: '1', pt: '2' })}>
           <MonacoEditor
             value={props.value[activeTab]}
             language="typescript"

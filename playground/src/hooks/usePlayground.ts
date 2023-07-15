@@ -78,7 +78,7 @@ export const config = defineConfig({
       h: 'full',
     },
     body: {
-      bg: { _dark: '#2C2C2C' },
+      bg: { base: 'white', _dark: '#2C2C2C' },
     },
   },
 });    
