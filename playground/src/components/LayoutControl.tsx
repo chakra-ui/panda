@@ -1,7 +1,9 @@
-import { css } from '@/styled-system/css'
-import { Radio, RadioControl, RadioGroup, RadioInput, RadioLabel } from '@ark-ui/react'
+import { HorizontalSplit, PreviewLayout, VerticalSplit } from '@/src/components/icons'
+import { css, cx } from '@/styled-system/css'
+import { Segment, SegmentControl, SegmentGroup, SegmentIndicator, SegmentInput, SegmentLabel } from '@ark-ui/react'
+import { segmentGroup } from '@/styled-system/recipes'
 
-export type Layout = 'horizontal' | 'vertical'
+export type Layout = 'horizontal' | 'vertical' | 'preview'
 export type LayoutControlProps = {
   value: Layout
   onChange: (layout: Layout) => void
@@ -10,24 +12,41 @@ export type LayoutControlProps = {
 export const LayoutControl = (props: LayoutControlProps) => {
   const { value, onChange } = props
   const options = [
-    { id: 'horizontal', label: 'Horizontal' },
-    { id: 'vertical', label: 'Vertical' },
-    // { id: 'desktop', label: 'Desktop' },
-    // { id: 'mobile', label: 'Mobile' },
+    { id: 'horizontal', label: 'Horizontal', icon: <HorizontalSplit /> },
+    { id: 'vertical', label: 'Vertical', icon: <VerticalSplit /> },
+    { id: 'preview', label: 'Preview', icon: <PreviewLayout /> },
+    // { id: 'responsive', label: 'Responsive' },
   ]
   return (
-    <RadioGroup
+    <SegmentGroup
+      className={cx(
+        segmentGroup(),
+        css({
+          gap: '2',
+          p: '1',
+          bg: { base: 'gray.100', _dark: '#3A3A3AFF' },
+          borderRadius: 'sm',
+        }),
+      )}
       value={value}
-      onChange={({ value }) => onChange(value as Layout)}
-      className={css({ display: 'flex', gap: 3, ml: 'auto' })}
+      onChange={(e) => onChange(e.value as any)}
     >
+      <SegmentIndicator />
       {options.map((option, id) => (
-        <Radio key={id} value={option.id} style={{ fontWeight: option.id === value ? 'bold' : 'inherit' }}>
-          <RadioLabel>{option.label}</RadioLabel>
-          <RadioInput />
-          <RadioControl />
-        </Radio>
+        <Segment
+          className={css({
+            p: '1',
+          })}
+          key={id}
+          value={option.id}
+          aria-label={option.label}
+          title={option.label}
+        >
+          <SegmentLabel>{option.icon}</SegmentLabel>
+          <SegmentInput />
+          <SegmentControl />
+        </Segment>
       ))}
-    </RadioGroup>
+    </SegmentGroup>
   )
 }

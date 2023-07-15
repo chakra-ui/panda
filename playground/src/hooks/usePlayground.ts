@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Layout } from '../components/LayoutControl'
+import { SplitterProps } from '@ark-ui/react'
 
 export type State = {
   code: string
@@ -12,9 +13,41 @@ export type UsePlayGroundProps = {
 
 export const usePlayground = (props: UsePlayGroundProps) => {
   const { intialState } = props
-  const [layout, setLayout] = useState<Layout>('horizontal')
+  const [layout, setLayout] = useState<Extract<Layout, 'horizontal' | 'vertical'>>('horizontal')
   const [isPristine, setIsPristine] = useState(true)
   const [isSharing, setIsSharing] = useState(false)
+
+  const [panels, setPanels] = useState([
+    { id: 'left', size: 50, minSize: 15 },
+    { id: 'preview', size: 50 },
+  ])
+
+  const isPreviewMode = panels.find((panel) => panel.id === 'left')?.size === 0
+
+  const layoutValue = isPreviewMode ? ('preview' as const) : layout
+
+  const onResizePanels: SplitterProps['onResize'] = (e) => setPanels(e.size as any)
+
+  function setPanelSize(id: string, size: number) {
+    setPanels((prevPanels) => {
+      return prevPanels.map((panel) => {
+        return panel.id === id ? { ...panel, size } : panel
+      })
+    })
+  }
+
+  const switchLayout = (layout: Layout) => {
+    if (layout === 'preview') {
+      setLayout('horizontal')
+      setPanelSize('left', 0)
+    } else {
+      setLayout(layout)
+      if (isPreviewMode) {
+        setPanelSize('preview', 50)
+        setPanelSize('left', 50)
+      }
+    }
+  }
 
   const [state, setState] = useState(
     intialState
@@ -41,6 +74,9 @@ export const App = () => {
 export const config = defineConfig({
   theme: { extend: {} },
   globalCss: {
+    html: {
+      h: 'full',
+    },
     body: {
       bg: { _dark: '#2C2C2C' },
     },
@@ -70,7 +106,11 @@ export const config = defineConfig({
   return {
     isPristine,
     layout,
-    setLayout,
+    layoutValue,
+    isPreviewMode,
+    panels,
+    onResizePanels,
+    switchLayout,
     state,
     setState: (newState: State) => {
       setIsPristine(false)

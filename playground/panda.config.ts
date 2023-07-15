@@ -1,3 +1,4 @@
+import { recipes } from '@/theme/recipes'
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
@@ -8,19 +9,43 @@ export default defineConfig({
   outdir: 'styled-system',
   jsxFactory: 'panda',
   theme: {
-    semanticTokens: {
-      colors: {
-        border: {
-          default: {
-            value: {
-              base: 'rgb(235, 235, 235)',
-              _dark: 'rgba(255, 255, 255, 0.05)',
+    extend: {
+      tokens: {
+        colors: {
+          primary: { value: '#F6E458' },
+        },
+      },
+      semanticTokens: {
+        colors: {
+          border: {
+            default: {
+              value: {
+                base: '#EBEBEB',
+                _dark: '#FFFFFF0D',
+              },
+            },
+
+            badge: {
+              value: {
+                base: '#EBEBEB',
+                _dark: '#FFFFFF4D',
+              },
+            },
+          },
+          text: {
+            default: {
+              value: {
+                base: '#778597',
+                _dark: '#FFFFFF4D',
+              },
             },
           },
         },
       },
+      recipes,
     },
   },
+
   globalCss: {
     html: {
       lineHeight: 1.5,
@@ -43,7 +68,7 @@ export default defineConfig({
       },
     },
     '*, *::before, *::after': {
-      borderColor: 'gray.300',
+      borderColor: 'border.default',
       borderStyle: 'solid',
     },
   },

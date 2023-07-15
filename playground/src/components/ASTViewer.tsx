@@ -10,7 +10,7 @@ export const ASTViewer = (props: { parserResult: ReturnType<typeof usePanda>['pa
   if (!props.parserResult) return null
 
   return (
-    <Stack p="4" h="full" overflow="auto">
+    <Stack py="4" h="full" overflow="auto">
       {Array.from(props.parserResult.toArray()).map((result, index) => {
         return <ResultItemRow key={index} result={result} />
       })}
@@ -24,22 +24,22 @@ const resultType = cva({
     px: '2',
     borderRadius: 'lg',
     fontWeight: 'semibold',
-    border: '1px solid token(colors.gray.300)',
+    borderWidth: '1px',
   },
   variants: {
     type: {
-      object: { bg: 'gray.100', color: 'gray.700' },
-      cva: { bg: 'gray.300' },
-      jsx: { bg: 'blue.300' },
-      'jsx-factory': { bg: 'blue.100' },
-      pattern: { bg: 'indigo.400', color: 'white' },
-      'jsx-pattern': { bg: 'indigo.400', color: 'white' },
-      recipe: { bg: 'yellow.300' },
-      'jsx-recipe': { bg: 'yellow.300' },
+      object: { bg: { base: 'gray.100', _dark: '#FFFFFF08' }, color: { base: 'gray.700', _dark: 'white' } },
+      cva: { bg: { base: 'gray.300', _dark: '#FFFFFF12' }, color: { base: 'gray.700', _dark: 'white' } },
+      jsx: { bg: { base: 'blue.300', _dark: 'blue.500' } },
+      'jsx-factory': { bg: { base: 'blue.100', _dark: 'blue.300' }, color: { _dark: 'black' } },
+      pattern: { bg: { base: 'indigo.400', _dark: 'indigo.500' }, color: 'white' },
+      'jsx-pattern': { bg: { base: 'indigo.400', _dark: 'indigo.500' }, color: 'white' },
+      recipe: { bg: { base: 'yellow.300', _dark: 'yellow.500' }, color: { _dark: 'black' } },
+      'jsx-recipe': { bg: { base: 'yellow.300', _dark: 'yellow.500' }, color: { _dark: 'black' } },
     },
     name: {
-      cva: { bg: 'teal.500', color: 'white' },
-      css: { bg: 'blue.500', color: 'white' },
+      cva: { bg: { base: 'teal.500', _dark: 'teal.700' }, color: 'white' },
+      css: { bg: { base: 'blue.500', _dark: 'blue.700' }, color: 'white' },
     },
   },
 })
@@ -48,7 +48,7 @@ const ResultItemRow = (props: { result: ResultItem }) => {
   const { result } = props
   const { resolvedTheme } = useTheme()
   return (
-    <Stack>
+    <Stack px="6">
       <panda.div className={hstack()}>
         <span className={resultType({ type: result.type })}>{result.type}</span>{' '}
         <span className={resultType({ name: result.name as 'cva' | 'css' })}>{result.name}</span>
