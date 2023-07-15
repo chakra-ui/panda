@@ -87,7 +87,7 @@ export const conditions = {
   osDark: '@media (prefers-color-scheme: dark)',
   osLight: '@media (prefers-color-scheme: light)',
 
-  highConstrast: '@media (forced-colors: active)',
+  highContrast: '@media (forced-colors: active)',
   lessContrast: '@media (prefers-contrast: less)',
   moreContrast: '@media (prefers-contrast: more)',
 

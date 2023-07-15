@@ -436,7 +436,7 @@ var userGenerated = [
   '_light',
   '_osDark',
   '_osLight',
-  '_highConstrast',
+  '_highContrast',
   '_lessContrast',
   '_moreContrast',
   '_ltr',

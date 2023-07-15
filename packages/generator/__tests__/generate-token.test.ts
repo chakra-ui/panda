@@ -464,9 +464,11 @@ describe('generator', () => {
         --colors-button-card-heading: #000
       }
 
-      :where([data-theme=dark], .dark) {
-        --colors-complex: #b91c1c
-      }
+      @media (forced-colors: active) {
+        :where([data-theme=dark], .dark) {
+          --colors-complex: #b91c1c
+                  }
+              }
 
       [data-color=material] {
         --colors-surface: #m-b
