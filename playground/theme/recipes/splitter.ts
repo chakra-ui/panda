@@ -14,6 +14,7 @@ export const splitter = defineRecipe({
     '& [data-part="resize-trigger"]:not([data-disabled])': {
       background: 'border.default',
       position: 'relative',
+      outline: '0',
 
       opacity: { _before: 0, _hover: { _before: 1 } },
 
