@@ -24,6 +24,7 @@ export const layout: UtilityConfig = {
   },
   zIndex: {
     className: 'z',
+    values: 'zIndex',
   },
   boxSizing: {
     className: 'box',

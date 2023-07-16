@@ -463,7 +463,7 @@ This token type represents the depth of an element's position on the z-axis.
 ```jsx
 const theme = {
   tokens: {
-    zIndices: {
+    zIndex: {
       modal: { value: 1000 }
     }
   }
