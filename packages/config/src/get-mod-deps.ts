@@ -2,6 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import { resolveTsPathPattern, type PathMapping } from './ts-config-paths'
 import ts from 'typescript'
+import type { ConfigTsOptions } from '@pandacss/types'
+import type { TSConfig } from 'pkg-types'
 
 const jsExtensions = ['.js', '.cjs', '.mjs']
 
@@ -36,6 +38,7 @@ export type GetDepsOptions = {
   baseUrl: string | undefined
   pathMappings: PathMapping[]
   foundModuleAliases: Map<string, string>
+  compilerOptions?: TSConfig['compilerOptions']
 }
 
 const importRegex = /import[\s\S]*?['"](.{3,}?)['"]/gi
@@ -44,7 +47,7 @@ const requireRegex = /require\(['"`](.+)['"`]\)/gi
 const exportRegex = /export[\s\S]*from[\s\S]*?['"](.{3,}?)['"]/gi
 
 function getDeps(opts: GetDepsOptions, fromAlias?: string) {
-  const { filename, seen } = opts
+  const { filename, seen, compilerOptions } = opts
 
   // Try to find the file
   const absoluteFile = resolveWithExtension(
@@ -90,7 +93,7 @@ function getDeps(opts: GetDepsOptions, fromAlias?: string) {
 
     // this is for internal monorepo packages that don't have a `dist`
     // and instead use a package.json `main` field that points to a src/xxx.ts file
-    const found = ts.resolveModuleName(mod, absoluteFile, {}, ts.sys).resolvedModule
+    const found = ts.resolveModuleName(mod, absoluteFile, compilerOptions ?? {}, ts.sys).resolvedModule
     if (found && found.extension === '.ts') {
       getDeps(Object.assign({}, nextOpts, { filename: found.resolvedFileName }))
       return
@@ -106,14 +109,10 @@ function getDeps(opts: GetDepsOptions, fromAlias?: string) {
   })
 }
 
-export type GetConfigDependenciesTsOptions = {
-  baseUrl?: string | undefined
-  pathMappings: PathMapping[]
-}
-
 export function getConfigDependencies(
   filePath: string,
-  tsOptions: GetConfigDependenciesTsOptions = { pathMappings: [] },
+  tsOptions: ConfigTsOptions = { pathMappings: [] },
+  compilerOptions?: TSConfig['compilerOptions'],
 ) {
   if (filePath === null) return { deps: new Set<string>(), aliases: new Map<string, string>() }
 
@@ -131,6 +130,7 @@ export function getConfigDependencies(
     baseUrl: tsOptions.baseUrl,
     pathMappings: tsOptions.pathMappings ?? [],
     foundModuleAliases: foundModuleAliases,
+    compilerOptions,
   })
 
   return { deps, aliases: foundModuleAliases }

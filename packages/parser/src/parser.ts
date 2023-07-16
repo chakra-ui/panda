@@ -6,7 +6,9 @@ import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { getImportDeclarations } from './import'
 import { createParserResult } from './parser-result'
-import type { RecipeConfig, ResultItem } from '@pandacss/types'
+import type { ConfigTsOptions, RecipeConfig, ResultItem } from '@pandacss/types'
+import { resolveTsPathPattern } from '@pandacss/config'
+import type { ProjectOptions } from './project-types'
 
 type ParserPatternNode = {
   name: string
@@ -29,13 +31,14 @@ const cvaProps = ['compoundVariants', 'defaultVariants', 'variants', 'base']
 const isCva = (map: BoxNodeMap['value']) => cvaProps.some((prop) => map.has(prop))
 
 export type ParserOptions = {
-  importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string>
+  importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string[]>
   jsx?: {
     factory: string
     nodes: ParserNodeOptions[]
     isStyleProp: (prop: string) => boolean
   }
   getRecipesByJsxName: (jsxName: string) => RecipeConfig[]
+  tsOptions?: ConfigTsOptions
 }
 
 // create strict regex from array of strings
@@ -65,8 +68,9 @@ type EvalOptions = ReturnType<GetEvaluateOptions>
 
 const defaultEnv: EvalOptions['environment'] = { preset: 'NONE' }
 
-export function createParser(options: ParserOptions) {
-  const { jsx, importMap, getRecipesByJsxName } = options
+export function createParser(options: ParserOptions, { join }: Pick<ProjectOptions, 'join'>) {
+  const { jsx, getRecipesByJsxName, tsOptions } = options
+  const importMap = Object.fromEntries(Object.entries(options.importMap).map(([key, value]) => [key, join(...value)]))
 
   // Create regex for each import map
   const importRegex = [
@@ -87,7 +91,30 @@ export function createParser(options: ParserOptions) {
     // Get all import declarations
     const imports = getImportDeclarations(sourceFile, {
       match(value) {
-        return importRegex.some(({ regex, mod }) => regex.test(value.name) && value.mod.includes(mod))
+        let found: string | boolean = false
+
+        for (const { regex, mod } of importRegex) {
+          // if none of the imported values match the regex, skip
+          if (!regex.test(value.name)) continue
+
+          // this checks that `yyy` contains {outdir}/{folder} in `import xxx from yyy`
+          if (value.mod.includes(mod)) {
+            found = true
+            break
+          }
+
+          // that might be a TS path mapping, it could be completely different from the actual path
+          if (tsOptions?.pathMappings) {
+            const filename = resolveTsPathPattern(tsOptions.pathMappings, value.mod)
+
+            if (filename?.includes(mod)) {
+              found = mod
+              break
+            }
+          }
+        }
+
+        return found
       },
     })
 

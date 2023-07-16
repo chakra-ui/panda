@@ -53,6 +53,9 @@ function getProject(code: string, options?: <Conf extends UserConfig>(conf: Conf
     useInMemoryFileSystem: true,
     getFiles: () => [staticFilePath],
     readFile: () => code,
+    join(...paths) {
+      return paths.join('/')
+    },
     parserOptions: generator.parserOptions,
     hooks,
   })
@@ -72,6 +75,9 @@ export function getFixtureProject(
     useInMemoryFileSystem: true,
     getFiles: () => [staticFilePath],
     readFile: () => code,
+    join(...paths) {
+      return paths.join('/')
+    },
     parserOptions: generator.parserOptions,
     hooks,
   })

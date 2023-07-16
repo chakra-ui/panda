@@ -9,7 +9,7 @@
     "prepare": "husky install && pnpm build-fast",
     "dev": "pnpm -r --parallel --filter=./packages/** --filter=./extension/** dev",
     "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
-    "build": "pnpm -r --parallel --filter=./packages/** --filter=./extension/** build",
+    "build": "pnpm -r --filter=./packages/** --filter=./extension/** build",
     "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
     "clean": "pnpm -r --parallel exec rimraf dist .turbo *.log",
     "reset": "pnpm -r --parallel exec rimraf node_modules && rimraf node_modules",

@@ -790,6 +790,9 @@ importers:
 
   packages/parser:
     dependencies:
+      '@pandacss/config':
+        specifier: workspace:^
+        version: link:../config
       '@pandacss/extractor':
         specifier: workspace:*
         version: link:../extractor

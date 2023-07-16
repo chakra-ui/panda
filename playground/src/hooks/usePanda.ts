@@ -56,6 +56,9 @@ export function usePanda(source: string, config: string) {
       parserOptions: generator.parserOptions,
       getFiles: () => ['code.tsx'],
       readFile: (file) => (file === 'code.tsx' ? source : ''),
+      join(...paths) {
+        return paths.join('/')
+      },
       hooks: generator.hooks,
     })
 
