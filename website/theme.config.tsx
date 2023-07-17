@@ -13,6 +13,7 @@ import {
 import { Steps } from './src/mdx/steps'
 import { css } from './styled-system/css'
 import { Icon } from './theme/icons'
+import { StatelyMachinePreview } from '@/mdx/stately-machine'
 
 const config: DocsThemeConfig = {
   components: {
@@ -22,6 +23,7 @@ const config: DocsThemeConfig = {
     Cards: Cards,
     Callout: Callout,
     FileTree: FileTree,
+    StatelyMachinePreview: StatelyMachinePreview,
     Steps: Steps,
     Tab: Tab,
     Tabs: Tabs
