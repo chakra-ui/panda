@@ -32,7 +32,7 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
   const baseUrl = compilerOptions.baseUrl ?? ''
 
   const cwd = conf.config.cwd
-  const relativeBaseUrl = baseUrl !== cwd ? baseUrl.replace(cwd, '').slice(1) + '/' : cwd
+  const relativeBaseUrl = baseUrl !== cwd ? baseUrl.replace(cwd, '').slice(1) : cwd
 
   return {
     ...ctx,
