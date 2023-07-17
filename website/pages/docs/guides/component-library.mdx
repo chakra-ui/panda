@@ -14,9 +14,19 @@ When creating a component library that uses Panda which can be used in a variety
 
 > In the examples below, we use `tsup` as the build tool. You can use any other build tool.
 
-# Decision machine
+## Recommendations
+
+- **App** code might **not** use Panda, use the **[static css](#ship-a-static-css-file)** file approach
+- **App** code **uses** Panda and Library code **doesn't ship components** but only ships tokens, patterns or recipes, use the **[ship preset](#ship-a-panda-preset)** approach
+- **App** code **uses** Panda and lives in your **internal monorepo**, use the **[include src files](#include-the-src-files)** approach
+- **App** code **uses** Panda and Library Code source files **shouldn't be published on npm**, use **[ship build info](#ship-the-build-info-file)** approach
+
+> ⚠️ If you use the `include src files` or `ship build info` approach, you might also need to ship a `preset` if your library code has any custom tokens, patterns or recipes.
+
+You can use the visual decision machine below to help you choose the best approach for your use case.
 
 <StatelyMachinePreview embedId="d30cb4f3-2279-41a6-ad95-13e72ccfe884" machineId="0ff5a34b-1d63-476d-ad2d-21c91dad9973" />
+
 
 ## Ship a Panda Preset
 
@@ -256,15 +266,6 @@ export default defineConfig({
   outdir: '@acme-org/styled-system'
 })
 ```
-
-## Recommendations
-
-- Library Code shouldn't be published on npm and App code uses Panda, use [ship build info](#ship-the-build-info-file) approach
-- App code might not use Panda, use the [static css](#ship-a-static-css-file) file approach
-- App code lives in an internal monorepo, use the [include src files](#include-the-src-files) approach
-- Library code doesn't ship components but only ships tokens, patterns or recipes, use the [ship preset](#ship-a-panda-preset) approach
-
-> ⚠️ If you use the `include src files` or `ship build info` approach, you might also need to ship a `preset` if your library code has any custom tokens, patterns or recipes.
 
 ## Troubleshooting
 
