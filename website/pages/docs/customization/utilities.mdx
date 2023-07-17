@@ -15,7 +15,7 @@ Here are the properties you need to define or customize a utility:
 - `className` : The className the property maps to
 - `shorthand`: The shorthand or alias version of the property
 - `values`: The possible values the property can have. Could be a token category, or an enum of values, string, number,
-  or boolean.
+or boolean.
 - `transform`: A function that converts the value to a valid css object
 
 ## Creating a custom utility
@@ -41,21 +41,21 @@ export default defineConfig({
 Then you can run the following command to generate the pattern JS code:
 
 <Tabs items={['pnpm', 'npm', 'yarn']}>
-  <Tab>
-    ```bash
-    pnpm panda codegen
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    npm panda codegen
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    yarn panda codegen
-    ```
-  </Tab>
+    <Tab>
+        ```bash
+        pnpm panda codegen
+        ```
+    </Tab>
+    <Tab>
+        ```bash
+        npm panda codegen
+        ```
+    </Tab>
+    <Tab>
+        ```bash
+        yarn panda codegen
+        ```
+    </Tab>
 </Tabs>
 
 Now, we can use the `br` property in our components.
@@ -119,6 +119,29 @@ export default defineConfig({
           return {
             borderTopWidth: value,
             borderTopColor: token('colors.gray.400')
+          }
+        }
+      }
+    }
+  }
+})
+```
+
+### Using boolean values
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  utilities: {
+    extend: {
+      truncate: {
+        className: 'truncate',
+        values: { type: 'boolean' },
+        transform(value) {
+          if (!value) return {}
+          return {
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
           }
         }
       }
