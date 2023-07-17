@@ -1,5 +1,23 @@
 # @pandacss/parser
 
+## 0.7.0
+
+### Patch Changes
+
+- 16cd3764: Fix parser issue in `.vue` files, make the traversal check nested elements instead of only checking the 1st
+  level
+- 7bc69e4b: Fix issue where extraction does not work when the spread syntax is used or prop contains string that ends
+  with ':'
+- Updated dependencies [f2abf34d]
+- Updated dependencies [f59154fb]
+- Updated dependencies [a9c189b7]
+- Updated dependencies [7bc69e4b]
+  - @pandacss/extractor@0.7.0
+  - @pandacss/shared@0.7.0
+  - @pandacss/types@0.7.0
+  - @pandacss/is-valid-prop@0.7.0
+  - @pandacss/logger@0.7.0
+
 ## 0.6.0
 
 ### Patch Changes

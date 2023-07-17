@@ -1,5 +1,32 @@
 # @pandacss/preset-base
 
+## 0.7.0
+
+### Minor Changes
+
+- 60a77841: Refactor `transition` utility to improve DX of adding transition. Transitions will now add a default
+  transition property, timing function and duration. This allows you to add transitions with a single property.
+
+  ```jsx
+  <div className={css({ transition: 'background' })}>Content</div>
+  ```
+
+  This will generate the following css:
+
+  ```css
+  .transition_background {
+    transition-property: background, background-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  ```
+
+### Patch Changes
+
+- d9eeba60: Fix issue where `zIndex` tokens are not connected to zIndex utility
+- Updated dependencies [a9c189b7]
+  - @pandacss/types@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes

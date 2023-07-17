@@ -1,5 +1,19 @@
 # @pandacss/generator
 
+## 0.7.0
+
+### Patch Changes
+
+- a9c189b7: Fix issue where `splitVariantProps` in cva doesn't resolve the correct types
+- Updated dependencies [f59154fb]
+- Updated dependencies [a9c189b7]
+  - @pandacss/shared@0.7.0
+  - @pandacss/types@0.7.0
+  - @pandacss/core@0.7.0
+  - @pandacss/token-dictionary@0.7.0
+  - @pandacss/is-valid-prop@0.7.0
+  - @pandacss/logger@0.7.0
+
 ## 0.6.0
 
 ### Patch Changes

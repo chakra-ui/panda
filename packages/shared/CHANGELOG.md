@@ -1,5 +1,11 @@
 # @pandacss/shared
 
+## 0.7.0
+
+### Patch Changes
+
+- f59154fb: Fix issue where slash could not be used in token name
+
 ## 0.6.0
 
 ## 0.5.1
