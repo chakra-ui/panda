@@ -154,6 +154,7 @@ export function useEditor(props: PandaEditorProps) {
         }),
       )
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [configureEditor, setupLibs, getPandaTypes],
   )
 
