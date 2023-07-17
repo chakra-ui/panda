@@ -36,7 +36,7 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@ark-ui/react": "0.7.2",
+    "@ark-ui/react": "0.7.3",
     "@astrojs/react": "2.2.1",
     "@pandacss/types": "workspace:*",
     "@pandacss/config": "workspace:*",
