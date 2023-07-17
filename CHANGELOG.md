@@ -6,6 +6,36 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [0.7.0] - 2023-07-17
+
+### Fixed
+
+- Fix postcss issue where `@layer reset, base, tokens, recipes, utilities` check was too strict
+- Fix parser issue in `.vue` files, make the traversal check nested elements instead of only checking the 1st level
+- Fix issue where slash could not be used in token name
+- Improve module detection and hot module reloading in the PostCSS plugin when external files are changed
+- Fix issue where `splitVariantProps` in cva doesn't resolve the correct types
+- Fix issue where `zIndex` tokens are not connected to zIndex utility
+
+### Changed
+
+- Refactor `transition` utility to improve DX of adding transition. Transitions will now add a default transition
+  property, timing function and duration. This allows you to add transitions with a single property.
+
+```jsx
+<div className={css({ transition: 'background' })}>Content</div>
+```
+
+This will generate the following css:
+
+```css
+.transition_background {
+  transition-property: background, background-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+```
+
 ## [0.6.0] - 2023-07-08
 
 ### Fixed
