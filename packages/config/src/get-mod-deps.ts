@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
-import { resolveTsPathPattern, type PathMapping } from './ts-config-paths'
+import { type PathMapping } from './ts-config-paths'
+import { resolveTsPathPattern } from './resolve-ts-path-pattern'
 import ts from 'typescript'
 import type { ConfigTsOptions } from '@pandacss/types'
 import type { TSConfig } from 'pkg-types'

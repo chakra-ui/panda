@@ -20,11 +20,11 @@ const createTsProject = (options: Partial<TsProjectOptions>) =>
     },
   })
 
-export const createProject = ({ getFiles, readFile, parserOptions, hooks, join, ...projectOptions }: ProjectOptions) =>
+export const createProject = ({ getFiles, readFile, parserOptions, hooks, ...projectOptions }: ProjectOptions) =>
   pipe(
     {
       project: createTsProject(projectOptions),
-      parser: createParser(parserOptions, { join }),
+      parser: createParser(parserOptions),
     },
 
     Obj.assign(({ project, parser }) => ({

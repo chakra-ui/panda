@@ -1,7 +1,7 @@
 import { createGenerator, type Generator } from '@pandacss/generator'
 import { createProject, type Project } from '@pandacss/parser'
 import type { ConfigResultWithHooks, PandaHookable } from '@pandacss/types'
-import type { Runtime } from '@pandacss/types/src/runtime'
+import type { Runtime } from '@pandacss/types'
 import { getChunkEngine } from './chunk-engine'
 import { nodeRuntime } from './node-runtime'
 import { getOutputEngine } from './output-engine'
@@ -26,9 +26,8 @@ export const createContext = (conf: ConfigResultWithHooks) => {
       ...conf.tsconfig,
       getFiles,
       readFile: runtime.fs.readFileSync,
-      join: runtime.path.join as any,
       hooks: conf.hooks,
-      parserOptions: generator.parserOptions,
+      parserOptions: { join: runtime.path.join, ...generator.parserOptions },
     }),
   }
 
