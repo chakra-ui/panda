@@ -37,7 +37,7 @@
   "dependencies": {
     "@changesets/changelog-github": "0.4.8",
     "@changesets/cli": "2.26.2",
-    "@types/node": "20.4.1",
+    "@types/node": "20.4.2",
     "@typescript-eslint/eslint-plugin": "5.61.0",
     "@typescript-eslint/parser": "5.61.0",
     "concurrently": "^8.2.0",

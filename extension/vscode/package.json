@@ -228,7 +228,7 @@
     "@pandacss/vsix-builder": "workspace:*",
     "@pnpm/find-workspace-dir": "^6.0.2",
     "@pnpm/find-workspace-packages": "^6.0.9",
-    "@types/node": "20.4.1",
+    "@types/node": "20.4.2",
     "@types/vscode": "^1.80.0",
     "@vscode/vsce": "^2.19.0",
     "dotenv": "^16.3.1",
