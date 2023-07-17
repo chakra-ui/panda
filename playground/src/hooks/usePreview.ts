@@ -17,6 +17,7 @@ export function usePreview() {
       setIsMounted(false)
       contentRef?.removeEventListener('DOMContentLoaded', handleLoad)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentRef])
 
   const { resolvedTheme } = useTheme()

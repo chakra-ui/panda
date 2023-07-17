@@ -21,6 +21,16 @@ export function useEditor(props: PandaEditorProps) {
   const [activeTab, setActiveTab] = useState<keyof State>('code')
   const monacoRef = useRef<Parameters<OnMount>[1]>()
 
+  const formatText = async (text: string) => {
+    const prettier = await import('prettier/standalone')
+    const typescript = await import('prettier/parser-typescript')
+    return prettier.format(text, {
+      parser: 'typescript',
+      plugins: [typescript],
+      singleQuote: true,
+    })
+  }
+
   const configureEditor: OnMount = useCallback((editor, monaco) => {
     function registerKeybindings() {
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
@@ -36,18 +46,10 @@ export function useEditor(props: PandaEditorProps) {
 
     monaco.languages.registerDocumentFormattingEditProvider('typescript', {
       async provideDocumentFormattingEdits(model) {
-        const prettier = await import('prettier/standalone')
-        const typescript = await import('prettier/parser-typescript')
-        const text = prettier.format(model.getValue(), {
-          parser: 'typescript',
-          plugins: [typescript],
-          singleQuote: true,
-        })
-
         return [
           {
             range: model.getFullModelRange(),
-            text,
+            text: await formatText(model.getValue()),
           },
         ]
       },
@@ -152,14 +154,19 @@ export function useEditor(props: PandaEditorProps) {
         }),
       )
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [configureEditor, setupLibs, getPandaTypes],
   )
 
-  const onCodeEditorChange: OnChange = (content) => {
+  const onCodeEditorChange = (content: Parameters<OnChange>[0]) => {
     onChange({
       ...value,
       [activeTab]: content,
     })
+  }
+
+  const onCodeEditorFormat = async () => {
+    onCodeEditorChange(await formatText(value[activeTab]))
   }
 
   useUpdateEffect(() => {
@@ -172,5 +179,6 @@ export function useEditor(props: PandaEditorProps) {
     onBeforeMount,
     onCodeEditorChange,
     onCodeEditorMount,
+    onCodeEditorFormat,
   }
 }
