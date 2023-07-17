@@ -1,5 +1,31 @@
 # @pandacss/node
 
+## 0.7.0
+
+### Patch Changes
+
+- f4bb0576: Fix postcss issue where `@layer reset, base, tokens, recipes, utilities` check was too strict
+- d8ebaf2f: Fix issue where hot module reloading is inconsistent in the PostCSS plugin when external files are changed
+- 4ff7ddea: Fix issue where hot module reloading is inconsistent in the PostCSS plugin when another internal package is
+  changed
+- Updated dependencies [16cd3764]
+- Updated dependencies [f2abf34d]
+- Updated dependencies [f59154fb]
+- Updated dependencies [a9c189b7]
+- Updated dependencies [7bc69e4b]
+- Updated dependencies [1a05c4bb]
+  - @pandacss/parser@0.7.0
+  - @pandacss/extractor@0.7.0
+  - @pandacss/shared@0.7.0
+  - @pandacss/generator@0.7.0
+  - @pandacss/types@0.7.0
+  - @pandacss/config@0.7.0
+  - @pandacss/core@0.7.0
+  - @pandacss/token-dictionary@0.7.0
+  - @pandacss/error@0.7.0
+  - @pandacss/is-valid-prop@0.7.0
+  - @pandacss/logger@0.7.0
+
 ## 0.6.0
 
 ### Patch Changes

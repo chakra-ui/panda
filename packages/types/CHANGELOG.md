@@ -1,5 +1,11 @@
 # @pandacss/types
 
+## 0.7.0
+
+### Patch Changes
+
+- a9c189b7: Fix issue where `splitVariantProps` in cva doesn't resolve the correct types
+
 ## 0.6.0
 
 ## 0.5.1
