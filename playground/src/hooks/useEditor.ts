@@ -49,7 +49,7 @@ export function useEditor(props: PandaEditorProps) {
         return [
           {
             range: model.getFullModelRange(),
-            text: formatText(model.getValue()),
+            text: await formatText(model.getValue()),
           },
         ]
       },
@@ -157,7 +157,7 @@ export function useEditor(props: PandaEditorProps) {
     [configureEditor, setupLibs, getPandaTypes],
   )
 
-  const onCodeEditorChange: OnChange = (content) => {
+  const onCodeEditorChange = (content: Parameters<OnChange>[0]) => {
     onChange({
       ...value,
       [activeTab]: content,
