@@ -12,7 +12,7 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "postcss": "8.4.25",
+    "postcss": "8.4.26",
     "nuxt": "^3.6.2",
     "@pandacss/dev": "workspace:*"
   }
