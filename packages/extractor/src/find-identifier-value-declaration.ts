@@ -1,9 +1,6 @@
-import { createLogScope, logger } from '@pandacss/logger'
 import { Identifier, Node } from 'ts-morph'
 import { getExportedVarDeclarationWithName, getModuleSpecifierSourceFile } from './maybe-box-node'
 import type { BoxContext } from './types'
-
-const scope = createLogScope('findIdentifierValueDeclaration')
 
 export function isScope(node: Node): boolean {
   return (
@@ -31,23 +28,16 @@ export function getDeclarationFor(node: Identifier, stack: Node[], ctx: BoxConte
       Node.isBindingElement(parent)) &&
     parent.getNameNode() == node
   ) {
-    logger.debug(scope('getDeclarationFor'), { isDeclarationLike: true, kind: parent.getKindName() })
     declarationStack.push(parent)
     declaration = parent
   } else if (Node.isImportSpecifier(parent) && parent.getNameNode() == node) {
     if (ctx.flags?.skipTraverseFiles) return
 
     const sourceFile = getModuleSpecifierSourceFile(parent.getImportDeclaration())
-    logger.debug(scope('getDeclarationFor'), { isImportDeclaration: true, sourceFile: Boolean(sourceFile) })
 
     if (sourceFile) {
       const exportStack = [parent, sourceFile] as Node[]
       const maybeVar = getExportedVarDeclarationWithName(node.getText(), sourceFile, exportStack, ctx)
-
-      logger.debug(scope('getDeclarationFor'), {
-        from: sourceFile.getFilePath(),
-        hasVar: Boolean(maybeVar),
-      })
 
       if (maybeVar) {
         declarationStack.push(...exportStack.concat(maybeVar))
@@ -56,12 +46,6 @@ export function getDeclarationFor(node: Identifier, stack: Node[], ctx: BoxConte
     }
   }
 
-  logger.debug(scope('getDeclarationFor'), {
-    node: node.getKindName(),
-    parent: parent.getKindName(),
-    declaration: declaration?.getKindName(),
-  })
-
   if (declaration) {
     stack.push(...declarationStack)
   }
@@ -69,15 +53,12 @@ export function getDeclarationFor(node: Identifier, stack: Node[], ctx: BoxConte
   return declaration
 }
 
-// TODO getParentWhile ?
 const getInnermostScope = (from: Node) => {
   let scope = from.getParent()
   while (scope && !isScope(scope)) {
-    // logger.debug("getInnermostScope", scope.getKindName());
     scope = scope.getParent()
   }
 
-  logger.debug('getInnermostScope', { found: scope?.getKindName() })
   return scope
 }
 
@@ -95,11 +76,7 @@ export function findIdentifierValueDeclaration(
 
   do {
     scope = getInnermostScope(scope!)
-    logger.debug('find', {
-      identifier: identifier.getText(),
-      scope: scope?.getKindName(),
-      count: count++,
-    })
+    count++
     if (!scope) return
 
     const refName = identifier.getText()
@@ -142,11 +119,6 @@ export function findIdentifierValueDeclaration(
       }
     })
 
-    logger.debug('find', {
-      scope: scope.getKindName(),
-      foundNode: foundNode?.getKindName(),
-      isUnresolvable,
-    })
     if (foundNode || isUnresolvable) {
       if (foundNode) {
         stack.push(...innerStack)
@@ -155,11 +127,4 @@ export function findIdentifierValueDeclaration(
       return foundNode
     }
   } while (scope && !Node.isSourceFile(scope) && !foundNode && !isUnresolvable && count < 100)
-
-  logger.debug('find', {
-    end: true,
-    count,
-    scope: scope?.getKindName(),
-    isUnresolvable,
-  })
 }

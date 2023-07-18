@@ -574,9 +574,6 @@ importers:
 
   packages/extractor:
     dependencies:
-      '@pandacss/logger':
-        specifier: workspace:*
-        version: link:../logger
       lil-fp:
         specifier: 1.4.5
         version: 1.4.5

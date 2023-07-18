@@ -23,7 +23,6 @@
     "dist"
   ],
   "dependencies": {
-    "@pandacss/logger": "workspace:*",
     "lil-fp": "1.4.5",
     "ts-evaluator": "^1.1.0",
     "ts-morph": "18.0.0",

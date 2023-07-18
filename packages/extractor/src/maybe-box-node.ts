@@ -1,4 +1,3 @@
-import { logger } from '@pandacss/logger'
 import { Bool } from 'lil-fp'
 import type {
   ArrayLiteralExpression,
@@ -252,7 +251,6 @@ const maybeStringLiteral = (node: Node, stack: Node[], ctx: BoxContext) =>
   onlyStringLiteral(maybeBoxNode(node, stack, ctx))
 
 export const maybePropName = (node: Node, stack: Node[], ctx: BoxContext) => {
-  logger.debug('prop-name', node.getKindName())
   const boxed = maybeBoxNode(node, stack, ctx)
   const strBox = onlyStringLiteral(boxed)
   if (strBox) return strBox
@@ -282,22 +280,11 @@ const maybeResolveConditionalExpression = (
   const whenTrueValue = maybeBoxNode(whenTrueExpr, stack, ctx)
   const whenFalseValue = maybeBoxNode(whenFalseExpr, stack, ctx)
 
-  logger.debug('cond', { before: true, whenTrueValue, whenFalseValue, canReturnWhenTrue })
-
   //<ColorBox <ColorBox color={"blue.100" || "never.100"} />
   //<ColorBox <ColorBox color={"blue.100" ?? "never.100"} />
   if (canReturnWhenTrue && whenTrueValue && !box.isUnresolvable(whenTrueValue)) {
-    logger.debug('cond', { earlyReturn: true, whenTrueValue })
     return whenTrueValue
   }
-
-  logger.debug('cond', {
-    after: true,
-    // whenTrueLiteral: whenTrueExpr.getText(),
-    // whenFalseLiteral: whenFalseExpr.getText(),
-    whenTrueValue,
-    whenFalseValue,
-  })
 
   // <ColorBox <ColorBox color={true && "never.100"} />
   // whenTrueValue === true
@@ -342,11 +329,9 @@ const maybeResolveConditionalExpression = (
 
 const findProperty = (node: ObjectLiteralElementLike, propName: string, _stack: Node[], ctx: BoxContext) => {
   const stack = [..._stack]
-  logger.debug('find-prop', { propName, kind: node.getKindName() })
 
   if (Node.isPropertyAssignment(node)) {
     const name = node.getNameNode()
-    // logger.debug("find-prop", { name: name.getText(), kind: name.getKindName() });
 
     if (Node.isIdentifier(name) && name.getText() === propName) {
       stack.push(name)
@@ -391,30 +376,12 @@ const getObjectLiteralPropValue = (
   const property =
     initializer.getProperty(propName) ?? initializer.getProperties().find((p) => findProperty(p, propName, stack, ctx))
 
-  logger.debug('get-prop', {
-    propName,
-    accessList,
-    // shortcut: initializer.getProperty(propName),
-    // finder: initializer.getProperties().find((p) => findProperty(p, propName, stack, ctx)),
-    // property: property?.getText().slice(0, 100),
-    propertyKind: property?.getKindName(),
-    // properties: initializer.getProperties().map((p) => p.getText().slice(0, 100)),
-    // initializer: initializer.getText().slice(0, 100),
-    initializerKind: initializer.getKindName(),
-  })
-
   if (!property) return
   stack.push(property)
 
   if (Node.isPropertyAssignment(property)) {
     const propInit = property.getInitializer()
     if (!propInit) return
-
-    logger.debug('get-prop', {
-      propAssignment: true,
-      // propInit: propInit.getText(),
-      propInitKind: propInit.getKindName(),
-    })
 
     if (Node.isObjectLiteralExpression(propInit)) {
       if (accessList.length > 0) {
@@ -432,7 +399,6 @@ const getObjectLiteralPropValue = (
 
   if (Node.isShorthandPropertyAssignment(property)) {
     const identifier = property.getNameNode()
-    logger.debug('get-prop', { shorthand: true, accessList, propInit: identifier.getText() })
 
     if (accessList.length > 0) {
       return maybePropIdentifierValue(identifier, accessList, stack, ctx)
@@ -455,14 +421,11 @@ const maybeTemplateStringValue = (template: TemplateExpression, stack: Node[], c
   const tailValues = tail.map((t) => {
     const expression = t.getExpression()
     const propBox = maybePropName(expression, stack, ctx)
-    // logger({ expression: expression.getText(), propBox });
     if (!propBox) return
 
     const literal = t.getLiteral()
     return propBox.value + literal.getLiteralText()
   })
-
-  // logger({ head: head.getText(), headValue, tailValues, tail: tail.map((t) => t.getText()) });
 
   if (tailValues.every(isNotNullish)) {
     return headValue.value + tailValues.join('')
@@ -472,11 +435,9 @@ const maybeTemplateStringValue = (template: TemplateExpression, stack: Node[], c
 const maybeBindingElementValue = (def: BindingElement, stack: Node[], propName: string, ctx: BoxContext) => {
   const parent = def.getParent()
 
-  logger.debug('id-def', { parent: parent?.getKindName() })
   if (!parent) return
 
   const grandParent = parent.getParent()
-  logger.debug('id-def', { grandParent: grandParent?.getKindName() })
   if (!grandParent) return
 
   if (Node.isArrayBindingPattern(parent)) {
@@ -485,14 +446,12 @@ const maybeBindingElementValue = (def: BindingElement, stack: Node[], propName: 
 
     if (Node.isVariableDeclaration(grandParent)) {
       const init = grandParent.getInitializer()
-      logger.debug('id-def', { grandParentInit: init?.getKindName() })
       if (!init) return
 
       const initializer = unwrapExpression(init)
       if (!Node.isArrayLiteralExpression(initializer)) return
 
       const element = initializer.getElements()[index + 1]
-      logger.debug('id-def', { index, propName, elementKind: element?.getKindName() })
       if (!element) return
 
       const innerStack = [...stack, initializer, element]
@@ -501,7 +460,6 @@ const maybeBindingElementValue = (def: BindingElement, stack: Node[], propName: 
 
       if (box.isObject(maybeObject)) {
         const propValue = maybeObject.value[propName]
-        logger.debug('id-def', { propName, propValue })
 
         return box.from(propValue, element, innerStack)
       }
@@ -513,7 +471,6 @@ const maybeBindingElementValue = (def: BindingElement, stack: Node[], propName: 
       const propValue = maybeObject.value.get(propName)
       if (!propValue) return
 
-      logger.debug('id-def', { propName, propValue })
       return propValue
     }
   }
@@ -526,23 +483,15 @@ const maybeBindingElementValue = (def: BindingElement, stack: Node[], propName: 
 
 function maybePropDefinitionValue(def: Node, accessList: string[], _stack: Node[], ctx: BoxContext) {
   const propName = accessList.at(-1)!
-  logger.debug('maybe-prop-def-value', { propName, accessList, kind: def.getKindName() })
 
   if (Node.isVariableDeclaration(def)) {
     const init = def.getInitializer()
-    logger.debug('maybe-prop-def-value', {
-      // init: init?.getText(),
-      kind: init?.getKindName(),
-      propName,
-    })
 
     if (!init) {
       const type = def.getTypeNode()
       if (!type) return
 
       if (Node.isTypeLiteral(type)) {
-        logger.debug('maybe-prop-def-value', { typeLiteral: true })
-
         if (accessList.length > 0) {
           const stack = [..._stack]
           stack.push(type)
@@ -562,8 +511,6 @@ function maybePropDefinitionValue(def: Node, accessList: string[], _stack: Node[
 
           const typeValue = getTypeNodeValue(typeLiteral, stack, ctx)
 
-          logger.debug('maybe-prop-def-value', { propName, typeValue: Boolean(typeValue) })
-
           return box.from(typeValue, typeLiteral, stack)
         }
 
@@ -576,11 +523,6 @@ function maybePropDefinitionValue(def: Node, accessList: string[], _stack: Node[
     }
 
     const initializer = unwrapExpression(init)
-    logger.debug('maybe-prop-def-value', {
-      // initializer: initializer.getText(),
-      kind: initializer.getKindName(),
-      propName,
-    })
 
     if (Node.isObjectLiteralExpression(initializer)) {
       const propValue = getObjectLiteralPropValue(initializer, accessList, _stack, ctx)
@@ -623,17 +565,9 @@ const maybePropIdentifierValue = (
 ): BoxNode | undefined => {
   const maybeValueDeclaration = findIdentifierValueDeclaration(identifier, _stack, ctx)
 
-  logger.debug('maybePropIdentifierValue', {
-    identifier: identifier.getText(),
-    hasValueDeclaration: Boolean(maybeValueDeclaration),
-  })
-
   if (!maybeValueDeclaration) {
     return box.unresolvable(identifier, _stack)
   }
-
-  const declaration = unwrapExpression(maybeValueDeclaration)
-  logger.debug('maybePropIdentifierValue', { def: declaration.getKindName(), accessList })
 
   const maybeValue = maybePropDefinitionValue(maybeValueDeclaration, accessList, _stack, ctx)
   if (maybeValue) return maybeValue
@@ -652,7 +586,6 @@ const getTypeLiteralNodePropValue = (
 ): LiteralValue => {
   if (typeLiteralCache.has(type)) {
     const map = typeLiteralCache.get(type)
-    logger.debug('cached', { typeLiteralNodeProp: true, kind: type.getKindName() })
 
     if (map === null) return
     if (map?.has(propName)) {
@@ -671,14 +604,7 @@ const getTypeLiteralNodePropValue = (
       return
     }
 
-    // logger.lazyScoped("type", () => ({
-    //     propType: propType.getText().slice(0, 20),
-    //     propTypeKind: propType.getKindName(),
-    //     propName,
-    // }));
-
     const propValue = getTypeNodeValue(propType, stack, ctx)
-    logger.debug('type', { propName, hasPropValue: isNotNullish(propValue) })
     if (isNotNullish(propValue)) {
       if (!typeLiteralCache.has(type)) {
         typeLiteralCache.set(type, new Map())
@@ -695,7 +621,6 @@ const getTypeLiteralNodePropValue = (
 }
 
 export function getNameLiteral(wrapper: Node) {
-  logger.debug('literal', { name: wrapper.getText(), kind: wrapper.getKindName() })
   if (Node.isStringLiteral(wrapper)) return wrapper.getLiteralText()
   return wrapper.getText()
 }
@@ -703,7 +628,6 @@ export function getNameLiteral(wrapper: Node) {
 const typeNodeCache = new WeakMap()
 const getTypeNodeValue = (type: TypeNode, stack: Node[], ctx: BoxContext): LiteralValue => {
   if (typeNodeCache.has(type)) {
-    logger.debug('cached', { typeNode: true, kind: type.getKindName() })
     return typeNodeCache.get(type)
   }
 
@@ -711,7 +635,6 @@ const getTypeNodeValue = (type: TypeNode, stack: Node[], ctx: BoxContext): Liter
     const literal = type.getLiteral()
     if (Node.isStringLiteral(literal)) {
       const result = literal.getLiteralText()
-      logger.debug('type-value', { result })
       typeNodeCache.set(type, result)
 
       return result
@@ -727,7 +650,6 @@ const getTypeNodeValue = (type: TypeNode, stack: Node[], ctx: BoxContext): Liter
           const nameNode = member.getNameNode()
           const nameText = nameNode.getText()
           const name = getNameLiteral(nameNode)
-          logger.debug('isTypeLiteral', { nameNodeKind: nameNode.getKindName(), name })
           if (!name) return
 
           const value = getTypeLiteralNodePropValue(type, nameText, stack, ctx)
@@ -736,7 +658,6 @@ const getTypeNodeValue = (type: TypeNode, stack: Node[], ctx: BoxContext): Liter
         .filter(isNotNullish)
 
       const result = Object.fromEntries(entries)
-      // logger.lazyScoped("type-value", () => ({ obj: Object.keys(obj) }));
       typeNodeCache.set(type, result)
 
       return result
@@ -747,8 +668,6 @@ const getTypeNodeValue = (type: TypeNode, stack: Node[], ctx: BoxContext): Liter
 }
 
 const maybeDefinitionValue = (def: Node, stack: Node[], ctx: BoxContext): BoxNode | undefined => {
-  logger.debug('maybe-def-value', { kind: def.getKindName() })
-
   if (Node.isShorthandPropertyAssignment(def)) {
     const propNameNode = def.getNameNode()
     return maybePropIdentifierValue(propNameNode, [propNameNode.getText()], stack, ctx)
@@ -757,17 +676,11 @@ const maybeDefinitionValue = (def: Node, stack: Node[], ctx: BoxContext): BoxNod
   // const staticColor =
   if (Node.isVariableDeclaration(def)) {
     const init = def.getInitializer()
-    logger.debug('maybe-def-value', {
-      varDeclaration: true,
-      // initializer: init?.getText(),
-      kind: init?.getKindName(),
-    })
 
     if (!init) {
       const type = def.getTypeNode()
       if (!type) return
 
-      logger.debug('maybe-def-value', { noInit: true, kind: type.getKindName() })
       if (Node.isTypeLiteral(type)) {
         stack.push(type)
         const maybeTypeValue = getTypeNodeValue(type, stack, ctx)
@@ -792,7 +705,6 @@ const maybeDefinitionValue = (def: Node, stack: Node[], ctx: BoxContext): BoxNod
       const propName = nameNode.getText()
       const innerStack = [...stack, nameNode]
 
-      logger.debug('maybe-def-value', { bindingElement: true, propName })
       const value = maybeBindingElementValue(def, innerStack, propName, ctx)
       if (value) return value
 
@@ -817,11 +729,9 @@ export const getExportedVarDeclarationWithName = (
 ): VariableDeclaration | undefined => {
   const maybeVar = sourceFile.getVariableDeclaration(varName)
 
-  logger.debug('getExportedVarDeclarationWithName', { varName, path: sourceFile.getFilePath(), hasVar: !!maybeVar })
   if (maybeVar) return maybeVar
 
   const exportDeclaration = resolveVarDeclarationFromExportWithName(varName, sourceFile, stack, ctx)
-  logger.debug('getExportedVarDeclarationWithName', { exportDeclaration: Boolean(exportDeclaration) })
   if (!exportDeclaration) return
 
   return exportDeclaration
@@ -835,7 +745,6 @@ const hasNamedExportWithName = (name: string, exportDeclaration: ExportDeclarati
 
   for (const namedExport of namedExports) {
     const exportedName = namedExport.getNameNode().getText()
-    logger.debug('export-declaration', { searching: name, exportedName })
 
     if (exportedName === name) {
       return true
@@ -856,7 +765,6 @@ export const getModuleSpecifierSourceFile = (declaration: ExportDeclaration | Im
   const project = declaration.getProject()
   const moduleName = declaration.getModuleSpecifierValue()
 
-  logger.debug('getModuleSpecifierSourceFile', { moduleName })
   if (!moduleName) return
 
   const containingFile = declaration.getSourceFile().getFilePath()
@@ -866,11 +774,9 @@ export const getModuleSpecifierSourceFile = (declaration: ExportDeclaration | Im
     project.getCompilerOptions(),
     project.getModuleResolutionHost(),
   )
-  logger.debug('getModuleSpecifierSourceFile', resolved)
   if (!resolved.resolvedModule) return
 
   const sourceFile = project.addSourceFileAtPath(resolved.resolvedModule.resolvedFileName)
-  logger.debug('getModuleSpecifierSourceFile', { found: Boolean(sourceFile) })
 
   return sourceFile
 }
@@ -883,11 +789,6 @@ function resolveVarDeclarationFromExportWithName(
 ): VariableDeclaration | undefined {
   for (const exportDeclaration of sourceFile.getExportDeclarations()) {
     const exportStack = [exportDeclaration] as Node[]
-    logger.debug('resolveVarDeclarationFromExportWithName', {
-      symbolName,
-      // exporDeclaration: exportDeclaration.getText(),
-      exporDeclarationKind: exportDeclaration.getKindName(),
-    })
     if (!hasNamedExportWithName(symbolName, exportDeclaration)) continue
 
     const maybeFile = getModuleSpecifierSourceFile(exportDeclaration)
@@ -904,13 +805,11 @@ function resolveVarDeclarationFromExportWithName(
 
 export const maybeIdentifierValue = (identifier: Identifier, _stack: Node[], ctx: BoxContext) => {
   const valueDeclaration = findIdentifierValueDeclaration(identifier, _stack, ctx)
-  logger.debug('id-ref', { identifier: identifier.getText(), hasValueDeclaration: Boolean(valueDeclaration) })
   if (!valueDeclaration) {
     return box.unresolvable(identifier, _stack)
   }
 
   const declaration = unwrapExpression(valueDeclaration)
-  logger.debug('id-ref', { def: declaration.getKindName() })
 
   const stack = [..._stack]
   const maybeValue = maybeDefinitionValue(declaration, stack, ctx)
@@ -926,11 +825,6 @@ const tryComputingPlusTokenBinaryExpressionToString = (node: BinaryExpression, s
   const leftValue = maybePropName(left, stack, ctx)
   const rightValue = maybePropName(right, stack, ctx)
   if (!leftValue || !rightValue) return
-
-  logger.debug('tryComputingPlusTokenBinaryExpressionToString', {
-    leftValue,
-    rightValue,
-  })
 
   if (isNotNullish(leftValue.value) && isNotNullish(rightValue.value)) {
     return box.literal(String(leftValue.value) + String(rightValue.value), node, stack)
@@ -998,8 +892,6 @@ const getElementAccessedExpressionValue = (
 
     const propName = argLiteral.value.toString()
 
-    logger.debug('PropertyAccessExpression', { propRefValue, propName })
-
     if (box.isObject(propRefValue)) {
       const propValue = propRefValue.value[propName]
       return box.from(propValue, arg, stack)
@@ -1021,7 +913,6 @@ const getElementAccessedExpressionValue = (
   // <ColorBox color={xxx[yyy[zzz]]} />
   if (Node.isIdentifier(elementAccessed) && Node.isElementAccessExpression(arg)) {
     const propName = getElementAccessedExpressionValue(arg, stack, ctx)
-    logger.debug('element:access', { isArgElementAccessExpression: true, propName })
 
     if (typeof propName === 'string' && isNotNullish(propName)) {
       return maybePropIdentifierValue(elementAccessed, [propName], stack, ctx)
@@ -1031,24 +922,17 @@ const getElementAccessedExpressionValue = (
   // <ColorBox color={xxx[yyy["zzz"]]} />
   if (Node.isElementAccessExpression(elementAccessed) && argLiteral && isNotNullish(argLiteral.value)) {
     const identifier = getElementAccessedExpressionValue(elementAccessed, stack, ctx)
-    logger.debug('element:access', {
-      isElementAccessExpression: true,
-      identifier,
-      argValue: argLiteral,
-    })
 
     if (isObject(identifier)) {
       const argValue = argLiteral.value.toString()
 
       if (box.isMap(identifier)) {
         const maybeValue = identifier.value.get(argValue)
-        logger.debug('isMap', { isElementAccessExpression: true, maybeValue })
         return maybeValue
       }
 
       if (box.isObject(identifier)) {
         const maybeLiteralValue = identifier.value[argValue]
-        logger.debug('isObject', { isElementAccessExpression: true, maybeLiteralValue })
         if (!maybeLiteralValue) return
 
         return box.from(maybeLiteralValue, expression, stack)
@@ -1066,7 +950,6 @@ const getElementAccessedExpressionValue = (
     if (ctx.flags?.skipConditions) return box.unresolvable(arg, stack)
 
     const propName = maybePropName(arg, stack, ctx)
-    logger.debug('isConditional', { isConditionalExpression: true, propName })
     if (isNotNullish(propName) && isNotNullish(propName.value)) {
       if (Node.isIdentifier(elementAccessed)) {
         return maybePropIdentifierValue(elementAccessed, [propName.value.toString()], stack, ctx)
@@ -1111,14 +994,6 @@ const getArrayElementValueAtIndex = (array: ArrayLiteralExpression, index: numbe
   if (!element) return
 
   const value = maybeBoxNode(element, stack, ctx)
-  logger.debug('array:element', {
-    // array: array.getText(),
-    arrayKind: array.getKindName(),
-    // element: element.getText(),
-    elementKind: element.getKindName(),
-    value,
-    // obj: maybeBoxNode(element, stack, ctx),
-  })
 
   if (isNotNullish(value)) {
     return value
@@ -1135,12 +1010,6 @@ const getPropertyAccessedExpressionValue = (
   const elementAccessed = unwrapExpression(expression.getExpression())
   const accessList = _accessList.concat(propName)
 
-  logger.debug('prop-access-value', {
-    propName,
-    accessList,
-    // elementAccessed: elementAccessed.getText().slice(0, 100),
-    elementAccessedKind: elementAccessed.getKindName(),
-  })
   stack.push(elementAccessed)
 
   // someObj.key
@@ -1151,7 +1020,6 @@ const getPropertyAccessedExpressionValue = (
   // someObj.key.nested
   if (Node.isPropertyAccessExpression(elementAccessed)) {
     const propValue = getPropertyAccessedExpressionValue(elementAccessed, accessList, stack, ctx)
-    logger.debug('prop-access-value', { propName, propValue })
     return propValue
   }
 
@@ -1160,7 +1028,6 @@ const getPropertyAccessedExpressionValue = (
     const leftElementAccessed = getElementAccessedExpressionValue(elementAccessed, stack, ctx)
     if (!leftElementAccessed) return
 
-    logger.debug('prop-access-value', { propName, leftElementAccessed })
     if (box.isObject(leftElementAccessed)) {
       const propValue = leftElementAccessed.value[propName]
       return box.from(propValue, expression, stack)
