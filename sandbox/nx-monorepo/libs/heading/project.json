@@ -1,0 +1,16 @@
+{
+  "name": "heading",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/heading/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/heading/**/*.{ts,tsx,js,jsx}"]
+      }
+    }
+  }
+}

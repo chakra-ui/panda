@@ -1,0 +1,24 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@nx-monorepo/heading": ["libs/heading/src/index.ts"],
+      "@nx-monorepo/heading/server": ["libs/heading/src/server.ts"],
+      "@nx-monorepo/theme": ["libs/theme/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}
