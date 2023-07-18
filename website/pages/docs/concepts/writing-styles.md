@@ -213,7 +213,7 @@ import { css, cx } from '../styled-system/css'
 const styles = css({
   borderWidth: '1px',
   borderRadius: '8px',
-  paddingX: '12px'
+  paddingX: '12px',
   paddingY: '24px'
 })
 
