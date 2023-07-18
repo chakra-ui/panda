@@ -92,7 +92,7 @@ export class Builder {
   async setup(options: { configPath?: string } = {}) {
     logger.debug('builder', '🚧 Setup')
 
-    const configPath = options.configPath ?? this.getConfigPath()
+    const configPath = options.configPath ? resolve(options.configPath) : this.getConfigPath()
     let tsOptions: GetConfigDependenciesTsOptions = { baseUrl: undefined, pathMappings: [] }
 
     if (this.context?.tsconfig) {
