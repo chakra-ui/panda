@@ -18,10 +18,10 @@ const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
 })
 
 const getImportMap = (outdir: string) => ({
-  css: `${outdir}/css`,
-  recipe: `${outdir}/recipes`,
-  pattern: `${outdir}/patterns`,
-  jsx: `${outdir}/jsx`,
+  css: [outdir, 'css'],
+  recipe: [outdir, 'recipes'],
+  pattern: [outdir, 'patterns'],
+  jsx: [outdir, 'jsx'],
 })
 
 export const createGenerator = (conf: ConfigResultWithHooks) => {
@@ -32,7 +32,7 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
   const baseUrl = compilerOptions.baseUrl ?? ''
 
   const cwd = conf.config.cwd
-  const relativeBaseUrl = baseUrl ? baseUrl.replace(cwd, '').slice(1) + '/' : cwd
+  const relativeBaseUrl = baseUrl !== cwd ? baseUrl.replace(cwd, '').slice(1) : cwd
 
   return {
     ...ctx,
@@ -48,6 +48,8 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
         nodes: [...patterns.nodes, ...recipes.nodes],
       },
       getRecipesByJsxName: recipes.filter,
+      compilerOptions: compilerOptions as any,
+      tsOptions: conf.tsOptions,
     },
   }
 }

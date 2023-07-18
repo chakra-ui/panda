@@ -1,4 +1,4 @@
-import { loadConfigFile } from '@pandacss/config'
+import { convertTsPathsToRegexes, loadConfigFile } from '@pandacss/config'
 import type { Config, ConfigResultWithHooks, PandaHooks } from '@pandacss/types'
 import { createDebugger, createHooks } from 'hookable'
 import { lookItUpSync } from 'look-it-up'
@@ -33,6 +33,12 @@ export async function loadConfigAndCreateContext(options: { cwd?: string; config
   if (tsconfigResult) {
     conf.tsconfig = tsconfigResult.tsconfig
     conf.tsconfigFile = tsconfigResult.tsconfigFile
+
+    const options = tsconfigResult.tsconfig?.compilerOptions
+    if (options?.paths) {
+      const baseUrl = options.baseUrl
+      conf.tsOptions = { baseUrl, pathMappings: convertTsPathsToRegexes(options.paths, baseUrl ?? cwd) }
+    }
   }
 
   conf.config.outdir ??= 'styled-system'

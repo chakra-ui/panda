@@ -1,5 +1,5 @@
 export { findConfigFile } from './find-config'
-export { getConfigDependencies, type GetConfigDependenciesTsOptions, type GetDepsOptions } from './get-mod-deps'
+export { getConfigDependencies, type GetDepsOptions } from './get-mod-deps'
 export { getResolvedConfig } from './get-resolved-config'
 export { bundleConfigFile, loadConfigFile, resolveConfigFile } from './load-config'
 export { mergeConfigs } from './merge-config'

@@ -1,17 +1,10 @@
 import { Obj, pipe, tap } from 'lil-fp'
 import { Project as TsProject, type ProjectOptions as TsProjectOptions, ScriptKind } from 'ts-morph'
-import { createParser, type ParserOptions } from './parser'
+import { createParser } from './parser'
 import { ParserResult } from './parser-result'
-import type { PandaHookable } from '@pandacss/types'
 import { vueToTsx } from './vue-to-tsx'
 import { svelteToTsx } from './svelte-to-tsx'
-
-export type ProjectOptions = Partial<TsProjectOptions> & {
-  readFile: (filePath: string) => string
-  getFiles: () => string[]
-  hooks: PandaHookable
-  parserOptions: ParserOptions
-}
+import type { ProjectOptions } from './project-types'
 
 const createTsProject = (options: Partial<TsProjectOptions>) =>
   new TsProject({

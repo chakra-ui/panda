@@ -2,9 +2,20 @@ import { memo } from '@pandacss/shared'
 import type { ImportDeclaration, SourceFile } from 'ts-morph'
 
 type ImportResult = {
+  /** @example 'hstack' */
   name: string
+  /** @example 'pandaHStack' */
   alias: string
+  /**
+   * @example '../../styled-system/patterns'
+   * @example '@styles/patterns'
+   */
   mod: string
+  /**
+   * If mod is a TS path mapping, this will be the matching importMap[kind] value
+   * @example 'generated/panda-css/patterns'
+   */
+  importMapValue: string | boolean
 }
 
 const getModuleSpecifierValue = (node: ImportDeclaration) => {
@@ -18,7 +29,7 @@ const getModuleSpecifierValue = (node: ImportDeclaration) => {
 export function getImportDeclarations(
   file: SourceFile,
   options: {
-    match: (value: ImportResult) => boolean
+    match: (value: Omit<ImportResult, 'importMapValue'>) => string | boolean
   },
 ) {
   const { match } = options
@@ -34,9 +45,10 @@ export function getImportDeclarations(
       const name = specifier.getNameNode().getText()
       const alias = specifier.getAliasNode()?.getText() || name
 
-      if (!match({ name, alias, mod: source })) return
+      const importMapValue = match({ name, alias, mod: source })
+      if (!importMapValue) return
 
-      result.push({ name, alias, mod: source })
+      result.push({ name, alias, mod: source, importMapValue })
     })
   })
 
@@ -49,7 +61,7 @@ export function getImportDeclarations(
       return result.find((o) => o.alias === id)
     },
     createMatch(mod: string) {
-      const mods = result.filter((o) => o.mod.includes(mod))
+      const mods = result.filter((o) => o.mod.includes(mod) || o.importMapValue === mod)
       return memo((id: string) => !!mods.find((mod) => mod.alias === id || mod.name === id))
     },
     match(id: string) {

@@ -16,6 +16,7 @@
     "dev": "pnpm build-fast --watch"
   },
   "dependencies": {
+    "@pandacss/config": "workspace:^",
     "@pandacss/extractor": "workspace:*",
     "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/logger": "workspace:*",

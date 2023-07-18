@@ -1,4 +1,4 @@
-import { getConfigDependencies, type GetConfigDependenciesTsOptions, convertTsPathsToRegexes } from '@pandacss/config'
+import { getConfigDependencies } from '@pandacss/config'
 import { discardDuplicate, mergeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
@@ -93,19 +93,10 @@ export class Builder {
     logger.debug('builder', '🚧 Setup')
 
     const configPath = options.configPath ?? this.getConfigPath()
-    let tsOptions: GetConfigDependenciesTsOptions = { baseUrl: undefined, pathMappings: [] }
+    const tsOptions = this.context?.tsOptions ?? { baseUrl: undefined, pathMappings: [] }
+    const compilerOptions = this.context?.tsconfig?.compilerOptions ?? {}
 
-    if (this.context?.tsconfig) {
-      const options = this.context.tsconfig.compilerOptions
-      if (options?.paths) {
-        const baseUrl = options.baseUrl
-        tsOptions = {
-          baseUrl,
-          pathMappings: convertTsPathsToRegexes(options?.paths, baseUrl ?? this.context.config.cwd),
-        }
-      }
-    }
-    const { deps: foundDeps } = getConfigDependencies(configPath, tsOptions)
+    const { deps: foundDeps } = getConfigDependencies(configPath, tsOptions, compilerOptions)
     const cwd = this.context?.config.cwd ?? dirname(configPath)
 
     const configDeps = new Set([...foundDeps, ...(this.context?.dependencies ?? []).map((file) => resolve(cwd, file))])

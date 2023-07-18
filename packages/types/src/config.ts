@@ -233,10 +233,21 @@ export type Preset = ExtendableOptions & PresetOptions
 
 export type UserConfig = UnwrapExtend<RequiredBy<Config, 'outdir' | 'cwd' | 'include'>>
 
+export type PathMapping = {
+  pattern: RegExp
+  paths: string[]
+}
+
+export type ConfigTsOptions = {
+  baseUrl?: string | undefined
+  pathMappings: PathMapping[]
+}
+
 export interface LoadConfigResult {
   path: string
   config: UserConfig
   tsconfig?: TSConfig
+  tsOptions?: ConfigTsOptions
   tsconfigFile?: string
   dependencies: string[]
 }

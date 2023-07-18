@@ -53,7 +53,12 @@ export function usePanda(source: string, config: string) {
   return useMemo(() => {
     const project = createProject({
       useInMemoryFileSystem: true,
-      parserOptions: generator.parserOptions,
+      parserOptions: {
+        join(...paths) {
+          return paths.join('/')
+        },
+        ...generator.parserOptions,
+      },
       getFiles: () => ['code.tsx'],
       readFile: (file) => (file === 'code.tsx' ? source : ''),
       hooks: generator.hooks,

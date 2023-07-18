@@ -13,6 +13,10 @@ export default defineConfig({
   resolve: {
     alias: [
       {
+        find: '@pandacss/config/ts-path',
+        replacement: resolve('./packages/config/src/resolve-ts-path-pattern.ts'),
+      },
+      {
         find: '@pandacss/dev',
         replacement: resolve('./packages/cli/src'),
       },
