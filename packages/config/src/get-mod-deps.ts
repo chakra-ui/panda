@@ -48,7 +48,8 @@ const requireRegex = /require\(['"`](.+)['"`]\)/gi
 const exportRegex = /export[\s\S]*from[\s\S]*?['"](.{3,}?)['"]/gi
 
 function getDeps(opts: GetDepsOptions, fromAlias?: string) {
-  const { filename, seen, compilerOptions } = opts
+  const { filename, seen } = opts
+  const { moduleResolution: _, ...compilerOptions } = opts.compilerOptions ?? {}
 
   // Try to find the file
   const absoluteFile = resolveWithExtension(
@@ -92,21 +93,25 @@ function getDeps(opts: GetDepsOptions, fromAlias?: string) {
       return
     }
 
-    // this is for internal monorepo packages that don't have a `dist`
-    // and instead use a package.json `main` field that points to a src/xxx.ts file
-    const found = ts.resolveModuleName(mod, absoluteFile, compilerOptions ?? {}, ts.sys).resolvedModule
-    if (found && found.extension === '.ts') {
-      getDeps(Object.assign({}, nextOpts, { filename: found.resolvedFileName }))
-      return
+    try {
+      // this is for internal monorepo packages that don't have a `dist`
+      // and instead use a package.json `main` field that points to a src/xxx.ts file
+      const found = ts.resolveModuleName(mod, absoluteFile, compilerOptions, ts.sys).resolvedModule
+      if (found && found.extension === '.ts') {
+        getDeps(Object.assign({}, nextOpts, { filename: found.resolvedFileName }))
+        return
+      }
+
+      if (!opts.pathMappings) return
+
+      // this is for imports using `baseUrl` (ex: ./src) like `import { css } from "styled-system/css"`
+      const filename = resolveTsPathPattern(opts.pathMappings, mod)
+      if (!filename) return
+
+      getDeps(Object.assign({}, nextOpts, { filename }), mod)
+    } catch (err) {
+      //
     }
-
-    if (!opts.pathMappings) return
-
-    // this is for imports using `baseUrl` (ex: ./src) like `import { css } from "styled-system/css"`
-    const filename = resolveTsPathPattern(opts.pathMappings, mod)
-    if (!filename) return
-
-    getDeps(Object.assign({}, nextOpts, { filename }), mod)
   })
 }
 
