@@ -76,17 +76,13 @@ export function generateRecipes(ctx: Context) {
           compoundVariants ?? [],
         )})
 
-        const variantKeys = ${stringify(Object.keys(variantKeyMap))}
-
-        function splitVariantProps(props) {
-          return splitProps(props, variantKeys)
-        }
-        
         export const ${name} = Object.assign(${name}Fn, {
           __recipe__: true,
-          variantKeys,
+          variantKeys: ${stringify(Object.keys(variantKeyMap))},
           variantMap: ${stringify(variantKeyMap)},
-          splitVariantProps,
+          splitVariantProps(props) {
+            return splitProps(props, variantKeys)
+          },
         })
         `,
 
