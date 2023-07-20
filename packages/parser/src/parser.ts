@@ -28,7 +28,6 @@ const isNodeRecipe = (node: ParserNodeOptions): node is ParserRecipeNode => node
 
 const cvaProps = ['compoundVariants', 'defaultVariants', 'variants', 'base']
 const isCva = (map: BoxNodeMap['value']) => cvaProps.some((prop) => map.has(prop))
-const isRawFn = (name: string) => Boolean(name.endsWith('.raw'))
 
 export type ParserOptions = {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string[]>
@@ -134,6 +133,10 @@ export function createParser(options: ParserOptions) {
     const isValidRecipe = imports.createMatch(importMap.recipe)
     const isValidStyleFn = (name: string) => name === jsx?.factory
     const isFactory = (name: string) => Boolean(jsx && name.startsWith(jsxFactoryAlias))
+    const isRawFn = (fullName: string) => {
+      const name = fullName.split('.raw')[0] ?? ''
+      return name === 'css' || isValidPattern(name) || isValidRecipe(name)
+    }
 
     const jsxPatternNodes = new RegExp(
       `^(${jsx?.nodes

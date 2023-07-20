@@ -2957,11 +2957,13 @@ describe('preset patterns', () => {
     `)
   })
 
-  test('css.raw', () => {
+  test('{fn}.raw', () => {
     const code = `
     import { css } from ".panda/css";
     import { button } from ".panda/recipes";
     import { stack } from ".panda/patterns";
+
+    const filePath = String.raw\`C:\\Development\\profile\\aboutme.html\`;
 
     export default function App() {
       return (
