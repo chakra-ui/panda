@@ -112,5 +112,8 @@ const editorTokenizer = cva({
     '& .JSXElement.JSXText': {
       color: { base: '#000000!', _dark: '#EBDBB2!' },
     },
+    '& .JSXClosingFragment.JSXBracket, & .JSXOpeningElement.JSXBracket, & .JSXOpeningFragment.JSXBracket': {
+      fontWeight: 'normal!',
+    },
   },
 })
