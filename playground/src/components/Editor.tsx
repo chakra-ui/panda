@@ -1,4 +1,4 @@
-import { css, cx } from '@/styled-system/css'
+import { css, cva, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { segmentGroup } from '@/styled-system/recipes'
 
@@ -19,6 +19,9 @@ const EDITOR_OPTIONS: EditorProps['options'] = {
   guides: {
     indentation: false,
   },
+  fontLigatures: true,
+  fontFamily: "'Fira Code', 'Fira Mono', 'Menlo', 'Monaco', 'Courier', monospace",
+  fontWeight: '500',
 }
 
 const tabs = [
@@ -85,7 +88,7 @@ export const Editor = (props: PandaEditorProps) => {
             <FormatCode />
           </button>
         </SegmentGroup>
-        <div className={css({ flex: '1', pt: '2' })}>
+        <div className={cx(css({ flex: '1', pt: '2' }), editorTokenizer())}>
           <MonacoEditor
             value={props.value[activeTab]}
             language="typescript"
@@ -100,3 +103,30 @@ export const Editor = (props: PandaEditorProps) => {
     </Flex>
   )
 }
+
+const editorTokenizer = cva({
+  base: {
+    '& .JSXElement.JSXBracket, & .JSXOpeningFragment.JSXBracket, & .JSXClosingFragment.JSXBracket': {
+      color: { base: '#000000!', _dark: '#83A598!' },
+    },
+    '& .bracket-highlighting-1, & .bracket-highlighting-3': {
+      color: { _dark: '#EBDBB2!' },
+    },
+    '& .JSXElement.JSXIdentifier, & .JSXAttribute.JSXIdentifier + *': {
+      color: { base: '#22863a!', _dark: '#8EC07C!' },
+    },
+    '& .JSXAttribute.JSXIdentifier, & .JSXExpressionContainer.JSXBracket + :not(.bracket-highlighting-3):not(.JSXElement)':
+      {
+        color: { base: '#6f42c1!', _dark: '#FABD2F!' },
+      },
+    '& .JSXExpressionContainer.JSXBracket, & .bracket-highlighting-0': {
+      color: { _dark: '#A89984!' },
+    },
+    '& .bracket-highlighting-0, & .bracket-highlighting-4': {
+      color: { _dark: '#A89984!' },
+    },
+    '& .JSXElement.JSXText': {
+      color: { base: '#000000!', _dark: '#EBDBB2!' },
+    },
+  },
+})

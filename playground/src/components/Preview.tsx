@@ -1,4 +1,4 @@
-import { LiveProvider, LiveError, useLiveContext } from 'react-live-runner'
+import { LiveProvider, useLiveContext } from 'react-live-runner'
 import { useIsClient } from 'usehooks-ts'
 import { createPortal } from 'react-dom'
 import { usePreview } from '@/src/hooks/usePreview'
@@ -8,8 +8,9 @@ export type PreviewProps = {
   previewJs?: string
   source: string
   patternNames: string[]
+  recipeNames: string[]
 }
-export const Preview = ({ previewCss = '', previewJs = '', patternNames, source }: PreviewProps) => {
+export const Preview = ({ previewCss = '', previewJs = '', patternNames, recipeNames, source }: PreviewProps) => {
   const isClient = useIsClient()
 
   const { handleLoad, contentRef, setContentRef, iframeLoaded, isReady } = usePreview()
@@ -25,6 +26,7 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
       cx,
       token,
       ${patternNames.map((name) => `${name},`).join('\n')}
+      ${recipeNames.map((name) => `${name},`).join('\n')}
     };
   </script>
 
@@ -80,6 +82,12 @@ export const Preview = ({ previewCss = '', previewJs = '', patternNames, source 
   )
 }
 
+function LiveError() {
+  const { error } = useLiveContext()
+
+  return error ? <pre className="playgroundError">{error}</pre> : <></>
+}
+
 function LivePreview() {
   const { element } = useLiveContext()
 
@@ -102,6 +110,6 @@ function extractDefaultArrowFunctionName(code: string) {
   if (match && match[1]) {
     return match[1]
   } else {
-    return null // Default function name not found
+    return null
   }
 }
