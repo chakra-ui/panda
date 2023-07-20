@@ -1,4 +1,9 @@
-import { OnMount, OnChange, BeforeMount } from '@monaco-editor/react'
+import { OnMount, OnChange, BeforeMount, EditorProps } from '@monaco-editor/react'
+import { parse } from '@babel/parser'
+import traverse from '@babel/traverse'
+//@ts-expect-error
+import MonacoJSXHighlighter from 'monaco-jsx-highlighter'
+
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useUpdateEffect } from 'usehooks-ts'
 
@@ -12,6 +17,22 @@ export type PandaEditorProps = {
   value: State
   onChange: (state: State) => void
   artifacts: Artifact[]
+}
+
+export const EDITOR_OPTIONS: EditorProps['options'] = {
+  minimap: { enabled: false },
+  fontSize: 14,
+  quickSuggestions: {
+    strings: true,
+    other: true,
+    comments: true,
+  },
+  guides: {
+    indentation: false,
+  },
+  fontLigatures: true,
+  fontFamily: "'Fira Code', 'Fira Mono', 'Menlo', 'Monaco', 'Courier', monospace",
+  fontWeight: '400',
 }
 
 export function useEditor(props: PandaEditorProps) {
@@ -32,6 +53,13 @@ export function useEditor(props: PandaEditorProps) {
   }
 
   const configureEditor: OnMount = useCallback((editor, monaco) => {
+    // Instantiate the highlighter
+    const monacoJSXHighlighter = new MonacoJSXHighlighter(monaco, parse, traverse, editor)
+    // Activate highlighting (debounceTime default: 100ms)
+    monacoJSXHighlighter.highlightOnDidChangeModelContent()
+    // Activate JSX commenting
+    monacoJSXHighlighter.addJSXCommentCommand()
+
     function registerKeybindings() {
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
         editor.trigger('editor', 'editor.action.formatDocument', undefined)
@@ -65,6 +93,8 @@ export function useEditor(props: PandaEditorProps) {
       jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
       reactNamespace: 'React',
       allowJs: true,
+      checkJs: true,
+      strict: true,
       typeRoots: ['node_modules/@types'],
     })
   }, [])

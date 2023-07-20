@@ -840,6 +840,10 @@ export const pandaTheme: editor.IStandaloneThemeData = {
       token: 'text.html punctuation.tag',
     },
     {
+      foreground: '#FABD2F',
+      token: 'type.identifier.ts',
+    },
+    {
       foreground: '#fe8019',
       token: 'source.js variable.language',
     },

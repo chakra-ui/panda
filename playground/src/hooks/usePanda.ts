@@ -94,12 +94,15 @@ export function usePanda(source: string, config: string) {
     )
 
     const patternNames = Object.keys(generator.config.patterns ?? {})
+    const recipeNames = Array.from(generator.recipes.rules.keys())
+
     const panda = {
       parserResult,
       parsedCss,
       previewCss,
       previewJs,
       patternNames,
+      recipeNames,
       artifacts,
       cssArtifacts,
     }

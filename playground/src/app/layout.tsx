@@ -1,5 +1,5 @@
 import { cx } from '@/styled-system/css'
-import { Inter } from '@next/font/google'
+import { Inter } from 'next/font/google'
 import type { PropsWithChildren } from 'react'
 import '../styles/globals.css'
 import { Providers } from '@/src/components/providers'
