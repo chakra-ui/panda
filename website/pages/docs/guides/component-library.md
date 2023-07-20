@@ -88,8 +88,6 @@ Finally, don't forget to include the [cascade layers](/docs/concepts/cascade-lay
 
 ```tsx filename="src/App.tsx"
 import { Button } from '@acme-org/design-system'
-import '@acme-org/design-system/dist/styles.css'
-
 import './main.css'
 
 export function App() {
@@ -100,8 +98,10 @@ export function App() {
 **main.css**
 
 ```css filename="src/main.css"
-/* Your own styles here */
 @layer reset, base, tokens, recipes, utilities;
+@import url('@acme-org/design-system/dist/styles.css');
+
+/* Your own styles here */
 ```
 
 This approach comes with a few downsides:
