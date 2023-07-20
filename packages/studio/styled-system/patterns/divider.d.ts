@@ -13,5 +13,10 @@ export type DividerProperties = {
 
 type DividerOptions = DividerProperties & Omit<SystemStyleObject, keyof DividerProperties >
 
+interface DividerPatternFn {
+  (options?: DividerOptions): string
+  raw: (options: DividerOptions) => DividerOptions
+}
 
-export declare function divider(options?: DividerOptions): string
+
+export declare const divider: DividerPatternFn;

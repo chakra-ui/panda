@@ -28,6 +28,7 @@ const isNodeRecipe = (node: ParserNodeOptions): node is ParserRecipeNode => node
 
 const cvaProps = ['compoundVariants', 'defaultVariants', 'variants', 'base']
 const isCva = (map: BoxNodeMap['value']) => cvaProps.some((prop) => map.has(prop))
+const isRawFn = (name: string) => Boolean(name.endsWith('.raw'))
 
 export type ParserOptions = {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string[]>
@@ -220,7 +221,7 @@ export function createParser(options: ParserOptions) {
 
     const matchFn = memo((fnName: string) => {
       if (recipes.has(fnName) || patterns.has(fnName)) return true
-      if (fnName === cvaAlias || fnName === cssAlias || isFactory(fnName)) return true
+      if (fnName === cvaAlias || fnName === cssAlias || isRawFn(fnName) || isFactory(fnName)) return true
       return functions.has(fnName)
     })
 
@@ -251,7 +252,9 @@ export function createParser(options: ParserOptions) {
     measure()
 
     extractResultByName.forEach((result, alias) => {
-      const name = imports.getName(alias)
+      let name = imports.getName(alias)
+      if (isRawFn(name)) name = name.replace('.raw', '')
+
       logger.debug(`ast:${name}`, name !== alias ? { kind: result.kind, alias } : { kind: result.kind })
 
       if (result.kind === 'function') {

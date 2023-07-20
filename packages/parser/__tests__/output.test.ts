@@ -2956,4 +2956,117 @@ describe('preset patterns', () => {
       }"
     `)
   })
+
+  test('css.raw', () => {
+    const code = `
+    import { css } from ".panda/css";
+    import { button } from ".panda/recipes";
+    import { stack } from ".panda/patterns";
+
+    export default function App() {
+      return (
+        <Button rootProps={css.raw({ bg: "red.400" })} />
+      );
+    }
+
+    // recipe in storybook
+    export const Funky: Story = {
+      args: button.raw({
+        visual: "funky",
+        shape: "circle",
+        size: "sm",
+      }),
+    };
+
+    // mixed with pattern
+    const stackProps = {
+      sm: stack.raw({ direction: "column" }),
+      md: stack.raw({ direction: "row" })
+    }
+
+    stack(stackProps[props.size]))
+
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "bg": "red.400",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Button",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {
+              "shape": "circle",
+              "size": "sm",
+              "visual": "funky",
+            },
+          ],
+          "name": "button",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "direction": "column",
+            },
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {
+              "direction": "row",
+            },
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bg_red\\\\.400 {
+          background: var(--colors-red-400)
+          }
+
+        .flex_row {
+          flex-direction: row
+          }
+
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+      }"
+    `)
+  })
 })

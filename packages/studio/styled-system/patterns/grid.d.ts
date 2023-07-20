@@ -15,5 +15,10 @@ export type GridProperties = {
 
 type GridOptions = GridProperties & Omit<SystemStyleObject, keyof GridProperties >
 
+interface GridPatternFn {
+  (options?: GridOptions): string
+  raw: (options: GridOptions) => GridOptions
+}
 
-export declare function grid(options?: GridOptions): string
+
+export declare const grid: GridPatternFn;

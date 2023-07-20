@@ -14,5 +14,10 @@ export type FloatProperties = {
 
 type FloatOptions = FloatProperties & Omit<SystemStyleObject, keyof FloatProperties >
 
+interface FloatPatternFn {
+  (options?: FloatOptions): string
+  raw: (options: FloatOptions) => FloatOptions
+}
 
-export declare function float(options?: FloatOptions): string
+
+export declare const float: FloatPatternFn;

@@ -15,16 +15,22 @@ export function generateCssFn(ctx: Context) {
   return {
     dts: outdent`
     import type { SystemStyleObject } from '../types'
-    export declare function css(styles: SystemStyleObject): string
+
+    interface CssFunction {
+      (styles: SystemStyleObject): string
+      raw: (styles: SystemStyleObject) => SystemStyleObject
+    }
+
+    export declare const css: CssFunction;
     `,
     js: outdent`
     ${ctx.file.import('createCss, createMergeCss, hypenateProperty, withoutSpace', '../helpers')}
     ${ctx.file.import('sortConditions, finalizeConditions', './conditions')}
 
     const classNameMap = ${stringify(utility.entries())}
-    
+
     const shorthands = ${stringify(utility.shorthands)}
-    
+
     const breakpointKeys = ${JSON.stringify(conditions.breakpoints.keys)}
 
     const hasShorthand = ${utility.hasShorthand ? 'true' : 'false'}
@@ -54,6 +60,7 @@ export function generateCssFn(ctx: Context) {
     }
 
     export const css = createCss(context)
+    css.raw = (styles) => styles
 
     export const { mergeCss, assignCss } = createMergeCss(context)
     `,

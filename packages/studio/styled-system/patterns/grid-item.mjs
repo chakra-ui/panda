@@ -20,3 +20,4 @@ const gridItemConfig = {
 export const getGridItemStyle = (styles = {}) => gridItemConfig.transform(styles, { map: mapObject })
 
 export const gridItem = (styles) => css(getGridItemStyle(styles))
+gridItem.raw = (styles) => styles

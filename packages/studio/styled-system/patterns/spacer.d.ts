@@ -11,5 +11,10 @@ export type SpacerProperties = {
 
 type SpacerOptions = SpacerProperties & Omit<SystemStyleObject, keyof SpacerProperties >
 
+interface SpacerPatternFn {
+  (options?: SpacerOptions): string
+  raw: (options: SpacerOptions) => SpacerOptions
+}
 
-export declare function spacer(options?: SpacerOptions): string
+
+export declare const spacer: SpacerPatternFn;

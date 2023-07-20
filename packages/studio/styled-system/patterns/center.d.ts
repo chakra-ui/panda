@@ -11,5 +11,10 @@ export type CenterProperties = {
 
 type CenterOptions = CenterProperties & Omit<SystemStyleObject, keyof CenterProperties >
 
+interface CenterPatternFn {
+  (options?: CenterOptions): string
+  raw: (options: CenterOptions) => CenterOptions
+}
 
-export declare function center(options?: CenterOptions): string
+
+export declare const center: CenterPatternFn;
