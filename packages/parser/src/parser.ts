@@ -56,11 +56,12 @@ function createImportMatcher(mod: string, values?: string[]) {
 const combineResult = (unboxed: Unboxed) => {
   return [...unboxed.conditions, unboxed.raw, ...unboxed.spreadConditions]
 }
-const fallback = (box: BoxNode) => ({
-  value: undefined,
-  getNode: () => box.getNode(),
-  getStack: () => box.getStack(),
-})
+const fallback = (box: BoxNode) =>
+  ({
+    value: undefined,
+    getNode: () => box.getNode(),
+    getStack: () => box.getStack(),
+  } as BoxNode)
 
 type GetEvaluateOptions = NonNullable<Parameters<typeof extract>['0']['getEvaluateOptions']>
 
@@ -304,11 +305,9 @@ export function createParser(options: ParserOptions) {
             result.queryList.forEach((query) => {
               if (query.kind === 'call-expression' && query.box.value[1]) {
                 const map = query.box.value[1]
-                const result: ResultItem = {
-                  name,
-                  box: (map as BoxNodeMap) ?? fallback(query.box),
-                  data: combineResult(unbox(map)),
-                }
+                const boxNode = box.isMap(map) ? map : fallback(query.box)
+                // ensure that data is always an object
+                const result = { name, box: boxNode, data: combineResult(unbox(boxNode)) } as ResultItem
 
                 // CallExpression factory inline recipe
                 // panda("span", { base: {}, variants: { ... } })
@@ -336,11 +335,9 @@ export function createParser(options: ParserOptions) {
             result.queryList.forEach((query) => {
               if (query.kind === 'call-expression') {
                 const map = query.box.value[0]
-                const result: ResultItem = {
-                  name,
-                  box: (map as BoxNodeMap) ?? fallback(query.box),
-                  data: combineResult(unbox(map)),
-                }
+                const boxNode = box.isMap(map) ? map : fallback(query.box)
+                // ensure that data is always an object
+                const result = { name, box: boxNode, data: combineResult(unbox(boxNode)) } as ResultItem
 
                 // PropertyAccess factory inline recipe
                 // panda.span({ base: {}, variants: { ... } })

@@ -90,7 +90,9 @@ describe('generate recipes', () => {
         ]
       },
         splitVariantProps(props) {
-          return splitProps(props, variantKeys)
+          return splitProps(props, [
+        \\"size\\"
+      ])
         },
       })",
           "name": "text-style",
@@ -131,7 +133,7 @@ describe('generate recipes', () => {
         variantKeys: [],
         variantMap: {},
         splitVariantProps(props) {
-          return splitProps(props, variantKeys)
+          return splitProps(props, [])
         },
       })",
           "name": "tooltip-style",
@@ -188,7 +190,10 @@ describe('generate recipes', () => {
         ]
       },
         splitVariantProps(props) {
-          return splitProps(props, variantKeys)
+          return splitProps(props, [
+        \\"size\\",
+        \\"variant\\"
+      ])
         },
       })",
           "name": "button-style",
