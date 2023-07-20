@@ -155,7 +155,8 @@ export const extract = ({ ast, ...ctx }: ExtractOptions) => {
     }
 
     if (functions && Node.isCallExpression(node)) {
-      const fnName = node.getExpression().getText()
+      const expr = node.getExpression()
+      const fnName = Node.isCallExpression(expr) ? expr.getExpression().getText() : expr.getText()
       if (!functions.matchFn({ fnNode: node, fnName })) return
 
       const matchProp = ({ propName, propNode }: MatchFnPropArgs) =>
