@@ -66,6 +66,7 @@ describe('generate recipes', () => {
       interface TextStyleRecipe {
         __type: TextStyleVariantProps
         (props?: TextStyleVariantProps): string
+        raw: (props?: TextStyleVariantProps) => TextStyleVariantProps
         variantMap: TextStyleVariantMap
         variantKeys: Array<keyof TextStyleVariant>
         splitVariantProps<Props extends TextStyleVariantProps>(props: Props): [TextStyleVariantProps, Pretty<Omit<Props, keyof TextStyleVariantProps>>]
@@ -116,6 +117,7 @@ describe('generate recipes', () => {
       interface TooltipStyleRecipe {
         __type: TooltipStyleVariantProps
         (props?: TooltipStyleVariantProps): string
+        raw: (props?: TooltipStyleVariantProps) => TooltipStyleVariantProps
         variantMap: TooltipStyleVariantMap
         variantKeys: Array<keyof TooltipStyleVariant>
         splitVariantProps<Props extends TooltipStyleVariantProps>(props: Props): [TooltipStyleVariantProps, Pretty<Omit<Props, keyof TooltipStyleVariantProps>>]
@@ -158,6 +160,7 @@ describe('generate recipes', () => {
       interface ButtonStyleRecipe {
         __type: ButtonStyleVariantProps
         (props?: ButtonStyleVariantProps): string
+        raw: (props?: ButtonStyleVariantProps) => ButtonStyleVariantProps
         variantMap: ButtonStyleVariantMap
         variantKeys: Array<keyof ButtonStyleVariant>
         splitVariantProps<Props extends ButtonStyleVariantProps>(props: Props): [ButtonStyleVariantProps, Pretty<Omit<Props, keyof ButtonStyleVariantProps>>]
