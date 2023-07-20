@@ -17,5 +17,10 @@ export type FlexProperties = {
 
 type FlexOptions = FlexProperties & Omit<SystemStyleObject, keyof FlexProperties >
 
+interface FlexPatternFn {
+  (options?: FlexOptions): string
+  raw: (options: FlexOptions) => FlexOptions
+}
 
-export declare function flex(options?: FlexOptions): string
+
+export declare const flex: FlexPatternFn;

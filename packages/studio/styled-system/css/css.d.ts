@@ -1,3 +1,9 @@
 /* eslint-disable */
 import type { SystemStyleObject } from '../types'
-export declare function css(styles: SystemStyleObject): string
+
+interface CssFunction {
+  (styles: SystemStyleObject): string
+  raw: (styles: SystemStyleObject) => SystemStyleObject
+}
+
+export declare const css: CssFunction;

@@ -11,5 +11,10 @@ export type CircleProperties = {
 
 type CircleOptions = CircleProperties & Omit<SystemStyleObject, keyof CircleProperties >
 
+interface CirclePatternFn {
+  (options?: CircleOptions): string
+  raw: (options: CircleOptions) => CircleOptions
+}
 
-export declare function circle(options?: CircleOptions): string
+
+export declare const circle: CirclePatternFn;

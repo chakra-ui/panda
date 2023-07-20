@@ -12,5 +12,10 @@ export type VstackProperties = {
 
 type VstackOptions = VstackProperties & Omit<SystemStyleObject, keyof VstackProperties >
 
+interface VstackPatternFn {
+  (options?: VstackOptions): string
+  raw: (options: VstackOptions) => VstackOptions
+}
 
-export declare function vstack(options?: VstackOptions): string
+
+export declare const vstack: VstackPatternFn;

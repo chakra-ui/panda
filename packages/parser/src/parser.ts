@@ -133,6 +133,10 @@ export function createParser(options: ParserOptions) {
     const isValidRecipe = imports.createMatch(importMap.recipe)
     const isValidStyleFn = (name: string) => name === jsx?.factory
     const isFactory = (name: string) => Boolean(jsx && name.startsWith(jsxFactoryAlias))
+    const isRawFn = (fullName: string) => {
+      const name = fullName.split('.raw')[0] ?? ''
+      return name === 'css' || isValidPattern(name) || isValidRecipe(name)
+    }
 
     const jsxPatternNodes = new RegExp(
       `^(${jsx?.nodes
@@ -220,7 +224,7 @@ export function createParser(options: ParserOptions) {
 
     const matchFn = memo((fnName: string) => {
       if (recipes.has(fnName) || patterns.has(fnName)) return true
-      if (fnName === cvaAlias || fnName === cssAlias || isFactory(fnName)) return true
+      if (fnName === cvaAlias || fnName === cssAlias || isRawFn(fnName) || isFactory(fnName)) return true
       return functions.has(fnName)
     })
 
@@ -251,7 +255,9 @@ export function createParser(options: ParserOptions) {
     measure()
 
     extractResultByName.forEach((result, alias) => {
-      const name = imports.getName(alias)
+      let name = imports.getName(alias)
+      if (isRawFn(name)) name = name.replace('.raw', '')
+
       logger.debug(`ast:${name}`, name !== alias ? { kind: result.kind, alias } : { kind: result.kind })
 
       if (result.kind === 'function') {

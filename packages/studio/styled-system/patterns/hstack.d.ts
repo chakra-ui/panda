@@ -12,5 +12,10 @@ export type HstackProperties = {
 
 type HstackOptions = HstackProperties & Omit<SystemStyleObject, keyof HstackProperties >
 
+interface HstackPatternFn {
+  (options?: HstackOptions): string
+  raw: (options: HstackOptions) => HstackOptions
+}
 
-export declare function hstack(options?: HstackOptions): string
+
+export declare const hstack: HstackPatternFn;

@@ -393,5 +393,6 @@ const context = {
 }
 
 export const css = createCss(context)
+css.raw = (styles) => styles
 
 export const { mergeCss, assignCss } = createMergeCss(context)

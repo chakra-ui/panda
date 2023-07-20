@@ -11,5 +11,10 @@ export type LinkBoxProperties = {
 
 type LinkBoxOptions = LinkBoxProperties & Omit<SystemStyleObject, keyof LinkBoxProperties >
 
+interface LinkBoxPatternFn {
+  (options?: LinkBoxOptions): string
+  raw: (options: LinkBoxOptions) => LinkBoxOptions
+}
 
-export declare function linkBox(options?: LinkBoxOptions): string
+
+export declare const linkBox: LinkBoxPatternFn;
