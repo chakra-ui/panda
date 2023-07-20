@@ -9,6 +9,13 @@ const ctx = {
         size: ['sm', 'md'],
         variant: ['primary', 'secondary'],
       },
+      tooltipStyle: {
+        __base: {
+          '&[data-tooltip], & [data-tooltip]': {
+            color: { _dark: 'red' },
+          },
+        },
+      },
     }
 
     return values[recipe] ?? {}
@@ -47,6 +54,7 @@ const getStyles = getStaticCss({
       },
       { variant: ['primary', 'secondary'] },
     ],
+    tooltipStyle: ['*'],
   },
 })
 
@@ -139,6 +147,33 @@ describe('static-css', () => {
           {
             "buttonStyle": {
               "variant": "secondary",
+            },
+          },
+          {
+            "tooltipStyle": {
+              "base": {
+                "base": {
+                  "&[data-tooltip], & [data-tooltip]": {
+                    "color": {
+                      "_dark": "red",
+                    },
+                  },
+                },
+                "md": {
+                  "&[data-tooltip], & [data-tooltip]": {
+                    "color": {
+                      "_dark": "red",
+                    },
+                  },
+                },
+                "sm": {
+                  "&[data-tooltip], & [data-tooltip]": {
+                    "color": {
+                      "_dark": "red",
+                    },
+                  },
+                },
+              },
             },
           },
         ],

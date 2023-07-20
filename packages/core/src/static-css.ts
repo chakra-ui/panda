@@ -43,17 +43,30 @@ export function getStaticCss(options: StaticCssOptions) {
     })
 
     Object.entries(recipes).forEach(([recipe, rules]) => {
-      rules.forEach((recipeRule) => {
-        let rule = recipeRule
+      rules.forEach((rule) => {
+        const { __base, ...recipeKeys } = ctx.getRecipeKeys(recipe)
+        const useAllKeys = rule === '*'
+        const { conditions = [], responsive = useAllKeys, ...variants } = useAllKeys ? recipeKeys : rule
 
-        if (rule === '*') {
-          rule = { conditions: [], responsive: true, ...ctx.getRecipeKeys(recipe) }
-        }
-
-        const { conditions: _conditions, responsive, ...variants } = rule
-        const conditions = _conditions || []
         if (responsive) {
           conditions.push(...ctx.breakpoints)
+        }
+
+        if (__base) {
+          const conditionalValues = conditions.reduce(
+            (acc, condition) => ({
+              base: __base,
+              ...acc,
+              [formatCondition(ctx, condition)]: __base,
+            }),
+            {},
+          )
+
+          results.recipes.push({
+            [recipe]: {
+              base: conditions.length ? conditionalValues : __base,
+            },
+          })
         }
 
         Object.entries(variants).forEach(([variant, values]) => {
@@ -61,7 +74,7 @@ export function getStaticCss(options: StaticCssOptions) {
 
           const computedValues = values.flatMap((value) => {
             if (value === '*') {
-              return ctx.getRecipeKeys(recipe)[variant]
+              return recipeKeys[variant]
             }
 
             return value
