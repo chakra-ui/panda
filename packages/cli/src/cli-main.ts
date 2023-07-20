@@ -12,6 +12,7 @@ import {
   setupPostcss,
   shipFiles,
   writeAnalyzeJSON,
+  type PandaContext,
 } from '@pandacss/node'
 import { compact } from '@pandacss/shared'
 import { buildStudio, previewStudio, serveStudio } from '@pandacss/studio'
@@ -120,10 +121,12 @@ export async function main() {
     .option('--silent', "Don't print any logs")
     .option('--clean', 'Clean the chunks before generating')
     .option('-c, --config <path>', 'Path to panda config file')
-    .option('--outfile [file]', "Output file for extracted css, default to './styled-system/styles.css'")
+    .option('-w, --watch', 'Watch files and rebuild')
+    .option('-p, --poll', 'Use polling instead of filesystem events when watching')
+    .option('-o, --outfile [file]', "Output file for extracted css, default to './styled-system/styles.css'")
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (flags) => {
-      const { silent, clean, config: configPath, outfile } = flags
+      const { silent, clean, config: configPath, outfile, watch, poll } = flags
 
       const cwd = resolve(flags.cwd)
 
@@ -131,25 +134,60 @@ export async function main() {
         logger.level = 'silent'
       }
 
-      const ctx = await loadConfigAndCreateContext({
-        cwd,
-        configPath,
-      })
-
-      if (clean) {
-        ctx.chunks.empty()
+      function loadContext() {
+        return loadConfigAndCreateContext({ cwd, config: { clean }, configPath })
       }
 
-      if (outfile) {
-        const outPath = resolve(cwd, outfile)
+      let ctx = await loadContext()
 
-        const { msg } = await bundleCss(ctx, outPath)
-        logger.info('css:emit', msg)
-        //
-      } else {
-        //
-        const { msg } = await extractCss(ctx)
-        logger.info('css:emit', msg)
+      const cssgen = async (ctx: PandaContext) => {
+        if (outfile) {
+          const outPath = resolve(cwd, outfile)
+
+          const { msg } = await bundleCss(ctx, outPath)
+          logger.info('css:emit', msg)
+          //
+        } else {
+          //
+          const { msg } = await extractCss(ctx)
+          logger.info('css:emit', msg)
+        }
+      }
+
+      await cssgen(ctx)
+
+      if (watch) {
+        logger.info('ctx:watch', ctx.messages.configWatch())
+        const configWatcher = ctx.runtime.fs.watch({ include: ctx.dependencies, cwd, poll })
+
+        configWatcher.on(
+          'change',
+          debounce(async () => {
+            logger.info('ctx:change', 'config changed, rebuilding...')
+            ctx = await loadContext()
+            await cssgen(ctx)
+            logger.info('ctx:updated', 'config rebuilt ✅')
+          }),
+        )
+
+        const contentWatcher = ctx.runtime.fs.watch(ctx.config)
+        contentWatcher.on(
+          'all',
+          debounce(async (event, file) => {
+            logger.info(`file:${event}`, file)
+            if (event === 'unlink') {
+              ctx.project.removeSourceFile(ctx.runtime.path.abs(cwd, file))
+            } else if (event === 'change') {
+              ctx.project.reloadSourceFile(file)
+              await cssgen(ctx)
+            } else if (event === 'add') {
+              ctx.project.createSourceFile(file)
+              await cssgen(ctx)
+            }
+          }),
+        )
+
+        logger.info('ctx:watch', ctx.messages.watch())
       }
     })
 
@@ -290,7 +328,7 @@ export async function main() {
     .command('ship [glob]', 'Ship extract result from files in glob')
     .option('--silent', "Don't print any logs")
     .option(
-      '--outfile [file]',
+      '--o, --outfile [file]',
       "Output path for the build info file, default to './styled-system/panda.buildinfo.json'",
     )
     .option('-m, --minify', 'Minify generated JSON file')

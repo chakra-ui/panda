@@ -82,6 +82,28 @@ tsup src/index.tsx
 panda cssgen --outfile dist/styles.css
 ```
 
+Finally, don't forget to include the [cascade layers](/docs/concepts/cascade-layers) as well in your app code:
+
+**App code**
+
+```tsx filename="src/App.tsx"
+import { Button } from '@acme-org/design-system'
+import './main.css'
+
+export function App() {
+  return <Button>Click me</Button>
+}
+```
+
+**main.css**
+
+```css filename="src/main.css"
+@layer reset, base, tokens, recipes, utilities;
+@import url('@acme-org/design-system/dist/styles.css');
+
+/* Your own styles here */
+```
+
 This approach comes with a few downsides:
 
 - You can't customize the styles since the css is already generated
