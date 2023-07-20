@@ -78,24 +78,22 @@ describe('generate recipes', () => {
 
       const textStyleFn = createRecipe('textStyle', {}, [])
 
-      const variantKeys = [
-        \\"size\\"
-      ]
-
-      function splitVariantProps(props) {
-        return splitProps(props, variantKeys)
-      }
-
       export const textStyle = Object.assign(textStyleFn, {
         __recipe__: true,
-        variantKeys,
+        variantKeys: [
+        \\"size\\"
+      ],
         variantMap: {
         \\"size\\": [
           \\"h1\\",
           \\"h2\\"
         ]
       },
-        splitVariantProps,
+        splitVariantProps(props) {
+          return splitProps(props, [
+        \\"size\\"
+      ])
+        },
       })",
           "name": "text-style",
         },
@@ -130,17 +128,13 @@ describe('generate recipes', () => {
 
       const tooltipStyleFn = createRecipe('tooltipStyle', {}, [])
 
-      const variantKeys = []
-
-      function splitVariantProps(props) {
-        return splitProps(props, variantKeys)
-      }
-
       export const tooltipStyle = Object.assign(tooltipStyleFn, {
         __recipe__: true,
-        variantKeys,
+        variantKeys: [],
         variantMap: {},
-        splitVariantProps,
+        splitVariantProps(props) {
+          return splitProps(props, [])
+        },
       })",
           "name": "tooltip-style",
         },
@@ -179,18 +173,12 @@ describe('generate recipes', () => {
         \\"variant\\": \\"solid\\"
       }, [])
 
-      const variantKeys = [
-        \\"size\\",
-        \\"variant\\"
-      ]
-
-      function splitVariantProps(props) {
-        return splitProps(props, variantKeys)
-      }
-
       export const buttonStyle = Object.assign(buttonStyleFn, {
         __recipe__: true,
-        variantKeys,
+        variantKeys: [
+        \\"size\\",
+        \\"variant\\"
+      ],
         variantMap: {
         \\"size\\": [
           \\"sm\\",
@@ -201,7 +189,12 @@ describe('generate recipes', () => {
           \\"outline\\"
         ]
       },
-        splitVariantProps,
+        splitVariantProps(props) {
+          return splitProps(props, [
+        \\"size\\",
+        \\"variant\\"
+      ])
+        },
       })",
           "name": "button-style",
         },
