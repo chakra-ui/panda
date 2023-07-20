@@ -81,7 +81,7 @@ export function generateRecipes(ctx: Context) {
           variantKeys: ${stringify(Object.keys(variantKeyMap))},
           variantMap: ${stringify(variantKeyMap)},
           splitVariantProps(props) {
-            return splitProps(props, variantKeys)
+            return splitProps(props, ${stringify(Object.keys(variantKeyMap))})
           },
         })
         `,
