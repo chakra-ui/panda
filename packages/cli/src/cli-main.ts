@@ -22,6 +22,7 @@ import { debounce } from 'perfect-debounce'
 import updateNotifier from 'update-notifier'
 import { name, version } from '../package.json'
 import type { Config } from '@pandacss/types'
+import { cliInit } from './cli-init'
 
 export async function main() {
   updateNotifier({ pkg: { name, version }, distTag: 'latest' }).notify()
@@ -32,6 +33,7 @@ export async function main() {
 
   cli
     .command('init', "Initialize the panda's config file")
+    .option('-i, --interactive', 'Run in interactive mode', { default: false })
     .option('-f, --force', 'Force overwrite existing config file')
     .option('-p, --postcss', 'Emit postcss config file')
     .option('-c, --config <path>', 'Path to panda config file')
@@ -43,13 +45,20 @@ export async function main() {
     .option('--syntax <syntax>', 'The css syntax preference')
     .action(
       async (
-        flags: Pick<Config, 'jsxFramework' | 'syntax' | 'cwd' | 'poll' | 'watch' | 'gitignore' | 'outExtension'> & {
+        _flags: Pick<Config, 'jsxFramework' | 'syntax' | 'cwd' | 'poll' | 'watch' | 'gitignore' | 'outExtension'> & {
           force?: boolean
           postcss?: boolean
           silent?: boolean
+          interactive?: boolean
           config?: string
         } = {},
       ) => {
+        let options = {}
+        if (_flags.interactive) {
+          options = await cliInit()
+        }
+
+        const flags = { ..._flags, ...options }
         const { force, postcss, silent, gitignore, outExtension, jsxFramework, config: configPath, syntax } = flags
 
         const cwd = resolve(flags.cwd ?? '')
