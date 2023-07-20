@@ -1,7 +1,7 @@
 import { css } from '@/styled-system/css'
 import { Stack } from '@/styled-system/jsx'
 import { Segment, SegmentControl, SegmentGroup, SegmentIndicator, SegmentInput, SegmentLabel } from '@ark-ui/react'
-import MonacoEditor, { EditorProps } from '@monaco-editor/react'
+import MonacoEditor from '@monaco-editor/react'
 import { useState, useRef, useEffect } from 'react'
 import { CssFileArtifact } from '../hooks/usePanda'
 import { OnMount, BeforeMount } from '@monaco-editor/react'
@@ -12,20 +12,7 @@ import prettier from 'prettier'
 import parserBabel from 'prettier/parser-babel'
 import parserHtml from 'prettier/parser-html'
 import parserPostCSS from 'prettier/parser-postcss'
-
-const EDITOR_OPTIONS: EditorProps['options'] = {
-  minimap: { enabled: false },
-  fontSize: 14,
-  readOnly: true,
-  quickSuggestions: {
-    strings: true,
-    other: true,
-    comments: true,
-  },
-  guides: {
-    indentation: false,
-  },
-}
+import { EDITOR_OPTIONS } from '@/src/hooks/useEditor'
 
 export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileArtifact[]; visible: boolean }) => {
   const [activeTab, setActiveTab] = useState(cssArtifacts[0]?.file ?? 'styles.css')

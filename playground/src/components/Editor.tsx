@@ -2,27 +2,11 @@ import { css, cva, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { segmentGroup } from '@/styled-system/recipes'
 
-import MonacoEditor, { EditorProps } from '@monaco-editor/react'
+import MonacoEditor from '@monaco-editor/react'
 import { Segment, SegmentControl, SegmentGroup, SegmentIndicator, SegmentInput, SegmentLabel } from '@ark-ui/react'
 
-import { PandaEditorProps, useEditor } from '../hooks/useEditor'
+import { PandaEditorProps, useEditor, EDITOR_OPTIONS } from '../hooks/useEditor'
 import { FormatCode } from '@/src/components/icons'
-
-const EDITOR_OPTIONS: EditorProps['options'] = {
-  minimap: { enabled: false },
-  fontSize: 14,
-  quickSuggestions: {
-    strings: true,
-    other: true,
-    comments: true,
-  },
-  guides: {
-    indentation: false,
-  },
-  fontLigatures: true,
-  fontFamily: "'Fira Code', 'Fira Mono', 'Menlo', 'Monaco', 'Courier', monospace",
-  fontWeight: '500',
-}
 
 const tabs = [
   {

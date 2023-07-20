@@ -1,4 +1,4 @@
-import { OnMount, OnChange, BeforeMount } from '@monaco-editor/react'
+import { OnMount, OnChange, BeforeMount, EditorProps } from '@monaco-editor/react'
 import { parse } from '@babel/parser'
 import traverse from '@babel/traverse'
 //@ts-expect-error
@@ -17,6 +17,22 @@ export type PandaEditorProps = {
   value: State
   onChange: (state: State) => void
   artifacts: Artifact[]
+}
+
+export const EDITOR_OPTIONS: EditorProps['options'] = {
+  minimap: { enabled: false },
+  fontSize: 14,
+  quickSuggestions: {
+    strings: true,
+    other: true,
+    comments: true,
+  },
+  guides: {
+    indentation: false,
+  },
+  fontLigatures: true,
+  fontFamily: "'Fira Code', 'Fira Mono', 'Menlo', 'Monaco', 'Courier', monospace",
+  fontWeight: '400',
 }
 
 export function useEditor(props: PandaEditorProps) {
