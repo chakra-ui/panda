@@ -29,14 +29,19 @@ export const transformShadow: TokenTransformer = {
 
     if (Array.isArray(token.value)) {
       // Check if the token is a conditional token and also transform the condition values if they use array syntax.
-      // This is suboptimal because we are transforming `base` value twice and then we are discarding it in `token.getConditionTokens` method.
-      if (token.isConditional) {
-        const conditions = token.extensions.conditions ?? {}
+      if (token.extensions.conditions) {
+        const conditions = token.extensions.conditions
 
         for (const [prop, value] of Object.entries(conditions)) {
           if (Array.isArray(value)) {
             conditions[prop] = value.map((value) => this.transform({ value } as Token, { prefix })).join(', ')
           }
+        }
+
+        // Return the already transformed `base` value if the original value is an array.
+        // This is added as an optimization to avoid transforming the shadow array value multiple times.
+        if (token.extensions.conditions?.base && Array.isArray(token.originalValue)) {
+          return token.extensions.conditions.base
         }
       }
 
