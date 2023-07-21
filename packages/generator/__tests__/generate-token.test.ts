@@ -563,7 +563,7 @@ describe('generator', () => {
       `)
     })
 
-    test.skip('should not extract shadow array as a separate unnamed block for the custom dark condition', () => {
+    test('should not extract shadow array as a separate unnamed block for the custom dark condition', () => {
       const css = generateTokenCss(
         createGenerator({
           dependencies: [],
@@ -599,7 +599,7 @@ describe('generator', () => {
         }
 
         .dark {
-          --shadows-e1: '0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3)'
+          --shadows-e1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3)
         }
           }
           "
