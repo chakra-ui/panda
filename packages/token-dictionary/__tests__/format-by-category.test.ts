@@ -24,6 +24,7 @@ test('format / by category', () => {
           "description": undefined,
           "extensions": {
             "category": "colors",
+            "colorPalette": "",
             "condition": "base",
             "prop": "red",
             "var": "--colors-red",
@@ -42,6 +43,7 @@ test('format / by category', () => {
           "description": undefined,
           "extensions": {
             "category": "colors",
+            "colorPalette": "",
             "condition": "base",
             "prop": "blue",
             "var": "--colors-blue",
@@ -60,6 +62,7 @@ test('format / by category', () => {
           "description": undefined,
           "extensions": {
             "category": "colors",
+            "colorPalette": "",
             "condition": "base",
             "prop": "green",
             "var": "--colors-green",

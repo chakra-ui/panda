@@ -32,6 +32,7 @@ test('should generate virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
+          "colorPalette": "",
           "condition": "base",
           "prop": "primary",
           "var": "--colors-primary",
