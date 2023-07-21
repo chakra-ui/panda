@@ -203,7 +203,8 @@ export const addColorPalette: TokenTransformer = {
   type: 'extensions',
   name: 'tokens/colors/colorPalette',
   match(token) {
-    // check if category is colors and last element in path is a number
+    // Check if category is colors and last element in path is a number.
+    // We assume that if the last element is a number, it's a color palette.
     return token.extensions.category === 'colors' && /^\d+$/.test(token.path[token.path.length - 1])
   },
   transform(token) {
