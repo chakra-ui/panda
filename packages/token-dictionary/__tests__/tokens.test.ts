@@ -1876,12 +1876,6 @@ test('should work with default fixture', () => {
         "colorPalette.800" => "var(--colors-color-palette-800)",
         "colorPalette.900" => "var(--colors-color-palette-900)",
         "colorPalette.950" => "var(--colors-color-palette-950)",
-        "colorPalette.yam" => "var(--colors-color-palette-yam)",
-        "colorPalette.poller" => "var(--colors-color-palette-poller)",
-        "colorPalette.tall" => "var(--colors-color-palette-tall)",
-        "colorPalette.thick" => "var(--colors-color-palette-thick)",
-        "colorPalette.body" => "var(--colors-color-palette-body)",
-        "colorPalette.heading" => "var(--colors-color-palette-heading)",
       },
       "blurs" => Map {
         "sm" => "var(--blurs-sm)",

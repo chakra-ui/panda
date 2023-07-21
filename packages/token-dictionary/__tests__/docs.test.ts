@@ -18,7 +18,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "button",
                 "condition": "base",
                 "conditions": {
                   "_dark": "#000",
@@ -42,7 +41,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "button",
                 "condition": "_dark",
                 "conditions": {
                   "_dark": "#000",
@@ -68,7 +66,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "button.card",
                 "condition": "base",
                 "conditions": {
                   "_dark": "#000",
@@ -93,7 +90,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "button.card",
                 "condition": "_dark",
                 "conditions": {
                   "_dark": "#000",
@@ -118,7 +114,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "button.card",
                 "condition": "base",
                 "conditions": {
                   "_dark": "#000",
@@ -143,7 +138,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "button.card",
                 "condition": "_dark",
                 "conditions": {
                   "_dark": "#000",
@@ -170,7 +164,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "",
                 "condition": "base",
                 "conditions": {
                   "_dark": "{colors.red.400}",
@@ -193,7 +186,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "",
                 "condition": "_dark",
                 "conditions": {
                   "_dark": "{colors.red.400}",
@@ -216,7 +208,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "",
                 "condition": "base",
                 "conditions": {
                   "_dark": "{colors.red.700}",
@@ -239,7 +230,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "",
                 "condition": "_dark",
                 "conditions": {
                   "_dark": "{colors.red.700}",
@@ -262,7 +252,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "",
                 "condition": "base",
                 "conditions": {
                   "_dark": {
@@ -287,7 +276,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "",
                 "condition": "_dark:_highContrast",
                 "conditions": {
                   "_dark": {
@@ -312,7 +300,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "",
                 "condition": "_materialTheme",
                 "conditions": {
                   "_materialTheme": {
@@ -343,7 +330,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "",
                 "condition": "_materialTheme:_dark",
                 "conditions": {
                   "_materialTheme": {
@@ -374,7 +360,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "",
                 "condition": "_pastelTheme",
                 "conditions": {
                   "_materialTheme": {
@@ -405,7 +390,6 @@ test('should generate categorize token', () => {
               "description": undefined,
               "extensions": {
                 "category": "colors",
-                "colorPalette": "",
                 "condition": "_pastelTheme:_dark:md",
                 "conditions": {
                   "_materialTheme": {

@@ -1901,30 +1901,6 @@ test('[dts] should generate package', () => {
       \\"colors.colorPalette.950\\": {
         \\"value\\": \\"var(--colors-color-palette-950)\\",
         \\"variable\\": \\"var(--colors-color-palette-950)\\"
-      },
-      \\"colors.colorPalette.yam\\": {
-        \\"value\\": \\"var(--colors-color-palette-yam)\\",
-        \\"variable\\": \\"var(--colors-color-palette-yam)\\"
-      },
-      \\"colors.colorPalette.poller\\": {
-        \\"value\\": \\"var(--colors-color-palette-poller)\\",
-        \\"variable\\": \\"var(--colors-color-palette-poller)\\"
-      },
-      \\"colors.colorPalette.tall\\": {
-        \\"value\\": \\"var(--colors-color-palette-tall)\\",
-        \\"variable\\": \\"var(--colors-color-palette-tall)\\"
-      },
-      \\"colors.colorPalette.thick\\": {
-        \\"value\\": \\"var(--colors-color-palette-thick)\\",
-        \\"variable\\": \\"var(--colors-color-palette-thick)\\"
-      },
-      \\"colors.colorPalette.body\\": {
-        \\"value\\": \\"var(--colors-color-palette-body)\\",
-        \\"variable\\": \\"var(--colors-color-palette-body)\\"
-      },
-      \\"colors.colorPalette.heading\\": {
-        \\"value\\": \\"var(--colors-color-palette-heading)\\",
-        \\"variable\\": \\"var(--colors-color-palette-heading)\\"
       }
     }
 
