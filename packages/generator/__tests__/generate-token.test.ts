@@ -562,4 +562,48 @@ describe('generator', () => {
           "
       `)
     })
+
+    test.skip('should not extract shadow array as a separate unnamed block for the custom dark condition', () => {
+      const css = generateTokenCss(
+        createGenerator({
+          dependencies: [],
+          config: {
+            cwd: '',
+            include: [],
+            theme: {
+              semanticTokens: {
+                shadows: {
+                  e1: {
+                    value: {
+                      base: ['0px 1px 2px rgba(0, 0, 0, 0.3)', '0px 1px 3px 1px rgba(0, 0, 0, 0.15)'],
+                      _dark: ['0px 1px 3px 1px rgba(0, 0, 0, 0.15)', '0px 1px 2px rgba(0, 0, 0, 0.3)'],
+                    },
+                  },
+                },
+              },
+            },
+            conditions: {
+              dark: '.dark &',
+            },
+            outdir: '',
+          },
+          path: '',
+          hooks: createHooks(),
+        }),
+      )
+
+      expect(css).toMatchInlineSnapshot(`
+        "@layer tokens {
+            :where(:root, :host) {
+          --shadows-e1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)
+        }
+
+        .dark {
+          --shadows-e1: '0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3)'
+        }
+          }
+          "
+      `)
+    })
+  })
 })
