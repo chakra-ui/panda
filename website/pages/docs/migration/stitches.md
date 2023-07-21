@@ -364,7 +364,7 @@ const Button = styled('button', {
 })
 ```
 
-## Keyframes
+## Animations
 
 In Stitches, you can define keyframes using the `keyframes` method.
 
