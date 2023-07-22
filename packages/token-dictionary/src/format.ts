@@ -65,7 +65,7 @@ export const formats = {
     grouped.forEach((tokens, condition) => {
       result.get(condition) || result.set(condition, new Map())
       tokens.forEach((token) => {
-        if (token.extensions.isNegative) return
+        if (token.extensions.isNegative || token.extensions.isVirtual) return
         result.get(condition)!.set(token.extensions.var, token.value)
       })
     })
