@@ -2,6 +2,7 @@ import type { NextSeoProps } from 'next-seo'
 import { NextSeo } from 'next-seo'
 import { useTheme } from 'next-themes'
 import NextHead from 'next/head'
+import NextScript from 'next/script'
 import { useMounted } from 'nextra/hooks'
 import { useConfig } from './contexts'
 
@@ -30,7 +31,7 @@ export function Head() {
         {...config.useNextSeoProps?.()}
       />
       <NextHead>
-        <script
+        <NextScript
           defer
           data-domain="panda-css.com"
           src="https://plausible.io/js/script.js"
