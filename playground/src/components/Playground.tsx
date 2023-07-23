@@ -22,8 +22,9 @@ export const Playground = (props: UsePlayGroundProps) => {
     isPristine,
     state,
     setState,
-    share,
+    onShare,
     isSharing,
+    isResponsive,
   } = usePlayground(props)
   const panda = usePanda(state.code, state.config)
   const { previewCss, previewJs, artifacts, patternNames, recipeNames } = panda
@@ -45,12 +46,12 @@ export const Playground = (props: UsePlayGroundProps) => {
             },
             cursor: 'pointer',
           })}
-          onClick={share}
+          onClick={onShare}
           disabled={isPristine || isSharing}
         >
           {isSharing ? 'Saving...' : 'Share'}
         </button>
-        <LayoutControl value={layoutValue} onChange={switchLayout} />
+        <LayoutControl value={layoutValue} onChange={switchLayout} isResponsive={isResponsive} />
         <ColorModeSwitch />
       </Toolbar>
       <Splitter size={panels} onResize={onResizePanels} orientation={layout} className={splitter()}>
@@ -73,13 +74,14 @@ export const Playground = (props: UsePlayGroundProps) => {
         <SplitterResizeTrigger id="left:preview" asChild disabled={isPreviewMode}>
           <div />
         </SplitterResizeTrigger>
-        <SplitterPanel id="preview" className={css({ zIndex: 3 })}>
+        <SplitterPanel id="preview" className={css({ zIndex: 3, pos: 'relative' })}>
           <Preview
             source={state.code}
             previewCss={previewCss}
             previewJs={previewJs}
             patternNames={patternNames}
             recipeNames={recipeNames}
+            isResponsive={isResponsive}
           />
         </SplitterPanel>
       </Splitter>

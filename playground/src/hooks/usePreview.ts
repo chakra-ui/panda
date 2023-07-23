@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useTheme } from 'next-themes'
 
-export function usePreview() {
+export type PreviewProps = {
+  previewCss?: string
+  previewJs?: string
+  source: string
+  patternNames: string[]
+  recipeNames: string[]
+  isResponsive: boolean
+}
+
+export function usePreview(props: PreviewProps) {
+  const { previewJs = '', patternNames, recipeNames } = props
   const [contentRef, setContentRef] = useState<HTMLIFrameElement | null>(null)
 
   const [iframeLoaded, setIframeLoaded] = useState(false)
@@ -58,5 +68,33 @@ export function usePreview() {
 
   const isReady = isMounted && !!contentRef?.contentDocument
 
-  return { handleLoad, contentRef, setContentRef, iframeLoaded, isReady }
+  const srcDoc = `<!DOCTYPE html>
+  <html>
+  <head>
+    <script type="module">
+    ${previewJs}
+    ;window.panda = {
+      css,
+      cva,
+      cx,
+      token,
+      ${patternNames.map((name) => `${name},`).join('\n')}
+      ${recipeNames.map((name) => `${name},`).join('\n')}
+    };
+  </script>
+
+  <script type="module">
+
+  //* This is just listening for the color mode change event and applying the class to the html element
+  window.parent.postMessage({action:"getColorMode"},"*"),window.addEventListener("message",(function(e){e.data.colorMode&&function(e){switch(e){case"light":document.querySelector("html").classList.add("light"),document.querySelector("html").classList.remove("dark");break;case"dark":document.querySelector("html").classList.add("dark"),document.querySelector("html").classList.remove("light")}}(e.data.colorMode)}));
+
+</script>
+
+  </head>
+  <body>
+  
+  </body>
+  </html>`
+
+  return { handleLoad, contentRef, setContentRef, iframeLoaded, isReady, srcDoc }
 }

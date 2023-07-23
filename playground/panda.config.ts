@@ -39,11 +39,26 @@ export default defineConfig({
                 _dark: '#FFFFFF4D',
               },
             },
+            complementary: {
+              value: {
+                base: '{colors.black}',
+                _dark: '{colors.white}',
+              },
+            },
           },
         },
       },
       recipes,
     },
+  },
+  staticCss: {
+    css: [
+      {
+        properties: {
+          cursor: ['ew-resize', 'ns-resize', 'nwse-resize', 'nesw-resize'],
+        },
+      },
+    ],
   },
 
   globalCss: {
