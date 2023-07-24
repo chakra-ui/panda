@@ -7,6 +7,10 @@ export const responsiveBorder = cva({
     alignItems: 'center',
     justifyContent: 'center',
     bg: { base: 'rgba(233,236,239,1)', _dark: 'rgba(24,24,24,0.3)' },
+    transition: 'background-color 0.2s ease-in-out',
+    '&[data-resizing], &:hover': {
+      bg: { base: 'rgb(204 204 204 / 63%)', _dark: 'rgba(24,24,24,0.5)' },
+    },
     '& svg': {
       color: { base: 'rgba(156,163,175,1)', _dark: '#FFFFFF4D' },
     },

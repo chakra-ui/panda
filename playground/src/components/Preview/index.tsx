@@ -102,7 +102,12 @@ export const Preview = (props: PreviewProps) => {
             height: wrapperSize.height,
           }}
         >
-          <div className={responsiveBorder({ position: 'top' })} onMouseDown={startTop} onTouchStart={startTop}>
+          <div
+            className={responsiveBorder({ position: 'top' })}
+            onMouseDown={startTop}
+            onTouchStart={startTop}
+            data-resizing={resizing?.handle === 'top' ? '' : undefined}
+          >
             <div
               className={css({
                 textStyle: 'xs',
@@ -124,6 +129,7 @@ export const Preview = (props: PreviewProps) => {
               className={responsiveBorder({ position: position as keyof typeof resizers })}
               onMouseDown={handler}
               onTouchStart={handler}
+              data-resizing={resizing?.handle === camelToKebabCase(position) ? '' : undefined}
             >
               <ResizeIcon />
             </div>
@@ -213,6 +219,9 @@ function extractDefaultArrowFunctionName(code: string) {
   } else {
     return null
   }
+}
+function camelToKebabCase(inputString: string) {
+  return inputString.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
 }
 
 function ResizeIcon() {
