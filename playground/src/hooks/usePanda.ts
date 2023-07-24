@@ -7,11 +7,54 @@ import * as pandaDefs from '@pandacss/dev'
 import { createHooks } from 'hookable'
 import { useMemo } from 'react'
 import { getResolvedConfig } from '@/src/lib/resolve-config'
+import { merge } from 'merge-anything'
 
 const evalCode = (code: string, scope: Record<string, unknown>) => {
   const scopeKeys = Object.keys(scope)
   const scopeValues = scopeKeys.map((key) => scope[key])
   return new Function(...scopeKeys, code)(...scopeValues)
+}
+
+const playgroundPreset = {
+  theme: {
+    recipes: {
+      playgroundError: pandaDefs.defineRecipe({
+        name: 'playgroundError',
+        base: {
+          p: '2',
+          color: 'red.400',
+          display: 'flex',
+          gap: '2',
+          alignItems: 'center',
+          background: { base: 'white', _dark: '#262626' },
+          borderBottomWidth: '1px',
+          borderBottomColor: { base: 'gray.100', _dark: '#262626' },
+          textStyle: 'sm',
+
+          '& > span': {
+            borderRadius: 'full',
+            display: 'flex',
+            padding: '1',
+            alignItems: 'center',
+            background: {
+              base: 'rgba(235, 94, 66, 0.2)',
+              _dark: 'rgba(235, 94, 66, 0.1)',
+            },
+          },
+
+          '& svg': {
+            h: '16px',
+            w: '16px',
+          },
+        },
+        variants: {
+          style: {
+            empty: {},
+          },
+        },
+      }),
+    },
+  },
 }
 
 export function usePanda(source: string, config: string) {
@@ -38,8 +81,12 @@ export function usePanda(source: string, config: string) {
       outdir: 'styled-system',
       preflight: true,
       optimize: true,
-      presets: [presetBase, presetTheme, ...(presets ?? [])],
+      presets: [presetBase, presetTheme, playgroundPreset, ...(presets ?? [])],
       ...restConfig,
+      staticCss: merge(restConfig.staticCss, {
+        css: [{ properties: { margin: ['10px'] } }],
+        recipes: { playgroundError: ['*'] },
+      }),
     })
 
     return createGenerator({

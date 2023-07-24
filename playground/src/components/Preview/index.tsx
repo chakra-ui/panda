@@ -6,6 +6,7 @@ import { css } from '@/styled-system/css'
 import { flex } from '@/styled-system/patterns'
 import { useResponsiveView } from '@/src/hooks/useResponsiveView'
 import { responsiveBorder } from '@/src/components/Preview/responsive-border'
+import { ErrorIcon } from '@/src/components/icons'
 
 export const Preview = (props: PreviewProps) => {
   const { previewCss = '', source, isResponsive } = props
@@ -192,7 +193,18 @@ export const Preview = (props: PreviewProps) => {
 function LiveError() {
   const { error } = useLiveContext()
 
-  return error ? <pre className="playgroundError">{error}</pre> : <></>
+  function renderError() {
+    return (
+      <div className="playgroundError">
+        <span>
+          <ErrorIcon />
+        </span>
+        <pre>{error}</pre>
+      </div>
+    )
+  }
+
+  return error ? renderError() : <></>
 }
 
 function LivePreview() {
