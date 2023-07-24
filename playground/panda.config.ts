@@ -51,15 +51,6 @@ export default defineConfig({
       recipes,
     },
   },
-  staticCss: {
-    css: [
-      {
-        properties: {
-          cursor: ['ew-resize', 'ns-resize', 'nwse-resize', 'nesw-resize'],
-        },
-      },
-    ],
-  },
 
   globalCss: {
     html: {
