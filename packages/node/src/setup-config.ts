@@ -49,7 +49,7 @@ export default defineConfig({
 
     // The output directory for your css system
     outdir: "styled-system",
-    ${jsxFramework ? `\n // The JSX framework to use\njsxFramework: '${jsxFramework}'` : ''}
+    ${jsxFramework ? `\n // The JSX framework to use\njsxFramework: '${jsxFramework}',` : ''}
     ${syntax ? `\n // The CSS Syntax to use to use\nsyntax: '${syntax}'` : ''}
 })
     `
