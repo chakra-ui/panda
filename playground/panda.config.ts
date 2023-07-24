@@ -4,7 +4,7 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   preflight: true,
   jsxFramework: 'react',
-  include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
+  include: ['./src/**/*.{tsx,jsx,ts}', './pages/**/*.{jsx,tsx,ts}'],
   exclude: [],
   outdir: 'styled-system',
   jsxFactory: 'panda',
