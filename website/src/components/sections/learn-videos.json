@@ -81,5 +81,16 @@
         "thumbnail": "/videos/patterns-as-jsx.png"
       }
     ]
+  },
+  "component library": {
+    "title": "Component Library Guide",
+    "data": [
+      {
+        "title": "Using Panda Presets",
+        "url": "https://youtu.be/HMM-FB4CcUk",
+        "duration": "3m 30s",
+        "thumbnail": "/videos/panda-preset.png"
+      }
+    ]
   }
 }
