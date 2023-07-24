@@ -39,7 +39,7 @@
     "prettier": "^2.8.8",
     "satori": "^0.10.1",
     "ts-morph": "19.0.0",
-    "ts-pattern": "5.0.1",
+    "ts-pattern": "5.0.4",
     "tsup": "7.1.0",
     "typescript": "^5.1.6",
     "utf8": "^3.0.0",

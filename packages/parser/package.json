@@ -26,7 +26,7 @@
     "lil-fp": "1.4.5",
     "magic-string": "^0.30.1",
     "ts-morph": "19.0.0",
-    "ts-pattern": "5.0.1"
+    "ts-pattern": "5.0.4"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",
