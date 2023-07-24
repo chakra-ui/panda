@@ -10,10 +10,10 @@ terminal window.
 
 ## `panda init`
 
-Initialize panda in a project. This process will:
+Initialize Panda in a project. This process will:
 
 - Create a `panda.config.ts` file in your project with the default settings and presets.
-- Emit css utilities for your project in the specified `output` directory.
+- Emit CSS utilities for your project in the specified `output` directory.
 
 ### Flags
 
@@ -23,7 +23,7 @@ Whether to emit a [postcss](https://postcss.org/) config file
 
 #### `--config, -c`
 
-Path to panda config file
+Path to Panda config file
 
 Related: [`config`](/docs/references/config)
 
@@ -39,19 +39,19 @@ Whether to suppress all output
 
 ## `panda`
 
-Run the extract process to generate static css from your project.
+Run the extract process to generate static CSS from your project.
 
 ### Flags
 
 #### `--outdir`
 
-The output directory for the generated css utilities
+The output directory for the generated CSS utilities
 
 Related: [`config.outdir`](/docs/references/config#outdir)
 
 #### `--minify`
 
-Whether to minify the generated css
+Whether to minify the generated CSS
 
 Related: [`config.minify`](/docs/references/config#minify)
 
@@ -69,7 +69,7 @@ Related: [`config.watch`](/docs/references/config#watch)
 
 #### `--poll`
 
-Whether to poll for file changes.
+Whether to poll for file changes
 
 Related: [`config.poll`](/docs/references/config#poll)
 
@@ -81,7 +81,7 @@ Related: [`config`](/docs/references/config.md)
 
 #### `--preflight`
 
-Whether to emit the preflight or reset css
+Whether to emit the preflight or reset CSS
 
 Related: [`config.preflight`](/docs/references/config#preflight)
 
@@ -107,7 +107,7 @@ Related: [`config.hash`](/docs/references/config#hash)
 
 ## `panda codegen`
 
-Generate a new css utilities for your project based on the configuraion file.
+Generate new CSS utilities for your project based on the configuration file.
 
 ### Flags
 
@@ -119,7 +119,7 @@ Related: [`config.clean`](/docs/references/config#clean)
 
 #### `--config, -c`
 
-Path to panda config file
+Path to Panda config file
 
 Related: [`config`](/docs/references/config.md)
 
@@ -137,7 +137,7 @@ Related: [`config.logLevel`](/docs/references/config#log-level)
 
 ## `panda cssgen`
 
-Generate the css from files
+Generate the CSS from files.
 
 ### Flags
 
@@ -149,7 +149,7 @@ Related: [`config.clean`](/docs/references/config#clean)
 
 #### `--config, -c`
 
-Path to panda config file
+Path to Panda config file
 
 Related: [`config`](/docs/references/config.md)
 
@@ -167,7 +167,7 @@ Related: [`config.logLevel`](/docs/references/config#log-level)
 
 ## `panda studio`
 
-Realtime documentation for your design tokens
+Realtime documentation for your design tokens.
 
 ### Flags
 
@@ -185,7 +185,7 @@ Output directory for static files
 
 #### `--config, -c`
 
-Path to panda config file
+Path to Panda config file
 
 Related: [`config`](/docs/references/config.md)
 
@@ -197,13 +197,13 @@ Related: [`config.cwd`](/docs/references/config#cwd)
 
 ## `panda analyze`
 
-Analyze design token usage in glob
+Analyze design token usage in glob.
 
 ### Flags
 
 #### `--json [filepath]`
 
-Output analyze report in given JSON filepath.
+Output analyze report in given JSON filepath
 
 > `panda analyze --json report.json`
 
@@ -215,7 +215,7 @@ Related: [`config.logLevel`](/docs/references/config#log-level)
 
 #### `--config, -c`
 
-Path to panda config file
+Path to Panda config file
 
 Related: [`config`](/docs/references/config.md)
 
@@ -227,7 +227,7 @@ Related: [`config.cwd`](/docs/references/config#cwd)
 
 ## `panda debug`
 
-Debug design token extraction & css generated from files in glob
+Debug design token extraction & CSS generated from files in glob.
 
 ### Flags
 
@@ -237,7 +237,7 @@ Output debug files in stdout without writing to disk
 
 #### `--outdir [dir]`
 
-Output directory for debug files, default to '../styled-system/debug'
+Output directory for debug files, defaults to `../styled-system/debug`
 
 #### `--silent`
 
@@ -245,7 +245,7 @@ Whether to suppress all output
 
 #### `--config, -c`
 
-Path to panda config file
+Path to Panda config file
 
 Related: [`config`](/docs/references/config.md)
 
