@@ -1,5 +1,51 @@
 # @pandacss/generator
 
+## 0.8.0
+
+### Minor Changes
+
+- 9ddf258b: Introduce the new `{fn}.raw` method that allows for a super flexible usage and extraction :tada: :
+
+  ```tsx
+  <Button rootProps={css.raw({ bg: "red.400" })} />
+
+  // recipe in storybook
+  export const Funky: Story = {
+  	args: button.raw({
+  		visual: "funky",
+  		shape: "circle",
+  		size: "sm",
+  	}),
+  };
+
+  // mixed with pattern
+  const stackProps = {
+    sm: stack.raw({ direction: "column" }),
+    md: stack.raw({ direction: "row" })
+  }
+
+  stack(stackProps[props.size]))
+  ```
+
+### Patch Changes
+
+- 3f1e7e32: Adds the `{recipe}.raw()` in generated runtime
+- ac078416: Fix issue with extracting nested tokens as color-palette. Fix issue with extracting shadow array as a
+  separate unnamed block for the custom dark condition.
+- be0ad578: Fix parser issue with TS path mappings
+- b75905d8: Improve generated react jsx types to remove legacy ref. This fixes type composition issues.
+- 0520ba83: Refactor generated recipe js code
+- 156b6bde: Fix issue where generated package json does not respect `outExtension` when `emitPackage` is `true`
+- Updated dependencies [fb449016]
+- Updated dependencies [ac078416]
+- Updated dependencies [be0ad578]
+  - @pandacss/core@0.8.0
+  - @pandacss/token-dictionary@0.8.0
+  - @pandacss/types@0.8.0
+  - @pandacss/is-valid-prop@0.8.0
+  - @pandacss/logger@0.8.0
+  - @pandacss/shared@0.8.0
+
 ## 0.7.0
 
 ### Patch Changes
