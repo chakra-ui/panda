@@ -24,7 +24,11 @@ export type RecipeNode = {
   /**
    * The name of the recipe
    */
-  name: string
+  baseName: string
+  /**
+   * Discriminant
+   */
+  type: 'recipe'
   /**
    * The keys of the variants
    */
@@ -61,4 +65,8 @@ export type RecipeNode = {
    * The function to split the props
    */
   splitProps: (props: Dict) => [Dict, Dict]
+  /**
+   * The props of the recipe
+   */
+  props: string[]
 }

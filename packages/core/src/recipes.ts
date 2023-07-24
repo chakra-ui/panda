@@ -51,7 +51,7 @@ export class Recipes {
 
   save = () => {
     for (const [name, recipe] of Object.entries(this.recipes)) {
-      this.assignRecipe(name, this.normalize(recipe))
+      this.assignRecipe(name, this.normalize(name, recipe))
     }
   }
 
@@ -63,7 +63,7 @@ export class Recipes {
     sharedState.configs.set(name, {
       ...this.getNames(name),
       jsx,
-      name,
+      type: 'recipe' as const,
       variantKeys,
       variantKeyMap: Object.fromEntries(
         Object.entries(recipe.variants ?? {}).map(([key, value]) => {
@@ -75,6 +75,7 @@ export class Recipes {
       splitProps: (props) => {
         return splitProps(props, variantKeys) as [Dict, Dict]
       },
+      props: variantKeys,
     })
   }
 
@@ -91,6 +92,7 @@ export class Recipes {
 
   getNames = memo((name: string) => {
     return {
+      baseName: name,
       upperName: capitalize(name),
       dashName: dashCase(name),
       jsxName: capitalize(name),
@@ -117,26 +119,15 @@ export class Recipes {
     return Array.from(sharedState.configs.values())
   }
 
-  get nodes() {
-    return this.details.map(({ upperName, variantKeys, name, jsx, match }) => ({
-      type: 'recipe' as const,
-      name: upperName,
-      props: variantKeys,
-      baseName: name,
-      jsx,
-      match,
-    }))
-  }
-
   splitProps = (name: string, props: Dict) => {
     const recipe = this.find(name)
     if (!recipe) return [{}, props]
     return recipe.splitProps(props)
   }
 
-  normalize = (config: RecipeConfig) => {
+  normalize = (name: string, config: RecipeConfig) => {
     const {
-      name,
+      className,
       jsx = [capitalize(name)],
       base = {},
       variants = {},
@@ -147,7 +138,7 @@ export class Recipes {
 
     const recipe: Required<RecipeConfig> = {
       jsx,
-      name,
+      className,
       description,
       base: {},
       variants: {},
@@ -223,16 +214,16 @@ export class Recipes {
     const recipe = this.getRecipe(recipeName)
     if (!recipe) return
 
-    const { name, defaultVariants = {}, base = {} } = recipe.config
+    const { defaultVariants = {}, base = {} } = recipe.config
 
-    const styles = Object.assign({ [name]: '__ignore__' }, defaultVariants, variants)
+    const styles = Object.assign({ [recipeName]: '__ignore__' }, defaultVariants, variants)
     const keys = Object.keys(styles)
 
     if (keys.length === 1 && Object.keys(base).length === 0) {
       return
     }
 
-    const rule = this.rules.get(name)
+    const rule = this.rules.get(recipeName)
     rule?.process({ styles })
   }
 

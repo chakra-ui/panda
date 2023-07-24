@@ -57,7 +57,7 @@ const stack = definePattern({
 })
 
 const vstack = definePattern({
-  jsx: 'VStack',
+  jsxName: 'VStack',
   properties: {
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'property', value: 'gap' },
@@ -76,7 +76,7 @@ const vstack = definePattern({
 })
 
 const hstack = definePattern({
-  jsx: 'HStack',
+  jsxName: 'HStack',
   properties: {
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'property', value: 'gap' },

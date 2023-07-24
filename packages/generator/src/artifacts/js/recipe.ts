@@ -34,7 +34,7 @@ export function generateRecipes(ctx: Context) {
          }
 
          value = withoutSpace(value)
-         return { className: \`\${name}--\${prop}${separator}\${value}\` }
+         return { className: \`\${baseName}--\${prop}${separator}\${value}\` }
       }
 
       const recipeCss = createCss({
@@ -62,8 +62,8 @@ export function generateRecipes(ctx: Context) {
   return [
     createRecipeFn,
     ...ctx.recipes.details.map((recipe) => {
-      const { config, upperName, variantKeyMap, dashName } = recipe
-      const { name, description, defaultVariants, compoundVariants } = config
+      const { baseName, config, upperName, variantKeyMap, dashName } = recipe
+      const { description, defaultVariants, compoundVariants } = config
 
       return {
         name: dashName,
@@ -72,11 +72,11 @@ export function generateRecipes(ctx: Context) {
         ${ctx.file.import('splitProps', '../helpers')}
         ${ctx.file.import('createRecipe', './create-recipe')}
 
-        const ${name}Fn = createRecipe('${name}', ${stringify(defaultVariants ?? {})}, ${stringify(
+        const ${baseName}Fn = createRecipe('${baseName}', ${stringify(defaultVariants ?? {})}, ${stringify(
           compoundVariants ?? [],
         )})
 
-        export const ${name} = Object.assign(${name}Fn, {
+        export const ${baseName} = Object.assign(${baseName}Fn, {
           __recipe__: true,
           raw: (props) => props,
           variantKeys: ${stringify(Object.keys(variantKeyMap))},
@@ -121,7 +121,7 @@ export function generateRecipes(ctx: Context) {
         }
 
         ${description ? `/** ${description} */` : ''}
-        export declare const ${name}: ${upperName}Recipe
+        export declare const ${baseName}: ${upperName}Recipe
         `,
       }
     }),

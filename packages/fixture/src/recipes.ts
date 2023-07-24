@@ -2,7 +2,7 @@ import type { RecipeConfig } from '@pandacss/types'
 
 export const recipes: Record<string, RecipeConfig> = {
   textStyle: {
-    name: 'textStyle',
+    className: 'textStyle',
     base: {
       fontFamily: 'mono',
       divideX: '20px',
@@ -24,7 +24,7 @@ export const recipes: Record<string, RecipeConfig> = {
     },
   },
   tooltipStyle: {
-    name: 'tooltipStyle',
+    className: 'tooltipStyle',
     base: {
       '&[data-tooltip], & [data-tooltip]': {
         color: { _dark: 'red' },
@@ -32,7 +32,7 @@ export const recipes: Record<string, RecipeConfig> = {
     },
   },
   buttonStyle: {
-    name: 'buttonStyle',
+    className: 'buttonStyle',
     base: {
       display: 'inline-flex',
       alignItems: 'center',

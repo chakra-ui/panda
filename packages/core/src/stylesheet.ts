@@ -70,8 +70,8 @@ export class Stylesheet {
     this.processAtomic(restStyles, cssObject)
   }
 
-  processRecipe = (config: RecipeConfig, styles: SystemStyleObject) => {
-    this.recipes.process(config.name, { styles })
+  processRecipe = (name: string, config: RecipeConfig, styles: SystemStyleObject) => {
+    this.recipes.process(name, { styles })
     config.compoundVariants?.forEach((compoundVariant) => {
       this.processAtomic(compoundVariant.css)
     })

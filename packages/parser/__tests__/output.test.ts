@@ -1,9 +1,9 @@
 import { describe, test, expect } from 'vitest'
 import { getFixtureProject } from './fixture'
-import type { TSConfig, UserConfig } from '@pandacss/types'
+import type { Config, TSConfig } from '@pandacss/types'
 
-const run = (code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf, tsconfig?: TSConfig) => {
-  const { parse, generator } = getFixtureProject(code, options, tsconfig)
+const run = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
+  const { parse, generator } = getFixtureProject(code, userConfig, tsconfig)
   const result = parse()!
   return {
     json: result?.toArray().map(({ box, ...item }) => item),
@@ -208,43 +208,44 @@ describe('extract to css output pipeline', () => {
       )
     }
      `
-    const result = run(code, (conf) => ({
-      ...conf,
+    const result = run(code, {
       theme: {
-        recipes: {
-          pinkRecipe: {
-            name: 'pinkRecipe',
-            jsx: ['ComponentWithMultipleRecipes'],
-            base: { color: 'pink.100' },
-            variants: {
-              variant: {
-                small: { fontSize: 'sm' },
+        extend: {
+          recipes: {
+            pinkRecipe: {
+              className: 'pinkRecipe',
+              jsx: ['ComponentWithMultipleRecipes'],
+              base: { color: 'pink.100' },
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
               },
             },
-          },
-          greenRecipe: {
-            name: 'greenRecipe',
-            jsx: ['ComponentWithMultipleRecipes'],
-            base: { color: 'green.100' },
-            variants: {
-              variant: {
-                small: { fontSize: 'sm' },
+            greenRecipe: {
+              className: 'greenRecipe',
+              jsx: ['ComponentWithMultipleRecipes'],
+              base: { color: 'green.100' },
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
               },
             },
-          },
-          blueRecipe: {
-            name: 'blueRecipe',
-            jsx: ['ComponentWithMultipleRecipes'],
-            base: { color: 'blue.100' },
-            variants: {
-              variant: {
-                small: { fontSize: 'sm' },
+            blueRecipe: {
+              className: 'blueRecipe',
+              jsx: ['ComponentWithMultipleRecipes'],
+              base: { color: 'blue.100' },
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
               },
             },
           },
         },
       },
-    }))
+    })
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -306,15 +307,15 @@ describe('extract to css output pipeline', () => {
 
         @layer _base {
           .pinkRecipe {
-            color: pink.100
+            color: var(--colors-pink-100)
               }
 
           .greenRecipe {
-            color: green.100
+            color: var(--colors-green-100)
               }
 
           .blueRecipe {
-            color: blue.100
+            color: var(--colors-blue-100)
               }
           }
       }"
@@ -815,6 +816,75 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('jsx patterns + custom wrapper', () => {
+    const code = `
+      import { stack } from ".panda/patterns"
+
+      const CustomStack = ({ align = "center", ...props }) => (
+        <div className={stack({ align, ...props })} />
+      )
+
+      function Button() {
+        return (
+          <div>
+              <CustomStack align="flex-end">Click me</CustomStack>
+          </div>
+        )
+      }
+     `
+    const result = run(code, {
+      patterns: {
+        extend: {
+          stack: {
+            jsx: ['CustomStack'],
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "align": "center",
+            },
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {
+              "align": "flex-end",
+            },
+          ],
+          "name": "CustomStack",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .items_center {
+          align-items: center
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+      }"
+    `)
+  })
+
   test('factory css', () => {
     const code = `
     import { panda } from ".panda/jsx"
@@ -1054,53 +1124,53 @@ describe('extract to css output pipeline', () => {
         )
        }
      `
-    const { parse, generator } = getFixtureProject(code, (conf) => ({
-      ...conf,
+    const { parse, generator } = getFixtureProject(code, {
       theme: {
-        ...conf.theme,
-        recipes: {
-          ...conf.theme?.recipes,
-          button: {
-            name: 'button',
-            jsx: ['Button', /WithRegex$/],
-            description: 'A button styles',
-            base: { fontSize: 'lg' },
-            variants: {
-              size: {
-                sm: { padding: '2', borderRadius: 'sm' },
-                md: { padding: '4', borderRadius: 'md' },
+        extend: {
+          recipes: {
+            button: {
+              className: 'button',
+              jsx: ['Button', /WithRegex$/],
+              description: 'A button styles',
+              base: { fontSize: 'lg' },
+              variants: {
+                size: {
+                  sm: { padding: '2', borderRadius: 'sm' },
+                  md: { padding: '4', borderRadius: 'md' },
+                },
+                variant: {
+                  primary: { color: 'white', backgroundColor: 'blue.500' },
+                  danger: { color: 'white', backgroundColor: 'red.500' },
+                  secondary: { color: 'pink.300', backgroundColor: 'green.500' },
+                },
               },
-              variant: {
-                primary: { color: 'white', backgroundColor: 'blue.500' },
-                danger: { color: 'white', backgroundColor: 'red.500' },
-                secondary: { color: 'pink.300', backgroundColor: 'green.500' },
+              // @ts-expect-error
+              compoundVariants: [{ variant: 'danger', size: 'md', css: { zIndex: 100 } }],
+            },
+            anotherButton: {
+              className: 'anotherButton',
+              jsx: ['AnotherButton'],
+              variants: {
+                spacing: {
+                  sm: { padding: '2', borderRadius: 'sm' },
+                  md: { padding: '4', borderRadius: 'md' },
+                },
               },
             },
-            compoundVariants: [{ variant: 'danger', size: 'md', css: { zIndex: 100 } }],
-          },
-          anotherButton: {
-            name: 'anotherButton',
-            jsx: ['AnotherButton'],
-            variants: {
-              spacing: {
-                sm: { padding: '2', borderRadius: 'sm' },
-                md: { padding: '4', borderRadius: 'md' },
-              },
-            },
-          },
-          complexButton: {
-            name: 'complexButton',
-            jsx: ['ComplexButton', /^Complex.+Button$/],
-            variants: {
-              color: {
-                blue: { color: 'blue.500' },
-                red: { color: 'red.500' },
+            complexButton: {
+              className: 'complexButton',
+              jsx: ['ComplexButton', /^Complex.+Button$/],
+              variants: {
+                color: {
+                  blue: { color: 'blue.500' },
+                  red: { color: 'red.500' },
+                },
               },
             },
           },
         },
       },
-    }))
+    })
     const result = parse()!
     expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
       [
@@ -2831,9 +2901,7 @@ describe('preset patterns', () => {
     }
 
      `
-    const result = run(code, (config) => ({ ...config, outdir: 'src/styled-system', cwd: 'app' }), {
-      compilerOptions: { baseUrl: 'app/src' },
-    })
+    const result = run(code, { outdir: 'src/styled-system', cwd: 'app' }, { compilerOptions: { baseUrl: 'app/src' } })
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
