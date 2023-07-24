@@ -22,11 +22,11 @@ const App = () => {
   const [color, setColor] = useState('red.300')
 
   return (
-    <div 
-      className={css({ 
+    <div
+      className={css({
         // ❌ Avoid: Panda can't determine the value of color at build-time
-        color 
-      })} 
+        color
+      })}
     />
   )
 }
@@ -43,12 +43,14 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   staticCss: {
-    css: [{ 
-      properties: {
-        // ✅ Good: Pre-generate the styles for the color
-        color: ['red.300'] 
-      } 
-    }]
+    css: [
+      {
+        properties: {
+          // ✅ Good: Pre-generate the styles for the color
+          color: ['red.300']
+        }
+      }
+    ]
   }
 })
 ```
@@ -76,12 +78,10 @@ import { token } from '../styled-system/tokens'
 const Component = props => {
   return (
     <div
-      
       className={css({
         // ✅ Good: Store the value in a CSS custom property
-        color: 'var(--color)' 
+        color: 'var(--color)'
       })}
-      
       style={{
         // ✅ Good: Handle the runtime value in the style attribute
         '--color': token(`colors.${props.color}`)
@@ -109,10 +109,10 @@ import { token } from '../styled-system/tokens'
 
 const Component = props => {
   return (
-    <div 
+    <div
       style={{
         // ✅ Good: Dynamically generate CSS custom property from the token
-        color: token.var(`colors.${props.color}`) 
+        color: token.var(`colors.${props.color}`)
       }}
     >
       Dynamic color with runtime value
@@ -122,7 +122,7 @@ const Component = props => {
 
 const App = () => {
   const [runtimeColor, setRuntimeColor] = useState('yellow.300')
-  
+
   return <Component color={runtimeColor} />
 }
 ```
@@ -167,6 +167,30 @@ const App = () => {
   )
 }
 ```
+
+## Property Renaming
+
+Due to the static nature of Panda, you can't rename properties at runtime.
+
+```tsx filename="App.tsx"
+import { Circle, CircleProps } from '../styled-system/jsx'
+
+type Props = {
+  circleSize?: CircleProps['size']
+}
+
+const CustomCircle = (props: Props) => {
+  const { circleSize = '3' } = props
+  return (
+    <Circle
+      // ❌ Avoid: Panda can't determine the value of circleSize at build-time
+      size={circleSize}
+    />
+  )
+}
+```
+
+In this case, you need to use the `size` prop.
 
 ## Runtime conditions
 
@@ -304,11 +328,7 @@ const Section = () => {
   const [type, setType] = useState('primary')
 
   // ✅ Good: This will work as expected
-  return (
-    <section className={sectionRecipe({ type })}>
-      ✅ With a recipe
-    </section>
-  )
+  return <section className={sectionRecipe({ type })}>✅ With a recipe</section>
 }
 ```
 
@@ -365,4 +385,14 @@ const Button = () => {
 <styled.div color={getColor()} />
 <styled.div color={colors[getColorName()]} />
 <styled.div color={colors[colorFromAnotherFile]} />
+
+const CustomCircle = (props) => {
+  const { circleSize = '3' } = props
+  return (
+    <Circle
+      // ❌ Avoid: Panda can't determine the value of circleSize at build-time
+      size={circleSize}
+    />
+  )
+}
 ```
