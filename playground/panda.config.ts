@@ -4,7 +4,7 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   preflight: true,
   jsxFramework: 'react',
-  include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
+  include: ['./src/**/*.{tsx,jsx,ts}', './pages/**/*.{jsx,tsx,ts}'],
   exclude: [],
   outdir: 'styled-system',
   jsxFactory: 'panda',
@@ -37,6 +37,12 @@ export default defineConfig({
               value: {
                 base: '#778597',
                 _dark: '#FFFFFF4D',
+              },
+            },
+            complementary: {
+              value: {
+                base: '{colors.black}',
+                _dark: '{colors.white}',
               },
             },
           },
