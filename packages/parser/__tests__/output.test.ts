@@ -203,7 +203,7 @@ describe('extract to css output pipeline', () => {
     export default function Page() {
       return (
         <>
-          <ComponentWithMultipleRecipes variant="sm" />
+          <ComponentWithMultipleRecipes variant="small" />
         </>
       )
     }
@@ -257,7 +257,7 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
-              "variant": "sm",
+              "variant": "small",
             },
           ],
           "name": "ComponentWithMultipleRecipes",
@@ -273,7 +273,7 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
-              "variant": "sm",
+              "variant": "small",
             },
           ],
           "name": "ComponentWithMultipleRecipes",
@@ -289,7 +289,7 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
-              "variant": "sm",
+              "variant": "small",
             },
           ],
           "name": "ComponentWithMultipleRecipes",
@@ -300,6 +300,10 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
+        .pinkRecipe--variant_small,.greenRecipe--variant_small,.blueRecipe--variant_small {
+          font-size: sm
+          }
+
         @layer _base {
           .pinkRecipe {
             color: pink.100

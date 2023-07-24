@@ -78,6 +78,7 @@ export function generateRecipes(ctx: Context) {
 
         export const ${name} = Object.assign(${name}Fn, {
           __recipe__: true,
+          raw: (props) => props,
           variantKeys: ${stringify(Object.keys(variantKeyMap))},
           variantMap: ${stringify(variantKeyMap)},
           splitVariantProps(props) {
