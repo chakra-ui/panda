@@ -39,8 +39,8 @@ importers:
         specifier: ^2.8.8
         version: 2.8.8
       ts-morph:
-        specifier: 18.0.0
-        version: 18.0.0
+        specifier: 19.0.0
+        version: 19.0.0
       tsup:
         specifier: 7.1.0
         version: 7.1.0(postcss@8.4.25)(typescript@5.1.6)
@@ -122,8 +122,8 @@ importers:
         specifier: ^0.10.1
         version: 0.10.1
       ts-morph:
-        specifier: 18.0.0
-        version: 18.0.0
+        specifier: 19.0.0
+        version: 19.0.0
       ts-pattern:
         specifier: 5.0.1
         version: 5.0.1
@@ -581,8 +581,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(typescript@5.1.6)
       ts-morph:
-        specifier: 18.0.0
-        version: 18.0.0
+        specifier: 19.0.0
+        version: 19.0.0
       ts-pattern:
         specifier: 5.0.1
         version: 5.0.1
@@ -754,8 +754,8 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3
       ts-morph:
-        specifier: 18.0.0
-        version: 18.0.0
+        specifier: 19.0.0
+        version: 19.0.0
       ts-pattern:
         specifier: 5.0.1
         version: 5.0.1
@@ -815,8 +815,8 @@ importers:
         specifier: ^0.30.1
         version: 0.30.1
       ts-morph:
-        specifier: 18.0.0
-        version: 18.0.0
+        specifier: 19.0.0
+        version: 19.0.0
       ts-pattern:
         specifier: 5.0.1
         version: 5.0.1
@@ -11352,8 +11352,8 @@ packages:
       path-browserify: 1.0.1
     dev: false
 
-  /@ts-morph/common@0.19.0:
-    resolution: {integrity: sha512-Unz/WHmd4pGax91rdIKWi51wnVUW11QttMEPpBiBgIewnc9UQIX7UDLxr5vRlqeByXCwhkF6VabSsI0raWcyAQ==}
+  /@ts-morph/common@0.20.0:
+    resolution: {integrity: sha512-7uKjByfbPpwuzkstL3L5MQyuXPSKdoNG93Fmi2JoDcTf3pEP731JdRFAduRVkOs8oqxPsXKA+ScrWkdQ8t/I+Q==}
     dependencies:
       fast-glob: 3.3.0
       minimatch: 7.4.6
@@ -28866,10 +28866,10 @@ packages:
       code-block-writer: 10.1.1
     dev: false
 
-  /ts-morph@18.0.0:
-    resolution: {integrity: sha512-Kg5u0mk19PIIe4islUI/HWRvm9bC1lHejK4S0oh1zaZ77TMZAEmQC0sHQYiu2RgCQFZKXz1fMVi/7nOOeirznA==}
+  /ts-morph@19.0.0:
+    resolution: {integrity: sha512-D6qcpiJdn46tUqV45vr5UGM2dnIEuTGNxVhg0sk5NX11orcouwj6i1bMqZIz2mZTZB1Hcgy7C3oEVhAT+f6mbQ==}
     dependencies:
-      '@ts-morph/common': 0.19.0
+      '@ts-morph/common': 0.20.0
       code-block-writer: 12.0.0
 
   /ts-node@10.9.1(@types/node@14.18.33)(typescript@4.9.5):
