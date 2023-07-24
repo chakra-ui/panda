@@ -425,17 +425,6 @@
     --colors-bg: #fff;
     --colors-card: #e5e5e5;
     --colors-border: #d4d4d4;
-    --colors-color-palette-50: var(--colors-color-palette-50);
-    --colors-color-palette-100: var(--colors-color-palette-100);
-    --colors-color-palette-200: var(--colors-color-palette-200);
-    --colors-color-palette-300: var(--colors-color-palette-300);
-    --colors-color-palette-400: var(--colors-color-palette-400);
-    --colors-color-palette-500: var(--colors-color-palette-500);
-    --colors-color-palette-600: var(--colors-color-palette-600);
-    --colors-color-palette-700: var(--colors-color-palette-700);
-    --colors-color-palette-800: var(--colors-color-palette-800);
-    --colors-color-palette-900: var(--colors-color-palette-900);
-    --colors-color-palette-950: var(--colors-color-palette-950);
   }
 
   .dark {
