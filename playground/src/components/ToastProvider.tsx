@@ -17,7 +17,7 @@ export const AppToastProvider = (props: AppToastProviderProps) => (
                   return (
                     <Toast key={toast.id} toast={toast}>
                       <div data-part="icon" data-type={toast.state.context.type}>
-                        {icon[toast.state.context.type]}
+                        {icon[toast.state.context.type as 'success' | 'error']}
                       </div>
                       <div data-part="content">
                         <ToastTitle />

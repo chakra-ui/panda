@@ -89,8 +89,8 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
                 <SegmentLabel
                   className={css({
                     px: '2',
-                    color: {
-                      '&[data-state="checked"]': {
+                    '&[data-state="checked"]': {
+                      color: {
                         base: { base: 'inherit', _hover: 'text.default' },
                         _groupExpanded: 'black',
                       },
