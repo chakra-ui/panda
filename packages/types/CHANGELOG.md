@@ -1,5 +1,11 @@
 # @pandacss/types
 
+## 0.8.0
+
+### Patch Changes
+
+- be0ad578: Fix parser issue with TS path mappings
+
 ## 0.7.0
 
 ### Patch Changes

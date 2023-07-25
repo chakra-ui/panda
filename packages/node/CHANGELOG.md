@@ -1,5 +1,35 @@
 # @pandacss/node
 
+## 0.8.0
+
+### Patch Changes
+
+- 5d1d376b: Adding missing comma for generated panda config
+- be0ad578: Fix parser issue with TS path mappings
+- 78612d7f: Fix node evaluation in extractor process (can happen when using a BinaryExpression, simple CallExpression or
+  conditions)
+- Updated dependencies [3f1e7e32]
+- Updated dependencies [fb449016]
+- Updated dependencies [ac078416]
+- Updated dependencies [e1f6318a]
+- Updated dependencies [be0ad578]
+- Updated dependencies [b75905d8]
+- Updated dependencies [78612d7f]
+- Updated dependencies [9ddf258b]
+- Updated dependencies [0520ba83]
+- Updated dependencies [156b6bde]
+  - @pandacss/generator@0.8.0
+  - @pandacss/core@0.8.0
+  - @pandacss/extractor@0.8.0
+  - @pandacss/parser@0.8.0
+  - @pandacss/token-dictionary@0.8.0
+  - @pandacss/config@0.8.0
+  - @pandacss/types@0.8.0
+  - @pandacss/error@0.8.0
+  - @pandacss/is-valid-prop@0.8.0
+  - @pandacss/logger@0.8.0
+  - @pandacss/shared@0.8.0
+
 ## 0.7.0
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @pandacss/token-dictionary
 
+## 0.8.0
+
+### Patch Changes
+
+- ac078416: Fix issue with extracting nested tokens as color-palette. Fix issue with extracting shadow array as a
+  separate unnamed block for the custom dark condition.
+- Updated dependencies [be0ad578]
+  - @pandacss/types@0.8.0
+  - @pandacss/shared@0.8.0
+
 ## 0.7.0
 
 ### Patch Changes

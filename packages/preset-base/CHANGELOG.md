@@ -1,5 +1,13 @@
 # @pandacss/preset-base
 
+## 0.8.0
+
+### Patch Changes
+
+- be0ad578: Fix parser issue with TS path mappings
+- Updated dependencies [be0ad578]
+  - @pandacss/types@0.8.0
+
 ## 0.7.0
 
 ### Minor Changes

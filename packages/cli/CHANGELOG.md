@@ -1,5 +1,28 @@
 # @pandacss/dev
 
+## 0.8.0
+
+### Patch Changes
+
+- f7da0aea: Add `-w, --watch` flag on `panda cssgen`, `-o` shortcut for `--outfile` for both `panda cssgen` and
+  `panda ship`
+- Updated dependencies [5d1d376b]
+- Updated dependencies [ac078416]
+- Updated dependencies [e1f6318a]
+- Updated dependencies [be0ad578]
+- Updated dependencies [78612d7f]
+  - @pandacss/node@0.8.0
+  - @pandacss/token-dictionary@0.8.0
+  - @pandacss/config@0.8.0
+  - @pandacss/studio@0.8.0
+  - @pandacss/types@0.8.0
+  - @pandacss/postcss@0.8.0
+  - @pandacss/preset-panda@0.8.0
+  - @pandacss/astro@0.8.0
+  - @pandacss/error@0.8.0
+  - @pandacss/logger@0.8.0
+  - @pandacss/shared@0.8.0
+
 ## 0.7.0
 
 ### Patch Changes
