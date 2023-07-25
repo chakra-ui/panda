@@ -19,13 +19,8 @@ export function useResponsiveView() {
   const [responsiveSize, setResponsiveSize] = useState({ width: 320, height: 670 })
 
   const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null)
-  const [wrapperRef, setWrapperRef] = useState<HTMLDivElement | null>(null)
 
   const [size, setSize] = useState<{ width: number; height: number; visible?: boolean }>({ width: 0, height: 0 })
-  const [wrapperSize, setWrapperSize] = useState<{ width: number; height: number; visible?: boolean }>({
-    width: 0,
-    height: 0,
-  })
 
   const [resizing, setResizing] = useState<{
     handle?: string
@@ -35,7 +30,6 @@ export function useResponsiveView() {
     startY?: number
   }>()
   const timeout = useRef<number>()
-  const wrapperTimeout = useRef<number>()
   const constrainedResponsiveSize = constrainSize(responsiveSize.width, responsiveSize.height)
 
   function constrainWidth(desiredWidth: number) {
@@ -66,27 +60,6 @@ export function useResponsiveView() {
       zoom: Math.min(widthZoom, heightZoom),
     }
   }
-
-  useEffect(() => {
-    const observer = new ResizeObserver(() => {
-      window.clearTimeout(wrapperTimeout.current)
-      const rect = wrapperRef?.getBoundingClientRect()
-      if (!rect) return
-      const width = Math.round(rect.width)
-      const height = Math.round(rect.height)
-      setWrapperSize({
-        width,
-        height,
-      })
-      wrapperTimeout.current = window.setTimeout(() => {
-        setWrapperSize((size) => ({ ...size, visible: false }))
-      }, 1000)
-    })
-    if (wrapperRef) observer.observe(wrapperRef)
-    return () => {
-      observer.disconnect()
-    }
-  }, [wrapperRef])
 
   useEffect(() => {
     let isInitial = true
@@ -308,8 +281,6 @@ export function useResponsiveView() {
 
   return {
     setContainerRef,
-    wrapperSize,
-    setWrapperRef,
     constrainedResponsiveSize,
     startLeft,
     startRight,
