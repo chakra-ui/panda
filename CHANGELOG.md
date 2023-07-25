@@ -6,6 +6,49 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [0.8.0] - 2023-07-25
+
+### Fixed
+
+- Fix issue where `panda init` with `jsxFramework` flag generated invalid object due to missing comma.
+- Fix issue where composite tokens in semantic tokens generated invalid css.
+- Fix issue where extractor doesn't work reliably due to `typescript` module version mismatch.
+- Fix issue where generated package json does not respect `outExtension` when `emitPackage` is `true`
+
+### Added
+
+- Added new flags to the `panda cssgen` and `panda ship` command:
+
+  - `-w, --watch` flag to watch for changes
+  - `-o` shortcut for `--outfile`
+
+- Introduce the new `{fn}.raw()` method to css, patterns and recipes. This function is an identity function and only
+  serves as a hint for the extractor to extract the css.
+
+  It can be useful, for example, in Storybook args or custom react props.
+
+```tsx
+// mark the object as valid css for the extractor
+<Button rootProps={css.raw({ bg: 'red.400' })} />
+```
+
+```tsx
+export const Funky: Story = {
+  // mark this as a button recipe usage
+  args: button.raw({
+    visual: 'funky',
+    shape: 'circle',
+    size: 'sm',
+  }),
+}
+```
+
+### Changed
+
+- Improve virtual color processing to avoid generated unused css variables.
+- Improve generated react jsx types to remove legacy ref
+- Temporarily disable VSCode extension in `.svelte` or `.vue` files
+
 ## [0.7.0] - 2023-07-17
 
 ### Fixed
