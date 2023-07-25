@@ -6,7 +6,7 @@ const anatomy = createAnatomy('card', ['root', 'title', 'content'])
 const parts = defineParts(anatomy.build())
 
 export const cardRecipe = defineRecipe({
-  name: 'card',
+  className: 'card',
   description: 'A card style',
   jsx: ['Card'],
   base: {

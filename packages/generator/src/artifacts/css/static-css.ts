@@ -19,7 +19,7 @@ export const generateStaticCss = (ctx: Context) => {
 
       return Object.keys(values)
     },
-    getRecipeKeys: (recipe) => recipes.details.find((detail) => detail.name === recipe)?.variantKeyMap ?? {},
+    getRecipeKeys: (recipe) => recipes.details.find((detail) => detail.baseName === recipe)?.variantKeyMap ?? {},
   })
 
   results.css.forEach((css) => {

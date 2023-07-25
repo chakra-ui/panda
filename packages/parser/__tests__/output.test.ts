@@ -302,7 +302,7 @@ describe('extract to css output pipeline', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
         .pinkRecipe--variant_small,.greenRecipe--variant_small,.blueRecipe--variant_small {
-          font-size: sm
+          font-size: var(--font-sizes-sm)
           }
 
         @layer _base {

@@ -62,7 +62,7 @@
   ```ts
   recipes: {
       pinkRecipe: {
-          name: 'pinkRecipe',
+          className: 'pinkRecipe',
           jsx: ['ComponentWithMultipleRecipes'],
           base: { color: 'pink.100' },
           variants: {
@@ -72,7 +72,7 @@
           },
       },
       greenRecipe: {
-          name: 'greenRecipe',
+          className: 'greenRecipe',
           jsx: ['ComponentWithMultipleRecipes'],
           base: { color: 'green.100' },
           variants: {
@@ -82,7 +82,7 @@
           },
       },
       blueRecipe: {
-          name: 'blueRecipe',
+          className: 'blueRecipe',
           jsx: ['ComponentWithMultipleRecipes'],
           base: { color: 'blue.100' },
           variants: {

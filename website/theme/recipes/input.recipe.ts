@@ -5,7 +5,7 @@ const anatomy = createAnatomy('input', ['input', 'leftIcon', 'rightIcon'])
 const parts = defineParts(anatomy.build())
 
 export const inputRecipe = defineRecipe({
-  name: 'input',
+  className: 'input',
   base: {
     position: 'relative',
     display: 'flex',

@@ -5,7 +5,7 @@ const anatomy = createAnatomy('button', ['leftIcon', 'rightIcon'])
 const parts = defineParts(anatomy.build())
 
 export const buttonRecipe = defineRecipe({
-  name: 'button',
+  className: 'button',
   base: {
     display: 'flex',
     alignItems: 'center',

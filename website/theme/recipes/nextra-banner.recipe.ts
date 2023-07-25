@@ -11,7 +11,7 @@ const anatomy = createAnatomy('banner', [
 const parts = defineParts(anatomy.build())
 
 export const nextraBannerRecipe = defineRecipe({
-  name: 'nextraBannerRecipe',
+  className: 'nextraBannerRecipe',
   description: 'A nextra banner style',
   base: parts({
     root: {

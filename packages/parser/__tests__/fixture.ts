@@ -133,7 +133,7 @@ export function patternParser(code: string) {
             direction: { type: 'property', value: 'flexDirection' },
             gap: { type: 'property', value: 'gap' },
           },
-          transform(props) {
+          transform(props: any) {
             const { align = 'flex-start', justify, direction = 'column', gap = '10px', ...rest } = props
             return {
               display: 'flex',

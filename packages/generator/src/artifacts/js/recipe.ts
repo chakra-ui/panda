@@ -34,7 +34,7 @@ export function generateRecipes(ctx: Context) {
          }
 
          value = withoutSpace(value)
-         return { className: \`\${baseName}--\${prop}${separator}\${value}\` }
+         return { className: \`\${name}--\${prop}${separator}\${value}\` }
       }
 
       const recipeCss = createCss({

@@ -19,7 +19,7 @@ const playgroundPreset = {
   theme: {
     recipes: {
       playgroundError: pandaDefs.defineRecipe({
-        name: 'playgroundError',
+        className: 'playgroundError',
         base: {
           p: '2',
           color: 'red.400',

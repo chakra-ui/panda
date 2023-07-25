@@ -146,7 +146,7 @@ const Button = styled('button', {
 import { defineConfig, defineRecipe } from '@pandacss/dev'
 
 const buttonStyle = defineRecipe({
-  name: 'button',
+  className: 'button',
   base: {
     backgroundColor: 'gainsboro',
     borderRadius: '9999px'

@@ -27,7 +27,7 @@ const link = {
 } as SystemStyleObject
 
 export const navbarRecipe = defineRecipe({
-  name: 'navbar',
+  className: 'navbar',
   description: 'A navbar style',
   jsx: ['Navbar'],
   base: parts({
