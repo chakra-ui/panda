@@ -335,6 +335,10 @@ describe('extract to css output pipeline', () => {
           font-size: var(--font-sizes-sm)
           }
 
+        .sizeRecipe--size_medium {
+          font-size: var(--font-sizes-md)
+          }
+
         @layer _base {
           .pinkRecipe {
             color: var(--colors-pink-100)
@@ -353,6 +357,10 @@ describe('extract to css output pipeline', () => {
       @layer utilities {
         .size_medium {
           size: medium
+          }
+
+        .variant_small {
+          variant: small
           }
       }"
     `)
