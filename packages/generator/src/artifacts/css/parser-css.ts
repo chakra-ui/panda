@@ -35,9 +35,9 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
 
             match(recipe)
               // treat recipe jsx like regular recipe + atomic
-              .with({ type: 'jsx-recipe', name: P.string }, ({ name: jsxName }) => {
+              .with({ type: 'jsx-recipe' }, () => {
                 recipe.data.forEach((data) => {
-                  const [recipeProps, styleProps] = recipes.splitProps(jsxName, data)
+                  const [recipeProps, styleProps] = recipes.splitProps(recipeName, data)
                   sheet.processStyleProps(styleProps)
                   sheet.processRecipe(recipeName, recipeConfig, recipeProps)
                 })

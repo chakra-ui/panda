@@ -193,17 +193,17 @@ describe('extract to css output pipeline', () => {
 
   test('multiple recipes on 1 component', () => {
     const code = `
-    import { button, pinkRecipe, greenRecipe, blueRecipe } from ".panda/recipes"
+    import { button, pinkRecipe, greenRecipe, blueRecipe, sizeRecipe } from ".panda/recipes"
 
-    const ComponentWithMultipleRecipes = ({ variant }) => {
-      return <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }))}>Hello</button>
+    const ComponentWithMultipleRecipes = ({ variant, size }) => {
+      return <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }), sizeRecipe({ size }))}>Hello</button>
     }
 
 
     export default function Page() {
       return (
         <>
-          <ComponentWithMultipleRecipes variant="small" />
+          <ComponentWithMultipleRecipes variant="small" size="medium" />
         </>
       )
     }
@@ -242,6 +242,16 @@ describe('extract to css output pipeline', () => {
                 },
               },
             },
+            sizeRecipe: {
+              className: 'sizeRecipe',
+              jsx: ['ComponentWithMultipleRecipes'],
+              variants: {
+                size: {
+                  medium: { fontSize: 'md' },
+                  large: { fontSize: 'lg' },
+                },
+              },
+            },
           },
         },
       },
@@ -258,6 +268,7 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
+              "size": "medium",
               "variant": "small",
             },
           ],
@@ -274,6 +285,7 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
+              "size": "medium",
               "variant": "small",
             },
           ],
@@ -290,6 +302,24 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
+              "size": "medium",
+              "variant": "small",
+            },
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "sizeRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "size": "medium",
               "variant": "small",
             },
           ],
@@ -317,6 +347,12 @@ describe('extract to css output pipeline', () => {
           .blueRecipe {
             color: var(--colors-blue-100)
               }
+          }
+      }
+
+      @layer utilities {
+        .size_medium {
+          size: medium
           }
       }"
     `)

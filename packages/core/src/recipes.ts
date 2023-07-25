@@ -119,8 +119,8 @@ export class Recipes {
     return Array.from(sharedState.configs.values())
   }
 
-  splitProps = (name: string, props: Dict) => {
-    const recipe = this.find(name)
+  splitProps = (recipeName: string, props: Dict) => {
+    const recipe = this.details.find((node) => node.baseName === recipeName)
     if (!recipe) return [{}, props]
     return recipe.splitProps(props)
   }
