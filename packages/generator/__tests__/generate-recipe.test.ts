@@ -23,7 +23,7 @@ describe('generate recipes', () => {
             }
 
             value = withoutSpace(value)
-            return { className: \`\${baseName}--\${prop}_\${value}\` }
+            return { className: \`\${name}--\${prop}_\${value}\` }
          }
 
          const recipeCss = createCss({
