@@ -29,6 +29,7 @@ export const splitter = defineRecipe({
           position: 'absolute',
           top: 0,
           left: 0,
+          right: 0,
           zIndex: 4,
         },
 
@@ -39,7 +40,7 @@ export const splitter = defineRecipe({
 
         _horizontal: {
           minWidth: '1px',
-          _before: { right: '-10px', h: 'full' },
+          _before: { left: '-10px', h: 'full' },
         },
 
         '&[hidden]': {

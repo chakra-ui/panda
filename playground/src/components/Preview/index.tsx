@@ -16,8 +16,6 @@ export const Preview = (props: PreviewProps) => {
 
   const {
     setContainerRef,
-    setWrapperRef,
-    wrapperSize,
     constrainedResponsiveSize,
     startLeft,
     startRight,
@@ -99,8 +97,8 @@ export const Preview = (props: PreviewProps) => {
         <div
           className={flex({ align: 'flex-start', pos: 'absolute' })}
           style={{
-            width: wrapperSize.width,
-            height: wrapperSize.height,
+            width: constrainedResponsiveSize.width * constrainedResponsiveSize.zoom,
+            height: constrainedResponsiveSize.height * constrainedResponsiveSize.zoom,
           }}
         >
           <div
@@ -138,7 +136,6 @@ export const Preview = (props: PreviewProps) => {
         </div>
       )}
       <div
-        ref={setWrapperRef}
         className={css({
           pos: 'relative',
           w: 'full',
