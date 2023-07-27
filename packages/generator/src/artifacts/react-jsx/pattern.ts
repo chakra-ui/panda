@@ -15,8 +15,8 @@ export function generateReactJsxPattern(ctx: Context) {
       import { createElement, forwardRef } from 'react'
       ${ctx.file.import(factoryName, './factory')}
       ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
-  
-      export const ${jsxName} = forwardRef(function ${jsxName}(props, ref) {
+
+      export const ${jsxName} = /* @__PURE__ */ forwardRef(function ${jsxName}(props, ref) {
         ${match(props.length)
           .with(
             0,
@@ -32,16 +32,16 @@ export function generateReactJsxPattern(ctx: Context) {
         return createElement(${factoryName}.${jsxElement}, { ref, ...styleProps, ...restProps })
           `,
           )}
-      })    
+      })
       `,
 
       dts: outdent`
       import type { FunctionComponent } from 'react'
       import type { ${upperName}Properties } from '../patterns/${dashName}'
       import type { ${typeName} } from '../types/jsx'
-  
+
       export type ${upperName}Props = ${upperName}Properties & Omit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}>
-  
+
       ${description ? `/** ${description} */` : ''}
       export declare const ${jsxName}: FunctionComponent<${upperName}Props>
       `,
