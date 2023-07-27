@@ -11,13 +11,6 @@ export function generatePattern(ctx: Context) {
     const { properties, transform, strict, description } = config
 
     const transformFn = stringify({ transform }) ?? ''
-    const helperImports = ['mapObject']
-    if (transformFn.includes('__spreadValues')) {
-      helperImports.push('__spreadValues')
-    }
-    if (transformFn.includes('__objRest')) {
-      helperImports.push('__objRest')
-    }
 
     return {
       name: dashName,
@@ -70,7 +63,7 @@ export function generatePattern(ctx: Context) {
 
      `,
       js: outdent`
-    ${ctx.file.import(helperImports.join(', '), '../helpers')}
+    ${ctx.file.import('mapObject', '../helpers')}
     ${ctx.file.import('css', '../css/index')}
 
     const ${baseName}Config = ${transformFn.replace(`{transform`, `{\ntransform`)}

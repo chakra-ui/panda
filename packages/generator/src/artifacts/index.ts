@@ -28,7 +28,7 @@ import { generateStyleProps } from './types/style-props'
 import { generateTokenTypes } from './types/token-types'
 
 function setupHelpers(ctx: Context): Artifact {
-  const code = generateHelpers()
+  const code = generateHelpers(ctx)
   return {
     files: [{ file: ctx.file.ext('helpers'), code: code.js }],
   }
