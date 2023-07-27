@@ -1,8 +1,6 @@
 import { outdent } from 'outdent'
 import type { Context } from '../../engines'
 
-const stringify = (v: any) => JSON.stringify(Object.fromEntries(v), null, 2)
-
 export function generateCssFn(ctx: Context) {
   const {
     utility,
@@ -11,6 +9,10 @@ export function generateCssFn(ctx: Context) {
   } = ctx
 
   const { separator } = utility
+  const shorthandsByProp = Array.from(utility.shorthands.entries()).reduce((acc, [shorthand, prop]) => {
+    acc[prop] = shorthand
+    return acc
+  }, {} as Record<string, string>)
 
   return {
     dts: outdent`
@@ -27,35 +29,57 @@ export function generateCssFn(ctx: Context) {
     ${ctx.file.import('createCss, createMergeCss, hypenateProperty, withoutSpace', '../helpers')}
     ${ctx.file.import('sortConditions, finalizeConditions', './conditions')}
 
-    const classNameMap = ${stringify(utility.entries())}
+    const utilities = "${utility
+      .entries()
+      .map(([prop, className]) => {
+        const shorthand = shorthandsByProp[prop]
+        // mark shorthand equal to className as 1 to save a few bytes
+        return [prop, shorthand ? [className, shorthand === className ? 1 : shorthand].join('/') : className].join(':')
+      })
+      .join(',')}"
 
-    const shorthands = ${stringify(utility.shorthands)}
-
-    const breakpointKeys = ${JSON.stringify(conditions.breakpoints.keys)}
-
-    const hasShorthand = ${utility.hasShorthand ? 'true' : 'false'}
+    const classMap = {}
+    ${
+      utility.hasShorthand
+        ? outdent`
+    const shorthands = {}
+    utilities.split(',').forEach((utility) => {
+      const [prop, meta] = utility.split(':')
+      const [className, shorthand] = meta.split('/')
+      classMap[prop] = className
+      if (shorthand) shorthands[shorthand === '1' ? className : shorthand] = prop
+    })
 
     const resolveShorthand = (prop) => shorthands[prop] || prop
-
-    function transform(prop, value) {
-      const key = resolveShorthand(prop)
-      const propKey = classNameMap[key] || hypenateProperty(key)
-      const className = \`$\{propKey}${separator}$\{withoutSpace(value)}\`
-      return { className }
+    `
+        : outdent`
+    utilities.split(',').forEach((utility) => {
+      const [prop, className] = utility.split(':')
+      classMap[prop] = className
+    })
+    `
     }
 
     const context = {
-      hash: ${hash ? 'true' : 'false'},
+      ${hash ? 'hash: true,' : ''}
       conditions: {
         shift: sortConditions,
         finalize: finalizeConditions,
-        breakpoints: { keys: breakpointKeys }
+        breakpoints: { keys: ${JSON.stringify(conditions.breakpoints.keys)} }
       },
       utility: {
-        prefix: ${prefix ? JSON.stringify(prefix) : undefined},
-        transform,
-        hasShorthand,
-        resolveShorthand,
+        ${prefix ? 'prefix: ' + JSON.stringify(prefix) + ',' : ''}
+        transform: ${
+          utility.hasShorthand
+            ? `(prop, value) => {
+              const key = resolveShorthand(prop)
+              const propKey = classMap[key] || hypenateProperty(key)
+              return { className: \`$\{propKey}${separator}$\{withoutSpace(value)}\` }
+            }`
+            : `(key, value) => ({ className: \`$\{classMap[key] || hypenateProperty(key)}${separator}$\{withoutSpace(value)}\` })`
+        },
+        ${utility.hasShorthand ? 'hasShorthand: true,' : ''}
+        resolveShorthand: ${utility.hasShorthand ? 'resolveShorthand' : 'prop => prop'},
       }
     }
 

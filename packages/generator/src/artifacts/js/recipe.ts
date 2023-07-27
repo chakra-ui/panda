@@ -40,9 +40,9 @@ export function generateRecipes(ctx: Context) {
       }
 
       const recipeCss = createCss({
-        hash: ${hash ? 'true' : 'false'},
+        ${hash ? 'hash: true,' : ''}
         utility: {
-          prefix: ${prefix ? JSON.stringify(prefix) : undefined},
+          ${prefix ? 'prefix: ' + JSON.stringify(prefix) + ',' : ''}
           transform,
         }
       })
@@ -104,13 +104,15 @@ export function generateRecipes(ctx: Context) {
             compoundVariants ?? [],
           )})
 
+        const ${baseName}VariantMap = ${stringify(variantKeyMap)}
+        const ${baseName}VariantKeys = Object.keys(${baseName}VariantMap)
         export const ${baseName} = Object.assign(${baseName}Fn, {
           __recipe__: true,
           raw: (props) => props,
-          variantKeys: ${stringify(Object.keys(variantKeyMap))},
-          variantMap: ${stringify(variantKeyMap)},
+          variantKeys: ${baseName}VariantKeys,
+          variantMap: ${baseName}VariantMap,
           splitVariantProps(props) {
-            return splitProps(props, ${stringify(Object.keys(variantKeyMap))})
+            return splitProps(props, ${baseName}VariantKeys)
           },
         })
         `,
