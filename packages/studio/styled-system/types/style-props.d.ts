@@ -8,78 +8,7 @@ export type CssVarProperties = {
 }
 
 export type SystemProperties = {
-  	MsAccelerator?: PropertyValue<'MsAccelerator'>
-	MsBlockProgression?: PropertyValue<'MsBlockProgression'>
-	MsContentZoomChaining?: PropertyValue<'MsContentZoomChaining'>
-	MsContentZooming?: PropertyValue<'MsContentZooming'>
-	MsContentZoomLimit?: PropertyValue<'MsContentZoomLimit'>
-	MsContentZoomLimitMax?: PropertyValue<'MsContentZoomLimitMax'>
-	MsContentZoomLimitMin?: PropertyValue<'MsContentZoomLimitMin'>
-	MsContentZoomSnap?: PropertyValue<'MsContentZoomSnap'>
-	MsContentZoomSnapPoints?: PropertyValue<'MsContentZoomSnapPoints'>
-	MsContentZoomSnapType?: PropertyValue<'MsContentZoomSnapType'>
-	MsFilter?: PropertyValue<'MsFilter'>
-	MsFlowFrom?: PropertyValue<'MsFlowFrom'>
-	MsFlowInto?: PropertyValue<'MsFlowInto'>
-	MsGridColumns?: PropertyValue<'MsGridColumns'>
-	MsGridRows?: PropertyValue<'MsGridRows'>
-	MsHighContrastAdjust?: PropertyValue<'MsHighContrastAdjust'>
-	MsHyphenateLimitChars?: PropertyValue<'MsHyphenateLimitChars'>
-	MsHyphenateLimitLines?: PropertyValue<'MsHyphenateLimitLines'>
-	MsHyphenateLimitZone?: PropertyValue<'MsHyphenateLimitZone'>
-	MsImeAlign?: PropertyValue<'MsImeAlign'>
-	MsOverflowStyle?: PropertyValue<'MsOverflowStyle'>
-	MsScrollbar3dlightColor?: PropertyValue<'MsScrollbar3dlightColor'>
-	MsScrollbarArrowColor?: PropertyValue<'MsScrollbarArrowColor'>
-	MsScrollbarBaseColor?: PropertyValue<'MsScrollbarBaseColor'>
-	MsScrollbarDarkshadowColor?: PropertyValue<'MsScrollbarDarkshadowColor'>
-	MsScrollbarFaceColor?: PropertyValue<'MsScrollbarFaceColor'>
-	MsScrollbarHighlightColor?: PropertyValue<'MsScrollbarHighlightColor'>
-	MsScrollbarShadowColor?: PropertyValue<'MsScrollbarShadowColor'>
-	MsScrollbarTrackColor?: PropertyValue<'MsScrollbarTrackColor'>
-	MsScrollChaining?: PropertyValue<'MsScrollChaining'>
-	MsScrollLimit?: PropertyValue<'MsScrollLimit'>
-	MsScrollLimitXMax?: PropertyValue<'MsScrollLimitXMax'>
-	MsScrollLimitXMin?: PropertyValue<'MsScrollLimitXMin'>
-	MsScrollLimitYMax?: PropertyValue<'MsScrollLimitYMax'>
-	MsScrollLimitYMin?: PropertyValue<'MsScrollLimitYMin'>
-	MsScrollRails?: PropertyValue<'MsScrollRails'>
-	MsScrollSnapPointsX?: PropertyValue<'MsScrollSnapPointsX'>
-	MsScrollSnapPointsY?: PropertyValue<'MsScrollSnapPointsY'>
-	MsScrollSnapType?: PropertyValue<'MsScrollSnapType'>
-	MsScrollSnapX?: PropertyValue<'MsScrollSnapX'>
-	MsScrollSnapY?: PropertyValue<'MsScrollSnapY'>
-	MsScrollTranslation?: PropertyValue<'MsScrollTranslation'>
-	MsTextAutospace?: PropertyValue<'MsTextAutospace'>
-	MsTouchSelect?: PropertyValue<'MsTouchSelect'>
-	MsUserSelect?: PropertyValue<'MsUserSelect'>
-	MsWrapFlow?: PropertyValue<'MsWrapFlow'>
-	MsWrapMargin?: PropertyValue<'MsWrapMargin'>
-	MsWrapThrough?: PropertyValue<'MsWrapThrough'>
-	MozAppearance?: PropertyValue<'MozAppearance'>
-	MozBinding?: PropertyValue<'MozBinding'>
-	MozBorderBottomColors?: PropertyValue<'MozBorderBottomColors'>
-	MozBorderLeftColors?: PropertyValue<'MozBorderLeftColors'>
-	MozBorderRightColors?: PropertyValue<'MozBorderRightColors'>
-	MozBorderTopColors?: PropertyValue<'MozBorderTopColors'>
-	MozContextProperties?: PropertyValue<'MozContextProperties'>
-	MozFloatEdge?: PropertyValue<'MozFloatEdge'>
-	MozForceBrokenImageIcon?: PropertyValue<'MozForceBrokenImageIcon'>
-	MozImageRegion?: PropertyValue<'MozImageRegion'>
-	MozOrient?: PropertyValue<'MozOrient'>
-	MozOutlineRadius?: PropertyValue<'MozOutlineRadius'>
-	MozOutlineRadiusBottomleft?: PropertyValue<'MozOutlineRadiusBottomleft'>
-	MozOutlineRadiusBottomright?: PropertyValue<'MozOutlineRadiusBottomright'>
-	MozOutlineRadiusTopleft?: PropertyValue<'MozOutlineRadiusTopleft'>
-	MozOutlineRadiusTopright?: PropertyValue<'MozOutlineRadiusTopright'>
-	MozStackSizing?: PropertyValue<'MozStackSizing'>
-	MozTextBlink?: PropertyValue<'MozTextBlink'>
-	MozUserFocus?: PropertyValue<'MozUserFocus'>
-	MozUserInput?: PropertyValue<'MozUserInput'>
-	MozUserModify?: PropertyValue<'MozUserModify'>
-	MozWindowDragging?: PropertyValue<'MozWindowDragging'>
-	MozWindowShadow?: PropertyValue<'MozWindowShadow'>
-	WebkitAppearance?: PropertyValue<'WebkitAppearance'>
+  	WebkitAppearance?: PropertyValue<'WebkitAppearance'>
 	WebkitBorderBefore?: PropertyValue<'WebkitBorderBefore'>
 	WebkitBorderBeforeColor?: PropertyValue<'WebkitBorderBeforeColor'>
 	WebkitBorderBeforeStyle?: PropertyValue<'WebkitBorderBeforeStyle'>
@@ -543,6 +472,7 @@ export type SystemProperties = {
 	writingMode?: PropertyValue<'writingMode'>
 	zIndex?: PropertyValue<'zIndex'>
 	zoom?: PropertyValue<'zoom'>
+	?: PropertyValue<''>
 	pos?: PropertyValue<'pos'>
 	insetEnd?: PropertyValue<'insetEnd'>
 	end?: PropertyValue<'end'>

@@ -14,7 +14,7 @@ import { generateStringLiteralCssFn } from './js/css-fn.string-literal'
 import { generateCvaFn } from './js/cva'
 import { generateCx } from './js/cx'
 import { generateHelpers } from './js/helpers'
-import { generateisValidProp } from './js/is-valid-prop'
+import { generateIsValidProp } from './js/is-valid-prop'
 import { generatePattern } from './js/pattern'
 import { generateRecipes } from './js/recipe'
 import { generateSvaFn } from './js/sva'
@@ -183,7 +183,7 @@ function setupPatterns(ctx: Context): Artifact {
 function setupJsx(ctx: Context): Artifact {
   if (!ctx.jsx.framework) return
 
-  const isValidProp = generateisValidProp(ctx)
+  const isValidProp = generateIsValidProp(ctx)
   const types = generateJsxTypes(ctx)!
   const factory = generateJsxFactory(ctx)
   const patterns = generateJsxPatterns(ctx)
