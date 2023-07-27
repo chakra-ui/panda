@@ -193,17 +193,17 @@ describe('extract to css output pipeline', () => {
 
   test('multiple recipes on 1 component', () => {
     const code = `
-    import { button, pinkRecipe, greenRecipe, blueRecipe, sizeRecipe } from ".panda/recipes"
+    import { button, pinkRecipe, greenRecipe, blueRecipe, sizeRecipe, bgRecipe } from ".panda/recipes"
 
-    const ComponentWithMultipleRecipes = ({ variant, size }) => {
-      return <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }), sizeRecipe({ size }))}>Hello</button>
+    const ComponentWithMultipleRecipes = ({ variant, size, color }) => {
+      return <button className={cx(pinkRecipe({ variant }), greenRecipe({ variant }), blueRecipe({ variant }), sizeRecipe({ size }), bgRecipe({ color }))}>Hello</button>
     }
 
 
     export default function Page() {
       return (
         <>
-          <ComponentWithMultipleRecipes variant="small" size="medium" />
+          <ComponentWithMultipleRecipes variant="small" size="medium" color="yellow" />
         </>
       )
     }
@@ -252,6 +252,15 @@ describe('extract to css output pipeline', () => {
                 },
               },
             },
+            bgRecipe: {
+              className: 'bgRecipe',
+              jsx: ['ComponentWithMultipleRecipes'],
+              variants: {
+                color: {
+                  yellow: { backgroundColor: 'yellow.100' },
+                },
+              },
+            },
           },
         },
       },
@@ -268,6 +277,7 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
+              "color": "yellow",
               "size": "medium",
               "variant": "small",
             },
@@ -285,6 +295,7 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
+              "color": "yellow",
               "size": "medium",
               "variant": "small",
             },
@@ -302,6 +313,7 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
+              "color": "yellow",
               "size": "medium",
               "variant": "small",
             },
@@ -319,6 +331,25 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
+              "color": "yellow",
+              "size": "medium",
+              "variant": "small",
+            },
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "bgRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "color": "yellow",
               "size": "medium",
               "variant": "small",
             },
@@ -339,6 +370,10 @@ describe('extract to css output pipeline', () => {
           font-size: var(--font-sizes-md)
           }
 
+        .bgRecipe--color_yellow {
+          background-color: var(--colors-yellow-100)
+          }
+
         @layer _base {
           .pinkRecipe {
             color: var(--colors-pink-100)
@@ -355,12 +390,185 @@ describe('extract to css output pipeline', () => {
       }
 
       @layer utilities {
-        .size_medium {
-          size: medium
+        .text_yellow {
+          color: yellow
           }
 
         .variant_small {
           variant: small
+          }
+
+        .size_medium {
+          size: medium
+          }
+      }"
+    `)
+  })
+
+  test('multiple recipes on 1 component using {recipe}.raw', () => {
+    const code = `
+    import { button, pinkRecipe, sizeRecipe, bgRecipe } from ".panda/recipes"
+
+    const ComponentWithMultipleRecipes = ({ pinkProps: { variant } = {}, sizeProps: { size } = {}, colorProps: { color } = {} }) => {
+      return <button className={cx(pinkRecipe({ variant }), sizeRecipe({ size }), bgRecipe({ color }))}>Hello</button>
+    }
+
+
+    export default function Page() {
+      return (
+        <>
+          <ComponentWithMultipleRecipes
+            pinkProps={pinkRecipe.raw({ variant: "small" })}
+            sizeProps={sizeRecipe.raw({ size: "medium" })}
+            bgProps={bgRecipe.raw({ color: "yellow" })}
+          />
+        </>
+      )
+    }
+     `
+    const result = run(code, {
+      theme: {
+        extend: {
+          recipes: {
+            pinkRecipe: {
+              className: 'pinkRecipe',
+              jsx: ['ComponentWithMultipleRecipes'],
+              base: { color: 'pink.100' },
+              variants: {
+                variant: {
+                  small: { fontSize: 'sm' },
+                },
+              },
+            },
+            sizeRecipe: {
+              className: 'sizeRecipe',
+              jsx: ['ComponentWithMultipleRecipes'],
+              variants: {
+                size: {
+                  medium: { fontSize: 'md' },
+                  large: { fontSize: 'lg' },
+                },
+              },
+            },
+            bgRecipe: {
+              className: 'bgRecipe',
+              jsx: ['ComponentWithMultipleRecipes'],
+              variants: {
+                color: {
+                  yellow: { backgroundColor: 'yellow.100' },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "pinkRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {
+              "variant": "small",
+            },
+          ],
+          "name": "pinkRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "sizeRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {
+              "size": "medium",
+            },
+          ],
+          "name": "sizeRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "bgRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {
+              "color": "yellow",
+            },
+          ],
+          "name": "bgRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .pinkRecipe--variant_small {
+          font-size: var(--font-sizes-sm)
+          }
+
+        .sizeRecipe--size_medium {
+          font-size: var(--font-sizes-md)
+          }
+
+        .bgRecipe--color_yellow {
+          background-color: var(--colors-yellow-100)
+          }
+
+        @layer _base {
+          .pinkRecipe {
+            color: var(--colors-pink-100)
+              }
           }
       }"
     `)
