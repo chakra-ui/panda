@@ -84,7 +84,6 @@ export function usePanda(source: string, config: string) {
       presets: [presetBase, presetTheme, playgroundPreset, ...(presets ?? [])],
       ...restConfig,
       staticCss: merge(restConfig.staticCss, {
-        css: [{ properties: { margin: ['10px'] } }],
         recipes: { playgroundError: ['*'] },
       }),
     })
