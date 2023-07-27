@@ -44,7 +44,7 @@ export function generateReactJsxStringLiteralFactory(ctx: Context) {
       })
     }
 
-    export const ${factoryName} = createJsxFactory()
+    export const ${factoryName} = /* @__PURE__ */ createJsxFactory()
 
     `,
   }
