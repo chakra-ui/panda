@@ -292,7 +292,7 @@ To define a config recipe, import the `defineRecipe` helper function
 import { defineRecipe } from '@pandacss/dev'
 
 export const buttonRecipe = defineRecipe({
-  name: 'button',
+  className: 'button',
   description: 'The styles for the Button component',
   base: {
     display: 'flex'

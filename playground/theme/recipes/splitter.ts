@@ -4,7 +4,7 @@ import { splitterAnatomy } from '@ark-ui/react'
 const parts = defineParts(splitterAnatomy.build())
 
 export const splitter = defineRecipe({
-  name: 'splitter',
+  className: 'splitter',
   description: 'The styles for the splitter component',
   base: parts({
     root: {

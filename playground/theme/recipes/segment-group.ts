@@ -4,7 +4,7 @@ import { segmentGroupAnatomy } from '@ark-ui/react'
 const parts = defineParts(segmentGroupAnatomy.build())
 
 export const segmentGroup = defineRecipe({
-  name: 'segmentGroup',
+  className: 'segmentGroup',
   description: 'The styles for the segment group component',
   base: parts({
     root: {
