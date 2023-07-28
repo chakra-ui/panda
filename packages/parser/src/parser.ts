@@ -6,7 +6,7 @@ import { Node } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { getImportDeclarations } from './import'
 import { createParserResult } from './parser-result'
-import type { ConfigTsOptions, ResultItem, Runtime } from '@pandacss/types'
+import type { Config, ConfigTsOptions, ResultItem, Runtime } from '@pandacss/types'
 import { resolveTsPathPattern } from '@pandacss/config/ts-path'
 import type { Generator } from '@pandacss/generator'
 
@@ -24,6 +24,7 @@ export type ParserOptions = {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string[]>
   jsx?: {
     factory: string
+    styleProps: Exclude<Config['jsxStyleProps'], undefined>
     nodes: ParserNodeOptions[]
     isStyleProp: (prop: string) => boolean
   }
@@ -222,26 +223,31 @@ export function createParser(options: ParserOptions) {
       )
     })
 
-    const matchTagProp = memo((tagName: string, propName: string) => {
-      if (
-        Boolean(components.get(tagName)?.has(propName)) ||
-        options.jsx?.isStyleProp(propName) ||
-        propertiesMap.has(propName)
+    const matchTagProp = match(jsx?.styleProps)
+      .with('all', () =>
+        memo((tagName: string, propName: string) => {
+          if (
+            Boolean(components.get(tagName)?.has(propName)) ||
+            options.jsx?.isStyleProp(propName) ||
+            propertiesMap.has(propName)
+          )
+            return true
+
+          if (isJsxTagRecipe(tagName)) {
+            const recipeList = getRecipesByJsxName(tagName)
+            return recipeList.some((recipe) => recipePropertiesByName.get(recipe.baseName)?.has(propName))
+          }
+
+          if (isJsxTagPattern(tagName)) {
+            const patternList = getPatternsByJsxName(tagName)
+            return patternList.some((pattern) => patternPropertiesByName.get(pattern.baseName)?.has(propName))
+          }
+
+          return false
+        }),
       )
-        return true
-
-      if (isJsxTagRecipe(tagName)) {
-        const recipeList = getRecipesByJsxName(tagName)
-        return recipeList.some((recipe) => recipePropertiesByName.get(recipe.baseName)?.has(propName))
-      }
-
-      if (isJsxTagPattern(tagName)) {
-        const patternList = getPatternsByJsxName(tagName)
-        return patternList.some((pattern) => patternPropertiesByName.get(pattern.baseName)?.has(propName))
-      }
-
-      return false
-    })
+      .with('minimal', () => (_tagName: string, propName: string) => propName === 'css')
+      .otherwise(() => () => false)
 
     const matchFn = memo((fnName: string) => {
       if (recipes.has(fnName) || patterns.has(fnName)) return true

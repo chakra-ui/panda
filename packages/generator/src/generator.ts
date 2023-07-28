@@ -45,6 +45,7 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
       importMap: getImportMap(config.outdir.replace(relativeBaseUrl, '')),
       jsx: {
         factory: jsx.factoryName,
+        styleProps: jsx.styleProps,
         isStyleProp: isValidProperty,
         nodes: [...patterns.details, ...recipes.details],
       },
