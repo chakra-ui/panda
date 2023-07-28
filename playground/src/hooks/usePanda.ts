@@ -9,7 +9,7 @@ import { useMemo } from 'react'
 import { getResolvedConfig } from '@/src/lib/resolve-config'
 import { merge } from 'merge-anything'
 import { Config, Preset } from '@pandacss/types'
-import { RecipeRule } from '@pandacss/types/dist/static-css'
+import { StaticCssOptions } from '@pandacss/types'
 
 const evalCode = (code: string, scope: Record<string, unknown>) => {
   const scopeKeys = Object.keys(scope)
@@ -86,7 +86,7 @@ export function usePanda(source: string, config: string) {
       presets: [presetBase, presetTheme, playgroundPreset, ...(presets ?? [])],
       ...restConfig,
       staticCss: merge(restConfig.staticCss, {
-        recipes: { playgroundError: ['*' as RecipeRule] },
+        recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'],
       }),
     })
 
