@@ -68,6 +68,7 @@ describe('recipe ruleset', () => {
           "display": "inline-flex",
           "justifyContent": "center",
         },
+        "className": "buttonStyle",
         "compoundVariants": [],
         "defaultVariants": {
           "size": "md",
@@ -77,7 +78,6 @@ describe('recipe ruleset', () => {
         "jsx": [
           "ButtonStyle",
         ],
-        "name": "buttonStyle",
         "variants": {
           "size": {
             "md": {

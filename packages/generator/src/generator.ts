@@ -45,9 +45,10 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
       jsx: {
         factory: jsx.factoryName,
         isStyleProp: isValidProperty,
-        nodes: [...patterns.nodes, ...recipes.nodes],
+        nodes: [...patterns.details, ...recipes.details],
       },
       getRecipesByJsxName: recipes.filter,
+      getPatternsByJsxName: patterns.filter,
       compilerOptions: compilerOptions as any,
       tsOptions: conf.tsOptions,
     },

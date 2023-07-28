@@ -4,7 +4,7 @@ import { defineParts, defineRecipe } from '@pandacss/dev'
 const parts = defineParts(tabsAnatomy.build())
 
 export const nextraTabsRecipe = defineRecipe({
-  name: 'nextraTabs',
+  className: 'nextraTabs',
   description: 'A nextra documentation tabs style',
   base: parts({
     root: {
