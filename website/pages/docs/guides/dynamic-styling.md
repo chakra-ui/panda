@@ -192,6 +192,28 @@ const CustomCircle = (props: Props) => {
 
 In this case, you need to use the `size` prop.
 
+### Alternative
+
+As of v0.8, we added a new `{fn}.raw()` method to css, patterns and recipes. This function is an identity function and only serves as a hint for the compiler to extract the css.
+
+It can be useful, for example, in Storybook args or custom react props.
+
+```tsx filename="App.tsx"
+// mark the object as valid css for the extractor
+<Button rootProps={css.raw({ bg: 'red.400' })} />
+```
+
+```tsx
+export const Funky: Story = {
+  // mark this as a button recipe usage
+  args: button.raw({
+    visual: 'funky',
+    shape: 'circle',
+    size: 'sm'
+  })
+}
+```
+
 ## Runtime conditions
 
 Even though we recommend that you first look for better alternatives (such as using
