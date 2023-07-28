@@ -8,6 +8,8 @@ import { createHooks } from 'hookable'
 import { useMemo } from 'react'
 import { getResolvedConfig } from '@/src/lib/resolve-config'
 import { merge } from 'merge-anything'
+import { Config, Preset } from '@pandacss/types'
+import { RecipeRule } from '@pandacss/types/dist/static-css'
 
 const evalCode = (code: string, scope: Record<string, unknown>) => {
   const scopeKeys = Object.keys(scope)
@@ -15,10 +17,10 @@ const evalCode = (code: string, scope: Record<string, unknown>) => {
   return new Function(...scopeKeys, code)(...scopeValues)
 }
 
-const playgroundPreset = {
+const playgroundPreset: Preset = {
   theme: {
     recipes: {
-      playgroundError: pandaDefs.defineRecipe({
+      playgroundError: {
         className: 'playgroundError',
         base: {
           p: '2',
@@ -52,13 +54,13 @@ const playgroundPreset = {
             empty: {},
           },
         },
-      }),
+      },
     },
   },
 }
 
 export function usePanda(source: string, config: string) {
-  const userConfig = useMemo(() => {
+  const userConfig = useMemo<Config>(() => {
     const codeTrimmed = config
       .replaceAll(/export /g, '')
       .replaceAll(/import\s*{[^}]+}\s*from\s*['"][^'"]+['"];\n*/g, '')
@@ -84,7 +86,7 @@ export function usePanda(source: string, config: string) {
       presets: [presetBase, presetTheme, playgroundPreset, ...(presets ?? [])],
       ...restConfig,
       staticCss: merge(restConfig.staticCss, {
-        recipes: { playgroundError: ['*'] },
+        recipes: { playgroundError: ['*' as RecipeRule] },
       }),
     })
 
