@@ -27,7 +27,7 @@ export const Playground = (props: UsePlayGroundProps) => {
     isResponsive,
   } = usePlayground(props)
   const panda = usePanda(state.code, state.config)
-  const { previewCss, previewJs, artifacts, patternNames, recipeNames } = panda
+  const { previewCss, previewJs, artifacts, patternNames, patternJsxNames, recipeNames } = panda
 
   return (
     <>
@@ -80,6 +80,7 @@ export const Playground = (props: UsePlayGroundProps) => {
             previewCss={previewCss}
             previewJs={previewJs}
             patternNames={patternNames}
+            patternJsxNames={patternJsxNames}
             recipeNames={recipeNames}
             isResponsive={isResponsive}
           />

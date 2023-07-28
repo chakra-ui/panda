@@ -26,6 +26,7 @@
     "@pandacss/parser": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
+    "@pandacss/shared": "workspace:*",
     "@prisma/client": "4.16.2",
     "@textea/json-viewer": "3.1.1",
     "hookable": "5.5.3",

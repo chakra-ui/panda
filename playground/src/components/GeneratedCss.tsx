@@ -67,7 +67,7 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
           borderBottomWidth: '1px',
         })}
         value={activeTab}
-        onChange={(e) => (console.log(e), setActiveTab(e.value as any))}
+        onChange={(e) => setActiveTab(e.value as any)}
       >
         <SegmentIndicator
           data-expanded={visible ? '' : undefined}

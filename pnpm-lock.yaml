@@ -988,6 +988,9 @@ importers:
       '@pandacss/preset-panda':
         specifier: workspace:*
         version: link:../packages/preset-panda
+      '@pandacss/shared':
+        specifier: workspace:*
+        version: link:../packages/shared
       '@prisma/client':
         specifier: 4.16.2
         version: 4.16.2(prisma@4.16.2)

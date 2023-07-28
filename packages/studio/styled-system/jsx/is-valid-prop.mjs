@@ -1010,15 +1010,14 @@ var allCssProperties = [
   ...userGenerated,
 ]
 var properties = new Map(allCssProperties.map((prop) => [prop, true]))
-function memo(fn) {
+function memoize(fn) {
   const cache = /* @__PURE__ */ Object.create(null)
   return (arg) => {
     if (cache[arg] === void 0) cache[arg] = fn(arg)
     return cache[arg]
   }
 }
-var selectorRegex = /&|@/
-var isCssProperty = memo((prop) => {
-  return properties.has(prop) || prop.startsWith('--') || selectorRegex.test(prop)
+var isCssProperty = memoize((prop) => {
+  return properties.has(prop) || prop.startsWith('--') || /&|@/.test(prop)
 })
 export { allCssProperties, isCssProperty }

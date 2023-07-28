@@ -6,12 +6,14 @@ export type PreviewProps = {
   previewJs?: string
   source: string
   patternNames: string[]
+  patternJsxNames: string[]
   recipeNames: string[]
   isResponsive: boolean
 }
 
 export function usePreview(props: PreviewProps) {
-  const { previewJs = '', patternNames, recipeNames } = props
+  const { previewJs = '', patternNames, patternJsxNames, recipeNames } = props
+
   const [contentRef, setContentRef] = useState<HTMLIFrameElement | null>(null)
 
   const [iframeLoaded, setIframeLoaded] = useState(false)
@@ -71,14 +73,24 @@ export function usePreview(props: PreviewProps) {
   const srcDoc = `<!DOCTYPE html>
   <html>
   <head>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script> 
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script> 
+
     <script type="module">
+    const { forwardRef, createElement } = React;
+    function useMemo(fn) {
+      return fn()
+    }
+
     ${previewJs}
     ;window.panda = {
       css,
       cva,
       cx,
       token,
+      ${patternJsxNames.length ? 'styled,' : ''}
       ${patternNames.map((name) => `${name},`).join('\n')}
+      ${patternJsxNames.map((name) => `${name},`).join('\n')}
       ${recipeNames.map((name) => `${name},`).join('\n')}
     };
   </script>

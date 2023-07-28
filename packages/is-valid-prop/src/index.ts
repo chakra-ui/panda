@@ -541,7 +541,7 @@ const allCssProperties = [
 
 const properties = new Map(allCssProperties.map((prop) => [prop, true]))
 
-function memo<T>(fn: (value: string) => T): (value: string) => T {
+function memoize<T>(fn: (value: string) => T): (value: string) => T {
   const cache = Object.create(null)
   return (arg: string) => {
     if (cache[arg] === undefined) cache[arg] = fn(arg)
@@ -549,10 +549,8 @@ function memo<T>(fn: (value: string) => T): (value: string) => T {
   }
 }
 
-const selectorRegex = /&|@/
-
-const isCssProperty = memo((prop: string) => {
-  return properties.has(prop) || prop.startsWith('--') || selectorRegex.test(prop)
+const isCssProperty = memoize((prop: string) => {
+  return properties.has(prop) || prop.startsWith('--') || /&|@/.test(prop)
 })
 
 export { isCssProperty, allCssProperties }
