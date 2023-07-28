@@ -61,7 +61,7 @@ const playgroundPreset: Preset = {
 }
 
 export function usePanda(source: string, config: string) {
-  const userConfig = useMemo<Config>(() => {
+  const userConfig = useMemo<Config | null>(() => {
     const codeTrimmed = config
       .replaceAll(/export /g, '')
       .replaceAll(/import\s*{[^}]+}\s*from\s*['"][^'"]+['"];\n*/g, '')
@@ -145,7 +145,7 @@ export function usePanda(source: string, config: string) {
 
     const patternNames = Object.keys(generator.config.patterns ?? {})
 
-    const patternJsxNames = userConfig.jsxFramework
+    const patternJsxNames = userConfig?.jsxFramework
       ? Object.entries(generator.config.patterns ?? {}).map(([key, value]) => value.jsxName ?? capitalize(key))
       : []
     const recipeNames = Array.from(generator.recipes.rules.keys())
