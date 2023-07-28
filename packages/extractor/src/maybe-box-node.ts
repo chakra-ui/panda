@@ -170,7 +170,8 @@ export function maybeBoxNode(
         const condValue = isBoxNode(condBoxNode) ? condBoxNode : box.from(condBoxNode, node, stack)
         if (box.isEmptyInitializer(condValue)) return
 
-        if (box.isUnresolvable(condValue) || box.isConditional(condValue)) {
+        const isFromDefaultBinding = condValue.getStack().some((node) => Node.isBindingElement(node))
+        if (box.isUnresolvable(condValue) || box.isConditional(condValue) || isFromDefaultBinding) {
           const whenTrueExpr = unwrapExpression(node.getWhenTrue())
           const whenFalseExpr = unwrapExpression(node.getWhenFalse())
           return cache(maybeResolveConditionalExpression({ whenTrueExpr, whenFalseExpr, node, stack }, ctx))
@@ -231,7 +232,7 @@ export function maybeBoxNode(
   )
 }
 
-export const onlyStringLiteral = (boxNode: MaybeBoxNodeReturn) => {
+const onlyStringLiteral = (boxNode: MaybeBoxNodeReturn) => {
   if (!boxNode) return
 
   if (isBoxNode(boxNode) && box.isLiteral(boxNode) && typeof boxNode.value === 'string') {
