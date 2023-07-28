@@ -19,6 +19,8 @@ export class Stylesheet {
 
   constructor(private context: StylesheetContext, private options?: StylesheetOptions) {
     const { recipes } = options ?? {}
+    // TODO. keep a reference to all slotted recipes
+    //    but pass all slotted recipe in format name__slot
     this.recipes = new Recipes(recipes ?? {}, context)
   }
 
@@ -70,7 +72,9 @@ export class Stylesheet {
     this.processAtomic(restStyles, cssObject)
   }
 
+  // TODO change this to support multiple recipes (for slotted recipes)
   processRecipe = (config: RecipeConfig, styles: SystemStyleObject) => {
+    // TODO. find all slotted recipes, and process all of them
     this.recipes.process(config.name, { styles })
     config.compoundVariants?.forEach((compoundVariant) => {
       this.processAtomic(compoundVariant.css)

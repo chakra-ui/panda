@@ -27,14 +27,17 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
         })
       })
 
+      // TODO: result.sva.forEach((sva) => {})
+
       result.recipe.forEach((recipeSet, name) => {
         try {
           for (const recipe of recipeSet) {
+            // TODO: change this to return an array of recipe configs (for slotted recipes)
             const recipeConfig = recipes.getConfig(name)
             if (!recipeConfig) continue
 
             match(recipe)
-              // treat recipe jsx like regular recipe + atomic
+              // TODO: treat recipe jsx like regular recipe + atomic
               .with({ type: 'jsx-recipe', name: P.string }, ({ name }) => {
                 recipe.data.forEach((data) => {
                   const [recipeProps, styleProps] = recipes.splitProps(name, data)
