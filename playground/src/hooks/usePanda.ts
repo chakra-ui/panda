@@ -89,8 +89,7 @@ export function usePanda(source: string, config: string) {
       staticCss: merge(restConfig.staticCss, {
         recipes: { playgroundError: ['*' as RecipeRule] },
       }),
-      jsxFramework: 'react',
-      // jsxFramework: restConfig.jsxFramework ? 'react' : undefined,
+      jsxFramework: restConfig.jsxFramework ? 'react' : undefined,
     })
 
     return createGenerator({
@@ -145,13 +144,10 @@ export function usePanda(source: string, config: string) {
     )
 
     const patternNames = Object.keys(generator.config.patterns ?? {})
-    const patternJsxNames = Object.entries(generator.config.patterns ?? {}).map(
-      ([key, value]) => value.jsxName ?? capitalize(key),
-    )
 
-    // const patternJsxNames = userConfig.jsxFramework
-    //   ? Object.entries(generator.config.patterns ?? {}).map(([key, value]) => value.jsxName ?? capitalize(key))
-    //   : []
+    const patternJsxNames = userConfig.jsxFramework
+      ? Object.entries(generator.config.patterns ?? {}).map(([key, value]) => value.jsxName ?? capitalize(key))
+      : []
     const recipeNames = Array.from(generator.recipes.rules.keys())
 
     const panda = {
