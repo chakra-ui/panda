@@ -1,5 +1,44 @@
 # @pandacss/extractor
 
+## 0.9.0
+
+### Patch Changes
+
+- 3269b411: Fix extractor issue where we didn't explore both branches when using a default value as the condition
+  expression
+
+  In the example below, only the `yellow` color would be generated although the `blue` color should also be generated in
+  case the `disabled` prop is `true`.
+
+  ```tsx
+  const CompB = ({ disabled = false }: { disabled: boolean }) => {
+    return <div className={css({ color: disabled ? 'blue' : 'yellow' })}>Component B is disabled</div>
+  }
+  ```
+
+## 0.8.0
+
+### Patch Changes
+
+- fb449016: Fix cases where Stitches `styled.withConfig` would be misinterpreted as a panda fn and lead to this error:
+
+  ```ts
+  TypeError: Cannot read properties of undefined (reading 'startsWith')
+      at /panda/packages/shared/dist/index.js:433:16
+      at get (/panda/packages/shared/dist/index.js:116:20)
+      at Utility.setClassName (/panda/packages/core/dist/index.js:1682:66)
+      at inner (/panda/packages/core/dist/index.js:1705:14)
+      at Utility.getOrCreateClassName (/panda/packages/core/dist/index.js:1709:12)
+      at AtomicRule.transform (/panda/packages/core/dist/index.js:1729:23)
+      at /panda/packages/core/dist/index.js:323:32
+      at inner (/panda/packages/shared/dist/index.js:219:12)
+      at walkObject (/panda/packages/shared/dist/index.js:221:10)
+      at AtomicRule.process (/panda/packages/core/dist/index.js:317:35)
+  ```
+
+- 78612d7f: Fix node evaluation in extractor process (can happen when using a BinaryExpression, simple CallExpression or
+  conditions)
+
 ## 0.7.0
 
 ### Patch Changes

@@ -63,7 +63,7 @@ export type RecipeConfig<T extends RecipeVariantRecord = RecipeVariantRecord> = 
   /**
    * The name of the recipe.
    */
-  name: string
+  className: string
   /**
    * The description of the recipe. This will be used in the JSDoc comment.
    */

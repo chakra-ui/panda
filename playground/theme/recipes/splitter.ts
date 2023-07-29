@@ -4,7 +4,7 @@ import { splitterAnatomy } from '@ark-ui/react'
 const parts = defineParts(splitterAnatomy.build())
 
 export const splitter = defineRecipe({
-  name: 'splitter',
+  className: 'splitter',
   description: 'The styles for the splitter component',
   base: parts({
     root: {
@@ -29,6 +29,7 @@ export const splitter = defineRecipe({
           position: 'absolute',
           top: 0,
           left: 0,
+          right: 0,
           zIndex: 4,
         },
 
@@ -39,7 +40,7 @@ export const splitter = defineRecipe({
 
         _horizontal: {
           minWidth: '1px',
-          _before: { right: '-10px', h: 'full' },
+          _before: { left: '-10px', h: 'full' },
         },
 
         '&[hidden]': {

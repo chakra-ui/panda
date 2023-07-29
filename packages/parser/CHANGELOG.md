@@ -1,5 +1,129 @@
 # @pandacss/parser
 
+## 0.9.0
+
+### Minor Changes
+
+- c08de87f: ### Breaking
+
+  - Renamed the `name` property of a config recipe to `className`. This is to ensure API consistency and express the
+    intent of the property more clearly.
+
+  ```diff
+  export const buttonRecipe = defineRecipe({
+  -  name: 'button',
+  +  className: 'button',
+    // ...
+  })
+  ```
+
+  - Renamed the `jsx` property of a pattern to `jsxName`.
+
+  ```diff
+  const hstack = definePattern({
+  -  jsx: 'HStack',
+  +  jsxName: 'HStack',
+    // ...
+  })
+  ```
+
+  ### Feature
+
+  Update the `jsx` property to be used for advanced tracking of custom pattern components.
+
+  ```jsx
+  import { Circle } from 'styled-system/jsx'
+  const CustomCircle = ({ children, ...props }) => {
+    return <Circle {...props}>{children}</Circle>
+  }
+  ```
+
+  To track the `CustomCircle` component, you can now use the `jsx` property.
+
+  ```js
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    patterns: {
+      extend: {
+        circle: {
+          jsx: ['CustomCircle'],
+        },
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [c08de87f]
+- Updated dependencies [3269b411]
+  - @pandacss/types@0.9.0
+  - @pandacss/extractor@0.9.0
+  - @pandacss/config@0.9.0
+  - @pandacss/is-valid-prop@0.9.0
+  - @pandacss/logger@0.9.0
+  - @pandacss/shared@0.9.0
+
+## 0.8.0
+
+### Minor Changes
+
+- 9ddf258b: Introduce the new `{fn}.raw` method that allows for a super flexible usage and extraction :tada: :
+
+  ```tsx
+  <Button rootProps={css.raw({ bg: "red.400" })} />
+
+  // recipe in storybook
+  export const Funky: Story = {
+  	args: button.raw({
+  		visual: "funky",
+  		shape: "circle",
+  		size: "sm",
+  	}),
+  };
+
+  // mixed with pattern
+  const stackProps = {
+    sm: stack.raw({ direction: "column" }),
+    md: stack.raw({ direction: "row" })
+  }
+
+  stack(stackProps[props.size]))
+  ```
+
+### Patch Changes
+
+- fb449016: Fix cases where Stitches `styled.withConfig` would be misinterpreted as a panda fn and lead to this error:
+
+  ```ts
+  TypeError: Cannot read properties of undefined (reading 'startsWith')
+      at /panda/packages/shared/dist/index.js:433:16
+      at get (/panda/packages/shared/dist/index.js:116:20)
+      at Utility.setClassName (/panda/packages/core/dist/index.js:1682:66)
+      at inner (/panda/packages/core/dist/index.js:1705:14)
+      at Utility.getOrCreateClassName (/panda/packages/core/dist/index.js:1709:12)
+      at AtomicRule.transform (/panda/packages/core/dist/index.js:1729:23)
+      at /panda/packages/core/dist/index.js:323:32
+      at inner (/panda/packages/shared/dist/index.js:219:12)
+      at walkObject (/panda/packages/shared/dist/index.js:221:10)
+      at AtomicRule.process (/panda/packages/core/dist/index.js:317:35)
+  ```
+
+- be0ad578: Fix parser issue with TS path mappings
+- 78612d7f: Fix node evaluation in extractor process (can happen when using a BinaryExpression, simple CallExpression or
+  conditions)
+- Updated dependencies [fb449016]
+- Updated dependencies [e1f6318a]
+- Updated dependencies [be0ad578]
+- Updated dependencies [78612d7f]
+  - @pandacss/extractor@0.8.0
+  - @pandacss/config@0.8.0
+  - @pandacss/types@0.8.0
+  - @pandacss/is-valid-prop@0.8.0
+  - @pandacss/logger@0.8.0
+  - @pandacss/shared@0.8.0
+
 ## 0.7.0
 
 ### Patch Changes
@@ -37,7 +161,7 @@
   ```ts
   recipes: {
       pinkRecipe: {
-          name: 'pinkRecipe',
+          className: 'pinkRecipe',
           jsx: ['ComponentWithMultipleRecipes'],
           base: { color: 'pink.100' },
           variants: {
@@ -47,7 +171,7 @@
           },
       },
       greenRecipe: {
-          name: 'greenRecipe',
+          className: 'greenRecipe',
           jsx: ['ComponentWithMultipleRecipes'],
           base: { color: 'green.100' },
           variants: {
@@ -57,7 +181,7 @@
           },
       },
       blueRecipe: {
-          name: 'blueRecipe',
+          className: 'blueRecipe',
           jsx: ['ComponentWithMultipleRecipes'],
           base: { color: 'blue.100' },
           variants: {

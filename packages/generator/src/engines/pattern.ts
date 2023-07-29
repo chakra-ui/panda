@@ -1,58 +1,53 @@
-import { capitalize, dashCase, mapObject, uncapitalize } from '@pandacss/shared'
+import { capitalize, dashCase, mapObject, memo, uncapitalize } from '@pandacss/shared'
 import type { Dict, UserConfig } from '@pandacss/types'
-import { Obj, pipe } from 'lil-fp'
 
 const helpers = { map: mapObject }
 
+const createRegex = (item: Array<string | RegExp>) => {
+  const regex = item.map((item) => (typeof item === 'string' ? item : item.source)).join('|')
+  return new RegExp(`^${regex}$`)
+}
+
 export const getPatternEngine = (config: UserConfig) => {
-  return pipe(
-    { patterns: config.patterns ?? {} },
+  const patterns = config.patterns ?? {}
+  const getNames = (name: string) => {
+    const upperName = capitalize(name)
+    return {
+      upperName,
+      baseName: name,
+      dashName: dashCase(name),
+      styleFnName: `get${upperName}Style`,
+      jsxName: patterns[name]?.jsxName ?? upperName,
+    }
+  }
+  const details = Object.entries(patterns).map(([name, pattern]) => {
+    const names = getNames(name)
+    const jsx = (pattern.jsx ?? []).concat([names.jsxName])
 
-    Obj.bind('getConfig', ({ patterns }) => {
-      return (name: string) => patterns[name]
-    }),
+    return {
+      ...names,
+      props: Object.keys(pattern?.properties ?? {}),
+      blocklistType: pattern?.blocklist ? `| '${pattern.blocklist.join("' | '")}'` : '',
+      config: pattern,
+      type: 'pattern' as const,
+      match: createRegex(jsx),
+      jsx,
+    }
+  })
 
-    Obj.bind('transform', ({ getConfig }) => {
-      return (name: string, data: Dict) => {
-        return getConfig(name)?.transform?.(data, helpers) ?? {}
-      }
+  return {
+    getConfig: (name: string) => patterns[name],
+    transform: (name: string, data: Dict) => {
+      return patterns[name]?.transform?.(data, helpers) ?? {}
+    },
+    getNames,
+    details,
+    getFnName: memo((jsxName: string) => {
+      return details.find((node) => node.jsxName === jsxName)?.baseName ?? uncapitalize(jsxName)
     }),
-
-    Obj.bind('getNames', ({ getConfig }) => (name: string) => {
-      const upperName = capitalize(name)
-      return {
-        name,
-        upperName,
-        dashName: dashCase(name),
-        styleFnName: `get${upperName}Style`,
-        jsxName: getConfig(name)?.jsx ?? upperName,
-      }
+    filter: memo((jsxName: string) => {
+      return details.filter((node) => node.match.test(jsxName))
     }),
-
-    Obj.bind('details', ({ getNames, patterns }) => {
-      return Object.entries(patterns).map(([name, pattern]) => ({
-        ...getNames(name),
-        props: Object.keys(pattern?.properties ?? {}),
-        blocklistType: pattern?.blocklist ? `| '${pattern.blocklist.join("' | '")}'` : '',
-        config: pattern,
-      }))
-    }),
-
-    Obj.bind('nodes', ({ patterns }) => {
-      return Object.entries(patterns).map(([name, pattern]) => ({
-        type: 'pattern' as const,
-        name: pattern.jsx ?? capitalize(name),
-        props: Object.keys(pattern?.properties ?? {}),
-        baseName: name,
-      }))
-    }),
-
-    Obj.bind('getFnName', ({ nodes }) => (jsx: string) => {
-      return nodes.find((node) => node.name === jsx)?.baseName ?? uncapitalize(jsx)
-    }),
-
-    Obj.bind('isEmpty', ({ patterns }) => {
-      return () => Object.keys(patterns).length === 0
-    }),
-  )
+    isEmpty: () => Object.keys(patterns).length === 0,
+  }
 }

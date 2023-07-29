@@ -1,5 +1,75 @@
 # @pandacss/fixture
 
+## 0.9.0
+
+### Minor Changes
+
+- c08de87f: ### Breaking
+
+  - Renamed the `name` property of a config recipe to `className`. This is to ensure API consistency and express the
+    intent of the property more clearly.
+
+  ```diff
+  export const buttonRecipe = defineRecipe({
+  -  name: 'button',
+  +  className: 'button',
+    // ...
+  })
+  ```
+
+  - Renamed the `jsx` property of a pattern to `jsxName`.
+
+  ```diff
+  const hstack = definePattern({
+  -  jsx: 'HStack',
+  +  jsxName: 'HStack',
+    // ...
+  })
+  ```
+
+  ### Feature
+
+  Update the `jsx` property to be used for advanced tracking of custom pattern components.
+
+  ```jsx
+  import { Circle } from 'styled-system/jsx'
+  const CustomCircle = ({ children, ...props }) => {
+    return <Circle {...props}>{children}</Circle>
+  }
+  ```
+
+  To track the `CustomCircle` component, you can now use the `jsx` property.
+
+  ```js
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    patterns: {
+      extend: {
+        circle: {
+          jsx: ['CustomCircle'],
+        },
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [c08de87f]
+  - @pandacss/preset-base@0.9.0
+  - @pandacss/types@0.9.0
+  - @pandacss/preset-panda@0.9.0
+
+## 0.8.0
+
+### Patch Changes
+
+- Updated dependencies [be0ad578]
+  - @pandacss/preset-base@0.8.0
+  - @pandacss/types@0.8.0
+  - @pandacss/preset-panda@0.8.0
+
 ## 0.7.0
 
 ### Patch Changes

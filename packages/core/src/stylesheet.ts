@@ -72,10 +72,8 @@ export class Stylesheet {
     this.processAtomic(restStyles, cssObject)
   }
 
-  // TODO change this to support multiple recipes (for slotted recipes)
-  processRecipe = (config: RecipeConfig, styles: SystemStyleObject) => {
-    // TODO. find all slotted recipes, and process all of them
-    this.recipes.process(config.name, { styles })
+  processRecipe = (name: string, config: RecipeConfig, styles: SystemStyleObject) => {
+    this.recipes.process(name, { styles })
     config.compoundVariants?.forEach((compoundVariant) => {
       this.processAtomic(compoundVariant.css)
     })

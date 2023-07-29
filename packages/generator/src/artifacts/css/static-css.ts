@@ -19,7 +19,7 @@ export const generateStaticCss = (ctx: Context) => {
 
       return Object.keys(values)
     },
-    getRecipeKeys: (recipe) => recipes.details.find((detail) => detail.config.name === recipe)?.variantKeyMap ?? {},
+    getRecipeKeys: (recipe) => recipes.details.find((detail) => detail.baseName === recipe)?.variantKeyMap ?? {},
   })
 
   results.css.forEach((css) => {
@@ -31,7 +31,7 @@ export const generateStaticCss = (ctx: Context) => {
       // TODO: change this to support multiple recipes (for slotted recipes)
       const recipeConfig = recipes.getConfig(name)
       if (!recipeConfig) return
-      sheet.processRecipe(recipeConfig, value)
+      sheet.processRecipe(name, recipeConfig, value)
     })
   })
 

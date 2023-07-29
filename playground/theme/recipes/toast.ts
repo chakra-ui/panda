@@ -9,7 +9,7 @@ const parts = defineParts({
 })
 
 export const toast = defineRecipe({
-  name: 'toast',
+  className: 'toast',
   description: 'A toast style',
   base: parts({
     root: {

@@ -6,7 +6,7 @@ const anatomy = createAnatomy('callout', ['root', 'icon', 'content'])
 const parts = defineParts(anatomy.build())
 
 export const calloutRecipe = defineRecipe({
-  name: 'callout',
+  className: 'callout',
   description: 'A callout style',
   jsx: ['Callout'],
   base: parts({

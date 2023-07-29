@@ -27,27 +27,24 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
         })
       })
 
-      // TODO: result.sva.forEach((sva) => {})
-
-      result.recipe.forEach((recipeSet, name) => {
+      result.recipe.forEach((recipeSet, recipeName) => {
         try {
           for (const recipe of recipeSet) {
-            // TODO: change this to return an array of recipe configs (for slotted recipes)
-            const recipeConfig = recipes.getConfig(name)
+            const recipeConfig = recipes.getConfig(recipeName)
             if (!recipeConfig) continue
 
             match(recipe)
-              // TODO: treat recipe jsx like regular recipe + atomic
-              .with({ type: 'jsx-recipe', name: P.string }, ({ name }) => {
+              // treat recipe jsx like regular recipe + atomic
+              .with({ type: 'jsx-recipe' }, () => {
                 recipe.data.forEach((data) => {
-                  const [recipeProps, styleProps] = recipes.splitProps(name, data)
+                  const [recipeProps, styleProps] = recipes.splitProps(recipeName, data)
                   sheet.processStyleProps(styleProps)
-                  sheet.processRecipe(recipeConfig, recipeProps)
+                  sheet.processRecipe(recipeName, recipeConfig, recipeProps)
                 })
               })
               .otherwise(() => {
                 recipe.data.forEach((data) => {
-                  sheet.processRecipe(recipeConfig, data)
+                  sheet.processRecipe(recipeName, recipeConfig, data)
                 })
               })
           }
@@ -61,9 +58,9 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
           for (const pattern of patternSet) {
             match(pattern)
               // treat pattern jsx like regular pattern
-              .with({ type: 'jsx-pattern', name: P.string }, ({ name }) => {
+              .with({ type: 'jsx-pattern', name: P.string }, ({ name: jsxName }) => {
                 pattern.data.forEach((data) => {
-                  const fnName = patterns.getFnName(name)
+                  const fnName = patterns.getFnName(jsxName)
                   const styleProps = patterns.transform(fnName, data)
                   sheet.processStyleProps(styleProps)
                 })

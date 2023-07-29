@@ -1,5 +1,29 @@
 # @pandacss/config
 
+## 0.9.0
+
+### Patch Changes
+
+- Updated dependencies [c08de87f]
+  - @pandacss/preset-base@0.9.0
+  - @pandacss/types@0.9.0
+  - @pandacss/preset-panda@0.9.0
+  - @pandacss/error@0.9.0
+  - @pandacss/logger@0.9.0
+
+## 0.8.0
+
+### Patch Changes
+
+- e1f6318a: Fix module resolution issue when using panda from a browser environment
+- be0ad578: Fix parser issue with TS path mappings
+- Updated dependencies [be0ad578]
+  - @pandacss/preset-base@0.8.0
+  - @pandacss/types@0.8.0
+  - @pandacss/preset-panda@0.8.0
+  - @pandacss/error@0.8.0
+  - @pandacss/logger@0.8.0
+
 ## 0.7.0
 
 ### Patch Changes

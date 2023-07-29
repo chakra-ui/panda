@@ -10,7 +10,7 @@ describe('mergeConfigs / presets', () => {
       theme: {
         recipes: {
           button: {
-            name: 'button',
+            className: 'button',
             variants: {
               size: {
                 small: {
@@ -23,7 +23,7 @@ describe('mergeConfigs / presets', () => {
         extend: {
           recipes: {
             checkbox: {
-              name: 'checkbox',
+              className: 'checkbox',
               variants: {
                 default: {},
               },
@@ -38,7 +38,7 @@ describe('mergeConfigs / presets', () => {
         extend: {
           recipes: {
             button: {
-              name: 'button',
+              className: 'button',
               variants: {
                 kind: {
                   error: { backgroundColor: 'red' },
@@ -46,7 +46,7 @@ describe('mergeConfigs / presets', () => {
               },
             },
             table: {
-              name: 'table',
+              className: 'table',
               variants: {
                 style: {
                   striped: { backgroundColor: 'gray.300' },
@@ -63,7 +63,7 @@ describe('mergeConfigs / presets', () => {
         extend: {
           recipes: {
             button: {
-              name: 'button',
+              className: 'button',
               variants: {
                 kind: {
                   info: { backgroundColor: 'blue.300' },
@@ -71,7 +71,7 @@ describe('mergeConfigs / presets', () => {
               },
             },
             menu: {
-              name: 'menu',
+              className: 'menu',
               variants: {
                 size: {
                   lg: { p: 0 },
@@ -85,7 +85,7 @@ describe('mergeConfigs / presets', () => {
 
     const asyncConfig = async () => {
       const boxPromise = Promise.resolve({
-        name: 'box',
+        className: 'box',
         variants: {
           size: {
             lg: { p: 0 },
@@ -111,7 +111,7 @@ describe('mergeConfigs / presets', () => {
         extend: {
           recipes: {
             button: {
-              name: 'button',
+              className: 'button',
               variants: {
                 size: {
                   large: { fontSize: 'lg' },
@@ -119,7 +119,7 @@ describe('mergeConfigs / presets', () => {
               },
             },
             checkbox: {
-              name: 'checkbox',
+              className: 'checkbox',
               variants: {
                 shape: {
                   circle: { rounded: 'full' },
@@ -138,7 +138,7 @@ describe('mergeConfigs / presets', () => {
         "theme": {
           "recipes": {
             "box": {
-              "name": "box",
+              "className": "box",
               "variants": {
                 "size": {
                   "lg": {
@@ -148,7 +148,7 @@ describe('mergeConfigs / presets', () => {
               },
             },
             "button": {
-              "name": "button",
+              "className": "button",
               "variants": {
                 "kind": {
                   "error": {
@@ -169,7 +169,7 @@ describe('mergeConfigs / presets', () => {
               },
             },
             "checkbox": {
-              "name": "checkbox",
+              "className": "checkbox",
               "variants": {
                 "default": {},
                 "shape": {
@@ -180,7 +180,7 @@ describe('mergeConfigs / presets', () => {
               },
             },
             "menu": {
-              "name": "menu",
+              "className": "menu",
               "variants": {
                 "size": {
                   "lg": {
@@ -190,7 +190,7 @@ describe('mergeConfigs / presets', () => {
               },
             },
             "table": {
-              "name": "table",
+              "className": "table",
               "variants": {
                 "style": {
                   "striped": {
