@@ -27,7 +27,7 @@ export const Playground = (props: UsePlayGroundProps) => {
     isResponsive,
   } = usePlayground(props)
   const panda = usePanda(state.code, state.config)
-  const { previewCss, previewJs, artifacts, patternNames, recipeNames } = panda
+  const { artifacts } = panda
 
   return (
     <>
@@ -75,14 +75,7 @@ export const Playground = (props: UsePlayGroundProps) => {
           <div />
         </SplitterResizeTrigger>
         <SplitterPanel id="preview" className={css({ zIndex: 3, pos: 'relative' })}>
-          <Preview
-            source={state.code}
-            previewCss={previewCss}
-            previewJs={previewJs}
-            patternNames={patternNames}
-            recipeNames={recipeNames}
-            isResponsive={isResponsive}
-          />
+          <Preview source={state.code} panda={panda} isResponsive={isResponsive} />
         </SplitterPanel>
       </Splitter>
     </>
