@@ -4,7 +4,7 @@ import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { existsSync } from 'fs'
 import { statSync } from 'fs-extra'
-import { dirname, resolve } from 'path'
+import { resolve } from 'path'
 import type { Message, Root } from 'postcss'
 import { findConfig, loadConfigAndCreateContext } from './config'
 import { type PandaContext } from './create-context'
@@ -56,7 +56,10 @@ export class Builder {
     const prevModified = configCache.get(configPath)?.depsModifiedMap
 
     for (const file of deps) {
-      const time = statSync(file).mtimeMs
+      const stats = statSync(file, { throwIfNoEntry: false })
+      if (!stats) continue
+
+      const time = stats.mtimeMs
       newModified.set(file, time)
 
       if (!prevModified || !prevModified.has(file) || time > prevModified.get(file)!) {
@@ -89,7 +92,7 @@ export class Builder {
     return configPath
   }
 
-  async setup(options: { configPath?: string } = {}) {
+  async setup(options: { configPath?: string; cwd?: string } = {}) {
     logger.debug('builder', '🚧 Setup')
 
     const configPath = options.configPath ?? this.getConfigPath()
@@ -97,7 +100,7 @@ export class Builder {
     const compilerOptions = this.context?.tsconfig?.compilerOptions ?? {}
 
     const { deps: foundDeps } = getConfigDependencies(configPath, tsOptions, compilerOptions)
-    const cwd = this.context?.config.cwd ?? dirname(configPath)
+    const cwd = options?.cwd ?? this.context?.config.cwd ?? process.cwd()
 
     const configDeps = new Set([...foundDeps, ...(this.context?.dependencies ?? []).map((file) => resolve(cwd, file))])
     this.configDependencies = configDeps

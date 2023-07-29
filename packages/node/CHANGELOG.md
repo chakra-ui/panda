@@ -1,5 +1,24 @@
 # @pandacss/node
 
+## 0.9.0
+
+### Patch Changes
+
+- f10e706a: Fix PostCSS edge-case where the config file is not in the app root
+- Updated dependencies [c08de87f]
+- Updated dependencies [3269b411]
+  - @pandacss/generator@0.9.0
+  - @pandacss/parser@0.9.0
+  - @pandacss/types@0.9.0
+  - @pandacss/core@0.9.0
+  - @pandacss/extractor@0.9.0
+  - @pandacss/config@0.9.0
+  - @pandacss/token-dictionary@0.9.0
+  - @pandacss/error@0.9.0
+  - @pandacss/is-valid-prop@0.9.0
+  - @pandacss/logger@0.9.0
+  - @pandacss/shared@0.9.0
+
 ## 0.8.0
 
 ### Patch Changes

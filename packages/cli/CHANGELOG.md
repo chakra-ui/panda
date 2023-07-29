@@ -1,5 +1,23 @@
 # @pandacss/dev
 
+## 0.9.0
+
+### Patch Changes
+
+- Updated dependencies [c08de87f]
+- Updated dependencies [f10e706a]
+  - @pandacss/types@0.9.0
+  - @pandacss/postcss@0.9.0
+  - @pandacss/node@0.9.0
+  - @pandacss/config@0.9.0
+  - @pandacss/token-dictionary@0.9.0
+  - @pandacss/preset-panda@0.9.0
+  - @pandacss/studio@0.9.0
+  - @pandacss/astro@0.9.0
+  - @pandacss/error@0.9.0
+  - @pandacss/logger@0.9.0
+  - @pandacss/shared@0.9.0
+
 ## 0.8.0
 
 ### Patch Changes
