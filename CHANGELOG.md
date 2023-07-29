@@ -6,6 +6,68 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [0.9.0] - 2023-07-28
+
+### Fixed
+
+- Fix issue where extractor did not consider `true` and `false` branch when using tenary operator
+- Fix issue where postcss plugin did not respect the `cwd` option in the panda config
+
+### Added
+
+Update the `jsx` property to be used for advanced tracking of custom pattern components.
+
+```jsx
+import { Circle } from 'styled-system/jsx'
+
+const CustomCircle = ({ children, ...props }) => {
+  return <Circle {...props}>{children}</Circle>
+}
+```
+
+To track the `CustomCircle` component, you can now use the `jsx` property.
+
+```js
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  patterns: {
+    extend: {
+      circle: {
+        jsx: ['CustomCircle'],
+      },
+    },
+  },
+})
+```
+
+### Changed
+
+- **BREAKING:** Renamed the `name` property of a config recipe to `className`. This is to ensure API consistency and
+  express the intent of the property more clearly.
+
+```diff
+export const buttonRecipe = defineRecipe({
+-  name: 'button',
++  className: 'button',
+  // ...
+})
+```
+
+> Update your config to use the new `className` property and run `panda codegen --clean` to update the generated code.
+
+- **BREAKING:** Renamed the `jsx` property of a pattern to `jsxName`.
+
+```diff
+const hstack = definePattern({
+-  jsx: 'HStack',
++  jsxName: 'HStack',
+  // ...
+})
+```
+
+> Update your config to use the new `jsxName` property and run `panda codegen --clean` to update the generated code.
+
 ## [0.8.0] - 2023-07-25
 
 ### Fixed
