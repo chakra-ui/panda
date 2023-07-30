@@ -5,8 +5,11 @@ describe('get-slot-recipes', () => {
   test('should work', () => {
     const slots = getSlotRecipes({
       className: 'btn',
-      slots: ['button', 'text'],
+      slots: ['root', 'button', 'text'],
       base: {
+        root: {
+          color: 'red',
+        },
         button: {
           fontSize: '1rem',
         },
@@ -69,6 +72,17 @@ describe('get-slot-recipes', () => {
               },
             },
           },
+        },
+        "root": {
+          "base": {
+            "color": "red",
+          },
+          "className": "btn__root",
+          "compoundVariants": [],
+          "defaultVariants": {
+            "size": "small",
+          },
+          "variants": {},
         },
         "text": {
           "base": {

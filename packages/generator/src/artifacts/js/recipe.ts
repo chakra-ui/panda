@@ -77,10 +77,10 @@ export function generateRecipes(ctx: Context) {
         const defaultVariants = ${stringify(defaultVariants ?? {})}
         const compoundVariants = ${stringify(compoundVariants ?? [])}
         
-        const slotNames = ${stringify(config.slots.map((slot) => [slot, `${baseName}__${slot}`]))}
+        const slotNames = ${stringify(config.slots.map((slot) => [slot, `${config.className}__${slot}`]))}
         const slotFns = slotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, defaultVariants, getSlotCompoundVariant(compoundVariants, slotName))]) 
 
-        const ${baseName}Fn = (props) => {
+        const ${baseName}Fn = (props = {}) => {
           return Object.fromEntries(slotFns.map(([slotName, slotFn]) => [slotName, slotFn(props)]))
         }
         
@@ -96,11 +96,11 @@ export function generateRecipes(ctx: Context) {
         `,
         )
         .otherwise(
-          () => outdent`
+          (config) => outdent`
         ${ctx.file.import('splitProps', '../helpers')}
         ${ctx.file.import('createRecipe', './create-recipe')}
 
-        const ${baseName}Fn = createRecipe('${baseName}', ${stringify(defaultVariants ?? {})}, ${stringify(
+        const ${baseName}Fn = createRecipe('${config.className}', ${stringify(defaultVariants ?? {})}, ${stringify(
             compoundVariants ?? [],
           )})
 
@@ -147,7 +147,9 @@ export function generateRecipes(ctx: Context) {
 
         interface ${upperName}Recipe {
           __type: ${upperName}VariantProps
-          (props?: ${upperName}VariantProps): string
+          (props?: ${upperName}VariantProps): ${
+          isSlotRecipe(config) ? `Pretty<Record<${unionType(config.slots)}, string>>` : 'string'
+        }
           raw: (props?: ${upperName}VariantProps) => ${upperName}VariantProps
           variantMap: ${upperName}VariantMap
           variantKeys: Array<keyof ${upperName}Variant>

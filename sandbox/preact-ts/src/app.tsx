@@ -1,4 +1,5 @@
 import { sva } from '../styled-system/css'
+import { card } from '../styled-system/recipes'
 
 const button = sva({
   slots: ['label', 'icon'],
@@ -49,13 +50,19 @@ const button = sva({
 })
 
 export function App() {
-  const classes = button({ size: 'lg', rounded: true })
+  const btnClass = button({ size: 'lg', rounded: true })
+  const cardClass = card()
+
   return (
-    <>
+    <div>
+      <div class={cardClass.root}>
+        <p class={cardClass.label}> Card / Label</p>
+        <p class={cardClass.icon}> Card / Icon</p>
+      </div>
+
       <button>
-        <span className={classes.label}>Label</span>
-        <span className={classes.icon}>Icon</span>
+        <span class={btnClass.label}>Button Label</span>
       </button>
-    </>
+    </div>
   )
 }

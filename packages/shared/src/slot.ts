@@ -31,7 +31,10 @@ export const getSlotRecipes = (recipe: any) => {
       // assign variants
       walkObject(
         recipe.variants ?? {},
-        (variant: any, path: string[]) => assign(cva, ['variants', ...path], variant[slot]),
+        (variant: any, path: string[]) => {
+          if (!variant[slot]) return
+          assign(cva, ['variants', ...path], variant[slot])
+        },
         {
           stop: (_value, path) => path.includes(slot),
         },

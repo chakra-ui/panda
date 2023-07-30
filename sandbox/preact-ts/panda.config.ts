@@ -10,9 +10,12 @@ export default defineConfig({
     extend: {
       recipes: {
         card: defineSlotRecipe({
-          className: 'card',
-          slots: ['label', 'icon'],
+          className: 'u-card',
+          slots: ['root', 'label', 'icon'],
           base: {
+            root: {
+              bg: 'red.200',
+            },
             label: {
               color: 'red',
               textDecoration: 'underline',
