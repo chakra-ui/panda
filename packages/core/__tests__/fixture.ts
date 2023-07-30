@@ -51,6 +51,13 @@ export function processRecipe(recipe: 'buttonStyle' | 'textStyle' | 'tooltipStyl
   return recipes.toCss()
 }
 
+export function processSlotRecipe(recipe: 'button', value: Record<string, any>) {
+  const recipes = new Recipes(mocks.slotRecipes, createContext())
+  recipes.save()
+  recipes.process(recipe, { styles: value })
+  return recipes.toCss()
+}
+
 export const compositions = {
   textStyle: {
     headline: {

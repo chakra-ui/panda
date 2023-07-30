@@ -1,16 +1,12 @@
-import { capitalize, dashCase, memo, splitProps } from '@pandacss/shared'
-import type { RecipeConfig, Dict, SystemStyleObject } from '@pandacss/types'
+import { capitalize, createRegex, dashCase, getSlotRecipes, memo, splitProps } from '@pandacss/shared'
+import type { Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
 import merge from 'lodash.merge'
 import { AtomicRule, type ProcessOptions } from './atomic-rule'
+import { isSlotRecipe } from './is-slot-recipe'
 import { serializeStyle } from './serialize'
 import type { RecipeNode, StylesheetContext } from './types'
 
-type RecipeValues = Record<string, RecipeConfig>
-
-const createRegex = (item: Array<string | RegExp>) => {
-  const regex = item.map((item) => (typeof item === 'string' ? item : item.source)).join('|')
-  return new RegExp(`^${regex}$`)
-}
+type RecipeRecord = Record<string, RecipeConfig | SlotRecipeConfig>
 
 const sharedState = {
   /**
@@ -18,13 +14,17 @@ const sharedState = {
    */
   classNames: new Map<string, string>(),
   /**
-   * The map of the property to their resolved styless
+   * The map of the property to their resolved styles
    */
   styles: new Map<string, SystemStyleObject>(),
   /**
    * The map of the recipes with their resolved styles
    */
   configs: new Map<string, RecipeNode>(),
+  /**
+   * The map of recipe key to slot ids
+   */
+  slots: new Map<string, string[]>(),
 }
 
 export class Recipes {
@@ -33,7 +33,7 @@ export class Recipes {
    */
   rules: Map<string, AtomicRule> = new Map()
 
-  constructor(private recipes: RecipeValues = {}, private context?: StylesheetContext) {
+  constructor(private recipes: RecipeRecord = {}, private context?: StylesheetContext) {
     this.assignRules()
   }
 
@@ -51,11 +51,26 @@ export class Recipes {
 
   save = () => {
     for (const [name, recipe] of Object.entries(this.recipes)) {
-      this.assignRecipe(name, this.normalize(name, recipe))
+      if (isSlotRecipe(recipe)) {
+        // extract recipes for each slot
+        const slots = getSlotRecipes(recipe)
+
+        // normalize each recipe
+        Object.entries(slots).forEach(([slot, slot_recipe]) => {
+          const slotName = this.getSlotKey(name, slot)
+          this.normalize(slotName, slot_recipe)
+        })
+
+        // save the root recipe
+        this.assignRecipe(name, recipe)
+        //
+      } else {
+        this.assignRecipe(name, this.normalize(name, recipe))
+      }
     }
   }
 
-  private assignRecipe = (name: string, recipe: RecipeConfig) => {
+  private assignRecipe = (name: string, recipe: RecipeConfig | SlotRecipeConfig) => {
     const variantKeys = Object.keys(recipe.variants ?? {})
     const jsx = recipe.jsx ?? [capitalize(name)]
     const match = createRegex(jsx)
@@ -77,12 +92,35 @@ export class Recipes {
       },
       props: variantKeys,
     })
+
+    if (isSlotRecipe(recipe)) {
+      sharedState.slots.set(
+        name,
+        recipe.slots.map((slot) => this.getSlotKey(name, slot)),
+      )
+    }
+  }
+
+  getSlotKey = (name: string, slot: string) => {
+    return `${name}__${slot}`
   }
 
   assignRules = () => {
     if (!this.context) return
-    for (const name of Object.keys(this.recipes)) {
-      this.rules.set(name, this.createRule(name))
+
+    for (const [name, recipe] of Object.entries(this.recipes)) {
+      //
+      if (isSlotRecipe(recipe)) {
+        //
+        recipe.slots.forEach((slot) => {
+          const slotName = this.getSlotKey(name, slot)
+          this.rules.set(slotName, this.createRule(slotName))
+        })
+        //
+      } else {
+        //
+        this.rules.set(name, this.createRule(name))
+      }
     }
   }
 
@@ -103,7 +141,7 @@ export class Recipes {
     return sharedState.configs.get(name)
   })
 
-  getConfig = memo((name: string): RecipeConfig | undefined => {
+  getConfig = memo((name: string) => {
     return this.recipes[name]
   })
 
@@ -137,6 +175,7 @@ export class Recipes {
     } = config
 
     const recipe: Required<RecipeConfig> = {
+      ...config,
       jsx,
       className,
       description,
@@ -147,6 +186,7 @@ export class Recipes {
     }
 
     recipe.base = this.serialize(base)
+
     sharedState.styles.set(name, recipe.base)
     sharedState.classNames.set(name, name)
 
@@ -223,8 +263,21 @@ export class Recipes {
       return
     }
 
-    const rule = this.rules.get(recipeName)
-    rule?.process({ styles })
+    const slots = sharedState.slots.get(recipeName)
+
+    if (slots) {
+      //
+      slots.forEach((slot) => {
+        const rule = this.rules.get(slot)
+        rule?.process({ styles })
+      })
+    } else {
+      //
+
+      const rule = this.rules.get(recipeName)
+      rule?.process({ styles })
+      //
+    }
   }
 
   toCss = () => {

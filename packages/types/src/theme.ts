@@ -1,5 +1,5 @@
 import type { LayerStyles, TextStyles } from './composition'
-import type { RecipeConfig } from './recipe'
+import type { RecipeConfig, SlotRecipeConfig } from './recipe'
 import type { CssKeyframes } from './system-types'
 import type { SemanticTokens, Tokens } from './tokens'
 
@@ -32,5 +32,5 @@ export type Theme = {
    * Multi-variant style definitions for your project.
    * Useful for defining component styles.
    */
-  recipes?: Record<string, RecipeConfig>
+  recipes?: Record<string, RecipeConfig | SlotRecipeConfig>
 }

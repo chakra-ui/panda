@@ -1,7 +1,9 @@
 import { logger } from '@pandacss/logger'
-import type { Dict, RecipeConfig, SystemStyleObject } from '@pandacss/types'
+import { getSlotRecipes } from '@pandacss/shared'
+import type { Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
 import postcss, { CssSyntaxError } from 'postcss'
 import { AtomicRule } from './atomic-rule'
+import { isSlotRecipe } from './is-slot-recipe'
 import { discardDuplicate, expandCssFunctions, optimizeCss } from './optimize'
 import { Recipes } from './recipes'
 import { safeParse } from './safe-parse'
@@ -19,8 +21,6 @@ export class Stylesheet {
 
   constructor(private context: StylesheetContext, private options?: StylesheetOptions) {
     const { recipes } = options ?? {}
-    // TODO. keep a reference to all slotted recipes
-    //    but pass all slotted recipe in format name__slot
     this.recipes = new Recipes(recipes ?? {}, context)
   }
 
@@ -72,11 +72,28 @@ export class Stylesheet {
     this.processAtomic(restStyles, cssObject)
   }
 
-  processRecipe = (name: string, config: RecipeConfig, styles: SystemStyleObject) => {
-    this.recipes.process(name, { styles })
+  processCompoundVariants = (config: RecipeConfig | SlotRecipeConfig) => {
     config.compoundVariants?.forEach((compoundVariant) => {
-      this.processAtomic(compoundVariant.css)
+      if (isSlotRecipe(config)) {
+        for (const css of Object.values(compoundVariant.css)) {
+          this.processAtomic(css)
+        }
+      } else {
+        this.processAtomic(compoundVariant.css)
+      }
     })
+  }
+
+  processRecipe = (name: string, config: RecipeConfig | SlotRecipeConfig, styles: SystemStyleObject) => {
+    this.recipes.process(name, { styles })
+    this.processCompoundVariants(config)
+  }
+
+  processAtomicSlotRecipe = (recipe: SlotRecipeConfig) => {
+    const slots = getSlotRecipes(recipe)
+    for (const slotRecipe of Object.values(slots)) {
+      this.processAtomicRecipe(slotRecipe)
+    }
   }
 
   processAtomicRecipe = (recipe: Pick<RecipeConfig, 'base' | 'variants' | 'compoundVariants'>) => {
