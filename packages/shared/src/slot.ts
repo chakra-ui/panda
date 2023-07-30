@@ -29,19 +29,26 @@ export const getSlotRecipes = (recipe: any) => {
       if (base) cva.base = base
 
       // assign variants
-      walkObject(recipe.variants, (variant: any, path: string[]) => assign(cva, ['variants', ...path], variant[slot]), {
-        stop: (_value, path) => path.includes(slot),
-      })
+      walkObject(
+        recipe.variants ?? {},
+        (variant: any, path: string[]) => assign(cva, ['variants', ...path], variant[slot]),
+        {
+          stop: (_value, path) => path.includes(slot),
+        },
+      )
 
       // assign compound variants
-      recipe.compoundVariants?.forEach((compoundVariant: any) => {
-        const slotCss = compoundVariant.css[slot]
-        if (!slotCss) return
-        cva.compoundVariants.push({ ...compoundVariant, css: slotCss })
-      })
+      if (recipe.compoundVariants) {
+        cva.compoundVariants = getSlotCompoundVariant(recipe.compoundVariants ?? [], slot)
+      }
 
       return [slot, cva]
     })
 
   return Object.fromEntries(parts)
 }
+
+export const getSlotCompoundVariant = <T extends { css: any }>(compoundVariants: T[], slotName: string) =>
+  compoundVariants
+    .filter((compoundVariant) => compoundVariant.css[slotName])
+    .map((compoundVariant) => ({ ...compoundVariant, css: compoundVariant.css[slotName] }))

@@ -224,6 +224,47 @@ function normalizeHTMLProps(props) {
 }
 normalizeHTMLProps.keys = htmlProps
 
+// src/slot.ts
+var assign = (obj, path, value) => {
+  const last = path.pop()
+  const target = path.reduce((acc, key) => {
+    if (acc[key] == null) acc[key] = {}
+    return acc[key]
+  }, obj)
+  if (last != null) target[last] = value
+}
+var getSlotRecipes = (recipe) => {
+  const parts = recipe.slots
+    .map((slot) => [
+      slot,
+      // setup base recipe
+      {
+        // create class-base on BEM
+        className: [recipe.className ?? '', slot].join('__'),
+        base: {},
+        variants: {},
+        defaultVariants: recipe.defaultVariants ?? {},
+        compoundVariants: [],
+      },
+    ])
+    .map(([slot, cva]) => {
+      const base = recipe.base[slot]
+      if (base) cva.base = base
+      walkObject(recipe.variants ?? {}, (variant, path) => assign(cva, ['variants', ...path], variant[slot]), {
+        stop: (_value, path) => path.includes(slot),
+      })
+      if (recipe.compoundVariants) {
+        cva.compoundVariants = getSlotCompoundVariant(recipe.compoundVariants ?? [], slot)
+      }
+      return [slot, cva]
+    })
+  return Object.fromEntries(parts)
+}
+var getSlotCompoundVariant = (compoundVariants, slotName) =>
+  compoundVariants
+    .filter((compoundVariant) => compoundVariant.css[slotName])
+    .map((compoundVariant) => ({ ...compoundVariant, css: compoundVariant.css[slotName] }))
+
 // src/split-props.ts
 function splitProps(props, ...keys) {
   const descriptors = Object.getOwnPropertyDescriptors(props)
@@ -248,6 +289,8 @@ export {
   createCss,
   createMergeCss,
   filterBaseConditions,
+  getSlotCompoundVariant,
+  getSlotRecipes,
   hypenateProperty,
   isBaseCondition,
   isObject,

@@ -21,6 +21,12 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
         })
       })
 
+      result.sva.forEach((sva) => {
+        sva.data.forEach((data) => {
+          sheet.processAtomicSlotRecipe(data)
+        })
+      })
+
       result.jsx.forEach((jsx) => {
         jsx.data.forEach((data) => {
           sheet.processStyleProps(data)

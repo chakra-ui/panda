@@ -102,6 +102,14 @@ export function cvaParser(code: string) {
   }
 }
 
+export function svaParser(code: string) {
+  const project = getProject(code)
+  const data = project.parseSourceFile(staticFilePath)!
+  return {
+    sva: data.sva,
+  }
+}
+
 export function styledParser(code: string) {
   const project = getProject(code)
   const data = project.parseSourceFile(staticFilePath)!

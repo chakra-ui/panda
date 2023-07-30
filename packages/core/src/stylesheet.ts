@@ -89,7 +89,7 @@ export class Stylesheet {
     this.processCompoundVariants(config)
   }
 
-  processAtomicSlotRecipe = (recipe: SlotRecipeConfig) => {
+  processAtomicSlotRecipe = (recipe: Pick<SlotRecipeConfig, 'base' | 'variants' | 'compoundVariants'>) => {
     const slots = getSlotRecipes(recipe)
     for (const slotRecipe of Object.values(slots)) {
       this.processAtomicRecipe(slotRecipe)

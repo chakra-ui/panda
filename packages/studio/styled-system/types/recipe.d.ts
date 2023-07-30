@@ -43,6 +43,7 @@ export type RecipeCompoundVariant<T extends RecipeVariantRecord> = RecipeCompoun
 }
 
 export type RecipeDefinition<T extends RecipeVariantRecord> = {
+  slots?: never
   /**
    * The base styles of the recipe.
    */
