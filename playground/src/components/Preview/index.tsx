@@ -1,18 +1,26 @@
 import { LiveProvider, useLiveContext } from 'react-live-runner'
 import { useIsClient } from 'usehooks-ts'
 import { createPortal } from 'react-dom'
-import { usePreview, PreviewProps } from '@/src/hooks/usePreview'
+import { usePreview } from '@/src/hooks/usePreview'
 import { css } from '@/styled-system/css'
 import { flex } from '@/styled-system/patterns'
 import { useResponsiveView } from '@/src/hooks/useResponsiveView'
 import { responsiveBorder } from '@/src/components/Preview/responsive-border'
 import { ErrorIcon } from '@/src/components/icons'
+import { UsePanda } from '@/src/hooks/usePanda'
+
+export type PreviewProps = {
+  source: string
+  isResponsive: boolean
+  panda: UsePanda
+}
 
 export const Preview = (props: PreviewProps) => {
-  const { previewCss = '', source, isResponsive } = props
+  const { source, isResponsive, panda } = props
+  const { previewCss = '', previewJs } = panda
   const isClient = useIsClient()
 
-  const { handleLoad, contentRef, setContentRef, iframeLoaded, isReady, srcDoc } = usePreview(props)
+  const { handleLoad, contentRef, setContentRef, iframeLoaded, isReady, srcDoc } = usePreview()
 
   const {
     setContainerRef,
@@ -49,14 +57,12 @@ export const Preview = (props: PreviewProps) => {
     }
 
     const defaultExportName = extractDefaultExportedFunctionName(source) ?? 'App'
-    const transformed = source
+    const transformed = `${previewJs}\n${source
       .replaceAll(/import.*/g, '')
-      .replaceAll(/export default /g, '')
-      .replaceAll(/export /g, '')
-      .concat(`\nrender(<${defaultExportName} />)`)
+      .concat(`\nrender(<${defaultExportName} />)`)}`
 
     const contents = (
-      <LiveProvider code={transformed} scope={(contentRef?.contentWindow as any)?.panda}>
+      <LiveProvider code={transformed}>
         <LiveError />
         <LivePreview />
       </LiveProvider>
