@@ -31,10 +31,7 @@ export const segmentGroup = defineRecipe({
       display: 'flex',
     },
     radioLabel: {
-      color: 'text.default',
-      '&[data-state="checked"]': {
-        color: 'black',
-      },
+      color: { base: 'text.default', _checked: 'black' },
       transition: 'color 170ms ease-in-out',
 
       '&:not([data-state="checked"]):hover': { color: { base: 'gray.700', _dark: 'gray.300' } },
