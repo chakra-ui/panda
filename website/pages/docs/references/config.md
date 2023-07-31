@@ -553,7 +553,7 @@ Used to generate css utility classes for your project.
 
 **Default**: `false`
 
-Options for the generated typescript definitions.
+Only allow token values and prevent custom or raw CSS values.
 
 ```json
 {
