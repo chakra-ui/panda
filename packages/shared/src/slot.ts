@@ -42,7 +42,7 @@ export const getSlotRecipes = (recipe: any) => {
 
       // assign compound variants
       if (recipe.compoundVariants) {
-        cva.compoundVariants = getSlotCompoundVariant(recipe.compoundVariants ?? [], slot)
+        cva.compoundVariants = getSlotCompoundVariant(recipe.compoundVariants, slot)
       }
 
       return [slot, cva]
