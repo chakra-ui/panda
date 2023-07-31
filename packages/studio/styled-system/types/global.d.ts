@@ -13,4 +13,5 @@ declare module '@pandacss/dev' {
   export function defineTextStyles(definition: CompositionStyles['textStyles']): CompositionStyles['textStyles']
   export function defineLayerStyles(definition: CompositionStyles['layerStyles']): CompositionStyles['layerStyles']
   export function definePattern<T extends PatternProperties>(config: PatternConfig<T>): PatternConfig
+  export function defineParts<T extends Parts>(parts: T): (config: Partial<Record<keyof T, SystemStyleObject>>) => Partial<Record<keyof T, SystemStyleObject>>
 }
