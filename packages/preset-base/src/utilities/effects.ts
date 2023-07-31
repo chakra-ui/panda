@@ -1,6 +1,9 @@
 import type { UtilityConfig } from '@pandacss/types'
 
 export const effects: UtilityConfig = {
+  opacity: {
+    values: 'opacity',
+  },
   boxShadow: {
     shorthand: 'shadow',
     className: 'shadow',

@@ -144,6 +144,7 @@ describe('generate property types', () => {
       	borderBlockEndColor: Tokens[\\"colors\\"];
       	borderBlockStart: Tokens[\\"borders\\"];
       	borderBlockStartColor: Tokens[\\"colors\\"];
+      	opacity: Tokens[\\"opacity\\"];
       	boxShadow: Tokens[\\"shadows\\"];
       	boxShadowColor: Tokens[\\"colors\\"];
       	filter: \\"auto\\";
