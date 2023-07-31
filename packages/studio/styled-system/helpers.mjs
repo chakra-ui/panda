@@ -250,11 +250,18 @@ var getSlotRecipes = (recipe) => {
     .map(([slot, cva]) => {
       const base = recipe.base[slot]
       if (base) cva.base = base
-      walkObject(recipe.variants ?? {}, (variant, path) => assign(cva, ['variants', ...path], variant[slot]), {
-        stop: (_value, path) => path.includes(slot),
-      })
+      walkObject(
+        recipe.variants ?? {},
+        (variant, path) => {
+          if (!variant[slot]) return
+          assign(cva, ['variants', ...path], variant[slot])
+        },
+        {
+          stop: (_value, path) => path.includes(slot),
+        },
+      )
       if (recipe.compoundVariants) {
-        cva.compoundVariants = getSlotCompoundVariant(recipe.compoundVariants ?? [], slot)
+        cva.compoundVariants = getSlotCompoundVariant(recipe.compoundVariants, slot)
       }
       return [slot, cva]
     })

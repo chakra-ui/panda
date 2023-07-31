@@ -43,7 +43,6 @@ export type RecipeCompoundVariant<T extends RecipeVariantRecord> = RecipeCompoun
 }
 
 export type RecipeDefinition<T extends RecipeVariantRecord> = {
-  slots?: never
   /**
    * The base styles of the recipe.
    */
@@ -97,12 +96,8 @@ export type SlotRecipeVariantFn<S extends string, T extends RecipeVariantRecord>
 ) => SlotRecord<S, string>
 
 export type SlotRecipeRuntimeFn<S extends string, T extends SlotRecipeVariantRecord<S>> = SlotRecipeVariantFn<S, T> & {
-  // don't allow composition with `styled` factory
-  __type: never
   variantKeys: (keyof T)[]
   variantMap: RecipeVariantMap<T>
-  resolve: (props: RecipeSelection<T>) => SlotRecord<S, SystemStyleObject>
-  config: RecipeConfig<T>
   splitVariantProps<Props extends RecipeSelection<T>>(props: Props): [RecipeSelection<T>, Pretty<Omit<Props, keyof T>>]
 }
 

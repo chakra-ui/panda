@@ -8,7 +8,7 @@ export default defineConfig({
   jsxFramework: 'preact',
   theme: {
     extend: {
-      recipes: {
+      slotRecipes: {
         card: defineSlotRecipe({
           className: 'u-card',
           slots: ['root', 'label', 'icon'],

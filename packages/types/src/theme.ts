@@ -32,5 +32,9 @@ export type Theme = {
    * Multi-variant style definitions for your project.
    * Useful for defining component styles.
    */
-  recipes?: Record<string, RecipeConfig | SlotRecipeConfig>
+  recipes?: Record<string, RecipeConfig>
+  /**
+   * Multi-variant style definitions for component slots.
+   */
+  slotRecipes?: Record<string, SlotRecipeConfig>
 }
