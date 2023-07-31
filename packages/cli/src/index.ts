@@ -3,6 +3,7 @@ import type {
   Config,
   CssKeyframes,
   GlobalStyleObject,
+  Parts,
   PatternConfig,
   Preset,
   RecipeConfig,
@@ -30,6 +31,12 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
   config: SlotRecipeConfig<S, T>,
 ) {
   return config as SlotRecipeConfig
+}
+
+export function defineParts<T extends Parts>(parts: T) {
+  return function (config: Partial<Record<keyof T, SystemStyleObject>>): Partial<Record<keyof T, SystemStyleObject>> {
+    return Object.fromEntries(Object.entries(config).map(([key, value]) => [parts[key].selector, value])) as any
+  }
 }
 
 export function definePattern<T extends PatternConfig>(config: T) {
