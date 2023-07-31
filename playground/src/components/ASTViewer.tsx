@@ -30,6 +30,7 @@ const resultType = cva({
     type: {
       object: { bg: { base: 'gray.100', _dark: '#FFFFFF08' }, color: { base: 'gray.700', _dark: 'white' } },
       cva: { bg: { base: 'gray.300', _dark: '#FFFFFF12' }, color: { base: 'gray.700', _dark: 'white' } },
+      sva: { bg: { base: 'gray.300', _dark: '#FFFFFF12' }, color: { base: 'gray.700', _dark: 'white' } },
       jsx: { bg: { base: 'blue.300', _dark: 'blue.500' } },
       'jsx-factory': { bg: { base: 'blue.100', _dark: 'blue.300' }, color: { _dark: 'black' } },
       pattern: { bg: { base: 'indigo.400', _dark: 'indigo.500' }, color: 'white' },
