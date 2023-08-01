@@ -567,7 +567,7 @@ Only allow token values and prevent custom or raw CSS values.
 
 **Type**: `'react' | 'solid' | 'preact' | 'vue' | 'qwik'`
 
-JS Framework for genrated JSX elements.
+JS Framework for generated JSX elements.
 
 ```json
 {
