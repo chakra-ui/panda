@@ -22,6 +22,6 @@
     "@pandacss/types": "workspace:*"
   },
   "devDependencies": {
-    "@atlaskit/tokens": "1.11.2"
+    "@atlaskit/tokens": "1.13.1"
   }
 }

@@ -20,6 +20,6 @@
   ],
   "dependencies": {
     "@pandacss/node": "workspace:*",
-    "postcss": "^8.4.25"
+    "postcss": "^8.4.27"
   }
 }

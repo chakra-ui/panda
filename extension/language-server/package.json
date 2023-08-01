@@ -30,12 +30,12 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@types/base-64": "^1.0.0",
-    "@types/node": "20.4.4",
+    "@types/node": "20.4.5",
     "@types/utf8": "^3.0.1",
     "base-64": "^1.0.0",
     "color2k": "^2.0.2",
     "lil-fp": "1.4.5",
-    "postcss": "^8.4.25",
+    "postcss": "^8.4.27",
     "prettier": "^2.8.8",
     "satori": "^0.10.1",
     "ts-morph": "19.0.0",
@@ -48,6 +48,6 @@
     "vscode-uri": "^3.0.7"
   },
   "dependencies": {
-    "fast-glob": "^3.3.0"
+    "fast-glob": "^3.3.1"
   }
 }

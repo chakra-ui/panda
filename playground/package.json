@@ -17,7 +17,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@ark-ui/react": "0.8.1",
+    "@ark-ui/react": "0.9.0",
     "@babel/parser": "^7.22.7",
     "@babel/traverse": "^7.22.8",
     "@monaco-editor/react": "4.5.1",
@@ -26,20 +26,20 @@
     "@pandacss/parser": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
-    "@prisma/client": "4.16.2",
+    "@prisma/client": "5.1.0",
     "@textea/json-viewer": "3.1.1",
     "hookable": "5.5.3",
     "merge-anything": "5.1.7",
     "monaco-editor": "0.40.0",
     "monaco-jsx-highlighter": "^2.0.4",
     "nanoid": "4.0.2",
-    "next": "13.4.9",
+    "next": "13.4.12",
     "next-themes": "^0.2.1",
     "os-browserify": "0.3.0",
     "path-browserify": "1.0.1",
     "prettier": "^2.8.8",
     "prism-react-renderer": "2.0.6",
-    "prisma": "4.16.2",
+    "prisma": "5.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-live-runner": "^1.0.5",
@@ -52,11 +52,11 @@
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "@types/node": "20.4.4",
+    "@types/node": "20.4.5",
     "@types/prettier": "2.7.3",
-    "@types/react": "18.2.14",
-    "@types/react-dom": "18.2.6",
-    "eslint": "8.44.0",
-    "eslint-config-next": "13.4.9"
+    "@types/react": "18.2.18",
+    "@types/react-dom": "18.2.7",
+    "eslint": "8.46.0",
+    "eslint-config-next": "13.4.12"
   }
 }
