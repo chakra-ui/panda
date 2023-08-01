@@ -97,6 +97,8 @@ export function usePanda(source: string, config: string) {
       staticCss: merge(restConfig.staticCss, {
         recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'],
       }),
+
+      jsxFramework: restConfig.jsxFramework ? 'react' : undefined,
     })
 
     return createGenerator({

@@ -1,3 +1,4 @@
+import React from 'react'
 import { LiveProvider, useLiveContext } from 'react-live-runner'
 import { useIsClient } from 'usehooks-ts'
 import { createPortal } from 'react-dom'
@@ -57,12 +58,12 @@ export const Preview = (props: PreviewProps) => {
     }
 
     const defaultExportName = extractDefaultExportedFunctionName(source) ?? 'App'
-    const transformed = `${previewJs}\n${source
+    const transformed = `${previewJs.replaceAll(/export /g, '')}\n${source
       .replaceAll(/import.*/g, '')
       .concat(`\nrender(<${defaultExportName} />)`)}`
 
     const contents = (
-      <LiveProvider code={transformed}>
+      <LiveProvider code={transformed} scope={React}>
         <LiveError />
         <LivePreview />
       </LiveProvider>
