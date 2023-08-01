@@ -65,7 +65,7 @@ export const navbarRecipe = defineRecipe({
       display: 'flex',
       alignItems: 'center',
       _hover: { opacity: 0.75 },
-      ms: 'auto'
+      marginEnd: 'auto'
     },
     menuLink: {
       textStyle: 'sm',
