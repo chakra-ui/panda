@@ -1435,6 +1435,25 @@ describe('extract to css output pipeline', () => {
         },
         {
           "data": [
+            {
+              "marginBottom": "42px",
+              "marginTop": "40px",
+            },
+          ],
+          "name": "panda.button",
+          "type": "jsx-factory",
+        },
+        {
+          "data": [
+            {
+              "bg": "red.200",
+            },
+          ],
+          "name": "panda.div",
+          "type": "jsx-factory",
+        },
+        {
+          "data": [
             {},
           ],
           "name": "button",
@@ -1488,25 +1507,6 @@ describe('extract to css output pipeline', () => {
           ],
           "name": "Stack",
           "type": "jsx-pattern",
-        },
-        {
-          "data": [
-            {
-              "marginBottom": "42px",
-              "marginTop": "40px",
-            },
-          ],
-          "name": "panda.button",
-          "type": "jsx-factory",
-        },
-        {
-          "data": [
-            {
-              "bg": "red.200",
-            },
-          ],
-          "name": "panda.div",
-          "type": "jsx-factory",
         },
       ]
     `)

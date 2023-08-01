@@ -12,10 +12,7 @@ export const threeViewLinkStyle = cva({
     wordBreak: 'break-word',
     cursor: 'pointer',
     WebkitTapHighlightColor: 'transparent',
-    WebkitTouchCallout: 'none',
-    _moreContrast: {
-      border: '1px solid'
-    }
+    WebkitTouchCallout: 'none'
   },
   variants: {
     active: {
@@ -25,12 +22,6 @@ export const threeViewLinkStyle = cva({
         color: 'black',
         _dark: {
           bg: 'yellow.300'
-        },
-        _moreContrast: {
-          borderColor: 'gray.500',
-          _dark: {
-            borderColor: 'white'
-          }
         }
       },
       false: {
@@ -44,19 +35,6 @@ export const threeViewLinkStyle = cva({
           _hover: {
             bg: 'whiteAlpha.200',
             color: 'gray.50'
-          }
-        },
-        _moreContrast: {
-          color: 'gray.900',
-          _dark: {
-            color: 'gray.50',
-            _hover: {
-              borderColor: 'gray.50'
-            }
-          },
-          borderColor: 'transparent',
-          _hover: {
-            borderColor: 'gray.900'
           }
         }
       }

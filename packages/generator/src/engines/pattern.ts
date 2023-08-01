@@ -1,12 +1,7 @@
-import { capitalize, dashCase, mapObject, memo, uncapitalize } from '@pandacss/shared'
+import { capitalize, dashCase, mapObject, memo, uncapitalize, createRegex } from '@pandacss/shared'
 import type { Dict, UserConfig } from '@pandacss/types'
 
 const helpers = { map: mapObject }
-
-const createRegex = (item: Array<string | RegExp>) => {
-  const regex = item.map((item) => (typeof item === 'string' ? item : item.source)).join('|')
-  return new RegExp(`^${regex}$`)
-}
 
 export const getPatternEngine = (config: UserConfig) => {
   const patterns = config.patterns ?? {}

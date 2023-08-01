@@ -17,6 +17,7 @@ import { generateHelpers } from './js/helpers'
 import { generateisValidProp } from './js/is-valid-prop'
 import { generatePattern } from './js/pattern'
 import { generateRecipes } from './js/recipe'
+import { generateSvaFn } from './js/sva'
 import { generateTokenJs } from './js/token'
 import { generateJsxFactory, generateJsxPatterns, generateJsxTypes } from './jsx'
 import { generatePackageJson } from './pkg-json'
@@ -107,6 +108,19 @@ function setupCva(ctx: Context): Artifact {
     files: [
       { file: ctx.file.ext('cva'), code: code.js },
       { file: 'cva.d.ts', code: code.dts },
+    ],
+  }
+}
+
+function setupSva(ctx: Context): Artifact {
+  if (ctx.isTemplateLiteralSyntax) return
+
+  const code = generateSvaFn(ctx)
+  return {
+    dir: ctx.paths.css,
+    files: [
+      { file: ctx.file.ext('sva'), code: code.js },
+      { file: 'sva.d.ts', code: code.dts },
     ],
   }
 }
@@ -209,11 +223,13 @@ function setupCssIndex(ctx: Context): Artifact {
   ${ctx.file.export('./css')}
   ${ctx.file.export('./cx')}
   ${ctx.isTemplateLiteralSyntax ? '' : ctx.file.export('./cva')}
+  ${ctx.isTemplateLiteralSyntax ? '' : ctx.file.export('./sva')}
  `,
     dts: outdent`
   export * from './css'
   export * from './cx'
   ${ctx.isTemplateLiteralSyntax ? '' : `export * from './cva'`}
+  ${ctx.isTemplateLiteralSyntax ? '' : `export * from './sva'`}
   `,
   }
 
@@ -262,6 +278,7 @@ export const generateArtifacts = (ctx: Context) => (): Artifact[] => {
     setupKeyframes(ctx),
     setupTypes(ctx),
     setupCva(ctx),
+    setupSva(ctx),
     setupCx(ctx),
     setupCss(ctx),
     setupRecipes(ctx),

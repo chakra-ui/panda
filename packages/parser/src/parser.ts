@@ -67,7 +67,7 @@ export function createParser(options: ParserOptions) {
 
   // Create regex for each import map
   const importRegex = [
-    createImportMatcher(importMap.css, ['css', 'cva']),
+    createImportMatcher(importMap.css, ['css', 'cva', 'sva']),
     createImportMatcher(importMap.recipe),
     createImportMatcher(importMap.pattern),
   ]
@@ -150,6 +150,7 @@ export function createParser(options: ParserOptions) {
 
     const recipes = new Set<string>()
     const patterns = new Set<string>()
+
     imports.value.forEach((importDeclaration) => {
       const { alias } = importDeclaration
       if (isValidRecipe(alias)) {
@@ -166,6 +167,7 @@ export function createParser(options: ParserOptions) {
 
     const propertiesMap = new Map<string, boolean>()
     const recipePropertiesByName = new Map<string, Set<string>>()
+
     const recipeJsxLists = (jsx?.nodes ?? []).filter(isNodeRecipe).reduce(
       (acc, recipe) => {
         recipePropertiesByName.set(recipe.jsxName, new Set(recipe.props ?? []))
@@ -185,6 +187,7 @@ export function createParser(options: ParserOptions) {
 
     const cvaAlias = imports.getAlias('cva')
     const cssAlias = imports.getAlias('css')
+    const svaAlias = imports.getAlias('sva')
 
     if (options.jsx) {
       options.jsx.nodes.forEach((node) => {
@@ -242,7 +245,8 @@ export function createParser(options: ParserOptions) {
 
     const matchFn = memo((fnName: string) => {
       if (recipes.has(fnName) || patterns.has(fnName)) return true
-      if (fnName === cvaAlias || fnName === cssAlias || isRawFn(fnName) || isFactory(fnName)) return true
+      if (fnName === cvaAlias || fnName === cssAlias || fnName === svaAlias || isRawFn(fnName) || isFactory(fnName))
+        return true
       return functions.has(fnName)
     })
 
@@ -280,15 +284,18 @@ export function createParser(options: ParserOptions) {
 
       if (result.kind === 'function') {
         match(name)
-          .when(css.match, (name: 'css' | 'cva') => {
+          .when(css.match, (name: 'css' | 'cva' | 'sva') => {
             result.queryList.forEach((query) => {
+              //
               if (query.kind === 'call-expression') {
                 collector.set(name, {
                   name,
                   box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                   data: combineResult(unbox(query.box.value[0])),
                 })
+                //
               } else if (query.kind === 'tagged-template') {
+                //
                 const obj = astish(query.box.value as string)
                 collector.set(name, {
                   name,
