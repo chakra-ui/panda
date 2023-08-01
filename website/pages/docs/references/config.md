@@ -375,8 +375,8 @@ Ex object-literal:
 
 ```tsx
 const styles = css({
-    backgroundColor: 'gainsboro',
-    padding: '10px 15px'
+  backgroundColor: 'gainsboro',
+  padding: '10px 15px'
 })
 ```
 
@@ -384,9 +384,9 @@ Ex template-literal:
 
 ```tsx
 const Container = styled.div`
-    background-color: gainsboro;
-    padding: 10px 15px;
-`;
+  background-color: gainsboro;
+  padding: 10px 15px;
+`
 ```
 
 ## Design token options
@@ -567,7 +567,7 @@ Only allow token values and prevent custom or raw CSS values.
 
 **Type**: `'react' | 'solid' | 'preact' | 'vue' | 'qwik'`
 
-Options for the generated typescript definitions.
+JS Framework for genrated JSX elements.
 
 ```json
 {
