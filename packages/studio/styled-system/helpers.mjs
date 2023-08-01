@@ -279,6 +279,7 @@ export {
   isBaseCondition,
   isObject,
   mapObject,
+  memo,
   mergeProps,
   splitProps,
   toHash,

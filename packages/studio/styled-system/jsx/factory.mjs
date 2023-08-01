@@ -56,4 +56,4 @@ function createJsxFactory() {
   })
 }
 
-export const panda = createJsxFactory()
+export const panda = /* @__PURE__ */ createJsxFactory()
