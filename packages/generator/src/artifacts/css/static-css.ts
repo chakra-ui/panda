@@ -28,7 +28,6 @@ export const generateStaticCss = (ctx: Context) => {
 
   results.recipes.forEach((result) => {
     Object.entries(result).forEach(([name, value]) => {
-      // TODO: change this to support multiple recipes (for slotted recipes)
       const recipeConfig = recipes.getConfig(name)
       if (!recipeConfig) return
       sheet.processRecipe(name, recipeConfig, value)
