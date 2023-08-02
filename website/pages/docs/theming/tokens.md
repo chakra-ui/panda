@@ -197,8 +197,13 @@ type Gradient =
   | string
   | {
       type: 'linear' | 'radial'
-      placement: string
-      colors: Array<string | { color: string; position: number }>
+      placement: string | number
+      stops:
+        | Array<{
+            color: string
+            position: number
+          }>
+        | Array<string>
     }
 ```
 
@@ -213,7 +218,7 @@ const theme = {
         value: {
           type: 'linear',
           placement: 'to right',
-          colors: ['red', 'blue']
+          stops: ['red', 'blue']
         }
       }
     }
