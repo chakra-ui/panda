@@ -50,22 +50,6 @@ export default defineConfig({
 })
 ```
 
-### Configure the content
-
-Add your panda config to your `panda.config.js` file, or wherver panda is configured in your project.
-
-```js {6}
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  preflight: true,
-  // define the content to scan 👇🏻
-  include: ['./src/**/*.{ts,tsx,js,jsx,astro}', './pages/**/*.{ts,tsx,js,jsx,astro}'],
-  exclude: [],
-  outdir: 'styled-system'
-})
-```
-
   ### Update package.json scripts
 
   Open your `package.json` file and update the `scripts` section as follows:
@@ -85,6 +69,22 @@ export default defineConfig({
     The `prepare` script that will run codegen after dependency installation. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
 
   > This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
+
+### Configure the content
+
+Add your panda config to your `panda.config.js` file, or wherver panda is configured in your project.
+
+```js {6}
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  preflight: true,
+  // define the content to scan 👇🏻
+  include: ['./src/**/*.{ts,tsx,js,jsx,astro}', './pages/**/*.{ts,tsx,js,jsx,astro}'],
+  exclude: [],
+  outdir: 'styled-system'
+})
+```
 
 ### Start your build process
 
