@@ -65,6 +65,20 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
   const compositionContext = { conditions, utility }
   assignCompositions(compositions, compositionContext)
 
+  const buildLayers = () => {
+    const {
+      reset = 'reset',
+      base = 'base',
+      tokens = 'tokens',
+      recipes = 'recipes',
+      utilities = 'utilities',
+    } = config.layers ?? {}
+
+    return { reset, base, tokens, recipes, utilities }
+  }
+
+  const layers = buildLayers()
+
   const createSheetContext = (): StylesheetContext => ({
     root: postcss.root(),
     conditions,
@@ -114,5 +128,6 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     conditions,
     createSheetContext,
     createSheet,
+    layers,
   }
 }

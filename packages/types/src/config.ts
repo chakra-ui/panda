@@ -171,6 +171,8 @@ type CssgenOptions = {
   syntax?: 'template-literal' | 'object-literal'
 }
 
+type Layer = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
+
 type CodegenOptions = {
   /**
    * Whether to emit the artifacts to `node_modules` as a package.
@@ -202,6 +204,11 @@ type CodegenOptions = {
    * @default 'true'
    */
   shorthands?: boolean
+  /**
+   * Layer mappings used in the generated css.
+   * @default 'true'
+   */
+  layers?: Partial<Record<Layer, string>>
 }
 
 type PresetOptions = {
