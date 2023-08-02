@@ -39,14 +39,29 @@ async function getViteConfig(viteConfig: AstroConfig['vite']) {
   }
 }
 
-export default function pandaIntegration(): AstroIntegration {
+type PandaOptions = {
+  /**
+   * Inject panda's base styles into the Astro app.
+   * @default true
+   */
+  applyBaseStyles?: boolean
+}
+
+export default function pandaIntegration(options?: PandaOptions): AstroIntegration {
+  const applyBaseStyles = options?.applyBaseStyles ?? true
+
   return {
     name: '@pandacss/astro',
     hooks: {
-      'astro:config:setup': async ({ config, updateConfig }) => {
+      'astro:config:setup': async ({ config, updateConfig, injectScript }) => {
         updateConfig({
           vite: await getViteConfig(config.vite),
         })
+
+        if (applyBaseStyles) {
+          // Inject the Panda base import
+          injectScript('page-ssr', `import '@pandacss/astro/base.css';`)
+        }
       },
     },
   }

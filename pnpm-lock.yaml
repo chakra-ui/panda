@@ -368,9 +368,6 @@ importers:
 
   packages/cli:
     dependencies:
-      '@pandacss/astro':
-        specifier: workspace:*
-        version: link:../astro
       '@pandacss/config':
         specifier: workspace:*
         version: link:../config
@@ -1095,6 +1092,9 @@ importers:
         specifier: 1.7.8
         version: 1.7.8
     devDependencies:
+      '@pandacss/astro':
+        specifier: workspace:*
+        version: link:../../packages/astro
       '@pandacss/dev':
         specifier: workspace:*
         version: link:../../packages/cli
@@ -1970,7 +1970,7 @@ packages:
       '@babel/helper-validator-option': 7.22.5
       browserslist: 4.21.9
       lru-cache: 5.1.1
-      semver: 6.3.0
+      semver: 6.3.1
 
   /@babel/helper-compilation-targets@7.22.9(@babel/core@7.22.5):
     resolution: {integrity: sha512-7qYrNM6HjpnPHJbopxmb8hSPoZ0gsX8IvUS32JGVoy+pU9e5N0nLr1VjJoR6kA4d9dmGLxNYOjeB8sUDal2WMw==}
@@ -2222,6 +2222,20 @@ packages:
       '@babel/helper-simple-access': 7.22.5
       '@babel/helper-split-export-declaration': 7.22.6
       '@babel/helper-validator-identifier': 7.22.5
+
+  /@babel/helper-module-transforms@7.22.9(@babel/core@7.22.1):
+    resolution: {integrity: sha512-t+WA2Xn5K+rTeGtC8jCsdAH52bjggG5TKRuRrAGNM/mjIbO4GxvlLMFOEz9wXY5I2XQ60PMFsAG2WIcG82dQMQ==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0
+    dependencies:
+      '@babel/core': 7.22.1
+      '@babel/helper-environment-visitor': 7.22.5
+      '@babel/helper-module-imports': 7.22.5
+      '@babel/helper-simple-access': 7.22.5
+      '@babel/helper-split-export-declaration': 7.22.6
+      '@babel/helper-validator-identifier': 7.22.5
+    dev: true
 
   /@babel/helper-module-transforms@7.22.9(@babel/core@7.22.5):
     resolution: {integrity: sha512-t+WA2Xn5K+rTeGtC8jCsdAH52bjggG5TKRuRrAGNM/mjIbO4GxvlLMFOEz9wXY5I2XQ60PMFsAG2WIcG82dQMQ==}
@@ -2863,6 +2877,7 @@ packages:
     dependencies:
       '@babel/core': 7.22.1
       '@babel/helper-plugin-utils': 7.22.5
+    dev: false
 
   /@babel/plugin-syntax-jsx@7.21.4(@babel/core@7.22.5):
     resolution: {integrity: sha512-5hewiLct5OKyh6PLKEYaFclcqtIgCb6bmELouxjF6up5q3Sov7rOayW4RwhbaBL0dit8rA80GNfY+UuDp2mBbQ==}
@@ -2882,6 +2897,7 @@ packages:
     dependencies:
       '@babel/core': 7.22.9
       '@babel/helper-plugin-utils': 7.22.5
+    dev: true
 
   /@babel/plugin-syntax-jsx@7.22.5(@babel/core@7.22.1):
     resolution: {integrity: sha512-gvyP4hZrgrs/wWMaocvxZ44Hw0b3W8Pe+cMxc8V1ULQ07oh8VNbIRaoD1LRZVTvD+0nieDKjfgKg89sD7rrKrg==}
@@ -3899,11 +3915,9 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.22.1
-      '@babel/helper-module-transforms': 7.22.5
+      '@babel/helper-module-transforms': 7.22.9(@babel/core@7.22.1)
       '@babel/helper-plugin-utils': 7.22.5
       '@babel/helper-simple-access': 7.22.5
-    transitivePeerDependencies:
-      - supports-color
     dev: true
 
   /@babel/plugin-transform-modules-commonjs@7.21.5(@babel/core@7.22.5):
@@ -3913,11 +3927,9 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.22.5
-      '@babel/helper-module-transforms': 7.22.5
+      '@babel/helper-module-transforms': 7.22.9(@babel/core@7.22.5)
       '@babel/helper-plugin-utils': 7.22.5
       '@babel/helper-simple-access': 7.22.5
-    transitivePeerDependencies:
-      - supports-color
     dev: false
 
   /@babel/plugin-transform-modules-commonjs@7.21.5(@babel/core@7.22.9):
@@ -3927,11 +3939,9 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.22.9
-      '@babel/helper-module-transforms': 7.22.5
+      '@babel/helper-module-transforms': 7.22.9(@babel/core@7.22.9)
       '@babel/helper-plugin-utils': 7.22.5
       '@babel/helper-simple-access': 7.22.5
-    transitivePeerDependencies:
-      - supports-color
 
   /@babel/plugin-transform-modules-commonjs@7.22.5(@babel/core@7.22.9):
     resolution: {integrity: sha512-B4pzOXj+ONRmuaQTg05b3y/4DuFz3WcCNAXPLb2Q0GT0TrGKGxNKV4jwsXts+StaM0LQczZbOpj8o1DLPDJIiA==}
@@ -14678,7 +14688,7 @@ packages:
     dependencies:
       '@babel/core': 7.22.1
       '@babel/helper-module-imports': 7.18.6
-      '@babel/plugin-syntax-jsx': 7.21.4(@babel/core@7.22.1)
+      '@babel/plugin-syntax-jsx': 7.22.5(@babel/core@7.22.1)
       '@babel/types': 7.22.5
       html-entities: 2.3.3
       validate-html-nesting: 1.2.2
@@ -14691,7 +14701,7 @@ packages:
     dependencies:
       '@babel/core': 7.22.9
       '@babel/helper-module-imports': 7.18.6
-      '@babel/plugin-syntax-jsx': 7.21.4(@babel/core@7.22.9)
+      '@babel/plugin-syntax-jsx': 7.22.5(@babel/core@7.22.9)
       '@babel/types': 7.22.5
       html-entities: 2.3.3
       validate-html-nesting: 1.2.2

@@ -42,7 +42,7 @@ Add panda integration to your `astro.config.mjs` file.
 
 ```js
 import { defineConfig } from 'astro/config'
-import pandacss from '@pandacss/dev/astro'
+import pandacss from '@pandacss/astro'
 
 export default defineConfig({
   // ...
@@ -85,14 +85,6 @@ export default defineConfig({
     The `prepare` script that will run codegen after dependency installation. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
 
   > This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
-
-### Configure the entry CSS with layers
-
-Add this code to an `index.css` file imported in the root component of your project.
-
-```css
-@layer reset, base, tokens, recipes, utilities;
-```
 
 ### Start your build process
 

@@ -22,10 +22,6 @@
       "import": "./dist/presets.mjs"
     },
     "./postcss": "./postcss.js",
-    "./astro": {
-      "import": "./astro.mjs",
-      "types": "./astro.d.ts"
-    },
     "./package.json": "./package.json"
   },
   "sideEffects": false,
@@ -44,11 +40,9 @@
     "app",
     "bin.js",
     "*.d.ts",
-    "postcss.js",
-    "astro.mjs"
+    "postcss.js"
   ],
   "dependencies": {
-    "@pandacss/astro": "workspace:*",
     "@pandacss/config": "workspace:*",
     "@pandacss/error": "workspace:*",
     "@pandacss/logger": "workspace:*",
@@ -67,10 +61,5 @@
     "@types/update-notifier": "6.0.4",
     "kleur": "4.1.5",
     "update-notifier": "6.0.2"
-  },
-  "peerDependenciesMeta": {
-    "astro": {
-      "optional": true
-    }
   }
 }

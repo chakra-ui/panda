@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "prepare": "panda codegen",
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
@@ -18,6 +19,7 @@
     "solid-js": "1.7.8"
   },
   "devDependencies": {
-    "@pandacss/dev": "workspace:*"
+    "@pandacss/dev": "workspace:*",
+    "@pandacss/astro": "workspace:*"
   }
 }
