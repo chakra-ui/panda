@@ -9,6 +9,8 @@ import type {
   RecipeConfig,
   RecipeVariantRecord,
   SemanticTokens,
+  SlotRecipeConfig,
+  SlotRecipeVariantRecord,
   SystemStyleObject,
   Tokens,
 } from '@pandacss/types'
@@ -25,8 +27,10 @@ export function defineRecipe<T extends RecipeVariantRecord>(config: RecipeConfig
   return config as RecipeConfig
 }
 
-export function definePattern<T extends PatternConfig>(config: T) {
-  return config as PatternConfig
+export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRecord<S>>(
+  config: SlotRecipeConfig<S, T>,
+) {
+  return config as SlotRecipeConfig
 }
 
 export function defineParts<T extends Parts>(parts: T) {
@@ -35,12 +39,20 @@ export function defineParts<T extends Parts>(parts: T) {
   }
 }
 
+export function definePattern<T extends PatternConfig>(config: T) {
+  return config as PatternConfig
+}
+
 export function definePreset(preset: Preset): Preset {
   return preset
 }
 
 export function defineKeyframes(keyframes: CssKeyframes) {
   return keyframes
+}
+
+export function defineGlobalStyles(definition: GlobalStyleObject) {
+  return definition
 }
 
 /* -----------------------------------------------------------------------------
@@ -74,13 +86,5 @@ export function defineLayerStyles(definition: CompositionStyles['layerStyles']) 
 }
 
 export function defineStyles(definition: SystemStyleObject) {
-  return definition
-}
-
-/* -----------------------------------------------------------------------------
- * Global styles
- * -----------------------------------------------------------------------------*/
-
-export function defineGlobalStyles(definition: GlobalStyleObject) {
   return definition
 }

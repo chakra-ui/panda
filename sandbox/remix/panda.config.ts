@@ -3,7 +3,6 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   outExtension: 'js',
   studio: {
-    title: 'Chakra UI',
     logo: 'https://place-hold.it/36x24',
   },
   preflight: true,
@@ -18,7 +17,7 @@ export default defineConfig({
     },
     recipes: {
       button: {
-        name: 'button',
+        className: 'button',
         description: 'A button styles',
         base: {
           fontSize: 'lg',

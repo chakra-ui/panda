@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/preset-atlaskit",
-  "version": "0.7.0",
+  "version": "0.9.0",
   "description": "The preset for PandaCSS that contains the default theme",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -22,6 +22,6 @@
     "@pandacss/types": "workspace:*"
   },
   "devDependencies": {
-    "@atlaskit/tokens": "1.11.2"
+    "@atlaskit/tokens": "1.13.1"
   }
 }

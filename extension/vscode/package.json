@@ -3,7 +3,7 @@
   "name": "panda-css-vscode",
   "displayName": "🐼 Panda CSS",
   "description": "The official Panda CSS plugin for VS Code",
-  "version": "0.2.8",
+  "version": "0.2.10",
   "private": true,
   "engines": {
     "vscode": "^1.67.0"
@@ -228,11 +228,11 @@
     "@pandacss/vsix-builder": "workspace:*",
     "@pnpm/find-workspace-dir": "^6.0.2",
     "@pnpm/find-workspace-packages": "^6.0.9",
-    "@types/node": "20.4.1",
+    "@types/node": "20.4.5",
     "@types/vscode": "^1.80.0",
-    "@vscode/vsce": "^2.19.0",
+    "@vscode/vsce": "^2.20.0",
     "dotenv": "^16.3.1",
-    "execa": "7.1.1",
+    "execa": "7.2.0",
     "fs-extra": "11.1.1",
     "semver": "^7.5.4",
     "tsup": "7.1.0",

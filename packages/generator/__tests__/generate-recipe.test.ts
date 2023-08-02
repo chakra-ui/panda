@@ -81,6 +81,7 @@ describe('generate recipes', () => {
 
       export const textStyle = Object.assign(textStyleFn, {
         __recipe__: true,
+        raw: (props) => props,
         variantKeys: [
         \\"size\\"
       ],
@@ -132,6 +133,7 @@ describe('generate recipes', () => {
 
       export const tooltipStyle = Object.assign(tooltipStyleFn, {
         __recipe__: true,
+        raw: (props) => props,
         variantKeys: [],
         variantMap: {},
         splitVariantProps(props) {
@@ -178,6 +180,7 @@ describe('generate recipes', () => {
 
       export const buttonStyle = Object.assign(buttonStyleFn, {
         __recipe__: true,
+        raw: (props) => props,
         variantKeys: [
         \\"size\\",
         \\"variant\\"

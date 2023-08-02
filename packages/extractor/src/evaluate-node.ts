@@ -20,8 +20,6 @@ export const evaluateNode = (node: Expression, stack: Node[], ctx: BoxContext) =
   }
 
   const result = evaluate({
-    node: node.compilerNode as any,
-    typescript: ts as any,
     policy: {
       deterministic: true,
       network: false,
@@ -32,6 +30,8 @@ export const evaluateNode = (node: Expression, stack: Node[], ctx: BoxContext) =
       process: { exit: false, spawnChild: false },
     },
     ...ctx.getEvaluateOptions?.(node, stack),
+    node: node.compilerNode as any,
+    typescript: ts as any,
   })
 
   const expr = result.success ? result.value : TsEvalError

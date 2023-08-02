@@ -1,21 +1,21 @@
-import { HorizontalSplit, PreviewLayout, VerticalSplit } from '@/src/components/icons'
+import { HorizontalSplit, PreviewLayout, ResponsiveLayout, VerticalSplit } from '@/src/components/icons'
 import { css, cx } from '@/styled-system/css'
 import { Segment, SegmentControl, SegmentGroup, SegmentIndicator, SegmentInput, SegmentLabel } from '@ark-ui/react'
 import { segmentGroup } from '@/styled-system/recipes'
 
-export type Layout = 'horizontal' | 'vertical' | 'preview'
+export type Layout = 'horizontal' | 'vertical' | 'preview' | 'responsive'
 export type LayoutControlProps = {
   value: Layout
   onChange: (layout: Layout) => void
+  isResponsive: boolean
 }
 
 export const LayoutControl = (props: LayoutControlProps) => {
-  const { value, onChange } = props
+  const { value, onChange, isResponsive } = props
   const options = [
     { id: 'horizontal', label: 'Horizontal', icon: <HorizontalSplit /> },
     { id: 'vertical', label: 'Vertical', icon: <VerticalSplit /> },
     { id: 'preview', label: 'Preview', icon: <PreviewLayout /> },
-    // { id: 'responsive', label: 'Responsive' },
   ]
   return (
     <SegmentGroup
@@ -47,6 +47,20 @@ export const LayoutControl = (props: LayoutControlProps) => {
           <SegmentControl />
         </Segment>
       ))}
+      <button
+        data-active={isResponsive ? '' : undefined}
+        title="Toggle Responsive view"
+        className={css({
+          p: '1',
+          cursor: 'pointer',
+          color: { base: 'text.default', _active: 'text.complementary' },
+        })}
+        onClick={() => onChange('responsive')}
+      >
+        <span>
+          <ResponsiveLayout />
+        </span>
+      </button>
     </SegmentGroup>
   )
 }

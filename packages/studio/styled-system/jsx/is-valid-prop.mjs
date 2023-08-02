@@ -262,6 +262,7 @@ var userGenerated = [
   'borderBlockEndColor',
   'borderBlockStart',
   'borderBlockStartColor',
+  'opacity',
   'boxShadow',
   'boxShadowColor',
   'mixBlendMode',

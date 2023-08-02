@@ -35,13 +35,6 @@ export const SidebarFooter: FC<ISidebarFooterProps> = ({
         display: 'flex',
         alignItems: 'center',
         gap: 2,
-        _moreContrast: {
-          bg: 'neutral.400',
-          shadow: 'none',
-          _dark: {
-            shadow: 'none'
-          }
-        },
         "&[data-toggle-animation='show'] button": {
           opacity: 0,
           animation: 'fadein 1s ease 0.2s forwards'

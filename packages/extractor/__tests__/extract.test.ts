@@ -5668,3 +5668,44 @@ it('resolves identifier pointing to default value on parameters JsxExpression > 
     }
   `)
 })
+
+it('still explore both branches when using a default value as the condition expression', () => {
+  expect(
+    extractFromCode(
+      `import { css } from "../panda/css";
+
+      const CompB = ({ disabled = false }: { disabled: boolean }) => {
+        return (
+          <div className={css({ color: disabled ? 'blue' : 'yellow' })}>
+            Component B is {disabled ? 'disabled' : 'not disabled'}
+          </div>
+        );
+      };
+      `,
+      { functionNameList: ['css'] },
+    ),
+  ).toMatchInlineSnapshot(`
+    {
+      "css": [
+        {
+          "conditions": [
+            {
+              "0": {
+                "color": "blue",
+              },
+            },
+            {
+              "0": {
+                "color": "yellow",
+              },
+            },
+          ],
+          "raw": [
+            {},
+          ],
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})

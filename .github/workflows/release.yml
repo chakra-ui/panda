@@ -44,6 +44,18 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
+      - name: Slack Notification
+        if: steps.changesets.outputs.published == 'true'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "package_name": "@pandacss/dev",
+              "changelog_url": "https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   create_timestamp:
     runs-on: ubuntu-latest
 

@@ -120,7 +120,7 @@ export function isCondition(value) {
 }
 
 const underscoreRegex = /^_/
-const selectorRegex = /&|@/
+const conditionsSelectorRegex = /&|@/
 
 export function finalizeConditions(paths) {
   return paths.map((path) => {
@@ -128,7 +128,7 @@ export function finalizeConditions(paths) {
       return path.replace(underscoreRegex, '')
     }
 
-    if (selectorRegex.test(path)) {
+    if (conditionsSelectorRegex.test(path)) {
       return `[${withoutSpace(path.trim())}]`
     }
 

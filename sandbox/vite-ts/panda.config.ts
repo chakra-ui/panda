@@ -14,7 +14,7 @@ export default defineConfig({
     },
     recipes: {
       button: {
-        name: 'button',
+        className: 'button',
         jsx: ['Button', 'ListedButton', /WithRegex$/],
         description: 'A button styles',
         base: {

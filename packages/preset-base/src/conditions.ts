@@ -10,9 +10,9 @@ export const conditions = {
   readOnly: '&:is(:read-only, [data-read-only])',
   readWrite: '&:read-write',
   empty: '&:is(:empty, [data-empty])',
-  checked: '&:is(:checked, [data-checked], [aria-checked=true])',
+  checked: '&:is(:checked, [data-checked], [aria-checked=true], [data-state="checked"])',
   enabled: '&:enabled',
-  expanded: '&:is([aria-expanded=true], [data-expanded])',
+  expanded: '&:is([aria-expanded=true], [data-expanded], [data-state="expanded"])',
   highlighted: '&[data-highlighted]',
 
   before: '&::before',
@@ -40,9 +40,9 @@ export const conditions = {
   peerFocusWithin: '.peer:focus-within ~ &',
   peerFocusVisible: '.peer:is(:focus-visible, [data-focus-visible]) ~ &',
   peerDisabled: '.peer:is(:disabled, [disabled], [data-disabled]) ~ &',
-  peerChecked: '.peer:is(:checked, [data-checked], [aria-checked=true]) ~ &',
+  peerChecked: '.peer:is(:checked, [data-checked], [aria-checked=true], [data-state="checked"]) ~ &',
   peerInvalid: '.peer:is(:invalid, [data-invalid], [aria-invalid=true]) ~ &',
-  peerExpanded: '.peer:is([aria-expanded=true], [data-expanded]) ~ &',
+  peerExpanded: '.peer:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) ~ &',
   peerPlaceholderShown: '.peer:placeholder-shown ~ &',
 
   groupFocus: '.group:is(:focus, [data-focus]) &',
@@ -51,11 +51,11 @@ export const conditions = {
   groupFocusWithin: '.group:focus-within &',
   groupFocusVisible: '.group:is(:focus-visible, [data-focus-visible]) &',
   groupDisabled: '.group:is(:disabled, [disabled], [data-disabled]) &',
-  groupChecked: '.group:is(:checked, [data-checked], [aria-checked=true]) &',
-  groupExpanded: '.group:is([aria-expanded=true], [data-expanded]) &',
+  groupChecked: '.group:is(:checked, [data-checked], [aria-checked=true], [data-state="checked"]) &',
+  groupExpanded: '.group:is([aria-expanded=true], [data-expanded], [data-state="expanded"]) &',
   groupInvalid: '.group:invalid &',
 
-  indeterminate: '&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed])',
+  indeterminate: '&:is(:indeterminate, [data-indeterminate], [aria-checked=mixed], [data-state="indeterminate")',
   required: '&:required',
   valid: '&:is(:valid, [data-valid])',
   invalid: '&:is(:invalid, [data-invalid])',
@@ -69,7 +69,7 @@ export const conditions = {
 
   default: '&:default',
   optional: '&:optional',
-  open: '&[open]',
+  open: '&:is([open], [data-open], [data-state="open"])',
   fullscreen: '&:fullscreen',
   loading: '&:is([data-loading], [aria-busy=true])',
 

@@ -237,7 +237,7 @@ describe('mergeConfigs / recipes', () => {
         extend: {
           recipes: {
             button: {
-              name: 'button',
+              className: 'button',
               variants: {
                 size: {
                   large: { fontSize: 'lg' },
@@ -245,7 +245,7 @@ describe('mergeConfigs / recipes', () => {
               },
             },
             checkbox: {
-              name: 'checkbox',
+              className: 'checkbox',
               variants: {
                 shape: {
                   circle: { rounded: 'full' },
@@ -261,7 +261,7 @@ describe('mergeConfigs / recipes', () => {
       theme: {
         recipes: {
           button: {
-            name: 'button',
+            className: 'button',
             variants: {
               size: {
                 small: {
@@ -274,7 +274,7 @@ describe('mergeConfigs / recipes', () => {
         extend: {
           recipes: {
             checkbox: {
-              name: 'checkbox',
+              className: 'checkbox',
               variants: {
                 default: {},
               },
@@ -289,7 +289,7 @@ describe('mergeConfigs / recipes', () => {
     expect(result.theme.recipes).toMatchInlineSnapshot(`
       {
         "button": {
-          "name": "button",
+          "className": "button",
           "variants": {
             "size": {
               "large": {
@@ -302,7 +302,7 @@ describe('mergeConfigs / recipes', () => {
           },
         },
         "checkbox": {
-          "name": "checkbox",
+          "className": "checkbox",
           "variants": {
             "default": {},
             "shape": {

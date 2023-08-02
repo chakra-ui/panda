@@ -78,11 +78,13 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     return new Stylesheet(sheetContext, {
       content: options?.content,
       recipes: theme?.recipes,
+      slotRecipes: theme?.slotRecipes,
     })
   }
 
   const recipeContext = createSheetContext()
-  const recipes = new Recipes(theme?.recipes ?? {}, recipeContext)
+  const recipeConfigs = Object.assign({}, theme.recipes ?? {}, theme.slotRecipes ?? {})
+  const recipes = new Recipes(recipeConfigs, recipeContext)
   // cache recipes on first run
   recipes.save()
 

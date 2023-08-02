@@ -10,9 +10,13 @@ import { ${upperName} } from '../types/jsx'
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
-import type { ComponentProps, ElementType } from 'react'
+import type { ComponentPropsWithoutRef, ElementType, ElementRef, Ref } from 'react'
 
 type Dict = Record<string, unknown>
+
+type ComponentProps<T extends ElementType> = Omit<ComponentPropsWithoutRef<T>, 'ref'> & {
+  ref?: Ref<ElementRef<T>>
+}
 
 export type ${componentName}<T extends ElementType> = {
   (args: { raw: readonly string[] | ArrayLike<string> }): (props: ComponentProps<T>) => JSX.Element

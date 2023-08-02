@@ -7,7 +7,7 @@ import type { Context } from '../../engines'
 export function generatePattern(ctx: Context) {
   if (ctx.patterns.isEmpty()) return
   return ctx.patterns.details.map((pattern) => {
-    const { name, config, dashName, upperName, styleFnName, blocklistType } = pattern
+    const { baseName, config, dashName, upperName, styleFnName, blocklistType } = pattern
     const { properties, transform, strict, description } = config
 
     const transformFn = stringify({ transform }) ?? ''
@@ -53,7 +53,7 @@ export function generatePattern(ctx: Context) {
 
       ${
         strict
-          ? outdent`export declare function ${name}(options: ${upperName}Properties): string`
+          ? outdent`export declare function ${baseName}(options: ${upperName}Properties): string`
           : outdent`
 
           type ${upperName}Options = ${upperName}Properties & Omit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}>
@@ -64,7 +64,7 @@ export function generatePattern(ctx: Context) {
           }
 
           ${description ? `/** ${description} */` : ''}
-          export declare const ${name}: ${upperName}PatternFn;
+          export declare const ${baseName}: ${upperName}PatternFn;
           `
       }
 
@@ -73,12 +73,12 @@ export function generatePattern(ctx: Context) {
     ${ctx.file.import(helperImports.join(', '), '../helpers')}
     ${ctx.file.import('css', '../css/index')}
 
-    const ${name}Config = ${transformFn.replace(`{transform`, `{\ntransform`)}
+    const ${baseName}Config = ${transformFn.replace(`{transform`, `{\ntransform`)}
 
-    export const ${styleFnName} = (styles = {}) => ${name}Config.transform(styles, { map: mapObject })
+    export const ${styleFnName} = (styles = {}) => ${baseName}Config.transform(styles, { map: mapObject })
 
-    export const ${name} = (styles) => css(${styleFnName}(styles))
-    ${name}.raw = (styles) => styles
+    export const ${baseName} = (styles) => css(${styleFnName}(styles))
+    ${baseName}.raw = (styles) => styles
     `,
     }
   })

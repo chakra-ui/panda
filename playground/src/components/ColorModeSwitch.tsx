@@ -27,7 +27,15 @@ export const ColorModeSwitch = () => {
     <button
       title={`Switch to ${isDark ? 'Light' : 'Dark'} mode`}
       onClick={toggleTheme}
-      className={css({ borderRadius: 'sm', cursor: 'pointer', p: '2', bg: { base: 'gray.100', _dark: '#3A3A3AFF' } })}
+      className={css({
+        borderRadius: 'sm',
+        cursor: 'pointer',
+        p: '2',
+        bg: { base: 'gray.100', _dark: '#3A3A3AFF' },
+        '& svg': {
+          width: '22px',
+        },
+      })}
     >
       <IconToUse />
     </button>
