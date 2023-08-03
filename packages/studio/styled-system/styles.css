@@ -1,4 +1,4 @@
-@layer reset, ,base, ,tokens, ,recipes, ,utilities,;
+@layer reset, base, tokens, recipes, utilities;
 
 @import './reset.css';
 

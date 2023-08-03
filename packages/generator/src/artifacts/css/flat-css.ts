@@ -10,7 +10,9 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
   const { theme: { keyframes } = {}, preflight, minify, staticCss } = ctx.config
 
   const unresolved = [
-    `@layer ${Object.values(ctx.layers).map((l) => `${l}, `)};`,
+    `@layer ${Object.values(ctx.layers)
+      .map((l, i, arr) => (i === arr.length - 1 ? l : `${l}, `))
+      .join('')};`,
     preflight && "@import './reset.css';",
     "@import './global.css';",
     staticCss && "@import './static.css';",
