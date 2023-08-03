@@ -9,6 +9,14 @@ type ContextOptions = {
   prefix?: string
 }
 
+export const defaultLayers = {
+  reset: 'reset',
+  base: 'base',
+  tokens: 'tokens',
+  recipes: 'recipes',
+  utilities: 'utilities',
+}
+
 export const createContext = ({ hash, prefix }: ContextOptions = {}): StylesheetContext => {
   const conditions = new Conditions({
     conditions: mocks.conditions,
@@ -34,6 +42,7 @@ export const createContext = ({ hash, prefix }: ContextOptions = {}): Stylesheet
     conditions: conditions,
     utility: utility,
     helpers: { map: () => '' },
+    layers: defaultLayers,
   }
 }
 

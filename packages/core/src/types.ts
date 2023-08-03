@@ -1,4 +1,4 @@
-import type { RecipeConfig, Dict, PatternHelpers, SlotRecipeConfig } from '@pandacss/types'
+import type { RecipeConfig, Dict, PatternHelpers, SlotRecipeConfig, Config } from '@pandacss/types'
 import type { Root } from 'postcss'
 import type { Conditions } from './conditions'
 import type { Utility } from './utility'
@@ -18,6 +18,7 @@ export type StylesheetContext = {
   helpers: PatternHelpers
   hash?: boolean
   transform?: AtomicRuleTransform
+  layers: NonNullable<Required<Config['layers']>>
 }
 
 export type RecipeNode = {

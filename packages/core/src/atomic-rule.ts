@@ -19,10 +19,11 @@ export type ProcessOptions = {
 
 export class AtomicRule {
   root: Root
-  //TODO
-  layer = 'utilities'
+  layer: string
+
   constructor(private context: StylesheetContext) {
     this.root = postcss.root()
+    this.layer = context.layers.utilities
   }
 
   hashFn = (conditions: string[], className: string) => {

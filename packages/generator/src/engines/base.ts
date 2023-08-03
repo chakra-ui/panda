@@ -85,6 +85,7 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     utility,
     hash: hash.className,
     helpers,
+    layers,
   })
 
   const createSheet = (options?: Pick<StylesheetOptions, 'content'>) => {
