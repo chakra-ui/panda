@@ -1,3 +1,4 @@
+import type { Dict } from '@pandacss/types'
 import type { Context } from '../../engines'
 import { generateGlobalCss } from './global-css'
 import { generateKeyframeCss } from './keyframe-css'
@@ -9,10 +10,10 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
   const { files, resolve } = options
   const { theme: { keyframes } = {}, preflight, minify, staticCss } = ctx.config
 
+  const layersStr = '@layer reset, base, tokens, recipes, utilities;'
+
   const unresolved = [
-    `@layer ${Object.values(ctx.layers)
-      .map((l, i, arr) => (i === arr.length - 1 ? l : `${l}, `))
-      .join('')};`,
+    Object.keys(ctx.layers).reduce((acc, name) => acc.replace(name, (ctx.layers as Dict<string>)[name]), layersStr),
     preflight && "@import './reset.css';",
     "@import './global.css';",
     staticCss && "@import './static.css';",
