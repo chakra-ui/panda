@@ -1004,7 +1004,7 @@ describe('extract to css output pipeline', () => {
 
   // https://github.com/chakra-ui/panda/issues/1062
   describe('issue 1062: expand colorPalette flexibility', () => {
-    test.only('should extract color palette with more than one level of nesting', () => {
+    test('should extract color palette with more than one level of nesting', () => {
       const code = `
       import { css } from ".panda/css"
 
