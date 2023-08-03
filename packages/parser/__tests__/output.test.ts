@@ -1028,23 +1028,26 @@ describe('extract to css output pipeline', () => {
         );
       };
      `
-      const result = run(code, (conf) => ({
-        ...conf,
+      const result = run(code, {
         theme: {
-          semanticTokens: {
-            colors: {
-              button: {
-                dark: { value: 'navy' },
-                light: {
-                  DEFAULT: {
-                    value: 'skyblue',
+          extend: {
+            semanticTokens: {
+              colors: {
+                button: {
+                  dark: {
+                    value: 'navy',
                   },
-                  accent: {
+                  light: {
                     DEFAULT: {
-                      value: 'cyan',
+                      value: 'skyblue',
                     },
-                    secondary: {
-                      value: 'blue',
+                    accent: {
+                      DEFAULT: {
+                        value: 'cyan',
+                      },
+                      secondary: {
+                        value: 'blue',
+                      },
                     },
                   },
                 },
@@ -1052,7 +1055,7 @@ describe('extract to css output pipeline', () => {
             },
           },
         },
-      }))
+      })
 
       expect(result.json).toMatchInlineSnapshot(`
         [
@@ -1077,6 +1080,7 @@ describe('extract to css output pipeline', () => {
       expect(result.css).toMatchInlineSnapshot(`
         "@layer utilities {
           .color-palette_button {
+            --colors-color-palette-thick: var(--colors-button-thick);
             --colors-color-palette-dark: var(--colors-button-dark);
             --colors-color-palette-light: var(--colors-button-light)
             }

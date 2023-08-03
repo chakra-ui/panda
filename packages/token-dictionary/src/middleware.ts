@@ -71,6 +71,15 @@ export const addVirtualPalette: TokenMiddleware = {
     tokens.forEach((token) => {
       const { colorPalette } = token.extensions
       if (!colorPalette) return
+      const colorPaletteRoot = colorPalette.split('.').shift()
+      token.path
+        .slice(token.path.indexOf(colorPaletteRoot) + 1)
+        .reduce((acc, _, i, arr) => {
+          acc.push(arr.slice(0, i + 1).join('.'))
+          return acc
+        }, [] as string[])
+        .forEach((key) => keys.add(key))
+
       const list = colorPalettes.get(colorPalette) || []
       keys.add(token.path.at(-1) as string)
       list.push(token)
@@ -81,7 +90,7 @@ export const addVirtualPalette: TokenMiddleware = {
       const node = new Token({
         name: `colors.colorPalette.${key}`,
         value: `{colors.colorPalette.${key}}`,
-        path: ['colors', 'colorPalette', key],
+        path: ['colors', 'colorPalette', ...key.split('.')],
       })
 
       node.setExtensions({
