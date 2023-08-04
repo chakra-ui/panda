@@ -70,7 +70,7 @@ function setupTypes(ctx: Context): Artifact {
     files: [
       jsx ? { file: 'jsx.d.ts', code: jsx.jsxType } : null,
       { file: 'csstype.d.ts', code: gen.cssType },
-      { file: 'system-types.d.ts', code: gen.cssType },
+      { file: 'system-types.d.ts', code: gen.system },
       { file: 'selectors.d.ts', code: gen.selectors },
       { file: 'composition.d.ts', code: gen.composition },
       { file: 'global.d.ts', code: entry.global },
