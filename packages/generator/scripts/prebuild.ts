@@ -24,7 +24,7 @@ const fileMap = [
     ],
   ],
   ['@pandacss/is-valid-prop', [['index.mjs', 'is-valid-prop.mjs']]],
-  ['@pandacss/shared', [['shared.mjs', 'helpers.mjs']]],
+  ['@pandacss/shared', [['shared.mjs', 'helpers.mjs'], ['astish.mjs'], ['normalize-html.mjs']]],
 ] as const
 
 async function main() {

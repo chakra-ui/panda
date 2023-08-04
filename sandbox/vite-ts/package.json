@@ -10,7 +10,10 @@
     "preview": "vite preview",
     "css": "PANDA_DEBUG=ast:* panda",
     "css:gen": "PANDA_DEBUG=* panda codegen",
-    "css:dev": "PANDA_DEBUG=file:* panda --watch"
+    "css:dev": "PANDA_DEBUG=file:* panda --watch",
+    "explore": "source-map-explorer 'dist/assets/*.js' --no-border-checks",
+    "analyze": "pnpm panda codegen --clean && ANALYZE=true vite build && pnpm explore",
+    "visualize": "pnpm panda codegen --clean && vite-bundle-visualizer"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -23,6 +26,8 @@
     "@pandacss/dev": "workspace:*",
     "postcss": "8.4.27",
     "typescript": "5.1.6",
-    "vite": "4.4.8"
+    "source-map-explorer": "^2.5.3",
+    "vite": "4.4.8",
+    "vite-bundle-visualizer": "^0.9.0"
   }
 }

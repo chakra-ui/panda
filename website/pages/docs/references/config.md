@@ -389,6 +389,38 @@ const Container = styled.div`
 `
 ```
 
+### shorthands
+
+**Type**: `boolean`
+
+**Default**: `true`
+
+Whether to allow shorthand properties
+
+```json
+{
+  "shorthands": true
+}
+```
+
+Ex `true`:
+
+```tsx
+const styles = css({
+  bgColor: 'gainsboro',
+  p: '10px 15px'
+})
+```
+
+Ex false:
+
+```tsx
+const styles = css({
+  backgroundColor: 'gainsboro',
+  padding: '10px 15px'
+})
+```
+
 ## Design token options
 
 ### cssVarRoot
@@ -591,6 +623,38 @@ Ex:
 
 ```tsx
 <panda.button marginTop="40px">Click me</panda.button>
+```
+
+### jsxStyleProps
+
+**Type**: `all` | `minimal` | `none`
+
+**Default**: `all`
+
+The style props allowed on generated JSX components
+
+- When set to 'all', all style props are allowed.
+- When set to 'minimal', only the `css` prop is allowed.
+- When set to 'none', no style props are allowed and therefore the `jsxFactory` will not be usable as a component:
+  - `<styled.div />` and `styled("div")` aren't valid
+  - but the recipe usage is still valid `styled("div", { base: { color: "red.300" }, variants: { ...} })`
+
+Ex with 'all':
+
+```jsx
+<styled.button marginTop="40px">Click me</styled.button>
+```
+
+Ex with 'minimal':
+
+```jsx
+<styled.button css={{ marginTop: '40px' }}>Click me</styled.button>
+```
+
+Ex with 'none':
+
+```jsx
+<button className={css({ marginTop: '40px' })}>Click me</button>
 ```
 
 ## Documentation options

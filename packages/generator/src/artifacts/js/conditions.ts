@@ -7,7 +7,8 @@ export function generateConditions(ctx: Context) {
     js: outdent`
     ${ctx.file.import('withoutSpace', '../helpers')}
 
-    const conditions = new Set([${keys.map((key) => JSON.stringify(key))}])
+    const conditionsStr = "${keys.join(',')}"
+    const conditions = new Set(conditionsStr.split(','))
 
     export function isCondition(value){
       return conditions.has(value) || /^@|&|&$/.test(value)

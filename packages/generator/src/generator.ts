@@ -10,6 +10,7 @@ const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
   config: {
     cssVarRoot: ':where(:root, :host)',
     jsxFactory: 'styled',
+    jsxStyleProps: 'all',
     outExtension: 'mjs',
     shorthands: true,
     syntax: 'object-literal',
@@ -44,6 +45,7 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
       importMap: getImportMap(config.outdir.replace(relativeBaseUrl, '')),
       jsx: {
         factory: jsx.factoryName,
+        styleProps: jsx.styleProps,
         isStyleProp: isValidProperty,
         nodes: [...patterns.details, ...recipes.details],
       },

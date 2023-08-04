@@ -8,7 +8,7 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
     js: outdent`
     import { defineComponent, h, computed } from 'vue'
     ${ctx.file.import('css, cx', '../css/index')}
-    
+
   function createStyled(Dynamic) {
     function styledFn(template) {
       const baseClassName = css(template)
@@ -32,10 +32,10 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
       })
     }
   }
-    
+
     function createJsxFactory() {
       const cache = new Map()
-    
+
       return new Proxy(createStyled, {
         apply(_, __, args) {
           return createStyled(...args)
@@ -49,7 +49,7 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
       })
     }
 
-    export const ${factoryName} = createJsxFactory()
+    export const ${factoryName} = /* @__PURE__ */ createJsxFactory()
     `,
   }
 }

@@ -3,7 +3,7 @@ import outdent from 'outdent'
 import type { Context } from '../../engines'
 
 export function generateStyleProps(ctx: Context) {
-  const props = new Set(allCssProperties.concat(ctx.utility.keys()))
+  const props = new Set(allCssProperties.concat(ctx.utility.keys()).filter(Boolean))
   return outdent`
     import type { ConditionalValue } from './conditions'
     import type { PropertyValue } from './prop-type'
