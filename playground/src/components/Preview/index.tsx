@@ -59,7 +59,7 @@ export const Preview = (props: PreviewProps) => {
 
     const defaultExportName = extractDefaultExportedFunctionName(source) ?? 'App'
     const transformed = `${previewJs.replaceAll(/export /g, '')}\n${source
-      .replaceAll(/import.*/g, '')
+      .replaceAll(/(?<!!)import.*/g, '')
       .concat(`\nrender(<${defaultExportName} />)`)}`
 
     const contents = (

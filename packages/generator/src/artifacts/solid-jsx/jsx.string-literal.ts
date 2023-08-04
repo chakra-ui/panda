@@ -15,7 +15,7 @@ function createStyled(element) {
     return function ${componentName}(props) {
       const mergedProps = mergeProps({ as: element }, props)
       const [localProps, elementProps] = splitProps(mergedProps, ['as', 'class'])
-      
+
       return createComponent(
         Dynamic,
         mergeProps(
@@ -50,7 +50,7 @@ function createJsxFactory() {
   })
 }
 
-export const ${factoryName} = createJsxFactory()
+export const ${factoryName} = /* @__PURE__ */ createJsxFactory()
     `,
   }
 }

@@ -40,9 +40,9 @@ export function generateRecipes(ctx: Context) {
       }
 
       const recipeCss = createCss({
-        hash: ${hash ? 'true' : 'false'},
+        ${hash ? 'hash: true,' : ''}
         utility: {
-          prefix: ${prefix ? JSON.stringify(prefix) : undefined},
+          ${prefix ? 'prefix: ' + JSON.stringify(prefix) + ',' : ''}
           transform,
         }
       })
@@ -74,23 +74,25 @@ export function generateRecipes(ctx: Context) {
         ${ctx.file.import('splitProps, getSlotCompoundVariant', '../helpers')}
         ${ctx.file.import('createRecipe', './create-recipe')}
 
-        const defaultVariants = ${stringify(defaultVariants ?? {})}
-        const compoundVariants = ${stringify(compoundVariants ?? [])}
-        
-        const slotNames = ${stringify(config.slots.map((slot) => [slot, `${config.className}__${slot}`]))}
-        const slotFns = slotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, defaultVariants, getSlotCompoundVariant(compoundVariants, slotName))]) 
+        const ${baseName}DefaultVariants = ${stringify(defaultVariants ?? {})}
+        const ${baseName}CompoundVariants = ${stringify(compoundVariants ?? [])}
+
+        const ${baseName}SlotNames = ${stringify(config.slots.map((slot) => [slot, `${config.className}__${slot}`]))}
+        const ${baseName}SlotFns = ${baseName}SlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, ${baseName}DefaultVariants, getSlotCompoundVariant(${baseName}CompoundVariants, slotName))])
 
         const ${baseName}Fn = (props = {}) => {
-          return Object.fromEntries(slotFns.map(([slotName, slotFn]) => [slotName, slotFn(props)]))
+          return Object.fromEntries(${baseName}SlotFns.map(([slotName, slotFn]) => [slotName, slotFn(props)]))
         }
-        
+
+        const ${baseName}VariantKeys = ${stringify(Object.keys(variantKeyMap))}
+
         export const ${baseName} = Object.assign(${baseName}Fn, {
           __recipe__: false,
           raw: (props) => props,
-          variantKeys: ${stringify(Object.keys(variantKeyMap))},
+          variantKeys: ${baseName}VariantKeys,
           variantMap: ${stringify(variantKeyMap)},
           splitVariantProps(props) {
-            return splitProps(props, ${stringify(Object.keys(variantKeyMap))})
+            return splitProps(props, ${baseName}VariantKeys)
           },
         })
         `,
@@ -104,13 +106,15 @@ export function generateRecipes(ctx: Context) {
             compoundVariants ?? [],
           )})
 
+        const ${baseName}VariantMap = ${stringify(variantKeyMap)}
+        const ${baseName}VariantKeys = Object.keys(${baseName}VariantMap)
         export const ${baseName} = Object.assign(${baseName}Fn, {
           __recipe__: true,
           raw: (props) => props,
-          variantKeys: ${stringify(Object.keys(variantKeyMap))},
-          variantMap: ${stringify(variantKeyMap)},
+          variantKeys: ${baseName}VariantKeys,
+          variantMap: ${baseName}VariantMap,
           splitVariantProps(props) {
-            return splitProps(props, ${stringify(Object.keys(variantKeyMap))})
+            return splitProps(props, ${baseName}VariantKeys)
           },
         })
         `,

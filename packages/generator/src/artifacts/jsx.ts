@@ -30,8 +30,8 @@ const typesMap = {
 }
 
 const typesStringLiteralMap = {
-  react: generateSolidJsxStringLiteralTypes,
-  solid: generateReactJsxStringLiteralTypes,
+  react: generateReactJsxStringLiteralTypes,
+  solid: generateSolidJsxStringLiteralTypes,
   qwik: generateQwikJsxStringLiteralTypes,
   preact: generatePreactJsxStringLiteralTypes,
   vue: generateVueJsxStringLiteralTypes,

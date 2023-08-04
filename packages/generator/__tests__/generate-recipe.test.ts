@@ -27,9 +27,9 @@ describe('generate recipes', () => {
          }
 
          const recipeCss = createCss({
-           hash: false,
+           
            utility: {
-             prefix: undefined,
+             
              transform,
            }
          })
@@ -79,22 +79,20 @@ describe('generate recipes', () => {
 
       const textStyleFn = createRecipe('textStyle', {}, [])
 
-      export const textStyle = Object.assign(textStyleFn, {
-        __recipe__: true,
-        raw: (props) => props,
-        variantKeys: [
-        \\"size\\"
-      ],
-        variantMap: {
+      const textStyleVariantMap = {
         \\"size\\": [
           \\"h1\\",
           \\"h2\\"
         ]
-      },
+      }
+      const textStyleVariantKeys = Object.keys(textStyleVariantMap)
+      export const textStyle = Object.assign(textStyleFn, {
+        __recipe__: true,
+        raw: (props) => props,
+        variantKeys: textStyleVariantKeys,
+        variantMap: textStyleVariantMap,
         splitVariantProps(props) {
-          return splitProps(props, [
-        \\"size\\"
-      ])
+          return splitProps(props, textStyleVariantKeys)
         },
       })",
           "name": "text-style",
@@ -131,13 +129,15 @@ describe('generate recipes', () => {
 
       const tooltipStyleFn = createRecipe('tooltipStyle', {}, [])
 
+      const tooltipStyleVariantMap = {}
+      const tooltipStyleVariantKeys = Object.keys(tooltipStyleVariantMap)
       export const tooltipStyle = Object.assign(tooltipStyleFn, {
         __recipe__: true,
         raw: (props) => props,
-        variantKeys: [],
-        variantMap: {},
+        variantKeys: tooltipStyleVariantKeys,
+        variantMap: tooltipStyleVariantMap,
         splitVariantProps(props) {
-          return splitProps(props, [])
+          return splitProps(props, tooltipStyleVariantKeys)
         },
       })",
           "name": "tooltip-style",
@@ -178,14 +178,7 @@ describe('generate recipes', () => {
         \\"variant\\": \\"solid\\"
       }, [])
 
-      export const buttonStyle = Object.assign(buttonStyleFn, {
-        __recipe__: true,
-        raw: (props) => props,
-        variantKeys: [
-        \\"size\\",
-        \\"variant\\"
-      ],
-        variantMap: {
+      const buttonStyleVariantMap = {
         \\"size\\": [
           \\"sm\\",
           \\"md\\"
@@ -194,12 +187,15 @@ describe('generate recipes', () => {
           \\"solid\\",
           \\"outline\\"
         ]
-      },
+      }
+      const buttonStyleVariantKeys = Object.keys(buttonStyleVariantMap)
+      export const buttonStyle = Object.assign(buttonStyleFn, {
+        __recipe__: true,
+        raw: (props) => props,
+        variantKeys: buttonStyleVariantKeys,
+        variantMap: buttonStyleVariantMap,
         splitVariantProps(props) {
-          return splitProps(props, [
-        \\"size\\",
-        \\"variant\\"
-      ])
+          return splitProps(props, buttonStyleVariantKeys)
         },
       })",
           "name": "button-style",

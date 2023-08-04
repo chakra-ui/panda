@@ -10,7 +10,7 @@ export function generateVueJsxFactory(ctx: Context) {
     ${ctx.file.import('css, cx, cva, assignCss', '../css/index')}
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('isCssProperty', './is-valid-prop')}
-    
+
     function styledFn(Dynamic, configOrCva = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
 
@@ -38,10 +38,10 @@ export function generateVueJsxFactory(ctx: Context) {
           })
 
           const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
-    
+
           return () => {
             const [_styleProps, _variantProps, htmlProps, elementProps] = splittedProps.value
-            
+
             return h(
               props.as,
               {
@@ -55,10 +55,10 @@ export function generateVueJsxFactory(ctx: Context) {
         },
       })
     }
-    
+
     function createJsxFactory() {
       const cache = new Map()
-    
+
       return new Proxy(styledFn, {
         apply(_, __, args) {
           return styledFn(...args)
@@ -72,7 +72,7 @@ export function generateVueJsxFactory(ctx: Context) {
       })
     }
 
-    export const ${factoryName} = createJsxFactory()
+    export const ${factoryName} = /* @__PURE__ */ createJsxFactory()
 
     `,
   }

@@ -1,14 +1,37 @@
 import isValidPropJson from '../generated/is-valid-prop.mjs.json' assert { type: 'json' }
 import type { Context } from '../../engines'
 import { outdent } from 'outdent'
+import { match } from 'ts-pattern'
 
-export function generateisValidProp(ctx: Context) {
+const cssPropRegex = /var cssPropertiesStr = ".*?";/
+const memoFnDeclarationRegex = /function memo(.+?)\nvar selectorRegex/s
+
+export function generateIsValidProp(ctx: Context) {
   if (ctx.isTemplateLiteralSyntax) return
   let content = isValidPropJson.content
+
+  // replace user generated props by those from ctx, `css` or nothing
   content = content.replace(
-    'var userGenerated = []',
-    `var userGenerated = [${ctx.properties.map((key) => JSON.stringify(key)).join(',')}]`,
+    'var userGeneratedStr = "";',
+    `var userGeneratedStr = "${match(ctx.jsx.styleProps)
+      .with('all', () => Array.from(new Set(ctx.properties)).join(','))
+      .with('minimal', () => 'css')
+      .with('none', () => '')
+      .exhaustive()}"`,
   )
+
+  // replace memo function declaration with an import from helpers
+  content = content.replace(memoFnDeclarationRegex, 'var selectorRegex')
+
+  // remove browser CSS props / memo function call when not needed
+  if (ctx.jsx.styleProps === 'minimal' || ctx.jsx.styleProps === 'none') {
+    content = content.replace('/* @__PURE__ */ memo(', '/* @__PURE__ */ (')
+    content = content.replace(cssPropRegex, 'var cssPropertiesStr = "";')
+  } else {
+    // we want memo if we're using style props
+    content = ctx.file.import('memo', '../helpers') + '\n' + content
+  }
+
   return {
     js: content,
     dts: outdent`
