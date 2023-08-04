@@ -7,10 +7,6 @@ export default defineConfig({
   outdir: 'styled-system',
   jsxFactory: 'panda',
   jsxFramework: 'react',
-  jsxStyleProps: 'all',
-  // shorthands: false,
-  // hash: true,
-  // minify: true,
   theme: {
     semanticTokens: {
       colors: {
