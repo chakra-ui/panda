@@ -26,7 +26,6 @@ import { generateTypesEntry } from './types/main'
 import { generatePropTypes } from './types/prop-types'
 import { generateStyleProps } from './types/style-props'
 import { generateTokenTypes } from './types/token-types'
-import { match } from 'ts-pattern'
 
 function setupHelpers(ctx: Context): Artifact {
   const code = generateHelpers(ctx)
@@ -60,25 +59,18 @@ function setupDesignTokens(ctx: Context): Artifact {
   }
 }
 
-const jsxStyleProps = 'export type JsxStyleProps = StyleProps & WithCss'
-
 function setupTypes(ctx: Context): Artifact {
-  const gen = getGeneratedTypes()
+  const gen = getGeneratedTypes(ctx)
   const conditions = generateConditions(ctx)
   const jsx = generateJsxTypes(ctx)
   const entry = generateTypesEntry()
-  const system = match(ctx.jsx.styleProps)
-    .with('all', () => gen.system)
-    .with('minimal', () => gen.system.replace(jsxStyleProps, 'export type JsxStyleProps = WithCss'))
-    .with('none', () => gen.system.replace(jsxStyleProps, 'export type JsxStyleProps = {}'))
-    .exhaustive()
 
   return {
     dir: ctx.paths.types,
     files: [
       jsx ? { file: 'jsx.d.ts', code: jsx.jsxType } : null,
       { file: 'csstype.d.ts', code: gen.cssType },
-      { file: 'system-types.d.ts', code: system },
+      { file: 'system-types.d.ts', code: gen.cssType },
       { file: 'selectors.d.ts', code: gen.selectors },
       { file: 'composition.d.ts', code: gen.composition },
       { file: 'global.d.ts', code: entry.global },
