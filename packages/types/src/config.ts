@@ -126,6 +126,30 @@ type JsxOptions = {
    * ```
    */
   jsxFactory?: string
+  /**
+   * The style props allowed on generated JSX components
+   * - When set to 'all', all style props are allowed.
+   * - When set to 'minimal', only the `css` prop is allowed.
+   * - When set to 'none', no style props are allowed and therefore the jsxFactory will not be importable.
+   *
+   * @default 'all'
+   *
+   * @example with 'all':
+   * ```jsx
+   * <styled.button marginTop="40px">Click me</styled.button>
+   * ```
+   *
+   * @example with 'minimal':
+   * ```jsx
+   * <styled.button css={{ marginTop: "40px" }}>Click me</styled.button>
+   * ```
+   *
+   * @example with 'none':
+   * ```jsx
+   * <button className={css({ marginTop: "40px" })}>Click me</button>
+   * ```
+   */
+  jsxStyleProps?: 'all' | 'minimal' | 'none'
 }
 
 type CssgenOptions = {
@@ -198,7 +222,7 @@ type CodegenOptions = {
    */
   gitignore?: boolean
   /**
-   * Whether to generate disabled shorthand properties
+   * Whether to allow shorthand properties
    * @default 'true'
    */
   shorthands?: boolean
