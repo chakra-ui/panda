@@ -2,7 +2,7 @@ import { outdent } from 'outdent'
 import type { Context } from '../../engines'
 
 export function generateQwikJsxTypes(ctx: Context) {
-  const { factoryName, componentName, upperName, typeName } = ctx.jsx
+  const { factoryName, styleProps, componentName, upperName, typeName } = ctx.jsx
 
   return {
     jsxFactory: outdent`
@@ -45,7 +45,7 @@ export type ${componentName}<T extends ElementType, P extends Dict = {}> = Funct
 type RecipeFn = { __type: any }
 
 interface JsxFactory {
-  <T extends ElementType>(component: T): ${componentName}<T, {}>
+  ${styleProps === 'none' ? '' : `<T extends ElementType>(component: T): ${componentName}<T, {}>`}
   <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>): ${componentName}<
     T,
     RecipeSelection<P>
@@ -55,7 +55,7 @@ interface JsxFactory {
 
 type JsxElements = { [K in keyof QwikIntrinsicElements]: ${componentName}<K, {}> }
 
-export type ${upperName} = JsxFactory & JsxElements
+export type ${upperName} = JsxFactory ${styleProps === 'none' ? '' : '& JsxElements'}
 
 export type ${typeName}<T extends ElementType> = Assign<ComponentProps<T>, JsxStyleProps>
   `,

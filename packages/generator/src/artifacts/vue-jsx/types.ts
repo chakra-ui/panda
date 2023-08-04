@@ -2,7 +2,7 @@ import { outdent } from 'outdent'
 import type { Context } from '../../engines'
 
 export function generateVueJsxTypes(ctx: Context) {
-  const { factoryName, componentName, upperName, typeName } = ctx.jsx
+  const { factoryName, styleProps, componentName, upperName, typeName } = ctx.jsx
 
   return {
     jsxFactory: outdent`
@@ -148,18 +148,18 @@ type IntrinsicElement =
   type RecipeFn = { __type: any }
 
   interface JsxFactory {
-    <T extends ElementType>(component: T): ${componentName}<T, {}>
+    ${styleProps === 'none' ? '' : `<T extends ElementType>(component: T): ${componentName}<T, {}>`}
     <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>): ${componentName}<
       T,
       RecipeSelection<P>
     >
     <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P): ${componentName}<T, P['__type']>
   }
-  
+
   type JsxElements = { [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}> }
-  
-  export type ${upperName} = JsxFactory & JsxElements
-    
+
+  export type ${upperName} = JsxFactory ${styleProps === 'none' ? '' : '& JsxElements'}
+
   export type ${typeName}<T extends ElementType> = JsxHTMLProps<ComponentProps<T>, JsxStyleProps>
   `,
   }

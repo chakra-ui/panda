@@ -6,6 +6,7 @@ export default defineConfig({
   exclude: [],
   outdir: 'styled-system',
   jsxFactory: 'panda',
+  jsxFramework: 'react',
   theme: {
     semanticTokens: {
       colors: {
@@ -80,7 +81,6 @@ export default defineConfig({
       },
     },
   },
-  jsxFramework: 'react',
   globalCss: {
     '*': {
       fontFamily: 'Inter',

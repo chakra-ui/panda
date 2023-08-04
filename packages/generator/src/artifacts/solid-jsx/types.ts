@@ -2,7 +2,7 @@ import { outdent } from 'outdent'
 import type { Context } from '../../engines'
 
 export function generateSolidJsxTypes(ctx: Context) {
-  const { factoryName, componentName, upperName, typeName } = ctx.jsx
+  const { factoryName, styleProps, componentName, upperName, typeName } = ctx.jsx
 
   return {
     jsxFactory: outdent`
@@ -26,7 +26,7 @@ export type ${componentName}<T extends ElementType, P extends Dict = {}> = {
 type RecipeFn = { __type: any }
 
 interface JsxFactory {
-  <T extends ElementType>(component: T): ${componentName}<T, {}>
+  ${styleProps === 'none' ? '' : `<T extends ElementType>(component: T): ${componentName}<T, {}>`}
   <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>): ${componentName}<
     T,
     RecipeSelection<P>
@@ -36,7 +36,7 @@ interface JsxFactory {
 
 type JsxElements = { [K in keyof JSX.IntrinsicElements]: ${componentName}<K, {}> }
 
-export type ${upperName} = JsxFactory & JsxElements
+export type ${upperName} = JsxFactory ${styleProps === 'none' ? '' : '& JsxElements'}
 
 export type ${typeName}<T extends ElementType> = JsxHTMLProps<ComponentProps<T>, JsxStyleProps>
   `,

@@ -16,8 +16,8 @@ export function generatePreactJsxPattern(ctx: Context) {
       import { forwardRef } from 'preact/compat'
       ${ctx.file.import(factoryName, './factory')}
       ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
-  
-      export const ${jsxName} = forwardRef(function ${jsxName}(props, ref) {
+
+      export const ${jsxName} = /* @__PURE__ */ forwardRef(function ${jsxName}(props, ref) {
         ${match(props.length)
           .with(
             0,
@@ -33,16 +33,16 @@ export function generatePreactJsxPattern(ctx: Context) {
           return h(${factoryName}.${jsxElement}, { ref, ...styleProps, ...restProps })
           `,
           )}
-      })    
+      })
       `,
 
       dts: outdent`
       import type { FunctionComponent } from 'preact'
       import type { ${upperName}Properties } from '../patterns/${dashName}'
       import type { ${typeName} } from '../types/jsx'
-  
+
       export type ${upperName}Props = ${upperName}Properties & Omit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}>
-  
+
       ${description ? `/** ${description} */` : ''}
       export declare const ${jsxName}: FunctionComponent<${upperName}Props>
       `,
