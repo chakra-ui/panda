@@ -152,25 +152,23 @@ describe('static-css', () => {
           {
             "tooltipStyle": {
               "base": {
-                "base": {
-                  "&[data-tooltip], & [data-tooltip]": {
-                    "color": {
-                      "_dark": "red",
-                    },
+                "&[data-tooltip], & [data-tooltip]": {
+                  "color": {
+                    "_dark": "red",
                   },
                 },
-                "md": {
-                  "&[data-tooltip], & [data-tooltip]": {
-                    "color": {
-                      "_dark": "red",
-                    },
+              },
+              "md": {
+                "&[data-tooltip], & [data-tooltip]": {
+                  "color": {
+                    "_dark": "red",
                   },
                 },
-                "sm": {
-                  "&[data-tooltip], & [data-tooltip]": {
-                    "color": {
-                      "_dark": "red",
-                    },
+              },
+              "sm": {
+                "&[data-tooltip], & [data-tooltip]": {
+                  "color": {
+                    "_dark": "red",
                   },
                 },
               },

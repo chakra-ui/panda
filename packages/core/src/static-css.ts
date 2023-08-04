@@ -63,9 +63,7 @@ export function getStaticCss(options: StaticCssOptions) {
           )
 
           results.recipes.push({
-            [recipe]: {
-              base: conditions.length ? conditionalValues : __base,
-            },
+            [recipe]: conditions.length ? conditionalValues : __base,
           })
         }
 
