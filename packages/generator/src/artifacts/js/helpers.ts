@@ -12,6 +12,13 @@ export function generateHelpers(ctx: Context) {
 
   ${ctx.jsx.framework ? `${normalizeHtmlMjs.content}` : ''}
 
+  export function __spreadValues(a, b) {
+    return { ...a, ...b }
+  }
+
+  export function __objRest(source, exclude) {
+    return Object.fromEntries(Object.entries(source).filter(([key]) => !exclude.includes(key)))
+  }
   `,
   }
 }
