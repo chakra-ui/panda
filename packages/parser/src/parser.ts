@@ -240,23 +240,16 @@ export function createParser(options: ParserOptions) {
     const matchTagProp = match(jsx?.styleProps)
       .with('all', () =>
         memo((tagName: string, propName: string) => {
-          if (
+          return (
             Boolean(components.get(tagName)?.has(propName)) ||
             options.jsx?.isStyleProp(propName) ||
-            propertiesMap.has(propName)
+            propertiesMap.has(propName) ||
+            isRecipeOrPatternProp(tagName, propName)
           )
-            return true
-
-          if (isRecipeOrPatternProp(tagName, propName)) return true
-
-          return false
         }),
       )
       .with('minimal', () => (tagName: string, propName: string) => {
-        if (propName === 'css') return true
-        if (isRecipeOrPatternProp(tagName, propName)) return true
-
-        return false
+        return propName === 'css' || isRecipeOrPatternProp(tagName, propName)
       })
       .otherwise(() => (tagName: string, propName: string) => isRecipeOrPatternProp(tagName, propName))
 
