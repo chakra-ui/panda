@@ -246,7 +246,21 @@ export function createParser(options: ParserOptions) {
           return false
         }),
       )
-      .with('minimal', () => (_tagName: string, propName: string) => propName === 'css')
+      .with('minimal', () => (tagName: string, propName: string) => {
+        if (propName === 'css') return true
+
+        if (isJsxTagRecipe(tagName)) {
+          const recipeList = getRecipesByJsxName(tagName)
+          return recipeList.some((recipe) => recipePropertiesByName.get(recipe.baseName)?.has(propName))
+        }
+
+        if (isJsxTagPattern(tagName)) {
+          const patternList = getPatternsByJsxName(tagName)
+          return patternList.some((pattern) => patternPropertiesByName.get(pattern.baseName)?.has(propName))
+        }
+
+        return false
+      })
       .otherwise(() => () => false)
 
     const matchFn = memo((fnName: string) => {
