@@ -223,6 +223,20 @@ export function createParser(options: ParserOptions) {
       )
     })
 
+    const isRecipeOrPatternProp = memo((tagName: string, propName: string) => {
+      if (isJsxTagRecipe(tagName)) {
+        const recipeList = getRecipesByJsxName(tagName)
+        return recipeList.some((recipe) => recipePropertiesByName.get(recipe.baseName)?.has(propName))
+      }
+
+      if (isJsxTagPattern(tagName)) {
+        const patternList = getPatternsByJsxName(tagName)
+        return patternList.some((pattern) => patternPropertiesByName.get(pattern.baseName)?.has(propName))
+      }
+
+      return false
+    })
+
     const matchTagProp = match(jsx?.styleProps)
       .with('all', () =>
         memo((tagName: string, propName: string) => {
@@ -233,35 +247,18 @@ export function createParser(options: ParserOptions) {
           )
             return true
 
-          if (isJsxTagRecipe(tagName)) {
-            const recipeList = getRecipesByJsxName(tagName)
-            return recipeList.some((recipe) => recipePropertiesByName.get(recipe.baseName)?.has(propName))
-          }
-
-          if (isJsxTagPattern(tagName)) {
-            const patternList = getPatternsByJsxName(tagName)
-            return patternList.some((pattern) => patternPropertiesByName.get(pattern.baseName)?.has(propName))
-          }
+          if (isRecipeOrPatternProp(tagName, propName)) return true
 
           return false
         }),
       )
       .with('minimal', () => (tagName: string, propName: string) => {
         if (propName === 'css') return true
-
-        if (isJsxTagRecipe(tagName)) {
-          const recipeList = getRecipesByJsxName(tagName)
-          return recipeList.some((recipe) => recipePropertiesByName.get(recipe.baseName)?.has(propName))
-        }
-
-        if (isJsxTagPattern(tagName)) {
-          const patternList = getPatternsByJsxName(tagName)
-          return patternList.some((pattern) => patternPropertiesByName.get(pattern.baseName)?.has(propName))
-        }
+        if (isRecipeOrPatternProp(tagName, propName)) return true
 
         return false
       })
-      .otherwise(() => () => false)
+      .otherwise(() => (tagName: string, propName: string) => isRecipeOrPatternProp(tagName, propName))
 
     const matchFn = memo((fnName: string) => {
       if (recipes.has(fnName) || patterns.has(fnName)) return true
