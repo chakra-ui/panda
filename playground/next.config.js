@@ -18,6 +18,9 @@ const nextConfig = {
   reactStrictMode: true,
   experimental: {
     appDir: true,
+    outputFileTracingExcludes: {
+      '*': ['**@swc**'],
+    },
   },
 }
 
