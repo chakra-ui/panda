@@ -50,8 +50,14 @@ test('should generate virtual palette', () => {
       Token {
         "description": undefined,
         "extensions": {
+          "ancestorKeys": [
+            "300",
+          ],
           "category": "colors",
           "colorPalette": "red",
+          "colorPaletteAncestors": [
+            "red",
+          ],
           "condition": "base",
           "prop": "red.300",
           "var": "--colors-red-300",
@@ -70,8 +76,14 @@ test('should generate virtual palette', () => {
       Token {
         "description": undefined,
         "extensions": {
+          "ancestorKeys": [
+            "500",
+          ],
           "category": "colors",
           "colorPalette": "red",
+          "colorPaletteAncestors": [
+            "red",
+          ],
           "condition": "base",
           "prop": "red.500",
           "var": "--colors-red-500",
@@ -90,8 +102,14 @@ test('should generate virtual palette', () => {
       Token {
         "description": undefined,
         "extensions": {
+          "ancestorKeys": [
+            "500",
+          ],
           "category": "colors",
           "colorPalette": "blue",
+          "colorPaletteAncestors": [
+            "blue",
+          ],
           "condition": "base",
           "prop": "blue.500",
           "var": "--colors-blue-500",
@@ -110,8 +128,14 @@ test('should generate virtual palette', () => {
       Token {
         "description": undefined,
         "extensions": {
+          "ancestorKeys": [
+            "700",
+          ],
           "category": "colors",
           "colorPalette": "blue",
+          "colorPaletteAncestors": [
+            "blue",
+          ],
           "condition": "base",
           "prop": "blue.700",
           "var": "--colors-blue-700",
@@ -228,6 +252,368 @@ test('should generate virtual palette', () => {
     Set {
       "red",
       "blue",
+    }
+  `)
+})
+
+test('should generate nested object virtual palette', () => {
+  const dictionary = new TokenDictionary({
+    semanticTokens: {
+      colors: {
+        button: {
+          dark: {
+            value: 'navy',
+          },
+          light: {
+            DEFAULT: {
+              value: 'skyblue',
+            },
+            accent: {
+              DEFAULT: {
+                value: 'cyan',
+              },
+              secondary: {
+                value: 'blue',
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+
+  dictionary
+    .registerTransform(...transforms)
+    .registerMiddleware(addVirtualPalette)
+    .build()
+
+  expect(dictionary.allTokens).toMatchInlineSnapshot(`
+    [
+      Token {
+        "description": undefined,
+        "extensions": {
+          "ancestorKeys": [
+            "dark",
+          ],
+          "category": "colors",
+          "colorPalette": "button",
+          "colorPaletteAncestors": [
+            "button",
+          ],
+          "condition": "base",
+          "conditions": {
+            "base": "navy",
+          },
+          "prop": "button.dark",
+          "var": "--colors-button-dark",
+          "varRef": "var(--colors-button-dark)",
+        },
+        "name": "colors.button.dark",
+        "originalValue": "navy",
+        "path": [
+          "colors",
+          "button",
+          "dark",
+        ],
+        "type": "color",
+        "value": "navy",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "ancestorKeys": [
+            "light",
+          ],
+          "category": "colors",
+          "colorPalette": "button",
+          "colorPaletteAncestors": [
+            "button",
+          ],
+          "condition": "base",
+          "conditions": {
+            "base": "skyblue",
+          },
+          "prop": "button.light",
+          "var": "--colors-button-light",
+          "varRef": "var(--colors-button-light)",
+        },
+        "name": "colors.button.light",
+        "originalValue": "skyblue",
+        "path": [
+          "colors",
+          "button",
+          "light",
+        ],
+        "type": "color",
+        "value": "skyblue",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "ancestorKeys": [
+            "light.accent",
+            "accent",
+          ],
+          "category": "colors",
+          "colorPalette": "button.light",
+          "colorPaletteAncestors": [
+            "button",
+            "button.light",
+          ],
+          "condition": "base",
+          "conditions": {
+            "base": "cyan",
+          },
+          "prop": "button.light.accent",
+          "var": "--colors-button-light-accent",
+          "varRef": "var(--colors-button-light-accent)",
+        },
+        "name": "colors.button.light.accent",
+        "originalValue": "cyan",
+        "path": [
+          "colors",
+          "button",
+          "light",
+          "accent",
+        ],
+        "type": "color",
+        "value": "cyan",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "ancestorKeys": [
+            "light.accent.secondary",
+            "accent.secondary",
+            "secondary",
+          ],
+          "category": "colors",
+          "colorPalette": "button.light.accent",
+          "colorPaletteAncestors": [
+            "button",
+            "button.light",
+            "button.light.accent",
+          ],
+          "condition": "base",
+          "conditions": {
+            "base": "blue",
+          },
+          "prop": "button.light.accent.secondary",
+          "var": "--colors-button-light-accent-secondary",
+          "varRef": "var(--colors-button-light-accent-secondary)",
+        },
+        "name": "colors.button.light.accent.secondary",
+        "originalValue": "blue",
+        "path": [
+          "colors",
+          "button",
+          "light",
+          "accent",
+          "secondary",
+        ],
+        "type": "color",
+        "value": "blue",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "colorPalette": "",
+          "condition": "base",
+          "isVirtual": true,
+          "prop": "colorPalette.dark",
+          "var": "--colors-color-palette-dark",
+          "varRef": "var(--colors-color-palette-dark)",
+        },
+        "name": "colors.colorPalette.dark",
+        "originalValue": "{colors.colorPalette.dark}",
+        "path": [
+          "colors",
+          "colorPalette",
+          "dark",
+        ],
+        "type": "color",
+        "value": "var(--colors-color-palette-dark)",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "colorPalette": "",
+          "condition": "base",
+          "isVirtual": true,
+          "prop": "colorPalette.light",
+          "var": "--colors-color-palette-light",
+          "varRef": "var(--colors-color-palette-light)",
+        },
+        "name": "colors.colorPalette.light",
+        "originalValue": "{colors.colorPalette.light}",
+        "path": [
+          "colors",
+          "colorPalette",
+          "light",
+        ],
+        "type": "color",
+        "value": "var(--colors-color-palette-light)",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "colorPalette": "",
+          "condition": "base",
+          "isVirtual": true,
+          "prop": "colorPalette.light.accent",
+          "var": "--colors-color-palette-light-accent",
+          "varRef": "var(--colors-color-palette-light-accent)",
+        },
+        "name": "colors.colorPalette.light.accent",
+        "originalValue": "{colors.colorPalette.light.accent}",
+        "path": [
+          "colors",
+          "colorPalette",
+          "light",
+          "accent",
+        ],
+        "type": "color",
+        "value": "var(--colors-color-palette-light-accent)",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "colorPalette": "",
+          "condition": "base",
+          "isVirtual": true,
+          "prop": "colorPalette.accent",
+          "var": "--colors-color-palette-accent",
+          "varRef": "var(--colors-color-palette-accent)",
+        },
+        "name": "colors.colorPalette.accent",
+        "originalValue": "{colors.colorPalette.accent}",
+        "path": [
+          "colors",
+          "colorPalette",
+          "accent",
+        ],
+        "type": "color",
+        "value": "var(--colors-color-palette-accent)",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "colorPalette": "",
+          "condition": "base",
+          "isVirtual": true,
+          "prop": "colorPalette.light.accent.secondary",
+          "var": "--colors-color-palette-light-accent-secondary",
+          "varRef": "var(--colors-color-palette-light-accent-secondary)",
+        },
+        "name": "colors.colorPalette.light.accent.secondary",
+        "originalValue": "{colors.colorPalette.light.accent.secondary}",
+        "path": [
+          "colors",
+          "colorPalette",
+          "light",
+          "accent",
+          "secondary",
+        ],
+        "type": "color",
+        "value": "var(--colors-color-palette-light-accent-secondary)",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "colorPalette": "",
+          "condition": "base",
+          "isVirtual": true,
+          "prop": "colorPalette.accent.secondary",
+          "var": "--colors-color-palette-accent-secondary",
+          "varRef": "var(--colors-color-palette-accent-secondary)",
+        },
+        "name": "colors.colorPalette.accent.secondary",
+        "originalValue": "{colors.colorPalette.accent.secondary}",
+        "path": [
+          "colors",
+          "colorPalette",
+          "accent",
+          "secondary",
+        ],
+        "type": "color",
+        "value": "var(--colors-color-palette-accent-secondary)",
+      },
+      Token {
+        "description": undefined,
+        "extensions": {
+          "category": "colors",
+          "colorPalette": "",
+          "condition": "base",
+          "isVirtual": true,
+          "prop": "colorPalette.secondary",
+          "var": "--colors-color-palette-secondary",
+          "varRef": "var(--colors-color-palette-secondary)",
+        },
+        "name": "colors.colorPalette.secondary",
+        "originalValue": "{colors.colorPalette.secondary}",
+        "path": [
+          "colors",
+          "colorPalette",
+          "secondary",
+        ],
+        "type": "color",
+        "value": "var(--colors-color-palette-secondary)",
+      },
+    ]
+  `)
+
+  expect(formats.groupByColorPalette(dictionary)).toMatchInlineSnapshot(`
+    Map {
+      "button" => Map {
+        "--colors-color-palette-dark" => "var(--colors-button-dark)",
+        "--colors-color-palette-light" => "var(--colors-button-light)",
+        "--colors-color-palette-light-accent" => "var(--colors-button-light-accent)",
+        "--colors-color-palette-light-accent-secondary" => "var(--colors-button-light-accent-secondary)",
+      },
+      "button.light" => Map {
+        "--colors-color-palette-accent" => "var(--colors-button-light-accent)",
+        "--colors-color-palette-accent-secondary" => "var(--colors-button-light-accent-secondary)",
+      },
+      "button.light.accent" => Map {
+        "--colors-color-palette-secondary" => "var(--colors-button-light-accent-secondary)",
+      },
+    }
+  `)
+
+  expect(formats.getFlattenedValues(dictionary)).toMatchInlineSnapshot(`
+    Map {
+      "colors" => Map {
+        "button.dark" => "var(--colors-button-dark)",
+        "button.light" => "var(--colors-button-light)",
+        "button.light.accent" => "var(--colors-button-light-accent)",
+        "button.light.accent.secondary" => "var(--colors-button-light-accent-secondary)",
+        "colorPalette.dark" => "var(--colors-color-palette-dark)",
+        "colorPalette.light" => "var(--colors-color-palette-light)",
+        "colorPalette.light.accent" => "var(--colors-color-palette-light-accent)",
+        "colorPalette.accent" => "var(--colors-color-palette-accent)",
+        "colorPalette.light.accent.secondary" => "var(--colors-color-palette-light-accent-secondary)",
+        "colorPalette.accent.secondary" => "var(--colors-color-palette-accent-secondary)",
+        "colorPalette.secondary" => "var(--colors-color-palette-secondary)",
+      },
+    }
+  `)
+
+  const getVar = formats.createVarGetter(dictionary)
+  expect(getVar('colors.colorPalette.light.accent.secondary')).toMatchInlineSnapshot(
+    '"var(--colors-color-palette-light-accent-secondary)"',
+  )
+
+  expect(formats.getColorPaletteValues(dictionary)).toMatchInlineSnapshot(`
+    Set {
+      "button",
+      "button.light",
+      "button.light.accent",
     }
   `)
 })

@@ -205,7 +205,7 @@ describe('generate property types', () => {
       	stroke: Tokens[\\"colors\\"];
       	srOnly: boolean;
       	debug: boolean;
-      	colorPalette: \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"button\\" | \\"button.card\\";
+      	colorPalette: \\"rose\\" | \\"pink\\" | \\"fuchsia\\" | \\"purple\\" | \\"violet\\" | \\"indigo\\" | \\"blue\\" | \\"sky\\" | \\"cyan\\" | \\"teal\\" | \\"emerald\\" | \\"green\\" | \\"lime\\" | \\"yellow\\" | \\"amber\\" | \\"orange\\" | \\"red\\" | \\"neutral\\" | \\"stone\\" | \\"zinc\\" | \\"gray\\" | \\"slate\\" | \\"deep\\" | \\"deep.test\\" | \\"deep.test.pool\\" | \\"button\\" | \\"button.card\\";
       }
 
 

@@ -69,21 +69,16 @@ export const addVirtualPalette: TokenMiddleware = {
     const colorPalettes = new Map<string, Token[]>()
 
     tokens.forEach((token) => {
-      const { colorPalette } = token.extensions
+      const { colorPalette, colorPaletteAncestors, ancestorKeys } = token.extensions
       if (!colorPalette) return
-      const colorPaletteRoot = colorPalette.split('.').shift()
-      token.path
-        .slice(token.path.indexOf(colorPaletteRoot) + 1)
-        .reduce((acc, _, i, arr) => {
-          acc.push(arr.slice(0, i + 1).join('.'))
-          return acc
-        }, [] as string[])
-        .forEach((key) => keys.add(key))
 
-      const list = colorPalettes.get(colorPalette) || []
-      keys.add(token.path.at(-1) as string)
-      list.push(token)
-      colorPalettes.set(colorPalette, list)
+      ancestorKeys.forEach(keys.add, keys)
+
+      colorPaletteAncestors.forEach((colorPaletteAncestor: string) => {
+        const ancestorList = colorPalettes.get(colorPaletteAncestor) || []
+        ancestorList.push(token)
+        colorPalettes.set(colorPalette, ancestorList)
+      })
     })
 
     keys.forEach((key) => {

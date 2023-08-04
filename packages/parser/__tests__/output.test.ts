@@ -1080,9 +1080,12 @@ describe('extract to css output pipeline', () => {
       expect(result.css).toMatchInlineSnapshot(`
         "@layer utilities {
           .color-palette_button {
+            --colors-color-palette-thick: var(--colors-button-thick);
+            --colors-color-palette-card-body: var(--colors-button-card-body);
+            --colors-color-palette-card-heading: var(--colors-button-card-heading);
             --colors-color-palette-dark: var(--colors-button-dark);
-            --colors-color-palette-light: var(--colors-button-light)
-            --colors-color-palette-light-accent: var(--colors-button-light-accent)
+            --colors-color-palette-light: var(--colors-button-light);
+            --colors-color-palette-light-accent: var(--colors-button-light-accent);
             --colors-color-palette-light-accent-secondary: var(--colors-button-light-accent-secondary)
             }
 

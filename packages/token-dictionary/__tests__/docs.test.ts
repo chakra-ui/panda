@@ -17,8 +17,14 @@ test('should generate categorize token', () => {
             Token {
               "description": undefined,
               "extensions": {
+                "ancestorKeys": [
+                  "thick",
+                ],
                 "category": "colors",
                 "colorPalette": "button",
+                "colorPaletteAncestors": [
+                  "button",
+                ],
                 "condition": "base",
                 "conditions": {
                   "_dark": "#000",
@@ -41,8 +47,14 @@ test('should generate categorize token', () => {
             Token {
               "description": undefined,
               "extensions": {
+                "ancestorKeys": [
+                  "thick",
+                ],
                 "category": "colors",
                 "colorPalette": "button",
+                "colorPaletteAncestors": [
+                  "button",
+                ],
                 "condition": "_dark",
                 "conditions": {
                   "_dark": "#000",
@@ -67,8 +79,16 @@ test('should generate categorize token', () => {
             Token {
               "description": undefined,
               "extensions": {
+                "ancestorKeys": [
+                  "card.body",
+                  "body",
+                ],
                 "category": "colors",
                 "colorPalette": "button.card",
+                "colorPaletteAncestors": [
+                  "button",
+                  "button.card",
+                ],
                 "condition": "base",
                 "conditions": {
                   "_dark": "#000",
@@ -92,8 +112,16 @@ test('should generate categorize token', () => {
             Token {
               "description": undefined,
               "extensions": {
+                "ancestorKeys": [
+                  "card.body",
+                  "body",
+                ],
                 "category": "colors",
                 "colorPalette": "button.card",
+                "colorPaletteAncestors": [
+                  "button",
+                  "button.card",
+                ],
                 "condition": "_dark",
                 "conditions": {
                   "_dark": "#000",
@@ -117,8 +145,16 @@ test('should generate categorize token', () => {
             Token {
               "description": undefined,
               "extensions": {
+                "ancestorKeys": [
+                  "card.heading",
+                  "heading",
+                ],
                 "category": "colors",
                 "colorPalette": "button.card",
+                "colorPaletteAncestors": [
+                  "button",
+                  "button.card",
+                ],
                 "condition": "base",
                 "conditions": {
                   "_dark": "#000",
@@ -142,8 +178,16 @@ test('should generate categorize token', () => {
             Token {
               "description": undefined,
               "extensions": {
+                "ancestorKeys": [
+                  "card.heading",
+                  "heading",
+                ],
                 "category": "colors",
                 "colorPalette": "button.card",
+                "colorPaletteAncestors": [
+                  "button",
+                  "button.card",
+                ],
                 "condition": "_dark",
                 "conditions": {
                   "_dark": "#000",

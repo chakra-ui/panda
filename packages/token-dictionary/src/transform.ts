@@ -191,14 +191,6 @@ export const addConditionalCssVariables: TokenTransformer = {
   },
 }
 
-function getColorPaletteName(path: string[]) {
-  if (path.includes('colorPalette')) return ''
-  const clone = [...path]
-  clone.pop()
-  clone.shift()
-  return clone.join('.')
-}
-
 export const addColorPalette: TokenTransformer = {
   type: 'extensions',
   name: 'tokens/colors/colorPalette',
@@ -206,7 +198,45 @@ export const addColorPalette: TokenTransformer = {
     return token.extensions.category === 'colors'
   },
   transform(token) {
-    return { colorPalette: getColorPaletteName(token.path) }
+    if (token.path.includes('colorPalette')) {
+      return {
+        // avoid breaking changes
+        colorPalette: '',
+      }
+    }
+
+    const tokenPathClone = [...token.path]
+    tokenPathClone.pop()
+    tokenPathClone.shift()
+
+    if (tokenPathClone.length === 0) {
+      return {
+        // avoid breaking changes
+        colorPalette: '',
+      }
+    }
+
+    const colorPaletteAncestors = tokenPathClone.reduce((acc: string[], _: any, i: number, arr: string[]) => {
+      acc.push(arr.slice(0, i + 1).join('.'))
+      return acc
+    }, [] as string[])
+
+    const colorPaletteRoot = tokenPathClone.at(0) as string
+
+    // Instead of using the last segment of the path as the colorPalette name, create an array of all possible ancestors paths.
+    // For example if the path is ['button', 'primary', 'background'], ancestor keys for `button` color palette should be ['primary.background', 'background']
+    const ancestorKeys = token.path
+      .slice(token.path.indexOf(colorPaletteRoot) + 1)
+      .reduce((acc: string[], _: any, i: number, arr: string[]) => {
+        acc.push(arr.slice(i).join('.'))
+        return acc
+      }, [] as string[])
+
+    return {
+      colorPalette: tokenPathClone.join('.'),
+      colorPaletteAncestors,
+      ancestorKeys,
+    }
   },
 }
 
