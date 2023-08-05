@@ -1,3 +1,4 @@
+import { posix, sep } from 'path'
 import type { PathMapping } from './ts-config-paths'
 
 /**
@@ -20,7 +21,7 @@ export const resolveTsPathPattern = (pathMappings: PathMapping[], moduleSpecifie
         return match[matchIndex]
       })
 
-      return mappedId
+      return mappedId.split(sep).join(posix.sep)
     }
   }
 }
