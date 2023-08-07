@@ -1,5 +1,16 @@
 # @pandacss/token-dictionary
 
+## 0.10.0
+
+### Patch Changes
+
+- 9d4aa918: Fix issue where svg asset tokens are seen as invalid in the browser
+- Updated dependencies [24e783b3]
+- Updated dependencies [386e5098]
+- Updated dependencies [a669f4d5]
+  - @pandacss/shared@0.10.0
+  - @pandacss/types@0.10.0
+
 ## 0.9.0
 
 ### Patch Changes
