@@ -14,7 +14,9 @@ export type RecipeSelection<T extends RecipeVariantRecord> = keyof any extends k
 
 export type RecipeVariantFn<T extends RecipeVariantRecord> = (props?: RecipeSelection<T>) => string
 
-export type RecipeVariantProps<T extends RecipeVariantFn<RecipeVariantRecord>> = Pretty<Parameters<T>[0]>
+export type RecipeVariantProps<
+  T extends RecipeVariantFn<RecipeVariantRecord> | SlotRecipeVariantFn<string, SlotRecipeVariantRecord<string>>,
+> = Pretty<Parameters<T>[0]>
 
 type RecipeVariantMap<T extends RecipeVariantRecord> = {
   [K in keyof T]: Array<keyof T[K]>
