@@ -169,6 +169,11 @@ export const border: UtilityConfig = {
     values: 'borders',
     shorthand: 'borderStart',
   },
+  borderInlineStartWidth: {
+    className: 'border-s',
+    values: 'borderWidths',
+    shorthand: 'borderStartWidth',
+  },
   borderInlineStartColor: {
     className: 'border-s',
     values: 'colors',
@@ -186,6 +191,11 @@ export const border: UtilityConfig = {
     className: 'border-e',
     values: 'borders',
     shorthand: 'borderEnd',
+  },
+  borderInlineEndWidth: {
+    className: 'border-e',
+    values: 'borderWidths',
+    shorthand: 'borderEndWidth',
   },
   borderInlineEndColor: {
     className: 'border-e',
