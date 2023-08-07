@@ -26,6 +26,6 @@
     "lil-fp": "1.4.5",
     "ts-evaluator": "^1.1.0",
     "ts-morph": "19.0.0",
-    "ts-pattern": "5.0.4"
+    "ts-pattern": "5.0.5"
   }
 }

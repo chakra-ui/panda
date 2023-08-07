@@ -48,7 +48,7 @@
     "postcss": "8.4.27",
     "preferred-pm": "^3.0.3",
     "ts-morph": "19.0.0",
-    "ts-pattern": "5.0.4",
+    "ts-pattern": "5.0.5",
     "tsconfck": "^2.1.2"
   },
   "devDependencies": {
