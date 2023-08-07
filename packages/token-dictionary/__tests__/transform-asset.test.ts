@@ -106,13 +106,13 @@ describe('transform / assets', () => {
             "prop": "mesh",
           },
           "name": "assets.mesh",
-          "originalValue": "url(/mesh.png)",
+          "originalValue": "url('/mesh.png')",
           "path": [
             "assets",
             "mesh",
           ],
           "type": "asset",
-          "value": "url(/mesh.png)",
+          "value": "url('/mesh.png')",
         },
       ]
     `)
