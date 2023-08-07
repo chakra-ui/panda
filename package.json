@@ -58,7 +58,7 @@
       "git add --all packages/studio/"
     ]
   },
-  "packageManager": "pnpm@8.6.4",
+  "packageManager": "pnpm@8.6.12",
   "pnpm": {
     "overrides": {
       "@types/react": "18.0.17"
