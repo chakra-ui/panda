@@ -30,7 +30,7 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@types/base-64": "^1.0.0",
-    "@types/node": "20.4.5",
+    "@types/node": "20.4.8",
     "@types/utf8": "^3.0.1",
     "base-64": "^1.0.0",
     "color2k": "^2.0.2",
