@@ -8,15 +8,16 @@ const styles = cva({
     userSelect: 'none',
     insetEnd: '1.5',
     height: '5',
-    borderRadius: 'md',
+    rounded: 'sm',
     bg: { base: 'white', _dark: 'rgb(17 17 17 / 0.2)' },
     color: 'gray.500',
     px: '1.5',
     fontFamily: 'mono',
     fontSize: '10px',
     fontWeight: 'medium',
-    border: '1px solid rgb(243 244 246 / 0.2)',
-    alignItems: 'center'
+    borderWidth: '1px',
+    alignItems: 'center',
+    left: '1.5'
   },
   variants: {
     mounted: {

@@ -193,6 +193,7 @@ export function Search({
         onBlur={() => {
           setFocused(false)
         }}
+        className={css({ ps: '12!' })}
         type="search"
         placeholder={renderString(config.search.placeholder)}
         onKeyDown={handleKeyDown}
