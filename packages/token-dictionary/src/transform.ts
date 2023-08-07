@@ -149,7 +149,7 @@ export const transformAssets: TokenTransformer = {
     const raw = token.value as TokenDataTypes['assets']
     return match(raw)
       .with(P.string, (value) => value)
-      .with({ type: 'url' }, ({ value }) => `url(${value})`)
+      .with({ type: 'url' }, ({ value }) => `url('${value}')`)
       .with({ type: 'svg' }, ({ value }) => `url('${svgToDataUri(value)})'`)
       .exhaustive()
   },
