@@ -286,7 +286,7 @@ The config recipe takes the following additional properties:
 
 > As of v0.9, the `name` property is removed in favor of `className`
 
-### Defining recipe
+### Defining the recipe
 
 To define a config recipe, import the `defineRecipe` helper function
 
