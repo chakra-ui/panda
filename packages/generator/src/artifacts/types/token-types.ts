@@ -40,7 +40,7 @@ export function generateTokenTypes(ctx: Context) {
   } else {
     const colorPaletteKeys = Object.keys(tokens.colorPalettes)
     if (colorPaletteKeys.length) {
-      set.add(`export type ColorPalette = ${unionType(Object.keys(tokens.colorPalettes))} | (string & {})`)
+      set.add(`export type ColorPalette = ${unionType(Object.keys(tokens.colorPalettes))}`)
     }
 
     for (const [key, value] of tokens.categoryMap.entries()) {

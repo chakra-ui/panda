@@ -44,9 +44,9 @@ export function generatePropTypes(ctx: Context) {
   ${result.join('\n')}
 
   export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-    ? ConditionalValue<PropertyTypes[T]${strictText}>
+    ? ConditionalValue<PropertyTypes[T]${strictText} | (string & {})>
     : T extends keyof CssProperties
-    ? ConditionalValue<CssProperties[T]>
+    ? ConditionalValue<CssProperties[T] | (string & {})>
     : ConditionalValue<string | number>
   `
 }
