@@ -16,8 +16,7 @@ const styles = cva({
     fontSize: '10px',
     fontWeight: 'medium',
     borderWidth: '1px',
-    alignItems: 'center',
-    left: '1.5'
+    alignItems: 'center'
   },
   variants: {
     mounted: {
