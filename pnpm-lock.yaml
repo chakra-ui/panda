@@ -943,9 +943,6 @@ importers:
       '@pandacss/extractor':
         specifier: workspace:*
         version: link:../extractor
-      '@pandacss/token-dictionary':
-        specifier: workspace:*
-        version: link:../token-dictionary
       chokidar-cli:
         specifier: ^3.0.0
         version: 3.0.0
