@@ -18,19 +18,19 @@ Install panda and create your `panda.config.ts` file.
 <Tabs items={['pnpm', 'npm', 'yarn']}>
   <Tab>
     ```bash
-    pnpm install -D @pandacss/dev
+    pnpm install -D @pandacss/dev @pandacss/astro
     pnpm panda init
     ```
   </Tab>
   <Tab>
     ```bash
-    npm install -D @pandacss/dev
+    npm install -D @pandacss/dev @pandacss/astro
     npx panda init
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn add -D @pandacss/dev
+    yarn add -D @pandacss/dev @pandacss/astro
     yarn panda init
     ```
   </Tab>
@@ -42,27 +42,11 @@ Add panda integration to your `astro.config.mjs` file.
 
 ```js
 import { defineConfig } from 'astro/config'
-import pandacss from '@pandacss/dev/astro'
+import pandacss from '@pandacss/astro'
 
 export default defineConfig({
   // ...
   integrations: [pandacss()]
-})
-```
-
-### Configure the content
-
-Add your panda config to your `panda.config.js` file, or wherver panda is configured in your project.
-
-```js {6}
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  preflight: true,
-  // define the content to scan 👇🏻
-  include: ['./src/**/*.{ts,tsx,js,jsx,astro}', './pages/**/*.{ts,tsx,js,jsx,astro}'],
-  exclude: [],
-  outdir: 'styled-system'
 })
 ```
 
@@ -86,12 +70,20 @@ export default defineConfig({
 
   > This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
 
-### Configure the entry CSS with layers
+### Configure the content
 
-Add this code to an `index.css` file imported in the root component of your project.
+Add your panda config to your `panda.config.js` file, or wherver panda is configured in your project.
 
-```css
-@layer reset, base, tokens, recipes, utilities;
+```js {6}
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  preflight: true,
+  // define the content to scan 👇🏻
+  include: ['./src/**/*.{ts,tsx,js,jsx,astro}', './pages/**/*.{ts,tsx,js,jsx,astro}'],
+  exclude: [],
+  outdir: 'styled-system'
+})
 ```
 
 ### Start your build process

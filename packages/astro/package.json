@@ -15,8 +15,14 @@
   "publishConfig": {
     "access": "public"
   },
+  "exports": {
+    ".": "./dist/index.js",
+    "./base.css": "./base.css",
+    "./package.json": "./package.json"
+  },
   "files": [
-    "dist"
+    "dist",
+    "base.css"
   ],
   "dependencies": {
     "@pandacss/postcss": "workspace:*",
