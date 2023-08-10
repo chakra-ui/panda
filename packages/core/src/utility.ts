@@ -391,4 +391,26 @@ export class Utility {
     const properties = Object.keys(this.config)
     return [...shorthands, ...properties]
   }
+
+  /**
+   * Returns a map of the property keys and their shorthands
+   */
+  getPropShorthandsMap = () => {
+    const shorthandsByProp = new Map<string, string[]>()
+
+    this.shorthands.forEach((prop, shorthand) => {
+      const list = shorthandsByProp.get(prop) ?? []
+      list.push(shorthand)
+      shorthandsByProp.set(prop, list)
+    })
+
+    return shorthandsByProp
+  }
+
+  /**
+   * Returns the shorthands for a given property
+   */
+  getPropShorthands = (prop: string) => {
+    return this.getPropShorthandsMap().get(prop) ?? []
+  }
 }

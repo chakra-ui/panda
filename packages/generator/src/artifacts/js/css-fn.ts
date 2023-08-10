@@ -8,13 +8,7 @@ export function generateCssFn(ctx: Context) {
     conditions,
   } = ctx
 
-  const { separator } = utility
-  const shorthandsByProp = new Map<string, string[]>()
-  utility.shorthands.forEach((prop, shorthand) => {
-    const list = shorthandsByProp.get(prop) ?? []
-    list.push(shorthand)
-    shorthandsByProp.set(prop, list)
-  })
+  const { separator, getPropShorthands } = utility
 
   return {
     dts: outdent`
@@ -34,7 +28,7 @@ export function generateCssFn(ctx: Context) {
     const utilities = "${utility
       .entries()
       .map(([prop, className]) => {
-        const shorthandList = shorthandsByProp.get(prop) ?? []
+        const shorthandList = getPropShorthands(prop)
 
         // encode utility as:
         // prop:className/shorthand1/shorthand2/shorthand3
@@ -67,7 +61,7 @@ export function generateCssFn(ctx: Context) {
       })
       .join(',')}"
 
-    const classMap = {}
+    const classNames = new Map()
     ${
       utility.hasShorthand
         ? outdent`
@@ -75,7 +69,7 @@ export function generateCssFn(ctx: Context) {
     utilities.split(',').forEach((utility) => {
       const [prop, meta] = utility.split(':')
       const [className, ...shorthandList] = meta.split('/')
-      classMap[prop] = className
+      classNames.set(prop, className)
       if (shorthandList.length) {
         shorthandList.forEach((shorthand) => {
           shorthands.set(shorthand === '1' ? className : shorthand, prop)
@@ -88,7 +82,7 @@ export function generateCssFn(ctx: Context) {
         : outdent`
     utilities.split(',').forEach((utility) => {
       const [prop, className] = utility.split(':')
-      classMap[prop] = className
+      classNames.set(prop, className)
     })
     `
     }
@@ -106,10 +100,10 @@ export function generateCssFn(ctx: Context) {
           utility.hasShorthand
             ? `(prop, value) => {
               const key = resolveShorthand(prop)
-              const propKey = classMap[key] || hypenateProperty(key)
+              const propKey = classNames.get(key) || hypenateProperty(key)
               return { className: \`$\{propKey}${separator}$\{withoutSpace(value)}\` }
             }`
-            : `(key, value) => ({ className: \`$\{classMap[key] || hypenateProperty(key)}${separator}$\{withoutSpace(value)}\` })`
+            : `(key, value) => ({ className: \`$\{classNames.get(key) || hypenateProperty(key)}${separator}$\{withoutSpace(value)}\` })`
         },
         ${utility.hasShorthand ? 'hasShorthand: true,' : ''}
         resolveShorthand: ${utility.hasShorthand ? 'resolveShorthand' : 'prop => prop'},
