@@ -1,0 +1,3 @@
+{
+  "content": "// src/esc.ts\nvar rcssescape = /([\\0-\\x1f\\x7f]|^-?\\d)|^-$|^-|[^\\x80-\\uFFFF\\w-]/g;\nvar fcssescape = function(ch, asCodePoint) {\n  if (!asCodePoint)\n    return \"\\\\\" + ch;\n  if (ch === \"\\0\")\n    return \"\\uFFFD\";\n  if (ch === \"-\" && ch.length === 1)\n    return \"\\\\-\";\n  return ch.slice(0, -1) + \"\\\\\" + ch.charCodeAt(ch.length - 1).toString(16);\n};\nvar esc = (sel) => {\n  return (sel + \"\").replace(rcssescape, fcssescape);\n};\nexport {\n  esc\n};\n"
+}

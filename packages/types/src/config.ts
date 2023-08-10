@@ -226,6 +226,11 @@ type CodegenOptions = {
    * @default 'true'
    */
   shorthands?: boolean
+  /**
+   * Whetehr to log a warning when a css rule wasn't generated but was referenced in the runtime.
+   * @default 'false'
+   */
+  missingCssWarning?: boolean
 }
 
 type PresetOptions = {
