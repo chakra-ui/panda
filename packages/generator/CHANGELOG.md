@@ -1,5 +1,21 @@
 # @pandacss/generator
 
+## 0.11.0
+
+### Patch Changes
+
+- 5b95caf5: Add a hook call when the final `styles.css` content has been generated, remove cyclic (from an unused hook)
+  dependency
+- 39b80b49: Fix an issue with the runtime className generation when using an utility that maps to multiple shorthands
+- 1dc788bd: Fix issue where some style properties shows TS error when using `!important`
+- Updated dependencies [5b95caf5]
+  - @pandacss/types@0.11.0
+  - @pandacss/core@0.11.0
+  - @pandacss/token-dictionary@0.11.0
+  - @pandacss/is-valid-prop@0.11.0
+  - @pandacss/logger@0.11.0
+  - @pandacss/shared@0.11.0
+
 ## 0.10.0
 
 ### Minor Changes
