@@ -114,17 +114,14 @@ export function Select({
               >
                 {option.label}
                 {option.value === selected.value && (
-                  <span
+                  <CheckIcon
                     className={css({
                       position: 'absolute',
-                      insetY: 0,
-                      display: 'flex',
-                      alignItems: 'center',
+                      right: '3',
+                      top: '2',
                       insetEnd: '3'
                     })}
-                  >
-                    <CheckIcon />
-                  </span>
+                  />
                 )}
               </SelectOption>
             ))}

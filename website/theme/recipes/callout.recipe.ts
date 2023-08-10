@@ -17,12 +17,11 @@ export const calloutRecipe = defineRecipe({
       borderRadius: 'lg',
       borderWidth: '1px',
       py: '2',
-      ps: '4'
+      px: '4'
     },
     icon: {
       userSelect: 'none',
       textStyle: 'xl',
-      ps: '3',
       pe: '2',
       fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
     },

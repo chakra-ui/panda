@@ -6,8 +6,9 @@
   "scripts": {
     "playground": "pnpm --filter=./playground",
     "build:playground": "pnpm --filter {./playground}... build",
+    "build:shared": "pnpm --filter {./packages/shared}... build-fast",
     "prepare": "husky install && pnpm build-fast",
-    "dev": "pnpm -r --parallel --filter=./packages/** --filter=./extension/** dev",
+    "dev": "pnpm build:shared && pnpm -r --parallel --filter=./packages/** --filter=./extension/** dev",
     "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
     "build": "pnpm -r --filter=./packages/** --filter=./extension/** build",
     "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
