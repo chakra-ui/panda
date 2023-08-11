@@ -28,6 +28,14 @@ const ctx = {
     }
     return values[property] ?? []
   },
+  getPatternKeys: (property: string) => {
+    const values: Record<string, any> = {
+      margin: ['20px', '40px'],
+      padding: ['20px', '40px', '60px'],
+      color: ['red.200', 'blue.200', 'green.200'],
+    }
+    return values[property] ?? []
+  },
 }
 
 const getStyles = getStaticCss({
@@ -46,6 +54,16 @@ const getStyles = getStaticCss({
       },
     },
   ],
+  patterns: {
+    hstack: ['*'],
+    vstack: {
+      conditions: ['sm', 'md'],
+      properties: {
+        margin: ['20px', '40px'],
+        padding: ['20px', '40px', '60px'],
+      },
+    },
+  },
   recipes: {
     buttonStyle: [
       {
@@ -120,6 +138,53 @@ describe('static-css', () => {
             },
           },
         ],
+        "patterns": [
+          {
+            "vstack": {
+              "margin": {
+                "base": "20px",
+                "md": "20px",
+                "sm": "20px",
+              },
+            },
+          },
+          {
+            "vstack": {
+              "margin": {
+                "base": "40px",
+                "md": "40px",
+                "sm": "40px",
+              },
+            },
+          },
+          {
+            "vstack": {
+              "padding": {
+                "base": "20px",
+                "md": "20px",
+                "sm": "20px",
+              },
+            },
+          },
+          {
+            "vstack": {
+              "padding": {
+                "base": "40px",
+                "md": "40px",
+                "sm": "40px",
+              },
+            },
+          },
+          {
+            "vstack": {
+              "padding": {
+                "base": "60px",
+                "md": "60px",
+                "sm": "60px",
+              },
+            },
+          },
+        ],
         "recipes": [
           {
             "buttonStyle": {
@@ -183,6 +248,7 @@ describe('static-css', () => {
     expect(
       getStaticCss({
         css: [],
+        patterns: {},
         recipes: {
           buttonStyle: ['*'],
         },
@@ -190,6 +256,7 @@ describe('static-css', () => {
     ).toMatchInlineSnapshot(`
       {
         "css": [],
+        "patterns": [],
         "recipes": [
           {
             "buttonStyle": {
@@ -247,9 +314,44 @@ describe('static-css', () => {
             "margin": "40px",
           },
         ],
+        "patterns": [],
         "recipes": [],
       }
     `)
+  })
+
+  describe('patterns', () => {
+    test('using * in pattern CssRule', () => {
+      expect(
+        getStaticCss({
+          patterns: {
+            hstack: ['*'],
+            vstack: {
+              properties: {
+                margin: ['*'],
+              },
+            },
+          },
+        })(ctx),
+      ).toMatchInlineSnapshot(`
+        {
+          "css": [],
+          "patterns": [
+            {
+              "vstack": {
+                "margin": "20px",
+              },
+            },
+            {
+              "vstack": {
+                "margin": "40px",
+              },
+            },
+          ],
+          "recipes": [],
+        }
+      `)
+    })
   })
 
   test('using * in CssRule with responsive: true', () => {
@@ -282,6 +384,7 @@ describe('static-css', () => {
             },
           },
         ],
+        "patterns": [],
         "recipes": [],
       }
     `)
@@ -323,6 +426,7 @@ describe('static-css', () => {
             },
           },
         ],
+        "patterns": [],
         "recipes": [],
       }
     `)

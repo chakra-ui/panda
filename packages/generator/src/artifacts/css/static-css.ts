@@ -2,7 +2,7 @@ import { getStaticCss } from '@pandacss/core'
 import type { Context } from '../../engines'
 
 export const generateStaticCss = (ctx: Context) => {
-  const { config, createSheet, utility, recipes } = ctx
+  const { config, createSheet, utility, recipes, patterns } = ctx
   const { staticCss = {}, theme = {}, optimize = true } = config
 
   const sheet = createSheet()
@@ -19,6 +19,11 @@ export const generateStaticCss = (ctx: Context) => {
 
       return Object.keys(values)
     },
+    getPatternKeys: (pattern) => {
+      const patternDetail = patterns.details.find((detail) => detail.baseName === pattern)
+      console.log('patternDetail', patternDetail)
+      // return Object.assign({ __base: recipeConfig?.config.base }, recipeConfig?.variantKeyMap ?? {})
+    },
     getRecipeKeys: (recipe) => {
       const recipeConfig = recipes.details.find((detail) => detail.baseName === recipe)
       return Object.assign({ __base: recipeConfig?.config.base }, recipeConfig?.variantKeyMap ?? {})
@@ -27,6 +32,10 @@ export const generateStaticCss = (ctx: Context) => {
 
   results.css.forEach((css) => {
     sheet.processAtomic(css)
+  })
+
+  results.patterns.forEach((pattern) => {
+    sheet.processPattern(pattern)
   })
 
   results.recipes.forEach((result) => {

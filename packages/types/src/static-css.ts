@@ -30,6 +30,14 @@ export type StaticCssOptions = {
    */
   css?: CssRule[]
   /**
+   * The css patterns to generate.
+   */
+  patterns?:
+    | ['*']
+    | {
+        [pattern: string]: ['*'] | CssRule
+      }
+  /**
    * The css recipes to generate.
    */
   recipes?: {

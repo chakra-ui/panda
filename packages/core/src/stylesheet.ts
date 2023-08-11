@@ -86,6 +86,11 @@ export class Stylesheet {
     })
   }
 
+  processPattern = (name: string, config: RecipeConfig | SlotRecipeConfig, styles: SystemStyleObject) => {
+    this.recipes.process(name, { styles })
+    this.processCompoundVariants(config)
+  }
+
   processRecipe = (name: string, config: RecipeConfig | SlotRecipeConfig, styles: SystemStyleObject) => {
     this.recipes.process(name, { styles })
     this.processCompoundVariants(config)

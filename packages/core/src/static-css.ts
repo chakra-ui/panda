@@ -3,6 +3,7 @@ import type { StaticCssOptions } from '@pandacss/types'
 type StaticContext = {
   breakpoints: string[]
   getPropertyKeys: (property: string) => string[]
+  getPatternKeys: (pattern: string) => string[]
   getRecipeKeys: (recipe: string) => {
     [variant: string]: string[]
   }
@@ -11,9 +12,13 @@ type StaticContext = {
 const formatCondition = (ctx: StaticContext, value: string) => (ctx.breakpoints.includes(value) ? value : `_${value}`)
 
 export function getStaticCss(options: StaticCssOptions) {
-  const { css = [], recipes = {} } = options
+  const { css = [], recipes = {}, patterns = {} } = options
 
-  const results: { css: Record<string, any>[]; recipes: Record<string, any>[] } = { css: [], recipes: [] }
+  const results: {
+    css: Record<string, any>[]
+    recipes: Record<string, any>[]
+    patterns: Record<string, any>[]
+  } = { css: [], recipes: [], patterns: [] }
 
   return (ctx: StaticContext) => {
     css.forEach((rule) => {
@@ -97,6 +102,46 @@ export function getStaticCss(options: StaticCssOptions) {
         })
       })
     })
+
+    if (Array.isArray(patterns)) {
+      // patterns
+    } else {
+      Object.entries(patterns).forEach(([pattern, rule]) => {
+        if (Array.isArray(rule)) {
+          if (rule[0] !== '*') {
+            throw new Error('Invalid pattern rule')
+          }
+
+          return
+        }
+
+        const conditions = rule.conditions || []
+        if (rule.responsive) {
+          conditions.push(...ctx.breakpoints)
+        }
+
+        Object.entries(rule.properties).forEach(([property, values]) => {
+          const computedValues = values.flatMap((value) => (value === '*' ? ctx.getPatternKeys(property) : value))
+
+          computedValues.forEach((value) => {
+            const conditionalValues = conditions.reduce(
+              (acc, condition) => ({
+                base: value,
+                ...acc,
+                [formatCondition(ctx, condition)]: value,
+              }),
+              {},
+            )
+
+            results.patterns.push({
+              [pattern]: {
+                [property]: conditions.length ? conditionalValues : value,
+              },
+            })
+          })
+        })
+      })
+    }
 
     return results
   }
