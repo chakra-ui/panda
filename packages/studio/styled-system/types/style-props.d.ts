@@ -8,303 +8,37 @@ export type CssVarProperties = {
 }
 
 export type SystemProperties = {
-  	WebkitAppearance?: PropertyValue<'WebkitAppearance'>
-	WebkitBorderBefore?: PropertyValue<'WebkitBorderBefore'>
-	WebkitBorderBeforeColor?: PropertyValue<'WebkitBorderBeforeColor'>
-	WebkitBorderBeforeStyle?: PropertyValue<'WebkitBorderBeforeStyle'>
-	WebkitBorderBeforeWidth?: PropertyValue<'WebkitBorderBeforeWidth'>
-	WebkitBoxReflect?: PropertyValue<'WebkitBoxReflect'>
-	WebkitLineClamp?: PropertyValue<'WebkitLineClamp'>
-	WebkitMask?: PropertyValue<'WebkitMask'>
-	WebkitMaskAttachment?: PropertyValue<'WebkitMaskAttachment'>
-	WebkitMaskClip?: PropertyValue<'WebkitMaskClip'>
-	WebkitMaskComposite?: PropertyValue<'WebkitMaskComposite'>
-	WebkitMaskImage?: PropertyValue<'WebkitMaskImage'>
-	WebkitMaskOrigin?: PropertyValue<'WebkitMaskOrigin'>
-	WebkitMaskPosition?: PropertyValue<'WebkitMaskPosition'>
-	WebkitMaskPositionX?: PropertyValue<'WebkitMaskPositionX'>
-	WebkitMaskPositionY?: PropertyValue<'WebkitMaskPositionY'>
-	WebkitMaskRepeat?: PropertyValue<'WebkitMaskRepeat'>
-	WebkitMaskRepeatX?: PropertyValue<'WebkitMaskRepeatX'>
-	WebkitMaskRepeatY?: PropertyValue<'WebkitMaskRepeatY'>
-	WebkitMaskSize?: PropertyValue<'WebkitMaskSize'>
-	WebkitOverflowScrolling?: PropertyValue<'WebkitOverflowScrolling'>
-	WebkitTapHighlightColor?: PropertyValue<'WebkitTapHighlightColor'>
-	WebkitTextFillColor?: PropertyValue<'WebkitTextFillColor'>
-	WebkitTextStroke?: PropertyValue<'WebkitTextStroke'>
-	WebkitTextStrokeColor?: PropertyValue<'WebkitTextStrokeColor'>
-	WebkitTextStrokeWidth?: PropertyValue<'WebkitTextStrokeWidth'>
-	WebkitTouchCallout?: PropertyValue<'WebkitTouchCallout'>
-	WebkitUserModify?: PropertyValue<'WebkitUserModify'>
-	accentColor?: PropertyValue<'accentColor'>
-	alignContent?: PropertyValue<'alignContent'>
-	alignItems?: PropertyValue<'alignItems'>
-	alignSelf?: PropertyValue<'alignSelf'>
-	alignTracks?: PropertyValue<'alignTracks'>
-	all?: PropertyValue<'all'>
+  	all?: PropertyValue<'all'>
 	animation?: PropertyValue<'animation'>
-	animationComposition?: PropertyValue<'animationComposition'>
-	animationDelay?: PropertyValue<'animationDelay'>
-	animationDirection?: PropertyValue<'animationDirection'>
-	animationDuration?: PropertyValue<'animationDuration'>
-	animationFillMode?: PropertyValue<'animationFillMode'>
-	animationIterationCount?: PropertyValue<'animationIterationCount'>
-	animationName?: PropertyValue<'animationName'>
-	animationPlayState?: PropertyValue<'animationPlayState'>
-	animationTimingFunction?: PropertyValue<'animationTimingFunction'>
-	animationTimeline?: PropertyValue<'animationTimeline'>
 	appearance?: PropertyValue<'appearance'>
-	aspectRatio?: PropertyValue<'aspectRatio'>
 	azimuth?: PropertyValue<'azimuth'>
-	backdropFilter?: PropertyValue<'backdropFilter'>
-	backfaceVisibility?: PropertyValue<'backfaceVisibility'>
 	background?: PropertyValue<'background'>
-	backgroundAttachment?: PropertyValue<'backgroundAttachment'>
-	backgroundBlendMode?: PropertyValue<'backgroundBlendMode'>
-	backgroundClip?: PropertyValue<'backgroundClip'>
-	backgroundColor?: PropertyValue<'backgroundColor'>
-	backgroundImage?: PropertyValue<'backgroundImage'>
-	backgroundOrigin?: PropertyValue<'backgroundOrigin'>
-	backgroundPosition?: PropertyValue<'backgroundPosition'>
-	backgroundPositionX?: PropertyValue<'backgroundPositionX'>
-	backgroundPositionY?: PropertyValue<'backgroundPositionY'>
-	backgroundRepeat?: PropertyValue<'backgroundRepeat'>
-	backgroundSize?: PropertyValue<'backgroundSize'>
-	blockOverflow?: PropertyValue<'blockOverflow'>
-	blockSize?: PropertyValue<'blockSize'>
 	border?: PropertyValue<'border'>
-	borderBlock?: PropertyValue<'borderBlock'>
-	borderBlockColor?: PropertyValue<'borderBlockColor'>
-	borderBlockStyle?: PropertyValue<'borderBlockStyle'>
-	borderBlockWidth?: PropertyValue<'borderBlockWidth'>
-	borderBlockEnd?: PropertyValue<'borderBlockEnd'>
-	borderBlockEndColor?: PropertyValue<'borderBlockEndColor'>
-	borderBlockEndStyle?: PropertyValue<'borderBlockEndStyle'>
-	borderBlockEndWidth?: PropertyValue<'borderBlockEndWidth'>
-	borderBlockStart?: PropertyValue<'borderBlockStart'>
-	borderBlockStartColor?: PropertyValue<'borderBlockStartColor'>
-	borderBlockStartStyle?: PropertyValue<'borderBlockStartStyle'>
-	borderBlockStartWidth?: PropertyValue<'borderBlockStartWidth'>
-	borderBottom?: PropertyValue<'borderBottom'>
-	borderBottomColor?: PropertyValue<'borderBottomColor'>
-	borderBottomLeftRadius?: PropertyValue<'borderBottomLeftRadius'>
-	borderBottomRightRadius?: PropertyValue<'borderBottomRightRadius'>
-	borderBottomStyle?: PropertyValue<'borderBottomStyle'>
-	borderBottomWidth?: PropertyValue<'borderBottomWidth'>
-	borderCollapse?: PropertyValue<'borderCollapse'>
-	borderColor?: PropertyValue<'borderColor'>
-	borderEndEndRadius?: PropertyValue<'borderEndEndRadius'>
-	borderEndStartRadius?: PropertyValue<'borderEndStartRadius'>
-	borderImage?: PropertyValue<'borderImage'>
-	borderImageOutset?: PropertyValue<'borderImageOutset'>
-	borderImageRepeat?: PropertyValue<'borderImageRepeat'>
-	borderImageSlice?: PropertyValue<'borderImageSlice'>
-	borderImageSource?: PropertyValue<'borderImageSource'>
-	borderImageWidth?: PropertyValue<'borderImageWidth'>
-	borderInline?: PropertyValue<'borderInline'>
-	borderInlineEnd?: PropertyValue<'borderInlineEnd'>
-	borderInlineColor?: PropertyValue<'borderInlineColor'>
-	borderInlineStyle?: PropertyValue<'borderInlineStyle'>
-	borderInlineWidth?: PropertyValue<'borderInlineWidth'>
-	borderInlineEndColor?: PropertyValue<'borderInlineEndColor'>
-	borderInlineEndStyle?: PropertyValue<'borderInlineEndStyle'>
-	borderInlineEndWidth?: PropertyValue<'borderInlineEndWidth'>
-	borderInlineStart?: PropertyValue<'borderInlineStart'>
-	borderInlineStartColor?: PropertyValue<'borderInlineStartColor'>
-	borderInlineStartStyle?: PropertyValue<'borderInlineStartStyle'>
-	borderInlineStartWidth?: PropertyValue<'borderInlineStartWidth'>
-	borderLeft?: PropertyValue<'borderLeft'>
-	borderLeftColor?: PropertyValue<'borderLeftColor'>
-	borderLeftStyle?: PropertyValue<'borderLeftStyle'>
-	borderLeftWidth?: PropertyValue<'borderLeftWidth'>
-	borderRadius?: PropertyValue<'borderRadius'>
-	borderRight?: PropertyValue<'borderRight'>
-	borderRightColor?: PropertyValue<'borderRightColor'>
-	borderRightStyle?: PropertyValue<'borderRightStyle'>
-	borderRightWidth?: PropertyValue<'borderRightWidth'>
-	borderSpacing?: PropertyValue<'borderSpacing'>
-	borderStartEndRadius?: PropertyValue<'borderStartEndRadius'>
-	borderStartStartRadius?: PropertyValue<'borderStartStartRadius'>
-	borderStyle?: PropertyValue<'borderStyle'>
-	borderTop?: PropertyValue<'borderTop'>
-	borderTopColor?: PropertyValue<'borderTopColor'>
-	borderTopLeftRadius?: PropertyValue<'borderTopLeftRadius'>
-	borderTopRightRadius?: PropertyValue<'borderTopRightRadius'>
-	borderTopStyle?: PropertyValue<'borderTopStyle'>
-	borderTopWidth?: PropertyValue<'borderTopWidth'>
-	borderWidth?: PropertyValue<'borderWidth'>
 	bottom?: PropertyValue<'bottom'>
-	boxAlign?: PropertyValue<'boxAlign'>
-	boxDecorationBreak?: PropertyValue<'boxDecorationBreak'>
-	boxDirection?: PropertyValue<'boxDirection'>
-	boxFlex?: PropertyValue<'boxFlex'>
-	boxFlexGroup?: PropertyValue<'boxFlexGroup'>
-	boxLines?: PropertyValue<'boxLines'>
-	boxOrdinalGroup?: PropertyValue<'boxOrdinalGroup'>
-	boxOrient?: PropertyValue<'boxOrient'>
-	boxPack?: PropertyValue<'boxPack'>
-	boxShadow?: PropertyValue<'boxShadow'>
-	boxSizing?: PropertyValue<'boxSizing'>
-	breakAfter?: PropertyValue<'breakAfter'>
-	breakBefore?: PropertyValue<'breakBefore'>
-	breakInside?: PropertyValue<'breakInside'>
-	captionSide?: PropertyValue<'captionSide'>
 	caret?: PropertyValue<'caret'>
-	caretColor?: PropertyValue<'caretColor'>
-	caretShape?: PropertyValue<'caretShape'>
 	clear?: PropertyValue<'clear'>
 	clip?: PropertyValue<'clip'>
-	clipPath?: PropertyValue<'clipPath'>
 	color?: PropertyValue<'color'>
-	colorScheme?: PropertyValue<'colorScheme'>
-	columnCount?: PropertyValue<'columnCount'>
-	columnFill?: PropertyValue<'columnFill'>
-	columnGap?: PropertyValue<'columnGap'>
-	columnRule?: PropertyValue<'columnRule'>
-	columnRuleColor?: PropertyValue<'columnRuleColor'>
-	columnRuleStyle?: PropertyValue<'columnRuleStyle'>
-	columnRuleWidth?: PropertyValue<'columnRuleWidth'>
-	columnSpan?: PropertyValue<'columnSpan'>
-	columnWidth?: PropertyValue<'columnWidth'>
 	columns?: PropertyValue<'columns'>
 	contain?: PropertyValue<'contain'>
-	containIntrinsicSize?: PropertyValue<'containIntrinsicSize'>
-	containIntrinsicBlockSize?: PropertyValue<'containIntrinsicBlockSize'>
-	containIntrinsicHeight?: PropertyValue<'containIntrinsicHeight'>
-	containIntrinsicInlineSize?: PropertyValue<'containIntrinsicInlineSize'>
-	containIntrinsicWidth?: PropertyValue<'containIntrinsicWidth'>
 	container?: PropertyValue<'container'>
-	containerName?: PropertyValue<'containerName'>
-	containerType?: PropertyValue<'containerType'>
 	content?: PropertyValue<'content'>
-	contentVisibility?: PropertyValue<'contentVisibility'>
-	counterIncrement?: PropertyValue<'counterIncrement'>
-	counterReset?: PropertyValue<'counterReset'>
-	counterSet?: PropertyValue<'counterSet'>
 	cursor?: PropertyValue<'cursor'>
 	direction?: PropertyValue<'direction'>
 	display?: PropertyValue<'display'>
-	emptyCells?: PropertyValue<'emptyCells'>
 	filter?: PropertyValue<'filter'>
 	flex?: PropertyValue<'flex'>
-	flexBasis?: PropertyValue<'flexBasis'>
-	flexDirection?: PropertyValue<'flexDirection'>
-	flexFlow?: PropertyValue<'flexFlow'>
-	flexGrow?: PropertyValue<'flexGrow'>
-	flexShrink?: PropertyValue<'flexShrink'>
-	flexWrap?: PropertyValue<'flexWrap'>
 	float?: PropertyValue<'float'>
 	font?: PropertyValue<'font'>
-	fontFamily?: PropertyValue<'fontFamily'>
-	fontFeatureSettings?: PropertyValue<'fontFeatureSettings'>
-	fontKerning?: PropertyValue<'fontKerning'>
-	fontLanguageOverride?: PropertyValue<'fontLanguageOverride'>
-	fontOpticalSizing?: PropertyValue<'fontOpticalSizing'>
-	fontPalette?: PropertyValue<'fontPalette'>
-	fontVariationSettings?: PropertyValue<'fontVariationSettings'>
-	fontSize?: PropertyValue<'fontSize'>
-	fontSizeAdjust?: PropertyValue<'fontSizeAdjust'>
-	fontSmooth?: PropertyValue<'fontSmooth'>
-	fontStretch?: PropertyValue<'fontStretch'>
-	fontStyle?: PropertyValue<'fontStyle'>
-	fontSynthesis?: PropertyValue<'fontSynthesis'>
-	fontVariant?: PropertyValue<'fontVariant'>
-	fontVariantAlternates?: PropertyValue<'fontVariantAlternates'>
-	fontVariantCaps?: PropertyValue<'fontVariantCaps'>
-	fontVariantEastAsian?: PropertyValue<'fontVariantEastAsian'>
-	fontVariantEmoji?: PropertyValue<'fontVariantEmoji'>
-	fontVariantLigatures?: PropertyValue<'fontVariantLigatures'>
-	fontVariantNumeric?: PropertyValue<'fontVariantNumeric'>
-	fontVariantPosition?: PropertyValue<'fontVariantPosition'>
-	fontWeight?: PropertyValue<'fontWeight'>
-	forcedColorAdjust?: PropertyValue<'forcedColorAdjust'>
 	gap?: PropertyValue<'gap'>
 	grid?: PropertyValue<'grid'>
-	gridArea?: PropertyValue<'gridArea'>
-	gridAutoColumns?: PropertyValue<'gridAutoColumns'>
-	gridAutoFlow?: PropertyValue<'gridAutoFlow'>
-	gridAutoRows?: PropertyValue<'gridAutoRows'>
-	gridColumn?: PropertyValue<'gridColumn'>
-	gridColumnEnd?: PropertyValue<'gridColumnEnd'>
-	gridColumnGap?: PropertyValue<'gridColumnGap'>
-	gridColumnStart?: PropertyValue<'gridColumnStart'>
-	gridGap?: PropertyValue<'gridGap'>
-	gridRow?: PropertyValue<'gridRow'>
-	gridRowEnd?: PropertyValue<'gridRowEnd'>
-	gridRowGap?: PropertyValue<'gridRowGap'>
-	gridRowStart?: PropertyValue<'gridRowStart'>
-	gridTemplate?: PropertyValue<'gridTemplate'>
-	gridTemplateAreas?: PropertyValue<'gridTemplateAreas'>
-	gridTemplateColumns?: PropertyValue<'gridTemplateColumns'>
-	gridTemplateRows?: PropertyValue<'gridTemplateRows'>
-	hangingPunctuation?: PropertyValue<'hangingPunctuation'>
 	height?: PropertyValue<'height'>
-	hyphenateCharacter?: PropertyValue<'hyphenateCharacter'>
-	hyphenateLimitChars?: PropertyValue<'hyphenateLimitChars'>
 	hyphens?: PropertyValue<'hyphens'>
-	imageOrientation?: PropertyValue<'imageOrientation'>
-	imageRendering?: PropertyValue<'imageRendering'>
-	imageResolution?: PropertyValue<'imageResolution'>
-	imeMode?: PropertyValue<'imeMode'>
-	initialLetter?: PropertyValue<'initialLetter'>
-	initialLetterAlign?: PropertyValue<'initialLetterAlign'>
-	inlineSize?: PropertyValue<'inlineSize'>
-	inputSecurity?: PropertyValue<'inputSecurity'>
 	inset?: PropertyValue<'inset'>
-	insetBlock?: PropertyValue<'insetBlock'>
-	insetBlockEnd?: PropertyValue<'insetBlockEnd'>
-	insetBlockStart?: PropertyValue<'insetBlockStart'>
-	insetInline?: PropertyValue<'insetInline'>
-	insetInlineEnd?: PropertyValue<'insetInlineEnd'>
-	insetInlineStart?: PropertyValue<'insetInlineStart'>
 	isolation?: PropertyValue<'isolation'>
-	justifyContent?: PropertyValue<'justifyContent'>
-	justifyItems?: PropertyValue<'justifyItems'>
-	justifySelf?: PropertyValue<'justifySelf'>
-	justifyTracks?: PropertyValue<'justifyTracks'>
 	left?: PropertyValue<'left'>
-	letterSpacing?: PropertyValue<'letterSpacing'>
-	lineBreak?: PropertyValue<'lineBreak'>
-	lineClamp?: PropertyValue<'lineClamp'>
-	lineHeight?: PropertyValue<'lineHeight'>
-	lineHeightStep?: PropertyValue<'lineHeightStep'>
-	listStyle?: PropertyValue<'listStyle'>
-	listStyleImage?: PropertyValue<'listStyleImage'>
-	listStylePosition?: PropertyValue<'listStylePosition'>
-	listStyleType?: PropertyValue<'listStyleType'>
 	margin?: PropertyValue<'margin'>
-	marginBlock?: PropertyValue<'marginBlock'>
-	marginBlockEnd?: PropertyValue<'marginBlockEnd'>
-	marginBlockStart?: PropertyValue<'marginBlockStart'>
-	marginBottom?: PropertyValue<'marginBottom'>
-	marginInline?: PropertyValue<'marginInline'>
-	marginInlineEnd?: PropertyValue<'marginInlineEnd'>
-	marginInlineStart?: PropertyValue<'marginInlineStart'>
-	marginLeft?: PropertyValue<'marginLeft'>
-	marginRight?: PropertyValue<'marginRight'>
-	marginTop?: PropertyValue<'marginTop'>
-	marginTrim?: PropertyValue<'marginTrim'>
 	mask?: PropertyValue<'mask'>
-	maskBorder?: PropertyValue<'maskBorder'>
-	maskBorderMode?: PropertyValue<'maskBorderMode'>
-	maskBorderOutset?: PropertyValue<'maskBorderOutset'>
-	maskBorderRepeat?: PropertyValue<'maskBorderRepeat'>
-	maskBorderSlice?: PropertyValue<'maskBorderSlice'>
-	maskBorderSource?: PropertyValue<'maskBorderSource'>
-	maskBorderWidth?: PropertyValue<'maskBorderWidth'>
-	maskClip?: PropertyValue<'maskClip'>
-	maskComposite?: PropertyValue<'maskComposite'>
-	maskImage?: PropertyValue<'maskImage'>
-	maskMode?: PropertyValue<'maskMode'>
-	maskOrigin?: PropertyValue<'maskOrigin'>
-	maskPosition?: PropertyValue<'maskPosition'>
-	maskRepeat?: PropertyValue<'maskRepeat'>
-	maskSize?: PropertyValue<'maskSize'>
-	maskType?: PropertyValue<'maskType'>
-	masonryAutoFlow?: PropertyValue<'masonryAutoFlow'>
-	mathDepth?: PropertyValue<'mathDepth'>
-	mathShift?: PropertyValue<'mathShift'>
-	mathStyle?: PropertyValue<'mathStyle'>
 	maxBlockSize?: PropertyValue<'maxBlockSize'>
 	maxHeight?: PropertyValue<'maxHeight'>
 	maxInlineSize?: PropertyValue<'maxInlineSize'>
@@ -314,162 +48,32 @@ export type SystemProperties = {
 	minHeight?: PropertyValue<'minHeight'>
 	minInlineSize?: PropertyValue<'minInlineSize'>
 	minWidth?: PropertyValue<'minWidth'>
-	mixBlendMode?: PropertyValue<'mixBlendMode'>
-	objectFit?: PropertyValue<'objectFit'>
-	objectPosition?: PropertyValue<'objectPosition'>
 	offset?: PropertyValue<'offset'>
-	offsetAnchor?: PropertyValue<'offsetAnchor'>
-	offsetDistance?: PropertyValue<'offsetDistance'>
-	offsetPath?: PropertyValue<'offsetPath'>
-	offsetPosition?: PropertyValue<'offsetPosition'>
-	offsetRotate?: PropertyValue<'offsetRotate'>
 	opacity?: PropertyValue<'opacity'>
 	order?: PropertyValue<'order'>
 	orphans?: PropertyValue<'orphans'>
 	outline?: PropertyValue<'outline'>
-	outlineColor?: PropertyValue<'outlineColor'>
-	outlineOffset?: PropertyValue<'outlineOffset'>
-	outlineStyle?: PropertyValue<'outlineStyle'>
-	outlineWidth?: PropertyValue<'outlineWidth'>
 	overflow?: PropertyValue<'overflow'>
-	overflowAnchor?: PropertyValue<'overflowAnchor'>
-	overflowBlock?: PropertyValue<'overflowBlock'>
-	overflowClipBox?: PropertyValue<'overflowClipBox'>
-	overflowClipMargin?: PropertyValue<'overflowClipMargin'>
-	overflowInline?: PropertyValue<'overflowInline'>
-	overflowWrap?: PropertyValue<'overflowWrap'>
-	overflowX?: PropertyValue<'overflowX'>
-	overflowY?: PropertyValue<'overflowY'>
-	overscrollBehavior?: PropertyValue<'overscrollBehavior'>
-	overscrollBehaviorBlock?: PropertyValue<'overscrollBehaviorBlock'>
-	overscrollBehaviorInline?: PropertyValue<'overscrollBehaviorInline'>
-	overscrollBehaviorX?: PropertyValue<'overscrollBehaviorX'>
-	overscrollBehaviorY?: PropertyValue<'overscrollBehaviorY'>
 	padding?: PropertyValue<'padding'>
-	paddingBlock?: PropertyValue<'paddingBlock'>
-	paddingBlockEnd?: PropertyValue<'paddingBlockEnd'>
-	paddingBlockStart?: PropertyValue<'paddingBlockStart'>
-	paddingBottom?: PropertyValue<'paddingBottom'>
-	paddingInline?: PropertyValue<'paddingInline'>
-	paddingInlineEnd?: PropertyValue<'paddingInlineEnd'>
-	paddingInlineStart?: PropertyValue<'paddingInlineStart'>
-	paddingLeft?: PropertyValue<'paddingLeft'>
-	paddingRight?: PropertyValue<'paddingRight'>
-	paddingTop?: PropertyValue<'paddingTop'>
 	page?: PropertyValue<'page'>
 	pageBreakAfter?: PropertyValue<'pageBreakAfter'>
 	pageBreakBefore?: PropertyValue<'pageBreakBefore'>
 	pageBreakInside?: PropertyValue<'pageBreakInside'>
-	paintOrder?: PropertyValue<'paintOrder'>
 	perspective?: PropertyValue<'perspective'>
-	perspectiveOrigin?: PropertyValue<'perspectiveOrigin'>
-	placeContent?: PropertyValue<'placeContent'>
-	placeItems?: PropertyValue<'placeItems'>
-	placeSelf?: PropertyValue<'placeSelf'>
-	pointerEvents?: PropertyValue<'pointerEvents'>
 	position?: PropertyValue<'position'>
-	printColorAdjust?: PropertyValue<'printColorAdjust'>
 	quotes?: PropertyValue<'quotes'>
 	resize?: PropertyValue<'resize'>
 	right?: PropertyValue<'right'>
 	rotate?: PropertyValue<'rotate'>
-	rowGap?: PropertyValue<'rowGap'>
-	rubyAlign?: PropertyValue<'rubyAlign'>
-	rubyMerge?: PropertyValue<'rubyMerge'>
-	rubyPosition?: PropertyValue<'rubyPosition'>
 	scale?: PropertyValue<'scale'>
-	scrollbarColor?: PropertyValue<'scrollbarColor'>
-	scrollbarGutter?: PropertyValue<'scrollbarGutter'>
-	scrollbarWidth?: PropertyValue<'scrollbarWidth'>
-	scrollBehavior?: PropertyValue<'scrollBehavior'>
-	scrollMargin?: PropertyValue<'scrollMargin'>
-	scrollMarginBlock?: PropertyValue<'scrollMarginBlock'>
-	scrollMarginBlockStart?: PropertyValue<'scrollMarginBlockStart'>
-	scrollMarginBlockEnd?: PropertyValue<'scrollMarginBlockEnd'>
-	scrollMarginBottom?: PropertyValue<'scrollMarginBottom'>
-	scrollMarginInline?: PropertyValue<'scrollMarginInline'>
-	scrollMarginInlineStart?: PropertyValue<'scrollMarginInlineStart'>
-	scrollMarginInlineEnd?: PropertyValue<'scrollMarginInlineEnd'>
-	scrollMarginLeft?: PropertyValue<'scrollMarginLeft'>
-	scrollMarginRight?: PropertyValue<'scrollMarginRight'>
-	scrollMarginTop?: PropertyValue<'scrollMarginTop'>
-	scrollPadding?: PropertyValue<'scrollPadding'>
-	scrollPaddingBlock?: PropertyValue<'scrollPaddingBlock'>
-	scrollPaddingBlockStart?: PropertyValue<'scrollPaddingBlockStart'>
-	scrollPaddingBlockEnd?: PropertyValue<'scrollPaddingBlockEnd'>
-	scrollPaddingBottom?: PropertyValue<'scrollPaddingBottom'>
-	scrollPaddingInline?: PropertyValue<'scrollPaddingInline'>
-	scrollPaddingInlineStart?: PropertyValue<'scrollPaddingInlineStart'>
-	scrollPaddingInlineEnd?: PropertyValue<'scrollPaddingInlineEnd'>
-	scrollPaddingLeft?: PropertyValue<'scrollPaddingLeft'>
-	scrollPaddingRight?: PropertyValue<'scrollPaddingRight'>
-	scrollPaddingTop?: PropertyValue<'scrollPaddingTop'>
-	scrollSnapAlign?: PropertyValue<'scrollSnapAlign'>
-	scrollSnapCoordinate?: PropertyValue<'scrollSnapCoordinate'>
-	scrollSnapDestination?: PropertyValue<'scrollSnapDestination'>
-	scrollSnapPointsX?: PropertyValue<'scrollSnapPointsX'>
-	scrollSnapPointsY?: PropertyValue<'scrollSnapPointsY'>
-	scrollSnapStop?: PropertyValue<'scrollSnapStop'>
-	scrollSnapType?: PropertyValue<'scrollSnapType'>
-	scrollSnapTypeX?: PropertyValue<'scrollSnapTypeX'>
-	scrollSnapTypeY?: PropertyValue<'scrollSnapTypeY'>
-	scrollTimeline?: PropertyValue<'scrollTimeline'>
-	scrollTimelineAxis?: PropertyValue<'scrollTimelineAxis'>
-	scrollTimelineName?: PropertyValue<'scrollTimelineName'>
-	shapeImageThreshold?: PropertyValue<'shapeImageThreshold'>
-	shapeMargin?: PropertyValue<'shapeMargin'>
-	shapeOutside?: PropertyValue<'shapeOutside'>
-	tabSize?: PropertyValue<'tabSize'>
-	tableLayout?: PropertyValue<'tableLayout'>
-	textAlign?: PropertyValue<'textAlign'>
-	textAlignLast?: PropertyValue<'textAlignLast'>
-	textCombineUpright?: PropertyValue<'textCombineUpright'>
-	textDecoration?: PropertyValue<'textDecoration'>
-	textDecorationColor?: PropertyValue<'textDecorationColor'>
-	textDecorationLine?: PropertyValue<'textDecorationLine'>
-	textDecorationSkip?: PropertyValue<'textDecorationSkip'>
-	textDecorationSkipInk?: PropertyValue<'textDecorationSkipInk'>
-	textDecorationStyle?: PropertyValue<'textDecorationStyle'>
-	textDecorationThickness?: PropertyValue<'textDecorationThickness'>
-	textEmphasis?: PropertyValue<'textEmphasis'>
-	textEmphasisColor?: PropertyValue<'textEmphasisColor'>
-	textEmphasisPosition?: PropertyValue<'textEmphasisPosition'>
-	textEmphasisStyle?: PropertyValue<'textEmphasisStyle'>
-	textIndent?: PropertyValue<'textIndent'>
-	textJustify?: PropertyValue<'textJustify'>
-	textOrientation?: PropertyValue<'textOrientation'>
-	textOverflow?: PropertyValue<'textOverflow'>
-	textRendering?: PropertyValue<'textRendering'>
-	textShadow?: PropertyValue<'textShadow'>
-	textSizeAdjust?: PropertyValue<'textSizeAdjust'>
-	textTransform?: PropertyValue<'textTransform'>
-	textUnderlineOffset?: PropertyValue<'textUnderlineOffset'>
-	textUnderlinePosition?: PropertyValue<'textUnderlinePosition'>
 	top?: PropertyValue<'top'>
-	touchAction?: PropertyValue<'touchAction'>
 	transform?: PropertyValue<'transform'>
-	transformBox?: PropertyValue<'transformBox'>
-	transformOrigin?: PropertyValue<'transformOrigin'>
-	transformStyle?: PropertyValue<'transformStyle'>
 	transition?: PropertyValue<'transition'>
-	transitionDelay?: PropertyValue<'transitionDelay'>
-	transitionDuration?: PropertyValue<'transitionDuration'>
-	transitionProperty?: PropertyValue<'transitionProperty'>
-	transitionTimingFunction?: PropertyValue<'transitionTimingFunction'>
 	translate?: PropertyValue<'translate'>
-	unicodeBidi?: PropertyValue<'unicodeBidi'>
-	userSelect?: PropertyValue<'userSelect'>
-	verticalAlign?: PropertyValue<'verticalAlign'>
-	viewTransitionName?: PropertyValue<'viewTransitionName'>
 	visibility?: PropertyValue<'visibility'>
-	whiteSpace?: PropertyValue<'whiteSpace'>
 	widows?: PropertyValue<'widows'>
 	width?: PropertyValue<'width'>
 	willChange?: PropertyValue<'willChange'>
-	wordBreak?: PropertyValue<'wordBreak'>
-	wordSpacing?: PropertyValue<'wordSpacing'>
-	wordWrap?: PropertyValue<'wordWrap'>
-	writingMode?: PropertyValue<'writingMode'>
 	zIndex?: PropertyValue<'zIndex'>
 	zoom?: PropertyValue<'zoom'>
 	pos?: PropertyValue<'pos'>
@@ -558,29 +162,160 @@ export type SystemProperties = {
 	shadowColor?: PropertyValue<'shadowColor'>
 	x?: PropertyValue<'x'>
 	y?: PropertyValue<'y'>
+	aspectRatio?: PropertyValue<'aspectRatio'>
+	boxDecorationBreak?: PropertyValue<'boxDecorationBreak'>
+	boxSizing?: PropertyValue<'boxSizing'>
+	objectPosition?: PropertyValue<'objectPosition'>
+	objectFit?: PropertyValue<'objectFit'>
+	overscrollBehavior?: PropertyValue<'overscrollBehavior'>
+	overscrollBehaviorX?: PropertyValue<'overscrollBehaviorX'>
+	overscrollBehaviorY?: PropertyValue<'overscrollBehaviorY'>
+	insetInline?: PropertyValue<'insetInline'>
+	insetBlock?: PropertyValue<'insetBlock'>
+	insetBlockEnd?: PropertyValue<'insetBlockEnd'>
+	insetBlockStart?: PropertyValue<'insetBlockStart'>
+	insetInlineEnd?: PropertyValue<'insetInlineEnd'>
+	insetInlineStart?: PropertyValue<'insetInlineStart'>
 	insetX?: PropertyValue<'insetX'>
 	insetY?: PropertyValue<'insetY'>
 	hideFrom?: PropertyValue<'hideFrom'>
 	hideBelow?: PropertyValue<'hideBelow'>
+	flexBasis?: PropertyValue<'flexBasis'>
+	flexDirection?: PropertyValue<'flexDirection'>
+	flexGrow?: PropertyValue<'flexGrow'>
+	flexShrink?: PropertyValue<'flexShrink'>
+	gridTemplateColumns?: PropertyValue<'gridTemplateColumns'>
+	gridTemplateRows?: PropertyValue<'gridTemplateRows'>
+	gridColumn?: PropertyValue<'gridColumn'>
+	gridRow?: PropertyValue<'gridRow'>
+	gridColumnStart?: PropertyValue<'gridColumnStart'>
+	gridColumnEnd?: PropertyValue<'gridColumnEnd'>
+	gridAutoFlow?: PropertyValue<'gridAutoFlow'>
+	gridAutoColumns?: PropertyValue<'gridAutoColumns'>
+	gridAutoRows?: PropertyValue<'gridAutoRows'>
+	gridGap?: PropertyValue<'gridGap'>
+	gridRowGap?: PropertyValue<'gridRowGap'>
+	gridColumnGap?: PropertyValue<'gridColumnGap'>
+	rowGap?: PropertyValue<'rowGap'>
+	columnGap?: PropertyValue<'columnGap'>
+	justifyContent?: PropertyValue<'justifyContent'>
+	alignContent?: PropertyValue<'alignContent'>
+	alignItems?: PropertyValue<'alignItems'>
+	alignSelf?: PropertyValue<'alignSelf'>
+	paddingLeft?: PropertyValue<'paddingLeft'>
+	paddingRight?: PropertyValue<'paddingRight'>
+	paddingTop?: PropertyValue<'paddingTop'>
+	paddingBottom?: PropertyValue<'paddingBottom'>
+	paddingBlock?: PropertyValue<'paddingBlock'>
+	paddingBlockEnd?: PropertyValue<'paddingBlockEnd'>
+	paddingBlockStart?: PropertyValue<'paddingBlockStart'>
+	paddingInline?: PropertyValue<'paddingInline'>
+	paddingInlineEnd?: PropertyValue<'paddingInlineEnd'>
+	paddingInlineStart?: PropertyValue<'paddingInlineStart'>
+	marginLeft?: PropertyValue<'marginLeft'>
+	marginRight?: PropertyValue<'marginRight'>
+	marginTop?: PropertyValue<'marginTop'>
+	marginBottom?: PropertyValue<'marginBottom'>
+	marginBlock?: PropertyValue<'marginBlock'>
+	marginBlockEnd?: PropertyValue<'marginBlockEnd'>
+	marginBlockStart?: PropertyValue<'marginBlockStart'>
+	marginInline?: PropertyValue<'marginInline'>
+	marginInlineEnd?: PropertyValue<'marginInlineEnd'>
+	marginInlineStart?: PropertyValue<'marginInlineStart'>
+	outlineWidth?: PropertyValue<'outlineWidth'>
+	outlineColor?: PropertyValue<'outlineColor'>
+	outlineOffset?: PropertyValue<'outlineOffset'>
 	divideX?: PropertyValue<'divideX'>
 	divideY?: PropertyValue<'divideY'>
 	divideColor?: PropertyValue<'divideColor'>
 	divideStyle?: PropertyValue<'divideStyle'>
+	inlineSize?: PropertyValue<'inlineSize'>
+	blockSize?: PropertyValue<'blockSize'>
+	fontFamily?: PropertyValue<'fontFamily'>
+	fontSize?: PropertyValue<'fontSize'>
+	fontWeight?: PropertyValue<'fontWeight'>
 	fontSmoothing?: PropertyValue<'fontSmoothing'>
+	fontVariantNumeric?: PropertyValue<'fontVariantNumeric'>
+	letterSpacing?: PropertyValue<'letterSpacing'>
+	lineHeight?: PropertyValue<'lineHeight'>
+	textAlign?: PropertyValue<'textAlign'>
+	textDecoration?: PropertyValue<'textDecoration'>
+	textDecorationColor?: PropertyValue<'textDecorationColor'>
+	textEmphasisColor?: PropertyValue<'textEmphasisColor'>
+	textDecorationStyle?: PropertyValue<'textDecorationStyle'>
+	textDecorationThickness?: PropertyValue<'textDecorationThickness'>
+	textUnderlineOffset?: PropertyValue<'textUnderlineOffset'>
+	textTransform?: PropertyValue<'textTransform'>
+	textIndent?: PropertyValue<'textIndent'>
+	textShadow?: PropertyValue<'textShadow'>
+	textOverflow?: PropertyValue<'textOverflow'>
+	verticalAlign?: PropertyValue<'verticalAlign'>
+	wordBreak?: PropertyValue<'wordBreak'>
 	textWrap?: PropertyValue<'textWrap'>
 	truncate?: PropertyValue<'truncate'>
+	lineClamp?: PropertyValue<'lineClamp'>
+	listStyleType?: PropertyValue<'listStyleType'>
+	listStylePosition?: PropertyValue<'listStylePosition'>
+	listStyleImage?: PropertyValue<'listStyleImage'>
+	backgroundPosition?: PropertyValue<'backgroundPosition'>
+	backgroundPositionX?: PropertyValue<'backgroundPositionX'>
+	backgroundPositionY?: PropertyValue<'backgroundPositionY'>
+	backgroundAttachment?: PropertyValue<'backgroundAttachment'>
+	backgroundClip?: PropertyValue<'backgroundClip'>
+	backgroundColor?: PropertyValue<'backgroundColor'>
+	backgroundOrigin?: PropertyValue<'backgroundOrigin'>
+	backgroundImage?: PropertyValue<'backgroundImage'>
+	backgroundRepeat?: PropertyValue<'backgroundRepeat'>
+	backgroundBlendMode?: PropertyValue<'backgroundBlendMode'>
+	backgroundSize?: PropertyValue<'backgroundSize'>
 	backgroundGradient?: PropertyValue<'backgroundGradient'>
 	textGradient?: PropertyValue<'textGradient'>
 	gradientFrom?: PropertyValue<'gradientFrom'>
 	gradientTo?: PropertyValue<'gradientTo'>
 	gradientVia?: PropertyValue<'gradientVia'>
+	borderRadius?: PropertyValue<'borderRadius'>
+	borderTopLeftRadius?: PropertyValue<'borderTopLeftRadius'>
+	borderTopRightRadius?: PropertyValue<'borderTopRightRadius'>
+	borderBottomRightRadius?: PropertyValue<'borderBottomRightRadius'>
+	borderBottomLeftRadius?: PropertyValue<'borderBottomLeftRadius'>
 	borderTopRadius?: PropertyValue<'borderTopRadius'>
 	borderRightRadius?: PropertyValue<'borderRightRadius'>
 	borderBottomRadius?: PropertyValue<'borderBottomRadius'>
 	borderLeftRadius?: PropertyValue<'borderLeftRadius'>
+	borderStartStartRadius?: PropertyValue<'borderStartStartRadius'>
+	borderStartEndRadius?: PropertyValue<'borderStartEndRadius'>
 	borderStartRadius?: PropertyValue<'borderStartRadius'>
+	borderEndStartRadius?: PropertyValue<'borderEndStartRadius'>
+	borderEndEndRadius?: PropertyValue<'borderEndEndRadius'>
 	borderEndRadius?: PropertyValue<'borderEndRadius'>
+	borderColor?: PropertyValue<'borderColor'>
+	borderInline?: PropertyValue<'borderInline'>
+	borderInlineWidth?: PropertyValue<'borderInlineWidth'>
+	borderInlineColor?: PropertyValue<'borderInlineColor'>
+	borderBlock?: PropertyValue<'borderBlock'>
+	borderBlockWidth?: PropertyValue<'borderBlockWidth'>
+	borderBlockColor?: PropertyValue<'borderBlockColor'>
+	borderLeft?: PropertyValue<'borderLeft'>
+	borderLeftColor?: PropertyValue<'borderLeftColor'>
+	borderInlineStart?: PropertyValue<'borderInlineStart'>
+	borderInlineStartWidth?: PropertyValue<'borderInlineStartWidth'>
+	borderInlineStartColor?: PropertyValue<'borderInlineStartColor'>
+	borderRight?: PropertyValue<'borderRight'>
+	borderRightColor?: PropertyValue<'borderRightColor'>
+	borderInlineEnd?: PropertyValue<'borderInlineEnd'>
+	borderInlineEndWidth?: PropertyValue<'borderInlineEndWidth'>
+	borderInlineEndColor?: PropertyValue<'borderInlineEndColor'>
+	borderTop?: PropertyValue<'borderTop'>
+	borderTopColor?: PropertyValue<'borderTopColor'>
+	borderBottom?: PropertyValue<'borderBottom'>
+	borderBottomColor?: PropertyValue<'borderBottomColor'>
+	borderBlockEnd?: PropertyValue<'borderBlockEnd'>
+	borderBlockEndColor?: PropertyValue<'borderBlockEndColor'>
+	borderBlockStart?: PropertyValue<'borderBlockStart'>
+	borderBlockStartColor?: PropertyValue<'borderBlockStartColor'>
+	boxShadow?: PropertyValue<'boxShadow'>
 	boxShadowColor?: PropertyValue<'boxShadowColor'>
+	mixBlendMode?: PropertyValue<'mixBlendMode'>
 	brightness?: PropertyValue<'brightness'>
 	contrast?: PropertyValue<'contrast'>
 	grayscale?: PropertyValue<'grayscale'>
@@ -590,6 +325,7 @@ export type SystemProperties = {
 	sepia?: PropertyValue<'sepia'>
 	dropShadow?: PropertyValue<'dropShadow'>
 	blur?: PropertyValue<'blur'>
+	backdropFilter?: PropertyValue<'backdropFilter'>
 	backdropBlur?: PropertyValue<'backdropBlur'>
 	backdropBrightness?: PropertyValue<'backdropBrightness'>
 	backdropContrast?: PropertyValue<'backdropContrast'>
@@ -599,27 +335,71 @@ export type SystemProperties = {
 	backdropOpacity?: PropertyValue<'backdropOpacity'>
 	backdropSaturate?: PropertyValue<'backdropSaturate'>
 	backdropSepia?: PropertyValue<'backdropSepia'>
+	borderCollapse?: PropertyValue<'borderCollapse'>
+	borderSpacing?: PropertyValue<'borderSpacing'>
 	borderSpacingX?: PropertyValue<'borderSpacingX'>
 	borderSpacingY?: PropertyValue<'borderSpacingY'>
+	tableLayout?: PropertyValue<'tableLayout'>
+	transitionTimingFunction?: PropertyValue<'transitionTimingFunction'>
+	transitionDelay?: PropertyValue<'transitionDelay'>
+	transitionDuration?: PropertyValue<'transitionDuration'>
+	transitionProperty?: PropertyValue<'transitionProperty'>
+	animationDelay?: PropertyValue<'animationDelay'>
+	transformOrigin?: PropertyValue<'transformOrigin'>
 	scaleX?: PropertyValue<'scaleX'>
 	scaleY?: PropertyValue<'scaleY'>
 	translateX?: PropertyValue<'translateX'>
 	translateY?: PropertyValue<'translateY'>
+	accentColor?: PropertyValue<'accentColor'>
+	caretColor?: PropertyValue<'caretColor'>
+	scrollBehavior?: PropertyValue<'scrollBehavior'>
 	scrollbar?: PropertyValue<'scrollbar'>
+	scrollMargin?: PropertyValue<'scrollMargin'>
 	scrollMarginX?: PropertyValue<'scrollMarginX'>
 	scrollMarginY?: PropertyValue<'scrollMarginY'>
+	scrollMarginLeft?: PropertyValue<'scrollMarginLeft'>
+	scrollMarginRight?: PropertyValue<'scrollMarginRight'>
+	scrollMarginTop?: PropertyValue<'scrollMarginTop'>
+	scrollMarginBottom?: PropertyValue<'scrollMarginBottom'>
+	scrollMarginBlock?: PropertyValue<'scrollMarginBlock'>
+	scrollMarginBlockEnd?: PropertyValue<'scrollMarginBlockEnd'>
+	scrollMarginBlockStart?: PropertyValue<'scrollMarginBlockStart'>
+	scrollMarginInline?: PropertyValue<'scrollMarginInline'>
+	scrollMarginInlineEnd?: PropertyValue<'scrollMarginInlineEnd'>
+	scrollMarginInlineStart?: PropertyValue<'scrollMarginInlineStart'>
+	scrollPadding?: PropertyValue<'scrollPadding'>
+	scrollPaddingBlock?: PropertyValue<'scrollPaddingBlock'>
+	scrollPaddingBlockStart?: PropertyValue<'scrollPaddingBlockStart'>
+	scrollPaddingBlockEnd?: PropertyValue<'scrollPaddingBlockEnd'>
+	scrollPaddingInline?: PropertyValue<'scrollPaddingInline'>
+	scrollPaddingInlineEnd?: PropertyValue<'scrollPaddingInlineEnd'>
+	scrollPaddingInlineStart?: PropertyValue<'scrollPaddingInlineStart'>
 	scrollPaddingX?: PropertyValue<'scrollPaddingX'>
 	scrollPaddingY?: PropertyValue<'scrollPaddingY'>
+	scrollPaddingLeft?: PropertyValue<'scrollPaddingLeft'>
+	scrollPaddingRight?: PropertyValue<'scrollPaddingRight'>
+	scrollPaddingTop?: PropertyValue<'scrollPaddingTop'>
+	scrollPaddingBottom?: PropertyValue<'scrollPaddingBottom'>
+	scrollSnapAlign?: PropertyValue<'scrollSnapAlign'>
+	scrollSnapStop?: PropertyValue<'scrollSnapStop'>
+	scrollSnapType?: PropertyValue<'scrollSnapType'>
 	scrollSnapStrictness?: PropertyValue<'scrollSnapStrictness'>
 	scrollSnapMargin?: PropertyValue<'scrollSnapMargin'>
 	scrollSnapMarginTop?: PropertyValue<'scrollSnapMarginTop'>
 	scrollSnapMarginBottom?: PropertyValue<'scrollSnapMarginBottom'>
 	scrollSnapMarginLeft?: PropertyValue<'scrollSnapMarginLeft'>
 	scrollSnapMarginRight?: PropertyValue<'scrollSnapMarginRight'>
+	touchAction?: PropertyValue<'touchAction'>
+	userSelect?: PropertyValue<'userSelect'>
 	fill?: PropertyValue<'fill'>
 	stroke?: PropertyValue<'stroke'>
 	srOnly?: PropertyValue<'srOnly'>
 	debug?: PropertyValue<'debug'>
+	backfaceVisibility?: PropertyValue<'backfaceVisibility'>
+	clipPath?: PropertyValue<'clipPath'>
+	maskImage?: PropertyValue<'maskImage'>
+	maskSize?: PropertyValue<'maskSize'>
+	textSizeAdjust?: PropertyValue<'textSizeAdjust'>
 	colorPalette?: PropertyValue<'colorPalette'>
 	textStyle?: PropertyValue<'textStyle'>
 }
