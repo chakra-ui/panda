@@ -6,6 +6,83 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [0.11.0] - 2023-08-11
+
+### Fixed
+
+- Fix regression where style property with multiple shorthand did not generate the correct className
+- Normalize tsconfig path mapping to ensure consistency across platforms
+- Fix issue where some style properties shows TS error when using `!important`
+
+### Added
+
+- Add new visually hidden and bleed patterns.
+
+  **Bleed** is a layout pattern is used to negate the padding applied to a parent container. You can apply an `inline`
+  or `block` bleed to a child element, setting its value to match the parent's padding.
+
+  ```tsx
+  import { css } from '../styled-system/css'
+  import { bleed } from '../styled-system/patterns'
+
+  export function Page() {
+    return (
+      <div class={css({ px: '6' })}>
+        <div class={bleed({ inline: '6' })}>Welcome</div>
+      </div>
+    )
+  }
+  ```
+
+  **Visually hidden** is a layout pattern used to hide content visually, but still make it available to screen readers.
+
+  ```tsx
+  import { css } from '../styled-system/css'
+  import { visuallyHidden } from '../styled-system/patterns'
+
+  export function Checkbox() {
+    return (
+      <label>
+        <input type="checkbox" class={visuallyHidden()}>
+          I'm hidden
+        </input>
+        <span>Checkbox</span>
+      </label>
+    )
+  }
+  ```
+
+- Add support for optional `glob` argument in the `panda cssgen` command. It is useful when you need to extract the css
+  of specific pages in your application.
+
+  > This argument overrides the `include` config option.
+
+  ```sh
+  panda cssgen app/ecommerce/**/*.tsx -o ecommerce.css
+  ```
+
+- Added a new hook for when the final `styles.css` content has been generated. This is useful when you need to do
+  something with the final CSS content.
+
+  ```ts filename=panda.config.ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    hooks: {
+      'generator:css'(file, content) {
+        if (file === 'styles.css') {
+          // do something with the final css content
+        }
+      },
+    },
+  })
+  ```
+
+### Changed
+
+- Removed the `@pandacss/dev/astro` entrypoint in favor of installing `@pandacss/astro` package
+- Automatically inject the entry css `@layer` in `@pandacss/astro` removing the need to manually setup a css file.
+
 ## [0.10.0] - 2023-08-07
 
 ### Fixed
