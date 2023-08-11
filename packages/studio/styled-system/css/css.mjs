@@ -41,7 +41,6 @@ export const cssCache = new Map()
 export const css = (styles) => {
   const classNames = cssFn(styles)
   cssCache.set(classNames, styles)
-  console.log({ classNames, styles })
   return classNames
 }
 css.raw = (styles) => styles
