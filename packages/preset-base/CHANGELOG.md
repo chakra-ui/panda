@@ -1,5 +1,65 @@
 # @pandacss/preset-base
 
+## 0.11.0
+
+### Minor Changes
+
+- 811f4fb1: Add new visually hidden and bleed patterns.
+
+  ### Bleed
+
+  Bleed is a layout pattern is used to negate the padding applied to a parent container. You can apply an `inline` or
+  `block` bleed to a child element, setting its value to match the parent's padding.
+
+  ```tsx
+  import { css } from '../styled-system/css'
+  import { bleed } from '../styled-system/patterns'
+
+  export function Page() {
+    return (
+      <div class={css({ px: '6' })}>
+        <div class={bleed({ inline: '6' })}>Welcome</div>
+      </div>
+    )
+  }
+  ```
+
+  ### Visually Hidden
+
+  Visually hidden is a layout pattern used to hide content visually, but still make it available to screen readers.
+
+  ```tsx
+  import { css } from '../styled-system/css'
+  import { visuallyHidden } from '../styled-system/patterns'
+
+  export function Checkbox() {
+    return (
+      <label>
+        <input type="checkbox" class={visuallyHidden()}>
+          I'm hidde
+        </input>
+        <span>Checkbox</span>
+      </label>
+    )
+  }
+  ```
+
+### Patch Changes
+
+- Updated dependencies [5b95caf5]
+  - @pandacss/types@0.11.0
+
+## 0.10.0
+
+### Patch Changes
+
+- 00d11a8b: Update conditions
+- 1972b4fa: Add opacity utility to base preset
+- Updated dependencies [24e783b3]
+- Updated dependencies [386e5098]
+- Updated dependencies [a669f4d5]
+  - @pandacss/types@0.10.0
+
 ## 0.9.0
 
 ### Minor Changes

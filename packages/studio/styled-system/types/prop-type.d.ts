@@ -125,10 +125,12 @@ type PropertyValueTypes  = {
 	borderLeft: Tokens["borders"];
 	borderLeftColor: Tokens["colors"];
 	borderInlineStart: Tokens["borders"];
+	borderInlineStartWidth: Tokens["borderWidths"];
 	borderInlineStartColor: Tokens["colors"];
 	borderRight: Tokens["borders"];
 	borderRightColor: Tokens["colors"];
 	borderInlineEnd: Tokens["borders"];
+	borderInlineEndWidth: Tokens["borderWidths"];
 	borderInlineEndColor: Tokens["colors"];
 	borderTop: Tokens["borders"];
 	borderTopColor: Tokens["colors"];
@@ -288,8 +290,10 @@ type PropertyValueTypes  = {
 	borderYWidth: Shorthand<"borderBlockWidth">;
 	borderYColor: Shorthand<"borderBlockColor">;
 	borderStart: Shorthand<"borderInlineStart">;
+	borderStartWidth: Shorthand<"borderInlineStartWidth">;
 	borderStartColor: Shorthand<"borderInlineStartColor">;
 	borderEnd: Shorthand<"borderInlineEnd">;
+	borderEndWidth: Shorthand<"borderInlineEndWidth">;
 	borderEndColor: Shorthand<"borderInlineEndColor">;
 	shadow: Shorthand<"boxShadow">;
 	shadowColor: Shorthand<"boxShadowColor">;
@@ -298,7 +302,7 @@ type PropertyValueTypes  = {
 }
 
 export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-  ? ConditionalValue<PropertyTypes[T] | CssValue<T>>
+  ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
   : T extends keyof CssProperties
-  ? ConditionalValue<CssProperties[T]>
+  ? ConditionalValue<CssProperties[T] | (string & {})>
   : ConditionalValue<string | number>

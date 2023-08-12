@@ -6,12 +6,271 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [0.11.0] - 2023-08-11
+
+### Fixed
+
+- Fix regression where style property with multiple shorthand did not generate the correct className
+- Normalize tsconfig path mapping to ensure consistency across platforms
+- Fix issue where some style properties shows TS error when using `!important`
+
+### Added
+
+- Add new visually hidden and bleed patterns.
+
+  **Bleed** is a layout pattern is used to negate the padding applied to a parent container. You can apply an `inline`
+  or `block` bleed to a child element, setting its value to match the parent's padding.
+
+  ```tsx
+  import { css } from '../styled-system/css'
+  import { bleed } from '../styled-system/patterns'
+
+  export function Page() {
+    return (
+      <div class={css({ px: '6' })}>
+        <div class={bleed({ inline: '6' })}>Welcome</div>
+      </div>
+    )
+  }
+  ```
+
+  **Visually hidden** is a layout pattern used to hide content visually, but still make it available to screen readers.
+
+  ```tsx
+  import { css } from '../styled-system/css'
+  import { visuallyHidden } from '../styled-system/patterns'
+
+  export function Checkbox() {
+    return (
+      <label>
+        <input type="checkbox" class={visuallyHidden()}>
+          I'm hidden
+        </input>
+        <span>Checkbox</span>
+      </label>
+    )
+  }
+  ```
+
+- Add support for optional `glob` argument in the `panda cssgen` command. It is useful when you need to extract the css
+  of specific pages in your application.
+
+  > This argument overrides the `include` config option.
+
+  ```sh
+  panda cssgen app/ecommerce/**/*.tsx -o ecommerce.css
+  ```
+
+- Added a new hook for when the final `styles.css` content has been generated. This is useful when you need to do
+  something with the final CSS content.
+
+  ```ts filename=panda.config.ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    hooks: {
+      'generator:css'(file, content) {
+        if (file === 'styles.css') {
+          // do something with the final css content
+        }
+      },
+    },
+  })
+  ```
+
+### Changed
+
+- Removed the `@pandacss/dev/astro` entrypoint in favor of installing `@pandacss/astro` package
+- Automatically inject the entry css `@layer` in `@pandacss/astro` removing the need to manually setup a css file.
+
+## [0.10.0] - 2023-08-07
+
+### Fixed
+
+- Reduce the size of the generated JS code by ~30% by optimizing the generated code.
+  > Check [this PR](https://github.com/chakra-ui/panda/pull/1115) to see the details.
+- Fix issue in `staticCss` where recipe css generation does not work when recipe includes only `base` (no `variants`)
+- Fix issue where `opacity` property is not connected to the `opacity` tokens
+
+### Added
+
+#### Slot Recipes
+
+Introduce new slot recipe features to define recipes that can be used to style composite or multi-part components
+easily.
+
+- `sva`: the slot recipe version of `cva`
+- `defineSlotRecipe`: the slot recipe version of `defineRecipe`
+
+**Atomic Slot Recipe**
+
+Use the `sva` function to define atomic slot recipes.
+
+```jsx
+import { sva } from 'styled-system/css'
+
+const button = sva({
+  slots: ['label', 'icon'],
+  base: {
+    label: { color: 'red', textDecoration: 'underline' },
+  },
+  variants: {
+    rounded: {
+      true: {},
+    },
+    size: {
+      sm: {
+        label: { fontSize: 'sm' },
+        icon: { fontSize: 'sm' },
+      },
+      lg: {
+        label: { fontSize: 'lg' },
+        icon: { fontSize: 'lg', color: 'pink' },
+      },
+    },
+  },
+  defaultVariants: {
+    size: 'sm',
+  },
+})
+
+export function App() {
+  const btnClass = button({ size: 'lg', rounded: true })
+
+  return (
+    <button>
+      <p class={btnClass.label}> Label</p>
+      <p class={btnClass.icon}> Icon</p>
+    </button>
+  )
+}
+```
+
+**Config Slot Recipe**
+
+Use the `defineSlotRecipe` function to define slot recipes in your config.
+
+```ts filename=panda.config.ts
+import { defineConfig, defineSlotRecipe } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    slotRecipes: {
+      button: defineSlotRecipe({
+        className: 'button',
+        slots: ['label', 'icon'],
+        base: {
+          label: { color: 'red', textDecoration: 'underline' },
+        },
+        variants: {
+          rounded: {
+            true: {},
+          },
+          size: {
+            sm: {
+              label: { fontSize: 'sm' },
+              icon: { fontSize: 'sm' },
+            },
+            lg: {
+              label: { fontSize: 'lg' },
+              icon: { fontSize: 'lg', color: 'pink' },
+            },
+          },
+        },
+        defaultVariants: {
+          size: 'sm',
+        },
+      }),
+    },
+  },
+})
+```
+
+Here's how you can use the config slot recipe in your JSX code. The classnames generated by the slot recipe are added to
+the `recipes` cascade layer.
+
+```jsx
+import { button } from 'styled-system/recipes'
+
+export function App() {
+  const btnClass = button({ size: 'lg', rounded: true })
+
+  return (
+    <button>
+      <p class={btnClass.label}> Label</p>
+      <p class={btnClass.icon}> Icon</p>
+    </button>
+  )
+}
+```
+
+#### JSX Style Props
+
+Add `jsxStyleProps` config option for controlling how JSX style props are handled in Panda. It helps to significantly
+reducing the bundle size of the generated JS code by using the `jsxStyleProps` config option.
+
+This config option supports 3 values:
+
+- `all`: All CSS properties can be used as JSX style props. This is the default value.
+
+```ts filename=panda.config.ts
+export default defineConfig({
+  jsxStyleProps: 'all',
+})
+```
+
+```jsx
+import { styled } from 'styled-system/jsx'
+
+const Example = () => {
+  // all CSS properties + css prop are allowed
+  return <Box bg="red.400" color="white" css={{...}} />
+}
+```
+
+- `minimal`: Only the `css` prop can be used as JSX style props. This reduced the generated JS bundle size by ~45%.
+
+```ts filename=panda.config.ts
+export default defineConfig({
+  jsxStyleProps: 'minimal',
+})
+```
+
+```jsx
+import { styled } from 'styled-system/jsx'
+
+const Example = () => {
+  // only the `css` prop is allowed
+  return <Box css={{ bg: 'red.400', color: 'white' }} />
+}
+```
+
+- `none`: No CSS properties can be used as JSX style props. This reduced the generated JS bundle size by ~48%.
+
+```ts filename=panda.config.ts
+export default defineConfig({
+  jsxStyleProps: 'none',
+})
+```
+
+> Check [this PR](https://github.com/chakra-ui/panda/pull/1115) to see the details.
+
+### Changed
+
+Update Panda preset conditions:
+
+- `_checked` now supports `[data-state=checked]`
+- `_expanded` now supports `[data-state=expanded]`
+- `_indeterminate` now supports `[data-state=indeterminate]`
+- `_open` now supports `[data-open]` and `[data-state=open]`
+
 ## [0.9.0] - 2023-07-28
 
 ### Fixed
 
 - Fix issue where extractor did not consider `true` and `false` branch when using tenary operator
 - Fix issue where postcss plugin did not respect the `cwd` option in the panda config
+- Fix issue where `asset` tokens generated invalid css variable
 
 ### Added
 

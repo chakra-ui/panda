@@ -1,5 +1,100 @@
 # @pandacss/studio
 
+## 0.11.0
+
+### Patch Changes
+
+- Updated dependencies [dead08a2]
+- Updated dependencies [cde9702e]
+- Updated dependencies [5b95caf5]
+  - @pandacss/config@0.11.0
+  - @pandacss/node@0.11.0
+  - @pandacss/types@0.11.0
+  - @pandacss/token-dictionary@0.11.0
+  - @pandacss/logger@0.11.0
+  - @pandacss/shared@0.11.0
+
+## 0.10.0
+
+### Minor Changes
+
+- a669f4d5: Introduce new slot recipe features.
+
+  Slot recipes are useful for styling composite or multi-part components easily.
+
+  - `sva`: the slot recipe version of `cva`
+  - `defineSlotRecipe`: the slot recipe version of `defineRecipe`
+
+  **Definition**
+
+  ```jsx
+  import { sva } from 'styled-system/css'
+
+  const button = sva({
+    slots: ['label', 'icon'],
+    base: {
+      label: { color: 'red', textDecoration: 'underline' },
+    },
+    variants: {
+      rounded: {
+        true: {},
+      },
+      size: {
+        sm: {
+          label: { fontSize: 'sm' },
+          icon: { fontSize: 'sm' },
+        },
+        lg: {
+          label: { fontSize: 'lg' },
+          icon: { fontSize: 'lg', color: 'pink' },
+        },
+      },
+    },
+    defaultVariants: {
+      size: 'sm',
+    },
+  })
+  ```
+
+  **Usage**
+
+  ```jsx
+  export function App() {
+    const btnClass = button({ size: 'lg', rounded: true })
+
+    return (
+      <button>
+        <p class={btnClass.label}> Label</p>
+        <p class={btnClass.icon}> Icon</p>
+      </button>
+    )
+  }
+  ```
+
+### Patch Changes
+
+- 24e783b3: Reduce the overall `outdir` size, introduce the new config `jsxStyleProps` option to disable style props and
+  further reduce it.
+
+  `config.jsxStyleProps`:
+
+  - When set to 'all', all style props are allowed.
+  - When set to 'minimal', only the `css` prop is allowed.
+  - When set to 'none', no style props are allowed and therefore the `jsxFactory` will not be usable as a component:
+    - `<styled.div />` and `styled("div")` aren't valid
+    - but the recipe usage is still valid `styled("div", { base: { color: "red.300" }, variants: { ...} })`
+
+- Updated dependencies [24e783b3]
+- Updated dependencies [9d4aa918]
+- Updated dependencies [386e5098]
+- Updated dependencies [a669f4d5]
+  - @pandacss/shared@0.10.0
+  - @pandacss/types@0.10.0
+  - @pandacss/token-dictionary@0.10.0
+  - @pandacss/node@0.10.0
+  - @pandacss/config@0.10.0
+  - @pandacss/logger@0.10.0
+
 ## 0.9.0
 
 ### Patch Changes

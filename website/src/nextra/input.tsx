@@ -19,17 +19,14 @@ const styles = {
     rounded: 'lg',
     px: 3,
     py: 2,
-    transition: 'colors',
-    textStyle: 'md',
+    transition: 'shadow',
+    textStyle: { base: 'md', md: 'sm' },
     lineHeight: 'tight',
-    md: {
-      textStyle: 'sm'
-    },
-    bgColor: 'rgb(0 0 0 / 0.05)',
+    bg: 'rgb(0 0 0 / 0.05)',
     _dark: {
       color: 'gray.400',
-      bgColor: 'rgb(249 250 251 / 0.1)',
-      _focus: { bgColor: 'black' }
+      bg: 'rgb(249 250 251 / 0.1)',
+      _focus: { bg: 'black' }
     },
     _focus: {
       bg: 'white'

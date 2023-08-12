@@ -549,8 +549,10 @@ export type SystemProperties = {
 	borderYWidth?: PropertyValue<'borderYWidth'>
 	borderYColor?: PropertyValue<'borderYColor'>
 	borderStart?: PropertyValue<'borderStart'>
+	borderStartWidth?: PropertyValue<'borderStartWidth'>
 	borderStartColor?: PropertyValue<'borderStartColor'>
 	borderEnd?: PropertyValue<'borderEnd'>
+	borderEndWidth?: PropertyValue<'borderEndWidth'>
 	borderEndColor?: PropertyValue<'borderEndColor'>
 	shadow?: PropertyValue<'shadow'>
 	shadowColor?: PropertyValue<'shadowColor'>
