@@ -78,9 +78,7 @@ Whether to only emit the `tokens` directory
 
 ### prefix
 
-**Type**: `boolean`
-
-**Default**: `true`
+**Type**: `string`
 
 The namespace prefix for the generated css classes and css variables.
 
@@ -107,6 +105,42 @@ would result in:
   color: var(--panda-colors-blue-500);
 }
 ```
+
+### layers
+
+**Type**: `Partial<Layer>`
+
+Cascade layers used in generated css.
+
+Ex: when customizing the utilities layer
+
+```json
+{
+  "layers": {
+    "utilities": "panda_utilities"
+  }
+}
+```
+
+```tsx
+import { css } from '../styled-system/css'
+
+const App = () => {
+  return <div className={css({ color: 'blue.500' })} />
+}
+```
+
+would result in:
+
+```css
+@layer panda_utilities {
+  .text_blue\.500 {
+    color: var(--colors-blue-500);
+  }
+}
+```
+
+You should update the layer in your root css also.
 
 ### separator
 
@@ -389,6 +423,8 @@ const Container = styled.div`
 `
 ```
 
+## Design token options
+
 ### shorthands
 
 **Type**: `boolean`
@@ -420,8 +456,6 @@ const styles = css({
   padding: '10px 15px'
 })
 ```
-
-## Design token options
 
 ### cssVarRoot
 
