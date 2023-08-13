@@ -307,9 +307,9 @@ describe('generate property types', () => {
       }
 
       export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-        ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
+        ? ConditionalValue<PropertyTypes[T] | CssValue<T> | \`\${string}!\`>
         : T extends keyof CssProperties
-        ? ConditionalValue<CssProperties[T] | (string & {})>
+        ? ConditionalValue<CssProperties[T] | \`\${string}!\`>
         : ConditionalValue<string | number>"
     `)
   })

@@ -9,6 +9,8 @@ export function generatePropTypes(ctx: Context) {
 
   const strictText = `${strictTokens ? '' : ' | CssValue<T>'}`
 
+  const allowImportantModifier = '`${string}!`'
+
   const result: string[] = [
     outdent`
     import type { ConditionalValue } from './conditions';
@@ -44,9 +46,9 @@ export function generatePropTypes(ctx: Context) {
   ${result.join('\n')}
 
   export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-    ? ConditionalValue<PropertyTypes[T]${strictText} | (string & {})>
+    ? ConditionalValue<PropertyTypes[T]${strictText} | ${allowImportantModifier}>
     : T extends keyof CssProperties
-    ? ConditionalValue<CssProperties[T] | (string & {})>
+    ? ConditionalValue<CssProperties[T] | ${allowImportantModifier}>
     : ConditionalValue<string | number>
   `
 }
