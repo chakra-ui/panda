@@ -104,7 +104,7 @@ export const background: UtilityConfig = {
         '--gradient-stops': 'var(--gradient-from), var(--gradient-to)',
         '--gradient': 'var(--gradient-via-stops, var(--gradient-stops))',
         backgroundImage: value,
-        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
         color: 'transparent',
       }
     },

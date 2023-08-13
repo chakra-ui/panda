@@ -1,5 +1,6 @@
 import { writeFileSync } from 'fs'
 import json from 'mdn-data/css/properties.json'
+import { properties as svgProperties } from './svg'
 
 const dashRegex = /-+(.)/g
 function camelCaseProperty(str: string): string {
@@ -9,6 +10,7 @@ function camelCaseProperty(str: string): string {
 const omitRegex = /^(?:-moz|-ms|--\*)/
 
 const properties = Object.keys(json)
+  .concat(Object.keys(svgProperties))
   .filter((v) => !omitRegex.test(v))
   .map((v) => camelCaseProperty(v))
 
