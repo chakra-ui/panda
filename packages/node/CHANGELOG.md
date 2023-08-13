@@ -1,5 +1,26 @@
 # @pandacss/node
 
+## 0.11.0
+
+### Patch Changes
+
+- cde9702e: Add an optional `glob` argument that overrides the config.include on the `panda cssgen` CLI command.
+- Updated dependencies [dead08a2]
+- Updated dependencies [5b95caf5]
+- Updated dependencies [39b80b49]
+- Updated dependencies [1dc788bd]
+  - @pandacss/config@0.11.0
+  - @pandacss/generator@0.11.0
+  - @pandacss/types@0.11.0
+  - @pandacss/parser@0.11.0
+  - @pandacss/core@0.11.0
+  - @pandacss/token-dictionary@0.11.0
+  - @pandacss/error@0.11.0
+  - @pandacss/extractor@0.11.0
+  - @pandacss/is-valid-prop@0.11.0
+  - @pandacss/logger@0.11.0
+  - @pandacss/shared@0.11.0
+
 ## 0.10.0
 
 ### Patch Changes

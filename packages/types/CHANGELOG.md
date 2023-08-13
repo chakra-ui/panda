@@ -1,5 +1,12 @@
 # @pandacss/types
 
+## 0.11.0
+
+### Patch Changes
+
+- 5b95caf5: Add a hook call when the final `styles.css` content has been generated, remove cyclic (from an unused hook)
+  dependency
+
 ## 0.10.0
 
 ### Minor Changes

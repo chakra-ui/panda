@@ -8,11 +8,7 @@ export function generateCssFn(ctx: Context) {
     conditions,
   } = ctx
 
-  const { separator } = utility
-  const shorthandsByProp = Array.from(utility.shorthands.entries()).reduce((acc, [shorthand, prop]) => {
-    acc[prop] = shorthand
-    return acc
-  }, {} as Record<string, string>)
+  const { separator, getPropShorthands } = utility
 
   return {
     dts: outdent`
@@ -32,30 +28,61 @@ export function generateCssFn(ctx: Context) {
     const utilities = "${utility
       .entries()
       .map(([prop, className]) => {
-        const shorthand = shorthandsByProp[prop]
-        // mark shorthand equal to className as 1 to save a few bytes
-        return [prop, shorthand ? [className, shorthand === className ? 1 : shorthand].join('/') : className].join(':')
+        const shorthandList = getPropShorthands(prop)
+
+        // encode utility as:
+        // prop:className/shorthand1/shorthand2/shorthand3
+
+        // ex without shorthand
+        // { prop: 'aspectRatio', className: 'aspect', result: 'aspectRatio:aspect' }
+
+        // ex: with 1 shorthand
+        // { prop: 'flexDirection', className: 'flex', result: 'flexDirection:flex/flexDir }
+
+        // ex: with 1 shorthand with same shorthand as className
+        // { prop: 'position', className: 'pos', result: 'position:pos/1' }
+
+        // ex: with more than 1 shorthand
+        // { prop: 'marginInlineStart', className: 'ms', result: 'marginInlineStart:ms/1/marginStart' }
+        const result = [
+          prop,
+          [
+            className,
+            shorthandList.length
+              ? // mark shorthand equal to className as 1 to save a few bytes
+                shorthandList.map((shorthand) => (shorthand === className ? 1 : shorthand)).join('/')
+              : null,
+          ]
+            .filter(Boolean)
+            .join('/'),
+        ].join(':')
+
+        return result
       })
       .join(',')}"
 
-    const classMap = {}
+    const classNames = new Map()
     ${
       utility.hasShorthand
         ? outdent`
-    const shorthands = {}
+    const shorthands = new Map()
     utilities.split(',').forEach((utility) => {
       const [prop, meta] = utility.split(':')
-      const [className, shorthand] = meta.split('/')
-      classMap[prop] = className
-      if (shorthand) shorthands[shorthand === '1' ? className : shorthand] = prop
+      const [className, ...shorthandList] = meta.split('/')
+      classNames.set(prop, className)
+      if (shorthandList.length) {
+        shorthandList.forEach((shorthand) => {
+          shorthands.set(shorthand === '1' ? className : shorthand, prop)
+        })
+      }
     })
 
-    const resolveShorthand = (prop) => shorthands[prop] || prop
+    const resolveShorthand = (prop) => shorthands.get(prop) || prop
     `
         : outdent`
     utilities.split(',').forEach((utility) => {
       const [prop, className] = utility.split(':')
-      classMap[prop] = className
+      classNames.set(prop, className)
     })
     `
     }
@@ -73,10 +100,10 @@ export function generateCssFn(ctx: Context) {
           utility.hasShorthand
             ? `(prop, value) => {
               const key = resolveShorthand(prop)
-              const propKey = classMap[key] || hypenateProperty(key)
+              const propKey = classNames.get(key) || hypenateProperty(key)
               return { className: \`$\{propKey}${separator}$\{withoutSpace(value)}\` }
             }`
-            : `(key, value) => ({ className: \`$\{classMap[key] || hypenateProperty(key)}${separator}$\{withoutSpace(value)}\` })`
+            : `(key, value) => ({ className: \`$\{classNames.get(key) || hypenateProperty(key)}${separator}$\{withoutSpace(value)}\` })`
         },
         ${utility.hasShorthand ? 'hasShorthand: true,' : ''}
         resolveShorthand: ${utility.hasShorthand ? 'resolveShorthand' : 'prop => prop'},

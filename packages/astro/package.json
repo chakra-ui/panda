@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/astro",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "type": "module",
   "description": "Astro integration for Panda CSS",
   "main": "dist/index.js",
@@ -15,8 +15,14 @@
   "publishConfig": {
     "access": "public"
   },
+  "exports": {
+    ".": "./dist/index.js",
+    "./base.css": "./base.css",
+    "./package.json": "./package.json"
+  },
   "files": [
-    "dist"
+    "dist",
+    "base.css"
   ],
   "dependencies": {
     "@pandacss/postcss": "workspace:*",

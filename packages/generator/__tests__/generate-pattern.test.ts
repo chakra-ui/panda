@@ -848,6 +848,87 @@ test('should generate pattern', () => {
     float.raw = (styles) => styles",
         "name": "float",
       },
+      {
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { Properties } from '../types/csstype'
+    import type { Tokens } from '../tokens'
+
+    export type BleedProperties = {
+       inline?: PropertyValue<'marginInline'>
+    	block?: PropertyValue<'marginBlock'>
+    }
+
+
+    type BleedOptions = BleedProperties & Omit<SystemStyleObject, keyof BleedProperties >
+
+    interface BleedPatternFn {
+      (options?: BleedOptions): string
+      raw: (options: BleedOptions) => BleedOptions
+    }
+
+
+    export declare const bleed: BleedPatternFn;
+    ",
+        "js": "import { mapObject } from '../helpers.mjs';
+    import { css } from '../css/index.mjs';
+
+    const bleedConfig = {
+    transform(props) {
+      const { inline = \\"0\\", block = \\"0\\", ...rest } = props;
+      return {
+        \\"--bleed-x\\": \`spacing.\${inline}\`,
+        \\"--bleed-y\\": \`spacing.\${block}\`,
+        marginInline: \\"calc(var(--bleed-x, 0) * -1)\\",
+        marginBlock: \\"calc(var(--bleed-y, 0) * -1)\\",
+        ...rest
+      };
+    }}
+
+    export const getBleedStyle = (styles = {}) => bleedConfig.transform(styles, { map: mapObject })
+
+    export const bleed = (styles) => css(getBleedStyle(styles))
+    bleed.raw = (styles) => styles",
+        "name": "bleed",
+      },
+      {
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { Properties } from '../types/csstype'
+    import type { Tokens } from '../tokens'
+
+    export type VisuallyHiddenProperties = {
+       
+    }
+
+
+    type VisuallyHiddenOptions = VisuallyHiddenProperties & Omit<SystemStyleObject, keyof VisuallyHiddenProperties >
+
+    interface VisuallyHiddenPatternFn {
+      (options?: VisuallyHiddenOptions): string
+      raw: (options: VisuallyHiddenOptions) => VisuallyHiddenOptions
+    }
+
+
+    export declare const visuallyHidden: VisuallyHiddenPatternFn;
+    ",
+        "js": "import { mapObject } from '../helpers.mjs';
+    import { css } from '../css/index.mjs';
+
+    const visuallyHiddenConfig = {
+    transform(props) {
+      return {
+        srOnly: true,
+        ...props
+      };
+    }}
+
+    export const getVisuallyHiddenStyle = (styles = {}) => visuallyHiddenConfig.transform(styles, { map: mapObject })
+
+    export const visuallyHidden = (styles) => css(getVisuallyHiddenStyle(styles))
+    visuallyHidden.raw = (styles) => styles",
+        "name": "visually-hidden",
+      },
     ]
   `)
 })

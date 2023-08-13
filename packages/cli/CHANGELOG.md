@@ -1,5 +1,25 @@
 # @pandacss/dev
 
+## 0.11.0
+
+### Patch Changes
+
+- cde9702e: Add an optional `glob` argument that overrides the config.include on the `panda cssgen` CLI command.
+- 164fbf27: Remove astro plugin entrypoint in favor of installing `@pandacss/astro` package
+- Updated dependencies [dead08a2]
+- Updated dependencies [cde9702e]
+- Updated dependencies [5b95caf5]
+  - @pandacss/config@0.11.0
+  - @pandacss/node@0.11.0
+  - @pandacss/types@0.11.0
+  - @pandacss/studio@0.11.0
+  - @pandacss/postcss@0.11.0
+  - @pandacss/preset-panda@0.11.0
+  - @pandacss/token-dictionary@0.11.0
+  - @pandacss/error@0.11.0
+  - @pandacss/logger@0.11.0
+  - @pandacss/shared@0.11.0
+
 ## 0.10.0
 
 ### Minor Changes

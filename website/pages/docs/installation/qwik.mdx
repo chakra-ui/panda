@@ -18,7 +18,7 @@ To get started, we will need to create a new Qwik project using `typescript` tem
 <Tabs items={['npm', 'pnpm', 'yarn']}>
   <Tab>
     ```bash
-    npx create qwik@latest
+    npm create qwik@latest
     ```
   </Tab>
   <Tab>
@@ -34,72 +34,27 @@ To get started, we will need to create a new Qwik project using `typescript` tem
 </Tabs>
 
 
-### Install Panda
+### Install and Configure Panda
 
-Install panda and create your `panda.config.ts` file.
+Qwik provies an official script that installs panda and configures it for you.
 
 <Tabs items={['npm', 'pnpm', 'yarn']}>
   <Tab>
     ```bash
-    npm install -D @pandacss/dev
-    npx panda init --postcss
+    npm run qwik add pandacss
     ```
   </Tab>
   <Tab>
     ```bash
-    pnpm add -D @pandacss/dev
-    pnpm panda init --postcss
+    pnpm qwik add pandacss
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn add -D @pandacss/dev
-    yarn panda init --postcss
+    yarn qwik add pandacss
     ```
   </Tab>
 </Tabs>
-
-### Update package.json scripts
-
-Open your `package.json` file and update the `scripts` section as follows:
-
-```diff {3} filename="package.json"
-{
-  "scripts": {
-+    "prepare": "panda codegen",
-    "build": "qwik build",
-    "build.client": "vite build",
-    "build.preview": "vite build --ssr src/entry.preview.tsx",
-  }
-}
-```
-- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about [codegen](/docs/references/cli#panda-codegen) in the CLI section.
-
- > This step ensures that the panda output directory is regenerated after each dependency installation. So you can add the output directory to your `.gitignore` file and not worry about it.
- 
-### Configure the content
-
-Make sure that all of the paths of your Qwik components are included in the `include` section of the `panda.config.ts` file.
-
-```js {6} filename="panda.config.ts"
-import { defineConfig } from "@pandacss/dev"
-
-export default defineConfig({
- preflight: true,
- // Where to look for your css declarations
- include: ["./src/**/*.{js,jsx,ts,tsx}", "./pages/**/*.{js,jsx,ts,tsx}"],
- exclude: [],
- outdir: "styled-system",
-})
-```
-
-### Configure the entry CSS with layers
-
-Add this code to an `src/style/index.css` file imported in the root component of your project.
-
-```css filename="src/global.css"
-@layer reset, base, tokens, recipes, utilities;
-```
 
 ## Start your build process
 

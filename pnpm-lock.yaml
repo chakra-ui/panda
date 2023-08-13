@@ -368,9 +368,6 @@ importers:
 
   packages/cli:
     dependencies:
-      '@pandacss/astro':
-        specifier: workspace:*
-        version: link:../astro
       '@pandacss/config':
         specifier: workspace:*
         version: link:../config
@@ -943,9 +940,6 @@ importers:
       '@pandacss/extractor':
         specifier: workspace:*
         version: link:../extractor
-      '@pandacss/token-dictionary':
-        specifier: workspace:*
-        version: link:../token-dictionary
       chokidar-cli:
         specifier: ^3.0.0
         version: 3.0.0
@@ -1095,6 +1089,9 @@ importers:
         specifier: 1.7.8
         version: 1.7.8
     devDependencies:
+      '@pandacss/astro':
+        specifier: workspace:*
+        version: link:../../packages/astro
       '@pandacss/dev':
         specifier: workspace:*
         version: link:../../packages/cli

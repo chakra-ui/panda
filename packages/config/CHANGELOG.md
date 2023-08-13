@@ -1,5 +1,21 @@
 # @pandacss/config
 
+## 0.11.0
+
+### Patch Changes
+
+- dead08a2: Normalize tsconfig path mapping result to posix path.
+
+  It fix not generating pattern styles on windows eventually.
+
+- Updated dependencies [5b95caf5]
+- Updated dependencies [811f4fb1]
+  - @pandacss/types@0.11.0
+  - @pandacss/preset-base@0.11.0
+  - @pandacss/preset-panda@0.11.0
+  - @pandacss/error@0.11.0
+  - @pandacss/logger@0.11.0
+
 ## 0.10.0
 
 ### Patch Changes
