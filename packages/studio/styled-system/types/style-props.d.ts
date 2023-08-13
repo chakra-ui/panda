@@ -472,6 +472,36 @@ export type SystemProperties = {
 	writingMode?: PropertyValue<'writingMode'>
 	zIndex?: PropertyValue<'zIndex'>
 	zoom?: PropertyValue<'zoom'>
+	alignmentBaseline?: PropertyValue<'alignmentBaseline'>
+	baselineShift?: PropertyValue<'baselineShift'>
+	clipRule?: PropertyValue<'clipRule'>
+	colorInterpolation?: PropertyValue<'colorInterpolation'>
+	colorRendering?: PropertyValue<'colorRendering'>
+	dominantBaseline?: PropertyValue<'dominantBaseline'>
+	fill?: PropertyValue<'fill'>
+	fillOpacity?: PropertyValue<'fillOpacity'>
+	fillRule?: PropertyValue<'fillRule'>
+	floodColor?: PropertyValue<'floodColor'>
+	floodOpacity?: PropertyValue<'floodOpacity'>
+	glyphOrientationVertical?: PropertyValue<'glyphOrientationVertical'>
+	lightingColor?: PropertyValue<'lightingColor'>
+	marker?: PropertyValue<'marker'>
+	markerEnd?: PropertyValue<'markerEnd'>
+	markerMid?: PropertyValue<'markerMid'>
+	markerStart?: PropertyValue<'markerStart'>
+	shapeRendering?: PropertyValue<'shapeRendering'>
+	stopColor?: PropertyValue<'stopColor'>
+	stopOpacity?: PropertyValue<'stopOpacity'>
+	stroke?: PropertyValue<'stroke'>
+	strokeDasharray?: PropertyValue<'strokeDasharray'>
+	strokeDashoffset?: PropertyValue<'strokeDashoffset'>
+	strokeLinecap?: PropertyValue<'strokeLinecap'>
+	strokeLinejoin?: PropertyValue<'strokeLinejoin'>
+	strokeMiterlimit?: PropertyValue<'strokeMiterlimit'>
+	strokeOpacity?: PropertyValue<'strokeOpacity'>
+	strokeWidth?: PropertyValue<'strokeWidth'>
+	textAnchor?: PropertyValue<'textAnchor'>
+	vectorEffect?: PropertyValue<'vectorEffect'>
 	pos?: PropertyValue<'pos'>
 	insetEnd?: PropertyValue<'insetEnd'>
 	end?: PropertyValue<'end'>
@@ -616,8 +646,6 @@ export type SystemProperties = {
 	scrollSnapMarginBottom?: PropertyValue<'scrollSnapMarginBottom'>
 	scrollSnapMarginLeft?: PropertyValue<'scrollSnapMarginLeft'>
 	scrollSnapMarginRight?: PropertyValue<'scrollSnapMarginRight'>
-	fill?: PropertyValue<'fill'>
-	stroke?: PropertyValue<'stroke'>
 	srOnly?: PropertyValue<'srOnly'>
 	debug?: PropertyValue<'debug'>
 	colorPalette?: PropertyValue<'colorPalette'>

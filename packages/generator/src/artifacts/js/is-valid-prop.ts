@@ -4,7 +4,7 @@ import { outdent } from 'outdent'
 import { match } from 'ts-pattern'
 
 const cssPropRegex = /var cssPropertiesStr = ".*?";/
-const memoFnDeclarationRegex = /function memo(.+?)\nvar selectorRegex/s
+const memoFnDeclarationRegex = /function memo(.+?)\nvar cssPropertySelectorRegex/s
 
 export function generateIsValidProp(ctx: Context) {
   if (ctx.isTemplateLiteralSyntax) return
@@ -21,7 +21,7 @@ export function generateIsValidProp(ctx: Context) {
   )
 
   // replace memo function declaration with an import from helpers
-  content = content.replace(memoFnDeclarationRegex, 'var selectorRegex')
+  content = content.replace(memoFnDeclarationRegex, 'var cssPropertySelectorRegex')
 
   // remove browser CSS props / memo function call when not needed
   if (ctx.jsx.styleProps === 'minimal' || ctx.jsx.styleProps === 'none') {
