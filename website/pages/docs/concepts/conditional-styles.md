@@ -24,7 +24,7 @@ Panda allows you to write conditional styles, and provides common condition shor
 
 ### Property based condition
 
-This works great, but might be a a bit verbose. You can apply the condition `_hover` directly to the `bg` property, leading to a more concise syntax:
+This works great, but might be a bit verbose. You can apply the condition `_hover` directly to the `bg` property, leading to a more concise syntax:
 
 ```diff
 <button
@@ -65,7 +65,7 @@ Panda includes a set of common pseudo states that you can use to style your comp
 
 ## Arbitrary selectors
 
-What if you want need a one-off selector that is not defined in your config's conditions ? You can use the `css` function to generate classes for arbitrary selectors:
+What if you need a one-off selector that is not defined in your config's conditions? You can use the `css` function to generate classes for arbitrary selectors:
 
 ```tsx
 import { css } from './styled-system/css'
