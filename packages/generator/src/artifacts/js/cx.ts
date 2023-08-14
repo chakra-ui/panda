@@ -1,22 +1,34 @@
 import outdent from 'outdent'
+import type { Context } from '../../engines'
 
-export function generateCx() {
+export function generateCx(ctx: Context) {
   return {
     js: outdent`
+    ${ctx.file.import('cssCache, css, mergeCss', './css')}
+
     function cx() {
+      const objs = []
       let str = '',
         i = 0,
         arg
-    
+
       for (; i < arguments.length; ) {
-        if ((arg = arguments[i++]) && typeof arg === 'string') {
-          str && (str += ' ')
-          str += arg
+        arg = arguments[i++]
+        if (!arg || typeof arg !== 'string') continue
+
+        if (cssCache.has(arg)) {
+          objs.push(cssCache.get(arg))
+          continue
         }
+
+        str && (str += ' ')
+        str += arg.toString()
       }
-      return str
+
+      const merged = mergeCss(...objs)
+      return [css(merged), str].join(' ')
     }
-   
+
     export { cx }
   `,
     dts: outdent`
