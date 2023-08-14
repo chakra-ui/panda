@@ -10,7 +10,7 @@ export function generateStyleProps(ctx: Context) {
     import type { Token } from '../tokens'
 
     export type CssVarProperties = {
-      [key in \`--\${string}\`]?: ConditionalValue<Token | (string & {}) | (number & {})>
+      [key in \`--\${string}\`]?: ConditionalValue<Token | \`\${string}!\` | (number & {})>
     }
 
     export type SystemProperties = {
