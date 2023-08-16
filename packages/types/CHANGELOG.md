@@ -1,5 +1,11 @@
 # @pandacss/types
 
+## 0.11.1
+
+### Patch Changes
+
+- 23b516f4: Make layers customizable
+
 ## 0.11.0
 
 ### Patch Changes
