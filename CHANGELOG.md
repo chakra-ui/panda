@@ -75,8 +75,6 @@ export function Page() {
 
 ## [0.11.0] - 2023-08-11
 
----
-
 ### Fixed
 
 - Fix regression where style property with multiple shorthand did not generate the correct className
