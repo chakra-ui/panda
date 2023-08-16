@@ -4,8 +4,13 @@ import { Stack, styled, Circle, HStack } from 'styled-system/jsx'
 import { button } from 'styled-system/recipes'
 import { Button } from 'app/components/Button'
 import { badge, Badge } from 'app/components/Badge'
+import type { V2_MetaFunction } from '@remix-run/node'
 
-export function Index() {
+export const meta: V2_MetaFunction = () => {
+  return [{ title: 'New Remix App' }, { name: 'description', content: 'Welcome to Remix!' }]
+}
+
+export default function Index() {
   return (
     <div className={css({ paddingY: '40px', debug: true })}>
       <Button
