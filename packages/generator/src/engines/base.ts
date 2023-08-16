@@ -10,7 +10,7 @@ import {
 import { isCssProperty } from '@pandacss/is-valid-prop'
 import { compact, mapObject, memo } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import type { ConfigResultWithHooks, TSConfig as _TSConfig } from '@pandacss/types'
+import type { CascadeLayers, ConfigResultWithHooks, TSConfig as _TSConfig } from '@pandacss/types'
 import { isBool, isStr } from 'lil-fp'
 import postcss from 'postcss'
 
@@ -65,19 +65,15 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
   const compositionContext = { conditions, utility }
   assignCompositions(compositions, compositionContext)
 
-  const buildLayers = () => {
-    const {
-      reset = 'reset',
-      base = 'base',
-      tokens = 'tokens',
-      recipes = 'recipes',
-      utilities = 'utilities',
-    } = config.layers ?? {}
+  const layers = config.layers as CascadeLayers
+  const layerNames = Object.values(layers)
 
-    return { reset, base, tokens, recipes, utilities }
-  }
+  const isValidLayerRule = memo((layerRule: string) => {
+    const names = new Set(layerRule.split(',').map((name) => name.trim()))
+    return names.size >= 5 && layerNames.every((name) => names.has(name))
+  })
 
-  const layers = buildLayers()
+  const layerString = `@layer ${layerNames.join(', ')};`
 
   const createSheetContext = (): StylesheetContext => ({
     root: postcss.root(),
@@ -129,6 +125,10 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     conditions,
     createSheetContext,
     createSheet,
+    // cascade layer
     layers,
+    isValidLayerRule,
+    layerString,
+    layerNames,
   }
 }

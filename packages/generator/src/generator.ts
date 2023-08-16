@@ -15,6 +15,14 @@ const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
     shorthands: true,
     syntax: 'object-literal',
     ...conf.config,
+    layers: {
+      reset: 'reset',
+      base: 'base',
+      tokens: 'tokens',
+      recipes: 'recipes',
+      utilities: 'utilities',
+      ...conf.config.layers,
+    },
   },
 })
 

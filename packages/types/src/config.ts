@@ -10,6 +10,10 @@ import type { UtilityConfig } from './utility'
 
 export type { TSConfig }
 
+export type CascadeLayer = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
+
+export type CascadeLayers = Record<CascadeLayer, string>
+
 type StudioOptions = {
   /**
    * Used to customize the design system studio
@@ -195,8 +199,6 @@ type CssgenOptions = {
   syntax?: 'template-literal' | 'object-literal'
 }
 
-type Layer = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
-
 type CodegenOptions = {
   /**
    * Whether to emit the artifacts to `node_modules` as a package.
@@ -232,7 +234,7 @@ type CodegenOptions = {
    * Layer mappings used in the generated css.
    * @default 'true'
    */
-  layers?: Partial<Record<Layer, string>>
+  layers?: Partial<CascadeLayers>
 }
 
 type PresetOptions = {

@@ -203,15 +203,10 @@ export class Builder {
   }
 
   isValidRoot(root: Root) {
-    const layersName = Object.values(this.context?.layers ?? {})
-
     let found = false
 
     root.walkAtRules('layer', (rule) => {
-      const foundLayers = new Set<string>()
-      rule.params.split(',').forEach((name) => foundLayers.add(name.trim()))
-
-      if (foundLayers.size >= 5 && layersName.every((name) => foundLayers.has(name))) {
+      if (this.context?.isValidLayerRule(rule.params)) {
         found = true
       }
     })
