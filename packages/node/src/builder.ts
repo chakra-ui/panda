@@ -32,9 +32,6 @@ const contentFilesCache = new WeakMap<PandaContext, ContentData>()
 
 let setupCount = 0
 
-/** @layer reset, base, tokens, recipes, utilities */
-const layersName = ['reset', 'base', 'tokens', 'recipes', 'utilities']
-
 export class Builder {
   /**
    * The current panda context
@@ -209,10 +206,7 @@ export class Builder {
     let found = false
 
     root.walkAtRules('layer', (rule) => {
-      const foundLayers = new Set<string>()
-      rule.params.split(',').forEach((name) => foundLayers.add(name.trim()))
-
-      if (foundLayers.size >= 5 && layersName.every((name) => foundLayers.has(name))) {
+      if (this.context?.isValidLayerRule(rule.params)) {
         found = true
       }
     })

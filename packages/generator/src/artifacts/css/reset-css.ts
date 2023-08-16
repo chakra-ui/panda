@@ -5,7 +5,7 @@ const css = String.raw
 export function generateResetCss(ctx: Context, scope = '') {
   const selector = scope ? `${scope} ` : ''
   // prettier-ignore
-  const output = css`@layer reset {
+  const output = css`@layer ${ctx.layers.reset} {
   ${selector}* {
     margin: 0;
     padding: 0;
