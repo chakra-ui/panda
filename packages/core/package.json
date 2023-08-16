@@ -32,7 +32,7 @@
     "postcss-discard-duplicates": "^6.0.0",
     "postcss-merge-rules": "^6.0.1",
     "postcss-selector-parser": "^6.0.13",
-    "autoprefixer": "10.4.14",
+    "autoprefixer": "10.4.15",
     "ts-pattern": "5.0.4",
     "lodash.merge": "4.6.2"
   },
