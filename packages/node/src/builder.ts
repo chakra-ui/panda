@@ -40,13 +40,13 @@ export class Builder {
 
   configDependencies: Set<string> = new Set()
 
-  writeFileCss(file: string, css: string) {
+  writeFileCss = (file: string, css: string) => {
     const oldCss = this.fileCssMap?.get(file) ?? ''
     const newCss = mergeCss(oldCss, css)
     this.fileCssMap?.set(file, newCss)
   }
 
-  checkConfigDeps(configPath: string, deps: Set<string>): ConfigDepsResult {
+  checkConfigDeps = (configPath: string, deps: Set<string>): ConfigDepsResult => {
     let modified = false
 
     const newModified = new Map()
@@ -79,7 +79,7 @@ export class Builder {
     return { isModified: true, modifiedMap: newModified }
   }
 
-  getConfigPath() {
+  getConfigPath = () => {
     const configPath = findConfig()
 
     if (!configPath) {
@@ -89,7 +89,7 @@ export class Builder {
     return configPath
   }
 
-  async setup(options: { configPath?: string; cwd?: string } = {}) {
+  setup = async (options: { configPath?: string; cwd?: string } = {}) => {
     logger.debug('builder', '🚧 Setup')
 
     const configPath = options.configPath ?? this.getConfigPath()
@@ -130,7 +130,7 @@ export class Builder {
     setupCount++
   }
 
-  async setupContext(options: { configPath: string; depsModifiedMap: Map<string, number> }) {
+  setupContext = async (options: { configPath: string; depsModifiedMap: Map<string, number> }) => {
     const { configPath, depsModifiedMap } = options
 
     this.context = await loadConfigAndCreateContext({ configPath })
@@ -152,7 +152,7 @@ export class Builder {
     })
   }
 
-  getContextOrThrow(): PandaContext {
+  getContextOrThrow = (): PandaContext => {
     if (!this.context) {
       throw new Error('context not loaded')
     }
@@ -169,7 +169,7 @@ export class Builder {
     return contentFilesCache.get(ctx)!.fileCssMap
   }
 
-  async extractFile(ctx: PandaContext, file: string) {
+  extractFile = async (ctx: PandaContext, file: string) => {
     const mtime = existsSync(file) ? statSync(file).mtimeMs : -Infinity
 
     const isUnchanged = this.fileModifiedMap.has(file) && mtime === this.fileModifiedMap.get(file)
@@ -184,7 +184,7 @@ export class Builder {
     return css
   }
 
-  async extract() {
+  extract = async () => {
     const ctx = this.getContextOrThrow()
 
     const done = logger.time.info('Extracted in')
@@ -194,7 +194,7 @@ export class Builder {
     done()
   }
 
-  toString() {
+  toString = () => {
     const ctx = this.getContextOrThrow()
     return ctx.getCss({
       files: Array.from(this.fileCssMap.values()),
@@ -202,19 +202,20 @@ export class Builder {
     })
   }
 
-  isValidRoot(root: Root) {
-    let found = false
+  isValidRoot = (root: Root) => {
+    const ctx = this.getContextOrThrow()
+    let valid = false
 
     root.walkAtRules('layer', (rule) => {
-      if (this.context?.isValidLayerRule(rule.params)) {
-        found = true
+      if (ctx.isValidLayerRule(rule.params)) {
+        valid = true
       }
     })
 
-    return found
+    return valid
   }
 
-  write(root: Root) {
+  write = (root: Root) => {
     const rootCssContent = root.toString()
     root.removeAll()
 
@@ -226,7 +227,7 @@ export class Builder {
     )
   }
 
-  registerDependency(fn: (dep: Message) => void) {
+  registerDependency = (fn: (dep: Message) => void) => {
     const ctx = this.getContextOrThrow()
 
     for (const fileOrGlob of ctx.config.include) {
