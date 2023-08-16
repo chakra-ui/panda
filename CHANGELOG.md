@@ -6,7 +6,76 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [0.11.1] - 2023-08-16
+
+### Fixed
+
+Add missing svg props types.
+
+### Added
+
+Add new `layers` key to config, to make layers customizable.
+
+Example:
+
+**In Config**:
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  layers: {
+    utilities: 'panda_utilities',
+  },
+})
+```
+
+**In global css**:
+
+```diff
+- @layer reset, base, tokens, recipes, utilities;
++ @layer reset, base, tokens, recipes, panda_utilities;
+```
+
+Doing this:
+
+```tsx
+import { css } from '../styled-system/css'
+
+const App = () => {
+  return <div className={css({ color: 'blue.500' })} />
+}
+```
+
+Results in:
+
+```css
+@layer panda_utilities {
+  .text_blue\.500 {
+    color: var(--colors-blue-500);
+  }
+}
+```
+
+### Changed
+
+Make the `cx` smarter by merging and deduplicating the styles passed in.
+
+Example:
+
+```tsx
+import { css, cx } from '../styled-system/css'
+
+export function Page() {
+  return (
+    <div class={cx(css({ mx: '3', paddingTop: '4' }), css({ mx: '10', pt: '6' }))}>Will result in "mx_10 pt_6"</div>
+  )
+}
+```
+
 ## [0.11.0] - 2023-08-11
+
+---
 
 ### Fixed
 
