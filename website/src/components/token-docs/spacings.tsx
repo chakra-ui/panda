@@ -17,6 +17,7 @@ export const Spacings = () => {
       >
         <p className={css({ width: '100px' })}>Name</p>
         <p className={css({ width: '100px' })}>Value</p>
+        <p className={css({ width: '100px' })}>Pixel</p>
       </div>
 
       <div className={stack({ px: '3', pt: '2' })}>
@@ -26,6 +27,9 @@ export const Spacings = () => {
               {token.extensions.prop}
             </p>
             <p className={css({ width: '100px' })}>{token.value}</p>
+            <p className={css({ width: '100px' })}>
+              {token.extensions.pixelValue}
+            </p>
             <div className={css({ flex: '1' })}>
               <div
                 className={css({ bg: 'pink.200', height: '4' })}

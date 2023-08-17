@@ -33,7 +33,7 @@ export class Recipes {
    */
   rules: Map<string, AtomicRule> = new Map()
 
-  constructor(private recipes: RecipeRecord = {}, private context?: StylesheetContext) {
+  constructor(private recipes: RecipeRecord = {}, private context: StylesheetContext) {
     this.assignRules()
   }
 
@@ -42,7 +42,7 @@ export class Recipes {
   }
 
   private get separator() {
-    return this.context?.utility.separator ?? '_'
+    return this.context.utility.separator ?? '_'
   }
 
   private getClassName = (className: string, variant: string, value: string) => {
@@ -240,7 +240,7 @@ export class Recipes {
       transform: this.getTransform(name),
     })
 
-    rule.layer = 'recipes'
+    rule.layer = this.context.layers.recipes
     return rule
   }
 

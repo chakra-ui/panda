@@ -9,7 +9,7 @@ export type {
 } from './analyze-report'
 export type { CompositionStyles, LayerStyles, TextStyles } from './composition'
 export type { ConditionDetails, ConditionType, Conditions, RawCondition } from './conditions'
-export type { Config, ConfigTsOptions, LoadConfigResult, Preset, UserConfig, TSConfig } from './config'
+export type { Config, ConfigTsOptions, LoadConfigResult, Preset, UserConfig, TSConfig, CascadeLayers } from './config'
 export type { ConfigResultWithHooks, PandaHooks, PandaHookable } from './hooks'
 export type { ParserResultType, ResultItem } from './parser'
 export type { Part, Parts } from './parts'

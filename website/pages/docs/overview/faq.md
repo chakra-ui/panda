@@ -149,14 +149,6 @@ You used `_base` instead of `base`, there is no underscore `_`.
 
 ---
 
-### Why are my recipes not working? The classes are generated but the css is not, even when I build the app and check the generated css file.
-
-Check that each recipe "key" matches the "name" in the recipe. This ensures that the correct CSS is generated for the classes.
-
-If you use recipes from a library package, check that your app's `panda.config` is also importing those recipes directly or using a preset.
-
----
-
 ### What's the difference between using `defineConfig()` vs `definePreset()`
 
 `defineConfig` is intended to be used in your app config, and will show you all the config keys that are available.

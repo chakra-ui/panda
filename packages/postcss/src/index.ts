@@ -18,12 +18,13 @@ export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (o
     postcssPlugin: PLUGIN_NAME,
     plugins: [
       async function (root, result) {
-        // ignore non-panda file
+        await builder.setup({ configPath, cwd })
+
+        // ignore non-panda css file
         if (!builder.isValidRoot(root)) {
           return
         }
 
-        await builder.setup({ configPath, cwd })
         await builder.extract()
 
         builder.registerDependency((dep) => {
