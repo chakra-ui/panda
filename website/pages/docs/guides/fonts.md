@@ -38,7 +38,7 @@ Next, you need to add the font variables to your HTML document. You can do this 
 #### App Router
 
 ```jsx filename="app/layout.tsx"
-import { Fira_Code, MonaSans } from '../styles/font'
+import { FiraCode, MonaSans } from '../styles/font'
 
 export default function Layout(props) {
   const { children } = props
@@ -53,7 +53,7 @@ export default function Layout(props) {
 #### Pages Router
 
 ```jsx filename="pages/_app.tsx"
-import { Fira_Code, MonaSans } from '../styles/font'
+import { FiraCode, MonaSans } from '../styles/font'
 
 export default function App({ Component, pageProps }) {
   return (
