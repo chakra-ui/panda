@@ -1570,6 +1570,102 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('css prop with recipes and patterns', () => {
+    const code = `
+      import { stack } from ".panda/patterns"
+      import { button } from ".panda/recipes";
+
+      stack({ align: "center", css: { backgroundColor: "red.100" } })
+      button({ shape: "circle", css: { backgroundColor: "yellow.100" } })
+
+     `
+    const result = run(code, {
+      theme: {
+        extend: {
+          recipes: {
+            button: {
+              className: 'btn',
+              base: { color: 'pink.100' },
+              variants: {
+                shape: {
+                  circle: { borderRadius: '50%' },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "css": {
+                "backgroundColor": "yellow.100",
+              },
+              "shape": "circle",
+            },
+          ],
+          "name": "button",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "align": "center",
+              "css": {
+                "backgroundColor": "red.100",
+              },
+            },
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        .btn--shape_circle {
+          border-radius: 50%
+          }
+
+        @layer _base {
+          .btn {
+            color: var(--colors-pink-100)
+              }
+          }
+      }
+
+      @layer utilities {
+        .bg_yellow\\\\.100 {
+          background-color: var(--colors-yellow-100)
+          }
+
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .items_center {
+          align-items: center
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .bg_red\\\\.100 {
+          background-color: var(--colors-red-100)
+          }
+      }"
+    `)
+  })
 })
 
 describe('preset patterns', () => {
