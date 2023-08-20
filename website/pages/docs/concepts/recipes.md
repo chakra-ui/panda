@@ -491,6 +491,29 @@ const PageButton = (props: ButtonProps) => {
 }
 ```
 
+## Css Property
+
+You can add extra styles when using a recipe by passing a `css` object to the recipe function. This can also be used to override a variant style.
+
+```tsx
+import { button } from '../styled-system/recipes'
+
+function App() {
+  return (
+    <div>
+      <button
+        class={button({
+          size: 'sm', // means { padding: '4', fontSize: '12px' }
+          css: { fontWeight: 'bold', fontSize: '20px' } // will override the fontSize
+        })}
+      >
+        Click me
+      </button>
+    </div>
+  )
+}
+```
+
 ## Best Practices
 
 - Leverage css variables in the base styles as much as possible. Makes it easier to theme the component with JS
