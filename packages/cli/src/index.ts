@@ -15,7 +15,7 @@ import type {
   Tokens,
 } from '@pandacss/types'
 
-export * from '@pandacss/types'
+export type * from '@pandacss/types'
 
 /* -----------------------------------------------------------------------------
  * Config creators
