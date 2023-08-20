@@ -20,5 +20,5 @@ const flexConfig = {
 
 export const getFlexStyle = (styles = {}) => flexConfig.transform(styles, { map: mapObject })
 
-export const flex = ({ css: cssStyles, ...styles }) => cx(css(getFlexStyle(styles)), css(cssStyles))
+export const flex = ({ css: cssStyles, ...styles } = {}) => cx(css(getFlexStyle(styles)), css(cssStyles))
 flex.raw = (styles) => styles

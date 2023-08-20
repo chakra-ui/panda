@@ -19,5 +19,5 @@ const circleConfig = {
 
 export const getCircleStyle = (styles = {}) => circleConfig.transform(styles, { map: mapObject })
 
-export const circle = ({ css: cssStyles, ...styles }) => cx(css(getCircleStyle(styles)), css(cssStyles))
+export const circle = ({ css: cssStyles, ...styles } = {}) => cx(css(getCircleStyle(styles)), css(cssStyles))
 circle.raw = (styles) => styles

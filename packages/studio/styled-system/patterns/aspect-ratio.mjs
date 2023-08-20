@@ -32,5 +32,5 @@ const aspectRatioConfig = {
 
 export const getAspectRatioStyle = (styles = {}) => aspectRatioConfig.transform(styles, { map: mapObject })
 
-export const aspectRatio = ({ css: cssStyles, ...styles }) => cx(css(getAspectRatioStyle(styles)), css(cssStyles))
+export const aspectRatio = ({ css: cssStyles, ...styles } = {}) => cx(css(getAspectRatioStyle(styles)), css(cssStyles))
 aspectRatio.raw = (styles) => styles

@@ -15,5 +15,5 @@ const containerConfig = {
 
 export const getContainerStyle = (styles = {}) => containerConfig.transform(styles, { map: mapObject })
 
-export const container = ({ css: cssStyles, ...styles }) => cx(css(getContainerStyle(styles)), css(cssStyles))
+export const container = ({ css: cssStyles, ...styles } = {}) => cx(css(getContainerStyle(styles)), css(cssStyles))
 container.raw = (styles) => styles

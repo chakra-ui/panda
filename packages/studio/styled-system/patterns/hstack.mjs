@@ -17,5 +17,5 @@ const hstackConfig = {
 
 export const getHstackStyle = (styles = {}) => hstackConfig.transform(styles, { map: mapObject })
 
-export const hstack = ({ css: cssStyles, ...styles }) => cx(css(getHstackStyle(styles)), css(cssStyles))
+export const hstack = ({ css: cssStyles, ...styles } = {}) => cx(css(getHstackStyle(styles)), css(cssStyles))
 hstack.raw = (styles) => styles

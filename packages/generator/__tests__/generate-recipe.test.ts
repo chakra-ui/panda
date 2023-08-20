@@ -14,7 +14,7 @@ describe('generate recipes', () => {
       import { compact, createCss, withoutSpace } from '../helpers.mjs';
 
       export const createRecipe = (name, defaultVariants, compoundVariants) => {
-        return ({ css: cssStyles, ...variants }) => {
+        return ({ css: cssStyles, ...variants } = {}) => {
          const transform = (prop, value) => {
            assertCompoundVariant(name, compoundVariants, variants, prop)
 

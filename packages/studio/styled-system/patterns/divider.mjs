@@ -18,5 +18,5 @@ const dividerConfig = {
 
 export const getDividerStyle = (styles = {}) => dividerConfig.transform(styles, { map: mapObject })
 
-export const divider = ({ css: cssStyles, ...styles }) => cx(css(getDividerStyle(styles)), css(cssStyles))
+export const divider = ({ css: cssStyles, ...styles } = {}) => cx(css(getDividerStyle(styles)), css(cssStyles))
 divider.raw = (styles) => styles

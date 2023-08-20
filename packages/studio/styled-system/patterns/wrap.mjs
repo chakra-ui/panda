@@ -19,5 +19,5 @@ const wrapConfig = {
 
 export const getWrapStyle = (styles = {}) => wrapConfig.transform(styles, { map: mapObject })
 
-export const wrap = ({ css: cssStyles, ...styles }) => cx(css(getWrapStyle(styles)), css(cssStyles))
+export const wrap = ({ css: cssStyles, ...styles } = {}) => cx(css(getWrapStyle(styles)), css(cssStyles))
 wrap.raw = (styles) => styles

@@ -36,7 +36,7 @@ test('should generate pattern', () => {
 
     export const getBoxStyle = (styles = {}) => boxConfig.transform(styles, { map: mapObject })
 
-    export const box = ({ css: cssStyles, ...styles }) => cx(css(getBoxStyle(styles)), css(cssStyles))
+    export const box = ({ css: cssStyles, ...styles } = {}) => cx(css(getBoxStyle(styles)), css(cssStyles))
     box.raw = (styles) => styles",
         "name": "box",
       },
@@ -88,7 +88,7 @@ test('should generate pattern', () => {
 
     export const getFlexStyle = (styles = {}) => flexConfig.transform(styles, { map: mapObject })
 
-    export const flex = ({ css: cssStyles, ...styles }) => cx(css(getFlexStyle(styles)), css(cssStyles))
+    export const flex = ({ css: cssStyles, ...styles } = {}) => cx(css(getFlexStyle(styles)), css(cssStyles))
     flex.raw = (styles) => styles",
         "name": "flex",
       },
@@ -134,7 +134,7 @@ test('should generate pattern', () => {
 
     export const getStackStyle = (styles = {}) => stackConfig.transform(styles, { map: mapObject })
 
-    export const stack = ({ css: cssStyles, ...styles }) => cx(css(getStackStyle(styles)), css(cssStyles))
+    export const stack = ({ css: cssStyles, ...styles } = {}) => cx(css(getStackStyle(styles)), css(cssStyles))
     stack.raw = (styles) => styles",
         "name": "stack",
       },
@@ -178,7 +178,7 @@ test('should generate pattern', () => {
 
     export const getVstackStyle = (styles = {}) => vstackConfig.transform(styles, { map: mapObject })
 
-    export const vstack = ({ css: cssStyles, ...styles }) => cx(css(getVstackStyle(styles)), css(cssStyles))
+    export const vstack = ({ css: cssStyles, ...styles } = {}) => cx(css(getVstackStyle(styles)), css(cssStyles))
     vstack.raw = (styles) => styles",
         "name": "vstack",
       },
@@ -222,7 +222,7 @@ test('should generate pattern', () => {
 
     export const getHstackStyle = (styles = {}) => hstackConfig.transform(styles, { map: mapObject })
 
-    export const hstack = ({ css: cssStyles, ...styles }) => cx(css(getHstackStyle(styles)), css(cssStyles))
+    export const hstack = ({ css: cssStyles, ...styles } = {}) => cx(css(getHstackStyle(styles)), css(cssStyles))
     hstack.raw = (styles) => styles",
         "name": "hstack",
       },
@@ -263,7 +263,7 @@ test('should generate pattern', () => {
 
     export const getSpacerStyle = (styles = {}) => spacerConfig.transform(styles, { map: mapObject })
 
-    export const spacer = ({ css: cssStyles, ...styles }) => cx(css(getSpacerStyle(styles)), css(cssStyles))
+    export const spacer = ({ css: cssStyles, ...styles } = {}) => cx(css(getSpacerStyle(styles)), css(cssStyles))
     spacer.raw = (styles) => styles",
         "name": "spacer",
       },
@@ -307,7 +307,7 @@ test('should generate pattern', () => {
 
     export const getSquareStyle = (styles = {}) => squareConfig.transform(styles, { map: mapObject })
 
-    export const square = ({ css: cssStyles, ...styles }) => cx(css(getSquareStyle(styles)), css(cssStyles))
+    export const square = ({ css: cssStyles, ...styles } = {}) => cx(css(getSquareStyle(styles)), css(cssStyles))
     square.raw = (styles) => styles",
         "name": "square",
       },
@@ -352,7 +352,7 @@ test('should generate pattern', () => {
 
     export const getCircleStyle = (styles = {}) => circleConfig.transform(styles, { map: mapObject })
 
-    export const circle = ({ css: cssStyles, ...styles }) => cx(css(getCircleStyle(styles)), css(cssStyles))
+    export const circle = ({ css: cssStyles, ...styles } = {}) => cx(css(getCircleStyle(styles)), css(cssStyles))
     circle.raw = (styles) => styles",
         "name": "circle",
       },
@@ -393,7 +393,7 @@ test('should generate pattern', () => {
 
     export const getCenterStyle = (styles = {}) => centerConfig.transform(styles, { map: mapObject })
 
-    export const center = ({ css: cssStyles, ...styles }) => cx(css(getCenterStyle(styles)), css(cssStyles))
+    export const center = ({ css: cssStyles, ...styles } = {}) => cx(css(getCenterStyle(styles)), css(cssStyles))
     center.raw = (styles) => styles",
         "name": "center",
       },
@@ -435,7 +435,7 @@ test('should generate pattern', () => {
 
     export const getLinkBoxStyle = (styles = {}) => linkBoxConfig.transform(styles, { map: mapObject })
 
-    export const linkBox = ({ css: cssStyles, ...styles }) => cx(css(getLinkBoxStyle(styles)), css(cssStyles))
+    export const linkBox = ({ css: cssStyles, ...styles } = {}) => cx(css(getLinkBoxStyle(styles)), css(cssStyles))
     linkBox.raw = (styles) => styles",
         "name": "link-box",
       },
@@ -482,7 +482,7 @@ test('should generate pattern', () => {
 
     export const getLinkOverlayStyle = (styles = {}) => linkOverlayConfig.transform(styles, { map: mapObject })
 
-    export const linkOverlay = ({ css: cssStyles, ...styles }) => cx(css(getLinkOverlayStyle(styles)), css(cssStyles))
+    export const linkOverlay = ({ css: cssStyles, ...styles } = {}) => cx(css(getLinkOverlayStyle(styles)), css(cssStyles))
     linkOverlay.raw = (styles) => styles",
         "name": "link-overlay",
       },
@@ -540,7 +540,7 @@ test('should generate pattern', () => {
 
     export const getAspectRatioStyle = (styles = {}) => aspectRatioConfig.transform(styles, { map: mapObject })
 
-    export const aspectRatio = ({ css: cssStyles, ...styles }) => cx(css(getAspectRatioStyle(styles)), css(cssStyles))
+    export const aspectRatio = ({ css: cssStyles, ...styles } = {}) => cx(css(getAspectRatioStyle(styles)), css(cssStyles))
     aspectRatio.raw = (styles) => styles",
         "name": "aspect-ratio",
       },
@@ -587,7 +587,7 @@ test('should generate pattern', () => {
 
     export const getGridStyle = (styles = {}) => gridConfig.transform(styles, { map: mapObject })
 
-    export const grid = ({ css: cssStyles, ...styles }) => cx(css(getGridStyle(styles)), css(cssStyles))
+    export const grid = ({ css: cssStyles, ...styles } = {}) => cx(css(getGridStyle(styles)), css(cssStyles))
     grid.raw = (styles) => styles",
         "name": "grid",
       },
@@ -637,7 +637,7 @@ test('should generate pattern', () => {
 
     export const getGridItemStyle = (styles = {}) => gridItemConfig.transform(styles, { map: mapObject })
 
-    export const gridItem = ({ css: cssStyles, ...styles }) => cx(css(getGridItemStyle(styles)), css(cssStyles))
+    export const gridItem = ({ css: cssStyles, ...styles } = {}) => cx(css(getGridItemStyle(styles)), css(cssStyles))
     gridItem.raw = (styles) => styles",
         "name": "grid-item",
       },
@@ -686,7 +686,7 @@ test('should generate pattern', () => {
 
     export const getWrapStyle = (styles = {}) => wrapConfig.transform(styles, { map: mapObject })
 
-    export const wrap = ({ css: cssStyles, ...styles }) => cx(css(getWrapStyle(styles)), css(cssStyles))
+    export const wrap = ({ css: cssStyles, ...styles } = {}) => cx(css(getWrapStyle(styles)), css(cssStyles))
     wrap.raw = (styles) => styles",
         "name": "wrap",
       },
@@ -727,7 +727,7 @@ test('should generate pattern', () => {
 
     export const getContainerStyle = (styles = {}) => containerConfig.transform(styles, { map: mapObject })
 
-    export const container = ({ css: cssStyles, ...styles }) => cx(css(getContainerStyle(styles)), css(cssStyles))
+    export const container = ({ css: cssStyles, ...styles } = {}) => cx(css(getContainerStyle(styles)), css(cssStyles))
     container.raw = (styles) => styles",
         "name": "container",
       },
@@ -773,7 +773,7 @@ test('should generate pattern', () => {
 
     export const getDividerStyle = (styles = {}) => dividerConfig.transform(styles, { map: mapObject })
 
-    export const divider = ({ css: cssStyles, ...styles }) => cx(css(getDividerStyle(styles)), css(cssStyles))
+    export const divider = ({ css: cssStyles, ...styles } = {}) => cx(css(getDividerStyle(styles)), css(cssStyles))
     divider.raw = (styles) => styles",
         "name": "divider",
       },
@@ -844,7 +844,7 @@ test('should generate pattern', () => {
 
     export const getFloatStyle = (styles = {}) => floatConfig.transform(styles, { map: mapObject })
 
-    export const float = ({ css: cssStyles, ...styles }) => cx(css(getFloatStyle(styles)), css(cssStyles))
+    export const float = ({ css: cssStyles, ...styles } = {}) => cx(css(getFloatStyle(styles)), css(cssStyles))
     float.raw = (styles) => styles",
         "name": "float",
       },
@@ -887,7 +887,7 @@ test('should generate pattern', () => {
 
     export const getBleedStyle = (styles = {}) => bleedConfig.transform(styles, { map: mapObject })
 
-    export const bleed = ({ css: cssStyles, ...styles }) => cx(css(getBleedStyle(styles)), css(cssStyles))
+    export const bleed = ({ css: cssStyles, ...styles } = {}) => cx(css(getBleedStyle(styles)), css(cssStyles))
     bleed.raw = (styles) => styles",
         "name": "bleed",
       },
@@ -925,7 +925,7 @@ test('should generate pattern', () => {
 
     export const getVisuallyHiddenStyle = (styles = {}) => visuallyHiddenConfig.transform(styles, { map: mapObject })
 
-    export const visuallyHidden = ({ css: cssStyles, ...styles }) => cx(css(getVisuallyHiddenStyle(styles)), css(cssStyles))
+    export const visuallyHidden = ({ css: cssStyles, ...styles } = {}) => cx(css(getVisuallyHiddenStyle(styles)), css(cssStyles))
     visuallyHidden.raw = (styles) => styles",
         "name": "visually-hidden",
       },

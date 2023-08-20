@@ -22,5 +22,5 @@ const gridConfig = {
 
 export const getGridStyle = (styles = {}) => gridConfig.transform(styles, { map: mapObject })
 
-export const grid = ({ css: cssStyles, ...styles }) => cx(css(getGridStyle(styles)), css(cssStyles))
+export const grid = ({ css: cssStyles, ...styles } = {}) => cx(css(getGridStyle(styles)), css(cssStyles))
 grid.raw = (styles) => styles

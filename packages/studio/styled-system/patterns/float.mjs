@@ -42,5 +42,5 @@ const floatConfig = {
 
 export const getFloatStyle = (styles = {}) => floatConfig.transform(styles, { map: mapObject })
 
-export const float = ({ css: cssStyles, ...styles }) => cx(css(getFloatStyle(styles)), css(cssStyles))
+export const float = ({ css: cssStyles, ...styles } = {}) => cx(css(getFloatStyle(styles)), css(cssStyles))
 float.raw = (styles) => styles

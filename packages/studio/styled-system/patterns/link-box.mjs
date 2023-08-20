@@ -16,5 +16,5 @@ const linkBoxConfig = {
 
 export const getLinkBoxStyle = (styles = {}) => linkBoxConfig.transform(styles, { map: mapObject })
 
-export const linkBox = ({ css: cssStyles, ...styles }) => cx(css(getLinkBoxStyle(styles)), css(cssStyles))
+export const linkBox = ({ css: cssStyles, ...styles } = {}) => cx(css(getLinkBoxStyle(styles)), css(cssStyles))
 linkBox.raw = (styles) => styles

@@ -15,5 +15,5 @@ const spacerConfig = {
 
 export const getSpacerStyle = (styles = {}) => spacerConfig.transform(styles, { map: mapObject })
 
-export const spacer = ({ css: cssStyles, ...styles }) => cx(css(getSpacerStyle(styles)), css(cssStyles))
+export const spacer = ({ css: cssStyles, ...styles } = {}) => cx(css(getSpacerStyle(styles)), css(cssStyles))
 spacer.raw = (styles) => styles

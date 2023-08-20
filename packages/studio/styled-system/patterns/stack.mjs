@@ -17,5 +17,5 @@ const stackConfig = {
 
 export const getStackStyle = (styles = {}) => stackConfig.transform(styles, { map: mapObject })
 
-export const stack = ({ css: cssStyles, ...styles }) => cx(css(getStackStyle(styles)), css(cssStyles))
+export const stack = ({ css: cssStyles, ...styles } = {}) => cx(css(getStackStyle(styles)), css(cssStyles))
 stack.raw = (styles) => styles

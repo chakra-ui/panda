@@ -77,7 +77,7 @@ export function generatePattern(ctx: Context) {
 
     export const ${styleFnName} = (styles = {}) => ${baseName}Config.transform(styles, { map: mapObject })
 
-    export const ${baseName} = ({ css: cssStyles, ...styles }) => cx(css(${styleFnName}(styles)), css(cssStyles))
+    export const ${baseName} = ({ css: cssStyles, ...styles } = {}) => cx(css(${styleFnName}(styles)), css(cssStyles))
     ${baseName}.raw = (styles) => styles
     `,
     }

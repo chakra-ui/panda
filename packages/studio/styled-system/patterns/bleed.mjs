@@ -16,5 +16,5 @@ const bleedConfig = {
 
 export const getBleedStyle = (styles = {}) => bleedConfig.transform(styles, { map: mapObject })
 
-export const bleed = ({ css: cssStyles, ...styles }) => cx(css(getBleedStyle(styles)), css(cssStyles))
+export const bleed = ({ css: cssStyles, ...styles } = {}) => cx(css(getBleedStyle(styles)), css(cssStyles))
 bleed.raw = (styles) => styles

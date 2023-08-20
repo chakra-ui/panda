@@ -21,5 +21,5 @@ const linkOverlayConfig = {
 
 export const getLinkOverlayStyle = (styles = {}) => linkOverlayConfig.transform(styles, { map: mapObject })
 
-export const linkOverlay = ({ css: cssStyles, ...styles }) => cx(css(getLinkOverlayStyle(styles)), css(cssStyles))
+export const linkOverlay = ({ css: cssStyles, ...styles } = {}) => cx(css(getLinkOverlayStyle(styles)), css(cssStyles))
 linkOverlay.raw = (styles) => styles

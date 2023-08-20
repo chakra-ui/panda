@@ -12,5 +12,6 @@ const visuallyHiddenConfig = {
 
 export const getVisuallyHiddenStyle = (styles = {}) => visuallyHiddenConfig.transform(styles, { map: mapObject })
 
-export const visuallyHidden = ({ css: cssStyles, ...styles }) => cx(css(getVisuallyHiddenStyle(styles)), css(cssStyles))
+export const visuallyHidden = ({ css: cssStyles, ...styles } = {}) =>
+  cx(css(getVisuallyHiddenStyle(styles)), css(cssStyles))
 visuallyHidden.raw = (styles) => styles

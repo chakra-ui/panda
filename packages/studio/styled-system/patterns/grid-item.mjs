@@ -19,5 +19,5 @@ const gridItemConfig = {
 
 export const getGridItemStyle = (styles = {}) => gridItemConfig.transform(styles, { map: mapObject })
 
-export const gridItem = ({ css: cssStyles, ...styles }) => cx(css(getGridItemStyle(styles)), css(cssStyles))
+export const gridItem = ({ css: cssStyles, ...styles } = {}) => cx(css(getGridItemStyle(styles)), css(cssStyles))
 gridItem.raw = (styles) => styles

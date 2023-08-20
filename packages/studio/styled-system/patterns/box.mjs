@@ -9,5 +9,5 @@ const boxConfig = {
 
 export const getBoxStyle = (styles = {}) => boxConfig.transform(styles, { map: mapObject })
 
-export const box = ({ css: cssStyles, ...styles }) => cx(css(getBoxStyle(styles)), css(cssStyles))
+export const box = ({ css: cssStyles, ...styles } = {}) => cx(css(getBoxStyle(styles)), css(cssStyles))
 box.raw = (styles) => styles

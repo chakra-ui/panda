@@ -17,5 +17,5 @@ const vstackConfig = {
 
 export const getVstackStyle = (styles = {}) => vstackConfig.transform(styles, { map: mapObject })
 
-export const vstack = ({ css: cssStyles, ...styles }) => cx(css(getVstackStyle(styles)), css(cssStyles))
+export const vstack = ({ css: cssStyles, ...styles } = {}) => cx(css(getVstackStyle(styles)), css(cssStyles))
 vstack.raw = (styles) => styles

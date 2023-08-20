@@ -15,5 +15,5 @@ const styledLinkConfig = {
 
 export const getStyledLinkStyle = (styles = {}) => styledLinkConfig.transform(styles, { map: mapObject })
 
-export const styledLink = ({ css: cssStyles, ...styles }) => cx(css(getStyledLinkStyle(styles)), css(cssStyles))
+export const styledLink = ({ css: cssStyles, ...styles } = {}) => cx(css(getStyledLinkStyle(styles)), css(cssStyles))
 styledLink.raw = (styles) => styles

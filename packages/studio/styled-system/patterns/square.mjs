@@ -18,5 +18,5 @@ const squareConfig = {
 
 export const getSquareStyle = (styles = {}) => squareConfig.transform(styles, { map: mapObject })
 
-export const square = ({ css: cssStyles, ...styles }) => cx(css(getSquareStyle(styles)), css(cssStyles))
+export const square = ({ css: cssStyles, ...styles } = {}) => cx(css(getSquareStyle(styles)), css(cssStyles))
 square.raw = (styles) => styles

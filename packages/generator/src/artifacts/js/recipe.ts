@@ -27,7 +27,7 @@ export function generateRecipes(ctx: Context) {
    ${ctx.file.import('compact, createCss, withoutSpace', '../helpers')}
 
    export const createRecipe = (name, defaultVariants, compoundVariants) => {
-     return ({ css: cssStyles, ...variants }) => {
+     return ({ css: cssStyles, ...variants } = {}) => {
       const transform = (prop, value) => {
         assertCompoundVariant(name, compoundVariants, variants, prop)
 
