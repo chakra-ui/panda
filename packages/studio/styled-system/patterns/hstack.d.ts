@@ -13,7 +13,7 @@ export type HstackProperties = {
 type HstackOptions = HstackProperties & Omit<SystemStyleObject, keyof HstackProperties >
 
 interface HstackPatternFn {
-  (options?: HstackOptions): string
+  (options?: HstackOptions & { css?: SystemStyleObject }): string
   raw: (options: HstackOptions) => HstackOptions
 }
 

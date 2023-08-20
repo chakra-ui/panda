@@ -12,7 +12,7 @@ export type VisuallyHiddenProperties = {
 type VisuallyHiddenOptions = VisuallyHiddenProperties & Omit<SystemStyleObject, keyof VisuallyHiddenProperties >
 
 interface VisuallyHiddenPatternFn {
-  (options?: VisuallyHiddenOptions): string
+  (options?: VisuallyHiddenOptions & { css?: SystemStyleObject }): string
   raw: (options: VisuallyHiddenOptions) => VisuallyHiddenOptions
 }
 

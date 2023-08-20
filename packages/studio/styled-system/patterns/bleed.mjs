@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const bleedConfig = {
   transform(props) {
@@ -16,5 +16,5 @@ const bleedConfig = {
 
 export const getBleedStyle = (styles = {}) => bleedConfig.transform(styles, { map: mapObject })
 
-export const bleed = (styles) => css(getBleedStyle(styles))
+export const bleed = ({ css: cssStyles, ...styles }) => cx(css(getBleedStyle(styles)), css(cssStyles))
 bleed.raw = (styles) => styles

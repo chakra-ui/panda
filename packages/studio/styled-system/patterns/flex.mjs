@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const flexConfig = {
   transform(props) {
@@ -20,5 +20,5 @@ const flexConfig = {
 
 export const getFlexStyle = (styles = {}) => flexConfig.transform(styles, { map: mapObject })
 
-export const flex = (styles) => css(getFlexStyle(styles))
+export const flex = ({ css: cssStyles, ...styles }) => cx(css(getFlexStyle(styles)), css(cssStyles))
 flex.raw = (styles) => styles

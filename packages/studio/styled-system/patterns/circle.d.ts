@@ -12,7 +12,7 @@ export type CircleProperties = {
 type CircleOptions = CircleProperties & Omit<SystemStyleObject, keyof CircleProperties >
 
 interface CirclePatternFn {
-  (options?: CircleOptions): string
+  (options?: CircleOptions & { css?: SystemStyleObject }): string
   raw: (options: CircleOptions) => CircleOptions
 }
 

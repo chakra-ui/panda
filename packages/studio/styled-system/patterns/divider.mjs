@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const dividerConfig = {
   transform(props, { map }) {
@@ -18,5 +18,5 @@ const dividerConfig = {
 
 export const getDividerStyle = (styles = {}) => dividerConfig.transform(styles, { map: mapObject })
 
-export const divider = (styles) => css(getDividerStyle(styles))
+export const divider = ({ css: cssStyles, ...styles }) => cx(css(getDividerStyle(styles)), css(cssStyles))
 divider.raw = (styles) => styles

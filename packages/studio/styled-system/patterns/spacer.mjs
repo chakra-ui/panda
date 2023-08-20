@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const spacerConfig = {
   transform(props, { map }) {
@@ -15,5 +15,5 @@ const spacerConfig = {
 
 export const getSpacerStyle = (styles = {}) => spacerConfig.transform(styles, { map: mapObject })
 
-export const spacer = (styles) => css(getSpacerStyle(styles))
+export const spacer = ({ css: cssStyles, ...styles }) => cx(css(getSpacerStyle(styles)), css(cssStyles))
 spacer.raw = (styles) => styles

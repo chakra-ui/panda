@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const visuallyHiddenConfig = {
   transform(props) {
@@ -12,5 +12,5 @@ const visuallyHiddenConfig = {
 
 export const getVisuallyHiddenStyle = (styles = {}) => visuallyHiddenConfig.transform(styles, { map: mapObject })
 
-export const visuallyHidden = (styles) => css(getVisuallyHiddenStyle(styles))
+export const visuallyHidden = ({ css: cssStyles, ...styles }) => cx(css(getVisuallyHiddenStyle(styles)), css(cssStyles))
 visuallyHidden.raw = (styles) => styles

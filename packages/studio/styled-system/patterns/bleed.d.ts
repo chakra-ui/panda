@@ -13,7 +13,7 @@ export type BleedProperties = {
 type BleedOptions = BleedProperties & Omit<SystemStyleObject, keyof BleedProperties >
 
 interface BleedPatternFn {
-  (options?: BleedOptions): string
+  (options?: BleedOptions & { css?: SystemStyleObject }): string
   raw: (options: BleedOptions) => BleedOptions
 }
 

@@ -19,7 +19,7 @@ test('should generate pattern', () => {
     type BoxOptions = BoxProperties & Omit<SystemStyleObject, keyof BoxProperties >
 
     interface BoxPatternFn {
-      (options?: BoxOptions): string
+      (options?: BoxOptions & { css?: SystemStyleObject }): string
       raw: (options: BoxOptions) => BoxOptions
     }
 
@@ -27,7 +27,7 @@ test('should generate pattern', () => {
     export declare const box: BoxPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const boxConfig = {
     transform(props) {
@@ -36,7 +36,7 @@ test('should generate pattern', () => {
 
     export const getBoxStyle = (styles = {}) => boxConfig.transform(styles, { map: mapObject })
 
-    export const box = (styles) => css(getBoxStyle(styles))
+    export const box = ({ css: cssStyles, ...styles }) => cx(css(getBoxStyle(styles)), css(cssStyles))
     box.raw = (styles) => styles",
         "name": "box",
       },
@@ -60,7 +60,7 @@ test('should generate pattern', () => {
     type FlexOptions = FlexProperties & Omit<SystemStyleObject, keyof FlexProperties >
 
     interface FlexPatternFn {
-      (options?: FlexOptions): string
+      (options?: FlexOptions & { css?: SystemStyleObject }): string
       raw: (options: FlexOptions) => FlexOptions
     }
 
@@ -68,7 +68,7 @@ test('should generate pattern', () => {
     export declare const flex: FlexPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const flexConfig = {
     transform(props) {
@@ -88,7 +88,7 @@ test('should generate pattern', () => {
 
     export const getFlexStyle = (styles = {}) => flexConfig.transform(styles, { map: mapObject })
 
-    export const flex = (styles) => css(getFlexStyle(styles))
+    export const flex = ({ css: cssStyles, ...styles }) => cx(css(getFlexStyle(styles)), css(cssStyles))
     flex.raw = (styles) => styles",
         "name": "flex",
       },
@@ -109,7 +109,7 @@ test('should generate pattern', () => {
     type StackOptions = StackProperties & Omit<SystemStyleObject, keyof StackProperties >
 
     interface StackPatternFn {
-      (options?: StackOptions): string
+      (options?: StackOptions & { css?: SystemStyleObject }): string
       raw: (options: StackOptions) => StackOptions
     }
 
@@ -117,7 +117,7 @@ test('should generate pattern', () => {
     export declare const stack: StackPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const stackConfig = {
     transform(props) {
@@ -134,7 +134,7 @@ test('should generate pattern', () => {
 
     export const getStackStyle = (styles = {}) => stackConfig.transform(styles, { map: mapObject })
 
-    export const stack = (styles) => css(getStackStyle(styles))
+    export const stack = ({ css: cssStyles, ...styles }) => cx(css(getStackStyle(styles)), css(cssStyles))
     stack.raw = (styles) => styles",
         "name": "stack",
       },
@@ -153,7 +153,7 @@ test('should generate pattern', () => {
     type VstackOptions = VstackProperties & Omit<SystemStyleObject, keyof VstackProperties >
 
     interface VstackPatternFn {
-      (options?: VstackOptions): string
+      (options?: VstackOptions & { css?: SystemStyleObject }): string
       raw: (options: VstackOptions) => VstackOptions
     }
 
@@ -161,7 +161,7 @@ test('should generate pattern', () => {
     export declare const vstack: VstackPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const vstackConfig = {
     transform(props) {
@@ -178,7 +178,7 @@ test('should generate pattern', () => {
 
     export const getVstackStyle = (styles = {}) => vstackConfig.transform(styles, { map: mapObject })
 
-    export const vstack = (styles) => css(getVstackStyle(styles))
+    export const vstack = ({ css: cssStyles, ...styles }) => cx(css(getVstackStyle(styles)), css(cssStyles))
     vstack.raw = (styles) => styles",
         "name": "vstack",
       },
@@ -197,7 +197,7 @@ test('should generate pattern', () => {
     type HstackOptions = HstackProperties & Omit<SystemStyleObject, keyof HstackProperties >
 
     interface HstackPatternFn {
-      (options?: HstackOptions): string
+      (options?: HstackOptions & { css?: SystemStyleObject }): string
       raw: (options: HstackOptions) => HstackOptions
     }
 
@@ -205,7 +205,7 @@ test('should generate pattern', () => {
     export declare const hstack: HstackPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const hstackConfig = {
     transform(props) {
@@ -222,7 +222,7 @@ test('should generate pattern', () => {
 
     export const getHstackStyle = (styles = {}) => hstackConfig.transform(styles, { map: mapObject })
 
-    export const hstack = (styles) => css(getHstackStyle(styles))
+    export const hstack = ({ css: cssStyles, ...styles }) => cx(css(getHstackStyle(styles)), css(cssStyles))
     hstack.raw = (styles) => styles",
         "name": "hstack",
       },
@@ -240,7 +240,7 @@ test('should generate pattern', () => {
     type SpacerOptions = SpacerProperties & Omit<SystemStyleObject, keyof SpacerProperties >
 
     interface SpacerPatternFn {
-      (options?: SpacerOptions): string
+      (options?: SpacerOptions & { css?: SystemStyleObject }): string
       raw: (options: SpacerOptions) => SpacerOptions
     }
 
@@ -248,7 +248,7 @@ test('should generate pattern', () => {
     export declare const spacer: SpacerPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const spacerConfig = {
     transform(props, { map }) {
@@ -263,7 +263,7 @@ test('should generate pattern', () => {
 
     export const getSpacerStyle = (styles = {}) => spacerConfig.transform(styles, { map: mapObject })
 
-    export const spacer = (styles) => css(getSpacerStyle(styles))
+    export const spacer = ({ css: cssStyles, ...styles }) => cx(css(getSpacerStyle(styles)), css(cssStyles))
     spacer.raw = (styles) => styles",
         "name": "spacer",
       },
@@ -281,7 +281,7 @@ test('should generate pattern', () => {
     type SquareOptions = SquareProperties & Omit<SystemStyleObject, keyof SquareProperties >
 
     interface SquarePatternFn {
-      (options?: SquareOptions): string
+      (options?: SquareOptions & { css?: SystemStyleObject }): string
       raw: (options: SquareOptions) => SquareOptions
     }
 
@@ -289,7 +289,7 @@ test('should generate pattern', () => {
     export declare const square: SquarePatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const squareConfig = {
     transform(props) {
@@ -307,7 +307,7 @@ test('should generate pattern', () => {
 
     export const getSquareStyle = (styles = {}) => squareConfig.transform(styles, { map: mapObject })
 
-    export const square = (styles) => css(getSquareStyle(styles))
+    export const square = ({ css: cssStyles, ...styles }) => cx(css(getSquareStyle(styles)), css(cssStyles))
     square.raw = (styles) => styles",
         "name": "square",
       },
@@ -325,7 +325,7 @@ test('should generate pattern', () => {
     type CircleOptions = CircleProperties & Omit<SystemStyleObject, keyof CircleProperties >
 
     interface CirclePatternFn {
-      (options?: CircleOptions): string
+      (options?: CircleOptions & { css?: SystemStyleObject }): string
       raw: (options: CircleOptions) => CircleOptions
     }
 
@@ -333,7 +333,7 @@ test('should generate pattern', () => {
     export declare const circle: CirclePatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const circleConfig = {
     transform(props) {
@@ -352,7 +352,7 @@ test('should generate pattern', () => {
 
     export const getCircleStyle = (styles = {}) => circleConfig.transform(styles, { map: mapObject })
 
-    export const circle = (styles) => css(getCircleStyle(styles))
+    export const circle = ({ css: cssStyles, ...styles }) => cx(css(getCircleStyle(styles)), css(cssStyles))
     circle.raw = (styles) => styles",
         "name": "circle",
       },
@@ -370,7 +370,7 @@ test('should generate pattern', () => {
     type CenterOptions = CenterProperties & Omit<SystemStyleObject, keyof CenterProperties >
 
     interface CenterPatternFn {
-      (options?: CenterOptions): string
+      (options?: CenterOptions & { css?: SystemStyleObject }): string
       raw: (options: CenterOptions) => CenterOptions
     }
 
@@ -378,7 +378,7 @@ test('should generate pattern', () => {
     export declare const center: CenterPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const centerConfig = {
     transform(props) {
@@ -393,7 +393,7 @@ test('should generate pattern', () => {
 
     export const getCenterStyle = (styles = {}) => centerConfig.transform(styles, { map: mapObject })
 
-    export const center = (styles) => css(getCenterStyle(styles))
+    export const center = ({ css: cssStyles, ...styles }) => cx(css(getCenterStyle(styles)), css(cssStyles))
     center.raw = (styles) => styles",
         "name": "center",
       },
@@ -411,7 +411,7 @@ test('should generate pattern', () => {
     type LinkBoxOptions = LinkBoxProperties & Omit<SystemStyleObject, keyof LinkBoxProperties >
 
     interface LinkBoxPatternFn {
-      (options?: LinkBoxOptions): string
+      (options?: LinkBoxOptions & { css?: SystemStyleObject }): string
       raw: (options: LinkBoxOptions) => LinkBoxOptions
     }
 
@@ -419,7 +419,7 @@ test('should generate pattern', () => {
     export declare const linkBox: LinkBoxPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const linkBoxConfig = {
     transform(props) {
@@ -435,7 +435,7 @@ test('should generate pattern', () => {
 
     export const getLinkBoxStyle = (styles = {}) => linkBoxConfig.transform(styles, { map: mapObject })
 
-    export const linkBox = (styles) => css(getLinkBoxStyle(styles))
+    export const linkBox = ({ css: cssStyles, ...styles }) => cx(css(getLinkBoxStyle(styles)), css(cssStyles))
     linkBox.raw = (styles) => styles",
         "name": "link-box",
       },
@@ -453,7 +453,7 @@ test('should generate pattern', () => {
     type LinkOverlayOptions = LinkOverlayProperties & Omit<SystemStyleObject, keyof LinkOverlayProperties >
 
     interface LinkOverlayPatternFn {
-      (options?: LinkOverlayOptions): string
+      (options?: LinkOverlayOptions & { css?: SystemStyleObject }): string
       raw: (options: LinkOverlayOptions) => LinkOverlayOptions
     }
 
@@ -461,7 +461,7 @@ test('should generate pattern', () => {
     export declare const linkOverlay: LinkOverlayPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const linkOverlayConfig = {
     transform(props) {
@@ -482,7 +482,7 @@ test('should generate pattern', () => {
 
     export const getLinkOverlayStyle = (styles = {}) => linkOverlayConfig.transform(styles, { map: mapObject })
 
-    export const linkOverlay = (styles) => css(getLinkOverlayStyle(styles))
+    export const linkOverlay = ({ css: cssStyles, ...styles }) => cx(css(getLinkOverlayStyle(styles)), css(cssStyles))
     linkOverlay.raw = (styles) => styles",
         "name": "link-overlay",
       },
@@ -500,7 +500,7 @@ test('should generate pattern', () => {
     type AspectRatioOptions = AspectRatioProperties & Omit<SystemStyleObject, keyof AspectRatioProperties | 'aspectRatio'>
 
     interface AspectRatioPatternFn {
-      (options?: AspectRatioOptions): string
+      (options?: AspectRatioOptions & { css?: SystemStyleObject }): string
       raw: (options: AspectRatioOptions) => AspectRatioOptions
     }
 
@@ -508,7 +508,7 @@ test('should generate pattern', () => {
     export declare const aspectRatio: AspectRatioPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const aspectRatioConfig = {
     transform(props, { map }) {
@@ -540,7 +540,7 @@ test('should generate pattern', () => {
 
     export const getAspectRatioStyle = (styles = {}) => aspectRatioConfig.transform(styles, { map: mapObject })
 
-    export const aspectRatio = (styles) => css(getAspectRatioStyle(styles))
+    export const aspectRatio = ({ css: cssStyles, ...styles }) => cx(css(getAspectRatioStyle(styles)), css(cssStyles))
     aspectRatio.raw = (styles) => styles",
         "name": "aspect-ratio",
       },
@@ -562,7 +562,7 @@ test('should generate pattern', () => {
     type GridOptions = GridProperties & Omit<SystemStyleObject, keyof GridProperties >
 
     interface GridPatternFn {
-      (options?: GridOptions): string
+      (options?: GridOptions & { css?: SystemStyleObject }): string
       raw: (options: GridOptions) => GridOptions
     }
 
@@ -570,7 +570,7 @@ test('should generate pattern', () => {
     export declare const grid: GridPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const gridConfig = {
     transform(props, { map }) {
@@ -587,7 +587,7 @@ test('should generate pattern', () => {
 
     export const getGridStyle = (styles = {}) => gridConfig.transform(styles, { map: mapObject })
 
-    export const grid = (styles) => css(getGridStyle(styles))
+    export const grid = ({ css: cssStyles, ...styles }) => cx(css(getGridStyle(styles)), css(cssStyles))
     grid.raw = (styles) => styles",
         "name": "grid",
       },
@@ -610,7 +610,7 @@ test('should generate pattern', () => {
     type GridItemOptions = GridItemProperties & Omit<SystemStyleObject, keyof GridItemProperties >
 
     interface GridItemPatternFn {
-      (options?: GridItemOptions): string
+      (options?: GridItemOptions & { css?: SystemStyleObject }): string
       raw: (options: GridItemOptions) => GridItemOptions
     }
 
@@ -618,7 +618,7 @@ test('should generate pattern', () => {
     export declare const gridItem: GridItemPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const gridItemConfig = {
     transform(props, { map }) {
@@ -637,7 +637,7 @@ test('should generate pattern', () => {
 
     export const getGridItemStyle = (styles = {}) => gridItemConfig.transform(styles, { map: mapObject })
 
-    export const gridItem = (styles) => css(getGridItemStyle(styles))
+    export const gridItem = ({ css: cssStyles, ...styles }) => cx(css(getGridItemStyle(styles)), css(cssStyles))
     gridItem.raw = (styles) => styles",
         "name": "grid-item",
       },
@@ -659,7 +659,7 @@ test('should generate pattern', () => {
     type WrapOptions = WrapProperties & Omit<SystemStyleObject, keyof WrapProperties >
 
     interface WrapPatternFn {
-      (options?: WrapOptions): string
+      (options?: WrapOptions & { css?: SystemStyleObject }): string
       raw: (options: WrapOptions) => WrapOptions
     }
 
@@ -667,7 +667,7 @@ test('should generate pattern', () => {
     export declare const wrap: WrapPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const wrapConfig = {
     transform(props) {
@@ -686,7 +686,7 @@ test('should generate pattern', () => {
 
     export const getWrapStyle = (styles = {}) => wrapConfig.transform(styles, { map: mapObject })
 
-    export const wrap = (styles) => css(getWrapStyle(styles))
+    export const wrap = ({ css: cssStyles, ...styles }) => cx(css(getWrapStyle(styles)), css(cssStyles))
     wrap.raw = (styles) => styles",
         "name": "wrap",
       },
@@ -704,7 +704,7 @@ test('should generate pattern', () => {
     type ContainerOptions = ContainerProperties & Omit<SystemStyleObject, keyof ContainerProperties >
 
     interface ContainerPatternFn {
-      (options?: ContainerOptions): string
+      (options?: ContainerOptions & { css?: SystemStyleObject }): string
       raw: (options: ContainerOptions) => ContainerOptions
     }
 
@@ -712,7 +712,7 @@ test('should generate pattern', () => {
     export declare const container: ContainerPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const containerConfig = {
     transform(props) {
@@ -727,7 +727,7 @@ test('should generate pattern', () => {
 
     export const getContainerStyle = (styles = {}) => containerConfig.transform(styles, { map: mapObject })
 
-    export const container = (styles) => css(getContainerStyle(styles))
+    export const container = ({ css: cssStyles, ...styles }) => cx(css(getContainerStyle(styles)), css(cssStyles))
     container.raw = (styles) => styles",
         "name": "container",
       },
@@ -747,7 +747,7 @@ test('should generate pattern', () => {
     type DividerOptions = DividerProperties & Omit<SystemStyleObject, keyof DividerProperties >
 
     interface DividerPatternFn {
-      (options?: DividerOptions): string
+      (options?: DividerOptions & { css?: SystemStyleObject }): string
       raw: (options: DividerOptions) => DividerOptions
     }
 
@@ -755,7 +755,7 @@ test('should generate pattern', () => {
     export declare const divider: DividerPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const dividerConfig = {
     transform(props, { map }) {
@@ -773,7 +773,7 @@ test('should generate pattern', () => {
 
     export const getDividerStyle = (styles = {}) => dividerConfig.transform(styles, { map: mapObject })
 
-    export const divider = (styles) => css(getDividerStyle(styles))
+    export const divider = ({ css: cssStyles, ...styles }) => cx(css(getDividerStyle(styles)), css(cssStyles))
     divider.raw = (styles) => styles",
         "name": "divider",
       },
@@ -794,7 +794,7 @@ test('should generate pattern', () => {
     type FloatOptions = FloatProperties & Omit<SystemStyleObject, keyof FloatProperties >
 
     interface FloatPatternFn {
-      (options?: FloatOptions): string
+      (options?: FloatOptions & { css?: SystemStyleObject }): string
       raw: (options: FloatOptions) => FloatOptions
     }
 
@@ -802,7 +802,7 @@ test('should generate pattern', () => {
     export declare const float: FloatPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const floatConfig = {
     transform(props, { map }) {
@@ -844,7 +844,7 @@ test('should generate pattern', () => {
 
     export const getFloatStyle = (styles = {}) => floatConfig.transform(styles, { map: mapObject })
 
-    export const float = (styles) => css(getFloatStyle(styles))
+    export const float = ({ css: cssStyles, ...styles }) => cx(css(getFloatStyle(styles)), css(cssStyles))
     float.raw = (styles) => styles",
         "name": "float",
       },
@@ -863,7 +863,7 @@ test('should generate pattern', () => {
     type BleedOptions = BleedProperties & Omit<SystemStyleObject, keyof BleedProperties >
 
     interface BleedPatternFn {
-      (options?: BleedOptions): string
+      (options?: BleedOptions & { css?: SystemStyleObject }): string
       raw: (options: BleedOptions) => BleedOptions
     }
 
@@ -871,7 +871,7 @@ test('should generate pattern', () => {
     export declare const bleed: BleedPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const bleedConfig = {
     transform(props) {
@@ -887,7 +887,7 @@ test('should generate pattern', () => {
 
     export const getBleedStyle = (styles = {}) => bleedConfig.transform(styles, { map: mapObject })
 
-    export const bleed = (styles) => css(getBleedStyle(styles))
+    export const bleed = ({ css: cssStyles, ...styles }) => cx(css(getBleedStyle(styles)), css(cssStyles))
     bleed.raw = (styles) => styles",
         "name": "bleed",
       },
@@ -905,7 +905,7 @@ test('should generate pattern', () => {
     type VisuallyHiddenOptions = VisuallyHiddenProperties & Omit<SystemStyleObject, keyof VisuallyHiddenProperties >
 
     interface VisuallyHiddenPatternFn {
-      (options?: VisuallyHiddenOptions): string
+      (options?: VisuallyHiddenOptions & { css?: SystemStyleObject }): string
       raw: (options: VisuallyHiddenOptions) => VisuallyHiddenOptions
     }
 
@@ -913,7 +913,7 @@ test('should generate pattern', () => {
     export declare const visuallyHidden: VisuallyHiddenPatternFn;
     ",
         "js": "import { mapObject } from '../helpers.mjs';
-    import { css } from '../css/index.mjs';
+    import { css, cx } from '../css/index.mjs';
 
     const visuallyHiddenConfig = {
     transform(props) {
@@ -925,7 +925,7 @@ test('should generate pattern', () => {
 
     export const getVisuallyHiddenStyle = (styles = {}) => visuallyHiddenConfig.transform(styles, { map: mapObject })
 
-    export const visuallyHidden = (styles) => css(getVisuallyHiddenStyle(styles))
+    export const visuallyHidden = ({ css: cssStyles, ...styles }) => cx(css(getVisuallyHiddenStyle(styles)), css(cssStyles))
     visuallyHidden.raw = (styles) => styles",
         "name": "visually-hidden",
       },

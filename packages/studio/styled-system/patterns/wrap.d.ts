@@ -16,7 +16,7 @@ export type WrapProperties = {
 type WrapOptions = WrapProperties & Omit<SystemStyleObject, keyof WrapProperties >
 
 interface WrapPatternFn {
-  (options?: WrapOptions): string
+  (options?: WrapOptions & { css?: SystemStyleObject }): string
   raw: (options: WrapOptions) => WrapOptions
 }
 

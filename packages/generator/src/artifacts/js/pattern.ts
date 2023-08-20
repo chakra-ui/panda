@@ -59,7 +59,7 @@ export function generatePattern(ctx: Context) {
           type ${upperName}Options = ${upperName}Properties & Omit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}>
 
           interface ${upperName}PatternFn {
-            (options?: ${upperName}Options): string
+            (options?: ${upperName}Options & { css?: SystemStyleObject }): string
             raw: (options: ${upperName}Options) => ${upperName}Options
           }
 
@@ -71,13 +71,13 @@ export function generatePattern(ctx: Context) {
      `,
       js: outdent`
     ${ctx.file.import(helperImports.join(', '), '../helpers')}
-    ${ctx.file.import('css', '../css/index')}
+    ${ctx.file.import('css, cx', '../css/index')}
 
     const ${baseName}Config = ${transformFn.replace(`{transform`, `{\ntransform`)}
 
     export const ${styleFnName} = (styles = {}) => ${baseName}Config.transform(styles, { map: mapObject })
 
-    export const ${baseName} = (styles) => css(${styleFnName}(styles))
+    export const ${baseName} = ({ css: cssStyles, ...styles }) => cx(css(${styleFnName}(styles)), css(cssStyles))
     ${baseName}.raw = (styles) => styles
     `,
     }

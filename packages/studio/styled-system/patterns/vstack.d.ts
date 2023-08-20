@@ -13,7 +13,7 @@ export type VstackProperties = {
 type VstackOptions = VstackProperties & Omit<SystemStyleObject, keyof VstackProperties >
 
 interface VstackPatternFn {
-  (options?: VstackOptions): string
+  (options?: VstackOptions & { css?: SystemStyleObject }): string
   raw: (options: VstackOptions) => VstackOptions
 }
 

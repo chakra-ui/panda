@@ -15,7 +15,7 @@ export type StackProperties = {
 type StackOptions = StackProperties & Omit<SystemStyleObject, keyof StackProperties >
 
 interface StackPatternFn {
-  (options?: StackOptions): string
+  (options?: StackOptions & { css?: SystemStyleObject }): string
   raw: (options: StackOptions) => StackOptions
 }
 

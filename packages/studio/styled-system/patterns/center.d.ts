@@ -12,7 +12,7 @@ export type CenterProperties = {
 type CenterOptions = CenterProperties & Omit<SystemStyleObject, keyof CenterProperties >
 
 interface CenterPatternFn {
-  (options?: CenterOptions): string
+  (options?: CenterOptions & { css?: SystemStyleObject }): string
   raw: (options: CenterOptions) => CenterOptions
 }
 

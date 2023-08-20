@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const wrapConfig = {
   transform(props) {
@@ -19,5 +19,5 @@ const wrapConfig = {
 
 export const getWrapStyle = (styles = {}) => wrapConfig.transform(styles, { map: mapObject })
 
-export const wrap = (styles) => css(getWrapStyle(styles))
+export const wrap = ({ css: cssStyles, ...styles }) => cx(css(getWrapStyle(styles)), css(cssStyles))
 wrap.raw = (styles) => styles

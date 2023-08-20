@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const vstackConfig = {
   transform(props) {
@@ -17,5 +17,5 @@ const vstackConfig = {
 
 export const getVstackStyle = (styles = {}) => vstackConfig.transform(styles, { map: mapObject })
 
-export const vstack = (styles) => css(getVstackStyle(styles))
+export const vstack = ({ css: cssStyles, ...styles }) => cx(css(getVstackStyle(styles)), css(cssStyles))
 vstack.raw = (styles) => styles

@@ -12,7 +12,7 @@ export type ContainerProperties = {
 type ContainerOptions = ContainerProperties & Omit<SystemStyleObject, keyof ContainerProperties >
 
 interface ContainerPatternFn {
-  (options?: ContainerOptions): string
+  (options?: ContainerOptions & { css?: SystemStyleObject }): string
   raw: (options: ContainerOptions) => ContainerOptions
 }
 

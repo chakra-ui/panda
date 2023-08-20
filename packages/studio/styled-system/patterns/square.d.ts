@@ -12,7 +12,7 @@ export type SquareProperties = {
 type SquareOptions = SquareProperties & Omit<SystemStyleObject, keyof SquareProperties >
 
 interface SquarePatternFn {
-  (options?: SquareOptions): string
+  (options?: SquareOptions & { css?: SystemStyleObject }): string
   raw: (options: SquareOptions) => SquareOptions
 }
 

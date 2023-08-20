@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const styledLinkConfig = {
   transform: (props) => ({
@@ -15,5 +15,5 @@ const styledLinkConfig = {
 
 export const getStyledLinkStyle = (styles = {}) => styledLinkConfig.transform(styles, { map: mapObject })
 
-export const styledLink = (styles) => css(getStyledLinkStyle(styles))
+export const styledLink = ({ css: cssStyles, ...styles }) => cx(css(getStyledLinkStyle(styles)), css(cssStyles))
 styledLink.raw = (styles) => styles

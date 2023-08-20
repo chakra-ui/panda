@@ -50,7 +50,12 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
               })
               .otherwise(() => {
                 recipe.data.forEach((data) => {
-                  sheet.processRecipe(recipeName, recipeConfig, data)
+                  const { css, ...recipeProps } = data
+                  sheet.processRecipe(recipeName, recipeConfig, recipeProps)
+
+                  if (css) {
+                    sheet.processStyleProps({ css })
+                  }
                 })
               })
           }
@@ -73,8 +78,13 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
               })
               .otherwise(() => {
                 pattern.data.forEach((data) => {
+                  const { css, ...patternProps } = data
                   const styleProps = patterns.transform(name, data)
                   sheet.processAtomic(styleProps)
+
+                  if (css) {
+                    sheet.processStyleProps(patternProps)
+                  }
                 })
               })
           }

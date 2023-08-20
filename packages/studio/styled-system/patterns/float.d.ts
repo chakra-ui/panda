@@ -15,7 +15,7 @@ export type FloatProperties = {
 type FloatOptions = FloatProperties & Omit<SystemStyleObject, keyof FloatProperties >
 
 interface FloatPatternFn {
-  (options?: FloatOptions): string
+  (options?: FloatOptions & { css?: SystemStyleObject }): string
   raw: (options: FloatOptions) => FloatOptions
 }
 

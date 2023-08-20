@@ -14,7 +14,7 @@ describe('generate recipes', () => {
       import { compact, createCss, withoutSpace } from '../helpers.mjs';
 
       export const createRecipe = (name, defaultVariants, compoundVariants) => {
-        return (variants) => {
+        return ({ css: cssStyles, ...variants }) => {
          const transform = (prop, value) => {
            assertCompoundVariant(name, compoundVariants, variants, prop)
 
@@ -42,13 +42,13 @@ describe('generate recipes', () => {
 
          const compoundVariantStyles = getCompoundVariantCss(compoundVariants, recipeStyles)
 
-         return cx(recipeCss(recipeStyles), css(compoundVariantStyles))
+         return cx(recipeCss(recipeStyles), css(compoundVariantStyles), css(cssStyles))
         }
       }",
           "name": "create-recipe",
         },
         {
-          "dts": "import type { ConditionalValue } from '../types'
+          "dts": "import type { ConditionalValue, SystemStyleObject } from '../types'
       import type { Pretty } from '../types/helpers'
 
       type TextStyleVariant = {
@@ -65,7 +65,7 @@ describe('generate recipes', () => {
 
       interface TextStyleRecipe {
         __type: TextStyleVariantProps
-        (props?: TextStyleVariantProps): string
+        (props?: TextStyleVariantProps & { css?: SystemStyleObject }): string
         raw: (props?: TextStyleVariantProps) => TextStyleVariantProps
         variantMap: TextStyleVariantMap
         variantKeys: Array<keyof TextStyleVariant>
@@ -98,7 +98,7 @@ describe('generate recipes', () => {
           "name": "text-style",
         },
         {
-          "dts": "import type { ConditionalValue } from '../types'
+          "dts": "import type { ConditionalValue, SystemStyleObject } from '../types'
       import type { Pretty } from '../types/helpers'
 
       type TooltipStyleVariant = {
@@ -115,7 +115,7 @@ describe('generate recipes', () => {
 
       interface TooltipStyleRecipe {
         __type: TooltipStyleVariantProps
-        (props?: TooltipStyleVariantProps): string
+        (props?: TooltipStyleVariantProps & { css?: SystemStyleObject }): string
         raw: (props?: TooltipStyleVariantProps) => TooltipStyleVariantProps
         variantMap: TooltipStyleVariantMap
         variantKeys: Array<keyof TooltipStyleVariant>
@@ -143,7 +143,7 @@ describe('generate recipes', () => {
           "name": "tooltip-style",
         },
         {
-          "dts": "import type { ConditionalValue } from '../types'
+          "dts": "import type { ConditionalValue, SystemStyleObject } from '../types'
       import type { Pretty } from '../types/helpers'
 
       type ButtonStyleVariant = {
@@ -161,7 +161,7 @@ describe('generate recipes', () => {
 
       interface ButtonStyleRecipe {
         __type: ButtonStyleVariantProps
-        (props?: ButtonStyleVariantProps): string
+        (props?: ButtonStyleVariantProps & { css?: SystemStyleObject }): string
         raw: (props?: ButtonStyleVariantProps) => ButtonStyleVariantProps
         variantMap: ButtonStyleVariantMap
         variantKeys: Array<keyof ButtonStyleVariant>

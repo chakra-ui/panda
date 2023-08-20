@@ -12,7 +12,7 @@ export type SpacerProperties = {
 type SpacerOptions = SpacerProperties & Omit<SystemStyleObject, keyof SpacerProperties >
 
 interface SpacerPatternFn {
-  (options?: SpacerOptions): string
+  (options?: SpacerOptions & { css?: SystemStyleObject }): string
   raw: (options: SpacerOptions) => SpacerOptions
 }
 

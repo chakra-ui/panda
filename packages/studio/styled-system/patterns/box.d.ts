@@ -12,7 +12,7 @@ export type BoxProperties = {
 type BoxOptions = BoxProperties & Omit<SystemStyleObject, keyof BoxProperties >
 
 interface BoxPatternFn {
-  (options?: BoxOptions): string
+  (options?: BoxOptions & { css?: SystemStyleObject }): string
   raw: (options: BoxOptions) => BoxOptions
 }
 

@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const aspectRatioConfig = {
   transform(props, { map }) {
@@ -32,5 +32,5 @@ const aspectRatioConfig = {
 
 export const getAspectRatioStyle = (styles = {}) => aspectRatioConfig.transform(styles, { map: mapObject })
 
-export const aspectRatio = (styles) => css(getAspectRatioStyle(styles))
+export const aspectRatio = ({ css: cssStyles, ...styles }) => cx(css(getAspectRatioStyle(styles)), css(cssStyles))
 aspectRatio.raw = (styles) => styles

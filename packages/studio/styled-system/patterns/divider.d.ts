@@ -14,7 +14,7 @@ export type DividerProperties = {
 type DividerOptions = DividerProperties & Omit<SystemStyleObject, keyof DividerProperties >
 
 interface DividerPatternFn {
-  (options?: DividerOptions): string
+  (options?: DividerOptions & { css?: SystemStyleObject }): string
   raw: (options: DividerOptions) => DividerOptions
 }
 

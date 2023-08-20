@@ -12,7 +12,7 @@ export type StyledLinkProperties = {
 type StyledLinkOptions = StyledLinkProperties & Omit<SystemStyleObject, keyof StyledLinkProperties >
 
 interface StyledLinkPatternFn {
-  (options?: StyledLinkOptions): string
+  (options?: StyledLinkOptions & { css?: SystemStyleObject }): string
   raw: (options: StyledLinkOptions) => StyledLinkOptions
 }
 

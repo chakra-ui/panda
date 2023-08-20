@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const linkBoxConfig = {
   transform(props) {
@@ -16,5 +16,5 @@ const linkBoxConfig = {
 
 export const getLinkBoxStyle = (styles = {}) => linkBoxConfig.transform(styles, { map: mapObject })
 
-export const linkBox = (styles) => css(getLinkBoxStyle(styles))
+export const linkBox = ({ css: cssStyles, ...styles }) => cx(css(getLinkBoxStyle(styles)), css(cssStyles))
 linkBox.raw = (styles) => styles

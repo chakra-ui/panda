@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const circleConfig = {
   transform(props) {
@@ -19,5 +19,5 @@ const circleConfig = {
 
 export const getCircleStyle = (styles = {}) => circleConfig.transform(styles, { map: mapObject })
 
-export const circle = (styles) => css(getCircleStyle(styles))
+export const circle = ({ css: cssStyles, ...styles }) => cx(css(getCircleStyle(styles)), css(cssStyles))
 circle.raw = (styles) => styles

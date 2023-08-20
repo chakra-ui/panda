@@ -12,7 +12,7 @@ export type AspectRatioProperties = {
 type AspectRatioOptions = AspectRatioProperties & Omit<SystemStyleObject, keyof AspectRatioProperties | 'aspectRatio'>
 
 interface AspectRatioPatternFn {
-  (options?: AspectRatioOptions): string
+  (options?: AspectRatioOptions & { css?: SystemStyleObject }): string
   raw: (options: AspectRatioOptions) => AspectRatioOptions
 }
 

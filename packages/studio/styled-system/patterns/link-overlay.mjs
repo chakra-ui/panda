@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const linkOverlayConfig = {
   transform(props) {
@@ -21,5 +21,5 @@ const linkOverlayConfig = {
 
 export const getLinkOverlayStyle = (styles = {}) => linkOverlayConfig.transform(styles, { map: mapObject })
 
-export const linkOverlay = (styles) => css(getLinkOverlayStyle(styles))
+export const linkOverlay = ({ css: cssStyles, ...styles }) => cx(css(getLinkOverlayStyle(styles)), css(cssStyles))
 linkOverlay.raw = (styles) => styles

@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const gridItemConfig = {
   transform(props, { map }) {
@@ -19,5 +19,5 @@ const gridItemConfig = {
 
 export const getGridItemStyle = (styles = {}) => gridItemConfig.transform(styles, { map: mapObject })
 
-export const gridItem = (styles) => css(getGridItemStyle(styles))
+export const gridItem = ({ css: cssStyles, ...styles }) => cx(css(getGridItemStyle(styles)), css(cssStyles))
 gridItem.raw = (styles) => styles

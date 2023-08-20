@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const containerConfig = {
   transform(props) {
@@ -15,5 +15,5 @@ const containerConfig = {
 
 export const getContainerStyle = (styles = {}) => containerConfig.transform(styles, { map: mapObject })
 
-export const container = (styles) => css(getContainerStyle(styles))
+export const container = ({ css: cssStyles, ...styles }) => cx(css(getContainerStyle(styles)), css(cssStyles))
 container.raw = (styles) => styles

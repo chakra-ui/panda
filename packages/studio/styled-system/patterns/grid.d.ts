@@ -16,7 +16,7 @@ export type GridProperties = {
 type GridOptions = GridProperties & Omit<SystemStyleObject, keyof GridProperties >
 
 interface GridPatternFn {
-  (options?: GridOptions): string
+  (options?: GridOptions & { css?: SystemStyleObject }): string
   raw: (options: GridOptions) => GridOptions
 }
 

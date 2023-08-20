@@ -27,7 +27,7 @@ export function generateRecipes(ctx: Context) {
    ${ctx.file.import('compact, createCss, withoutSpace', '../helpers')}
 
    export const createRecipe = (name, defaultVariants, compoundVariants) => {
-     return (variants) => {
+     return ({ css: cssStyles, ...variants }) => {
       const transform = (prop, value) => {
         assertCompoundVariant(name, compoundVariants, variants, prop)
 
@@ -55,7 +55,7 @@ export function generateRecipes(ctx: Context) {
 
       const compoundVariantStyles = getCompoundVariantCss(compoundVariants, recipeStyles)
 
-      return cx(recipeCss(recipeStyles), css(compoundVariantStyles))
+      return cx(recipeCss(recipeStyles), css(compoundVariantStyles), css(cssStyles))
      }
    }
   `,
@@ -126,7 +126,7 @@ export function generateRecipes(ctx: Context) {
         js: jsCode,
 
         dts: outdent`
-        import type { ConditionalValue } from '../types'
+        import type { ConditionalValue, SystemStyleObject } from '../types'
         import type { Pretty } from '../types/helpers'
 
         type ${upperName}Variant = {
@@ -151,7 +151,7 @@ export function generateRecipes(ctx: Context) {
 
         interface ${upperName}Recipe {
           __type: ${upperName}VariantProps
-          (props?: ${upperName}VariantProps): ${
+          (props?: ${upperName}VariantProps & { css?: SystemStyleObject }): ${
           isSlotRecipe(config) ? `Pretty<Record<${unionType(config.slots)}, string>>` : 'string'
         }
           raw: (props?: ${upperName}VariantProps) => ${upperName}VariantProps

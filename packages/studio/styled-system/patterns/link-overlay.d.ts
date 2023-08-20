@@ -12,7 +12,7 @@ export type LinkOverlayProperties = {
 type LinkOverlayOptions = LinkOverlayProperties & Omit<SystemStyleObject, keyof LinkOverlayProperties >
 
 interface LinkOverlayPatternFn {
-  (options?: LinkOverlayOptions): string
+  (options?: LinkOverlayOptions & { css?: SystemStyleObject }): string
   raw: (options: LinkOverlayOptions) => LinkOverlayOptions
 }
 

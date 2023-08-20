@@ -12,7 +12,7 @@ export type LinkBoxProperties = {
 type LinkBoxOptions = LinkBoxProperties & Omit<SystemStyleObject, keyof LinkBoxProperties >
 
 interface LinkBoxPatternFn {
-  (options?: LinkBoxOptions): string
+  (options?: LinkBoxOptions & { css?: SystemStyleObject }): string
   raw: (options: LinkBoxOptions) => LinkBoxOptions
 }
 

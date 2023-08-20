@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const stackConfig = {
   transform(props) {
@@ -17,5 +17,5 @@ const stackConfig = {
 
 export const getStackStyle = (styles = {}) => stackConfig.transform(styles, { map: mapObject })
 
-export const stack = (styles) => css(getStackStyle(styles))
+export const stack = ({ css: cssStyles, ...styles }) => cx(css(getStackStyle(styles)), css(cssStyles))
 stack.raw = (styles) => styles

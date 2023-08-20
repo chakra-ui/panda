@@ -18,7 +18,7 @@ export type FlexProperties = {
 type FlexOptions = FlexProperties & Omit<SystemStyleObject, keyof FlexProperties >
 
 interface FlexPatternFn {
-  (options?: FlexOptions): string
+  (options?: FlexOptions & { css?: SystemStyleObject }): string
   raw: (options: FlexOptions) => FlexOptions
 }
 

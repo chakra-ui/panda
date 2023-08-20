@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const squareConfig = {
   transform(props) {
@@ -18,5 +18,5 @@ const squareConfig = {
 
 export const getSquareStyle = (styles = {}) => squareConfig.transform(styles, { map: mapObject })
 
-export const square = (styles) => css(getSquareStyle(styles))
+export const square = ({ css: cssStyles, ...styles }) => cx(css(getSquareStyle(styles)), css(cssStyles))
 square.raw = (styles) => styles

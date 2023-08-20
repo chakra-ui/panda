@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const centerConfig = {
   transform(props) {
@@ -15,5 +15,5 @@ const centerConfig = {
 
 export const getCenterStyle = (styles = {}) => centerConfig.transform(styles, { map: mapObject })
 
-export const center = (styles) => css(getCenterStyle(styles))
+export const center = ({ css: cssStyles, ...styles }) => cx(css(getCenterStyle(styles)), css(cssStyles))
 center.raw = (styles) => styles

@@ -1,5 +1,5 @@
 import { mapObject } from '../helpers.mjs'
-import { css } from '../css/index.mjs'
+import { css, cx } from '../css/index.mjs'
 
 const floatConfig = {
   transform(props, { map }) {
@@ -42,5 +42,5 @@ const floatConfig = {
 
 export const getFloatStyle = (styles = {}) => floatConfig.transform(styles, { map: mapObject })
 
-export const float = (styles) => css(getFloatStyle(styles))
+export const float = ({ css: cssStyles, ...styles }) => cx(css(getFloatStyle(styles)), css(cssStyles))
 float.raw = (styles) => styles
