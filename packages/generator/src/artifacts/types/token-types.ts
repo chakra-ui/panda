@@ -24,7 +24,6 @@ const categories = [
   'gradients',
   'breakpoints',
   'assets',
-  'animationName',
 ]
 
 export function generateTokenTypes(ctx: Context) {
@@ -35,13 +34,7 @@ export function generateTokenTypes(ctx: Context) {
 
   const set = new Set<string>()
 
-  const keyframeTokens = Object.keys(theme?.keyframes ?? {})
-
-  set.add(
-    `export type Token = ${
-      tokens.isEmpty ? 'string' : unionType(tokens.allNames.concat(keyframeTokens.map((n) => `animationName.${n}`)))
-    }`,
-  )
+  set.add(`export type Token = ${tokens.isEmpty ? 'string' : unionType(tokens.allNames)}`)
 
   const result = new Set<string>(['export type Tokens = {'])
 
@@ -59,8 +52,10 @@ export function generateTokenTypes(ctx: Context) {
       result.add(`\t\t${key}: ${typeName}Token`)
     }
 
-    set.add(`export type AnimationNameToken = ${unionType(keyframeTokens)}`)
-    result.add(`\t\tanimationName: AnimationNameToken`)
+    const keyframes = Object.keys(theme?.keyframes ?? {})
+
+    set.add(`export type AnimationName = ${unionType(keyframes)}`)
+    result.add(`\t\tanimationName: AnimationName`)
   }
 
   result.add('} & { [token: string]: never }')
