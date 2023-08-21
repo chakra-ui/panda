@@ -3,4 +3,4 @@
 '@pandacss/dev': patch
 ---
 
-Export all types
+Export types for all `define` helper functions
