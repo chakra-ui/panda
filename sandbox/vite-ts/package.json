@@ -24,7 +24,7 @@
     "@types/react-dom": "18.2.7",
     "@vitejs/plugin-react": "4.0.4",
     "@pandacss/dev": "workspace:*",
-    "postcss": "8.4.27",
+    "postcss": "8.4.28",
     "typescript": "5.1.6",
     "source-map-explorer": "^2.5.3",
     "vite": "4.4.9",
