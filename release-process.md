@@ -40,4 +40,6 @@ Before creating a new release, make sure that there are no pending pull requests
 
    > **Maintainers:** After the release, a Slack message will be sent to the #release channel
 
-4. When the release is complete, create a PR to update the [CHANGELOG.md](./CHANGELOG.md) file with the new version
+4. When the release is complete, create a PR to: 
+   1. update the [CHANGELOG.md](./CHANGELOG.md) file with the new version.
+   2. Add any lingering documentation.
