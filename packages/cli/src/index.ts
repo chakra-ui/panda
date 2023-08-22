@@ -6,6 +6,7 @@ import type {
   Parts,
   PatternConfig,
   Preset,
+  PropertyConfig,
   RecipeConfig,
   RecipeVariantRecord,
   SemanticTokens,
@@ -55,6 +56,10 @@ export function defineGlobalStyles(definition: GlobalStyleObject) {
   return definition
 }
 
+export function defineUtility(utility: PropertyConfig) {
+  return utility
+}
+
 /* -----------------------------------------------------------------------------
  * Token creators
  * -----------------------------------------------------------------------------*/
@@ -97,6 +102,7 @@ export type {
   Preset,
   CssKeyframes,
   GlobalStyleObject,
+  PropertyConfig,
   Tokens,
   SemanticTokens,
   CompositionStyles,
