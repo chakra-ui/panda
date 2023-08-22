@@ -1,6 +1,5 @@
 import { createAnatomy } from '@ark-ui/react'
 import { defineParts, defineRecipe } from '@pandacss/dev'
-import { SystemStyleObject } from '../../styled-system/types'
 
 const anatomy = createAnatomy('navbar', [
   'root',
@@ -18,16 +17,8 @@ const anatomy = createAnatomy('navbar', [
 
 const parts = defineParts(anatomy.build())
 
-const link = {
-  textStyle: 'sm',
-  _moreContrast: {
-    color: 'gray.700',
-    _dark: { color: 'gray.100' }
-  }
-} as SystemStyleObject
-
 export const navbarRecipe = defineRecipe({
-  name: 'navbar',
+  className: 'navbar',
   description: 'A navbar style',
   jsx: ['Navbar'],
   base: parts({
@@ -51,10 +42,6 @@ export const navbarRecipe = defineRecipe({
         shadow: '0 -1px 0 rgba(255,255,255,.1) inset'
       },
       shadow: '0 2px 4px rgba(0,0,0,.02),0 1px 0 rgba(0,0,0,.06)',
-      _moreContrast: {
-        shadow: '0 0 0 1px #000',
-        _dark: { shadow: '0 0 0 1px #fff' }
-      },
       _supportsBackdrop: {
         backdropFilter: 'blur(8px)',
         backgroundColor: 'rgba(255, 255, 255, 0.85) !important',
@@ -70,7 +57,7 @@ export const navbarRecipe = defineRecipe({
       maxW: '90rem',
       alignItems: 'center',
       justifyContent: 'flex-end',
-      gap: 2,
+      gap: '2',
       pl: 'max(env(safe-area-inset-left),1.5rem)',
       pr: 'max(env(safe-area-inset-right),1.5rem)'
     },
@@ -78,38 +65,37 @@ export const navbarRecipe = defineRecipe({
       display: 'flex',
       alignItems: 'center',
       _hover: { opacity: 0.75 },
-      _ltr: { mr: 'auto' },
-      _rtl: { ml: 'auto' }
+      marginEnd: 'auto'
     },
     menuLink: {
-      ...link,
+      textStyle: 'sm',
       display: 'flex',
-      gap: 1
+      gap: '1'
     },
     menuLinkIcon: {
       h: '18px',
       minW: '18px',
       rounded: 'sm',
-      p: 0.5
+      p: '0.5'
     },
     navLink: {
-      ...link,
+      textStyle: 'sm',
       position: 'relative',
-      ml: -2,
+      ml: '-2',
       display: 'none',
       whiteSpace: 'nowrap',
-      p: 2,
+      p: '2',
       md: { display: 'inline-block' }
     },
     navLinkText: {
       position: 'absolute',
-      insetX: 0,
+      insetX: '0',
       textAlign: 'center'
     },
     mobileMenu: {
-      mr: -2,
+      mr: '-2',
       rounded: 'sm',
-      p: 2,
+      p: '2',
       _active: { bg: 'rgb(156 163 175 / 0.2)' },
       md: { display: 'none' },
       '& svg': {

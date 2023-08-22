@@ -20,3 +20,4 @@ const circleConfig = {
 export const getCircleStyle = (styles = {}) => circleConfig.transform(styles, { map: mapObject })
 
 export const circle = (styles) => css(getCircleStyle(styles))
+circle.raw = (styles) => styles

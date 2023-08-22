@@ -9,8 +9,8 @@ import {
   utilities,
 } from '@pandacss/fixture'
 import { createGenerator } from '@pandacss/generator'
-import type { LoadConfigResult, PandaHooks, TSConfig } from '@pandacss/types'
-import { type UserConfig } from '@pandacss/types'
+import type { Config, LoadConfigResult, PandaHooks, TSConfig } from '@pandacss/types'
+import { mergeConfigs } from '@pandacss/config'
 import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
 import { createHooks } from 'hookable'
@@ -44,26 +44,17 @@ const defaults: LoadConfigResult = {
   path: '',
 }
 
-function getProject(code: string, options?: <Conf extends UserConfig>(conf: Conf) => Conf) {
-  const config = options ? options(defaults.config) : defaults.config
-  const hooks = createHooks<PandaHooks>()
-  const generator = createGenerator({ ...defaults, config, hooks })
-
-  return createProject({
-    useInMemoryFileSystem: true,
-    getFiles: () => [staticFilePath],
-    readFile: () => code,
-    parserOptions: generator.parserOptions,
-    hooks,
-  })
+function getProject(code: string, userConfig?: Config) {
+  return getFixtureProject(code, userConfig).project
 }
 
-export function getFixtureProject(
-  code: string,
-  options?: <Conf extends UserConfig>(conf: Conf) => Conf,
-  tsconfig?: TSConfig,
-) {
-  const config = options ? options(defaults.config) : defaults.config
+export function getFixtureProject(code: string, userConfig?: Config, tsconfig?: TSConfig) {
+  const resolvedConfig = userConfig ? mergeConfigs([defaults.config, userConfig]) : defaults.config
+  const config = {
+    ...resolvedConfig,
+    outdir: userConfig?.outdir ?? defaults.config.outdir,
+    cwd: userConfig?.cwd ?? defaults.config.cwd,
+  } as typeof resolvedConfig
   const hooks = createHooks<PandaHooks>()
   const generator = createGenerator({ ...defaults, config, hooks, tsconfig })
 
@@ -72,7 +63,12 @@ export function getFixtureProject(
     useInMemoryFileSystem: true,
     getFiles: () => [staticFilePath],
     readFile: () => code,
-    parserOptions: generator.parserOptions,
+    parserOptions: {
+      join(...paths) {
+        return paths.join('/')
+      },
+      ...generator.parserOptions,
+    },
     hooks,
   })
 
@@ -106,6 +102,14 @@ export function cvaParser(code: string) {
   }
 }
 
+export function svaParser(code: string) {
+  const project = getProject(code)
+  const data = project.parseSourceFile(staticFilePath)!
+  return {
+    sva: data.sva,
+  }
+}
+
 export function styledParser(code: string) {
   const project = getProject(code)
   const data = project.parseSourceFile(staticFilePath)!
@@ -127,72 +131,67 @@ export function jsxParser(code: string) {
 }
 
 export function patternParser(code: string) {
-  const project = getProject(code, (conf) => ({
-    ...conf,
+  const project = getProject(code, {
     patterns: {
-      ...conf.patterns,
-      stack: {
-        properties: {
-          align: { type: 'property', value: 'alignItems' },
-          justify: { type: 'property', value: 'justifyContent' },
-          direction: { type: 'property', value: 'flexDirection' },
-          gap: { type: 'property', value: 'gap' },
-        },
-        transform(props) {
-          const { align = 'flex-start', justify, direction = 'column', gap = '10px', ...rest } = props
-          return {
-            display: 'flex',
-            flexDirection: direction,
-            alignItems: align,
-            justifyContent: justify,
-            gap,
-            ...rest,
-          }
+      extend: {
+        stack: {
+          properties: {
+            align: { type: 'property', value: 'alignItems' },
+            justify: { type: 'property', value: 'justifyContent' },
+            direction: { type: 'property', value: 'flexDirection' },
+            gap: { type: 'property', value: 'gap' },
+          },
+          transform(props: any) {
+            const { align = 'flex-start', justify, direction = 'column', gap = '10px', ...rest } = props
+            return {
+              display: 'flex',
+              flexDirection: direction,
+              alignItems: align,
+              justifyContent: justify,
+              gap,
+              ...rest,
+            }
+          },
         },
       },
     },
-  }))
+  })
   const data = project.parseSourceFile(staticFilePath)!
   return data.pattern
 }
 
 export function jsxRecipeParser(code: string) {
-  const project = getProject(code, (conf) => ({
-    ...conf,
+  const project = getProject(code, {
     theme: {
-      ...conf.theme,
-      recipes: {
-        ...conf.theme?.recipes,
-        button: {
-          name: 'button',
-          jsx: ['Button', /WithRegex$/],
-          description: 'A button styles',
-          base: { fontSize: 'lg' },
-          variants: {
-            size: {
-              sm: { padding: '2', borderRadius: 'sm' },
-              md: { padding: '4', borderRadius: 'md' },
-            },
-            variant: {
-              primary: { color: 'white', backgroundColor: 'blue.500' },
-              danger: { color: 'white', backgroundColor: 'red.500' },
-              secondary: { color: 'pink.300', backgroundColor: 'green.500' },
+      extend: {
+        recipes: {
+          button: {
+            className: 'button',
+            jsx: ['Button', /WithRegex$/],
+            description: 'A button styles',
+            base: { fontSize: 'lg' },
+            variants: {
+              size: {
+                sm: { padding: '2', borderRadius: 'sm' },
+                md: { padding: '4', borderRadius: 'md' },
+              },
+              variant: {
+                primary: { color: 'white', backgroundColor: 'blue.500' },
+                danger: { color: 'white', backgroundColor: 'red.500' },
+                secondary: { color: 'pink.300', backgroundColor: 'green.500' },
+              },
             },
           },
         },
       },
     },
-  }))
+  })
   const data = project.parseSourceFile(staticFilePath)!
   return data.recipe
 }
 
-export const parseAndExtract = (
-  code: string,
-  options?: <Conf extends UserConfig>(conf: Conf) => Conf,
-  tsconfig?: TSConfig,
-) => {
-  const { parse, generator } = getFixtureProject(code, options, tsconfig)
+export const parseAndExtract = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
+  const { parse, generator } = getFixtureProject(code, userConfig, tsconfig)
   const result = parse()!
   return {
     json: result?.toArray().flatMap(({ box, ...item }) => item),

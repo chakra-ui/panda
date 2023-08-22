@@ -2,10 +2,12 @@ import { describe, expect, test } from 'vitest'
 import { generateResetCss } from '../src/artifacts/css/reset-css'
 import { createHooks } from 'hookable'
 import type { PandaHooks } from '@pandacss/types'
+import { generator } from './fixture'
 
 describe('generate reset', () => {
   test('should work', () => {
-    expect(generateResetCss({ hooks: createHooks<PandaHooks>() } as any, '.pd-reset')).toMatchInlineSnapshot(`
+    expect(generateResetCss({ hooks: createHooks<PandaHooks>(), layers: generator.layers } as any, '.pd-reset'))
+      .toMatchInlineSnapshot(`
       "@layer reset {
         .pd-reset * {
           margin: 0;

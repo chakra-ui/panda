@@ -6,6 +6,7 @@ export default defineConfig({
   exclude: [],
   outdir: 'styled-system',
   jsxFactory: 'panda',
+  jsxFramework: 'react',
   theme: {
     semanticTokens: {
       colors: {
@@ -14,7 +15,7 @@ export default defineConfig({
     },
     recipes: {
       button: {
-        name: 'button',
+        className: 'button',
         jsx: ['Button', 'ListedButton', /WithRegex$/],
         description: 'A button styles',
         base: {
@@ -80,7 +81,6 @@ export default defineConfig({
       },
     },
   },
-  jsxFramework: 'react',
   globalCss: {
     '*': {
       fontFamily: 'Inter',

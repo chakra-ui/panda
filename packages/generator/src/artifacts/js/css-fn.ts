@@ -1,8 +1,6 @@
 import { outdent } from 'outdent'
 import type { Context } from '../../engines'
 
-const stringify = (v: any) => JSON.stringify(Object.fromEntries(v), null, 2)
-
 export function generateCssFn(ctx: Context) {
   const {
     utility,
@@ -10,50 +8,116 @@ export function generateCssFn(ctx: Context) {
     conditions,
   } = ctx
 
-  const { separator } = utility
+  const { separator, getPropShorthands } = utility
 
   return {
     dts: outdent`
     import type { SystemStyleObject } from '../types'
-    export declare function css(styles: SystemStyleObject): string
+
+    interface CssFunction {
+      (styles: SystemStyleObject): string
+      raw: (styles: SystemStyleObject) => SystemStyleObject
+    }
+
+    export declare const css: CssFunction;
     `,
     js: outdent`
     ${ctx.file.import('createCss, createMergeCss, hypenateProperty, withoutSpace', '../helpers')}
     ${ctx.file.import('sortConditions, finalizeConditions', './conditions')}
 
-    const classNameMap = ${stringify(utility.entries())}
-    
-    const shorthands = ${stringify(utility.shorthands)}
-    
-    const breakpointKeys = ${JSON.stringify(conditions.breakpoints.keys)}
+    const utilities = "${utility
+      .entries()
+      .map(([prop, className]) => {
+        const shorthandList = getPropShorthands(prop)
 
-    const hasShorthand = ${utility.hasShorthand ? 'true' : 'false'}
+        // encode utility as:
+        // prop:className/shorthand1/shorthand2/shorthand3
 
-    const resolveShorthand = (prop) => shorthands[prop] || prop
+        // ex without shorthand
+        // { prop: 'aspectRatio', className: 'aspect', result: 'aspectRatio:aspect' }
 
-    function transform(prop, value) {
-      const key = resolveShorthand(prop)
-      const propKey = classNameMap[key] || hypenateProperty(key)
-      const className = \`$\{propKey}${separator}$\{withoutSpace(value)}\`
-      return { className }
+        // ex: with 1 shorthand
+        // { prop: 'flexDirection', className: 'flex', result: 'flexDirection:flex/flexDir }
+
+        // ex: with 1 shorthand with same shorthand as className
+        // { prop: 'position', className: 'pos', result: 'position:pos/1' }
+
+        // ex: with more than 1 shorthand
+        // { prop: 'marginInlineStart', className: 'ms', result: 'marginInlineStart:ms/1/marginStart' }
+        const result = [
+          prop,
+          [
+            className,
+            shorthandList.length
+              ? // mark shorthand equal to className as 1 to save a few bytes
+                shorthandList.map((shorthand) => (shorthand === className ? 1 : shorthand)).join('/')
+              : null,
+          ]
+            .filter(Boolean)
+            .join('/'),
+        ].join(':')
+
+        return result
+      })
+      .join(',')}"
+
+    const classNameByProp = new Map()
+    ${
+      utility.hasShorthand
+        ? outdent`
+    const shorthands = new Map()
+    utilities.split(',').forEach((utility) => {
+      const [prop, meta] = utility.split(':')
+      const [className, ...shorthandList] = meta.split('/')
+      classNameByProp.set(prop, className)
+      if (shorthandList.length) {
+        shorthandList.forEach((shorthand) => {
+          shorthands.set(shorthand === '1' ? className : shorthand, prop)
+        })
+      }
+    })
+
+    const resolveShorthand = (prop) => shorthands.get(prop) || prop
+    `
+        : outdent`
+    utilities.split(',').forEach((utility) => {
+      const [prop, className] = utility.split(':')
+      classNameByProp.set(prop, className)
+    })
+    `
     }
 
     const context = {
-      hash: ${hash ? 'true' : 'false'},
+      ${hash ? 'hash: true,' : ''}
       conditions: {
         shift: sortConditions,
         finalize: finalizeConditions,
-        breakpoints: { keys: breakpointKeys }
+        breakpoints: { keys: ${JSON.stringify(conditions.breakpoints.keys)} }
       },
       utility: {
-        prefix: ${prefix ? JSON.stringify(prefix) : undefined},
-        transform,
-        hasShorthand,
-        resolveShorthand,
+        ${prefix ? 'prefix: ' + JSON.stringify(prefix) + ',' : ''}
+        transform: ${
+          utility.hasShorthand
+            ? `(prop, value) => {
+              const key = resolveShorthand(prop)
+              const propKey = classNameByProp.get(key) || hypenateProperty(key)
+              return { className: \`$\{propKey}${separator}$\{withoutSpace(value)}\` }
+            }`
+            : `(key, value) => ({ className: \`$\{classNameByProp.get(key) || hypenateProperty(key)}${separator}$\{withoutSpace(value)}\` })`
+        },
+        ${utility.hasShorthand ? 'hasShorthand: true,' : ''}
+        resolveShorthand: ${utility.hasShorthand ? 'resolveShorthand' : 'prop => prop'},
       }
     }
 
-    export const css = createCss(context)
+    const cssFn = createCss(context)
+    export const cssCache = new Map()
+    export const css = (styles) => {
+      const classNames = cssFn(styles)
+      cssCache.set(classNames, styles)
+      return classNames
+    }
+    css.raw = (styles) => styles
 
     export const { mergeCss, assignCss } = createMergeCss(context)
     `,

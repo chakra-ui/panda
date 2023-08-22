@@ -1,9 +1,13 @@
 /* eslint-disable */
-import type { ComponentProps, ElementType } from 'react'
+import type { ComponentPropsWithoutRef, ElementType, ElementRef, Ref } from 'react'
 import type { Assign, JsxStyleProps, JsxHTMLProps } from './system-types'
 import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
 
 type Dict = Record<string, unknown>
+
+type ComponentProps<T extends ElementType> = Omit<ComponentPropsWithoutRef<T>, 'ref'> & {
+  ref?: Ref<ElementRef<T>>
+}
 
 export type PandaComponent<T extends ElementType, P extends Dict = {}> = {
   (props: JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>): JSX.Element

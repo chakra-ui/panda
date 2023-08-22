@@ -2,7 +2,7 @@
   "name": "@pandacss/language-server",
   "displayName": "Panda CSS",
   "description": "🐼 The official Panda language server",
-  "version": "0.6.0",
+  "version": "0.11.1",
   "main": "dist/index.js",
   "repository": {
     "url": "https://github.com/chakra-ui/panda",
@@ -30,16 +30,16 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@types/base-64": "^1.0.0",
-    "@types/node": "20.4.1",
+    "@types/node": "20.4.5",
     "@types/utf8": "^3.0.1",
     "base-64": "^1.0.0",
     "color2k": "^2.0.2",
     "lil-fp": "1.4.5",
-    "postcss": "^8.4.25",
+    "postcss": "^8.4.27",
     "prettier": "^2.8.8",
     "satori": "^0.10.1",
-    "ts-morph": "18.0.0",
-    "ts-pattern": "5.0.1",
+    "ts-morph": "19.0.0",
+    "ts-pattern": "5.0.4",
     "tsup": "7.1.0",
     "typescript": "^5.1.6",
     "utf8": "^3.0.0",
@@ -48,6 +48,6 @@
     "vscode-uri": "^3.0.7"
   },
   "dependencies": {
-    "fast-glob": "^3.3.0"
+    "fast-glob": "^3.3.1"
   }
 }

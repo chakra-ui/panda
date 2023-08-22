@@ -1,0 +1,3 @@
+{
+  "reject": ["prettier", "mime", "npm-packlist", "@types/mime", "@types/npm-packlist"]
+}

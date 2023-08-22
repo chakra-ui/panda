@@ -37,6 +37,8 @@ export type AssetToken = "check"
 
 export type BreakpointToken = "sm" | "md" | "lg" | "xl" | "2xl"
 
+export type AnimationName = "spin" | "ping" | "pulse" | "bounce"
+
 export type Tokens = {
 		borders: BorderToken
 		easings: EasingToken
@@ -55,6 +57,7 @@ export type Tokens = {
 		colors: ColorToken
 		assets: AssetToken
 		breakpoints: BreakpointToken
+		animationName: AnimationName
 } & { [token: string]: never }
 
 export type TokenCategory = "zIndex" | "opacity" | "colors" | "fonts" | "fontSizes" | "fontWeights" | "lineHeights" | "letterSpacings" | "sizes" | "shadows" | "spacing" | "radii" | "borders" | "durations" | "easings" | "animations" | "blurs" | "gradients" | "breakpoints" | "assets"

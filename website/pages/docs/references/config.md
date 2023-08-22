@@ -78,9 +78,7 @@ Whether to only emit the `tokens` directory
 
 ### prefix
 
-**Type**: `boolean`
-
-**Default**: `true`
+**Type**: `string`
 
 The namespace prefix for the generated css classes and css variables.
 
@@ -107,6 +105,42 @@ would result in:
   color: var(--panda-colors-blue-500);
 }
 ```
+
+### layers
+
+**Type**: `Partial<Layer>`
+
+Cascade layers used in generated css.
+
+Ex: when customizing the utilities layer
+
+```json
+{
+  "layers": {
+    "utilities": "panda_utilities"
+  }
+}
+```
+
+```tsx
+import { css } from '../styled-system/css'
+
+const App = () => {
+  return <div className={css({ color: 'blue.500' })} />
+}
+```
+
+would result in:
+
+```css
+@layer panda_utilities {
+  .text_blue\.500 {
+    color: var(--colors-blue-500);
+  }
+}
+```
+
+You should update the layer in your root css also.
 
 ### separator
 
@@ -375,8 +409,8 @@ Ex object-literal:
 
 ```tsx
 const styles = css({
-    backgroundColor: 'gainsboro',
-    padding: '10px 15px'
+  backgroundColor: 'gainsboro',
+  padding: '10px 15px'
 })
 ```
 
@@ -384,12 +418,44 @@ Ex template-literal:
 
 ```tsx
 const Container = styled.div`
-    background-color: gainsboro;
-    padding: 10px 15px;
-`;
+  background-color: gainsboro;
+  padding: 10px 15px;
+`
 ```
 
 ## Design token options
+
+### shorthands
+
+**Type**: `boolean`
+
+**Default**: `true`
+
+Whether to allow shorthand properties
+
+```json
+{
+  "shorthands": true
+}
+```
+
+Ex `true`:
+
+```tsx
+const styles = css({
+  bgColor: 'gainsboro',
+  p: '10px 15px'
+})
+```
+
+Ex false:
+
+```tsx
+const styles = css({
+  backgroundColor: 'gainsboro',
+  padding: '10px 15px'
+})
+```
 
 ### cssVarRoot
 
@@ -553,7 +619,7 @@ Used to generate css utility classes for your project.
 
 **Default**: `false`
 
-Options for the generated typescript definitions.
+Only allow token values and prevent custom or raw CSS values.
 
 ```json
 {
@@ -567,7 +633,7 @@ Options for the generated typescript definitions.
 
 **Type**: `'react' | 'solid' | 'preact' | 'vue' | 'qwik'`
 
-Options for the generated typescript definitions.
+JS Framework for generated JSX elements.
 
 ```json
 {
@@ -591,6 +657,38 @@ Ex:
 
 ```tsx
 <panda.button marginTop="40px">Click me</panda.button>
+```
+
+### jsxStyleProps
+
+**Type**: `all` | `minimal` | `none`
+
+**Default**: `all`
+
+The style props allowed on generated JSX components
+
+- When set to 'all', all style props are allowed.
+- When set to 'minimal', only the `css` prop is allowed.
+- When set to 'none', no style props are allowed and therefore the `jsxFactory` will not be usable as a component:
+  - `<styled.div />` and `styled("div")` aren't valid
+  - but the recipe usage is still valid `styled("div", { base: { color: "red.300" }, variants: { ...} })`
+
+Ex with 'all':
+
+```jsx
+<styled.button marginTop="40px">Click me</styled.button>
+```
+
+Ex with 'minimal':
+
+```jsx
+<styled.button css={{ marginTop: '40px' }}>Click me</styled.button>
+```
+
+Ex with 'none':
+
+```jsx
+<button className={css({ marginTop: '40px' })}>Click me</button>
 ```
 
 ## Documentation options

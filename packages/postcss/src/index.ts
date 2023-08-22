@@ -10,20 +10,21 @@ const interopDefault = (obj: any) => (obj && obj.__esModule ? obj.default : obj)
 
 export const loadConfig = () => interopDefault(require('@pandacss/postcss'))
 
-export const pandacss: PluginCreator<{ configPath?: string }> = (options = {}) => {
-  const { configPath } = options
+export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (options = {}) => {
+  const { configPath, cwd } = options
   const builder = new Builder()
 
   return {
     postcssPlugin: PLUGIN_NAME,
     plugins: [
       async function (root, result) {
-        // ignore non-panda file
+        await builder.setup({ configPath, cwd })
+
+        // ignore non-panda css file
         if (!builder.isValidRoot(root)) {
           return
         }
 
-        await builder.setup({ configPath })
         await builder.extract()
 
         builder.registerDependency((dep) => {

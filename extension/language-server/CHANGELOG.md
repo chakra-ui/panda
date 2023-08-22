@@ -1,5 +1,22 @@
 # @pandacss/language-server
 
+## 0.11.1
+
+## 0.11.0
+
+## 0.10.0
+
+## 0.9.0
+
+## 0.8.0
+
+### Patch Changes
+
+- 78612d7f: Fix node evaluation in extractor process (can happen when using a BinaryExpression, simple CallExpression or
+  conditions)
+
+## 0.7.0
+
 ## 0.6.0
 
 ## 0.5.1

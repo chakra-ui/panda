@@ -63,6 +63,10 @@ export const transitions: UtilityConfig = {
     className: 'animation',
     values: 'animations',
   },
+  animationName: {
+    className: 'animation-name',
+    values: 'animationName',
+  },
   animationDelay: {
     className: 'animation-delay',
     values: 'durations',

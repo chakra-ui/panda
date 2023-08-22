@@ -1,5 +1,180 @@
 # @pandacss/dev
 
+## 0.11.1
+
+### Patch Changes
+
+- Updated dependencies [c07e1beb]
+- Updated dependencies [23b516f4]
+  - @pandacss/shared@0.11.1
+  - @pandacss/studio@0.11.1
+  - @pandacss/types@0.11.1
+  - @pandacss/node@0.11.1
+  - @pandacss/token-dictionary@0.11.1
+  - @pandacss/config@0.11.1
+  - @pandacss/preset-panda@0.11.1
+  - @pandacss/postcss@0.11.1
+  - @pandacss/error@0.11.1
+  - @pandacss/logger@0.11.1
+
+## 0.11.0
+
+### Patch Changes
+
+- cde9702e: Add an optional `glob` argument that overrides the config.include on the `panda cssgen` CLI command.
+- 164fbf27: Remove astro plugin entrypoint in favor of installing `@pandacss/astro` package
+- Updated dependencies [dead08a2]
+- Updated dependencies [cde9702e]
+- Updated dependencies [5b95caf5]
+  - @pandacss/config@0.11.0
+  - @pandacss/node@0.11.0
+  - @pandacss/types@0.11.0
+  - @pandacss/studio@0.11.0
+  - @pandacss/postcss@0.11.0
+  - @pandacss/preset-panda@0.11.0
+  - @pandacss/token-dictionary@0.11.0
+  - @pandacss/error@0.11.0
+  - @pandacss/logger@0.11.0
+  - @pandacss/shared@0.11.0
+
+## 0.10.0
+
+### Minor Changes
+
+- a669f4d5: Introduce new slot recipe features.
+
+  Slot recipes are useful for styling composite or multi-part components easily.
+
+  - `sva`: the slot recipe version of `cva`
+  - `defineSlotRecipe`: the slot recipe version of `defineRecipe`
+
+  **Definition**
+
+  ```jsx
+  import { sva } from 'styled-system/css'
+
+  const button = sva({
+    slots: ['label', 'icon'],
+    base: {
+      label: { color: 'red', textDecoration: 'underline' },
+    },
+    variants: {
+      rounded: {
+        true: {},
+      },
+      size: {
+        sm: {
+          label: { fontSize: 'sm' },
+          icon: { fontSize: 'sm' },
+        },
+        lg: {
+          label: { fontSize: 'lg' },
+          icon: { fontSize: 'lg', color: 'pink' },
+        },
+      },
+    },
+    defaultVariants: {
+      size: 'sm',
+    },
+  })
+  ```
+
+  **Usage**
+
+  ```jsx
+  export function App() {
+    const btnClass = button({ size: 'lg', rounded: true })
+
+    return (
+      <button>
+        <p class={btnClass.label}> Label</p>
+        <p class={btnClass.icon}> Icon</p>
+      </button>
+    )
+  }
+  ```
+
+### Patch Changes
+
+- Updated dependencies [24e783b3]
+- Updated dependencies [9d4aa918]
+- Updated dependencies [386e5098]
+- Updated dependencies [a669f4d5]
+  - @pandacss/shared@0.10.0
+  - @pandacss/studio@0.10.0
+  - @pandacss/types@0.10.0
+  - @pandacss/token-dictionary@0.10.0
+  - @pandacss/node@0.10.0
+  - @pandacss/config@0.10.0
+  - @pandacss/preset-panda@0.10.0
+  - @pandacss/postcss@0.10.0
+  - @pandacss/astro@0.10.0
+  - @pandacss/error@0.10.0
+  - @pandacss/logger@0.10.0
+
+## 0.9.0
+
+### Patch Changes
+
+- Updated dependencies [c08de87f]
+- Updated dependencies [f10e706a]
+  - @pandacss/types@0.9.0
+  - @pandacss/postcss@0.9.0
+  - @pandacss/node@0.9.0
+  - @pandacss/config@0.9.0
+  - @pandacss/token-dictionary@0.9.0
+  - @pandacss/preset-panda@0.9.0
+  - @pandacss/studio@0.9.0
+  - @pandacss/astro@0.9.0
+  - @pandacss/error@0.9.0
+  - @pandacss/logger@0.9.0
+  - @pandacss/shared@0.9.0
+
+## 0.8.0
+
+### Patch Changes
+
+- f7da0aea: Add `-w, --watch` flag on `panda cssgen`, `-o` shortcut for `--outfile` for both `panda cssgen` and
+  `panda ship`
+- Updated dependencies [5d1d376b]
+- Updated dependencies [ac078416]
+- Updated dependencies [e1f6318a]
+- Updated dependencies [be0ad578]
+- Updated dependencies [78612d7f]
+  - @pandacss/node@0.8.0
+  - @pandacss/token-dictionary@0.8.0
+  - @pandacss/config@0.8.0
+  - @pandacss/studio@0.8.0
+  - @pandacss/types@0.8.0
+  - @pandacss/postcss@0.8.0
+  - @pandacss/preset-panda@0.8.0
+  - @pandacss/astro@0.8.0
+  - @pandacss/error@0.8.0
+  - @pandacss/logger@0.8.0
+  - @pandacss/shared@0.8.0
+
+## 0.7.0
+
+### Patch Changes
+
+- Updated dependencies [f4bb0576]
+- Updated dependencies [f59154fb]
+- Updated dependencies [d8ebaf2f]
+- Updated dependencies [a9c189b7]
+- Updated dependencies [4ff7ddea]
+- Updated dependencies [1a05c4bb]
+  - @pandacss/node@0.7.0
+  - @pandacss/shared@0.7.0
+  - @pandacss/types@0.7.0
+  - @pandacss/config@0.7.0
+  - @pandacss/postcss@0.7.0
+  - @pandacss/studio@0.7.0
+  - @pandacss/token-dictionary@0.7.0
+  - @pandacss/preset-panda@0.7.0
+  - @pandacss/astro@0.7.0
+  - @pandacss/error@0.7.0
+  - @pandacss/logger@0.7.0
+
 ## 0.6.0
 
 ### Patch Changes

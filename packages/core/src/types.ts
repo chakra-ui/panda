@@ -1,4 +1,4 @@
-import type { RecipeConfig, Dict, PatternHelpers } from '@pandacss/types'
+import type { CascadeLayers, Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig } from '@pandacss/types'
 import type { Root } from 'postcss'
 import type { Conditions } from './conditions'
 import type { Utility } from './utility'
@@ -18,13 +18,18 @@ export type StylesheetContext = {
   helpers: PatternHelpers
   hash?: boolean
   transform?: AtomicRuleTransform
+  layers: CascadeLayers
 }
 
 export type RecipeNode = {
   /**
    * The name of the recipe
    */
-  name: string
+  baseName: string
+  /**
+   * Discriminant
+   */
+  type: 'recipe'
   /**
    * The keys of the variants
    */
@@ -56,9 +61,13 @@ export type RecipeNode = {
   /**
    * The transformed recipe config
    */
-  config: RecipeConfig
+  config: RecipeConfig | SlotRecipeConfig
   /**
    * The function to split the props
    */
   splitProps: (props: Dict) => [Dict, Dict]
+  /**
+   * The props of the recipe
+   */
+  props: string[]
 }

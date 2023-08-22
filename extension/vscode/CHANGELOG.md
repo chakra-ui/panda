@@ -1,5 +1,71 @@
 # panda-css-vscode
 
+## 0.2.13
+
+### Patch Changes
+
+- @pandacss/dev@0.11.1
+- @pandacss/preset-base@0.11.1
+- @pandacss/preset-panda@0.11.1
+- @pandacss/ts-plugin@0.11.1
+
+## 0.2.12
+
+### Patch Changes
+
+- Updated dependencies [cde9702e]
+- Updated dependencies [164fbf27]
+- Updated dependencies [811f4fb1]
+  - @pandacss/dev@0.11.0
+  - @pandacss/preset-base@0.11.0
+  - @pandacss/preset-panda@0.11.0
+  - @pandacss/ts-plugin@0.11.0
+
+## 0.2.11
+
+### Patch Changes
+
+- Updated dependencies [00d11a8b]
+- Updated dependencies [1972b4fa]
+- Updated dependencies [a669f4d5]
+  - @pandacss/preset-base@0.10.0
+  - @pandacss/dev@0.10.0
+  - @pandacss/preset-panda@0.10.0
+  - @pandacss/ts-plugin@0.10.0
+
+## 0.2.10
+
+### Patch Changes
+
+- Updated dependencies [c08de87f]
+  - @pandacss/preset-base@0.9.0
+  - @pandacss/dev@0.9.0
+  - @pandacss/preset-panda@0.9.0
+  - @pandacss/ts-plugin@0.9.0
+
+## 0.2.9
+
+### Patch Changes
+
+- 92a09703: Temporarily disable extension in svelte/vue files
+- Updated dependencies [f7da0aea]
+- Updated dependencies [be0ad578]
+  - @pandacss/dev@0.8.0
+  - @pandacss/preset-base@0.8.0
+  - @pandacss/preset-panda@0.8.0
+  - @pandacss/ts-plugin@0.8.0
+
+## 0.2.8
+
+### Patch Changes
+
+- Updated dependencies [60a77841]
+- Updated dependencies [d9eeba60]
+  - @pandacss/preset-base@0.7.0
+  - @pandacss/dev@0.7.0
+  - @pandacss/preset-panda@0.7.0
+  - @pandacss/ts-plugin@0.7.0
+
 ## 0.2.7
 
 ### Patch Changes

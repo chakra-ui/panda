@@ -1,4 +1,3 @@
-import type { TokenDictionary } from '@pandacss/token-dictionary'
 import type { HookKeys, Hookable } from 'hookable'
 import type { LoadConfigResult, UserConfig } from './config'
 import type { ParserResultType } from './parser'
@@ -15,10 +14,6 @@ export interface PandaHooks {
    */
   'config:change': (ctx: UserConfig) => MaybeAsyncReturn
   /**
-   * Called after creating the TokenDictionary from the resolved config.
-   */
-  'generator:tokens': (tokenDictionary: TokenDictionary) => void
-  /**
    * Called after reading the file content but before parsing it.
    */
   'parser:before': (file: string, content: string) => void
@@ -34,7 +29,7 @@ export interface PandaHooks {
    * Called before generating the design-system CSS files (global, static, preflight, tokens, keyframes)
    */
   'generator:css': (
-    file: 'global.css' | 'static.css' | 'reset.css' | 'tokens.css' | 'keyframes.css',
+    file: 'global.css' | 'static.css' | 'reset.css' | 'tokens.css' | 'keyframes.css' | 'styles.css',
     css: string,
   ) => void
 }

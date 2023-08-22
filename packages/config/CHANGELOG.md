@@ -1,5 +1,86 @@
 # @pandacss/config
 
+## 0.11.1
+
+### Patch Changes
+
+- Updated dependencies [23b516f4]
+  - @pandacss/types@0.11.1
+  - @pandacss/preset-base@0.11.1
+  - @pandacss/preset-panda@0.11.1
+  - @pandacss/error@0.11.1
+  - @pandacss/logger@0.11.1
+
+## 0.11.0
+
+### Patch Changes
+
+- dead08a2: Normalize tsconfig path mapping result to posix path.
+
+  It fix not generating pattern styles on windows eventually.
+
+- Updated dependencies [5b95caf5]
+- Updated dependencies [811f4fb1]
+  - @pandacss/types@0.11.0
+  - @pandacss/preset-base@0.11.0
+  - @pandacss/preset-panda@0.11.0
+  - @pandacss/error@0.11.0
+  - @pandacss/logger@0.11.0
+
+## 0.10.0
+
+### Patch Changes
+
+- Updated dependencies [24e783b3]
+- Updated dependencies [00d11a8b]
+- Updated dependencies [1972b4fa]
+- Updated dependencies [386e5098]
+- Updated dependencies [a669f4d5]
+  - @pandacss/types@0.10.0
+  - @pandacss/preset-base@0.10.0
+  - @pandacss/preset-panda@0.10.0
+  - @pandacss/error@0.10.0
+  - @pandacss/logger@0.10.0
+
+## 0.9.0
+
+### Patch Changes
+
+- Updated dependencies [c08de87f]
+  - @pandacss/preset-base@0.9.0
+  - @pandacss/types@0.9.0
+  - @pandacss/preset-panda@0.9.0
+  - @pandacss/error@0.9.0
+  - @pandacss/logger@0.9.0
+
+## 0.8.0
+
+### Patch Changes
+
+- e1f6318a: Fix module resolution issue when using panda from a browser environment
+- be0ad578: Fix parser issue with TS path mappings
+- Updated dependencies [be0ad578]
+  - @pandacss/preset-base@0.8.0
+  - @pandacss/types@0.8.0
+  - @pandacss/preset-panda@0.8.0
+  - @pandacss/error@0.8.0
+  - @pandacss/logger@0.8.0
+
+## 0.7.0
+
+### Patch Changes
+
+- 1a05c4bb: Fix issue where hot module reloading is inconsistent in the PostCSS plugin when another internal
+  typescript-only package is changed
+- Updated dependencies [60a77841]
+- Updated dependencies [a9c189b7]
+- Updated dependencies [d9eeba60]
+  - @pandacss/preset-base@0.7.0
+  - @pandacss/types@0.7.0
+  - @pandacss/preset-panda@0.7.0
+  - @pandacss/error@0.7.0
+  - @pandacss/logger@0.7.0
+
 ## 0.6.0
 
 ### Patch Changes

@@ -3,34 +3,34 @@
   "private": true,
   "sideEffects": false,
   "scripts": {
-    "prepare": "panda",
+    "prepare": "panda codegen",
     "build": "remix build",
     "dev": "remix dev",
-    "css": "PANDA_DEBUG=ast:* panda",
-    "css:gen": "PANDA_DEBUG=* panda codegen",
-    "css:dev": "PANDA_DEBUG=file:* panda --watch",
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@remix-run/node": "^1.18.1",
-    "@remix-run/react": "^1.18.1",
-    "@remix-run/vercel": "^1.18.1",
-    "@vercel/node": "^2.15.3",
+    "@remix-run/css-bundle": "^1.19.3",
+    "@remix-run/node": "^1.19.3",
+    "@remix-run/react": "^1.19.3",
+    "@remix-run/vercel": "^1.19.3",
+    "@vercel/node": "^2.10.3",
+    "isbot": "^3.6.8",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "source-map-support": "^0.5.21"
   },
   "devDependencies": {
-    "@remix-run/dev": "^1.18.1",
-    "@remix-run/eslint-config": "^1.18.1",
-    "@remix-run/serve": "^1.18.1",
-    "@types/react": "^18.2.14",
-    "@types/react-dom": "^18.2.6",
-    "@pandacss/dev": "workspace:*",
-    "eslint": "^8.44.0",
-    "postcss": "^8.4.25",
-    "typescript": "^5.1.6"
+    "@pandacss/dev": "workspace:^",
+    "@remix-run/dev": "^1.19.3",
+    "@remix-run/eslint-config": "^1.19.3",
+    "@remix-run/serve": "^1.19.3",
+    "@types/react": "^18.0.35",
+    "@types/react-dom": "^18.0.11",
+    "@types/source-map-support": "^0.5.6",
+    "eslint": "^8.38.0",
+    "typescript": "^5.0.4"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=14.0.0"
   }
 }

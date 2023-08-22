@@ -1,5 +1,173 @@
 # @pandacss/fixture
 
+## 0.11.1
+
+### Patch Changes
+
+- Updated dependencies [23b516f4]
+  - @pandacss/types@0.11.1
+  - @pandacss/preset-base@0.11.1
+  - @pandacss/preset-panda@0.11.1
+
+## 0.11.0
+
+### Patch Changes
+
+- Updated dependencies [5b95caf5]
+- Updated dependencies [811f4fb1]
+  - @pandacss/types@0.11.0
+  - @pandacss/preset-base@0.11.0
+  - @pandacss/preset-panda@0.11.0
+
+## 0.10.0
+
+### Minor Changes
+
+- a669f4d5: Introduce new slot recipe features.
+
+  Slot recipes are useful for styling composite or multi-part components easily.
+
+  - `sva`: the slot recipe version of `cva`
+  - `defineSlotRecipe`: the slot recipe version of `defineRecipe`
+
+  **Definition**
+
+  ```jsx
+  import { sva } from 'styled-system/css'
+
+  const button = sva({
+    slots: ['label', 'icon'],
+    base: {
+      label: { color: 'red', textDecoration: 'underline' },
+    },
+    variants: {
+      rounded: {
+        true: {},
+      },
+      size: {
+        sm: {
+          label: { fontSize: 'sm' },
+          icon: { fontSize: 'sm' },
+        },
+        lg: {
+          label: { fontSize: 'lg' },
+          icon: { fontSize: 'lg', color: 'pink' },
+        },
+      },
+    },
+    defaultVariants: {
+      size: 'sm',
+    },
+  })
+  ```
+
+  **Usage**
+
+  ```jsx
+  export function App() {
+    const btnClass = button({ size: 'lg', rounded: true })
+
+    return (
+      <button>
+        <p class={btnClass.label}> Label</p>
+        <p class={btnClass.icon}> Icon</p>
+      </button>
+    )
+  }
+  ```
+
+### Patch Changes
+
+- Updated dependencies [24e783b3]
+- Updated dependencies [00d11a8b]
+- Updated dependencies [1972b4fa]
+- Updated dependencies [386e5098]
+- Updated dependencies [a669f4d5]
+  - @pandacss/types@0.10.0
+  - @pandacss/preset-base@0.10.0
+  - @pandacss/preset-panda@0.10.0
+
+## 0.9.0
+
+### Minor Changes
+
+- c08de87f: ### Breaking
+
+  - Renamed the `name` property of a config recipe to `className`. This is to ensure API consistency and express the
+    intent of the property more clearly.
+
+  ```diff
+  export const buttonRecipe = defineRecipe({
+  -  name: 'button',
+  +  className: 'button',
+    // ...
+  })
+  ```
+
+  - Renamed the `jsx` property of a pattern to `jsxName`.
+
+  ```diff
+  const hstack = definePattern({
+  -  jsx: 'HStack',
+  +  jsxName: 'HStack',
+    // ...
+  })
+  ```
+
+  ### Feature
+
+  Update the `jsx` property to be used for advanced tracking of custom pattern components.
+
+  ```jsx
+  import { Circle } from 'styled-system/jsx'
+  const CustomCircle = ({ children, ...props }) => {
+    return <Circle {...props}>{children}</Circle>
+  }
+  ```
+
+  To track the `CustomCircle` component, you can now use the `jsx` property.
+
+  ```js
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    patterns: {
+      extend: {
+        circle: {
+          jsx: ['CustomCircle'],
+        },
+      },
+    },
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [c08de87f]
+  - @pandacss/preset-base@0.9.0
+  - @pandacss/types@0.9.0
+  - @pandacss/preset-panda@0.9.0
+
+## 0.8.0
+
+### Patch Changes
+
+- Updated dependencies [be0ad578]
+  - @pandacss/preset-base@0.8.0
+  - @pandacss/types@0.8.0
+  - @pandacss/preset-panda@0.8.0
+
+## 0.7.0
+
+### Patch Changes
+
+- Updated dependencies [60a77841]
+- Updated dependencies [a9c189b7]
+- Updated dependencies [d9eeba60]
+  - @pandacss/preset-base@0.7.0
+  - @pandacss/types@0.7.0
+  - @pandacss/preset-panda@0.7.0
+
 ## 0.6.0
 
 ### Patch Changes

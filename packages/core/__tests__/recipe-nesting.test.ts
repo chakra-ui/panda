@@ -6,7 +6,7 @@ function run(value: Record<string, any> = {}) {
   const recipe = new Recipes(
     {
       text: {
-        name: 'text',
+        className: 'text',
         base: {
           marginTop: 'auto',
           marginBottom: 0,

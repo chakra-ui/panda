@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/parser",
-  "version": "0.6.0",
+  "version": "0.11.1",
   "description": "The static parser for panda css",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -16,6 +16,7 @@
     "dev": "pnpm build-fast --watch"
   },
   "dependencies": {
+    "@pandacss/config": "workspace:^",
     "@pandacss/extractor": "workspace:*",
     "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/logger": "workspace:*",
@@ -23,9 +24,9 @@
     "@pandacss/types": "workspace:*",
     "@vue/compiler-sfc": "^3.3.4",
     "lil-fp": "1.4.5",
-    "magic-string": "^0.30.1",
-    "ts-morph": "18.0.0",
-    "ts-pattern": "5.0.1"
+    "magic-string": "^0.30.2",
+    "ts-morph": "19.0.0",
+    "ts-pattern": "5.0.4"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",

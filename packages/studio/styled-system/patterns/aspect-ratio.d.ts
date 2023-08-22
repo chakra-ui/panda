@@ -11,5 +11,10 @@ export type AspectRatioProperties = {
 
 type AspectRatioOptions = AspectRatioProperties & Omit<SystemStyleObject, keyof AspectRatioProperties | 'aspectRatio'>
 
+interface AspectRatioPatternFn {
+  (options?: AspectRatioOptions): string
+  raw: (options: AspectRatioOptions) => AspectRatioOptions
+}
 
-export declare function aspectRatio(options?: AspectRatioOptions): string
+
+export declare const aspectRatio: AspectRatioPatternFn;

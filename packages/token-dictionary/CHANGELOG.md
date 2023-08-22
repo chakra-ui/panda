@@ -1,5 +1,60 @@
 # @pandacss/token-dictionary
 
+## 0.11.1
+
+### Patch Changes
+
+- Updated dependencies [c07e1beb]
+- Updated dependencies [23b516f4]
+  - @pandacss/shared@0.11.1
+  - @pandacss/types@0.11.1
+
+## 0.11.0
+
+### Patch Changes
+
+- Updated dependencies [5b95caf5]
+  - @pandacss/types@0.11.0
+  - @pandacss/shared@0.11.0
+
+## 0.10.0
+
+### Patch Changes
+
+- 9d4aa918: Fix issue where svg asset tokens are seen as invalid in the browser
+- Updated dependencies [24e783b3]
+- Updated dependencies [386e5098]
+- Updated dependencies [a669f4d5]
+  - @pandacss/shared@0.10.0
+  - @pandacss/types@0.10.0
+
+## 0.9.0
+
+### Patch Changes
+
+- Updated dependencies [c08de87f]
+  - @pandacss/types@0.9.0
+  - @pandacss/shared@0.9.0
+
+## 0.8.0
+
+### Patch Changes
+
+- ac078416: Fix issue with extracting nested tokens as color-palette. Fix issue with extracting shadow array as a
+  separate unnamed block for the custom dark condition.
+- Updated dependencies [be0ad578]
+  - @pandacss/types@0.8.0
+  - @pandacss/shared@0.8.0
+
+## 0.7.0
+
+### Patch Changes
+
+- Updated dependencies [f59154fb]
+- Updated dependencies [a9c189b7]
+  - @pandacss/shared@0.7.0
+  - @pandacss/types@0.7.0
+
 ## 0.6.0
 
 ### Patch Changes

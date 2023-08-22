@@ -7,14 +7,15 @@ export function generateConditions(ctx: Context) {
     js: outdent`
     ${ctx.file.import('withoutSpace', '../helpers')}
 
-    const conditions = new Set([${keys.map((key) => JSON.stringify(key))}])
+    const conditionsStr = "${keys.join(',')}"
+    const conditions = new Set(conditionsStr.split(','))
 
     export function isCondition(value){
       return conditions.has(value) || /^@|&|&$/.test(value)
     }
 
     const underscoreRegex = /^_/
-    const selectorRegex = /&|@/
+    const conditionsSelectorRegex = /&|@/
 
     export function finalizeConditions(paths){
       return paths.map((path) => {
@@ -22,7 +23,7 @@ export function generateConditions(ctx: Context) {
           return path.replace(underscoreRegex, '')
         }
 
-        if (selectorRegex.test(path)){
+        if (conditionsSelectorRegex.test(path)){
           return \`[\${withoutSpace(path.trim())}]\`
         }
 

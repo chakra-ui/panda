@@ -280,11 +280,13 @@ Config recipes are extracted and generated just in time, this means regardless o
 
 The config recipe takes the following additional properties:
 
-- `name`: The name of the recipe. Used in the generated class name
+- `className`: The name of the recipe. Used in the generated class name
 - `jsx`: An array of JSX components that use the recipe. Defaults to the uppercase version of the recipe name
 - `description`: An optional description of the recipe (used in the js-doc comments)
 
-### Defining recipe
+> As of v0.9, the `name` property is removed in favor of `className`
+
+### Defining the recipe
 
 To define a config recipe, import the `defineRecipe` helper function
 
@@ -292,7 +294,7 @@ To define a config recipe, import the `defineRecipe` helper function
 import { defineRecipe } from '@pandacss/dev'
 
 export const buttonRecipe = defineRecipe({
-  name: 'button',
+  className: 'button',
   description: 'The styles for the Button component',
   base: {
     display: 'flex'
@@ -365,7 +367,7 @@ function App() {
 }
 ```
 
-The generated css is registered under the `recipe` [cascade layer](/docs/concepts/cascade-layers.mdx) with the class name that matches the recipe-variant name pattern `<recipe-name>--<variant-name>`.
+The generated css is registered under the `recipe` [cascade layer](/docs/concepts/cascade-layers.mdx) with the class name that matches the recipe-variant name pattern `<recipe-className>--<variant-name>`.
 
 > **Technical Notes 📝:** Only the recipe and variants used in your application are generated. Not more!
 
@@ -565,9 +567,11 @@ const button = defineRecipe({
 
 ## Should I use atomic or config recipes ?
 
-[Config recipes](/concepts/recipes#config-recipe) are generated just in time, meaning that only the recipes and variants you use will exist in the generated CSS, regardless of the number of recipes in the config.
+[Config recipes](/docs/concepts/recipes#config-recipe) are generated just in time, meaning that only the recipes and variants you use will exist in the generated CSS, regardless of the number of recipes in the config.
 
-This contrasts with [Atomic recipes](/concepts/recipes#atomic-recipe) (cva), which generates all of the variants regardless of what was used in your code. The reason for this difference is that all `config.recipes` are known at the start of the panda process when we evaluate your config. In contrast, the CVA recipes are scattered throughout your code. To get all of them and find their usage across your code, we would need to scan your app code multiple times, which would not be ideal performance-wise.
+This contrasts with [Atomic recipes](/docs/concepts/recipes#atomic-recipe-or-cva) (cva), which generates all of the variants regardless of what was used in your code. The reason for this difference is that all `config.recipes` are known at the start of the panda process when we evaluate your config.
+
+In contrast, the CVA recipes are scattered throughout your code. To get all of them and find their usage across your code, we would need to scan your app code multiple times, which would not be ideal performance-wise.
 
 When dealing with simple use cases, or if you need code colocation, or even avoiding dynamic styling, atomic recipes shine by providing all style variants. Config recipes are preferred for design system components, delivering leaner CSS with only the styles used. Choose according to your component needs.
 

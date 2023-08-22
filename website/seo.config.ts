@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 const defineMetadata = <T extends Metadata>(metadata: T) => metadata
 
 const seoConfig = defineMetadata({
+  metadataBase: new URL('https://panda-css.com'),
   title: {
     template: '%s - Panda CSS',
     default:

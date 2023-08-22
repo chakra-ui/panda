@@ -1,24 +1,12 @@
-import { css, cx } from '@/styled-system/css'
+import { css, cva, cx } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { segmentGroup } from '@/styled-system/recipes'
 
-import MonacoEditor, { EditorProps } from '@monaco-editor/react'
+import MonacoEditor from '@monaco-editor/react'
 import { Segment, SegmentControl, SegmentGroup, SegmentIndicator, SegmentInput, SegmentLabel } from '@ark-ui/react'
 
-import { PandaEditorProps, useEditor } from '../hooks/useEditor'
-
-const EDITOR_OPTIONS: EditorProps['options'] = {
-  minimap: { enabled: false },
-  fontSize: 14,
-  quickSuggestions: {
-    strings: true,
-    other: true,
-    comments: true,
-  },
-  guides: {
-    indentation: false,
-  },
-}
+import { PandaEditorProps, useEditor, EDITOR_OPTIONS } from '../hooks/useEditor'
+import { FormatCode } from '@/src/components/icons'
 
 const tabs = [
   {
@@ -32,7 +20,8 @@ const tabs = [
 ]
 
 export const Editor = (props: PandaEditorProps) => {
-  const { activeTab, setActiveTab, onBeforeMount, onCodeEditorChange, onCodeEditorMount } = useEditor(props)
+  const { activeTab, setActiveTab, onBeforeMount, onCodeEditorChange, onCodeEditorMount, onCodeEditorFormat } =
+    useEditor(props)
 
   return (
     <Flex flex="1" direction="column" align="flex-start">
@@ -41,8 +30,9 @@ export const Editor = (props: PandaEditorProps) => {
           className={cx(
             segmentGroup(),
             css({
-              pl: '6',
               borderBottomWidth: '1px',
+              pl: '6',
+              pr: '4',
             }),
           )}
           value={activeTab}
@@ -62,8 +52,27 @@ export const Editor = (props: PandaEditorProps) => {
               <SegmentControl />
             </Segment>
           ))}
+
+          <button
+            className={css({
+              ml: 'auto',
+              borderRadius: 'sm',
+              cursor: 'pointer',
+              p: '1',
+              color: 'text.default',
+              _hover: {
+                color: { base: 'gray.700', _dark: 'gray.100' },
+                bg: { base: 'gray.100', _dark: '#3A3A3AFF' },
+              },
+              transition: 'all 0.2s ease-in-out',
+            })}
+            title="Format code"
+            onClick={onCodeEditorFormat}
+          >
+            <FormatCode />
+          </button>
         </SegmentGroup>
-        <div className={css({ flex: '1' })}>
+        <div className={cx(css({ flex: '1', pt: '2' }), editorTokenizer())}>
           <MonacoEditor
             value={props.value[activeTab]}
             language="typescript"
@@ -78,3 +87,33 @@ export const Editor = (props: PandaEditorProps) => {
     </Flex>
   )
 }
+
+const editorTokenizer = cva({
+  base: {
+    '& .JSXElement.JSXBracket, & .JSXOpeningFragment.JSXBracket, & .JSXClosingFragment.JSXBracket': {
+      color: { base: '#000000!', _dark: '#83A598!' },
+    },
+    '& .bracket-highlighting-1, & .bracket-highlighting-3': {
+      color: { _dark: '#EBDBB2!' },
+    },
+    '& .JSXElement.JSXIdentifier, & .JSXAttribute.JSXIdentifier + *': {
+      color: { base: '#22863a!', _dark: '#8EC07C!' },
+    },
+    '& .JSXAttribute.JSXIdentifier, & .JSXExpressionContainer.JSXBracket + :not(.bracket-highlighting-3):not(.JSXElement)':
+      {
+        color: { base: '#6f42c1!', _dark: '#FABD2F!' },
+      },
+    '& .JSXExpressionContainer.JSXBracket, & .bracket-highlighting-0': {
+      color: { _dark: '#A89984!' },
+    },
+    '& .bracket-highlighting-0, & .bracket-highlighting-4': {
+      color: { _dark: '#A89984!' },
+    },
+    '& .JSXElement.JSXText': {
+      color: { base: '#000000!', _dark: '#EBDBB2!' },
+    },
+    '& .JSXClosingFragment.JSXBracket, & .JSXOpeningElement.JSXBracket, & .JSXOpeningFragment.JSXBracket': {
+      fontWeight: 'normal!',
+    },
+  },
+})

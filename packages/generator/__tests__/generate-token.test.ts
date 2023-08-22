@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { generateTokenCss } from '../src/artifacts/css/token-css'
 import { generator } from './fixture'
+import { createGenerator } from '../src'
+import { createHooks } from 'hookable'
 
 describe('generator', () => {
   test('[css] should generate css', () => {
@@ -436,24 +438,7 @@ describe('generator', () => {
         --colors-button-thick: #fff;
         --colors-button-card-body: #fff;
         --colors-button-card-heading: #fff;
-        --spacing-gutter: 1rem;
-        --colors-color-palette-50: var(--colors-color-palette-50);
-        --colors-color-palette-100: var(--colors-color-palette-100);
-        --colors-color-palette-200: var(--colors-color-palette-200);
-        --colors-color-palette-300: var(--colors-color-palette-300);
-        --colors-color-palette-400: var(--colors-color-palette-400);
-        --colors-color-palette-500: var(--colors-color-palette-500);
-        --colors-color-palette-600: var(--colors-color-palette-600);
-        --colors-color-palette-700: var(--colors-color-palette-700);
-        --colors-color-palette-800: var(--colors-color-palette-800);
-        --colors-color-palette-900: var(--colors-color-palette-900);
-        --colors-color-palette-950: var(--colors-color-palette-950);
-        --colors-color-palette-yam: var(--colors-color-palette-yam);
-        --colors-color-palette-poller: var(--colors-color-palette-poller);
-        --colors-color-palette-tall: var(--colors-color-palette-tall);
-        --colors-color-palette-thick: var(--colors-color-palette-thick);
-        --colors-color-palette-body: var(--colors-color-palette-body);
-        --colors-color-palette-heading: var(--colors-color-palette-heading)
+        --spacing-gutter: 1rem
       }
 
       :where([data-theme=dark], .dark) {
@@ -496,5 +481,129 @@ describe('generator', () => {
         }
         "
     `)
+  })
+
+  // https://github.com/chakra-ui/panda/issues/769
+  describe('issue 769: Invalid CSS when extending theme with semanticTokens', () => {
+    test('should not extract nested tokens as `color-palette` css variables', () => {
+      const css = generateTokenCss(
+        createGenerator({
+          dependencies: [],
+          config: {
+            cwd: '',
+            include: [],
+            theme: {
+              tokens: {
+                colors: {
+                  single: {
+                    value: '#ef4444',
+                  },
+                  test: {
+                    50: {
+                      value: '#f9f9f9',
+                    },
+                    100: {
+                      value: '#f2f2f2',
+                    },
+                  },
+                  deep: {
+                    test: {
+                      yam: {
+                        value: '%555',
+                      },
+                      pool: {
+                        poller: {
+                          value: '#fff',
+                        },
+                        tall: {
+                          value: '$dfdf',
+                        },
+                        palette: {
+                          50: {
+                            value: '#f9f9f9',
+                          },
+                          100: {
+                            value: '#f2f2f2',
+                          },
+                          200: {
+                            value: '#ebebeb',
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            conditions: {
+              dark: '.dark &',
+            },
+            outdir: '',
+          },
+          path: '',
+          hooks: createHooks(),
+        }),
+      )
+
+      expect(css).toMatchInlineSnapshot(`
+        "@layer tokens {
+            :where(:root, :host) {
+          --colors-single: #ef4444;
+          --colors-test-50: #f9f9f9;
+          --colors-test-100: #f2f2f2;
+          --colors-deep-test-yam: %555;
+          --colors-deep-test-pool-poller: #fff;
+          --colors-deep-test-pool-tall: $dfdf;
+          --colors-deep-test-pool-palette-50: #f9f9f9;
+          --colors-deep-test-pool-palette-100: #f2f2f2;
+          --colors-deep-test-pool-palette-200: #ebebeb
+        }
+          }
+          "
+      `)
+    })
+
+    test('should not extract shadow array as a separate unnamed block for the custom dark condition', () => {
+      const css = generateTokenCss(
+        createGenerator({
+          dependencies: [],
+          config: {
+            cwd: '',
+            include: [],
+            theme: {
+              semanticTokens: {
+                shadows: {
+                  e1: {
+                    value: {
+                      base: ['0px 1px 2px rgba(0, 0, 0, 0.3)', '0px 1px 3px 1px rgba(0, 0, 0, 0.15)'],
+                      _dark: ['0px 1px 3px 1px rgba(0, 0, 0, 0.15)', '0px 1px 2px rgba(0, 0, 0, 0.3)'],
+                    },
+                  },
+                },
+              },
+            },
+            conditions: {
+              dark: '.dark &',
+            },
+            outdir: '',
+          },
+          path: '',
+          hooks: createHooks(),
+        }),
+      )
+
+      expect(css).toMatchInlineSnapshot(`
+        "@layer tokens {
+            :where(:root, :host) {
+          --shadows-e1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)
+        }
+
+        .dark {
+          --shadows-e1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3)
+        }
+          }
+          "
+      `)
+    })
   })
 })

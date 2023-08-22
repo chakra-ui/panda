@@ -3,7 +3,7 @@ import type { BoxNodeMap, BoxNodeLiteral, Unboxed } from '@pandacss/extractor'
 export type ResultItem = {
   name?: string
   data: Array<Unboxed['raw']>
-  type?: 'object' | 'cva' | 'pattern' | 'recipe' | 'jsx-factory' | 'jsx-pattern' | 'jsx-recipe' | 'jsx'
+  type?: 'object' | 'cva' | 'sva' | 'pattern' | 'recipe' | 'jsx-factory' | 'jsx-pattern' | 'jsx-recipe' | 'jsx'
   box: BoxNodeMap | BoxNodeLiteral
 }
 
@@ -11,10 +11,12 @@ export type ParserResultType = {
   jsx: Set<ResultItem>
   css: Set<ResultItem>
   cva: Set<ResultItem>
+  sva: Set<ResultItem>
   recipe: Map<string, Set<ResultItem>>
   pattern: Map<string, Set<ResultItem>>
   filePath: string | undefined
   set: (name: 'cva' | 'css', result: ResultItem) => void
+  setSva: (result: ResultItem) => void
   setCva: (result: ResultItem) => void
   setJsx: (result: ResultItem) => void
   setRecipe: (name: string, result: ResultItem) => void
@@ -23,6 +25,7 @@ export type ParserResultType = {
   setFilePath: (filePath: string) => ParserResultType
   toArray: () => Array<ResultItem>
   toJSON: () => {
+    sva: Array<ResultItem>
     css: Array<ResultItem>
     cva: Array<ResultItem>
     recipe: Record<string, ResultItem[]>

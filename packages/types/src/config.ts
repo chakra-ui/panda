@@ -10,6 +10,10 @@ import type { UtilityConfig } from './utility'
 
 export type { TSConfig }
 
+export type CascadeLayer = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
+
+export type CascadeLayers = Record<CascadeLayer, string>
+
 type StudioOptions = {
   /**
    * Used to customize the design system studio
@@ -126,6 +130,30 @@ type JsxOptions = {
    * ```
    */
   jsxFactory?: string
+  /**
+   * The style props allowed on generated JSX components
+   * - When set to 'all', all style props are allowed.
+   * - When set to 'minimal', only the `css` prop is allowed.
+   * - When set to 'none', no style props are allowed and therefore the jsxFactory will not be importable.
+   *
+   * @default 'all'
+   *
+   * @example with 'all':
+   * ```jsx
+   * <styled.button marginTop="40px">Click me</styled.button>
+   * ```
+   *
+   * @example with 'minimal':
+   * ```jsx
+   * <styled.button css={{ marginTop: "40px" }}>Click me</styled.button>
+   * ```
+   *
+   * @example with 'none':
+   * ```jsx
+   * <button className={css({ marginTop: "40px" })}>Click me</button>
+   * ```
+   */
+  jsxStyleProps?: 'all' | 'minimal' | 'none'
 }
 
 type CssgenOptions = {
@@ -198,10 +226,15 @@ type CodegenOptions = {
    */
   gitignore?: boolean
   /**
-   * Whether to generate disabled shorthand properties
+   * Whether to allow shorthand properties
    * @default 'true'
    */
   shorthands?: boolean
+  /**
+   * Layer mappings used in the generated css.
+   * @default 'true'
+   */
+  layers?: Partial<CascadeLayers>
 }
 
 type PresetOptions = {
@@ -233,10 +266,21 @@ export type Preset = ExtendableOptions & PresetOptions
 
 export type UserConfig = UnwrapExtend<RequiredBy<Config, 'outdir' | 'cwd' | 'include'>>
 
+export type PathMapping = {
+  pattern: RegExp
+  paths: string[]
+}
+
+export type ConfigTsOptions = {
+  baseUrl?: string | undefined
+  pathMappings: PathMapping[]
+}
+
 export interface LoadConfigResult {
   path: string
   config: UserConfig
   tsconfig?: TSConfig
+  tsOptions?: ConfigTsOptions
   tsconfigFile?: string
   dependencies: string[]
 }

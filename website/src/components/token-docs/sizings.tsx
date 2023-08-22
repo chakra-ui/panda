@@ -17,6 +17,7 @@ export const Sizings = () => {
       >
         <p className={css({ width: '100px' })}>Name</p>
         <p className={css({ width: '100px' })}>Value</p>
+        <p className={css({ width: '100px' })}>Pixel</p>
       </div>
 
       <div className={stack({ px: '3', pt: '2' })}>
@@ -26,6 +27,9 @@ export const Sizings = () => {
               {token.extensions.prop}
             </p>
             <p className={css({ width: '100px' })}>{token.value}</p>
+            <p className={css({ width: '100px' })}>
+              {token.extensions.pixelValue}
+            </p>
           </div>
         ))}
       </div>

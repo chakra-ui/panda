@@ -1,5 +1,156 @@
 # @pandacss/types
 
+## 0.11.1
+
+### Patch Changes
+
+- 23b516f4: Make layers customizable
+
+## 0.11.0
+
+### Patch Changes
+
+- 5b95caf5: Add a hook call when the final `styles.css` content has been generated, remove cyclic (from an unused hook)
+  dependency
+
+## 0.10.0
+
+### Minor Changes
+
+- a669f4d5: Introduce new slot recipe features.
+
+  Slot recipes are useful for styling composite or multi-part components easily.
+
+  - `sva`: the slot recipe version of `cva`
+  - `defineSlotRecipe`: the slot recipe version of `defineRecipe`
+
+  **Definition**
+
+  ```jsx
+  import { sva } from 'styled-system/css'
+
+  const button = sva({
+    slots: ['label', 'icon'],
+    base: {
+      label: { color: 'red', textDecoration: 'underline' },
+    },
+    variants: {
+      rounded: {
+        true: {},
+      },
+      size: {
+        sm: {
+          label: { fontSize: 'sm' },
+          icon: { fontSize: 'sm' },
+        },
+        lg: {
+          label: { fontSize: 'lg' },
+          icon: { fontSize: 'lg', color: 'pink' },
+        },
+      },
+    },
+    defaultVariants: {
+      size: 'sm',
+    },
+  })
+  ```
+
+  **Usage**
+
+  ```jsx
+  export function App() {
+    const btnClass = button({ size: 'lg', rounded: true })
+
+    return (
+      <button>
+        <p class={btnClass.label}> Label</p>
+        <p class={btnClass.icon}> Icon</p>
+      </button>
+    )
+  }
+  ```
+
+### Patch Changes
+
+- 24e783b3: Reduce the overall `outdir` size, introduce the new config `jsxStyleProps` option to disable style props and
+  further reduce it.
+
+  `config.jsxStyleProps`:
+
+  - When set to 'all', all style props are allowed.
+  - When set to 'minimal', only the `css` prop is allowed.
+  - When set to 'none', no style props are allowed and therefore the `jsxFactory` will not be usable as a component:
+    - `<styled.div />` and `styled("div")` aren't valid
+    - but the recipe usage is still valid `styled("div", { base: { color: "red.300" }, variants: { ...} })`
+
+- 386e5098: Update `RecipeVariantProps` to support slot recipes
+
+## 0.9.0
+
+### Minor Changes
+
+- c08de87f: ### Breaking
+
+  - Renamed the `name` property of a config recipe to `className`. This is to ensure API consistency and express the
+    intent of the property more clearly.
+
+  ```diff
+  export const buttonRecipe = defineRecipe({
+  -  name: 'button',
+  +  className: 'button',
+    // ...
+  })
+  ```
+
+  - Renamed the `jsx` property of a pattern to `jsxName`.
+
+  ```diff
+  const hstack = definePattern({
+  -  jsx: 'HStack',
+  +  jsxName: 'HStack',
+    // ...
+  })
+  ```
+
+  ### Feature
+
+  Update the `jsx` property to be used for advanced tracking of custom pattern components.
+
+  ```jsx
+  import { Circle } from 'styled-system/jsx'
+  const CustomCircle = ({ children, ...props }) => {
+    return <Circle {...props}>{children}</Circle>
+  }
+  ```
+
+  To track the `CustomCircle` component, you can now use the `jsx` property.
+
+  ```js
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    patterns: {
+      extend: {
+        circle: {
+          jsx: ['CustomCircle'],
+        },
+      },
+    },
+  })
+  ```
+
+## 0.8.0
+
+### Patch Changes
+
+- be0ad578: Fix parser issue with TS path mappings
+
+## 0.7.0
+
+### Patch Changes
+
+- a9c189b7: Fix issue where `splitVariantProps` in cva doesn't resolve the correct types
+
 ## 0.6.0
 
 ## 0.5.1

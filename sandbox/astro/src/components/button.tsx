@@ -1,4 +1,4 @@
-import { css } from '../../panda/css'
+import { css } from '../../styled-system/css'
 
 export function Button({ children }) {
   return (

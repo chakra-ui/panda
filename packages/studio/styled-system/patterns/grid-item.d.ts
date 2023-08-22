@@ -16,5 +16,10 @@ export type GridItemProperties = {
 
 type GridItemOptions = GridItemProperties & Omit<SystemStyleObject, keyof GridItemProperties >
 
+interface GridItemPatternFn {
+  (options?: GridItemOptions): string
+  raw: (options: GridItemOptions) => GridItemOptions
+}
 
-export declare function gridItem(options?: GridItemOptions): string
+
+export declare const gridItem: GridItemPatternFn;

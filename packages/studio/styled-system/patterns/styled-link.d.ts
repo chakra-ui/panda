@@ -11,5 +11,10 @@ export type StyledLinkProperties = {
 
 type StyledLinkOptions = StyledLinkProperties & Omit<SystemStyleObject, keyof StyledLinkProperties >
 
+interface StyledLinkPatternFn {
+  (options?: StyledLinkOptions): string
+  raw: (options: StyledLinkOptions) => StyledLinkOptions
+}
 
-export declare function styledLink(options?: StyledLinkOptions): string
+
+export declare const styledLink: StyledLinkPatternFn;

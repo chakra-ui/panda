@@ -10,7 +10,7 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
   const { theme: { keyframes } = {}, preflight, minify, staticCss } = ctx.config
 
   const unresolved = [
-    '@layer reset, base, tokens, recipes, utilities;',
+    ctx.layerString,
     preflight && "@import './reset.css';",
     "@import './global.css';",
     staticCss && "@import './static.css';",
@@ -36,5 +36,8 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
 
   sheet.append(...files)
 
-  return sheet.toCss({ optimize: true, minify })
+  const output = sheet.toCss({ optimize: true, minify })
+  ctx.hooks.callHook('generator:css', 'styles.css', output)
+
+  return output
 }

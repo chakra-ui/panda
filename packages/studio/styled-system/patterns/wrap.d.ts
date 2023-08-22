@@ -15,5 +15,10 @@ export type WrapProperties = {
 
 type WrapOptions = WrapProperties & Omit<SystemStyleObject, keyof WrapProperties >
 
+interface WrapPatternFn {
+  (options?: WrapOptions): string
+  raw: (options: WrapOptions) => WrapOptions
+}
 
-export declare function wrap(options?: WrapOptions): string
+
+export declare const wrap: WrapPatternFn;

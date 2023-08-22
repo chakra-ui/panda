@@ -9,7 +9,7 @@ CSS cascade layers refer to the order in which CSS rules are applied to an HTML 
 to the same element, the browser uses the cascade to determine which rule should take precedence. See the
 [MDN article](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer) to learn more.
 
-Panda take advantage of the cascade to provide a more efficient and flexible way to organize styles. This allows you to
+Panda takes advantage of the cascade to provide a more efficient and flexible way to organize styles. This allows you to
 define styles in a modular way, using CSS rules that are scoped to specific components or elements.
 
 ## Layer Types
@@ -111,3 +111,7 @@ Here's what the first line of the generated CSS looks like:
 
 Adding this line to the top of your CSS file will determine the order in which the layers are applied. This is the most
 exciting feature of CSS cascade layers.
+
+## Customize layers
+
+Panda lets you customize the cascade layers, so your project can coexist with other solutions. Learn more about customizing layers [here](/docs/references/config#layers).

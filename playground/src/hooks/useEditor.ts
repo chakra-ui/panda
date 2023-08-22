@@ -1,4 +1,9 @@
-import { OnMount, OnChange, BeforeMount } from '@monaco-editor/react'
+import { OnMount, OnChange, BeforeMount, EditorProps } from '@monaco-editor/react'
+import { parse } from '@babel/parser'
+import traverse from '@babel/traverse'
+//@ts-expect-error
+import MonacoJSXHighlighter from 'monaco-jsx-highlighter'
+
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useUpdateEffect } from 'usehooks-ts'
 
@@ -14,6 +19,22 @@ export type PandaEditorProps = {
   artifacts: Artifact[]
 }
 
+export const EDITOR_OPTIONS: EditorProps['options'] = {
+  minimap: { enabled: false },
+  fontSize: 14,
+  quickSuggestions: {
+    strings: true,
+    other: true,
+    comments: true,
+  },
+  guides: {
+    indentation: false,
+  },
+  fontLigatures: true,
+  fontFamily: "'Fira Code', 'Fira Mono', 'Menlo', 'Monaco', 'Courier', monospace",
+  fontWeight: '400',
+}
+
 export function useEditor(props: PandaEditorProps) {
   const { onChange, value, artifacts } = props
   const { resolvedTheme } = useTheme()
@@ -21,7 +42,24 @@ export function useEditor(props: PandaEditorProps) {
   const [activeTab, setActiveTab] = useState<keyof State>('code')
   const monacoRef = useRef<Parameters<OnMount>[1]>()
 
+  const formatText = async (text: string) => {
+    const prettier = await import('prettier/standalone')
+    const typescript = await import('prettier/parser-typescript')
+    return prettier.format(text, {
+      parser: 'typescript',
+      plugins: [typescript],
+      singleQuote: true,
+    })
+  }
+
   const configureEditor: OnMount = useCallback((editor, monaco) => {
+    // Instantiate the highlighter
+    const monacoJSXHighlighter = new MonacoJSXHighlighter(monaco, parse, traverse, editor)
+    // Activate highlighting (debounceTime default: 100ms)
+    monacoJSXHighlighter.highlightOnDidChangeModelContent()
+    // Activate JSX commenting
+    monacoJSXHighlighter.addJSXCommentCommand()
+
     function registerKeybindings() {
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
         editor.trigger('editor', 'editor.action.formatDocument', undefined)
@@ -36,18 +74,10 @@ export function useEditor(props: PandaEditorProps) {
 
     monaco.languages.registerDocumentFormattingEditProvider('typescript', {
       async provideDocumentFormattingEdits(model) {
-        const prettier = await import('prettier/standalone')
-        const typescript = await import('prettier/parser-typescript')
-        const text = prettier.format(model.getValue(), {
-          parser: 'typescript',
-          plugins: [typescript],
-          singleQuote: true,
-        })
-
         return [
           {
             range: model.getFullModelRange(),
-            text,
+            text: await formatText(model.getValue()),
           },
         ]
       },
@@ -63,6 +93,8 @@ export function useEditor(props: PandaEditorProps) {
       jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
       reactNamespace: 'React',
       allowJs: true,
+      checkJs: true,
+      strict: true,
       typeRoots: ['node_modules/@types'],
     })
   }, [])
@@ -152,14 +184,19 @@ export function useEditor(props: PandaEditorProps) {
         }),
       )
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [configureEditor, setupLibs, getPandaTypes],
   )
 
-  const onCodeEditorChange: OnChange = (content) => {
+  const onCodeEditorChange = (content: Parameters<OnChange>[0]) => {
     onChange({
       ...value,
       [activeTab]: content,
     })
+  }
+
+  const onCodeEditorFormat = async () => {
+    onCodeEditorChange(await formatText(value[activeTab]))
   }
 
   useUpdateEffect(() => {
@@ -172,5 +209,6 @@ export function useEditor(props: PandaEditorProps) {
     onBeforeMount,
     onCodeEditorChange,
     onCodeEditorMount,
+    onCodeEditorFormat,
   }
 }

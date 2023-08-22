@@ -1,0 +1,3 @@
+{
+  "content": "// src/normalize-html.ts\nvar htmlProps = [\"htmlSize\", \"htmlTranslate\", \"htmlWidth\", \"htmlHeight\"];\nfunction convert(key) {\n  return htmlProps.includes(key) ? key.replace(\"html\", \"\").toLowerCase() : key;\n}\nfunction normalizeHTMLProps(props) {\n  return Object.fromEntries(Object.entries(props).map(([key, value]) => [convert(key), value]));\n}\nnormalizeHTMLProps.keys = htmlProps;\nexport {\n  normalizeHTMLProps\n};\n"
+}

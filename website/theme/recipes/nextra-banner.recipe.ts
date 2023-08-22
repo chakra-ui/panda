@@ -11,12 +11,12 @@ const anatomy = createAnatomy('banner', [
 const parts = defineParts(anatomy.build())
 
 export const nextraBannerRecipe = defineRecipe({
-  name: 'nextraBannerRecipe',
+  className: 'nextraBannerRecipe',
   description: 'A nextra banner style',
   base: parts({
     root: {
       position: 'sticky',
-      top: 0,
+      top: '0',
       zIndex: 20,
       display: 'flex',
       alignItems: 'center',
@@ -27,8 +27,8 @@ export const nextraBannerRecipe = defineRecipe({
           // pt: '1.5rem'
         },
         '&.nextra-nav-container': {
-          top: 10,
-          md: { top: 0 }
+          top: '10',
+          md: { top: '0' }
         }
       },
       'body.nextra-banner-hidden &': {
@@ -48,9 +48,8 @@ export const nextraBannerRecipe = defineRecipe({
         color: 'white',
         bg: 'linear-gradient(1deg,#383838,#212121)'
       },
-      px: 2,
-      _ltr: { pl: 10 },
-      _rtl: { pr: 10 },
+      px: '2',
+      ps: '10',
       _print: { display: 'none' }
     },
     content: {

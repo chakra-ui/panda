@@ -9,6 +9,14 @@ type ContextOptions = {
   prefix?: string
 }
 
+export const defaultLayers = {
+  reset: 'reset',
+  base: 'base',
+  tokens: 'tokens',
+  recipes: 'recipes',
+  utilities: 'utilities',
+}
+
 export const createContext = ({ hash, prefix }: ContextOptions = {}): StylesheetContext => {
   const conditions = new Conditions({
     conditions: mocks.conditions,
@@ -34,6 +42,7 @@ export const createContext = ({ hash, prefix }: ContextOptions = {}): Stylesheet
     conditions: conditions,
     utility: utility,
     helpers: { map: () => '' },
+    layers: defaultLayers,
   }
 }
 
@@ -46,6 +55,13 @@ export function getRecipe(key: 'buttonStyle' | 'textStyle' | 'tooltipStyle') {
 
 export function processRecipe(recipe: 'buttonStyle' | 'textStyle' | 'tooltipStyle', value: Record<string, any>) {
   const recipes = new Recipes(mocks.recipes, createContext())
+  recipes.save()
+  recipes.process(recipe, { styles: value })
+  return recipes.toCss()
+}
+
+export function processSlotRecipe(recipe: 'button', value: Record<string, any>) {
+  const recipes = new Recipes(mocks.slotRecipes, createContext())
   recipes.save()
   recipes.process(recipe, { styles: value })
   return recipes.toCss()

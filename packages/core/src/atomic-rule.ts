@@ -19,9 +19,11 @@ export type ProcessOptions = {
 
 export class AtomicRule {
   root: Root
-  layer = 'utilities'
+  layer: string
+
   constructor(private context: StylesheetContext) {
     this.root = postcss.root()
+    this.layer = context.layers.utilities
   }
 
   hashFn = (conditions: string[], className: string) => {
@@ -50,6 +52,8 @@ export class AtomicRule {
     const { conditions: cond } = this.context
 
     const styleObject = normalizeStyleObject(styles, this.context)
+    // shouldn't happen, but just in case
+    if (typeof styleObject !== 'object') return
 
     const rule = this.rule
 

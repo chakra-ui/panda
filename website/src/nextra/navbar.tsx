@@ -89,7 +89,6 @@ function NavbarMenu({ className, menu, children }: NavMenuProps) {
                 textStyle: 'sm',
                 shadow: 'lg'
               })}
-              // @ts-ignore
               tabIndex={0}
             >
               {Object.entries(items || {}).map(([key, item]) => (

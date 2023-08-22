@@ -1,10 +1,10 @@
-import { getConfigDependencies, type GetConfigDependenciesTsOptions, convertTsPathsToRegexes } from '@pandacss/config'
+import { getConfigDependencies } from '@pandacss/config'
 import { discardDuplicate, mergeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { existsSync } from 'fs'
 import { statSync } from 'fs-extra'
-import { dirname, resolve } from 'path'
+import { resolve } from 'path'
 import type { Message, Root } from 'postcss'
 import { findConfig, loadConfigAndCreateContext } from './config'
 import { type PandaContext } from './create-context'
@@ -32,9 +32,6 @@ const contentFilesCache = new WeakMap<PandaContext, ContentData>()
 
 let setupCount = 0
 
-/** @layer reset, base, tokens, recipes, utilities */
-const layersName = ['reset', 'base', 'tokens', 'recipes', 'utilities']
-
 export class Builder {
   /**
    * The current panda context
@@ -43,20 +40,23 @@ export class Builder {
 
   configDependencies: Set<string> = new Set()
 
-  writeFileCss(file: string, css: string) {
+  writeFileCss = (file: string, css: string) => {
     const oldCss = this.fileCssMap?.get(file) ?? ''
     const newCss = mergeCss(oldCss, css)
     this.fileCssMap?.set(file, newCss)
   }
 
-  checkConfigDeps(configPath: string, deps: Set<string>): ConfigDepsResult {
+  checkConfigDeps = (configPath: string, deps: Set<string>): ConfigDepsResult => {
     let modified = false
 
     const newModified = new Map()
     const prevModified = configCache.get(configPath)?.depsModifiedMap
 
     for (const file of deps) {
-      const time = statSync(file).mtimeMs
+      const stats = statSync(file, { throwIfNoEntry: false })
+      if (!stats) continue
+
+      const time = stats.mtimeMs
       newModified.set(file, time)
 
       if (!prevModified || !prevModified.has(file) || time > prevModified.get(file)!) {
@@ -79,7 +79,7 @@ export class Builder {
     return { isModified: true, modifiedMap: newModified }
   }
 
-  getConfigPath() {
+  getConfigPath = () => {
     const configPath = findConfig()
 
     if (!configPath) {
@@ -89,24 +89,15 @@ export class Builder {
     return configPath
   }
 
-  async setup(options: { configPath?: string } = {}) {
+  setup = async (options: { configPath?: string; cwd?: string } = {}) => {
     logger.debug('builder', '🚧 Setup')
 
     const configPath = options.configPath ?? this.getConfigPath()
-    let tsOptions: GetConfigDependenciesTsOptions = { baseUrl: undefined, pathMappings: [] }
+    const tsOptions = this.context?.tsOptions ?? { baseUrl: undefined, pathMappings: [] }
+    const compilerOptions = this.context?.tsconfig?.compilerOptions ?? {}
 
-    if (this.context?.tsconfig) {
-      const options = this.context.tsconfig.compilerOptions
-      if (options?.paths) {
-        const baseUrl = options.baseUrl
-        tsOptions = {
-          baseUrl,
-          pathMappings: convertTsPathsToRegexes(options?.paths, baseUrl ?? this.context.config.cwd),
-        }
-      }
-    }
-    const { deps: foundDeps } = getConfigDependencies(configPath, tsOptions)
-    const cwd = this.context?.config.cwd ?? dirname(configPath)
+    const { deps: foundDeps } = getConfigDependencies(configPath, tsOptions, compilerOptions)
+    const cwd = options?.cwd ?? this.context?.config.cwd ?? process.cwd()
 
     const configDeps = new Set([...foundDeps, ...(this.context?.dependencies ?? []).map((file) => resolve(cwd, file))])
     this.configDependencies = configDeps
@@ -139,7 +130,7 @@ export class Builder {
     setupCount++
   }
 
-  async setupContext(options: { configPath: string; depsModifiedMap: Map<string, number> }) {
+  setupContext = async (options: { configPath: string; depsModifiedMap: Map<string, number> }) => {
     const { configPath, depsModifiedMap } = options
 
     this.context = await loadConfigAndCreateContext({ configPath })
@@ -161,7 +152,7 @@ export class Builder {
     })
   }
 
-  getContextOrThrow(): PandaContext {
+  getContextOrThrow = (): PandaContext => {
     if (!this.context) {
       throw new Error('context not loaded')
     }
@@ -178,7 +169,7 @@ export class Builder {
     return contentFilesCache.get(ctx)!.fileCssMap
   }
 
-  async extractFile(ctx: PandaContext, file: string) {
+  extractFile = async (ctx: PandaContext, file: string) => {
     const mtime = existsSync(file) ? statSync(file).mtimeMs : -Infinity
 
     const isUnchanged = this.fileModifiedMap.has(file) && mtime === this.fileModifiedMap.get(file)
@@ -193,7 +184,7 @@ export class Builder {
     return css
   }
 
-  async extract() {
+  extract = async () => {
     const ctx = this.getContextOrThrow()
 
     const done = logger.time.info('Extracted in')
@@ -203,7 +194,7 @@ export class Builder {
     done()
   }
 
-  toString() {
+  toString = () => {
     const ctx = this.getContextOrThrow()
     return ctx.getCss({
       files: Array.from(this.fileCssMap.values()),
@@ -211,22 +202,20 @@ export class Builder {
     })
   }
 
-  isValidRoot(root: Root) {
-    let found = false
+  isValidRoot = (root: Root) => {
+    const ctx = this.getContextOrThrow()
+    let valid = false
 
     root.walkAtRules('layer', (rule) => {
-      const foundLayers = new Set<string>()
-      rule.params.split(',').forEach((name) => foundLayers.add(name.trim()))
-
-      if (foundLayers.size >= 5 && layersName.every((name) => foundLayers.has(name))) {
-        found = true
+      if (ctx.isValidLayerRule(rule.params)) {
+        valid = true
       }
     })
 
-    return found
+    return valid
   }
 
-  write(root: Root) {
+  write = (root: Root) => {
     const rootCssContent = root.toString()
     root.removeAll()
 
@@ -238,7 +227,7 @@ export class Builder {
     )
   }
 
-  registerDependency(fn: (dep: Message) => void) {
+  registerDependency = (fn: (dep: Message) => void) => {
     const ctx = this.getContextOrThrow()
 
     for (const fileOrGlob of ctx.config.include) {

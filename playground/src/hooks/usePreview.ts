@@ -17,6 +17,7 @@ export function usePreview() {
       setIsMounted(false)
       contentRef?.removeEventListener('DOMContentLoaded', handleLoad)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentRef])
 
   const { resolvedTheme } = useTheme()
@@ -57,5 +58,21 @@ export function usePreview() {
 
   const isReady = isMounted && !!contentRef?.contentDocument
 
-  return { handleLoad, contentRef, setContentRef, iframeLoaded, isReady }
+  const srcDoc = `<!DOCTYPE html>
+  <html>
+  <head>
+  <script type="module">
+
+  //* This is just listening for the color mode change event and applying the class to the html element
+  window.parent.postMessage({action:"getColorMode"},"*"),window.addEventListener("message",(function(e){e.data.colorMode&&function(e){switch(e){case"light":document.querySelector("html").classList.add("light"),document.querySelector("html").classList.remove("dark");break;case"dark":document.querySelector("html").classList.add("dark"),document.querySelector("html").classList.remove("light")}}(e.data.colorMode)}));
+
+</script>
+
+  </head>
+  <body>
+  
+  </body>
+  </html>`
+
+  return { handleLoad, contentRef, setContentRef, iframeLoaded, isReady, srcDoc }
 }

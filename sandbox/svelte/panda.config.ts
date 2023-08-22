@@ -15,7 +15,7 @@ export default defineConfig({
     },
     recipes: {
       button: {
-        name: 'button',
+        className: 'button',
         description: 'A button styles',
         base: {
           fontSize: 'lg',

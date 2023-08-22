@@ -11,13 +11,13 @@ export function generateSolidJsxFactory(ctx: Context) {
     ${ctx.file.import('css, cx, cva, assignCss', '../css/index')}
     ${ctx.file.import('normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('allCssProperties', './is-valid-prop')}
-    
+
     function styledFn(element, configOrCva = {}) {
-      const cvaFn = configOrCva.__cva__ ? configOrCva : cva(configOrCva)
-      
+      const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
+
       return function ${componentName}(props) {
         const mergedProps = mergeProps({ as: element }, props)
-    
+
         const [localProps, variantProps, styleProps, htmlProps, elementProps] = splitProps(
           mergedProps,
           ['as', 'class'],
@@ -31,16 +31,16 @@ export function generateSolidJsxFactory(ctx: Context) {
           const styles = assignCss(propStyles, cssStyles)
           return cx(cvaFn(variantProps), css(styles), localProps.class)
         }
-        
+
         function cvaClass() {
           const { css: cssStyles, ...propStyles } = styleProps
           const cvaStyles = cvaFn.resolve(variantProps)
           const styles = assignCss(cvaStyles, propStyles, cssStyles)
           return cx(css(styles), localProps.class)
         }
-    
+
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
-        
+
         return createComponent(
           Dynamic,
           mergeProps(
@@ -58,10 +58,10 @@ export function generateSolidJsxFactory(ctx: Context) {
         )
       }
     }
-    
+
     function createJsxFactory() {
       const cache = new Map()
-    
+
       return new Proxy(styledFn, {
         apply(_, __, args) {
           return styledFn(...args)
@@ -74,8 +74,8 @@ export function generateSolidJsxFactory(ctx: Context) {
         },
       })
     }
-      
-    export const ${factoryName} = createJsxFactory()
+
+    export const ${factoryName} = /* @__PURE__ */ createJsxFactory()
     `,
   }
 }

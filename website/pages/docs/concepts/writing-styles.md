@@ -5,13 +5,13 @@ description: Panda generates the utilities you need to style your components wit
 
 # Writing Styles
 
-Using the object syntax is fundamental way of writing styles in Panda. It provides a type-safe style authoring experience, improves readability and ensures a consistent style override experience.
+Using the object syntax is a fundamental approach to writing styles in Panda. It not only provides a type-safe style authoring experience, but also improves readability and ensures a consistent experience with style overrides.
 
 ## Atomic Styles
 
-When you write styles in Panda, it generates modern atomic stylesheet that is automatically scoped to the `@layer utilities` cascade layer.
+When you write styles in Panda, it generates a modern atomic stylesheet that is automatically scoped to the `@layer utilities` cascade layer.
 
-Atomic stylesheets approach offers several advantages, including improved code maintainability, reusability, and a smaller overall CSS footprint.
+The atomic stylesheets approach offers several advantages, such as improved code maintainability and reusability, as well as a smaller overall CSS footprint.
 
 Panda exposes a `css` function that can be used to author styles. It accepts a style object and returns a className string.
 
@@ -33,7 +33,7 @@ const styles = css({
 </div>
 ```
 
-The styles generated at build time will look like this:
+The styles generated at build time end up like this:
 
 ```css
 @layer utilities {
@@ -59,7 +59,7 @@ The styles generated at build time will look like this:
 
 Panda provides shorthands for common css properties to help improve the speed of development and reduce the visual density of your style declarations.
 
-Properties like `borderRadius`, `backgroundColor`, and `padding` can swapped to their shorthand equivalent `rounded`, `bg`, and `p`.
+Properties like `borderRadius`, `backgroundColor`, and `padding` can be swapped to their shorthand equivalent `rounded`, `bg`, and `p`.
 
 ```jsx
 // BEFORE - Good
@@ -81,14 +81,14 @@ const styles = css({
 
 ### Type safety
 
-Panda is built with TypeScript and provides type safety for all style properties and shorthands. Most of the style properties are connect to either the native CSS properties or their respective token value defined as defined in the `theme` object.
+Panda is built with TypeScript and provides type safety for all style properties and shorthands. Most of the style properties are connected to either the native CSS properties or their respective token value defined as defined in the `theme` object.
 
 ```ts
 //                       ⤵ you'll get autocomplete for colors
 const styles = css({ bg: '|' })
 ```
 
-> You can also set `strictTokens: true` in the panda config to only allow token value and prevent custom or raw CSS values.
+> You can also enable the `strictTokens: true` setting in the Panda configuration. This allows only token values and prevents the use of custom or raw CSS values.
 
 ### Numeric values
 
@@ -114,13 +114,13 @@ const styles = css({
 
 ## Nested Styles
 
-Panda provides different ways of nesting style declarations. You can use the native css nesting syntax, or the built-in pseudo props like `_hover`, `_focus`, etc.
+Panda provides different ways of nesting style declarations. You can use the native css nesting syntax, or the built-in pseudo props like `_hover` and `_focus`. Pseudo props are covered more in-depth in the next section.
 
 ### Native CSS Nesting
 
 Panda supports the native css nesting syntax. You can use the `&` selector to create nested styles.
 
-> **Important:** It is required use the "&" character when nesting styles.
+> **Important:** It is required to use the "&" character when nesting styles.
 
 ```jsx
 <div
@@ -213,7 +213,7 @@ import { css, cx } from '../styled-system/css'
 const styles = css({
   borderWidth: '1px',
   borderRadius: '8px',
-  paddingX: '12px'
+  paddingX: '12px',
   paddingY: '24px'
 })
 
@@ -225,7 +225,7 @@ const Card = ({ className, ...props }) => {
 
 ### Hashing
 
-When debugging or previewing DOM elements in the browser, the length of the generated atomic `className` can get quite long and a bit annoying. If you prefer to have terser classnames, use the `hash` option to enable classname and css variable name hashing.
+When debugging or previewing DOM elements in the browser, the length of the generated atomic `className` can get quite long, and a bit annoying. If you prefer to have terser classnames, use the `hash` option to enable className and css variable name hashing.
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -250,7 +250,7 @@ const styles = css({
 })
 ```
 
-The generated classnames will look like:
+The hash generated classnames will look like:
 
 ```css
 .dsf3wd {
@@ -266,7 +266,7 @@ The generated classnames will look like:
 }
 ```
 
-> We recommend that you use this in production builds only as it can make debugging a bit harder.
+> We recommend that you use this in production builds only, as it can make debugging a bit harder.
 
 ## Important styles
 

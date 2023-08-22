@@ -1,16 +1,18 @@
 import { writeFileSync } from 'fs'
 import json from 'mdn-data/css/properties.json'
+import { properties as svgProperties } from './svg'
 
 const dashRegex = /-+(.)/g
 function camelCaseProperty(str: string): string {
   return str.replace(dashRegex, (_, p1) => p1.toUpperCase())
 }
 
-const omitRegex = /^(?:--\*)/
+const omitRegex = /^(?:-moz|-ms|--\*)/
 
 const properties = Object.keys(json)
+  .concat(Object.keys(svgProperties))
   .filter((v) => !omitRegex.test(v))
-  .map((v) => JSON.stringify(camelCaseProperty(v)))
+  .map((v) => camelCaseProperty(v))
 
 const format = (code: string) => {
   const prettier = require('prettier')
@@ -24,9 +26,11 @@ const format = (code: string) => {
 writeFileSync(
   './src/index.ts',
   format(`
-  const userGenerated: string[] = []
+  const userGeneratedStr = "";
+  const userGenerated = userGeneratedStr.split(',');
+  const cssPropertiesStr = "${Array.from(new Set(properties)).join(',')}";
 
-  const allCssProperties = [${Array.from(new Set(properties)).join(',')}, ...userGenerated]
+  const allCssProperties = cssPropertiesStr.split(',').concat(userGenerated)
 
   const properties = new Map(allCssProperties.map((prop) => [prop, true]))
 
@@ -38,10 +42,10 @@ writeFileSync(
     }
   }
 
-  const selectorRegex = /&|@/
+  const cssPropertySelectorRegex = /&|@/
 
-  const isCssProperty = memo((prop: string) => {
-    return properties.has(prop) || prop.startsWith('--') || selectorRegex.test(prop)
+  const isCssProperty = /* @__PURE__ */ memo((prop: string) => {
+    return properties.has(prop) || prop.startsWith('--') || cssPropertySelectorRegex.test(prop)
   })
 
   export { isCssProperty, allCssProperties }

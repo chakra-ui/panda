@@ -11,5 +11,10 @@ export type SquareProperties = {
 
 type SquareOptions = SquareProperties & Omit<SystemStyleObject, keyof SquareProperties >
 
+interface SquarePatternFn {
+  (options?: SquareOptions): string
+  raw: (options: SquareOptions) => SquareOptions
+}
 
-export declare function square(options?: SquareOptions): string
+
+export declare const square: SquarePatternFn;

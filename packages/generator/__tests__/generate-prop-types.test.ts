@@ -131,10 +131,12 @@ describe('generate property types', () => {
       	borderLeft: Tokens[\\"borders\\"];
       	borderLeftColor: Tokens[\\"colors\\"];
       	borderInlineStart: Tokens[\\"borders\\"];
+      	borderInlineStartWidth: Tokens[\\"borderWidths\\"];
       	borderInlineStartColor: Tokens[\\"colors\\"];
       	borderRight: Tokens[\\"borders\\"];
       	borderRightColor: Tokens[\\"colors\\"];
       	borderInlineEnd: Tokens[\\"borders\\"];
+      	borderInlineEndWidth: Tokens[\\"borderWidths\\"];
       	borderInlineEndColor: Tokens[\\"colors\\"];
       	borderTop: Tokens[\\"borders\\"];
       	borderTopColor: Tokens[\\"colors\\"];
@@ -144,6 +146,7 @@ describe('generate property types', () => {
       	borderBlockEndColor: Tokens[\\"colors\\"];
       	borderBlockStart: Tokens[\\"borders\\"];
       	borderBlockStartColor: Tokens[\\"colors\\"];
+      	opacity: Tokens[\\"opacity\\"];
       	boxShadow: Tokens[\\"shadows\\"];
       	boxShadowColor: Tokens[\\"colors\\"];
       	filter: \\"auto\\";
@@ -159,6 +162,7 @@ describe('generate property types', () => {
       	transitionDuration: Tokens[\\"durations\\"];
       	transition: \\"all\\" | \\"common\\" | \\"background\\" | \\"colors\\" | \\"opacity\\" | \\"shadow\\" | \\"transform\\";
       	animation: Tokens[\\"animations\\"];
+      	animationName: Tokens[\\"animationName\\"];
       	animationDelay: Tokens[\\"durations\\"];
       	scale: \\"auto\\" | CssProperties[\\"scale\\"];
       	translate: \\"auto\\" | CssProperties[\\"translate\\"];
@@ -292,8 +296,10 @@ describe('generate property types', () => {
       	borderYWidth: Shorthand<\\"borderBlockWidth\\">;
       	borderYColor: Shorthand<\\"borderBlockColor\\">;
       	borderStart: Shorthand<\\"borderInlineStart\\">;
+      	borderStartWidth: Shorthand<\\"borderInlineStartWidth\\">;
       	borderStartColor: Shorthand<\\"borderInlineStartColor\\">;
       	borderEnd: Shorthand<\\"borderInlineEnd\\">;
+      	borderEndWidth: Shorthand<\\"borderInlineEndWidth\\">;
       	borderEndColor: Shorthand<\\"borderInlineEndColor\\">;
       	shadow: Shorthand<\\"boxShadow\\">;
       	shadowColor: Shorthand<\\"boxShadowColor\\">;
@@ -302,9 +308,9 @@ describe('generate property types', () => {
       }
 
       export type PropertyValue<T extends string> = T extends keyof PropertyTypes
-        ? ConditionalValue<PropertyTypes[T] | CssValue<T>>
+        ? ConditionalValue<PropertyTypes[T] | CssValue<T> | (string & {})>
         : T extends keyof CssProperties
-        ? ConditionalValue<CssProperties[T]>
+        ? ConditionalValue<CssProperties[T] | (string & {})>
         : ConditionalValue<string | number>"
     `)
   })

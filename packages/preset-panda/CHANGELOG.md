@@ -1,5 +1,49 @@
 # @pandacss/preset-panda
 
+## 0.11.1
+
+### Patch Changes
+
+- Updated dependencies [23b516f4]
+  - @pandacss/types@0.11.1
+
+## 0.11.0
+
+### Patch Changes
+
+- Updated dependencies [5b95caf5]
+  - @pandacss/types@0.11.0
+
+## 0.10.0
+
+### Patch Changes
+
+- Updated dependencies [24e783b3]
+- Updated dependencies [386e5098]
+- Updated dependencies [a669f4d5]
+  - @pandacss/types@0.10.0
+
+## 0.9.0
+
+### Patch Changes
+
+- Updated dependencies [c08de87f]
+  - @pandacss/types@0.9.0
+
+## 0.8.0
+
+### Patch Changes
+
+- Updated dependencies [be0ad578]
+  - @pandacss/types@0.8.0
+
+## 0.7.0
+
+### Patch Changes
+
+- Updated dependencies [a9c189b7]
+  - @pandacss/types@0.7.0
+
 ## 0.6.0
 
 ### Patch Changes

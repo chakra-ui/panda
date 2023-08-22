@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/generator",
-  "version": "0.6.0",
+  "version": "0.11.1",
   "description": "The css generator for css panda",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -30,8 +30,8 @@
     "lil-fp": "1.4.5",
     "outdent": " ^0.8.0",
     "pluralize": "8.0.0",
-    "postcss": "8.4.25",
-    "ts-pattern": "5.0.1"
+    "postcss": "8.4.27",
+    "ts-pattern": "5.0.4"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",

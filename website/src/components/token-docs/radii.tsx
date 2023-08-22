@@ -11,9 +11,14 @@ export const Radii = () => {
             className={square({ size: '8', bg: 'pink.200' })}
             style={{ borderRadius: token.value }}
           />
-          <p className={css({ fontWeight: 'medium' })}>
-            {token.extensions.prop}
-          </p>
+          <div>
+            <p className={css({ fontWeight: 'medium' })}>
+              {token.extensions.prop}
+            </p>
+            <p>
+              {token.value} ({token.extensions.pixelValue})
+            </p>
+          </div>
         </div>
       ))}
     </div>

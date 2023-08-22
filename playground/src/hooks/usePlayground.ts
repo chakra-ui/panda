@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Layout } from '../components/LayoutControl'
-import { SplitterProps } from '@ark-ui/react'
+import { SplitterProps, useToast } from '@ark-ui/react'
 
 export type State = {
   code: string
@@ -16,6 +16,8 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   const [layout, setLayout] = useState<Extract<Layout, 'horizontal' | 'vertical'>>('horizontal')
   const [isPristine, setIsPristine] = useState(true)
   const [isSharing, setIsSharing] = useState(false)
+  const [isResponsive, setIsResponsive] = useState(false)
+  const toast = useToast()
 
   const [panels, setPanels] = useState([
     { id: 'left', size: 50, minSize: 15 },
@@ -37,15 +39,21 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   }
 
   const switchLayout = (layout: Layout) => {
+    if (layout === 'responsive') {
+      setIsResponsive((p) => !p)
+      return
+    }
+
     if (layout === 'preview') {
       setLayout('horizontal')
       setPanelSize('left', 0)
-    } else {
-      setLayout(layout)
-      if (isPreviewMode) {
-        setPanelSize('preview', 50)
-        setPanelSize('left', 50)
-      }
+      return
+    }
+
+    setLayout(layout)
+    if (isPreviewMode) {
+      setPanelSize('preview', 50)
+      setPanelSize('left', 50)
     }
   }
 
@@ -78,7 +86,7 @@ export const config = defineConfig({
       h: 'full',
     },
     body: {
-      bg: { _dark: '#2C2C2C' },
+      bg: { base: 'white', _dark: '#2C2C2C' },
     },
   },
 });    
@@ -86,7 +94,16 @@ export const config = defineConfig({
 `,
         },
   )
-  const share = async () => {
+
+  function copyCurrentURI() {
+    const currentURI = window.location.href
+    navigator.clipboard.writeText(currentURI).then(() => {
+      // Current URI successfully copied to clipboard
+      console.log('Current URI copied to clipboard:', currentURI)
+    })
+  }
+
+  const onShare = async () => {
     setIsSharing(true)
     fetch('/api/share', {
       method: 'POST',
@@ -98,7 +115,23 @@ export const config = defineConfig({
       .then((response) => response.json())
       .then(({ data }) => {
         history.pushState({ id: data.id }, '', data.id)
+        copyCurrentURI()
+        toast.success({
+          title: 'Playground saved.',
+          description: 'Link copied to clipboard.',
+          placement: 'top',
+          duration: 3000,
+        })
         setIsPristine(true)
+        setIsSharing(false)
+      })
+      .catch(() => {
+        toast.error({
+          title: 'Could not save playground.',
+          description: 'Please try again.',
+          placement: 'top',
+          duration: 3000,
+        })
         setIsSharing(false)
       })
   }
@@ -116,7 +149,8 @@ export const config = defineConfig({
       setIsPristine(false)
       setState(newState)
     },
-    share,
+    onShare,
     isSharing,
+    isResponsive,
   }
 }

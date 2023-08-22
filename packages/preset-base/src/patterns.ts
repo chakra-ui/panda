@@ -57,7 +57,7 @@ const stack = definePattern({
 })
 
 const vstack = definePattern({
-  jsx: 'VStack',
+  jsxName: 'VStack',
   properties: {
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'property', value: 'gap' },
@@ -76,7 +76,7 @@ const vstack = definePattern({
 })
 
 const hstack = definePattern({
-  jsx: 'HStack',
+  jsxName: 'HStack',
   properties: {
     justify: { type: 'property', value: 'justifyContent' },
     gap: { type: 'property', value: 'gap' },
@@ -391,6 +391,32 @@ const float = definePattern({
   },
 })
 
+const bleed = definePattern({
+  properties: {
+    inline: { type: 'property', value: 'marginInline' },
+    block: { type: 'property', value: 'marginBlock' },
+  },
+  transform(props) {
+    const { inline = '0', block = '0', ...rest } = props
+    return {
+      '--bleed-x': `spacing.${inline}`,
+      '--bleed-y': `spacing.${block}`,
+      marginInline: 'calc(var(--bleed-x, 0) * -1)',
+      marginBlock: 'calc(var(--bleed-y, 0) * -1)',
+      ...rest,
+    }
+  },
+})
+
+const visuallyHidden = definePattern({
+  transform(props) {
+    return {
+      srOnly: true,
+      ...props,
+    }
+  },
+})
+
 export const patterns = {
   box,
   flex,
@@ -410,4 +436,6 @@ export const patterns = {
   container,
   divider,
   float,
+  bleed,
+  visuallyHidden,
 }

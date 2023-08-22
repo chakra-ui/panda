@@ -1,11 +1,16 @@
+import { useEffect, useMemo, useState } from 'react'
+
 import { createGenerator } from '@pandacss/generator'
 import { createProject } from '@pandacss/parser'
 import presetBase from '@pandacss/preset-base'
 import presetTheme from '@pandacss/preset-panda'
 import * as pandaDefs from '@pandacss/dev'
+import { Config, Preset } from '@pandacss/types'
+import { StaticCssOptions } from '@pandacss/types'
 
+import { merge } from 'merge-anything'
 import { createHooks } from 'hookable'
-import { useMemo } from 'react'
+
 import { getResolvedConfig } from '@/src/lib/resolve-config'
 
 const evalCode = (code: string, scope: Record<string, unknown>) => {
@@ -14,19 +19,68 @@ const evalCode = (code: string, scope: Record<string, unknown>) => {
   return new Function(...scopeKeys, code)(...scopeValues)
 }
 
-export function usePanda(source: string, config: string) {
-  const userConfig = useMemo(() => {
-    const codeTrimmed = config
-      .replaceAll(/export /g, '')
-      .replaceAll(/import\s*{[^}]+}\s*from\s*['"][^'"]+['"];\n*/g, '')
-      .trim()
-      .replace(/;$/, '')
+const evalConfig = (config: string) => {
+  const codeTrimmed = config
+    .replaceAll(/export /g, '')
+    .replaceAll(/import\s*{[^}]+}\s*from\s*['"][^'"]+['"];\n*/g, '')
+    .trim()
+    .replace(/;$/, '')
 
-    try {
-      return evalCode(`return (() => {${codeTrimmed}; return config})()`, pandaDefs)
-    } catch (e) {
-      return null
-    }
+  try {
+    return evalCode(`return (() => {${codeTrimmed}; return config})()`, pandaDefs)
+  } catch (e) {
+    return null
+  }
+}
+
+const playgroundPreset: Preset = {
+  theme: {
+    recipes: {
+      playgroundError: {
+        className: 'playgroundError',
+        base: {
+          p: '2',
+          color: 'red.400',
+          display: 'flex',
+          gap: '2',
+          alignItems: 'center',
+          background: { base: 'white', _dark: '#262626' },
+          borderBottomWidth: '1px',
+          borderBottomColor: { base: 'gray.100', _dark: '#262626' },
+          textStyle: 'sm',
+
+          '& > span': {
+            borderRadius: 'full',
+            display: 'flex',
+            padding: '1',
+            alignItems: 'center',
+            background: {
+              base: 'rgba(235, 94, 66, 0.2)',
+              _dark: 'rgba(235, 94, 66, 0.1)',
+            },
+          },
+
+          '& svg': {
+            h: '16px',
+            w: '16px',
+          },
+        },
+        variants: {
+          style: {
+            empty: {},
+          },
+        },
+      },
+    },
+  },
+}
+
+export function usePanda(source: string, config: string) {
+  const [userConfig, setUserConfig] = useState<Config | null>(evalConfig(config))
+
+  useEffect(() => {
+    const newUserConfig = evalConfig(config)
+    if (newUserConfig) setUserConfig(newUserConfig)
   }, [config])
 
   const generator = useMemo(() => {
@@ -38,8 +92,13 @@ export function usePanda(source: string, config: string) {
       outdir: 'styled-system',
       preflight: true,
       optimize: true,
-      presets: [presetBase, presetTheme, ...(presets ?? [])],
+      presets: [presetBase, presetTheme, playgroundPreset, ...(presets ?? [])],
       ...restConfig,
+      staticCss: merge(restConfig.staticCss, {
+        recipes: { playgroundError: ['*'] } as StaticCssOptions['recipes'],
+      }),
+
+      jsxFramework: restConfig.jsxFramework ? 'react' : undefined,
     })
 
     return createGenerator({
@@ -53,7 +112,12 @@ export function usePanda(source: string, config: string) {
   return useMemo(() => {
     const project = createProject({
       useInMemoryFileSystem: true,
-      parserOptions: generator.parserOptions,
+      parserOptions: {
+        join(...paths) {
+          return paths.join('/')
+        },
+        ...generator.parserOptions,
+      },
       getFiles: () => ['code.tsx'],
       readFile: (file) => (file === 'code.tsx' ? source : ''),
       hooks: generator.hooks,
@@ -66,11 +130,10 @@ export function usePanda(source: string, config: string) {
     const cssFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.css')) ?? [])
 
     const allJsFiles = artifacts.flatMap((a) => a?.files.filter((f) => f.file.endsWith('.mjs')) ?? [])
-    const jsFiles = allJsFiles.filter((f) => f.file.endsWith('.mjs'))
 
-    const previewJs = jsFiles
-      .map((f) => f.code?.replaceAll(/import .*/g, '').replaceAll(/export \* .*/g, ''))
-      .join('\n')
+    const previewJs = allJsFiles
+      .map((f) => f.code?.replaceAll(/import .*/g, '').replaceAll(/export \* from '(.+?)';/g, ''))
+      ?.join('\n')
 
     const presetCss = cssFiles.map((f) => f.code).join('\n')
     const previewCss = ['@layer reset, base, tokens, recipes, utilities;', presetCss, parsedCss].join('\n')
@@ -88,15 +151,14 @@ export function usePanda(source: string, config: string) {
       [{ code: parsedCss, file: 'styles.css' }] as CssFileArtifact[],
     )
 
-    const patternNames = Object.keys(generator.config.patterns ?? {})
     const panda = {
-      parserResult,
-      parsedCss,
       previewCss,
-      previewJs,
-      patternNames,
       artifacts,
+      previewJs,
+      parserResult,
       cssArtifacts,
+
+      parsedCss,
     }
     console.log(panda) // <-- useful for debugging purposes, don't remove
     return panda
@@ -108,3 +170,5 @@ export type CssFileArtifact = {
   code: string | undefined
   dir: string[] | undefined
 }
+
+export type UsePanda = ReturnType<typeof usePanda>

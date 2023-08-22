@@ -7,7 +7,7 @@ description: How to set up Panda in a component library
 
 When creating a component library that uses Panda which can be used in a variety of different projects, you have four options:
 
-1. Ship a Panda preset
+1. Ship a Panda [preset](/docs/customization/presets)
 2. Ship a static CSS file
 3. Use Panda as external package, and ship the src files
 4. Use Panda as external package, and ship the build info file
@@ -80,6 +80,28 @@ tsup src/index.tsx
 
 # generate the static CSS file
 panda cssgen --outfile dist/styles.css
+```
+
+Finally, don't forget to include the [cascade layers](/docs/concepts/cascade-layers) as well in your app code:
+
+**App code**
+
+```tsx filename="src/App.tsx"
+import { Button } from '@acme-org/design-system'
+import './main.css'
+
+export function App() {
+  return <Button>Click me</Button>
+}
+```
+
+**main.css**
+
+```css filename="src/main.css"
+@layer reset, base, tokens, recipes, utilities;
+@import url('@acme-org/design-system/dist/styles.css');
+
+/* Your own styles here */
 ```
 
 This approach comes with a few downsides:

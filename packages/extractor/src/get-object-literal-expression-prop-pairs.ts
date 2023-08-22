@@ -1,4 +1,3 @@
-import { logger } from '@pandacss/logger'
 import type { ObjectLiteralExpression } from 'ts-morph'
 import { Node } from 'ts-morph'
 import { box } from './box'
@@ -57,13 +56,9 @@ export const getObjectLiteralExpressionPropPairs = (
       const initializer = unwrapExpression(init)
       stack.push(initializer)
 
-      logger.debug('prop', { propName, kind: initializer.getKindName() })
-
       const maybeValue = maybeBoxNode(initializer, stack, ctx)
-      logger.debug('prop-value', { propName, hasValue: !!maybeValue })
 
       if (maybeValue) {
-        logger.debug('prop-value', { propName, maybeValue })
         extractedPropValues.push([propName.toString(), maybeValue])
         return
       }
@@ -74,7 +69,6 @@ export const getObjectLiteralExpressionPropPairs = (
       stack.push(initializer)
 
       const maybeObject = maybeBoxNode(initializer, stack, ctx, matchProp)
-      logger.debug('isSpreadAssignment', { extracted: Boolean(maybeObject) })
 
       if (!maybeObject) return
 

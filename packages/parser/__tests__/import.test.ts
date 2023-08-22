@@ -13,6 +13,7 @@ describe('extract imports', () => {
       [
         {
           "alias": "nCss",
+          "importMapValue": true,
           "mod": "@panda/css",
           "name": "css",
         },
