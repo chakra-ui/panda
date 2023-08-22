@@ -165,14 +165,14 @@ You can use these types to get type safety in your components.
 
 ### Style Object
 
-Use the `JSXStyleProps` to get the types of the style object that is compatible with JSX elements.
+Use the `JsxStyleProps` to get the types of the style object that is compatible with JSX elements.
 
 ```jsx {2}
 import { styled } from '../styled-system/jsx'
-import type { JSXStyleProps } from '../styled-system/types'
+import type { JsxStyleProps } from '../styled-system/types'
 
 type ButtonProps = {
-  color?: JSXStyleProps['color']
+  color?: JsxStyleProps['color']
 }
 
 const Button = (props: ButtonProps) => {

@@ -61,7 +61,7 @@ export function generateCssFn(ctx: Context) {
       })
       .join(',')}"
 
-    const classNames = new Map()
+    const classNameByProp = new Map()
     ${
       utility.hasShorthand
         ? outdent`
@@ -69,7 +69,7 @@ export function generateCssFn(ctx: Context) {
     utilities.split(',').forEach((utility) => {
       const [prop, meta] = utility.split(':')
       const [className, ...shorthandList] = meta.split('/')
-      classNames.set(prop, className)
+      classNameByProp.set(prop, className)
       if (shorthandList.length) {
         shorthandList.forEach((shorthand) => {
           shorthands.set(shorthand === '1' ? className : shorthand, prop)
@@ -82,7 +82,7 @@ export function generateCssFn(ctx: Context) {
         : outdent`
     utilities.split(',').forEach((utility) => {
       const [prop, className] = utility.split(':')
-      classNames.set(prop, className)
+      classNameByProp.set(prop, className)
     })
     `
     }
@@ -100,17 +100,23 @@ export function generateCssFn(ctx: Context) {
           utility.hasShorthand
             ? `(prop, value) => {
               const key = resolveShorthand(prop)
-              const propKey = classNames.get(key) || hypenateProperty(key)
+              const propKey = classNameByProp.get(key) || hypenateProperty(key)
               return { className: \`$\{propKey}${separator}$\{withoutSpace(value)}\` }
             }`
-            : `(key, value) => ({ className: \`$\{classNames.get(key) || hypenateProperty(key)}${separator}$\{withoutSpace(value)}\` })`
+            : `(key, value) => ({ className: \`$\{classNameByProp.get(key) || hypenateProperty(key)}${separator}$\{withoutSpace(value)}\` })`
         },
         ${utility.hasShorthand ? 'hasShorthand: true,' : ''}
         resolveShorthand: ${utility.hasShorthand ? 'resolveShorthand' : 'prop => prop'},
       }
     }
 
-    export const css = createCss(context)
+    const cssFn = createCss(context)
+    export const cssCache = new Map()
+    export const css = (styles) => {
+      const classNames = cssFn(styles)
+      cssCache.set(classNames, styles)
+      return classNames
+    }
     css.raw = (styles) => styles
 
     export const { mergeCss, assignCss } = createMergeCss(context)

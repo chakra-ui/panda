@@ -111,3 +111,7 @@ Here's what the first line of the generated CSS looks like:
 
 Adding this line to the top of your CSS file will determine the order in which the layers are applied. This is the most
 exciting feature of CSS cascade layers.
+
+## Customize layers
+
+Panda lets you customize the cascade layers, so your project can coexist with other solutions. Learn more about customizing layers [here](/docs/references/config#layers).

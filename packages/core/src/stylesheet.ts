@@ -33,7 +33,7 @@ export class Stylesheet {
     // wrap css root in @layer directive
     const layer = postcss.atRule({
       name: 'layer',
-      params: 'base',
+      params: this.context.layers.base,
       nodes: [css],
     })
 

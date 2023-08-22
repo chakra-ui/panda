@@ -162,6 +162,7 @@ describe('generate property types', () => {
       	transitionDuration: Tokens[\\"durations\\"];
       	transition: \\"all\\" | \\"common\\" | \\"background\\" | \\"colors\\" | \\"opacity\\" | \\"shadow\\" | \\"transform\\";
       	animation: Tokens[\\"animations\\"];
+      	animationName: Tokens[\\"animationName\\"];
       	animationDelay: Tokens[\\"durations\\"];
       	scale: \\"auto\\" | CssProperties[\\"scale\\"];
       	translate: \\"auto\\" | CssProperties[\\"translate\\"];

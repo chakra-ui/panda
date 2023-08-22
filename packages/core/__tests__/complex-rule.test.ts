@@ -5,6 +5,7 @@ import { describe, expect, test } from 'vitest'
 import { Conditions, Utility } from '../src'
 import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
 import type { StylesheetContext } from '../src/types'
+import { defaultLayers } from './fixture'
 
 const conditions = new Conditions({
   breakpoints: mocks.breakpoints,
@@ -29,6 +30,7 @@ export const createContext = (): StylesheetContext => ({
   conditions: conditions,
   utility: utility,
   helpers: { map: () => '' },
+  layers: defaultLayers,
 })
 
 function css(obj: ProcessOptions) {

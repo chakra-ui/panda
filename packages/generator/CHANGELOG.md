@@ -1,5 +1,29 @@
 # @pandacss/generator
 
+## 0.11.1
+
+### Patch Changes
+
+- c07e1beb: Make the `cx` smarter by merging and deduplicating the styles passed in
+
+  Example:
+
+  ```tsx
+  <h1 className={cx(css({ mx: '3', paddingTop: '4' }), css({ mx: '10', pt: '6' }))}>Will result in "mx_10 pt_6"</h1>
+  ```
+
+- dfb3f85f: Add missing svg props types
+- 23b516f4: Make layers customizable
+- Updated dependencies [c07e1beb]
+- Updated dependencies [dfb3f85f]
+- Updated dependencies [23b516f4]
+  - @pandacss/shared@0.11.1
+  - @pandacss/is-valid-prop@0.11.1
+  - @pandacss/types@0.11.1
+  - @pandacss/core@0.11.1
+  - @pandacss/token-dictionary@0.11.1
+  - @pandacss/logger@0.11.1
+
 ## 0.11.0
 
 ### Patch Changes

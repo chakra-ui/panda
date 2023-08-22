@@ -10,6 +10,10 @@ import type { UtilityConfig } from './utility'
 
 export type { TSConfig }
 
+export type CascadeLayer = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
+
+export type CascadeLayers = Record<CascadeLayer, string>
+
 type StudioOptions = {
   /**
    * Used to customize the design system studio
@@ -226,6 +230,11 @@ type CodegenOptions = {
    * @default 'true'
    */
   shorthands?: boolean
+  /**
+   * Layer mappings used in the generated css.
+   * @default 'true'
+   */
+  layers?: Partial<CascadeLayers>
 }
 
 type PresetOptions = {

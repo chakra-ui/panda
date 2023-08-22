@@ -1,5 +1,11 @@
 # @pandacss/is-valid-prop
 
+## 0.11.1
+
+### Patch Changes
+
+- dfb3f85f: Add missing svg props types
+
 ## 0.11.0
 
 ## 0.10.0

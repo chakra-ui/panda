@@ -13,7 +13,7 @@ export function generateSolidJsxFactory(ctx: Context) {
     ${ctx.file.import('allCssProperties', './is-valid-prop')}
 
     function styledFn(element, configOrCva = {}) {
-      const cvaFn = configOrCva.__cva__ ? configOrCva : cva(configOrCva)
+      const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
 
       return function ${componentName}(props) {
         const mergedProps = mergeProps({ as: element }, props)

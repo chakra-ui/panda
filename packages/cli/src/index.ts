@@ -88,3 +88,16 @@ export function defineLayerStyles(definition: CompositionStyles['layerStyles']) 
 export function defineStyles(definition: SystemStyleObject) {
   return definition
 }
+
+export type {
+  Config,
+  SlotRecipeConfig,
+  SlotRecipeVariantRecord,
+  SystemStyleObject,
+  Preset,
+  CssKeyframes,
+  GlobalStyleObject,
+  Tokens,
+  SemanticTokens,
+  CompositionStyles,
+}
