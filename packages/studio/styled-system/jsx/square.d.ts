@@ -2,8 +2,9 @@
 import type { FunctionComponent } from 'react'
 import type { SquareProperties } from '../patterns/square'
 import type { HTMLPandaProps } from '../types/jsx'
+import type { DistributiveOmit } from '../types/system-types'
 
-export type SquareProps = SquareProperties & Omit<HTMLPandaProps<'div'>, keyof SquareProperties >
+export type SquareProps = SquareProperties & DistributiveOmit<HTMLPandaProps<'div'>, keyof SquareProperties >
 
 
 export declare const Square: FunctionComponent<SquareProps>

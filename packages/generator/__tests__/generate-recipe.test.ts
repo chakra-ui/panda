@@ -50,6 +50,7 @@ describe('generate recipes', () => {
         {
           "dts": "import type { ConditionalValue } from '../types'
       import type { Pretty } from '../types/helpers'
+      import type { DistributiveOmit } from '../types/system-types'
 
       type TextStyleVariant = {
         size: \\"h1\\" | \\"h2\\"
@@ -69,7 +70,7 @@ describe('generate recipes', () => {
         raw: (props?: TextStyleVariantProps) => TextStyleVariantProps
         variantMap: TextStyleVariantMap
         variantKeys: Array<keyof TextStyleVariant>
-        splitVariantProps<Props extends TextStyleVariantProps>(props: Props): [TextStyleVariantProps, Pretty<Omit<Props, keyof TextStyleVariantProps>>]
+        splitVariantProps<Props extends TextStyleVariantProps>(props: Props): [TextStyleVariantProps, Pretty<DistributiveOmit<Props, keyof TextStyleVariantProps>>]
       }
 
 
@@ -100,6 +101,7 @@ describe('generate recipes', () => {
         {
           "dts": "import type { ConditionalValue } from '../types'
       import type { Pretty } from '../types/helpers'
+      import type { DistributiveOmit } from '../types/system-types'
 
       type TooltipStyleVariant = {
         
@@ -119,7 +121,7 @@ describe('generate recipes', () => {
         raw: (props?: TooltipStyleVariantProps) => TooltipStyleVariantProps
         variantMap: TooltipStyleVariantMap
         variantKeys: Array<keyof TooltipStyleVariant>
-        splitVariantProps<Props extends TooltipStyleVariantProps>(props: Props): [TooltipStyleVariantProps, Pretty<Omit<Props, keyof TooltipStyleVariantProps>>]
+        splitVariantProps<Props extends TooltipStyleVariantProps>(props: Props): [TooltipStyleVariantProps, Pretty<DistributiveOmit<Props, keyof TooltipStyleVariantProps>>]
       }
 
 
@@ -145,6 +147,7 @@ describe('generate recipes', () => {
         {
           "dts": "import type { ConditionalValue } from '../types'
       import type { Pretty } from '../types/helpers'
+      import type { DistributiveOmit } from '../types/system-types'
 
       type ButtonStyleVariant = {
         size: \\"sm\\" | \\"md\\"
@@ -165,7 +168,7 @@ describe('generate recipes', () => {
         raw: (props?: ButtonStyleVariantProps) => ButtonStyleVariantProps
         variantMap: ButtonStyleVariantMap
         variantKeys: Array<keyof ButtonStyleVariant>
-        splitVariantProps<Props extends ButtonStyleVariantProps>(props: Props): [ButtonStyleVariantProps, Pretty<Omit<Props, keyof ButtonStyleVariantProps>>]
+        splitVariantProps<Props extends ButtonStyleVariantProps>(props: Props): [ButtonStyleVariantProps, Pretty<DistributiveOmit<Props, keyof ButtonStyleVariantProps>>]
       }
 
 

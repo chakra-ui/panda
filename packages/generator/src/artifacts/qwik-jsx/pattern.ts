@@ -36,20 +36,17 @@ export function generateQwikJsxPattern(ctx: Context) {
       `,
 
       dts: outdent`
-      import type { FunctionComponent } from '@builder.io/qwik'
+      import type { Component } from '@builder.io/qwik'
       import type { ${upperName}Properties } from '../patterns/${dashName}'
       import type { ${typeName} } from '../types/jsx'
-  
-      type Assign<T, U> = {
-        [K in keyof T]?: K extends keyof T ? (K extends keyof U ? T[K] & U[K] : T[K]) : never
-      } & U
+      import type { Assign, DistributiveOmit } from '../types/system-types'
 
-      export type ${upperName}Props = Assign<${typeName}<'${jsxElement}'>, Omit<${upperName}Properties, ${
+      export type ${upperName}Props = Assign<${typeName}<'${jsxElement}'>, DistributiveOmit<${upperName}Properties, ${
         blocklistType || '""'
       }>>
   
       ${description ? `/** ${description} */` : ''}
-      export declare const ${jsxName}: FunctionComponent<${upperName}Props>
+      export declare const ${jsxName}: Component<${upperName}Props>
       `,
     }
   })
