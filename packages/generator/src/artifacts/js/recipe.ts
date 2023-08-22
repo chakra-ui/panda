@@ -128,6 +128,7 @@ export function generateRecipes(ctx: Context) {
         dts: outdent`
         import type { ConditionalValue } from '../types'
         import type { Pretty } from '../types/helpers'
+        import type { DistributiveOmit } from '../types/system-types'
 
         type ${upperName}Variant = {
           ${Object.keys(variantKeyMap)
@@ -157,7 +158,7 @@ export function generateRecipes(ctx: Context) {
           raw: (props?: ${upperName}VariantProps) => ${upperName}VariantProps
           variantMap: ${upperName}VariantMap
           variantKeys: Array<keyof ${upperName}Variant>
-          splitVariantProps<Props extends ${upperName}VariantProps>(props: Props): [${upperName}VariantProps, Pretty<Omit<Props, keyof ${upperName}VariantProps>>]
+          splitVariantProps<Props extends ${upperName}VariantProps>(props: Props): [${upperName}VariantProps, Pretty<DistributiveOmit<Props, keyof ${upperName}VariantProps>>]
         }
 
         ${description ? `/** ${description} */` : ''}

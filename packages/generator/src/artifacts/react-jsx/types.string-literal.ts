@@ -11,10 +11,11 @@ export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
 import type { ComponentPropsWithoutRef, ElementType, ElementRef, Ref } from 'react'
+import type { DistributiveOmit } from '../types/system-types'
 
 type Dict = Record<string, unknown>
 
-type ComponentProps<T extends ElementType> = Omit<ComponentPropsWithoutRef<T>, 'ref'> & {
+type ComponentProps<T extends ElementType> = DistributiveOmit<ComponentPropsWithoutRef<T>, 'ref'> & {
   ref?: Ref<ElementRef<T>>
 }
 

@@ -10,13 +10,13 @@ import { ${upperName} } from '../types/jsx'
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
-import type { FunctionComponent, QwikIntrinsicElements } from '@builder.io/qwik'
+import type { Component, QwikIntrinsicElements } from '@builder.io/qwik'
 
-type ElementType = keyof QwikIntrinsicElements | FunctionComponent<any>
+type ElementType = keyof QwikIntrinsicElements | Component<any>
 
 type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsicElements
   ? QwikIntrinsicElements[T]
-  : T extends FunctionComponent<infer P>
+  : T extends Component<infer P>
   ? P
   : never
 

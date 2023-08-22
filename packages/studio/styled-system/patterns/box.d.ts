@@ -1,7 +1,8 @@
 /* eslint-disable */
 import type { SystemStyleObject, ConditionalValue } from '../types'
-import type { PropertyValue } from '../types/prop-type'
 import type { Properties } from '../types/csstype'
+import type { PropertyValue } from '../types/prop-type'
+import type { DistributiveOmit } from '../types/system-types'
 import type { Tokens } from '../tokens'
 
 export type BoxProperties = {
@@ -9,11 +10,11 @@ export type BoxProperties = {
 }
 
 
-type BoxOptions = BoxProperties & Omit<SystemStyleObject, keyof BoxProperties >
+type BoxStyles = BoxProperties & DistributiveOmit<SystemStyleObject, keyof BoxProperties >
 
 interface BoxPatternFn {
-  (options?: BoxOptions): string
-  raw: (options: BoxOptions) => BoxOptions
+  (styles?: BoxStyles): string
+  raw: (styles: BoxStyles) => BoxStyles
 }
 
 

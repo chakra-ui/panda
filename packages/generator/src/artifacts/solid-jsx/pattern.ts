@@ -40,8 +40,9 @@ export function generateSolidJsxPattern(ctx: Context) {
     import { Component } from 'solid-js'
     import { ${upperName}Properties } from '../patterns/${dashName}'
     import { ${typeName} } from '../types/jsx'
+    import { DistributiveOmit } from '../types/system-types'
 
-    export type ${upperName}Props = ${upperName}Properties & Omit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}>
+    export type ${upperName}Props = ${upperName}Properties & DistributiveOmit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}>
 
     ${description ? `/** ${description} */` : ''}
     export declare const ${jsxName}: Component<${upperName}Props>
