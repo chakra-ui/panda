@@ -54,6 +54,22 @@ Panda allows you apply the responsive condition directly to a style property, re
 </span>
 ```
 
+### The Array syntax
+
+Panda also accepts arrays as values for responsive styles. Pass the corresponding value for each breakpoint in the array. Using our previous code as an example:
+
+```jsx
+<span
+  className={css({
+    fontWeight: ['medium', undefined, undefined, 'bold']
+  })}
+>
+  Text
+</span>
+```
+
+> We're leaving the corresponding values of the unused breakpoints `sm` and `md` as undefined.
+
 ### Targeting a breakpoint range
 
 By default, styles assigned to a specific breakpoint will be effective at that breakpoint and will persist as applied styles at larger breakpoints.

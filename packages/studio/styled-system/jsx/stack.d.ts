@@ -2,8 +2,9 @@
 import type { FunctionComponent } from 'react'
 import type { StackProperties } from '../patterns/stack'
 import type { HTMLPandaProps } from '../types/jsx'
+import type { DistributiveOmit } from '../types/system-types'
 
-export type StackProps = StackProperties & Omit<HTMLPandaProps<'div'>, keyof StackProperties >
+export type StackProps = StackProperties & DistributiveOmit<HTMLPandaProps<'div'>, keyof StackProperties >
 
 
 export declare const Stack: FunctionComponent<StackProps>
