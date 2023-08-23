@@ -332,6 +332,47 @@ function App() {
 }
 ```
 
+### Visually Hidden
+
+The Visually Hidden pattern is used to hide an element visually, but keep it accessible to screen readers.
+
+```tsx
+import { visuallyHidden } from '../styled-system/patterns'
+
+export function Checkbox() {
+  return (
+    <label>
+      <input type="checkbox" class={visuallyHidden()}>
+        I'm hidden
+      </input>
+      <span>Checkbox</span>
+    </label>
+  )
+}
+```
+
+### Bleed
+
+The Bleed pattern is used to create a full width element by negating the padding applied to its parent container.
+
+The `bleed` function accepts the following properties:
+
+- `inline`: The amount of padding to negate on the horizontal axis. Should match the parent's padding.
+- `block`: The amount of padding to negate on the vertical axis. Should match the parent's padding.
+
+```tsx
+import { css } from '../styled-system/css'
+import { bleed } from '../styled-system/patterns'
+
+export function Page() {
+  return (
+    <div class={css({ px: '6' })}>
+      <div class={bleed({ inline: '6' })}>Welcome</div>
+    </div>
+  )
+}
+```
+
 ## Usage with JSX
 
 To use the pattern in JSX, you need to set the `jsxFramework` property in the config. When this is set, Panda will emit
