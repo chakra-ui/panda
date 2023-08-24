@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.12.0] - 2023-08-24
+
+## Fixed
+
+- Fix issue where styled factory does not respect union prop types like `type Props = AProps | BProps`
+- Fix failed styled component for solid-js when using recipe
+
+## Added
+
+- Add interactive flag to `panda init` command. This flag allows you to run the init command in interactive mode.
+
+```sh
+panda init -i
+```
+
+![panda init interactive mode](https://github.com/chakra-ui/panda/assets/30869823/0ae28a54-bfce-44dc-a314-c0f795c1da3b)
+
+- Add `defineUtility` method. This method allows you to define custom utilities in your config.
+
+```ts
+import { defineUtility, defineConfig } from '@pandacss/dev'
+
+const appearance = defineUtility({
+  className: 'appearance',
+  transform(value) {
+    return { appearance: value, WebkitAppearance: value }
+  },
+})
+
+export default defineConfig({
+  utilities: {
+    appearance,
+  },
+})
+```
+
+- Add `animationName` utility. This utility connects to your keyframes.
+
 See the [Changesets](./.changeset) for the latest changes.
 
 ## [0.11.1] - 2023-08-16
