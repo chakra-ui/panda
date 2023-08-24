@@ -295,17 +295,30 @@ export function createParser(options: ParserOptions) {
       if (result.kind === 'function') {
         match(name)
           .when(css.match, (name: 'css' | 'cva' | 'sva') => {
+            // css({ ... }), cva({ ... }), sva({ ... })
             result.queryList.forEach((query) => {
-              //
               if (query.kind === 'call-expression') {
-                collector.set(name, {
-                  name,
-                  box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
-                  data: combineResult(unbox(query.box.value[0])),
-                })
+                // css({ ... }, { ... })
+                if (query.box.value.length > 1) {
+                  collector.set(name, {
+                    name,
+                    box: query.box,
+                    data: query.box.value.reduce(
+                      (acc, value) => [...acc, ...combineResult(unbox(value))],
+                      [] as Array<Unboxed['raw']>,
+                    ),
+                  })
+                } else {
+                  // css({ ... })
+                  collector.set(name, {
+                    name,
+                    box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
+                    data: combineResult(unbox(query.box.value[0])),
+                  })
+                }
                 //
               } else if (query.kind === 'tagged-template') {
-                //
+                // css` ... `
                 const obj = astish(query.box.value as string)
                 collector.set(name, {
                   name,

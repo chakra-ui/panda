@@ -1,10 +1,10 @@
-import type { BoxNodeMap, BoxNodeLiteral, Unboxed } from '@pandacss/extractor'
+import type { BoxNodeMap, BoxNodeLiteral, Unboxed, BoxNodeArray } from '@pandacss/extractor'
 
 export type ResultItem = {
   name?: string
   data: Array<Unboxed['raw']>
   type?: 'object' | 'cva' | 'sva' | 'pattern' | 'recipe' | 'jsx-factory' | 'jsx-pattern' | 'jsx-recipe' | 'jsx'
-  box: BoxNodeMap | BoxNodeLiteral
+  box: BoxNodeMap | BoxNodeLiteral | BoxNodeArray
 }
 
 export type ParserResultType = {
