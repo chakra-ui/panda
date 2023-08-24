@@ -1,5 +1,19 @@
 # @pandacss/generator
 
+## 0.12.0
+
+### Patch Changes
+
+- a41515de: Fix issue where styled factory does not respect union prop types like `type Props = AProps | BProps`
+- bf2ff391: Add `animationName` utility
+- ad1518b8: fix failed styled component for solid-js when using recipe
+  - @pandacss/core@0.12.0
+  - @pandacss/token-dictionary@0.12.0
+  - @pandacss/is-valid-prop@0.12.0
+  - @pandacss/logger@0.12.0
+  - @pandacss/shared@0.12.0
+  - @pandacss/types@0.12.0
+
 ## 0.11.1
 
 ### Patch Changes

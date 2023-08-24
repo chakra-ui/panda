@@ -1,5 +1,28 @@
 # @pandacss/dev
 
+## 0.12.0
+
+### Minor Changes
+
+- 75ba44de: Add the CLI interactive mode
+
+### Patch Changes
+
+- 7a041b16: Add `defineUtility` method
+- 4c8c1715: Export types for all `define` helper functions
+- Updated dependencies [4c8c1715]
+- Updated dependencies [bf2ff391]
+  - @pandacss/studio@0.12.0
+  - @pandacss/node@0.12.0
+  - @pandacss/config@0.12.0
+  - @pandacss/postcss@0.12.0
+  - @pandacss/token-dictionary@0.12.0
+  - @pandacss/error@0.12.0
+  - @pandacss/logger@0.12.0
+  - @pandacss/preset-panda@0.12.0
+  - @pandacss/shared@0.12.0
+  - @pandacss/types@0.12.0
+
 ## 0.11.1
 
 ### Patch Changes

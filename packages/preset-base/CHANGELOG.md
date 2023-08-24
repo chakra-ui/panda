@@ -1,5 +1,12 @@
 # @pandacss/preset-base
 
+## 0.12.0
+
+### Patch Changes
+
+- bf2ff391: Add `animationName` utility
+  - @pandacss/types@0.12.0
+
 ## 0.11.1
 
 ### Patch Changes
