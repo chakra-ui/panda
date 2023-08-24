@@ -17,6 +17,10 @@ Initialize Panda in a project. This process will:
 
 ### Flags
 
+#### `--interactive, -i`
+
+Whether to run the interactive mode
+
 #### `--postcss, -p`
 
 Whether to emit a [postcss](https://postcss.org/) config file
