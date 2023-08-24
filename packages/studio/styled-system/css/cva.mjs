@@ -4,7 +4,7 @@ import { css, mergeCss } from './css.mjs'
 export function cva(config) {
   const { base = {}, variants = {}, defaultVariants = {}, compoundVariants = [] } = config
 
-  function resolve(props) {
+  function resolve(props = {}) {
     const computedVariants = { ...defaultVariants, ...compact(props) }
     let variantCss = { ...base }
     for (const [key, value] of Object.entries(computedVariants)) {
@@ -32,7 +32,7 @@ export function cva(config) {
     __cva__: true,
     variantMap,
     variantKeys,
-    resolve,
+    raw: resolve,
     config,
     splitVariantProps,
   })

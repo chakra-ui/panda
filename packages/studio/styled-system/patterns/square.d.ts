@@ -14,7 +14,7 @@ type SquareStyles = SquareProperties & DistributiveOmit<SystemStyleObject, keyof
 
 interface SquarePatternFn {
   (styles?: SquareStyles): string
-  raw: (styles: SquareStyles) => SquareStyles
+  raw: (styles: SquareStyles) => SystemStyleObject
 }
 
 

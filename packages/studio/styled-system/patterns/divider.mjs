@@ -19,4 +19,4 @@ const dividerConfig = {
 export const getDividerStyle = (styles = {}) => dividerConfig.transform(styles, { map: mapObject })
 
 export const divider = (styles) => css(getDividerStyle(styles))
-divider.raw = (styles) => styles
+divider.raw = getDividerStyle

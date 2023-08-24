@@ -20,7 +20,7 @@ type FlexStyles = FlexProperties & DistributiveOmit<SystemStyleObject, keyof Fle
 
 interface FlexPatternFn {
   (styles?: FlexStyles): string
-  raw: (styles: FlexStyles) => FlexStyles
+  raw: (styles: FlexStyles) => SystemStyleObject
 }
 
 

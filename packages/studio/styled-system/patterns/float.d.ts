@@ -17,7 +17,7 @@ type FloatStyles = FloatProperties & DistributiveOmit<SystemStyleObject, keyof F
 
 interface FloatPatternFn {
   (styles?: FloatStyles): string
-  raw: (styles: FloatStyles) => FloatStyles
+  raw: (styles: FloatStyles) => SystemStyleObject
 }
 
 

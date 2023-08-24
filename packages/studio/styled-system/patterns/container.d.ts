@@ -14,7 +14,7 @@ type ContainerStyles = ContainerProperties & DistributiveOmit<SystemStyleObject,
 
 interface ContainerPatternFn {
   (styles?: ContainerStyles): string
-  raw: (styles: ContainerStyles) => ContainerStyles
+  raw: (styles: ContainerStyles) => SystemStyleObject
 }
 
 

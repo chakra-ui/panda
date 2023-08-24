@@ -111,13 +111,7 @@ export function generateCssFn(ctx: Context) {
     }
 
     const cssFn = createCss(context)
-    export const cssCache = new Map()
-    export const css = (...styles) => {
-      styles.forEach((styles) => {
-        cssCache.set(cssFn(styles), styles)
-      })
-      return cssFn(mergeCss(...styles))
-    }
+    export const css = (...styles) => cssFn(mergeCss(...styles))
     css.raw = (styles) => styles
 
     export const { mergeCss, assignCss } = createMergeCss(context)

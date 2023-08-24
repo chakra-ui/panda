@@ -1,18 +1,30 @@
 'use client'
 import * as React from 'react'
 import { flex } from '../../styled-system/patterns'
-import { RecipeVariantProps, css, cx } from '../../styled-system/css'
+import { RecipeVariantProps, css, cva } from '../../styled-system/css'
 import { SystemStyleObject } from '../../styled-system/types'
-import { thingy } from '../../styled-system/recipes'
 
 export function Button(props: React.ComponentPropsWithoutRef<'button'> & { css?: SystemStyleObject }) {
-  const rootStyle = cx(flex({ direction: 'row', _hover: { color: 'blue.400' }, border: '1px solid' }), props.className)
+  const flexProps = flex.raw({ direction: 'row', _hover: { color: 'blue.400' }, border: '1px solid' })
+  const rootStyle = css(flexProps, props.css ?? {})
   return <button className={rootStyle}>{props.children}</button>
 }
 
+const thing = cva({
+  base: { display: 'flex', fontSize: 'lg' },
+  variants: {
+    variant: {
+      primary: { color: 'white', backgroundColor: 'blue.500' },
+    },
+  },
+})
+
 export const Thingy = (
-  props: React.ComponentPropsWithoutRef<'button'> & { recipeProps?: RecipeVariantProps<typeof thingy> },
+  props: React.ComponentPropsWithoutRef<'button'> & {
+    css?: SystemStyleObject
+    recipeProps?: RecipeVariantProps<typeof thing>
+  },
 ) => {
-  const rootStyle = cx(thingy(), css({ _hover: { color: 'blue.400' } }), props.className)
+  const rootStyle = css(thing.raw({ variant: 'primary' }), css.raw({ _hover: { color: 'blue.400' } }), props.css ?? {})
   return <button className={rootStyle}>{props.children}</button>
 }

@@ -21,7 +21,7 @@ test('should generate pattern', () => {
 
     interface BoxPatternFn {
       (styles?: BoxStyles): string
-      raw: (styles: BoxStyles) => BoxStyles
+      raw: (styles: BoxStyles) => SystemStyleObject
     }
 
 
@@ -38,7 +38,7 @@ test('should generate pattern', () => {
     export const getBoxStyle = (styles = {}) => boxConfig.transform(styles, { map: mapObject })
 
     export const box = (styles) => css(getBoxStyle(styles))
-    box.raw = (styles) => styles",
+    box.raw = getBoxStyle",
         "name": "box",
       },
       {
@@ -63,7 +63,7 @@ test('should generate pattern', () => {
 
     interface FlexPatternFn {
       (styles?: FlexStyles): string
-      raw: (styles: FlexStyles) => FlexStyles
+      raw: (styles: FlexStyles) => SystemStyleObject
     }
 
 
@@ -91,7 +91,7 @@ test('should generate pattern', () => {
     export const getFlexStyle = (styles = {}) => flexConfig.transform(styles, { map: mapObject })
 
     export const flex = (styles) => css(getFlexStyle(styles))
-    flex.raw = (styles) => styles",
+    flex.raw = getFlexStyle",
         "name": "flex",
       },
       {
@@ -113,7 +113,7 @@ test('should generate pattern', () => {
 
     interface StackPatternFn {
       (styles?: StackStyles): string
-      raw: (styles: StackStyles) => StackStyles
+      raw: (styles: StackStyles) => SystemStyleObject
     }
 
 
@@ -138,7 +138,7 @@ test('should generate pattern', () => {
     export const getStackStyle = (styles = {}) => stackConfig.transform(styles, { map: mapObject })
 
     export const stack = (styles) => css(getStackStyle(styles))
-    stack.raw = (styles) => styles",
+    stack.raw = getStackStyle",
         "name": "stack",
       },
       {
@@ -158,7 +158,7 @@ test('should generate pattern', () => {
 
     interface VstackPatternFn {
       (styles?: VstackStyles): string
-      raw: (styles: VstackStyles) => VstackStyles
+      raw: (styles: VstackStyles) => SystemStyleObject
     }
 
 
@@ -183,7 +183,7 @@ test('should generate pattern', () => {
     export const getVstackStyle = (styles = {}) => vstackConfig.transform(styles, { map: mapObject })
 
     export const vstack = (styles) => css(getVstackStyle(styles))
-    vstack.raw = (styles) => styles",
+    vstack.raw = getVstackStyle",
         "name": "vstack",
       },
       {
@@ -203,7 +203,7 @@ test('should generate pattern', () => {
 
     interface HstackPatternFn {
       (styles?: HstackStyles): string
-      raw: (styles: HstackStyles) => HstackStyles
+      raw: (styles: HstackStyles) => SystemStyleObject
     }
 
 
@@ -228,7 +228,7 @@ test('should generate pattern', () => {
     export const getHstackStyle = (styles = {}) => hstackConfig.transform(styles, { map: mapObject })
 
     export const hstack = (styles) => css(getHstackStyle(styles))
-    hstack.raw = (styles) => styles",
+    hstack.raw = getHstackStyle",
         "name": "hstack",
       },
       {
@@ -247,7 +247,7 @@ test('should generate pattern', () => {
 
     interface SpacerPatternFn {
       (styles?: SpacerStyles): string
-      raw: (styles: SpacerStyles) => SpacerStyles
+      raw: (styles: SpacerStyles) => SystemStyleObject
     }
 
 
@@ -270,7 +270,7 @@ test('should generate pattern', () => {
     export const getSpacerStyle = (styles = {}) => spacerConfig.transform(styles, { map: mapObject })
 
     export const spacer = (styles) => css(getSpacerStyle(styles))
-    spacer.raw = (styles) => styles",
+    spacer.raw = getSpacerStyle",
         "name": "spacer",
       },
       {
@@ -289,7 +289,7 @@ test('should generate pattern', () => {
 
     interface SquarePatternFn {
       (styles?: SquareStyles): string
-      raw: (styles: SquareStyles) => SquareStyles
+      raw: (styles: SquareStyles) => SystemStyleObject
     }
 
 
@@ -315,7 +315,7 @@ test('should generate pattern', () => {
     export const getSquareStyle = (styles = {}) => squareConfig.transform(styles, { map: mapObject })
 
     export const square = (styles) => css(getSquareStyle(styles))
-    square.raw = (styles) => styles",
+    square.raw = getSquareStyle",
         "name": "square",
       },
       {
@@ -334,7 +334,7 @@ test('should generate pattern', () => {
 
     interface CirclePatternFn {
       (styles?: CircleStyles): string
-      raw: (styles: CircleStyles) => CircleStyles
+      raw: (styles: CircleStyles) => SystemStyleObject
     }
 
 
@@ -361,7 +361,7 @@ test('should generate pattern', () => {
     export const getCircleStyle = (styles = {}) => circleConfig.transform(styles, { map: mapObject })
 
     export const circle = (styles) => css(getCircleStyle(styles))
-    circle.raw = (styles) => styles",
+    circle.raw = getCircleStyle",
         "name": "circle",
       },
       {
@@ -380,7 +380,7 @@ test('should generate pattern', () => {
 
     interface CenterPatternFn {
       (styles?: CenterStyles): string
-      raw: (styles: CenterStyles) => CenterStyles
+      raw: (styles: CenterStyles) => SystemStyleObject
     }
 
 
@@ -403,7 +403,7 @@ test('should generate pattern', () => {
     export const getCenterStyle = (styles = {}) => centerConfig.transform(styles, { map: mapObject })
 
     export const center = (styles) => css(getCenterStyle(styles))
-    center.raw = (styles) => styles",
+    center.raw = getCenterStyle",
         "name": "center",
       },
       {
@@ -422,7 +422,7 @@ test('should generate pattern', () => {
 
     interface LinkBoxPatternFn {
       (styles?: LinkBoxStyles): string
-      raw: (styles: LinkBoxStyles) => LinkBoxStyles
+      raw: (styles: LinkBoxStyles) => SystemStyleObject
     }
 
 
@@ -446,7 +446,7 @@ test('should generate pattern', () => {
     export const getLinkBoxStyle = (styles = {}) => linkBoxConfig.transform(styles, { map: mapObject })
 
     export const linkBox = (styles) => css(getLinkBoxStyle(styles))
-    linkBox.raw = (styles) => styles",
+    linkBox.raw = getLinkBoxStyle",
         "name": "link-box",
       },
       {
@@ -465,7 +465,7 @@ test('should generate pattern', () => {
 
     interface LinkOverlayPatternFn {
       (styles?: LinkOverlayStyles): string
-      raw: (styles: LinkOverlayStyles) => LinkOverlayStyles
+      raw: (styles: LinkOverlayStyles) => SystemStyleObject
     }
 
 
@@ -494,7 +494,7 @@ test('should generate pattern', () => {
     export const getLinkOverlayStyle = (styles = {}) => linkOverlayConfig.transform(styles, { map: mapObject })
 
     export const linkOverlay = (styles) => css(getLinkOverlayStyle(styles))
-    linkOverlay.raw = (styles) => styles",
+    linkOverlay.raw = getLinkOverlayStyle",
         "name": "link-overlay",
       },
       {
@@ -513,7 +513,7 @@ test('should generate pattern', () => {
 
     interface AspectRatioPatternFn {
       (styles?: AspectRatioStyles): string
-      raw: (styles: AspectRatioStyles) => AspectRatioStyles
+      raw: (styles: AspectRatioStyles) => SystemStyleObject
     }
 
 
@@ -553,7 +553,7 @@ test('should generate pattern', () => {
     export const getAspectRatioStyle = (styles = {}) => aspectRatioConfig.transform(styles, { map: mapObject })
 
     export const aspectRatio = (styles) => css(getAspectRatioStyle(styles))
-    aspectRatio.raw = (styles) => styles",
+    aspectRatio.raw = getAspectRatioStyle",
         "name": "aspect-ratio",
       },
       {
@@ -576,7 +576,7 @@ test('should generate pattern', () => {
 
     interface GridPatternFn {
       (styles?: GridStyles): string
-      raw: (styles: GridStyles) => GridStyles
+      raw: (styles: GridStyles) => SystemStyleObject
     }
 
 
@@ -601,7 +601,7 @@ test('should generate pattern', () => {
     export const getGridStyle = (styles = {}) => gridConfig.transform(styles, { map: mapObject })
 
     export const grid = (styles) => css(getGridStyle(styles))
-    grid.raw = (styles) => styles",
+    grid.raw = getGridStyle",
         "name": "grid",
       },
       {
@@ -625,7 +625,7 @@ test('should generate pattern', () => {
 
     interface GridItemPatternFn {
       (styles?: GridItemStyles): string
-      raw: (styles: GridItemStyles) => GridItemStyles
+      raw: (styles: GridItemStyles) => SystemStyleObject
     }
 
 
@@ -652,7 +652,7 @@ test('should generate pattern', () => {
     export const getGridItemStyle = (styles = {}) => gridItemConfig.transform(styles, { map: mapObject })
 
     export const gridItem = (styles) => css(getGridItemStyle(styles))
-    gridItem.raw = (styles) => styles",
+    gridItem.raw = getGridItemStyle",
         "name": "grid-item",
       },
       {
@@ -675,7 +675,7 @@ test('should generate pattern', () => {
 
     interface WrapPatternFn {
       (styles?: WrapStyles): string
-      raw: (styles: WrapStyles) => WrapStyles
+      raw: (styles: WrapStyles) => SystemStyleObject
     }
 
 
@@ -702,7 +702,7 @@ test('should generate pattern', () => {
     export const getWrapStyle = (styles = {}) => wrapConfig.transform(styles, { map: mapObject })
 
     export const wrap = (styles) => css(getWrapStyle(styles))
-    wrap.raw = (styles) => styles",
+    wrap.raw = getWrapStyle",
         "name": "wrap",
       },
       {
@@ -721,7 +721,7 @@ test('should generate pattern', () => {
 
     interface ContainerPatternFn {
       (styles?: ContainerStyles): string
-      raw: (styles: ContainerStyles) => ContainerStyles
+      raw: (styles: ContainerStyles) => SystemStyleObject
     }
 
 
@@ -744,7 +744,7 @@ test('should generate pattern', () => {
     export const getContainerStyle = (styles = {}) => containerConfig.transform(styles, { map: mapObject })
 
     export const container = (styles) => css(getContainerStyle(styles))
-    container.raw = (styles) => styles",
+    container.raw = getContainerStyle",
         "name": "container",
       },
       {
@@ -765,7 +765,7 @@ test('should generate pattern', () => {
 
     interface DividerPatternFn {
       (styles?: DividerStyles): string
-      raw: (styles: DividerStyles) => DividerStyles
+      raw: (styles: DividerStyles) => SystemStyleObject
     }
 
 
@@ -791,7 +791,7 @@ test('should generate pattern', () => {
     export const getDividerStyle = (styles = {}) => dividerConfig.transform(styles, { map: mapObject })
 
     export const divider = (styles) => css(getDividerStyle(styles))
-    divider.raw = (styles) => styles",
+    divider.raw = getDividerStyle",
         "name": "divider",
       },
       {
@@ -813,7 +813,7 @@ test('should generate pattern', () => {
 
     interface FloatPatternFn {
       (styles?: FloatStyles): string
-      raw: (styles: FloatStyles) => FloatStyles
+      raw: (styles: FloatStyles) => SystemStyleObject
     }
 
 
@@ -863,7 +863,7 @@ test('should generate pattern', () => {
     export const getFloatStyle = (styles = {}) => floatConfig.transform(styles, { map: mapObject })
 
     export const float = (styles) => css(getFloatStyle(styles))
-    float.raw = (styles) => styles",
+    float.raw = getFloatStyle",
         "name": "float",
       },
       {
@@ -883,7 +883,7 @@ test('should generate pattern', () => {
 
     interface BleedPatternFn {
       (styles?: BleedStyles): string
-      raw: (styles: BleedStyles) => BleedStyles
+      raw: (styles: BleedStyles) => SystemStyleObject
     }
 
 
@@ -907,7 +907,7 @@ test('should generate pattern', () => {
     export const getBleedStyle = (styles = {}) => bleedConfig.transform(styles, { map: mapObject })
 
     export const bleed = (styles) => css(getBleedStyle(styles))
-    bleed.raw = (styles) => styles",
+    bleed.raw = getBleedStyle",
         "name": "bleed",
       },
       {
@@ -926,7 +926,7 @@ test('should generate pattern', () => {
 
     interface VisuallyHiddenPatternFn {
       (styles?: VisuallyHiddenStyles): string
-      raw: (styles: VisuallyHiddenStyles) => VisuallyHiddenStyles
+      raw: (styles: VisuallyHiddenStyles) => SystemStyleObject
     }
 
 
@@ -946,7 +946,7 @@ test('should generate pattern', () => {
     export const getVisuallyHiddenStyle = (styles = {}) => visuallyHiddenConfig.transform(styles, { map: mapObject })
 
     export const visuallyHidden = (styles) => css(getVisuallyHiddenStyle(styles))
-    visuallyHidden.raw = (styles) => styles",
+    visuallyHidden.raw = getVisuallyHiddenStyle",
         "name": "visually-hidden",
       },
     ]

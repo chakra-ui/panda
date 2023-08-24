@@ -218,8 +218,91 @@ const styles = css({
 })
 
 const Card = ({ className, ...props }) => {
-  const rootClassName = cx(styles, className)
+  const rootClassName = cx('group', styles, className)
   return <div className={rootClassName} {...props} />
+}
+```
+
+### Overriding
+
+Passing multiple styles to the `css` function will merge the styles together. This allows you to override styles in a predictable way.
+
+```jsx
+import { css } from '../styled-system/css'
+
+const result = css({ mx: '3', paddingTop: '4' }, { mx: '10', pt: '6' })
+//    ^? result = "mx_10 pt_6"
+```
+
+If you intend for your components to have overridable styles, rather than passing
+the result of the `css` function as props, you should pass the style objects using the `raw` functions and just call the
+`css` function in the component itself.
+
+Example:
+
+```tsx title="src/components/Button.tsx"
+'use client'
+import * as React from 'react'
+import { flex } from '../../styled-system/patterns'
+import { css, cva } from '../../styled-system/css'
+import { SystemStyleObject } from '../../styled-system/types'
+
+export function Button(
+  props: React.ComponentPropsWithoutRef<'button'> & { css?: SystemStyleObject }
+) {
+  const flexProps = flex.raw({
+    direction: 'row',
+    _hover: { color: 'blue.400' },
+    border: '1px solid'
+  })
+  const rootStyle = css(flexProps, props.css ?? {})
+  return <button className={rootStyle}>{props.children}</button>
+}
+
+const thing = cva({
+  base: { display: 'flex', fontSize: 'lg' },
+  variants: {
+    variant: {
+      primary: { color: 'white', backgroundColor: 'blue.500' }
+    }
+  }
+})
+
+export const Thingy = (
+  props: React.ComponentPropsWithoutRef<'button'> & { css?: SystemStyleObject }
+) => {
+  const rootStyle = css(
+    thing.raw({ variant: 'primary' }),
+    css.raw({ _hover: { color: 'blue.400' } }),
+    props.css ?? {}
+  )
+  return <button className={rootStyle}>{props.children}</button>
+}
+```
+
+```tsx title="src/app/page.tsx"
+import { css } from '../../styled-system/css'
+import { Button, Thingy } from './Button'
+
+export default function Home() {
+  return (
+    <>
+      <Button css={css.raw({ display: 'block', _hover: { color: 'red' } })}>
+        Client component button with pattern
+        <span>
+          will result in `class="d_block flex_row hover:text_red
+          border_1px_solid"`
+        </span>
+      </Button>
+      <Thingy css={css.raw({ display: 'block', _hover: { color: 'yellow' } })}>
+        Client component button with recipe
+        <span>
+          will result in `class="d_block fs_lg text_white bg_blue.500
+          hover:text_yellow"`
+        </span>
+      </Thingy>
+    </>
+  )
 }
 ```
 

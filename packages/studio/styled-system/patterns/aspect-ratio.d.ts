@@ -14,7 +14,7 @@ type AspectRatioStyles = AspectRatioProperties & DistributiveOmit<SystemStyleObj
 
 interface AspectRatioPatternFn {
   (styles?: AspectRatioStyles): string
-  raw: (styles: AspectRatioStyles) => AspectRatioStyles
+  raw: (styles: AspectRatioStyles) => SystemStyleObject
 }
 
 

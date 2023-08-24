@@ -31,7 +31,7 @@ export function generatePreactJsxFactory(ctx: Context) {
 
         function cvaClass() {
           const { css: cssStyles, ...propStyles } = styleProps
-          const cvaStyles = cvaFn.resolve(variantProps)
+          const cvaStyles = cvaFn.raw(variantProps)
           const styles = assignCss(cvaStyles, propStyles, cssStyles)
           return cx(css(styles), elementProps.className, elementProps.class)
         }
