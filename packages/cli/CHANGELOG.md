@@ -1,5 +1,20 @@
 # @pandacss/dev
 
+## 0.12.1
+
+### Patch Changes
+
+- @pandacss/node@0.12.1
+- @pandacss/postcss@0.12.1
+- @pandacss/studio@0.12.1
+- @pandacss/config@0.12.1
+- @pandacss/error@0.12.1
+- @pandacss/logger@0.12.1
+- @pandacss/preset-panda@0.12.1
+- @pandacss/shared@0.12.1
+- @pandacss/token-dictionary@0.12.1
+- @pandacss/types@0.12.1
+
 ## 0.12.0
 
 ### Minor Changes
