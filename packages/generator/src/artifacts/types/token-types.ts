@@ -52,9 +52,9 @@ export function generateTokenTypes(ctx: Context) {
       result.add(`\t\t${key}: ${typeName}Token`)
     }
 
-    const keyframes = Object.keys(theme?.keyframes ?? {})
+    const keyframes = unionType(Object.keys(theme?.keyframes ?? {}))
 
-    set.add(`export type AnimationName = ${unionType(keyframes)}`)
+    if (keyframes) set.add(`export type AnimationName = ${keyframes}`)
     result.add(`\t\tanimationName: AnimationName`)
   }
 
