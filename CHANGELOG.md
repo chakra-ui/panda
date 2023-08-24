@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
+See the [Changesets](./.changeset) for the latest changes.
+
 ## [Unreleased]
 
 ## [0.12.0] - 2023-08-24
@@ -41,8 +43,6 @@ export default defineConfig({
 ```
 
 - Add `animationName` utility. This utility connects to your keyframes.
-
-See the [Changesets](./.changeset) for the latest changes.
 
 ## [0.11.1] - 2023-08-16
 
