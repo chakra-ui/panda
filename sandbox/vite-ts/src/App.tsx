@@ -111,7 +111,28 @@ function App() {
         <div className={badge({ status: 'warning' })}>Warning</div>
         <div className={badge({ status: 'success' })}>Warning</div>
       </section>
+      <ClassMerging />
     </div>
+  )
+}
+
+const ClassMerging = () => {
+  const cxMerge = cx(css({ mx: '3', paddingTop: '4' }), css({ mx: '10', pt: '6' }))
+  const cssMerge = css({ mx: '3', paddingTop: '4' }, { mx: '10', pt: '6' })
+  const single = css({ mx: '3', paddingTop: '4' })
+
+  return (
+    <>
+      <div className={cxMerge}>
+        cx(css({}), css({})) result in {cxMerge}
+      </div>
+      <div className={cssMerge}>
+        css({}, {}) Will result in {cssMerge}
+      </div>
+      <div className={single}>
+        css({}) Will result in {single}
+      </div>
+    </>
   )
 }
 

@@ -15,7 +15,7 @@ export function generateCssFn(ctx: Context) {
     import type { SystemStyleObject } from '../types'
 
     interface CssFunction {
-      (styles: SystemStyleObject): string
+      (...styles: SystemStyleObject[]): string
       raw: (styles: SystemStyleObject) => SystemStyleObject
     }
 
@@ -112,10 +112,11 @@ export function generateCssFn(ctx: Context) {
 
     const cssFn = createCss(context)
     export const cssCache = new Map()
-    export const css = (styles) => {
-      const classNames = cssFn(styles)
-      cssCache.set(classNames, styles)
-      return classNames
+    export const css = (...styles) => {
+      styles.forEach((styles) => {
+        cssCache.set(cssFn(styles), styles)
+      })
+      return cssFn(mergeCss(...styles))
     }
     css.raw = (styles) => styles
 
