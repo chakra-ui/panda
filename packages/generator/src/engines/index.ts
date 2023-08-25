@@ -6,7 +6,7 @@ import { getPatternEngine } from './pattern'
 
 export const getEngine = (conf: ConfigResultWithHooks) => {
   const { config } = conf
-  const forceConsistentTypeExtension = false
+  const { forceConsistentTypeExtension, outExtension } = config
   return {
     ...getBaseEngine(conf),
     patterns: getPatternEngine(config),
@@ -14,10 +14,10 @@ export const getEngine = (conf: ConfigResultWithHooks) => {
     paths: getPathEngine(config),
     file: {
       ext(file: string) {
-        return `${file}.${config.outExtension}`
+        return `${file}.${outExtension}`
       },
       extDts(file: string) {
-        const dts = config.outExtension === 'mjs' && forceConsistentTypeExtension ? 'd.mts' : 'd.ts'
+        const dts = outExtension === 'mjs' && forceConsistentTypeExtension ? 'd.mts' : 'd.ts'
         return `${file}.${dts}`
       },
       __extDts(file: string) {
