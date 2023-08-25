@@ -132,7 +132,7 @@ export class Stylesheet {
         css = `${this.options.content}\n\n${css}`
       }
 
-      return optimize ? discardDuplicate(css) : css
+      return optimize ? discardDuplicate(css, { minify }) : css
     } catch (error) {
       if (error instanceof CssSyntaxError) {
         logger.error('sheet', error.message)
