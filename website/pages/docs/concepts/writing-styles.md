@@ -214,11 +214,11 @@ const result = css({ mx: '3', paddingTop: '4' }, { mx: '10', pt: '6' })
 //    ^? result = "mx_10 pt_6"
 ```
 
-To design a component that supports style overrides, you can now provide the `css` prop as a style object, and it'll be
+To design a component that supports style overrides, you can provide the `css` prop as a style object, and it'll be
 merged correctly.
 
-```tsx title="src/components/Button.tsx"
-import { css } from '../../styled-system/css'
+```tsx filename="src/components/Button.tsx"
+import { css } from '../styled-system/css'
 
 export const Button = ({ css: cssProp = {}, children }) => {
   const className = css(
@@ -231,8 +231,8 @@ export const Button = ({ css: cssProp = {}, children }) => {
 
 Then you can use the `Button` component like this:
 
-```tsx title="src/app/page.tsx"
-import { css } from '../../styled-system/css'
+```tsx filename="src/app/page.tsx"
+import { css } from '../styled-system/css'
 import { Button, Thingy } from './Button'
 
 export default function Page() {
@@ -251,9 +251,9 @@ to be merged as expected in any situation.
 
 **Pattern Example:**
 
-```tsx title="src/components/Button.tsx"
-import { hstack } from '../../styled-system/patterns'
-import { css, cva } from '../../styled-system/css'
+```tsx filename="src/components/Button.tsx"
+import { hstack } from '../styled-system/patterns'
+import { css, cva } from '../styled-system/css'
 
 export const Button = ({ css: cssProp = {}, children }) => {
   // using the flex pattern
@@ -271,8 +271,8 @@ export const Button = ({ css: cssProp = {}, children }) => {
 
 **CVA Example:**
 
-```tsx title="src/components/Button.tsx"
-import { css, cva } from '../../styled-system/css'
+```tsx filename="src/components/Button.tsx"
+import { css, cva } from '../styled-system/css'
 
 const buttonRecipe = cva({
   base: { display: 'flex', fontSize: 'lg' },
