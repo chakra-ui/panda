@@ -1,10 +1,11 @@
 /* eslint-disable */
+// @ts-nocheck
 import type { TextStyles, LayerStyles } from '@pandacss/dev'
-import type { RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig } from './recipe'
-import type { Parts } from './parts'
-import type { PatternConfig, PatternProperties } from './pattern'
-import type { GlobalStyleObject, SystemStyleObject } from './system-types'
-import type { CompositionStyles } from './composition'
+import type { RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig } from './recipe';
+import type { Parts } from './parts';
+import type { PatternConfig, PatternProperties } from './pattern';
+import type { GlobalStyleObject, SystemStyleObject } from './system-types';
+import type { CompositionStyles } from './composition';
 
 declare module '@pandacss/dev' {
   export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): RecipeConfig

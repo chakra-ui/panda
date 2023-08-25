@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { SystemStyleObject, DistributiveOmit } from './system-types'
+import type {  SystemStyleObject, DistributiveOmit  } from './system-types';
 
 type Pretty<T> = { [K in keyof T]: T[K] } & {}
 

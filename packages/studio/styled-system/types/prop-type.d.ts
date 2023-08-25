@@ -1,7 +1,7 @@
 /* eslint-disable */
 import type { ConditionalValue } from './conditions';
-import type { CssProperties } from './system-types'
-import type { Tokens } from '../tokens'
+import type { CssProperties } from './system-types';
+import type { Tokens } from '../tokens/index';
 
 type PropertyValueTypes  = {
 	aspectRatio: "auto" | "square" | "landscape" | "portrait" | "wide" | "ultrawide" | "golden";

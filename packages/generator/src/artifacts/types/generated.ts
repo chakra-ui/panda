@@ -16,10 +16,7 @@ export function getGeneratedTypes(ctx: Context) {
    * to import type { CompositionStyleObject } from './system-types.d.ts'
    */
   const rewriteImports = (code: string) =>
-    code.replace(
-      /import\s+type\s+\{([^}]+)\}\s+from\s+['"]([^'"]+)['"]/g,
-      `import type {$1} from '${ctx.file.extDts('$2')}'`,
-    )
+    code.replace(/import\s+type\s+\{([^}]+)\}\s+from\s+['"]([^'"]+)['"]/g, ctx.file.importType('$1', '$2'))
 
   return {
     cssType: csstype.content,

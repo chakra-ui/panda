@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { CompositionStyleObject } from './system-types'
+import type {  CompositionStyleObject  } from './system-types';
 
 type Recursive<T> = {
   [key: string]: Recursive<T> | T
