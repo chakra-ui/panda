@@ -111,18 +111,7 @@ function App() {
         <div className={badge({ status: 'warning' })}>Warning</div>
         <div className={badge({ status: 'success' })}>Warning</div>
       </section>
-      <ClassMerging />
     </div>
-  )
-}
-
-const ClassMerging = () => {
-  const cssMerge = css({ mx: '3', paddingTop: '4' }, { mx: '10', pt: '6' })
-
-  return (
-    <>
-      <div className={cssMerge}>Will result in {cssMerge}</div>
-    </>
   )
 }
 

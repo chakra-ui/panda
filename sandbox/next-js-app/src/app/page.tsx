@@ -5,10 +5,8 @@ export default function Home() {
   return (
     <>
       <div className={css({ fontSize: '2xl', fontWeight: 'bold' })}>Hello 🐼!</div>
-      <Button css={css.raw({ display: 'block', _hover: { color: 'red' } })}>Client component button</Button>
-      <Thingy css={css.raw({ display: 'block', _hover: { color: 'yellow' } })}>
-        Client component button with recipe
-      </Thingy>
+      <Button css={{ display: 'block', _hover: { color: 'red' } }}>Client component button</Button>
+      <Thingy css={{ display: 'block', _hover: { color: 'yellow' } }}>Client component button with recipe</Thingy>
     </>
   )
 }
