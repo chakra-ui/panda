@@ -29,6 +29,8 @@ export function optimizeCss(code: string, options: OptimizeOptions = {}) {
 
   if (minify) {
     plugins.push(normalizeWhiteSpace(), minifySelectors())
+  } else {
+    plugins.push(prettify())
   }
 
   const { css } = postcss(plugins).process(code)
@@ -55,6 +57,8 @@ export function discardDuplicate(code: string | Root, options: OptimizeOptions =
 
   if (minify) {
     plugins.push(normalizeWhiteSpace(), minifySelectors())
+  } else {
+    plugins.push(prettify())
   }
 
   const { css } = postcss(plugins).process(code)
