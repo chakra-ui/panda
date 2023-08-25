@@ -1,4 +1,4 @@
-import { getSlotRecipes } from '../helpers.mjs'
+import { getSlotRecipes, splitProps } from '../helpers.mjs'
 import { cva } from './cva.mjs'
 
 export function sva(config) {
@@ -9,12 +9,19 @@ export function sva(config) {
     return Object.fromEntries(result)
   }
 
-  const [, firstCva] = slots[0]
+  const variants = config.variants ?? {}
+  const variantKeys = Object.keys(variants)
+
+  function splitVariantProps(props) {
+    return splitProps(props, variantKeys)
+  }
+
+  const variantMap = Object.fromEntries(Object.entries(variants).map(([key, value]) => [key, Object.keys(value)]))
 
   return Object.assign(svaFn, {
     __cva__: false,
-    variantMap: firstCva.variantMap,
-    variantKeys: firstCva.variantKeys,
-    splitVariantProps: firstCva.splitVariantProps,
+    variantMap,
+    variantKeys,
+    splitVariantProps,
   })
 }
