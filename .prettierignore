@@ -5,7 +5,7 @@ coverage
 build
 *.hbs
 *.d.ts
-packages/cli/app/styled-system
+packages/studio/styled-system
 packages/generator/src/artifacts/generated
 website/pages/**/*.mdx
 .draft/**/*.mdx
