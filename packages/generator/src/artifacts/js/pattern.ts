@@ -26,7 +26,7 @@ export function generatePattern(ctx: Context) {
       ${ctx.file.importType('Properties', '../types/csstype')}
       ${ctx.file.importType('PropertyValue', '../types/prop-type')}
       ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
-      ${ctx.file.importType('Token', '../tokens/index')}
+      ${ctx.file.importType('Tokens', '../tokens/index')}
 
       export type ${upperName}Properties = {
          ${Object.keys(properties ?? {})
