@@ -201,11 +201,107 @@ The styles generated at build time will look like this:
 }
 ```
 
-## Managing Classnames
+## Style Composition
 
-### Merging
+### Merging styles
 
-Panda provides a `cx` function to manage classnames. It accepts a list of classnames and returns a string.
+Passing multiple styles to the `css` function will deeply merge the styles, allowing you to override styles in a predictable way.
+
+```jsx
+import { css } from '../styled-system/css'
+
+const result = css({ mx: '3', paddingTop: '4' }, { mx: '10', pt: '6' })
+//    ^? result = "mx_10 pt_6"
+```
+
+To design a component that supports style overrides, you can now provide the `css` prop as a style object, and it'll be
+merged correctly.
+
+```tsx title="src/components/Button.tsx"
+import { css } from '../../styled-system/css'
+
+export const Button = ({ css: cssProp = {}, children }) => {
+  const className = css(
+    { display: 'flex', alignItem: 'center', color: 'black' },
+    cssProp
+  )
+  return <button className={className}>{children}</button>
+}
+```
+
+Then you can use the `Button` component like this:
+
+```tsx title="src/app/page.tsx"
+import { css } from '../../styled-system/css'
+import { Button, Thingy } from './Button'
+
+export default function Page() {
+  return (
+    <Button css={{ color: 'pink', _hover: { color: 'red' } }}>
+      will result in `class="d_flex align_center text_pink hover:text_red"`
+    </Button>
+  )
+}
+```
+
+---
+
+You can use this approach as well with the new `{cvaFn}.raw` and `{patternFn}.raw` functions, will allow style objects
+to be merged as expected in any situation.
+
+**Pattern Example:**
+
+```tsx title="src/components/Button.tsx"
+import { hstack } from '../../styled-system/patterns'
+import { css, cva } from '../../styled-system/css'
+
+export const Button = ({ css: cssProp = {}, children }) => {
+  // using the flex pattern
+  const hstackProps = hstack.raw({
+    border: '1px solid',
+    _hover: { color: 'blue.400' }
+  })
+
+  // merging the styles
+  const className = css(hstackProps, cssProp)
+
+  return <button className={className}>{children}</button>
+}
+```
+
+**CVA Example:**
+
+```tsx title="src/components/Button.tsx"
+import { css, cva } from '../../styled-system/css'
+
+const buttonRecipe = cva({
+  base: { display: 'flex', fontSize: 'lg' },
+  variants: {
+    variant: {
+      primary: { color: 'white', backgroundColor: 'blue.500' }
+    }
+  }
+})
+
+export const Button = ({ css: cssProp = {}, children }) => {
+  const className = css(
+    // using the button recipe
+    buttonRecipe.raw({ variant: 'primary' }),
+
+    // adding style overrides (internal)
+    { _hover: { color: 'blue.400' } },
+
+    // adding style overrides (external)
+    cssProp
+  )
+
+  return <button className={className}>{props.children}</button>
+}
+```
+
+### Classname concatenation
+
+Panda provides a simple `cx` function to join classnames. It accepts a list of classnames and returns a string.
 
 ```jsx
 import { css, cx } from '../styled-system/css'
@@ -218,7 +314,7 @@ const styles = css({
 })
 
 const Card = ({ className, ...props }) => {
-  const rootClassName = cx(styles, className)
+  const rootClassName = cx('group', styles, className)
   return <div className={rootClassName} {...props} />
 }
 ```

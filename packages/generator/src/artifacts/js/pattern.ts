@@ -61,7 +61,7 @@ export function generatePattern(ctx: Context) {
 
           interface ${upperName}PatternFn {
             (styles?: ${upperName}Styles): string
-            raw: (styles: ${upperName}Styles) => ${upperName}Styles
+            raw: (styles: ${upperName}Styles) => SystemStyleObject
           }
 
           ${description ? `/** ${description} */` : ''}
@@ -79,7 +79,7 @@ export function generatePattern(ctx: Context) {
     export const ${styleFnName} = (styles = {}) => ${baseName}Config.transform(styles, { map: mapObject })
 
     export const ${baseName} = (styles) => css(${styleFnName}(styles))
-    ${baseName}.raw = (styles) => styles
+    ${baseName}.raw = ${styleFnName}
     `,
     }
   })

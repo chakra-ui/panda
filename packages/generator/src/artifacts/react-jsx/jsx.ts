@@ -33,7 +33,7 @@ export function generateReactJsxFactory(ctx: Context) {
 
           function cvaClass() {
             const { css: cssStyles, ...propStyles } = styleProps
-            const cvaStyles = cvaFn.resolve(variantProps)
+            const cvaStyles = cvaFn.raw(variantProps)
             const styles = assignCss(cvaStyles, propStyles, cssStyles)
             return cx(css(styles), elementProps.className)
           }`
@@ -49,7 +49,7 @@ export function generateReactJsxFactory(ctx: Context) {
           }
 
           function cvaClass() {
-            const cvaStyles = cvaFn.resolve(variantProps)
+            const cvaStyles = cvaFn.raw(variantProps)
             const styles = assignCss(cvaStyles, elementProps.css)
             return cx(css(styles), elementProps.className)
           }`
@@ -65,7 +65,7 @@ export function generateReactJsxFactory(ctx: Context) {
           }
 
           function cvaClass() {
-            const cvaStyles = cvaFn.resolve(variantProps)
+            const cvaStyles = cvaFn.raw(variantProps)
             const styles = assignCss(cvaStyles)
             return cx(css(styles), elementProps.className)
           }`

@@ -191,6 +191,53 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('basic usage with multiple style objects', () => {
+    const code = `
+      import { css } from ".panda/css"
+
+      css({ mx: '3', paddingTop: '4' }, { mx: '10', pt: '6' })
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "mx": "3",
+              "paddingTop": "4",
+            },
+            {
+              "mx": "10",
+              "pt": "6",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .mx_3 {
+          margin-inline: var(--spacing-3)
+          }
+
+        .pt_4 {
+          padding-top: var(--spacing-4)
+          }
+
+        .mx_10 {
+          margin-inline: var(--spacing-10)
+          }
+
+        .pt_6 {
+          padding-top: var(--spacing-6)
+          }
+      }"
+    `)
+  })
+
   test('multiple recipes on 1 component', () => {
     const code = `
     import { button, pinkRecipe, greenRecipe, blueRecipe, sizeRecipe, bgRecipe } from ".panda/recipes"

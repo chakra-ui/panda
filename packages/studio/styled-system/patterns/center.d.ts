@@ -14,7 +14,7 @@ type CenterStyles = CenterProperties & DistributiveOmit<SystemStyleObject, keyof
 
 interface CenterPatternFn {
   (styles?: CenterStyles): string
-  raw: (styles: CenterStyles) => CenterStyles
+  raw: (styles: CenterStyles) => SystemStyleObject
 }
 
 

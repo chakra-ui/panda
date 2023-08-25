@@ -5709,3 +5709,34 @@ it('still explore both branches when using a default value as the condition expr
     }
   `)
 })
+
+it('extract all `css` style objects', () => {
+  expect(
+    extractFromCode(
+      `import { css } from "../panda/css";
+
+      css({ mx: '3', paddingTop: '4' }, { mx: '10', pt: '6' })
+      `,
+      { functionNameList: ['css'] },
+    ),
+  ).toMatchInlineSnapshot(`
+    {
+      "css": [
+        {
+          "conditions": [],
+          "raw": [
+            {
+              "mx": "3",
+              "paddingTop": "4",
+            },
+            {
+              "mx": "10",
+              "pt": "6",
+            },
+          ],
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})

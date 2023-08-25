@@ -10,7 +10,7 @@ export function generateCvaFn(ctx: Context) {
     export function cva(config) {
       const { base = {}, variants = {}, defaultVariants = {}, compoundVariants = [] } = config
 
-      function resolve(props) {
+      function resolve(props = {}) {
         const computedVariants = { ...defaultVariants, ...compact(props) }
         let variantCss = { ...base }
         for (const [key, value] of Object.entries(computedVariants)) {
@@ -25,7 +25,7 @@ export function generateCvaFn(ctx: Context) {
       function cvaFn(props) {
         return css(resolve(props))
       }
-      
+
       const variantKeys = Object.keys(variants)
 
       function splitVariantProps(props) {
@@ -38,7 +38,7 @@ export function generateCvaFn(ctx: Context) {
         __cva__: true,
         variantMap,
         variantKeys,
-        resolve,
+        raw: resolve,
         config,
         splitVariantProps,
       })
@@ -66,7 +66,7 @@ export function generateCvaFn(ctx: Context) {
       if (compoundVariants.length > 0 && typeof variants[prop] === 'object') {
         throw new Error(\`[recipe:\${name}:\${prop}] Conditions are not supported when using compound variants.\`)
       }
-    }    
+    }
 
     `,
     dts: outdent`
