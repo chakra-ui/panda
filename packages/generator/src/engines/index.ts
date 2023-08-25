@@ -13,11 +13,27 @@ export const getEngine = (conf: ConfigResultWithHooks) => ({
     ext(file: string) {
       return `${file}.${conf.config.outExtension}`
     },
+    extDts(file: string) {
+      const dts = conf.config.outExtension === 'js' ? 'd.ts' : 'd.mts'
+      return `${file}.${dts}`
+    },
     import(mod: string, file: string) {
       return `import { ${mod} } from '${this.ext(file)}';`
     },
-    export(file: string) {
+    importType(mod: string, file: string) {
+      return `import type { ${mod} } from '${this.extDts(file)}';`
+    },
+    exportType(mod: string, file: string) {
+      return `export type { ${mod} } from '${this.extDts(file)}';`
+    },
+    exportStar(file: string) {
       return `export * from '${this.ext(file)}';`
+    },
+    exportTypeStar(file: string) {
+      return `export type * from '${this.extDts(file)}';`
+    },
+    isTypeFile(file: string) {
+      return file.endsWith('.d.ts') || file.endsWith('.d.mts')
     },
   },
 })

@@ -70,12 +70,11 @@ export function generateCvaFn(ctx: Context) {
 
     `,
     dts: outdent`
-    import type { RecipeCreatorFn } from '../types/recipe'
+    ${ctx.file.importType('RecipeCreatorFn', '../types/recipe')}
 
     export declare const cva: RecipeCreatorFn
 
-    export type { RecipeVariantProps } from '../types/recipe'
-
+    ${ctx.file.exportType('RecipeVariantProps', '../types/recipe')}
     `,
   }
 }

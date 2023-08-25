@@ -6,13 +6,13 @@ export function generateSolidJsxTypes(ctx: Context) {
 
   return {
     jsxFactory: outdent`
-import type { ${upperName} } from '../types/jsx'
+${ctx.file.importType(upperName, '../types/jsx')}
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
 import type { ComponentProps, Component, JSX } from 'solid-js'
-import type { Assign, JsxStyleProps, JsxHTMLProps } from './system-types'
-import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
+${ctx.file.importType('Assign, JsxStyleProps, JsxHTMLProps', './system-types')}
+${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', './recipe')}
 
 type Dict = Record<string, unknown>
 

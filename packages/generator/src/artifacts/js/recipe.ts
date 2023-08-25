@@ -126,9 +126,9 @@ export function generateRecipes(ctx: Context) {
         js: jsCode,
 
         dts: outdent`
-        import type { ConditionalValue } from '../types'
-        import type { Pretty } from '../types/helpers'
-        import type { DistributiveOmit } from '../types/system-types'
+        ${ctx.file.importType('ConditionalValue', '../types/index')}
+        ${ctx.file.importType('Pretty', '../types/helpers')}
+        ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
 
         type ${upperName}Variant = {
           ${Object.keys(variantKeyMap)

@@ -11,9 +11,9 @@ export function generatePropTypes(ctx: Context) {
 
   const result: string[] = [
     outdent`
-    import type { ConditionalValue } from './conditions';
-    import type { CssProperties } from './system-types'
-    import type { Tokens } from '../tokens'
+    ${ctx.file.importType('ConditionalValue', './conditions')}
+    ${ctx.file.importType('CssProperties', './system-types')}
+    ${ctx.file.importType('Tokens', '../tokens/index')}
 
     type PropertyValueTypes  = {`,
   ]

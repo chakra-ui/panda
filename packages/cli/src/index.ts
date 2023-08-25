@@ -14,6 +14,8 @@ import type {
   SlotRecipeVariantRecord,
   SystemStyleObject,
   Tokens,
+  TextStyles,
+  LayerStyles,
 } from '@pandacss/types'
 
 /* -----------------------------------------------------------------------------
@@ -106,4 +108,6 @@ export type {
   Tokens,
   SemanticTokens,
   CompositionStyles,
+  LayerStyles,
+  TextStyles,
 }

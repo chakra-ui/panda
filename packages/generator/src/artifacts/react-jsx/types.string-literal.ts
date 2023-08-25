@@ -6,12 +6,12 @@ export function generateReactJsxStringLiteralTypes(ctx: Context) {
 
   return {
     jsxFactory: outdent`
-import { ${upperName} } from '../types/jsx'
+${ctx.file.importType(upperName, '../types/jsx')}
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
 import type { ComponentPropsWithoutRef, ElementType, ElementRef, Ref } from 'react'
-import type { DistributiveOmit } from '../types/system-types'
+${ctx.file.importType('DistributiveOmit', '../types/system-types')}
 
 type Dict = Record<string, unknown>
 

@@ -11,17 +11,29 @@ import type { Context } from '../../engines'
 const jsxStyleProps = 'export type JsxStyleProps = StyleProps & WithCss'
 
 export function getGeneratedTypes(ctx: Context) {
+  /**
+   * convert import type { CompositionStyleObject } from './system-types'
+   * to import type { CompositionStyleObject } from './system-types.d.ts'
+   */
+  const rewriteImports = (code: string) =>
+    code.replace(
+      /import\s+type\s+\{([^}]+)\}\s+from\s+['"]([^'"]+)['"]/g,
+      `import type {$1} from '${ctx.file.extDts('$2')}'`,
+    )
+
   return {
     cssType: csstype.content,
-    recipe: recipe.content,
-    pattern: pattern.content,
-    parts: parts.content,
-    composition: composition.content,
-    selectors: selectors.content,
-    system: match(ctx.jsx.styleProps)
-      .with('all', () => system.content)
-      .with('minimal', () => system.content.replace(jsxStyleProps, 'export type JsxStyleProps = WithCss'))
-      .with('none', () => system.content.replace(jsxStyleProps, 'export type JsxStyleProps = {}'))
-      .exhaustive(),
+    recipe: rewriteImports(recipe.content),
+    pattern: rewriteImports(pattern.content.replace('../tokens', '../tokens/index')),
+    parts: rewriteImports(parts.content),
+    composition: rewriteImports(composition.content),
+    selectors: rewriteImports(selectors.content),
+    system: rewriteImports(
+      match(ctx.jsx.styleProps)
+        .with('all', () => system.content)
+        .with('minimal', () => system.content.replace(jsxStyleProps, 'export type JsxStyleProps = WithCss'))
+        .with('none', () => system.content.replace(jsxStyleProps, 'export type JsxStyleProps = {}'))
+        .exhaustive(),
+    ),
   }
 }

@@ -38,9 +38,9 @@ export function generatePreactJsxPattern(ctx: Context) {
 
       dts: outdent`
       import type { FunctionComponent } from 'preact'
-      import type { ${upperName}Properties } from '../patterns/${dashName}'
-      import type { ${typeName} } from '../types/jsx'
-      import type { DistributiveOmit } from '../types/system-types'
+      ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
+      ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
+      ${ctx.file.importType(typeName, '../types/jsx')}
 
       export type ${upperName}Props = ${upperName}Properties & DistributiveOmit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}>
 
