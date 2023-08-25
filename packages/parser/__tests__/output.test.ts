@@ -1162,6 +1162,10 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .items_center {
+          align-items: center
+          }
+
         .d_flex {
           display: flex
           }
@@ -1170,8 +1174,8 @@ describe('extract to css output pipeline', () => {
           flex-direction: column
           }
 
-        .items_center {
-          align-items: center
+        .items_flex-end {
+          align-items: flex-end
           }
 
         .gap_10px {

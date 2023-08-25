@@ -66,7 +66,7 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
               // treat pattern jsx like regular pattern
               .with({ type: 'jsx-pattern', name: P.string }, ({ name: jsxName }) => {
                 pattern.data.forEach((data) => {
-                  const fnName = patterns.getFnName(jsxName)
+                  const fnName = patterns.find(jsxName)
                   const styleProps = patterns.transform(fnName, data)
                   sheet.processStyleProps(styleProps)
                 })
