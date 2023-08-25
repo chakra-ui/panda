@@ -1,4 +1,4 @@
-import { capitalize, dashCase, mapObject, memo, uncapitalize, createRegex } from '@pandacss/shared'
+import { capitalize, dashCase, mapObject, memo, createRegex, uncapitalize } from '@pandacss/shared'
 import type { Dict, UserConfig } from '@pandacss/types'
 
 const helpers = { map: mapObject }
@@ -37,8 +37,8 @@ export const getPatternEngine = (config: UserConfig) => {
     },
     getNames,
     details,
-    getFnName: memo((jsxName: string) => {
-      return details.find((node) => node.jsxName === jsxName)?.baseName ?? uncapitalize(jsxName)
+    find: memo((jsxName: string) => {
+      return details.find((node) => node.match.test(jsxName))?.baseName ?? uncapitalize(jsxName)
     }),
     filter: memo((jsxName: string) => {
       return details.filter((node) => node.match.test(jsxName))
