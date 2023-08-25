@@ -3,6 +3,7 @@ import type {
   Config,
   CssKeyframes,
   GlobalStyleObject,
+  LayerStyles,
   Parts,
   PatternConfig,
   Preset,
@@ -13,9 +14,8 @@ import type {
   SlotRecipeConfig,
   SlotRecipeVariantRecord,
   SystemStyleObject,
-  Tokens,
   TextStyles,
-  LayerStyles,
+  Tokens,
 } from '@pandacss/types'
 
 /* -----------------------------------------------------------------------------
@@ -97,17 +97,17 @@ export function defineStyles(definition: SystemStyleObject) {
 }
 
 export type {
+  CompositionStyles,
   Config,
+  CssKeyframes,
+  GlobalStyleObject,
+  LayerStyles,
+  Preset,
+  PropertyConfig,
+  SemanticTokens,
   SlotRecipeConfig,
   SlotRecipeVariantRecord,
   SystemStyleObject,
-  Preset,
-  CssKeyframes,
-  GlobalStyleObject,
-  PropertyConfig,
-  Tokens,
-  SemanticTokens,
-  CompositionStyles,
-  LayerStyles,
   TextStyles,
+  Tokens,
 }
