@@ -800,13 +800,10 @@ describe('extract to css output pipeline', () => {
           .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:\\\\[\\\\&\\\\:disabled\\\\]\\\\:filter_brightness\\\\(1\\\\):disabled {
             filter: brightness(1)
               }
-                  }
-
-        @media (min-width: 768px) {
           .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:p_1rem_0 {
             padding: 1rem 0
           }
-              }
+                  }
       }"
     `)
   })
