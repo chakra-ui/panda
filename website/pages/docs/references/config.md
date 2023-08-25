@@ -391,6 +391,22 @@ File extension for generated javascript files.
 }
 ```
 
+### forceConsistentTypeExtension
+
+**Type**: `boolean`
+
+**Default**: `false`
+
+Whether to force consistent type extensions for generated typescript .d.ts files.
+
+If set to `true` and `outExtension` is set to `mjs`, the generated typescript `.d.ts` files will have the extension `.d.mts`.
+
+```json
+{
+  "forceConsistentTypeExtension": true
+}
+```
+
 ### syntax
 
 **Type**: `'object-literal' | 'template-literal'`
