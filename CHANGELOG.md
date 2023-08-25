@@ -116,6 +116,12 @@ export const Button = ({ css: cssProp = {}, children }) => {
 }
 ```
 
+## [0.12.1] - 2023-08-24
+
+### Fixed
+
+- Fix issue where `AnimationName` type was generated wrongly if no keyframes were resolved in the config.
+
 ## [0.12.0] - 2023-08-24
 
 ## Fixed
