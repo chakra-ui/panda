@@ -1,5 +1,20 @@
 # @pandacss/core
 
+## 0.13.0
+
+### Minor Changes
+
+- 04b5fd6c: - Add support for minification in `cssgen` command.
+  - Fix issue where `panda --minify` does not work.
+
+### Patch Changes
+
+- @pandacss/error@0.13.0
+- @pandacss/logger@0.13.0
+- @pandacss/shared@0.13.0
+- @pandacss/token-dictionary@0.13.0
+- @pandacss/types@0.13.0
+
 ## 0.12.2
 
 ### Patch Changes
