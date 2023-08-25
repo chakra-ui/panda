@@ -146,6 +146,7 @@ export async function main() {
   cli
     .command('cssgen [glob]', 'Generate the css from files')
     .option('--silent', "Don't print any logs")
+    .option('-m, --minify', 'Minify generated code')
     .option('--clean', 'Clean the chunks before generating')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('-w, --watch', 'Watch files and rebuild')
@@ -163,9 +164,10 @@ export async function main() {
           poll?: boolean
           cwd?: string
           config?: string
+          minify?: boolean
         } = {},
       ) => {
-        const { silent, clean, config: configPath, outfile, watch, poll } = flags
+        const { silent, clean, config: configPath, outfile, watch, poll, minify } = flags
 
         const cwd = resolve(flags.cwd ?? '')
 
@@ -176,7 +178,11 @@ export async function main() {
         function loadContext() {
           return loadConfigAndCreateContext({
             cwd,
-            config: { clean, ...(maybeGlob ? { include: [maybeGlob] } : undefined) },
+            config: {
+              clean,
+              minify,
+              ...(maybeGlob ? { include: [maybeGlob] } : undefined),
+            },
             configPath,
           })
         }

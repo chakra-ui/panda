@@ -2,6 +2,7 @@ import postcss, { Root } from 'postcss'
 import dedupe from 'postcss-discard-duplicates'
 import discardEmpty from 'postcss-discard-empty'
 import mergeRules from 'postcss-merge-rules'
+import minifySelectors from 'postcss-minify-selectors'
 import nested from 'postcss-nested'
 import normalizeWhiteSpace from 'postcss-normalize-whitespace'
 import expandTokenFn from './plugins/expand-token-fn'
@@ -16,7 +17,7 @@ type OptimizeOptions = {
 
 export function optimizeCss(code: string, options: OptimizeOptions = {}) {
   const { minify = false } = options
-  const { css } = postcss([
+  const plugins = [
     nested(),
     mergeCascadeLayers(),
     sortMediaQueries(),
@@ -24,8 +25,13 @@ export function optimizeCss(code: string, options: OptimizeOptions = {}) {
     mergeRules(),
     sortCss(),
     discardEmpty(),
-    minify ? normalizeWhiteSpace() : prettify(),
-  ]).process(code)
+  ]
+
+  if (minify) {
+    plugins.push(normalizeWhiteSpace(), minifySelectors())
+  }
+
+  const { css } = postcss(plugins).process(code)
   return css
 }
 
@@ -35,8 +41,24 @@ export function expandCssFunctions(code: string | Root, options: { token?: (key:
   return css
 }
 
-export function discardDuplicate(code: string | Root) {
-  const { css } = postcss([mergeCascadeLayers(), dedupe(), sortMediaQueries(), sortCss(), prettify()]).process(code)
+export function discardDuplicate(code: string | Root, options: OptimizeOptions = {}) {
+  const { minify = false } = options
+  const plugins = [
+    nested(),
+    mergeCascadeLayers(),
+    sortMediaQueries(),
+    dedupe(),
+    mergeRules(),
+    sortCss(),
+    discardEmpty(),
+  ]
+
+  if (minify) {
+    plugins.push(normalizeWhiteSpace(), minifySelectors())
+  }
+
+  const { css } = postcss(plugins).process(code)
+
   return css
 }
 

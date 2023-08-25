@@ -2,7 +2,6 @@
   :root {
     --made-with-panda: '🐼';
   }
-
   *,
   *::before,
   *::after,
@@ -36,7 +35,6 @@
     --scale-x: 1;
     --scale-y: 1;
   }
-
   :root {
     --global-color-border: var(--colors-border);
     --global-color-placeholder: var(--colors-neutral-500);
@@ -48,12 +46,10 @@
     color: var(--colors-text);
     background: var(--colors-bg);
   }
-
   a {
     color: unset;
     text-decoration: none;
   }
-
   body {
     margin: var(--spacing-0);
     min-height: 100vh;
