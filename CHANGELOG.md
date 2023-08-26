@@ -6,6 +6,18 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.13.0] - 2023-08-26
+
+## Fixed
+
+- Fix issue where `panda --minify` does not work.
+- Fix issue where `defineTextStyle` and `defineLayerStyle` return types are incompatible with `config.theme` type.
+- Fix an issue with custom JSX components not finding their matching patterns.
+
+## Added
+
+- Add support for minification in `cssgen` command.
+
 ## [0.12.2] - 2023-08-25
 
 ### Fixed
