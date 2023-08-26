@@ -2,7 +2,7 @@
 import type { SystemStyleObject } from '../types'
 
 interface CssFunction {
-  (styles: SystemStyleObject): string
+  (...styles: SystemStyleObject[]): string
   raw: (styles: SystemStyleObject) => SystemStyleObject
 }
 

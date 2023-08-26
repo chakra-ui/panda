@@ -23,8 +23,9 @@ export function generatePattern(ctx: Context) {
       name: dashName,
       dts: outdent`
       import type { SystemStyleObject, ConditionalValue } from '../types'
-      import type { PropertyValue } from '../types/prop-type'
       import type { Properties } from '../types/csstype'
+      import type { PropertyValue } from '../types/prop-type'
+      import type { DistributiveOmit } from '../types/system-types'
       import type { Tokens } from '../tokens'
 
       export type ${upperName}Properties = {
@@ -53,14 +54,14 @@ export function generatePattern(ctx: Context) {
 
       ${
         strict
-          ? outdent`export declare function ${baseName}(options: ${upperName}Properties): string`
+          ? outdent`export declare function ${baseName}(styles: ${upperName}Properties): string`
           : outdent`
 
-          type ${upperName}Options = ${upperName}Properties & Omit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}>
+          type ${upperName}Styles = ${upperName}Properties & DistributiveOmit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}>
 
           interface ${upperName}PatternFn {
-            (options?: ${upperName}Options): string
-            raw: (options: ${upperName}Options) => ${upperName}Options
+            (styles?: ${upperName}Styles): string
+            raw: (styles: ${upperName}Styles) => SystemStyleObject
           }
 
           ${description ? `/** ${description} */` : ''}
@@ -78,7 +79,7 @@ export function generatePattern(ctx: Context) {
     export const ${styleFnName} = (styles = {}) => ${baseName}Config.transform(styles, { map: mapObject })
 
     export const ${baseName} = (styles) => css(${styleFnName}(styles))
-    ${baseName}.raw = (styles) => styles
+    ${baseName}.raw = ${styleFnName}
     `,
     }
   })

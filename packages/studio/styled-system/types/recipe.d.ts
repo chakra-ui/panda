@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { SystemStyleObject } from './system-types'
+import type { SystemStyleObject, DistributiveOmit } from './system-types'
 
 type Pretty<T> = { [K in keyof T]: T[K] } & {}
 
@@ -31,9 +31,11 @@ export type RecipeRuntimeFn<T extends RecipeVariantRecord> = RecipeVariantFn<T> 
   __type: RecipeSelection<T>
   variantKeys: (keyof T)[]
   variantMap: RecipeVariantMap<T>
-  resolve: (props: RecipeSelection<T>) => SystemStyleObject
+  raw: (props?: RecipeSelection<T>) => SystemStyleObject
   config: RecipeConfig<T>
-  splitVariantProps<Props extends RecipeSelection<T>>(props: Props): [RecipeSelection<T>, Pretty<Omit<Props, keyof T>>]
+  splitVariantProps<Props extends RecipeSelection<T>>(
+    props: Props,
+  ): [RecipeSelection<T>, Pretty<DistributiveOmit<Props, keyof T>>]
 }
 
 export type RecipeCompoundSelection<T extends RecipeVariantRecord> = {

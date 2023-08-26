@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/core",
-  "version": "0.11.1",
+  "version": "0.13.0",
   "description": "core functions for extract-it",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -32,6 +32,7 @@
     "postcss-discard-duplicates": "^6.0.0",
     "postcss-merge-rules": "^6.0.1",
     "postcss-selector-parser": "^6.0.13",
+    "postcss-minify-selectors": "^6.0.0",
     "autoprefixer": "10.4.15",
     "ts-pattern": "5.0.4",
     "lodash.merge": "4.6.2"

@@ -7,8 +7,9 @@ test('should generate pattern', () => {
     [
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type BoxProperties = {
@@ -16,11 +17,11 @@ test('should generate pattern', () => {
     }
 
 
-    type BoxOptions = BoxProperties & Omit<SystemStyleObject, keyof BoxProperties >
+    type BoxStyles = BoxProperties & DistributiveOmit<SystemStyleObject, keyof BoxProperties >
 
     interface BoxPatternFn {
-      (options?: BoxOptions): string
-      raw: (options: BoxOptions) => BoxOptions
+      (styles?: BoxStyles): string
+      raw: (styles: BoxStyles) => SystemStyleObject
     }
 
 
@@ -37,13 +38,14 @@ test('should generate pattern', () => {
     export const getBoxStyle = (styles = {}) => boxConfig.transform(styles, { map: mapObject })
 
     export const box = (styles) => css(getBoxStyle(styles))
-    box.raw = (styles) => styles",
+    box.raw = getBoxStyle",
         "name": "box",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type FlexProperties = {
@@ -57,11 +59,11 @@ test('should generate pattern', () => {
     }
 
 
-    type FlexOptions = FlexProperties & Omit<SystemStyleObject, keyof FlexProperties >
+    type FlexStyles = FlexProperties & DistributiveOmit<SystemStyleObject, keyof FlexProperties >
 
     interface FlexPatternFn {
-      (options?: FlexOptions): string
-      raw: (options: FlexOptions) => FlexOptions
+      (styles?: FlexStyles): string
+      raw: (styles: FlexStyles) => SystemStyleObject
     }
 
 
@@ -89,13 +91,14 @@ test('should generate pattern', () => {
     export const getFlexStyle = (styles = {}) => flexConfig.transform(styles, { map: mapObject })
 
     export const flex = (styles) => css(getFlexStyle(styles))
-    flex.raw = (styles) => styles",
+    flex.raw = getFlexStyle",
         "name": "flex",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type StackProperties = {
@@ -106,11 +109,11 @@ test('should generate pattern', () => {
     }
 
 
-    type StackOptions = StackProperties & Omit<SystemStyleObject, keyof StackProperties >
+    type StackStyles = StackProperties & DistributiveOmit<SystemStyleObject, keyof StackProperties >
 
     interface StackPatternFn {
-      (options?: StackOptions): string
-      raw: (options: StackOptions) => StackOptions
+      (styles?: StackStyles): string
+      raw: (styles: StackStyles) => SystemStyleObject
     }
 
 
@@ -135,13 +138,14 @@ test('should generate pattern', () => {
     export const getStackStyle = (styles = {}) => stackConfig.transform(styles, { map: mapObject })
 
     export const stack = (styles) => css(getStackStyle(styles))
-    stack.raw = (styles) => styles",
+    stack.raw = getStackStyle",
         "name": "stack",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type VstackProperties = {
@@ -150,11 +154,11 @@ test('should generate pattern', () => {
     }
 
 
-    type VstackOptions = VstackProperties & Omit<SystemStyleObject, keyof VstackProperties >
+    type VstackStyles = VstackProperties & DistributiveOmit<SystemStyleObject, keyof VstackProperties >
 
     interface VstackPatternFn {
-      (options?: VstackOptions): string
-      raw: (options: VstackOptions) => VstackOptions
+      (styles?: VstackStyles): string
+      raw: (styles: VstackStyles) => SystemStyleObject
     }
 
 
@@ -179,13 +183,14 @@ test('should generate pattern', () => {
     export const getVstackStyle = (styles = {}) => vstackConfig.transform(styles, { map: mapObject })
 
     export const vstack = (styles) => css(getVstackStyle(styles))
-    vstack.raw = (styles) => styles",
+    vstack.raw = getVstackStyle",
         "name": "vstack",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type HstackProperties = {
@@ -194,11 +199,11 @@ test('should generate pattern', () => {
     }
 
 
-    type HstackOptions = HstackProperties & Omit<SystemStyleObject, keyof HstackProperties >
+    type HstackStyles = HstackProperties & DistributiveOmit<SystemStyleObject, keyof HstackProperties >
 
     interface HstackPatternFn {
-      (options?: HstackOptions): string
-      raw: (options: HstackOptions) => HstackOptions
+      (styles?: HstackStyles): string
+      raw: (styles: HstackStyles) => SystemStyleObject
     }
 
 
@@ -223,13 +228,14 @@ test('should generate pattern', () => {
     export const getHstackStyle = (styles = {}) => hstackConfig.transform(styles, { map: mapObject })
 
     export const hstack = (styles) => css(getHstackStyle(styles))
-    hstack.raw = (styles) => styles",
+    hstack.raw = getHstackStyle",
         "name": "hstack",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type SpacerProperties = {
@@ -237,11 +243,11 @@ test('should generate pattern', () => {
     }
 
 
-    type SpacerOptions = SpacerProperties & Omit<SystemStyleObject, keyof SpacerProperties >
+    type SpacerStyles = SpacerProperties & DistributiveOmit<SystemStyleObject, keyof SpacerProperties >
 
     interface SpacerPatternFn {
-      (options?: SpacerOptions): string
-      raw: (options: SpacerOptions) => SpacerOptions
+      (styles?: SpacerStyles): string
+      raw: (styles: SpacerStyles) => SystemStyleObject
     }
 
 
@@ -264,13 +270,14 @@ test('should generate pattern', () => {
     export const getSpacerStyle = (styles = {}) => spacerConfig.transform(styles, { map: mapObject })
 
     export const spacer = (styles) => css(getSpacerStyle(styles))
-    spacer.raw = (styles) => styles",
+    spacer.raw = getSpacerStyle",
         "name": "spacer",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type SquareProperties = {
@@ -278,11 +285,11 @@ test('should generate pattern', () => {
     }
 
 
-    type SquareOptions = SquareProperties & Omit<SystemStyleObject, keyof SquareProperties >
+    type SquareStyles = SquareProperties & DistributiveOmit<SystemStyleObject, keyof SquareProperties >
 
     interface SquarePatternFn {
-      (options?: SquareOptions): string
-      raw: (options: SquareOptions) => SquareOptions
+      (styles?: SquareStyles): string
+      raw: (styles: SquareStyles) => SystemStyleObject
     }
 
 
@@ -308,13 +315,14 @@ test('should generate pattern', () => {
     export const getSquareStyle = (styles = {}) => squareConfig.transform(styles, { map: mapObject })
 
     export const square = (styles) => css(getSquareStyle(styles))
-    square.raw = (styles) => styles",
+    square.raw = getSquareStyle",
         "name": "square",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type CircleProperties = {
@@ -322,11 +330,11 @@ test('should generate pattern', () => {
     }
 
 
-    type CircleOptions = CircleProperties & Omit<SystemStyleObject, keyof CircleProperties >
+    type CircleStyles = CircleProperties & DistributiveOmit<SystemStyleObject, keyof CircleProperties >
 
     interface CirclePatternFn {
-      (options?: CircleOptions): string
-      raw: (options: CircleOptions) => CircleOptions
+      (styles?: CircleStyles): string
+      raw: (styles: CircleStyles) => SystemStyleObject
     }
 
 
@@ -353,13 +361,14 @@ test('should generate pattern', () => {
     export const getCircleStyle = (styles = {}) => circleConfig.transform(styles, { map: mapObject })
 
     export const circle = (styles) => css(getCircleStyle(styles))
-    circle.raw = (styles) => styles",
+    circle.raw = getCircleStyle",
         "name": "circle",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type CenterProperties = {
@@ -367,11 +376,11 @@ test('should generate pattern', () => {
     }
 
 
-    type CenterOptions = CenterProperties & Omit<SystemStyleObject, keyof CenterProperties >
+    type CenterStyles = CenterProperties & DistributiveOmit<SystemStyleObject, keyof CenterProperties >
 
     interface CenterPatternFn {
-      (options?: CenterOptions): string
-      raw: (options: CenterOptions) => CenterOptions
+      (styles?: CenterStyles): string
+      raw: (styles: CenterStyles) => SystemStyleObject
     }
 
 
@@ -394,13 +403,14 @@ test('should generate pattern', () => {
     export const getCenterStyle = (styles = {}) => centerConfig.transform(styles, { map: mapObject })
 
     export const center = (styles) => css(getCenterStyle(styles))
-    center.raw = (styles) => styles",
+    center.raw = getCenterStyle",
         "name": "center",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type LinkBoxProperties = {
@@ -408,11 +418,11 @@ test('should generate pattern', () => {
     }
 
 
-    type LinkBoxOptions = LinkBoxProperties & Omit<SystemStyleObject, keyof LinkBoxProperties >
+    type LinkBoxStyles = LinkBoxProperties & DistributiveOmit<SystemStyleObject, keyof LinkBoxProperties >
 
     interface LinkBoxPatternFn {
-      (options?: LinkBoxOptions): string
-      raw: (options: LinkBoxOptions) => LinkBoxOptions
+      (styles?: LinkBoxStyles): string
+      raw: (styles: LinkBoxStyles) => SystemStyleObject
     }
 
 
@@ -436,13 +446,14 @@ test('should generate pattern', () => {
     export const getLinkBoxStyle = (styles = {}) => linkBoxConfig.transform(styles, { map: mapObject })
 
     export const linkBox = (styles) => css(getLinkBoxStyle(styles))
-    linkBox.raw = (styles) => styles",
+    linkBox.raw = getLinkBoxStyle",
         "name": "link-box",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type LinkOverlayProperties = {
@@ -450,11 +461,11 @@ test('should generate pattern', () => {
     }
 
 
-    type LinkOverlayOptions = LinkOverlayProperties & Omit<SystemStyleObject, keyof LinkOverlayProperties >
+    type LinkOverlayStyles = LinkOverlayProperties & DistributiveOmit<SystemStyleObject, keyof LinkOverlayProperties >
 
     interface LinkOverlayPatternFn {
-      (options?: LinkOverlayOptions): string
-      raw: (options: LinkOverlayOptions) => LinkOverlayOptions
+      (styles?: LinkOverlayStyles): string
+      raw: (styles: LinkOverlayStyles) => SystemStyleObject
     }
 
 
@@ -483,13 +494,14 @@ test('should generate pattern', () => {
     export const getLinkOverlayStyle = (styles = {}) => linkOverlayConfig.transform(styles, { map: mapObject })
 
     export const linkOverlay = (styles) => css(getLinkOverlayStyle(styles))
-    linkOverlay.raw = (styles) => styles",
+    linkOverlay.raw = getLinkOverlayStyle",
         "name": "link-overlay",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type AspectRatioProperties = {
@@ -497,11 +509,11 @@ test('should generate pattern', () => {
     }
 
 
-    type AspectRatioOptions = AspectRatioProperties & Omit<SystemStyleObject, keyof AspectRatioProperties | 'aspectRatio'>
+    type AspectRatioStyles = AspectRatioProperties & DistributiveOmit<SystemStyleObject, keyof AspectRatioProperties | 'aspectRatio'>
 
     interface AspectRatioPatternFn {
-      (options?: AspectRatioOptions): string
-      raw: (options: AspectRatioOptions) => AspectRatioOptions
+      (styles?: AspectRatioStyles): string
+      raw: (styles: AspectRatioStyles) => SystemStyleObject
     }
 
 
@@ -541,13 +553,14 @@ test('should generate pattern', () => {
     export const getAspectRatioStyle = (styles = {}) => aspectRatioConfig.transform(styles, { map: mapObject })
 
     export const aspectRatio = (styles) => css(getAspectRatioStyle(styles))
-    aspectRatio.raw = (styles) => styles",
+    aspectRatio.raw = getAspectRatioStyle",
         "name": "aspect-ratio",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type GridProperties = {
@@ -559,11 +572,11 @@ test('should generate pattern', () => {
     }
 
 
-    type GridOptions = GridProperties & Omit<SystemStyleObject, keyof GridProperties >
+    type GridStyles = GridProperties & DistributiveOmit<SystemStyleObject, keyof GridProperties >
 
     interface GridPatternFn {
-      (options?: GridOptions): string
-      raw: (options: GridOptions) => GridOptions
+      (styles?: GridStyles): string
+      raw: (styles: GridStyles) => SystemStyleObject
     }
 
 
@@ -588,13 +601,14 @@ test('should generate pattern', () => {
     export const getGridStyle = (styles = {}) => gridConfig.transform(styles, { map: mapObject })
 
     export const grid = (styles) => css(getGridStyle(styles))
-    grid.raw = (styles) => styles",
+    grid.raw = getGridStyle",
         "name": "grid",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type GridItemProperties = {
@@ -607,11 +621,11 @@ test('should generate pattern', () => {
     }
 
 
-    type GridItemOptions = GridItemProperties & Omit<SystemStyleObject, keyof GridItemProperties >
+    type GridItemStyles = GridItemProperties & DistributiveOmit<SystemStyleObject, keyof GridItemProperties >
 
     interface GridItemPatternFn {
-      (options?: GridItemOptions): string
-      raw: (options: GridItemOptions) => GridItemOptions
+      (styles?: GridItemStyles): string
+      raw: (styles: GridItemStyles) => SystemStyleObject
     }
 
 
@@ -638,13 +652,14 @@ test('should generate pattern', () => {
     export const getGridItemStyle = (styles = {}) => gridItemConfig.transform(styles, { map: mapObject })
 
     export const gridItem = (styles) => css(getGridItemStyle(styles))
-    gridItem.raw = (styles) => styles",
+    gridItem.raw = getGridItemStyle",
         "name": "grid-item",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type WrapProperties = {
@@ -656,11 +671,11 @@ test('should generate pattern', () => {
     }
 
 
-    type WrapOptions = WrapProperties & Omit<SystemStyleObject, keyof WrapProperties >
+    type WrapStyles = WrapProperties & DistributiveOmit<SystemStyleObject, keyof WrapProperties >
 
     interface WrapPatternFn {
-      (options?: WrapOptions): string
-      raw: (options: WrapOptions) => WrapOptions
+      (styles?: WrapStyles): string
+      raw: (styles: WrapStyles) => SystemStyleObject
     }
 
 
@@ -687,13 +702,14 @@ test('should generate pattern', () => {
     export const getWrapStyle = (styles = {}) => wrapConfig.transform(styles, { map: mapObject })
 
     export const wrap = (styles) => css(getWrapStyle(styles))
-    wrap.raw = (styles) => styles",
+    wrap.raw = getWrapStyle",
         "name": "wrap",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type ContainerProperties = {
@@ -701,11 +717,11 @@ test('should generate pattern', () => {
     }
 
 
-    type ContainerOptions = ContainerProperties & Omit<SystemStyleObject, keyof ContainerProperties >
+    type ContainerStyles = ContainerProperties & DistributiveOmit<SystemStyleObject, keyof ContainerProperties >
 
     interface ContainerPatternFn {
-      (options?: ContainerOptions): string
-      raw: (options: ContainerOptions) => ContainerOptions
+      (styles?: ContainerStyles): string
+      raw: (styles: ContainerStyles) => SystemStyleObject
     }
 
 
@@ -728,13 +744,14 @@ test('should generate pattern', () => {
     export const getContainerStyle = (styles = {}) => containerConfig.transform(styles, { map: mapObject })
 
     export const container = (styles) => css(getContainerStyle(styles))
-    container.raw = (styles) => styles",
+    container.raw = getContainerStyle",
         "name": "container",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type DividerProperties = {
@@ -744,11 +761,11 @@ test('should generate pattern', () => {
     }
 
 
-    type DividerOptions = DividerProperties & Omit<SystemStyleObject, keyof DividerProperties >
+    type DividerStyles = DividerProperties & DistributiveOmit<SystemStyleObject, keyof DividerProperties >
 
     interface DividerPatternFn {
-      (options?: DividerOptions): string
-      raw: (options: DividerOptions) => DividerOptions
+      (styles?: DividerStyles): string
+      raw: (styles: DividerStyles) => SystemStyleObject
     }
 
 
@@ -774,13 +791,14 @@ test('should generate pattern', () => {
     export const getDividerStyle = (styles = {}) => dividerConfig.transform(styles, { map: mapObject })
 
     export const divider = (styles) => css(getDividerStyle(styles))
-    divider.raw = (styles) => styles",
+    divider.raw = getDividerStyle",
         "name": "divider",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type FloatProperties = {
@@ -791,11 +809,11 @@ test('should generate pattern', () => {
     }
 
 
-    type FloatOptions = FloatProperties & Omit<SystemStyleObject, keyof FloatProperties >
+    type FloatStyles = FloatProperties & DistributiveOmit<SystemStyleObject, keyof FloatProperties >
 
     interface FloatPatternFn {
-      (options?: FloatOptions): string
-      raw: (options: FloatOptions) => FloatOptions
+      (styles?: FloatStyles): string
+      raw: (styles: FloatStyles) => SystemStyleObject
     }
 
 
@@ -845,13 +863,14 @@ test('should generate pattern', () => {
     export const getFloatStyle = (styles = {}) => floatConfig.transform(styles, { map: mapObject })
 
     export const float = (styles) => css(getFloatStyle(styles))
-    float.raw = (styles) => styles",
+    float.raw = getFloatStyle",
         "name": "float",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type BleedProperties = {
@@ -860,11 +879,11 @@ test('should generate pattern', () => {
     }
 
 
-    type BleedOptions = BleedProperties & Omit<SystemStyleObject, keyof BleedProperties >
+    type BleedStyles = BleedProperties & DistributiveOmit<SystemStyleObject, keyof BleedProperties >
 
     interface BleedPatternFn {
-      (options?: BleedOptions): string
-      raw: (options: BleedOptions) => BleedOptions
+      (styles?: BleedStyles): string
+      raw: (styles: BleedStyles) => SystemStyleObject
     }
 
 
@@ -888,13 +907,14 @@ test('should generate pattern', () => {
     export const getBleedStyle = (styles = {}) => bleedConfig.transform(styles, { map: mapObject })
 
     export const bleed = (styles) => css(getBleedStyle(styles))
-    bleed.raw = (styles) => styles",
+    bleed.raw = getBleedStyle",
         "name": "bleed",
       },
       {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { PropertyValue } from '../types/prop-type'
     import type { Properties } from '../types/csstype'
+    import type { PropertyValue } from '../types/prop-type'
+    import type { DistributiveOmit } from '../types/system-types'
     import type { Tokens } from '../tokens'
 
     export type VisuallyHiddenProperties = {
@@ -902,11 +922,11 @@ test('should generate pattern', () => {
     }
 
 
-    type VisuallyHiddenOptions = VisuallyHiddenProperties & Omit<SystemStyleObject, keyof VisuallyHiddenProperties >
+    type VisuallyHiddenStyles = VisuallyHiddenProperties & DistributiveOmit<SystemStyleObject, keyof VisuallyHiddenProperties >
 
     interface VisuallyHiddenPatternFn {
-      (options?: VisuallyHiddenOptions): string
-      raw: (options: VisuallyHiddenOptions) => VisuallyHiddenOptions
+      (styles?: VisuallyHiddenStyles): string
+      raw: (styles: VisuallyHiddenStyles) => SystemStyleObject
     }
 
 
@@ -926,7 +946,7 @@ test('should generate pattern', () => {
     export const getVisuallyHiddenStyle = (styles = {}) => visuallyHiddenConfig.transform(styles, { map: mapObject })
 
     export const visuallyHidden = (styles) => css(getVisuallyHiddenStyle(styles))
-    visuallyHidden.raw = (styles) => styles",
+    visuallyHidden.raw = getVisuallyHiddenStyle",
         "name": "visually-hidden",
       },
     ]

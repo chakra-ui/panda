@@ -3,15 +3,18 @@ import type {
   Config,
   CssKeyframes,
   GlobalStyleObject,
+  LayerStyles,
   Parts,
   PatternConfig,
   Preset,
+  PropertyConfig,
   RecipeConfig,
   RecipeVariantRecord,
   SemanticTokens,
   SlotRecipeConfig,
   SlotRecipeVariantRecord,
   SystemStyleObject,
+  TextStyles,
   Tokens,
 } from '@pandacss/types'
 
@@ -55,6 +58,10 @@ export function defineGlobalStyles(definition: GlobalStyleObject) {
   return definition
 }
 
+export function defineUtility(utility: PropertyConfig) {
+  return utility
+}
+
 /* -----------------------------------------------------------------------------
  * Token creators
  * -----------------------------------------------------------------------------*/
@@ -90,14 +97,17 @@ export function defineStyles(definition: SystemStyleObject) {
 }
 
 export type {
+  CompositionStyles,
   Config,
+  CssKeyframes,
+  GlobalStyleObject,
+  LayerStyles,
+  Preset,
+  PropertyConfig,
+  SemanticTokens,
   SlotRecipeConfig,
   SlotRecipeVariantRecord,
   SystemStyleObject,
-  Preset,
-  CssKeyframes,
-  GlobalStyleObject,
+  TextStyles,
   Tokens,
-  SemanticTokens,
-  CompositionStyles,
 }

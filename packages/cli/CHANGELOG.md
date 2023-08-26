@@ -1,5 +1,78 @@
 # @pandacss/dev
 
+## 0.13.0
+
+### Minor Changes
+
+- 04b5fd6c: - Add support for minification in `cssgen` command.
+  - Fix issue where `panda --minify` does not work.
+
+### Patch Changes
+
+- @pandacss/node@0.13.0
+- @pandacss/studio@0.13.0
+- @pandacss/postcss@0.13.0
+- @pandacss/config@0.13.0
+- @pandacss/error@0.13.0
+- @pandacss/logger@0.13.0
+- @pandacss/preset-panda@0.13.0
+- @pandacss/shared@0.13.0
+- @pandacss/token-dictionary@0.13.0
+- @pandacss/types@0.13.0
+
+## 0.12.2
+
+### Patch Changes
+
+- @pandacss/node@0.12.2
+- @pandacss/postcss@0.12.2
+- @pandacss/studio@0.12.2
+- @pandacss/config@0.12.2
+- @pandacss/error@0.12.2
+- @pandacss/logger@0.12.2
+- @pandacss/preset-panda@0.12.2
+- @pandacss/shared@0.12.2
+- @pandacss/token-dictionary@0.12.2
+- @pandacss/types@0.12.2
+
+## 0.12.1
+
+### Patch Changes
+
+- @pandacss/node@0.12.1
+- @pandacss/postcss@0.12.1
+- @pandacss/studio@0.12.1
+- @pandacss/config@0.12.1
+- @pandacss/error@0.12.1
+- @pandacss/logger@0.12.1
+- @pandacss/preset-panda@0.12.1
+- @pandacss/shared@0.12.1
+- @pandacss/token-dictionary@0.12.1
+- @pandacss/types@0.12.1
+
+## 0.12.0
+
+### Minor Changes
+
+- 75ba44de: Add the CLI interactive mode
+
+### Patch Changes
+
+- 7a041b16: Add `defineUtility` method
+- 4c8c1715: Export types for all `define` helper functions
+- Updated dependencies [4c8c1715]
+- Updated dependencies [bf2ff391]
+  - @pandacss/studio@0.12.0
+  - @pandacss/node@0.12.0
+  - @pandacss/config@0.12.0
+  - @pandacss/postcss@0.12.0
+  - @pandacss/token-dictionary@0.12.0
+  - @pandacss/error@0.12.0
+  - @pandacss/logger@0.12.0
+  - @pandacss/preset-panda@0.12.0
+  - @pandacss/shared@0.12.0
+  - @pandacss/types@0.12.0
+
 ## 0.11.1
 
 ### Patch Changes

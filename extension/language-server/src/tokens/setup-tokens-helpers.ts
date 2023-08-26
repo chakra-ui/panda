@@ -151,6 +151,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
 
     return (result: ResultItem) => {
       const boxNode = result.box
+      if (box.isLiteral(boxNode)) return
 
       result.data.forEach((styles) => {
         const keys = Object.keys(styles)
@@ -161,7 +162,9 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
           if (value == null) return
 
           const [prop, ..._allConditions] = ctx.conditions.shift(paths)
-          const propNode = getNestedBoxProp(boxNode, paths)
+          const propNode = box.isArray(boxNode)
+            ? boxNode.value.find((node) => box.isMap(node) && getNestedBoxProp(node, paths))
+            : getNestedBoxProp(boxNode, paths)
           if (!box.isLiteral(propNode)) return
 
           const propName = ctx.utility.resolveShorthand(prop)
@@ -186,11 +189,13 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
 
     parserResult.css.forEach(onResult)
     parserResult.jsx.forEach(onResult)
-    parserResult.cva.forEach((item) =>
-      item.data.forEach(({ base }) =>
-        onResult(Object.assign({}, item, { box: item.box.value.get('base'), data: [base] })),
-      ),
-    )
+    parserResult.cva.forEach((item) => {
+      const map = item.box
+      if (!box.isMap(map)) return
+      return item.data.forEach(({ base }) =>
+        onResult(Object.assign({}, item, { box: map.value.get('base'), data: [base] })),
+      )
+    })
   }
 
   const getNodeAtPosition = (doc: TextDocument, position: Position) => {

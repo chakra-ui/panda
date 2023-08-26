@@ -1,5 +1,49 @@
 # @pandacss/parser
 
+## 0.13.0
+
+### Patch Changes
+
+- @pandacss/config@0.13.0
+- @pandacss/extractor@0.13.0
+- @pandacss/is-valid-prop@0.13.0
+- @pandacss/logger@0.13.0
+- @pandacss/shared@0.13.0
+- @pandacss/types@0.13.0
+
+## 0.12.2
+
+### Patch Changes
+
+- @pandacss/config@0.12.2
+- @pandacss/extractor@0.12.2
+- @pandacss/is-valid-prop@0.12.2
+- @pandacss/logger@0.12.2
+- @pandacss/shared@0.12.2
+- @pandacss/types@0.12.2
+
+## 0.12.1
+
+### Patch Changes
+
+- @pandacss/config@0.12.1
+- @pandacss/extractor@0.12.1
+- @pandacss/is-valid-prop@0.12.1
+- @pandacss/logger@0.12.1
+- @pandacss/shared@0.12.1
+- @pandacss/types@0.12.1
+
+## 0.12.0
+
+### Patch Changes
+
+- @pandacss/config@0.12.0
+- @pandacss/extractor@0.12.0
+- @pandacss/is-valid-prop@0.12.0
+- @pandacss/logger@0.12.0
+- @pandacss/shared@0.12.0
+- @pandacss/types@0.12.0
+
 ## 0.11.1
 
 ### Patch Changes

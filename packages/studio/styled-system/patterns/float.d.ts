@@ -1,7 +1,8 @@
 /* eslint-disable */
 import type { SystemStyleObject, ConditionalValue } from '../types'
-import type { PropertyValue } from '../types/prop-type'
 import type { Properties } from '../types/csstype'
+import type { PropertyValue } from '../types/prop-type'
+import type { DistributiveOmit } from '../types/system-types'
 import type { Tokens } from '../tokens'
 
 export type FloatProperties = {
@@ -12,11 +13,11 @@ export type FloatProperties = {
 }
 
 
-type FloatOptions = FloatProperties & Omit<SystemStyleObject, keyof FloatProperties >
+type FloatStyles = FloatProperties & DistributiveOmit<SystemStyleObject, keyof FloatProperties >
 
 interface FloatPatternFn {
-  (options?: FloatOptions): string
-  raw: (options: FloatOptions) => FloatOptions
+  (styles?: FloatStyles): string
+  raw: (styles: FloatStyles) => SystemStyleObject
 }
 
 

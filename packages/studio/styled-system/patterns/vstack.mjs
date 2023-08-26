@@ -18,4 +18,4 @@ const vstackConfig = {
 export const getVstackStyle = (styles = {}) => vstackConfig.transform(styles, { map: mapObject })
 
 export const vstack = (styles) => css(getVstackStyle(styles))
-vstack.raw = (styles) => styles
+vstack.raw = getVstackStyle

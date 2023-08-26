@@ -1,7 +1,8 @@
 /* eslint-disable */
 import type { SystemStyleObject, ConditionalValue } from '../types'
-import type { PropertyValue } from '../types/prop-type'
 import type { Properties } from '../types/csstype'
+import type { PropertyValue } from '../types/prop-type'
+import type { DistributiveOmit } from '../types/system-types'
 import type { Tokens } from '../tokens'
 
 export type SpacerProperties = {
@@ -9,11 +10,11 @@ export type SpacerProperties = {
 }
 
 
-type SpacerOptions = SpacerProperties & Omit<SystemStyleObject, keyof SpacerProperties >
+type SpacerStyles = SpacerProperties & DistributiveOmit<SystemStyleObject, keyof SpacerProperties >
 
 interface SpacerPatternFn {
-  (options?: SpacerOptions): string
-  raw: (options: SpacerOptions) => SpacerOptions
+  (styles?: SpacerStyles): string
+  raw: (styles: SpacerStyles) => SystemStyleObject
 }
 
 

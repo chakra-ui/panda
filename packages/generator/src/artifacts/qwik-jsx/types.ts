@@ -10,37 +10,21 @@ import { ${upperName} } from '../types/jsx'
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
-import type { FunctionComponent, QwikIntrinsicElements } from '@builder.io/qwik'
-import type { Assign as _Assign, JsxStyleProps, PatchedHTMLProps } from './system-types'
+import type { Component, QwikIntrinsicElements } from '@builder.io/qwik'
+import type { Assign, JsxStyleProps, PatchedHTMLProps } from './system-types'
 import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
 
-type ElementType = keyof QwikIntrinsicElements | FunctionComponent<any>
+type ElementType = keyof QwikIntrinsicElements | Component<any>
 
 type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsicElements
   ? QwikIntrinsicElements[T]
-  : T extends FunctionComponent<infer P>
+  : T extends Component<infer P>
   ? P
   : never
 
 type Dict = Record<string, unknown>
 
-type Omitted = 'color' | 'translate' | 'transition' | 'width' | 'height' | 'size' | 'content'
-
-// Patch due to Omit<T, K> not working with Qwik JSX Types
-
-type Assign<T, U> = {
-  [K in keyof T]?: K extends Omitted
-    ? K extends keyof U
-      ? U[K]
-      : never
-    : K extends keyof T
-    ? K extends keyof U
-      ? T[K] & U[K]
-      : T[K]
-    : never
-} & U & PatchedHTMLProps
-
-export type ${componentName}<T extends ElementType, P extends Dict = {}> = FunctionComponent<Assign<ComponentProps<T>, _Assign<JsxStyleProps, P>>>
+export type ${componentName}<T extends ElementType, P extends Dict = {}> = Component<Assign<ComponentProps<T> & PatchedHTMLProps, Assign<JsxStyleProps, P>>>
 
 type RecipeFn = { __type: any }
 

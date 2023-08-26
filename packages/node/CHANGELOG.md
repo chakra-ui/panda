@@ -1,5 +1,78 @@
 # @pandacss/node
 
+## 0.13.0
+
+### Patch Changes
+
+- Updated dependencies [04b5fd6c]
+- Updated dependencies [a9690110]
+- Updated dependencies [32ceac3f]
+  - @pandacss/core@0.13.0
+  - @pandacss/generator@0.13.0
+  - @pandacss/parser@0.13.0
+  - @pandacss/config@0.13.0
+  - @pandacss/error@0.13.0
+  - @pandacss/extractor@0.13.0
+  - @pandacss/is-valid-prop@0.13.0
+  - @pandacss/logger@0.13.0
+  - @pandacss/shared@0.13.0
+  - @pandacss/token-dictionary@0.13.0
+  - @pandacss/types@0.13.0
+
+## 0.12.2
+
+### Patch Changes
+
+- Updated dependencies [6588c8e0]
+- Updated dependencies [36fdff89]
+  - @pandacss/generator@0.12.2
+  - @pandacss/parser@0.12.2
+  - @pandacss/config@0.12.2
+  - @pandacss/core@0.12.2
+  - @pandacss/error@0.12.2
+  - @pandacss/extractor@0.12.2
+  - @pandacss/is-valid-prop@0.12.2
+  - @pandacss/logger@0.12.2
+  - @pandacss/shared@0.12.2
+  - @pandacss/token-dictionary@0.12.2
+  - @pandacss/types@0.12.2
+
+## 0.12.1
+
+### Patch Changes
+
+- Updated dependencies [599fbc1a]
+  - @pandacss/generator@0.12.1
+  - @pandacss/parser@0.12.1
+  - @pandacss/config@0.12.1
+  - @pandacss/core@0.12.1
+  - @pandacss/error@0.12.1
+  - @pandacss/extractor@0.12.1
+  - @pandacss/is-valid-prop@0.12.1
+  - @pandacss/logger@0.12.1
+  - @pandacss/shared@0.12.1
+  - @pandacss/token-dictionary@0.12.1
+  - @pandacss/types@0.12.1
+
+## 0.12.0
+
+### Patch Changes
+
+- Updated dependencies [a41515de]
+- Updated dependencies [bf2ff391]
+- Updated dependencies [ad1518b8]
+  - @pandacss/generator@0.12.0
+  - @pandacss/parser@0.12.0
+  - @pandacss/config@0.12.0
+  - @pandacss/core@0.12.0
+  - @pandacss/token-dictionary@0.12.0
+  - @pandacss/error@0.12.0
+  - @pandacss/extractor@0.12.0
+  - @pandacss/is-valid-prop@0.12.0
+  - @pandacss/logger@0.12.0
+  - @pandacss/shared@0.12.0
+  - @pandacss/types@0.12.0
+
 ## 0.11.1
 
 ### Patch Changes

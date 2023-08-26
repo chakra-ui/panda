@@ -1,7 +1,8 @@
 /* eslint-disable */
 import type { SystemStyleObject, ConditionalValue } from '../types'
-import type { PropertyValue } from '../types/prop-type'
 import type { Properties } from '../types/csstype'
+import type { PropertyValue } from '../types/prop-type'
+import type { DistributiveOmit } from '../types/system-types'
 import type { Tokens } from '../tokens'
 
 export type VstackProperties = {
@@ -10,11 +11,11 @@ export type VstackProperties = {
 }
 
 
-type VstackOptions = VstackProperties & Omit<SystemStyleObject, keyof VstackProperties >
+type VstackStyles = VstackProperties & DistributiveOmit<SystemStyleObject, keyof VstackProperties >
 
 interface VstackPatternFn {
-  (options?: VstackOptions): string
-  raw: (options: VstackOptions) => VstackOptions
+  (styles?: VstackStyles): string
+  raw: (styles: VstackStyles) => SystemStyleObject
 }
 
 

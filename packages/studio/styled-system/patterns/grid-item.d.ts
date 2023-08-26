@@ -1,7 +1,8 @@
 /* eslint-disable */
 import type { SystemStyleObject, ConditionalValue } from '../types'
-import type { PropertyValue } from '../types/prop-type'
 import type { Properties } from '../types/csstype'
+import type { PropertyValue } from '../types/prop-type'
+import type { DistributiveOmit } from '../types/system-types'
 import type { Tokens } from '../tokens'
 
 export type GridItemProperties = {
@@ -14,11 +15,11 @@ export type GridItemProperties = {
 }
 
 
-type GridItemOptions = GridItemProperties & Omit<SystemStyleObject, keyof GridItemProperties >
+type GridItemStyles = GridItemProperties & DistributiveOmit<SystemStyleObject, keyof GridItemProperties >
 
 interface GridItemPatternFn {
-  (options?: GridItemOptions): string
-  raw: (options: GridItemOptions) => GridItemOptions
+  (styles?: GridItemStyles): string
+  raw: (styles: GridItemStyles) => SystemStyleObject
 }
 
 

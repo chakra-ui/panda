@@ -89,6 +89,7 @@ export const config = defineConfig({
       bg: { base: 'white', _dark: '#2C2C2C' },
     },
   },
+  jsxFramework: 'react',
 });    
           
 `,

@@ -28,7 +28,7 @@ export function generateQwikJsxFactory(ctx: Context) {
         }
 
         function cvaClass() {
-          const cvaStyles = cvaFn.resolve(variantProps)
+          const cvaStyles = cvaFn.raw(variantProps)
           const styles = assignCss(cvaStyles, propStyles, cssStyles)
           return cx(css(styles), elementProps.class)
         }
