@@ -1,5 +1,20 @@
 # @pandacss/generator
 
+## 0.13.0
+
+### Patch Changes
+
+- a9690110: Fix issue where `defineTextStyle` and `defineLayerStyle` return types are incompatible with `config.theme`
+  type.
+- 32ceac3f: Fix an issue with custom JSX components not finding their matching patterns
+- Updated dependencies [04b5fd6c]
+  - @pandacss/core@0.13.0
+  - @pandacss/is-valid-prop@0.13.0
+  - @pandacss/logger@0.13.0
+  - @pandacss/shared@0.13.0
+  - @pandacss/token-dictionary@0.13.0
+  - @pandacss/types@0.13.0
+
 ## 0.12.2
 
 ### Patch Changes
