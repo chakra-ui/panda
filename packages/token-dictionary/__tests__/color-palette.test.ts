@@ -32,7 +32,6 @@ test('should generate virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
-          "colorPalette": "",
           "condition": "base",
           "prop": "primary",
           "var": "--colors-primary",
@@ -50,13 +49,13 @@ test('should generate virtual palette', () => {
       Token {
         "description": undefined,
         "extensions": {
-          "ancestorKeys": [
-            "300",
-          ],
           "category": "colors",
           "colorPalette": "red",
-          "colorPaletteAncestors": [
+          "colorPaletteRoots": [
             "red",
+          ],
+          "colorPaletteTokenKeys": [
+            "300",
           ],
           "condition": "base",
           "prop": "red.300",
@@ -76,13 +75,13 @@ test('should generate virtual palette', () => {
       Token {
         "description": undefined,
         "extensions": {
-          "ancestorKeys": [
-            "500",
-          ],
           "category": "colors",
           "colorPalette": "red",
-          "colorPaletteAncestors": [
+          "colorPaletteRoots": [
             "red",
+          ],
+          "colorPaletteTokenKeys": [
+            "500",
           ],
           "condition": "base",
           "prop": "red.500",
@@ -102,13 +101,13 @@ test('should generate virtual palette', () => {
       Token {
         "description": undefined,
         "extensions": {
-          "ancestorKeys": [
-            "500",
-          ],
           "category": "colors",
           "colorPalette": "blue",
-          "colorPaletteAncestors": [
+          "colorPaletteRoots": [
             "blue",
+          ],
+          "colorPaletteTokenKeys": [
+            "500",
           ],
           "condition": "base",
           "prop": "blue.500",
@@ -128,13 +127,13 @@ test('should generate virtual palette', () => {
       Token {
         "description": undefined,
         "extensions": {
-          "ancestorKeys": [
-            "700",
-          ],
           "category": "colors",
           "colorPalette": "blue",
-          "colorPaletteAncestors": [
+          "colorPaletteRoots": [
             "blue",
+          ],
+          "colorPaletteTokenKeys": [
+            "700",
           ],
           "condition": "base",
           "prop": "blue.700",
@@ -155,7 +154,6 @@ test('should generate virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
-          "colorPalette": "",
           "condition": "base",
           "isVirtual": true,
           "prop": "colorPalette.300",
@@ -176,7 +174,6 @@ test('should generate virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
-          "colorPalette": "",
           "condition": "base",
           "isVirtual": true,
           "prop": "colorPalette.500",
@@ -197,7 +194,6 @@ test('should generate virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
-          "colorPalette": "",
           "condition": "base",
           "isVirtual": true,
           "prop": "colorPalette.700",
@@ -292,13 +288,13 @@ test('should generate nested object virtual palette', () => {
       Token {
         "description": undefined,
         "extensions": {
-          "ancestorKeys": [
-            "dark",
-          ],
           "category": "colors",
           "colorPalette": "button",
-          "colorPaletteAncestors": [
+          "colorPaletteRoots": [
             "button",
+          ],
+          "colorPaletteTokenKeys": [
+            "dark",
           ],
           "condition": "base",
           "conditions": {
@@ -321,13 +317,13 @@ test('should generate nested object virtual palette', () => {
       Token {
         "description": undefined,
         "extensions": {
-          "ancestorKeys": [
-            "light",
-          ],
           "category": "colors",
           "colorPalette": "button",
-          "colorPaletteAncestors": [
+          "colorPaletteRoots": [
             "button",
+          ],
+          "colorPaletteTokenKeys": [
+            "light",
           ],
           "condition": "base",
           "conditions": {
@@ -350,15 +346,15 @@ test('should generate nested object virtual palette', () => {
       Token {
         "description": undefined,
         "extensions": {
-          "ancestorKeys": [
-            "light.accent",
-            "accent",
-          ],
           "category": "colors",
           "colorPalette": "button.light",
-          "colorPaletteAncestors": [
+          "colorPaletteRoots": [
             "button",
             "button.light",
+          ],
+          "colorPaletteTokenKeys": [
+            "light.accent",
+            "accent",
           ],
           "condition": "base",
           "conditions": {
@@ -382,17 +378,17 @@ test('should generate nested object virtual palette', () => {
       Token {
         "description": undefined,
         "extensions": {
-          "ancestorKeys": [
-            "light.accent.secondary",
-            "accent.secondary",
-            "secondary",
-          ],
           "category": "colors",
           "colorPalette": "button.light.accent",
-          "colorPaletteAncestors": [
+          "colorPaletteRoots": [
             "button",
             "button.light",
             "button.light.accent",
+          ],
+          "colorPaletteTokenKeys": [
+            "light.accent.secondary",
+            "accent.secondary",
+            "secondary",
           ],
           "condition": "base",
           "conditions": {
@@ -418,7 +414,6 @@ test('should generate nested object virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
-          "colorPalette": "",
           "condition": "base",
           "isVirtual": true,
           "prop": "colorPalette.dark",
@@ -439,7 +434,6 @@ test('should generate nested object virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
-          "colorPalette": "",
           "condition": "base",
           "isVirtual": true,
           "prop": "colorPalette.light",
@@ -460,7 +454,6 @@ test('should generate nested object virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
-          "colorPalette": "",
           "condition": "base",
           "isVirtual": true,
           "prop": "colorPalette.light.accent",
@@ -482,7 +475,6 @@ test('should generate nested object virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
-          "colorPalette": "",
           "condition": "base",
           "isVirtual": true,
           "prop": "colorPalette.accent",
@@ -503,7 +495,6 @@ test('should generate nested object virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
-          "colorPalette": "",
           "condition": "base",
           "isVirtual": true,
           "prop": "colorPalette.light.accent.secondary",
@@ -526,7 +517,6 @@ test('should generate nested object virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
-          "colorPalette": "",
           "condition": "base",
           "isVirtual": true,
           "prop": "colorPalette.accent.secondary",
@@ -548,7 +538,6 @@ test('should generate nested object virtual palette', () => {
         "description": undefined,
         "extensions": {
           "category": "colors",
-          "colorPalette": "",
           "condition": "base",
           "isVirtual": true,
           "prop": "colorPalette.secondary",
