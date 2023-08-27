@@ -1066,7 +1066,24 @@ describe('extract to css output pipeline', () => {
                 },
               })}
             >
-              Hello world
+              Root color palette
+            </button>
+            <button
+              className={css({
+                colorPalette: 'button.light',
+                color: 'colorPalette.accent',
+                background: 'colorPalette.accent.secondary',
+              })}
+            >
+              One level deep nested color palette
+            </button>
+            <button
+              className={css({
+                colorPalette: 'button.light.accent',
+                color: 'colorPalette.secondary',
+              })}
+            >
+              Nested color palette leaf
             </button>
           </>
         );
@@ -1118,6 +1135,27 @@ describe('extract to css output pipeline', () => {
             "name": "css",
             "type": "object",
           },
+          {
+            "data": [
+              {
+                "background": "colorPalette.accent.secondary",
+                "color": "colorPalette.accent",
+                "colorPalette": "button.light",
+              },
+            ],
+            "name": "css",
+            "type": "object",
+          },
+          {
+            "data": [
+              {
+                "color": "colorPalette.secondary",
+                "colorPalette": "button.light.accent",
+              },
+            ],
+            "name": "css",
+            "type": "object",
+          },
         ]
       `)
 
@@ -1139,6 +1177,27 @@ describe('extract to css output pipeline', () => {
 
           .bg_colorPalette\\\\.dark {
             background-color: var(--colors-color-palette-dark)
+            }
+
+          .color-palette_button\\\\.light {
+            --colors-color-palette-accent: var(--colors-button-light-accent);
+            --colors-color-palette-accent-secondary: var(--colors-button-light-accent-secondary)
+            }
+
+          .text_colorPalette\\\\.accent {
+            color: var(--colors-color-palette-accent)
+            }
+
+          .bg_colorPalette\\\\.accent\\\\.secondary {
+            background: var(--colors-color-palette-accent-secondary)
+            }
+
+          .color-palette_button\\\\.light\\\\.accent {
+            --colors-color-palette-secondary: var(--colors-button-light-accent-secondary)
+            }
+
+          .text_colorPalette\\\\.secondary {
+            color: var(--colors-color-palette-secondary)
             }
 
           .hover\\\\:text_colorPalette\\\\.light\\\\.accent:is(:hover, [data-hover]) {

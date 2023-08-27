@@ -69,15 +69,46 @@ export const addVirtualPalette: TokenMiddleware = {
     const colorPalettes = new Map<string, Token[]>()
 
     tokens.forEach((token) => {
-      const { colorPalette, colorPaletteAncestors, ancestorKeys } = token.extensions
+      const { colorPalette, colorPaletteRoots, colorPaletteTokenKeys } = token.extensions
       if (!colorPalette) return
 
-      ancestorKeys.forEach(keys.add, keys)
+      // Add colorPalette keys to the set so we can create virtual tokens for them
+      colorPaletteTokenKeys.forEach(keys.add, keys)
 
-      colorPaletteAncestors.forEach((colorPaletteAncestor: string) => {
-        const ancestorList = colorPalettes.get(colorPaletteAncestor) || []
-        ancestorList.push(token)
-        colorPalettes.set(colorPalette, ancestorList)
+      /**
+       * Assign nested tokens to their respective color palette list.
+       *
+       * Iteration 1:
+       * If `colorPaletteRoots` is this array ['button']
+       * and the token name is 'colors.button.light' it will be added to the 'button' color palette list.
+       * ```
+       * const colorPalettes = {
+       *  'button': ['colors.button.light'],
+       * }
+       *
+       * Itteration 2:
+       * If `colorPaletteRoots` is this array ['button', 'button.light']
+       * and the token name is 'colors.button.light.accent' it will be added to the 'button' and 'button.light' color palette lists.
+       * ```
+       * const colorPalettes = {
+       * 'button': ['colors.button.light', 'colors.button.light.accent'],
+       * 'button.light': ['colors.button.light.accent'],
+       * }
+       *
+       * Itteration 3:
+       * If `colorPaletteRoots` is this array ['button', 'button.light', 'button.light.accent']
+       * and the token name is 'colors.button.light.accent.secondary' it will be added to the 'button', 'button.light' and 'button.light.accent' color palette lists.
+       * ```
+       * const colorPalettes = {
+       *  'button': ['colors.button.light', 'colors.button.light.accent', 'colors.button.light.accent.secondary'],
+       *  'button.light': ['colors.button.light.accent', 'colors.button.light.accent.secondary'],
+       *  'button.light.accent': ['colors.button.light.accent.secondary'],
+       * }
+       */
+      colorPaletteRoots.forEach((colorPaletteRoot: string) => {
+        const colorPaletteList = colorPalettes.get(colorPaletteRoot) || []
+        colorPaletteList.push(token)
+        colorPalettes.set(colorPaletteRoot, colorPaletteList)
       })
     })
 
