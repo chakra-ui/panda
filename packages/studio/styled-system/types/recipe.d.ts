@@ -31,7 +31,7 @@ export type RecipeRuntimeFn<T extends RecipeVariantRecord> = RecipeVariantFn<T> 
   __type: RecipeSelection<T>
   variantKeys: (keyof T)[]
   variantMap: RecipeVariantMap<T>
-  raw: (props?: RecipeSelection<T>) => SystemStyleObject
+  resolve: (props: RecipeSelection<T>) => SystemStyleObject
   config: RecipeConfig<T>
   splitVariantProps<Props extends RecipeSelection<T>>(
     props: Props,

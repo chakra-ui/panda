@@ -14,7 +14,7 @@ type LinkBoxStyles = LinkBoxProperties & DistributiveOmit<SystemStyleObject, key
 
 interface LinkBoxPatternFn {
   (styles?: LinkBoxStyles): string
-  raw: (styles: LinkBoxStyles) => SystemStyleObject
+  raw: (styles: LinkBoxStyles) => LinkBoxStyles
 }
 
 

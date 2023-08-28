@@ -21,7 +21,7 @@ function styledFn(Dynamic, configOrCva = {}) {
 
     function cvaClass() {
       const { css: cssStyles, ...propStyles } = styleProps
-      const cvaStyles = cvaFn.raw(variantProps)
+      const cvaStyles = cvaFn.resolve(variantProps)
       const styles = assignCss(cvaStyles, propStyles, cssStyles)
       return cx(css(styles), elementProps.className)
     }

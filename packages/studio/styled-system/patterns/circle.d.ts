@@ -14,7 +14,7 @@ type CircleStyles = CircleProperties & DistributiveOmit<SystemStyleObject, keyof
 
 interface CirclePatternFn {
   (styles?: CircleStyles): string
-  raw: (styles: CircleStyles) => SystemStyleObject
+  raw: (styles: CircleStyles) => CircleStyles
 }
 
 

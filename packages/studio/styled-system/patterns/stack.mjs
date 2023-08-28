@@ -18,4 +18,4 @@ const stackConfig = {
 export const getStackStyle = (styles = {}) => stackConfig.transform(styles, { map: mapObject })
 
 export const stack = (styles) => css(getStackStyle(styles))
-stack.raw = getStackStyle
+stack.raw = (styles) => styles
