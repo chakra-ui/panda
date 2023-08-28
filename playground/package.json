@@ -17,7 +17,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@ark-ui/react": "0.9.0",
+    "@ark-ui/react": "0.13.1",
     "@babel/parser": "^7.22.7",
     "@babel/traverse": "^7.22.8",
     "@monaco-editor/react": "4.5.1",
