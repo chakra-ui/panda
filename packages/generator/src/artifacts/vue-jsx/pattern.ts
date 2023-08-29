@@ -31,10 +31,10 @@ export function generateVueJsxPattern(ctx: Context) {
     `,
 
       dts: outdent`
-    import { FunctionalComponent } from 'vue'
-    import { ${upperName}Properties } from '../patterns/${dashName}'
-    import { ${typeName} } from '../types/jsx'
-    import { DistributiveOmit } from '../types/system-types'
+    import type { FunctionalComponent } from 'vue'
+    ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
+    ${ctx.file.importType(typeName, '../types/jsx')}
+    ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
 
     export type ${upperName}Props = ${upperName}Properties & DistributiveOmit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}>
 

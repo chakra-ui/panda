@@ -12,7 +12,7 @@ export function generateCssFn(ctx: Context) {
 
   return {
     dts: outdent`
-    import type { SystemStyleObject } from '../types'
+    ${ctx.file.importType('SystemStyleObject', '../types/index')}
 
     interface CssFunction {
       (...styles: SystemStyleObject[]): string

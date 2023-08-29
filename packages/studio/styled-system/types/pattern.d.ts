@@ -1,6 +1,6 @@
 /* eslint-disable */
-import type { CssProperty, SystemStyleObject } from './system-types'
-import type { TokenCategory } from '../tokens'
+import type {  CssProperty, SystemStyleObject  } from './system-types';
+import type {  TokenCategory  } from '../tokens/index';
 
 type Primitive = string | number | boolean | null | undefined
 type LiteralUnion<T, K extends Primitive = string> = T | (K & Record<never, never>)

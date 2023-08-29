@@ -35,7 +35,7 @@ export function generateSvaFn(ctx: Context) {
     }
     `,
     dts: outdent`
-    import type { SlotRecipeCreatorFn } from '../types/recipe'
+    ${ctx.file.importType('SlotRecipeCreatorFn', '../types/recipe')}
 
     export declare const sva: SlotRecipeCreatorFn
     `,

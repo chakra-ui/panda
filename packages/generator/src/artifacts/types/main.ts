@@ -1,13 +1,15 @@
 import { outdent } from 'outdent'
+import type { Context } from '../../engines'
 
-export const generateTypesEntry = () => ({
+export const generateTypesEntry = (ctx: Context) => ({
   global: outdent`
+    // @ts-nocheck
     import type { TextStyles, LayerStyles } from '@pandacss/dev'
-    import type { RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig } from './recipe'
-    import type { Parts } from './parts'
-    import type { PatternConfig, PatternProperties } from './pattern'
-    import type { GlobalStyleObject, SystemStyleObject } from './system-types'
-    import type { CompositionStyles } from './composition'
+    ${ctx.file.importType('RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig', './recipe')}
+    ${ctx.file.importType('Parts', './parts')}
+    ${ctx.file.importType('PatternConfig, PatternProperties', './pattern')}
+    ${ctx.file.importType('GlobalStyleObject, SystemStyleObject', './system-types')}
+    ${ctx.file.importType('CompositionStyles', './composition')}
 
     declare module '@pandacss/dev' {
       export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): RecipeConfig
@@ -21,9 +23,9 @@ export const generateTypesEntry = () => ({
     }
     `,
   index: outdent`
-    import './global'
-    export type { ConditionalValue } from './conditions'
-    export type { GlobalStyleObject, JsxStyleProps, SystemStyleObject } from './system-types'
+    import '${ctx.file.extDts('./global')}'
+    ${ctx.file.exportType('ConditionalValue', './conditions')}
+    ${ctx.file.exportType('GlobalStyleObject, JsxStyleProps, SystemStyleObject', './system-types')}
 
     `,
   helpers: outdent`

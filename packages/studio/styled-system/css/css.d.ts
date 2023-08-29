@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { SystemStyleObject } from '../types'
+import type { SystemStyleObject } from '../types/index';
 
 interface CssFunction {
   (...styles: SystemStyleObject[]): string

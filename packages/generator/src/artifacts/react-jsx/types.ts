@@ -6,13 +6,13 @@ export function generateReactJsxTypes(ctx: Context) {
 
   return {
     jsxFactory: outdent`
-import { ${upperName} } from '../types/jsx'
+${ctx.file.importType(upperName, '../types/jsx')}
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
 import type { ComponentPropsWithoutRef, ElementType, ElementRef, Ref } from 'react'
-import type { Assign, DistributiveOmit, JsxStyleProps, JsxHTMLProps } from './system-types'
-import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
+${ctx.file.importType('Assign, DistributiveOmit, JsxHTMLProps, JsxStyleProps', './system-types')}
+${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', './recipe')}
 
 type Dict = Record<string, unknown>
 

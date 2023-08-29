@@ -6,13 +6,15 @@ export function generateVueJsxTypes(ctx: Context) {
 
   return {
     jsxFactory: outdent`
-import { ${upperName} } from '../types/jsx'
+${ctx.file.importType(upperName, '../types/jsx')}
+
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
 import type { Component, FunctionalComponent } from 'vue'
-import type { Assign, JsxStyleProps, JsxHTMLProps } from './system-types'
-import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
+
+${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', './recipe')}
+${ctx.file.importType('Assign, JsxStyleProps, JsxHTMLProps', './system-types')}
 
 type IntrinsicElement =
   | 'a'

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { AnySelector, Selectors } from './selectors'
+import type { AnySelector, Selectors } from './selectors';
 
 export type Conditions = {
 	"_hover": string

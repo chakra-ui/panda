@@ -11,8 +11,8 @@ export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
 import type { ComponentProps, JSX } from 'preact'
-import type { Assign, JsxStyleProps, JsxHTMLProps } from './system-types'
-import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
+${ctx.file.importType('Assign, JsxStyleProps, JsxHTMLProps', './system-types')}
+${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', './recipe')}
 
 type ElementType = keyof JSX.IntrinsicElements
 

@@ -41,7 +41,7 @@ export function generateConditions(ctx: Context) {
       }
       `,
     dts: outdent`
-    import type { AnySelector, Selectors } from './selectors'
+    ${ctx.file.importType('AnySelector, Selectors', './selectors')}
 
     export type Conditions = {
     ${keys.map((key) => `\t${JSON.stringify(key)}: string`).join('\n')}

@@ -6,7 +6,8 @@ export function generateVueJsxStringLiteralTypes(ctx: Context) {
 
   return {
     jsxFactory: outdent`
-import { ${upperName} } from '../types/jsx'
+${ctx.file.importType(upperName, '../types/jsx')}
+
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
