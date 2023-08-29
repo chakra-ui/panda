@@ -6,6 +6,22 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.13.1] - 2023-08-29
+
+## Fixed
+
+- Fix issue where Panda does not detect styles after nested template in vue
+- Fix issue where `cva` is undefined in preact styled factory
+
+## Added
+
+- Allow `.mts` and `.cts` panda config extension
+- Add `forceConsistentTypeExtension` config option for enforcing consistent file extension for emitted type definition
+  files. This is useful for projects that use `moduleResolution: node16` which requires explicit file extensions in
+  imports/exports.
+  > If set to `true` and `outExtension` is set to `mjs`, the generated typescript `.d.ts` files will have the extension
+  > `.d.mts`.
+
 ## [0.13.0] - 2023-08-26
 
 ## Fixed
@@ -59,7 +75,6 @@ export const Button = ({ css: cssProp = {}, children }) => {
 Then you can use the `Button` component like this:
 
 ```tsx filename="src/app/page.tsx"
-import { css } from '../styled-system/css'
 import { Button, Thingy } from './Button'
 
 export default function Page() {
