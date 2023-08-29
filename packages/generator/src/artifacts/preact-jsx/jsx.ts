@@ -9,7 +9,7 @@ export function generatePreactJsxFactory(ctx: Context) {
     import { h } from 'preact'
     import { forwardRef } from 'preact/compat'
     import { useMemo } from 'preact/hooks'
-    ${ctx.file.import('css, cx, assignCss', '../css/index')}
+    ${ctx.file.import('css, cx, cva, assignCss', '../css/index')}
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('isCssProperty', './is-valid-prop')}
 
