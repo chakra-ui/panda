@@ -232,7 +232,6 @@ export const Button = ({ css: cssProp = {}, children }) => {
 Then you can use the `Button` component like this:
 
 ```tsx filename="src/app/page.tsx"
-import { css } from '../styled-system/css'
 import { Button, Thingy } from './Button'
 
 export default function Page() {
