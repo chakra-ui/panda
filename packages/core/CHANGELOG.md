@@ -1,5 +1,16 @@
 # @pandacss/core
 
+## 0.13.1
+
+### Patch Changes
+
+- Updated dependencies [d0fbc7cc]
+  - @pandacss/error@0.13.1
+  - @pandacss/logger@0.13.1
+  - @pandacss/shared@0.13.1
+  - @pandacss/token-dictionary@0.13.1
+  - @pandacss/types@0.13.1
+
 ## 0.13.0
 
 ### Minor Changes

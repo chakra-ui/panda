@@ -1,5 +1,29 @@
 # @pandacss/dev
 
+## 0.13.1
+
+### Patch Changes
+
+- a5d7d514: Add `forceConsistentTypeExtension` config option for enforcing consistent file extension for emitted type
+  definition files. This is useful for projects that use `moduleResolution: node16` which requires explicit file
+  extensions in imports/exports.
+
+  > If set to `true` and `outExtension` is set to `mjs`, the generated typescript `.d.ts` files will have the extension
+  > `.d.mts`.
+
+- Updated dependencies [577dcb9d]
+- Updated dependencies [d0fbc7cc]
+  - @pandacss/studio@0.13.1
+  - @pandacss/error@0.13.1
+  - @pandacss/config@0.13.1
+  - @pandacss/node@0.13.1
+  - @pandacss/postcss@0.13.1
+  - @pandacss/logger@0.13.1
+  - @pandacss/preset-panda@0.13.1
+  - @pandacss/shared@0.13.1
+  - @pandacss/token-dictionary@0.13.1
+  - @pandacss/types@0.13.1
+
 ## 0.13.0
 
 ### Minor Changes
