@@ -15,7 +15,7 @@ type VstackStyles = VstackProperties & DistributiveOmit<SystemStyleObject, keyof
 
 interface VstackPatternFn {
   (styles?: VstackStyles): string
-  raw: (styles: VstackStyles) => VstackStyles
+  raw: (styles: VstackStyles) => SystemStyleObject
 }
 
 

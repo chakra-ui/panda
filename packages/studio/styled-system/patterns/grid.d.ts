@@ -18,7 +18,7 @@ type GridStyles = GridProperties & DistributiveOmit<SystemStyleObject, keyof Gri
 
 interface GridPatternFn {
   (styles?: GridStyles): string
-  raw: (styles: GridStyles) => GridStyles
+  raw: (styles: GridStyles) => SystemStyleObject
 }
 
 

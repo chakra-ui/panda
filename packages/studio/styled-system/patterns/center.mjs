@@ -16,4 +16,4 @@ const centerConfig = {
 export const getCenterStyle = (styles = {}) => centerConfig.transform(styles, { map: mapObject })
 
 export const center = (styles) => css(getCenterStyle(styles))
-center.raw = (styles) => styles
+center.raw = getCenterStyle

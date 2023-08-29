@@ -17,7 +17,7 @@ type StackStyles = StackProperties & DistributiveOmit<SystemStyleObject, keyof S
 
 interface StackPatternFn {
   (styles?: StackStyles): string
-  raw: (styles: StackStyles) => StackStyles
+  raw: (styles: StackStyles) => SystemStyleObject
 }
 
 

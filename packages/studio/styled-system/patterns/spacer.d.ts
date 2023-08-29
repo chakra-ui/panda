@@ -14,7 +14,7 @@ type SpacerStyles = SpacerProperties & DistributiveOmit<SystemStyleObject, keyof
 
 interface SpacerPatternFn {
   (styles?: SpacerStyles): string
-  raw: (styles: SpacerStyles) => SpacerStyles
+  raw: (styles: SpacerStyles) => SystemStyleObject
 }
 
 

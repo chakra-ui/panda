@@ -16,7 +16,7 @@ type DividerStyles = DividerProperties & DistributiveOmit<SystemStyleObject, key
 
 interface DividerPatternFn {
   (styles?: DividerStyles): string
-  raw: (styles: DividerStyles) => DividerStyles
+  raw: (styles: DividerStyles) => SystemStyleObject
 }
 
 

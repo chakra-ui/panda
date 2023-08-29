@@ -18,7 +18,7 @@ type WrapStyles = WrapProperties & DistributiveOmit<SystemStyleObject, keyof Wra
 
 interface WrapPatternFn {
   (styles?: WrapStyles): string
-  raw: (styles: WrapStyles) => WrapStyles
+  raw: (styles: WrapStyles) => SystemStyleObject
 }
 
 

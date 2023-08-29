@@ -14,7 +14,7 @@ type StyledLinkStyles = StyledLinkProperties & DistributiveOmit<SystemStyleObjec
 
 interface StyledLinkPatternFn {
   (styles?: StyledLinkStyles): string
-  raw: (styles: StyledLinkStyles) => StyledLinkStyles
+  raw: (styles: StyledLinkStyles) => SystemStyleObject
 }
 
 

@@ -16,4 +16,4 @@ const spacerConfig = {
 export const getSpacerStyle = (styles = {}) => spacerConfig.transform(styles, { map: mapObject })
 
 export const spacer = (styles) => css(getSpacerStyle(styles))
-spacer.raw = (styles) => styles
+spacer.raw = getSpacerStyle
