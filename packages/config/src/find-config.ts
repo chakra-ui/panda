@@ -1,7 +1,7 @@
 import findUp from 'escalade/sync'
 import { resolve } from 'path'
 
-const configs = ['.ts', '.js', '.mjs', '.cjs']
+const configs = ['.ts', '.js', '.mts', '.mjs', '.cjs']
 const pandaConfigRegex = new RegExp(`panda.config(${configs.join('|')})$`)
 
 const isPandaConfig = (file: string) => pandaConfigRegex.test(file)
