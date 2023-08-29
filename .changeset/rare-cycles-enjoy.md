@@ -1,5 +1,6 @@
 ---
+'@pandacss/error': patch
 '@pandacss/config': patch
 ---
 
-Allow `.mts` panda config extension
+Allow `.mts` and `.cts` panda config extension
