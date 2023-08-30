@@ -249,7 +249,7 @@ export default function Page() {
 
 ---
 
-You can use this approach as well with the new `{cvaFn}.raw` and `{patternFn}.raw` functions, will allow style objects
+You can use this approach as well with the `{cvaFn}.raw`, `{svaFn.raw}` and `{patternFn}.raw` functions, allowing style objects
 to be merged as expected in any situation.
 
 **Pattern Example:**
@@ -300,6 +300,57 @@ export const Button = ({ css: cssProp = {}, children }) => {
 
   return <button className={className}>{props.children}</button>
 }
+```
+
+**SVA Example:**
+
+```tsx filename="src/components/Button.tsx"
+import { css, sva } from '../styled-system/css'
+
+const checkbox = sva({
+  slots: ['root', 'control', 'label'],
+  base: {
+    root: { display: 'flex', alignItems: 'center', gap: '2' },
+    control: { borderWidth: '1px', borderRadius: 'sm' },
+    label: { marginStart: '2' }
+  },
+  variants: {
+    size: {
+      sm: {
+        control: { width: '8', height: '8' },
+        label: { fontSize: 'sm' }
+      },
+      md: {
+        control: { width: '10', height: '10' },
+        label: { fontSize: 'md' }
+      }
+    }
+  },
+  defaultVariants: {
+    size: 'sm'
+  }
+})
+
+export const Checkbox = ({ rootProps, controlProps, labelProps }) => {
+  // using the checkbox recipe
+  const slotStyles = checkbox.raw({ size: 'md' })
+
+  return (
+    <label className={css(slotStyles.root, rootProps)}>
+      <input type="checkbox" className={css({ srOnly: true })} />
+      <div className={css(slotStyles.control, controlProps)} />
+      <span className={css(slotStyles.label, labelProps)}>Checkbox Label</span>
+    </label>
+  )
+}
+
+// Usage
+
+<Checkbox
+  rootProps={css.raw({ gap: 4 })}
+  controlProps={css.raw({ borderColor: 'yellow.400' })}
+  labelProps={css.raw({ fontSize: 'lg' })}
+/>
 ```
 
 ### Classname concatenation
