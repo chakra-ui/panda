@@ -342,7 +342,7 @@ export const Checkbox = ({ rootProps, controlProps, labelProps }) => {
 
 // Usage
 
-;<Checkbox
+<Checkbox
   rootProps={css.raw({ gap: 4 })}
   controlProps={css.raw({ borderColor: 'yellow.400' })}
   labelProps={css.raw({ fontSize: 'lg' })}
