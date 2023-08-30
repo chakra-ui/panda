@@ -261,7 +261,7 @@ const Checkbox = { Root, Control, Label }
 
 ## Config Slot Recipe
 
-Config slot recipes are very similar atomic recipes except that they use well-defined classNames and store the styles in the `recipes` cascade layer.
+Config slot recipes are very similar atomic recipes except that they use well-defined classNames and store the styles in the `_slots` layer, itself in the `recipes` [cascade layer](/docs/concepts/cascade-layers.mdx).
 
 The config slot recipe takes the following additional properties:
 
@@ -351,7 +351,7 @@ const Checkbox = () => {
 }
 ```
 
-The generated css is registered under the `recipe` [cascade layer](/docs/concepts/cascade-layers.mdx) with the class name that matches the recipe-slot-variant name pattern `<recipe-className>__<slot-name>--<variant-name>`.
+The generated css is registered in the `_slots` layer, itself under the `recipe` [cascade layer](/docs/concepts/cascade-layers.mdx), with the class name that matches the recipe-slot-variant name pattern `<recipe-className>__<slot-name>--<variant-name>`.
 
 ```css
 @layer recipes {

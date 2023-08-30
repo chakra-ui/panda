@@ -5,6 +5,7 @@ import { AtomicRule, type ProcessOptions } from './atomic-rule'
 import { isSlotRecipe } from './is-slot-recipe'
 import { serializeStyle } from './serialize'
 import type { RecipeNode, StylesheetContext } from './types'
+import postcss from 'postcss'
 
 type RecipeRecord = Record<string, RecipeConfig | SlotRecipeConfig>
 
@@ -111,12 +112,12 @@ export class Recipes {
         //
         recipe.slots.forEach((slotName) => {
           const slotKey = this.getSlotKey(name, slotName)
-          this.rules.set(slotKey, this.createRule(slotKey))
+          this.rules.set(slotKey, this.createRule(slotKey, '_slots'))
         })
         //
       } else {
         //
-        this.rules.set(name, this.createRule(name))
+        this.rules.set(name, this.createRule(name, '_base'))
       }
     }
   }
@@ -211,11 +212,11 @@ export class Recipes {
     return serializeStyle(styleObject, this.context)
   }
 
-  private getTransform = (name: string) => {
+  private getTransform = (name: string, layer: string) => {
     return (variant: string, value: string) => {
       if (value === '__ignore__') {
         return {
-          layer: '_base',
+          layer,
           className: sharedState.classNames.get(name)!,
           styles: sharedState.styles.get(name) ?? {},
         }
@@ -230,14 +231,14 @@ export class Recipes {
     }
   }
 
-  private createRule = (name: string) => {
+  private createRule = (name: string, layer: string) => {
     if (!this.context) {
       throw new Error("Can't create a rule without a context")
     }
 
     const rule = new AtomicRule({
       ...this.context,
-      transform: this.getTransform(name),
+      transform: this.getTransform(name, layer),
     })
 
     rule.layer = this.context.layers.recipes
@@ -284,6 +285,12 @@ export class Recipes {
 
   toCss = () => {
     if (!this.context) return ''
+
+    const first = this.context.root.first
+    if (first && first.type === 'atrule' && first.name === 'layer' && first.params === this.context.layers.recipes) {
+      first.prepend(postcss.atRule({ name: 'layer', params: '_base, _slots' }))
+    }
+
     return this.context.root.toString()
   }
 }

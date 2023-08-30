@@ -5,7 +5,8 @@ describe('slot recipe ruleset', () => {
   test('should work', () => {
     expect(processSlotRecipe('button', { size: 'sm' })).toMatchInlineSnapshot(`
       "@layer recipes {
-          @layer _base {
+          @layer _base, _slots;
+          @layer _slots {
               .button__container {
                   font-family: var(--fonts-mono)
               }
@@ -16,7 +17,7 @@ describe('slot recipe ruleset', () => {
           }
       }
       @layer recipes {
-          @layer _base {
+          @layer _slots {
               .button__icon {
                   font-size: 1.5rem
               }
