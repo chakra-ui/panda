@@ -62,6 +62,8 @@ Panda provides shorthands for common css properties to help improve the speed of
 Properties like `borderRadius`, `backgroundColor`, and `padding` can be swapped to their shorthand equivalent `rounded`, `bg`, and `p`.
 
 ```jsx
+import { css } from '../styled-system/css'
+
 // BEFORE - Good
 const styles = css({
   backgroundColor: 'gainsboro',
@@ -84,6 +86,8 @@ const styles = css({
 Panda is built with TypeScript and provides type safety for all style properties and shorthands. Most of the style properties are connected to either the native CSS properties or their respective token value defined as defined in the `theme` object.
 
 ```ts
+import { css } from '../styled-system/css'
+
 //                       ⤵ you'll get autocomplete for colors
 const styles = css({ bg: '|' })
 ```
@@ -232,7 +236,7 @@ export const Button = ({ css: cssProp = {}, children }) => {
 Then you can use the `Button` component like this:
 
 ```tsx filename="src/app/page.tsx"
-import { Button, Thingy } from './Button'
+import { Button } from './Button'
 
 export default function Page() {
   return (
@@ -252,7 +256,7 @@ to be merged as expected in any situation.
 
 ```tsx filename="src/components/Button.tsx"
 import { hstack } from '../styled-system/patterns'
-import { css, cva } from '../styled-system/css'
+import { css } from '../styled-system/css'
 
 export const Button = ({ css: cssProp = {}, children }) => {
   // using the flex pattern
@@ -323,6 +327,8 @@ const Card = ({ className, ...props }) => {
 When debugging or previewing DOM elements in the browser, the length of the generated atomic `className` can get quite long, and a bit annoying. If you prefer to have terser classnames, use the `hash` option to enable className and css variable name hashing.
 
 ```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   // ...
   hash: true

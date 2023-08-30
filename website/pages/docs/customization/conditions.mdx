@@ -12,6 +12,8 @@ Conditions allow you to apply different styles and behaviors based on specific c
 To create a condition, you can use the conditions property in the config. Let's say we want to create a `groupHover` pseudo condition that applies styles to an element when a parent container with the `group` role is hovered.
 
 ```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   conditions: {
     extend: {
@@ -45,6 +47,8 @@ Then you can run the following command to generate the conditions JS code:
 Now, we can use the `groupHover` condition in our components.
 
 ```jsx
+import { css } from '../styled-system/css'
+
 function App() {
   return (
     <div role="group">

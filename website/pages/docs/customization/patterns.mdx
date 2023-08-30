@@ -81,7 +81,7 @@ Then you can run the following command to generate the pattern JS code:
 Now you can import the pattern and use it in your application:
 
 ```js
-import { scrollable } from './styled-system/patterns'
+import { scrollable } from '../styled-system/patterns'
 
 const App = () => {
   return (
@@ -98,6 +98,8 @@ You can extend the default patterns by using the `patterns.extend` property in t
 
 
 ```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   patterns: {
     extend: {

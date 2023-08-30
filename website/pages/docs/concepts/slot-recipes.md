@@ -57,6 +57,7 @@ The returned value from `sva` is a function that can be used to apply the recipe
 example of how to use the `checkbox` recipe:
 
 ```jsx filename="Checkbox.tsx"
+import { css } from '../styled-system/css'
 import { checkbox } from './checkbox.recipe'
 
 const Checkbox = () => {
@@ -167,6 +168,7 @@ export type CheckboxVariants = RecipeVariantProps<typeof checkbox>
 Unlike the atomic recipe or `cva`, slot recipes are not meant to be used directly in the `styled` factory since it returns an object of classes instead of a single class.
 
 ```jsx
+import { css } from '../styled-system/css'
 import { styled } from '../styled-system/jsx'
 import { checkbox, type CheckboxVariants } from './checkbox.recipe'
 
@@ -309,7 +311,7 @@ To add the recipe to the config, you’d need to add it to the `slotRecipes` pro
 
 ```jsx filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
-import { buttonRecipe } from './checkbox.recipe'
+import { checkboxRecipe } from './checkbox.recipe'
 
 export default defineConfig({
   //...
@@ -337,6 +339,7 @@ To use the recipe, you can import the recipe from the `<outdir>/recipes` entrypo
 tracks the usage of the recipe and only generates CSS of the variants used in your application.
 
 ```js
+import { css } from '../styled-system/css'
 import { checkbox } from '../styled-system/recipes'
 
 const Checkbox = () => {
@@ -399,6 +402,7 @@ Every slot recipe ships a type interface for its accepted variants. You can impo
 For the checkbox recipe, we can import the `CheckboxVariants` type like so:
 
 ```ts
+import React from 'react'
 import type { CheckboxVariants } from '../styled-system/recipes'
 
 type CheckboxProps = CheckboxVariants & {

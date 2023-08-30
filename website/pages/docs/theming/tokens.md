@@ -19,6 +19,8 @@ A design token consists of the following properties:
 Tokens are defined in the `panda.config` file under the `theme` key
 
 ```js filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   theme: {
     // 👇🏻 Define your tokens here
@@ -56,7 +58,9 @@ function App() {
 
 You can also add an optional description to your tokens. This will be used in the autogenerate token documentation.
 
-```js {6}
+```js {8}
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   theme: {
     tokens: {
@@ -83,6 +87,8 @@ For example, assuming we've defined the following tokens:
 - `danger` and `success` are semantic tokens that reference the `red` and `green` tokens.
 
 ```js
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   theme: {
     tokens: {
@@ -106,6 +112,8 @@ Semantic tokens can also be changed based on the [conditions](/docs/concepts/con
 For example, if you want a color to change automatically based on light or dark mode.
 
 ```js
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   // ...
   theme: {
@@ -132,6 +140,8 @@ Tokens can be nested to create a hierarchy of tokens. This is useful when you wa
 > Tip: You can use the `DEFAULT` key to define the default value of a nested token.
 
 ```js
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   // ...
   theme: {
