@@ -6,7 +6,7 @@ declare module 'color-contrast-checker' {
     convertColorToSixDigit(colorCode: string): string
     checkPairs(
       pairs: Array<{ colorA: string | undefined; colorB: string | undefined; fontSize: number }>,
-    ): Array<{ WCAG_AA: boolean; WCAG_AAA: bolean }>
+    ): Array<{ WCAG_AA: boolean; WCAG_AAA: boolean }>
     calculateLuminance(rgb: { r: number; g: number; b: number }): number
     hexToLuminance(color: string | undefined): number
     getContrastRatio(luminanceA: number, luminanceB: number): number
