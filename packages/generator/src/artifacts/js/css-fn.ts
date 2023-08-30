@@ -15,7 +15,7 @@ export function generateCssFn(ctx: Context) {
     ${ctx.file.importType('SystemStyleObject', '../types/index')}
 
     interface CssFunction {
-      (...styles: SystemStyleObject[]): string
+      (...styles: Array<SystemStyleObject | undefined | null | false>): string
       raw: (styles: SystemStyleObject) => SystemStyleObject
     }
 
