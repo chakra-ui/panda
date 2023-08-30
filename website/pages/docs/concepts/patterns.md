@@ -138,6 +138,8 @@ The `aspectRatio` function accepts the following properties:
 - `ratio`: The aspect ratio of the container. Can be a number or a string.
 
 ```tsx
+import { aspectRatio } from '../styled-system/patterns'
+
 function App() {
   return (
     <div className={aspectRatio({ ratio: 16 / 9 })}>
@@ -214,6 +216,9 @@ The `float` function accepts the following properties:
 - `offsetY`: Same as `offset`, but only for the vertical axis.
 
 ```tsx
+import { css } from '../styled-system/css'
+import { float } from '../styled-system/patterns'
+
 function App() {
   return (
     <div className={css({ position: 'relative' })}>
@@ -287,7 +292,7 @@ The `divider` function accepts the following properties:
 - `color`: The color of the divider. Can be a color token, or arbitrary value.
 
 ```tsx
-import { divider } from '../styled-system/patterns'
+import { divider, stack } from '../styled-system/patterns'
 
 function App() {
   return (

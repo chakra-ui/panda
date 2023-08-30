@@ -233,6 +233,8 @@ export default defineConfig({
 })
 
 // link.tsx
+import { styled } from '../styled-system/jsx'
+
 const StyledLink = styled('a', {
   base: {
     color: 'primary',
@@ -351,6 +353,8 @@ export default defineConfig({
 In styled-components, you can target existing styled components within the styled function
 
 ```tsx
+import styled from 'styled-components'
+
 const Link = styled.a`
   background: papayawhip;
   color: #bf4f74;
@@ -369,6 +373,8 @@ const Icon = styled.svg`
 In Panda, you need to use the native selector directly. This is largely due to the static nature of Panda
 
 ```tsx
+import { styled } from '../styled-system/jsx'
+
 const Link = styled.a`
   background: papayawhip;
   color: #bf4f74;
@@ -395,6 +401,8 @@ const App = () => (
 In styled components, you can define keyframes using the `keyframes` method.
 
 ```ts
+import styled, { keyframes } from 'styled-components'
+
 const rotate = keyframes`
   from {
     transform: rotate(0deg);
@@ -436,6 +444,8 @@ export default defineConfig({
 })
 
 // usage
+import { styled } from '../styled-system/jsx'
+
 const style = styled.button`
   &:hover {
     animation: rotate 200ms;

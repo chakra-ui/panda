@@ -187,6 +187,8 @@ const Button = styled('button', buttonStyle)
 In Stitches, you configure breakpoints in the `media` key of the `createStitches` method, and use it via the `@<breakpoint>` syntax.
 
 ```ts
+import { createStitches } from '@stitches/react';
+
 // configure
 const { styled, css } = createStitches({
   media: {
@@ -242,6 +244,8 @@ In Panda, you use the `base` key to target the base styles.
 In Stitches, tokens are defined in the `theme` key of the `createStitches` method.
 
 ```ts
+import { createStitches } from '@stitches/react'
+
 const { styled, css } = createStitches({
   theme: {
     colors: {
@@ -281,6 +285,8 @@ export default defineConfig({
 })
 
 // usage
+import { css } from '../styled-system/css'
+
 const styles = css({
   backgroundColor: 'gray100'
 })
@@ -304,6 +310,8 @@ export default defineConfig({
 In Stitches, the `createTheme` function is used to define dark theme values.
 
 ```tsx
+import { createStitches } from '@stitches/react'
+
 const { createTheme } = createStitches({})
 
 // create theme
@@ -346,6 +354,8 @@ export default defineConfig({
 In Stitches, you can create locally scoped tokens using the `$$` prefix
 
 ```ts
+import { styled } from '@stitches/react'
+
 const Button = styled('button', {
   $$shadowColor: '$colors$pink500',
   boxShadow: '0 0 0 15px $$shadowColor'
@@ -356,6 +366,8 @@ In Panda, there's no special syntax, you need to use the css variable syntax.
 CSS variables are able to query the theme tokens directly using dot notation
 
 ```ts
+import { styled } from '../styled-system/jsx'
+
 const Button = styled('button', {
   base: {
     '--shadowColor': 'colors.pink500',
@@ -369,6 +381,8 @@ const Button = styled('button', {
 In Stitches, you can define keyframes using the `keyframes` method.
 
 ```ts
+import { keyframes, styled } from '@stitches/react'
+
 const scaleUp = keyframes({
   '0%': { transform: 'scale(1)' },
   '100%': { transform: 'scale(1.5)' }
@@ -401,6 +415,8 @@ export default defineConfig({
 })
 
 // usage
+import { css } from '../styled-system/css'
+
 const style = css({
   '&:hover': {
     animation: 'scaleUp 200ms'
@@ -413,7 +429,7 @@ const style = css({
 In Stitches, you can define utilities by using the `utils` key in the `createStitches` method.
 
 ```ts
-import { createStitches } from '@stitches/react'
+import { createStitches, type PropertyValue } from '@stitches/react'
 
 const { styled, css } = createStitches({
   utils: {
@@ -501,6 +517,8 @@ export default defineConfig({
 In Stitches, you can directly target React or styled components via the `toString()` method.
 
 ```tsx
+import { css } from '@stitches/react'
+
 const Icon = () => (
   <svg className="right-arrow" ... />
 );
@@ -518,6 +536,8 @@ const buttonClass = css({
 In Panda, you need to use the native selector directly. This is largely due to the static nature of Panda
 
 ```tsx
+import { css } from '../styled-system/css'
+
 const Icon = () => (
   <svg className="right-arrow" ... />
 );

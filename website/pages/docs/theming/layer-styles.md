@@ -60,6 +60,8 @@ This should automatically update the generated theme the specified `layerStyles`
 Now we can use `layerStyle` property in our components.
 
 ```jsx
+import { css } from '../styled-system/css'
+
 function App() {
   return (
     <div className={css({ layerStyle: 'container' })}>

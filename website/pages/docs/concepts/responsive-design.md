@@ -115,6 +115,8 @@ In order to define custom breakpoints, you can easily accomplish this by passing
 > Note: Make sure that the CSS units of your breakpoints are consistent. Use either all pixels (`px`) or all `em`, but do not mix them.
 
 ```js filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   // ...
   theme: {
