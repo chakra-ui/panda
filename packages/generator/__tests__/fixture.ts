@@ -10,8 +10,9 @@ import {
 } from '@pandacss/fixture'
 import { createGenerator } from '../src'
 import { createHooks } from 'hookable'
+import { ConfigResultWithHooks } from '@pandacss/types'
 
-export const generator = createGenerator({
+export const generatorConfig = {
   dependencies: [],
   config: {
     cwd: '',
@@ -35,4 +36,5 @@ export const generator = createGenerator({
   },
   path: '',
   hooks: createHooks(),
-})
+} as ConfigResultWithHooks
+export const generator = createGenerator(generatorConfig)
