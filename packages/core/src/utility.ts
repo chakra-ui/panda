@@ -249,10 +249,6 @@ export class Utility {
     if (!this.strictTokens && config.property) {
       this.types.set(property, set.add(`CssProperties["${config.property}"]`))
     }
-
-    // if (config.property || !this.config.transform) {
-    //   this.types.set(property, set.add(`CssProperties["${config.property ?? property}"]`))
-    // }
   }
 
   private assignPropertyTypes = () => {
