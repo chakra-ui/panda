@@ -48,6 +48,7 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     config: isTemplateLiteralSyntax ? {} : config.utilities,
     separator: config.separator,
     shorthands: config.shorthands,
+    strictTokens: config.strictTokens,
   })
 
   const conditions = new Conditions({

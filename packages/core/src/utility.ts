@@ -9,6 +9,7 @@ export type UtilityOptions = {
   separator?: string
   prefix?: string
   shorthands?: boolean
+  strictTokens?: boolean
 }
 
 export class Utility {
@@ -66,8 +67,10 @@ export class Utility {
 
   prefix = ''
 
+  strictTokens = false
+
   constructor(options: UtilityOptions) {
-    const { tokens, config = {}, separator, prefix, shorthands } = options
+    const { tokens, config = {}, separator, prefix, shorthands, strictTokens } = options
 
     this.tokens = tokens
     this.config = config
@@ -78,6 +81,10 @@ export class Utility {
 
     if (prefix) {
       this.prefix = prefix
+    }
+
+    if (strictTokens) {
+      this.strictTokens = strictTokens
     }
 
     if (shorthands) {
@@ -239,9 +246,13 @@ export class Utility {
 
     const set = this.types.get(property) ?? new Set()
 
-    if (config.property) {
+    if (!this.strictTokens && config.property) {
       this.types.set(property, set.add(`CssProperties["${config.property}"]`))
     }
+
+    // if (config.property || !this.config.transform) {
+    //   this.types.set(property, set.add(`CssProperties["${config.property ?? property}"]`))
+    // }
   }
 
   private assignPropertyTypes = () => {
