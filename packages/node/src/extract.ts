@@ -57,6 +57,7 @@ const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)
 export async function emitArtifacts(ctx: PandaContext) {
   if (ctx.config.clean) ctx.output.empty()
   await Promise.all(ctx.getArtifacts().map(ctx.output.write))
+  ctx.hooks.callHook('generator:done')
   return {
     box: createBox({
       content: ctx.messages.codegenComplete(),
