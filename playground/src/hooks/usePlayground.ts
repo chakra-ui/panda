@@ -8,11 +8,11 @@ export type State = {
 }
 
 export type UsePlayGroundProps = {
-  intialState?: State | null
+  initialState?: State | null
 }
 
 export const usePlayground = (props: UsePlayGroundProps) => {
-  const { intialState } = props
+  const { initialState } = props
   const [layout, setLayout] = useState<Extract<Layout, 'horizontal' | 'vertical'>>('horizontal')
   const [isPristine, setIsPristine] = useState(true)
   const [isSharing, setIsSharing] = useState(false)
@@ -58,8 +58,8 @@ export const usePlayground = (props: UsePlayGroundProps) => {
   }
 
   const [state, setState] = useState(
-    intialState
-      ? intialState
+    initialState
+      ? initialState
       : {
           code: `import { css } from 'styled-system/css'
 
