@@ -1,8 +1,8 @@
 /* eslint-disable */
 import type { FunctionComponent } from 'react'
-import type { VisuallyHiddenProperties } from '../patterns/visually-hidden'
-import type { HTMLPandaProps } from '../types/jsx'
-import type { DistributiveOmit } from '../types/system-types'
+import type { VisuallyHiddenProperties } from '../patterns/visually-hidden';
+import type { HTMLPandaProps } from '../types/jsx';
+import type { DistributiveOmit } from '../types/system-types';
 
 export type VisuallyHiddenProps = VisuallyHiddenProperties & DistributiveOmit<HTMLPandaProps<'div'>, keyof VisuallyHiddenProperties >
 

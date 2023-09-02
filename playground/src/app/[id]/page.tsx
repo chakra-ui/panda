@@ -11,7 +11,7 @@ const Page = async (props: any) => {
     select: { code: true, config: true },
   })
 
-  return <Playground intialState={initialState} />
+  return <Playground initialState={initialState} />
 }
 
 export default Page

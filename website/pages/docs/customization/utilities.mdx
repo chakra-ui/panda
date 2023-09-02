@@ -23,6 +23,8 @@ or boolean.
 Let's say we want to create new property `br` that applies a border radius to an element.
 
 ```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   utilities: {
     extend: {
@@ -61,6 +63,8 @@ Then you can run the following command to generate the pattern JS code:
 Now, we can use the `br` property in our components.
 
 ```jsx
+import { css } from '../styled-system/css'
+
 function App() {
   return <div className={css({ br: 'sm' })} />
 }
@@ -69,6 +73,8 @@ function App() {
 or use in JSX style props
 
 ```jsx
+import { styled } from '../styled-system/jsx'
+
 function App() {
   return <styled.div br="sm" />
 }
@@ -80,6 +86,9 @@ Let's say we want to create a new property `borderX` that applies a limited set 
 automatically applies the border color.
 
 ```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { token } from './styled-system/tokens'
+
 export default defineConfig({
   utilities: {
     extend: {
@@ -101,6 +110,8 @@ export default defineConfig({
 Now, we can use the `borderX` or `bx` property in our components.
 
 ```jsx
+import { css } from '../styled-system/css'
+
 function App() {
   return <div className={css({ borderX: 'sm' })} />
 }
@@ -109,6 +120,9 @@ function App() {
 ### Using mapped values
 
 ```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { token } from './styled-system/tokens'
+
 export default defineConfig({
   utilities: {
     extend: {
@@ -130,6 +144,8 @@ export default defineConfig({
 ### Using boolean values
 
 ```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   utilities: {
     extend: {

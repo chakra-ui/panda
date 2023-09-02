@@ -32,6 +32,10 @@ export interface PandaHooks {
     file: 'global.css' | 'static.css' | 'reset.css' | 'tokens.css' | 'keyframes.css' | 'styles.css',
     css: string,
   ) => void
+  /**
+   * Called after the codegen is completed
+   */
+  'generator:done': () => void | Promise<void>
 }
 
 export type PandaHookable = Hookable<PandaHooks, HookKeys<PandaHooks>>

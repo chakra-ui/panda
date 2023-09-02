@@ -6,7 +6,7 @@ export function generatePreactJsxStringLiteralTypes(ctx: Context) {
 
   return {
     jsxFactory: outdent`
-import type { ${upperName} } from '../types/jsx'
+${ctx.file.importType(upperName, '../types/jsx')}
 export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`

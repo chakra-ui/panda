@@ -191,7 +191,7 @@ export class TokenDictionary {
   applyMiddlewares(enforce: EnforcePhase) {
     this.middlewares.forEach((middleware) => {
       if (middleware.enforce === enforce) {
-        middleware.transform(this, { prefix: this.prefix })
+        middleware.transform(this, { prefix: this.prefix, hash: this.hash })
       }
     })
   }

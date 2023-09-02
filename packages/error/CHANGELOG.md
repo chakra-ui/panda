@@ -1,5 +1,11 @@
 # @pandacss/error
 
+## 0.13.1
+
+### Patch Changes
+
+- d0fbc7cc: Allow `.mts` and `.cts` panda config extension
+
 ## 0.13.0
 
 ## 0.12.2

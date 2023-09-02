@@ -1,5 +1,24 @@
 # @pandacss/generator
 
+## 0.13.1
+
+### Patch Changes
+
+- a5d7d514: Add `forceConsistentTypeExtension` config option for enforcing consistent file extension for emitted type
+  definition files. This is useful for projects that use `moduleResolution: node16` which requires explicit file
+  extensions in imports/exports.
+
+  > If set to `true` and `outExtension` is set to `mjs`, the generated typescript `.d.ts` files will have the extension
+  > `.d.mts`.
+
+- 192d5e49: Fix issue where `cva` is undefined in preact styled factory
+  - @pandacss/core@0.13.1
+  - @pandacss/is-valid-prop@0.13.1
+  - @pandacss/logger@0.13.1
+  - @pandacss/shared@0.13.1
+  - @pandacss/token-dictionary@0.13.1
+  - @pandacss/types@0.13.1
+
 ## 0.13.0
 
 ### Patch Changes

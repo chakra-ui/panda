@@ -62,6 +62,8 @@ Panda provides shorthands for common css properties to help improve the speed of
 Properties like `borderRadius`, `backgroundColor`, and `padding` can be swapped to their shorthand equivalent `rounded`, `bg`, and `p`.
 
 ```jsx
+import { css } from '../styled-system/css'
+
 // BEFORE - Good
 const styles = css({
   backgroundColor: 'gainsboro',
@@ -84,6 +86,8 @@ const styles = css({
 Panda is built with TypeScript and provides type safety for all style properties and shorthands. Most of the style properties are connected to either the native CSS properties or their respective token value defined as defined in the `theme` object.
 
 ```ts
+import { css } from '../styled-system/css'
+
 //                       ⤵ you'll get autocomplete for colors
 const styles = css({ bg: '|' })
 ```
@@ -232,8 +236,7 @@ export const Button = ({ css: cssProp = {}, children }) => {
 Then you can use the `Button` component like this:
 
 ```tsx filename="src/app/page.tsx"
-import { css } from '../styled-system/css'
-import { Button, Thingy } from './Button'
+import { Button } from './Button'
 
 export default function Page() {
   return (
@@ -246,14 +249,14 @@ export default function Page() {
 
 ---
 
-You can use this approach as well with the new `{cvaFn}.raw` and `{patternFn}.raw` functions, will allow style objects
+You can use this approach as well with the `{cvaFn}.raw`, `{svaFn.raw}` and `{patternFn}.raw` functions, allowing style objects
 to be merged as expected in any situation.
 
 **Pattern Example:**
 
 ```tsx filename="src/components/Button.tsx"
 import { hstack } from '../styled-system/patterns'
-import { css, cva } from '../styled-system/css'
+import { css } from '../styled-system/css'
 
 export const Button = ({ css: cssProp = {}, children }) => {
   // using the flex pattern
@@ -299,6 +302,57 @@ export const Button = ({ css: cssProp = {}, children }) => {
 }
 ```
 
+**SVA Example:**
+
+```tsx filename="src/components/Button.tsx"
+import { css, sva } from '../styled-system/css'
+
+const checkbox = sva({
+  slots: ['root', 'control', 'label'],
+  base: {
+    root: { display: 'flex', alignItems: 'center', gap: '2' },
+    control: { borderWidth: '1px', borderRadius: 'sm' },
+    label: { marginStart: '2' }
+  },
+  variants: {
+    size: {
+      sm: {
+        control: { width: '8', height: '8' },
+        label: { fontSize: 'sm' }
+      },
+      md: {
+        control: { width: '10', height: '10' },
+        label: { fontSize: 'md' }
+      }
+    }
+  },
+  defaultVariants: {
+    size: 'sm'
+  }
+})
+
+export const Checkbox = ({ rootProps, controlProps, labelProps }) => {
+  // using the checkbox recipe
+  const slotStyles = checkbox.raw({ size: 'md' })
+
+  return (
+    <label className={css(slotStyles.root, rootProps)}>
+      <input type="checkbox" className={css({ srOnly: true })} />
+      <div className={css(slotStyles.control, controlProps)} />
+      <span className={css(slotStyles.label, labelProps)}>Checkbox Label</span>
+    </label>
+  )
+}
+
+// Usage
+
+<Checkbox
+  rootProps={css.raw({ gap: 4 })}
+  controlProps={css.raw({ borderColor: 'yellow.400' })}
+  labelProps={css.raw({ fontSize: 'lg' })}
+/>
+```
+
 ### Classname concatenation
 
 Panda provides a simple `cx` function to join classnames. It accepts a list of classnames and returns a string.
@@ -324,6 +378,8 @@ const Card = ({ className, ...props }) => {
 When debugging or previewing DOM elements in the browser, the length of the generated atomic `className` can get quite long, and a bit annoying. If you prefer to have terser classnames, use the `hash` option to enable className and css variable name hashing.
 
 ```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   // ...
   hash: true

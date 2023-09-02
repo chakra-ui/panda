@@ -12,6 +12,9 @@ While you can get very far by using the `className` prop and function from Panda
 If you use Chakra UI, Styled System, or Theme UI, you'll feel right at home right away 😊
 
 ```jsx
+import { css } from '../styled-system/css'
+import { styled } from '../styled-system/jsx'
+
 // The className approach
 const Button = ({ children }) => (
   <button
@@ -44,6 +47,8 @@ Using JSX style props is turned off by default in Panda, but you can opt-in to t
 JSX is a JavaScript syntax extension that allows you to write HTML-like code directly within your JavaScript code and is supported by most popular frameworks. Panda supports JSX style props in React, Preact, Vue 3, Qwik and Solid.js.
 
 ```js filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   // ...
   jsxFramework: 'react'

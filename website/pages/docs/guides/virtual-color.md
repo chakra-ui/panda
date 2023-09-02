@@ -11,6 +11,8 @@ create virtual color.
 > **Important:** A valid `colorPalette` value is an color object that has `50` to `900` keys.
 
 ```js
+import { css } from '../styled-system/css'
+
 const className = css({
   colorPalette: 'blue',
   bg: 'colorPalette.100',
@@ -29,7 +31,7 @@ Virtual colors are useful when creating easily customizable components.
 You can also use virtual colors with recipes.
 
 ```js
-import { css, cva, cx } from 'styled-system/css'
+import { css, cva, cx } from '../styled-system/css'
 
 const button = cva({
   base: {
@@ -52,7 +54,7 @@ const button = cva({
 You can also use virtual colors with different conditions, such as color modes.
 
 ```js
-import { css, cva, cx } from 'styled-system/css'
+import { css, cva, cx } from '../styled-system/css'
 
 const someButton = cva({
   base: { padding: 4 },

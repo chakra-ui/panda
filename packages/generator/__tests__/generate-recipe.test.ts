@@ -48,9 +48,9 @@ describe('generate recipes', () => {
           "name": "create-recipe",
         },
         {
-          "dts": "import type { ConditionalValue } from '../types'
-      import type { Pretty } from '../types/helpers'
-      import type { DistributiveOmit } from '../types/system-types'
+          "dts": "import type { ConditionalValue } from '../types/index';
+      import type { Pretty } from '../types/helpers';
+      import type { DistributiveOmit } from '../types/system-types';
 
       type TextStyleVariant = {
         size: \\"h1\\" | \\"h2\\"
@@ -99,9 +99,9 @@ describe('generate recipes', () => {
           "name": "text-style",
         },
         {
-          "dts": "import type { ConditionalValue } from '../types'
-      import type { Pretty } from '../types/helpers'
-      import type { DistributiveOmit } from '../types/system-types'
+          "dts": "import type { ConditionalValue } from '../types/index';
+      import type { Pretty } from '../types/helpers';
+      import type { DistributiveOmit } from '../types/system-types';
 
       type TooltipStyleVariant = {
         
@@ -145,9 +145,9 @@ describe('generate recipes', () => {
           "name": "tooltip-style",
         },
         {
-          "dts": "import type { ConditionalValue } from '../types'
-      import type { Pretty } from '../types/helpers'
-      import type { DistributiveOmit } from '../types/system-types'
+          "dts": "import type { ConditionalValue } from '../types/index';
+      import type { Pretty } from '../types/helpers';
+      import type { DistributiveOmit } from '../types/system-types';
 
       type ButtonStyleVariant = {
         size: \\"sm\\" | \\"md\\"

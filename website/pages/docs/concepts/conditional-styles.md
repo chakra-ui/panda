@@ -68,7 +68,7 @@ Panda includes a set of common pseudo states that you can use to style your comp
 What if you need a one-off selector that is not defined in your config's conditions? You can use the `css` function to generate classes for arbitrary selectors:
 
 ```tsx
-import { css } from './styled-system/css'
+import { css } from '../styled-system/css'
 
 const App = () => {
   return (
@@ -85,7 +85,7 @@ const App = () => {
 This also works with the supported at-rules (`@media`, `@layer`, `@container`, `@supports`, and `@page`):
 
 ```tsx
-import { css } from './styled-system/css'
+import { css } from '../styled-system/css'
 
 const App = () => {
   return (

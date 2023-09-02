@@ -1,5 +1,18 @@
 # @pandacss/parser
 
+## 0.13.1
+
+### Patch Changes
+
+- 577dcb9d: Fix issue where Panda does not detect styles after nested template in vue
+- Updated dependencies [d0fbc7cc]
+  - @pandacss/config@0.13.1
+  - @pandacss/extractor@0.13.1
+  - @pandacss/is-valid-prop@0.13.1
+  - @pandacss/logger@0.13.1
+  - @pandacss/shared@0.13.1
+  - @pandacss/types@0.13.1
+
 ## 0.13.0
 
 ### Patch Changes

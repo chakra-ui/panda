@@ -1,7 +1,7 @@
 /* eslint-disable */
-import type { ConditionalValue } from './conditions'
-import type { PropertyValue } from './prop-type'
-import type { Token } from '../tokens'
+import type { ConditionalValue } from './conditions';
+import type { PropertyValue } from './prop-type';
+import type { Token } from '../tokens/index';
 
 export type CssVarProperties = {
   [key in `--${string}`]?: ConditionalValue<Token | (string & {}) | (number & {})>

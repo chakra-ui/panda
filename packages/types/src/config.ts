@@ -103,10 +103,6 @@ type FileSystemOptions = {
    */
   cwd?: string
   /**
-   * File extension for generated javascript files.
-   */
-  outExtension?: 'mjs' | 'js'
-  /**
    * The log level for the built-in logger.
    * @default 'info'
    */
@@ -235,6 +231,17 @@ type CodegenOptions = {
    * @default 'true'
    */
   layers?: Partial<CascadeLayers>
+  /**
+   * File extension for generated javascript files.
+   * @default 'mjs'
+   */
+  outExtension?: 'mjs' | 'js'
+  /**
+   * Whether to force consistent type extensions for generated typescript .d.ts files.
+   * If set to `true` and `outExtension` is set to `mjs`, the generated typescript .d.ts files will have the extension `.d.mts`.
+   * @default false
+   */
+  forceConsistentTypeExtension?: boolean
 }
 
 type PresetOptions = {

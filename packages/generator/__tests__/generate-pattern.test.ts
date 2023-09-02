@@ -6,11 +6,11 @@ test('should generate pattern', () => {
   expect(generatePattern(generator)).toMatchInlineSnapshot(`
     [
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type BoxProperties = {
        
@@ -42,11 +42,11 @@ test('should generate pattern', () => {
         "name": "box",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type FlexProperties = {
        align?: PropertyValue<'alignItems'>
@@ -95,11 +95,11 @@ test('should generate pattern', () => {
         "name": "flex",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type StackProperties = {
        align?: PropertyValue<'alignItems'>
@@ -142,11 +142,11 @@ test('should generate pattern', () => {
         "name": "stack",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type VstackProperties = {
        justify?: PropertyValue<'justifyContent'>
@@ -187,11 +187,11 @@ test('should generate pattern', () => {
         "name": "vstack",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type HstackProperties = {
        justify?: PropertyValue<'justifyContent'>
@@ -232,11 +232,11 @@ test('should generate pattern', () => {
         "name": "hstack",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type SpacerProperties = {
        size?: ConditionalValue<Tokens[\\"spacing\\"]>
@@ -274,11 +274,11 @@ test('should generate pattern', () => {
         "name": "spacer",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type SquareProperties = {
        size?: PropertyValue<'width'>
@@ -319,11 +319,11 @@ test('should generate pattern', () => {
         "name": "square",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type CircleProperties = {
        size?: PropertyValue<'width'>
@@ -365,11 +365,11 @@ test('should generate pattern', () => {
         "name": "circle",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type CenterProperties = {
        inline?: ConditionalValue<boolean>
@@ -407,11 +407,11 @@ test('should generate pattern', () => {
         "name": "center",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type LinkBoxProperties = {
        
@@ -450,11 +450,11 @@ test('should generate pattern', () => {
         "name": "link-box",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type LinkOverlayProperties = {
        
@@ -498,11 +498,11 @@ test('should generate pattern', () => {
         "name": "link-overlay",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type AspectRatioProperties = {
        ratio?: ConditionalValue<number>
@@ -557,11 +557,11 @@ test('should generate pattern', () => {
         "name": "aspect-ratio",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type GridProperties = {
        gap?: PropertyValue<'gap'>
@@ -605,11 +605,11 @@ test('should generate pattern', () => {
         "name": "grid",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type GridItemProperties = {
        colSpan?: ConditionalValue<number>
@@ -656,11 +656,11 @@ test('should generate pattern', () => {
         "name": "grid-item",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type WrapProperties = {
        gap?: PropertyValue<'gap'>
@@ -706,11 +706,11 @@ test('should generate pattern', () => {
         "name": "wrap",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type ContainerProperties = {
        
@@ -748,11 +748,11 @@ test('should generate pattern', () => {
         "name": "container",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type DividerProperties = {
        orientation?: ConditionalValue<\\"horizontal\\" | \\"vertical\\">
@@ -795,11 +795,11 @@ test('should generate pattern', () => {
         "name": "divider",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type FloatProperties = {
        offsetX?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"left\\"]>
@@ -867,11 +867,11 @@ test('should generate pattern', () => {
         "name": "float",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type BleedProperties = {
        inline?: PropertyValue<'marginInline'>
@@ -911,11 +911,11 @@ test('should generate pattern', () => {
         "name": "bleed",
       },
       {
-        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types'
-    import type { Properties } from '../types/csstype'
-    import type { PropertyValue } from '../types/prop-type'
-    import type { DistributiveOmit } from '../types/system-types'
-    import type { Tokens } from '../tokens'
+        "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
+    import type { Properties } from '../types/csstype';
+    import type { PropertyValue } from '../types/prop-type';
+    import type { DistributiveOmit } from '../types/system-types';
+    import type { Tokens } from '../tokens/index';
 
     export type VisuallyHiddenProperties = {
        

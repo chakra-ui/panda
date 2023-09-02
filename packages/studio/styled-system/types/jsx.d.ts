@@ -1,7 +1,7 @@
 /* eslint-disable */
 import type { ComponentPropsWithoutRef, ElementType, ElementRef, Ref } from 'react'
-import type { Assign, DistributiveOmit, JsxStyleProps, JsxHTMLProps } from './system-types'
-import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe'
+import type { Assign, DistributiveOmit, JsxHTMLProps, JsxStyleProps } from './system-types';
+import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './recipe';
 
 type Dict = Record<string, unknown>
 

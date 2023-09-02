@@ -420,6 +420,7 @@ Every recipe ships a type interface for its accepted variants. You can import th
 For the button recipe, we can import the `ButtonVariants` type like so:
 
 ```ts
+import React from 'react'
 import type { ButtonVariants } from '../styled-system/recipes'
 
 type ButtonProps = ButtonVariants & {
@@ -434,6 +435,7 @@ Layer recipes can be consumed directly in your custom JSX components. Panda will
 For example, if your recipe is called `button` and you create a `Button` component from it, Panda will automatically track the usage of the variant properties.
 
 ```tsx
+import React from 'react'
 import { button, type ButtonVariants } from '../styled-system/recipes'
 
 type ButtonProps = ButtonVariants & {
@@ -464,7 +466,9 @@ We recommend that you use the recipe functions in most cases, in design systems 
 
 To track the usage of the recipes in these cases, you'll need to add the `jsx` hint for the recipe config
 
-```js {10} filename="button.recipe.ts"
+```js {12} filename="button.recipe.ts"
+import { defineRecipe } from '@pandacss/dev'
+
 const button = defineRecipe({
   base: {
     color: 'red',
@@ -500,6 +504,8 @@ Both atomic and config recipe ships a helper methods and properties that can be 
 - `splitVariantProps`: A function that takes an object as its argument and returns an array containing the recipe variant props and the rest of the props
 
 ```js
+import { cva } from '../styled-system/css'
+
 const buttonRecipe = cva({
   base: {
     color: 'red',

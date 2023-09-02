@@ -1,5 +1,5 @@
-import { compact, splitProps } from '../helpers.mjs'
-import { css, mergeCss } from './css.mjs'
+import { compact, splitProps } from '../helpers.mjs';
+import { css, mergeCss } from './css.mjs';
 
 export function cva(config) {
   const { base = {}, variants = {}, defaultVariants = {}, compoundVariants = [] } = config

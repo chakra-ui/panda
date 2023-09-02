@@ -40,7 +40,7 @@ const NodeTypes = {
 export const vueToTsx = (code: string) => {
   try {
     const parsed = parse(code)
-    const fileStr = new MagicString(code)
+    const fileStr = new MagicString(`<template>${parsed.descriptor.template?.content}</template>` ?? '')
 
     const rewriteProp = (prop: BaseElementNode['props'][number]) => {
       if (
@@ -48,7 +48,7 @@ export const vueToTsx = (code: string) => {
         prop.exp?.type === NodeTypes.SIMPLE_EXPRESSION &&
         prop.arg?.type === NodeTypes.SIMPLE_EXPRESSION
       ) {
-        fileStr.update(prop.loc.start.offset, prop.loc.end.offset, `${prop.arg.content}={${prop.exp.content}}`)
+        fileStr.replace(prop.loc.source, `${prop.arg.content}={${prop.exp.content}}`)
       }
     }
 
@@ -64,13 +64,9 @@ export const vueToTsx = (code: string) => {
       }
     }
 
-    const templateStart = code.indexOf('<template')
-    const templateEnd = code.indexOf('</template>') + '</template>'.length
     const scriptContent = (parsed.descriptor.scriptSetup ?? parsed.descriptor.script)?.content + '\n'
 
-    const transformed = new MagicString(
-      `${scriptContent}\nconst render = ${fileStr.snip(templateStart, templateEnd).toString()}`,
-    )
+    const transformed = new MagicString(`${scriptContent}\nconst render = ${fileStr.toString()}`)
 
     return transformed.toString()
   } catch (err) {

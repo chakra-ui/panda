@@ -157,6 +157,139 @@ describe('extract Vue templates', () => {
     `)
   })
 
+  test('Nested templates', () => {
+    const code = `
+    <script lang="ts">
+    import { css } from "styled-system/css";
+  </script>
+
+  <template>
+    <div>
+      <div>
+        <slot name="icon"></slot>
+        <div :class="hstack()">
+          <p :class="css({ textStyle: 'overline' })">
+            <slot name="price"></slot>
+          </p>
+          <div>
+            <template v-if="isSelected">
+              <IconRadioSelected />
+            </template>
+            <template v-else>
+              <IconRadio />
+            </template>
+          </div>
+        </div>
+      </div>
+      <h7 :class="css({ textStyle: 'h7' })"><slot name="heading"></slot></h7>
+      <p :class="css({ textStyle: 'text', color: 'grey.70' })">
+        <slot name="description"></slot>
+      </p>
+    </div>
+  </template>
+`
+
+    const transformed = vueToTsx(code)
+    expect(transformed).toMatchInlineSnapshot(`
+      "
+          import { css } from \\"styled-system/css\\";
+        
+
+      const render = <template>
+          <div>
+            <div>
+              <slot name=\\"icon\\"></slot>
+              <div class={hstack()}>
+                <p class={css({ textStyle: 'overline' })}>
+                  <slot name=\\"price\\"></slot>
+                </p>
+                <div>
+                  <template v-if=\\"isSelected\\">
+                    <IconRadioSelected />
+                  </template>
+                  <template v-else>
+                    <IconRadio />
+                  </template>
+                </div>
+              </div>
+            </div>
+            <h7 class={css({ textStyle: 'h7' })}><slot name=\\"heading\\"></slot></h7>
+            <p class={css({ textStyle: 'text', color: 'grey.70' })}>
+              <slot name=\\"description\\"></slot>
+            </p>
+          </div>
+        </template>"
+    `)
+
+    const result = run(transformed)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "textStyle": "overline",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "textStyle": "h7",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "color": "grey.70",
+              "textStyle": "text",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "IconRadioSelected",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "IconRadio",
+          "type": "jsx",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text-style_overline {
+          text-style: overline
+          }
+
+        .text-style_h7 {
+          text-style: h7
+          }
+
+        .text-style_text {
+          text-style: text
+          }
+
+        .text_grey\\\\.70 {
+          color: grey.70
+          }
+      }"
+    `)
+  })
+
   test('vue 3 script setup', () => {
     const code = `
     <script setup lang="ts">

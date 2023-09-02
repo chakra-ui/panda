@@ -2,7 +2,7 @@ import type { Context } from '../engines'
 
 export function generatePackageJson(ctx: Context) {
   const {
-    config: { outdir, outExtension: ext = 'mjs' },
+    config: { outdir },
   } = ctx
 
   const pkg = {
@@ -12,32 +12,32 @@ export function generatePackageJson(ctx: Context) {
     type: 'module',
     exports: {
       './css': {
-        types: './css/index.d.ts',
-        require: `./css/index.${ext}`,
-        import: `./css/index.${ext}`,
+        types: ctx.file.extDts('./css/index'),
+        require: ctx.file.ext(`./css/index`),
+        import: ctx.file.ext(`./css/index`),
       },
       './jsx': {
-        types: './jsx/index.d.ts',
-        require: `./jsx/index.${ext}`,
-        import: `./jsx/index.${ext}`,
+        types: ctx.file.extDts('./jsx/index'),
+        require: ctx.file.ext(`./jsx/index`),
+        import: ctx.file.ext(`./jsx/index`),
       },
       './patterns': {
-        types: './patterns/index.d.ts',
-        require: `./patterns/index.${ext}`,
-        import: `./patterns/index.${ext}`,
+        types: ctx.file.extDts('./patterns/index'),
+        require: ctx.file.ext(`./patterns/index`),
+        import: ctx.file.ext(`./patterns/index`),
       },
       './recipes': {
-        types: './recipes/index.d.ts',
-        require: `./recipes/index.${ext}`,
-        import: `./recipes/index.${ext}`,
+        types: ctx.file.extDts('./recipes/index'),
+        require: ctx.file.ext(`./recipes/index`),
+        import: ctx.file.ext(`./recipes/index`),
       },
       './tokens': {
-        types: './tokens/index.d.ts',
-        require: `./tokens/index.${ext}`,
-        import: `./tokens/index.${ext}`,
+        types: ctx.file.extDts('./tokens/index'),
+        require: ctx.file.ext(`./tokens/index`),
+        import: ctx.file.ext(`./tokens/index`),
       },
       './types': {
-        types: './types/index.d.ts',
+        types: ctx.file.extDts('./types/index'),
       },
       './styles.css': './styles.css',
     },
