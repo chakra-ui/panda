@@ -96,3 +96,66 @@ export const App = () => {
   )
 }
 ```
+
+## Semantic Virtual Colors
+
+You can also create semantic virtual colors. 
+Semantic virtual colors gives you an ability to create a virtual color organized by category, variant and state.
+Hierarchically organized virtual colors are useful when creating easily customizable components.
+
+```js
+{
+    theme: {
+        extend: {
+            semanticTokens: {
+                colors: {
+                    button: {
+                        dark: {
+                            value: 'navy',
+                        },
+                        light: {
+                            DEFAULT: {
+                                value: 'skyblue',
+                            },
+                            accent: {
+                                DEFAULT: {
+                                    value: 'cyan',
+                                },
+                                secondary: {
+                                    value: 'blue',
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
+}
+```
+
+Usage examples:
+
+You can use the root `button` color palette and its values directly:
+
+```tsx
+import { css } from ".panda/css"
+
+export const App = () => {
+    return (
+        <button
+            className={css({
+            colorPalette: 'button',
+            color: 'colorPalette.light',
+            backgroundColor: 'colorPalette.dark',
+            _hover: {
+                color: 'colorPalette.light.accent',
+                background: 'colorPalette.light.accent.secondary',
+            },
+            })}
+        >
+         Root color palette
+        </button>
+    )
+})
+```

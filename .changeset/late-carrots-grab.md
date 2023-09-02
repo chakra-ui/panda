@@ -84,3 +84,22 @@ export const App = () => {
     )
 })
 ```
+
+Or you can use any deeply nested property (e.g. `button.light.accent`) as a root color palette:
+
+```tsx
+import { css } from ".panda/css"
+
+export const App = () => {
+    return (
+        <button
+            className={css({
+                colorPalette: 'button.light.accent',
+                color: 'colorPalette.secondary',
+            })}
+        >
+            Nested color palette leaf
+        </button>
+    )
+})
+```
