@@ -83,6 +83,23 @@ Update the tsconfig file to include the `styled-system` folder.
 }
 ```
 
+
+Update the Vite config to resolve the `styled-system` folder.
+
+```ts {3-10} filename="web/vite.config.ts
+const viteConfig: UserConfig = {
+  plugins: [redwood()],
+  resolve: {
+    alias: [
+      {
+        find: 'styled-system',
+        replacement: resolve(__dirname, 'styled-system'),
+      },
+    ],
+  },
+};
+```
+
 ### Update package.json scripts
 
 Open the `web/package.json` file and update the `scripts` section as follows:
