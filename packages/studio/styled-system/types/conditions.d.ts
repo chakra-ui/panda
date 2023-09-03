@@ -113,7 +113,7 @@ export type Conditions = {
 	/** `@media screen and (min-width: 1024px) and (max-width: 95.996875em)` */"lgToXl": string
 	/** `@media screen and (min-width: 1024px)` */"lgTo2xl": string
 	/** `@media screen and (min-width: 1280px)` */"xlTo2xl": string
-	/** `undefined` */"base": string
+	/** The base (=no conditions) styles to apply  */"base": string
 }
 
 export type Condition = keyof Conditions
