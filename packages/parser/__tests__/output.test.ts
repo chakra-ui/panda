@@ -1684,10 +1684,38 @@ describe('extract to css output pipeline', () => {
         },
         {
           "data": [
+            {
+              "spacing": "sm",
+            },
+          ],
+          "name": "AnotherButton",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {
+              "color": "blue",
+            },
+          ],
+          "name": "ComplexDesignSystemButton",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
             {},
           ],
           "name": "anotherButton",
           "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "size": "md",
+              "variant": "danger",
+            },
+          ],
+          "name": "AnotherButtonWithRegex",
+          "type": "jsx-recipe",
         },
         {
           "data": [
@@ -1738,8 +1766,24 @@ describe('extract to css output pipeline', () => {
           background: var(--colors-red-200)
           }
 
+        .spacing_sm {
+          spacing: sm
+          }
+
+        .text_blue {
+          color: blue
+          }
+
         .z_100 {
           z-index: 100
+          }
+
+        .variant_danger {
+          variant: danger
+          }
+
+        .size_md {
+          size: md
           }
 
         .d_flex {
@@ -1830,6 +1874,13 @@ describe('extract to css output pipeline', () => {
       [
         {
           "data": [
+            {},
+          ],
+          "name": "StyledButton",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
             {
               "backgroundColor": "tomato",
             },
@@ -1846,6 +1897,25 @@ describe('extract to css output pipeline', () => {
           "name": "Button",
           "type": "jsx-recipe",
         },
+        {
+          "data": [
+            {},
+          ],
+          "name": "TomatoButton",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {
+              "color": "purple",
+              "css": {
+                "color": "pink",
+              },
+            },
+          ],
+          "name": "TomatoButton",
+          "type": "jsx-recipe",
+        },
       ]
     `)
     const css = generator.getParserCss(result)!
@@ -1857,6 +1927,14 @@ describe('extract to css output pipeline', () => {
 
         .bg_yellow {
           background-color: yellow
+          }
+
+        .text_purple {
+          color: purple
+          }
+
+        .text_pink {
+          color: pink
           }
       }"
     `)
@@ -2180,16 +2258,12 @@ describe('preset patterns', () => {
           display: flex
           }
 
-        .items_center {
-          align-items: center
+        .flex_column {
+          flex-direction: column
           }
 
         .gap_10px {
           gap: 10px
-          }
-
-        .flex_column {
-          flex-direction: column
           }
 
         .text_blue\\\\.100 {
@@ -2278,16 +2352,12 @@ describe('preset patterns', () => {
           display: flex
           }
 
-        .items_center {
-          align-items: center
+        .flex_column {
+          flex-direction: column
           }
 
         .gap_10px {
           gap: 10px
-          }
-
-        .flex_row {
-          flex-direction: row
           }
 
         .text_blue\\\\.100 {
@@ -2450,18 +2520,6 @@ describe('preset patterns', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .pos_relative {
-          position: relative
-          }
-
-        .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:pos_relative :where(a, abbr) {
-          position: relative
-              }
-
-        .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:z_1 :where(a, abbr) {
-          z-index: 1
-              }
-
         .pos_static {
           position: static
           }
@@ -2924,6 +2982,14 @@ describe('preset patterns', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .d_grid {
+          display: grid
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
         .text_blue\\\\.100 {
           color: var(--colors-blue-100)
           }
