@@ -1,0 +1,21 @@
+@layer utilities {
+  .\ \*\:text_token\(colors\.red\) {
+    color: 'colors.red'
+    }
+
+  .\ \*\:border_1px_solid_token\(colors\.blue\) {
+    border: 1px solid 'colors.blue'
+    }
+
+  .\ \*\:background-image_linear-gradient\(token\(colors\.red\)\,_token\(colors\.blue\)\) {
+    background-image: linear-gradient('colors.red', 'colors.blue')
+    }
+
+  .\ \*\:text_token\(colors\.red\,_colors\.blue\) {
+    color: var('colors.red', 'colors.blue')
+    }
+
+  .\ \*\:text_token\(colors\.magenta\,_pink\) {
+    color: var('colors.magenta', pink)
+    }
+}

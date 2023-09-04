@@ -9,7 +9,9 @@ function expandTokenFn(fn?: (str: string) => string | undefined): TransformCallb
       if (decl.value.includes('token(')) {
         const value = decl.value.replace(tokenRegex, (_, token) => {
           const [tokenValue, tokenFallback] = token.split(',').map((s: string) => s.trim())
-          const result = [tokenValue, tokenFallback].filter(Boolean).map((s) => fn?.(s) ?? s)
+          const result = [tokenValue, tokenFallback]
+            .filter(Boolean)
+            .map((s) => fn?.(s) ?? (s.includes('.') ? `'${s}'` : s))
 
           if (result.length > 1) {
             const [a, b] = result
