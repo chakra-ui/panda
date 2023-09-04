@@ -1783,6 +1783,84 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('should allow JSX props along with recipe components', () => {
+    const code = `
+    import { styled, type HTMLStyledProps } from 'styled-system/jsx';
+    type ButtonProps = HTMLStyledProps<'button'>;
+    const StyledButton = styled('button', { base: { padding: 'md' } });
+
+    const Button = ({ children, ...props }: ButtonProps) => (
+      <StyledButton {...props}>{children}</StyledButton>
+    );
+
+    const TomatoButton = (props: ButtonProps) => (
+      <Button backgroundColor="tomato" {...props} />
+    );
+
+    export const App = () => {
+      return (
+        <>
+          <div>
+            <TomatoButton>Button</TomatoButton>
+            <Button backgroundColor="yellow">Button</Button>
+            <TomatoButton color="purple" css={{ color: "pink" }}>Button</TomatoButton>
+          </div>
+        </>
+      );
+    };
+
+     `
+    const { parse, generator } = getFixtureProject(code, {
+      outdir: 'styled-system',
+      jsxFactory: 'styled',
+      theme: {
+        extend: {
+          recipes: {
+            button: {
+              className: 'my-button',
+              jsx: [/Button.*/],
+            },
+          },
+        },
+      },
+    })
+    const result = parse()!
+    expect(result?.toArray().map(({ box, ...item }) => item)).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "backgroundColor": "tomato",
+            },
+          ],
+          "name": "Button",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {
+              "backgroundColor": "yellow",
+            },
+          ],
+          "name": "Button",
+          "type": "jsx-recipe",
+        },
+      ]
+    `)
+    const css = generator.getParserCss(result)!
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bg_tomato {
+          background-color: tomato
+          }
+
+        .bg_yellow {
+          background-color: yellow
+          }
+      }"
+    `)
+  })
 })
 
 describe('preset patterns', () => {
