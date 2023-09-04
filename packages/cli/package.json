@@ -59,7 +59,7 @@
     "perfect-debounce": "^1.0.0"
   },
   "devDependencies": {
-    "@types/update-notifier": "6.0.4",
+    "@types/update-notifier": "6.0.5",
     "kleur": "4.1.5",
     "update-notifier": "6.0.2"
   }
