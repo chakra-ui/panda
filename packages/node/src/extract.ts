@@ -108,12 +108,17 @@ export async function writeAndBundleCssChunks(ctx: PandaContext) {
  * Including the root CSS artifact files content (global, static, reset, tokens, keyframes)
  * Without any imports
  */
-export async function bundleCss(ctx: PandaContext, outfile: string) {
-  const extracted = await writeChunks(ctx)
-  const files = ctx.chunks.getFiles()
+export async function bundleCss(ctx: PandaContext, outfile: string, resolve = true) {
+  const files = ctx
+    .getFiles()
+    .map((file) => extractFile(ctx, file))
+    .filter(Boolean) as string[]
+
   const minify = ctx.config.minify
-  await writeFile(outfile, optimizeCss(ctx.getCss({ files, resolve: true }), { minify }))
-  return { files, msg: ctx.messages.buildComplete(extracted.length) }
+  const css = optimizeCss(ctx.getCss({ files, resolve }), { minify })
+
+  await writeFile(outfile, css)
+  return { files, msg: ctx.messages.buildComplete(files.length) }
 }
 
 /**
@@ -124,7 +129,7 @@ export async function bundleMinimalFilesCss(ctx: PandaContext, outfile: string) 
   const files = ctx.getFiles()
   const filesWithCss = []
 
-  const collector = createParserResult()
+  const collector = createParserResult(ctx)
 
   files.forEach((file) => {
     const measure = logger.time.debug(`Parsed ${file}`)

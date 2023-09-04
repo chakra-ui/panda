@@ -37,7 +37,6 @@ export async function generate(config: Config, configPath?: string) {
       match(event)
         .with('unlink', () => {
           ctx.project.removeSourceFile(path.abs(cwd, file))
-          ctx.chunks.rm(file)
         })
         .with('change', async () => {
           ctx.project.reloadSourceFile(file)
