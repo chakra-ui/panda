@@ -45,7 +45,7 @@
     "pathe": "^1.1.1",
     "pkg-types": "1.0.3",
     "pluralize": "8.0.0",
-    "postcss": "8.4.27",
+    "postcss": "8.4.29",
     "preferred-pm": "^3.0.3",
     "ts-morph": "19.0.0",
     "ts-pattern": "5.0.4",
