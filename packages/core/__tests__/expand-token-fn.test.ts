@@ -52,7 +52,7 @@ describe('expandTokenFn', () => {
     `)
   })
 
-  test('non-existing should remain unchanged', () => {
+  test('non-existing should be wrapped in quotes to avoid CSS Syntax error', () => {
     const result = run(css`
       * {
         color: token(colors.magenta, pink);
@@ -62,7 +62,7 @@ describe('expandTokenFn', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "
             * {
-              color: var(colors.magenta, pink);
+              color: var('colors.magenta', pink);
             }
           "
     `)
