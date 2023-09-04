@@ -2317,4 +2317,38 @@ describe('Utility', () => {
       }
     `)
   })
+
+  test('allow retrieving the token object with the raw value', () => {
+    const utility = new Utility({
+      tokens: new TokenDictionary({
+        tokens: { colors: { someColor: { value: '#aabbcc' } } },
+      }),
+      config: {
+        backgroundColor: {
+          shorthand: 'bgColor',
+          className: 'bg',
+          values: 'colors',
+          transform(_, args) {
+            const token = args.token.raw('colors.' + args.raw)
+            return {
+              backgroundColor: token?.value.replace('aa', 'ee'),
+            }
+          },
+        },
+      },
+    })
+
+    expect(utility.classNames).toMatchInlineSnapshot(`
+      Map {
+        "(backgroundColor = someColor)" => "bg_someColor",
+      }
+    `)
+    expect(utility.styles).toMatchInlineSnapshot(`
+      Map {
+        "(backgroundColor = someColor)" => {
+          "backgroundColor": "#eebbcc",
+        },
+      }
+    `)
+  })
 })
