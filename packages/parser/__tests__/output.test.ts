@@ -3337,6 +3337,8 @@ describe('preset patterns', () => {
 
     const filePath = String.raw\`C:\\Development\\profile\\aboutme.html\`;
 
+    css.raw({ mx: '3', paddingTop: '4', color: 'amber.100' }, { mx: '10', pt: '6', color: 'blue.950' })
+
     export default function App() {
       return (
         <Button rootProps={css.raw({ bg: "red.400" })} />
@@ -3364,6 +3366,22 @@ describe('preset patterns', () => {
     const result = run(code)
     expect(result.json).toMatchInlineSnapshot(`
       [
+        {
+          "data": [
+            {
+              "color": "amber.100",
+              "mx": "3",
+              "paddingTop": "4",
+            },
+            {
+              "color": "blue.950",
+              "mx": "10",
+              "pt": "6",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
         {
           "data": [
             {
@@ -3421,6 +3439,30 @@ describe('preset patterns', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .mx_3 {
+          margin-inline: var(--spacing-3)
+          }
+
+        .pt_4 {
+          padding-top: var(--spacing-4)
+          }
+
+        .text_amber\\\\.100 {
+          color: var(--colors-amber-100)
+          }
+
+        .mx_10 {
+          margin-inline: var(--spacing-10)
+          }
+
+        .pt_6 {
+          padding-top: var(--spacing-6)
+          }
+
+        .text_blue\\\\.950 {
+          color: var(--colors-blue-950)
+          }
+
         .bg_red\\\\.400 {
           background: var(--colors-red-400)
           }
