@@ -5,23 +5,12 @@ import type { PandaContext } from './create-context'
 import { writeFile } from 'fs/promises'
 
 export async function bundleChunks(ctx: PandaContext) {
-  const files = ctx.chunks.getFiles()
-  await ctx.output.write({
-    dir: ctx.paths.root,
-    files: [{ file: 'styles.css', code: ctx.getCss({ files }) }],
+  const outfile = ctx.runtime.path.join(...ctx.paths.root, 'styles.css')
+  const measure = logger.time.debug('file:write' + ' ' + outfile)
+  return bundleCss(ctx, outfile, false).then((res) => {
+    measure()
+    return res
   })
-  return { files, msg: ctx.messages.buildComplete(files.length) }
-}
-
-export async function writeFileChunk(ctx: PandaContext, file: string) {
-  const { path } = ctx.runtime
-  logger.debug('chunk:write', `File: ${path.relative(ctx.config.cwd, file)}`)
-
-  const css = extractFile(ctx, file)
-  if (!css) return
-
-  const artifact = ctx.chunks.getArtifact(file, css)
-  return ctx.output.write(artifact)
 }
 
 export function extractFile(ctx: PandaContext, file: string) {
@@ -47,10 +36,6 @@ export function extractFile(ctx: PandaContext, file: string) {
   )
 }
 
-function extractFiles(ctx: PandaContext) {
-  return Promise.all(ctx.getFiles().map((file) => writeFileChunk(ctx, file)))
-}
-
 const randomWords = ['Sweet', 'Divine', 'Pandalicious', 'Super']
 const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
 
@@ -72,17 +57,15 @@ export async function emitAndExtract(ctx: PandaContext) {
   if (ctx.config.emitTokensOnly) {
     return { files: [], msg: 'Successfully rebuilt the css variables and js function to query your tokens ✨' }
   }
-  return extractCss(ctx)
-}
-
-export async function extractCss(ctx: PandaContext) {
-  await extractFiles(ctx)
   return bundleChunks(ctx)
 }
 
-export async function bundleCss(ctx: PandaContext, outfile: string) {
-  const extracted = await extractFiles(ctx)
-  const files = ctx.chunks.getFiles()
-  await writeFile(outfile, ctx.getCss({ files, resolve: true }))
-  return { files, msg: ctx.messages.buildComplete(extracted.length) }
+export async function bundleCss(ctx: PandaContext, outfile: string, resolve = true) {
+  const files = ctx
+    .getFiles()
+    .map((file) => extractFile(ctx, file))
+    .filter(Boolean) as string[]
+  const css = ctx.getCss({ files, resolve })
+  await writeFile(outfile, css)
+  return { msg: ctx.messages.buildComplete(files.length) }
 }

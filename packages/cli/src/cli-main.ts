@@ -4,7 +4,7 @@ import {
   bundleCss,
   debugFiles,
   emitArtifacts,
-  extractCss,
+  bundleChunks,
   generate,
   loadConfigAndCreateContext,
   setupConfig,
@@ -198,7 +198,7 @@ export async function main() {
             //
           } else {
             //
-            const { msg } = await extractCss(ctx)
+            const { msg } = await bundleChunks(ctx)
             logger.info('css:emit', msg)
           }
         }

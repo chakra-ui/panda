@@ -2,7 +2,6 @@ import { createGenerator, type Generator } from '@pandacss/generator'
 import { createProject, type Project } from '@pandacss/parser'
 import type { ConfigResultWithHooks, PandaHookable } from '@pandacss/types'
 import type { Runtime } from '@pandacss/types'
-import { getChunkEngine } from './chunk-engine'
 import { nodeRuntime } from './node-runtime'
 import { getOutputEngine } from './output-engine'
 
@@ -31,7 +30,7 @@ export const createContext = (conf: ConfigResultWithHooks) => {
     }),
   }
 
-  return Object.assign(ctx, { chunks: getChunkEngine(ctx), output: getOutputEngine(ctx) }) as PandaContext
+  return Object.assign(ctx, { output: getOutputEngine(ctx) }) as PandaContext
 }
 
 export type PandaContext = Generator & {
@@ -39,6 +38,5 @@ export type PandaContext = Generator & {
   hooks: PandaHookable
   project: Project
   getFiles: () => string[]
-  chunks: ReturnType<typeof getChunkEngine>
   output: ReturnType<typeof getOutputEngine>
 }

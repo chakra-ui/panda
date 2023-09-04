@@ -2,7 +2,7 @@ import { logger } from '@pandacss/logger'
 import type { Config } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import type { PandaContext } from './create-context'
-import { bundleChunks, emitAndExtract, writeFileChunk } from './extract'
+import { bundleChunks, emitAndExtract } from './extract'
 import { loadContext } from './load-context'
 
 async function build(ctx: PandaContext) {
@@ -37,11 +37,9 @@ export async function generate(config: Config, configPath?: string) {
       match(event)
         .with('unlink', () => {
           ctx.project.removeSourceFile(path.abs(cwd, file))
-          ctx.chunks.rm(file)
         })
         .with('change', async () => {
           ctx.project.reloadSourceFile(file)
-          await writeFileChunk(ctxRef.current, file)
           return bundleChunks(ctxRef.current)
         })
         .with('add', async () => {
