@@ -440,14 +440,6 @@ describe('extract to css output pipeline', () => {
         .text_yellow {
           color: yellow
           }
-
-        .variant_small {
-          variant: small
-          }
-
-        .size_medium {
-          size: medium
-          }
       }"
     `)
   })
@@ -1766,24 +1758,12 @@ describe('extract to css output pipeline', () => {
           background: var(--colors-red-200)
           }
 
-        .spacing_sm {
-          spacing: sm
-          }
-
         .text_blue {
           color: blue
           }
 
         .z_100 {
           z-index: 100
-          }
-
-        .variant_danger {
-          variant: danger
-          }
-
-        .size_md {
-          size: md
           }
 
         .d_flex {

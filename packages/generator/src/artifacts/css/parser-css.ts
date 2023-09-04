@@ -1,5 +1,5 @@
 import { logger } from '@pandacss/logger'
-import type { ParserResultType } from '@pandacss/types'
+import type { Dict, ParserResultType } from '@pandacss/types'
 import { pipe, tap, tryCatch } from 'lil-fp/func'
 import { P, match } from 'ts-pattern'
 import type { Context } from '../../engines'
@@ -29,7 +29,7 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
 
       result.jsx.forEach((jsx) => {
         jsx.data.forEach((data) => {
-          sheet.processStyleProps(data)
+          sheet.processStyleProps(filterProps(ctx, data))
         })
       })
 
@@ -44,7 +44,8 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
               .with({ type: 'jsx-recipe' }, () => {
                 recipe.data.forEach((data) => {
                   const [recipeProps, styleProps] = recipes.splitProps(recipeName, data)
-                  sheet.processStyleProps(styleProps)
+
+                  sheet.processStyleProps(filterProps(ctx, styleProps))
                   sheet.processRecipe(recipeName, recipeConfig, recipeProps)
                 })
               })
@@ -68,7 +69,7 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
                 pattern.data.forEach((data) => {
                   const fnName = patterns.find(jsxName)
                   const styleProps = patterns.transform(fnName, data)
-                  sheet.processStyleProps(styleProps)
+                  sheet.processStyleProps(filterProps(ctx, styleProps))
                 })
               })
               .otherwise(() => {
@@ -95,3 +96,13 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
       },
     ),
   )
+
+const filterProps = (ctx: Context, props: Dict) => {
+  const clone = {} as Dict
+  for (const [key, value] of Object.entries(props)) {
+    if (ctx.isValidProperty(key)) {
+      clone[key] = value
+    }
+  }
+  return clone
+}
