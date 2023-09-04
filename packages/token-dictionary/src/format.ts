@@ -19,16 +19,19 @@ export const formats = {
     const grouped: Map<string, Map<string, string>> = new Map()
 
     dictionary.allTokens.forEach((token) => {
-      const { colorPalette } = token.extensions
+      const { colorPalette, colorPaletteRoots } = token.extensions
       if (!colorPalette || token.extensions.isVirtual) return
-      grouped.get(colorPalette) || grouped.set(colorPalette, new Map())
 
-      const virtualName = token.name.replace(colorPalette, 'colorPalette')
-      const virtualToken = dictionary.getByName(virtualName)
-      if (!virtualToken) return
+      colorPaletteRoots.forEach((colorPaletteRoot: string) => {
+        grouped.get(colorPaletteRoot) || grouped.set(colorPaletteRoot, new Map())
 
-      const virtualVar = virtualToken.extensions.var
-      grouped.get(colorPalette)!.set(virtualVar, token.extensions.varRef)
+        const virtualName = token.name.replace(colorPaletteRoot, 'colorPalette')
+        const virtualToken = dictionary.getByName(virtualName)
+        if (!virtualToken) return
+
+        const virtualVar = virtualToken.extensions.var
+        grouped.get(colorPaletteRoot)!.set(virtualVar, token.extensions.varRef)
+      })
     })
 
     return grouped

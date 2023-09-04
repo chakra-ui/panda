@@ -1046,6 +1046,172 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  // https://github.com/chakra-ui/panda/issues/1062
+  describe('issue 1062: expand colorPalette flexibility', () => {
+    test('should extract color palette with more than one level of nesting', () => {
+      const code = `
+      import { css } from ".panda/css"
+
+      export const App = () => {
+        return (
+          <>
+            <button
+              className={css({
+                colorPalette: 'button',
+                color: 'colorPalette.light',
+                backgroundColor: 'colorPalette.dark',
+                _hover: {
+                  color: 'colorPalette.light.accent',
+                  background: 'colorPalette.light.accent.secondary',
+                },
+              })}
+            >
+              Root color palette
+            </button>
+            <button
+              className={css({
+                colorPalette: 'button.light',
+                color: 'colorPalette.accent',
+                background: 'colorPalette.accent.secondary',
+              })}
+            >
+              One level deep nested color palette
+            </button>
+            <button
+              className={css({
+                colorPalette: 'button.light.accent',
+                color: 'colorPalette.secondary',
+              })}
+            >
+              Nested color palette leaf
+            </button>
+          </>
+        );
+      };
+     `
+      const result = run(code, {
+        theme: {
+          extend: {
+            semanticTokens: {
+              colors: {
+                button: {
+                  dark: {
+                    value: 'navy',
+                  },
+                  light: {
+                    DEFAULT: {
+                      value: 'skyblue',
+                    },
+                    accent: {
+                      DEFAULT: {
+                        value: 'cyan',
+                      },
+                      secondary: {
+                        value: 'blue',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+
+      expect(result.json).toMatchInlineSnapshot(`
+        [
+          {
+            "data": [
+              {
+                "_hover": {
+                  "background": "colorPalette.light.accent.secondary",
+                  "color": "colorPalette.light.accent",
+                },
+                "backgroundColor": "colorPalette.dark",
+                "color": "colorPalette.light",
+                "colorPalette": "button",
+              },
+            ],
+            "name": "css",
+            "type": "object",
+          },
+          {
+            "data": [
+              {
+                "background": "colorPalette.accent.secondary",
+                "color": "colorPalette.accent",
+                "colorPalette": "button.light",
+              },
+            ],
+            "name": "css",
+            "type": "object",
+          },
+          {
+            "data": [
+              {
+                "color": "colorPalette.secondary",
+                "colorPalette": "button.light.accent",
+              },
+            ],
+            "name": "css",
+            "type": "object",
+          },
+        ]
+      `)
+
+      expect(result.css).toMatchInlineSnapshot(`
+        "@layer utilities {
+          .color-palette_button {
+            --colors-color-palette-thick: var(--colors-button-thick);
+            --colors-color-palette-card-body: var(--colors-button-card-body);
+            --colors-color-palette-card-heading: var(--colors-button-card-heading);
+            --colors-color-palette-dark: var(--colors-button-dark);
+            --colors-color-palette-light: var(--colors-button-light);
+            --colors-color-palette-light-accent: var(--colors-button-light-accent);
+            --colors-color-palette-light-accent-secondary: var(--colors-button-light-accent-secondary)
+            }
+
+          .text_colorPalette\\\\.light {
+            color: var(--colors-color-palette-light)
+            }
+
+          .bg_colorPalette\\\\.dark {
+            background-color: var(--colors-color-palette-dark)
+            }
+
+          .color-palette_button\\\\.light {
+            --colors-color-palette-accent: var(--colors-button-light-accent);
+            --colors-color-palette-accent-secondary: var(--colors-button-light-accent-secondary)
+            }
+
+          .text_colorPalette\\\\.accent {
+            color: var(--colors-color-palette-accent)
+            }
+
+          .bg_colorPalette\\\\.accent\\\\.secondary {
+            background: var(--colors-color-palette-accent-secondary)
+            }
+
+          .color-palette_button\\\\.light\\\\.accent {
+            --colors-color-palette-secondary: var(--colors-button-light-accent-secondary)
+            }
+
+          .text_colorPalette\\\\.secondary {
+            color: var(--colors-color-palette-secondary)
+            }
+
+          .hover\\\\:text_colorPalette\\\\.light\\\\.accent:is(:hover, [data-hover]) {
+            color: var(--colors-color-palette-light-accent)
+                }
+
+          .hover\\\\:bg_colorPalette\\\\.light\\\\.accent\\\\.secondary:is(:hover, [data-hover]) {
+            background: var(--colors-color-palette-light-accent-secondary)
+                }
+        }"
+      `)
+    })
+  })
+
   test('patterns', () => {
     const code = `
       import { stack, hstack as aliased } from ".panda/patterns"

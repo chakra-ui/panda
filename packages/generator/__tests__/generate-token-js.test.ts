@@ -1902,13 +1902,33 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"var(--colors-color-palette-950)\\",
         \\"variable\\": \\"var(--colors-color-palette-950)\\"
       },
+      \\"colors.colorPalette.test.yam\\": {
+        \\"value\\": \\"var(--colors-color-palette-test-yam)\\",
+        \\"variable\\": \\"var(--colors-color-palette-test-yam)\\"
+      },
       \\"colors.colorPalette.yam\\": {
         \\"value\\": \\"var(--colors-color-palette-yam)\\",
         \\"variable\\": \\"var(--colors-color-palette-yam)\\"
       },
+      \\"colors.colorPalette.test.pool.poller\\": {
+        \\"value\\": \\"var(--colors-color-palette-test-pool-poller)\\",
+        \\"variable\\": \\"var(--colors-color-palette-test-pool-poller)\\"
+      },
+      \\"colors.colorPalette.pool.poller\\": {
+        \\"value\\": \\"var(--colors-color-palette-pool-poller)\\",
+        \\"variable\\": \\"var(--colors-color-palette-pool-poller)\\"
+      },
       \\"colors.colorPalette.poller\\": {
         \\"value\\": \\"var(--colors-color-palette-poller)\\",
         \\"variable\\": \\"var(--colors-color-palette-poller)\\"
+      },
+      \\"colors.colorPalette.test.pool.tall\\": {
+        \\"value\\": \\"var(--colors-color-palette-test-pool-tall)\\",
+        \\"variable\\": \\"var(--colors-color-palette-test-pool-tall)\\"
+      },
+      \\"colors.colorPalette.pool.tall\\": {
+        \\"value\\": \\"var(--colors-color-palette-pool-tall)\\",
+        \\"variable\\": \\"var(--colors-color-palette-pool-tall)\\"
       },
       \\"colors.colorPalette.tall\\": {
         \\"value\\": \\"var(--colors-color-palette-tall)\\",
@@ -1918,9 +1938,17 @@ test('[dts] should generate package', () => {
         \\"value\\": \\"var(--colors-color-palette-thick)\\",
         \\"variable\\": \\"var(--colors-color-palette-thick)\\"
       },
+      \\"colors.colorPalette.card.body\\": {
+        \\"value\\": \\"var(--colors-color-palette-card-body)\\",
+        \\"variable\\": \\"var(--colors-color-palette-card-body)\\"
+      },
       \\"colors.colorPalette.body\\": {
         \\"value\\": \\"var(--colors-color-palette-body)\\",
         \\"variable\\": \\"var(--colors-color-palette-body)\\"
+      },
+      \\"colors.colorPalette.card.heading\\": {
+        \\"value\\": \\"var(--colors-color-palette-card-heading)\\",
+        \\"variable\\": \\"var(--colors-color-palette-card-heading)\\"
       },
       \\"colors.colorPalette.heading\\": {
         \\"value\\": \\"var(--colors-color-palette-heading)\\",

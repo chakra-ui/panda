@@ -169,6 +169,7 @@ describe('Utility', () => {
           "zinc",
           "gray",
           "slate",
+          "deep",
           "deep.test",
           "deep.test.pool",
           "button",
@@ -446,11 +447,18 @@ describe('Utility', () => {
         "(backgroundColor = colorPalette.800)" => "bg_colorPalette.800",
         "(backgroundColor = colorPalette.900)" => "bg_colorPalette.900",
         "(backgroundColor = colorPalette.950)" => "bg_colorPalette.950",
+        "(backgroundColor = colorPalette.test.yam)" => "bg_colorPalette.test.yam",
         "(backgroundColor = colorPalette.yam)" => "bg_colorPalette.yam",
+        "(backgroundColor = colorPalette.test.pool.poller)" => "bg_colorPalette.test.pool.poller",
+        "(backgroundColor = colorPalette.pool.poller)" => "bg_colorPalette.pool.poller",
         "(backgroundColor = colorPalette.poller)" => "bg_colorPalette.poller",
+        "(backgroundColor = colorPalette.test.pool.tall)" => "bg_colorPalette.test.pool.tall",
+        "(backgroundColor = colorPalette.pool.tall)" => "bg_colorPalette.pool.tall",
         "(backgroundColor = colorPalette.tall)" => "bg_colorPalette.tall",
         "(backgroundColor = colorPalette.thick)" => "bg_colorPalette.thick",
+        "(backgroundColor = colorPalette.card.body)" => "bg_colorPalette.card.body",
         "(backgroundColor = colorPalette.body)" => "bg_colorPalette.body",
+        "(backgroundColor = colorPalette.card.heading)" => "bg_colorPalette.card.heading",
         "(backgroundColor = colorPalette.heading)" => "bg_colorPalette.heading",
         "(display = flex)" => "d_flex",
         "(display = inline-flex)" => "d_inline-flex",
@@ -547,6 +555,7 @@ describe('Utility', () => {
         "(colorPalette = zinc)" => "color-palette_zinc",
         "(colorPalette = gray)" => "color-palette_gray",
         "(colorPalette = slate)" => "color-palette_slate",
+        "(colorPalette = deep)" => "color-palette_deep",
         "(colorPalette = deep.test)" => "color-palette_deep.test",
         "(colorPalette = deep.test.pool)" => "color-palette_deep.test.pool",
         "(colorPalette = button)" => "color-palette_button",
@@ -1357,11 +1366,26 @@ describe('Utility', () => {
         "(backgroundColor = colorPalette.950)" => {
           "backgroundColor": "var(--colors-color-palette-950)",
         },
+        "(backgroundColor = colorPalette.test.yam)" => {
+          "backgroundColor": "var(--colors-color-palette-test-yam)",
+        },
         "(backgroundColor = colorPalette.yam)" => {
           "backgroundColor": "var(--colors-color-palette-yam)",
         },
+        "(backgroundColor = colorPalette.test.pool.poller)" => {
+          "backgroundColor": "var(--colors-color-palette-test-pool-poller)",
+        },
+        "(backgroundColor = colorPalette.pool.poller)" => {
+          "backgroundColor": "var(--colors-color-palette-pool-poller)",
+        },
         "(backgroundColor = colorPalette.poller)" => {
           "backgroundColor": "var(--colors-color-palette-poller)",
+        },
+        "(backgroundColor = colorPalette.test.pool.tall)" => {
+          "backgroundColor": "var(--colors-color-palette-test-pool-tall)",
+        },
+        "(backgroundColor = colorPalette.pool.tall)" => {
+          "backgroundColor": "var(--colors-color-palette-pool-tall)",
         },
         "(backgroundColor = colorPalette.tall)" => {
           "backgroundColor": "var(--colors-color-palette-tall)",
@@ -1369,8 +1393,14 @@ describe('Utility', () => {
         "(backgroundColor = colorPalette.thick)" => {
           "backgroundColor": "var(--colors-color-palette-thick)",
         },
+        "(backgroundColor = colorPalette.card.body)" => {
+          "backgroundColor": "var(--colors-color-palette-card-body)",
+        },
         "(backgroundColor = colorPalette.body)" => {
           "backgroundColor": "var(--colors-color-palette-body)",
+        },
+        "(backgroundColor = colorPalette.card.heading)" => {
+          "backgroundColor": "var(--colors-color-palette-card-heading)",
         },
         "(backgroundColor = colorPalette.heading)" => {
           "backgroundColor": "var(--colors-color-palette-heading)",
@@ -1882,7 +1912,14 @@ describe('Utility', () => {
           "--colors-color-palette-900": "var(--colors-slate-900)",
           "--colors-color-palette-950": "var(--colors-slate-950)",
         },
+        "(colorPalette = deep)" => {
+          "--colors-color-palette-test-pool-poller": "var(--colors-deep-test-pool-poller)",
+          "--colors-color-palette-test-pool-tall": "var(--colors-deep-test-pool-tall)",
+          "--colors-color-palette-test-yam": "var(--colors-deep-test-yam)",
+        },
         "(colorPalette = deep.test)" => {
+          "--colors-color-palette-pool-poller": "var(--colors-deep-test-pool-poller)",
+          "--colors-color-palette-pool-tall": "var(--colors-deep-test-pool-tall)",
           "--colors-color-palette-yam": "var(--colors-deep-test-yam)",
         },
         "(colorPalette = deep.test.pool)" => {
@@ -1890,6 +1927,8 @@ describe('Utility', () => {
           "--colors-color-palette-tall": "var(--colors-deep-test-pool-tall)",
         },
         "(colorPalette = button)" => {
+          "--colors-color-palette-card-body": "var(--colors-button-card-body)",
+          "--colors-color-palette-card-heading": "var(--colors-button-card-heading)",
           "--colors-color-palette-thick": "var(--colors-button-thick)",
         },
         "(colorPalette = button.card)" => {
@@ -2239,7 +2278,14 @@ describe('Utility', () => {
           "--colors-color-palette-900": "var(--colors-slate-900)",
           "--colors-color-palette-950": "var(--colors-slate-950)",
         },
+        "(colorPalette = deep)" => {
+          "--colors-color-palette-test-pool-poller": "var(--colors-deep-test-pool-poller)",
+          "--colors-color-palette-test-pool-tall": "var(--colors-deep-test-pool-tall)",
+          "--colors-color-palette-test-yam": "var(--colors-deep-test-yam)",
+        },
         "(colorPalette = deep.test)" => {
+          "--colors-color-palette-pool-poller": "var(--colors-deep-test-pool-poller)",
+          "--colors-color-palette-pool-tall": "var(--colors-deep-test-pool-tall)",
           "--colors-color-palette-yam": "var(--colors-deep-test-yam)",
         },
         "(colorPalette = deep.test.pool)" => {
@@ -2247,6 +2293,8 @@ describe('Utility', () => {
           "--colors-color-palette-tall": "var(--colors-deep-test-pool-tall)",
         },
         "(colorPalette = button)" => {
+          "--colors-color-palette-card-body": "var(--colors-button-card-body)",
+          "--colors-color-palette-card-heading": "var(--colors-button-card-heading)",
           "--colors-color-palette-thick": "var(--colors-button-thick)",
         },
         "(colorPalette = button.card)" => {
@@ -2286,6 +2334,7 @@ describe('Utility', () => {
         "(colorPalette = zinc)" => "color-palette_zinc",
         "(colorPalette = gray)" => "color-palette_gray",
         "(colorPalette = slate)" => "color-palette_slate",
+        "(colorPalette = deep)" => "color-palette_deep",
         "(colorPalette = deep.test)" => "color-palette_deep.test",
         "(colorPalette = deep.test.pool)" => "color-palette_deep.test.pool",
         "(colorPalette = button)" => "color-palette_button",

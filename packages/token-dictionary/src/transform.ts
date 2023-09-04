@@ -191,22 +191,116 @@ export const addConditionalCssVariables: TokenTransformer = {
   },
 }
 
-function getColorPaletteName(path: string[]) {
-  if (path.includes('colorPalette')) return ''
-  const clone = [...path]
-  clone.pop()
-  clone.shift()
-  return clone.join('.')
-}
-
 export const addColorPalette: TokenTransformer = {
   type: 'extensions',
   name: 'tokens/colors/colorPalette',
   match(token) {
-    return token.extensions.category === 'colors'
+    return token.extensions.category === 'colors' && !token.extensions.isVirtual
   },
   transform(token) {
-    return { colorPalette: getColorPaletteName(token.path) }
+    const tokenPathClone = [...token.path]
+    tokenPathClone.pop()
+    tokenPathClone.shift()
+
+    if (tokenPathClone.length === 0) {
+      return {}
+    }
+
+    /**
+     * If this is the nested color palette:
+     * ```json
+     * {
+     *   "colors": {
+     *     "button": {
+     *       "light": {
+     *         "accent": {
+     *           "secondary": {
+     *             value: 'blue',
+     *           },
+     *         },
+     *       },
+     *     },
+     *   },
+     * },
+     * ```
+     *
+     * The `colorPaletteRoots` will be `['button', 'button.light', 'button.light.accent']`.
+     * It holds all the possible values you can pass to the css `colorPalette` property.
+     * It's used by the `addVirtualPalette` middleware to build the virtual `colorPalette` token for each color pattern root.
+     */
+    const colorPaletteRoots = tokenPathClone.reduce((acc: string[], _: any, i: number, arr: string[]) => {
+      acc.push(arr.slice(0, i + 1).join('.'))
+      return acc
+    }, [] as string[])
+
+    const colorPaletteRoot = tokenPathClone.at(0) as string
+    const colorPalette = tokenPathClone.join('.')
+
+    /**
+     * If this is the nested color palette:
+     * ```json
+     * {
+     *   "colors": {
+     *     "button": {
+     *       "light": {
+     *         "accent": {
+     *           "secondary": {
+     *             value: 'blue',
+     *           },
+     *         },
+     *       },
+     *     },
+     *   },
+     * },
+     * ```
+     *
+     * The `colorPaletteTokenKeys` will be `['light.accent.secondary', 'accent.secondary', 'secondary']`
+     * It is used by the `addVirtualPalette` middleware to build the virtual `colorPalette` token for each color pattern root.
+     *
+     * Examples:
+     *
+     * If the `colorPalette` is `button` then the virtual token will be `colorPalette.light.accent.secondary`.
+     * ```jsx
+     * <button
+     *   className={css({
+     *     colorPalette: 'button',
+     *     color: 'colorPalette.light.accent.secondary',
+     *   })}
+     * />
+     * ```
+     *
+     * If the `colorPalette` is `button.light` then the virtual token will be `colorPalette.accent.secondary`.
+     * ```jsx
+     * <button
+     *   className={css({
+     *     colorPalette: 'button.light',
+     *     color: 'colorPalette.accent.secondary',
+     *   })}
+     * />
+     * ```
+     *
+     * If the `colorPalette` is `button.light.accent` then the virtual token will be `colorPalette.secondary`.
+     * ```jsx
+     * <button
+     *   className={css({
+     *     colorPalette: 'button.light.accent',
+     *     color: 'colorPalette.secondary',
+     *   })}
+     * />
+     */
+    const colorPaletteTokenKeys = token.path
+      // Remove everything before colorPalette root and the root itself
+      .slice(token.path.indexOf(colorPaletteRoot) + 1)
+      .reduce((acc: string[], _: any, i: number, arr: string[]) => {
+        acc.push(arr.slice(i).join('.'))
+        return acc
+      }, [] as string[])
+
+    return {
+      colorPalette,
+      colorPaletteRoots,
+      colorPaletteTokenKeys,
+    }
   },
 }
 

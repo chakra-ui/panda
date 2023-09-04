@@ -69,19 +69,54 @@ export const addVirtualPalette: TokenMiddleware = {
     const colorPalettes = new Map<string, Token[]>()
 
     tokens.forEach((token) => {
-      const { colorPalette } = token.extensions
+      const { colorPalette, colorPaletteRoots, colorPaletteTokenKeys } = token.extensions
       if (!colorPalette) return
-      const list = colorPalettes.get(colorPalette) || []
-      keys.add(token.path.at(-1) as string)
-      list.push(token)
-      colorPalettes.set(colorPalette, list)
+
+      // Add colorPalette keys to the set so we can create virtual tokens for them
+      colorPaletteTokenKeys.forEach(keys.add, keys)
+
+      /**
+       * Assign nested tokens to their respective color palette list.
+       *
+       * Iteration 1:
+       * If `colorPaletteRoots` is this array ['button']
+       * and the token name is 'colors.button.light' it will be added to the 'button' color palette list.
+       * ```
+       * const colorPalettes = {
+       *  'button': ['colors.button.light'],
+       * }
+       *
+       * Itteration 2:
+       * If `colorPaletteRoots` is this array ['button', 'button.light']
+       * and the token name is 'colors.button.light.accent' it will be added to the 'button' and 'button.light' color palette lists.
+       * ```
+       * const colorPalettes = {
+       * 'button': ['colors.button.light', 'colors.button.light.accent'],
+       * 'button.light': ['colors.button.light.accent'],
+       * }
+       *
+       * Itteration 3:
+       * If `colorPaletteRoots` is this array ['button', 'button.light', 'button.light.accent']
+       * and the token name is 'colors.button.light.accent.secondary' it will be added to the 'button', 'button.light' and 'button.light.accent' color palette lists.
+       * ```
+       * const colorPalettes = {
+       *  'button': ['colors.button.light', 'colors.button.light.accent', 'colors.button.light.accent.secondary'],
+       *  'button.light': ['colors.button.light.accent', 'colors.button.light.accent.secondary'],
+       *  'button.light.accent': ['colors.button.light.accent.secondary'],
+       * }
+       */
+      colorPaletteRoots.forEach((colorPaletteRoot: string) => {
+        const colorPaletteList = colorPalettes.get(colorPaletteRoot) || []
+        colorPaletteList.push(token)
+        colorPalettes.set(colorPaletteRoot, colorPaletteList)
+      })
     })
 
     keys.forEach((key) => {
       const node = new Token({
         name: `colors.colorPalette.${key}`,
         value: `{colors.colorPalette.${key}}`,
-        path: ['colors', 'colorPalette', key],
+        path: ['colors', 'colorPalette', ...key.split('.')],
       })
 
       node.setExtensions({
