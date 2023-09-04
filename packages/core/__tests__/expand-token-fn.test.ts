@@ -5,6 +5,7 @@ import expandTokenFn from '../src/plugins/expand-token-fn'
 const tokens: Record<string, string> = {
   'colors.red': 'var(--colors-red)',
   'colors.blue': 'var(--colors-blue)',
+  'sizes.4xl': '56rem',
 }
 
 function run(code: string) {
@@ -63,6 +64,30 @@ describe('expandTokenFn', () => {
       "
             * {
               color: var('colors.magenta', pink);
+            }
+          "
+    `)
+  })
+
+  test('non-existing should remain unchanged', () => {
+    const result = run(css`
+      @layer utilities {
+        @container (min-width: token(sizes.4xl, 1280px)) {
+          .\[\@container_\(min-width\:_token\(sizes\.4xl\)\)\]\:text_green {
+            color: green;
+          }
+        }
+      }
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "
+            @layer utilities {
+              @container (min-width: 56rem) {
+                .[@container_(min-width:_token(sizes.4xl))]:text_green {
+                  color: green;
+                }
+              }
             }
           "
     `)
