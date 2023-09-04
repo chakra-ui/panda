@@ -16,7 +16,7 @@ export function generateCssFn(ctx: Context) {
 
     interface CssFunction {
       (...styles: Array<SystemStyleObject | undefined | null | false>): string
-      raw: (styles: SystemStyleObject) => SystemStyleObject
+      raw: (...styles: Array<SystemStyleObject | undefined | null | false>) => SystemStyleObject
     }
 
     export declare const css: CssFunction;
@@ -112,7 +112,7 @@ export function generateCssFn(ctx: Context) {
 
     const cssFn = createCss(context)
     export const css = (...styles) => cssFn(mergeCss(...styles))
-    css.raw = (styles) => styles
+    css.raw = (...styles) => mergeCss(...styles)
 
     export const { mergeCss, assignCss } = createMergeCss(context)
     `,
