@@ -21,7 +21,7 @@ test('should generate pattern', () => {
 
     interface BoxPatternFn {
       (styles?: BoxStyles): string
-      raw: (styles: BoxStyles) => SystemStyleObject
+      raw: (styles?: BoxStyles) => SystemStyleObject
     }
 
 
@@ -63,7 +63,7 @@ test('should generate pattern', () => {
 
     interface FlexPatternFn {
       (styles?: FlexStyles): string
-      raw: (styles: FlexStyles) => SystemStyleObject
+      raw: (styles?: FlexStyles) => SystemStyleObject
     }
 
 
@@ -113,7 +113,7 @@ test('should generate pattern', () => {
 
     interface StackPatternFn {
       (styles?: StackStyles): string
-      raw: (styles: StackStyles) => SystemStyleObject
+      raw: (styles?: StackStyles) => SystemStyleObject
     }
 
 
@@ -158,7 +158,7 @@ test('should generate pattern', () => {
 
     interface VstackPatternFn {
       (styles?: VstackStyles): string
-      raw: (styles: VstackStyles) => SystemStyleObject
+      raw: (styles?: VstackStyles) => SystemStyleObject
     }
 
 
@@ -203,7 +203,7 @@ test('should generate pattern', () => {
 
     interface HstackPatternFn {
       (styles?: HstackStyles): string
-      raw: (styles: HstackStyles) => SystemStyleObject
+      raw: (styles?: HstackStyles) => SystemStyleObject
     }
 
 
@@ -247,7 +247,7 @@ test('should generate pattern', () => {
 
     interface SpacerPatternFn {
       (styles?: SpacerStyles): string
-      raw: (styles: SpacerStyles) => SystemStyleObject
+      raw: (styles?: SpacerStyles) => SystemStyleObject
     }
 
 
@@ -289,7 +289,7 @@ test('should generate pattern', () => {
 
     interface SquarePatternFn {
       (styles?: SquareStyles): string
-      raw: (styles: SquareStyles) => SystemStyleObject
+      raw: (styles?: SquareStyles) => SystemStyleObject
     }
 
 
@@ -334,7 +334,7 @@ test('should generate pattern', () => {
 
     interface CirclePatternFn {
       (styles?: CircleStyles): string
-      raw: (styles: CircleStyles) => SystemStyleObject
+      raw: (styles?: CircleStyles) => SystemStyleObject
     }
 
 
@@ -380,7 +380,7 @@ test('should generate pattern', () => {
 
     interface CenterPatternFn {
       (styles?: CenterStyles): string
-      raw: (styles: CenterStyles) => SystemStyleObject
+      raw: (styles?: CenterStyles) => SystemStyleObject
     }
 
 
@@ -422,7 +422,7 @@ test('should generate pattern', () => {
 
     interface LinkBoxPatternFn {
       (styles?: LinkBoxStyles): string
-      raw: (styles: LinkBoxStyles) => SystemStyleObject
+      raw: (styles?: LinkBoxStyles) => SystemStyleObject
     }
 
 
@@ -465,7 +465,7 @@ test('should generate pattern', () => {
 
     interface LinkOverlayPatternFn {
       (styles?: LinkOverlayStyles): string
-      raw: (styles: LinkOverlayStyles) => SystemStyleObject
+      raw: (styles?: LinkOverlayStyles) => SystemStyleObject
     }
 
 
@@ -513,7 +513,7 @@ test('should generate pattern', () => {
 
     interface AspectRatioPatternFn {
       (styles?: AspectRatioStyles): string
-      raw: (styles: AspectRatioStyles) => SystemStyleObject
+      raw: (styles?: AspectRatioStyles) => SystemStyleObject
     }
 
 
@@ -576,7 +576,7 @@ test('should generate pattern', () => {
 
     interface GridPatternFn {
       (styles?: GridStyles): string
-      raw: (styles: GridStyles) => SystemStyleObject
+      raw: (styles?: GridStyles) => SystemStyleObject
     }
 
 
@@ -625,7 +625,7 @@ test('should generate pattern', () => {
 
     interface GridItemPatternFn {
       (styles?: GridItemStyles): string
-      raw: (styles: GridItemStyles) => SystemStyleObject
+      raw: (styles?: GridItemStyles) => SystemStyleObject
     }
 
 
@@ -675,7 +675,7 @@ test('should generate pattern', () => {
 
     interface WrapPatternFn {
       (styles?: WrapStyles): string
-      raw: (styles: WrapStyles) => SystemStyleObject
+      raw: (styles?: WrapStyles) => SystemStyleObject
     }
 
 
@@ -721,7 +721,7 @@ test('should generate pattern', () => {
 
     interface ContainerPatternFn {
       (styles?: ContainerStyles): string
-      raw: (styles: ContainerStyles) => SystemStyleObject
+      raw: (styles?: ContainerStyles) => SystemStyleObject
     }
 
 
@@ -765,7 +765,7 @@ test('should generate pattern', () => {
 
     interface DividerPatternFn {
       (styles?: DividerStyles): string
-      raw: (styles: DividerStyles) => SystemStyleObject
+      raw: (styles?: DividerStyles) => SystemStyleObject
     }
 
 
@@ -813,7 +813,7 @@ test('should generate pattern', () => {
 
     interface FloatPatternFn {
       (styles?: FloatStyles): string
-      raw: (styles: FloatStyles) => SystemStyleObject
+      raw: (styles?: FloatStyles) => SystemStyleObject
     }
 
 
@@ -883,7 +883,7 @@ test('should generate pattern', () => {
 
     interface BleedPatternFn {
       (styles?: BleedStyles): string
-      raw: (styles: BleedStyles) => SystemStyleObject
+      raw: (styles?: BleedStyles) => SystemStyleObject
     }
 
 
@@ -926,7 +926,7 @@ test('should generate pattern', () => {
 
     interface VisuallyHiddenPatternFn {
       (styles?: VisuallyHiddenStyles): string
-      raw: (styles: VisuallyHiddenStyles) => SystemStyleObject
+      raw: (styles?: VisuallyHiddenStyles) => SystemStyleObject
     }
 
 

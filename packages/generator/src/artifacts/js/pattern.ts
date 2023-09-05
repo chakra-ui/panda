@@ -61,7 +61,7 @@ export function generatePattern(ctx: Context) {
 
           interface ${upperName}PatternFn {
             (styles?: ${upperName}Styles): string
-            raw: (styles: ${upperName}Styles) => SystemStyleObject
+            raw: (styles?: ${upperName}Styles) => SystemStyleObject
           }
 
           ${description ? `/** ${description} */` : ''}
