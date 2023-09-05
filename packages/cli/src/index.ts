@@ -106,6 +106,7 @@ export type {
   PropertyConfig,
   RecipeConfig,
   RecipeVariantRecord,
+  PatternConfig,
   SemanticTokens,
   SlotRecipeConfig,
   SlotRecipeVariantRecord,
