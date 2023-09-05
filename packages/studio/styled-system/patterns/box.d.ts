@@ -14,7 +14,7 @@ type BoxStyles = BoxProperties & DistributiveOmit<SystemStyleObject, keyof BoxPr
 
 interface BoxPatternFn {
   (styles?: BoxStyles): string
-  raw: (styles: BoxStyles) => SystemStyleObject
+  raw: (styles?: BoxStyles) => SystemStyleObject
 }
 
 

@@ -14,7 +14,7 @@ type VisuallyHiddenStyles = VisuallyHiddenProperties & DistributiveOmit<SystemSt
 
 interface VisuallyHiddenPatternFn {
   (styles?: VisuallyHiddenStyles): string
-  raw: (styles: VisuallyHiddenStyles) => SystemStyleObject
+  raw: (styles?: VisuallyHiddenStyles) => SystemStyleObject
 }
 
 

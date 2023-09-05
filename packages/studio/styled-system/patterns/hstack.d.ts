@@ -15,7 +15,7 @@ type HstackStyles = HstackProperties & DistributiveOmit<SystemStyleObject, keyof
 
 interface HstackPatternFn {
   (styles?: HstackStyles): string
-  raw: (styles: HstackStyles) => SystemStyleObject
+  raw: (styles?: HstackStyles) => SystemStyleObject
 }
 
 
