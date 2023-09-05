@@ -1,5 +1,39 @@
 # @pandacss/generator
 
+## 0.14.0
+
+### Patch Changes
+
+- bdd30d18: Fix issue where `pattern.raw(...)` did not share the same signature as `pattern(...)`
+- bff17df2: Add each condition raw value information on hover using JSDoc annotation
+- 6548f4f7: Add missing types (`StyledComponents`, `RecipeConfig`, `PatternConfig` etc) to solve a TypeScript issue (The
+  inferred type of xxx cannot be named without a reference...) when generating declaration files in addition to using
+  `emitPackage: true`
+- 6f7ee198: Add `{svaFn}.raw` function to get raw styles and allow reusable components with style overrides, just like
+  with `{cvaFn}.raw`
+- 623e321f: Fix `config.strictTokens: true` issue where some properties would still allow arbitrary values
+- 542d1ebc: Change the typings for the `css(...args)` function so that you can pass possibly undefined values to it.
+
+  This is mostly intended for component props that have optional values like `cssProps?: SystemStyleObject` and would
+  use it like `css({ ... }, cssProps)`
+
+- 39b20797: Change the `css.raw` function signature to match the one from
+  [`css()`](https://github.com/chakra-ui/panda/pull/1264), to allow passing multiple style objects that will be smartly
+  merged.
+- Updated dependencies [b1c31fdd]
+- Updated dependencies [8106b411]
+- Updated dependencies [9e799554]
+- Updated dependencies [e6459a59]
+- Updated dependencies [6f7ee198]
+- Updated dependencies [623e321f]
+- Updated dependencies [02161d41]
+  - @pandacss/token-dictionary@0.14.0
+  - @pandacss/types@0.14.0
+  - @pandacss/core@0.14.0
+  - @pandacss/is-valid-prop@0.14.0
+  - @pandacss/logger@0.14.0
+  - @pandacss/shared@0.14.0
+
 ## 0.13.1
 
 ### Patch Changes

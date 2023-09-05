@@ -1,5 +1,16 @@
 # @pandacss/fixture
 
+## 0.14.0
+
+### Patch Changes
+
+- Updated dependencies [8106b411]
+- Updated dependencies [e6459a59]
+- Updated dependencies [6f7ee198]
+  - @pandacss/types@0.14.0
+  - @pandacss/preset-base@0.14.0
+  - @pandacss/preset-panda@0.14.0
+
 ## 0.13.1
 
 ### Patch Changes

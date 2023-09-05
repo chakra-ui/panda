@@ -1,5 +1,42 @@
 # @pandacss/core
 
+## 0.14.0
+
+### Patch Changes
+
+- e6459a59: The utility transform fn now allow retrieving the token object with the raw value/conditions as currently
+  there's no way to get it from there.
+- 623e321f: Fix `config.strictTokens: true` issue where some properties would still allow arbitrary values
+- 02161d41: Fix issue with the `token()` function in CSS strings that produced CSS syntax error when non-existing token
+  were left unchanged (due to the `.`)
+
+  Before:
+
+  ```css
+  * {
+    color: token(colors.magenta, pink);
+  }
+  ```
+
+  Now:
+
+  ```css
+  * {
+    color: token('colors.magenta', pink);
+  }
+  ```
+
+- Updated dependencies [b1c31fdd]
+- Updated dependencies [8106b411]
+- Updated dependencies [9e799554]
+- Updated dependencies [e6459a59]
+- Updated dependencies [6f7ee198]
+  - @pandacss/token-dictionary@0.14.0
+  - @pandacss/types@0.14.0
+  - @pandacss/error@0.14.0
+  - @pandacss/logger@0.14.0
+  - @pandacss/shared@0.14.0
+
 ## 0.13.1
 
 ### Patch Changes

@@ -1,5 +1,37 @@
 # @pandacss/node
 
+## 0.14.0
+
+### Minor Changes
+
+- 8106b411: Add `generator:done` hook to perform actions when codegen artifacts are emitted.
+
+### Patch Changes
+
+- Updated dependencies [b1c31fdd]
+- Updated dependencies [bdd30d18]
+- Updated dependencies [bff17df2]
+- Updated dependencies [6548f4f7]
+- Updated dependencies [8106b411]
+- Updated dependencies [9e799554]
+- Updated dependencies [e6459a59]
+- Updated dependencies [6f7ee198]
+- Updated dependencies [623e321f]
+- Updated dependencies [542d1ebc]
+- Updated dependencies [39b20797]
+- Updated dependencies [02161d41]
+  - @pandacss/token-dictionary@0.14.0
+  - @pandacss/generator@0.14.0
+  - @pandacss/types@0.14.0
+  - @pandacss/core@0.14.0
+  - @pandacss/parser@0.14.0
+  - @pandacss/config@0.14.0
+  - @pandacss/error@0.14.0
+  - @pandacss/extractor@0.14.0
+  - @pandacss/is-valid-prop@0.14.0
+  - @pandacss/logger@0.14.0
+  - @pandacss/shared@0.14.0
+
 ## 0.13.1
 
 ### Patch Changes
