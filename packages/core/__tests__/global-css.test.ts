@@ -56,13 +56,13 @@ describe('Global css', () => {
           color: pink;
           }
 
-        @media screen and (min-width: 640px) {
+        @media screen and (min-width: 40em) {
           .btn {
             font-size: 12px;
               }
           }
 
-        @media screen and (min-width: 1024px) {
+        @media screen and (min-width: 64em) {
           .btn {
             width: 90px;
               }

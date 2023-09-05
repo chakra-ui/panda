@@ -12,7 +12,7 @@ describe('Breakpoints', () => {
           "sm",
           {
             "max": "47.996875em",
-            "min": "640px",
+            "min": "40em",
             "name": "sm",
           },
         ],
@@ -20,7 +20,7 @@ describe('Breakpoints', () => {
           "md",
           {
             "max": "63.996875em",
-            "min": "768px",
+            "min": "48em",
             "name": "md",
           },
         ],
@@ -28,7 +28,7 @@ describe('Breakpoints', () => {
           "lg",
           {
             "max": "79.996875em",
-            "min": "1024px",
+            "min": "64em",
             "name": "lg",
           },
         ],
@@ -36,7 +36,7 @@ describe('Breakpoints', () => {
           "xl",
           {
             "max": "95.996875em",
-            "min": "1280px",
+            "min": "80em",
             "name": "xl",
           },
         ],
@@ -44,7 +44,7 @@ describe('Breakpoints', () => {
           "2xl",
           {
             "max": undefined,
-            "min": "1536px",
+            "min": "96em",
             "name": "2xl",
           },
         ],
@@ -55,27 +55,27 @@ describe('Breakpoints', () => {
       {
         "2xl": {
           "max": undefined,
-          "min": "1536px",
+          "min": "96em",
           "name": "2xl",
         },
         "lg": {
           "max": "79.996875em",
-          "min": "1024px",
+          "min": "64em",
           "name": "lg",
         },
         "md": {
           "max": "63.996875em",
-          "min": "768px",
+          "min": "48em",
           "name": "md",
         },
         "sm": {
           "max": "47.996875em",
-          "min": "640px",
+          "min": "40em",
           "name": "sm",
         },
         "xl": {
           "max": "95.996875em",
-          "min": "1280px",
+          "min": "80em",
           "name": "xl",
         },
       }
@@ -83,30 +83,31 @@ describe('Breakpoints', () => {
 
     expect(bp.ranges).toMatchInlineSnapshot(`
       {
-        "2xl": "screen and (min-width: 1536px)",
-        "2xlOnly": "screen and (min-width: 1536px)",
-        "lg": "screen and (min-width: 1024px)",
-        "lgDown": "screen and (max-width: 79.996875em)",
-        "lgOnly": "screen and (min-width: 1024px) and (max-width: 79.996875em)",
-        "lgTo2xl": "screen and (min-width: 1024px)",
-        "lgToXl": "screen and (min-width: 1024px) and (max-width: 95.996875em)",
-        "md": "screen and (min-width: 768px)",
-        "mdDown": "screen and (max-width: 63.996875em)",
-        "mdOnly": "screen and (min-width: 768px) and (max-width: 63.996875em)",
-        "mdTo2xl": "screen and (min-width: 768px)",
-        "mdToLg": "screen and (min-width: 768px) and (max-width: 79.996875em)",
-        "mdToXl": "screen and (min-width: 768px) and (max-width: 95.996875em)",
-        "sm": "screen and (min-width: 640px)",
-        "smDown": "screen and (max-width: 47.996875em)",
-        "smOnly": "screen and (min-width: 640px) and (max-width: 47.996875em)",
-        "smTo2xl": "screen and (min-width: 640px)",
-        "smToLg": "screen and (min-width: 640px) and (max-width: 79.996875em)",
-        "smToMd": "screen and (min-width: 640px) and (max-width: 63.996875em)",
-        "smToXl": "screen and (min-width: 640px) and (max-width: 95.996875em)",
-        "xl": "screen and (min-width: 1280px)",
-        "xlDown": "screen and (max-width: 95.996875em)",
-        "xlOnly": "screen and (min-width: 1280px) and (max-width: 95.996875em)",
-        "xlTo2xl": "screen and (min-width: 1280px)",
+        "2xl": "screen and (min-width: 96em)",
+        "2xlDown": "screen and (max-width: 96em)",
+        "2xlOnly": "screen and (min-width: 96em)",
+        "lg": "screen and (min-width: 64em)",
+        "lgDown": "screen and (max-width: 64em)",
+        "lgOnly": "screen and (min-width: 64em) and (max-width: 79.996875em)",
+        "lgTo2xl": "screen and (min-width: 64em) and (max-width: 95.996875em)",
+        "lgToXl": "screen and (min-width: 64em) and (max-width: 79.996875em)",
+        "md": "screen and (min-width: 48em)",
+        "mdDown": "screen and (max-width: 48em)",
+        "mdOnly": "screen and (min-width: 48em) and (max-width: 63.996875em)",
+        "mdTo2xl": "screen and (min-width: 48em) and (max-width: 95.996875em)",
+        "mdToLg": "screen and (min-width: 48em) and (max-width: 63.996875em)",
+        "mdToXl": "screen and (min-width: 48em) and (max-width: 79.996875em)",
+        "sm": "screen and (min-width: 40em)",
+        "smDown": "screen and (max-width: 40em)",
+        "smOnly": "screen and (min-width: 40em) and (max-width: 47.996875em)",
+        "smTo2xl": "screen and (min-width: 40em) and (max-width: 95.996875em)",
+        "smToLg": "screen and (min-width: 40em) and (max-width: 63.996875em)",
+        "smToMd": "screen and (min-width: 40em) and (max-width: 47.996875em)",
+        "smToXl": "screen and (min-width: 40em) and (max-width: 79.996875em)",
+        "xl": "screen and (min-width: 80em)",
+        "xlDown": "screen and (max-width: 80em)",
+        "xlOnly": "screen and (min-width: 80em) and (max-width: 95.996875em)",
+        "xlTo2xl": "screen and (min-width: 80em) and (max-width: 95.996875em)",
       }
     `)
   })
@@ -125,7 +126,7 @@ describe('Breakpoints', () => {
 
     expect(root.toString()).toMatchInlineSnapshot(`
       "
-          @media screen and (min-width: 768px){
+          @media screen and (min-width: 48em){
               .foo{
                   color: red;
               }

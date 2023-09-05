@@ -26,22 +26,6 @@ export class Breakpoints {
     return ['screen', min && `(min-width: ${min})`, max && `(max-width: ${max})`].filter(Boolean).join(' and ')
   }
 
-  up = (name: string) => {
-    const { min } = this.get(name)
-    return this.build({ min })
-  }
-
-  down = (name: string) => {
-    const { max } = this.get(name)
-    return this.build({ max })
-  }
-
-  between = (minName: string, maxName: string) => {
-    const { min } = this.get(minName)
-    const { max } = this.get(maxName)
-    return this.build({ min, max })
-  }
-
   only = (name: string) => {
     const { min, max } = this.get(name)
     return this.build({ min, max })
@@ -52,15 +36,23 @@ export class Breakpoints {
     const permuations = getPermutations(breakpoints)
 
     const values = breakpoints
-      .flatMap((_name, index) => {
-        const min = breakpoints[index]
-        const down: [string, string] = [`${min}Down`, this.down(min)]
-        const up: [string, string] = [min, this.up(min)]
-        const only: [string, string] = [`${min}Only`, this.only(min)]
+      .flatMap((name) => {
+        const value = this.get(name)
+
+        const down: [string, string] = [`${name}Down`, this.build({ max: value.min })]
+        const up: [string, string] = [name, this.build({ min: value.min })]
+        const only: [string, string] = [`${name}Only`, this.only(name)]
+
         return [up, only, down]
       })
       .filter(([_, value]) => value !== '')
-      .concat(permuations.map(([min, max]) => [`${min}To${capitalize(max)}`, this.between(min, max)]))
+      .concat(
+        permuations.map(([min, max]) => {
+          const minValue = this.get(min)
+          const maxValue = this.get(max)
+          return [`${min}To${capitalize(max)}`, this.build({ min: minValue.min, max: adjust(maxValue.min) })]
+        }),
+      )
 
     return Object.fromEntries(values)
   }
@@ -89,7 +81,12 @@ export class Breakpoints {
   }
 }
 
-type Entries = [string, { name: string; min: string; max?: string | null }][]
+type Entries = [string, { name: string; min?: string | null; max?: string | null }][]
+
+function adjust(value: string | null | undefined) {
+  const computedMax = parseFloat(toPx(value!) ?? '') - 0.05
+  return toEm(`${computedMax}px`) as string
+}
 
 function sortBreakpoints(breakpoints: Record<string, string>): Entries {
   return Object.entries(breakpoints)
@@ -104,11 +101,10 @@ function sortBreakpoints(breakpoints: Record<string, string>): Entries {
       }
 
       if (max != null) {
-        const computedMax = parseFloat(toPx(max) ?? '') - 0.05
-        max = toEm(`${computedMax}px`)!
+        max = adjust(max)
       }
 
-      return [name, { name, min, max }]
+      return [name, { name, min: toEm(min), max }]
     })
 }
 

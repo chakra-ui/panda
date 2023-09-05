@@ -64,7 +64,7 @@ describe('atomic / with basic style object', () => {
               width: 50px
           }
           .sm\\\\:w_60px {
-              @media screen and (min-width: 640px) {
+              @media screen and (min-width: 40em) {
                   width: 60px
               }
           }
@@ -79,7 +79,7 @@ describe('atomic / with basic style object', () => {
               width: 50px
           }
           .md\\\\:w_60px {
-              @media screen and (min-width: 768px) {
+              @media screen and (min-width: 48em) {
                   width: 60px
               }
           }
@@ -98,7 +98,7 @@ describe('atomic / with basic style object', () => {
       "@layer utilities {
           .ltr\\\\:sm\\\\:ml_4 {
               [dir=ltr] & {
-                  @media screen and (min-width: 640px) {
+                  @media screen and (min-width: 40em) {
                       margin-left: var(--spacing-4)
                   }
               }
@@ -152,20 +152,20 @@ describe('atomic / with basic style object', () => {
       "@layer utilities {
           .sm\\\\:rtl\\\\:top_20px {
               [dir=rtl] & {
-                  @media screen and (min-width: 640px) {
+                  @media screen and (min-width: 40em) {
                       top: 20px
                   }
               }
           }
           .sm\\\\:hover\\\\:top_50px {
               &:is(:hover, [data-hover]) {
-                  @media screen and (min-width: 640px) {
+                  @media screen and (min-width: 40em) {
                       top: 50px
                   }
               }
           }
           .lg\\\\:top_120px {
-              @media screen and (min-width: 1024px) {
+              @media screen and (min-width: 64em) {
                   top: 120px
               }
           }
@@ -186,7 +186,7 @@ describe('atomic / with basic style object', () => {
               left: 20px
           }
           .md\\\\:left_40px {
-              @media screen and (min-width: 768px) {
+              @media screen and (min-width: 48em) {
                   left: 40px
               }
           }
@@ -216,7 +216,7 @@ describe('atomic / with nesting scope', () => {
           }
           .\\\\[\\\\&_\\\\>_p\\\\]\\\\:md\\\\:left_40px {
               & > p {
-                  @media screen and (min-width: 768px) {
+                  @media screen and (min-width: 48em) {
                       left: 40px
                   }
               }
@@ -247,7 +247,7 @@ describe('atomic / with nesting scope', () => {
                   &:is(:hover, [data-hover]) {
                       [dir=ltr] & {
                            &.dark, .dark & {
-                              @media screen and (min-width: 640px) {
+                              @media screen and (min-width: 40em) {
                                   font: serif
                               }
                           }
@@ -278,14 +278,14 @@ describe('atomic / with nesting scope', () => {
           }
           .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:sm\\\\:fs_14px {
               input:hover & {
-                  @media screen and (min-width: 640px) {
+                  @media screen and (min-width: 40em) {
                       font-size: 14px
                   }
               }
           }
           .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:lg\\\\:fs_18px {
               input:hover & {
-                  @media screen and (min-width: 1024px) {
+                  @media screen and (min-width: 64em) {
                       font-size: 18px
                   }
               }
@@ -319,7 +319,7 @@ describe('atomic / with nesting scope', () => {
           }
           .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:sm\\\\:text_left {
               &::placeholder {
-                  @media screen and (min-width: 640px) {
+                  @media screen and (min-width: 40em) {
                       text-align: left
                   }
               }
@@ -347,7 +347,7 @@ describe('atomic / with nesting scope', () => {
           }
           .\\\\[\\\\@media_base\\\\]\\\\:sm\\\\:text_left {
               @media base {
-                  @media screen and (min-width: 640px) {
+                  @media screen and (min-width: 40em) {
                       text-align: left
                   }
               }
@@ -388,7 +388,7 @@ describe('atomic / with grouped conditions styles', () => {
           .hover\\\\:sm\\\\:dark\\\\:bg_red\\\\.300 {
               &:is(:hover, [data-hover]) {
                    &.dark, .dark & {
-                      @media screen and (min-width: 640px) {
+                      @media screen and (min-width: 40em) {
                           background: var(--colors-red-300)
                       }
                   }
@@ -415,7 +415,7 @@ describe('atomic / with grouped conditions styles', () => {
           .hover\\\\:disabled\\\\:sm\\\\:bg_red\\\\.300 {
               &:is(:hover, [data-hover]) {
                   &:is(:disabled, [disabled], [data-disabled]) {
-                      @media screen and (min-width: 640px) {
+                      @media screen and (min-width: 40em) {
                           background: var(--colors-red-300)
                       }
                   }
@@ -449,7 +449,7 @@ describe('atomic / with grouped conditions styles', () => {
           .\\\\[\\\\@media_base\\\\]\\\\:\\\\[\\\\&\\\\:hover\\\\]\\\\:sm\\\\:text_left {
               &:hover {
                   @media base {
-                      @media screen and (min-width: 640px) {
+                      @media screen and (min-width: 40em) {
                           text-align: left
                       }
                   }

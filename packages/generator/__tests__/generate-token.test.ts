@@ -467,13 +467,13 @@ describe('generator', () => {
         --colors-surface: #p-b
       }
 
-      @media screen and (min-width: 768px) {
+      @media screen and (min-width: 48em) {
         [data-color=pastel]:where([data-theme=dark], .dark) {
           --colors-surface: #p-d
                       }
                   }
 
-      @media screen and (min-width: 1024px) {
+      @media screen and (min-width: 64em) {
         :where(html) {
           --spacing-gutter: 1.25rem
               }

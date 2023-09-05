@@ -58,8 +58,8 @@ describe('complex-rule', () => {
           }
           .dark\\\\:sm\\\\:md\\\\:text_red200 {
               &[data-theme='dark'], &&[data-theme='dark'] {
-                  @media screen and (min-width: 640px) {
-                      @media screen and (min-width: 768px) {
+                  @media screen and (min-width: 40em) {
+                      @media screen and (min-width: 48em) {
                           color: red200
                       }
                   }

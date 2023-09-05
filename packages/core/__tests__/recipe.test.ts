@@ -180,7 +180,7 @@ describe('recipe ruleset', () => {
               }
           }
           .lg\\\\:buttonStyle--variant_outline {
-              @media screen and (min-width: 1024px) {
+              @media screen and (min-width: 64em) {
                   background-color: var(--colors-transparent);
                   border: 1px solid blue;
                   color: blue;

@@ -69,7 +69,7 @@ test('[recipe] direct nesting / recipe ruleset', () => {
             &:first-child:hover {
                 color: var(--colors-red-200);
             }
-            @media screen and (min-width: 768px) {
+            @media screen and (min-width: 48em) {
                 &:first-child:hover {
                     color: var(--colors-gray-300);
                 }

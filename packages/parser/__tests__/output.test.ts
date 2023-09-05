@@ -176,13 +176,13 @@ describe('extract to css output pipeline', () => {
           margin: calc(var(--spacing-2) * -1)
                   }
 
-        @media screen and (min-width: 640px) {
+        @media screen and (min-width: 40em) {
           .sm\\\\:m_4px {
             margin: 4px
           }
               }
 
-        @media screen and (min-width: 768px) {
+        @media screen and (min-width: 48em) {
           .md\\\\:p_4 {
             padding: var(--spacing-4)
           }
@@ -2987,13 +2987,13 @@ describe('preset patterns', () => {
           padding-inline: var(--spacing-4)
           }
 
-        @media screen and (min-width: 768px) {
+        @media screen and (min-width: 48em) {
           .md\\\\:px_6 {
             padding-inline: var(--spacing-6)
           }
               }
 
-        @media screen and (min-width: 1024px) {
+        @media screen and (min-width: 64em) {
           .lg\\\\:px_8 {
             padding-inline: var(--spacing-8)
           }
@@ -3051,13 +3051,13 @@ describe('preset patterns', () => {
           color: var(--colors-blue-100)
           }
 
-        @media screen and (min-width: 768px) {
+        @media screen and (min-width: 48em) {
           .md\\\\:px_6 {
             padding-inline: var(--spacing-6)
           }
               }
 
-        @media screen and (min-width: 1024px) {
+        @media screen and (min-width: 64em) {
           .lg\\\\:px_8 {
             padding-inline: var(--spacing-8)
           }
@@ -3460,19 +3460,19 @@ describe('preset patterns', () => {
           flex-direction: column
           }
 
-        @media screen and (min-width: 640px) {
+        @media screen and (min-width: 40em) {
           .sm\\\\:flex_row {
             flex-direction: row
           }
               }
 
-        @media screen and (min-width: 768px) {
+        @media screen and (min-width: 48em) {
           .md\\\\:px_6 {
             padding-inline: var(--spacing-6)
           }
               }
 
-        @media screen and (min-width: 1024px) {
+        @media screen and (min-width: 64em) {
           .lg\\\\:px_8 {
             padding-inline: var(--spacing-8)
           }
