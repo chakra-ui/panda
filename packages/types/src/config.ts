@@ -207,8 +207,8 @@ type CodegenOptions = {
    */
   emitTokensOnly?: boolean
   /**
-   * Whether to hash the generated class names.
-   * This is useful if want to shorten the class names.
+   * Whether to hash the generated class names / css variables.
+   * This is useful if want to shorten the class names or css variables.
    * @default false
    */
   hash?: boolean | { cssVar: boolean; className: boolean }

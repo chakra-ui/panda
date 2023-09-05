@@ -11,39 +11,6 @@
 @import './tokens/keyframes.css';
 
 @layer utilities {
-  .styles\:dark\:text_green500.dark,
-    .dark .styles\:dark\:text_green500 {
-    color: green500;
-    }
-
-  .\ \*\:text_token\(colors\.red\) {
-    color: 'colors.red'
-    }
-
-  .\ \*\:border_1px_solid_token\(colors\.blue\) {
-    border: 1px solid 'colors.blue'
-    }
-
-  .\ \*\:background-image_linear-gradient\(token\(colors\.red\)\,_token\(colors\.blue\)\) {
-    background-image: linear-gradient('colors.red', 'colors.blue')
-    }
-
-  .\ \*\:text_token\(colors\.red\,_colors\.blue\) {
-    color: var('colors.red', 'colors.blue')
-    }
-
-  .\ \*\:text_token\(colors\.magenta\,_pink\) {
-    color: var('colors.magenta', pink)
-    }
-
-  .font_12px\/1\.5_Helvetica\,_Arial\,_sans-serif {
-    font: 12px/1.5 Helvetica, Arial, sans-serif;
-  }
-
-  .text_red {
-    color: red;
-  }
-
   .w_26px {
     width: 26px;
   }
@@ -1029,10 +996,6 @@
     border-bottom-color: var(--colors-black);
     }
 
-  .\[\&\:hover\]\:text_blue:hover {
-    color: blue;
-    }
-
   .\[\&\:hover\]\:bg_\#4049f0:hover {
     background: #4049f0;
     }
@@ -1043,15 +1006,6 @@
 
   .\[\&_li\]\:hover\:opacity_0\.8 li:where(:hover, [data-hover]) {
     opacity: 0.8;
-      }
-
-  @media screen and (min-width: 640px) {
-    @media screen and (min-width: 768px) {
-      .styles\:dark\:sm\:md\:text_red200.dark,
-    .dark .styles\:dark\:sm\:md\:text_red200 {
-        color: red200
-    }
-        }
       }
 
   @media screen and (min-width: 768px) {
