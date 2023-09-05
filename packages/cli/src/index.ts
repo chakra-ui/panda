@@ -104,6 +104,8 @@ export type {
   LayerStyles,
   Preset,
   PropertyConfig,
+  RecipeConfig,
+  RecipeVariantRecord,
   SemanticTokens,
   SlotRecipeConfig,
   SlotRecipeVariantRecord,
