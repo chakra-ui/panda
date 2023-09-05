@@ -6,6 +6,131 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.14.0] - 2023-09-05
+
+## Fixed
+
+- Fix issue where `pattern.raw(...)` did not share the same signature as `pattern(...)`
+- Fix issue where negative spacing tokens doesn't respect hash option
+- Fix `config.strictTokens: true` issue where some properties would still allow arbitrary values
+- Fix issue with the `token()` function in CSS strings that produced CSS syntax error when non-existing token were left
+  unchanged (due to the `.`)
+
+**Before:**
+
+```css
+* {
+  color: token(colors.magenta, pink);
+}
+```
+
+**Now**:
+
+```css
+* {
+  color: token('colors.magenta', pink);
+}
+```
+
+## Added
+
+- Add `{svaFn}.raw` function to get raw styles and allow reusable components with style overrides, just like with
+  `{cvaFn}.raw`
+- The utility transform fn now allow retrieving the token object with the raw value/conditions as currently there's no
+  way to get it from there.
+- Add `generator:done` hook to perform actions when codegen artifacts are emitted.
+- Add each condition raw value information on hover using JSDoc annotation
+- Add missing types (PatternConfig, RecipeConfig, RecipeVariantRecord) to solve a TypeScript issue (The inferred type of
+  xxx cannot be named without a reference...)
+- Add missing types (`StyledComponents`, `RecipeConfig`, `PatternConfig` etc) to solve a TypeScript issue (The inferred
+  type of xxx cannot be named without a reference...) when generating declaration files in addition to using
+  `emitPackage: true`
+- Introduces deep nested `colorPalettes` for enhanced color management
+- Previous color palette structure was flat and less flexible, now `colorPalettes` can be organized hierarchically for
+  improved organization
+
+**Example**: Define colors within categories, variants and states
+
+```js
+const theme = {
+  extend: {
+    semanticTokens: {
+      colors: {
+        button: {
+          dark: {
+            value: 'navy',
+          },
+          light: {
+            DEFAULT: {
+              value: 'skyblue',
+            },
+            accent: {
+              DEFAULT: {
+                value: 'cyan',
+              },
+              secondary: {
+                value: 'blue',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+You can now use the root `button` color palette and its values directly:
+
+```tsx
+import { css } from '../styled-system/css'
+
+export const App = () => {
+  return (
+    <button
+      className={css({
+        colorPalette: 'button',
+        color: 'colorPalette.light',
+        backgroundColor: 'colorPalette.dark',
+        _hover: {
+          color: 'colorPalette.light.accent',
+          background: 'colorPalette.light.accent.secondary',
+        },
+      })}
+    >
+      Root color palette
+    </button>
+  )
+}
+```
+
+Or you can use any deeply nested property (e.g. `button.light.accent`) as a root color palette:
+
+```tsx
+import { css } from '../styled-system/css'
+
+export const App = () => {
+  return (
+    <button
+      className={css({
+        colorPalette: 'button.light.accent',
+        color: 'colorPalette.secondary',
+      })}
+    >
+      Nested color palette leaf
+    </button>
+  )
+}
+```
+
+## Changed
+
+- Change the typings for the `css(...args)` function so that you can pass possibly undefined values to it. This is
+  mostly intended for component props that have optional values like `cssProps?: SystemStyleObject` and would use it
+  like `css({ ... }, cssProps)`
+- Change the `css.raw` function signature to match the one from [`css()`](https://github.com/chakra-ui/panda/pull/1264),
+  to allow passing multiple style objects that will be smartly merged.
+
 ## [0.13.1] - 2023-08-29
 
 ## Fixed
