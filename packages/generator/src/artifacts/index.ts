@@ -196,12 +196,12 @@ function setupJsx(ctx: Context): Artifact {
   `,
     dts: outdent`
   ${ctx.file.exportTypeStar('./factory')}
-  
+
   ${isValidProp?.dts ? ctx.file.exportTypeStar('./is-valid-prop') : ''}
-  
+
   ${outdent.string(patterns.map((file) => ctx.file.exportTypeStar(`./${file.name}`)).join('\n'))}
-  
-  ${ctx.file.exportType(ctx.jsx.typeName, '../types/jsx')}
+
+  ${ctx.file.exportType([ctx.jsx.typeName, ctx.jsx.componentName].join(', '), '../types/jsx')}
     `,
   }
 

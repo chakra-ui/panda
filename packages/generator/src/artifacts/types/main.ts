@@ -22,9 +22,12 @@ export const generateTypesEntry = (ctx: Context) => ({
       export function defineParts<T extends Parts>(parts: T): (config: Partial<Record<keyof T, SystemStyleObject>>) => Partial<Record<keyof T, SystemStyleObject>>
     }
     `,
+  // We need to export types used in the global.d.ts here to avoid TS errors such as `The inferred type of 'xxx' cannot be named without a reference to 'yyy'`
   index: outdent`
     import '${ctx.file.extDts('./global')}'
     ${ctx.file.exportType('ConditionalValue', './conditions')}
+    ${ctx.file.exportType('PatternConfig, PatternProperties', './pattern')}
+    ${ctx.file.exportType('RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig', './recipe')}
     ${ctx.file.exportType('GlobalStyleObject, JsxStyleProps, SystemStyleObject', './system-types')}
 
     `,

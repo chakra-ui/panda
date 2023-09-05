@@ -14,7 +14,7 @@ type LinkOverlayStyles = LinkOverlayProperties & DistributiveOmit<SystemStyleObj
 
 interface LinkOverlayPatternFn {
   (styles?: LinkOverlayStyles): string
-  raw: (styles: LinkOverlayStyles) => SystemStyleObject
+  raw: (styles?: LinkOverlayStyles) => SystemStyleObject
 }
 
 

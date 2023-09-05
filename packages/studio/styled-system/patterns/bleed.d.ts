@@ -15,7 +15,7 @@ type BleedStyles = BleedProperties & DistributiveOmit<SystemStyleObject, keyof B
 
 interface BleedPatternFn {
   (styles?: BleedStyles): string
-  raw: (styles: BleedStyles) => SystemStyleObject
+  raw: (styles?: BleedStyles) => SystemStyleObject
 }
 
 

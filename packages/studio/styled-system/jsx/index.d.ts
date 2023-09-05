@@ -25,4 +25,4 @@ export * from './bleed';
 export * from './visually-hidden';
 export * from './styled-link';
 
-export type { HTMLPandaProps } from '../types/jsx';
+export type { HTMLPandaProps, PandaComponent } from '../types/jsx';
