@@ -1,8 +1,8 @@
 import { toHash } from './hash'
 
-const escRegex = /[.*+?^${}()|[\]\\/]/g
+const escRegex = /[^a-zA-Z0-9_\u0081-\uffff-]/g
 function esc(string: string) {
-  return string.replace(escRegex, '\\$&')
+  return `${string}`.replace(escRegex, (s) => `\\${s}`)
 }
 
 const dashCaseRegex = /[A-Z]/g

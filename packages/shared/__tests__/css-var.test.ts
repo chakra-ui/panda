@@ -37,4 +37,13 @@ describe('css var', () => {
       }
     `)
   })
+
+  test('with percentage', () => {
+    expect(cssVar('100%', { prefix: 'sizes' })).toMatchInlineSnapshot(`
+      {
+        "ref": "var(--sizes-100\\\\%)",
+        "var": "--sizes-100\\\\%",
+      }
+    `)
+  })
 })
