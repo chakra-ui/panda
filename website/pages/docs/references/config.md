@@ -204,17 +204,21 @@ Whether to minify the generated css. This can be set to `true` to reduce the siz
 
 ### hash
 
-**Type**: `boolean`
+**Type**: `boolean | { cssVar: boolean; className: boolean }`
 
 **Default**: `false`
 
-Whether to hash the generated class names. This is useful if want to shorten the class names.
+Whether to hash the generated class names / css variables. This is useful if want to shorten the class names or css variables.
+
+Hash the class names and css variables:
 
 ```json
 {
   "hash": false
 }
 ```
+
+This
 
 ```tsx
 import { css } from '../styled-system/css'
@@ -225,6 +229,40 @@ const App = () => {
 ```
 
 would result in something that looks like:
+
+```css
+.dOFUTE {
+  color: var(--cgpxvS);
+}
+```
+
+You can also hash them individually.
+
+E.g. only hash the css variables:
+
+```json
+{
+  "hash": { "cssVar": true, "className": false }
+}
+```
+
+Then the result looks like this:
+
+```css
+.text_blue\.500 {
+  color: var(--cgpxvS);
+}
+```
+
+Now only hash the class names:
+
+```json
+{
+  "hash": { "cssVar": false, "className": true }
+}
+```
+
+Then the result looks like this:
 
 ```css
 .dOFUTE {
