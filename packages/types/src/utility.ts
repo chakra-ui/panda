@@ -1,10 +1,13 @@
 import type { LiteralUnion } from './shared'
 import type { CssProperty, NestedCssProperties } from './system-types'
-import type { TokenCategory } from './tokens'
+import type { Token, TokenCategory } from './tokens'
 
-type Getter = (path: string) => any
+interface TokenFn {
+  (path: string): string | undefined
+  raw: (path: string) => Token | undefined
+}
 
-type ThemeFn = (token: Getter) => Record<string, string>
+type ThemeFn = (token: (path: string) => any) => Record<string, string>
 
 export type PropertyValues =
   | LiteralUnion<TokenCategory>
@@ -14,7 +17,7 @@ export type PropertyValues =
   | ThemeFn
 
 type TransformArgs = {
-  token: Getter
+  token: TokenFn
   raw: any
 }
 

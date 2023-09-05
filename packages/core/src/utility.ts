@@ -309,7 +309,10 @@ export class Utility {
     const defaultTransform = (value: string) => this.defaultTransform(value, property)
     const getStyles = this.transforms.get(property) ?? defaultTransform
 
-    const styles = getStyles(raw, { token: this.getToken.bind(this), raw: alias })
+    const tokenFn = Object.assign(this.getToken.bind(this), {
+      raw: (path: string) => this.tokens.getByName(path),
+    })
+    const styles = getStyles(raw, { token: tokenFn, raw: alias })
 
     this.styles.set(propKey, styles ?? {})
 
