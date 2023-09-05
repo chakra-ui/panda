@@ -1,5 +1,18 @@
 # @pandacss/types
 
+## 0.14.0
+
+### Minor Changes
+
+- 8106b411: Add `generator:done` hook to perform actions when codegen artifacts are emitted.
+
+### Patch Changes
+
+- e6459a59: The utility transform fn now allow retrieving the token object with the raw value/conditions as currently
+  there's no way to get it from there.
+- 6f7ee198: Add `{svaFn}.raw` function to get raw styles and allow reusable components with style overrides, just like
+  with `{cvaFn}.raw`
+
 ## 0.13.1
 
 ## 0.13.0

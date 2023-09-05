@@ -1,5 +1,25 @@
 # @pandacss/studio
 
+## 0.14.0
+
+### Patch Changes
+
+- bff17df2: Add each condition raw value information on hover using JSDoc annotation
+- 6f7ee198: Add `{svaFn}.raw` function to get raw styles and allow reusable components with style overrides, just like
+  with `{cvaFn}.raw`
+- 623e321f: Fix `config.strictTokens: true` issue where some properties would still allow arbitrary values
+- Updated dependencies [b1c31fdd]
+- Updated dependencies [8106b411]
+- Updated dependencies [9e799554]
+- Updated dependencies [e6459a59]
+- Updated dependencies [6f7ee198]
+  - @pandacss/token-dictionary@0.14.0
+  - @pandacss/types@0.14.0
+  - @pandacss/node@0.14.0
+  - @pandacss/config@0.14.0
+  - @pandacss/logger@0.14.0
+  - @pandacss/shared@0.14.0
+
 ## 0.13.1
 
 ### Patch Changes

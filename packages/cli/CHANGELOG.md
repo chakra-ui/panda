@@ -1,5 +1,29 @@
 # @pandacss/dev
 
+## 0.14.0
+
+### Patch Changes
+
+- 6552d715: Add missing types (PatternConfig, RecipeConfig, RecipeVariantRecord) to solve a TypeScript issue (The
+  inferred type of xxx cannot be named without a reference...)
+- Updated dependencies [b1c31fdd]
+- Updated dependencies [bff17df2]
+- Updated dependencies [8106b411]
+- Updated dependencies [9e799554]
+- Updated dependencies [e6459a59]
+- Updated dependencies [6f7ee198]
+- Updated dependencies [623e321f]
+  - @pandacss/token-dictionary@0.14.0
+  - @pandacss/studio@0.14.0
+  - @pandacss/types@0.14.0
+  - @pandacss/node@0.14.0
+  - @pandacss/config@0.14.0
+  - @pandacss/preset-panda@0.14.0
+  - @pandacss/postcss@0.14.0
+  - @pandacss/error@0.14.0
+  - @pandacss/logger@0.14.0
+  - @pandacss/shared@0.14.0
+
 ## 0.13.1
 
 ### Patch Changes
