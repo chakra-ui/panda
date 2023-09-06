@@ -65,8 +65,8 @@ type Gradient = {
 type Asset = { type: 'url' | 'svg'; value: string }
 
 export type TokenDataTypes = {
-  zIndex: number
-  opacity: number
+  zIndex: string | number
+  opacity: string | number
   colors: string
   fonts: string | string[]
   fontSizes: string
