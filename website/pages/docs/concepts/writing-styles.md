@@ -226,7 +226,7 @@ import { css } from '../styled-system/css'
 
 export const Button = ({ css: cssProp = {}, children }) => {
   const className = css(
-    { display: 'flex', alignItem: 'center', color: 'black' },
+    { display: 'flex', alignItems: 'center', color: 'black' },
     cssProp
   )
   return <button className={className}>{children}</button>
