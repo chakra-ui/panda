@@ -111,7 +111,7 @@ export class Recipes {
         //
         recipe.slots.forEach((slotName) => {
           const slotKey = this.getSlotKey(name, slotName)
-          this.rules.set(slotKey, this.createRule(slotKey))
+          this.rules.set(slotKey, this.createRule(slotKey, true))
         })
         //
       } else {
@@ -230,7 +230,7 @@ export class Recipes {
     }
   }
 
-  private createRule = (name: string) => {
+  private createRule = (name: string, slot?: boolean) => {
     if (!this.context) {
       throw new Error("Can't create a rule without a context")
     }
@@ -240,7 +240,8 @@ export class Recipes {
       transform: this.getTransform(name),
     })
 
-    rule.layer = this.context.layers.recipes
+    const layer = this.context.layers.recipes
+    rule.layer = slot ? `${layer}.slots` : layer
     return rule
   }
 

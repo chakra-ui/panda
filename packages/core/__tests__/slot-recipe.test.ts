@@ -4,7 +4,7 @@ import { processSlotRecipe } from './fixture'
 describe('slot recipe ruleset', () => {
   test('should work', () => {
     expect(processSlotRecipe('button', { size: 'sm' })).toMatchInlineSnapshot(`
-      "@layer recipes {
+      "@layer recipes.slots {
           @layer _base {
               .button__container {
                   font-family: var(--fonts-mono)
@@ -15,7 +15,7 @@ describe('slot recipe ruleset', () => {
               line-height: 1em
           }
       }
-      @layer recipes {
+      @layer recipes.slots {
           @layer _base {
               .button__icon {
                   font-size: 1.5rem
