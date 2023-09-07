@@ -45,23 +45,24 @@ export type RecipeCompoundVariant<T extends RecipeVariantRecord> = RecipeCompoun
   css: SystemStyleObject
 }
 
+type LiteralOrGenerated<T> = T | (() => T)
 export type RecipeDefinition<T extends RecipeVariantRecord> = {
   /**
    * The base styles of the recipe.
    */
-  base?: SystemStyleObject
+  base?: LiteralOrGenerated<SystemStyleObject>
   /**
    * The multi-variant styles of the recipe.
    */
-  variants?: T | RecipeVariantRecord
+  variants?: LiteralOrGenerated<T | RecipeVariantRecord>
   /**
    * The default variants of the recipe.
    */
-  defaultVariants?: RecipeSelection<T>
+  defaultVariants?: LiteralOrGenerated<RecipeSelection<T>>
   /**
    * The styles to apply when a combination of variants is selected.
    */
-  compoundVariants?: Array<RecipeCompoundVariant<T>>
+  compoundVariants?: LiteralOrGenerated<Array<RecipeCompoundVariant<T>>>
 }
 
 export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => RecipeRuntimeFn<T>

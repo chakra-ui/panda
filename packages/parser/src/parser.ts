@@ -60,7 +60,7 @@ type GetEvaluateOptions = NonNullable<Parameters<typeof extract>['0']['getEvalua
 
 type EvalOptions = ReturnType<GetEvaluateOptions>
 
-const defaultEnv: EvalOptions['environment'] = { preset: 'NONE' }
+const defaultEnv: EvalOptions['environment'] = { preset: 'ECMA' }
 
 export function createParser(options: ParserOptions) {
   const { jsx, getRecipesByJsxName, getPatternsByJsxName, tsOptions, join } = options

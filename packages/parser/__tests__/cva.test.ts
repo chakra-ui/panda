@@ -312,4 +312,115 @@ describe('ast parser / cva', () => {
       }
     `)
   })
+
+  test('should evaluate variants supplied as a function', () => {
+    const code = `
+    import {cva} from ".panda/css"
+
+    const variants = () => {
+      const spacingTokens = Object.entries({
+          s: 'token(spacing.1)',
+          m: 'token(spacing.2)',
+          l: 'token(spacing.3)',
+      });
+      
+      const spacingProps = {
+          'px': 'paddingX',
+          'py': 'paddingY',
+      };
+      
+      // Generate variants programmatically
+      return Object.entries(spacingProps)
+          .map(([name, styleProp]) => {
+              const variants = spacingTokens
+                  .map(([variant, token]) => ({ [variant]: { [styleProp]: token } }))
+                  .reduce((_agg, kv) => ({ ..._agg, ...kv }));
+      
+              return { [name]: variants };
+          })
+          .reduce((_agg, kv) => ({ ..._agg, ...kv }));
+    }
+
+    const baseStyle = cva({
+        variants: variants(),
+    })
+     `
+
+    expect(cvaParser(code)).toMatchInlineSnapshot(`
+      {
+        "cva": Set {
+          {
+            "box": {
+              "column": 23,
+              "line": 28,
+              "node": "CallExpression",
+              "type": "map",
+              "value": Map {
+                "variants" => {
+                  "column": 19,
+                  "line": 29,
+                  "node": "CallExpression",
+                  "type": "object",
+                  "value": {
+                    "px": {
+                      "l": {
+                        "paddingX": "token(spacing.3)",
+                      },
+                      "m": {
+                        "paddingX": "token(spacing.2)",
+                      },
+                      "s": {
+                        "paddingX": "token(spacing.1)",
+                      },
+                    },
+                    "py": {
+                      "l": {
+                        "paddingY": "token(spacing.3)",
+                      },
+                      "m": {
+                        "paddingY": "token(spacing.2)",
+                      },
+                      "s": {
+                        "paddingY": "token(spacing.1)",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            "data": [
+              {
+                "variants": {
+                  "px": {
+                    "l": {
+                      "paddingX": "token(spacing.3)",
+                    },
+                    "m": {
+                      "paddingX": "token(spacing.2)",
+                    },
+                    "s": {
+                      "paddingX": "token(spacing.1)",
+                    },
+                  },
+                  "py": {
+                    "l": {
+                      "paddingY": "token(spacing.3)",
+                    },
+                    "m": {
+                      "paddingY": "token(spacing.2)",
+                    },
+                    "s": {
+                      "paddingY": "token(spacing.1)",
+                    },
+                  },
+                },
+              },
+            ],
+            "name": "cva",
+            "type": "object",
+          },
+        },
+      }
+    `)
+  })
 })
