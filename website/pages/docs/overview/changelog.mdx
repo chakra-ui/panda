@@ -1,0 +1,16 @@
+import { buildDynamicMDX } from 'nextra/remote'
+import { RemoteContent } from 'nextra/data'
+
+export const getStaticProps = async () => {
+  const response = await fetch('https://raw.githubusercontent.com/chakra-ui/panda/main/CHANGELOG.md')
+  const markdown = await response.text()
+  const mdx = await buildDynamicMDX(markdown)
+  return {
+    props: {
+      ...mdx,
+    },
+    revalidate: 60 // Revalidate at most once every 60 seconds
+  }
+}
+
+<RemoteContent />

@@ -3,8 +3,5 @@
   "why-panda": "Why Panda?",
   "faq": "FAQs",
   "browser-support": "Browser Support",
-  "changelog": {
-    "title": "Changelog",
-    "href": "https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md"
-  }
+  "changelog": "Changelog"
 }
