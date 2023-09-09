@@ -63,7 +63,7 @@ export function generateCvaFn(ctx: Context) {
     }
 
     export function assertCompoundVariant(name, compoundVariants, variants, prop) {
-      if (compoundVariants.length > 0 && typeof variants[prop] === 'object') {
+      if (compoundVariants.length > 0 && typeof variants?.[prop] === 'object') {
         throw new Error(\`[recipe:\${name}:\${prop}] Conditions are not supported when using compound variants.\`)
       }
     }
