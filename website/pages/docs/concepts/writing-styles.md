@@ -346,11 +346,15 @@ export const Checkbox = ({ rootProps, controlProps, labelProps }) => {
 
 // Usage
 
-<Checkbox
-  rootProps={css.raw({ gap: 4 })}
-  controlProps={css.raw({ borderColor: 'yellow.400' })}
-  labelProps={css.raw({ fontSize: 'lg' })}
-/>
+const App = () => {
+  return (
+    <Checkbox
+      rootProps={css.raw({ gap: 4 })}
+      controlProps={css.raw({ borderColor: 'yellow.400' })}
+      labelProps={css.raw({ fontSize: 'lg' })}
+    />
+  )
+}
 ```
 
 ### Classname concatenation
@@ -402,19 +406,19 @@ const styles = css({
 })
 ```
 
-The hash generated classnames will look like:
+The hash generated css will look like:
 
 ```css
-.dsf3wd {
+.fPSBzf {
   display: flex;
 }
 
-.kdi9jd {
+.ksWBqx {
   flex-direction: row;
 }
 
-.mdf4jd:hover {
-  background-color: var(--colors-red-50);
+.btpEVp:is(:hover, [data-hover]) {
+  background: var(--bINrJX);
 }
 ```
 

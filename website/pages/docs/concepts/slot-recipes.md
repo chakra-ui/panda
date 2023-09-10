@@ -190,7 +190,7 @@ const Checkbox = (props: CheckboxVariants) => {
 
 ### Styling JSX Compound Components
 
-Component components are a great way to create reusable components for better composition. Slot recipes play nicely with this pattern and requires a context provider for the component.
+Compound components are a great way to create reusable components for better composition. Slot recipes play nicely with this pattern and requires a context provider for the component.
 
 > **Note:** This is an advanced topic and you don't need to understand it to use slot recipes. If you use React, be aware that context require adding 'use client' to the top of the file.
 

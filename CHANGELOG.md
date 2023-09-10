@@ -8,7 +8,7 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [0.14.0] - 2023-09-05
 
-## Fixed
+### Fixed
 
 - Fix issue where `pattern.raw(...)` did not share the same signature as `pattern(...)`
 - Fix issue where negative spacing tokens doesn't respect hash option
@@ -32,7 +32,7 @@ See the [Changesets](./.changeset) for the latest changes.
 }
 ```
 
-## Added
+### Added
 
 - Add `{svaFn}.raw` function to get raw styles and allow reusable components with style overrides, just like with
   `{cvaFn}.raw`
@@ -123,7 +123,7 @@ export const App = () => {
 }
 ```
 
-## Changed
+### Changed
 
 - Change the typings for the `css(...args)` function so that you can pass possibly undefined values to it. This is
   mostly intended for component props that have optional values like `cssProps?: SystemStyleObject` and would use it
@@ -133,12 +133,12 @@ export const App = () => {
 
 ## [0.13.1] - 2023-08-29
 
-## Fixed
+### Fixed
 
 - Fix issue where Panda does not detect styles after nested template in vue
 - Fix issue where `cva` is undefined in preact styled factory
 
-## Added
+### Added
 
 - Allow `.mts` and `.cts` panda config extension
 - Add `forceConsistentTypeExtension` config option for enforcing consistent file extension for emitted type definition
@@ -149,13 +149,13 @@ export const App = () => {
 
 ## [0.13.0] - 2023-08-26
 
-## Fixed
+### Fixed
 
 - Fix issue where `panda --minify` does not work.
 - Fix issue where `defineTextStyle` and `defineLayerStyle` return types are incompatible with `config.theme` type.
 - Fix an issue with custom JSX components not finding their matching patterns.
 
-## Added
+### Added
 
 - Add support for minification in `cssgen` command.
 
@@ -276,12 +276,12 @@ export const Button = ({ css: cssProp = {}, children }) => {
 
 ## [0.12.0] - 2023-08-24
 
-## Fixed
+### Fixed
 
 - Fix issue where styled factory does not respect union prop types like `type Props = AProps | BProps`
 - Fix failed styled component for solid-js when using recipe
 
-## Added
+### Added
 
 - Add interactive flag to `panda init` command. This flag allows you to run the init command in interactive mode.
 
