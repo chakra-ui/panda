@@ -1610,7 +1610,6 @@ describe('extract to css output pipeline', () => {
                   secondary: { color: 'pink.300', backgroundColor: 'green.500' },
                 },
               },
-              // @ts-expect-error
               compoundVariants: [{ variant: 'danger', size: 'md', css: { zIndex: 100 } }],
             },
             anotherButton: {
