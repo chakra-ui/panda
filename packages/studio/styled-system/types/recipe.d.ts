@@ -39,7 +39,7 @@ export type RecipeRuntimeFn<T extends RecipeVariantRecord> = RecipeVariantFn<T> 
 }
 
 export type RecipeCompoundSelection<T extends RecipeVariantRecord> = {
-  [K in keyof T]?: StringToBoolean<keyof T[K]>
+  [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>>
 }
 
 export type RecipeCompoundVariant<T extends RecipeVariantRecord> = RecipeCompoundSelection<T> & {
