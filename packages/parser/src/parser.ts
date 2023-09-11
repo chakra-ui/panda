@@ -139,7 +139,7 @@ export function createParser(options: ParserOptions) {
         pattern.jsx?.forEach((jsx) => {
           if (typeof jsx === 'string') {
             acc.string.add(jsx)
-          } else {
+          } else if (jsx) {
             acc.regex.push(jsx)
           }
         })

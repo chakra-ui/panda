@@ -73,11 +73,11 @@ export const classifyTokens = (ctx: PandaContext, parserResultByFilepath: Map<st
         return true
       }
 
-      if (patternProp.type === 'property') {
+      if (patternProp.type === 'property' && patternProp.value) {
         return Boolean(ctx.config.utilities?.[patternProp.value])
       }
 
-      if (patternProp.type === 'enum') {
+      if (patternProp.type === 'enum' && patternProp.value) {
         return Boolean(patternProp.value.includes(String(value)))
       }
 
