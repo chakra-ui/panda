@@ -50,6 +50,8 @@ export default function Layout(props) {
 }
 ```
 
+> **Note 🚨:** By default, Next.js attaches the className for the fonts to the `<body>` element, for panda to appropriately load fonts, update the code to attach the `className` to the `<html>` element.
+
 #### Pages Router
 
 ```jsx filename="pages/_app.tsx"
