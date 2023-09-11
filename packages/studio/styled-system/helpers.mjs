@@ -210,49 +210,24 @@ var hypenateProperty = memo((property) => {
 });
 
 // src/slot.ts
-var assign = (obj, path, value) => {
-  const last = path.pop();
-  const target = path.reduce((acc, key) => {
-    if (acc[key] == null)
-      acc[key] = {};
-    return acc[key];
-  }, obj);
-  if (last != null)
-    target[last] = value;
-};
 var getSlotRecipes = (recipe) => {
-  const parts = recipe.slots.map((slot) => [
-    slot,
-    // setup base recipe
-    {
-      // create class-base on BEM
-      className: [recipe.className ?? "", slot].join("__"),
-      base: {},
-      variants: {},
-      defaultVariants: recipe.defaultVariants ?? {},
-      compoundVariants: []
-    }
-  ]).map(([slot, cva]) => {
-    const base = recipe.base[slot];
-    if (base)
-      cva.base = base;
-    walkObject(
-      recipe.variants ?? {},
-      (variant, path) => {
-        if (!variant[slot])
-          return;
-        assign(cva, ["variants", ...path], variant[slot]);
-      },
-      {
-        stop: (_value, path) => path.includes(slot)
-      }
-    );
-    if (recipe.compoundVariants) {
-      cva.compoundVariants = getSlotCompoundVariant(recipe.compoundVariants, slot);
-    }
-    return [slot, cva];
+  const init = (slot) => ({
+    className: [recipe.className, slot].filter(Boolean).join("__"),
+    base: recipe.base?.[slot] ?? {},
+    variants: {},
+    defaultVariants: recipe.defaultVariants ?? {},
+    compoundVariants: recipe.compoundVariants ? getSlotCompoundVariant(recipe.compoundVariants, slot) : []
   });
-  return Object.fromEntries(parts);
+  const recipeParts = recipe.slots.map((slot) => [slot, init(slot)]);
+  for (const [variantsKey, variantsSpec] of Object.entries(recipe.variants ?? {})) {
+    for (const [variantKey, variantSpec] of Object.entries(variantsSpec)) {
+      recipeParts.forEach(([slot, slotRecipe]) => {
+        slotRecipe.variants[variantsKey] ??= {};
+        slotRecipe.variants[variantsKey][variantKey] = variantSpec[slot] ?? {};
+      });
+    }
+  }
+  return Object.fromEntries(recipeParts);
 };
 var getSlotCompoundVariant = (compoundVariants, slotName) => compoundVariants.filter((compoundVariant) => compoundVariant.css[slotName]).map((compoundVariant) => ({ ...compoundVariant, css: compoundVariant.css[slotName] }));
 

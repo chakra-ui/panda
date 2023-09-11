@@ -1,54 +1,33 @@
-import { walkObject } from './walk-object'
-
-const assign = (obj: Record<string, any>, path: string[], value: any) => {
-  const last = path.pop()
-  const target = path.reduce((acc, key) => {
-    if (acc[key] == null) acc[key] = {}
-    return acc[key]
-  }, obj)
-  if (last != null) target[last] = value
+type Recipe = {
+  className?: string
+  slots: string[]
+  base?: any
+  variants?: Record<string, Record<string, Record<string, any>>>
+  defaultVariants?: Record<string, string>
+  compoundVariants?: any[]
 }
 
-export const getSlotRecipes = (recipe: any) => {
-  const parts = recipe.slots
-    .map((slot: string) => [
-      slot,
-      // setup base recipe
-      {
-        // create class-base on BEM
-        className: [recipe.className ?? '', slot].join('__'),
-        base: {},
-        variants: {},
-        defaultVariants: recipe.defaultVariants ?? {},
-        compoundVariants: [],
-      },
-    ])
-    .map(([slot, cva]: [string, any]) => {
-      // assign base styles
-      const base = recipe.base[slot]
-      if (base) cva.base = base
+export const getSlotRecipes = (recipe: Recipe) => {
+  const init = (slot: string) => ({
+    className: [recipe.className, slot].filter(Boolean).join('__'),
+    base: recipe.base?.[slot] ?? {},
+    variants: {},
+    defaultVariants: recipe.defaultVariants ?? {},
+    compoundVariants: recipe.compoundVariants ? getSlotCompoundVariant(recipe.compoundVariants, slot) : [],
+  })
 
-      // assign variants
-      walkObject(
-        recipe.variants ?? {},
-        (variant: any, path: string[]) => {
-          if (!variant[slot]) return
-          assign(cva, ['variants', ...path], variant[slot])
-        },
-        {
-          stop: (_value, path) => path.includes(slot),
-        },
-      )
+  const recipeParts = recipe.slots.map((slot: any) => [slot, init(slot)])
 
-      // assign compound variants
-      if (recipe.compoundVariants) {
-        cva.compoundVariants = getSlotCompoundVariant(recipe.compoundVariants, slot)
-      }
+  for (const [variantsKey, variantsSpec] of Object.entries(recipe.variants ?? {})) {
+    for (const [variantKey, variantSpec] of Object.entries(variantsSpec)) {
+      recipeParts.forEach(([slot, slotRecipe]) => {
+        slotRecipe.variants[variantsKey] ??= {}
+        slotRecipe.variants[variantsKey][variantKey] = variantSpec[slot] ?? {}
+      })
+    }
+  }
 
-      return [slot, cva]
-    })
-
-  return Object.fromEntries(parts)
+  return Object.fromEntries(recipeParts)
 }
 
 export const getSlotCompoundVariant = <T extends { css: any }>(compoundVariants: T[], slotName: string) =>

@@ -1,33 +1,21 @@
 import { describe, expect, test } from 'vitest'
 import { getSlotRecipes } from '../src/slot'
 
-describe('get-slot-recipes', () => {
-  test('should work', () => {
+describe('getSlotRecipes', () => {
+  test('should split recipes into smaller cva(s)', () => {
     const slots = getSlotRecipes({
       className: 'btn',
       slots: ['root', 'button', 'text'],
       base: {
-        root: {
-          color: 'red',
-        },
-        button: {
-          fontSize: '1rem',
-        },
-        text: {
-          letterSpacing: '0.1em',
-        },
+        root: { color: 'red' },
+        button: { fontSize: '1rem' },
+        text: { letterSpacing: '0.1em' },
       },
       variants: {
-        variant: {
-          size: {
-            small: {
-              button: {
-                bg: 'red.200',
-              },
-              text: {
-                color: 'pink',
-              },
-            },
+        size: {
+          small: {
+            button: { bg: 'red.200' },
+            text: { color: 'pink' },
           },
         },
       },
@@ -64,11 +52,9 @@ describe('get-slot-recipes', () => {
             "size": "small",
           },
           "variants": {
-            "variant": {
-              "size": {
-                "small": {
-                  "bg": "red.200",
-                },
+            "size": {
+              "small": {
+                "bg": "red.200",
               },
             },
           },
@@ -82,7 +68,11 @@ describe('get-slot-recipes', () => {
           "defaultVariants": {
             "size": "small",
           },
-          "variants": {},
+          "variants": {
+            "size": {
+              "small": {},
+            },
+          },
         },
         "text": {
           "base": {
@@ -100,11 +90,82 @@ describe('get-slot-recipes', () => {
             "size": "small",
           },
           "variants": {
-            "variant": {
-              "size": {
-                "small": {
-                  "color": "pink",
-                },
+            "size": {
+              "small": {
+                "color": "pink",
+              },
+            },
+          },
+        },
+      }
+    `)
+  })
+
+  test('should resolve recipes when slot and variant use the same key', () => {
+    const slots = getSlotRecipes({
+      slots: ['root', 'icon'],
+      base: {
+        root: { bg: 'green.600', p: '2em' },
+        icon: { bg: 'neutral.100', p: '3', ml: '1em', borderRadius: '9999px' },
+      },
+      variants: {
+        icon: {
+          true: {
+            root: { bg: 'blue.600' },
+            icon: { bg: 'red.400' },
+          },
+        },
+        size: {
+          sm: {
+            root: { bg: 'blue.600' },
+            icon: { bg: 'red.400' },
+          },
+        },
+      },
+    })
+
+    expect(slots).toMatchInlineSnapshot(`
+      {
+        "icon": {
+          "base": {
+            "bg": "neutral.100",
+            "borderRadius": "9999px",
+            "ml": "1em",
+            "p": "3",
+          },
+          "className": "icon",
+          "compoundVariants": [],
+          "defaultVariants": {},
+          "variants": {
+            "icon": {
+              "true": {
+                "bg": "red.400",
+              },
+            },
+            "size": {
+              "sm": {
+                "bg": "red.400",
+              },
+            },
+          },
+        },
+        "root": {
+          "base": {
+            "bg": "green.600",
+            "p": "2em",
+          },
+          "className": "root",
+          "compoundVariants": [],
+          "defaultVariants": {},
+          "variants": {
+            "icon": {
+              "true": {
+                "bg": "blue.600",
+              },
+            },
+            "size": {
+              "sm": {
+                "bg": "blue.600",
               },
             },
           },
