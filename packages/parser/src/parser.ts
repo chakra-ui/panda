@@ -423,16 +423,16 @@ export function createParser(options: ParserOptions) {
           const data = combineResult(unbox(query.box))
 
           match(name)
-            .when(isFactory, (name) => {
-              collector.setJsx({ name, box: query.box, type: 'jsx-factory', data })
+            .when(isFactory, (jsxName) => {
+              collector.setJsx({ name: jsxName, box: query.box, type: 'jsx-factory', data })
             })
-            .when(isJsxTagPattern, (name) => {
-              collector.setPattern(name, { type: 'jsx-pattern', name, box: query.box, data })
+            .when(isJsxTagPattern, (jsxName) => {
+              collector.setPattern(jsxName, { type: 'jsx-pattern', name: jsxName, box: query.box, data })
             })
-            .when(isJsxTagRecipe, (name) => {
-              const recipeList = getRecipesByJsxName(name)
+            .when(isJsxTagRecipe, (jsxName) => {
+              const recipeList = getRecipesByJsxName(jsxName)
               recipeList.map((recipe) => {
-                collector.setRecipe(recipe.baseName, { type: 'jsx-recipe', name, box: query.box, data })
+                collector.setRecipe(recipe.baseName, { type: 'jsx-recipe', name: jsxName, box: query.box, data })
               })
             })
             .otherwise(() => {
