@@ -38,7 +38,7 @@ const layerStyles = defineLayerStyles({
 
 ## Update the config
 
-To use the text styles, we need to update the `config` object in the `panda.config.ts` file.
+To use the layer styles, we need to update the `config` object in the `panda.config.ts` file.
 
 ```js filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
