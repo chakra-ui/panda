@@ -14,6 +14,7 @@ import {
   writeAnalyzeJSON,
   type PandaContext,
 } from '@pandacss/node'
+import { findConfigFile } from '@pandacss/config'
 import { compact } from '@pandacss/shared'
 import { buildStudio, previewStudio, serveStudio } from '@pandacss/studio'
 import { cac } from 'cac'
@@ -284,23 +285,26 @@ export async function main() {
           outdir?: string
         },
       ) => {
-        const { build, preview, outdir, config: configPath } = flags
+        const { build, preview, outdir, config } = flags
 
         const cwd = resolve(flags.cwd ?? '')
 
         const ctx = await loadConfigAndCreateContext({
           cwd,
-          configPath,
+          configPath: config,
         })
 
-        const outDir = resolve(outdir || ctx.studio.outdir)
+        const buildOpts = {
+          configPath: findConfigFile({ cwd, file: config })!,
+          outDir: resolve(outdir || ctx.studio.outdir),
+        }
 
         if (preview) {
-          await previewStudio({ outDir })
+          await previewStudio(buildOpts)
         } else if (build) {
-          await buildStudio({ outDir })
+          await buildStudio(buildOpts)
         } else {
-          await serveStudio()
+          await serveStudio(buildOpts)
 
           const note = `use ${colors.reset(colors.bold('--build'))} to build`
           logger.log(colors.dim(`  ${colors.green('➜')}  ${colors.bold('Build')}: ${note}`))
