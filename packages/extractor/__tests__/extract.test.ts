@@ -5740,3 +5740,24 @@ it('extract all `css` style objects', () => {
     }
   `)
 })
+
+it('unwrapExpression with satisfies', () => {
+  expect(
+    extractFromCode(`
+      const someObject = { red: "red.600" } satisfies any;
+      <ColorBox color={someObject.red}></ColorBox>
+        `),
+  ).toMatchInlineSnapshot(`
+    {
+      "ColorBox": [
+        {
+          "conditions": [],
+          "raw": {
+            "color": "red.600",
+          },
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})
