@@ -41,6 +41,11 @@ export const unwrapExpression = (node: Node): Node => {
     return unwrapExpression(node.getExpression())
   }
 
+  // xxx satisfies yyy -> xxx
+  if (Node.isSatisfiesExpression(node)) {
+    return unwrapExpression(node.getExpression())
+  }
+
   return node
 }
 
