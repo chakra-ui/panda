@@ -205,7 +205,7 @@ import { Button, Thingy } from './Button'
 export default function Page() {
   return (
     <Button css={{ color: 'pink', _hover: { color: 'red' } }}>
-      will result in `class="d_flex align_center text_pink hover:text_red"`
+      will result in `class="d_flex items_center text_pink hover:text_red"`
     </Button>
   )
 }
