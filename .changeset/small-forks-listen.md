@@ -3,4 +3,4 @@
 '@pandacss/dev': patch
 ---
 
-Fix issue where studio uses internal panda config, instead of parent config.
+Fix issue where studio uses studio config, instead of custom panda config.
