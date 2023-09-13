@@ -5408,6 +5408,7 @@ it('extract CallExpression nested ObjectLiteralExpression', () => {
           "conditions": [],
           "raw": [
             "span",
+            undefined,
           ],
           "spreadConditions": [],
         },
@@ -5755,6 +5756,38 @@ it('unwrapExpression with satisfies', () => {
           "raw": {
             "color": "red.600",
           },
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})
+
+it('extracts arrays without removing nullish values', () => {
+  expect(
+    extractFromCode(
+      `
+    const className = css({
+      display: "flex", color: ['black', undefined, "orange", 'red'],
+    })`,
+      { functionNameList: ['css'] },
+    ),
+  ).toMatchInlineSnapshot(`
+    {
+      "css": [
+        {
+          "conditions": [],
+          "raw": [
+            {
+              "color": [
+                "black",
+                undefined,
+                "orange",
+                "red",
+              ],
+              "display": "flex",
+            },
+          ],
           "spreadConditions": [],
         },
       ],
