@@ -416,8 +416,8 @@ const theme = {
         value: {
           offsetX: 0,
           offsetY: 4,
-          blurRadius: 4,
-          spreadRadius: 0,
+          blur: 4,
+          spread: 0,
           color: 'rgba(0, 0, 0, 0.1)'
         }
       },
