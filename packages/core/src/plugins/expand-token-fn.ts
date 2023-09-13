@@ -1,3 +1,4 @@
+import type { Token } from '@pandacss/types'
 import type { TransformCallback } from 'postcss'
 
 const tokenRegex = /token\(([^)]+)\)/g
@@ -29,15 +30,18 @@ const tokenReplacer = (a: string, b?: string) =>
   b ? (a.endsWith(')') ? a.replace(closingParenthesisRegex, `, ${b})`) : `var(${a}, ${b})`) : a
 const atRuleReplace = (a: string, b?: string) => a ?? b
 
-function expandTokenFn(fn?: (str: string) => string | undefined): TransformCallback {
+function expandTokenFn(
+  tokenFn?: (key: string) => string,
+  rawTokenFn?: (path: string) => Token | undefined,
+): TransformCallback {
   return (root) => {
     root.walk((node) => {
       if (node.type === 'decl' && node.value.includes('token(')) {
-        node.value = expandToken(node.value, tokenReplacer, fn)
+        node.value = expandToken(node.value, tokenReplacer, tokenFn)
         return
       }
       if (node.type === 'atrule' && node.params.includes('token(')) {
-        node.params = expandToken(node.params, atRuleReplace, fn)
+        node.params = expandToken(node.params, atRuleReplace, (path: string) => rawTokenFn?.(path)?.value)
       }
     })
   }

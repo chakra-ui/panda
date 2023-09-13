@@ -1,15 +1,12 @@
 import postcss from 'postcss'
 import { describe, expect, test } from 'vitest'
 import expandTokenFn from '../src/plugins/expand-token-fn'
+import { createContext } from './fixture'
 
-const tokens: Record<string, string> = {
-  'colors.red': 'var(--colors-red)',
-  'colors.blue': 'var(--colors-blue)',
-  'sizes.4xl': '56rem',
-}
+const ctx = createContext()
 
 function run(code: string) {
-  return postcss([expandTokenFn((token) => tokens[token])]).process(code, {
+  return postcss([expandTokenFn(ctx.utility.getToken, ctx.utility.tokens.getByName)]).process(code, {
     from: undefined,
   })
 }
@@ -20,18 +17,18 @@ describe('expandTokenFn', () => {
   test('existing', () => {
     const result = run(css`
       * {
-        color: token(colors.red);
-        border: 1px solid token(colors.blue);
-        background-image: linear-gradient(token(colors.red), token(colors.blue));
+        color: token(colors.red.400);
+        border: 1px solid token(colors.blue.400);
+        background-image: linear-gradient(token(colors.red.400), token(colors.blue.400));
       }
     `)
 
     expect(result.css).toMatchInlineSnapshot(`
       "
             * {
-              color: var(--colors-red);
-              border: 1px solid var(--colors-blue);
-              background-image: linear-gradient(var(--colors-red), var(--colors-blue));
+              color: var(--colors-red-400);
+              border: 1px solid var(--colors-blue-400);
+              background-image: linear-gradient(var(--colors-red-400), var(--colors-blue-400));
             }
           "
     `)
@@ -40,14 +37,14 @@ describe('expandTokenFn', () => {
   test('with fallback', () => {
     const result = run(css`
       * {
-        color: token(colors.red, colors.blue);
+        color: token(colors.red.400, colors.blue.400);
       }
     `)
 
     expect(result.css).toMatchInlineSnapshot(`
       "
             * {
-              color: var(--colors-red, var(--colors-blue));
+              color: var(--colors-red-400, var(--colors-blue-400));
             }
           "
     `)
@@ -56,14 +53,14 @@ describe('expandTokenFn', () => {
   test('non-existing should be wrapped in quotes to avoid CSS Syntax error', () => {
     const result = run(css`
       * {
-        color: token(colors.magenta, pink);
+        color: token(colors.doesntexist.400, pink);
       }
     `)
 
     expect(result.css).toMatchInlineSnapshot(`
       "
             * {
-              color: var('colors.magenta', pink);
+              color: var('colors.doesntexist.400', pink);
             }
           "
     `)
