@@ -1,3 +1,4 @@
+import { esc } from '@pandacss/shared'
 import type { Token } from '@pandacss/types'
 import type { TransformCallback } from 'postcss'
 
@@ -11,9 +12,7 @@ const expandToken = (
 ): string => {
   const value = str.replace(tokenRegex, (_, token) => {
     const [tokenValue, tokenFallback] = token.split(',').map((s: string) => s.trim())
-    const result = [tokenValue, tokenFallback]
-      .filter(Boolean)
-      .map((s) => getterFn?.(s) ?? (s.includes('.') ? `'${s}'` : s))
+    const result = [tokenValue, tokenFallback].filter(Boolean).map((s) => getterFn?.(s) ?? esc(s))
 
     if (result.length > 1) {
       const [a, b] = result

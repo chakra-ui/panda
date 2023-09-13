@@ -60,7 +60,7 @@ describe('expandTokenFn', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "
             * {
-              color: var('colors.doesntexist.400', pink);
+              color: var(colors\\\\.doesntexist\\\\.400, pink);
             }
           "
     `)
