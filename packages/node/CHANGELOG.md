@@ -1,5 +1,32 @@
 # @pandacss/node
 
+## 0.15.0
+
+### Patch Changes
+
+- 39298609: Make the types suggestion faster (updated `DeepPartial`)
+- Updated dependencies [be24d1a0]
+- Updated dependencies [4bc515ea]
+- Updated dependencies [9f429d35]
+- Updated dependencies [93d9ee7e]
+- Updated dependencies [bc3b077d]
+- Updated dependencies [35793d85]
+- Updated dependencies [39298609]
+- Updated dependencies [dd47b6e6]
+- Updated dependencies [7c1ab170]
+- Updated dependencies [f27146d6]
+  - @pandacss/extractor@0.15.0
+  - @pandacss/types@0.15.0
+  - @pandacss/generator@0.15.0
+  - @pandacss/shared@0.15.0
+  - @pandacss/core@0.15.0
+  - @pandacss/parser@0.15.0
+  - @pandacss/config@0.15.0
+  - @pandacss/token-dictionary@0.15.0
+  - @pandacss/error@0.15.0
+  - @pandacss/is-valid-prop@0.15.0
+  - @pandacss/logger@0.15.0
+
 ## 0.14.0
 
 ### Minor Changes
