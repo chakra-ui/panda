@@ -1,5 +1,25 @@
 # @pandacss/core
 
+## 0.15.0
+
+### Minor Changes
+
+- bc3b077d: Move slot recipes styles to new `recipes.slots` layer so that classic config recipes will have a higher
+  specificity
+
+### Patch Changes
+
+- dd47b6e6: Fix issue where hideFrom doesn't work due to incorrect breakpoint computation
+- Updated dependencies [4bc515ea]
+- Updated dependencies [9f429d35]
+- Updated dependencies [39298609]
+- Updated dependencies [f27146d6]
+  - @pandacss/types@0.15.0
+  - @pandacss/shared@0.15.0
+  - @pandacss/token-dictionary@0.15.0
+  - @pandacss/error@0.15.0
+  - @pandacss/logger@0.15.0
+
 ## 0.14.0
 
 ### Patch Changes

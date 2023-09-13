@@ -1,5 +1,15 @@
 # @pandacss/shared
 
+## 0.15.0
+
+### Patch Changes
+
+- 9f429d35: Fix issue where slot recipe did not apply rules when variant name has the same key as a slot
+- f27146d6: Fix an issue where some JSX components wouldn't get matched to their corresponding recipes/patterns when
+  using `Regex` in the `jsx` field of a config, resulting in some style props missing.
+
+  issue: https://github.com/chakra-ui/panda/issues/1315
+
 ## 0.14.0
 
 ## 0.13.1
