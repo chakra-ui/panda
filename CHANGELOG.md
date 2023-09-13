@@ -6,6 +6,37 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.15.0] - 2023-09-13
+
+### Fixed
+
+- Fix issue (https://github.com/chakra-ui/panda/issues/1365) with the `unbox` fn that removed nullish values, which
+  could be useful for the [Array Syntax](https://panda-css.com/docs/concepts/responsive-design#the-array-syntax)
+
+```ts
+const className = css({
+  color: ['black', undefined, 'orange', 'red'],
+})
+```
+
+- Fix issue where slot recipe did not apply rules when variant name has the same key as a slot
+- Fix issue with cva when using compoundVariants and not passing any variants in the usage (ex: `button()` with
+  `const button = cva({ ... })`)
+- Fix issue where hideFrom doesn't work due to incorrect breakpoint computation
+- Fix issue where the `satisfies` would prevent an object from being extracted
+- Fix an issue where some JSX components wouldn't get matched to their corresponding recipes/patterns when using `Regex`
+  in the `jsx` field of a config, resulting in some style props missing.
+
+### Added
+
+- Allow `string`s as `zIndex` and `opacity` tokens in order to support css custom properties
+
+### Changed
+
+- Refactor: Prefer `NativeElements` type for vue jsx elements
+- Move slot recipes styles to new `recipes.slots` layer so that classic config recipes will have a higher specificity
+- Make the types suggestion faster (updated `DeepPartial`)
+
 ## [0.14.0] - 2023-09-05
 
 ### Fixed
