@@ -1,4 +1,4 @@
-export const getSlotRecipes = (recipe: any): Record<string, any> => {
+export const getSlotRecipes = (recipe: Record<string, any> = {}): Record<string, any> => {
   const init = (slot: string) => ({
     className: [recipe.className, slot].filter(Boolean).join('__'),
     base: recipe.base?.[slot] ?? {},
@@ -7,7 +7,8 @@ export const getSlotRecipes = (recipe: any): Record<string, any> => {
     compoundVariants: recipe.compoundVariants ? getSlotCompoundVariant(recipe.compoundVariants, slot) : [],
   })
 
-  const recipeParts = recipe.slots.map((slot: any) => [slot, init(slot)]) as [string, any][]
+  const slots = recipe.slots ?? []
+  const recipeParts = slots.map((slot: any) => [slot, init(slot)]) as [string, any][]
 
   for (const [variantsKey, variantsSpec] of Object.entries(recipe.variants ?? {})) {
     for (const [variantKey, variantSpec] of Object.entries(variantsSpec as Record<string, any>)) {
