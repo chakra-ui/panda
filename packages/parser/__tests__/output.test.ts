@@ -1887,6 +1887,183 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('should evaluate ${fn}.raw inside another ${fn}.raw to allow for composition', () => {
+    const code = `
+    import { css } from 'styled-system/css'
+
+    const paragraphSpacingStyle = css.raw({
+      "&:not(:first-child)": { marginBlockEnd: "1em" },
+    });
+
+    export const proseCss = css.raw({
+      maxWidth: "800px",
+      "& p": {
+        "&:not(:first-child)": { marginBlockStart: "1em" },
+      },
+      "& h1": paragraphSpacingStyle,
+      "& h2": paragraphSpacingStyle,
+    });`
+
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "&:not(:first-child)": {
+                "marginBlockEnd": "1em",
+              },
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "& h1": {
+                "&:not(:first-child)": {
+                  "marginBlockEnd": "1em",
+                },
+              },
+              "& h2": {
+                "&:not(:first-child)": {
+                  "marginBlockEnd": "1em",
+                },
+              },
+              "& p": {
+                "&:not(:first-child)": {
+                  "marginBlockStart": "1em",
+                },
+              },
+              "maxWidth": "800px",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mb_1em:not(:first-child) {
+          margin-block-end: 1em
+              }
+
+        .max-w_800px {
+          max-width: 800px
+          }
+
+        .\\\\[\\\\&_p\\\\]\\\\:\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mt_1em p:not(:first-child) {
+          margin-block-start: 1em
+                  }
+
+        .\\\\[\\\\&_h1\\\\]\\\\:\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mb_1em h1:not(:first-child),.\\\\[\\\\&_h2\\\\]\\\\:\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mb_1em h2:not(:first-child) {
+          margin-block-end: 1em
+                  }
+      }"
+    `)
+  })
+
+  test('should evaluate variants supplied a function', () => {
+    const code = `
+    import {cva} from ".panda/css"
+    const variants = () => {
+      const spacingTokens = Object.entries({
+          s: 'token(spacing.1)',
+          m: 'token(spacing.2)',
+          l: 'token(spacing.3)',
+      });
+
+      const spacingProps = {
+          'px': 'paddingX',
+          'py': 'paddingY',
+      };
+
+      // Generate variants programmatically
+      return Object.entries(spacingProps)
+          .map(([name, styleProp]) => {
+              const variants = spacingTokens
+                  .map(([variant, token]) => ({ [variant]: { [styleProp]: token } }))
+                  .reduce((_agg, kv) => ({ ..._agg, ...kv }));
+
+              return { [name]: variants };
+          })
+          .reduce((_agg, kv) => ({ ..._agg, ...kv }));
+    }
+    const baseStyle = cva({
+        variants: variants(),
+    })
+     `
+
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "variants": {
+                "px": {
+                  "l": {
+                    "paddingX": "token(spacing.3)",
+                  },
+                  "m": {
+                    "paddingX": "token(spacing.2)",
+                  },
+                  "s": {
+                    "paddingX": "token(spacing.1)",
+                  },
+                },
+                "py": {
+                  "l": {
+                    "paddingY": "token(spacing.3)",
+                  },
+                  "m": {
+                    "paddingY": "token(spacing.2)",
+                  },
+                  "s": {
+                    "paddingY": "token(spacing.1)",
+                  },
+                },
+              },
+            },
+          ],
+          "name": "cva",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .px_token\\\\(spacing\\\\.1\\\\) {
+          padding-inline: var(--spacing-1)
+          }
+
+        .px_token\\\\(spacing\\\\.2\\\\) {
+          padding-inline: var(--spacing-2)
+          }
+
+        .px_token\\\\(spacing\\\\.3\\\\) {
+          padding-inline: var(--spacing-3)
+          }
+
+        .py_token\\\\(spacing\\\\.1\\\\) {
+          padding-block: var(--spacing-1)
+          }
+
+        .py_token\\\\(spacing\\\\.2\\\\) {
+          padding-block: var(--spacing-2)
+          }
+
+        .py_token\\\\(spacing\\\\.3\\\\) {
+          padding-block: var(--spacing-3)
+          }
+      }"
+    `)
+  })
 })
 
 describe('preset patterns', () => {

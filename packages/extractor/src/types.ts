@@ -101,7 +101,7 @@ export type MatchTaggedTemplateArgs = {
 export type MatchTaggedTemplate = (tag: MatchTaggedTemplateArgs) => boolean
 
 export type BoxContext = {
-  getEvaluateOptions?: (node: Expression, stack: Node[]) => EvaluateOptions
+  getEvaluateOptions?: (node: Expression, stack: Node[]) => Omit<EvaluateOptions, 'node' | 'policy'> | void
   canEval?: (node: Expression, stack: Node[]) => boolean
   flags?: {
     skipEvaluate?: boolean

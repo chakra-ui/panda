@@ -58,9 +58,11 @@ const fallback = (box: BoxNode) =>
 
 type GetEvaluateOptions = NonNullable<Parameters<typeof extract>['0']['getEvaluateOptions']>
 
-type EvalOptions = ReturnType<GetEvaluateOptions>
+type EvalOptions = Exclude<ReturnType<GetEvaluateOptions>, void>
 
-const defaultEnv: EvalOptions['environment'] = { preset: 'NONE' }
+const defaultEnv: EvalOptions['environment'] = { preset: 'ECMA' }
+const identityFn = (styles: any) => styles
+const evaluateOptions: EvalOptions = { environment: defaultEnv }
 
 export function createParser(options: ParserOptions) {
   const { jsx, getRecipesByJsxName, getPatternsByJsxName, tsOptions, join } = options
@@ -280,7 +282,23 @@ export function createParser(options: ParserOptions) {
       taggedTemplates: {
         matchTaggedTemplate: (tag) => matchFn(tag.fnName),
       },
-      getEvaluateOptions: (node) => ({ node: node as any, environment: defaultEnv }),
+      getEvaluateOptions: (node) => {
+        if (!Node.isCallExpression(node)) return evaluateOptions
+        const propAccessExpr = node.getExpression()
+
+        if (!Node.isPropertyAccessExpression(propAccessExpr)) return evaluateOptions
+        let name = propAccessExpr.getText()
+
+        if (!isRawFn(name as string)) {
+          return evaluateOptions
+        }
+
+        name = name.replace('.raw', '')
+
+        return {
+          environment: Object.assign({}, defaultEnv, { extra: { [name]: { raw: identityFn } } }),
+        }
+      },
       flags: { skipTraverseFiles: true },
     })
 
