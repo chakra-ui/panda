@@ -1,5 +1,7 @@
-import { analyzeTokens, loadConfigAndCreateContext, writeAnalyzeJSON } from '@pandacss/node'
+import { PandaContext, analyzeTokens, loadConfigAndCreateContext, writeAnalyzeJSON } from '@pandacss/node'
 import { stringify } from 'javascript-stringify'
+import { AstroIntegration } from 'astro'
+import { PluginOption } from 'vite'
 
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
@@ -11,25 +13,35 @@ const _dirname = dirname(fileURLToPath(import.meta.url))
 const analysisDataFilepath = 'src/lib/analysis.json'
 const jsonPath = resolve(_dirname, analysisDataFilepath)
 
-/**
- * @returns import('vite').VitePlugin
- */
-function vitePlugin({ configPath }) {
-  let config
+function vitePlugin({ configPath }): PluginOption {
+  let config: PandaContext['config']
 
+  async function loadPandaConfig() {
+    const ctx = await loadConfigAndCreateContext({ configPath })
+    config = ctx.config
+
+    const result = analyzeTokens(ctx)
+    await writeAnalyzeJSON(jsonPath, result, ctx)
+  }
   return {
     name: 'vite:panda',
 
-    async configResolved() {
-      const ctx = await loadConfigAndCreateContext({ configPath })
-      config = ctx.config
-
-      const result = analyzeTokens(ctx)
-      await writeAnalyzeJSON(jsonPath, result, ctx)
+    async handleHotUpdate({ server, file }) {
+      const module = server.moduleGraph.getModuleById(resolvedVirtualModuleId)
+      if (module && file === configPath) {
+        await loadPandaConfig()
+        await server.reloadModule(module)
+        return [module]
+      }
+      return []
     },
 
     async configureServer(server) {
       server.watcher.add(configPath)
+    },
+
+    async configResolved() {
+      await loadPandaConfig()
     },
 
     resolveId(id) {
@@ -49,18 +61,11 @@ function vitePlugin({ configPath }) {
   }
 }
 
-/**
- * @returns import('astro').AstroIntegration
- */
-const virtualPanda = () => ({
+const virtualPanda = (): AstroIntegration => ({
   name: 'virtual:panda',
   hooks: {
-    'astro:config:setup': ({ updateConfig, addWatchFile }) => {
+    'astro:config:setup': ({ updateConfig }) => {
       const configPath = process.env.PUBLIC_CONFIG_PATH
-
-      if (configPath) {
-        addWatchFile(configPath)
-      }
 
       updateConfig({
         vite: {
