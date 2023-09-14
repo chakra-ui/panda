@@ -1,5 +1,32 @@
 # @pandacss/generator
 
+## 0.15.0
+
+### Patch Changes
+
+- 9f429d35: Fix issue where slot recipe did not apply rules when variant name has the same key as a slot
+- 93d9ee7e: Refactor: Prefer `NativeElements` type for vue jsx elements
+- 35793d85: Fix issue with cva when using compoundVariants and not passing any variants in the usage (ex: `button()`
+  with `const button = cva({ ... })`)
+- 39298609: Make the types suggestion faster (updated `DeepPartial`)
+- f27146d6: Fix an issue where some JSX components wouldn't get matched to their corresponding recipes/patterns when
+  using `Regex` in the `jsx` field of a config, resulting in some style props missing.
+
+  issue: https://github.com/chakra-ui/panda/issues/1315
+
+- Updated dependencies [4bc515ea]
+- Updated dependencies [9f429d35]
+- Updated dependencies [bc3b077d]
+- Updated dependencies [39298609]
+- Updated dependencies [dd47b6e6]
+- Updated dependencies [f27146d6]
+  - @pandacss/types@0.15.0
+  - @pandacss/shared@0.15.0
+  - @pandacss/core@0.15.0
+  - @pandacss/token-dictionary@0.15.0
+  - @pandacss/is-valid-prop@0.15.0
+  - @pandacss/logger@0.15.0
+
 ## 0.14.0
 
 ### Patch Changes

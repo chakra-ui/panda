@@ -241,7 +241,7 @@ export const createStyleContext = recipe => {
 }
 ```
 
-> Note: For the TypeScript version of this file, refer to [style-context.tsx](https://github.com/cschroeter/park-ui/blob/1401f2ade5875306bbc42926aa9a097cf3d305b3/website/src/lib/create-style-context.tsx#L10) in Park UI
+> Note: For the TypeScript version of this file, refer to [create-style-context.tsx](https://github.com/cschroeter/park-ui/blob/main/website/src/lib/create-style-context.tsx) in Park UI
 
 Then, use the context to create compound components connected to the recipe
 
