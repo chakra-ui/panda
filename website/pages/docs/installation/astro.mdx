@@ -110,14 +110,13 @@ Run your build process with `npm run dev` or whatever command is configured in y
 
 ### Start using Panda
 
-Use the generated style utilities in your code and panda will extract them to the generated CSS file.
+We will update the contents of `src/pages/astro.tsx` with the following snippet that uses Panda CSS:
 
 ```jsx
-import { css } from './styled-system/css'
-
-export function App() {
-  return <div className={css({ bg: 'red.400' })} />
-}
+---
+import { css } from '../../styled-system/css';
+---
+<div class={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello !</div>
 ```
 </Steps>
 
