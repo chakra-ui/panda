@@ -5,8 +5,10 @@ import glob from 'fast-glob'
 import {
   emptyDirSync,
   ensureDirSync,
+  exists,
   existsSync,
   readdirSync,
+  readFile,
   readFileSync,
   removeSync,
   writeFile,
@@ -33,7 +35,13 @@ export const nodeRuntime: Runtime = {
     },
   },
   fs: {
+    exists(filePath: string) {
+      return exists(filePath)
+    },
     existsSync,
+    readFile(filePath: string) {
+      return readFile(filePath, 'utf8')
+    },
     readFileSync(filePath: string) {
       return readFileSync(filePath, 'utf8')
     },

@@ -9,15 +9,19 @@ export const getOutputEngine = ({
   empty() {
     fs.rmDirSync(path.join(...paths.root))
   },
+  relative(file: string, dir = paths.root) {
+    return path.join(...dir, file)
+  },
   async write(output: Artifact | undefined) {
     if (!output) return
 
     const { dir = paths.root, files } = output
-    fs.ensureDirSync(path.join(...dir))
+    const dirPath = path.join(...dir)
+    fs.ensureDirSync(dirPath)
 
     return Promise.all(
       files.map(async ({ file, code }) => {
-        const absPath = path.join(...dir, file)
+        const absPath = path.join(dirPath, file)
         if (code) {
           return fs.writeFile(absPath, code)
         }

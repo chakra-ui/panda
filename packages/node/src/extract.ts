@@ -3,6 +3,7 @@ import { Obj, pipe, tap, tryCatch } from 'lil-fp'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
 import { writeFile } from 'fs/promises'
+import type { Artifact } from '@pandacss/types'
 
 export async function bundleChunks(ctx: PandaContext) {
   const files = ctx.chunks.getFiles()
@@ -56,7 +57,10 @@ const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)
 
 export async function emitArtifacts(ctx: PandaContext) {
   if (ctx.config.clean) ctx.output.empty()
-  await Promise.all(ctx.getArtifacts().map(ctx.output.write))
+  const artifacts = ctx.getArtifacts()
+  await Promise.all(
+    ctx.config.emitPackage ? artifacts.map((a) => updatePackageJsonIfExists(a, ctx)) : artifacts.map(ctx.output.write),
+  )
   ctx.hooks.callHook('generator:done')
   return {
     box: createBox({
@@ -65,6 +69,29 @@ export async function emitArtifacts(ctx: PandaContext) {
     }),
     msg: ctx.messages.artifactsGenerated(),
   }
+}
+
+async function updatePackageJsonIfExists(artifact: Artifact, ctx: PandaContext) {
+  const entry = artifact?.files[0]
+
+  if (entry && entry.code && entry.file === 'package.json') {
+    const pkgJsonPath = ctx.output.relative(entry.file, artifact.dir)
+    const exists = await ctx.runtime.fs.exists(pkgJsonPath)
+
+    if (exists) {
+      const pandaExports = JSON.parse(entry.code).exports as Record<string, unknown>
+      const currentPkgJson = JSON.parse(await ctx.runtime.fs.readFile(pkgJsonPath))
+      const updated = Object.assign(currentPkgJson, {
+        exports: Object.assign(currentPkgJson.exports, pandaExports),
+      })
+
+      return ctx.output.write({
+        files: [{ file: 'package.json', code: JSON.stringify(updated) }],
+      })
+    }
+  }
+
+  return ctx.output.write(artifact)
 }
 
 export async function emitAndExtract(ctx: PandaContext) {

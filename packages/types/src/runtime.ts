@@ -12,8 +12,10 @@ type InputOptions = {
 
 interface FileSystem {
   readDirSync(dir: string): string[]
+  exists(fileLike: string): Promise<boolean>
   existsSync(fileLike: string): boolean
   glob(opts: InputOptions): string[]
+  readFile(filePath: string): Promise<string>
   readFileSync(filePath: string): string
   rmDirSync(dirPath: string): void
   writeFile(file: string, content: string): Promise<void>
