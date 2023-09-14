@@ -29,6 +29,7 @@ export function generateResetCss(ctx: Context, scope = '') {
     -webkit-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     -moz-tab-size: 4;
     tab-size: 4;
     font-family: var(--global-font-body, var(--font-fallback));
