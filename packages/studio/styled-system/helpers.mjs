@@ -210,7 +210,7 @@ var hypenateProperty = memo((property) => {
 });
 
 // src/slot.ts
-var getSlotRecipes = (recipe) => {
+var getSlotRecipes = (recipe = {}) => {
   const init = (slot) => ({
     className: [recipe.className, slot].filter(Boolean).join("__"),
     base: recipe.base?.[slot] ?? {},
@@ -218,7 +218,8 @@ var getSlotRecipes = (recipe) => {
     defaultVariants: recipe.defaultVariants ?? {},
     compoundVariants: recipe.compoundVariants ? getSlotCompoundVariant(recipe.compoundVariants, slot) : []
   });
-  const recipeParts = recipe.slots.map((slot) => [slot, init(slot)]);
+  const slots = recipe.slots ?? [];
+  const recipeParts = slots.map((slot) => [slot, init(slot)]);
   for (const [variantsKey, variantsSpec] of Object.entries(recipe.variants ?? {})) {
     for (const [variantKey, variantSpec] of Object.entries(variantsSpec)) {
       recipeParts.forEach(([slot, slotRecipe]) => {

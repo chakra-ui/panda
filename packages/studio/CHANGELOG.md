@@ -1,5 +1,26 @@
 # @pandacss/studio
 
+## 0.15.0
+
+### Patch Changes
+
+- 39298609: Make the types suggestion faster (updated `DeepPartial`)
+- f27146d6: Fix an issue where some JSX components wouldn't get matched to their corresponding recipes/patterns when
+  using `Regex` in the `jsx` field of a config, resulting in some style props missing.
+
+  issue: https://github.com/chakra-ui/panda/issues/1315
+
+- Updated dependencies [4bc515ea]
+- Updated dependencies [9f429d35]
+- Updated dependencies [39298609]
+- Updated dependencies [f27146d6]
+  - @pandacss/types@0.15.0
+  - @pandacss/shared@0.15.0
+  - @pandacss/node@0.15.0
+  - @pandacss/config@0.15.0
+  - @pandacss/token-dictionary@0.15.0
+  - @pandacss/logger@0.15.0
+
 ## 0.14.0
 
 ### Patch Changes
