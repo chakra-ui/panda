@@ -120,7 +120,7 @@ export class Stylesheet {
       } = this.context
 
       breakpoints.expandScreenAtRule(this.context.root)
-      expandCssFunctions(this.context.root, { token: utility.getToken })
+      expandCssFunctions(this.context.root, { token: utility.getToken, raw: this.context.utility.tokens.getByName })
 
       let css = this.context.root.toString()
 

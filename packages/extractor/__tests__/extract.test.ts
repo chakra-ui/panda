@@ -5408,6 +5408,7 @@ it('extract CallExpression nested ObjectLiteralExpression', () => {
           "conditions": [],
           "raw": [
             "span",
+            undefined,
           ],
           "spreadConditions": [],
         },
@@ -5732,6 +5733,59 @@ it('extract all `css` style objects', () => {
             {
               "mx": "10",
               "pt": "6",
+            },
+          ],
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})
+
+it('unwrapExpression with satisfies', () => {
+  expect(
+    extractFromCode(`
+      const someObject = { red: "red.600" } satisfies any;
+      <ColorBox color={someObject.red}></ColorBox>
+        `),
+  ).toMatchInlineSnapshot(`
+    {
+      "ColorBox": [
+        {
+          "conditions": [],
+          "raw": {
+            "color": "red.600",
+          },
+          "spreadConditions": [],
+        },
+      ],
+    }
+  `)
+})
+
+it('extracts arrays without removing nullish values', () => {
+  expect(
+    extractFromCode(
+      `
+    const className = css({
+      display: "flex", color: ['black', undefined, "orange", 'red'],
+    })`,
+      { functionNameList: ['css'] },
+    ),
+  ).toMatchInlineSnapshot(`
+    {
+      "css": [
+        {
+          "conditions": [],
+          "raw": [
+            {
+              "color": [
+                "black",
+                undefined,
+                "orange",
+                "red",
+              ],
+              "display": "flex",
             },
           ],
           "spreadConditions": [],

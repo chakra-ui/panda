@@ -42,6 +42,18 @@ import { css } from '../styled-system/css'
 const className = css({ border: '1px solid token(colors.red.400, red)' })
 ```
 
+You can also use it in media queries or any other CSS at-rule.
+
+```js
+import { css } from '../styled-system/css'
+
+const className = css({
+  '@media screen and (min-width: token(sizes.4xl))': {
+    color: 'green.400'
+  }
+})
+```
+
 ## Vanilla JS
 
 Use the generated `token` function to query design tokens in your project. This is useful if you need direct access to your design tokens in the `style` attribute or when using CSS-in-JS libraries like `styled-components` or `@emotion/styled`

@@ -76,7 +76,6 @@ const getLiteralValue = (node: BoxNode | undefined, ctx: UnboxContext): LiteralV
             Object.assign({}, ctx, { path: ctx.path.concat(String(index++)), parent: node }),
           ),
         ),
-        Arr.filter(isNotNullish),
         (v) => v.flat(),
       )
     })

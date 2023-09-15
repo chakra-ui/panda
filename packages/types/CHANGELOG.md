@@ -1,5 +1,12 @@
 # @pandacss/types
 
+## 0.15.0
+
+### Patch Changes
+
+- 4bc515ea: Allow `string`s as `zIndex` and `opacity` tokens in order to support css custom properties
+- 39298609: Make the types suggestion faster (updated `DeepPartial`)
+
 ## 0.14.0
 
 ### Minor Changes

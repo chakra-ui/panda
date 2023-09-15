@@ -68,7 +68,7 @@ Panda also accepts arrays as values for responsive styles. Pass the correspondin
 </span>
 ```
 
-> We're leaving the corresponding values of the unused breakpoints `sm` and `md` as undefined.
+> We're leaving the corresponding values of the unused breakpoints `md` and `lg` as undefined.
 
 ### Targeting a breakpoint range
 
