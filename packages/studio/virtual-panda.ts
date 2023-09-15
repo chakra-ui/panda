@@ -1,7 +1,7 @@
-import { PandaContext, analyzeTokens, loadConfigAndCreateContext, writeAnalyzeJSON } from '@pandacss/node'
+import { type PandaContext, analyzeTokens, loadConfigAndCreateContext, writeAnalyzeJSON } from '@pandacss/node'
 import { stringify } from 'javascript-stringify'
-import { AstroIntegration } from 'astro'
-import { PluginOption } from 'vite'
+import type { AstroIntegration } from 'astro'
+import type { PluginOption } from 'vite'
 
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
