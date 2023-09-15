@@ -10,6 +10,7 @@ import mergeCascadeLayers from './plugins/merge-layers'
 import prettify from './plugins/prettify'
 import sortCss from './plugins/sort-css'
 import sortMediaQueries from './plugins/sort-mq'
+import type { Token } from '@pandacss/types'
 
 type OptimizeOptions = {
   minify?: boolean
@@ -37,9 +38,12 @@ export function optimizeCss(code: string, options: OptimizeOptions = {}) {
   return css
 }
 
-export function expandCssFunctions(code: string | Root, options: { token?: (key: string) => string } = {}) {
-  const { token } = options
-  const { css } = postcss([expandTokenFn(token)]).process(code)
+export function expandCssFunctions(
+  code: string | Root,
+  options: { token?: (key: string) => string; raw?: (path: string) => Token | undefined } = {},
+) {
+  const { token, raw } = options
+  const { css } = postcss([expandTokenFn(token, raw)]).process(code)
   return css
 }
 
