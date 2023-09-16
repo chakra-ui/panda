@@ -1,7 +1,6 @@
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
-  clean: true,
   gitignore: false,
   preflight: true,
   include: ['./src/**/*.{tsx,jsx,astro}'],
