@@ -620,11 +620,17 @@ describe('generator', () => {
                 red: {
                   value: '#ef4444',
                 },
+                semanticRed: {
+                  value: '{colors.danger}',
+                }
               },
               borders: {
                 red: {
                   value: '1px solid {colors.red}',
                 },
+                semanticRed: {
+                  value: '{borders.danger}',
+                }
               },
             },
             semanticTokens: {
@@ -654,9 +660,11 @@ describe('generator', () => {
       "@layer tokens {
           :where(:root, :host) {
         --colors-red: #ef4444;
+        --colors-semantic-red: var(--colors-danger);
         --borders-red: 1px solid var(--colors-red);
+        --borders-semantic-red: var(--borders-danger);
         --colors-danger: var(--colors-red);
-        --borders-danger: 1px solid var(--colors-red)
+        --borders-danger: var(--borders-red)
       }
         }
         "

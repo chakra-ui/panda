@@ -105,12 +105,12 @@ export class Token {
   }
 
   /**
-   * Returns the token value with the references expanded.
-   * e.g. {color.gray.100} => #f7fafc
-   *
+   * Returns the token variable reference with the references expanded.
+   * e.g. {color.gray.100} => var(--colors-gray-100)
+   * 
    */
   expandReferences(): string {
-    if (!this.hasReference) return this.value
+    if (!this.hasReference) return this.extensions.varRef ?? this.value
 
     const references = this.extensions.references ?? {}
 
