@@ -13,7 +13,7 @@ const _dirname = dirname(fileURLToPath(import.meta.url))
 const analysisDataFilepath = 'src/lib/analysis.json'
 const jsonPath = resolve(_dirname, analysisDataFilepath)
 
-function vitePlugin({ configPath }: { configPath: string }): PluginOption {
+function vitePlugin(configPath: string): PluginOption {
   let config: PandaContext['config']
 
   async function loadPandaConfig() {
@@ -64,7 +64,7 @@ const virtualPanda = (): AstroIntegration => ({
 
       updateConfig({
         vite: {
-          plugins: [vitePlugin({ configPath })],
+          plugins: [vitePlugin(configPath!)],
         },
       })
     },
