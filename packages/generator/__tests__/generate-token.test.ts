@@ -607,7 +607,7 @@ describe('generator', () => {
     })
   })
 
-  test.only('should reuse css variable in semantic token alias', () => {
+  test('should reuse css variable in semantic token alias', () => {
     const css = generateTokenCss(
       createGenerator({
         dependencies: [],
