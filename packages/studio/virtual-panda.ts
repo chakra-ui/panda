@@ -26,18 +26,13 @@ function vitePlugin({ configPath }): PluginOption {
   return {
     name: 'vite:panda',
 
-    async handleHotUpdate({ server, file }) {
-      const module = server.moduleGraph.getModuleById(resolvedVirtualModuleId)
-      if (module && file === configPath) {
-        await loadPandaConfig()
-        await server.reloadModule(module)
-        return [module]
-      }
-      return []
-    },
-
     async configureServer(server) {
-      server.watcher.add(configPath)
+      server.watcher.add(configPath).on('change', async (path) => {
+        if (path !== configPath) return
+        await loadPandaConfig()
+        const module = server.moduleGraph.getModuleById(resolvedVirtualModuleId)
+        if (module) await server.reloadModule(module)
+      })
     },
 
     async configResolved() {
