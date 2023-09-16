@@ -1,4 +1,5 @@
 @layer utilities {
+
   .d_flex {
     display: flex
     }
@@ -58,12 +59,6 @@
   .cursor_pointer {
     cursor: pointer
     }
-    .hover\:opacity_1:is(:hover, [data-hover]) {
-      opacity: 1
-        }
-    .hover\:border-b_black:is(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black)
-        }
 
   .self_flex-start {
     align-self: flex-start
@@ -72,4 +67,12 @@
   .mr_2 {
     margin-right: var(--spacing-2)
     }
+
+  .hover\:opacity_1:is(:hover, [data-hover]) {
+    opacity: 1
+        }
+
+  .hover\:border-b_black:is(:hover, [data-hover]) {
+    border-bottom-color: var(--colors-black)
+        }
 }

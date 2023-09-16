@@ -1,9 +1,11 @@
 @layer utilities {
+
   .p_4px_8px {
     padding: 4px 8px
     }
-    .\[\&_li\]\:cursor_pointer li {
-      cursor: pointer
+
+  .\[\&_li\]\:cursor_pointer li {
+    cursor: pointer
         }
 
   .list-style_none {
@@ -25,9 +27,6 @@
   .ml_2 {
     margin-left: var(--spacing-2)
     }
-    .hover\:opacity_0\.6:is(:hover, [data-hover]) {
-      opacity: 0.6
-        }
 
   .font_semibold {
     font-weight: var(--font-weights-semibold)
@@ -88,12 +87,6 @@
   .cursor_pointer {
     cursor: pointer
     }
-    .hover\:opacity_1:is(:hover, [data-hover]) {
-      opacity: 1
-        }
-    .hover\:border-b_black:is(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black)
-        }
 
   .d_flex {
     display: flex
@@ -106,7 +99,20 @@
   .gap_2 {
     gap: var(--spacing-2)
     }
-      .\[\&_li\]\:hover\:opacity_0\.8 li:is(:hover, [data-hover]) {
-        opacity: 0.8
+
+  .hover\:opacity_0\.6:is(:hover, [data-hover]) {
+    opacity: 0.6
+        }
+
+  .hover\:opacity_1:is(:hover, [data-hover]) {
+    opacity: 1
+        }
+
+  .hover\:border-b_black:is(:hover, [data-hover]) {
+    border-bottom-color: var(--colors-black)
+        }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 li:is(:hover, [data-hover]) {
+    opacity: 0.8
             }
 }

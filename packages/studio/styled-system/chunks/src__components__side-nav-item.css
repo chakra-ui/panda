@@ -1,4 +1,5 @@
 @layer utilities {
+
   .d_block {
     display: block
     }
@@ -18,10 +19,12 @@
   .font_medium {
     font-weight: var(--font-weights-medium)
     }
-    .hover\:text_yellow\.300:is(:hover, [data-hover]) {
-      color: var(--colors-yellow-300)
+
+  .currentPage\:text_yellow\.300[aria-current=page] {
+    color: var(--colors-yellow-300)
         }
-    .currentPage\:text_yellow\.300[aria-current=page] {
-      color: var(--colors-yellow-300)
+
+  .hover\:text_yellow\.300:is(:hover, [data-hover]) {
+    color: var(--colors-yellow-300)
         }
 }

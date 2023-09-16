@@ -1,9 +1,11 @@
 @layer utilities {
+
   .p_4px_8px {
     padding: 4px 8px
     }
-    .\[\&_li\]\:cursor_pointer li {
-      cursor: pointer
+
+  .\[\&_li\]\:cursor_pointer li {
+    cursor: pointer
         }
 
   .list-style_none {
@@ -78,9 +80,6 @@
   .rounded_md {
     border-radius: var(--radii-md)
     }
-    .hover\:opacity_0\.8:is(:hover, [data-hover]) {
-      opacity: 0.8
-        }
 
   .w_16 {
     width: var(--sizes-16)
@@ -121,13 +120,20 @@
   .cursor_pointer {
     cursor: pointer
     }
-    .hover\:opacity_1:is(:hover, [data-hover]) {
-      opacity: 1
+
+  .hover\:opacity_0\.8:is(:hover, [data-hover]) {
+    opacity: 0.8
         }
-    .hover\:border-b_black:is(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black)
+
+  .hover\:opacity_1:is(:hover, [data-hover]) {
+    opacity: 1
         }
-      .\[\&_li\]\:hover\:opacity_0\.8 li:is(:hover, [data-hover]) {
-        opacity: 0.8
+
+  .hover\:border-b_black:is(:hover, [data-hover]) {
+    border-bottom-color: var(--colors-black)
+        }
+
+  .\[\&_li\]\:hover\:opacity_0\.8 li:is(:hover, [data-hover]) {
+    opacity: 0.8
             }
 }

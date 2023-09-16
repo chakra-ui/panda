@@ -47,9 +47,6 @@
   .transition_all_0\.2s_ease {
     transition: all 0.2s ease
     }
-    .hover\:bg_gray\.100:is(:hover, [data-hover]) {
-      background-color: var(--colors-gray-100)
-        }
 
   .d_inline-flex {
     display: inline-flex
@@ -70,12 +67,6 @@
   .cursor_pointer {
     cursor: pointer
     }
-    .hover\:opacity_1:is(:hover, [data-hover]) {
-      opacity: 1
-        }
-    .hover\:border-b_black:is(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black)
-        }
 
   .d_flex {
     display: flex
@@ -92,4 +83,16 @@
   .mt_4 {
     margin-top: var(--spacing-4)
     }
+
+  .hover\:bg_gray\.100:is(:hover, [data-hover]) {
+    background-color: var(--colors-gray-100)
+        }
+
+  .hover\:opacity_1:is(:hover, [data-hover]) {
+    opacity: 1
+        }
+
+  .hover\:border-b_black:is(:hover, [data-hover]) {
+    border-bottom-color: var(--colors-black)
+        }
 }

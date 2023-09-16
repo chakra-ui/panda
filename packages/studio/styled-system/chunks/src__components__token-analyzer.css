@@ -14,9 +14,6 @@
   .list-style_none {
     list-style: none
     }
-    .hover\:opacity_0\.8:is(:hover, [data-hover]) {
-      opacity: 0.8
-        }
 
   .p_6 {
     padding: var(--spacing-6)
@@ -85,9 +82,6 @@
   .p_0 {
     padding: var(--spacing-0)
     }
-    .hover\:bg_border:is(:hover, [data-hover]) {
-      background-color: var(--colors-border)
-        }
 
   .py_2 {
     padding-block: var(--spacing-2)
@@ -100,16 +94,10 @@
   .transition_all_0\.2s_ease {
     transition: all 0.2s ease
     }
-    .hover\:bg_border:is(:hover, [data-hover]) {
-      background: var(--colors-border)
-        }
 
   .rounded_md {
     border-radius: var(--radii-md)
     }
-    .hover\:opacity_0\.6:is(:hover, [data-hover]) {
-      opacity: 0.6
-        }
 
   .bg_none {
     background: none
@@ -166,12 +154,6 @@
   .cursor_pointer {
     cursor: pointer
     }
-    .hover\:opacity_1:is(:hover, [data-hover]) {
-      opacity: 1
-        }
-    .hover\:border-b_black:is(:hover, [data-hover]) {
-      border-bottom-color: var(--colors-black)
-        }
 
   .gap_4 {
     gap: var(--spacing-4)
@@ -208,6 +190,30 @@
   .w_full {
     width: var(--sizes-full)
     }
+
+  .hover\:opacity_0\.8:is(:hover, [data-hover]) {
+    opacity: 0.8
+        }
+
+  .hover\:bg_border:is(:hover, [data-hover]) {
+    background-color: var(--colors-border)
+        }
+
+  .hover\:bg_border:is(:hover, [data-hover]) {
+    background: var(--colors-border)
+        }
+
+  .hover\:opacity_0\.6:is(:hover, [data-hover]) {
+    opacity: 0.6
+        }
+
+  .hover\:opacity_1:is(:hover, [data-hover]) {
+    opacity: 1
+        }
+
+  .hover\:border-b_black:is(:hover, [data-hover]) {
+    border-bottom-color: var(--colors-black)
+        }
       .\[\&_li\]\:hover\:opacity_0\.8 li:is(:hover, [data-hover]) {
         opacity: 0.8
             }
