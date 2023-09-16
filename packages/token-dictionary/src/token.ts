@@ -105,7 +105,7 @@ export class Token {
   }
 
   /**
-   * Returns the token variable reference with the references expanded.
+   * Returns the token value with the references expanded.
    * e.g. {color.gray.100} => var(--colors-gray-100)
    * 
    */
