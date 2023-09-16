@@ -606,4 +606,60 @@ describe('generator', () => {
       `)
     })
   })
+
+  test.only('should reuse css variable in semantic token alias', () => {
+    const css = generateTokenCss(
+      createGenerator({
+        dependencies: [],
+        config: {
+          cwd: '',
+          include: [],
+          theme: {
+            tokens: {
+              colors: {
+                red: {
+                  value: '#ef4444',
+                },
+              },
+              borders: {
+                red: {
+                  value: '1px solid {colors.red}',
+                },
+              },
+            },
+            semanticTokens: {
+              colors: {
+                danger: { 
+                  value: '{colors.red}' 
+                },
+              },
+              borders: {
+                danger: {
+                  value: '{borders.red}',
+                },
+              },
+            },
+          },
+          conditions: {
+            dark: '.dark &',
+          },
+          outdir: '',
+        },
+        path: '',
+        hooks: createHooks(),
+      }),
+    )
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+          :where(:root, :host) {
+        --colors-red: #ef4444;
+        --borders-red: 1px solid var(--colors-red);
+        --colors-danger: var(--colors-red);
+        --borders-danger: 1px solid var(--colors-red)
+      }
+        }
+        "
+    `)
+  })
 })
