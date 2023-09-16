@@ -667,7 +667,7 @@ test('should work with default fixture', () => {
             "base": "{spacing.4}",
             "lg": "{spacing.5}",
           },
-          "pixelValue": "16px",
+          "pixelValue": "var(--spacing-4)",
           "prop": "gutter",
           "var": "--spacing-gutter",
           "varRef": "var(--spacing-gutter)",
@@ -679,7 +679,7 @@ test('should work with default fixture', () => {
           "gutter",
         ],
         "type": "dimension",
-        "value": "1rem",
+        "value": "var(--spacing-4)",
       },
       Token {
         "description": undefined,
@@ -690,7 +690,7 @@ test('should work with default fixture', () => {
             "base": "{spacing.4}",
             "lg": "{spacing.5}",
           },
-          "pixelValue": "20px",
+          "pixelValue": "var(--spacing-5)",
           "prop": "gutter",
           "var": "--spacing-gutter",
           "varRef": "var(--spacing-gutter)",
@@ -702,7 +702,7 @@ test('should work with default fixture', () => {
           "gutter",
         ],
         "type": "dimension",
-        "value": "1.25rem",
+        "value": "var(--spacing-5)",
       },
       Token {
         "description": undefined,
@@ -1515,7 +1515,7 @@ test('should work with default fixture', () => {
           "-gutter",
         ],
         "type": "dimension",
-        "value": "1.25rem",
+        "value": "var(--spacing-5)",
       },
     ]
   `)
