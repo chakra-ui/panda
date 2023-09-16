@@ -23,6 +23,7 @@ function vitePlugin(configPath: string): PluginOption {
     const result = analyzeTokens(ctx)
     await writeAnalyzeJSON(jsonPath, result, ctx)
   }
+
   return {
     name: 'vite:panda',
 
@@ -35,10 +36,6 @@ function vitePlugin(configPath: string): PluginOption {
       })
     },
 
-    async configResolved() {
-      await loadPandaConfig()
-    },
-
     resolveId(id) {
       if (id === virtualModuleId) {
         return resolvedVirtualModuleId
@@ -48,6 +45,7 @@ function vitePlugin(configPath: string): PluginOption {
 
     async load(id) {
       if (id === resolvedVirtualModuleId) {
+        await loadPandaConfig()
         return {
           code: `export const config = ${stringify(config)}`,
         }
