@@ -622,7 +622,7 @@ describe('generator', () => {
                 },
                 semanticRed: {
                   value: '{colors.danger}',
-                }
+                },
               },
               borders: {
                 red: {
@@ -630,13 +630,13 @@ describe('generator', () => {
                 },
                 semanticRed: {
                   value: '{borders.danger}',
-                }
+                },
               },
             },
             semanticTokens: {
               colors: {
-                danger: { 
-                  value: '{colors.red}' 
+                danger: {
+                  value: '{colors.red}',
                 },
               },
               borders: {
