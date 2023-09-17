@@ -432,18 +432,18 @@ describe('generator', () => {
         --breakpoints-lg: 1024px;
         --breakpoints-xl: 1280px;
         --breakpoints-2xl: 1536px;
-        --colors-primary: #ef4444;
-        --colors-secondary: #991b1b;
-        --colors-complex: #991b1b;
+        --colors-primary: var(--colors-red-500);
+        --colors-secondary: var(--colors-red-800);
+        --colors-complex: var(--colors-red-800);
         --colors-button-thick: #fff;
         --colors-button-card-body: #fff;
         --colors-button-card-heading: #fff;
-        --spacing-gutter: 1rem
+        --spacing-gutter: var(--spacing-4)
       }
 
       :where([data-theme=dark], .dark) {
-        --colors-primary: #f87171;
-        --colors-secondary: #b91c1c;
+        --colors-primary: var(--colors-red-400);
+        --colors-secondary: var(--colors-red-700);
         --colors-button-thick: #000;
         --colors-button-card-body: #000;
         --colors-button-card-heading: #000
@@ -451,7 +451,7 @@ describe('generator', () => {
 
       @media (forced-colors: active) {
         :where([data-theme=dark], .dark) {
-          --colors-complex: #b91c1c
+          --colors-complex: var(--colors-red-700)
                   }
               }
 
@@ -475,7 +475,7 @@ describe('generator', () => {
 
       @media screen and (min-width: 64em) {
         :where(html) {
-          --spacing-gutter: 1.25rem
+          --spacing-gutter: var(--spacing-5)
               }
           }
         }
