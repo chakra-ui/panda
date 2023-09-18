@@ -37,7 +37,8 @@ function cvaClass() {
     })
   })
 
-  PandaComponent.displayName = `panda.${Dynamic}`
+  const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
+  PandaComponent.displayName = `panda.${name}`
   return PandaComponent
 }
 

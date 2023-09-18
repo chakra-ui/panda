@@ -10,10 +10,12 @@ export function generateVueJsxStringLiteralFactory(ctx: Context) {
     ${ctx.file.import('css, cx', '../css/index')}
 
   function createStyled(Dynamic) {
+    const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
+
     function styledFn(template) {
       const baseClassName = css(template)
       return defineComponent({
-        name: \`${factoryName}.\${Dynamic}\`,
+        name: \`${factoryName}.\${name}\`,
         inheritAttrs: false,
         props: { as: { type: [String, Object], default: Dynamic } },
         setup(props, { slots, attrs }) {
