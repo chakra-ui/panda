@@ -432,18 +432,18 @@ describe('generator', () => {
         --breakpoints-lg: 1024px;
         --breakpoints-xl: 1280px;
         --breakpoints-2xl: 1536px;
-        --colors-primary: #ef4444;
-        --colors-secondary: #991b1b;
-        --colors-complex: #991b1b;
+        --colors-primary: var(--colors-red-500);
+        --colors-secondary: var(--colors-red-800);
+        --colors-complex: var(--colors-red-800);
         --colors-button-thick: #fff;
         --colors-button-card-body: #fff;
         --colors-button-card-heading: #fff;
-        --spacing-gutter: 1rem
+        --spacing-gutter: var(--spacing-4)
       }
 
       :where([data-theme=dark], .dark) {
-        --colors-primary: #f87171;
-        --colors-secondary: #b91c1c;
+        --colors-primary: var(--colors-red-400);
+        --colors-secondary: var(--colors-red-700);
         --colors-button-thick: #000;
         --colors-button-card-body: #000;
         --colors-button-card-heading: #000
@@ -451,7 +451,7 @@ describe('generator', () => {
 
       @media (forced-colors: active) {
         :where([data-theme=dark], .dark) {
-          --colors-complex: #b91c1c
+          --colors-complex: var(--colors-red-700)
                   }
               }
 
@@ -475,7 +475,7 @@ describe('generator', () => {
 
       @media screen and (min-width: 64em) {
         :where(html) {
-          --spacing-gutter: 1.25rem
+          --spacing-gutter: var(--spacing-5)
               }
           }
         }
@@ -605,5 +605,69 @@ describe('generator', () => {
           "
       `)
     })
+  })
+
+  test('should reuse css variable in semantic token alias', () => {
+    const css = generateTokenCss(
+      createGenerator({
+        dependencies: [],
+        config: {
+          cwd: '',
+          include: [],
+          theme: {
+            tokens: {
+              colors: {
+                red: {
+                  value: '#ef4444',
+                },
+                semanticRed: {
+                  value: '{colors.danger}',
+                },
+              },
+              borders: {
+                red: {
+                  value: '1px solid {colors.red}',
+                },
+                semanticRed: {
+                  value: '{borders.danger}',
+                },
+              },
+            },
+            semanticTokens: {
+              colors: {
+                danger: {
+                  value: '{colors.red}',
+                },
+              },
+              borders: {
+                danger: {
+                  value: '{borders.red}',
+                },
+              },
+            },
+          },
+          conditions: {
+            dark: '.dark &',
+          },
+          outdir: '',
+        },
+        path: '',
+        hooks: createHooks(),
+      }),
+    )
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+          :where(:root, :host) {
+        --colors-red: #ef4444;
+        --colors-semantic-red: var(--colors-danger);
+        --borders-red: 1px solid var(--colors-red);
+        --borders-semantic-red: var(--borders-danger);
+        --colors-danger: var(--colors-red);
+        --borders-danger: var(--borders-red)
+      }
+        }
+        "
+    `)
   })
 })
