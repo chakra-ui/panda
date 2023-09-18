@@ -5,8 +5,7 @@ import {
   Segment,
   SegmentControl,
   SegmentGroup,
-  SegmentIndicator,
-  SegmentInput,
+  SegmentGroupIndicator,
   SegmentLabel,
   SplitterResizeTrigger,
   SplitterPanel,
@@ -68,7 +67,7 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
             }}
             onChange={(e) => setActiveTab(e.value as any)}
           >
-            <SegmentIndicator
+            <SegmentGroupIndicator
               className={css({
                 background: { base: 'transparent', _groupExpanded: 'primary' },
               })}
@@ -99,7 +98,6 @@ export function ArtifactsPanel(props: ArtifactsPanelType) {
                 >
                   {option.label}
                 </SegmentLabel>
-                <SegmentInput />
                 <SegmentControl />
               </Segment>
             ))}

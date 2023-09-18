@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Layout } from '../components/LayoutControl'
 import { SplitterProps, useToast } from '@ark-ui/react'
+import { EXAMPLES, Example } from '@/src/components/Examples/data'
 
 export type State = {
   code: string
@@ -57,42 +58,14 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     }
   }
 
+  const cssExample = EXAMPLES.find((example) => example.id === 'css')
+
   const [state, setState] = useState(
     initialState
       ? initialState
       : {
-          code: `import { css } from 'styled-system/css'
-
-export const App = () => {
-  return (
-    <>
-      <button
-        className={css({
-          color: 'red.400',
-        })}
-      >
-        Hello world
-      </button>
-    </>
-  )
-}
-`,
-          config: `import { defineConfig } from '@pandacss/dev';
-
-export const config = defineConfig({
-  theme: { extend: {} },
-  globalCss: {
-    html: {
-      h: 'full',
-    },
-    body: {
-      bg: { base: 'white', _dark: '#2C2C2C' },
-    },
-  },
-  jsxFramework: 'react',
-});    
-          
-`,
+          code: cssExample?.code,
+          config: cssExample?.config,
         },
   )
 
@@ -137,6 +110,15 @@ export const config = defineConfig({
       })
   }
 
+  const setExample = (_example: Example) => {
+    const example = EXAMPLES.find((example) => example.id === _example)
+    setIsPristine(true)
+    setState((prev) => ({
+      code: example?.code ?? prev.code,
+      config: example?.config ?? prev.config,
+    }))
+  }
+
   return {
     isPristine,
     layout,
@@ -150,6 +132,7 @@ export const config = defineConfig({
       setIsPristine(false)
       setState(newState)
     },
+    setExample,
     onShare,
     isSharing,
     isResponsive,
