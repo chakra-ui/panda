@@ -24,7 +24,8 @@ export function generatePreactJsxStringLiteralFactory(ctx: Context) {
           })
         })
 
-        ${componentName}.displayName = \`${factoryName}.\${Dynamic}\`
+        const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
+        ${componentName}.displayName = \`${factoryName}.\${name}\`
         return ${componentName}
       }
     }
