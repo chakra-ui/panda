@@ -239,6 +239,7 @@ export const EXAMPLES = [
       );
     };
     `,
+    config: undefined,
   },
 ] as const
 
