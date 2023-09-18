@@ -7,7 +7,7 @@ export function generateQwikJsxFactory(ctx: Context) {
   return {
     js: outdent`
     import { h } from '@builder.io/qwik'
-    ${ctx.file.import('css, cx, cva, assignCss', '../css/index')}
+    ${ctx.file.import('css, cx, cva', '../css/index')}
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('isCssProperty', './is-valid-prop')}
 
@@ -23,14 +23,13 @@ export function generateQwikJsxFactory(ctx: Context) {
         const { css: cssStyles, ...propStyles } = styleProps
 
         function recipeClass() {
-          const styles = assignCss(propStyles, cssStyles)
-          return cx(cvaFn(variantProps), css(styles), elementProps.class)
+          const compoundVariantStyles = cvaFn.getCompoundVariantCss?.(variantProps);
+          return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), elementProps.class)
         }
 
         function cvaClass() {
           const cvaStyles = cvaFn.raw(variantProps)
-          const styles = assignCss(cvaStyles, propStyles, cssStyles)
-          return cx(css(styles), elementProps.class)
+          return cx(css(cvaStyles, propStyles, cssStyles), elementProps.class)
         }
 
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass

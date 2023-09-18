@@ -28,15 +28,13 @@ export function generateSolidJsxFactory(ctx: Context) {
 
         function recipeClass() {
           const { css: cssStyles, ...propStyles } = styleProps
-          const styles = assignCss(propStyles, cssStyles)
-          return cx(cvaFn(variantProps), css(styles), localProps.class)
+          return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), localProps.class)
         }
 
         function cvaClass() {
           const { css: cssStyles, ...propStyles } = styleProps
           const cvaStyles = cvaFn.raw(variantProps)
-          const styles = assignCss(cvaStyles, propStyles, cssStyles)
-          return cx(css(styles), localProps.class)
+          return cx(css(cvaStyles, propStyles, cssStyles), localProps.class)
         }
 
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass

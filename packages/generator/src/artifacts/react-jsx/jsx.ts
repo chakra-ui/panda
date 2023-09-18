@@ -8,7 +8,7 @@ export function generateReactJsxFactory(ctx: Context) {
   return {
     js: outdent`
     import { createElement, forwardRef, useMemo } from 'react'
-    ${ctx.file.import('css, cx, cva, assignCss', '../css/index')}
+    ${ctx.file.import('css, cx, cva', '../css/index')}
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.jsx.styleProps === 'all' ? ctx.file.import('isCssProperty', './is-valid-prop') : ''}
 
@@ -27,15 +27,14 @@ export function generateReactJsxFactory(ctx: Context) {
 
           function recipeClass() {
             const { css: cssStyles, ...propStyles } = styleProps
-            const styles = assignCss(propStyles, cssStyles)
-            return cx(cvaFn(variantProps), css(styles), elementProps.className)
+            const compoundVariantStyles = cvaFn.getCompoundVariantCss?.(variantProps);
+            return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), elementProps.className)
           }
 
           function cvaClass() {
             const { css: cssStyles, ...propStyles } = styleProps
             const cvaStyles = cvaFn.raw(variantProps)
-            const styles = assignCss(cvaStyles, propStyles, cssStyles)
-            return cx(css(styles), elementProps.className)
+            return cx(css(cvaStyles, propStyles, cssStyles), elementProps.className)
           }`
           })
           .with('minimal', () => {
@@ -45,13 +44,13 @@ export function generateReactJsxFactory(ctx: Context) {
           }, [restProps])
 
           function recipeClass() {
-            return cx(cvaFn(variantProps), css(assignCss(elementProps.css)), elementProps.className)
+            const compoundVariantStyles = cvaFn.getCompoundVariantCss?.(variantProps);
+            return cx(cvaFn(variantProps, false), css(compoundVariantStyles, elementProps.css), elementProps.className)
           }
 
           function cvaClass() {
             const cvaStyles = cvaFn.raw(variantProps)
-            const styles = assignCss(cvaStyles, elementProps.css)
-            return cx(css(styles), elementProps.className)
+            return cx(css(cvaStyles, elementProps.css), elementProps.className)
           }`
           })
           .with('none', () => {
@@ -61,13 +60,13 @@ export function generateReactJsxFactory(ctx: Context) {
           }, [restProps])
 
           function recipeClass() {
-            return cx(cvaFn(variantProps), elementProps.className)
+            const compoundVariantStyles = cvaFn.getCompoundVariantCss?.(variantProps);
+            return cx(cvaFn(variantProps, false), elementProps.className)
           }
 
           function cvaClass() {
             const cvaStyles = cvaFn.raw(variantProps)
-            const styles = assignCss(cvaStyles)
-            return cx(css(styles), elementProps.className)
+            return cx(css(cvaStyles), elementProps.className)
           }`
           })
           .run()}

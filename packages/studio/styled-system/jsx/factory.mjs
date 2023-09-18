@@ -1,5 +1,5 @@
 import { createElement, forwardRef, useMemo } from 'react'
-import { css, cx, cva, assignCss } from '../css/index.mjs';
+import { css, cx, cva } from '../css/index.mjs';
 import { splitProps, normalizeHTMLProps } from '../helpers.mjs';
 import { isCssProperty } from './is-valid-prop.mjs';
 
@@ -15,15 +15,14 @@ function styledFn(Dynamic, configOrCva = {}) {
 
 function recipeClass() {
   const { css: cssStyles, ...propStyles } = styleProps
-  const styles = assignCss(propStyles, cssStyles)
-  return cx(cvaFn(variantProps), css(styles), elementProps.className)
+  const compoundVariantStyles = cvaFn.getCompoundVariantCss?.(variantProps);
+  return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), elementProps.className)
 }
 
 function cvaClass() {
   const { css: cssStyles, ...propStyles } = styleProps
   const cvaStyles = cvaFn.raw(variantProps)
-  const styles = assignCss(cvaStyles, propStyles, cssStyles)
-  return cx(css(styles), elementProps.className)
+  return cx(css(cvaStyles, propStyles, cssStyles), elementProps.className)
 }
 
 
