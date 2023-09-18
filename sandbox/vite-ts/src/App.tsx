@@ -1,10 +1,12 @@
 import { css, cx } from '../styled-system/css'
 import { Circle, HStack, Stack, panda } from '../styled-system/jsx'
 import { circle as circleLike, stack, vstack } from '../styled-system/patterns'
-import { button } from '../styled-system/recipes'
+import { button, someRecipe } from '../styled-system/recipes'
 import { Badge, badge } from './Badge'
 import { AnotherButtonWithRegex, Button, ListedButton } from './Button'
 import { Card } from './Card'
+
+const SomeRecipe = panda('div', someRecipe)
 
 function App() {
   const paddingY = '25px'
@@ -111,6 +113,10 @@ function App() {
         <div className={badge({ status: 'warning' })}>Warning</div>
         <div className={badge({ status: 'success' })}>Warning</div>
       </section>
+
+      <SomeRecipe size="small" color="red.400">
+        config recipe compoundVariants overriding within styled, should be red.100
+      </SomeRecipe>
     </div>
   )
 }
