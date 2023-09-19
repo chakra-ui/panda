@@ -58,7 +58,7 @@ export const EXAMPLES = [
     };
     
     `,
-    config: undefined,
+    config: getConfig(`theme: { extend: {} },`),
   },
   {
     id: 'sva',
@@ -98,7 +98,7 @@ export const EXAMPLES = [
       );
     };
     `,
-    config: undefined,
+    config: getConfig(`theme: { extend: {} },`),
   },
   {
     id: 'config-recipes',
@@ -239,7 +239,7 @@ export const EXAMPLES = [
       );
     };
     `,
-    config: undefined,
+    config: getConfig(`theme: { extend: {} },`),
   },
 ] as const
 
