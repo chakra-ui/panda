@@ -203,14 +203,14 @@ describe('mergeConfigs / theme', () => {
               "blue": {
                 "value": "blue",
               },
-              "default-main": {
-                "value": "override",
-              },
               "gray": {
-                "value": "from-default-config",
+                "value": "gray",
               },
               "orange": {
                 "value": "orange",
+              },
+              "pink": {
+                "value": "pink",
               },
             },
           },
