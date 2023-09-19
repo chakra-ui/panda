@@ -22,7 +22,7 @@
     "dev": "pnpm build-fast --watch"
   },
   "devDependencies": {
-    "typescript": "^5.1.6",
-    "@pandacss/extension-shared": "workspace:^"
+    "@pandacss/extension-shared": "workspace:^",
+    "typescript": "^5.2.2"
   }
 }

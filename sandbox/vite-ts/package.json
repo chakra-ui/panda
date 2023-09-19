@@ -20,13 +20,13 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/react": "18.2.18",
+    "@pandacss/dev": "workspace:*",
+    "@types/react": "18.2.22",
     "@types/react-dom": "18.2.7",
     "@vitejs/plugin-react": "4.0.4",
-    "@pandacss/dev": "workspace:*",
     "postcss": "8.4.27",
-    "typescript": "5.1.6",
     "source-map-explorer": "^2.5.3",
+    "typescript": "5.2.2",
     "vite": "4.4.9",
     "vite-bundle-visualizer": "^0.9.0"
   }
