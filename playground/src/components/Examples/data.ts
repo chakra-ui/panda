@@ -105,7 +105,7 @@ export const EXAMPLES = [
     label: 'Config Recipes',
     code: outdent`import { button } from 'styled-system/recipes';
 
-    function App() {
+    export const App = () => {
       return (
         <div>
           <button className={button()}>Click me</button>
@@ -156,7 +156,7 @@ export const EXAMPLES = [
     label: 'Config Slot Recipes',
     code: outdent`import { card } from 'styled-system/recipes';
 
-    function App() {
+    export const App = () => {
       return (
         <>
         <div className={card().root}>
