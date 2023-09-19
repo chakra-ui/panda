@@ -27,7 +27,6 @@ export function generateResetCss(ctx: Context, scope = '') {
       'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
       'Noto Color Emoji';
     -webkit-text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -moz-tab-size: 4;
@@ -171,22 +170,37 @@ export function generateResetCss(ctx: Context, scope = '') {
     font-family: var(--global-font-mono, var(--font-fallback));
   }
 
-  ${selector}[type='search'] {
+
+  ${selector}input[type="text"],
+  ${selector}input[type="email"],
+  ${selector}input[type="search"],
+  ${selector}input[type="password"] {
+    -webkit-appearance: none;
+    -moz-appearance: none; 
+  }
+
+  ${selector}input[type='search'] {
     -webkit-appearance: textfield;
     outline-offset: -2px;
   }
 
-  ${selector}::-webkit-search-decoration {
+  ${selector}::-webkit-search-decoration,
+  ${selector}::-webkit-search-cancel-button {
     -webkit-appearance: none;
   }
 
   ${selector}::-webkit-file-upload-button {
     -webkit-appearance: button;
+    font: inherit;
   }
 
-  ${selector}::-webkit-inner-spin-button,
-  ${selector}::-webkit-outer-spin-button {
+  ${selector}input[type="number"]::-webkit-inner-spin-button,
+  ${selector}input[type="number"]::-webkit-outer-spin-button {
     height: auto;
+  }
+
+  ${selector}input[type='number']{
+    -moz-appearance: textfield;
   }
 
   ${selector}:-moz-ui-invalid {

@@ -13,9 +13,10 @@ export function generateVueJsxFactory(ctx: Context) {
 
     function styledFn(Dynamic, configOrCva = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
+      const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
 
       return defineComponent({
-        name: \`${factoryName}.\${Dynamic}\`,
+        name: \`${factoryName}.\${name}\`,
         inheritAttrs: false,
         props: { as: { type: [String, Object], default: Dynamic } },
         setup(props, { slots, attrs }) {

@@ -30,7 +30,6 @@ describe('generate reset', () => {
               'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
               'Noto Color Emoji';
             -webkit-text-size-adjust: 100%;
-            -webkit-text-size-adjust: 100%;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             -moz-tab-size: 4;
@@ -174,22 +173,37 @@ describe('generate reset', () => {
             font-family: var(--global-font-mono, var(--font-fallback));
           }
 
-          .pd-reset [type='search'] {
+
+          .pd-reset input[type=\\"text\\"],
+          .pd-reset input[type=\\"email\\"],
+          .pd-reset input[type=\\"search\\"],
+          .pd-reset input[type=\\"password\\"] {
+            -webkit-appearance: none;
+            -moz-appearance: none; 
+          }
+
+          .pd-reset input[type='search'] {
             -webkit-appearance: textfield;
             outline-offset: -2px;
           }
 
-          .pd-reset ::-webkit-search-decoration {
+          .pd-reset ::-webkit-search-decoration,
+          .pd-reset ::-webkit-search-cancel-button {
             -webkit-appearance: none;
           }
 
           .pd-reset ::-webkit-file-upload-button {
             -webkit-appearance: button;
+            font: inherit;
           }
 
-          .pd-reset ::-webkit-inner-spin-button,
-          .pd-reset ::-webkit-outer-spin-button {
+          .pd-reset input[type=\\"number\\"]::-webkit-inner-spin-button,
+          .pd-reset input[type=\\"number\\"]::-webkit-outer-spin-button {
             height: auto;
+          }
+
+          .pd-reset input[type='number']{
+            -moz-appearance: textfield;
           }
 
           .pd-reset :-moz-ui-invalid {
