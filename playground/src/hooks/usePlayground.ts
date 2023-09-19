@@ -64,8 +64,8 @@ export const usePlayground = (props: UsePlayGroundProps) => {
     initialState
       ? initialState
       : {
-          code: cssExample?.code,
-          config: cssExample?.config,
+          code: cssExample?.code ?? '',
+          config: cssExample?.config ?? '',
         },
   )
 
