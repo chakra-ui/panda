@@ -230,7 +230,7 @@ test('should generate categorize token', () => {
                 "primary",
               ],
               "type": "color",
-              "value": "#ef4444",
+              "value": "var(--colors-red-500)",
             },
             Token {
               "description": undefined,
@@ -252,7 +252,7 @@ test('should generate categorize token', () => {
                 "primary",
               ],
               "type": "color",
-              "value": "#f87171",
+              "value": "var(--colors-red-400)",
             },
             Token {
               "description": undefined,
@@ -274,7 +274,7 @@ test('should generate categorize token', () => {
                 "secondary",
               ],
               "type": "color",
-              "value": "#991b1b",
+              "value": "var(--colors-red-800)",
             },
             Token {
               "description": undefined,
@@ -296,7 +296,7 @@ test('should generate categorize token', () => {
                 "secondary",
               ],
               "type": "color",
-              "value": "#b91c1c",
+              "value": "var(--colors-red-700)",
             },
             Token {
               "description": undefined,
@@ -320,7 +320,7 @@ test('should generate categorize token', () => {
                 "complex",
               ],
               "type": "color",
-              "value": "#991b1b",
+              "value": "var(--colors-red-800)",
             },
             Token {
               "description": undefined,
@@ -344,7 +344,7 @@ test('should generate categorize token', () => {
                 "complex",
               ],
               "type": "color",
-              "value": "#b91c1c",
+              "value": "var(--colors-red-700)",
             },
             Token {
               "description": undefined,

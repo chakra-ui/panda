@@ -36,10 +36,10 @@ test('format / json flat', () => {
         "--colors-green" => "#00ff00",
         "--colors-pink-50" => "#ff0000",
         "--colors-pink-100" => "#0000ff",
-        "--colors-brand" => "#ff0000",
+        "--colors-brand" => "var(--colors-red)",
       },
       "dark" => Map {
-        "--colors-brand" => "#0000ff",
+        "--colors-brand" => "var(--colors-blue)",
       },
     }
   `)
