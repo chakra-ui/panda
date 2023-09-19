@@ -85,7 +85,6 @@ export const SectionRecipes = () => {
           </Stack>
 
           <panda.div flex="1" maxW={{ lg: '40rem' }} flexShrink="0">
-            {/* @ts-expect-error Server Component */}
             <Code
               lang="tsx"
               style={{ borderRadius: token('radii.xl') }}
