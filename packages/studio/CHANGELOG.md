@@ -1,5 +1,19 @@
 # @pandacss/studio
 
+## 0.15.1
+
+### Patch Changes
+
+- 7e8bcb03: Fix an issue when wrapping a component with `styled` would display its name as `styled.[object Object]`
+- Updated dependencies [26f6982c]
+- Updated dependencies [4e003bfb]
+  - @pandacss/shared@0.15.1
+  - @pandacss/token-dictionary@0.15.1
+  - @pandacss/node@0.15.1
+  - @pandacss/types@0.15.1
+  - @pandacss/config@0.15.1
+  - @pandacss/logger@0.15.1
+
 ## 0.15.0
 
 ### Patch Changes
