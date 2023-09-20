@@ -22,11 +22,11 @@ export function getResolvedConfig(config: ExtendableConfig) {
 
     if (preset instanceof Promise) {
       preset.then((result) => {
-        configs.push(result)
+        configs.unshift(result)
         presets.unshift(...(result.presets ?? []))
       })
     } else {
-      configs.push(preset)
+      configs.unshift(preset)
       presets.unshift(...(preset.presets ?? []))
     }
   }
