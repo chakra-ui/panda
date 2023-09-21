@@ -1,6 +1,5 @@
 import { EXAMPLES, Example } from '@/src/components/Examples/data'
-import { css } from '@/styled-system/css'
-import { menu } from '@/styled-system/recipes'
+import { button, menu } from '@/styled-system/recipes'
 import { Menu, MenuContent, MenuItem, MenuPositioner, MenuTrigger } from '@ark-ui/react'
 
 type ExamplesProps = {
@@ -16,17 +15,7 @@ export const Examples = (props: ExamplesProps) => {
       }}
     >
       <MenuTrigger asChild>
-        <button
-          title="Try out some examples"
-          className={css({
-            borderRadius: 'lg',
-            fontWeight: 'semibold',
-            cursor: 'pointer',
-            px: '3',
-            py: '2',
-            bg: { base: 'gray.100', _dark: '#3A3A3AFF' },
-          })}
-        >
+        <button title="Try out some examples" className={button()}>
           Examples
         </button>
       </MenuTrigger>

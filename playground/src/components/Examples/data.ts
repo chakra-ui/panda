@@ -5,21 +5,33 @@ export const EXAMPLES = [
   {
     id: 'css',
     label: 'Writing styles (css)',
-    code: outdent`import { css } from 'styled-system/css'
-
-        export const App = () => {
-          return (
-            <>
-              <button
-                className={css({
-                  color: 'red.400',
-                })}
-              >
-                Hello world
-              </button>
-            </>
-          )
-        }
+    code: outdent`import { css } from 'styled-system/css';
+    import { center } from 'styled-system/patterns';
+    
+    export const App = () => {
+      return (
+        <div
+          className={center({
+            h: 'full',
+          })}
+        >
+          <div
+            className={css({
+              display: 'flex',
+              flexDir: 'column',
+              fontWeight: 'semibold',
+              color: 'yellow.300',
+              textAlign: 'center',
+              textStyle: '4xl',
+            })}
+          >
+            <span>🐼</span>
+            <span>Hello from Panda</span>
+          </div>
+        </div>
+      );
+    };
+    
         `,
     config: getConfig(`theme: { extend: {} },`),
   },
@@ -27,35 +39,39 @@ export const EXAMPLES = [
     id: 'cva',
     label: 'Atomic Recipes (cva)',
     code: outdent`import { cva } from 'styled-system/css';
-
+    import { center } from 'styled-system/patterns';
+    
     const button = cva({
       base: {
-        display: 'flex',
+        borderRadius: 'md',
+        fontWeight: 'semibold',
+        h: '10',
+        px: '4',
       },
       variants: {
         visual: {
-          solid: { bg: 'yellow.200', color: 'black' },
-          outline: { borderWidth: '1px', borderColor: 'yellow.200' },
-        },
-        size: {
-          sm: { padding: '4', fontSize: '12px' },
-          lg: { padding: '8', fontSize: '24px' },
+          solid: {
+            bg: { base: 'colorPalette.500', _dark: 'colorPalette.300' },
+            color: { base: 'white', _dark: 'gray.800' },
+          },
+          outline: {
+            border: '1px solid',
+            color: { base: 'colorPalette.600', _dark: 'colorPalette.200' },
+            borderColor: 'currentColor',
+          },
         },
       },
     });
     
     export const App = () => {
       return (
-        <>
-          <button className={button({ visual: 'outline', size: 'sm' })}>
-            Click Me
-          </button>
-          <button className={button({ visual: 'solid', size: 'lg' })}>
-            Click Me
-          </button>
-        </>
+        <div className={center({ colorPalette: 'yellow', h: 'full', gap: '4' })}>
+          <button className={button({ visual: 'solid' })}>Button</button>
+          <button className={button({ visual: 'outline' })}>Button</button>
+        </div>
       );
     };
+    
     
     `,
     config: getConfig(`theme: { extend: {} },`),
@@ -64,13 +80,15 @@ export const EXAMPLES = [
     id: 'sva',
     label: 'Slot Recipes (sva)',
     code: outdent`import { sva } from 'styled-system/css';
-
+    import { center } from 'styled-system/patterns';
+    
     const card = sva({
       slots: ['root', 'title', 'content'],
       base: {
         root: {
           p: '6',
           m: '4',
+          w: 'md',
           boxShadow: 'md',
           borderRadius: 'md',
           _dark: { bg: '#262626', color: 'white' },
@@ -81,7 +99,6 @@ export const EXAMPLES = [
         title: {
           textStyle: 'xl',
           fontWeight: 'semibold',
-          borderBottom: 'solid yellow 0.2px',
           pb: '2',
         },
       },
@@ -89,14 +106,15 @@ export const EXAMPLES = [
     
     export const App = () => {
       return (
-        <>
+        <div className={center({ h: 'full' })}>
           <div className={card().root}>
             <div className={card().title}>Team Members</div>
             <div className={card().content}>Content</div>
           </div>
-        </>
+        </div>
       );
     };
+    
     `,
     config: getConfig(`theme: { extend: {} },`),
   },
@@ -104,15 +122,17 @@ export const EXAMPLES = [
     id: 'config-recipes',
     label: 'Config Recipes',
     code: outdent`import { button } from 'styled-system/recipes';
-
+    import { center } from 'styled-system/patterns';
+    
     export const App = () => {
       return (
-        <div>
-          <button className={button()}>Click me</button>
-          <button className={button({ shape: 'circle' })}>Click me</button>
+        <div className={center({ colorPalette: 'yellow', h: 'full', gap: '4' })}>
+          <button className={button({ visual: 'solid' })}>Button</button>
+          <button className={button({ visual: 'outline' })}>Button</button>
         </div>
       );
-    }
+    };
+    
     `,
     config: getConfig(
       `theme: {
@@ -126,27 +146,24 @@ export const EXAMPLES = [
         className: 'button',
         description: 'The styles for the Button component',
         base: {
-          display: 'flex'
+          borderRadius: 'md',
+          fontWeight: 'semibold',
+          h: '10',
+          px: '4',
         },
         variants: {
           visual: {
-            funky: { bg: 'yellow.200', color: 'black' },
-            edgy: { border: '1px solid {colors.yellow.500}' }
+            solid: {
+              bg: { base: 'colorPalette.500', _dark: 'colorPalette.300' },
+              color: { base: 'white', _dark: 'gray.800' },
+            },
+            outline: {
+              border: '1px solid',
+              color: { base: 'colorPalette.600', _dark: 'colorPalette.200' },
+              borderColor: 'currentColor',
+            },
           },
-          size: {
-            sm: { padding: '4', fontSize: '12px' },
-            lg: { padding: '8', fontSize: '40px' }
-          },
-          shape: {
-            square: { borderRadius: '0' },
-            circle: { borderRadius: 'full' }
-          }
         },
-        defaultVariants: {
-          visual: 'funky',
-          size: 'sm',
-          shape: 'circle'
-        }
       })`,
       `import { defineConfig, defineRecipe } from '@pandacss/dev'`,
     ),
@@ -155,17 +172,19 @@ export const EXAMPLES = [
     id: 'config-slot-recipes',
     label: 'Config Slot Recipes',
     code: outdent`import { card } from 'styled-system/recipes';
-
+    import { center } from 'styled-system/patterns';
+    
     export const App = () => {
       return (
-        <>
-        <div className={card().root}>
-          <div className={card().title}>Team Members</div>
-          <div className={card().content}>Content</div>
+        <div className={center({ h: 'full' })}>
+          <div className={card().root}>
+            <div className={card().title}>Team Members</div>
+            <div className={card().content}>Content</div>
+          </div>
         </div>
-      </>
       );
-    }
+    };
+    
     `,
     config: getConfig(
       `theme: {
@@ -183,6 +202,7 @@ export const EXAMPLES = [
           root: {
             p: '6',
             m: '4',
+            w: 'md',
             boxShadow: 'md',
             borderRadius: 'md',
             _dark: { bg: '#262626', color: 'white' },
@@ -193,42 +213,41 @@ export const EXAMPLES = [
           title: {
             textStyle: 'xl',
             fontWeight: 'semibold',
-            borderBottom: 'solid yellow 0.2px',
             pb: '2',
           },
         },
-      })`,
+      });`,
       `import { defineConfig, defineSlotRecipe } from '@pandacss/dev'`,
     ),
   },
   {
     id: 'patterns',
     label: 'Patterns',
-    code: outdent`import { stack, hstack, flex, square, circle } from 'styled-system/patterns';
-
+    code: outdent`import { cx } from 'styled-system/css';
+    import { flex, square, circle, center } from 'styled-system/patterns';
+    
     export const App = () => {
       return (
         <div
-          className={stack({
-            gap: '1',
-            p: '1',
-            divideY: '1px',
-            divideColor: 'yellow.200',
-            divideStyle: 'solid',
-          })}
+          className={cx(
+            flex({
+              gap: '4',
+              direction: 'column',
+            }),
+            center({ h: 'full' })
+          )}
         >
-          <div className={hstack({ gap: '6', padding: '1' })}>
-            <div className={square({ size: '9', bg: 'yellow.300' })}>1</div>
-            <div className={square({ size: '9', bg: 'red.300' })}>2</div>
-            <div className={square({ size: '9', bg: 'green.300' })}>3</div>
+          <div className={flex({ gap: '6', padding: '1' })}>
+            <div className={square({ size: '11', bg: 'yellow.300' })}>1</div>
+            <div className={square({ size: '11', bg: 'red.300' })}>2</div>
+            <div className={square({ size: '11', bg: 'green.300' })}>3</div>
           </div>
     
           <div
             className={flex({
               direction: 'row',
               align: 'center',
-              gap: '1',
-              p: '1',
+              gap: '4',
             })}
           >
             <div className={circle({ size: '12', bg: 'blue.300' })}>1</div>
@@ -238,6 +257,7 @@ export const EXAMPLES = [
         </div>
       );
     };
+    
     `,
     config: getConfig(`theme: { extend: {} },`),
   },

@@ -16,11 +16,12 @@ const itemStyle = {
   h: '10',
   px: '2.5',
   mx: '1',
+  transition: 'background 0.2s ease',
   _hover: {
-    bg: { base: 'gray.100', _dark: '#262626' },
+    bg: { base: 'gray.100', _dark: '#3A3A3AFF' },
   },
   _highlighted: {
-    bg: { base: 'gray.100', _dark: '#262626' },
+    bg: { base: 'gray.100', _dark: '#3A3A3AFF' },
   },
 } as const
 
@@ -29,7 +30,7 @@ export const menu = defineRecipe({
   description: 'The styles for the menu component',
   base: parts({
     content: {
-      bg: { base: 'white', _dark: '#282828' },
+      bg: { base: 'white', _dark: '#262626' },
       backdropFilter: 'blur(10px)',
       borderRadius: 'md',
       borderWidth: '1px',
