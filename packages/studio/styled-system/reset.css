@@ -20,6 +20,7 @@
       'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
       'Noto Color Emoji';
     -webkit-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -moz-tab-size: 4;
@@ -163,37 +164,22 @@
     font-family: var(--global-font-mono, var(--font-fallback));
   }
 
-
-  input[type="text"],
-  input[type="email"],
-  input[type="search"],
-  input[type="password"] {
-    -webkit-appearance: none;
-    -moz-appearance: none; 
-  }
-
-  input[type='search'] {
+  [type='search'] {
     -webkit-appearance: textfield;
     outline-offset: -2px;
   }
 
-  ::-webkit-search-decoration,
-  ::-webkit-search-cancel-button {
+  ::-webkit-search-decoration {
     -webkit-appearance: none;
   }
 
   ::-webkit-file-upload-button {
     -webkit-appearance: button;
-    font: inherit;
   }
 
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
+  ::-webkit-inner-spin-button,
+  ::-webkit-outer-spin-button {
     height: auto;
-  }
-
-  input[type='number']{
-    -moz-appearance: textfield;
   }
 
   :-moz-ui-invalid {

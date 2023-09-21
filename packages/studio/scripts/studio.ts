@@ -5,24 +5,31 @@ import { createRequire } from 'node:module'
 
 export type BuildOpts = {
   outDir: string
+  configPath: string
 }
 
 const require = createRequire(import.meta.url)
 const astroBin = require.resolve('astro')
 const appPath = join(__dirname, '..')
 
-export async function buildStudio({ outDir }: BuildOpts) {
+export async function buildStudio({ outDir, configPath }: BuildOpts) {
   process.env.ASTRO_OUT_DIR = outDir
   const { stdout } = await execa(astroBin, ['build', '--root', appPath], {
     cwd: appPath,
+    env: {
+      PUBLIC_CONFIG_PATH: configPath,
+    },
   })
   logger.log(stdout)
 }
 
-export async function serveStudio() {
+export async function serveStudio({ configPath }: BuildOpts) {
   const result = execa(astroBin, ['dev', '--root', appPath], {
     stdio: 'inherit',
     cwd: appPath,
+    env: {
+      PUBLIC_CONFIG_PATH: configPath,
+    },
   })
   result.stdout?.pipe(process.stdout)
   result.stderr?.pipe(process.stderr)

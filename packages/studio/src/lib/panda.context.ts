@@ -1,11 +1,9 @@
 import { flatten } from '@pandacss/shared'
 import { TokenDictionary } from '@pandacss/token-dictionary'
-import type { TokenDataTypes, UserConfig } from '@pandacss/types'
+import type { TokenDataTypes } from '@pandacss/types'
+import { config } from 'virtual:panda'
 
-// @ts-ignore
-import { config as _config } from 'virtual:panda'
-
-const config = _config as UserConfig
+// console.log('_config', config)
 
 const { theme } = config
 
