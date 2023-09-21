@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { mergeConfigs } from '../src/merge-config'
+import { getResolvedConfig } from '../src/get-resolved-config'
 import type { Config } from '@pandacss/types'
 
 const defineConfig = <T extends Config>(config: T) => config
@@ -136,6 +137,74 @@ describe('mergeConfigs / theme', () => {
             "colors": {
               "blue": {
                 "value": "blue",
+              },
+              "orange": {
+                "value": "orange",
+              },
+              "pink": {
+                "value": "pink",
+              },
+            },
+          },
+        },
+      }
+    `)
+  })
+
+  test('should getResolvedConfig, merge and override', async () => {
+    const defaultConfig = defineConfig({
+      theme: {
+        tokens: {
+          colors: {
+            'default-main': { value: 'override' },
+          },
+        },
+        extend: {
+          tokens: {
+            colors: {
+              orange: { value: 'orange' },
+              gray: { value: 'from-default-config' },
+            },
+          },
+        },
+      },
+    })
+
+    const userConfig = defineConfig({
+      theme: {
+        tokens: {
+          colors: {
+            pink: { value: 'pink' },
+          },
+        },
+        extend: {
+          tokens: {
+            colors: {
+              blue: { value: 'blue' },
+              gray: { value: 'gray' },
+            },
+          },
+        },
+      },
+    })
+
+    const result = await getResolvedConfig(
+      {
+        presets: [defaultConfig, userConfig],
+      },
+      '',
+    )
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "theme": {
+          "tokens": {
+            "colors": {
+              "blue": {
+                "value": "blue",
+              },
+              "gray": {
+                "value": "gray",
               },
               "orange": {
                 "value": "orange",

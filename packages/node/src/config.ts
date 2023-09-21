@@ -5,7 +5,7 @@ import { lookItUpSync } from 'look-it-up'
 import { parse } from 'tsconfck'
 import { createContext } from './create-context'
 
-const configs = ['.ts', '.js', '.mjs', '.cjs']
+const configs = ['.ts', '.js', '.mts', '.mjs', '.cts', '.cjs']
 
 export function findConfig() {
   for (const config of configs) {

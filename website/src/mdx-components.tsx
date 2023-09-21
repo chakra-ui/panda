@@ -56,5 +56,5 @@ export const getComponents = (props: Props): Components => {
     FrameworkCards: FrameworkCards,
     TokenDocs: TokenDocs,
     ...components
-  }
+  } as Components
 }

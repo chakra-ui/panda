@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/config",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "Find and load panda config",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -46,7 +46,7 @@
     "escalade": "3.1.1",
     "jiti": "^1.19.1",
     "merge-anything": "^5.1.7",
-    "typescript": "^5.1.6"
+    "typescript": "^5.2.2"
   },
   "devDependencies": {
     "pkg-types": "1.0.3"

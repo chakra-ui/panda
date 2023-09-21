@@ -1,13 +1,14 @@
 @layer utilities {
+
   .d_flex {
-    display: flex;
-  }
+    display: flex
+    }
 
   .flex_column {
-    flex-direction: column;
-  }
+    flex-direction: column
+    }
 
   .gap_12 {
-    gap: var(--spacing-12);
-  }
+    gap: var(--spacing-12)
+    }
 }

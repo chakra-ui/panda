@@ -16,10 +16,10 @@ export async function getResolvedConfig(config: ExtendableConfig, cwd: string) {
     const preset = await presets.shift()!
     if (typeof preset === 'string') {
       const presetModule = await bundle(preset, cwd)
-      configs.push(await presetModule.config)
+      configs.unshift(await presetModule.config)
       presets.unshift(...((await presetModule.config.presets) ?? []))
     } else {
-      configs.push(preset)
+      configs.unshift(preset)
       presets.unshift(...(preset.presets ?? []))
     }
   }

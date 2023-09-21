@@ -1,6 +1,6 @@
 import { defineConfig } from 'astro/config'
 import react from '@astrojs/react'
-import virtualPanda from './virtual-panda.mjs'
+import virtualPanda from './virtual-panda'
 
 // https://astro.build/config
 export default defineConfig({

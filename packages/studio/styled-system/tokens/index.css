@@ -420,18 +420,18 @@
   --breakpoints-xl: 1280px;
   --breakpoints-2xl: 1536px;
   --shadows-inset: inset 0 0 0 1px rgba(0,0,0,0.1);
-  --colors-text: #000;
-  --colors-bg: #fff;
-  --colors-card: #e5e5e5;
-  --colors-border: #d4d4d4
+  --colors-text: var(--colors-black);
+  --colors-bg: var(--colors-white);
+  --colors-card: var(--colors-neutral-200);
+  --colors-border: var(--colors-neutral-300)
 }
 
 .dark {
   --shadows-inset: inset 0 0 0 1px rgba(255,255,255,0.2);
-  --colors-text: #e5e5e5;
-  --colors-bg: #171717;
-  --colors-card: #262626;
-  --colors-border: #404040
+  --colors-text: var(--colors-neutral-200);
+  --colors-bg: var(--colors-neutral-900);
+  --colors-card: var(--colors-neutral-800);
+  --colors-border: var(--colors-neutral-700)
 }
   }
   

@@ -119,7 +119,6 @@ export const SectionCssInJS = () => {
           </panda.h2>
 
           <panda.div width="full" maxW="4xl" mx="auto">
-            {/* @ts-expect-error Server Component */}
             <Code lang="tsx" extensions={[tabs]} subProps={codeSnippets} />
           </panda.div>
 

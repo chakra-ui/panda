@@ -1,21 +1,22 @@
 @layer utilities {
+
   .w_auto {
-    width: auto;
-  }
+    width: auto
+    }
 
   .min-w_80px {
-    min-width: 80px;
-  }
+    min-width: 80px
+    }
 
   .h_40px {
-    height: 40px;
-  }
+    height: 40px
+    }
 
   .mb_2 {
-    margin-bottom: var(--spacing-2);
-  }
+    margin-bottom: var(--spacing-2)
+    }
 
   .opacity_0\.7 {
-    opacity: 0.7;
-  }
+    opacity: 0.7
+    }
 }
