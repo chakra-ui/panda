@@ -259,6 +259,32 @@ export const EXAMPLES = [
     };
     
     `,
+
+    config: getConfig(`theme: { extend: {} },`),
+  },
+
+  {
+    id: 'jsx',
+    label: 'JSX Style Props',
+    code: outdent`import { styled, Center } from 'styled-system/jsx';
+
+    export const App = () => {
+      return (
+        <Center h="full">
+          <styled.button
+            rounded="md"
+            fontWeight="semibold"
+            h="10"
+            px="4"
+            bg={{ base: 'yellow.500', _dark: 'yellow.300' }}
+            color={{ base: 'white', _dark: 'gray.800' }}
+          >
+            Button
+          </styled.button>
+        </Center>
+      );
+    };
+    `,
     config: getConfig(`theme: { extend: {} },`),
   },
 ] as const
