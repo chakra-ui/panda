@@ -3,11 +3,29 @@ import { css, cx, cva } from '../css/index.mjs';
 import { splitProps, normalizeHTMLProps } from '../helpers.mjs';
 import { isCssProperty } from './is-valid-prop.mjs';
 
-function styledFn(Dynamic, configOrCva = {}) {
+function styledFn(Dynamic, configOrCva = {}, options = {}) {
   const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
+
+  const defaultShouldForwardProp = (prop) => !cvaFn.variantKeys.includes(prop) && !isCssProperty(prop)
+  const { dataAttr, shouldForwardProp = defaultShouldForwardProp } = options
+  const initialProps = Object.assign(
+    dataAttr && configOrCva.recipeName ? { 'data-recipe': configOrCva.recipeName } : {},
+    options.defaultProps,
+  )
 
   const PandaComponent = /* @__PURE__ */ forwardRef(function PandaComponent(props, ref) {
     const { as: Element = Dynamic, ...restProps } = props
+
+    const forwardedProps = useMemo(() => {
+      const props = {}
+      for (const key in restProps) {
+        if (shouldForwardProp(key, isCssProperty)) {
+          props[key] = restProps[key]
+        }
+      }
+
+      return props
+    }, [restProps, shouldForwardProp])
 
     const [variantProps, styleProps, htmlProps, elementProps] = useMemo(() => {
   return splitProps(restProps, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
@@ -30,6 +48,8 @@ function cvaClass() {
 
     return createElement(Element, {
       ref,
+      ...initialProps,
+      ...forwardedProps,
       ...elementProps,
       ...normalizeHTMLProps(htmlProps),
       className: classes(),

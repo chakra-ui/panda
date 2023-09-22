@@ -12,11 +12,29 @@ export function generateReactJsxFactory(ctx: Context) {
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.jsx.styleProps === 'all' ? ctx.file.import('isCssProperty', './is-valid-prop') : ''}
 
-    function styledFn(Dynamic, configOrCva = {}) {
+    function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
+
+      const defaultShouldForwardProp = (prop) => !cvaFn.variantKeys.includes(prop) && !isCssProperty(prop)
+      const { dataAttr, shouldForwardProp = defaultShouldForwardProp } = options
+      const initialProps = Object.assign(
+        dataAttr && configOrCva.recipeName ? { 'data-recipe': configOrCva.recipeName } : {},
+        options.defaultProps,
+      )
 
       const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
         const { as: Element = Dynamic, ...restProps } = props
+
+        const forwardedProps = useMemo(() => {
+          const props = {}
+          for (const key in restProps) {
+            if (shouldForwardProp(key, isCssProperty)) {
+              props[key] = restProps[key]
+            }
+          }
+
+          return props
+        }, [restProps, shouldForwardProp])
 
         ${match(ctx.jsx.styleProps)
           .with('all', () => {
@@ -76,6 +94,8 @@ export function generateReactJsxFactory(ctx: Context) {
 
         return createElement(Element, {
           ref,
+          ...initialProps,
+          ...forwardedProps,
           ...elementProps,
           ...normalizeHTMLProps(htmlProps),
           className: classes(),

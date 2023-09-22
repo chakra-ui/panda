@@ -12,11 +12,25 @@ export function generateSolidJsxFactory(ctx: Context) {
     ${ctx.file.import('normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('allCssProperties', './is-valid-prop')}
 
-    function styledFn(element, configOrCva = {}) {
+    function styledFn(element, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
+
+      const defaultShouldForwardProp = (prop) => !cvaFn.variantKeys.includes(prop) && !isCssProperty(prop)
+      const { dataAttr, shouldForwardProp = defaultShouldForwardProp } = options
+      const initialProps = Object.assign(
+        dataAttr && configOrCva.recipeName ? { 'data-recipe': configOrCva.recipeName } : {},
+        options.defaultProps,
+      )
 
       return function ${componentName}(props) {
         const mergedProps = mergeProps({ as: element }, props)
+
+        const forwardedProps = {}
+        for (const key in restProps) {
+          if (shouldForwardProp(key, isCssProperty)) {
+            forwardedProps[key] = restProps[key]
+          }
+        }
 
         const [localProps, variantProps, styleProps, htmlProps, elementProps] = splitProps(
           mergedProps,
@@ -43,8 +57,10 @@ export function generateSolidJsxFactory(ctx: Context) {
         return createComponent(
           Dynamic,
           mergeProps(
+            initialProps,
+            forwardedProps,
             elementProps,
-            normalizeHTMLProps(htmlProps),
+            normalizeHTMLProps(htmlProps)
             {
               get component() {
                 return localProps.as

@@ -11,15 +11,33 @@ export function generateVueJsxFactory(ctx: Context) {
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('isCssProperty', './is-valid-prop')}
 
-    function styledFn(Dynamic, configOrCva = {}) {
+    function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
       const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
+
+      const defaultShouldForwardProp = (prop) => !cvaFn.variantKeys.includes(prop) && !isCssProperty(prop)
+      const { dataAttr, shouldForwardProp = defaultShouldForwardProp } = options
+      const initialProps = Object.assign(
+        dataAttr && configOrCva.recipeName ? { 'data-recipe': configOrCva.recipeName } : {},
+        options.defaultProps,
+      )
 
       return defineComponent({
         name: \`${factoryName}.\${name}\`,
         inheritAttrs: false,
         props: { as: { type: [String, Object], default: Dynamic } },
         setup(props, { slots, attrs }) {
+          const forwardedProps = computed(() => {
+            const props = {}
+            for (const key in attrs) {
+              if (shouldForwardProp(key, isCssProperty)) {
+                props[key] = attrs[key]
+              }
+            }
+
+            return props
+          })
+
           const splittedProps = computed(() => {
             return splitProps(attrs, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
           })
@@ -46,6 +64,8 @@ export function generateVueJsxFactory(ctx: Context) {
             return h(
               props.as,
               {
+                ...initialProps,
+                ...forwardedProps.value,
                 ...elementProps,
                 ...normalizeHTMLProps(htmlProps),
                 class: classes.value,

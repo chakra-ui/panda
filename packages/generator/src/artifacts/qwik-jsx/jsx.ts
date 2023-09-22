@@ -11,11 +11,25 @@ export function generateQwikJsxFactory(ctx: Context) {
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('isCssProperty', './is-valid-prop')}
 
-    function styledFn(Dynamic, configOrCva = {}) {
+    function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
+
+      const defaultShouldForwardProp = (prop) => !cvaFn.variantKeys.includes(prop) && !isCssProperty(prop)
+      const { dataAttr, shouldForwardProp = defaultShouldForwardProp } = options
+      const initialProps = Object.assign(
+        dataAttr && configOrCva.recipeName ? { 'data-recipe': configOrCva.recipeName } : {},
+        options.defaultProps,
+      )
 
       const ${componentName} = function ${componentName}(props) {
         const { as: Element = Dynamic, className, ...restProps } = props
+
+        const forwardedProps = {}
+        for (const key in restProps) {
+          if (shouldForwardProp(key, isCssProperty)) {
+            forwardedProps[key] = restProps[key]
+          }
+        }
 
         const [variantProps, styleProps, htmlProps, elementProps] =
             splitProps(restProps, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
@@ -35,6 +49,9 @@ export function generateQwikJsxFactory(ctx: Context) {
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
 
         return h(Element, {
+          ...initialProps,
+          ...forwardedProps,
+          ...elementProps,
           ...elementProps,
           ...normalizeHTMLProps(htmlProps),
           class: classes(),

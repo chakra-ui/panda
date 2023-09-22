@@ -28,13 +28,21 @@ export interface ${componentName}<T extends ElementType, P extends Dict = {}> ex
 
 interface RecipeFn { __type: any }
 
+interface FactoryOptions<TProps extends Dict> {
+  dataAttr?: boolean
+  defaultProps?: TProps
+  shouldForwardProp?(prop: string, isCssProperty: (prop: string) => boolean): boolean
+}
+
+export type JsxRecipeProps<T extends ElementType, P extends RecipeFn> = JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P['__type']>>;
+
 interface JsxFactory {
   ${styleProps === 'none' ? '' : `<T extends ElementType>(component: T): ${componentName}<T, {}>`}
-  <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>): ${componentName}<
+  <T extends ElementType, P extends RecipeVariantRecord>(component: T, recipe: RecipeDefinition<P>, options?: FactoryOptions<JsxRecipeProps<T, P>>): ${componentName}<
     T,
     RecipeSelection<P>
   >
-  <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P): ${componentName}<T, P['__type']>
+  <T extends ElementType, P extends RecipeFn>(component: T, recipeFn: P, options?: FactoryOptions<JsxRecipeProps<T, P>>): ${componentName}<T, P['__type']>
 }
 
 type JsxElements = { [K in keyof QwikIntrinsicElements]: ${componentName}<K, {}> }
