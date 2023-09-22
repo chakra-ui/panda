@@ -1,6 +1,6 @@
 import { HorizontalSplit, PreviewLayout, ResponsiveLayout, VerticalSplit } from '@/src/components/icons'
 import { css, cx } from '@/styled-system/css'
-import { Segment, SegmentControl, SegmentGroup, SegmentIndicator, SegmentInput, SegmentLabel } from '@ark-ui/react'
+import { Segment, SegmentControl, SegmentGroup, SegmentLabel, SegmentGroupIndicator } from '@ark-ui/react'
 import { segmentGroup } from '@/styled-system/recipes'
 
 export type Layout = 'horizontal' | 'vertical' | 'preview' | 'responsive'
@@ -31,7 +31,7 @@ export const LayoutControl = (props: LayoutControlProps) => {
       value={value}
       onChange={(e) => onChange(e.value as any)}
     >
-      <SegmentIndicator />
+      <SegmentGroupIndicator />
       {options.map((option, id) => (
         <Segment
           className={css({
@@ -43,7 +43,6 @@ export const LayoutControl = (props: LayoutControlProps) => {
           title={option.label}
         >
           <SegmentLabel>{option.icon}</SegmentLabel>
-          <SegmentInput />
           <SegmentControl />
         </Segment>
       ))}

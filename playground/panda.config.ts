@@ -4,6 +4,14 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   preflight: true,
   jsxFramework: 'react',
+  conditions: {
+    extend: {
+      closed: '&:is([data-state=closed])',
+      open: '&:is([open], [data-state=open])',
+      hidden: '&:is([hidden])',
+      hover: '&:is(:hover, [data-hover]):not(:disabled)',
+    },
+  },
   include: ['./src/**/*.{tsx,jsx,ts}', './pages/**/*.{jsx,tsx,ts}'],
   exclude: [],
   outdir: 'styled-system',

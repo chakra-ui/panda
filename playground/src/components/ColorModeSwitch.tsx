@@ -1,5 +1,6 @@
 import { Moon, Sun } from '@/src/components/icons'
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
+import { button } from '@/styled-system/recipes'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 
@@ -27,15 +28,16 @@ export const ColorModeSwitch = () => {
     <button
       title={`Switch to ${isDark ? 'Light' : 'Dark'} mode`}
       onClick={toggleTheme}
-      className={css({
-        borderRadius: 'sm',
-        cursor: 'pointer',
-        p: '2',
-        bg: { base: 'gray.100', _dark: '#3A3A3AFF' },
-        '& svg': {
-          width: '22px',
-        },
-      })}
+      className={cx(
+        button(),
+        css({
+          borderRadius: 'sm',
+          p: '2',
+          '& svg': {
+            width: '22px',
+          },
+        }),
+      )}
     >
       <IconToUse />
     </button>
