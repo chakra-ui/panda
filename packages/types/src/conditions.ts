@@ -20,6 +20,10 @@ export interface RawCondition extends ConditionDetails {
 export interface Conditions {
   [condition: string]: string
 }
+export interface ExtendableConditions {
+  [condition: string]: string | Conditions | undefined
+  extend?: Conditions | undefined
+}
 
 export type Condition = string
 

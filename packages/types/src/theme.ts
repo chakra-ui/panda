@@ -38,3 +38,7 @@ export interface Theme {
    */
   slotRecipes?: Record<string, SlotRecipeConfig>
 }
+
+export interface ExtendableTheme extends Theme {
+  extend?: Theme | undefined
+}

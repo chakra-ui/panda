@@ -43,6 +43,10 @@ export type SystemStyleObject = Nested<SystemProperties & CssVarProperties>
 export interface GlobalStyleObject {
   [selector: string]: SystemStyleObject
 }
+export interface ExtendableGlobalStyleObject {
+  [selector: string]: SystemStyleObject | undefined
+  extend?: GlobalStyleObject | undefined
+}
 
 export type CompositionStyleObject<Property extends string> = Nested<{
   [K in Property]?: K extends keyof SystemStyleObject ? SystemStyleObject[K] : unknown

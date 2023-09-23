@@ -54,3 +54,7 @@ export interface PropertyConfig {
 export type UtilityConfig = {
   [property in LiteralUnion<CssProperty>]?: PropertyConfig
 }
+
+export type ExtendableUtilityConfig = UtilityConfig & {
+  extend?: UtilityConfig
+}

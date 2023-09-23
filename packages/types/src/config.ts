@@ -1,12 +1,12 @@
 import type { TSConfig } from 'pkg-types'
-import type { Conditions } from './conditions'
+import type { Conditions, ExtendableConditions } from './conditions'
 import type { PandaHooks } from './hooks'
 import type { PatternConfig } from './pattern'
-import type { Extendable, RequiredBy, UnwrapExtend } from './shared'
+import type { RequiredBy } from './shared'
 import type { StaticCssOptions } from './static-css'
-import type { GlobalStyleObject } from './system-types'
-import type { Theme } from './theme'
-import type { UtilityConfig } from './utility'
+import type { ExtendableGlobalStyleObject, GlobalStyleObject } from './system-types'
+import type { ExtendableTheme, Theme } from './theme'
+import type { ExtendableUtilityConfig, UtilityConfig } from './utility'
 
 export type { TSConfig }
 
@@ -38,6 +38,10 @@ interface StudioOptions {
   }
 }
 
+interface Patterns {
+  [pattern: string]: PatternConfig
+}
+
 interface PresetCore {
   /**
    * The css selectors or media queries shortcuts.
@@ -62,8 +66,33 @@ interface PresetCore {
   patterns: Record<string, PatternConfig>
 }
 
-type ExtendableOptions = {
-  [K in keyof PresetCore]?: Extendable<PresetCore[K]>
+interface ExtendablePatterns {
+  [pattern: string]: PatternConfig | undefined
+  extend?: Patterns | undefined
+}
+
+export interface ExtendableOptions {
+  /**
+   * The css selectors or media queries shortcuts.
+   * @example `{ hover: "&:hover" }`
+   */
+  conditions?: ExtendableConditions
+  /**
+   * The global styles for your project.
+   */
+  globalCss?: ExtendableGlobalStyleObject
+  /**
+   * The theme configuration for your project.
+   */
+  theme?: ExtendableTheme
+  /**
+   * The css utility definitions.
+   */
+  utilities?: ExtendableUtilityConfig
+  /**
+   * Common styling or layout patterns for your project.
+   */
+  patterns?: ExtendablePatterns
 }
 
 interface FileSystemOptions {
@@ -272,7 +301,9 @@ export interface Config
 
 export interface Preset extends ExtendableOptions, PresetOptions {}
 
-export interface UserConfig extends UnwrapExtend<RequiredBy<Config, 'outdir' | 'cwd' | 'include'>> {}
+export interface UserConfig
+  extends Partial<PresetCore>,
+    RequiredBy<Omit<Config, keyof PresetCore>, 'outdir' | 'cwd' | 'include'> {}
 
 export interface PathMapping {
   pattern: RegExp
