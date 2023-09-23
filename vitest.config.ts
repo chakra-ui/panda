@@ -9,6 +9,7 @@ export default defineConfig({
   test: {
     setupFiles: ['tests-setup.ts'],
     hideSkippedTests: true,
+    environment: 'happy-dom',
   },
   resolve: {
     alias: [

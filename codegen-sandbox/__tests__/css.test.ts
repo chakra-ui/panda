@@ -68,6 +68,18 @@ describe('css', () => {
     expect(className).toMatchInlineSnapshot('"bg_cyan.100 sm:bg_cyan.200 xl:bg_cyan.300"')
   })
 
+  test('using inline token helper - in value', () => {
+    const className = css({ border: '1px solid token(colors.blue.400)' })
+
+    expect(className).toMatchInlineSnapshot('"border_1px_solid_token(colors.blue.400)"')
+  })
+
+  test('using inline token helper - in condition', () => {
+    const className = css({ '@media screen and (min-width: token(sizes.4xl))': { bg: 'blue.500' } })
+
+    expect(className).toMatchInlineSnapshot('"[@media_screen_and_(min-width:_token(sizes.4xl))]:bg_blue.500"')
+  })
+
   test('nested condition prop with array syntax', () => {
     const className = css({ _hover: { _dark: { bg: ['pink.100', 'pink.200'] } } })
 
