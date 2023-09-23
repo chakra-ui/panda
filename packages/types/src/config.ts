@@ -14,7 +14,7 @@ export type CascadeLayer = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
 
 export type CascadeLayers = Record<CascadeLayer, string>
 
-type StudioOptions = {
+interface StudioOptions {
   /**
    * Used to customize the design system studio
    * @default { title: 'Panda', logo: '🐼' }
@@ -38,7 +38,7 @@ type StudioOptions = {
   }
 }
 
-type PresetCore = {
+interface PresetCore {
   /**
    * The css selectors or media queries shortcuts.
    * @example `{ hover: "&:hover" }`
@@ -66,7 +66,7 @@ type ExtendableOptions = {
   [K in keyof PresetCore]?: Extendable<PresetCore[K]>
 }
 
-type FileSystemOptions = {
+interface FileSystemOptions {
   /**
    * Whether to clean the output directory before generating the css.
    * @default false
@@ -111,7 +111,7 @@ type FileSystemOptions = {
 
 type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik'
 
-type JsxOptions = {
+interface JsxOptions {
   /**
    * The framework to use for generating supercharged elements.
    */
@@ -152,7 +152,7 @@ type JsxOptions = {
   jsxStyleProps?: 'all' | 'minimal' | 'none'
 }
 
-type CssgenOptions = {
+interface CssgenOptions {
   /**
    * Whether to include css reset styles in the generated css.
    * @default true
@@ -195,7 +195,7 @@ type CssgenOptions = {
   syntax?: 'template-literal' | 'object-literal'
 }
 
-type CodegenOptions = {
+interface CodegenOptions {
   /**
    * Whether to emit the artifacts to `node_modules` as a package.
    * @default false
@@ -244,7 +244,7 @@ type CodegenOptions = {
   forceConsistentTypeExtension?: boolean
 }
 
-type PresetOptions = {
+interface PresetOptions {
   /**
    * Used to create reusable config presets for your project or team.
    */
@@ -256,29 +256,30 @@ type PresetOptions = {
   eject?: boolean
 }
 
-type HooksOptions = {
+interface HooksOptions {
   hooks?: Partial<PandaHooks>
 }
 
-export type Config = StudioOptions &
-  ExtendableOptions &
-  CssgenOptions &
-  CodegenOptions &
-  FileSystemOptions &
-  JsxOptions &
-  PresetOptions &
-  HooksOptions
+export interface Config
+  extends StudioOptions,
+    ExtendableOptions,
+    CssgenOptions,
+    CodegenOptions,
+    FileSystemOptions,
+    JsxOptions,
+    PresetOptions,
+    HooksOptions {}
 
-export type Preset = ExtendableOptions & PresetOptions
+export interface Preset extends ExtendableOptions, PresetOptions {}
 
-export type UserConfig = UnwrapExtend<RequiredBy<Config, 'outdir' | 'cwd' | 'include'>>
+export interface UserConfig extends UnwrapExtend<RequiredBy<Config, 'outdir' | 'cwd' | 'include'>> {}
 
-export type PathMapping = {
+export interface PathMapping {
   pattern: RegExp
   paths: string[]
 }
 
-export type ConfigTsOptions = {
+export interface ConfigTsOptions {
   baseUrl?: string | undefined
   pathMappings: PathMapping[]
 }

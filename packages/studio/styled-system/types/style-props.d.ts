@@ -7,7 +7,7 @@ export type CssVarProperties = {
   [key in `--${string}`]?: ConditionalValue<Token | (string & {}) | (number & {})>
 }
 
-export type SystemProperties = {
+export interface SystemProperties {
   	WebkitAppearance?: PropertyValue<'WebkitAppearance'>
 	WebkitBorderBefore?: PropertyValue<'WebkitBorderBefore'>
 	WebkitBorderBeforeColor?: PropertyValue<'WebkitBorderBeforeColor'>

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import type { AnySelector, Selectors } from './selectors';
 
-export type Conditions = {
+export interface Conditions {
 	/** `&:is(:hover, [data-hover])` */"_hover": string
 	/** `&:is(:focus, [data-focus])` */"_focus": string
 	/** `&:focus-within` */"_focusWithin": string

@@ -3,7 +3,7 @@ import type { RecipeConfig, SlotRecipeConfig } from './recipe'
 import type { CssKeyframes } from './system-types'
 import type { SemanticTokens, Tokens } from './tokens'
 
-export type Theme = {
+export interface Theme {
   /**
    * The breakpoints for your project.
    */

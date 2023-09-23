@@ -5,12 +5,12 @@ import type { PropertyValue } from '../types/prop-type';
 import type { DistributiveOmit } from '../types/system-types';
 import type { Tokens } from '../tokens/index';
 
-export type VisuallyHiddenProperties = {
+export interface VisuallyHiddenProperties {
    
 }
 
 
-type VisuallyHiddenStyles = VisuallyHiddenProperties & DistributiveOmit<SystemStyleObject, keyof VisuallyHiddenProperties >
+interface VisuallyHiddenStyles extends VisuallyHiddenProperties, DistributiveOmit<SystemStyleObject, keyof VisuallyHiddenProperties > {}
 
 interface VisuallyHiddenPatternFn {
   (styles?: VisuallyHiddenStyles): string

@@ -13,7 +13,7 @@ export function generateStyleProps(ctx: Context) {
       [key in \`--\${string}\`]?: ConditionalValue<Token | (string & {}) | (number & {})>
     }
 
-    export type SystemProperties = {
+    export interface SystemProperties {
       ${Array.from(props)
         .map((v) => `\t${v}?: PropertyValue<'${v}'>`)
         .join('\n')}

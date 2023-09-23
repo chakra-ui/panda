@@ -5,12 +5,12 @@ import type { PropertyValue } from '../types/prop-type';
 import type { DistributiveOmit } from '../types/system-types';
 import type { Tokens } from '../tokens/index';
 
-export type AspectRatioProperties = {
+export interface AspectRatioProperties {
    ratio?: ConditionalValue<number>
 }
 
 
-type AspectRatioStyles = AspectRatioProperties & DistributiveOmit<SystemStyleObject, keyof AspectRatioProperties | 'aspectRatio'>
+interface AspectRatioStyles extends AspectRatioProperties, DistributiveOmit<SystemStyleObject, keyof AspectRatioProperties | 'aspectRatio'> {}
 
 interface AspectRatioPatternFn {
   (styles?: AspectRatioStyles): string

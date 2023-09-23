@@ -2,7 +2,9 @@ type Primitive = string | number | boolean | null | undefined
 
 export type LiteralUnion<T, K extends Primitive = string> = T | (K & Record<never, never>)
 
-export type Recursive<T> = { [key: string]: T | Recursive<T> }
+export interface Recursive<T> {
+  [key: string]: T | Recursive<T>
+}
 
 export type Dict<T = any> = Record<string, T>
 

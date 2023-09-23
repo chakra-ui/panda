@@ -43,7 +43,7 @@ export function generateConditions(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('AnySelector, Selectors', './selectors')}
 
-    export type Conditions = {
+    export interface Conditions {
     ${keys
       .map(
         (key) =>

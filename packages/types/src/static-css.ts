@@ -1,4 +1,4 @@
-type CssRule = {
+interface CssRule {
   /**
    * The css properties to generate utilities for.
    * @example ['margin', 'padding']
@@ -24,7 +24,7 @@ type RecipeRule =
       responsive?: boolean
     } & { [variant: string]: boolean | string[] })
 
-export type StaticCssOptions = {
+export interface StaticCssOptions {
   /**
    * The css utility classes to generate.
    */

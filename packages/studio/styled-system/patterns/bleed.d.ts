@@ -5,13 +5,13 @@ import type { PropertyValue } from '../types/prop-type';
 import type { DistributiveOmit } from '../types/system-types';
 import type { Tokens } from '../tokens/index';
 
-export type BleedProperties = {
+export interface BleedProperties {
    inline?: PropertyValue<'marginInline'>
 	block?: PropertyValue<'marginBlock'>
 }
 
 
-type BleedStyles = BleedProperties & DistributiveOmit<SystemStyleObject, keyof BleedProperties >
+interface BleedStyles extends BleedProperties, DistributiveOmit<SystemStyleObject, keyof BleedProperties > {}
 
 interface BleedPatternFn {
   (styles?: BleedStyles): string

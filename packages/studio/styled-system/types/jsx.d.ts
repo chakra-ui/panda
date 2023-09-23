@@ -9,12 +9,12 @@ type ComponentProps<T extends ElementType> = DistributiveOmit<ComponentPropsWith
   ref?: Ref<ElementRef<T>>
 }
 
-export type PandaComponent<T extends ElementType, P extends Dict = {}> = {
+export interface PandaComponent<T extends ElementType, P extends Dict = {}> {
   (props: JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>): JSX.Element
   displayName?: string
 }
 
-type RecipeFn = { __type: any }
+interface RecipeFn { __type: any }
 
 interface JsxFactory {
   <T extends ElementType>(component: T): PandaComponent<T, {}>

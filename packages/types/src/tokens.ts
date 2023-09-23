@@ -2,7 +2,7 @@ import type { Recursive } from './shared'
 
 export type TokenStatus = 'deprecated' | 'experimental' | 'new'
 
-export type Token<Value = any> = {
+export interface Token<Value = any> {
   value: Value
   description?: string
   type?: string
@@ -18,7 +18,8 @@ type RecursiveToken<C extends string, V> =
       [K in C]: RecursiveToken<C, V>
     }
 
-export type SemanticToken<Value = string, Condition extends string = string> = Token<RecursiveToken<Condition, Value>>
+export interface SemanticToken<Value = string, Condition extends string = string>
+  extends Token<RecursiveToken<Condition, Value>> {}
 
 /* -----------------------------------------------------------------------------
  * Token data types
@@ -36,13 +37,13 @@ type BorderStyle =
   | 'ridge'
   | 'solid'
 
-type Border = {
+interface Border {
   color: string
   width: string | number
   style: BorderStyle
 }
 
-type Shadow = {
+interface Shadow {
   offsetX: number
   offsetY: number
   blur: number
@@ -51,7 +52,7 @@ type Shadow = {
   inset?: boolean
 }
 
-type Gradient = {
+interface Gradient {
   type: 'linear' | 'radial'
   placement: string | number
   stops:
@@ -62,9 +63,12 @@ type Gradient = {
     | Array<string>
 }
 
-type Asset = { type: 'url' | 'svg'; value: string }
+interface Asset {
+  type: 'url' | 'svg'
+  value: string
+}
 
-export type TokenDataTypes = {
+export interface TokenDataTypes {
   zIndex: string | number
   opacity: string | number
   colors: string
