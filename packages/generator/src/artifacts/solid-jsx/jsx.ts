@@ -23,12 +23,13 @@ export function generateSolidJsxFactory(ctx: Context) {
       )
 
       return function ${componentName}(props) {
-        const mergedProps = mergeProps({ as: element }, props)
+        const mergedProps = mergeProps({ as: element }, initialProps, props)
 
         const forwardedProps = {}
-        for (const key in restProps) {
-          if (shouldForwardProp(key, isCssProperty)) {
-            forwardedProps[key] = restProps[key]
+        const combinedProps = Object.assign({}, initialProps, restProps)
+          for (const key in combinedProps) {
+          if (shouldForwardProp(key, isCssProperty, cvaFn.variantKeys)) {
+            forwardedProps[key] = combinedProps[key]
           }
         }
 
@@ -57,7 +58,6 @@ export function generateSolidJsxFactory(ctx: Context) {
         return createComponent(
           Dynamic,
           mergeProps(
-            initialProps,
             forwardedProps,
             elementProps,
             normalizeHTMLProps(htmlProps)

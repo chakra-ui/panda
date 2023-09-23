@@ -16,20 +16,21 @@ function styledFn(Dynamic, configOrCva = {}, options = {}) {
   const PandaComponent = /* @__PURE__ */ forwardRef(function PandaComponent(props, ref) {
     const { as: Element = Dynamic, ...restProps } = props
 
+    const combinedProps = useMemo(() => Object.assign({}, initialProps, restProps), [restProps])
     const forwardedProps = useMemo(() => {
-      const props = {}
-      for (const key in restProps) {
-        if (shouldForwardProp(key, isCssProperty)) {
-          props[key] = restProps[key]
+      const forwarded = {}
+      for (const key in combinedProps) {
+        if (shouldForwardProp(key, isCssProperty, cvaFn.variantKeys)) {
+          forwarded[key] = combinedProps[key]
         }
       }
 
-      return props
-    }, [restProps, shouldForwardProp])
+      return forwarded
+    }, [combinedProps, shouldForwardProp])
 
     const [variantProps, styleProps, htmlProps, elementProps] = useMemo(() => {
-  return splitProps(restProps, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
-}, [restProps])
+  return splitProps(combinedProps, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
+}, [combinedProps])
 
 function recipeClass() {
   const { css: cssStyles, ...propStyles } = styleProps
@@ -48,7 +49,6 @@ function cvaClass() {
 
     return createElement(Element, {
       ref,
-      ...initialProps,
       ...forwardedProps,
       ...elementProps,
       ...normalizeHTMLProps(htmlProps),

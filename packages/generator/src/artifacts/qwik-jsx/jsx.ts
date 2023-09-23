@@ -25,14 +25,15 @@ export function generateQwikJsxFactory(ctx: Context) {
         const { as: Element = Dynamic, className, ...restProps } = props
 
         const forwardedProps = {}
-        for (const key in restProps) {
-          if (shouldForwardProp(key, isCssProperty)) {
-            forwardedProps[key] = restProps[key]
+        const combinedProps = Object.assign({}, initialProps, restProps)
+          for (const key in combinedProps) {
+          if (shouldForwardProp(key, isCssProperty, cvaFn.variantKeys)) {
+            forwardedProps[key] = combinedProps[key]
           }
         }
 
         const [variantProps, styleProps, htmlProps, elementProps] =
-            splitProps(restProps, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
+            splitProps(combinedProps, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
 
         const { css: cssStyles, ...propStyles } = styleProps
 
@@ -49,9 +50,7 @@ export function generateQwikJsxFactory(ctx: Context) {
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
 
         return h(Element, {
-          ...initialProps,
           ...forwardedProps,
-          ...elementProps,
           ...elementProps,
           ...normalizeHTMLProps(htmlProps),
           class: classes(),

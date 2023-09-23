@@ -25,23 +25,24 @@ export function generateReactJsxFactory(ctx: Context) {
       const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
         const { as: Element = Dynamic, ...restProps } = props
 
+        const combinedProps = useMemo(() => Object.assign({}, initialProps, restProps), [restProps])
         const forwardedProps = useMemo(() => {
-          const props = {}
-          for (const key in restProps) {
-            if (shouldForwardProp(key, isCssProperty)) {
-              props[key] = restProps[key]
+          const forwarded = {}
+          for (const key in combinedProps) {
+            if (shouldForwardProp(key, isCssProperty, cvaFn.variantKeys)) {
+              forwarded[key] = combinedProps[key]
             }
           }
 
-          return props
-        }, [restProps, shouldForwardProp])
+          return forwarded
+        }, [combinedProps, shouldForwardProp])
 
         ${match(ctx.jsx.styleProps)
           .with('all', () => {
             return outdent`
           const [variantProps, styleProps, htmlProps, elementProps] = useMemo(() => {
-            return splitProps(restProps, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
-          }, [restProps])
+            return splitProps(combinedProps, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
+          }, [combinedProps])
 
           function recipeClass() {
             const { css: cssStyles, ...propStyles } = styleProps
@@ -58,8 +59,8 @@ export function generateReactJsxFactory(ctx: Context) {
           .with('minimal', () => {
             return outdent`
           const [variantProps, htmlProps, elementProps] = useMemo(() => {
-            return splitProps(restProps, cvaFn.variantKeys, normalizeHTMLProps.keys)
-          }, [restProps])
+            return splitProps(combinedProps, cvaFn.variantKeys, normalizeHTMLProps.keys)
+          }, [combinedProps])
 
           function recipeClass() {
             const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
@@ -74,8 +75,8 @@ export function generateReactJsxFactory(ctx: Context) {
           .with('none', () => {
             return outdent`
           const [variantProps, htmlProps, elementProps] = useMemo(() => {
-            return splitProps(restProps, cvaFn.variantKeys, normalizeHTMLProps.keys)
-          }, [restProps])
+            return splitProps(combinedProps, cvaFn.variantKeys, normalizeHTMLProps.keys)
+          }, [combinedProps])
 
           function recipeClass() {
             const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
@@ -94,7 +95,6 @@ export function generateReactJsxFactory(ctx: Context) {
 
         return createElement(Element, {
           ref,
-          ...initialProps,
           ...forwardedProps,
           ...elementProps,
           ...normalizeHTMLProps(htmlProps),

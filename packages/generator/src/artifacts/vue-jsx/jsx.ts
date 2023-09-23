@@ -28,14 +28,15 @@ export function generateVueJsxFactory(ctx: Context) {
         props: { as: { type: [String, Object], default: Dynamic } },
         setup(props, { slots, attrs }) {
           const forwardedProps = computed(() => {
-            const props = {}
-            for (const key in attrs) {
+            const forwarded = {}
+            const combined = Object.assign({}, initialProps, attrs)
+          for (const key in combined) {
               if (shouldForwardProp(key, isCssProperty)) {
-                props[key] = attrs[key]
+                forwarded[key] = attrs[key]
               }
             }
 
-            return props
+            return forwarded
           })
 
           const splittedProps = computed(() => {

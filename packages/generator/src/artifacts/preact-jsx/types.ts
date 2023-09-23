@@ -28,7 +28,7 @@ interface RecipeFn = { __type: any }
 interface FactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
   defaultProps?: TProps
-  shouldForwardProp?(prop: string, isCssProperty: (prop: string) => boolean): boolean
+  shouldForwardProp?(prop: string, isCssProperty: (prop: string) => boolean, variantKeys: string[]): boolean
 }
 
 export type JsxRecipeProps<T extends ElementType, P extends RecipeFn> = JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P['__type']>>;
