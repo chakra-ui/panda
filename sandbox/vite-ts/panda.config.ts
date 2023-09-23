@@ -26,7 +26,7 @@ export default defineConfig({
       someRecipe,
       button: {
         className: 'button',
-        jsx: ['Button', 'ListedButton', /WithRegex$/],
+        jsx: ['Button', 'ListedButton', /WithRegex$/, 'PrimaryButtonLike'],
         description: 'A button styles',
         base: {
           fontSize: 'lg',
@@ -54,6 +54,10 @@ export default defineConfig({
             secondary: {
               color: 'pink.300',
               backgroundColor: 'green.500',
+            },
+            purple: {
+              color: 'amber.300',
+              backgroundColor: 'purple.500',
             },
           },
           state: {
