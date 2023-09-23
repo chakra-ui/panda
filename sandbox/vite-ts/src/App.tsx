@@ -5,8 +5,19 @@ import { button, someRecipe } from '../styled-system/recipes'
 import { Badge, badge } from './Badge'
 import { AnotherButtonWithRegex, Button, ListedButton } from './Button'
 import { Card } from './Card'
+import { motion, isValidMotionProp } from 'framer-motion'
 
 const SomeRecipe = panda('div', someRecipe)
+
+const StyledMotion = panda(
+  motion.div,
+  {},
+  {
+    /*  Allow motion props and non-style props to be forwarded. */
+    shouldForwardProp: (prop, isCssProperty, variantKeys) =>
+      isValidMotionProp(prop) || (!variantKeys.includes(prop) && !isCssProperty(prop)),
+  },
+)
 
 const PrimaryButtonLike = panda('span', button, {
   dataAttr: true,
@@ -80,6 +91,31 @@ function App() {
           AnotherButtonWithRegex
         </AnotherButtonWithRegex>
         <PrimaryButtonLike>Default props override</PrimaryButtonLike>
+        <StyledMotion
+          animate={{
+            scale: [1, 2, 2, 1, 1],
+            rotate: [0, 0, 270, 270, 0],
+            borderRadius: ['20%', '20%', '50%', '50%', '20%'],
+          }}
+          transition={{
+            // @ts-ignore no problem in operation, although type error appears.
+            duration: 3,
+            ease: 'easeInOut',
+            repeat: Infinity,
+            repeatType: 'loop',
+          }}
+          padding="2"
+          bgGradient="to-l"
+          gradientFrom="#7928CA"
+          gradientTo="#FF0080"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          width="100px"
+          height="100px"
+        >
+          I'm Dizzy!
+        </StyledMotion>
       </section>
 
       <section className={css({ padding: '5', borderWidth: '1px' })}>
