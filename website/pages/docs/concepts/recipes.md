@@ -477,7 +477,7 @@ const button = defineRecipe({
   variants: {
     // ...
   },
-  // Add the jsx hint to track the usage of the recipe in JSX
+  // Add the jsx hint to track the usage of the recipe in JSX, you can use regex to match multiple components
   jsx: ['Button', 'PageButton']
 })
 ```
