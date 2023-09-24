@@ -67,7 +67,7 @@ interface PresetCore {
 }
 
 interface ExtendablePatterns {
-  [pattern: string]: PatternConfig | undefined
+  [pattern: string]: PatternConfig | Patterns | undefined
   extend?: Patterns | undefined
 }
 
