@@ -7,6 +7,7 @@ import type {
   SlotRecipeVariantRecord,
   RecipeConfig,
 } from '@pandacss/types'
+import type { Pretty, DistributivePick, DistributiveOmit } from './utils.types'
 
 export type {
   RecipeCompoundSelection,
@@ -99,26 +100,6 @@ export interface SlotRecipeBuilder<S extends string, T extends SlotRecipeVariant
   // config ? build ? api ?
   config: SlotRecipeBuilderConfig<S, T>
 }
-
-type Pretty<T> = { [K in keyof T]: T[K] } & {}
-
-/*
-  https://dev.to/safareli/pick-omit-and-union-types-in-typescript-4nd9
-  */
-type Pick_<T, K> = Pick<T, Extract<keyof T, K>>
-type Omit_<T, K> = Omit<T, Extract<keyof T, K>>
-
-type DistributivePick<T, K> = T extends unknown
-  ? keyof Pick_<T, K> extends never
-    ? never
-    : { [P in keyof Pick_<T, K>]: Pick_<T, K>[P] }
-  : never
-
-type DistributiveOmit<T, K> = T extends unknown
-  ? keyof Omit_<T, K> extends never
-    ? never
-    : { [P in keyof Omit_<T, K>]: Omit_<T, K>[P] }
-  : never
 
 export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRecord<S>>(
   config: SlotRecipeConfig<S, T>,

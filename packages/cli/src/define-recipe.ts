@@ -6,6 +6,7 @@ import type {
   RecipeSelection,
   RecipeVariantRecord,
 } from '@pandacss/types'
+import type { Pretty, DistributivePick, DistributiveOmit } from './utils.types'
 
 export type {
   RecipeCompoundSelection,
@@ -38,26 +39,6 @@ export interface RecipeBuilder<T extends RecipeVariantRecord> extends RecipeConf
   // config ? build ? api ?
   config: RecipeBuilderConfig<T>
 }
-
-type Pretty<T> = { [K in keyof T]: T[K] } & {}
-
-/*
-  https://dev.to/safareli/pick-omit-and-union-types-in-typescript-4nd9
-  */
-type Pick_<T, K> = Pick<T, Extract<keyof T, K>>
-type Omit_<T, K> = Omit<T, Extract<keyof T, K>>
-
-type DistributivePick<T, K> = T extends unknown
-  ? keyof Pick_<T, K> extends never
-    ? never
-    : { [P in keyof Pick_<T, K>]: Pick_<T, K>[P] }
-  : never
-
-type DistributiveOmit<T, K> = T extends unknown
-  ? keyof Omit_<T, K> extends never
-    ? never
-    : { [P in keyof Omit_<T, K>]: Omit_<T, K>[P] }
-  : never
 
 export function defineRecipe<T extends RecipeVariantRecord>(config: RecipeConfig<T>): RecipeBuilder<T> {
   return Object.assign(

@@ -38,11 +38,11 @@ export interface RecipeRuntimeFn<T extends RecipeVariantRecord> extends RecipeVa
   ): [RecipeSelection<T>, Pretty<DistributiveOmit<Props, keyof T>>]
 }
 
-export type RecipeCompoundSelection<T extends RecipeVariantRecord> = {
-  [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>>
-}
+type OneOrMore<T> = T | Array<T>
 
-export type RecipeCompoundVariant<T extends RecipeVariantRecord> = RecipeCompoundSelection<T> & {
+export type RecipeCompoundSelection<T> = { [K in keyof T]?: OneOrMore<StringToBoolean<keyof T[K]>> }
+
+export type RecipeCompoundVariant<T> = T & {
   css: SystemStyleObject
 }
 
@@ -54,7 +54,7 @@ export interface RecipeDefinition<T extends RecipeVariantRecord> {
   /**
    * The multi-variant styles of the recipe.
    */
-  variants?: T | RecipeVariantRecord
+  variants?: T
   /**
    * The default variants of the recipe.
    */
@@ -62,7 +62,7 @@ export interface RecipeDefinition<T extends RecipeVariantRecord> {
   /**
    * The styles to apply when a combination of variants is selected.
    */
-  compoundVariants?: Array<RecipeCompoundVariant<T>>
+  compoundVariants?: Array<Pretty<RecipeCompoundVariant<RecipeCompoundSelection<T>>>>
 }
 
 export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => RecipeRuntimeFn<T>
