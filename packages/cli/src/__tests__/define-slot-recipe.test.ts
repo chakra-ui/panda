@@ -1895,6 +1895,7 @@ describe('define-recipe', () => {
     const slotRecipe = defineSlotRecipe({
       className: 'card',
       slots: ['root', 'input', 'icon'],
+      base: { root: { border: 'none' }, input: { margin: '2' } },
       variants: {
         variant: {
           subtle: { root: { color: 'blue.100' } },
@@ -1925,6 +1926,15 @@ describe('define-recipe', () => {
     const assigned = slotRecipe.config.slots.assignTo('input', recipe)
     expect(assigned).toMatchInlineSnapshot(`
       {
+        "base": {
+          "input": {
+            "margin": "2",
+            "px": "4",
+          },
+          "root": {
+            "border": "none",
+          },
+        },
         "className": "card",
         "config": {
           "cast": [Function],
@@ -1948,7 +1958,8 @@ describe('define-recipe', () => {
           "size": {
             "lg": {
               "input": {
-                "fontSize": "lg",
+                "fontSize": "xl",
+                "h": "10",
               },
             },
             "md": {},
@@ -1956,7 +1967,9 @@ describe('define-recipe', () => {
           },
           "variant": {
             "outline": {
-              "input": {},
+              "input": {
+                "color": "green.100",
+              },
             },
             "solid": {},
             "subtle": {},

@@ -209,9 +209,10 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
           },
           assignTo: function <TSlot extends S, TRecipe extends RecipeConfig>(slot: TSlot, recipe: TRecipe) {
             const { variants = {} } = config
-            const { variants: recipeVariants = {} } = recipe
+            const base = (config.base ?? {}) as Record<string, {}>
+            const recipeVariants = recipe.variants ?? {}
 
-            const overridenVariants: SlotRecipeVariantRecord<S> = structuredClone(variants)
+            const overridenVariants = structuredClone(variants)
 
             for (const [vName, variantRecord] of Object.entries(variants)) {
               overridenVariants[vName] = {}
@@ -221,8 +222,7 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
 
                 for (const [vSlot, styles] of Object.entries(bySlots)) {
                   if (vSlot === slot) {
-                    // @ts-expect-error it's fine
-                    const recipeStyles = recipeVariants[vName]?.[vKey][vSlot]
+                    const recipeStyles = recipeVariants[vName]?.[vKey]
                     // @ts-expect-error it's fine
                     overridenVariants[vName][vKey][vSlot] = Object.assign({}, styles, recipeStyles)
                   }
@@ -230,7 +230,14 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
               }
             }
 
-            return defineSlotRecipe({ ...config, variants: overridenVariants })
+            const overridenBase = structuredClone(base)
+            for (const [vSlot, styles] of Object.entries(base)) {
+              if (vSlot === slot) {
+                overridenBase[vSlot] = Object.assign({}, styles, recipe.base)
+              }
+            }
+
+            return defineSlotRecipe({ ...config, variants: overridenVariants, base: overridenBase })
           },
         },
       },
