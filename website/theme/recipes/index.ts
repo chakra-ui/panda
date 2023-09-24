@@ -6,7 +6,6 @@ import { codeTabsRecipe } from './code-tabs.recipe'
 import { buttonRecipe } from './button.recipe'
 import { inputRecipe } from './input.recipe'
 import { nextraBannerRecipe } from './nextra-banner.recipe'
-import { type RecipeConfig } from '@pandacss/dev'
 
 export const recipes = {
   button: buttonRecipe,
@@ -17,4 +16,4 @@ export const recipes = {
   input: inputRecipe,
   navbar: navbarRecipe,
   nextraTabs: nextraTabsRecipe
-} as Record<string, RecipeConfig>
+}
