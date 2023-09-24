@@ -20,7 +20,7 @@ export interface RecipeBuilderConfig<T extends RecipeVariantRecord> {
   extend: <TVariants extends RecipeVariantRecord>(variants: TVariants) => RecipeBuilder<Pretty<T & TVariants>>
   /* Deep merge with another recipe */
   merge: <TVariants extends RecipeVariantRecord, MergedVariants extends Pretty<TVariants & T> = Pretty<TVariants & T>>(
-    extension: Omit<RecipeConfig<any>, 'variants' | 'compoundVariants' | 'defaultVariants'> & {
+    extension: Partial<Omit<RecipeConfig<any>, 'variants' | 'compoundVariants' | 'defaultVariants'>> & {
       variants?: TVariants
       compoundVariants?: Array<Pretty<RecipeCompoundVariant<RecipeCompoundSelection<MergedVariants>>>>
       defaultVariants?: RecipeSelection<MergedVariants>

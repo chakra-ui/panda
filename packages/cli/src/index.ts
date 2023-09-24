@@ -17,7 +17,9 @@ import type {
   TextStyles,
   Tokens,
 } from '@pandacss/types'
+
 export * from './define-recipe'
+export * from './define-slot-recipe'
 
 /* -----------------------------------------------------------------------------
  * Config creators
@@ -30,13 +32,6 @@ export function defineConfig(config: Config) {
 export function defineRecipeConfigs(config: Record<string, RecipeConfig>) {
   return config
 }
-
-export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRecord<S>>(
-  config: SlotRecipeConfig<S, T>,
-) {
-  return config as SlotRecipeConfig
-}
-
 export function defineParts<T extends Parts>(parts: T) {
   return function (config: Partial<Record<keyof T, SystemStyleObject>>): Partial<Record<keyof T, SystemStyleObject>> {
     return Object.fromEntries(Object.entries(config).map(([key, value]) => [parts[key].selector, value])) as any

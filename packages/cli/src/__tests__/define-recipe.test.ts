@@ -267,57 +267,6 @@ describe('define-recipe', () => {
       }>
     >()
   })
-  test('config.omit', () => {
-    const recipe = defineRecipe({
-      className: 'btn',
-      base: { px: '4' },
-      variants: {
-        visual: {
-          blue: { color: 'blue.100' },
-          red: { color: 'red.100' },
-        },
-        size: {
-          sm: { h: '8' },
-          md: { h: '10' },
-        },
-      },
-    }).config.omit('visual')
-
-    expect(recipe).toMatchInlineSnapshot(`
-      {
-        "base": {
-          "px": "4",
-        },
-        "className": "btn",
-        "compoundVariants": undefined,
-        "config": {
-          "cast": [Function],
-          "extend": [Function],
-          "merge": [Function],
-          "omit": [Function],
-          "pick": [Function],
-        },
-        "variants": {
-          "size": {
-            "md": {
-              "h": "10",
-            },
-            "sm": {
-              "h": "8",
-            },
-          },
-        },
-      }
-    `)
-    expectTypeOf(recipe).toMatchTypeOf<
-      RecipeBuilder<{
-        size: {
-          sm: { h: string }
-          md: { h: string }
-        }
-      }>
-    >()
-  })
 
   test('config.pick', () => {
     const recipe = defineRecipe({

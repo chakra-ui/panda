@@ -21,6 +21,7 @@ export type {
   RecipeSelection,
   RecipeVariantRecord,
   SlotRecipeConfig,
+  SlotRecipeCompoundVariant,
   SlotRecipeVariantRecord,
 } from './recipe'
 export type { Runtime } from './runtime'
