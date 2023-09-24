@@ -28,6 +28,7 @@
     }
   },
   "include": [
+    "styled-system",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",

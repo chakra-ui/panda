@@ -43,17 +43,17 @@ export function generateConditions(ctx: Context) {
     dts: outdent`
     ${ctx.file.importType('AnySelector, Selectors', './selectors')}
 
-    export type Conditions = {
+    export interface Conditions {
     ${keys
       .map(
         (key) =>
           `\t${
             key === 'base'
-              ? `/** The base (=no conditions) styles to apply  */`
+              ? `/** The base (=no conditions) styles to apply  */\n`
               : ctx.conditions.get(key)
-              ? `/** \`${ctx.conditions.get(key)}\` */`
+              ? `/** \`${ctx.conditions.get(key)}\` */\n`
               : ''
-          }${JSON.stringify(key)}: string`,
+          }\t${JSON.stringify(key)}: string`,
       )
       .join('\n')}
     }

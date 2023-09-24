@@ -16,14 +16,14 @@ export type PropertyValues =
   | Record<string, string>
   | ThemeFn
 
-type TransformArgs = {
+interface TransformArgs {
   token: TokenFn
   raw: any
 }
 
 export type PropertyTransform = (value: any, args: TransformArgs) => NestedCssProperties | undefined
 
-export type PropertyConfig = {
+export interface PropertyConfig {
   /**
    * @internal
    * The cascade layer to which the property belongs
@@ -53,4 +53,8 @@ export type PropertyConfig = {
 
 export type UtilityConfig = {
   [property in LiteralUnion<CssProperty>]?: PropertyConfig
+}
+
+export type ExtendableUtilityConfig = UtilityConfig & {
+  extend?: UtilityConfig
 }

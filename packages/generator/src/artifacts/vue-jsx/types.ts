@@ -25,11 +25,11 @@ type ComponentProps<T extends ElementType> = T extends IntrinsicElement
   ? Props
   : never
 
-type ${componentName}<T extends ElementType, P extends Dict = {}> = FunctionalComponent<
+  interface ${componentName}<T extends ElementType, P extends Dict = {}> extends FunctionalComponent<
 JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>
->
+> {}
 
-type RecipeFn = { __type: any }
+interface RecipeFn = { __type: any }
 
 interface JsxFactory {
   ${styleProps === 'none' ? '' : `<T extends ElementType>(component: T): ${componentName}<T, {}>`}

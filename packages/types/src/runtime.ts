@@ -4,7 +4,7 @@ interface Watcher {
   close(): Promise<void>
 }
 
-type InputOptions = {
+interface InputOptions {
   include: string[]
   exclude?: string[]
   cwd?: string

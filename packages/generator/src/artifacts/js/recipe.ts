@@ -130,7 +130,7 @@ export function generateRecipes(ctx: Context) {
         ${ctx.file.importType('Pretty', '../types/helpers')}
         ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
 
-        type ${upperName}Variant = {
+        interface ${upperName}Variant {
           ${Object.keys(variantKeyMap)
             .map((key) => {
               const values = variantKeyMap[key]
@@ -144,11 +144,7 @@ export function generateRecipes(ctx: Context) {
           [key in keyof ${upperName}Variant]: Array<${upperName}Variant[key]>
         }
 
-        export type ${upperName}VariantProps = {
-          [key in keyof ${upperName}Variant]?: ${
-          compoundVariants?.length ? `${upperName}Variant[key]` : `ConditionalValue<${upperName}Variant[key]>`
-        }
-        }
+        export interface ${upperName}VariantProps extends Partial<${upperName}Variant> {}
 
         interface ${upperName}Recipe {
           __type: ${upperName}VariantProps

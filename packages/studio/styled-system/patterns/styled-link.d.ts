@@ -5,12 +5,12 @@ import type { PropertyValue } from '../types/prop-type';
 import type { DistributiveOmit } from '../types/system-types';
 import type { Tokens } from '../tokens/index';
 
-export type StyledLinkProperties = {
+export interface StyledLinkProperties {
    
 }
 
 
-type StyledLinkStyles = StyledLinkProperties & DistributiveOmit<SystemStyleObject, keyof StyledLinkProperties >
+interface StyledLinkStyles extends StyledLinkProperties, DistributiveOmit<SystemStyleObject, keyof StyledLinkProperties > {}
 
 interface StyledLinkPatternFn {
   (styles?: StyledLinkStyles): string

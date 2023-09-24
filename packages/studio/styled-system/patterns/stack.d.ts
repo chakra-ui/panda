@@ -5,7 +5,7 @@ import type { PropertyValue } from '../types/prop-type';
 import type { DistributiveOmit } from '../types/system-types';
 import type { Tokens } from '../tokens/index';
 
-export type StackProperties = {
+export interface StackProperties {
    align?: PropertyValue<'alignItems'>
 	justify?: PropertyValue<'justifyContent'>
 	direction?: PropertyValue<'flexDirection'>
@@ -13,7 +13,7 @@ export type StackProperties = {
 }
 
 
-type StackStyles = StackProperties & DistributiveOmit<SystemStyleObject, keyof StackProperties >
+interface StackStyles extends StackProperties, DistributiveOmit<SystemStyleObject, keyof StackProperties > {}
 
 interface StackPatternFn {
   (styles?: StackStyles): string

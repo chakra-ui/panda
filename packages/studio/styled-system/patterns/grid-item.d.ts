@@ -5,7 +5,7 @@ import type { PropertyValue } from '../types/prop-type';
 import type { DistributiveOmit } from '../types/system-types';
 import type { Tokens } from '../tokens/index';
 
-export type GridItemProperties = {
+export interface GridItemProperties {
    colSpan?: ConditionalValue<number>
 	rowSpan?: ConditionalValue<number>
 	colStart?: ConditionalValue<number>
@@ -15,7 +15,7 @@ export type GridItemProperties = {
 }
 
 
-type GridItemStyles = GridItemProperties & DistributiveOmit<SystemStyleObject, keyof GridItemProperties >
+interface GridItemStyles extends GridItemProperties, DistributiveOmit<SystemStyleObject, keyof GridItemProperties > {}
 
 interface GridItemPatternFn {
   (styles?: GridItemStyles): string

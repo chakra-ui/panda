@@ -5,12 +5,12 @@ import type { PropertyValue } from '../types/prop-type';
 import type { DistributiveOmit } from '../types/system-types';
 import type { Tokens } from '../tokens/index';
 
-export type CircleProperties = {
+export interface CircleProperties {
    size?: PropertyValue<'width'>
 }
 
 
-type CircleStyles = CircleProperties & DistributiveOmit<SystemStyleObject, keyof CircleProperties >
+interface CircleStyles extends CircleProperties, DistributiveOmit<SystemStyleObject, keyof CircleProperties > {}
 
 interface CirclePatternFn {
   (styles?: CircleStyles): string

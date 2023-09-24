@@ -5,12 +5,12 @@ import type { PropertyValue } from '../types/prop-type';
 import type { DistributiveOmit } from '../types/system-types';
 import type { Tokens } from '../tokens/index';
 
-export type CenterProperties = {
+export interface CenterProperties {
    inline?: ConditionalValue<boolean>
 }
 
 
-type CenterStyles = CenterProperties & DistributiveOmit<SystemStyleObject, keyof CenterProperties >
+interface CenterStyles extends CenterProperties, DistributiveOmit<SystemStyleObject, keyof CenterProperties > {}
 
 interface CenterPatternFn {
   (styles?: CenterStyles): string

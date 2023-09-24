@@ -28,7 +28,7 @@ export function generatePattern(ctx: Context) {
       ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
       ${ctx.file.importType('Tokens', '../tokens/index')}
 
-      export type ${upperName}Properties = {
+      export interface ${upperName}Properties {
          ${Object.keys(properties ?? {})
            .map((key) => {
              const value = properties![key]
@@ -57,7 +57,7 @@ export function generatePattern(ctx: Context) {
           ? outdent`export declare function ${baseName}(styles: ${upperName}Properties): string`
           : outdent`
 
-          type ${upperName}Styles = ${upperName}Properties & DistributiveOmit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}>
+          interface ${upperName}Styles extends ${upperName}Properties, DistributiveOmit<SystemStyleObject, keyof ${upperName}Properties ${blocklistType}> {}
 
           interface ${upperName}PatternFn {
             (styles?: ${upperName}Styles): string

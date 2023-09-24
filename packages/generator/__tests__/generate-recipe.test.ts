@@ -52,7 +52,7 @@ describe('generate recipes', () => {
       import type { Pretty } from '../types/helpers';
       import type { DistributiveOmit } from '../types/system-types';
 
-      type TextStyleVariant = {
+      interface TextStyleVariant {
         size: \\"h1\\" | \\"h2\\"
       }
 
@@ -60,9 +60,7 @@ describe('generate recipes', () => {
         [key in keyof TextStyleVariant]: Array<TextStyleVariant[key]>
       }
 
-      export type TextStyleVariantProps = {
-        [key in keyof TextStyleVariant]?: ConditionalValue<TextStyleVariant[key]>
-      }
+      export interface TextStyleVariantProps extends Partial<TextStyleVariant> {}
 
       interface TextStyleRecipe {
         __type: TextStyleVariantProps
@@ -103,7 +101,7 @@ describe('generate recipes', () => {
       import type { Pretty } from '../types/helpers';
       import type { DistributiveOmit } from '../types/system-types';
 
-      type TooltipStyleVariant = {
+      interface TooltipStyleVariant {
         
       }
 
@@ -111,9 +109,7 @@ describe('generate recipes', () => {
         [key in keyof TooltipStyleVariant]: Array<TooltipStyleVariant[key]>
       }
 
-      export type TooltipStyleVariantProps = {
-        [key in keyof TooltipStyleVariant]?: ConditionalValue<TooltipStyleVariant[key]>
-      }
+      export interface TooltipStyleVariantProps extends Partial<TooltipStyleVariant> {}
 
       interface TooltipStyleRecipe {
         __type: TooltipStyleVariantProps
@@ -149,7 +145,7 @@ describe('generate recipes', () => {
       import type { Pretty } from '../types/helpers';
       import type { DistributiveOmit } from '../types/system-types';
 
-      type ButtonStyleVariant = {
+      interface ButtonStyleVariant {
         size: \\"sm\\" | \\"md\\"
       variant: \\"solid\\" | \\"outline\\"
       }
@@ -158,9 +154,7 @@ describe('generate recipes', () => {
         [key in keyof ButtonStyleVariant]: Array<ButtonStyleVariant[key]>
       }
 
-      export type ButtonStyleVariantProps = {
-        [key in keyof ButtonStyleVariant]?: ConditionalValue<ButtonStyleVariant[key]>
-      }
+      export interface ButtonStyleVariantProps extends Partial<ButtonStyleVariant> {}
 
       interface ButtonStyleRecipe {
         __type: ButtonStyleVariantProps

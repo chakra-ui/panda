@@ -42,7 +42,7 @@ export function generatePreactJsxPattern(ctx: Context) {
       ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
       ${ctx.file.importType(typeName, '../types/jsx')}
 
-      export type ${upperName}Props = ${upperName}Properties & DistributiveOmit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}>
+      export interface ${upperName}Props extends ${upperName}Properties, DistributiveOmit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}> {}
 
       ${description ? `/** ${description} */` : ''}
       export declare const ${jsxName}: FunctionComponent<${upperName}Props>
