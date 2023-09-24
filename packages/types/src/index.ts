@@ -14,7 +14,15 @@ export type { ConfigResultWithHooks, PandaHooks, PandaHookable } from './hooks'
 export type { ParserResultType, ResultItem } from './parser'
 export type { Part, Parts } from './parts'
 export type { PatternConfig, PatternHelpers, PatternProperty } from './pattern'
-export type { RecipeConfig, RecipeVariantRecord, SlotRecipeConfig, SlotRecipeVariantRecord } from './recipe'
+export type {
+  RecipeConfig,
+  RecipeCompoundSelection,
+  RecipeCompoundVariant,
+  RecipeSelection,
+  RecipeVariantRecord,
+  SlotRecipeConfig,
+  SlotRecipeVariantRecord,
+} from './recipe'
 export type { Runtime } from './runtime'
 export type { AnyFunction, Artifact, Dict, RequiredBy } from './shared'
 export type { StaticCssOptions } from './static-css'

@@ -1,3 +1,5 @@
+import { defineRecipeConfigs } from '@pandacss/dev'
+
 import { calloutRecipe } from './callout.recipe'
 import { cardRecipe } from './card.recipe'
 import { navbarRecipe } from './navbar.recipe'
@@ -7,7 +9,7 @@ import { buttonRecipe } from './button.recipe'
 import { inputRecipe } from './input.recipe'
 import { nextraBannerRecipe } from './nextra-banner.recipe'
 
-export const recipes = {
+export const recipes = defineRecipeConfigs({
   button: buttonRecipe,
   nextraBanner: nextraBannerRecipe,
   codeTabs: codeTabsRecipe,
@@ -16,4 +18,4 @@ export const recipes = {
   input: inputRecipe,
   navbar: navbarRecipe,
   nextraTabs: nextraTabsRecipe
-}
+})

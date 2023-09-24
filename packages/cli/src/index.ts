@@ -17,6 +17,7 @@ import type {
   TextStyles,
   Tokens,
 } from '@pandacss/types'
+export * from './define-recipe'
 
 /* -----------------------------------------------------------------------------
  * Config creators
@@ -26,8 +27,8 @@ export function defineConfig(config: Config) {
   return config
 }
 
-export function defineRecipe<T extends RecipeVariantRecord>(config: RecipeConfig<T>): RecipeConfig {
-  return config as RecipeConfig
+export function defineRecipeConfigs(config: Record<string, RecipeConfig>) {
+  return config
 }
 
 export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRecord<S>>(
