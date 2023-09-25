@@ -3,7 +3,7 @@ import { getRecipe, processRecipe } from './fixture'
 
 describe('recipe ruleset', () => {
   test('should work with basic', () => {
-    expect(processRecipe('textStyle', { variant: 'h1' })).toMatchInlineSnapshot(`
+    expect(processRecipe('textStyle', { size: 'h1' })).toMatchInlineSnapshot(`
       "@layer recipes {
           @layer _base {
               .textStyle {
@@ -13,6 +13,11 @@ describe('recipe ruleset', () => {
                       border-inline-end-width: 0px
                   }
               }
+          }
+          .textStyle--size_h1 {
+              font-size: 5rem;
+              line-height: 1em;
+              font-weight: 800
           }
       }"
     `)
@@ -31,7 +36,7 @@ describe('recipe ruleset', () => {
       }"
     `)
 
-    expect(processRecipe('textStyle', { variant: { base: 'h1', md: 'h2' } })).toMatchInlineSnapshot(`
+    expect(processRecipe('textStyle', { size: { base: 'h1', md: 'h2' } })).toMatchInlineSnapshot(`
       "@layer recipes {
           @layer _base {
               .textStyle {
@@ -40,6 +45,19 @@ describe('recipe ruleset', () => {
                       border-inline-start-width: 20px;
                       border-inline-end-width: 0px
                   }
+              }
+          }
+          .textStyle--size_h1 {
+              font-size: 5rem;
+              line-height: 1em;
+              font-weight: 800
+          }
+          .md\\\\:textStyle--size_h2 {
+              @media screen and (min-width: 48em) {
+                  font-size: 3rem;
+                  line-height: 1.2em;
+                  font-weight: 700;
+                  letter-spacing: -0.03em
               }
           }
       }"

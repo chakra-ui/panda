@@ -11,7 +11,7 @@ export type PatternProperty =
   | { type: 'token'; value: TokenCategory; property?: CssProperty }
   | { type: 'string' | 'boolean' | 'number' }
 
-export interface PatternHelpers {
+export type PatternHelpers = {
   map: (value: any, fn: (value: string) => string | undefined) => any
 }
 
@@ -19,7 +19,7 @@ export type PatternProperties = Record<string, PatternProperty>
 
 type Props<T> = Record<LiteralUnion<keyof T>, any>
 
-export interface PatternConfig<T extends PatternProperties = PatternProperties> {
+export type PatternConfig<T extends PatternProperties = PatternProperties> = {
   /**
    * The description of the pattern. This will be used in the JSDoc comment.
    */

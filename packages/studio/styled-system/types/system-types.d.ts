@@ -12,9 +12,9 @@ type Number = number & {}
 
 export type CssProperty = keyof PropertiesFallback
 
-export interface CssProperties extends PropertiesFallback<String | Number>, CssVarProperties {}
+export type CssProperties = PropertiesFallback<String | Number> & CssVarProperties
 
-export interface CssKeyframes {
+export type CssKeyframes = {
   [name: string]: {
     [time: string]: CssProperties
   }
@@ -28,7 +28,7 @@ type MinimalNested<P> = {
   [K in keyof Conditions]?: Nested<P>
 }
 
-interface GenericProperties {
+type GenericProperties = {
   [key: string]: ConditionalValue<String | Number | boolean>
 }
 
@@ -40,12 +40,8 @@ export type NestedCssProperties = Nested<CssProperties>
 
 export type SystemStyleObject = Nested<SystemProperties & CssVarProperties>
 
-export interface GlobalStyleObject {
+export type GlobalStyleObject = {
   [selector: string]: SystemStyleObject
-}
-export interface ExtendableGlobalStyleObject {
-  [selector: string]: SystemStyleObject | undefined
-  extend?: GlobalStyleObject | undefined
 }
 
 export type CompositionStyleObject<Property extends string> = Nested<{
@@ -55,9 +51,7 @@ export type CompositionStyleObject<Property extends string> = Nested<{
 /* -----------------------------------------------------------------------------
  * Jsx style props
  * -----------------------------------------------------------------------------*/
-interface WithCss {
-  css?: SystemStyleObject
-}
+type WithCss = { css?: SystemStyleObject }
 type StyleProps = SystemProperties & MinimalNested<SystemStyleObject>
 
 export type JsxStyleProps = StyleProps & WithCss
@@ -68,7 +62,7 @@ export type Assign<T, U> = {
   [K in keyof T]: K extends keyof U ? U[K] : T[K]
 } & U
 
-export interface PatchedHTMLProps {
+export type PatchedHTMLProps = {
   htmlWidth?: string | number
   htmlHeight?: string | number
   htmlTranslate?: 'yes' | 'no' | undefined

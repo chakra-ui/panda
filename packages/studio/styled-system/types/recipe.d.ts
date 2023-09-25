@@ -27,7 +27,7 @@ type RecipeVariantMap<T extends RecipeVariantRecord> = {
  * Recipe / Standard
  * -----------------------------------------------------------------------------*/
 
-export interface RecipeRuntimeFn<T extends RecipeVariantRecord> extends RecipeVariantFn<T> {
+export type RecipeRuntimeFn<T extends RecipeVariantRecord> = RecipeVariantFn<T> & {
   __type: RecipeSelection<T>
   variantKeys: (keyof T)[]
   variantMap: RecipeVariantMap<T>
@@ -46,7 +46,7 @@ export type RecipeCompoundVariant<T extends RecipeVariantRecord> = RecipeCompoun
   css: SystemStyleObject
 }
 
-export interface RecipeDefinition<T extends RecipeVariantRecord> {
+export type RecipeDefinition<T extends RecipeVariantRecord> = {
   /**
    * The base styles of the recipe.
    */
@@ -67,7 +67,7 @@ export interface RecipeDefinition<T extends RecipeVariantRecord> {
 
 export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => RecipeRuntimeFn<T>
 
-interface RecipeConfigMeta {
+type RecipeConfigMeta = {
   /**
    * The name of the recipe.
    */
@@ -85,9 +85,7 @@ interface RecipeConfigMeta {
   jsx?: Array<string | RegExp>
 }
 
-export interface RecipeConfig<T extends RecipeVariantRecord = RecipeVariantRecord>
-  extends RecipeDefinition<T>,
-    RecipeConfigMeta {}
+export type RecipeConfig<T extends RecipeVariantRecord = RecipeVariantRecord> = RecipeDefinition<T> & RecipeConfigMeta
 
 /* -----------------------------------------------------------------------------
  * Recipe / Slot
@@ -101,8 +99,7 @@ export type SlotRecipeVariantFn<S extends string, T extends RecipeVariantRecord>
   props?: RecipeSelection<T>,
 ) => SlotRecord<S, string>
 
-export interface SlotRecipeRuntimeFn<S extends string, T extends SlotRecipeVariantRecord<S>>
-  extends SlotRecipeVariantFn<S, T> {
+export type SlotRecipeRuntimeFn<S extends string, T extends SlotRecipeVariantRecord<S>> = SlotRecipeVariantFn<S, T> & {
   raw: (props?: RecipeSelection<T>) => Record<S, SystemStyleObject>
   variantKeys: (keyof T)[]
   variantMap: RecipeVariantMap<T>
@@ -113,7 +110,7 @@ export type SlotRecipeCompoundVariant<S extends string, T extends RecipeVariantR
   css: SlotRecord<S, SystemStyleObject>
 }
 
-export interface SlotRecipeDefinition<S extends string, T extends SlotRecipeVariantRecord<S>> {
+export type SlotRecipeDefinition<S extends string, T extends SlotRecipeVariantRecord<S>> = {
   /**
    * The parts/slots of the recipe.
    */
