@@ -24,7 +24,7 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "autoprefixer": "10.4.15",
+    "autoprefixer": "10.4.16",
     "hookable": "5.5.3",
     "lodash.merge": "4.6.2",
     "postcss": "8.4.27",
