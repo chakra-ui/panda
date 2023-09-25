@@ -17,6 +17,7 @@ export const generateTypesEntry = (ctx: Context) => ({
     declare module '@pandacss/dev' {
       export function defineRecipe<V extends RecipeVariantRecord>(config: RecipeConfig<V>): Panda.RecipeBuilder<V>
       export function defineSlotRecipe<S extends string, V extends SlotRecipeVariantRecord<S>>(config: SlotRecipeConfig<S, V>): Panda.SlotRecipeBuilder<S, V>
+      export function defineRecipeConfigs(config: Record<string, RecipeConfig>): Record<string, Panda.RecipeConfig>;
       export function defineStyles(definition: SystemStyleObject): SystemStyleObject
       export function defineGlobalStyles(definition: GlobalStyleObject): Panda.GlobalStyleObject
       export function defineTextStyles(definition: CompositionStyles['textStyles']): Panda.TextStyles

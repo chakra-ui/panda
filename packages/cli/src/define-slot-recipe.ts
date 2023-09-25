@@ -114,7 +114,7 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
             const base = (config.base ?? {}) as Record<string, {}>
             const recipeVariants = recipe.variants ?? {}
 
-            const overridenVariants = structuredClone(variants)
+            const overridenVariants = cloneDeep(variants)
 
             for (const [vName, variantRecord] of Object.entries(variants)) {
               overridenVariants[vName] = {}
@@ -125,14 +125,14 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
                 for (const [vSlot, styles] of Object.entries(bySlots)) {
                   if (vSlot === slot) {
                     const recipeStyles = recipeVariants[vName]?.[vKey]
-                    // @ts-expect-error it's fine
+
                     overridenVariants[vName][vKey][vSlot] = Object.assign({}, styles, recipeStyles)
                   }
                 }
               }
             }
 
-            const overridenBase = structuredClone(base)
+            const overridenBase = cloneDeep(base)
             for (const [vSlot, styles] of Object.entries(base)) {
               if (vSlot === slot) {
                 overridenBase[vSlot] = Object.assign({}, styles, recipe.base)
@@ -146,4 +146,8 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
     } as SlotRecipeBuilder<S, T>,
     config,
   ) as SlotRecipeBuilder<S, T>
+}
+
+function cloneDeep(variants: SlotRecipeVariantRecord<string>) {
+  return JSON.parse(JSON.stringify(variants))
 }
