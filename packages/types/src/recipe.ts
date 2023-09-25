@@ -229,14 +229,20 @@ export interface SlotBuilderConfig<S extends string, T extends SlotRecipeVariant
     recipe: TRecipe,
   ) => SlotRecipeBuilder<
     S,
+    // always fallback to (current) SlotRecipe variant value
     {
       [VName in keyof T]: {
         [VKey in keyof T[VName]]: {
+          // we only care about the slot that we are assigning to
           [VSlot in keyof T[VName][VKey]]: VSlot extends TSlot
             ? {
+                // if a variant name is not defined in the recipe to assign FROM
                 [VRecipeVariant in keyof TVariants]: VRecipeVariant extends VName
-                  ? TVariants[VRecipeVariant][VKey]
-                  : never
+                  ? // if a variant key is not defined in the recipe to assign FROM
+                    VKey extends keyof TVariants[VRecipeVariant]
+                    ? TVariants[VRecipeVariant][VKey]
+                    : T[VName][VKey][VSlot]
+                  : T[VName][VKey][VSlot]
               }[keyof TVariants]
             : T[VName][VKey][VSlot]
         }

@@ -1900,7 +1900,8 @@ describe('define-recipe', () => {
         variant: {
           subtle: { root: { color: 'blue.100' } },
           solid: { icon: { color: 'blue.100' } },
-          outline: { input: {} },
+          outline: { input: { mx: 2 } },
+          empty: { input: {} },
         },
         size: {
           sm: { root: { fontSize: 'sm' } },
@@ -1916,6 +1917,7 @@ describe('define-recipe', () => {
       variants: {
         variant: {
           outline: { color: 'green.100' },
+          empty: { border: 'none' },
         },
         size: {
           lg: { fontSize: 'xl', h: '10' },
@@ -1962,20 +1964,128 @@ describe('define-recipe', () => {
                 "h": "10",
               },
             },
-            "md": {},
-            "sm": {},
+            "md": {
+              "icon": {
+                "fontSize": "md",
+              },
+            },
+            "sm": {
+              "root": {
+                "fontSize": "sm",
+              },
+            },
           },
           "variant": {
+            "empty": {
+              "input": {
+                "border": "none",
+              },
+            },
             "outline": {
               "input": {
                 "color": "green.100",
+                "mx": 2,
               },
             },
-            "solid": {},
-            "subtle": {},
+            "solid": {
+              "icon": {
+                "color": "blue.100",
+              },
+            },
+            "subtle": {
+              "root": {
+                "color": "blue.100",
+              },
+            },
           },
         },
       }
     `)
+
+    expectTypeOf(assigned).toMatchTypeOf<
+      SlotRecipeBuilder<
+        'root' | 'input' | 'icon',
+        {
+          variant: {
+            subtle: { root: { color: 'blue.100' } }
+            solid: { icon: { color: 'blue.100' } }
+            outline: { input: { mx: number } | { color: 'green.100' } }
+            empty: { input: { border: 'none' } }
+          }
+          size: {
+            sm: { root: { fontSize: 'sm' } }
+            md: { icon: { fontSize: 'md' } }
+            lg: { input: { fontSize: 'xl'; h: string } }
+          }
+        }
+      >
+    >()
+  })
+
+  test("config.slots.assignTo with a variant key that doesn't exist", () => {
+    // spoiler: nothing happens
+
+    const button = defineRecipe({
+      className: 'btn',
+      variants: {
+        variant: { primary: { color: 'red' } },
+      },
+    })
+
+    const card = defineSlotRecipe({
+      className: 'card',
+      slots: ['root', 'input', 'icon'],
+      variants: {
+        variant: {
+          subtle: { root: { color: 'blue.100' } },
+        },
+      },
+    })
+
+    const assigned = card.config.slots.assignTo('input', button)
+    expect(assigned).toMatchInlineSnapshot(`
+      {
+        "base": {},
+        "className": "card",
+        "config": {
+          "cast": [Function],
+          "extend": [Function],
+          "merge": [Function],
+          "omit": [Function],
+          "pick": [Function],
+          "slots": {
+            "add": [Function],
+            "assignTo": [Function],
+            "omit": [Function],
+            "pick": [Function],
+          },
+        },
+        "slots": [
+          "root",
+          "input",
+          "icon",
+        ],
+        "variants": {
+          "variant": {
+            "subtle": {
+              "root": {
+                "color": "blue.100",
+              },
+            },
+          },
+        },
+      }
+    `)
+
+    expectTypeOf(assigned).toMatchTypeOf<
+      SlotRecipeBuilder<
+        'root' | 'input' | 'icon',
+        {
+          variant: {
+            subtle: { root: { color: 'blue.100' } }
+          }
+        }
+      >
+    >()
   })
 })

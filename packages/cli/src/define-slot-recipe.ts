@@ -51,10 +51,10 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
             const pickedVariants: SlotRecipeVariantRecord<S> = {}
 
             for (const [vName, variantRecord] of Object.entries(variants)) {
-              pickedVariants[vName] = {}
+              pickedVariants[vName] ||= {}
 
               for (const [vKey, bySlots] of Object.entries(variantRecord)) {
-                pickedVariants[vName][vKey] = {}
+                pickedVariants[vName][vKey] ||= {}
 
                 for (const [vSlot, styles] of Object.entries(bySlots)) {
                   if (keys.includes(vSlot as (typeof keys)[number])) {
@@ -83,10 +83,10 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
 
             for (const [vName, variantRecord] of Object.entries(variants)) {
               if (!keys.includes(vName as (typeof keys)[number])) {
-                pickedVariants[vName] = {}
+                pickedVariants[vName] ||= {}
 
                 for (const [vKey, bySlots] of Object.entries(variantRecord)) {
-                  pickedVariants[vName][vKey] = {}
+                  pickedVariants[vName][vKey] ||= {}
 
                   for (const [vSlot, styles] of Object.entries(bySlots)) {
                     if (!keys.includes(vSlot as (typeof keys)[number])) {
@@ -117,10 +117,10 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
             const overridenVariants = cloneDeep(variants)
 
             for (const [vName, variantRecord] of Object.entries(variants)) {
-              overridenVariants[vName] = {}
+              overridenVariants[vName] ||= {}
 
               for (const [vKey, bySlots] of Object.entries(variantRecord)) {
-                overridenVariants[vName][vKey] = {}
+                overridenVariants[vName][vKey] ||= {}
 
                 for (const [vSlot, styles] of Object.entries(bySlots)) {
                   if (vSlot === slot) {
