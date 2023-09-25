@@ -1,44 +1,15 @@
+import type { RecipeBuilder, RecipeConfig, RecipeVariantRecord } from '@pandacss/types'
 import merge from 'lodash.merge'
-import type {
-  RecipeCompoundSelection,
-  RecipeCompoundVariant,
-  RecipeConfig,
-  RecipeSelection,
-  RecipeVariantRecord,
-} from '@pandacss/types'
-import type { Pretty, DistributivePick, DistributiveOmit } from './utils.types'
 
 export type {
+  RecipeBuilder,
+  RecipeBuilderConfig,
   RecipeCompoundSelection,
   RecipeCompoundVariant,
   RecipeConfig,
   RecipeSelection,
   RecipeVariantRecord,
 } from '@pandacss/types'
-
-export interface RecipeBuilderConfig<T extends RecipeVariantRecord> {
-  /* Add additional or override variants */
-  extend: <TVariants extends RecipeVariantRecord>(variants: TVariants) => RecipeBuilder<Pretty<T & TVariants>>
-  /* Deep merge with another recipe */
-  merge: <TVariants extends RecipeVariantRecord, MergedVariants extends Pretty<TVariants & T> = Pretty<TVariants & T>>(
-    extension: Partial<Omit<RecipeConfig<any>, 'variants' | 'compoundVariants' | 'defaultVariants'>> & {
-      variants?: TVariants
-      compoundVariants?: Array<Pretty<RecipeCompoundVariant<RecipeCompoundSelection<MergedVariants>>>>
-      defaultVariants?: RecipeSelection<MergedVariants>
-    },
-  ) => RecipeBuilder<MergedVariants>
-  /* Pick only specified variants (also filter compoundVariants) */
-  pick: <TKeys extends keyof T>(...keys: TKeys[]) => RecipeBuilder<DistributivePick<T, TKeys>>
-  /* Omit specified variants (also filter compoundVariants) */
-  omit: <TKeys extends keyof T>(...keys: TKeys[]) => RecipeBuilder<DistributiveOmit<T, TKeys>>
-  /* Make the recipe generic to simplify the typings */
-  cast: () => RecipeConfig<RecipeVariantRecord>
-}
-
-export interface RecipeBuilder<T extends RecipeVariantRecord> extends RecipeConfig<T> {
-  // config ? build ? api ?
-  config: RecipeBuilderConfig<T>
-}
 
 export function defineRecipe<T extends RecipeVariantRecord>(config: RecipeConfig<T>): RecipeBuilder<T> {
   return Object.assign(

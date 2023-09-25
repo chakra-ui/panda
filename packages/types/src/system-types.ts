@@ -1,5 +1,6 @@
 import type { ConditionalValue, Conditions, Nested } from './conditions'
 import type { PropertiesFallback } from './csstype'
+import type { DistributiveOmit } from './helpers'
 import type { SystemProperties, CssVarProperties } from './style-props'
 
 type String = string & {}
@@ -60,8 +61,6 @@ interface WithCss {
 type StyleProps = SystemProperties & MinimalNested<SystemStyleObject>
 
 export type JsxStyleProps = StyleProps & WithCss
-
-export type DistributiveOmit<T, K extends keyof any> = T extends unknown ? Omit<T, K> : never
 
 export type Assign<T, U> = {
   [K in keyof T]: K extends keyof U ? U[K] : T[K]

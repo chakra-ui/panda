@@ -2,7 +2,7 @@
 import type { FunctionComponent } from 'react'
 import type { BleedProperties } from '../patterns/bleed';
 import type { HTMLPandaProps } from '../types/jsx';
-import type { DistributiveOmit } from '../types/system-types';
+import type { DistributiveOmit } from '../types/helpers';
 
 export interface BleedProps extends BleedProperties, DistributiveOmit<HTMLPandaProps<'div'>, keyof BleedProperties > {}
 

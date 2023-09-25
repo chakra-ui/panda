@@ -1,0 +1,3 @@
+{
+  "content": "export type Pretty<T> = { [K in keyof T]: T[K] } & {}\n\nexport type Pick_<T, K> = Pick<T, Extract<keyof T, K>>\nexport type Omit_<T, K> = Omit<T, Extract<keyof T, K>>\n\nexport type DistributivePick<T, K> = T extends unknown\n  ? keyof Pick_<T, K> extends never\n    ? never\n    : { [P in keyof Pick_<T, K>]: Pick_<T, K>[P] }\n  : never\n\nexport type DistributiveOmit<T, K> = T extends unknown\n  ? keyof Omit_<T, K> extends never\n    ? never\n    : { [P in keyof Omit_<T, K>]: Omit_<T, K>[P] }\n  : never\n"
+}

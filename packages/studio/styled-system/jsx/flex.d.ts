@@ -2,7 +2,7 @@
 import type { FunctionComponent } from 'react'
 import type { FlexProperties } from '../patterns/flex';
 import type { HTMLPandaProps } from '../types/jsx';
-import type { DistributiveOmit } from '../types/system-types';
+import type { DistributiveOmit } from '../types/helpers';
 
 export interface FlexProps extends FlexProperties, DistributiveOmit<HTMLPandaProps<'div'>, keyof FlexProperties > {}
 

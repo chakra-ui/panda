@@ -15,11 +15,16 @@ export type { ParserResultType, ResultItem } from './parser'
 export type { Part, Parts } from './parts'
 export type { PatternConfig, PatternHelpers, PatternProperty } from './pattern'
 export type {
+  RecipeBuilder,
+  RecipeBuilderConfig,
   RecipeConfig,
   RecipeCompoundSelection,
   RecipeCompoundVariant,
   RecipeSelection,
   RecipeVariantRecord,
+  SlotBuilderConfig,
+  SlotRecipeBuilder,
+  SlotRecipeBuilderConfig,
   SlotRecipeConfig,
   SlotRecipeCompoundVariant,
   SlotRecipeVariantRecord,

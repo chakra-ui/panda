@@ -2,7 +2,7 @@
 import type { FunctionComponent } from 'react'
 import type { StackProperties } from '../patterns/stack';
 import type { HTMLPandaProps } from '../types/jsx';
-import type { DistributiveOmit } from '../types/system-types';
+import type { DistributiveOmit } from '../types/helpers';
 
 export interface StackProps extends StackProperties, DistributiveOmit<HTMLPandaProps<'div'>, keyof StackProperties > {}
 

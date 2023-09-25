@@ -50,7 +50,7 @@ describe('generate recipes', () => {
         {
           "dts": "import type { ConditionalValue } from '../types/index';
       import type { Pretty } from '../types/helpers';
-      import type { DistributiveOmit } from '../types/system-types';
+      import type { DistributiveOmit } from '../types/helpers';
 
       interface TextStyleVariant {
         size: \\"h1\\" | \\"h2\\"
@@ -99,7 +99,7 @@ describe('generate recipes', () => {
         {
           "dts": "import type { ConditionalValue } from '../types/index';
       import type { Pretty } from '../types/helpers';
-      import type { DistributiveOmit } from '../types/system-types';
+      import type { DistributiveOmit } from '../types/helpers';
 
       interface TooltipStyleVariant {
         
@@ -143,7 +143,7 @@ describe('generate recipes', () => {
         {
           "dts": "import type { ConditionalValue } from '../types/index';
       import type { Pretty } from '../types/helpers';
-      import type { DistributiveOmit } from '../types/system-types';
+      import type { DistributiveOmit } from '../types/helpers';
 
       interface ButtonStyleVariant {
         size: \\"sm\\" | \\"md\\"

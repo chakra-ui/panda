@@ -11,7 +11,7 @@ export declare const ${factoryName}: ${upperName}
     `,
     jsxType: outdent`
 import type { ComponentPropsWithoutRef, ElementType, ElementRef, Ref } from 'react'
-${ctx.file.importType('DistributiveOmit', '../types/system-types')}
+${ctx.file.importType('DistributiveOmit', '../types/helpers')}
 
 type Dict = Record<string, unknown>
 

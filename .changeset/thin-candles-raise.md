@@ -37,7 +37,7 @@ The `defineRecipe` method will now return a `RecipeBuilder` object instead of a 
   any of the omitted variants.
 
 - `cast`: make the recipe generic to simplify the typings. It returns a new `RecipeConfig` object with the final
-  computed variants.
+  computed variants, without the `RecipeBuilder` methods.
 
 Each of these methods return a new `RecipeBuilder` object, so they can be chained together.
 

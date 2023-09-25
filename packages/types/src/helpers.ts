@@ -1,4 +1,3 @@
-/* eslint-disable */
 export type Pretty<T> = { [K in keyof T]: T[K] } & {}
 
 export type Pick_<T, K> = Pick<T, Extract<keyof T, K>>

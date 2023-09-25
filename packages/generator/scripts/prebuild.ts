@@ -16,6 +16,7 @@ const fileMap = [
     [
       ['csstype.d.ts'],
       ['system-types.d.ts'],
+      ['helpers.d.ts'],
       ['selectors.d.ts'],
       ['recipe.d.ts'],
       ['pattern.d.ts'],

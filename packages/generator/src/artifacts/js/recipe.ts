@@ -128,7 +128,7 @@ export function generateRecipes(ctx: Context) {
         dts: outdent`
         ${ctx.file.importType('ConditionalValue', '../types/index')}
         ${ctx.file.importType('Pretty', '../types/helpers')}
-        ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
+        ${ctx.file.importType('DistributiveOmit', '../types/helpers')}
 
         interface ${upperName}Variant {
           ${Object.keys(variantKeyMap)

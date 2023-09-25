@@ -39,7 +39,8 @@ export function generateQwikJsxPattern(ctx: Context) {
       import type { Component } from '@builder.io/qwik'
       ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
       ${ctx.file.importType(typeName, '../types/jsx')}
-      ${ctx.file.importType('Assign, DistributiveOmit', '../types/system-types')}
+      ${ctx.file.importType('Assign', '../types/system-types')}
+      ${ctx.file.importType('DistributiveOmit', '../types/helpers')}
 
       export interface ${upperName}Props extends Assign<${typeName}<'${jsxElement}'>, DistributiveOmit<${upperName}Properties, ${
         blocklistType || '""'

@@ -2,7 +2,7 @@
 import type { FunctionComponent } from 'react'
 import type { SpacerProperties } from '../patterns/spacer';
 import type { HTMLPandaProps } from '../types/jsx';
-import type { DistributiveOmit } from '../types/system-types';
+import type { DistributiveOmit } from '../types/helpers';
 
 export interface SpacerProps extends SpacerProperties, DistributiveOmit<HTMLPandaProps<'div'>, keyof SpacerProperties > {}
 

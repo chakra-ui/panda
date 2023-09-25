@@ -5,6 +5,7 @@ import recipe from '../generated/recipe.d.ts.json' assert { type: 'json' }
 import pattern from '../generated/pattern.d.ts.json' assert { type: 'json' }
 import parts from '../generated/parts.d.ts.json' assert { type: 'json' }
 import selectors from '../generated/selectors.d.ts.json' assert { type: 'json' }
+import helpers from '../generated/helpers.d.ts.json' assert { type: 'json' }
 import { match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
@@ -25,6 +26,7 @@ export function getGeneratedTypes(ctx: Context) {
     parts: rewriteImports(parts.content),
     composition: rewriteImports(composition.content),
     selectors: rewriteImports(selectors.content),
+    helpers: rewriteImports(helpers.content),
     system: rewriteImports(
       match(ctx.jsx.styleProps)
         .with('all', () => system.content)

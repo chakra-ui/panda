@@ -25,7 +25,7 @@ export function generatePattern(ctx: Context) {
       ${ctx.file.importType('SystemStyleObject, ConditionalValue', '../types/index')}
       ${ctx.file.importType('Properties', '../types/csstype')}
       ${ctx.file.importType('PropertyValue', '../types/prop-type')}
-      ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
+      ${ctx.file.importType('DistributiveOmit', '../types/helpers')}
       ${ctx.file.importType('Tokens', '../tokens/index')}
 
       export interface ${upperName}Properties {

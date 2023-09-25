@@ -9,7 +9,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface BoxProperties {
@@ -45,7 +45,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface FlexProperties {
@@ -98,7 +98,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface StackProperties {
@@ -145,7 +145,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface VstackProperties {
@@ -190,7 +190,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface HstackProperties {
@@ -235,7 +235,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface SpacerProperties {
@@ -277,7 +277,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface SquareProperties {
@@ -322,7 +322,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface CircleProperties {
@@ -368,7 +368,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface CenterProperties {
@@ -410,7 +410,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface LinkBoxProperties {
@@ -453,7 +453,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface LinkOverlayProperties {
@@ -501,7 +501,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface AspectRatioProperties {
@@ -560,7 +560,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface GridProperties {
@@ -608,7 +608,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface GridItemProperties {
@@ -659,7 +659,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface WrapProperties {
@@ -709,7 +709,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface ContainerProperties {
@@ -751,7 +751,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface DividerProperties {
@@ -798,7 +798,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface FloatProperties {
@@ -870,7 +870,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface BleedProperties {
@@ -914,7 +914,7 @@ test('should generate pattern', () => {
         "dts": "import type { SystemStyleObject, ConditionalValue } from '../types/index';
     import type { Properties } from '../types/csstype';
     import type { PropertyValue } from '../types/prop-type';
-    import type { DistributiveOmit } from '../types/system-types';
+    import type { DistributiveOmit } from '../types/helpers';
     import type { Tokens } from '../tokens/index';
 
     export interface VisuallyHiddenProperties {

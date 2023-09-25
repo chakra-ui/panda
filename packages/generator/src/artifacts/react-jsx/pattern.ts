@@ -39,7 +39,7 @@ export function generateReactJsxPattern(ctx: Context) {
       import type { FunctionComponent } from 'react'
       ${ctx.file.importType(`${upperName}Properties`, `../patterns/${dashName}`)}
       ${ctx.file.importType(typeName, '../types/jsx')}
-      ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
+      ${ctx.file.importType('DistributiveOmit', '../types/helpers')}
 
       export interface ${upperName}Props extends ${upperName}Properties, DistributiveOmit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}> {}
 

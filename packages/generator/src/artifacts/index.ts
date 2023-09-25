@@ -74,7 +74,7 @@ function setupTypes(ctx: Context): Artifact {
       { file: ctx.file.extDts('selectors'), code: gen.selectors },
       { file: ctx.file.extDts('composition'), code: gen.composition },
       { file: ctx.file.extDts('global'), code: entry.global },
-      { file: ctx.file.extDts('helpers'), code: entry.helpers },
+      { file: ctx.file.extDts('helpers'), code: gen.helpers },
       { file: ctx.file.extDts('recipe'), code: gen.recipe },
       { file: ctx.file.extDts('pattern'), code: gen.pattern },
       { file: ctx.file.extDts('parts'), code: gen.parts },

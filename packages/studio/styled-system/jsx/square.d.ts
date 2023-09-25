@@ -2,7 +2,7 @@
 import type { FunctionComponent } from 'react'
 import type { SquareProperties } from '../patterns/square';
 import type { HTMLPandaProps } from '../types/jsx';
-import type { DistributiveOmit } from '../types/system-types';
+import type { DistributiveOmit } from '../types/helpers';
 
 export interface SquareProps extends SquareProperties, DistributiveOmit<HTMLPandaProps<'div'>, keyof SquareProperties > {}
 

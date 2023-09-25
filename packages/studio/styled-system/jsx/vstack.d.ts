@@ -2,7 +2,7 @@
 import type { FunctionComponent } from 'react'
 import type { VstackProperties } from '../patterns/vstack';
 import type { HTMLPandaProps } from '../types/jsx';
-import type { DistributiveOmit } from '../types/system-types';
+import type { DistributiveOmit } from '../types/helpers';
 
 export interface VstackProps extends VstackProperties, DistributiveOmit<HTMLPandaProps<'div'>, keyof VstackProperties > {}
 

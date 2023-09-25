@@ -2,7 +2,7 @@
 import type { FunctionComponent } from 'react'
 import type { CenterProperties } from '../patterns/center';
 import type { HTMLPandaProps } from '../types/jsx';
-import type { DistributiveOmit } from '../types/system-types';
+import type { DistributiveOmit } from '../types/helpers';
 
 export interface CenterProps extends CenterProperties, DistributiveOmit<HTMLPandaProps<'div'>, keyof CenterProperties > {}
 
