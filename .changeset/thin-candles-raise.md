@@ -29,13 +29,13 @@ The `defineRecipe` method will now return a `RecipeBuilder` object instead of a 
 const button = defineRecipe({
   className: 'btn',
   variants: {
-    variant: { primary: { color: 'red' }, }
+    variant: { primary: { color: 'red' } },
   },
 }).config.extend({
-  variant: (
+  variant: {
     primary: { px: 2 },
     secondary: { color: 'blue' },
-  )
+  },
 })
 ```
 
