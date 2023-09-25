@@ -1087,13 +1087,13 @@ importers:
     dependencies:
       '@astrojs/solid-js':
         specifier: 2.2.0
-        version: 2.2.0(@babel/core@7.22.20)(solid-js@1.7.11)
+        version: 2.2.0(@babel/core@7.22.20)(solid-js@1.7.12)
       astro:
         specifier: 2.9.6
         version: 2.9.6(@types/node@20.4.5)
       solid-js:
-        specifier: 1.7.11
-        version: 1.7.11
+        specifier: 1.7.12
+        version: 1.7.12
     devDependencies:
       '@pandacss/astro':
         specifier: workspace:*
@@ -1779,14 +1779,14 @@ packages:
       - supports-color
     dev: false
 
-  /@astrojs/solid-js@2.2.0(@babel/core@7.22.20)(solid-js@1.7.11):
+  /@astrojs/solid-js@2.2.0(@babel/core@7.22.20)(solid-js@1.7.12):
     resolution: {integrity: sha512-yZcpwGnPnFsF74+9ppXBy/h3rAbrhNuRCz/pTck2KWufwsmn5SwUWTBWLGgSqK3dhaw56Mp2MMJQuLY3Nc5VMw==}
     engines: {node: '>=16.12.0'}
     peerDependencies:
       solid-js: ^1.4.3
     dependencies:
       babel-preset-solid: 1.7.4(@babel/core@7.22.20)
-      solid-js: 1.7.11
+      solid-js: 1.7.12
       vitefu: 0.2.4(vite@4.4.8)
     transitivePeerDependencies:
       - '@babel/core'
@@ -28581,8 +28581,8 @@ packages:
       ip: 2.0.0
       smart-buffer: 4.2.0
 
-  /solid-js@1.7.11:
-    resolution: {integrity: sha512-JkuvsHt8jqy7USsy9xJtT18aF9r2pFO+GB8JQ2XGTvtF49rGTObB46iebD25sE3qVNvIbwglXOXdALnJq9IHtQ==}
+  /solid-js@1.7.12:
+    resolution: {integrity: sha512-QoyoOUKu14iLoGxjxWFIU8+/1kLT4edQ7mZESFPonsEXZ//VJtPKD8Ud1aTKzotj+MNWmSs9YzK6TdY+fO9Eww==}
     dependencies:
       csstype: 3.1.2
       seroval: 0.5.1
