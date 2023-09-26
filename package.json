@@ -61,6 +61,7 @@
   },
   "packageManager": "pnpm@8.6.4",
   "devDependencies": {
+    "happy-dom": "^12.1.6",
     "mdx-local-link-checker": "^2.1.1",
     "rimraf": "^5.0.1"
   }

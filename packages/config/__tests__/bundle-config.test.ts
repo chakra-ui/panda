@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { bundle } from '../src/bundle'
 import path, { dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath } from 'node:url'
 
 describe('bundle config', () => {
   const cwd = process.cwd()
