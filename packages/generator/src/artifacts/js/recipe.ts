@@ -144,7 +144,11 @@ export function generateRecipes(ctx: Context) {
           [key in keyof ${upperName}Variant]: Array<${upperName}Variant[key]>
         }
 
-        export interface ${upperName}VariantProps extends Partial<${upperName}Variant> {}
+        export type ${upperName}VariantProps = {
+          [key in keyof ${upperName}Variant]?: ${
+          compoundVariants?.length ? `${upperName}Variant[key]` : `ConditionalValue<${upperName}Variant[key]>`
+        }
+        }
 
         interface ${upperName}Recipe {
           __type: ${upperName}VariantProps

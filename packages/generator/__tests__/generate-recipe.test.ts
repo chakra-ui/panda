@@ -60,7 +60,9 @@ describe('generate recipes', () => {
         [key in keyof TextStyleVariant]: Array<TextStyleVariant[key]>
       }
 
-      export interface TextStyleVariantProps extends Partial<TextStyleVariant> {}
+      export type TextStyleVariantProps = {
+        [key in keyof TextStyleVariant]?: ConditionalValue<TextStyleVariant[key]>
+      }
 
       interface TextStyleRecipe {
         __type: TextStyleVariantProps
@@ -109,7 +111,9 @@ describe('generate recipes', () => {
         [key in keyof TooltipStyleVariant]: Array<TooltipStyleVariant[key]>
       }
 
-      export interface TooltipStyleVariantProps extends Partial<TooltipStyleVariant> {}
+      export type TooltipStyleVariantProps = {
+        [key in keyof TooltipStyleVariant]?: ConditionalValue<TooltipStyleVariant[key]>
+      }
 
       interface TooltipStyleRecipe {
         __type: TooltipStyleVariantProps
@@ -154,7 +158,9 @@ describe('generate recipes', () => {
         [key in keyof ButtonStyleVariant]: Array<ButtonStyleVariant[key]>
       }
 
-      export interface ButtonStyleVariantProps extends Partial<ButtonStyleVariant> {}
+      export type ButtonStyleVariantProps = {
+        [key in keyof ButtonStyleVariant]?: ConditionalValue<ButtonStyleVariant[key]>
+      }
 
       interface ButtonStyleRecipe {
         __type: ButtonStyleVariantProps
