@@ -8,6 +8,6 @@ build
 packages/studio/styled-system
 packages/generator/src/artifacts/generated
 packages/config/__tests__/samples/ts-import-map/ts-import-map-outdir/**
- ackages/config/__tests__/samples/ts-import-map-one-source/outdir/**
+packages/config/__tests__/samples/ts-import-map-one-source/outdir/**
 website/pages/**/*.mdx
 .draft/**/*.mdx
