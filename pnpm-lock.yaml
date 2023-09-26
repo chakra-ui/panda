@@ -497,6 +497,14 @@ importers:
         specifier: workspace:^
         version: link:../../../../cli
 
+  packages/config/__tests__/samples/ts-import-map:
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:^
+        version: link:../../../../cli
+
+  packages/config/__tests__/samples/ts-import-map/ts-import-map-outdir: {}
+
   packages/config/__tests__/samples/with-preset:
     devDependencies:
       '@pandacss/dev':

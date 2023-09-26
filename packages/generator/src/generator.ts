@@ -1,4 +1,4 @@
-import type { ConfigResultWithHooks, TSConfig } from '@pandacss/types'
+import type { ConfigResultWithHooks, OutdirImportMap, TSConfig } from '@pandacss/types'
 import { generateArtifacts } from './artifacts'
 import { generateFlattenedCss } from './artifacts/css/flat-css'
 import { generateParserCss } from './artifacts/css/parser-css'
@@ -26,11 +26,11 @@ const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
   },
 })
 
-const getImportMap = (outdir: string) => ({
-  css: [outdir, 'css'],
-  recipe: [outdir, 'recipes'],
-  pattern: [outdir, 'patterns'],
-  jsx: [outdir, 'jsx'],
+const getImportMap = (outdir: string, configImportMap?: OutdirImportMap) => ({
+  css: configImportMap?.css ? [configImportMap.css] : [outdir, 'css'],
+  recipe: configImportMap?.recipes ? [configImportMap.recipes] : [outdir, 'recipes'],
+  pattern: configImportMap?.patterns ? [configImportMap.patterns] : [outdir, 'patterns'],
+  jsx: configImportMap?.jsx ? [configImportMap.jsx] : [outdir, 'jsx'],
 })
 
 export const createGenerator = (conf: ConfigResultWithHooks) => {
@@ -50,7 +50,7 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
     getParserCss: generateParserCss(ctx),
     messages: getMessages(ctx),
     parserOptions: {
-      importMap: getImportMap(config.outdir.replace(relativeBaseUrl, '')),
+      importMap: getImportMap(config.outdir.replace(relativeBaseUrl, ''), config.importMap),
       jsx: {
         factory: jsx.factoryName,
         styleProps: jsx.styleProps,
