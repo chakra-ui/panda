@@ -1,5 +1,15 @@
 # panda-css-vscode
 
+## 0.2.22
+
+### Patch Changes
+
+- Updated dependencies [f3c30d60]
+  - @pandacss/dev@0.15.2
+  - @pandacss/preset-base@0.15.2
+  - @pandacss/preset-panda@0.15.2
+  - @pandacss/ts-plugin@0.15.2
+
 ## 0.2.21
 
 ### Patch Changes
