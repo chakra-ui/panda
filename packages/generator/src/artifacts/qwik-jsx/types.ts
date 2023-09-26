@@ -16,7 +16,7 @@ import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './r
 
 type ElementType = keyof QwikIntrinsicElements | Component<any>
 
-type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsicElements
+export type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsicElements
   ? QwikIntrinsicElements[T]
   : T extends Component<infer P>
   ? P

@@ -14,7 +14,7 @@ import type { Component, QwikIntrinsicElements } from '@builder.io/qwik'
 
 type ElementType = keyof QwikIntrinsicElements | Component<any>
 
-type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsicElements
+export type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsicElements
   ? QwikIntrinsicElements[T]
   : T extends Component<infer P>
   ? P

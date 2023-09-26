@@ -25,10 +25,12 @@ export const generateTypesEntry = (ctx: Context) => ({
   // We need to export types used in the global.d.ts here to avoid TS errors such as `The inferred type of 'xxx' cannot be named without a reference to 'yyy'`
   index: outdent`
     import '${ctx.file.extDts('./global')}'
-    ${ctx.file.exportType('ConditionalValue', './conditions')}
-    ${ctx.file.exportType('PatternConfig, PatternProperties', './pattern')}
-    ${ctx.file.exportType('RecipeVariantRecord, RecipeConfig, SlotRecipeVariantRecord, SlotRecipeConfig', './recipe')}
-    ${ctx.file.exportType('GlobalStyleObject, JsxStyleProps, SystemStyleObject', './system-types')}
+    ${ctx.file.exportTypeStar('./conditions')}
+    ${ctx.file.exportTypeStar('./pattern')}
+    ${ctx.file.exportTypeStar('./recipe')}
+    ${ctx.file.exportTypeStar('./system-types')}
+    ${ctx.file.exportTypeStar('./jsx')}
+    ${ctx.file.exportTypeStar('./style-props')}
 
     `,
   helpers: outdent`
