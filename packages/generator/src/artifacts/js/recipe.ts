@@ -150,7 +150,7 @@ export function generateRecipes(ctx: Context) {
         }
         }
 
-        interface ${upperName}Recipe {
+        export interface ${upperName}Recipe {
           __type: ${upperName}VariantProps
           (props?: ${upperName}VariantProps): ${
           isSlotRecipe(config) ? `Pretty<Record<${unionType(config.slots)}, string>>` : 'string'

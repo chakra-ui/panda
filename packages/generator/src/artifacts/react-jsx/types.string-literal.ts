@@ -15,7 +15,7 @@ ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
 
 type Dict = Record<string, unknown>
 
-type ComponentProps<T extends ElementType> = DistributiveOmit<ComponentPropsWithoutRef<T>, 'ref'> & {
+export type ComponentProps<T extends ElementType> = DistributiveOmit<ComponentPropsWithoutRef<T>, 'ref'> & {
   ref?: Ref<ElementRef<T>>
 }
 
