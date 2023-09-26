@@ -1,5 +1,25 @@
 # @pandacss/node
 
+## 0.15.2
+
+### Patch Changes
+
+- f3c30d60: Update supported panda config extensions
+- Updated dependencies [6d15776c]
+- Updated dependencies [26a788c0]
+- Updated dependencies [2645c2da]
+  - @pandacss/generator@0.15.2
+  - @pandacss/types@0.15.2
+  - @pandacss/config@0.15.2
+  - @pandacss/parser@0.15.2
+  - @pandacss/core@0.15.2
+  - @pandacss/token-dictionary@0.15.2
+  - @pandacss/error@0.15.2
+  - @pandacss/extractor@0.15.2
+  - @pandacss/is-valid-prop@0.15.2
+  - @pandacss/logger@0.15.2
+  - @pandacss/shared@0.15.2
+
 ## 0.15.1
 
 ### Patch Changes

@@ -1,5 +1,25 @@
 # @pandacss/dev
 
+## 0.15.2
+
+### Patch Changes
+
+- f3c30d60: Fix issue where studio uses studio config, instead of custom panda config.
+- Updated dependencies [f3c30d60]
+- Updated dependencies [26a788c0]
+- Updated dependencies [f3c30d60]
+- Updated dependencies [2645c2da]
+  - @pandacss/node@0.15.2
+  - @pandacss/studio@0.15.2
+  - @pandacss/types@0.15.2
+  - @pandacss/config@0.15.2
+  - @pandacss/postcss@0.15.2
+  - @pandacss/preset-panda@0.15.2
+  - @pandacss/token-dictionary@0.15.2
+  - @pandacss/error@0.15.2
+  - @pandacss/logger@0.15.2
+  - @pandacss/shared@0.15.2
+
 ## 0.15.1
 
 ### Patch Changes
