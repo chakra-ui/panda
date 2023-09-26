@@ -52,11 +52,14 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
     parserOptions: {
       importMap: getImportMap(config.outdir.replace(relativeBaseUrl, ''), config.importMap),
       jsx: {
+        framework: jsx.framework,
         factory: jsx.factoryName,
         styleProps: jsx.styleProps,
         isStyleProp: isValidProperty,
         nodes: [...patterns.details, ...recipes.details],
       },
+      patternKeys: patterns.keys,
+      recipeKeys: recipes.keys,
       getRecipesByJsxName: recipes.filter,
       getPatternsByJsxName: patterns.filter,
       compilerOptions: compilerOptions as any,

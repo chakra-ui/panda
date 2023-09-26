@@ -99,7 +99,7 @@ export interface OutdirImportMap {
   css: string
   recipes: string
   patterns: string
-  jsx: string
+  jsx?: string
 }
 
 interface FileSystemOptions {

@@ -60,8 +60,13 @@ export function getImportDeclarations(
     find(id: string) {
       return result.find((o) => o.alias === id)
     },
-    createMatch(mod: string) {
-      const mods = result.filter((o) => o.mod.includes(mod) || o.importMapValue === mod)
+    createMatch(mod: string, keys: string[]) {
+      const mods = result.filter((o) => {
+        const isFromMod = o.mod.includes(mod) || o.importMapValue === mod
+        const isOneOfKeys = keys.includes(o.name)
+        return isFromMod && isOneOfKeys
+      })
+
       return memo((id: string) => !!mods.find((mod) => mod.alias === id || mod.name === id))
     },
     match(id: string) {

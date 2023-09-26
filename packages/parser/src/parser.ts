@@ -22,12 +22,15 @@ const isCva = (map: BoxNodeMap['value']) => cvaProps.some((prop) => map.has(prop
 
 export type ParserOptions = {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string[]>
-  jsx?: {
+  jsx: {
+    framework: string | undefined
     factory: string
     styleProps: Exclude<Config['jsxStyleProps'], undefined>
     nodes: ParserNodeOptions[]
     isStyleProp: (prop: string) => boolean
   }
+  patternKeys: string[]
+  recipeKeys: string[]
   getRecipesByJsxName: (jsxName: string) => ParserRecipeNode[]
   getPatternsByJsxName: (jsxName: string) => ParserPatternNode[]
   tsOptions?: ConfigTsOptions
@@ -75,7 +78,7 @@ export function createParser(options: ParserOptions) {
     createImportMatcher(importMap.pattern),
   ]
 
-  if (jsx) {
+  if (jsx.framework) {
     importRegex.push(createImportMatcher(importMap.jsx, [jsx.factory, ...jsx.nodes.map((node) => node.jsxName)]))
   }
 
@@ -124,8 +127,8 @@ export function createParser(options: ParserOptions) {
     const [css] = importRegex
     const jsxFactoryAlias = jsx ? imports.getAlias(jsx.factory) : 'styled'
 
-    const isValidPattern = imports.createMatch(importMap.pattern)
-    const isValidRecipe = imports.createMatch(importMap.recipe)
+    const isValidPattern = imports.createMatch(importMap.pattern, options.patternKeys)
+    const isValidRecipe = imports.createMatch(importMap.recipe, options.recipeKeys)
     const isValidStyleFn = (name: string) => name === jsx?.factory
     const isFactory = (name: string) => Boolean(jsx && name.startsWith(jsxFactoryAlias))
     const isRawFn = (fullName: string) => {

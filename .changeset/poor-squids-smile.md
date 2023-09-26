@@ -1,5 +1,7 @@
 ---
+'@pandacss/core': patch
 '@pandacss/generator': patch
+'@pandacss/parser': patch
 '@pandacss/types': patch
 ---
 
