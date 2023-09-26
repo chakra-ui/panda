@@ -49,6 +49,15 @@ describe('cva', () => {
   test('split variant props', () => {
     const result = button.splitVariantProps({ visual: 'solid', bg: 'red.500' })
 
-    expect(result).toMatchInlineSnapshot([{ visual: 'solid' }, { bg: 'red.500' }])
+    expect(result).toMatchInlineSnapshot(`
+      [
+        {
+          "visual": "solid",
+        },
+        {
+          "bg": "red.500",
+        },
+      ]
+    `)
   })
 })

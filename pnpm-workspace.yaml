@@ -1,6 +1,5 @@
 packages:
   - 'packages/**'
-  - 'codegen-sandbox'
   - 'sandbox/*'
   - 'playground'
   - 'website'

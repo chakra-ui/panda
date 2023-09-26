@@ -9,6 +9,20 @@ describe('recipe', () => {
     expect(result).toMatchInlineSnapshot('"button"')
   })
 
+  test('split variant props', () => {
+    const result = button.splitVariantProps({ visual: 'solid', bg: 'red.500' })
+    expect(result).toMatchInlineSnapshot(`
+      [
+        {
+          "visual": "solid",
+        },
+        {
+          "bg": "red.500",
+        },
+      ]
+    `)
+  })
+
   test('solid variant styles', () => {
     const result = button({ visual: 'solid' })
 
@@ -39,11 +53,5 @@ describe('recipe', () => {
     expect(() => buttonWithCompoundVariants({ visual: { base: 'solid', _hover: 'outline' } })).toThrow(
       '[recipe:button:visual] Conditions are not supported when using compound variants.',
     )
-  })
-
-  test('split variant props', () => {
-    const result = button.splitVariantProps({ visual: 'solid', bg: 'red.500' })
-
-    expect(result).toMatchInlineSnapshot([{ visual: 'solid' }, { bg: 'red.500' }])
   })
 })
