@@ -27,7 +27,15 @@ export function generateRecipes(ctx: Context) {
    ${ctx.file.import('compact, createCss, withoutSpace', '../helpers')}
 
    export const createRecipe = (name, defaultVariants, compoundVariants) => {
-     return (variants) => {
+    const getRecipeStyles = (variants) => {
+      return {
+        [name]: '__ignore__',
+        ...defaultVariants,
+        ...compact(variants),
+      };
+    };
+
+     const recipeFn = (variants, withCompoundVariants = true) => {
       const transform = (prop, value) => {
         assertCompoundVariant(name, compoundVariants, variants, prop)
 
@@ -47,16 +55,21 @@ export function generateRecipes(ctx: Context) {
         }
       })
 
-      const recipeStyles = {
-        [name]: '__ignore__',
-        ...defaultVariants,
-        ...compact(variants),
+      const recipeStyles = getRecipeStyles(variants)
+
+      if (withCompoundVariants) {
+        const compoundVariantStyles = getCompoundVariantCss(compoundVariants, recipeStyles)
+        return cx(recipeCss(recipeStyles), css(compoundVariantStyles))
       }
 
-      const compoundVariantStyles = getCompoundVariantCss(compoundVariants, recipeStyles)
-
-      return cx(recipeCss(recipeStyles), css(compoundVariantStyles))
+      return recipeCss(recipeStyles)
      }
+
+      return Object.assign(recipeFn, {
+        __getCompoundVariantCss__: (variants) => {
+          return getCompoundVariantCss(compoundVariants, getRecipeStyles(variants));
+        },
+      })
    }
   `,
   }

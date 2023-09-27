@@ -38,11 +38,13 @@ export interface RecipeRuntimeFn<T extends RecipeVariantRecord> extends RecipeVa
   ): [RecipeSelection<T>, Pretty<DistributiveOmit<Props, keyof T>>]
 }
 
-export type RecipeCompoundSelection<T extends RecipeVariantRecord> = {
-  [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>>
+type OneOrMore<T> = T | Array<T>
+
+export type RecipeCompoundSelection<T> = {
+  [K in keyof T]?: OneOrMore<StringToBoolean<keyof T[K]>>
 }
 
-export type RecipeCompoundVariant<T extends RecipeVariantRecord> = RecipeCompoundSelection<T> & {
+export type RecipeCompoundVariant<T> = T & {
   css: SystemStyleObject
 }
 
@@ -54,7 +56,7 @@ export interface RecipeDefinition<T extends RecipeVariantRecord> {
   /**
    * The multi-variant styles of the recipe.
    */
-  variants?: T | RecipeVariantRecord
+  variants?: T
   /**
    * The default variants of the recipe.
    */
@@ -62,7 +64,7 @@ export interface RecipeDefinition<T extends RecipeVariantRecord> {
   /**
    * The styles to apply when a combination of variants is selected.
    */
-  compoundVariants?: Array<RecipeCompoundVariant<T>>
+  compoundVariants?: Pretty<RecipeCompoundVariant<RecipeCompoundSelection<T>>>[]
 }
 
 export type RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => RecipeRuntimeFn<T>
@@ -109,7 +111,7 @@ export interface SlotRecipeRuntimeFn<S extends string, T extends SlotRecipeVaria
   splitVariantProps<Props extends RecipeSelection<T>>(props: Props): [RecipeSelection<T>, Pretty<Omit<Props, keyof T>>]
 }
 
-export type SlotRecipeCompoundVariant<S extends string, T extends RecipeVariantRecord> = RecipeCompoundSelection<T> & {
+export type SlotRecipeCompoundVariant<S extends string, T> = T & {
   css: SlotRecord<S, SystemStyleObject>
 }
 
@@ -125,7 +127,7 @@ export interface SlotRecipeDefinition<S extends string, T extends SlotRecipeVari
   /**
    * The multi-variant styles of the recipe.
    */
-  variants?: T | SlotRecipeVariantRecord<S>
+  variants?: T
   /**
    * The default variants of the recipe.
    */
@@ -133,7 +135,7 @@ export interface SlotRecipeDefinition<S extends string, T extends SlotRecipeVari
   /**
    * The styles to apply when a combination of variants is selected.
    */
-  compoundVariants?: Array<SlotRecipeCompoundVariant<S, T>>
+  compoundVariants?: Pretty<SlotRecipeCompoundVariant<S, RecipeCompoundSelection<T>>>[]
 }
 
 export type SlotRecipeCreatorFn = <S extends string, T extends SlotRecipeVariantRecord<S>>(

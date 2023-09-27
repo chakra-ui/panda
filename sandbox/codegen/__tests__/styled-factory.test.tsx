@@ -278,7 +278,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--visual_outline button--size_md text_green mx_2 text_red.200 fs_xl custom-btn"
+        class="button button--visual_outline button--size_md text_red.200 mx_2 fs_xl custom-btn"
       >
         Click me
       </button>

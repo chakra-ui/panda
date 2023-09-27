@@ -9,7 +9,7 @@ export function generatePreactJsxFactory(ctx: Context) {
     import { h } from 'preact'
     import { forwardRef } from 'preact/compat'
     import { useMemo } from 'preact/hooks'
-    ${ctx.file.import('css, cx, cva, assignCss', '../css/index')}
+    ${ctx.file.import('css, cx, cva', '../css/index')}
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('isCssProperty', './is-valid-prop')}
 
@@ -25,15 +25,14 @@ export function generatePreactJsxFactory(ctx: Context) {
 
         function recipeClass() {
           const { css: cssStyles, ...propStyles } = styleProps
-          const styles = assignCss(propStyles, cssStyles)
-          return cx(cvaFn(variantProps), css(styles), elementProps.className, elementProps.class)
+          const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
+          return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), elementProps.className, elementProps.class)
         }
 
         function cvaClass() {
           const { css: cssStyles, ...propStyles } = styleProps
           const cvaStyles = cvaFn.raw(variantProps)
-          const styles = assignCss(cvaStyles, propStyles, cssStyles)
-          return cx(css(styles), elementProps.className, elementProps.class)
+          return cx(css(cvaStyles, propStyles, cssStyles), elementProps.className, elementProps.class)
         }
 
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
