@@ -1,5 +1,104 @@
 # @pandacss/generator
 
+## 0.15.3
+
+### Patch Changes
+
+- d34c8b48: Fix issue where HMR does not work for Vue JSX factory and patterns
+- 1ac2011b: Add a new `config.importMap` option that allows you to specify a custom module specifier to import from
+  instead of being tied to the `outdir`
+
+  You can now do things like leverage the native package.json
+  [`imports`](https://nodejs.org/api/packages.html#subpath-imports):
+
+  ```ts
+  export default defineConfig({
+    outdir: './outdir',
+    importMap: {
+      css: '#panda/styled-system/css',
+      recipes: '#panda/styled-system/recipes',
+      patterns: '#panda/styled-system/patterns',
+      jsx: '#panda/styled-system/jsx',
+    },
+  })
+  ```
+
+  Or you could also make your outdir an actual package from your monorepo:
+
+  ```ts
+  export default defineConfig({
+    outdir: '../packages/styled-system',
+    importMap: {
+      css: '@monorepo/styled-system',
+      recipes: '@monorepo/styled-system',
+      patterns: '@monorepo/styled-system',
+      jsx: '@monorepo/styled-system',
+    },
+  })
+  ```
+
+  Working with tsconfig paths aliases is easy:
+
+  ```ts
+  export default defineConfig({
+    outdir: 'styled-system',
+    importMap: {
+      css: 'styled-system/css',
+      recipes: 'styled-system/recipes',
+      patterns: 'styled-system/patterns',
+      jsx: 'styled-system/jsx',
+    },
+  })
+  ```
+
+- 1eb31118: Automatically allow overriding config recipe compoundVariants styles within the `styled` JSX factory,
+  example below
+
+  With this config recipe:
+
+  ```ts file="panda.config.ts"
+  const button = defineRecipe({
+    className: 'btn',
+    base: { color: 'green', fontSize: '16px' },
+    variants: {
+      size: { small: { fontSize: '14px' } },
+    },
+    compoundVariants: [{ size: 'small', css: { color: 'blue' } }],
+  })
+  ```
+
+  This would previously not merge the `color` property overrides, but now it does:
+
+  ```tsx file="example.tsx"
+  import { styled } from '../styled-system/jsx'
+  import { button } from '../styled-system/recipes'
+
+  const Button = styled('button', button)
+
+  function App() {
+    return (
+      <>
+        <Button size="small" color="red.100">
+          Click me
+        </Button>
+      </>
+    )
+  }
+  ```
+
+  - Before: `btn btn--size_small text_blue text_red.100`
+  - After: `btn btn--size_small text_red.100`
+
+- Updated dependencies [95b06bb1]
+- Updated dependencies [1ac2011b]
+- Updated dependencies [58743bc4]
+  - @pandacss/shared@0.15.3
+  - @pandacss/core@0.15.3
+  - @pandacss/types@0.15.3
+  - @pandacss/token-dictionary@0.15.3
+  - @pandacss/is-valid-prop@0.15.3
+  - @pandacss/logger@0.15.3
+
 ## 0.15.2
 
 ### Patch Changes

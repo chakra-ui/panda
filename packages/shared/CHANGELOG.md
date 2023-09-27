@@ -1,5 +1,11 @@
 # @pandacss/shared
 
+## 0.15.3
+
+### Patch Changes
+
+- 95b06bb1: Fix issue in template literal mode where media queries doesn't work
+
 ## 0.15.2
 
 ## 0.15.1

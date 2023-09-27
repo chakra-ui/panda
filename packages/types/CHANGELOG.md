@@ -1,5 +1,60 @@
 # @pandacss/types
 
+## 0.15.3
+
+### Patch Changes
+
+- 1ac2011b: Add a new `config.importMap` option that allows you to specify a custom module specifier to import from
+  instead of being tied to the `outdir`
+
+  You can now do things like leverage the native package.json
+  [`imports`](https://nodejs.org/api/packages.html#subpath-imports):
+
+  ```ts
+  export default defineConfig({
+    outdir: './outdir',
+    importMap: {
+      css: '#panda/styled-system/css',
+      recipes: '#panda/styled-system/recipes',
+      patterns: '#panda/styled-system/patterns',
+      jsx: '#panda/styled-system/jsx',
+    },
+  })
+  ```
+
+  Or you could also make your outdir an actual package from your monorepo:
+
+  ```ts
+  export default defineConfig({
+    outdir: '../packages/styled-system',
+    importMap: {
+      css: '@monorepo/styled-system',
+      recipes: '@monorepo/styled-system',
+      patterns: '@monorepo/styled-system',
+      jsx: '@monorepo/styled-system',
+    },
+  })
+  ```
+
+  Working with tsconfig paths aliases is easy:
+
+  ```ts
+  export default defineConfig({
+    outdir: 'styled-system',
+    importMap: {
+      css: 'styled-system/css',
+      recipes: 'styled-system/recipes',
+      patterns: 'styled-system/patterns',
+      jsx: 'styled-system/jsx',
+    },
+  })
+  ```
+
+- 58743bc4: - Fix `ExtendableUtilityConfig` typings after a regression in 0.15.2 (due to
+  https://github.com/chakra-ui/panda/pull/1410)
+  - Fix `ExtendableTheme` (specifically make the `RecipeConfig` Partial inside the `theme: { extend: { ... } }` object),
+    same for slotRecipes
+
 ## 0.15.2
 
 ### Patch Changes
