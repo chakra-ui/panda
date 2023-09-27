@@ -10,7 +10,7 @@ Improved styled factory by adding a 3rd (optional) argument:
 interface FactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
   defaultProps?: TProps
-  shouldForwardProp?(prop: string, isCssProperty: (prop: string) => boolean, variantKeys: string[]): boolean
+  shouldForwardProp?(prop: string, variantKeys: string[]): boolean
 }
 ```
 
@@ -55,13 +55,14 @@ const App = () => <Button>Button</Button>
 ```jsx
 import { styled } from '../styled-system/jsx'
 import { button } from '../styled-system/recipes'
+import { isCssProperty } from '../styled-system/jsx'
 import { motion, isValidMotionProp } from 'framer-motion'
 
 const StyledMotion = styled(
   motion.div,
   {},
   {
-    shouldForwardProp: (prop, isCssProperty, variantKeys) =>
+    shouldForwardProp: (prop, variantKeys) =>
       isValidMotionProp(prop) || (!variantKeys.includes(prop) && !isCssProperty(prop)),
   },
 )

@@ -1,5 +1,5 @@
 import { css, cx } from '../styled-system/css'
-import { Circle, HStack, Stack, panda } from '../styled-system/jsx'
+import { Circle, HStack, Stack, isCssProperty, panda } from '../styled-system/jsx'
 import { circle as circleLike, stack, vstack } from '../styled-system/patterns'
 import { button, someRecipe } from '../styled-system/recipes'
 import { Badge, badge } from './Badge'
@@ -14,7 +14,7 @@ const StyledMotion = panda(
   {},
   {
     /*  Allow motion props and non-style props to be forwarded. */
-    shouldForwardProp: (prop, isCssProperty, variantKeys) =>
+    shouldForwardProp: (prop, variantKeys) =>
       isValidMotionProp(prop) || (!variantKeys.includes(prop) && !isCssProperty(prop)),
   },
 )
@@ -27,7 +27,7 @@ const PrimaryButtonLike = panda('span', button, {
     w: '255px',
     _hover: { color: 'amber.100' },
   },
-  shouldForwardProp: (prop, _isCssProp, _variantKeys) => {
+  shouldForwardProp: (prop, _variantKeys) => {
     return !prop.startsWith('_')
   },
 })

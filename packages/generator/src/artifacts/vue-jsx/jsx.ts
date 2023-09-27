@@ -7,18 +7,20 @@ export function generateVueJsxFactory(ctx: Context) {
   return {
     js: outdent`
     import { defineComponent, h, computed } from 'vue'
-    ${ctx.file.import('css, cx, cva, assignCss', '../css/index')}
+    ${ctx.file.import('css, cx, cva', '../css/index')}
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
-    ${ctx.file.import('isCssProperty', './is-valid-prop')}
+    ${ctx.jsx.styleProps === 'all' ? ctx.file.import('isCssProperty', './is-valid-prop') : ''}
+
+    const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
 
     function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
       const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
 
-      const defaultShouldForwardProp = (prop) => !cvaFn.variantKeys.includes(prop) && !isCssProperty(prop)
-      const { dataAttr, shouldForwardProp = defaultShouldForwardProp } = options
+      const forwardFn = options.shouldForwardProp || defaultShouldForwardProp
+      const shouldForwardProp = (prop) => forwardFn(prop, cvaFn.variantKeys)
       const initialProps = Object.assign(
-        dataAttr && configOrCva.recipeName ? { 'data-recipe': configOrCva.recipeName } : {},
+        options.dataAttr && configOrCva.__name__ ? { 'data-recipe': configOrCva.__name__ } : {},
         options.defaultProps,
       )
 
@@ -27,45 +29,33 @@ export function generateVueJsxFactory(ctx: Context) {
         inheritAttrs: false,
         props: { as: { type: [String, Object], default: Dynamic } },
         setup(props, { slots, attrs }) {
-          const forwardedProps = computed(() => {
-            const forwarded = {}
-            const combined = Object.assign({}, initialProps, attrs)
-          for (const key in combined) {
-              if (shouldForwardProp(key, isCssProperty)) {
-                forwarded[key] = attrs[key]
-              }
-            }
-
-            return forwarded
-          })
-
+          const combinedProps = computed(() => Object.assign({}, initialProps, attrs))
           const splittedProps = computed(() => {
-            return splitProps(attrs, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
+            return splitProps(combinedProps.value, shouldForwardProp, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
           })
 
           const recipeClass = computed(() => {
-            const [variantProps, styleProps, _htmlProps, elementProps] = splittedProps.value
+            const [forwardedProps, variantProps, styleProps, _htmlProps, _elementProps] = splittedProps.value
             const { css: cssStyles, ...propStyles } = styleProps
             const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
-            return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), elementProps.className)
+            return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.className)
           })
 
           const cvaClass = computed(() => {
-            const [variantProps, styleProps, _htmlProps, elementProps] = splittedProps.value
+            const [forwardedProps, variantProps, styleProps, _htmlProps, _elementProps] = splittedProps.value
             const { css: cssStyles, ...propStyles } = styleProps
             const cvaStyles = cvaFn.raw(variantProps)
-            return cx(css(cvaStyles, propStyles, cssStyles), elementProps.className)
+            return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.className)
           })
 
           const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
 
           return () => {
-            const [_styleProps, _variantProps, htmlProps, elementProps] = splittedProps.value
+            const [forwardedProps, _variantProps, _styleProps, htmlProps, elementProps] = splittedProps.value
 
             return h(
               props.as,
               {
-                ...initialProps,
                 ...forwardedProps.value,
                 ...elementProps,
                 ...normalizeHTMLProps(htmlProps),

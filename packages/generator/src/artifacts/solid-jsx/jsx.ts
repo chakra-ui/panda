@@ -8,34 +8,31 @@ export function generateSolidJsxFactory(ctx: Context) {
     import { Dynamic } from 'solid-js/web'
     import { mergeProps, splitProps } from 'solid-js'
     import { createComponent } from 'solid-js/web'
-    ${ctx.file.import('css, cx, cva, assignCss', '../css/index')}
+    ${ctx.file.import('css, cx, cva', '../css/index')}
     ${ctx.file.import('normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('allCssProperties', './is-valid-prop')}
+    ${ctx.jsx.styleProps === 'all' ? ctx.file.import('isCssProperty', './is-valid-prop') : ''}
+
+    const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
 
     function styledFn(element, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
 
-      const defaultShouldForwardProp = (prop) => !cvaFn.variantKeys.includes(prop) && !isCssProperty(prop)
-      const { dataAttr, shouldForwardProp = defaultShouldForwardProp } = options
+      const forwardFn = options.shouldForwardProp || defaultShouldForwardProp
+      const shouldForwardProp = (prop) => forwardFn(prop, cvaFn.variantKeys)
       const initialProps = Object.assign(
-        dataAttr && configOrCva.recipeName ? { 'data-recipe': configOrCva.recipeName } : {},
+        options.dataAttr && configOrCva.__name__ ? { 'data-recipe': configOrCva.__name__ } : {},
         options.defaultProps,
       )
 
       return function ${componentName}(props) {
         const mergedProps = mergeProps({ as: element }, initialProps, props)
+        const forwardedProps = Object.keys(props).filter(shouldForwardProp)
 
-        const forwardedProps = {}
-        const combinedProps = Object.assign({}, initialProps, restProps)
-          for (const key in combinedProps) {
-          if (shouldForwardProp(key, isCssProperty, cvaFn.variantKeys)) {
-            forwardedProps[key] = combinedProps[key]
-          }
-        }
-
-        const [localProps, variantProps, styleProps, htmlProps, elementProps] = splitProps(
+        const [localProps, forwardedProps, variantProps, styleProps, htmlProps, elementProps] = splitProps(
           mergedProps,
           ['as', 'class', 'className'],
+          forwardedProps,
           cvaFn.variantKeys,
           allCssProperties,
           normalizeHTMLProps.keys

@@ -13,46 +13,36 @@ export function generatePreactJsxFactory(ctx: Context) {
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('isCssProperty', './is-valid-prop')}
 
+    const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
+
     function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
 
-      const defaultShouldForwardProp = (prop) => !cvaFn.variantKeys.includes(prop) && !isCssProperty(prop)
-      const { dataAttr, shouldForwardProp = defaultShouldForwardProp } = options
+      const forwardFn = options.shouldForwardProp || defaultShouldForwardProp
+      const shouldForwardProp = (prop) => forwardFn(prop, cvaFn.variantKeys)
       const initialProps = Object.assign(
-        dataAttr && configOrCva.recipeName ? { 'data-recipe': configOrCva.recipeName } : {},
+        options.dataAttr && configOrCva.__name__ ? { 'data-recipe': configOrCva.__name__ } : {},
         options.defaultProps,
       )
 
       const ${componentName} = /* @__PURE__ */ forwardRef(function ${componentName}(props, ref) {
-        const { as: Element = Dynamic, ...restProps } = props
+        const { as: Element = Dynamic, children, ...restProps } = props
 
         const combinedProps = useMemo(() => Object.assign({}, initialProps, restProps), [restProps])
-        const forwardedProps = useMemo(() => {
-          const forwarded = {}
-
-          for (const key in combinedProps) {
-            if (shouldForwardProp(key, isCssProperty, cvaFn.variantKeys)) {
-              forwarded[key] = combinedProps[key]
-            }
-          }
-
-          return forwarded
-        }, [combinedProps, shouldForwardProp])
-
-        const [variantProps, styleProps, htmlProps, elementProps] = useMemo(() => {
-          return splitProps(combinedProps, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
+        const [forwardedProps, variantProps, styleProps, htmlProps, elementProps] = useMemo(() => {
+          return splitProps(combinedProps, shouldForwardProp, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
         }, [combinedProps])
 
         function recipeClass() {
           const { css: cssStyles, ...propStyles } = styleProps
           const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
-          return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), elementProps.className, elementProps.class)
+          return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.className, combinedProps.class)
         }
 
         function cvaClass() {
           const { css: cssStyles, ...propStyles } = styleProps
           const cvaStyles = cvaFn.raw(variantProps)
-          return cx(css(cvaStyles, propStyles, cssStyles), elementProps.className, elementProps.class)
+          return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.className, combinedProps.class)
         }
 
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
@@ -61,6 +51,7 @@ export function generatePreactJsxFactory(ctx: Context) {
           ...forwardedProps,
           ...elementProps,
           ...normalizeHTMLProps(htmlProps),
+          children,
           ref,
           className: classes()
         })
