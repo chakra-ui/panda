@@ -2064,6 +2064,130 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('import map', () => {
+    const code = `
+    import { css } from "controlled-import-map/css";
+    import { buttonStyle } from "controlled-import-map/common";
+    import { stack } from "controlled-import-map/common";
+    import { Box } from "controlled-import-map";
+
+    css({ mx: '3' })
+    stack({ direction: "column" })
+    buttonStyle({ visual: "funky" })
+
+    const App = () => {
+      return (
+        <>
+          <Box color="red" />
+        </>
+      );
+    }
+     `
+    const result = run(code, {
+      outdir: 'anywhere',
+      importMap: {
+        css: 'controlled-import-map/css',
+        recipes: 'controlled-import-map/common',
+        patterns: 'controlled-import-map/common',
+        jsx: 'controlled-import-map',
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "mx": "3",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "visual": "funky",
+            },
+          ],
+          "name": "buttonStyle",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {
+              "direction": "column",
+            },
+          ],
+          "name": "stack",
+          "type": "pattern",
+        },
+        {
+          "data": [
+            {
+              "color": "red",
+            },
+          ],
+          "name": "Box",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .mx_3 {
+          margin-inline: var(--spacing-3)
+          }
+
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .text_red {
+          color: red
+          }
+      }
+
+      @layer recipes {
+        .buttonStyle--size_md {
+          height: 3rem;
+          min-width: 3rem;
+          padding: 0 0.75rem
+          }
+
+        .buttonStyle--variant_solid {
+          background-color: blue;
+          color: var(--colors-white);
+          }
+
+        .buttonStyle--variant_solid[data-disabled] {
+          background-color: gray;
+          color: var(--colors-black)
+              }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue
+              }
+
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center
+              }
+          }
+      }"
+    `)
+  })
 })
 
 describe('preset patterns', () => {

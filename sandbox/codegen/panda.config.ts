@@ -1,4 +1,4 @@
-import { defineConfig, defineRecipe } from '@pandacss/dev'
+import { defineConfig, defineRecipe, defineSlotRecipe } from '@pandacss/dev'
 
 const buttonRecipe = defineRecipe({
   className: 'button',
@@ -19,6 +19,38 @@ const buttonRecipe = defineRecipe({
         border: '1px solid',
         color: { base: 'colorPalette.600', _dark: 'colorPalette.200' },
         borderColor: 'currentColor',
+      },
+    },
+  },
+})
+
+const slotButton = defineSlotRecipe({
+  className: 'slot-button',
+  slots: ['root', 'icon'],
+  base: {
+    root: { borderRadius: 'md', fontWeight: 'semibold', h: '10', px: '4' },
+    icon: { fontSize: '2xl' },
+  },
+  variants: {
+    visual: {
+      solid: {
+        root: {
+          bg: { base: 'colorPalette.500', _dark: 'colorPalette.300' },
+          color: { base: 'white', _dark: 'gray.800' },
+        },
+        icon: {
+          color: 'white',
+        },
+      },
+      outline: {
+        root: {
+          border: '1px solid',
+          color: { base: 'colorPalette.600', _dark: 'colorPalette.200' },
+          borderColor: 'currentColor',
+        },
+        icon: {
+          border: '1px solid',
+        },
       },
     },
   },
@@ -79,6 +111,9 @@ export default defineConfig({
       recipes: {
         button: buttonRecipe,
         buttonWithCompoundVariants: buttonWithCompoundVariantsRecipe,
+      },
+      slotRecipes: {
+        slotButton,
       },
     },
   },
