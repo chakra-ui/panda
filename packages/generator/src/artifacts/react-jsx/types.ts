@@ -16,16 +16,16 @@ ${ctx.file.importType('RecipeDefinition, RecipeSelection, RecipeVariantRecord', 
 
 type Dict = Record<string, unknown>
 
-type ComponentProps<T extends ElementType> = DistributiveOmit<ComponentPropsWithoutRef<T>, 'ref'> & {
+export type ComponentProps<T extends ElementType> = DistributiveOmit<ComponentPropsWithoutRef<T>, 'ref'> & {
   ref?: Ref<ElementRef<T>>
 }
 
-export type ${componentName}<T extends ElementType, P extends Dict = {}> = {
+export interface ${componentName}<T extends ElementType, P extends Dict = {}> {
   (props: JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>): JSX.Element
   displayName?: string
 }
 
-type RecipeFn = { __type: any }
+interface RecipeFn { __type: any }
 
 interface JsxFactory {
   ${styleProps === 'none' ? '' : `<T extends ElementType>(component: T): ${componentName}<T, {}>`}

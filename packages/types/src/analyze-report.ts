@@ -2,7 +2,7 @@ import type { BoxNodeEmptyInitializer, BoxNodeLiteral, BoxNodeMap } from '@panda
 import type { Config } from './config'
 
 export type ReportItemType = 'object' | 'cva' | 'pattern' | 'recipe' | 'jsx' | 'jsx-factory'
-export type ReportItem = {
+export interface ReportItem {
   id: number
   from: string
   type: ReportItemType
@@ -21,14 +21,14 @@ export type ReportItem = {
  * An instance is either a component usage or a function usage
  * @example an instance name could be 'Button', 'css', 'panda.div', 'vstack', ...
  */
-export type ReportInstanceItem = Pick<ReportItem, 'from' | 'type' | 'kind' | 'filepath'> & {
+export interface ReportInstanceItem extends Pick<ReportItem, 'from' | 'type' | 'kind' | 'filepath'> {
   instanceId: number
   contains: Array<ReportItem['id']>
   value: Record<string, any>
   box: BoxNodeMap
 }
 
-export type ReportMaps = {
+export interface ReportMaps {
   byInstanceOfKind: Map<'function' | 'component', Set<ReportInstanceItem['instanceId']>>
   byPropertyName: Map<string, Set<ReportItem['id']>>
   byCategory: Map<string, Set<ReportItem['id']>>
@@ -42,7 +42,7 @@ export type ReportMaps = {
   colorsUsed: Map<string, Set<ReportItem['id']>>
 }
 
-export type ReportCounts = {
+export interface ReportCounts {
   filesWithTokens: number
   propNameUsed: number
   tokenUsed: number
@@ -55,8 +55,11 @@ export type ReportCounts = {
   colorsUsed: number
 }
 
-export type MostUsedItem = { key: string; count: number }
-export type ReportStats = {
+export interface MostUsedItem {
+  key: string
+  count: number
+}
+export interface ReportStats {
   filesWithMostInstance: Record<string, number>
   filesWithMostPropValueCombinations: Record<string, number>
   mostUseds: {
@@ -74,7 +77,7 @@ export type ReportStats = {
   }
 }
 
-export type ReportDetails = {
+export interface ReportDetails {
   counts: ReportCounts
   stats: ReportStats
   details: {
@@ -87,7 +90,7 @@ export type ReportDetails = {
   }
 }
 
-type FileSizes = {
+interface FileSizes {
   normal: string
   minified: string
   gzip: {
@@ -96,11 +99,11 @@ type FileSizes = {
   }
 }
 
-export type AnalysisReport = ReportDetails & {
+export interface AnalysisReport extends ReportDetails {
   fileSizes: FileSizes
 }
 
-type ReportMapsJSON = {
+interface ReportMapsJSON {
   byInstanceOfKind: Record<'function' | 'component', Array<ReportInstanceItem['instanceId']>>
   byPropertyName: Record<string, Array<ReportItem['id']>>
   byCategory: Record<string, Array<ReportItem['id']>>
@@ -114,7 +117,7 @@ type ReportMapsJSON = {
   colorsUsed: Record<string, Array<ReportItem['id']>>
 }
 
-export type ReportItemJSON = {
+export interface ReportItemJSON {
   id: number
   from: string
   type: ReportItemType
@@ -136,14 +139,14 @@ export type ReportItemJSON = {
   }
 }
 
-export type ReportInstanceItemJSON = Pick<ReportItem, 'from' | 'type' | 'kind' | 'filepath'> & {
+export interface ReportInstanceItemJSON extends Pick<ReportItem, 'from' | 'type' | 'kind' | 'filepath'> {
   instanceId: number
   contains: Array<ReportItem['id']>
   value: Record<string, any>
   box: { type: 'map'; value: Record<string, any>; node: string; stack: string[]; line: number; column: number }
 }
 
-export type AnalysisReportJSON = {
+export interface AnalysisReportJSON {
   counts: ReportCounts
   stats: ReportStats
   details: {

@@ -62,7 +62,7 @@ export const SectionTryPanda = () => {
 
         <Grid mt="20" gap="10" columns={{ base: 1, md: 3 }}>
           {installSteps.map((step, i) => (
-            <Stack color="white" gap={{ base: '2', md: '8' }}>
+            <Stack color="white" gap={{ base: '2', md: '8' }} key={i}>
               <Stack gap="4" direction={{ base: 'row', md: 'column' }}>
                 <panda.span
                   key={i}

@@ -1,5 +1,61 @@
 # @pandacss/generator
 
+## 0.15.2
+
+### Patch Changes
+
+- 6d15776c: When bundling the `outdir` in a library, you usually want to generate type declaration files (`d.ts`).
+  Sometimes TS will complain about types not being exported.
+
+  - Export all types from `{outdir}/types/index.d.ts`, this fixes errors looking like this:
+
+  ```
+  src/components/Checkbox/index.tsx(8,7): error TS2742: The inferred type of 'Root' cannot be named without a reference to '../../../node_modules/@acmeorg/styled-system/types/system-types'. This is likely not portable. A type annotation is necessary.
+  src/components/Checkbox/index.tsx(8,7): error TS2742: The inferred type of 'Root' cannot be named without a reference to '../../../node_modules/@acmeorg/styled-system/types/csstype'. This is likely not portable. A type annotation is necessary.
+  src/components/Checkbox/index.tsx(8,7): error TS2742: The inferred type of 'Root' cannot be named without a reference to '../../../node_modules/@acmeorg/styled-system/types/conditions'. This is likely not portable. A type annotation is necessary.
+  ```
+
+  - Export generated recipe interfaces from `{outdir}/recipes/{recipeFn}.d.ts`, this fixes errors looking like this:
+
+  ```
+  src/ui/avatar.tsx (16:318) "AvatarRecipe" is not exported by "styled-system/recipes/index.d.ts", imported by "src/ui/avatar.tsx".
+  src/ui/card.tsx (2:164) "CardRecipe" is not exported by "styled-system/recipes/index.d.ts", imported by "src/ui/card.tsx".
+  src/ui/checkbox.tsx (19:310) "CheckboxRecipe" is not exported by "styled-system/recipes/index.d.ts", imported by "src/ui/checkbox.tsx".
+  ```
+
+  - Export type `ComponentProps` from `{outdir}/types/jsx.d.ts`, this fixes errors looking like this:
+
+  ```
+   "ComponentProps" is not exported by "styled-system/types/jsx.d.ts", imported by "src/ui/form-control.tsx".
+  ```
+
+- 26a788c0: - Switch to interface for runtime types
+  - Create custom partial types for each config object property
+- Updated dependencies [26a788c0]
+  - @pandacss/types@0.15.2
+  - @pandacss/core@0.15.2
+  - @pandacss/token-dictionary@0.15.2
+  - @pandacss/is-valid-prop@0.15.2
+  - @pandacss/logger@0.15.2
+  - @pandacss/shared@0.15.2
+
+## 0.15.1
+
+### Patch Changes
+
+- 7e8bcb03: Fix an issue when wrapping a component with `styled` would display its name as `styled.[object Object]`
+- 433f88cd: Fix issue in css reset where number input field spinner still show.
+- 7499bbd2: Add the property `-moz-osx-font-smoothing: grayscale;` to the `reset.css` under the `html` selector.
+- Updated dependencies [848936e0]
+- Updated dependencies [26f6982c]
+- Updated dependencies [4e003bfb]
+  - @pandacss/core@0.15.1
+  - @pandacss/shared@0.15.1
+  - @pandacss/token-dictionary@0.15.1
+  - @pandacss/types@0.15.1
+  - @pandacss/is-valid-prop@0.15.1
+  - @pandacss/logger@0.15.1
+
 ## 0.15.0
 
 ### Patch Changes

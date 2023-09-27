@@ -1,5 +1,5 @@
 /* eslint-disable */
-export type Part = {
+export interface Part {
   selector: string
 }
 

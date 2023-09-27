@@ -15,7 +15,7 @@ export function generatePropTypes(ctx: Context) {
     ${ctx.file.importType('CssProperties', './system-types')}
     ${ctx.file.importType('Tokens', '../tokens/index')}
 
-    type PropertyValueTypes  = {`,
+    interface PropertyValueTypes {`,
   ]
 
   const types = utility.getTypes()
@@ -31,7 +31,7 @@ export function generatePropTypes(ctx: Context) {
 
   type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T]${strictText} : CssValue<T>
 
-  export type PropertyTypes = PropertyValueTypes & {
+  export interface PropertyTypes extends PropertyValueTypes {
   `)
 
   utility.shorthands.forEach((value, key) => {

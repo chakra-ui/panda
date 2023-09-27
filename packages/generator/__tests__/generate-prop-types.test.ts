@@ -10,7 +10,7 @@ describe('generate property types', () => {
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
 
-      type PropertyValueTypes  = {
+      interface PropertyValueTypes {
       	aspectRatio: \\"auto\\" | \\"square\\" | \\"landscape\\" | \\"portrait\\" | \\"wide\\" | \\"ultrawide\\" | \\"golden\\";
       	zIndex: Tokens[\\"zIndex\\"];
       	top: Tokens[\\"spacing\\"];
@@ -218,7 +218,7 @@ describe('generate property types', () => {
 
         type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] | CssValue<T> : CssValue<T>
 
-        export type PropertyTypes = PropertyValueTypes & {
+        export interface PropertyTypes extends PropertyValueTypes {
         
       	pos: Shorthand<\\"position\\">;
       	insetEnd: Shorthand<\\"insetInlineEnd\\">;
@@ -324,7 +324,7 @@ describe('generate property types', () => {
       import type { CssProperties } from './system-types';
       import type { Tokens } from '../tokens/index';
 
-      type PropertyValueTypes  = {
+      interface PropertyValueTypes {
       	aspectRatio: \\"auto\\" | \\"square\\" | \\"landscape\\" | \\"portrait\\" | \\"wide\\" | \\"ultrawide\\" | \\"golden\\";
       	zIndex: Tokens[\\"zIndex\\"];
       	top: Tokens[\\"spacing\\"];
@@ -531,7 +531,7 @@ describe('generate property types', () => {
 
         type Shorthand<T> = T extends keyof PropertyValueTypes ? PropertyValueTypes[T] : CssValue<T>
 
-        export type PropertyTypes = PropertyValueTypes & {
+        export interface PropertyTypes extends PropertyValueTypes {
         
       	pos: Shorthand<\\"position\\">;
       	insetEnd: Shorthand<\\"insetInlineEnd\\">;

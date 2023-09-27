@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/token-dictionary",
-  "version": "0.15.0",
+  "version": "0.15.2",
   "description": "Common error messages for css panda",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -19,9 +19,9 @@
     "dist"
   ],
   "dependencies": {
-    "@pandacss/types": "workspace:*",
     "@pandacss/shared": "workspace:*",
-    "ts-pattern": "5.0.4"
+    "@pandacss/types": "workspace:*",
+    "ts-pattern": "5.0.5"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*"

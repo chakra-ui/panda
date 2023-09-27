@@ -1,5 +1,7 @@
-import { analyzeTokens, findConfig, loadConfigAndCreateContext, writeAnalyzeJSON } from '@pandacss/node'
+import { type PandaContext, analyzeTokens, loadConfigAndCreateContext, writeAnalyzeJSON } from '@pandacss/node'
 import { stringify } from 'javascript-stringify'
+import type { AstroIntegration } from 'astro'
+import type { PluginOption } from 'vite'
 
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
@@ -11,38 +13,39 @@ const _dirname = dirname(fileURLToPath(import.meta.url))
 const analysisDataFilepath = 'src/lib/analysis.json'
 const jsonPath = resolve(_dirname, analysisDataFilepath)
 
-/**
- * @returns import('vite').VitePlugin
- */
-function vitePlugin() {
-  let config
+function vitePlugin(configPath: string): PluginOption {
+  let config: PandaContext['config']
+
+  async function loadPandaConfig() {
+    const ctx = await loadConfigAndCreateContext({ configPath })
+    config = ctx.config
+
+    const result = analyzeTokens(ctx)
+    await writeAnalyzeJSON(jsonPath, result, ctx)
+  }
 
   return {
     name: 'vite:panda',
-    async configResolved() {
-      const ctx = await loadConfigAndCreateContext()
-      config = ctx.config
 
-      const result = analyzeTokens(ctx)
-      await writeAnalyzeJSON(jsonPath, result, ctx)
-    },
     async configureServer(server) {
-      const file = config.path
-      server.watcher.add(file).on('change', async () => {
+      server.watcher.add(configPath).on('change', async (path) => {
+        if (path !== configPath) return
+        await loadPandaConfig()
         const module = server.moduleGraph.getModuleById(resolvedVirtualModuleId)
-        if (module) {
-          await server.reloadModule(module)
-        }
+        if (module) await server.reloadModule(module)
       })
     },
+
     resolveId(id) {
       if (id === virtualModuleId) {
         return resolvedVirtualModuleId
       }
       return null
     },
+
     async load(id) {
       if (id === resolvedVirtualModuleId) {
+        await loadPandaConfig()
         return {
           code: `export const config = ${stringify(config)}`,
         }
@@ -51,22 +54,15 @@ function vitePlugin() {
   }
 }
 
-/**
- * @returns import('astro').AstroIntegration
- */
-const virtualPanda = () => ({
+const virtualPanda = (): AstroIntegration => ({
   name: 'virtual:panda',
   hooks: {
-    'astro:config:setup': ({ updateConfig, addWatchFile }) => {
-      const configPath = findConfig()
-
-      if (configPath) {
-        addWatchFile(configPath)
-      }
+    'astro:config:setup': ({ updateConfig }) => {
+      const configPath = process.env.PUBLIC_CONFIG_PATH
 
       updateConfig({
         vite: {
-          plugins: [vitePlugin()],
+          plugins: [vitePlugin(configPath!)],
         },
       })
     },

@@ -642,10 +642,10 @@ In contrast, the CVA recipes are scattered throughout your code. To get all of t
 
 When dealing with simple use cases, or if you need code colocation, or even avoiding dynamic styling, atomic recipes shine by providing all style variants. Config recipes are preferred for design system components, delivering leaner CSS with only the styles used. Choose according to your component needs.
 
-|                                                        | Config recipe                                                          | Atomic recipe (cva)                                                      |
-| ------------------------------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Can both use any theme tokens, utilities or conditions | ✅ yes                                                                 | ✅ yes                                                                   |
-| Are generated just in time (JIT) based on usage        | ✅ yes, only the recipe variants found in your code will be generated  | ❌ no, all variants found in your `cva` recipes will always be generated |
-| Can be shared in a preset                              | ✅ yes, you can include it in your `preset.theme.recipes`              | ❌ no                                                                    |
-| Can be colocated in your markup code                   | ❌ no, they must be defined or imported in your `panda.config`         | ✅ yes, you can place it anywhere in your app                            |
-| Generate atomic classes                                | ❌ no, a specific className will be generated using your `recipe.name` | ✅ yes                                                                   |
+|                                                        | Config recipe                                                               | Atomic recipe (cva)                                                      |
+| ------------------------------------------------------ | --------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Can both use any theme tokens, utilities or conditions | ✅ yes                                                                      | ✅ yes                                                                   |
+| Are generated just in time (JIT) based on usage        | ✅ yes, only the recipe variants found in your code will be generated       | ❌ no, all variants found in your `cva` recipes will always be generated |
+| Can be shared in a preset                              | ✅ yes, you can include it in your `preset.theme.recipes`                   | ❌ no                                                                    |
+| Can be colocated in your markup code                   | ❌ no, they must be defined or imported in your `panda.config`              | ✅ yes, you can place it anywhere in your app                            |
+| Generate atomic classes                                | ❌ no, a specific className will be generated using your `recipe.className` | ✅ yes                                                                   |

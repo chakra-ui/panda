@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/node",
-  "version": "0.15.0",
+  "version": "0.15.2",
   "description": "The core css panda library",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -48,12 +48,12 @@
     "postcss": "8.4.27",
     "preferred-pm": "^3.0.3",
     "ts-morph": "19.0.0",
-    "ts-pattern": "5.0.4",
+    "ts-pattern": "5.0.5",
     "tsconfck": "^2.1.2"
   },
   "devDependencies": {
     "@pandacss/fixture": "workspace:*",
-    "@types/fs-extra": "11.0.1",
+    "@types/fs-extra": "11.0.2",
     "@types/glob-parent": "^5.1.1",
     "@types/is-glob": "^4.0.2",
     "@types/lodash.merge": "4.6.7",

@@ -16,7 +16,7 @@ import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './r
 
 type ElementType = keyof QwikIntrinsicElements | Component<any>
 
-type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsicElements
+export type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsicElements
   ? QwikIntrinsicElements[T]
   : T extends Component<infer P>
   ? P
@@ -24,9 +24,9 @@ type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsicElemen
 
 type Dict = Record<string, unknown>
 
-export type ${componentName}<T extends ElementType, P extends Dict = {}> = Component<Assign<ComponentProps<T> & PatchedHTMLProps, Assign<JsxStyleProps, P>>>
+export interface ${componentName}<T extends ElementType, P extends Dict = {}> extends Component<Assign<ComponentProps<T>, PatchedHTMLProps, Assign<JsxStyleProps, P>>> {}
 
-type RecipeFn = { __type: any }
+interface RecipeFn { __type: any }
 
 interface JsxFactory {
   ${styleProps === 'none' ? '' : `<T extends ElementType>(component: T): ${componentName}<T, {}>`}

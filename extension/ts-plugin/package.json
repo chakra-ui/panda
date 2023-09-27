@@ -2,7 +2,7 @@
   "name": "@pandacss/ts-plugin",
   "displayName": "🐼 Panda CSS",
   "description": "The official Panda plugin for VS Code",
-  "version": "0.15.0",
+  "version": "0.15.2",
   "license": "MIT",
   "main": "dist/index.js",
   "type": "commonjs",
@@ -22,7 +22,7 @@
     "dev": "pnpm build-fast --watch"
   },
   "devDependencies": {
-    "typescript": "^5.1.6",
-    "@pandacss/extension-shared": "workspace:^"
+    "@pandacss/extension-shared": "workspace:^",
+    "typescript": "^5.2.2"
   }
 }

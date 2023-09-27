@@ -65,7 +65,7 @@ test('transform / border', () => {
           "sm",
         ],
         "type": "border",
-        "value": "1px solid #ff0000",
+        "value": "1px solid var(--colors-red)",
       },
       Token {
         "description": undefined,
@@ -83,7 +83,7 @@ test('transform / border', () => {
           "md",
         ],
         "type": "border",
-        "value": "2px solid #ff0000",
+        "value": "2px solid var(--colors-red)",
       },
       Token {
         "description": undefined,
@@ -105,7 +105,7 @@ test('transform / border', () => {
           "controlBorder",
         ],
         "type": "border",
-        "value": "1px solid #ff0000",
+        "value": "var(--borders-sm)",
       },
       Token {
         "description": undefined,
@@ -127,7 +127,7 @@ test('transform / border', () => {
           "controlBorder",
         ],
         "type": "border",
-        "value": "2px solid #ff0000",
+        "value": "var(--borders-md)",
       },
       Token {
         "description": undefined,

@@ -1,5 +1,40 @@
 # @pandacss/core
 
+## 0.15.2
+
+### Patch Changes
+
+- Updated dependencies [26a788c0]
+  - @pandacss/types@0.15.2
+  - @pandacss/token-dictionary@0.15.2
+  - @pandacss/error@0.15.2
+  - @pandacss/logger@0.15.2
+  - @pandacss/shared@0.15.2
+
+## 0.15.1
+
+### Patch Changes
+
+- 848936e0: Allow referencing tokens with the `token()` function in media queries or any other CSS at-rule.
+
+  ```js
+  import { css } from '../styled-system/css'
+
+  const className = css({
+    '@media screen and (min-width: token(sizes.4xl))': {
+      color: 'green.400',
+    },
+  })
+  ```
+
+- Updated dependencies [26f6982c]
+- Updated dependencies [4e003bfb]
+  - @pandacss/shared@0.15.1
+  - @pandacss/token-dictionary@0.15.1
+  - @pandacss/types@0.15.1
+  - @pandacss/error@0.15.1
+  - @pandacss/logger@0.15.1
+
 ## 0.15.0
 
 ### Minor Changes

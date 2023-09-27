@@ -1,5 +1,14 @@
 # @pandacss/types
 
+## 0.15.2
+
+### Patch Changes
+
+- 26a788c0: - Switch to interface for runtime types
+  - Create custom partial types for each config object property
+
+## 0.15.1
+
 ## 0.15.0
 
 ### Patch Changes

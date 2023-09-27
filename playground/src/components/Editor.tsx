@@ -3,7 +3,7 @@ import { Flex } from '@/styled-system/jsx'
 import { segmentGroup } from '@/styled-system/recipes'
 
 import MonacoEditor from '@monaco-editor/react'
-import { Segment, SegmentControl, SegmentGroup, SegmentIndicator, SegmentInput, SegmentLabel } from '@ark-ui/react'
+import { Segment, SegmentControl, SegmentGroup, SegmentGroupIndicator, SegmentLabel } from '@ark-ui/react'
 
 import { PandaEditorProps, useEditor, EDITOR_OPTIONS } from '../hooks/useEditor'
 import { FormatCode } from '@/src/components/icons'
@@ -38,7 +38,7 @@ export const Editor = (props: PandaEditorProps) => {
           value={activeTab}
           onChange={(e) => setActiveTab(e.value as any)}
         >
-          <SegmentIndicator />
+          <SegmentGroupIndicator />
           {tabs.map((option, id) => (
             <Segment key={id} value={option.id} aria-label={option.label}>
               <SegmentLabel
@@ -48,7 +48,6 @@ export const Editor = (props: PandaEditorProps) => {
               >
                 {option.label}
               </SegmentLabel>
-              <SegmentInput />
               <SegmentControl />
             </Segment>
           ))}

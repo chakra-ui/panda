@@ -1,5 +1,36 @@
 # @pandacss/studio
 
+## 0.15.2
+
+### Patch Changes
+
+- 26a788c0: - Switch to interface for runtime types
+  - Create custom partial types for each config object property
+- f3c30d60: Fix issue where studio uses studio config, instead of custom panda config.
+- Updated dependencies [f3c30d60]
+- Updated dependencies [26a788c0]
+- Updated dependencies [2645c2da]
+  - @pandacss/node@0.15.2
+  - @pandacss/types@0.15.2
+  - @pandacss/config@0.15.2
+  - @pandacss/token-dictionary@0.15.2
+  - @pandacss/logger@0.15.2
+  - @pandacss/shared@0.15.2
+
+## 0.15.1
+
+### Patch Changes
+
+- 7e8bcb03: Fix an issue when wrapping a component with `styled` would display its name as `styled.[object Object]`
+- Updated dependencies [26f6982c]
+- Updated dependencies [4e003bfb]
+  - @pandacss/shared@0.15.1
+  - @pandacss/token-dictionary@0.15.1
+  - @pandacss/node@0.15.1
+  - @pandacss/types@0.15.1
+  - @pandacss/config@0.15.1
+  - @pandacss/logger@0.15.1
+
 ## 0.15.0
 
 ### Patch Changes

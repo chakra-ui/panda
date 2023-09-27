@@ -3778,7 +3778,7 @@ describe('preset patterns', () => {
   test('{fn}.raw', () => {
     const code = `
     import { css } from ".panda/css";
-    import { button } from ".panda/recipes";
+    import { buttonStyle } from ".panda/recipes";
     import { stack } from ".panda/patterns";
 
     const filePath = String.raw\`C:\\Development\\profile\\aboutme.html\`;
@@ -3787,13 +3787,13 @@ describe('preset patterns', () => {
 
     export default function App() {
       return (
-        <Button rootProps={css.raw({ bg: "red.400" })} />
+        <ButtonStyle rootProps={css.raw({ bg: "red.400" })} />
       );
     }
 
     // recipe in storybook
     export const Funky: Story = {
-      args: button.raw({
+      args: buttonStyle.raw({
         visual: "funky",
         shape: "circle",
         size: "sm",
@@ -3841,7 +3841,7 @@ describe('preset patterns', () => {
           "data": [
             {},
           ],
-          "name": "Button",
+          "name": "ButtonStyle",
           "type": "jsx-recipe",
         },
         {
@@ -3852,8 +3852,15 @@ describe('preset patterns', () => {
               "visual": "funky",
             },
           ],
-          "name": "button",
+          "name": "buttonStyle",
           "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "ButtonStyle",
+          "type": "jsx-recipe",
         },
         {
           "data": [
@@ -3927,6 +3934,42 @@ describe('preset patterns', () => {
 
         .gap_10px {
           gap: 10px
+          }
+      }
+
+      @layer recipes {
+        .buttonStyle--size_md {
+          height: 3rem;
+          min-width: 3rem;
+          padding: 0 0.75rem
+          }
+
+        .buttonStyle--size_sm {
+          height: 2.5rem;
+          min-width: 2.5rem;
+          padding: 0 0.5rem
+          }
+
+        .buttonStyle--variant_solid {
+          background-color: blue;
+          color: var(--colors-white);
+          }
+
+        .buttonStyle--variant_solid[data-disabled] {
+          background-color: gray;
+          color: var(--colors-black)
+              }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue
+              }
+
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center
+              }
           }
       }"
     `)

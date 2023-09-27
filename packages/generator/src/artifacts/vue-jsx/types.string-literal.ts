@@ -16,7 +16,7 @@ import type { Component, FunctionalComponent, NativeElements } from 'vue'
 type IntrinsicElement = keyof NativeElements
 type ElementType = IntrinsicElement | Component
 
-type ComponentProps<T extends ElementType> = T extends IntrinsicElement
+export type ComponentProps<T extends ElementType> = T extends IntrinsicElement
   ? NativeElements[T]
   : T extends Component<infer Props>
   ? Props

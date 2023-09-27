@@ -5,16 +5,16 @@ import type { RecipeDefinition, RecipeSelection, RecipeVariantRecord } from './r
 
 type Dict = Record<string, unknown>
 
-type ComponentProps<T extends ElementType> = DistributiveOmit<ComponentPropsWithoutRef<T>, 'ref'> & {
+export type ComponentProps<T extends ElementType> = DistributiveOmit<ComponentPropsWithoutRef<T>, 'ref'> & {
   ref?: Ref<ElementRef<T>>
 }
 
-export type PandaComponent<T extends ElementType, P extends Dict = {}> = {
+export interface PandaComponent<T extends ElementType, P extends Dict = {}> {
   (props: JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>): JSX.Element
   displayName?: string
 }
 
-type RecipeFn = { __type: any }
+interface RecipeFn { __type: any }
 
 interface JsxFactory {
   <T extends ElementType>(component: T): PandaComponent<T, {}>

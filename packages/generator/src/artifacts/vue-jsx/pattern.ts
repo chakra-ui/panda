@@ -36,7 +36,7 @@ export function generateVueJsxPattern(ctx: Context) {
     ${ctx.file.importType(typeName, '../types/jsx')}
     ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
 
-    export type ${upperName}Props = ${upperName}Properties & DistributiveOmit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}>
+    export interface ${upperName}Props extends ${upperName}Properties, DistributiveOmit<${typeName}<'${jsxElement}'>, keyof ${upperName}Properties ${blocklistType}> {}
 
     ${description ? `/** ${description} */` : ''}
     export declare const ${jsxName}: FunctionalComponent<${upperName}Props>

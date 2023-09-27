@@ -1,5 +1,22 @@
 # @pandacss/token-dictionary
 
+## 0.15.2
+
+### Patch Changes
+
+- Updated dependencies [26a788c0]
+  - @pandacss/types@0.15.2
+  - @pandacss/shared@0.15.2
+
+## 0.15.1
+
+### Patch Changes
+
+- 4e003bfb: - reuse css variable in semantic token alias
+- Updated dependencies [26f6982c]
+  - @pandacss/shared@0.15.1
+  - @pandacss/types@0.15.1
+
 ## 0.15.0
 
 ### Patch Changes

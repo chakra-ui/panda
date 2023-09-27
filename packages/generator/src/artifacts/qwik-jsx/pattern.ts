@@ -15,7 +15,7 @@ export function generateQwikJsxPattern(ctx: Context) {
       import { h } from '@builder.io/qwik'
       ${ctx.file.import(factoryName, './factory')}
       ${ctx.file.import(styleFnName, `../patterns/${dashName}`)}
-  
+
       export const ${jsxName} = function ${jsxName}(props) {
         ${match(props.length)
           .with(
@@ -41,10 +41,10 @@ export function generateQwikJsxPattern(ctx: Context) {
       ${ctx.file.importType(typeName, '../types/jsx')}
       ${ctx.file.importType('Assign, DistributiveOmit', '../types/system-types')}
 
-      export type ${upperName}Props = Assign<${typeName}<'${jsxElement}'>, DistributiveOmit<${upperName}Properties, ${
+      export interface ${upperName}Props extends Assign<${typeName}<'${jsxElement}'>, DistributiveOmit<${upperName}Properties, ${
         blocklistType || '""'
-      }>>
-  
+      }>> {}
+
       ${description ? `/** ${description} */` : ''}
       export declare const ${jsxName}: Component<${upperName}Props>
       `,

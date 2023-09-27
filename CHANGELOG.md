@@ -6,6 +6,204 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.15.2] - 2023-09-26
+
+### Fixed
+
+- Fix issue where studio uses studio config, instead of custom panda config.
+
+### Added
+
+- Update supported panda config extensions
+- Create custom partial types for each config object property
+
+When bundling the `outdir` in a library, you usually want to generate type declaration files (`d.ts`). Sometimes TS will
+complain about types not being exported.
+
+- Export all types from `{outdir}/types/index.d.ts`, this fixes errors looking like this:
+
+```
+src/components/Checkbox/index.tsx(8,7): error TS2742: The inferred type of 'Root' cannot be named without a reference to '../../../node_modules/@acmeorg/styled-system/types/system-types'. This is likely not portable. A type annotation is necessary.
+src/components/Checkbox/index.tsx(8,7): error TS2742: The inferred type of 'Root' cannot be named without a reference to '../../../node_modules/@acmeorg/styled-system/types/csstype'. This is likely not portable. A type annotation is necessary.
+src/components/Checkbox/index.tsx(8,7): error TS2742: The inferred type of 'Root' cannot be named without a reference to '../../../node_modules/@acmeorg/styled-system/types/conditions'. This is likely not portable. A type annotation is necessary.
+```
+
+- Export generated recipe interfaces from `{outdir}/recipes/{recipeFn}.d.ts`, this fixes errors looking like this:
+
+```
+src/ui/avatar.tsx (16:318) "AvatarRecipe" is not exported by "styled-system/recipes/index.d.ts", imported by "src/ui/avatar.tsx".
+src/ui/card.tsx (2:164) "CardRecipe" is not exported by "styled-system/recipes/index.d.ts", imported by "src/ui/card.tsx".
+src/ui/checkbox.tsx (19:310) "CheckboxRecipe" is not exported by "styled-system/recipes/index.d.ts", imported by "src/ui/checkbox.tsx".
+```
+
+- Export type `ComponentProps` from `{outdir}/types/jsx.d.ts`, this fixes errors looking like this:
+
+```
+ "ComponentProps" is not exported by "styled-system/types/jsx.d.ts", imported by "src/ui/form-control.tsx".
+```
+
+### Changed
+
+- Switch to interface for runtime types
+- BREAKING CHANGE: Presets merging order felt wrong (left overriding right presets) and is now more intuitive (right
+  overriding left presets)
+
+> Note: This is only relevant for users using more than 1 custom defined preset that overlap with each other.
+
+Example:
+
+```ts
+const firstConfig = definePreset({
+  theme: {
+    tokens: {
+      colors: {
+        'first-main': { value: 'override' },
+      },
+    },
+    extend: {
+      tokens: {
+        colors: {
+          orange: { value: 'orange' },
+          gray: { value: 'from-first-config' },
+        },
+      },
+    },
+  },
+})
+
+const secondConfig = definePreset({
+  theme: {
+    tokens: {
+      colors: {
+        pink: { value: 'pink' },
+      },
+    },
+    extend: {
+      tokens: {
+        colors: {
+          blue: { value: 'blue' },
+          gray: { value: 'gray' },
+        },
+      },
+    },
+  },
+})
+
+// Final config
+export default defineConfig({
+  presets: [firstConfig, secondConfig],
+})
+```
+
+Here's the difference between the old and new behavior:
+
+```diff
+{
+  "theme": {
+    "tokens": {
+      "colors": {
+        "blue": {
+          "value": "blue"
+        },
+-        "first-main": {
+-          "value": "override"
+-        },
+        "gray": {
+-          "value": "from-first-config"
++          "value": "gray"
+        },
+        "orange": {
+          "value": "orange"
+        },
++        "pink": {
++            "value": "pink",
++        },
+      }
+    }
+  }
+}
+```
+
+## [0.15.1] - 2023-09-19
+
+### Fixed
+
+- Fix an issue when wrapping a component with `styled` would display its name as `styled.[object Object]`
+- Fix issue in css reset where number input field spinner still show.
+- Fix issue where slot recipe breaks when `slots` is `undefined`
+
+### Added
+
+- Reuse css variable in semantic token alias
+- Add the property `-moz-osx-font-smoothing: grayscale;` to the `reset.css` under the `html` selector.
+- Allow referencing tokens with the `token()` function in media queries or any other CSS at-rule.
+
+```js
+import { css } from '../styled-system/css'
+
+const className = css({
+  '@media screen and (min-width: token(sizes.4xl))': {
+    color: 'green.400',
+  },
+})
+```
+
+- Extract {fn}.raw as an identity fn
+
+so this will now work:
+
+```ts
+import { css } from 'styled-system/css'
+
+const paragraphSpacingStyle = css.raw({
+  '&:not(:first-child)': { marginBlockEnd: '1em' },
+})
+
+export const proseCss = css.raw({
+  maxWidth: '800px',
+  '& p': {
+    '&:not(:first-child)': { marginBlockStart: '1em' },
+  },
+  '& h1': paragraphSpacingStyle,
+  '& h2': paragraphSpacingStyle,
+})
+```
+
+- Use ECMA preset for ts-evaluator: This means that no other globals than those that are defined in the ECMAScript spec
+  such as Math, Promise, Object, etc, are available but it allows for some basic evaluation of expressions like this:
+
+```ts
+import { cva } from '.panda/css'
+
+const variants = () => {
+  const spacingTokens = Object.entries({
+    s: 'token(spacing.1)',
+    m: 'token(spacing.2)',
+    l: 'token(spacing.3)',
+  })
+
+  const spacingProps = {
+    px: 'paddingX',
+    py: 'paddingY',
+  }
+
+  // Generate variants programmatically
+  return Object.entries(spacingProps)
+    .map(([name, styleProp]) => {
+      const variants = spacingTokens
+        .map(([variant, token]) => ({ [variant]: { [styleProp]: token } }))
+        .reduce((_agg, kv) => ({ ..._agg, ...kv }))
+
+      return { [name]: variants }
+    })
+    .reduce((_agg, kv) => ({ ..._agg, ...kv }))
+}
+
+const baseStyle = cva({
+  variants: variants(),
+})
+```
+
 ## [0.15.0] - 2023-09-13
 
 ### Fixed

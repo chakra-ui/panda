@@ -1,6 +1,6 @@
 'use client'
 import { usePanda } from '@/src/hooks/usePanda'
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
 import { Splitter, SplitterPanel, SplitterResizeTrigger } from '@ark-ui/react'
 import { Editor } from './Editor'
 import { LayoutControl } from './LayoutControl'
@@ -9,7 +9,8 @@ import { Toolbar } from './Toolbar'
 import { UsePlayGroundProps, usePlayground } from '@/src/hooks/usePlayground'
 import { ColorModeSwitch } from '@/src/components/ColorModeSwitch'
 import { ArtifactsPanel } from '@/src/components/ArtifactsPanel'
-import { splitter } from '@/styled-system/recipes'
+import { button, splitter } from '@/styled-system/recipes'
+import { Examples } from '@/src/components/Examples'
 
 export const Playground = (props: UsePlayGroundProps) => {
   const {
@@ -25,6 +26,7 @@ export const Playground = (props: UsePlayGroundProps) => {
     onShare,
     isSharing,
     isResponsive,
+    setExample,
   } = usePlayground(props)
   const panda = usePanda(state.code, state.config)
   const { artifacts } = panda
@@ -32,20 +34,14 @@ export const Playground = (props: UsePlayGroundProps) => {
   return (
     <>
       <Toolbar>
+        <Examples setExample={setExample} />
         <button
-          className={css({
-            py: '2',
-            px: '4',
-            borderRadius: 'lg',
-            fontWeight: 'semibold',
-            bg: 'yellow.300',
-            color: { _dark: 'black' },
-            _disabled: {
-              opacity: 0.5,
-              cursor: 'not-allowed',
-            },
-            cursor: 'pointer',
-          })}
+          className={cx(
+            button({
+              visual: 'yellow',
+            }),
+            css({ px: '4' }),
+          )}
           onClick={onShare}
           disabled={isPristine || isSharing}
         >

@@ -1,6 +1,6 @@
 import { css } from '@/styled-system/css'
 import { Stack } from '@/styled-system/jsx'
-import { Segment, SegmentControl, SegmentGroup, SegmentIndicator, SegmentInput, SegmentLabel } from '@ark-ui/react'
+import { Segment, SegmentControl, SegmentGroup, SegmentGroupIndicator, SegmentLabel } from '@ark-ui/react'
 import MonacoEditor from '@monaco-editor/react'
 import { useState, useRef, useEffect } from 'react'
 import { CssFileArtifact } from '../hooks/usePanda'
@@ -69,7 +69,7 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
         value={activeTab}
         onChange={(e) => setActiveTab(e.value as any)}
       >
-        <SegmentIndicator
+        <SegmentGroupIndicator
           data-expanded={visible ? '' : undefined}
           className={css({
             background: { base: 'transparent', _expanded: 'primary' },
@@ -107,7 +107,6 @@ export const GeneratedCss = ({ cssArtifacts, visible }: { cssArtifacts: CssFileA
             >
               {artifact.file === 'index.css' ? artifact.dir?.slice(1).concat(artifact.file)?.join('/') : artifact.file}
             </SegmentLabel>
-            <SegmentInput />
             <SegmentControl />
           </Segment>
         ))}

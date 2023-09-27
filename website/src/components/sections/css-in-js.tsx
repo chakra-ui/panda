@@ -57,7 +57,7 @@ const codeSnippets = [
     code: outdent`
     import { styled } from './styled-system/jsx'
     import { cva } from './styled-system/css'
-    
+
     export const badge = cva({
       base: {
         fontWeight: 'medium',
@@ -76,9 +76,9 @@ const codeSnippets = [
         },
       }
     })
-    
-    export const Badge = styled('span', badge)    
-    
+
+    export const Badge = styled('span', badge)
+
     `,
     title: 'style-recipes.ts',
     lang: 'ts'
@@ -119,7 +119,6 @@ export const SectionCssInJS = () => {
           </panda.h2>
 
           <panda.div width="full" maxW="4xl" mx="auto">
-            {/* @ts-expect-error Server Component */}
             <Code lang="tsx" extensions={[tabs]} subProps={codeSnippets} />
           </panda.div>
 
@@ -141,7 +140,7 @@ export const SectionCssInJS = () => {
               gap="8"
             >
               {features.map(({ title, description, icon }) => (
-                <Stack maxW="440px" textStyle="xl" width="full">
+                <Stack maxW="440px" textStyle="xl" width="full" key={title}>
                   <HStack>
                     <Icon
                       icon={icon}

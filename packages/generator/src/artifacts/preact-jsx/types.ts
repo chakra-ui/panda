@@ -18,12 +18,12 @@ type ElementType = keyof JSX.IntrinsicElements
 
 type Dict = Record<string, unknown>
 
-export type ${componentName}<T extends ElementType, P extends Dict = {}> = {
+export interface ${componentName}<T extends ElementType, P extends Dict = {}> {
   (props: JsxHTMLProps<ComponentProps<T>, P> & JsxStyleProps): JSX.Element
   displayName?: string
 }
 
-type RecipeFn = { __type: any }
+interface RecipeFn = { __type: any }
 
 interface JsxFactory {
   ${styleProps === 'none' ? '' : `<T extends ElementType>(component: T): ${componentName}<T, {}>`}

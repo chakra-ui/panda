@@ -12,12 +12,12 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type BoxProperties = {
+    export interface BoxProperties {
        
     }
 
 
-    type BoxStyles = BoxProperties & DistributiveOmit<SystemStyleObject, keyof BoxProperties >
+    interface BoxStyles extends BoxProperties, DistributiveOmit<SystemStyleObject, keyof BoxProperties > {}
 
     interface BoxPatternFn {
       (styles?: BoxStyles): string
@@ -48,7 +48,7 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type FlexProperties = {
+    export interface FlexProperties {
        align?: PropertyValue<'alignItems'>
     	justify?: PropertyValue<'justifyContent'>
     	direction?: PropertyValue<'flexDirection'>
@@ -59,7 +59,7 @@ test('should generate pattern', () => {
     }
 
 
-    type FlexStyles = FlexProperties & DistributiveOmit<SystemStyleObject, keyof FlexProperties >
+    interface FlexStyles extends FlexProperties, DistributiveOmit<SystemStyleObject, keyof FlexProperties > {}
 
     interface FlexPatternFn {
       (styles?: FlexStyles): string
@@ -101,7 +101,7 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type StackProperties = {
+    export interface StackProperties {
        align?: PropertyValue<'alignItems'>
     	justify?: PropertyValue<'justifyContent'>
     	direction?: PropertyValue<'flexDirection'>
@@ -109,7 +109,7 @@ test('should generate pattern', () => {
     }
 
 
-    type StackStyles = StackProperties & DistributiveOmit<SystemStyleObject, keyof StackProperties >
+    interface StackStyles extends StackProperties, DistributiveOmit<SystemStyleObject, keyof StackProperties > {}
 
     interface StackPatternFn {
       (styles?: StackStyles): string
@@ -148,13 +148,13 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type VstackProperties = {
+    export interface VstackProperties {
        justify?: PropertyValue<'justifyContent'>
     	gap?: PropertyValue<'gap'>
     }
 
 
-    type VstackStyles = VstackProperties & DistributiveOmit<SystemStyleObject, keyof VstackProperties >
+    interface VstackStyles extends VstackProperties, DistributiveOmit<SystemStyleObject, keyof VstackProperties > {}
 
     interface VstackPatternFn {
       (styles?: VstackStyles): string
@@ -193,13 +193,13 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type HstackProperties = {
+    export interface HstackProperties {
        justify?: PropertyValue<'justifyContent'>
     	gap?: PropertyValue<'gap'>
     }
 
 
-    type HstackStyles = HstackProperties & DistributiveOmit<SystemStyleObject, keyof HstackProperties >
+    interface HstackStyles extends HstackProperties, DistributiveOmit<SystemStyleObject, keyof HstackProperties > {}
 
     interface HstackPatternFn {
       (styles?: HstackStyles): string
@@ -238,12 +238,12 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type SpacerProperties = {
+    export interface SpacerProperties {
        size?: ConditionalValue<Tokens[\\"spacing\\"]>
     }
 
 
-    type SpacerStyles = SpacerProperties & DistributiveOmit<SystemStyleObject, keyof SpacerProperties >
+    interface SpacerStyles extends SpacerProperties, DistributiveOmit<SystemStyleObject, keyof SpacerProperties > {}
 
     interface SpacerPatternFn {
       (styles?: SpacerStyles): string
@@ -280,12 +280,12 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type SquareProperties = {
+    export interface SquareProperties {
        size?: PropertyValue<'width'>
     }
 
 
-    type SquareStyles = SquareProperties & DistributiveOmit<SystemStyleObject, keyof SquareProperties >
+    interface SquareStyles extends SquareProperties, DistributiveOmit<SystemStyleObject, keyof SquareProperties > {}
 
     interface SquarePatternFn {
       (styles?: SquareStyles): string
@@ -325,12 +325,12 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type CircleProperties = {
+    export interface CircleProperties {
        size?: PropertyValue<'width'>
     }
 
 
-    type CircleStyles = CircleProperties & DistributiveOmit<SystemStyleObject, keyof CircleProperties >
+    interface CircleStyles extends CircleProperties, DistributiveOmit<SystemStyleObject, keyof CircleProperties > {}
 
     interface CirclePatternFn {
       (styles?: CircleStyles): string
@@ -371,12 +371,12 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type CenterProperties = {
+    export interface CenterProperties {
        inline?: ConditionalValue<boolean>
     }
 
 
-    type CenterStyles = CenterProperties & DistributiveOmit<SystemStyleObject, keyof CenterProperties >
+    interface CenterStyles extends CenterProperties, DistributiveOmit<SystemStyleObject, keyof CenterProperties > {}
 
     interface CenterPatternFn {
       (styles?: CenterStyles): string
@@ -413,12 +413,12 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type LinkBoxProperties = {
+    export interface LinkBoxProperties {
        
     }
 
 
-    type LinkBoxStyles = LinkBoxProperties & DistributiveOmit<SystemStyleObject, keyof LinkBoxProperties >
+    interface LinkBoxStyles extends LinkBoxProperties, DistributiveOmit<SystemStyleObject, keyof LinkBoxProperties > {}
 
     interface LinkBoxPatternFn {
       (styles?: LinkBoxStyles): string
@@ -456,12 +456,12 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type LinkOverlayProperties = {
+    export interface LinkOverlayProperties {
        
     }
 
 
-    type LinkOverlayStyles = LinkOverlayProperties & DistributiveOmit<SystemStyleObject, keyof LinkOverlayProperties >
+    interface LinkOverlayStyles extends LinkOverlayProperties, DistributiveOmit<SystemStyleObject, keyof LinkOverlayProperties > {}
 
     interface LinkOverlayPatternFn {
       (styles?: LinkOverlayStyles): string
@@ -504,12 +504,12 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type AspectRatioProperties = {
+    export interface AspectRatioProperties {
        ratio?: ConditionalValue<number>
     }
 
 
-    type AspectRatioStyles = AspectRatioProperties & DistributiveOmit<SystemStyleObject, keyof AspectRatioProperties | 'aspectRatio'>
+    interface AspectRatioStyles extends AspectRatioProperties, DistributiveOmit<SystemStyleObject, keyof AspectRatioProperties | 'aspectRatio'> {}
 
     interface AspectRatioPatternFn {
       (styles?: AspectRatioStyles): string
@@ -563,7 +563,7 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type GridProperties = {
+    export interface GridProperties {
        gap?: PropertyValue<'gap'>
     	columnGap?: PropertyValue<'gap'>
     	rowGap?: PropertyValue<'gap'>
@@ -572,7 +572,7 @@ test('should generate pattern', () => {
     }
 
 
-    type GridStyles = GridProperties & DistributiveOmit<SystemStyleObject, keyof GridProperties >
+    interface GridStyles extends GridProperties, DistributiveOmit<SystemStyleObject, keyof GridProperties > {}
 
     interface GridPatternFn {
       (styles?: GridStyles): string
@@ -611,7 +611,7 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type GridItemProperties = {
+    export interface GridItemProperties {
        colSpan?: ConditionalValue<number>
     	rowSpan?: ConditionalValue<number>
     	colStart?: ConditionalValue<number>
@@ -621,7 +621,7 @@ test('should generate pattern', () => {
     }
 
 
-    type GridItemStyles = GridItemProperties & DistributiveOmit<SystemStyleObject, keyof GridItemProperties >
+    interface GridItemStyles extends GridItemProperties, DistributiveOmit<SystemStyleObject, keyof GridItemProperties > {}
 
     interface GridItemPatternFn {
       (styles?: GridItemStyles): string
@@ -662,7 +662,7 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type WrapProperties = {
+    export interface WrapProperties {
        gap?: PropertyValue<'gap'>
     	rowGap?: PropertyValue<'gap'>
     	columnGap?: PropertyValue<'gap'>
@@ -671,7 +671,7 @@ test('should generate pattern', () => {
     }
 
 
-    type WrapStyles = WrapProperties & DistributiveOmit<SystemStyleObject, keyof WrapProperties >
+    interface WrapStyles extends WrapProperties, DistributiveOmit<SystemStyleObject, keyof WrapProperties > {}
 
     interface WrapPatternFn {
       (styles?: WrapStyles): string
@@ -712,12 +712,12 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type ContainerProperties = {
+    export interface ContainerProperties {
        
     }
 
 
-    type ContainerStyles = ContainerProperties & DistributiveOmit<SystemStyleObject, keyof ContainerProperties >
+    interface ContainerStyles extends ContainerProperties, DistributiveOmit<SystemStyleObject, keyof ContainerProperties > {}
 
     interface ContainerPatternFn {
       (styles?: ContainerStyles): string
@@ -754,14 +754,14 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type DividerProperties = {
+    export interface DividerProperties {
        orientation?: ConditionalValue<\\"horizontal\\" | \\"vertical\\">
     	thickness?: ConditionalValue<Tokens[\\"sizes\\"] | Properties[\\"borderWidth\\"]>
     	color?: ConditionalValue<Tokens[\\"colors\\"] | Properties[\\"borderColor\\"]>
     }
 
 
-    type DividerStyles = DividerProperties & DistributiveOmit<SystemStyleObject, keyof DividerProperties >
+    interface DividerStyles extends DividerProperties, DistributiveOmit<SystemStyleObject, keyof DividerProperties > {}
 
     interface DividerPatternFn {
       (styles?: DividerStyles): string
@@ -801,7 +801,7 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type FloatProperties = {
+    export interface FloatProperties {
        offsetX?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"left\\"]>
     	offsetY?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"top\\"]>
     	offset?: ConditionalValue<Tokens[\\"spacing\\"] | Properties[\\"top\\"]>
@@ -809,7 +809,7 @@ test('should generate pattern', () => {
     }
 
 
-    type FloatStyles = FloatProperties & DistributiveOmit<SystemStyleObject, keyof FloatProperties >
+    interface FloatStyles extends FloatProperties, DistributiveOmit<SystemStyleObject, keyof FloatProperties > {}
 
     interface FloatPatternFn {
       (styles?: FloatStyles): string
@@ -873,13 +873,13 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type BleedProperties = {
+    export interface BleedProperties {
        inline?: PropertyValue<'marginInline'>
     	block?: PropertyValue<'marginBlock'>
     }
 
 
-    type BleedStyles = BleedProperties & DistributiveOmit<SystemStyleObject, keyof BleedProperties >
+    interface BleedStyles extends BleedProperties, DistributiveOmit<SystemStyleObject, keyof BleedProperties > {}
 
     interface BleedPatternFn {
       (styles?: BleedStyles): string
@@ -917,12 +917,12 @@ test('should generate pattern', () => {
     import type { DistributiveOmit } from '../types/system-types';
     import type { Tokens } from '../tokens/index';
 
-    export type VisuallyHiddenProperties = {
+    export interface VisuallyHiddenProperties {
        
     }
 
 
-    type VisuallyHiddenStyles = VisuallyHiddenProperties & DistributiveOmit<SystemStyleObject, keyof VisuallyHiddenProperties >
+    interface VisuallyHiddenStyles extends VisuallyHiddenProperties, DistributiveOmit<SystemStyleObject, keyof VisuallyHiddenProperties > {}
 
     interface VisuallyHiddenPatternFn {
       (styles?: VisuallyHiddenStyles): string

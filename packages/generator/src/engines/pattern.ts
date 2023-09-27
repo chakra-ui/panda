@@ -31,6 +31,7 @@ export const getPatternEngine = (config: UserConfig) => {
   })
 
   return {
+    keys: Object.keys(patterns),
     getConfig: (name: string) => patterns[name],
     transform: (name: string, data: Dict) => {
       return patterns[name]?.transform?.(data, helpers) ?? {}

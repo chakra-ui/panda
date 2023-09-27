@@ -33,6 +33,8 @@ export class Recipes {
    */
   rules: Map<string, AtomicRule> = new Map()
 
+  keys: string[] = []
+
   constructor(private recipes: RecipeRecord = {}, private context: StylesheetContext) {
     this.assignRules()
   }
@@ -118,6 +120,8 @@ export class Recipes {
         //
         this.rules.set(name, this.createRule(name))
       }
+
+      this.keys.push(name)
     }
   }
 

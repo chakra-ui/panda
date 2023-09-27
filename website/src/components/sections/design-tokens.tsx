@@ -65,7 +65,6 @@ const CodePanel = (props: {
         {title}
       </panda.span>
       <panda.div flexShrink="0">
-        {/* @ts-expect-error Server Component */}
         <Code
           lang="tsx"
           style={{ borderRadius: token('radii.xl'), margin: '0' }}

@@ -1,12 +1,12 @@
 import type { TSConfig } from 'pkg-types'
-import type { Conditions } from './conditions'
+import type { Conditions, ExtendableConditions } from './conditions'
 import type { PandaHooks } from './hooks'
 import type { PatternConfig } from './pattern'
-import type { Extendable, RequiredBy, UnwrapExtend } from './shared'
+import type { RequiredBy } from './shared'
 import type { StaticCssOptions } from './static-css'
-import type { GlobalStyleObject } from './system-types'
-import type { Theme } from './theme'
-import type { UtilityConfig } from './utility'
+import type { ExtendableGlobalStyleObject, GlobalStyleObject } from './system-types'
+import type { ExtendableTheme, Theme } from './theme'
+import type { ExtendableUtilityConfig, UtilityConfig } from './utility'
 
 export type { TSConfig }
 
@@ -14,7 +14,7 @@ export type CascadeLayer = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
 
 export type CascadeLayers = Record<CascadeLayer, string>
 
-type StudioOptions = {
+interface StudioOptions {
   /**
    * Used to customize the design system studio
    * @default { title: 'Panda', logo: '🐼' }
@@ -38,7 +38,11 @@ type StudioOptions = {
   }
 }
 
-type PresetCore = {
+interface Patterns {
+  [pattern: string]: PatternConfig
+}
+
+interface PresetCore {
   /**
    * The css selectors or media queries shortcuts.
    * @example `{ hover: "&:hover" }`
@@ -62,11 +66,43 @@ type PresetCore = {
   patterns: Record<string, PatternConfig>
 }
 
-type ExtendableOptions = {
-  [K in keyof PresetCore]?: Extendable<PresetCore[K]>
+interface ExtendablePatterns {
+  [pattern: string]: PatternConfig | Patterns | undefined
+  extend?: Patterns | undefined
 }
 
-type FileSystemOptions = {
+export interface ExtendableOptions {
+  /**
+   * The css selectors or media queries shortcuts.
+   * @example `{ hover: "&:hover" }`
+   */
+  conditions?: ExtendableConditions
+  /**
+   * The global styles for your project.
+   */
+  globalCss?: ExtendableGlobalStyleObject
+  /**
+   * The theme configuration for your project.
+   */
+  theme?: ExtendableTheme
+  /**
+   * The css utility definitions.
+   */
+  utilities?: ExtendableUtilityConfig
+  /**
+   * Common styling or layout patterns for your project.
+   */
+  patterns?: ExtendablePatterns
+}
+
+export interface OutdirImportMap {
+  css: string
+  recipes: string
+  patterns: string
+  jsx?: string
+}
+
+interface FileSystemOptions {
   /**
    * Whether to clean the output directory before generating the css.
    * @default false
@@ -77,6 +113,19 @@ type FileSystemOptions = {
    * @default 'styled-system'
    */
   outdir?: string
+  /**
+   * Allows you to customize the import paths for the generated outdir.
+   * @default
+   * ```js
+   * {
+   *    css: 'styled-system/css',
+   *    recipes: 'styled-system/recipes',
+   *    patterns: 'styled-system/patterns',
+   *    jsx: 'styled-system/jsx',
+   * }
+   * ```
+   */
+  importMap?: OutdirImportMap
   /**
    * List of files glob to watch for changes.
    * @default []
@@ -111,7 +160,7 @@ type FileSystemOptions = {
 
 type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik'
 
-type JsxOptions = {
+interface JsxOptions {
   /**
    * The framework to use for generating supercharged elements.
    */
@@ -152,7 +201,7 @@ type JsxOptions = {
   jsxStyleProps?: 'all' | 'minimal' | 'none'
 }
 
-type CssgenOptions = {
+interface CssgenOptions {
   /**
    * Whether to include css reset styles in the generated css.
    * @default true
@@ -195,7 +244,7 @@ type CssgenOptions = {
   syntax?: 'template-literal' | 'object-literal'
 }
 
-type CodegenOptions = {
+interface CodegenOptions {
   /**
    * Whether to emit the artifacts to `node_modules` as a package.
    * @default false
@@ -244,7 +293,7 @@ type CodegenOptions = {
   forceConsistentTypeExtension?: boolean
 }
 
-type PresetOptions = {
+interface PresetOptions {
   /**
    * Used to create reusable config presets for your project or team.
    */
@@ -256,29 +305,32 @@ type PresetOptions = {
   eject?: boolean
 }
 
-type HooksOptions = {
+interface HooksOptions {
   hooks?: Partial<PandaHooks>
 }
 
-export type Config = StudioOptions &
-  ExtendableOptions &
-  CssgenOptions &
-  CodegenOptions &
-  FileSystemOptions &
-  JsxOptions &
-  PresetOptions &
-  HooksOptions
+export interface Config
+  extends StudioOptions,
+    ExtendableOptions,
+    CssgenOptions,
+    CodegenOptions,
+    FileSystemOptions,
+    JsxOptions,
+    PresetOptions,
+    HooksOptions {}
 
-export type Preset = ExtendableOptions & PresetOptions
+export interface Preset extends ExtendableOptions, PresetOptions {}
 
-export type UserConfig = UnwrapExtend<RequiredBy<Config, 'outdir' | 'cwd' | 'include'>>
+export interface UserConfig
+  extends Partial<PresetCore>,
+    RequiredBy<Omit<Config, keyof PresetCore>, 'outdir' | 'cwd' | 'include'> {}
 
-export type PathMapping = {
+export interface PathMapping {
   pattern: RegExp
   paths: string[]
 }
 
-export type ConfigTsOptions = {
+export interface ConfigTsOptions {
   baseUrl?: string | undefined
   pathMappings: PathMapping[]
 }

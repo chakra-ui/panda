@@ -47,8 +47,8 @@
     "prettier": "^2.8.8",
     "ts-morph": "19.0.0",
     "tsup": "7.1.0",
-    "tsx": "3.12.7",
-    "typescript": "5.1.6",
+    "tsx": "3.12.10",
+    "typescript": "5.2.2",
     "vite-tsconfig-paths": "4.2.0",
     "vitest": "0.33.0"
   },
@@ -60,12 +60,8 @@
     ]
   },
   "packageManager": "pnpm@8.6.4",
-  "pnpm": {
-    "overrides": {
-      "@types/react": "18.0.17"
-    }
-  },
   "devDependencies": {
+    "happy-dom": "^12.1.6",
     "mdx-local-link-checker": "^2.1.1",
     "rimraf": "^5.0.1"
   }

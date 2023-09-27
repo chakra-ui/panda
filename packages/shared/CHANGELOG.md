@@ -1,5 +1,13 @@
 # @pandacss/shared
 
+## 0.15.2
+
+## 0.15.1
+
+### Patch Changes
+
+- 26f6982c: Fix issue where slot recipe breaks when `slots` is `undefined`
+
 ## 0.15.0
 
 ### Patch Changes

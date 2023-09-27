@@ -5,7 +5,7 @@ import type { PropertyValue } from '../types/prop-type';
 import type { DistributiveOmit } from '../types/system-types';
 import type { Tokens } from '../tokens/index';
 
-export type FloatProperties = {
+export interface FloatProperties {
    offsetX?: ConditionalValue<Tokens["spacing"] | Properties["left"]>
 	offsetY?: ConditionalValue<Tokens["spacing"] | Properties["top"]>
 	offset?: ConditionalValue<Tokens["spacing"] | Properties["top"]>
@@ -13,7 +13,7 @@ export type FloatProperties = {
 }
 
 
-type FloatStyles = FloatProperties & DistributiveOmit<SystemStyleObject, keyof FloatProperties >
+interface FloatStyles extends FloatProperties, DistributiveOmit<SystemStyleObject, keyof FloatProperties > {}
 
 interface FloatPatternFn {
   (styles?: FloatStyles): string

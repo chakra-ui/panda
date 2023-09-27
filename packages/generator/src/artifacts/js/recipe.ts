@@ -138,7 +138,7 @@ export function generateRecipes(ctx: Context) {
         ${ctx.file.importType('Pretty', '../types/helpers')}
         ${ctx.file.importType('DistributiveOmit', '../types/system-types')}
 
-        type ${upperName}Variant = {
+        interface ${upperName}Variant {
           ${Object.keys(variantKeyMap)
             .map((key) => {
               const values = variantKeyMap[key]
@@ -158,7 +158,7 @@ export function generateRecipes(ctx: Context) {
         }
         }
 
-        interface ${upperName}Recipe {
+        export interface ${upperName}Recipe {
           __type: ${upperName}VariantProps
           (props?: ${upperName}VariantProps): ${
           isSlotRecipe(config) ? `Pretty<Record<${unionType(config.slots)}, string>>` : 'string'

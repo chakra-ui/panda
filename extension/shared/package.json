@@ -3,7 +3,7 @@
   "name": "@pandacss/extension-shared",
   "displayName": "🐼 Panda CSS",
   "description": "Shared utilities between extension client & server",
-  "version": "0.15.0",
+  "version": "0.15.2",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "tsup": "7.1.0",
-    "typescript": "^5.1.6"
+    "typescript": "^5.2.2"
   },
   "dependencies": {
     "@pandacss/shared": "workspace:^"

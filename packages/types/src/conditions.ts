@@ -2,21 +2,27 @@ import type { AnySelector, Selectors } from './selectors'
 
 export type ConditionType = 'at-rule' | 'parent-nesting' | 'self-nesting' | 'combinator-nesting'
 
-export type ConditionDetails = {
+export interface ConditionDetails {
   type: ConditionType
   value: string
   name?: string
   rawValue?: string
 }
 
-export type RawCondition = ConditionDetails & { raw: string }
+export interface RawCondition extends ConditionDetails {
+  raw: string
+}
 
 /* -----------------------------------------------------------------------------
  * Shadowed export (in CLI): DO NOT REMOVE
  * -----------------------------------------------------------------------------*/
 
-export type Conditions = {
+export interface Conditions {
   [condition: string]: string
+}
+export interface ExtendableConditions {
+  [condition: string]: string | Conditions | undefined
+  extend?: Conditions | undefined
 }
 
 export type Condition = string
