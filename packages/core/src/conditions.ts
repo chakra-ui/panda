@@ -48,14 +48,16 @@ export class Conditions {
   }
 
   shift = (paths: string[]) => {
-    return paths.slice().sort((a, b) => {
-      const aIsCondition = this.isCondition(a)
-      const bIsCondition = this.isCondition(b)
-      if (aIsCondition && !bIsCondition) return 1
-      if (!aIsCondition && bIsCondition) return -1
-      if (!aIsCondition && !bIsCondition) return -1
-      return 0
-    })
+    return paths
+      .map((path) => path.trim())
+      .sort((a, b) => {
+        const aIsCondition = this.isCondition(a)
+        const bIsCondition = this.isCondition(b)
+        if (aIsCondition && !bIsCondition) return 1
+        if (!aIsCondition && bIsCondition) return -1
+        if (!aIsCondition && !bIsCondition) return -1
+        return 0
+      })
   }
 
   segment = (paths: string[]): { condition: string[]; selector: string[] } => {
