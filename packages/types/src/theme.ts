@@ -39,6 +39,18 @@ export interface Theme {
   slotRecipes?: Record<string, SlotRecipeConfig>
 }
 
+interface PartialTheme extends Omit<Theme, 'recipes' | 'slotRecipes'> {
+  /**
+   * Multi-variant style definitions for your project.
+   * Useful for defining component styles.
+   */
+  recipes?: Record<string, Partial<RecipeConfig>>
+  /**
+   * Multi-variant style definitions for component slots.
+   */
+  slotRecipes?: Record<string, Partial<SlotRecipeConfig>>
+}
+
 export interface ExtendableTheme extends Theme {
-  extend?: Theme | undefined
+  extend?: PartialTheme | undefined
 }
