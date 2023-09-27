@@ -1,5 +1,5 @@
 {
-  "name": "panda-config-test-mts",
+  "name": "sandbox-config-test-mts",
   "private": true,
   "devDependencies": {
     "@pandacss/dev": "workspace:^"

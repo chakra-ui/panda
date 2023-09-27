@@ -1,5 +1,5 @@
 {
-  "name": "pandacss-ts-import-map-outdir",
+  "name": "sandbox-ts-import-map-outdir",
   "type": "module",
   "exports": {
     "./css": {

@@ -1,5 +1,5 @@
 {
-  "name": "panda-config-test-ts",
+  "name": "sandbox-config-test-ts",
   "private": true,
   "devDependencies": {
     "@pandacss/dev": "workspace:^"

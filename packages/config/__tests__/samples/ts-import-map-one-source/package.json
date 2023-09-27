@@ -1,5 +1,5 @@
 {
-  "name": "panda-config-test-with-importmap",
+  "name": "sandbox-config-test-with-importmap",
   "private": true,
   "type": "module",
   "scripts": {
