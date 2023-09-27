@@ -1,5 +1,6 @@
 import { outdent } from 'outdent'
 import type { Context } from '../../engines'
+import { match } from 'ts-pattern'
 
 export function generateSolidJsxFactory(ctx: Context) {
   const { componentName, factoryName } = ctx.jsx
@@ -13,7 +14,18 @@ export function generateSolidJsxFactory(ctx: Context) {
     ${ctx.file.import('allCssProperties', './is-valid-prop')}
     ${ctx.jsx.styleProps === 'all' ? ctx.file.import('isCssProperty', './is-valid-prop') : ''}
 
+    ${match(ctx.jsx.styleProps)
+      .with(
+        'all',
+        () => outdent`
     const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
+    `,
+      )
+      .otherwise(
+        () => outdent`
+    const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop)
+    `,
+      )}
 
     function styledFn(element, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
@@ -29,6 +41,9 @@ export function generateSolidJsxFactory(ctx: Context) {
         const mergedProps = mergeProps({ as: element }, initialProps, props)
         const forwardedProps = Object.keys(props).filter(shouldForwardProp)
 
+        ${match(ctx.jsx.styleProps)
+          .with('all', () => {
+            return outdent`
         const [localProps, forwardedProps, variantProps, styleProps, htmlProps, elementProps] = splitProps(
           mergedProps,
           ['as', 'class', 'className'],
@@ -48,7 +63,51 @@ export function generateSolidJsxFactory(ctx: Context) {
           const { css: cssStyles, ...propStyles } = styleProps
           const cvaStyles = cvaFn.raw(variantProps)
           return cx(css(cvaStyles, propStyles, cssStyles), localProps.class, localProps.className)
-        }
+        }`
+          })
+          .with('minimal', () => {
+            return outdent`
+            const [localProps, forwardedProps, variantProps, htmlProps, elementProps] = splitProps(
+              mergedProps,
+              ['as', 'class'],
+              forwardedProps,
+              cvaFn.variantKeys,
+              allCssProperties,
+              normalizeHTMLProps.keys
+            )
+
+            function recipeClass() {
+              const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
+              return cx(cvaFn(variantProps, false), css(compoundVariantStyles, combinedProps.css), localProps.class, localProps.className)
+            }
+
+            function cvaClass() {
+              const cvaStyles = cvaFn.raw(variantProps)
+              return cx(css(cvaStyles, combinedProps.css), localProps.class, localProps.className)
+            }`
+          })
+          .with('none', () => {
+            return outdent`
+            const [localProps, forwardedProps, variantProps, htmlProps, elementProps] = splitProps(
+              mergedProps,
+              ['as', 'class'],
+              forwardedProps,
+              cvaFn.variantKeys,
+              allCssProperties,
+              normalizeHTMLProps.keys
+            )
+
+            function recipeClass() {
+              const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
+              return cx(cvaFn(variantProps, false), css(compoundVariantStyles), localProps.class, localProps.className)
+            }
+
+            function cvaClass() {
+              const cvaStyles = cvaFn.raw(variantProps)
+              return cx(css(cvaStyles), localProps.class, localProps.className)
+            }`
+          })
+          .run()}
 
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
 

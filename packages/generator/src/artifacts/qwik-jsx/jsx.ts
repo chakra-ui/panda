@@ -1,5 +1,6 @@
 import { outdent } from 'outdent'
 import type { Context } from '../../engines'
+import { match } from 'ts-pattern'
 
 export function generateQwikJsxFactory(ctx: Context) {
   const { factoryName, componentName } = ctx.jsx
@@ -11,7 +12,18 @@ export function generateQwikJsxFactory(ctx: Context) {
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.jsx.styleProps === 'all' ? ctx.file.import('isCssProperty', './is-valid-prop') : ''}
 
+    ${match(ctx.jsx.styleProps)
+      .with(
+        'all',
+        () => outdent`
     const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
+    `,
+      )
+      .otherwise(
+        () => outdent`
+    const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop)
+    `,
+      )}
 
     function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
@@ -27,20 +39,53 @@ export function generateQwikJsxFactory(ctx: Context) {
         const { as: Element = Dynamic, children, className, ...restProps } = props
 
         const combinedProps = Object.assign({}, initialProps, restProps)
-        const [forwardedProps, variantProps, styleProps, htmlProps, elementProps] =
+        ${match(ctx.jsx.styleProps)
+          .with('all', () => {
+            return outdent`
+          const [forwardedProps, variantProps, styleProps, htmlProps, elementProps] =
             splitProps(combinedProps, shouldForwardProp, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
 
-        const { css: cssStyles, ...propStyles } = styleProps
+          const { css: cssStyles, ...propStyles } = styleProps
 
-        function recipeClass() {
-          const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
-          return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.class, className)
-        }
+          function recipeClass() {
+            const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
+            return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.class, className)
+          }
 
-        function cvaClass() {
-          const cvaStyles = cvaFn.raw(variantProps)
-          return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.class, className)
-        }
+          function cvaClass() {
+            const cvaStyles = cvaFn.raw(variantProps)
+            return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.class, className)
+          }`
+          })
+          .with('minimal', () => {
+            return outdent`
+            const [forwardedProps, variantProps, htmlProps, elementProps] =
+            splitProps(combinedProps, shouldForwardProp, cvaFn.variantKeys, normalizeHTMLProps.keys)
+
+          function recipeClass() {
+            const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
+            return cx(cvaFn(variantProps, false), css(compoundVariantStyles, combinedProps.css), combinedProps.class, className)
+          }
+
+          function cvaClass() {
+            const cvaStyles = cvaFn.raw(variantProps)
+            return cx(css(cvaStyles, combinedProps.css), combinedProps.class, className)`
+          })
+          .with('none', () => {
+            return outdent`
+            const [forwardedProps, variantProps, htmlProps, elementProps] =
+            splitProps(combinedProps, shouldForwardProp, cvaFn.variantKeys, normalizeHTMLProps.keys)
+
+          function recipeClass() {
+            const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
+            return cx(cvaFn(variantProps, false), css(compoundVariantStyles), combinedProps.class, className)
+          }
+
+          function cvaClass() {
+            const cvaStyles = cvaFn.raw(variantProps)
+            return cx(css(cvaStyles), combinedProps.class, className)`
+          })
+          .run()}
 
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
 

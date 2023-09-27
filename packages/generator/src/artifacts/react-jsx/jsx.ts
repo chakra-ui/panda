@@ -12,7 +12,18 @@ export function generateReactJsxFactory(ctx: Context) {
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.jsx.styleProps === 'all' ? ctx.file.import('isCssProperty', './is-valid-prop') : ''}
 
+    ${match(ctx.jsx.styleProps)
+      .with(
+        'all',
+        () => outdent`
     const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
+    `,
+      )
+      .otherwise(
+        () => outdent`
+    const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop)
+    `,
+      )}
 
     function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
@@ -72,7 +83,7 @@ export function generateReactJsxFactory(ctx: Context) {
 
           function recipeClass() {
             const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
-            return cx(cvaFn(variantProps, false), combinedProps.className)
+            return cx(cvaFn(variantProps, false), css(compoundVariantStyles), combinedProps.className)
           }
 
           function cvaClass() {
