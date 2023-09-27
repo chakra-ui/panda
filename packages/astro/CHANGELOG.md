@@ -1,5 +1,11 @@
 # @pandacss/astro
 
+## 0.15.3
+
+### Patch Changes
+
+- @pandacss/postcss@0.15.3
+
 ## 0.15.2
 
 ### Patch Changes
