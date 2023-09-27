@@ -14,7 +14,7 @@
     "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
     "clean": "pnpm -r --parallel exec rimraf dist .turbo *.log",
     "reset": "pnpm -r --parallel exec rimraf node_modules && rimraf node_modules",
-    "test": "vitest",
+    "test": "vitest && pnpm -r --filter=./sandbox/codegen --filter=./packages/config/samples/** test",
     "test-watch": "vitest --watch -u",
     "lint": "eslint packages --ext .ts",
     "prettier": "prettier --check packages",

@@ -28,6 +28,7 @@ export function generateSolidJsxFactory(ctx: Context) {
 
         function recipeClass() {
           const { css: cssStyles, ...propStyles } = styleProps
+          const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
           return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), localProps.class)
         }
 

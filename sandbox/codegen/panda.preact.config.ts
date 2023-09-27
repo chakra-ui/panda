@@ -13,8 +13,8 @@ export default defineConfig({
   exclude: [],
 
   // The output directory for your css system
-  outdir: 'styled-system',
+  outdir: 'styled-system-preact',
 
   // The JSX framework to use
-  jsxFramework: 'react',
+  jsxFramework: 'preact',
 })
