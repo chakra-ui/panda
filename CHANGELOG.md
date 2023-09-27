@@ -6,6 +6,104 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.15.3] - 2023-09-27
+
+### Fixed
+
+- Fix issue where HMR does not work for Vue JSX factory and patterns
+- Fix issue in template literal mode where media queries doesn't work
+- Fix `ExtendableUtilityConfig` typings after a regression in 0.15.2 (due to
+  https://github.com/chakra-ui/panda/pull/1410)
+- Fix `ExtendableTheme` (specifically make the `RecipeConfig` Partial inside the `theme: { extend: { ... } }` object),
+  same for slotRecipes
+
+### Added
+
+- Add a new `config.importMap` option that allows you to specify a custom module specifier to import from instead of
+  being tied to the `outdir`
+
+You can now do things like leverage the native package.json
+[`imports`](https://nodejs.org/api/packages.html#subpath-imports):
+
+```ts
+export default defineConfig({
+  outdir: './outdir',
+  importMap: {
+    css: '#panda/styled-system/css',
+    recipes: '#panda/styled-system/recipes',
+    patterns: '#panda/styled-system/patterns',
+    jsx: '#panda/styled-system/jsx',
+  },
+})
+```
+
+Or you could also make your outdir an actual package from your monorepo:
+
+```ts
+export default defineConfig({
+  outdir: '../packages/styled-system',
+  importMap: {
+    css: '@monorepo/styled-system',
+    recipes: '@monorepo/styled-system',
+    patterns: '@monorepo/styled-system',
+    jsx: '@monorepo/styled-system',
+  },
+})
+```
+
+Working with tsconfig paths aliases is easy:
+
+```ts
+export default defineConfig({
+  outdir: 'styled-system',
+  importMap: {
+    css: 'styled-system/css',
+    recipes: 'styled-system/recipes',
+    patterns: 'styled-system/patterns',
+    jsx: 'styled-system/jsx',
+  },
+})
+```
+
+### Changed
+
+Automatically allow overriding config recipe compoundVariants styles within the `styled` JSX factory, example below
+
+With this config recipe:
+
+```ts file="panda.config.ts"
+const button = defineRecipe({
+  className: 'btn',
+  base: { color: 'green', fontSize: '16px' },
+  variants: {
+    size: { small: { fontSize: '14px' } },
+  },
+  compoundVariants: [{ size: 'small', css: { color: 'blue' } }],
+})
+```
+
+This would previously not merge the `color` property overrides, but now it does:
+
+```tsx file="example.tsx"
+import { styled } from '../styled-system/jsx'
+import { button } from '../styled-system/recipes'
+
+const Button = styled('button', button)
+
+function App() {
+  return (
+    <>
+      <Button size="small" color="red.100">
+        Click me
+      </Button>
+    </>
+  )
+}
+```
+
+- Before: `btn btn--size_small text_blue text_red.100`
+- After: `btn btn--size_small text_red.100`
+
 ## [0.15.2] - 2023-09-26
 
 ### Fixed
