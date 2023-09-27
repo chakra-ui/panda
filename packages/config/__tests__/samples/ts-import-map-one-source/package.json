@@ -1,0 +1,22 @@
+{
+  "name": "panda-config-test-with-importmap",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare": "panda codegen",
+    "start": "node --experimental-modules ./ts-import-map.js",
+    "cssgen": "panda cssgen -o ./styles.css",
+    "ship": "pnpm panda ship -o ./styles.json",
+    "test:start": "node --experimental-modules test-ts-import-map.js",
+    "test": "panda codegen && pnpm ship && pnpm test:start"
+  },
+  "imports": {
+    "#panda/css": "./ts-import-map-outdir/css/index.mjs",
+    "#panda/recipes": "./ts-import-map-outdir/recipes/index.mjs",
+    "#panda/patterns": "./ts-import-map-outdir/patterns/index.mjs",
+    "#panda/jsx": "./ts-import-map-outdir/jsx/index.mjs"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "workspace:^"
+  }
+}

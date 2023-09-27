@@ -359,6 +359,25 @@ The output directory for the generated css.
 }
 ```
 
+### importMap
+
+**Type**: `Partial<OutdirImportMap>`
+
+**Default**: `{ "css": "styled-system/css", "recipes": "styled-system/recipes", "patterns": "styled-system/patterns", "jsx": "styled-system/jsx" }`
+
+Allows you to customize the import paths for the generated outdir.
+
+```json
+{
+  "importMap": {
+    "css": "@acme/styled-system",
+    "recipes": "@acme/styled-system",
+    "patterns": "@acme/styled-system",
+    "jsx": "@acme/styled-system"
+  }
+}
+```
+
 ### include
 
 **Type**: `string[]`

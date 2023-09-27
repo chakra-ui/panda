@@ -95,6 +95,13 @@ export interface ExtendableOptions {
   patterns?: ExtendablePatterns
 }
 
+export interface OutdirImportMap {
+  css: string
+  recipes: string
+  patterns: string
+  jsx?: string
+}
+
 interface FileSystemOptions {
   /**
    * Whether to clean the output directory before generating the css.
@@ -106,6 +113,19 @@ interface FileSystemOptions {
    * @default 'styled-system'
    */
   outdir?: string
+  /**
+   * Allows you to customize the import paths for the generated outdir.
+   * @default
+   * ```js
+   * {
+   *    css: 'styled-system/css',
+   *    recipes: 'styled-system/recipes',
+   *    patterns: 'styled-system/patterns',
+   *    jsx: 'styled-system/jsx',
+   * }
+   * ```
+   */
+  importMap?: OutdirImportMap
   /**
    * List of files glob to watch for changes.
    * @default []

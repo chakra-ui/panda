@@ -105,32 +105,6 @@ describe('[dynamic] ast parser', () => {
             "type": "recipe",
           },
         },
-        "layerStyle" => Set {
-          {
-            "box": {
-              "column": 9,
-              "line": 8,
-              "node": "CallExpression",
-              "type": "map",
-              "value": Map {
-                "variant" => {
-                  "column": 21,
-                  "line": 9,
-                  "node": "StringLiteral",
-                  "type": "literal",
-                  "value": "raised",
-                },
-              },
-            },
-            "data": [
-              {
-                "variant": "raised",
-              },
-            ],
-            "name": "layerStyle",
-            "type": "recipe",
-          },
-        },
       }
     `)
   })

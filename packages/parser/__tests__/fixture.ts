@@ -125,7 +125,7 @@ export function recipeParser(code: string) {
 }
 
 export function jsxParser(code: string) {
-  const project = getProject(code)
+  const project = getProject(code, { jsxFramework: 'react' })
   const data = project.parseSourceFile(staticFilePath)!
   return data.jsx
 }
