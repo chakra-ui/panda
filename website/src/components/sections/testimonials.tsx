@@ -56,6 +56,7 @@ export const SectionTestimonials = () => {
         <Grid columns={{ base: 1, lg: 3 }} gap="6" mt="20">
           {testimonials.map(testimonial => (
             <Stack
+              key={testimonial.username}
               gap="8"
               layerStyle="offShadow"
               shadowColor={{ base: 'black', _dark: 'yellow.300' }}
