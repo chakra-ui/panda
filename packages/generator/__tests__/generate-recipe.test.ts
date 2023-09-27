@@ -102,7 +102,7 @@ describe('generate recipes', () => {
       const textStyleVariantKeys = Object.keys(textStyleVariantMap)
       export const textStyle = Object.assign(textStyleFn, {
         __recipe__: true,
-        recipeName: 'textStyle',
+        __name__: 'textStyle',
         raw: (props) => props,
         variantKeys: textStyleVariantKeys,
         variantMap: textStyleVariantMap,
@@ -149,7 +149,7 @@ describe('generate recipes', () => {
       const tooltipStyleVariantKeys = Object.keys(tooltipStyleVariantMap)
       export const tooltipStyle = Object.assign(tooltipStyleFn, {
         __recipe__: true,
-        recipeName: 'tooltipStyle',
+        __name__: 'tooltipStyle',
         raw: (props) => props,
         variantKeys: tooltipStyleVariantKeys,
         variantMap: tooltipStyleVariantMap,
@@ -209,7 +209,7 @@ describe('generate recipes', () => {
       const buttonStyleVariantKeys = Object.keys(buttonStyleVariantMap)
       export const buttonStyle = Object.assign(buttonStyleFn, {
         __recipe__: true,
-        recipeName: 'buttonStyle',
+        __name__: 'buttonStyle',
         raw: (props) => props,
         variantKeys: buttonStyleVariantKeys,
         variantMap: buttonStyleVariantMap,

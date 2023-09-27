@@ -4268,13 +4268,6 @@ describe('preset patterns', () => {
         },
         {
           "data": [
-            {},
-          ],
-          "name": "ButtonStyle",
-          "type": "jsx-recipe",
-        },
-        {
-          "data": [
             {
               "direction": "column",
             },
