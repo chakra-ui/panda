@@ -23,7 +23,7 @@ export function generateQwikJsxFactory(ctx: Context) {
         const { css: cssStyles, ...propStyles } = styleProps
 
         function recipeClass() {
-          const compoundVariantStyles = cvaFn.getCompoundVariantCss?.(variantProps);
+          const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
           return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), elementProps.class)
         }
 

@@ -25,7 +25,7 @@ export function generatePreactJsxFactory(ctx: Context) {
 
         function recipeClass() {
           const { css: cssStyles, ...propStyles } = styleProps
-          const compoundVariantStyles = cvaFn.getCompoundVariantCss?.(variantProps);
+          const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
           return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), elementProps.className, elementProps.class)
         }
 

@@ -22,7 +22,7 @@ describe('generate recipes', () => {
          };
        };
 
-        return Object.assign((variants, withCompoundVariants = true) => {
+        const recipeFn = (variants, withCompoundVariants = true) => {
          const transform = (prop, value) => {
            assertCompoundVariant(name, compoundVariants, variants, prop)
 
@@ -44,14 +44,19 @@ describe('generate recipes', () => {
 
          const recipeStyles = getRecipeStyles(variants)
 
-         const compoundVariantStyles = withCompoundVariants && getCompoundVariantCss(compoundVariants, recipeStyles)
+         if (withCompoundVariants) {
+           const compoundVariantStyles = getCompoundVariantCss(compoundVariants, recipeStyles)
+           return cx(recipeCss(recipeStyles), css(compoundVariantStyles))
+         }
 
-         return cx(recipeCss(recipeStyles), css(compoundVariantStyles))
-        }, {
-         getCompoundVariantCss: (variants) => {
-           return getCompoundVariantCss(compoundVariants, getRecipeStyles(variants));
-         },
-       })
+         return recipeCss(recipeStyles)
+        }
+
+         return Object.assign(recipeFn, {
+           __getCompoundVariantCss__: (variants) => {
+             return getCompoundVariantCss(compoundVariants, getRecipeStyles(variants));
+           },
+         })
       }",
           "name": "create-recipe",
         },
