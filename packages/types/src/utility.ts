@@ -55,6 +55,10 @@ export type UtilityConfig = {
   [property in LiteralUnion<CssProperty>]?: PropertyConfig
 }
 
-export type ExtendableUtilityConfig = UtilityConfig & {
-  extend?: UtilityConfig
+type UtilityConfigWithExtend = {
+  [pattern in LiteralUnion<CssProperty>]?: PropertyConfig | UtilityConfig | undefined
+}
+
+export type ExtendableUtilityConfig = UtilityConfigWithExtend & {
+  extend?: UtilityConfig | undefined
 }
