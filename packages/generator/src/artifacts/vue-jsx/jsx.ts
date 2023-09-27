@@ -57,17 +57,12 @@ export function generateVueJsxFactory(ctx: Context) {
     }
 
     function createJsxFactory() {
-      const cache = new Map()
-
       return new Proxy(styledFn, {
         apply(_, __, args) {
           return styledFn(...args)
         },
         get(_, el) {
-          if (!cache.has(el)) {
-            cache.set(el, styledFn(el))
-          }
-          return cache.get(el)
+         return styledFn(el)
         },
       })
     }
