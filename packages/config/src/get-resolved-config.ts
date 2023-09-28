@@ -11,7 +11,7 @@ type ExtendableConfig = Extendable<Config>
 export async function getResolvedConfig(config: ExtendableConfig, cwd: string) {
   const presets = config.presets ?? []
 
-  const configs: ExtendableConfig[] = [config]
+  const configs: ExtendableConfig[] = []
   while (presets.length > 0) {
     const preset = await presets.shift()!
     if (typeof preset === 'string') {
@@ -24,5 +24,6 @@ export async function getResolvedConfig(config: ExtendableConfig, cwd: string) {
     }
   }
 
+  configs.unshift(config)
   return mergeConfigs(configs) as Config
 }

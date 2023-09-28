@@ -153,6 +153,40 @@ describe('mergeConfigs / theme', () => {
 
   test('should getResolvedConfig, merge and override', async () => {
     const defaultConfig = defineConfig({
+      presets: [
+        {
+          theme: {
+            tokens: {
+              colors: {
+                'nested-1': { value: 'nested-1' },
+              },
+            },
+            extend: {
+              tokens: {
+                colors: {
+                  'nested-X': { value: 'nested-A' },
+                },
+              },
+            },
+          },
+        },
+        {
+          theme: {
+            tokens: {
+              colors: {
+                'nested-2': { value: 'nested-2' },
+              },
+            },
+            extend: {
+              tokens: {
+                colors: {
+                  'nested-X': { value: 'nested-B' },
+                },
+              },
+            },
+          },
+        },
+      ],
       theme: {
         tokens: {
           colors: {
@@ -162,7 +196,7 @@ describe('mergeConfigs / theme', () => {
         extend: {
           tokens: {
             colors: {
-              orange: { value: 'orange' },
+              orange: { value: 'orange-never-overriden' },
               gray: { value: 'from-default-config' },
             },
           },
@@ -171,17 +205,54 @@ describe('mergeConfigs / theme', () => {
     })
 
     const userConfig = defineConfig({
+      presets: [
+        {
+          theme: {
+            tokens: {
+              colors: {
+                'nested-3': { value: 'nested-3' },
+              },
+            },
+            extend: {
+              tokens: {
+                colors: {
+                  'nested-X': { value: 'nested-C' },
+                },
+              },
+            },
+          },
+        },
+        {
+          theme: {
+            tokens: {
+              colors: {
+                'nested-4': { value: 'nested-4' },
+              },
+            },
+            extend: {
+              tokens: {
+                colors: {
+                  'nested-X': { value: 'nested-D' },
+                },
+              },
+            },
+          },
+        },
+      ],
       theme: {
         tokens: {
           colors: {
             pink: { value: 'pink' },
+            'nested-5': { value: 'nested-5' },
+            'nested-X': { value: 'nested-E' },
           },
         },
         extend: {
           tokens: {
             colors: {
               blue: { value: 'blue' },
-              gray: { value: 'gray' },
+              gray: { value: 'final-gray' },
+              'nested-X': { value: 'nested-F' },
             },
           },
         },
@@ -191,6 +262,22 @@ describe('mergeConfigs / theme', () => {
     const result = await getResolvedConfig(
       {
         presets: [defaultConfig, userConfig],
+        theme: {
+          tokens: {
+            colors: {
+              danger: { value: 'final-color' },
+            },
+          },
+          extend: {
+            tokens: {
+              colors: {
+                blue: { value: 'final-blue' },
+                final: { value: 'final' },
+                'nested-X': { value: 'final-nested' },
+              },
+            },
+          },
+        },
       },
       '',
     )
@@ -201,16 +288,22 @@ describe('mergeConfigs / theme', () => {
           "tokens": {
             "colors": {
               "blue": {
-                "value": "blue",
+                "value": "final-blue",
+              },
+              "danger": {
+                "value": "final-color",
+              },
+              "final": {
+                "value": "final",
               },
               "gray": {
-                "value": "gray",
+                "value": "final-gray",
+              },
+              "nested-X": {
+                "value": "final-nested",
               },
               "orange": {
-                "value": "orange",
-              },
-              "pink": {
-                "value": "pink",
+                "value": "orange-never-overriden",
               },
             },
           },
