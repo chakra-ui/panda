@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+styled-system
+styled-system-preact
+styled-system-vue
+styled-system-qwik
+styled-system-solid
+styled-system-vue

@@ -20,7 +20,7 @@ export function generateSolidJsxFactory(ctx: Context) {
 
         const [localProps, variantProps, styleProps, htmlProps, elementProps] = splitProps(
           mergedProps,
-          ['as', 'class'],
+          ['as', 'class', 'className'],
           cvaFn.variantKeys,
           allCssProperties,
           normalizeHTMLProps.keys
@@ -28,13 +28,14 @@ export function generateSolidJsxFactory(ctx: Context) {
 
         function recipeClass() {
           const { css: cssStyles, ...propStyles } = styleProps
-          return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), localProps.class)
+          const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
+          return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), localProps.class, localProps.className)
         }
 
         function cvaClass() {
           const { css: cssStyles, ...propStyles } = styleProps
           const cvaStyles = cvaFn.raw(variantProps)
-          return cx(css(cvaStyles, propStyles, cssStyles), localProps.class)
+          return cx(css(cvaStyles, propStyles, cssStyles), localProps.class, localProps.className)
         }
 
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
@@ -42,6 +43,8 @@ export function generateSolidJsxFactory(ctx: Context) {
         return createComponent(
           Dynamic,
           mergeProps(
+            elementProps,
+            normalizeHTMLProps(htmlProps),
             {
               get component() {
                 return localProps.as
@@ -50,8 +53,6 @@ export function generateSolidJsxFactory(ctx: Context) {
                 return classes()
               }
             },
-            elementProps,
-            normalizeHTMLProps(htmlProps)
           )
         )
       }

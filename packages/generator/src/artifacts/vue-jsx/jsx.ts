@@ -34,7 +34,8 @@ export function generateVueJsxFactory(ctx: Context) {
           const cvaClass = computed(() => {
             const [variantProps, styleProps, _htmlProps, elementProps] = splittedProps.value
             const { css: cssStyles, ...propStyles } = styleProps
-            return cx(cvaFn(variantProps), css(propStyles, cssStyles), elementProps.className)
+            const cvaStyles = cvaFn.raw(variantProps)
+            return cx(css(cvaStyles, propStyles, cssStyles), elementProps.className)
           })
 
           const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
@@ -45,9 +46,9 @@ export function generateVueJsxFactory(ctx: Context) {
             return h(
               props.as,
               {
-                class: classes.value,
                 ...elementProps,
                 ...normalizeHTMLProps(htmlProps),
+                class: classes.value,
               },
               slots.default && slots.default(),
             )
