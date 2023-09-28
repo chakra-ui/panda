@@ -1,5 +1,16 @@
 # @pandacss/config
 
+## 0.15.4
+
+### Patch Changes
+
+- abd7c47a: Fix preset merging, config wins over presets.
+  - @pandacss/types@0.15.4
+  - @pandacss/error@0.15.4
+  - @pandacss/logger@0.15.4
+  - @pandacss/preset-base@0.15.4
+  - @pandacss/preset-panda@0.15.4
+
 ## 0.15.3
 
 ### Patch Changes
