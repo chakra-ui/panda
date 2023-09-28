@@ -1,11 +1,9 @@
 @layer utilities {
-
   .cursor_pointer {
     cursor: pointer
     }
-
-  .\[\&\.active\]\:text_yellow\.300.active {
-    color: var(--colors-yellow-300)
+    .\[\&\.active\]\:text_yellow\.300.active {
+      color: var(--colors-yellow-300)
         }
 
   .sr_true {

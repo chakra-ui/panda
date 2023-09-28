@@ -1,5 +1,4 @@
 @layer utilities {
-
   .w_60 {
     width: var(--sizes-60)
     }
@@ -19,6 +18,9 @@
   .transition_all_0\.2s_ease {
     transition: all 0.2s ease
     }
+    .hover\:shadow_lg:is(:hover, [data-hover]) {
+      box-shadow: var(--shadows-lg)
+        }
     .\[\&_svg\]\:font_normal svg {
       font-weight: var(--font-weights-normal)
         }
@@ -50,8 +52,4 @@
   .mt_3 {
     margin-top: var(--spacing-3)
     }
-
-  .hover\:shadow_lg:is(:hover, [data-hover]) {
-    box-shadow: var(--shadows-lg)
-        }
 }

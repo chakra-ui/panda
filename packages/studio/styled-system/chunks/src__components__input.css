@@ -1,5 +1,4 @@
 @layer utilities {
-
   .bg_transparent {
     background: var(--colors-transparent)
     }
@@ -23,9 +22,8 @@
   .text_neutral\.600 {
     color: var(--colors-neutral-600)
     }
-
-  .dark\:text_neutral\.300.dark, .dark .dark\:text_neutral\.300 {
-    color: var(--colors-neutral-300)
+    .dark\:text_neutral\.300.dark, .dark .dark\:text_neutral\.300 {
+      color: var(--colors-neutral-300)
         }
 
   .shadow_sm {
@@ -39,20 +37,16 @@
   .border_border {
     border-color: var(--colors-border)
     }
-
-  .focusWithin\:outline-style_solid:focus-within {
-    outline-style: solid
+    .focusWithin\:outline-style_solid:focus-within {
+      outline-style: solid
         }
-
-  .focusWithin\:ring_2px:focus-within {
-    outline-width: 2px
+    .focusWithin\:ring_2px:focus-within {
+      outline-width: 2px
         }
-
-  .focusWithin\:ring_2px:focus-within {
-    outline-offset: 2px
+    .focusWithin\:ring_2px:focus-within {
+      outline-offset: 2px
         }
-
-  .focusWithin\:ring_neutral\.400:focus-within {
-    outline-color: var(--colors-neutral-400)
+    .focusWithin\:ring_neutral\.400:focus-within {
+      outline-color: var(--colors-neutral-400)
         }
 }
