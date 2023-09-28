@@ -2,7 +2,7 @@ import { outdent } from 'outdent'
 import type { Context } from '../../engines'
 
 export function generateVueJsxStringLiteralTypes(ctx: Context) {
-  const { factoryName, styleProps, componentName, upperName, typeName } = ctx.jsx
+  const { factoryName, componentName, upperName, typeName } = ctx.jsx
 
   return {
     jsxFactory: outdent`
@@ -31,7 +31,7 @@ interface JsxFactory {
 
 type JsxElements = { [K in IntrinsicElement]: ${componentName}<K> }
 
-export type ${upperName} = JsxFactory ${styleProps === 'none' ? '' : '& JsxElements'}
+export type ${upperName} = JsxFactory & JsxElements
 
 export type ${typeName}<T extends ElementType> = ComponentProps<T>
   `,
