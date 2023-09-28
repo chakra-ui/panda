@@ -15,7 +15,7 @@ export function generateQwikJsxFactory(ctx: Context) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
 
       const ${componentName} = function ${componentName}(props) {
-        const { as: Element = Dynamic, ...restProps } = props
+        const { as: Element = Dynamic, className, ...restProps } = props
 
         const [variantProps, styleProps, htmlProps, elementProps] =
             splitProps(restProps, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
@@ -24,12 +24,12 @@ export function generateQwikJsxFactory(ctx: Context) {
 
         function recipeClass() {
           const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
-          return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), elementProps.class)
+          return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), elementProps.class, className)
         }
 
         function cvaClass() {
           const cvaStyles = cvaFn.raw(variantProps)
-          return cx(css(cvaStyles, propStyles, cssStyles), elementProps.class)
+          return cx(css(cvaStyles, propStyles, cssStyles), elementProps.class, className)
         }
 
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass

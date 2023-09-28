@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import solid from 'vite-plugin-solid'
 import Vue from '@vitejs/plugin-vue'
 import preact from '@preact/preset-vite'
+import vueJsx from '@vitejs/plugin-vue-jsx'
 import { UserConfig } from 'vite'
 
 import { createRequire } from 'module'
@@ -34,7 +35,7 @@ const options = {
     },
   },
   vue: {
-    plugins: [Vue()],
+    plugins: [Vue(), vueJsx()],
     test: {
       include: ['**/__tests__/**/frameworks/vue.*.{test,spec}.{j,t}s?(x)'],
       environment: 'happy-dom',
