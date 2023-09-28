@@ -8,6 +8,16 @@ import { Card } from './Card'
 
 const SomeRecipe = panda('div', someRecipe)
 
+const PrimaryButtonLike = panda('span', button, {
+  dataAttr: true,
+  defaultProps: {
+    variant: 'purple',
+  },
+  shouldForwardProp: (prop, _variantKeys) => {
+    return !prop.startsWith('_')
+  },
+})
+
 function App() {
   const paddingY = '25px'
   const className = css({ padding: paddingY, fontSize: paddingY ? '2xl' : '4xl' })
@@ -66,6 +76,7 @@ function App() {
         <AnotherButtonWithRegex aria-label="AnotherButtonWithRegex" variant="secondary" size="sm">
           AnotherButtonWithRegex
         </AnotherButtonWithRegex>
+        <PrimaryButtonLike>Default props override</PrimaryButtonLike>
       </section>
 
       <section className={css({ padding: '5', borderWidth: '1px' })}>

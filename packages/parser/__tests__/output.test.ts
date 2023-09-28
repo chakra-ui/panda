@@ -2339,6 +2339,142 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('styled FactoryOptions defaultProps extraction', () => {
+    const code = `
+    import { panda } from ".panda/jsx"
+    import { cva } from ".panda/css"
+    import { button as aliasedButton } from ".panda/recipes"
+
+    const Button = panda("button", aliasedButton, {
+      defaultProps: {
+        size: 'md',
+        variant: 'second',
+        color: {
+          base: "amber.400",
+          _dark: "sky.300"
+          _hover: {
+            base: "amber.500",
+            _dark: "sky.200"
+          }
+        },
+      }
+    })
+
+    export default function Page() {
+      return (
+        <>
+          <Button>Click me!</Button>
+        </>
+      )
+    }
+
+     `
+    const result = run(code, {
+      theme: {
+        extend: {
+          recipes: {
+            button: {
+              className: 'button',
+              jsx: ['Button'],
+              base: {
+                color: 'sky.100',
+                bg: 'red.900',
+              },
+              variants: {
+                size: {
+                  sm: { borderRadius: 'sm' },
+                  md: { borderRadius: 'md' },
+                },
+                variant: {
+                  first: { backgroundColor: 'blue.500' },
+                  second: { backgroundColor: 'red.500' },
+                },
+              },
+              defaultVariants: { size: 'sm' },
+            },
+          },
+        },
+      },
+    })
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "panda",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "color": {
+                "_dark": "sky.300",
+                "_hover": {
+                  "_dark": "sky.200",
+                  "base": "amber.500",
+                },
+                "base": "amber.400",
+              },
+              "size": "md",
+              "variant": "second",
+            },
+          ],
+          "name": "button",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Button",
+          "type": "jsx-recipe",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .text_amber\\\\.400 {
+          color: var(--colors-amber-400)
+          }
+
+        [data-theme=dark] .dark\\\\:text_sky\\\\.300, .dark .dark\\\\:text_sky\\\\.300, .dark\\\\:text_sky\\\\.300.dark, .dark\\\\:text_sky\\\\.300[data-theme=dark] {
+          color: var(--colors-sky-300)
+              }
+
+        .hover\\\\:text_amber\\\\.500:is(:hover, [data-hover]) {
+          color: var(--colors-amber-500)
+              }
+
+        [data-theme=dark] .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]), .dark .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]), .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]).dark, .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover])[data-theme=dark] {
+          color: var(--colors-sky-200)
+                  }
+      }
+
+      @layer recipes {
+        .button--size_md {
+          border-radius: var(--radii-md)
+          }
+
+        .button--variant_second {
+          background-color: var(--colors-red-500)
+          }
+
+        .button--size_sm {
+          border-radius: var(--radii-sm)
+          }
+
+        @layer _base {
+          .button {
+            color: var(--colors-sky-100);
+            background: var(--colors-red-900)
+              }
+          }
+      }"
+    `)
+  })
 })
 
 describe('preset patterns', () => {
@@ -4129,13 +4265,6 @@ describe('preset patterns', () => {
           ],
           "name": "buttonStyle",
           "type": "recipe",
-        },
-        {
-          "data": [
-            {},
-          ],
-          "name": "ButtonStyle",
-          "type": "jsx-recipe",
         },
         {
           "data": [

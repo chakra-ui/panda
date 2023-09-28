@@ -96,7 +96,59 @@ const Button = ({ children }) => (
 )
 ```
 
-### Factory Function
+### Property Renaming
+
+<Callout type="warning">Due to the static nature of Panda, you can't rename properties at runtime.</Callout>
+
+```tsx filename="App.tsx"
+import { Circle, CircleProps } from '../styled-system/jsx'
+
+type Props = {
+  circleSize?: CircleProps['size']
+}
+
+const CustomCircle = (props: Props) => {
+  const { circleSize = '3' } = props
+  return (
+    <Circle
+      // ❌ Avoid: Panda can't know that you're mapping `circleSize` to `size`
+      size={circleSize}
+    />
+  )
+}
+
+// ...
+
+const App = () => {
+  return (
+    // In this case, you should keep the `size` naming
+    <CustomCircle circleSize="4" />
+  )
+}
+```
+
+The same principles apply to all style props, recipe variants, and pattern props.
+
+<Callout type="info">If you still need to rename properties at runtime, you can use `config.staticCss` as an escape-hatch to pre-generate the CSS anyway for the properties you need.</Callout>
+
+### Recipe
+
+You can use recipe variants as JSX props to quickly change the styles of your components, as long as [you're tracking those components in your recipe config](/docs/concepts/recipes#advanced-jsx-tracking).
+
+```jsx
+import { styled } from '../styled-system/jsx'
+import { button, type ButtonVariantProps } from '../styled-system/recipes'
+
+const Button = (props: ButtonVariantProps) => (
+  <button className={button(props)}>
+    Button
+  </button>
+)
+
+const App = () => <Button variant="secondary">Button</Button>
+```
+
+## Factory Function
 
 You can also use the `styled` function to create a styled component from any component or JSX intrinsic element (like "a", "button").
 
@@ -113,7 +165,9 @@ const App = () => (
 )
 ```
 
-### Recipe
+> You can configure the `styled` function name using the [`config.jsxFactory`](/docs/references/config#jsxfactory) option.
+
+### Factory Recipe
 
 You can define a recipe for your component using the `styled` function. This is useful when you want to create a component that has a specific set of style props.
 
@@ -142,6 +196,81 @@ const Button = styled('button', {
 
 const App = () => <Button variant="secondary" mt="10px">Button</Button>
 ```
+
+### Factory Options
+
+There's a few options you can pass to the `styled` function to customize the behavior of the generated component.
+
+```ts
+interface FactoryOptions<TProps extends Dict> {
+  dataAttr?: boolean
+  defaultProps?: TProps
+  shouldForwardProp?(prop: string, variantKeys: string[]): boolean
+}
+```
+
+#### `dataAttr`
+
+Setting `dataAttr` to true will add a `data-recipe="{recipeName}"` attribute to the element with the recipe name. This is useful for testing and debugging.
+
+```jsx
+import { styled } from '../styled-system/jsx'
+import { button } from '../styled-system/recipes'
+
+const Button = styled('button', button, { dataAttr: true })
+
+const App = () => <Button variant="secondary" mt="10px">Button</Button>
+// Will render something like <button data-recipe="button" class="btn btn--variant_purple mt_10px">Button</button>
+```
+
+#### `defaultProps`
+
+allows you to skip writing wrapper components just to set a few props. It also allows you to locall  override the default variants or base styles of a recipe.
+
+```jsx
+import { styled } from '../styled-system/jsx'
+import { button } from '../styled-system/recipes'
+
+const Button = styled('button', button, {
+  defaultProps: {
+    variant: 'secondary',
+    px: '10px'
+  }
+})
+
+const App = () => <Button>Button</Button>
+// Will render something like <button class="btn btn--variant_secondary px_10px">Button</button>
+```
+
+
+#### `shouldForwardProp`
+
+allows you to customize which props are forwarded to the underlying element. By default, all props except recipe variants and style props are forwarded.
+
+For example you could use it to integrate with [Framer Motion](https://www.framer.com/motion/).
+
+```jsx
+import { styled } from '../styled-system/jsx'
+import { button } from '../styled-system/recipes'
+import { motion, isValidMotionProp } from 'framer-motion'
+
+const StyledMotion = styled(motion.div, {}, {
+  shouldForwardProp: (prop, variantKeys) =>
+      isValidMotionProp(prop) || (!variantKeys.includes(prop) && !isCssProperty(prop)),
+})
+```
+
+### Reducing the allowed style props
+
+You can reduce the allowed JSX properties on the factory using [`config.jsxStyleProps`](/docs/references/config#jsxstyleprops):
+- When set to 'all', all style props are allowed.
+- When set to 'minimal', only the `css` prop is allowed.
+- When set to 'none', no style props are allowed and therefore the `jsxFactory` will not be usable as a component:
+  - `<styled.div />` and `styled("div")` aren't valid
+  - but the recipe usage is still valid `styled("div", { base: { color: "red.300" }, variants: { ...} })`
+
+> Removing style props (from `all` to either `minimal` or `none`) will reduce the size of the generated code due to not having to check which props are style props at runtime.
+
 
 ## JSX Patterns
 
@@ -193,7 +322,7 @@ Use the `HTMLStyledProps` type to get the types of an element in addition to the
 import { styled } from '../styled-system/jsx'
 import type { HTMLStyledProps } from '../styled-system/jsx'
 
-type ButtonProps = HTMLStyledProps<'button'> 
+type ButtonProps = HTMLStyledProps<'button'>
 
 const Button = (props: ButtonProps) => {
   return <styled.button {...props}>

@@ -7,12 +7,23 @@ export function generateVueJsxFactory(ctx: Context) {
   return {
     js: outdent`
     import { defineComponent, h, computed } from 'vue'
-    ${ctx.file.import('css, cx, cva, assignCss', '../css/index')}
+    ${ctx.file.import('css, cx, cva', '../css/index')}
     ${ctx.file.import('splitProps, normalizeHTMLProps', '../helpers')}
     ${ctx.file.import('isCssProperty', './is-valid-prop')}
 
-    function styledFn(Dynamic, configOrCva = {}) {
+    const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
+          
+    function styledFn(Dynamic, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
+      
+      const forwardFn = options.shouldForwardProp || defaultShouldForwardProp
+      const shouldForwardProp = (prop) => forwardFn(prop, cvaFn.variantKeys)
+      
+      const defaultProps = Object.assign(
+        options.dataAttr && configOrCva.__name__ ? { 'data-recipe': configOrCva.__name__ } : {},
+        options.defaultProps,
+      )
+        
       const name = (typeof Dynamic === 'string' ? Dynamic : Dynamic.displayName || Dynamic.name) || 'Component'
 
       return defineComponent({
@@ -20,32 +31,34 @@ export function generateVueJsxFactory(ctx: Context) {
         inheritAttrs: false,
         props: { as: { type: [String, Object], default: Dynamic } },
         setup(props, { slots, attrs }) {
+          const combinedProps = computed(() => Object.assign({}, defaultProps, attrs))
+          
           const splittedProps = computed(() => {
-            return splitProps(attrs, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
+            return splitProps(combinedProps.value, shouldForwardProp, cvaFn.variantKeys, isCssProperty, normalizeHTMLProps.keys)
           })
 
           const recipeClass = computed(() => {
-            const [variantProps, styleProps, _htmlProps, elementProps] = splittedProps.value
+            const [_forwardedProps, variantProps, styleProps, _htmlProps, _elementProps] = splittedProps.value
             const { css: cssStyles, ...propStyles } = styleProps
             const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
-            return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), elementProps.className)
+            return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.value.className)
           })
 
           const cvaClass = computed(() => {
-            const [variantProps, styleProps, _htmlProps, elementProps] = splittedProps.value
+            const [_forwardedProps, variantProps, styleProps, _htmlProps, _elementProps] = splittedProps.value
             const { css: cssStyles, ...propStyles } = styleProps
             const cvaStyles = cvaFn.raw(variantProps)
-            return cx(css(cvaStyles, propStyles, cssStyles), elementProps.className)
+            return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.value.className)
           })
 
           const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
 
           return () => {
-            const [_styleProps, _variantProps, htmlProps, elementProps] = splittedProps.value
-
+            const [forwardedProps, _variantProps, _styleProps, htmlProps, elementProps] = splittedProps.value
             return h(
               props.as,
               {
+                ...forwardedProps.value,
                 ...elementProps,
                 ...normalizeHTMLProps(htmlProps),
                 class: classes.value,

@@ -101,6 +101,7 @@ export function generateRecipes(ctx: Context) {
 
         export const ${baseName} = Object.assign(${baseName}Fn, {
           __recipe__: false,
+          __name__: '${baseName}',
           raw: (props) => props,
           variantKeys: ${baseName}VariantKeys,
           variantMap: ${stringify(variantKeyMap)},
@@ -123,6 +124,7 @@ export function generateRecipes(ctx: Context) {
         const ${baseName}VariantKeys = Object.keys(${baseName}VariantMap)
         export const ${baseName} = Object.assign(${baseName}Fn, {
           __recipe__: true,
+          __name__: '${baseName}',
           raw: (props) => props,
           variantKeys: ${baseName}VariantKeys,
           variantMap: ${baseName}VariantMap,

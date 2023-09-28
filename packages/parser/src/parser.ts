@@ -172,11 +172,11 @@ export function createParser(options: ParserOptions) {
     const components = new Map<string, Map<string, boolean>>()
 
     const propertiesMap = new Map<string, boolean>()
-    const recipePropertiesByName = new Map<string, Set<string>>()
+    const recipePropertiesByJsxName = new Map<string, Set<string>>()
 
     const recipeJsxLists = (jsx?.nodes ?? []).filter(isNodeRecipe).reduce(
       (acc, recipe) => {
-        recipePropertiesByName.set(recipe.jsxName, new Set(recipe.props ?? []))
+        recipePropertiesByJsxName.set(recipe.jsxName, new Set(recipe.props ?? []))
 
         recipe.jsx?.forEach((jsx) => {
           if (typeof jsx === 'string') {
@@ -231,7 +231,7 @@ export function createParser(options: ParserOptions) {
     const isRecipeOrPatternProp = memo((tagName: string, propName: string) => {
       if (isJsxTagRecipe(tagName)) {
         const recipeList = getRecipesByJsxName(tagName)
-        return recipeList.some((recipe) => recipePropertiesByName.get(recipe.baseName)?.has(propName))
+        return recipeList.some((recipe) => recipePropertiesByJsxName.get(recipe.jsxName)?.has(propName))
       }
 
       if (isJsxTagPattern(tagName)) {
@@ -392,6 +392,25 @@ export function createParser(options: ParserOptions) {
                   // CallExpression factory css
                   // panda("span", { color: "red.100", ... })
                   collector.set('css', result)
+                }
+
+                // panda("div", badge, { ... })
+                const options = query.box.value[2]
+                if (box.isUnresolvable(map) && options && box.isMap(options) && options.value.has('defaultProps')) {
+                  const maybeIdentifier = map.getNode()
+
+                  if (Node.isIdentifier(maybeIdentifier)) {
+                    const name = maybeIdentifier.getText()
+                    const recipeName = imports.getName(name)
+
+                    // set it as JSX-recipe so that recipe & style props will be split correctly
+                    collector.setRecipe(recipeName, {
+                      type: 'jsx-recipe',
+                      name: recipeName,
+                      box: options,
+                      data: combineResult(unbox(options.value.get('defaultProps'))),
+                    })
+                  }
                 }
               } else if (query.kind === 'tagged-template') {
                 // TaggedTemplateExpression factory css

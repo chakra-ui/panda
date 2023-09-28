@@ -6,21 +6,33 @@ export function generateSolidJsxFactory(ctx: Context) {
   return {
     js: outdent`
     import { Dynamic } from 'solid-js/web'
-    import { mergeProps, splitProps } from 'solid-js'
+    import { createMemo, mergeProps, splitProps } from 'solid-js'
     import { createComponent } from 'solid-js/web'
-    ${ctx.file.import('css, cx, cva, assignCss', '../css/index')}
+    ${ctx.file.import('css, cx, cva', '../css/index')}
     ${ctx.file.import('normalizeHTMLProps', '../helpers')}
-    ${ctx.file.import('allCssProperties', './is-valid-prop')}
-
-    function styledFn(element, configOrCva = {}) {
+    ${ctx.file.import('isCssProperty, allCssProperties', './is-valid-prop')}
+    
+    const defaultShouldForwardProp = (prop, variantKeys) => !variantKeys.includes(prop) && !isCssProperty(prop)
+    
+    function styledFn(element, configOrCva = {}, options = {}) {
       const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
 
-      return function ${componentName}(props) {
-        const mergedProps = mergeProps({ as: element }, props)
+      const forwardFn = options.shouldForwardProp || defaultShouldForwardProp
+      const shouldForwardProp = (prop) => forwardFn(prop, cvaFn.variantKeys)
+      
+      const defaultProps = Object.assign(
+        options.dataAttr && configOrCva.__name__ ? { 'data-recipe': configOrCva.__name__ } : {},
+        options.defaultProps,
+      )
 
-        const [localProps, variantProps, styleProps, htmlProps, elementProps] = splitProps(
+      return function ${componentName}(props) {
+        const mergedProps = mergeProps({ as: element }, defaultProps, props)
+        const forwardedKeys = createMemo(() => Object.keys(props).filter(shouldForwardProp))
+
+        const [localProps, forwardedProps, variantProps, styleProps, htmlProps, elementProps] = splitProps(
           mergedProps,
           ['as', 'class', 'className'],
+          forwardedKeys(),
           cvaFn.variantKeys,
           allCssProperties,
           normalizeHTMLProps.keys
@@ -40,9 +52,14 @@ export function generateSolidJsxFactory(ctx: Context) {
 
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
 
+        if (forwardedProps.className) {
+          delete forwardedProps.className
+        }
+
         return createComponent(
           Dynamic,
           mergeProps(
+            forwardedProps,
             elementProps,
             normalizeHTMLProps(htmlProps),
             {
