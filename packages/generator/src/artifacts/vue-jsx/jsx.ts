@@ -50,17 +50,17 @@ export function generateVueJsxFactory(ctx: Context) {
             })
 
             const recipeClass = computed(() => {
-              const [forwardedProps, variantProps, styleProps, _htmlProps, _elementProps] = splittedProps.value
+              const [_forwardedProps, variantProps, styleProps, _htmlProps, _elementProps] = splittedProps.value
               const { css: cssStyles, ...propStyles } = styleProps
               const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
-              return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.className)
+              return cx(cvaFn(variantProps, false), css(compoundVariantStyles, propStyles, cssStyles), combinedProps.value.className)
             })
 
             const cvaClass = computed(() => {
-              const [forwardedProps, variantProps, styleProps, _htmlProps, _elementProps] = splittedProps.value
+              const [_forwardedProps, variantProps, styleProps, _htmlProps, _elementProps] = splittedProps.value
               const { css: cssStyles, ...propStyles } = styleProps
               const cvaStyles = cvaFn.raw(variantProps)
-              return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.className)
+              return cx(css(cvaStyles, propStyles, cssStyles), combinedProps.value.className)
             })`
             })
             .with('minimal', () => {
@@ -70,15 +70,15 @@ export function generateVueJsxFactory(ctx: Context) {
             })
 
             const recipeClass = computed(() => {
-              const [forwardedProps, variantProps, _htmlProps, _elementProps] = splittedProps.value
+              const [_forwardedProps, variantProps, _htmlProps, _elementProps] = splittedProps.value
               const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
-              return cx(cvaFn(variantProps, false), css(compoundVariantStyles, combinedProps.css), combinedProps.className)
+              return cx(cvaFn(variantProps, false), css(compoundVariantStyles, combinedProps.css), combinedProps.value.className)
             })
 
             const cvaClass = computed(() => {
-              const [forwardedProps, variantProps, _htmlProps, _elementProps] = splittedProps.value
+              const [_forwardedProps, variantProps, _htmlProps, _elementProps] = splittedProps.value
               const cvaStyles = cvaFn.raw(variantProps)
-              return cx(css(cvaStyles, combinedProps.css), combinedProps.className)
+              return cx(css(cvaStyles, combinedProps.css), combinedProps.value.className)
             })`
             })
             .with('none', () => {
@@ -88,15 +88,15 @@ export function generateVueJsxFactory(ctx: Context) {
             })
 
             const recipeClass = computed(() => {
-              const [forwardedProps, variantProps, _htmlProps, _elementProps] = splittedProps.value
+              const [_forwardedProps, variantProps, _htmlProps, _elementProps] = splittedProps.value
               const compoundVariantStyles = cvaFn.__getCompoundVariantCss__?.(variantProps);
-              return cx(cvaFn(variantProps, false), css(compoundVariantStyles), combinedProps.className)
+              return cx(cvaFn(variantProps, false), css(compoundVariantStyles), combinedProps.value.className)
             })
 
             const cvaClass = computed(() => {
-              const [forwardedProps, variantProps, _htmlProps, _elementProps] = splittedProps.value
+              const [_forwardedProps, variantProps, _htmlProps, _elementProps] = splittedProps.value
               const cvaStyles = cvaFn.raw(variantProps)
-              return cx(css(cvaStyles), combinedProps.className)
+              return cx(css(cvaStyles), combinedProps.value.className)
             })`
             })
             .run()}

@@ -39,7 +39,7 @@ export function generateSolidJsxFactory(ctx: Context) {
 
       return function ${componentName}(props) {
         const mergedProps = mergeProps({ as: element }, initialProps, props)
-        const forwardedProps = Object.keys(props).filter(shouldForwardProp)
+        const forwardedKeys = Object.keys(props).filter(shouldForwardProp)
 
         ${match(ctx.jsx.styleProps)
           .with('all', () => {
@@ -47,7 +47,7 @@ export function generateSolidJsxFactory(ctx: Context) {
         const [localProps, forwardedProps, variantProps, styleProps, htmlProps, elementProps] = splitProps(
           mergedProps,
           ['as', 'class', 'className'],
-          forwardedProps,
+          forwardedKeys,
           cvaFn.variantKeys,
           allCssProperties,
           normalizeHTMLProps.keys
@@ -70,7 +70,7 @@ export function generateSolidJsxFactory(ctx: Context) {
             const [localProps, forwardedProps, variantProps, htmlProps, elementProps] = splitProps(
               mergedProps,
               ['as', 'class'],
-              forwardedProps,
+              forwardedKeys,
               cvaFn.variantKeys,
               allCssProperties,
               normalizeHTMLProps.keys
@@ -91,7 +91,7 @@ export function generateSolidJsxFactory(ctx: Context) {
             const [localProps, forwardedProps, variantProps, htmlProps, elementProps] = splitProps(
               mergedProps,
               ['as', 'class'],
-              forwardedProps,
+              forwardedKeys,
               cvaFn.variantKeys,
               allCssProperties,
               normalizeHTMLProps.keys
@@ -111,12 +111,16 @@ export function generateSolidJsxFactory(ctx: Context) {
 
         const classes = configOrCva.__recipe__ ? recipeClass : cvaClass
 
+        if (forwardedProps.className) {
+          delete forwardedProps.className
+        }
+
         return createComponent(
           Dynamic,
           mergeProps(
             forwardedProps,
             elementProps,
-            normalizeHTMLProps(htmlProps)
+            normalizeHTMLProps(htmlProps),
             {
               get component() {
                 return localProps.as
