@@ -2188,6 +2188,157 @@ describe('extract to css output pipeline', () => {
       }"
     `)
   })
+
+  test('array syntax - simple', () => {
+    const code = `
+        import { Box } from ".panda/jsx"
+
+         function App() {
+           return (
+            <Box paddingLeft={[0]} />
+          )
+         }
+       `
+
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "paddingLeft": [
+                0,
+              ],
+            },
+          ],
+          "name": "Box",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .pl_0 {
+          padding-left: var(--spacing-0)
+          }
+      }"
+    `)
+  })
+
+  test('array syntax - simple conditional', () => {
+    const code = `
+        import { Box } from ".panda/jsx"
+
+         function App() {
+           return (
+            <Box paddingLeft={hasIcon ? [0] : [4]} />
+          )
+         }
+       `
+
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "paddingLeft": [
+                0,
+              ],
+            },
+            {
+              "paddingLeft": [
+                4,
+              ],
+            },
+            {},
+          ],
+          "name": "Box",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .pl_0 {
+          padding-left: var(--spacing-0)
+          }
+
+        .pl_4 {
+          padding-left: var(--spacing-4)
+          }
+      }"
+    `)
+  })
+
+  test('array syntax - conditional in middle', () => {
+    const code = `
+        import { Box } from ".panda/jsx"
+
+         function App() {
+           return (
+            <Box py={[2, verticallyCondensed ? 2 : 3, 4]} />
+          )
+         }
+       `
+
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "py": [
+                undefined,
+                2,
+              ],
+            },
+            {
+              "py": [
+                undefined,
+                3,
+              ],
+            },
+            {
+              "py": [
+                2,
+                undefined,
+                4,
+              ],
+            },
+          ],
+          "name": "Box",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .py_2 {
+          padding-block: var(--spacing-2)
+          }
+
+        @media screen and (min-width: 40em) {
+          .sm\\\\:py_2 {
+            padding-block: var(--spacing-2)
+          }
+
+          .sm\\\\:py_3 {
+            padding-block: var(--spacing-3)
+          }
+              }
+
+        @media screen and (min-width: 48em) {
+          .md\\\\:py_4 {
+            padding-block: var(--spacing-4)
+          }
+              }
+      }"
+    `)
+  })
 })
 
 describe('preset patterns', () => {
