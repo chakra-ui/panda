@@ -1,5 +1,4 @@
 @layer utilities {
-
   .bg_card {
     background: var(--colors-card)
     }

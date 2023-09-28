@@ -3,8 +3,6 @@ import { TokenDictionary } from '@pandacss/token-dictionary'
 import type { TokenDataTypes } from '@pandacss/types'
 import { config } from 'virtual:panda'
 
-// console.log('_config', config)
-
 const { theme } = config
 
 const context = {
