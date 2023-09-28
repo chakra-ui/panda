@@ -47,22 +47,6 @@
     flex: 1 1 0%
     }
 
-  .w_auto {
-    width: auto
-    }
-
-  .min-w_80px {
-    min-width: 80px
-    }
-
-  .h_40px {
-    height: 40px
-    }
-
-  .mb_2 {
-    margin-bottom: var(--spacing-2)
-    }
-
   .h_10 {
     height: var(--sizes-10)
     }
