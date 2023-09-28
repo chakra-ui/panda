@@ -7,7 +7,7 @@ export function generateSolidJsxFactory(ctx: Context) {
   return {
     js: outdent`
     import { Dynamic } from 'solid-js/web'
-    import { mergeProps, splitProps } from 'solid-js'
+    import { createMemo, mergeProps, splitProps } from 'solid-js'
     import { createComponent } from 'solid-js/web'
     ${ctx.file.import('css, cx, cva', '../css/index')}
     ${ctx.file.import('normalizeHTMLProps', '../helpers')}
@@ -39,7 +39,7 @@ export function generateSolidJsxFactory(ctx: Context) {
 
       return function ${componentName}(props) {
         const mergedProps = mergeProps({ as: element }, initialProps, props)
-        const forwardedKeys = Object.keys(props).filter(shouldForwardProp)
+        const forwardedKeys = createMemo(() => Object.keys(props).filter(shouldForwardProp))
 
         ${match(ctx.jsx.styleProps)
           .with('all', () => {
@@ -47,7 +47,7 @@ export function generateSolidJsxFactory(ctx: Context) {
         const [localProps, forwardedProps, variantProps, styleProps, htmlProps, elementProps] = splitProps(
           mergedProps,
           ['as', 'class', 'className'],
-          forwardedKeys,
+          forwardedKeys(),
           cvaFn.variantKeys,
           allCssProperties,
           normalizeHTMLProps.keys
@@ -70,7 +70,7 @@ export function generateSolidJsxFactory(ctx: Context) {
             const [localProps, forwardedProps, variantProps, htmlProps, elementProps] = splitProps(
               mergedProps,
               ['as', 'class'],
-              forwardedKeys,
+              forwardedKeys(),
               cvaFn.variantKeys,
               allCssProperties,
               normalizeHTMLProps.keys
@@ -91,7 +91,7 @@ export function generateSolidJsxFactory(ctx: Context) {
             const [localProps, forwardedProps, variantProps, htmlProps, elementProps] = splitProps(
               mergedProps,
               ['as', 'class'],
-              forwardedKeys,
+              forwardedKeys(),
               cvaFn.variantKeys,
               allCssProperties,
               normalizeHTMLProps.keys
