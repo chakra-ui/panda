@@ -99,15 +99,15 @@
   .overflow_auto {
     overflow: auto
     }
+    @media screen and (min-width: 48em) {
 
-  @media screen and (min-width: 48em) {
-    .md\:px_6 {
+  .md\:px_6 {
       padding-inline: var(--spacing-6)
     }
         }
+    @media screen and (min-width: 64em) {
 
-  @media screen and (min-width: 64em) {
-    .lg\:px_8 {
+  .lg\:px_8 {
       padding-inline: var(--spacing-8)
     }
         }

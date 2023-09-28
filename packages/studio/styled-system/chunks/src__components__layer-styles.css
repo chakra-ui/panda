@@ -1,12 +1,10 @@
 @layer utilities {
-
-  .divide-y_1px > :not([hidden]) ~ :not([hidden]) {
-    border-top-width: 1px;
-    border-bottom-width: 0px
+    .divide-y_1px > :not([hidden]) ~ :not([hidden]) {
+      border-top-width: 1px;
+      border-bottom-width: 0px
         }
-
-  .divide_card > :not([hidden]) ~ :not([hidden]) {
-    border-color: var(--colors-card)
+    .divide_card > :not([hidden]) ~ :not([hidden]) {
+      border-color: var(--colors-card)
         }
 
   .px_1 {

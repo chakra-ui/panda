@@ -1,17 +1,10 @@
-import { type PandaContext, analyzeTokens, loadConfigAndCreateContext, writeAnalyzeJSON } from '@pandacss/node'
-import { stringify } from 'javascript-stringify'
+import { loadConfigAndCreateContext, type PandaContext } from '@pandacss/node'
 import type { AstroIntegration } from 'astro'
+import { stringify } from 'javascript-stringify'
 import type { PluginOption } from 'vite'
-
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
 
 const virtualModuleId = 'virtual:panda'
 const resolvedVirtualModuleId = '\0' + virtualModuleId
-
-const _dirname = dirname(fileURLToPath(import.meta.url))
-const analysisDataFilepath = 'src/lib/analysis.json'
-const jsonPath = resolve(_dirname, analysisDataFilepath)
 
 function vitePlugin(configPath: string): PluginOption {
   let config: PandaContext['config']
@@ -19,9 +12,6 @@ function vitePlugin(configPath: string): PluginOption {
   async function loadPandaConfig() {
     const ctx = await loadConfigAndCreateContext({ configPath })
     config = ctx.config
-
-    const result = analyzeTokens(ctx)
-    await writeAnalyzeJSON(jsonPath, result, ctx)
   }
 
   return {
