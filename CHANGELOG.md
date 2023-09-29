@@ -6,6 +6,153 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.15.4] - 2023-09-29
+
+### Fixed
+
+- Fix preset merging, config wins over presets.
+- Fix issues with class merging in the `styled` factory fn for Qwik, Solid and Vue.
+- Fix static extraction of the [Array Syntax](https://panda-css.com/docs/concepts/responsive-design#the-array-syntax)
+  when used with runtime conditions
+
+Given a component like this:
+
+```ts
+function App() {
+  return <Box py={[2, verticallyCondensed ? 2 : 3, 4]} />
+}
+```
+
+the `py` value was incorrectly extracted like this:
+
+```ts
+ {
+    "py": {
+        "1": 2,
+    },
+},
+{
+    "py": {
+        "1": 3,
+    },
+},
+```
+
+which would then generate invalid CSS like:
+
+```css
+.paddingBlock\\\\:1_2 {
+  1: 2px;
+}
+
+.paddingBlock\\\\:1_3 {
+  1: 3px;
+}
+```
+
+it's now correctly transformed back to an array:
+
+```diff
+{
+  "py": {
+-    "1": 2,
++   [
++       undefined,
++       2,
++   ]
+  },
+},
+{
+  "py": {
+-    "1": 3,
++   [
++       undefined,
++       3,
++   ]
+  },
+},
+```
+
+which will generate the correct CSS
+
+```css
+@media screen and (min-width: 40em) {
+  .sm\\\\:py_2 {
+    padding-block: var(--spacing-2);
+  }
+
+  .sm\\\\:py_3 {
+    padding-block: var(--spacing-3);
+  }
+}
+```
+
+### Added
+
+Improved styled factory by adding a 3rd (optional) argument:
+
+```ts
+interface FactoryOptions<TProps extends Dict> {
+  dataAttr?: boolean
+  defaultProps?: TProps
+  shouldForwardProp?(prop: string, variantKeys: string[]): boolean
+}
+```
+
+- Setting `dataAttr` to true will add a `data-recipe="{recipeName}"` attribute to the element with the recipe name. This
+  is useful for testing and debugging.
+
+```jsx
+import { styled } from '../styled-system/jsx'
+import { button } from '../styled-system/recipes'
+
+const Button = styled('button', button, { dataAttr: true })
+
+const App = () => (
+  <Button variant="secondary" mt="10px">
+    Button
+  </Button>
+)
+// Will render something like <button data-recipe="button" class="btn btn--variant_purple mt_10px">Button</button>
+```
+
+- `defaultProps` allows you to skip writing wrapper components just to set a few props. It also allows you to locally
+  override the default variants or base styles of a recipe.
+
+```jsx
+import { styled } from '../styled-system/jsx'
+import { button } from '../styled-system/recipes'
+
+const Button = styled('button', button, {
+  defaultProps: {
+    variant: 'secondary',
+    px: '10px',
+  },
+})
+
+const App = () => <Button>Button</Button>
+// Will render something like <button class="btn btn--variant_secondary px_10px">Button</button>
+```
+
+- `shouldForwardProp` allows you to customize which props are forwarded to the underlying element. By default, all props
+  except recipe variants and style props are forwarded.
+
+```jsx
+import { styled } from '../styled-system/jsx'
+import { button } from '../styled-system/recipes'
+import { isCssProperty } from '../styled-system/jsx'
+import { motion, isValidMotionProp } from 'framer-motion'
+
+const StyledMotion = styled(
+  motion.div,
+  {},
+  {
+    shouldForwardProp: (prop, variantKeys) =>
+      isValidMotionProp(prop) || (!variantKeys.includes(prop) && !isCssProperty(prop)),
+  },
+)
+```
+
 ## [0.15.3] - 2023-09-27
 
 ### Fixed
