@@ -80,6 +80,7 @@ const buttonWithCompoundVariantsRecipe = defineRecipe({
     size: {
       sm: { fontSize: '1rem' },
       md: { fontSize: '2rem' },
+      lg: { fontSize: '3rem' },
     },
   },
   compoundVariants: [
@@ -91,6 +92,11 @@ const buttonWithCompoundVariantsRecipe = defineRecipe({
       size: 'md',
       visual: 'outline',
       css: { color: 'green' },
+    },
+    {
+      size: ['sm', 'lg'],
+      visual: 'outline',
+      css: { color: 'red' },
     },
   ],
 })
