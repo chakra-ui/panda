@@ -219,6 +219,96 @@ describe('generate recipes', () => {
       })",
           "name": "button-style",
         },
+        {
+          "dts": "import type { ConditionalValue } from '../types/index';
+      import type { Pretty } from '../types/helpers';
+      import type { DistributiveOmit } from '../types/system-types';
+
+      interface PillStyleVariant {
+        size: \\"small\\" | \\"medium\\" | \\"large\\"
+      color: \\"primary\\" | \\"secondary\\"
+      disabled: boolean
+      }
+
+      type PillStyleVariantMap = {
+        [key in keyof PillStyleVariant]: Array<PillStyleVariant[key]>
+      }
+
+      export type PillStyleVariantProps = {
+        [key in keyof PillStyleVariant]?: PillStyleVariant[key]
+      }
+
+      export interface PillStyleRecipe {
+        __type: PillStyleVariantProps
+        (props?: PillStyleVariantProps): string
+        raw: (props?: PillStyleVariantProps) => PillStyleVariantProps
+        variantMap: PillStyleVariantMap
+        variantKeys: Array<keyof PillStyleVariant>
+        splitVariantProps<Props extends PillStyleVariantProps>(props: Props): [PillStyleVariantProps, Pretty<DistributiveOmit<Props, keyof PillStyleVariantProps>>]
+      }
+
+
+      export declare const pillStyle: PillStyleRecipe",
+          "js": "import { splitProps } from '../helpers.mjs';
+      import { createRecipe } from './create-recipe.mjs';
+
+      const pillStyleFn = createRecipe('pillStyle', {}, [
+        {
+          \\"size\\": \\"small\\",
+          \\"color\\": \\"primary\\",
+          \\"css\\": {
+            \\"border\\": \\"2px solid blue\\"
+          }
+        },
+        {
+          \\"size\\": \\"large\\",
+          \\"color\\": \\"secondary\\",
+          \\"disabled\\": true,
+          \\"css\\": {
+            \\"backgroundColor\\": \\"lightgray\\",
+            \\"color\\": \\"darkgray\\",
+            \\"border\\": \\"none\\"
+          }
+        },
+        {
+          \\"size\\": [
+            \\"small\\",
+            \\" medium\\"
+          ],
+          \\"color\\": \\"secondary\\",
+          \\"css\\": {
+            \\"fontWeight\\": \\"extrabold\\"
+          }
+        }
+      ])
+
+      const pillStyleVariantMap = {
+        \\"size\\": [
+          \\"small\\",
+          \\"medium\\",
+          \\"large\\"
+        ],
+        \\"color\\": [
+          \\"primary\\",
+          \\"secondary\\"
+        ],
+        \\"disabled\\": [
+          \\"true\\"
+        ]
+      }
+      const pillStyleVariantKeys = Object.keys(pillStyleVariantMap)
+      export const pillStyle = Object.assign(pillStyleFn, {
+        __recipe__: true,
+        __name__: 'pillStyle',
+        raw: (props) => props,
+        variantKeys: pillStyleVariantKeys,
+        variantMap: pillStyleVariantMap,
+        splitVariantProps(props) {
+          return splitProps(props, pillStyleVariantKeys)
+        },
+      })",
+          "name": "pill-style",
+        },
       ]
     `)
   })

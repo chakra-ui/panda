@@ -137,6 +137,10 @@ const button = cva({
         fontSize: '14px',
         padding: '4px 8px'
       },
+      medium: {
+        fontSize: '16px',
+        padding: '8px 16px'
+      },
       large: {
         fontSize: '18px',
         padding: '12px 24px'
@@ -162,7 +166,7 @@ const button = cva({
 
   // compound variants
   compoundVariants: [
-    // apply small size variant when both small size and primary color are selected
+    // apply when both small size and primary color are selected
     {
       size: 'small',
       color: 'primary',
@@ -170,7 +174,7 @@ const button = cva({
         border: '2px solid blue'
       }
     },
-    // apply large size variant when both large size and secondary color are selected and the button is disabled
+    // apply when both large size and secondary color are selected and the button is disabled
     {
       size: 'large',
       color: 'secondary',
@@ -179,6 +183,14 @@ const button = cva({
         backgroundColor: 'lightgray',
         color: 'darkgray',
         border: 'none'
+      }
+    },
+    // apply when both small or medium size, and secondary color variants are applied
+    {
+      size: ['small', ' medium'],
+      color: 'secondary',
+      css: {
+        fontWeight: 'extrabold'
       }
     }
   ]
