@@ -29,7 +29,7 @@ export type ComponentProps<T extends ElementType> = T extends IntrinsicElement
 JsxHTMLProps<ComponentProps<T>, Assign<JsxStyleProps, P>>
 > {}
 
-interface RecipeFn = { __type: any }
+interface RecipeFn { __type: any }
 
 interface JsxFactoryOptions<TProps extends Dict> {
   dataAttr?: boolean

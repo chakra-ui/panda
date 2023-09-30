@@ -58,7 +58,7 @@ export function generateVueJsxFactory(ctx: Context) {
             return h(
               props.as,
               {
-                ...forwardedProps.value,
+                ...forwardedProps,
                 ...elementProps,
                 ...normalizeHTMLProps(htmlProps),
                 class: classes.value,

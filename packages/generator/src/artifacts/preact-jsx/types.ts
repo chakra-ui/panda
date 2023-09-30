@@ -23,7 +23,7 @@ export interface ${componentName}<T extends ElementType, P extends Dict = {}> {
   displayName?: string
 }
 
-interface RecipeFn = { __type: any }
+interface RecipeFn { __type: any }
 
 interface JsxFactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
