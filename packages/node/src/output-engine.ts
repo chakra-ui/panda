@@ -15,7 +15,7 @@ export const getOutputEngine = ({
     const { dir = paths.root, files } = output
     fs.ensureDirSync(path.join(...dir))
 
-    return Promise.all(
+    return Promise.allSettled(
       files.map(async ({ file, code }) => {
         const absPath = path.join(...dir, file)
         if (code) {

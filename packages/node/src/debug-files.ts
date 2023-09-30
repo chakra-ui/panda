@@ -20,7 +20,7 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
   }
 
   const filesWithCss = []
-  await Promise.all(
+  await Promise.allSettled(
     files.map(async (file) => {
       const measure = logger.time.debug(`Parsed ${file}`)
       const result = ctx.project.parseSourceFile(file)
@@ -47,7 +47,7 @@ export async function debugFiles(ctx: PandaContext, options: { outdir: string; d
         logger.info('cli', `Writing ${colors.bold(`${outdir}/${astJsonPath}`)}`)
         logger.info('cli', `Writing ${colors.bold(`${outdir}/${cssPath}`)}`)
 
-        return Promise.all([
+        return Promise.allSettled([
           fs.writeFile(`${outdir}/${astJsonPath}`, JSON.stringify(result.toJSON(), null, 2)),
           fs.writeFile(`${outdir}/${cssPath}`, css),
         ])
