@@ -88,7 +88,7 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
     tryCatch(
       ({ sheet, result, config: { minify, optimize } }) => {
         const css = !result.isEmpty() ? sheet.toCss({ minify, optimize }) : undefined
-        ctx.hooks.callHook('parser:css', result.filePath ?? '', css)
+        void ctx.hooks.callHook('parser:css', result.filePath ?? '', css)
         return css
       },
       (err) => {

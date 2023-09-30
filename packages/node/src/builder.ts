@@ -189,7 +189,7 @@ export class Builder {
 
     const done = logger.time.info('Extracted in')
 
-    await Promise.all(ctx.getFiles().map((file) => this.extractFile(ctx, file)))
+    await Promise.allSettled(ctx.getFiles().map((file) => this.extractFile(ctx, file)))
 
     done()
   }

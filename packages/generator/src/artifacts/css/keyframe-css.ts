@@ -23,6 +23,8 @@ export function generateKeyframeCss(ctx: Context) {
   })
 
   const output = rule.toString()
-  ctx.hooks.callHook('generator:css', 'keyframes.css', output)
+
+  void ctx.hooks.callHook('generator:css', 'keyframes.css', output)
+
   return output
 }

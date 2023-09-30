@@ -51,7 +51,7 @@ export function generateTokenCss(ctx: Context) {
   }
   `
 
-  ctx.hooks.callHook('generator:css', 'tokens.css', output)
+  void ctx.hooks.callHook('generator:css', 'tokens.css', output)
   return output
 }
 

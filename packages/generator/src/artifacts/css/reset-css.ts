@@ -212,6 +212,7 @@ export function generateResetCss(ctx: Context, scope = '') {
   }
 }`
 
-  ctx.hooks.callHook('generator:css', 'reset.css', output)
+  void ctx.hooks.callHook('generator:css', 'reset.css', output)
+
   return output
 }

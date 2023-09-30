@@ -37,7 +37,8 @@ export const generateFlattenedCss = (ctx: Context) => (options: { files: string[
   sheet.append(...files)
 
   const output = sheet.toCss({ optimize: true, minify })
-  ctx.hooks.callHook('generator:css', 'styles.css', output)
+
+  void ctx.hooks.callHook('generator:css', 'styles.css', output)
 
   return output
 }
