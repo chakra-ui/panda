@@ -10,6 +10,7 @@ import { findConfig, loadConfigAndCreateContext } from './config'
 import { type PandaContext } from './create-context'
 import { emitArtifacts, extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
+import type { Config } from '@pandacss/types'
 
 type ContentData = {
   fileCssMap: Map<string, string>
@@ -39,6 +40,13 @@ export class Builder {
   context: PandaContext | undefined
 
   configDependencies: Set<string> = new Set()
+
+  configOverrides: Config | undefined
+
+  constructor(overrides: Config = {}) {
+    this.configOverrides = overrides
+    if (this.configOverrides?.logLevel) logger.level = this.configOverrides.logLevel
+  }
 
   writeFileCss = (file: string, css: string) => {
     const oldCss = this.fileCssMap?.get(file) ?? ''
@@ -133,7 +141,7 @@ export class Builder {
   setupContext = async (options: { configPath: string; depsModifiedMap: Map<string, number> }) => {
     const { configPath, depsModifiedMap } = options
 
-    this.context = await loadConfigAndCreateContext({ configPath })
+    this.context = await loadConfigAndCreateContext({ configPath, config: this.configOverrides })
 
     // don't emit artifacts on first setup
     if (setupCount > 0) {

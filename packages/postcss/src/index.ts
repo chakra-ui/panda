@@ -10,9 +10,15 @@ const interopDefault = (obj: any) => (obj && obj.__esModule ? obj.default : obj)
 
 export const loadConfig = () => interopDefault(require('@pandacss/postcss'))
 
-export const pandacss: PluginCreator<{ configPath?: string; cwd?: string }> = (options = {}) => {
-  const { configPath, cwd } = options
-  const builder = new Builder()
+interface PluginOptions {
+  configPath?: string
+  cwd?: string
+  silent?: boolean
+}
+
+export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
+  const { configPath, cwd, silent } = options
+  const builder = new Builder({ logLevel: silent ? 'silent' : undefined })
 
   return {
     postcssPlugin: PLUGIN_NAME,
