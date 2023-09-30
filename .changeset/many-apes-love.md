@@ -1,7 +1,7 @@
 ---
-'@pandacss/generator': patch
-'@pandacss/node': patch
-'@pandacss/dev': patch
+'@pandacss/generator': minor
+'@pandacss/node': minor
+'@pandacss/dev': minor
 ---
 
 ## --minimal flag
