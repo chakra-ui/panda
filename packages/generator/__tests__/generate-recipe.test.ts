@@ -91,7 +91,7 @@ describe('generate recipes', () => {
           "js": "import { splitProps } from '../helpers.mjs';
       import { createRecipe } from './create-recipe.mjs';
 
-      const textStyleFn = createRecipe('textStyle', {}, [])
+      const textStyleFn = /* @__PURE__ */ createRecipe('textStyle', {}, [])
 
       const textStyleVariantMap = {
         \\"size\\": [
@@ -99,8 +99,10 @@ describe('generate recipes', () => {
           \\"h2\\"
         ]
       }
+
       const textStyleVariantKeys = Object.keys(textStyleVariantMap)
-      export const textStyle = Object.assign(textStyleFn, {
+
+      export const textStyle = /* @__PURE__ */ Object.assign(textStyleFn, {
         __recipe__: true,
         __name__: 'textStyle',
         raw: (props) => props,
@@ -143,11 +145,13 @@ describe('generate recipes', () => {
           "js": "import { splitProps } from '../helpers.mjs';
       import { createRecipe } from './create-recipe.mjs';
 
-      const tooltipStyleFn = createRecipe('tooltipStyle', {}, [])
+      const tooltipStyleFn = /* @__PURE__ */ createRecipe('tooltipStyle', {}, [])
 
       const tooltipStyleVariantMap = {}
+
       const tooltipStyleVariantKeys = Object.keys(tooltipStyleVariantMap)
-      export const tooltipStyle = Object.assign(tooltipStyleFn, {
+
+      export const tooltipStyle = /* @__PURE__ */ Object.assign(tooltipStyleFn, {
         __recipe__: true,
         __name__: 'tooltipStyle',
         raw: (props) => props,
@@ -191,7 +195,7 @@ describe('generate recipes', () => {
           "js": "import { splitProps } from '../helpers.mjs';
       import { createRecipe } from './create-recipe.mjs';
 
-      const buttonStyleFn = createRecipe('buttonStyle', {
+      const buttonStyleFn = /* @__PURE__ */ createRecipe('buttonStyle', {
         \\"size\\": \\"md\\",
         \\"variant\\": \\"solid\\"
       }, [])
@@ -206,8 +210,10 @@ describe('generate recipes', () => {
           \\"outline\\"
         ]
       }
+
       const buttonStyleVariantKeys = Object.keys(buttonStyleVariantMap)
-      export const buttonStyle = Object.assign(buttonStyleFn, {
+
+      export const buttonStyle = /* @__PURE__ */ Object.assign(buttonStyleFn, {
         __recipe__: true,
         __name__: 'buttonStyle',
         raw: (props) => props,

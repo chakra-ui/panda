@@ -91,7 +91,7 @@ export function generateRecipes(ctx: Context) {
         const ${baseName}CompoundVariants = ${stringify(compoundVariants ?? [])}
 
         const ${baseName}SlotNames = ${stringify(config.slots.map((slot) => [slot, `${config.className}__${slot}`]))}
-        const ${baseName}SlotFns = ${baseName}SlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, ${baseName}DefaultVariants, getSlotCompoundVariant(${baseName}CompoundVariants, slotName))])
+        const ${baseName}SlotFns = /* @__PURE__ */ ${baseName}SlotNames.map(([slotName, slotKey]) => [slotName, createRecipe(slotKey, ${baseName}DefaultVariants, getSlotCompoundVariant(${baseName}CompoundVariants, slotName))])
 
         const ${baseName}Fn = (props = {}) => {
           return Object.fromEntries(${baseName}SlotFns.map(([slotName, slotFn]) => [slotName, slotFn(props)]))
@@ -99,7 +99,7 @@ export function generateRecipes(ctx: Context) {
 
         const ${baseName}VariantKeys = ${stringify(Object.keys(variantKeyMap))}
 
-        export const ${baseName} = Object.assign(${baseName}Fn, {
+        export const ${baseName} = /* @__PURE__ */ Object.assign(${baseName}Fn, {
           __recipe__: false,
           __name__: '${baseName}',
           raw: (props) => props,
@@ -116,13 +116,15 @@ export function generateRecipes(ctx: Context) {
         ${ctx.file.import('splitProps', '../helpers')}
         ${ctx.file.import('createRecipe', './create-recipe')}
 
-        const ${baseName}Fn = createRecipe('${config.className}', ${stringify(defaultVariants ?? {})}, ${stringify(
-            compoundVariants ?? [],
-          )})
+        const ${baseName}Fn = /* @__PURE__ */ createRecipe('${config.className}', ${stringify(
+            defaultVariants ?? {},
+          )}, ${stringify(compoundVariants ?? [])})
 
         const ${baseName}VariantMap = ${stringify(variantKeyMap)}
+        
         const ${baseName}VariantKeys = Object.keys(${baseName}VariantMap)
-        export const ${baseName} = Object.assign(${baseName}Fn, {
+        
+        export const ${baseName} = /* @__PURE__ */ Object.assign(${baseName}Fn, {
           __recipe__: true,
           __name__: '${baseName}',
           raw: (props) => props,
