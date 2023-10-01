@@ -12,7 +12,7 @@ communicate design decisions in your own way, and share information effectively.
 
 To launch the Panda studio, run the following command:
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm panda studio
@@ -28,6 +28,11 @@ To launch the Panda studio, run the following command:
     yarn panda studio
     ```
   </Tab>
+  <Tab>
+    ```bash
+    bun panda studio
+    ```
+  </Tab>
 </Tabs>
 
 This will launch a local server on port 3000. Navigate to `http://localhost:3000/tokens` to view the documentation.
@@ -36,7 +41,7 @@ This will launch a local server on port 3000. Navigate to `http://localhost:3000
 
 To build the Panda Studio, run the following command:
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm panda studio --build
@@ -50,6 +55,11 @@ To build the Panda Studio, run the following command:
   <Tab>
     ```bash
     yarn panda studio --build
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun panda studio --build
     ```
   </Tab>
 </Tabs>

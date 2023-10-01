@@ -25,7 +25,7 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
 
   If you don't enter any parameter, the CLI will guide you through the process of creating a new Next.js app.
 
-  <Tabs items={['pnpm', 'npm', 'yarn']} variant="code">
+  <Tabs items={['pnpm', 'npm', 'yarn', 'bun']} variant="code">
     <Tab>
       ```bash
       pnpm dlx create-next-app@latest --use-pnpm
@@ -39,6 +39,11 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
     <Tab>
       ```bash
       yarn dlx create-next-app@latest --use-yarn
+      ```
+    </Tab>
+    <Tab>
+      ```bash
+      bunx create-next-app@latest --use-bun
       ```
     </Tab>
   </Tabs>
@@ -77,7 +82,7 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
 
   Install Panda CSS dependency using your favorite package manager.
 
-  <Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
     <Tab>
       ```bash
       pnpm install -D @pandacss/dev
@@ -94,6 +99,12 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
       ```bash
       yarn add -D @pandacss/dev
       yarn panda init --postcss
+      ```
+    </Tab>
+    <Tab>
+      ```bash
+      bun add -D @pandacss/dev
+      bun panda init --postcss
       ```
     </Tab>
   </Tabs>
@@ -265,7 +276,7 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
 
   Run the following command to start the development server:
 
-  <Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
     <Tab>
       ```bash
       pnpm dev
@@ -279,6 +290,11 @@ If you don't have Next.js app installed, you can follow the [Create a Next.js ap
     <Tab>
       ```bash
       yarn dev
+      ```
+    </Tab>
+    <Tab>
+      ```bash
+      bun dev
       ```
     </Tab>
   </Tabs>

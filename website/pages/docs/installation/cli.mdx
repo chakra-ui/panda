@@ -12,7 +12,7 @@ An alternative way to use Panda is by running the Panda CLI tool.
 
 ### Install Panda
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm install -D @pandacss/dev
@@ -29,6 +29,12 @@ An alternative way to use Panda is by running the Panda CLI tool.
     ```bash
     yarn add -D @pandacss/dev
     yarn panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun add -D @pandacss/dev
+    bun panda init
     ```
   </Tab>
 </Tabs>
@@ -81,7 +87,7 @@ export function App() {
 
 Run the CLI tool to scan your JavaScript and TypeScript files for style properties and call expressions.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     # Run it once
@@ -107,6 +113,15 @@ Run the CLI tool to scan your JavaScript and TypeScript files for style properti
 
     # Run it in watch mode
     yarn panda --watch
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    # Run it once
+    bun panda
+
+    # Run it in watch mode
+    bun panda --watch
     ```
   </Tab>
 </Tabs>

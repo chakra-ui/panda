@@ -15,7 +15,7 @@ Setting up Panda CSS in a Solid.js project using PostCSS.
 
 To get started, we will need to create a new SolidJS project using `solidjs/templates/ts` template.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm dlx degit solidjs/templates/ts test-app
@@ -37,6 +37,13 @@ To get started, we will need to create a new SolidJS project using `solidjs/temp
     yarn
     ```
   </Tab>
+  <Tab>
+    ```bash
+    bunx degit solidjs/templates/ts test-app
+    cd test-app
+    bun install
+    ```
+  </Tab>
 </Tabs>
 
 
@@ -44,7 +51,7 @@ To get started, we will need to create a new SolidJS project using `solidjs/temp
 
 Install panda and create your `panda.config.ts` file.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm install -D @pandacss/dev
@@ -61,6 +68,12 @@ Install panda and create your `panda.config.ts` file.
     ```bash
     yarn add -D @pandacss/dev
     yarn panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun add -D @pandacss/dev
+    bun panda init --postcss
     ```
   </Tab>
 </Tabs>
@@ -120,7 +133,7 @@ Add this code to an `src/index.css` file imported in the root component of your 
 
 Run the following command to start your development server.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm dev
@@ -134,6 +147,11 @@ Run the following command to start your development server.
   <Tab>
     ```bash
     yarn dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun dev
     ```
   </Tab>
 </Tabs>

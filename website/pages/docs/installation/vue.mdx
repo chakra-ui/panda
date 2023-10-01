@@ -17,7 +17,7 @@ To get started, we will need to create a new Vue project using the official [sca
 
 If you don't enter any parameter, the CLI will guide you through the process of creating a new Vue app.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm create vue@latest
@@ -31,6 +31,11 @@ If you don't enter any parameter, the CLI will guide you through the process of 
   <Tab>
     ```bash
     yarn create vue@latest
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun create vue@latest
     ```
   </Tab>
 </Tabs>
@@ -53,7 +58,7 @@ Vue.js - The Progressive JavaScript Framework
 
 Enter the newly created directory and install the dependencies.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     cd test-app
@@ -72,13 +77,19 @@ Enter the newly created directory and install the dependencies.
     yarn
     ```
   </Tab>
+  <Tab>
+    ```bash
+    cd test-app
+    bun install
+    ```
+  </Tab>
 </Tabs>
 
 ### Install Panda
 
 Install panda and create your `panda.config.ts` file.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm install -D @pandacss/dev
@@ -95,6 +106,12 @@ Install panda and create your `panda.config.ts` file.
     ```bash
     yarn add -D @pandacss/dev
     yarn panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun add -D @pandacss/dev
+    bun panda init --postcss
     ```
   </Tab>
 </Tabs>
@@ -152,7 +169,7 @@ Add this code to an `src/index.css` file and import it in the root component of 
 
 Run the following command to start your development server.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm dev
@@ -166,6 +183,11 @@ Run the following command to start your development server.
   <Tab>
     ```bash
     yarn dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun dev
     ```
   </Tab>
 </Tabs>

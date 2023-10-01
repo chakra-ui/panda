@@ -15,7 +15,7 @@ Setting up Panda CSS in a Svelte project using PostCSS.
 
 To get started, we will need to create a new Svelte project.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm create svelte@latest test-app
@@ -29,6 +29,11 @@ To get started, we will need to create a new Svelte project.
   <Tab>
     ```bash
     yarn create svelte@latest test-app
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun create svelte@latest test-app
     ```
   </Tab>
 </Tabs>
@@ -55,7 +60,7 @@ You will be asked a few questions, answer them as follows:
 
 Enter the newly created directory and install the dependencies.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     cd test-app
@@ -74,6 +79,12 @@ Enter the newly created directory and install the dependencies.
     yarn
     ```
   </Tab>
+  <Tab>
+    ```bash
+    cd test-app
+    bun install
+    ```
+  </Tab>
 </Tabs>
 
 
@@ -81,7 +92,7 @@ Enter the newly created directory and install the dependencies.
 
 To install Panda and corresponding dependencies run the following commands:
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm install -D @pandacss/dev
@@ -98,6 +109,12 @@ To install Panda and corresponding dependencies run the following commands:
     ```bash
     yarn add -D @pandacss/dev
     yarn panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun add -D @pandacss/dev
+    bun panda init --postcss
     ```
   </Tab>
 </Tabs>
@@ -218,7 +235,7 @@ Create the `src/routes/+layout.svelte` file and add the following content:
 
 Run the following command to start your development server.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm dev
@@ -232,6 +249,11 @@ Run the following command to start your development server.
   <Tab>
     ```bash
     yarn dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun dev
     ```
   </Tab>
 </Tabs>
