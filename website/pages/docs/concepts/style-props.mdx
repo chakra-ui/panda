@@ -59,7 +59,7 @@ export default defineConfig({
 
 Next, you need to run `panda codegen` to generate the JSX runtime for your framework.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
   ```bash
   pnpm panda codegen --clean
@@ -73,6 +73,11 @@ Next, you need to run `panda codegen` to generate the JSX runtime for your frame
   <Tab>
   ```bash
   yarn panda codegen --clean
+  ```
+  </Tab>
+  <Tab>
+  ```bash
+  bun panda codegen --clean
   ```
   </Tab>
 </Tabs>

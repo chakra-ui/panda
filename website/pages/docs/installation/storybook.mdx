@@ -17,7 +17,7 @@ We are assuming that you already have a project set up with a framework like Rea
 
 Storybook needs to be installed into a project that is already set up with a framework. It will not work on an empty project.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm dlx storybook@latest init
@@ -33,13 +33,18 @@ Storybook needs to be installed into a project that is already set up with a fra
     yarn dlx storybook@latest init
     ```
   </Tab>
+  <Tab>
+    ```bash
+    bunx storybook@latest init
+    ```
+  </Tab>
 </Tabs>
 
 ### Install Panda
 
 Install panda and create your `panda.config.ts` file.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm install -D @pandacss/dev
@@ -56,6 +61,12 @@ Install panda and create your `panda.config.ts` file.
     ```bash
     yarn add -D @pandacss/dev
     yarn panda init --postcss
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun add -D @pandacss/dev
+    bun panda init --postcss
     ```
   </Tab>
 </Tabs>
@@ -149,7 +160,7 @@ export default preview;
 
 Run the following command to start your Storybook server.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm storybook
@@ -163,6 +174,11 @@ Run the following command to start your Storybook server.
   <Tab>
     ```bash
     yarn storybook
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun storybook
     ```
   </Tab>
 </Tabs>

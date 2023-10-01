@@ -15,7 +15,7 @@ Setting up Panda CSS in a Qwik project using PostCSS.
 
 To get started, we will need to create a new Qwik project using `typescript` template.
 
-<Tabs items={['npm', 'pnpm', 'yarn']}>
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     npm create qwik@latest
@@ -31,6 +31,11 @@ To get started, we will need to create a new Qwik project using `typescript` tem
     yarn create qwik
     ```
   </Tab>
+  <Tab>
+    ```bash
+    bun create qwik@latest
+    ```
+  </Tab>
 </Tabs>
 
 
@@ -38,7 +43,7 @@ To get started, we will need to create a new Qwik project using `typescript` tem
 
 Qwik provies an official script that installs panda and configures it for you.
 
-<Tabs items={['npm', 'pnpm', 'yarn']}>
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     npm run qwik add pandacss
@@ -54,13 +59,18 @@ Qwik provies an official script that installs panda and configures it for you.
     yarn qwik add pandacss
     ```
   </Tab>
+  <Tab>
+    ```bash
+    bun qwik add pandacss
+    ```
+  </Tab>
 </Tabs>
 
 ## Start your build process
 
 Run the following command to start your development server.
 
-<Tabs items={['npm', 'pnpm', 'yarn']}>
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     npm run dev
@@ -74,6 +84,11 @@ Run the following command to start your development server.
   <Tab>
     ```bash
     yarn dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun dev
     ```
   </Tab>
 </Tabs>

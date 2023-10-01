@@ -15,7 +15,7 @@ Setting up Panda CSS in a Nuxt project using PostCSS.
 
 To get started, we will need to create a new Nuxt project using npx.  
 
-<Tabs items={['npx', 'pnpm']}>
+<Tabs items={['npx', 'pnpm', 'bun']}>
   <Tab>
     ```bash
     npx nuxi@latest init test-app
@@ -26,11 +26,16 @@ To get started, we will need to create a new Nuxt project using npx.
     pnpm dlx nuxi@latest init test-app
     ```
   </Tab>
+  <Tab>
+    ```bash
+    bunx nuxi@latest init test-app
+    ```
+  </Tab>
 </Tabs>
 
 Enter the newly created directory and install the dependencies.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     cd test-app
@@ -49,13 +54,19 @@ Enter the newly created directory and install the dependencies.
     yarn install
     ```
   </Tab>
+  <Tab>
+    ```bash
+    cd test-app
+    bun install
+    ```
+  </Tab>
 </Tabs>
 
 ### Install Panda
 
 Install panda and create your `panda.config.ts` file.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm install -D @pandacss/dev
@@ -72,6 +83,12 @@ Install panda and create your `panda.config.ts` file.
     ```bash
     yarn add -D @pandacss/dev
     yarn panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun add -D @pandacss/dev
+    bun panda init
     ```
   </Tab>
 </Tabs>
@@ -160,7 +177,7 @@ With the above we've performed the following:
 
 Run the following command to start your development server.
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm dev
@@ -174,6 +191,11 @@ Run the following command to start your development server.
   <Tab>
     ```bash
     yarn dev
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun dev
     ```
   </Tab>
 </Tabs>

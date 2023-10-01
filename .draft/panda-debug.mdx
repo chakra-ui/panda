@@ -17,7 +17,7 @@ By default it will scan & output debug files for the entire project depending on
 from your config file.
 
 
-<Tabs items={['pnpm', 'npm', 'yarn']}>
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   <Tab>
     ```bash
     pnpm panda debug
@@ -43,6 +43,15 @@ from your config file.
     # using the optional glob argument
     yarn panda debug src/components/Button.tsx
     yarn panda debug "./src/components/**"
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun panda debug
+    # # You can also debug a specific file or folder
+    # using the optional glob argument
+    bun panda debug src/components/Button.tsx
+    bun panda debug "./src/components/**"
     ```
   </Tab>
 </Tabs>
