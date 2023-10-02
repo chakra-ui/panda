@@ -2,9 +2,12 @@ import type { Node } from 'ts-morph'
 import type { EvaluatedObjectResult, PrimitiveType } from './types'
 import { getNodeRange } from './get-node-range'
 
-type WithNode = { node: Node; stack: Node[] }
+interface WithNode {
+  node: Node
+  stack: Node[]
+}
 
-export type ObjectType = WithNode & {
+export interface ObjectType extends WithNode {
   type: 'object'
   value: EvaluatedObjectResult
   isEmpty?: boolean
@@ -12,26 +15,36 @@ export type ObjectType = WithNode & {
 
 export type LiteralKind = 'array' | 'string' | 'number' | 'boolean' | 'null' | 'undefined'
 
-export type LiteralType = WithNode & {
+export interface LiteralType extends WithNode {
   type: 'literal'
   value: PrimitiveType
   kind: LiteralKind
 }
 
-export type MapType = WithNode & { type: 'map'; value: MapTypeValue }
+export interface MapType extends WithNode {
+  type: 'map'
+  value: MapTypeValue
+}
 
-export type ArrayType = WithNode & { type: 'array'; value: BoxNode[] }
+export interface ArrayType extends WithNode {
+  type: 'array'
+  value: BoxNode[]
+}
 
-export type UnresolvableType = WithNode & { type: 'unresolvable' }
+export interface UnresolvableType extends WithNode {
+  type: 'unresolvable'
+}
 
-export type ConditionalType = WithNode & {
+export interface ConditionalType extends WithNode {
   type: 'conditional'
   whenTrue: BoxNode
   whenFalse: BoxNode
 }
 
 /** -> Jsx boolean attribute <Box flex /> */
-export type EmptyInitializerType = WithNode & { type: 'empty-initializer' }
+export interface EmptyInitializerType extends WithNode {
+  type: 'empty-initializer'
+}
 
 // export type PrimitiveBoxNode = ObjectType | LiteralType | MapType
 type BoxNodeDefinition =

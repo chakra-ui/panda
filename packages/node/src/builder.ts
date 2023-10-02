@@ -12,18 +12,18 @@ import { type PandaContext } from './create-context'
 import { emitArtifacts, extractFile } from './extract'
 import { parseDependency } from './parse-dependency'
 
-type ContentData = {
+interface ContentData {
   fileCssMap: Map<string, string>
   fileModifiedMap: Map<string, number>
 }
 
-type ConfigData = {
+interface ConfigData {
   context: PandaContext
   deps: Set<string>
   depsModifiedMap: Map<string, number>
 }
 
-type ConfigDepsResult = {
+interface ConfigDepsResult {
   modifiedMap: Map<string, number>
   isModified: boolean
 }

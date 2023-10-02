@@ -20,7 +20,7 @@ const isNodePattern = (node: ParserNodeOptions): node is ParserPatternNode => no
 const cvaProps = ['compoundVariants', 'defaultVariants', 'variants', 'base']
 const isCva = (map: BoxNodeMap['value']) => cvaProps.some((prop) => map.has(prop))
 
-export type ParserOptions = {
+export interface ParserOptions {
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string[]>
   jsx: {
     framework: string | undefined

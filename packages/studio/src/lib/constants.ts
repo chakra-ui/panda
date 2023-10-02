@@ -30,7 +30,7 @@ export enum NavKeys {
   CONTRAST_CHECKER = 'playground/contrast-checker',
 }
 
-export type NavItemData = {
+export interface NavItemData {
   label: string
   id: NavKeys
   description: string

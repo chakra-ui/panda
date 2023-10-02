@@ -12,7 +12,7 @@ import sortCss from './plugins/sort-css'
 import sortMediaQueries from './plugins/sort-mq'
 import type { Token } from '@pandacss/types'
 
-type OptimizeOptions = {
+interface OptimizeOptions {
   minify?: boolean
 }
 

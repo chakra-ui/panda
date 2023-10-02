@@ -115,7 +115,7 @@ const getLiteralValue = (node: BoxNode | undefined, ctx: UnboxContext): LiteralV
 type BoxNodeType = BoxNode | BoxNode[] | undefined
 type CacheMap = WeakMap<BoxNode, Unboxed>
 
-type UnboxContext = {
+interface UnboxContext {
   path: string[]
   parent: BoxNode | undefined
   cache: CacheMap
@@ -124,7 +124,7 @@ type UnboxContext = {
   /** @example <ColorBox {...(someCondition && { color: "blue.100" })} /> */
   spreadConditions: LiteralObject[] // there is no specific upside to having this separated from conditions but it's easier to debug
 }
-export type Unboxed = {
+export interface Unboxed {
   raw: LiteralObject
   conditions: LiteralObject[]
   spreadConditions: LiteralObject[]

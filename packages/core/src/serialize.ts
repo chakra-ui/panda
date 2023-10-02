@@ -6,7 +6,7 @@ import { cssToJs, toCss } from './to-css'
 import type { Utility } from './utility'
 import type postcss from 'postcss'
 
-export type SerializeContext = {
+export interface SerializeContext {
   conditions: Conditions
   utility: Utility
 }

@@ -15,42 +15,46 @@ import type { BoxNode, BoxNodeArray, BoxNodeLiteral, BoxNodeMap } from './box-fa
 
 export type PrimitiveType = string | number | boolean | null | undefined
 
-export type LiteralObject = Record<string, any>
+export interface LiteralObject {
+  [key: string]: any
+}
 
 export type SingleLiteralValue = PrimitiveType | LiteralObject
 
 export type LiteralValue = SingleLiteralValue | SingleLiteralValue[]
 
-export type EvaluatedObjectResult = Record<string, LiteralValue>
+export interface EvaluatedObjectResult {
+  [key: string]: LiteralValue
+}
 
 export type ExtractResultKind = 'component' | 'function'
 
-export type ExtractedFunctionInstance = {
+export interface ExtractedFunctionInstance {
   name: string
   kind: 'call-expression'
   fromNode: () => CallExpression
   box: BoxNodeArray
 }
 
-export type ExtractedTaggedTemplateInstance = {
+export interface ExtractedTaggedTemplateInstance {
   name: string
   kind: 'tagged-template'
   fromNode: () => TaggedTemplateExpression
   box: BoxNodeLiteral
 }
 
-export type ExtractedFunctionResult = {
+export interface ExtractedFunctionResult {
   kind: 'function'
   nodesByProp: Map<string, BoxNode[]>
   queryList: Array<ExtractedFunctionInstance | ExtractedTaggedTemplateInstance>
 }
 
-export type ExtractedComponentInstance = {
+export interface ExtractedComponentInstance {
   name: string
   fromNode: () => JsxOpeningElement | JsxSelfClosingElement
   box: BoxNodeMap
 }
-export type ExtractedComponentResult = {
+export interface ExtractedComponentResult {
   kind: 'component'
   nodesByProp: Map<string, BoxNode[]>
   queryList: ExtractedComponentInstance[]
@@ -61,46 +65,46 @@ export type ExtractResultByName = Map<string, ExtractResultItem>
 
 export type ListOrAll = 'all' | string[]
 
-export type MatchTagArgs = {
+export interface MatchTagArgs {
   tagName: string
   tagNode: JsxOpeningElement | JsxSelfClosingElement
   isFactory: boolean
 }
-export type MatchPropArgs = {
+export interface MatchPropArgs {
   propName: string
   propNode: JsxAttribute | undefined
 }
-export type MatchFnArgs = {
+export interface MatchFnArgs {
   fnName: string
   fnNode: CallExpression
 }
-export type MatchFnArguments = {
+export interface MatchFnArguments {
   argNode: Node
   index: number
 }
-export type MatchFnPropArgs = {
+export interface MatchFnPropArgs {
   propName: string
   propNode: PropertyAssignment | ShorthandPropertyAssignment
 }
 export type MatchPropFn = (prop: MatchPropArgs) => boolean
-export type FunctionMatchers = {
+export interface FunctionMatchers {
   matchFn: (element: MatchFnArgs) => boolean
   matchArg: (arg: Pick<MatchFnArgs, 'fnName' | 'fnNode'> & MatchFnArguments) => boolean
   matchProp: (prop: Pick<MatchFnArgs, 'fnName' | 'fnNode'> & MatchFnPropArgs) => boolean
 }
 
-export type ComponentMatchers = {
+export interface ComponentMatchers {
   matchTag: (element: MatchTagArgs) => boolean
   matchProp: (prop: Pick<MatchTagArgs, 'tagName' | 'tagNode'> & MatchPropArgs) => boolean
 }
 
-export type MatchTaggedTemplateArgs = {
+export interface MatchTaggedTemplateArgs {
   fnName: string
   taggedTemplateNode: TaggedTemplateExpression
 }
 export type MatchTaggedTemplate = (tag: MatchTaggedTemplateArgs) => boolean
 
-export type BoxContext = {
+export interface BoxContext {
   getEvaluateOptions?: (node: Expression, stack: Node[]) => Omit<EvaluateOptions, 'node' | 'policy'> | void
   canEval?: (node: Expression, stack: Node[]) => boolean
   flags?: {

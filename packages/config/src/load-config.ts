@@ -16,7 +16,7 @@ const bundledPresets = {
 const bundledPresetsNames = Object.keys(bundledPresets)
 const isBundledPreset = (preset: string): preset is keyof typeof bundledPresets => bundledPresetsNames.includes(preset)
 
-type ConfigFileOptions = {
+interface ConfigFileOptions {
   cwd: string
   file?: string
 }

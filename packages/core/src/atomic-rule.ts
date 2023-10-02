@@ -13,7 +13,7 @@ import postcss from 'postcss'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
 
-export type ProcessOptions = {
+export interface ProcessOptions {
   styles: Dict
 }
 

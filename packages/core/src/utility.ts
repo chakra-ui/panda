@@ -3,7 +3,7 @@ import type { TokenDictionary } from '@pandacss/token-dictionary'
 import type { AnyFunction, Dict, PropertyConfig, PropertyTransform, UtilityConfig } from '@pandacss/types'
 import type { TransformResult } from './types'
 
-export type UtilityOptions = {
+export interface UtilityOptions {
   config?: UtilityConfig
   tokens: TokenDictionary
   separator?: string
