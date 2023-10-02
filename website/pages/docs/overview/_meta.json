@@ -3,6 +3,10 @@
   "why-panda": "Why Panda?",
   "faq": "FAQs",
   "browser-support": "Browser Support",
+  "roadmap": {
+    "title": "Roadmap",
+    "href": "https://panda-css.canny.io/"
+  },
   "changelog": {
     "title": "Changelog",
     "href": "https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md"
