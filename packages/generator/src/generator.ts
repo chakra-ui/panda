@@ -1,8 +1,8 @@
-import type { ConfigResultWithHooks, OutdirImportMap, TSConfig } from '@pandacss/types'
+import type { Artifact, ConfigResultWithHooks, OutdirImportMap, ParserResultType, TSConfig } from '@pandacss/types'
 import { generateArtifacts } from './artifacts'
-import { generateFlattenedCss } from './artifacts/css/flat-css'
+import { generateFlattenedCss, type FlattenedCssOptions } from './artifacts/css/flat-css'
 import { generateParserCss } from './artifacts/css/parser-css'
-import { getEngine } from './engines'
+import { getEngine, type Context } from './engines'
 import { getMessages } from './messages'
 
 const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
@@ -26,14 +26,21 @@ const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
   },
 })
 
-const getImportMap = (outdir: string, configImportMap?: OutdirImportMap) => ({
+const getImportMap = (outdir: string, configImportMap?: OutdirImportMap): InternalImportMap => ({
   css: configImportMap?.css ? [configImportMap.css] : [outdir, 'css'],
   recipe: configImportMap?.recipes ? [configImportMap.recipes] : [outdir, 'recipes'],
   pattern: configImportMap?.patterns ? [configImportMap.patterns] : [outdir, 'patterns'],
   jsx: configImportMap?.jsx ? [configImportMap.jsx] : [outdir, 'jsx'],
 })
 
-export const createGenerator = (conf: ConfigResultWithHooks) => {
+interface InternalImportMap {
+  css: string[]
+  recipe: string[]
+  pattern: string[]
+  jsx: string[]
+}
+
+export const createGenerator = (conf: ConfigResultWithHooks): Generator => {
   const ctx = getEngine(defaults(conf))
   const { config, jsx, isValidProperty, patterns, recipes } = ctx
 
@@ -68,4 +75,25 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
   }
 }
 
-export type Generator = ReturnType<typeof createGenerator>
+export interface Generator extends Context {
+  getArtifacts: () => Artifact[]
+  getCss: (options: FlattenedCssOptions) => string
+  getParserCss: (result: ParserResultType) => string | undefined
+  messages: ReturnType<typeof getMessages>
+  parserOptions: {
+    importMap: InternalImportMap
+    jsx: {
+      framework: Context['jsx']['framework']
+      factory: Context['jsx']['factoryName']
+      styleProps: Context['jsx']['styleProps']
+      isStyleProp: Context['isValidProperty']
+      nodes: Array<Context['patterns']['details'][number] | Context['recipes']['details'][number]>
+    }
+    patternKeys: Context['patterns']['keys']
+    recipeKeys: Context['recipes']['keys']
+    getRecipesByJsxName: Context['recipes']['filter']
+    getPatternsByJsxName: Context['patterns']['filter']
+    compilerOptions: TSConfig['compilerOptions']
+    tsOptions: ConfigResultWithHooks['tsOptions']
+  }
+}

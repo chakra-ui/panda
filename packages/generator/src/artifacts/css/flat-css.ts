@@ -5,7 +5,12 @@ import { generateResetCss } from './reset-css'
 import { generateStaticCss } from './static-css'
 import { generateTokenCss } from './token-css'
 
-export const generateFlattenedCss = (ctx: Context) => (options: { files: string[]; resolve?: boolean }) => {
+export interface FlattenedCssOptions {
+  files: string[]
+  resolve?: boolean
+}
+
+export const generateFlattenedCss = (ctx: Context) => (options: FlattenedCssOptions) => {
   const { files, resolve } = options
   const { theme: { keyframes } = {}, preflight, minify, staticCss } = ctx.config
 

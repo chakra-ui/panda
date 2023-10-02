@@ -1,6 +1,6 @@
 import type { Generator } from '@pandacss/generator'
 import type { Artifact, PandaHookable } from '@pandacss/types'
-import type { Runtime } from '@pandacss/types/src/runtime'
+import type { Runtime } from '@pandacss/types'
 
 export const getOutputEngine = ({
   paths,
@@ -25,3 +25,8 @@ export const getOutputEngine = ({
     )
   },
 })
+
+export interface PandaOutputEngine {
+  empty(): void
+  write(output: Artifact | undefined): Promise<PromiseSettledResult<void>[] | undefined>
+}
