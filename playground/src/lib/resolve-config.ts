@@ -11,7 +11,7 @@ type ExtendableConfig = Extendable<Config>
 export function getResolvedConfig(config: ExtendableConfig) {
   const presets = config.presets ?? []
 
-  const configs: ExtendableConfig[] = [config]
+  const configs: ExtendableConfig[] = []
   while (presets.length > 0) {
     const preset = presets.shift()!
 
@@ -30,6 +30,8 @@ export function getResolvedConfig(config: ExtendableConfig) {
       presets.unshift(...(preset.presets ?? []))
     }
   }
+
+  configs.unshift(config)
   return mergeConfigs(configs) as Config
 }
 
