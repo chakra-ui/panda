@@ -2,9 +2,6 @@
   "name": "@pandacss/config",
   "version": "0.15.4",
   "description": "Find and load panda config",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "sideEffects": false,
   "publishConfig": {
@@ -12,19 +9,31 @@
   },
   "exports": {
     ".": {
+      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      }
     },
     "./merge": {
+      "development": "./src/merge-config.ts",
       "types": "./dist/merge-config.d.ts",
       "require": "./dist/merge-config.js",
-      "import": "./dist/merge-config.mjs"
+      "import": {
+        "types": "./dist/merge-config.d.mts",
+        "default": "./dist/merge-config.mjs"
+      }
     },
     "./ts-path": {
+      "development": "./src/resolve-ts-path-pattern.ts",
       "types": "./dist/resolve-ts-path-pattern.d.ts",
       "require": "./dist/resolve-ts-path-pattern.js",
-      "import": "./dist/resolve-ts-path-pattern.mjs"
+      "import": {
+        "types": "./dist/resolve-ts-path-pattern.d.mts",
+        "default": "./dist/resolve-ts-path-pattern.mjs"
+      }
     },
     "./package.json": "./package.json"
   },
