@@ -24,7 +24,7 @@
   "devDependencies": {
     "@types/mime": "^1",
     "@types/npm-packlist": "^3.0.0",
-    "@types/read": "^0.0.29",
+    "@types/read": "^0.0.30",
     "@types/tar-stream": "^2.2.2",
     "@types/xml2js": "^0.4.11",
     "@types/yauzl": "^2.10.0",
