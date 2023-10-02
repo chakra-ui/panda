@@ -10,13 +10,14 @@
     "noEmit": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "node",
     "noImplicitReturns": false,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "moduleResolution": "Bundler",
+    "module": "ESNext",
+    "customConditions": ["development"]
   },
   "include": ["packages"],
   "types": ["vitest/globals"],

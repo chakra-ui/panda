@@ -3,8 +3,6 @@
   "version": "0.17.0",
   "type": "module",
   "description": "Astro integration for Panda CSS",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "scripts": {
     "build": "tsup --dts",
@@ -16,8 +14,16 @@
     "access": "public"
   },
   "exports": {
-    ".": "./dist/index.js",
-    "./base.css": "./base.css",
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      }
+    },
+    "./base": "./base.css",
     "./package.json": "./package.json"
   },
   "files": [
