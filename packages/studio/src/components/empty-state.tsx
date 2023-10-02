@@ -1,6 +1,6 @@
 import { panda, Stack } from '../../styled-system/jsx'
 
-type EmptyStateProps = {
+interface EmptyStateProps {
   title: string
   children: React.ReactNode
   icon: React.ReactElement

@@ -4,7 +4,7 @@ import { TokenContent } from '../components/token-content'
 import { TokenGroup } from '../components/token-group'
 import { Input, Textarea } from './input'
 
-type FontTokensProps = {
+interface FontTokensProps {
   text?: string
   largeText?: boolean
   token: string

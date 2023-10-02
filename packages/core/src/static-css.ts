@@ -1,6 +1,6 @@
 import type { StaticCssOptions } from '@pandacss/types'
 
-type StaticContext = {
+interface StaticContext {
   breakpoints: string[]
   getPropertyKeys: (property: string) => string[]
   getRecipeKeys: (recipe: string) => {

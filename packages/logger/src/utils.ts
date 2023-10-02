@@ -1,6 +1,6 @@
 import { logLevels } from './levels'
 
-export type Config = {
+export interface Config {
   level?: LogLevel
   filter?: string
   isDebug?: boolean

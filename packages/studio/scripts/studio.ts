@@ -3,7 +3,7 @@ import { execa } from 'execa'
 import { join } from 'node:path'
 import { createRequire } from 'node:module'
 
-export type BuildOpts = {
+export interface BuildOpts {
   outDir: string
   configPath: string
 }

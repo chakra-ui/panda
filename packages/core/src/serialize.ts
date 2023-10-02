@@ -5,7 +5,7 @@ import type { Conditions } from './conditions'
 import { cssToJs, toCss } from './to-css'
 import type { Utility } from './utility'
 
-export type SerializeContext = {
+export interface SerializeContext {
   conditions: Conditions
   utility: Utility
 }

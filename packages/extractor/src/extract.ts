@@ -22,7 +22,11 @@ import { getComponentName } from './utils'
 import { maybeBoxNode } from './maybe-box-node'
 
 type JsxElement = JsxOpeningElement | JsxSelfClosingElement
-type Component = { name: string; props: MapTypeValue; conditionals: BoxNodeConditional[] }
+interface Component {
+  name: string
+  props: MapTypeValue
+  conditionals: BoxNodeConditional[]
+}
 type ComponentMap = Map<JsxElement, Component>
 
 const isImportOrExport = Bool.or(Node.isImportDeclaration, Node.isExportDeclaration)

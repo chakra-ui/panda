@@ -6,7 +6,9 @@ import { isSlotRecipe } from './is-slot-recipe'
 import { serializeStyle } from './serialize'
 import type { RecipeNode, StylesheetContext } from './types'
 
-type RecipeRecord = Record<string, RecipeConfig | SlotRecipeConfig>
+interface RecipeRecord {
+  [key: string]: RecipeConfig | SlotRecipeConfig
+}
 
 const sharedState = {
   /**

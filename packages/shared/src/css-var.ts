@@ -10,12 +10,12 @@ function dashCase(string: string) {
   return string.replace(dashCaseRegex, (match) => `-${match.toLowerCase()}`)
 }
 
-export type CssVar = {
+export interface CssVar {
   var: `--${string}`
   ref: string
 }
 
-export type CssVarOptions = {
+export interface CssVarOptions {
   fallback?: string
   prefix?: string
   hash?: boolean
