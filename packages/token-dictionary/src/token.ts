@@ -133,7 +133,7 @@ export class Token {
 
   /**
    * Returns the token value with the references expanded.
-   * Semantic tokens: {color.gray.100} => var(--colors-gray-100)
+   * e.g. {color.gray.100} => var(--colors-gray-100)
    *
    */
   expandReferences(): string {
