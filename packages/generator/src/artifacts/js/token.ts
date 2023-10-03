@@ -6,8 +6,8 @@ export function generateTokenJs(ctx: Context) {
   const map = new Map<string, { value: string; variable: string }>()
 
   tokens.allTokens.forEach((token) => {
-    const { varRef } = token.extensions
-    const value = token.isConditional ? varRef : token.value
+    const { varRef, rawValue } = token.extensions
+    const value = rawValue || token.value
     map.set(token.name, { value, variable: varRef })
   })
 

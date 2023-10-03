@@ -1,6 +1,8 @@
 import { expect, test } from 'vitest'
 import { generateTokenJs } from '../src/artifacts/js/token'
 import { generator } from './fixture'
+import { createGenerator } from '../src'
+import { createHooks } from 'hookable'
 
 test('[dts] should generate package', () => {
   expect(generateTokenJs(generator).js).toMatchInlineSnapshot(
@@ -1691,35 +1693,35 @@ test('[dts] should generate package', () => {
         \\"variable\\": \\"var(--breakpoints-2xl)\\"
       },
       \\"colors.primary\\": {
-        \\"value\\": \\"var(--colors-primary)\\",
+        \\"value\\": \\"#f87171\\",
         \\"variable\\": \\"var(--colors-primary)\\"
       },
       \\"colors.secondary\\": {
-        \\"value\\": \\"var(--colors-secondary)\\",
+        \\"value\\": \\"#b91c1c\\",
         \\"variable\\": \\"var(--colors-secondary)\\"
       },
       \\"colors.complex\\": {
-        \\"value\\": \\"var(--colors-complex)\\",
+        \\"value\\": \\"#b91c1c\\",
         \\"variable\\": \\"var(--colors-complex)\\"
       },
       \\"colors.surface\\": {
-        \\"value\\": \\"var(--colors-surface)\\",
+        \\"value\\": \\"#p-d\\",
         \\"variable\\": \\"var(--colors-surface)\\"
       },
       \\"colors.button.thick\\": {
-        \\"value\\": \\"var(--colors-button-thick)\\",
+        \\"value\\": \\"#000\\",
         \\"variable\\": \\"var(--colors-button-thick)\\"
       },
       \\"colors.button.card.body\\": {
-        \\"value\\": \\"var(--colors-button-card-body)\\",
+        \\"value\\": \\"#000\\",
         \\"variable\\": \\"var(--colors-button-card-body)\\"
       },
       \\"colors.button.card.heading\\": {
-        \\"value\\": \\"var(--colors-button-card-heading)\\",
+        \\"value\\": \\"#000\\",
         \\"variable\\": \\"var(--colors-button-card-heading)\\"
       },
       \\"spacing.gutter\\": {
-        \\"value\\": \\"var(--spacing-gutter)\\",
+        \\"value\\": \\"1.25rem\\",
         \\"variable\\": \\"var(--spacing-gutter)\\"
       },
       \\"spacing.-1\\": {
@@ -1855,7 +1857,7 @@ test('[dts] should generate package', () => {
         \\"variable\\": \\"var(--spacing-3\\\\\\\\.5)\\"
       },
       \\"spacing.-gutter\\": {
-        \\"value\\": \\"var(--spacing-gutter)\\",
+        \\"value\\": \\"1.25rem\\",
         \\"variable\\": \\"var(--spacing-gutter)\\"
       },
       \\"colors.colorPalette.50\\": {
@@ -1967,4 +1969,119 @@ test('[dts] should generate package', () => {
     token.var = tokenVar"
   `,
   )
+})
+
+// https://github.com/chakra-ui/panda/issues/1399
+test("should generate a raw value if it's possible", () => {
+  const egenrator = createGenerator({
+    dependencies: [],
+    config: {
+      cwd: '',
+      include: [],
+      theme: {
+        tokens: {
+          colors: {
+            purple: {
+              DEFAULT: { value: '{colors.purple.100}' },
+              100: { value: '#A0F' },
+              200: { value: '{colors.purple}' }, // DEFAULT => 100 => #A0F
+              300: { value: '{colors.purple.200}' }, //  200 => DEFAULT => 100 => #A0F
+            },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            primary: {
+              DEFAULT: { value: '{colors.purple}' }, // purple.DEFAULT => purple.100 => #A0F
+              accent: {
+                DEFAULT: { value: '{colors.purple.200}' }, // purple.200 => purple.DEFAULT => purple.100 => #A0F
+                dark: { value: '{colors.purple.300}' }, // purple.300 => purple.200 => purple.DEFAULT => purple.100 => #A0F
+              },
+              danger: {
+                value: { base: '{colors.purple}', _dark: '{colors.purple.200}' }, // contitional can't be resolved to raw value
+              },
+            },
+          },
+        },
+      },
+      outdir: '',
+    },
+    path: '',
+    hooks: createHooks(),
+  })
+
+  expect(generateTokenJs(egenrator).js).toMatchInlineSnapshot(`
+    "const tokens = {
+      \\"colors.purple.100\\": {
+        \\"value\\": \\"#A0F\\",
+        \\"variable\\": \\"var(--colors-purple-100)\\"
+      },
+      \\"colors.purple.200\\": {
+        \\"value\\": \\"#A0F\\",
+        \\"variable\\": \\"var(--colors-purple-200)\\"
+      },
+      \\"colors.purple.300\\": {
+        \\"value\\": \\"#A0F\\",
+        \\"variable\\": \\"var(--colors-purple-300)\\"
+      },
+      \\"colors.purple\\": {
+        \\"value\\": \\"#A0F\\",
+        \\"variable\\": \\"var(--colors-purple)\\"
+      },
+      \\"colors.primary\\": {
+        \\"value\\": \\"#A0F\\",
+        \\"variable\\": \\"var(--colors-primary)\\"
+      },
+      \\"colors.primary.accent\\": {
+        \\"value\\": \\"#A0F\\",
+        \\"variable\\": \\"var(--colors-primary-accent)\\"
+      },
+      \\"colors.primary.accent.dark\\": {
+        \\"value\\": \\"#A0F\\",
+        \\"variable\\": \\"var(--colors-primary-accent-dark)\\"
+      },
+      \\"colors.primary.danger\\": {
+        \\"value\\": \\"#A0F\\",
+        \\"variable\\": \\"var(--colors-primary-danger)\\"
+      },
+      \\"colors.colorPalette.100\\": {
+        \\"value\\": \\"var(--colors-color-palette-100)\\",
+        \\"variable\\": \\"var(--colors-color-palette-100)\\"
+      },
+      \\"colors.colorPalette.200\\": {
+        \\"value\\": \\"var(--colors-color-palette-200)\\",
+        \\"variable\\": \\"var(--colors-color-palette-200)\\"
+      },
+      \\"colors.colorPalette.300\\": {
+        \\"value\\": \\"var(--colors-color-palette-300)\\",
+        \\"variable\\": \\"var(--colors-color-palette-300)\\"
+      },
+      \\"colors.colorPalette.accent\\": {
+        \\"value\\": \\"var(--colors-color-palette-accent)\\",
+        \\"variable\\": \\"var(--colors-color-palette-accent)\\"
+      },
+      \\"colors.colorPalette.accent.dark\\": {
+        \\"value\\": \\"var(--colors-color-palette-accent-dark)\\",
+        \\"variable\\": \\"var(--colors-color-palette-accent-dark)\\"
+      },
+      \\"colors.colorPalette.dark\\": {
+        \\"value\\": \\"var(--colors-color-palette-dark)\\",
+        \\"variable\\": \\"var(--colors-color-palette-dark)\\"
+      },
+      \\"colors.colorPalette.danger\\": {
+        \\"value\\": \\"var(--colors-color-palette-danger)\\",
+        \\"variable\\": \\"var(--colors-color-palette-danger)\\"
+      }
+    }
+
+    export function token(path, fallback) {
+      return tokens[path]?.value || fallback
+    }
+
+    function tokenVar(path, fallback) {
+      return tokens[path]?.variable || fallback
+    }
+
+    token.var = tokenVar"
+  `)
 })
