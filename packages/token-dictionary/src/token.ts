@@ -104,13 +104,44 @@ export class Token {
     return isObject(this.originalValue) || Array.isArray(this.originalValue)
   }
 
+  setRawValue() {
+    if (this.extensions.rawValue) return
+
+    let rawValue = this.value
+
+    if (this.hasReference) {
+      const references = this.extensions.references ?? {}
+
+      rawValue = Object.keys(references).reduce((valueStr, key) => {
+        const referenceToken = references[key]
+
+        // Conditional tokens can't be resolved to a raw value
+        if (referenceToken.isConditional) {
+          return valueStr
+        }
+
+        const value = referenceToken.extensions.rawValue
+
+        return valueStr.replaceAll(`{${key}}`, value)
+      }, this.value)
+    }
+
+    this.setExtensions({
+      rawValue,
+    })
+  }
+
   /**
    * Returns the token value with the references expanded.
-   * e.g. {color.gray.100} => var(--colors-gray-100)
+   * Semantic tokens: {color.gray.100} => var(--colors-gray-100)
    *
    */
   expandReferences(): string {
-    if (!this.hasReference) return this.extensions.varRef ?? this.value
+    if (!this.hasReference) {
+      this.setRawValue()
+
+      return this.extensions.varRef ?? this.value
+    }
 
     const references = this.extensions.references ?? {}
 
@@ -121,8 +152,11 @@ export class Token {
       if (referenceToken.isConditional) {
         return valueStr
       }
+
       const value = referenceToken.expandReferences()
-      return valueStr.replace(`{${key}}`, value)
+      this.setRawValue()
+
+      return valueStr.replaceAll(`{${key}}`, value)
     }, this.value)
 
     delete this.extensions.references
