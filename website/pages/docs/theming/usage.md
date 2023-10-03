@@ -89,8 +89,7 @@ const tokens = {
 }
 ```
 
-- The `token()` function returns the raw value of the token, unless token is a composite value or color palette, in which case it also returns the
-  CSS custom property used to reference the token.
+- The `token()` function returns the raw value of the token. However, if the token is a composite value or color palette, it returns the CSS custom property used to reference the token
 - The `token.var()` function returns the CSS custom property used to reference the token.
 
 Both functions are typesafe and expect a known dot-separated token path, they also accept a fallback value as a second
