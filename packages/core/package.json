@@ -27,7 +27,7 @@
     "autoprefixer": "10.4.15",
     "hookable": "5.5.3",
     "lodash.merge": "4.6.2",
-    "postcss": "8.4.27",
+    "postcss": "8.4.31",
     "postcss-discard-duplicates": "^6.0.0",
     "postcss-discard-empty": "^6.0.0",
     "postcss-merge-rules": "^6.0.1",
