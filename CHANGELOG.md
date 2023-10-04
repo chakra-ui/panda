@@ -6,6 +6,17 @@ See the [Changesets](./.changeset) for the latest changes.
 
 ## [Unreleased]
 
+## [0.15.5] - 2023-10-4
+
+### Fixed
+
+- Fix issue where unused recipes and slot recipes doesn't get treeshaken properly
+- Fix issue with `Promise.all` where it aborts premature ine weird events. Switched to `Promise.allSettled`.
+- **Vue**: Fix issue where elements created from styled factory does not forward DOM attributes and events to the
+  underlying element.
+- **Vue**: Fix regression in generated types
+- **Preact**: Fix regression in generated types
+
 ## [0.15.4] - 2023-09-29
 
 ### Fixed

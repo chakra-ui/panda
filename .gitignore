@@ -24,6 +24,8 @@ styled-system
 styled-system-static
 panda
 panda-static
+outdir
+ts-import-map-outdir
 
 !packages/studio/styled-system
 packages/studio/src/lib/analysis.json
