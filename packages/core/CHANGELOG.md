@@ -1,5 +1,15 @@
 # @pandacss/core
 
+## 0.15.5
+
+### Patch Changes
+
+- @pandacss/error@0.15.5
+- @pandacss/logger@0.15.5
+- @pandacss/shared@0.15.5
+- @pandacss/token-dictionary@0.15.5
+- @pandacss/types@0.15.5
+
 ## 0.15.4
 
 ### Patch Changes

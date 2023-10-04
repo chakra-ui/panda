@@ -1,5 +1,25 @@
 # @pandacss/node
 
+## 0.15.5
+
+### Patch Changes
+
+- 909fcbe8: - Fix issue with `Promise.all` where it aborts premature ine weird events. Switched to `Promise.allSettled`
+- Updated dependencies [d12aed2b]
+- Updated dependencies [909fcbe8]
+- Updated dependencies [3d5971e5]
+  - @pandacss/generator@0.15.5
+  - @pandacss/parser@0.15.5
+  - @pandacss/config@0.15.5
+  - @pandacss/core@0.15.5
+  - @pandacss/error@0.15.5
+  - @pandacss/extractor@0.15.5
+  - @pandacss/is-valid-prop@0.15.5
+  - @pandacss/logger@0.15.5
+  - @pandacss/shared@0.15.5
+  - @pandacss/token-dictionary@0.15.5
+  - @pandacss/types@0.15.5
+
 ## 0.15.4
 
 ### Patch Changes
