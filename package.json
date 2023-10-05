@@ -23,7 +23,7 @@
     "typecheck": "tsc --noEmit",
     "release": "changeset publish",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
-    "prepare-studio": "pnpm --filter=./packages/studio codegen",
+    "prepare-studio": "PANDA_CLI=compiled pnpm --filter=./packages/studio codegen",
     "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
     "deploy-studio": "pnpm prepare-studio && pnpm build-studio",
     "serve-studio": "npx serve ./sandbox/vite-ts/panda-static",
