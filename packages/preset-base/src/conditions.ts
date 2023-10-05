@@ -70,6 +70,7 @@ export const conditions = {
   default: '&:default',
   optional: '&:optional',
   open: '&:is([open], [data-open], [data-state="open"])',
+  closed: '&:is([closed], [data-closed], [data-state="closed"])',
   fullscreen: '&:fullscreen',
   loading: '&:is([data-loading], [aria-busy=true])',
 
