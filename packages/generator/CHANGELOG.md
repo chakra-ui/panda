@@ -1,5 +1,22 @@
 # @pandacss/generator
 
+## 0.15.5
+
+### Patch Changes
+
+- d12aed2b: Fix issue where unused recipes and slot recipes doesn't get treeshaken properly
+- 909fcbe8: - Fix issue with `Promise.all` where it aborts premature ine weird events. Switched to `Promise.allSettled`
+- 3d5971e5: - **Vue**: Fix issue where elements created from styled factory does not forward DOM attributes and events
+  to the underlying element.
+  - **Vue**: Fix regression in generated types
+  - **Preact**: Fix regression in generated types
+  - @pandacss/core@0.15.5
+  - @pandacss/is-valid-prop@0.15.5
+  - @pandacss/logger@0.15.5
+  - @pandacss/shared@0.15.5
+  - @pandacss/token-dictionary@0.15.5
+  - @pandacss/types@0.15.5
+
 ## 0.15.4
 
 ### Patch Changes

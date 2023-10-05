@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/core",
-  "version": "0.15.4",
+  "version": "0.15.5",
   "description": "core functions for extract-it",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

@@ -1,5 +1,17 @@
 # @pandacss/studio
 
+## 0.15.5
+
+### Patch Changes
+
+- Updated dependencies [909fcbe8]
+  - @pandacss/node@0.15.5
+  - @pandacss/config@0.15.5
+  - @pandacss/logger@0.15.5
+  - @pandacss/shared@0.15.5
+  - @pandacss/token-dictionary@0.15.5
+  - @pandacss/types@0.15.5
+
 ## 0.15.4
 
 ### Patch Changes
