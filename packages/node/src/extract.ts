@@ -148,15 +148,19 @@ export type CssArtifactType = 'preflight' | 'tokens' | 'static' | 'global' | 'ke
  * Generates the CSS for a given artifact type
  */
 export async function generateCssArtifactOfType(ctx: PandaContext, cssType: CssArtifactType, outfile: string) {
+  let notFound = false
   const css = match(cssType)
     .with('preflight', () => ctx.getResetCss(ctx))
     .with('tokens', () => ctx.getTokenCss(ctx))
     .with('static', () => ctx.getStaticCss(ctx))
     .with('global', () => ctx.getGlobalCss(ctx))
     .with('keyframes', () => ctx.getKeyframeCss(ctx))
-    .exhaustive()
+    .otherwise(() => {
+      notFound = true
+    })
 
-  if (!css) return { msg: `No css artifact of type <${cssType}> was found` }
+  if (notFound) return { msg: `No css artifact of type <${cssType}> was found` }
+  if (!css) return { msg: `No css to generate for type <${cssType}>` }
 
   await writeFile(outfile, css)
   return { msg: `Successfully generated ${cssType} css artifact ✨` }
