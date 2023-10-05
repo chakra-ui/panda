@@ -64,7 +64,7 @@ export function processSlotRecipe(recipe: 'button', value: Record<string, any>) 
   const recipes = new Recipes(mocks.slotRecipes, createContext())
   recipes.save()
   recipes.process(recipe, { styles: value })
-  return recipes.toCss()
+  return recipes
 }
 
 export const compositions = {
