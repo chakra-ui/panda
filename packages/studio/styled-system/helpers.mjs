@@ -135,8 +135,12 @@ var fallbackCondition = {
 };
 var sanitize = (value) => typeof value === "string" ? value.replaceAll(/[\n\s]+/g, " ") : value;
 function createCss(context) {
-  const { utility, hash, conditions: conds = fallbackCondition } = context;
+  const { utility, hash, conditions: conds = fallbackCondition, mode } = context;
   const formatClassName = (str) => [utility.prefix, str].filter(Boolean).join("-");
+  const groupedHashFn = (styles, classList) => {
+    const className = hash ? toHash(JSON.stringify(styles)) : classList;
+    return formatClassName(className);
+  };
   const hashFn = (conditions, className) => {
     let result;
     if (hash) {
@@ -148,6 +152,12 @@ function createCss(context) {
     }
     return result;
   };
+  if (mode === "grouped" && hash) {
+    return (styleObject = {}) => {
+      const normalizedObject = normalizeStyleObject(styleObject, context);
+      return groupedHashFn(normalizedObject, "");
+    };
+  }
   return (styleObject = {}) => {
     const normalizedObject = normalizeStyleObject(styleObject, context);
     const classNames = /* @__PURE__ */ new Set();
@@ -163,7 +173,7 @@ function createCss(context) {
         className = `${className}!`;
       classNames.add(className);
     });
-    return Array.from(classNames).join(" ");
+    return mode === "grouped" ? groupedHashFn(styleObject, Array.from(classNames).join("__")) : Array.from(classNames).join(" ");
   };
 }
 function compactStyles(...styles) {

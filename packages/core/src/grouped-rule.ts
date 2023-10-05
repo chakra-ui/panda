@@ -11,6 +11,7 @@ import type { Dict } from '@pandacss/types'
 import postcss from 'postcss'
 import type { StylesheetContext } from './types'
 import { toCss } from './to-css'
+import type { ConditionalRule } from './conditional-rule'
 
 export interface ProcessOptions {
   styles: Dict
@@ -25,9 +26,17 @@ export class GroupedRule {
     this.layer = context.layers.utilities
   }
 
-  hashFn = (styles: Dict) => {
-    const result = this.context.utility.formatClassName(toHash(JSON.stringify(styles)))
+  groupedHashFn = (styles: Dict, classList: string) => {
+    const className = this.context.hash ? toHash(JSON.stringify(styles)) : classList
+    const result = this.context.utility.formatClassName(className)
     return esc(result)
+  }
+
+  hashFn = (conditions: string[], className: string) => {
+    const { conditions: cond, utility } = this.context
+    const baseArray = [...cond.finalize(conditions), utility.formatClassName(className)]
+    const result = baseArray.join(':')
+    return result
   }
 
   get transform() {
@@ -42,8 +51,9 @@ export class GroupedRule {
     // shouldn't happen, but just in case
     if (typeof styleObject !== 'object') return
 
-    const className = `.${this.hashFn(styleObject)}`
-    const rule = postcss.rule({ selector: className })
+    const rule = postcss.rule()
+    const classList = [] as string[]
+    const rulesToUpdate = [] as Array<[ConditionalRule, conditions: string[]]>
 
     walkObject(styleObject, (value, paths) => {
       // if value doesn't exist
@@ -60,6 +70,8 @@ export class GroupedRule {
       // allow users transform the generated class and styles
       const transformed = this.transform(prop, withoutImportant(value))
 
+      classList.push(this.hashFn(conditions, transformed.className))
+
       // convert css-in-js to css rule
       const cssRoot = toCss(transformed.styles, { important })
 
@@ -69,16 +81,23 @@ export class GroupedRule {
         rule.append(decl)
       } else {
         const condRule = this.context.conditions.rule()
+        const clone = [...decl]
 
-        condRule.nodes = decl
-        condRule.selector = className
-        condRule.update()
+        condRule.nodes = clone
 
-        // apply css conditions
-        condRule.applyConditions(conditions)
-
-        this.root.append(condRule.rule!)
+        rulesToUpdate.push([condRule, conditions])
       }
+    })
+
+    rule.selector = `.${this.groupedHashFn(styleObject, Array.from(classList).join('__'))}`
+    rulesToUpdate.forEach(([condRule, conditions]) => {
+      condRule.selector = rule.selector
+      condRule.update()
+
+      // apply css conditions
+      condRule.applyConditions(conditions)
+
+      this.root.append(condRule.rule!)
     })
 
     if (rule.nodes.length > 0) {

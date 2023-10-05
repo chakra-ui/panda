@@ -41,15 +41,9 @@ export function createCss(context: CreateCssContext) {
   const { utility, hash, conditions: conds = fallbackCondition, mode } = context
 
   const formatClassName = (str: string) => [utility.prefix, str].filter(Boolean).join('-')
-  const groupedHashFn = (styles: Record<string, any>) => {
-    return formatClassName(toHash(JSON.stringify(styles)))
-  }
-
-  if (mode === 'grouped') {
-    return (styleObject: Record<string, any> = {}) => {
-      const normalizedObject = normalizeStyleObject(styleObject, context)
-      return groupedHashFn(normalizedObject)
-    }
+  const groupedHashFn = (styles: Record<string, any>, classList: string) => {
+    const className = hash ? toHash(JSON.stringify(styles)) : classList
+    return formatClassName(className)
   }
 
   const hashFn = (conditions: string[], className: string) => {
@@ -62,6 +56,13 @@ export function createCss(context: CreateCssContext) {
       result = baseArray.join(':')
     }
     return result
+  }
+
+  if (mode === 'grouped' && hash) {
+    return (styleObject: Record<string, any> = {}) => {
+      const normalizedObject = normalizeStyleObject(styleObject, context)
+      return groupedHashFn(normalizedObject, '')
+    }
   }
 
   return (styleObject: Record<string, any> = {}) => {
@@ -84,7 +85,9 @@ export function createCss(context: CreateCssContext) {
       classNames.add(className)
     })
 
-    return Array.from(classNames).join(' ')
+    return mode === 'grouped'
+      ? groupedHashFn(styleObject, Array.from(classNames).join('__'))
+      : Array.from(classNames).join(' ')
   }
 }
 
