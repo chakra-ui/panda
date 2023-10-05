@@ -20,7 +20,6 @@ import { buildStudio, previewStudio, serveStudio } from '@pandacss/studio'
 import { cac } from 'cac'
 import { join, resolve } from 'pathe'
 import { debounce } from 'perfect-debounce'
-import updateNotifier from 'update-notifier'
 import { name, version } from '../package.json'
 import { cliInit } from './cli-init'
 import type {
@@ -34,8 +33,11 @@ import type {
   StudioCommandFlags,
 } from './types'
 
-export async function main() {
-  updateNotifier({ pkg: { name, version }, distTag: 'latest' }).notify()
+export async function main(isDev = false) {
+  // needed to fix SyntaxError: Identifier '__dirname' has already been declared
+  if (!isDev) {
+    require('update-notifier')({ pkg: { name, version }, distTag: 'latest' }).notify()
+  }
 
   const cli = cac('panda')
 
