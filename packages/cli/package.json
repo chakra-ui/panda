@@ -74,6 +74,7 @@
   },
   "devDependencies": {
     "@types/update-notifier": "6.0.5",
+    "esbuild-register": "^3.5.0",
     "kleur": "4.1.5",
     "update-notifier": "6.0.2"
   }
