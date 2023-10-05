@@ -81,6 +81,7 @@ export const getBaseEngine = (conf: ConfigResultWithHooks): PandaBaseEngine => {
     conditions,
     utility,
     hash: hash.className,
+    mode: config.mode ?? 'atomic',
     helpers,
     layers,
   })

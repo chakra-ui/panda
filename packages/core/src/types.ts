@@ -1,4 +1,4 @@
-import type { CascadeLayers, Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig } from '@pandacss/types'
+import type { CascadeLayers, Config, Dict, PatternHelpers, RecipeConfig, SlotRecipeConfig } from '@pandacss/types'
 import type { Root } from 'postcss'
 import type { Conditions } from './conditions'
 import type { Utility } from './utility'
@@ -17,6 +17,7 @@ export interface StylesheetContext {
   conditions: Conditions
   helpers: PatternHelpers
   hash?: boolean
+  mode?: Config['mode']
   transform?: AtomicRuleTransform
   layers: CascadeLayers
 }

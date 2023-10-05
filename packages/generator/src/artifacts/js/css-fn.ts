@@ -4,7 +4,7 @@ import type { Context } from '../../engines'
 export function generateCssFn(ctx: Context) {
   const {
     utility,
-    config: { hash, prefix },
+    config: { hash, prefix, mode },
     conditions,
   } = ctx
 
@@ -89,7 +89,8 @@ export function generateCssFn(ctx: Context) {
 
     const context = {
       ${hash ? 'hash: true,' : ''}
-      conditions: {
+      ${mode ? 'mode: ' + JSON.stringify(mode) + ',' : ''}
+        conditions: {
         shift: sortConditions,
         finalize: finalizeConditions,
         breakpoints: { keys: ${JSON.stringify(conditions.breakpoints.keys)} }

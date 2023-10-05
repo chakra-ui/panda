@@ -1,14 +1,14 @@
 import { describe, expect, test } from 'vitest'
-import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
+import { GroupedRule, type ProcessOptions } from '../src/grouped-rule'
 import { createContext } from './fixture'
 
 function css(obj: ProcessOptions) {
-  const ruleset = new AtomicRule(createContext())
+  const ruleset = new GroupedRule(createContext())
   ruleset.process(obj)
   return ruleset.toCss()
 }
 
-describe('atomic / with basic style object', () => {
+describe('grouped / with basic style object', () => {
   test('respect important syntax', () => {
     expect(
       css({
@@ -19,10 +19,8 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .text_red\\\\! {
-              color: red !important
-          }
-          .fs_30px\\\\! {
+          .fVOTto {
+              color: red !important;
               font-size: 30px !important
           }
       }"
@@ -32,7 +30,7 @@ describe('atomic / with basic style object', () => {
   test('should work with basic', () => {
     expect(css({ styles: { bg: 'red.300' } })).toMatchInlineSnapshot(`
       "@layer utilities {
-          .bg_red\\\\.300 {
+          .kqhTKz {
               background: var(--colors-red-300)
           }
       }"
@@ -42,7 +40,7 @@ describe('atomic / with basic style object', () => {
   test('should resolve shorthand', () => {
     expect(css({ styles: { width: '50px', w: '20px' } })).toMatchInlineSnapshot(`
       "@layer utilities {
-          .w_20px {
+          .dRToyv {
               width: 20px
           }
       }"
@@ -50,7 +48,7 @@ describe('atomic / with basic style object', () => {
 
     expect(css({ styles: { width: { base: '50px', md: '60px' }, w: '70px' } })).toMatchInlineSnapshot(`
       "@layer utilities {
-          .w_70px {
+          .hVktBK {
               width: 70px
           }
       }"
@@ -60,13 +58,13 @@ describe('atomic / with basic style object', () => {
   test('should resolve responsive array', () => {
     expect(css({ styles: { width: ['50px', '60px'] } })).toMatchInlineSnapshot(`
       "@layer utilities {
-          .w_50px {
-              width: 50px
-          }
-          .sm\\\\:w_60px {
+          .cCCFHz {
               @media screen and (min-width: 40em) {
                   width: 60px
               }
+          }
+          .cCCFHz {
+              width: 50px
           }
       }"
     `)
@@ -75,13 +73,13 @@ describe('atomic / with basic style object', () => {
   test('should resolve responsive array with gaps', () => {
     expect(css({ styles: { width: ['50px', null, '60px'] } })).toMatchInlineSnapshot(`
       "@layer utilities {
-          .w_50px {
-              width: 50px
-          }
-          .md\\\\:w_60px {
+          .jzSCGQ {
               @media screen and (min-width: 48em) {
                   width: 60px
               }
+          }
+          .jzSCGQ {
+              width: 50px
           }
       }"
     `)
@@ -96,14 +94,14 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .ltr\\\\:sm\\\\:ml_4 {
+          .fvPiUb {
               [dir=ltr] & {
                   @media screen and (min-width: 40em) {
                       margin-left: var(--spacing-4)
                   }
               }
           }
-          .rtl\\\\:ml_-4 {
+          .fvPiUb {
               [dir=rtl] & {
                   margin-left: calc(var(--spacing-4) * -1)
               }
@@ -122,17 +120,17 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .light\\\\:text_red {
+          .kfirSV {
                &.light, .light & {
                   color: red
               }
           }
-          .dark\\\\:text_green {
+          .kfirSV {
                &.dark, .dark & {
                   color: green
               }
           }
-          .dark\\\\:opacity_slate400 {
+          .kfirSV {
                &.dark, .dark & {
                   opacity: slate400
               }
@@ -150,21 +148,21 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .sm\\\\:rtl\\\\:top_20px {
+          .dToxDd {
               [dir=rtl] & {
                   @media screen and (min-width: 40em) {
                       top: 20px
                   }
               }
           }
-          .sm\\\\:hover\\\\:top_50px {
+          .dToxDd {
               &:is(:hover, [data-hover]) {
                   @media screen and (min-width: 40em) {
                       top: 50px
                   }
               }
           }
-          .lg\\\\:top_120px {
+          .dToxDd {
               @media screen and (min-width: 64em) {
                   top: 120px
               }
@@ -182,13 +180,13 @@ describe('atomic / with basic style object', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .left_20px {
-              left: 20px
-          }
-          .md\\\\:left_40px {
+          .grCvRg {
               @media screen and (min-width: 48em) {
                   left: 40px
               }
+          }
+          .grCvRg {
+              left: 20px
           }
       }"
     `)
@@ -197,7 +195,7 @@ describe('atomic / with basic style object', () => {
   test('should work with boolean transform', () => {
     expect(css({ styles: { debug: true } })).toMatchInlineSnapshot(`
       "@layer utilities {
-          .debug_true {
+          .KdJkM {
               outline: 1px solid blue !important;
               &>* {
                   outline: 1px solid red !important
@@ -222,40 +220,40 @@ describe('atomic / with nesting scope', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[\\\\&_\\\\>_p\\\\]\\\\:left_20px {
+          .dUhjO {
               & > p {
                   left: 20px
               }
           }
-          .\\\\[\\\\&_\\\\>_p\\\\]\\\\:md\\\\:left_40px {
+          .dUhjO {
               & > p {
                   @media screen and (min-width: 48em) {
                       left: 40px
                   }
               }
           }
-          .\\\\[\\\\&_\\\\>_p\\\\]\\\\:light\\\\:bg_red400 {
+          .dUhjO {
               & > p {
                    &.light, .light & {
                       background: red400
                   }
               }
           }
-          .\\\\[\\\\&_\\\\>_p\\\\]\\\\:dark\\\\:bg_green500 {
+          .dUhjO {
               & > p {
                    &.dark, .dark & {
                       background: green500
                   }
               }
           }
-          .\\\\[\\\\&_\\\\>_p\\\\]\\\\:rtl\\\\:font_sans {
+          .dUhjO {
               & > p {
                   [dir=rtl] & {
                       font: sans
                   }
               }
           }
-          .\\\\[\\\\&_\\\\>_p\\\\]\\\\:ltr\\\\:dark\\\\:sm\\\\:hover\\\\:font_serif {
+          .dUhjO {
               & > p {
                   &:is(:hover, [data-hover]) {
                       [dir=ltr] & {
@@ -284,19 +282,19 @@ describe('atomic / with nesting scope', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:bg_red400 {
+          .jzNKXF {
               input:hover & {
                   background: red400
               }
           }
-          .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:sm\\\\:fs_14px {
+          .jzNKXF {
               input:hover & {
                   @media screen and (min-width: 40em) {
                       font-size: 14px
                   }
               }
           }
-          .\\\\[input\\\\:hover_\\\\&\\\\]\\\\:lg\\\\:fs_18px {
+          .jzNKXF {
               input:hover & {
                   @media screen and (min-width: 64em) {
                       font-size: 18px
@@ -320,17 +318,17 @@ describe('atomic / with nesting scope', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:left_40px {
+          .doHJfd {
               &::placeholder {
                   left: 40px
               }
           }
-          .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:bg_red400 {
+          .doHJfd {
               &::placeholder {
                   background: red400
               }
           }
-          .\\\\[\\\\&\\\\:\\\\:placeholder\\\\]\\\\:sm\\\\:text_left {
+          .doHJfd {
               &::placeholder {
                   @media screen and (min-width: 40em) {
                       text-align: left
@@ -353,12 +351,12 @@ describe('atomic / with nesting scope', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[\\\\@media_base\\\\]\\\\:left_40px {
+          .knFbfi {
               @media base {
                   left: 40px
               }
           }
-          .\\\\[\\\\@media_base\\\\]\\\\:sm\\\\:text_left {
+          .knFbfi {
               @media base {
                   @media screen and (min-width: 40em) {
                       text-align: left
@@ -380,7 +378,7 @@ describe('atomic / with grouped conditions styles', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .hover\\\\:bg_pink\\\\.400 {
+          .gZsUrG {
               &:is(:hover, [data-hover]) {
                   background: var(--colors-pink-400)
               }
@@ -398,7 +396,7 @@ describe('atomic / with grouped conditions styles', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .hover\\\\:sm\\\\:dark\\\\:bg_red\\\\.300 {
+          .iUKBla {
               &:is(:hover, [data-hover]) {
                    &.dark, .dark & {
                       @media screen and (min-width: 40em) {
@@ -407,7 +405,7 @@ describe('atomic / with grouped conditions styles', () => {
                   }
               }
           }
-          .hover\\\\:text_pink\\\\.400 {
+          .iUKBla {
               &:is(:hover, [data-hover]) {
                   color: var(--colors-pink-400)
               }
@@ -425,7 +423,7 @@ describe('atomic / with grouped conditions styles', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .hover\\\\:disabled\\\\:sm\\\\:bg_red\\\\.300 {
+          .lliWRX {
               &:is(:hover, [data-hover]) {
                   &:is(:disabled, [disabled], [data-disabled]) {
                       @media screen and (min-width: 40em) {
@@ -452,14 +450,14 @@ describe('atomic / with grouped conditions styles', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[\\\\@media_base\\\\]\\\\:\\\\[\\\\&\\\\:hover\\\\]\\\\:left_40px {
+          .dapdYc {
               &:hover {
                   @media base {
                       left: 40px
                   }
               }
           }
-          .\\\\[\\\\@media_base\\\\]\\\\:\\\\[\\\\&\\\\:hover\\\\]\\\\:sm\\\\:text_left {
+          .dapdYc {
               &:hover {
                   @media base {
                       @media screen and (min-width: 40em) {
@@ -485,7 +483,7 @@ describe('atomic / with direct nesting', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:bg_green {
+          .kihEqI {
               @media (min-width: 768px) {
                   background-color: green
               }
@@ -534,73 +532,61 @@ describe('atomic / with direct nesting', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .all_unset {
-              all: unset
-          }
-          .bg_red {
-              background-color: red
-          }
-          .border_none {
-              border: var(--borders-none)
-          }
-          .p_\\\\$3_\\\\$3 {
-              padding: $3 $3
-          }
-          .rounded_\\\\$button {
-              border-radius: $button
-          }
-          .fs_\\\\$xsmall {
-              font-size: $xsmall
-          }
-          .cursor_pointer {
-              cursor: pointer
-          }
-          .\\\\[\\\\&_\\\\+_span\\\\]\\\\:ml_\\\\$2 {
+          .dtqgAs {
               & + span {
                   margin-left: $2
               }
           }
-          .\\\\[\\\\&\\\\:focus\\\\,_\\\\&\\\\:hover\\\\]\\\\:shadow_none {
+          .dtqgAs {
               &:focus, &:hover {
                   box-shadow: none
               }
           }
-          .\\\\[\\\\.test_\\\\&\\\\]\\\\:bg_blue {
+          .dtqgAs {
               .test & {
                   background-color: blue
               }
           }
-          .\\\\[\\\\&_\\\\.my-class\\\\]\\\\:text_red {
+          .dtqgAs {
               & .my-class {
                   color: red
               }
           }
-          .\\\\[\\\\:focus_\\\\>_\\\\&\\\\]\\\\:text_white {
+          .dtqgAs {
               :focus > & {
                   color: var(--colors-white)
               }
           }
-          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:bg_green {
+          .dtqgAs {
               @media (min-width: 768px) {
                   background-color: green
               }
           }
-          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:fs_\\\\$small {
+          .dtqgAs {
               @media (min-width: 768px) {
                   font-size: $small
               }
           }
-          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:\\\\[\\\\&\\\\:hover\\\\]\\\\:bg_yellow {
+          .dtqgAs {
               &:hover {
                   @media (min-width: 768px) {
                       background-color: yellow
                   }
               }
           }
-          .\\\\[\\\\&_span\\\\]\\\\:text_red {
+          .dtqgAs {
               & span {
                   color: red
               }
+          }
+          .dtqgAs {
+              all: unset;
+              background-color: red;
+              border: var(--borders-none);
+              padding: $3 $3;
+              border-radius: $button;
+              font-size: $xsmall;
+              cursor: pointer
           }
       }"
     `)
@@ -617,7 +603,7 @@ describe('atomic / with direct nesting', () => {
       }),
     ).toMatchInlineSnapshot(`
       "@layer utilities {
-          .\\\\[\\\\&_kbd\\\\]\\\\:text_red {
+          .bDiHXC {
               & kbd {
                   color: red
               }

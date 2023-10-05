@@ -242,6 +242,10 @@ interface CssgenOptions {
    * @default 'object-literal'
    */
   syntax?: 'template-literal' | 'object-literal'
+  /**
+   * CSS rules generation mode
+   */
+  mode?: 'atomic' | 'grouped'
 }
 
 interface CodegenOptions {

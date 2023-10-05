@@ -9,6 +9,7 @@ import { walkObject } from './walk-object'
 
 export interface CreateCssContext {
   hash?: boolean
+  mode?: 'atomic' | 'grouped'
   /**
    * Partial properties from the Utility class
    */
@@ -37,9 +38,19 @@ const fallbackCondition: NonNullable<CreateCssContext['conditions']> = {
 const sanitize = (value: any) => (typeof value === 'string' ? value.replaceAll(/[\n\s]+/g, ' ') : value)
 
 export function createCss(context: CreateCssContext) {
-  const { utility, hash, conditions: conds = fallbackCondition } = context
+  const { utility, hash, conditions: conds = fallbackCondition, mode } = context
 
   const formatClassName = (str: string) => [utility.prefix, str].filter(Boolean).join('-')
+  const groupedHashFn = (styles: Record<string, any>) => {
+    return formatClassName(toHash(JSON.stringify(styles)))
+  }
+
+  if (mode === 'grouped') {
+    return (styleObject: Record<string, any> = {}) => {
+      const normalizedObject = normalizeStyleObject(styleObject, context)
+      return groupedHashFn(normalizedObject)
+    }
+  }
 
   const hashFn = (conditions: string[], className: string) => {
     let result: string

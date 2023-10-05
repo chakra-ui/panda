@@ -14,6 +14,7 @@ const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
     outExtension: 'mjs',
     shorthands: true,
     syntax: 'object-literal',
+    mode: 'atomic',
     ...conf.config,
     layers: {
       reset: 'reset',

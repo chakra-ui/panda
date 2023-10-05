@@ -10,6 +10,7 @@ import { safeParse } from './safe-parse'
 import { serializeStyles } from './serialize'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
+import { GroupedRule } from './grouped-rule'
 
 export interface StylesheetOptions {
   content?: string
@@ -62,7 +63,7 @@ export class Stylesheet {
   }
 
   processAtomic = (...styleObject: (SystemStyleObject | undefined)[]) => {
-    const ruleset = new AtomicRule(this.context)
+    const ruleset = this.context.mode === 'grouped' ? new GroupedRule(this.context) : new AtomicRule(this.context)
     styleObject.forEach((styles) => {
       if (!styles) return
       ruleset.process({ styles })
