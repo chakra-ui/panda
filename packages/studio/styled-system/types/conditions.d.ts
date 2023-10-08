@@ -130,6 +130,8 @@ export interface Conditions {
 	"_optional": string
 	/** `&:is([open], [data-open], [data-state="open"])` */
 	"_open": string
+	/** `&:is([closed], [data-closed], [data-state="closed"])` */
+	"_closed": string
 	/** `&:fullscreen` */
 	"_fullscreen": string
 	/** `&:is([data-loading], [aria-busy=true])` */
