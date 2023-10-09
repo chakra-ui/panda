@@ -175,13 +175,13 @@ export class Builder {
     const isUnchanged = this.fileModifiedMap.has(file) && mtime === this.fileModifiedMap.get(file)
     if (isUnchanged) return
 
-    const css = extractFile(ctx, file)
-    if (!css) return
+    const parserResult = extractFile(ctx, file)
+    if (!parserResult) return
 
     this.fileModifiedMap.set(file, mtime)
-    this.writeFileCss(file, css)
+    this.writeFileCss(file, ctx.getParserCss(parserResult))
 
-    return css
+    return parserResult
   }
 
   extract = async () => {

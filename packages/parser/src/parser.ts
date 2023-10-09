@@ -7,6 +7,7 @@ import { match } from 'ts-pattern'
 import { getImportDeclarations } from './import'
 import { createParserResult } from './parser-result'
 import type { Config, ConfigTsOptions, ResultItem, Runtime } from '@pandacss/types'
+import type { Conditions } from '@pandacss/core'
 import { resolveTsPathPattern } from '@pandacss/config/ts-path'
 import type { Generator } from '@pandacss/generator'
 
@@ -27,12 +28,17 @@ export type ParserOptions = {
     factory: string
     styleProps: Exclude<Config['jsxStyleProps'], undefined>
     nodes: ParserNodeOptions[]
-    isStyleProp: (prop: string) => boolean
   }
   patternKeys: string[]
   recipeKeys: string[]
+  isValidProperty: (prop: string) => boolean
+  conditions: Conditions
   getRecipesByJsxName: (jsxName: string) => ParserRecipeNode[]
   getPatternsByJsxName: (jsxName: string) => ParserPatternNode[]
+  patterns: Generator['patterns']
+  recipes: Generator['recipes']
+  // syntax: NonNullable<Config['syntax']>
+  syntax: Config['syntax']
   tsOptions?: ConfigTsOptions
   join: Runtime['path']['join']
 }
@@ -68,7 +74,7 @@ const identityFn = (styles: any) => styles
 const evaluateOptions: EvalOptions = { environment: defaultEnv }
 
 export function createParser(options: ParserOptions) {
-  const { jsx, getRecipesByJsxName, getPatternsByJsxName, tsOptions, join } = options
+  const { jsx, getRecipesByJsxName, getPatternsByJsxName, isValidProperty, tsOptions, join } = options
   const importMap = Object.fromEntries(Object.entries(options.importMap).map(([key, value]) => [key, join(...value)]))
 
   // Create regex for each import map
@@ -117,7 +123,7 @@ export function createParser(options: ParserOptions) {
       },
     })
 
-    const collector = createParserResult()
+    const parserResult = createParserResult(options)
 
     logger.debug(
       'ast:import',
@@ -247,7 +253,7 @@ export function createParser(options: ParserOptions) {
         memo((tagName: string, propName: string) => {
           return (
             Boolean(components.get(tagName)?.has(propName)) ||
-            options.jsx?.isStyleProp(propName) ||
+            isValidProperty(propName) ||
             propertiesMap.has(propName) ||
             isRecipeOrPatternProp(tagName, propName)
           )
@@ -321,7 +327,7 @@ export function createParser(options: ParserOptions) {
               if (query.kind === 'call-expression') {
                 // css({ ... }, { ... })
                 if (query.box.value.length > 1) {
-                  collector.set(name, {
+                  parserResult.set(name, {
                     name,
                     box: query.box,
                     data: query.box.value.reduce(
@@ -330,8 +336,9 @@ export function createParser(options: ParserOptions) {
                     ),
                   })
                 } else {
+                  // console.log({ filePath, name }, unbox(query.box.value[0]).raw)
                   // css({ ... })
-                  collector.set(name, {
+                  parserResult.set(name, {
                     name,
                     box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                     data: combineResult(unbox(query.box.value[0])),
@@ -341,7 +348,7 @@ export function createParser(options: ParserOptions) {
               } else if (query.kind === 'tagged-template') {
                 // css` ... `
                 const obj = astish(query.box.value as string)
-                collector.set(name, {
+                parserResult.set(name, {
                   name,
                   box: query.box ?? fallback(query.box),
                   data: [obj],
@@ -353,7 +360,7 @@ export function createParser(options: ParserOptions) {
           .when(isValidPattern, (name) => {
             result.queryList.forEach((query) => {
               if (query.kind === 'call-expression') {
-                collector.setPattern(name, {
+                parserResult.setPattern(name, {
                   name,
                   box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                   data: combineResult(unbox(query.box.value[0])),
@@ -365,7 +372,7 @@ export function createParser(options: ParserOptions) {
           .when(isValidRecipe, (name) => {
             result.queryList.forEach((query) => {
               if (query.kind === 'call-expression') {
-                collector.setRecipe(name, {
+                parserResult.setRecipe(name, {
                   name,
                   box: (query.box.value[0] as BoxNodeMap) ?? fallback(query.box),
                   data: combineResult(unbox(query.box.value[0])),
@@ -387,11 +394,11 @@ export function createParser(options: ParserOptions) {
                 // CallExpression factory inline recipe
                 // panda("span", { base: {}, variants: { ... } })
                 if (box.isMap(map) && isCva(map.value)) {
-                  collector.setCva(result)
+                  parserResult.setCva(result)
                 } else {
                   // CallExpression factory css
                   // panda("span", { color: "red.100", ... })
-                  collector.set('css', result)
+                  parserResult.set('css', result)
                 }
 
                 // panda("div", badge, { ... })
@@ -404,7 +411,7 @@ export function createParser(options: ParserOptions) {
                     const recipeName = imports.getName(name)
 
                     // set it as JSX-recipe so that recipe & style props will be split correctly
-                    collector.setRecipe(recipeName, {
+                    parserResult.setRecipe(recipeName, {
                       type: 'jsx-recipe',
                       name: recipeName,
                       box: options,
@@ -416,7 +423,7 @@ export function createParser(options: ParserOptions) {
                 // TaggedTemplateExpression factory css
                 // panda('span')` color: red; `
                 const obj = astish(query.box.value as string)
-                collector.set('css', {
+                parserResult.set('css', {
                   name,
                   box: query.box ?? fallback(query.box),
                   data: [obj],
@@ -436,15 +443,15 @@ export function createParser(options: ParserOptions) {
                 // PropertyAccess factory inline recipe
                 // panda.span({ base: {}, variants: { ... } })
                 if (box.isMap(map) && isCva(map.value)) {
-                  collector.setCva(result)
+                  parserResult.setCva(result)
                 } else {
                   // PropertyAccess factory css
                   // panda.span({ ... })
-                  collector.set('css', result)
+                  parserResult.set('css', result)
                 }
               } else if (query.kind === 'tagged-template') {
                 const obj = astish(query.box.value as string)
-                collector.set('css', {
+                parserResult.set('css', {
                   name,
                   box: query.box ?? fallback(query.box),
                   data: [obj],
@@ -464,25 +471,29 @@ export function createParser(options: ParserOptions) {
 
           match(name)
             .when(isFactory, (jsxName) => {
-              collector.setJsx({ name: jsxName, box: query.box, type: 'jsx-factory', data })
+              parserResult.setJsx({ name: jsxName, box: query.box, type: 'jsx-factory', data })
             })
             .when(isJsxTagPattern, (jsxName) => {
-              collector.setPattern(jsxName, { type: 'jsx-pattern', name: jsxName, box: query.box, data })
+              parserResult.setPattern(jsxName, { type: 'jsx-pattern', name: jsxName, box: query.box, data })
             })
             .when(isJsxTagRecipe, (jsxName) => {
               const recipeList = getRecipesByJsxName(jsxName)
               recipeList.map((recipe) => {
-                collector.setRecipe(recipe.baseName, { type: 'jsx-recipe', name: jsxName, box: query.box, data })
+                parserResult.setRecipe(recipe.baseName, { type: 'jsx-recipe', name: jsxName, box: query.box, data })
               })
             })
             .otherwise(() => {
-              collector.setJsx({ name, box: query.box, type: 'jsx', data })
+              parserResult.setJsx({ name, box: query.box, type: 'jsx', data })
             })
         })
       }
     })
 
-    return collector
+    // console.log(collector.combinations.all)
+    // console.log(JSON.stringify(collector.unpack(), null, 2))
+    // console.log(collector.toJSON())
+    // console.log(collector.stylesHash)
+    return parserResult
   }
 }
 

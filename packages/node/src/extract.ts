@@ -1,5 +1,4 @@
 import { logger } from '@pandacss/logger'
-import { Obj, pipe, tap, tryCatch } from 'lil-fp'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
 import { writeFile } from 'fs/promises'
@@ -37,27 +36,22 @@ export async function writeFileChunk(ctx: PandaContext, file: string) {
 /**
  * Parse a file and return the corresponding css
  */
-export function extractFile(ctx: PandaContext, file: string) {
+export function extractFile(ctx: PandaContext, relativeFile: string) {
   const {
     runtime: { path },
     config: { cwd },
   } = ctx
-  return pipe(
-    { file: path.abs(cwd, file) },
-    tap(() => logger.debug('file:extract', file)),
-    Obj.bind('measure', () => logger.time.debug(`Extracted ${file}`)),
-    Obj.bind(
-      'result',
-      tryCatch(
-        ({ file }) => ctx.project.parseSourceFile(file),
-        (error) => logger.error('file:parse', error),
-      ),
-    ),
-    Obj.bind('measureCss', () => logger.time.debug(`Parsed ${file}`)),
-    Obj.bind('css', ({ result }) => (result ? ctx.getParserCss(result) : undefined)),
-    tap(({ measure, measureCss }) => [measureCss(), measure()]),
-    Obj.get('css'),
-  )
+  const file = path.abs(cwd, relativeFile)
+  logger.debug('file:extract', file)
+
+  try {
+    const measure = logger.time.debug(`Parsed ${file}`)
+    const result = ctx.project.parseSourceFile(file)
+    measure()
+    return result
+  } catch (error) {
+    logger.error('file:extract', error)
+  }
 }
 
 /**
@@ -89,7 +83,7 @@ export async function emitArtifacts(ctx: PandaContext) {
 export async function emitArtfifactsAndCssChunks(ctx: PandaContext) {
   await emitArtifacts(ctx)
   if (ctx.config.emitTokensOnly) {
-    return { files: [], msg: 'Successfully rebuilt the css variables and js function to query your tokens ✨' }
+    return { msg: 'Successfully rebuilt the css variables and js function to query your tokens ✨' }
   }
   return writeAndBundleCssChunks(ctx)
 }
@@ -109,13 +103,17 @@ export async function writeAndBundleCssChunks(ctx: PandaContext) {
  * Without any imports
  */
 export async function bundleCss(ctx: PandaContext, outfile: string, resolve = true) {
-  const files = ctx
-    .getFiles()
-    .map((file) => extractFile(ctx, file))
-    .filter(Boolean) as string[]
-
   const minify = ctx.config.minify
-  const css = optimizeCss(ctx.getCss({ files, resolve }), { minify })
+  const collector = createParserResult(ctx.parserOptions)
+  const files = ctx.getFiles().map((file) => {
+    const result = extractFile(ctx, file)
+    if (result) {
+      collector.mergeStyles(result)
+    }
+  })
+
+  const parserCss = ctx.getParserCss(collector)
+  const css = optimizeCss(ctx.getCss({ files: [parserCss ?? ''], resolve }), { minify })
 
   await writeFile(outfile, css)
   return { files, msg: ctx.messages.buildComplete(files.length) }

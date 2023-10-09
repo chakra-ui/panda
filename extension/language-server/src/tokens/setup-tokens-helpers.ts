@@ -160,6 +160,7 @@ export function setupTokensHelpers(setup: PandaExtensionSetup) {
         walkObject(styles, (value, paths) => {
           // if value doesn't exist
           if (value == null) return
+          if (!boxNode) return
 
           const [prop, ..._allConditions] = ctx.conditions.shift(paths)
           const propNode = box.isArray(boxNode)

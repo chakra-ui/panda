@@ -100,7 +100,8 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
   // cache recipes on first run
   recipes.save()
 
-  const properties = Array.from(new Set(['css', ...utility.keys(), ...conditions.keys()]))
+  // TODO colorPalette ?
+  const properties = Array.from(new Set(['css', 'textStyle', ...utility.keys(), ...conditions.keys()]))
   const propertyMap = new Map(properties.map((prop) => [prop, true]))
 
   const isValidProperty = memo((key: string) => {

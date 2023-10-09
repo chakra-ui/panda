@@ -39,8 +39,11 @@ export const getPatternEngine = (config: UserConfig) => {
     getNames,
     details,
     find: memo((jsxName: string) => {
-      return details.find((node) => node.match.test(jsxName))?.baseName ?? uncapitalize(jsxName)
+      return details.find((node) => node.match.test(jsxName))
     }),
+    getFnName(jsxName: string) {
+      return this.find(jsxName)?.baseName ?? uncapitalize(jsxName)
+    },
     filter: memo((jsxName: string) => {
       return details.filter((node) => node.match.test(jsxName))
     }),

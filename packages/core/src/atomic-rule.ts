@@ -57,9 +57,13 @@ export class AtomicRule {
 
     const rule = this.rule
 
+    // console.log(styleObject)
     walkObject(styleObject, (value, paths) => {
       // if value doesn't exist
       if (value == null) return
+
+      // console.log({ value, paths })
+      // TODO skip paths+value if seen before
 
       const important = isImportant(value)
 
@@ -71,6 +75,7 @@ export class AtomicRule {
 
       // allow users transform the generated class and styles
       const transformed = this.transform(prop, withoutImportant(value))
+      // console.log({ value, paths, prop, conditions, transformed })
 
       // convert css-in-js to css rule
       const cssRoot = toCss(transformed.styles, { important })

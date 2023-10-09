@@ -1,11 +1,55 @@
 import { logger } from '@pandacss/logger'
-import type { Dict, ParserResultType } from '@pandacss/types'
+import type { ParserResultType } from '@pandacss/types'
 import { pipe, tap, tryCatch } from 'lil-fp/func'
 import { P, match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
-export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
-  pipe(
+export const generateParserCss = (ctx: Context) => (parserResult: ParserResultType) => {
+  // TODO rm ?
+  const result = parserResult.state === 'will-collect' ? parserResult.collectStyles() : parserResult
+  if (result.isEmpty()) return ''
+
+  // console.log(result.toJSON())
+
+  const sheet = ctx.createSheet()
+  const { recipes } = ctx
+  const { minify, optimize } = ctx.config
+
+  result.css.forEach((css) => {
+    css.data.forEach((data) => {
+      sheet.processAtomic(data)
+    })
+  })
+
+  result.recipe.forEach((recipeSet, recipeName) => {
+    try {
+      for (const recipe of recipeSet) {
+        const recipeConfig = recipes.getConfig(recipeName)
+        if (!recipeConfig) continue
+
+        recipe.data.forEach((recipeProps) => {
+          sheet.processRecipe(recipeName, recipeConfig, recipeProps)
+        })
+      }
+    } catch (error) {
+      logger.error('serializer:recipe', error)
+    }
+  })
+
+  try {
+    const css = sheet.toCss({ minify, optimize })
+    ctx.hooks.callHook('parser:css', result.filePath ?? '', css)
+    return css
+  } catch (err) {
+    logger.error('serializer:css', 'Failed to serialize CSS: ' + err)
+    return ''
+  }
+}
+
+export const generateParserCssOld = (ctx: Context) => (result: ParserResultType) => {
+  if (result.isEmpty()) return
+
+  return pipe(
     { ...ctx, sheet: ctx.createSheet(), result },
 
     tap(({ sheet, result, patterns, recipes }) => {
@@ -29,7 +73,7 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
 
       result.jsx.forEach((jsx) => {
         jsx.data.forEach((data) => {
-          sheet.processStyleProps(filterProps(ctx, data))
+          sheet.processStyleProps(data)
         })
       })
 
@@ -45,7 +89,8 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
                 recipe.data.forEach((data) => {
                   const [recipeProps, styleProps] = recipes.splitProps(recipeName, data)
 
-                  sheet.processStyleProps(filterProps(ctx, styleProps))
+                  // TODO skip base if seen already
+                  sheet.processStyleProps(styleProps)
                   sheet.processRecipe(recipeName, recipeConfig, recipeProps)
                 })
               })
@@ -67,9 +112,10 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
               // treat pattern jsx like regular pattern
               .with({ type: 'jsx-pattern', name: P.string }, ({ name: jsxName }) => {
                 pattern.data.forEach((data) => {
-                  const fnName = patterns.find(jsxName)
+                  const fnName = patterns.getFnName(jsxName)
+                  // TODO skip base if seen already
                   const styleProps = patterns.transform(fnName, data)
-                  sheet.processStyleProps(filterProps(ctx, styleProps))
+                  sheet.processStyleProps(styleProps)
                 })
               })
               .otherwise(() => {
@@ -96,13 +142,4 @@ export const generateParserCss = (ctx: Context) => (result: ParserResultType) =>
       },
     ),
   )
-
-const filterProps = (ctx: Context, props: Dict) => {
-  const clone = {} as Dict
-  for (const [key, value] of Object.entries(props)) {
-    if (ctx.isValidProperty(key)) {
-      clone[key] = value
-    }
-  }
-  return clone
 }

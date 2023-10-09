@@ -11,7 +11,8 @@ const someRecipe = defineRecipe({
 
 export default defineConfig({
   preflight: true,
-  include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
+  // include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
+  include: ['./src/App.tsx'],
   exclude: [],
   outdir: 'styled-system',
   jsxFactory: 'panda',

@@ -1,10 +1,11 @@
 import { Obj, pipe, tap } from 'lil-fp'
 import { Project as TsProject, type ProjectOptions as TsProjectOptions, ScriptKind } from 'ts-morph'
 import { createParser } from './parser'
-import { ParserResult } from './parser-result'
+import { ParserResult, createParserResult } from './parser-result'
 import { vueToTsx } from './vue-to-tsx'
 import { svelteToTsx } from './svelte-to-tsx'
 import type { ProjectOptions } from './project-types'
+import type { ParserResultType } from '@pandacss/types'
 
 const createTsProject = (options: Partial<TsProjectOptions>) =>
   new TsProject({
@@ -25,13 +26,15 @@ export const createProject = ({ getFiles, readFile, parserOptions, hooks, ...pro
     {
       project: createTsProject(projectOptions),
       parser: createParser(parserOptions),
+      parserResults: new Map<string, ParserResult>(),
     },
 
-    Obj.assign(({ project, parser }) => ({
+    Obj.assign(({ project, parser, parserResults }) => ({
       getSourceFile: (filePath: string) => project.getSourceFile(filePath),
       removeSourceFile: (filePath: string) => {
         const sourceFile = project.getSourceFile(filePath)
         if (sourceFile) project.removeSourceFile(sourceFile)
+        parserResults.delete(filePath)
       },
       createSourceFile: (filePath: string) =>
         project.createSourceFile(filePath, readFile(filePath), {
@@ -48,8 +51,9 @@ export const createProject = ({ getFiles, readFile, parserOptions, hooks, ...pro
           const content = readFile(filePath)
 
           hooks.callHook('parser:before', filePath, content)
-          const result = ParserResult.fromJSON(content).setFilePath(filePath)
-          hooks.callHook('parser:after', filePath, result)
+          const result = createParserResult(parserOptions).setFilePath(filePath).fromJSON(content)
+          parserResults.set(filePath, result)
+          hooks.callHook('parser:after', filePath, result as any as ParserResultType)
 
           return result
         }
@@ -67,7 +71,12 @@ export const createProject = ({ getFiles, readFile, parserOptions, hooks, ...pro
 
         hooks.callHook('parser:before', filePath, content)
         const result = parser(sourceFile)?.setFilePath(filePath)
-        hooks.callHook('parser:after', filePath, result)
+        if (result) {
+          // console.log({ parseSourceFile: filePath })
+          parserResults.set(filePath, result)
+        }
+
+        hooks.callHook('parser:after', filePath, result as any as ParserResultType)
 
         return result
       },

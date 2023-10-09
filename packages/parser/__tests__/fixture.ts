@@ -64,10 +64,10 @@ export function getFixtureProject(code: string, userConfig?: Config, tsconfig?: 
     getFiles: () => [staticFilePath],
     readFile: () => code,
     parserOptions: {
+      ...generator.parserOptions,
       join(...paths) {
         return paths.join('/')
       },
-      ...generator.parserOptions,
     },
     hooks,
   })
@@ -193,6 +193,7 @@ export function jsxRecipeParser(code: string) {
 export const parseAndExtract = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
   const { parse, generator } = getFixtureProject(code, userConfig, tsconfig)
   const result = parse()!
+  // console.log(result)
   return {
     json: result?.toArray().flatMap(({ box, ...item }) => item),
     css: generator.getParserCss(result)!,

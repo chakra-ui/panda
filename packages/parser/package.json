@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@pandacss/config": "workspace:^",
+    "@pandacss/core": "workspace:^",
     "@pandacss/extractor": "workspace:*",
     "@pandacss/is-valid-prop": "workspace:*",
     "@pandacss/logger": "workspace:*",

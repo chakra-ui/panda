@@ -5,6 +5,8 @@ import type { Config, TSConfig } from '@pandacss/types'
 const run = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
   const { parse, generator } = getFixtureProject(code, userConfig, tsconfig)
   const result = parse()!
+  // console.log(result.stylesHash.css)
+  console.log(result.stylesHash.css.size)
   return {
     json: result?.toArray().map(({ box, ...item }) => item),
     css: generator.getParserCss(result)!,
@@ -38,11 +40,13 @@ describe('extract to css output pipeline', () => {
               <panda.div
                 debug
                 p="2"
-                m={{
+                md={{
                   color,
+                  _dark: { _hover: { m: -2 } }
+                }}
+                m={{
                   base: "1px",
                   sm: "4px",
-                  _dark: { _hover: { m: -2 } }
                 }}
                 css={{
                   md: { p: 4 },
@@ -88,14 +92,16 @@ describe('extract to css output pipeline', () => {
               },
               "debug": true,
               "m": {
+                "base": "1px",
+                "sm": "4px",
+              },
+              "md": {
                 "_dark": {
                   "_hover": {
                     "m": -2,
                   },
                 },
-                "base": "1px",
                 "color": "red.100",
-                "sm": "4px",
               },
               "p": "2",
             },
@@ -156,10 +162,6 @@ describe('extract to css output pipeline', () => {
           padding: var(--spacing-2)
           }
 
-        .margin\\\\:text_red\\\\.100 {
-          color: var(--colors-red-100)
-          }
-
         .m_1px {
           margin: 1px
           }
@@ -172,10 +174,6 @@ describe('extract to css output pipeline', () => {
           background-color: var(--some-bg)
               }
 
-        [data-theme=dark] .margin\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]), .dark .margin\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]), .margin\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]).dark, .margin\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover])[data-theme=dark] {
-          margin: calc(var(--spacing-2) * -1)
-                  }
-
         @media screen and (min-width: 40em) {
           .sm\\\\:m_4px {
             margin: 4px
@@ -183,8 +181,18 @@ describe('extract to css output pipeline', () => {
               }
 
         @media screen and (min-width: 48em) {
+          [data-theme=dark] .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]), .dark .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]), .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]).dark, .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover])[data-theme=dark] {
+            margin: calc(var(--spacing-2) * -1)
+                  }
+                      }
+
+        @media screen and (min-width: 48em) {
           .md\\\\:p_4 {
             padding: var(--spacing-4)
+          }
+
+          .md\\\\:text_red\\\\.100 {
+            color: var(--colors-red-100)
           }
               }
       }"
@@ -323,32 +331,10 @@ describe('extract to css output pipeline', () => {
         },
         {
           "data": [
-            {
-              "color": "yellow",
-              "size": "medium",
-              "variant": "small",
-            },
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
-        },
-        {
-          "data": [
             {},
           ],
           "name": "greenRecipe",
           "type": "recipe",
-        },
-        {
-          "data": [
-            {
-              "color": "yellow",
-              "size": "medium",
-              "variant": "small",
-            },
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
         },
         {
           "data": [
@@ -359,32 +345,10 @@ describe('extract to css output pipeline', () => {
         },
         {
           "data": [
-            {
-              "color": "yellow",
-              "size": "medium",
-              "variant": "small",
-            },
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
-        },
-        {
-          "data": [
             {},
           ],
           "name": "sizeRecipe",
           "type": "recipe",
-        },
-        {
-          "data": [
-            {
-              "color": "yellow",
-              "size": "medium",
-              "variant": "small",
-            },
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
         },
         {
           "data": [
@@ -404,11 +368,61 @@ describe('extract to css output pipeline', () => {
           "name": "ComponentWithMultipleRecipes",
           "type": "jsx-recipe",
         },
+        {
+          "data": [
+            {
+              "color": "yellow",
+              "size": "medium",
+              "variant": "small",
+            },
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {
+              "color": "yellow",
+              "size": "medium",
+              "variant": "small",
+            },
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {
+              "color": "yellow",
+              "size": "medium",
+              "variant": "small",
+            },
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {
+              "color": "yellow",
+              "size": "medium",
+              "variant": "small",
+            },
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
       ]
     `)
 
     expect(result.css).toMatchInlineSnapshot(`
-      "@layer recipes {
+      "@layer utilities {
+        .text_yellow {
+          color: yellow
+          }
+      }
+
+      @layer recipes {
         .pinkRecipe--variant_small,.greenRecipe--variant_small,.blueRecipe--variant_small {
           font-size: var(--font-sizes-sm)
           }
@@ -433,12 +447,6 @@ describe('extract to css output pipeline', () => {
           .blueRecipe {
             color: var(--colors-blue-100)
               }
-          }
-      }
-
-      @layer utilities {
-        .text_yellow {
-          color: yellow
           }
       }"
     `)
@@ -515,6 +523,48 @@ describe('extract to css output pipeline', () => {
           "data": [
             {},
           ],
+          "name": "sizeRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "bgRecipe",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "ComponentWithMultipleRecipes",
+          "type": "jsx-recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
           "name": "ComponentWithMultipleRecipes",
           "type": "jsx-recipe",
         },
@@ -529,20 +579,6 @@ describe('extract to css output pipeline', () => {
         },
         {
           "data": [
-            {},
-          ],
-          "name": "sizeRecipe",
-          "type": "recipe",
-        },
-        {
-          "data": [
-            {},
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
-        },
-        {
-          "data": [
             {
               "size": "medium",
             },
@@ -552,40 +588,12 @@ describe('extract to css output pipeline', () => {
         },
         {
           "data": [
-            {},
-          ],
-          "name": "bgRecipe",
-          "type": "recipe",
-        },
-        {
-          "data": [
-            {},
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
-        },
-        {
-          "data": [
             {
               "color": "yellow",
             },
           ],
           "name": "bgRecipe",
           "type": "recipe",
-        },
-        {
-          "data": [
-            {},
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
-        },
-        {
-          "data": [
-            {},
-          ],
-          "name": "ComponentWithMultipleRecipes",
-          "type": "jsx-recipe",
         },
       ]
     `)
@@ -687,7 +695,7 @@ describe('extract to css output pipeline', () => {
         }
     \`
      `
-    const result = run(code)
+    const result = run(code, { syntax: 'template-literal' })
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -736,16 +744,16 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .text_lightgreen {
+        .color_lightgreen {
           color: lightgreen
           }
 
-        .\\\\[\\\\&_\\\\>_strong\\\\]\\\\:text_hotpink > strong {
+        .\\\\[\\\\&_\\\\>_strong\\\\]\\\\:color_hotpink > strong {
           color: hotpink
               }
 
-        .bg_transparent {
-          background: var(--colors-transparent)
+        .background_transparent {
+          background: transparent
           }
 
         .border-radius_3px {
@@ -756,19 +764,19 @@ describe('extract to css output pipeline', () => {
           border: 1px solid var(--accent-color)
           }
 
-        .text_token\\\\(colors\\\\.blue\\\\.100\\\\) {
+        .color_token\\\\(colors\\\\.blue\\\\.100\\\\) {
           color: var(--colors-blue-100)
           }
 
-        .d_inline-block {
+        .display_inline-block {
           display: inline-block
           }
 
-        .m_0\\\\.5rem_1rem {
+        .margin_0\\\\.5rem_1rem {
           margin: 0.5rem 1rem
           }
 
-        .p_0\\\\.5rem_0 {
+        .padding_0\\\\.5rem_0 {
           padding: 0.5rem 0
           }
 
@@ -776,7 +784,7 @@ describe('extract to css output pipeline', () => {
           transition: all 200ms ease-in-out
           }
 
-        .w_11rem {
+        .width_11rem {
           width: 11rem
           }
 
@@ -792,7 +800,7 @@ describe('extract to css output pipeline', () => {
           .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:\\\\[\\\\&\\\\:disabled\\\\]\\\\:filter_brightness\\\\(1\\\\):disabled {
             filter: brightness(1)
               }
-          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:p_1rem_0 {
+          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:padding_1rem_0 {
             padding: 1rem 0
           }
                   }
@@ -811,7 +819,7 @@ describe('extract to css output pipeline', () => {
         color: token(colors.blue.100);
     \`
      `
-    const result = run(code)
+    const result = run(code, { syntax: 'template-literal' })
     expect(result.json).toMatchInlineSnapshot(`
       [
         {
@@ -831,8 +839,8 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .bg_transparent {
-          background: var(--colors-transparent)
+        .background_transparent {
+          background: transparent
           }
 
         .border-radius_3px {
@@ -843,7 +851,7 @@ describe('extract to css output pipeline', () => {
           border: 1px solid var(--accent-color)
           }
 
-        .text_token\\\\(colors\\\\.blue\\\\.100\\\\) {
+        .color_token\\\\(colors\\\\.blue\\\\.100\\\\) {
           color: var(--colors-blue-100)
           }
       }"
@@ -1243,24 +1251,24 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .flex_column {
-          flex-direction: column
-          }
-
         .d_flex {
           display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
           }
 
         .items_center {
           align-items: center
           }
 
-        .justify_flex-end {
-          justify-content: flex-end
-          }
-
         .gap_10px {
           gap: 10px
+          }
+
+        .justify_flex-end {
+          justify-content: flex-end
           }
 
         .flex_row {
@@ -1320,10 +1328,6 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .items_center {
-          align-items: center
-          }
-
         .d_flex {
           display: flex
           }
@@ -1332,12 +1336,16 @@ describe('extract to css output pipeline', () => {
           flex-direction: column
           }
 
-        .items_flex-end {
-          align-items: flex-end
+        .items_center {
+          align-items: center
           }
 
         .gap_10px {
           gap: 10px
+          }
+
+        .items_flex-end {
+          align-items: flex-end
           }
       }"
     `)
@@ -1464,13 +1472,6 @@ describe('extract to css output pipeline', () => {
       [
         {
           "data": [
-            {},
-          ],
-          "name": "panda.div",
-          "type": "object",
-        },
-        {
-          "data": [
             {
               "base": {
                 "color": "blue.100",
@@ -1480,6 +1481,13 @@ describe('extract to css output pipeline', () => {
           ],
           "name": "panda.div",
           "type": "cva",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "panda.div",
+          "type": "object",
         },
         {
           "data": [
@@ -1635,8 +1643,36 @@ describe('extract to css output pipeline', () => {
           "data": [
             {},
           ],
+          "name": "button",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
           "name": "css",
           "type": "object",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "anotherButton",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "complexButton",
+          "type": "recipe",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Stack",
+          "type": "jsx-pattern",
         },
         {
           "data": [
@@ -1659,13 +1695,6 @@ describe('extract to css output pipeline', () => {
         },
         {
           "data": [
-            {},
-          ],
-          "name": "button",
-          "type": "recipe",
-        },
-        {
-          "data": [
             {
               "size": "md",
               "variant": "danger",
@@ -1673,13 +1702,6 @@ describe('extract to css output pipeline', () => {
           ],
           "name": "AnotherButtonWithRegex",
           "type": "jsx-recipe",
-        },
-        {
-          "data": [
-            {},
-          ],
-          "name": "anotherButton",
-          "type": "recipe",
         },
         {
           "data": [
@@ -1692,13 +1714,6 @@ describe('extract to css output pipeline', () => {
         },
         {
           "data": [
-            {},
-          ],
-          "name": "complexButton",
-          "type": "recipe",
-        },
-        {
-          "data": [
             {
               "color": "blue",
             },
@@ -1706,18 +1721,23 @@ describe('extract to css output pipeline', () => {
           "name": "ComplexDesignSystemButton",
           "type": "jsx-recipe",
         },
-        {
-          "data": [
-            {},
-          ],
-          "name": "Stack",
-          "type": "jsx-pattern",
-        },
       ]
     `)
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
       "@layer utilities {
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
         .mt_40px {
           margin-top: 40px
           }
@@ -1732,18 +1752,6 @@ describe('extract to css output pipeline', () => {
 
         .z_100 {
           z-index: 100
-          }
-
-        .d_flex {
-          display: flex
-          }
-
-        .flex_column {
-          flex-direction: column
-          }
-
-        .gap_10px {
-          gap: 10px
           }
       }
 
@@ -1877,12 +1885,12 @@ describe('extract to css output pipeline', () => {
           background-color: yellow
           }
 
-        .text_purple {
-          color: purple
-          }
-
         .text_pink {
           color: pink
+          }
+
+        .text_purple {
+          color: purple
           }
       }"
     `)
@@ -2107,20 +2115,20 @@ describe('extract to css output pipeline', () => {
         {
           "data": [
             {
-              "visual": "funky",
-            },
-          ],
-          "name": "buttonStyle",
-          "type": "recipe",
-        },
-        {
-          "data": [
-            {
               "direction": "column",
             },
           ],
           "name": "stack",
           "type": "pattern",
+        },
+        {
+          "data": [
+            {
+              "visual": "funky",
+            },
+          ],
+          "name": "buttonStyle",
+          "type": "recipe",
         },
         {
           "data": [
@@ -2352,7 +2360,7 @@ describe('extract to css output pipeline', () => {
         variant: 'second',
         color: {
           base: "amber.400",
-          _dark: "sky.300"
+          _dark: "sky.300",
           _hover: {
             base: "amber.500",
             _dark: "sky.200"
@@ -2458,12 +2466,12 @@ describe('extract to css output pipeline', () => {
           border-radius: var(--radii-md)
           }
 
-        .button--variant_second {
-          background-color: var(--colors-red-500)
-          }
-
         .button--size_sm {
           border-radius: var(--radii-sm)
+          }
+
+        .button--variant_second {
+          background-color: var(--colors-red-500)
           }
 
         @layer _base {
@@ -2472,6 +2480,110 @@ describe('extract to css output pipeline', () => {
             background: var(--colors-red-900)
               }
           }
+      }"
+    `)
+  })
+
+  test('shorthand + condition ', () => {
+    const code = `
+        import { panda } from ".panda/jsx"
+
+        <panda.div m={{
+          base: 1,
+          sm: { _hover: 2 },
+          _dark: {
+            base: 3,
+            md: 4,
+            lg: { base: 5, _hover: 6 },
+            _focus: [7, undefined, null, 8, 9]
+            }
+          }} />
+       `
+
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "m": {
+                "_dark": {
+                  "_focus": [
+                    7,
+                    undefined,
+                    null,
+                    8,
+                    9,
+                  ],
+                  "base": 3,
+                  "lg": {
+                    "_hover": 6,
+                    "base": 5,
+                  },
+                  "md": 4,
+                },
+                "base": 1,
+                "sm": {
+                  "_hover": 2,
+                },
+              },
+            },
+          ],
+          "name": "panda.div",
+          "type": "jsx-factory",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .m_1 {
+          margin: var(--spacing-1)
+          }
+
+        [data-theme=dark] .dark\\\\:m_3, .dark .dark\\\\:m_3, .dark\\\\:m_3.dark, .dark\\\\:m_3[data-theme=dark] {
+          margin: var(--spacing-3)
+              }
+
+        [data-theme=dark] .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]), .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus])[data-theme=dark] {
+          margin: var(--spacing-7)
+                  }
+
+        @media screen and (min-width: 40em) {
+          .sm\\\\:hover\\\\:m_2:is(:hover, [data-hover]) {
+            margin: var(--spacing-2)
+              }
+                  }
+
+        @media screen and (min-width: 48em) {
+          [data-theme=dark] .dark\\\\:md\\\\:m_4, .dark .dark\\\\:md\\\\:m_4, .dark\\\\:md\\\\:m_4.dark, .dark\\\\:md\\\\:m_4[data-theme=dark] {
+            margin: var(--spacing-4)
+              }
+                  }
+
+        @media screen and (min-width: 64em) {
+          [data-theme=dark] .dark\\\\:lg\\\\:m_5, .dark .dark\\\\:lg\\\\:m_5, .dark\\\\:lg\\\\:m_5.dark, .dark\\\\:lg\\\\:m_5[data-theme=dark] {
+            margin: var(--spacing-5)
+              }
+                  }
+
+        @media screen and (min-width: 64em) {
+          [data-theme=dark] .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus]), .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus])[data-theme=dark] {
+            margin: var(--spacing-8)
+                  }
+                      }
+
+        @media screen and (min-width: 64em) {
+          [data-theme=dark] .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover]), .dark .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover]), .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover]).dark, .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover])[data-theme=dark] {
+            margin: var(--spacing-6)
+                  }
+                      }
+
+        @media screen and (min-width: 80em) {
+          [data-theme=dark] .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]), .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus])[data-theme=dark] {
+            margin: var(--spacing-9)
+                  }
+                      }
       }"
     `)
   })
@@ -4064,24 +4176,6 @@ describe('preset patterns', () => {
         {
           "data": [
             {
-              "flex": 2,
-            },
-          ],
-          "name": "css",
-          "type": "object",
-        },
-        {
-          "data": [
-            {
-              "flex": 1,
-            },
-          ],
-          "name": "css",
-          "type": "object",
-        },
-        {
-          "data": [
-            {
               "display": "flex",
               "flexDir": {
                 "_print": "row",
@@ -4102,19 +4196,29 @@ describe('preset patterns', () => {
           "name": "container",
           "type": "pattern",
         },
+        {
+          "data": [
+            {
+              "flex": 2,
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+        {
+          "data": [
+            {
+              "flex": 1,
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
       ]
     `)
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .flex_2 {
-          flex: 2
-          }
-
-        .flex_1 {
-          flex: 1 1 0%
-          }
-
         .pos_relative {
           position: relative
           }
@@ -4149,6 +4253,14 @@ describe('preset patterns', () => {
 
         .flex_column {
           flex-direction: column
+          }
+
+        .flex_2 {
+          flex: 2
+          }
+
+        .flex_1 {
+          flex: 1 1 0%
           }
 
         @media screen and (min-width: 40em) {
@@ -4324,10 +4436,6 @@ describe('preset patterns', () => {
           background: var(--colors-red-400)
           }
 
-        .flex_row {
-          flex-direction: row
-          }
-
         .d_flex {
           display: flex
           }
@@ -4338,6 +4446,10 @@ describe('preset patterns', () => {
 
         .gap_10px {
           gap: 10px
+          }
+
+        .flex_row {
+          flex-direction: row
           }
       }
 

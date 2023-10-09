@@ -113,10 +113,10 @@ export function usePanda(source: string, config: string) {
     const project = createProject({
       useInMemoryFileSystem: true,
       parserOptions: {
+        ...generator.parserOptions,
         join(...paths) {
           return paths.join('/')
         },
-        ...generator.parserOptions,
       },
       getFiles: () => ['code.tsx'],
       readFile: (file) => (file === 'code.tsx' ? source : ''),

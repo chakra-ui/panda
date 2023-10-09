@@ -31,6 +31,7 @@ export const createContext = (conf: ConfigResultWithHooks) => {
       getFiles,
       readFile: runtime.fs.readFileSync,
       hooks: conf.hooks,
+      // @ts-expect-error
       parserOptions: { join: runtime.path.join, ...generator.parserOptions },
     }),
   }
