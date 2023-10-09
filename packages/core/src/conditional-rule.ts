@@ -29,6 +29,7 @@ export class ConditionalRule {
 
   applyConditions = (conditions: string[]) => {
     const sorted = this.conditionsMap.sort(conditions)
+    // console.log({ conditions, sorted })
     const rule = postcss.rule({ selector: this.selector })
 
     sorted.forEach((cond) => {

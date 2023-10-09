@@ -12,6 +12,7 @@ export default function sortMediaQueries(): TransformCallback {
             b: { type: 'atrule', name: 'media' },
           },
           ({ a, b }) => {
+            // console.log(a.params, b.params)
             return sortAtRules(a.params, b.params)
           },
         )

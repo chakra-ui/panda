@@ -1,6 +1,10 @@
 import { type BoxNodeLiteral, type BoxNodeObject } from '@pandacss/extractor'
 import { getSlotRecipes, walkObject } from '@pandacss/shared'
+import { sortAtRules } from '@pandacss/core'
 import type {
+  ConditionType,
+  ConditionDetails,
+  RawCondition,
   Dict,
   ParserResultType,
   RecipeConfig,
@@ -132,6 +136,7 @@ export class ParserResult implements ParserResultType {
         if (cond) {
           const parts = cond.split(ParserResult.conditionSeparator)
           const first = parts[0]
+          // filterBaseConditions
           let relevantParts = parts.filter((p) => p !== 'base')
 
           if (first && !isCondition(first)) {
@@ -245,12 +250,20 @@ export class ParserResult implements ParserResultType {
       entry.recipe = recipe.replace('recipe:', '')
     }
 
-    const obj = entry.cond
-      ? makeObjAt(entry.cond.split(ParserResult.conditionSeparator).concat(entry.prop), entry.value)
-      : { [entry.prop]: entry.value === 'true' ? true : entry.value === 'false' ? false : entry.value }
-    // TODO value
+    const resolvedValue = entry.value === 'true' ? true : entry.value === 'false' ? false : entry.value
+    let obj = { [entry.prop]: resolvedValue }
 
-    return { obj, entry, hash } as StyleResult
+    let conditions
+    if (entry.cond) {
+      const parts = entry.cond.split(ParserResult.conditionSeparator)
+      conditions = this.ctx.conditions.sort(parts)
+
+      obj = makeObjAt(parts.concat(entry.prop), resolvedValue) as typeof obj
+    }
+
+    // console.log(JSON.stringify(obj), { entry, hash })
+
+    return { obj, entry, hash, conditions } as StyleResult
   }
 
   // TODO sort css based on conditions (sort them first)
@@ -269,19 +282,32 @@ export class ParserResult implements ParserResultType {
     // console.time('unpack')
     const collector = new ParserResult(this.ctx)
 
-    // const result = this
+    // const sortedCss = Array.from(this.stylesHash.css).sort((a, b) => {
+    //   const aStyles = this.fromHash(a)
+    // })
+
+    const cssResults = [] as StyleResult[]
+    const recipeResults = [] as StyleResult[]
+
     this.stylesHash.css.forEach((item) => {
-      const styleResult = this.fromHash(item)
-      collector.set('css', { name: 'css', data: [styleResult.obj] })
+      cssResults.push(this.fromHash(item))
     })
     this.stylesHash.recipe.forEach((set) => {
       set.forEach((item) => {
-        const styleResult = this.fromHash(item)
-        const recipeName = styleResult.entry.recipe
-        if (!recipeName) return
-
-        collector.setRecipe(recipeName, { name: recipeName, data: [styleResult.obj] })
+        recipeResults.push(this.fromHash(item))
       })
+    })
+
+    sortStyleRules(cssResults).forEach((styleResult) => {
+      // console.log(styleResult.hash)
+      collector.set('css', { name: 'css', data: [styleResult.obj] })
+    })
+
+    recipeResults.forEach((styleResult) => {
+      const recipeName = styleResult.entry.recipe
+      if (!recipeName) return
+
+      collector.setRecipe(recipeName, { name: recipeName, data: [styleResult.obj] })
     })
 
     this.shouldHash = willHash
@@ -493,4 +519,75 @@ function normalizeStyleObject(styles: Record<string, any>, context: ParserResult
       },
     },
   )
+}
+
+interface StyleRule extends StyleResult {
+  conditions?: Array<ConditionDetails & { params?: string }>
+}
+
+// const CONDITION_ORDER: ConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-nesting', 'at-rule']
+const hasAtRule = (conditions: ConditionDetails[]) => conditions.some((details) => details.type === 'at-rule')
+
+const styleOrder = [':link', ':visited', ':focus-within', ':focus', ':focus-visible', ':hover', ':active']
+
+const pseudoSelectorScore = (selector: string) => {
+  const index = styleOrder.findIndex((pseudoClass) => selector.includes(pseudoClass))
+  return index + 1
+}
+
+const compareConditions = (a: StyleRule, b: StyleRule) => {
+  if (a.conditions!.length === b.conditions!.length) {
+    const selector1 = a.conditions![0].value
+    const selector2 = b.conditions![0].value
+    // console.log({ selector1, selector2 })
+    return pseudoSelectorScore(selector1) - pseudoSelectorScore(selector2)
+  }
+
+  return a.conditions!.length - b.conditions!.length
+}
+
+const compareAtRuleConditions = (a: StyleRule, b: StyleRule) => {
+  if (a.conditions!.length === b.conditions!.length) {
+    // console.log(a.conditions, b.conditions)
+    const lastA = a.conditions![a.conditions!.length - 1]
+    const lastB = b.conditions![b.conditions!.length - 1]
+
+    const atRule1 = lastA.params ?? lastA.rawValue
+    const atRule2 = lastB.params ?? lastB.rawValue
+
+    // console.log({ atRule1, atRule2 })
+
+    const score = sortAtRules(atRule1, atRule2)
+    if (score !== 0) return score
+
+    const selector1 = a.conditions![0].value
+    const selector2 = b.conditions![0].value
+    // console.log({ selector1, selector2 })
+    return pseudoSelectorScore(selector1) - pseudoSelectorScore(selector2)
+  }
+
+  return a.conditions!.length - b.conditions!.length
+}
+
+const sortStyleRules = (styleRules: StyleRule[]): StyleRule[] => {
+  const sorted: StyleRule[] = []
+  const withSelectorsOnly: StyleRule[] = []
+  const withAtRules: StyleRule[] = []
+
+  for (const styleRule of styleRules) {
+    if (!styleRule.conditions) {
+      sorted.push(styleRule)
+    } else if (!hasAtRule(styleRule.conditions)) {
+      withSelectorsOnly.push(styleRule)
+    } else {
+      withAtRules.push(styleRule)
+    }
+  }
+
+  withSelectorsOnly.sort(compareConditions)
+  withAtRules.sort(compareAtRuleConditions)
+
+  sorted.push(...withSelectorsOnly, ...withAtRules)
+
+  return sorted
 }

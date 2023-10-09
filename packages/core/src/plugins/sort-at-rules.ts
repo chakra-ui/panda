@@ -131,6 +131,7 @@ function createSort(config: { unitlessMqAlwaysFirst?: boolean } = {}) {
   const { unitlessMqAlwaysFirst } = config
 
   return function sortCSSmq(a: string, b: string) {
+    // console.log({ a, b })
     const testIsPrint = _testIsPrint(a, b)
     if (testIsPrint !== null) {
       return testIsPrint

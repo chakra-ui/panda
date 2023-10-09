@@ -1,12 +1,13 @@
 import { describe, test, expect } from 'vitest'
 import { getFixtureProject } from './fixture'
 import type { Config, TSConfig } from '@pandacss/types'
+import { optimizeCss } from '@pandacss/core'
 
 const run = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
   const { parse, generator } = getFixtureProject(code, userConfig, tsconfig)
   const result = parse()!
   // console.log(result.stylesHash.css)
-  console.log(result.stylesHash.css.size)
+  // console.log(result.stylesHash.css.size)
   return {
     json: result?.toArray().map(({ box, ...item }) => item),
     css: generator.getParserCss(result)!,
@@ -138,10 +139,6 @@ describe('extract to css output pipeline', () => {
           --shadow: var(--colors-orange-100)
           }
 
-        [data-theme=dark] .dark\\\\:--shadow_colors\\\\.gray\\\\.800, .dark .dark\\\\:--shadow_colors\\\\.gray\\\\.800, .dark\\\\:--shadow_colors\\\\.gray\\\\.800.dark, .dark\\\\:--shadow_colors\\\\.gray\\\\.800[data-theme=dark] {
-          --shadow: var(--colors-gray-800)
-              }
-
         .shadow_0_0_0_4px_var\\\\(--shadow\\\\) {
           box-shadow: 0 0 0 4px var(--shadow)
           }
@@ -165,6 +162,10 @@ describe('extract to css output pipeline', () => {
         .m_1px {
           margin: 1px
           }
+
+        [data-theme=dark] .dark\\\\:--shadow_colors\\\\.gray\\\\.800, .dark .dark\\\\:--shadow_colors\\\\.gray\\\\.800, .dark\\\\:--shadow_colors\\\\.gray\\\\.800.dark, .dark\\\\:--shadow_colors\\\\.gray\\\\.800[data-theme=dark] {
+          --shadow: var(--colors-gray-800)
+              }
 
         .hover\\\\:text_\\\\#2ecc71:is(:hover, [data-hover]) {
           color: #2ecc71
@@ -748,10 +749,6 @@ describe('extract to css output pipeline', () => {
           color: lightgreen
           }
 
-        .\\\\[\\\\&_\\\\>_strong\\\\]\\\\:color_hotpink > strong {
-          color: hotpink
-              }
-
         .background_transparent {
           background: transparent
           }
@@ -787,6 +784,10 @@ describe('extract to css output pipeline', () => {
         .width_11rem {
           width: 11rem
           }
+
+        .\\\\[\\\\&_\\\\>_strong\\\\]\\\\:color_hotpink > strong {
+          color: hotpink
+              }
 
         .\\\\[\\\\&\\\\:hover\\\\]\\\\:filter_brightness\\\\(0\\\\.85\\\\):hover {
           filter: brightness(0.85)
@@ -967,10 +968,6 @@ describe('extract to css output pipeline', () => {
           color: var(--colors-green-100)
               }
 
-        .closed > [data-theme=dark] .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900, .closed > .dark .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900, .closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900.dark, .closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900[data-theme=dark] {
-          color: var(--colors-green-900)
-                  }
-
         .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:m_-2px + .\\\\[\\\\&_\\\\+_\\\\&\\\\]\\\\:m_-2px {
           margin: -2px
               }
@@ -978,6 +975,10 @@ describe('extract to css output pipeline', () => {
         .\\\\[\\\\&\\\\[data-state\\\\=\\\\'open\\\\'\\\\]\\\\]\\\\:cursor_pointer[data-state='open'] {
           cursor: pointer
               }
+
+        .closed > [data-theme=dark] .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900, .closed > .dark .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900, .closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900.dark, .closed > .\\\\[\\\\.closed_\\\\>_\\\\&\\\\]\\\\:dark\\\\:text_green\\\\.900[data-theme=dark] {
+          color: var(--colors-green-900)
+                  }
 
         .\\\\[\\\\&\\\\[data-state\\\\=\\\\'open\\\\'\\\\]\\\\]\\\\:before\\\\:content_\\\\\\"👋\\\\\\"[data-state='open']::before {
           content: \\"👋\\"
@@ -1956,13 +1957,13 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer utilities {
-        .\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mb_1em:not(:first-child) {
-          margin-block-end: 1em
-              }
-
         .max-w_800px {
           max-width: 800px
           }
+
+        .\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mb_1em:not(:first-child) {
+          margin-block-end: 1em
+              }
 
         .\\\\[\\\\&_p\\\\]\\\\:\\\\[\\\\&\\\\:not\\\\(\\\\:first-child\\\\)\\\\]\\\\:mt_1em p:not(:first-child) {
           margin-block-start: 1em
@@ -2492,6 +2493,7 @@ describe('extract to css output pipeline', () => {
           base: 1,
           sm: { _hover: 2 },
           _dark: {
+            _disabled: { _open: { base: 11, xl: { _loading: 13, base: 12, } }, base: 10 },
             base: 3,
             md: 4,
             lg: { base: 5, _hover: 6 },
@@ -2508,6 +2510,16 @@ describe('extract to css output pipeline', () => {
             {
               "m": {
                 "_dark": {
+                  "_disabled": {
+                    "_open": {
+                      "base": 11,
+                      "xl": {
+                        "_loading": 13,
+                        "base": 12,
+                      },
+                    },
+                    "base": 10,
+                  },
                   "_focus": [
                     7,
                     undefined,
@@ -2545,6 +2557,14 @@ describe('extract to css output pipeline', () => {
           margin: var(--spacing-3)
               }
 
+        [data-theme=dark] .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled]), .dark .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled]), .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled]).dark, .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled])[data-theme=dark] {
+          margin: var(--spacing-10)
+                  }
+
+        [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]).dark, .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"])[data-theme=dark] {
+          margin: var(--spacing-11)
+                      }
+
         [data-theme=dark] .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]), .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus])[data-theme=dark] {
           margin: var(--spacing-7)
                   }
@@ -2578,6 +2598,90 @@ describe('extract to css output pipeline', () => {
             margin: var(--spacing-6)
                   }
                       }
+
+        @media screen and (min-width: 80em) {
+          [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]).dark, .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"])[data-theme=dark] {
+            margin: var(--spacing-12)
+                      }
+                          }
+
+        @media screen and (min-width: 80em) {
+          [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]), .dark .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]), .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]).dark, .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true])[data-theme=dark] {
+            margin: 13
+                          }
+                              }
+
+        @media screen and (min-width: 80em) {
+          [data-theme=dark] .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]), .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus])[data-theme=dark] {
+            margin: var(--spacing-9)
+                  }
+                      }
+      }"
+    `)
+
+    expect(optimizeCss(result.css)).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .m_1 {
+          margin: var(--spacing-1)
+          }
+
+        [data-theme=dark] .dark\\\\:m_3, .dark .dark\\\\:m_3, .dark\\\\:m_3.dark, .dark\\\\:m_3[data-theme=dark] {
+          margin: var(--spacing-3)
+              }
+
+        [data-theme=dark] .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled]), .dark .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled]), .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled]).dark, .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled])[data-theme=dark] {
+          margin: var(--spacing-10)
+                  }
+
+        [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]).dark, .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"])[data-theme=dark] {
+          margin: var(--spacing-11)
+                      }
+
+        [data-theme=dark] .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]), .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus])[data-theme=dark] {
+          margin: var(--spacing-7)
+                  }
+
+        @media screen and (min-width: 40em) {
+          .sm\\\\:hover\\\\:m_2:is(:hover, [data-hover]) {
+            margin: var(--spacing-2)
+              }
+                  }
+
+        @media screen and (min-width: 48em) {
+          [data-theme=dark] .dark\\\\:md\\\\:m_4, .dark .dark\\\\:md\\\\:m_4, .dark\\\\:md\\\\:m_4.dark, .dark\\\\:md\\\\:m_4[data-theme=dark] {
+            margin: var(--spacing-4)
+              }
+                  }
+
+        @media screen and (min-width: 64em) {
+          [data-theme=dark] .dark\\\\:lg\\\\:m_5, .dark .dark\\\\:lg\\\\:m_5, .dark\\\\:lg\\\\:m_5.dark, .dark\\\\:lg\\\\:m_5[data-theme=dark] {
+            margin: var(--spacing-5)
+              }
+                  }
+
+        @media screen and (min-width: 64em) {
+          [data-theme=dark] .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus]), .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus])[data-theme=dark] {
+            margin: var(--spacing-8)
+                  }
+                      }
+
+        @media screen and (min-width: 64em) {
+          [data-theme=dark] .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover]), .dark .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover]), .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover]).dark, .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover])[data-theme=dark] {
+            margin: var(--spacing-6)
+                  }
+                      }
+
+        @media screen and (min-width: 80em) {
+          [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]).dark, .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"])[data-theme=dark] {
+            margin: var(--spacing-12)
+                      }
+                          }
+
+        @media screen and (min-width: 80em) {
+          [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]), .dark .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]), .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]).dark, .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true])[data-theme=dark] {
+            margin: 13
+                          }
+                              }
 
         @media screen and (min-width: 80em) {
           [data-theme=dark] .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]), .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus])[data-theme=dark] {
@@ -3103,6 +3207,10 @@ describe('preset patterns', () => {
           position: relative
           }
 
+        .pos_static {
+          position: static
+          }
+
         .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:pos_relative :where(a, abbr) {
           position: relative
               }
@@ -3110,10 +3218,6 @@ describe('preset patterns', () => {
         .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:z_1 :where(a, abbr) {
           z-index: 1
               }
-
-        .pos_static {
-          position: static
-          }
 
         .before\\\\:content_\\\\\\"\\\\\\"::before {
           content: \\"\\"
@@ -3180,6 +3284,10 @@ describe('preset patterns', () => {
           position: relative
           }
 
+        .pos_static {
+          position: static
+          }
+
         .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:pos_relative :where(a, abbr) {
           position: relative
               }
@@ -3187,10 +3295,6 @@ describe('preset patterns', () => {
         .\\\\[\\\\&_\\\\:where\\\\(a\\\\,_abbr\\\\)\\\\]\\\\:z_1 :where(a, abbr) {
           z-index: 1
               }
-
-        .pos_static {
-          position: static
-          }
 
         .before\\\\:content_\\\\\\"\\\\\\"::before {
           content: \\"\\"
@@ -4078,6 +4182,10 @@ describe('preset patterns', () => {
           position: relative
           }
 
+        .text_blue\\\\.100 {
+          color: var(--colors-blue-100)
+          }
+
         .before\\\\:content_\\\\\\"\\\\\\"::before {
           content: \\"\\"
               }
@@ -4129,10 +4237,6 @@ describe('preset patterns', () => {
         .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>img, .\\\\[\\\\&\\\\>img\\\\,_\\\\&\\\\>video\\\\]\\\\:object_cover>video {
           object-fit: cover
               }
-
-        .text_blue\\\\.100 {
-          color: var(--colors-blue-100)
-          }
       }"
     `)
   })

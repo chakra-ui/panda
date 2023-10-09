@@ -37,6 +37,7 @@ export default function sortCss(): TransformCallback {
     })
 
     rules.sort((rule1, rule2) => {
+      // console.log(rule1.selectors, rule2.selectors)
       const selector1 = rule1.selectors.length ? rule1.selectors[0] : rule1.selector
       const selector2 = rule2.selectors.length ? rule2.selectors[0] : rule2.selector
       return pseudoSelectorScore(selector1) - pseudoSelectorScore(selector2)

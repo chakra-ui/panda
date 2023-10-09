@@ -13,8 +13,9 @@ import postcss from 'postcss'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
 
-export type ProcessOptions = {
+export interface ProcessOptions {
   styles: Dict
+  shouldNormalize?: boolean
 }
 
 export class AtomicRule {
@@ -22,6 +23,7 @@ export class AtomicRule {
   layer: string
 
   constructor(private context: StylesheetContext) {
+    // console.log('new AtomicRule')
     this.root = postcss.root()
     this.layer = context.layers.utilities
   }
@@ -48,13 +50,13 @@ export class AtomicRule {
   }
 
   process = (options: ProcessOptions) => {
-    const { styles } = options
+    const { styles, shouldNormalize } = options
     const { conditions: cond } = this.context
 
-    const styleObject = normalizeStyleObject(styles, this.context)
     // shouldn't happen, but just in case
-    if (typeof styleObject !== 'object') return
+    if (typeof styles !== 'object') return
 
+    const styleObject = shouldNormalize ? normalizeStyleObject(styles, this.context) : styles
     const rule = this.rule
 
     // console.log(styleObject)

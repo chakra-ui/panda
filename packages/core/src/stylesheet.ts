@@ -21,6 +21,7 @@ export class Stylesheet {
   private recipes: Recipes
 
   constructor(private context: StylesheetContext, private options?: StylesheetOptions) {
+    // console.log('new Stylesheet')
     const { recipes = {}, slotRecipes = {} } = options ?? {}
     const recipeConfigs = Object.assign({}, recipes, slotRecipes)
     this.recipes = new Recipes(recipeConfigs, context)
