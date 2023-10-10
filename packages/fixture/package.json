@@ -3,10 +3,13 @@
   "version": "0.17.0",
   "private": true,
   "description": "Test fixtures for css panda",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "exports": {
     ".": {
-      "development": "./src/index.ts",
+      "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
       "import": {

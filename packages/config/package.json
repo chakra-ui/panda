@@ -2,6 +2,9 @@
   "name": "@pandacss/config",
   "version": "0.17.0",
   "description": "Find and load panda config",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "sideEffects": false,
   "publishConfig": {
@@ -9,7 +12,7 @@
   },
   "exports": {
     ".": {
-      "development": "./src/index.ts",
+      "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
       "import": {
@@ -18,7 +21,7 @@
       }
     },
     "./merge": {
-      "development": "./src/merge-config.ts",
+      "source": "./src/merge-config.ts",
       "types": "./dist/merge-config.d.ts",
       "require": "./dist/merge-config.js",
       "import": {
@@ -27,7 +30,7 @@
       }
     },
     "./ts-path": {
-      "development": "./src/resolve-ts-path-pattern.ts",
+      "source": "./src/resolve-ts-path-pattern.ts",
       "types": "./dist/resolve-ts-path-pattern.d.ts",
       "require": "./dist/resolve-ts-path-pattern.js",
       "import": {

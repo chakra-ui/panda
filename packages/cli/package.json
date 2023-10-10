@@ -12,7 +12,7 @@
   },
   "exports": {
     ".": {
-      "development": "./src/index.ts",
+      "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
       "import": {
@@ -21,7 +21,7 @@
       }
     },
     "./presets": {
-      "development": "./src/presets.ts",
+      "source": "./src/presets.ts",
       "types": "./dist/presets.d.ts",
       "require": "./dist/presets.js",
       "import": {

@@ -17,7 +17,7 @@
     "verbatimModuleSyntax": true,
     "moduleResolution": "Bundler",
     "module": "ESNext",
-    "customConditions": ["development"]
+    "customConditions": ["source"]
   },
   "include": ["packages"],
   "types": ["vitest/globals"],

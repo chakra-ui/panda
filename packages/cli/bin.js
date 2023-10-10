@@ -50,7 +50,7 @@ if (wantsCompiled || !isDevMode) {
   }
 
   const workspacePackagesDir = path.resolve(__dirname, '..')
-  const conditions = ['development', 'production', 'import', 'module', 'require', 'node', 'default']
+  const conditions = ['source', 'import', 'module', 'require', 'node', 'default']
 
   const transformTs = (code) => sucrase.transform(code, { transforms: ['typescript', 'imports'] }).code
   const transformEsm = (code) => sucrase.transform(code, { transforms: ['imports'] }).code

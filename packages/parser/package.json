@@ -2,9 +2,12 @@
   "name": "@pandacss/parser",
   "version": "0.17.0",
   "description": "The static parser for panda css",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "development": "./src/index.ts",
+      "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": {
         "types": "./dist/index.d.mts",

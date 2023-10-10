@@ -4,6 +4,8 @@
   "type": "module",
   "description": "Astro integration for Panda CSS",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsup --dts",
     "build-fast": "tsup --no-dts",
@@ -15,7 +17,7 @@
   },
   "exports": {
     ".": {
-      "development": "./src/index.ts",
+      "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
       "import": {
