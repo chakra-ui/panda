@@ -90,6 +90,11 @@ export const createGenerator = (conf: ConfigResultWithHooks): Generator => {
 
 export interface Generator extends Context {
   getArtifacts: () => Artifact[]
+  getStaticCss: (ctx: Context) => string
+  getResetCss: (ctx: Context) => string
+  getTokenCss: (ctx: Context) => string
+  getKeyframeCss: (ctx: Context) => string
+  getGlobalCss: (ctx: Context) => string
   getCss: (options: FlattenedCssOptions) => string
   getParserCss: (result: ParserResultType) => string | undefined
   messages: ReturnType<typeof getMessages>
