@@ -2,9 +2,10 @@ import { colors, logger } from '@pandacss/logger'
 import {
   analyzeTokens,
   bundleCss,
+  bundleMinimalFilesCss,
   debugFiles,
   emitArtifacts,
-  extractCss,
+  writeAndBundleCssChunks,
   generate,
   loadConfigAndCreateContext,
   setupConfig,
@@ -13,6 +14,8 @@ import {
   shipFiles,
   writeAnalyzeJSON,
   type PandaContext,
+  generateCssArtifactOfType,
+  type CssArtifactType,
 } from '@pandacss/node'
 import { findConfigFile } from '@pandacss/config'
 import { compact } from '@pandacss/shared'
@@ -137,19 +140,27 @@ export async function main() {
     })
 
   cli
-    .command('cssgen [glob]', 'Generate the css from files')
+    .command(
+      'cssgen [globOrType]',
+      'Generate the css from files, or generate the css from the specified type which can be: preflight, tokens, static, global, keyframes',
+    )
     .option('--silent', "Don't print any logs")
     .option('-m, --minify', 'Minify generated code')
     .option('--clean', 'Clean the chunks before generating')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('-w, --watch', 'Watch files and rebuild')
+    .option('--minimal', 'Do not include CSS generation for theme tokens, preflight, keyframes, static and global css')
     .option('-p, --poll', 'Use polling instead of filesystem events when watching')
     .option('-o, --outfile [file]', "Output file for extracted css, default to './styled-system/styles.css'")
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .action(async (maybeGlob?: string, flags: CssGenCommandFlags = {}) => {
-      const { silent, clean, config: configPath, outfile, watch, poll, minify } = flags
+      const { silent, clean, config: configPath, outfile, watch, poll, minify, minimal } = flags
 
       const cwd = resolve(flags.cwd ?? '')
+      const cssArtifact = ['preflight', 'tokens', 'static', 'global', 'keyframes'].find(
+        (type) => type === maybeGlob,
+      ) as CssArtifactType | undefined
+      const glob = cssArtifact ? undefined : maybeGlob
 
       if (silent) {
         logger.level = 'silent'
@@ -161,7 +172,8 @@ export async function main() {
           config: {
             clean,
             minify,
-            ...(maybeGlob ? { include: [maybeGlob] } : undefined),
+            optimize: true,
+            ...(glob ? { include: [glob] } : undefined),
           },
           configPath,
         })
@@ -173,12 +185,27 @@ export async function main() {
         if (outfile) {
           const outPath = resolve(cwd, outfile)
 
-          const { msg } = await bundleCss(ctx, outPath)
-          logger.info('css:emit', msg)
+          if (cssArtifact) {
+            const { msg } = await generateCssArtifactOfType(ctx, cssArtifact, outfile)
+            logger.info('css:emit', msg)
+            return
+          }
+
+          if (minimal) {
+            const { msg } = await bundleMinimalFilesCss(ctx, outPath)
+            logger.info('css:emit', msg)
+          } else {
+            const { msg } = await bundleCss(ctx, outPath)
+            logger.info('css:emit', msg)
+          }
           //
         } else {
+          if (cssArtifact) {
+            logger.warn('cssgen:warn', 'Cannot generate css artifact without an outfile')
+          }
+
           //
-          const { msg } = await extractCss(ctx)
+          const { msg } = await writeAndBundleCssChunks(ctx)
           logger.info('css:emit', msg)
         }
       }

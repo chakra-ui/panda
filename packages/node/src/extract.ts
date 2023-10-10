@@ -3,8 +3,14 @@ import { Obj, pipe, tap, tryCatch } from 'lil-fp'
 import { createBox } from './cli-box'
 import type { PandaContext } from './create-context'
 import { writeFile } from 'fs/promises'
+import { createParserResult } from '@pandacss/parser'
+import { match } from 'ts-pattern'
 
-export async function bundleChunks(ctx: PandaContext) {
+/**
+ * Bundles all the included files CSS into outdir/styles.css
+ * And import the root CSS artifacts files (global, static, reset, tokens, keyframes) in there
+ */
+export async function bundleStyleChunksWithImports(ctx: PandaContext) {
   const files = ctx.chunks.getFiles()
   await ctx.output.write({
     dir: ctx.paths.root,
@@ -13,6 +19,9 @@ export async function bundleChunks(ctx: PandaContext) {
   return { files, msg: ctx.messages.buildComplete(files.length) }
 }
 
+/**
+ * Writes in outdir/chunks/{file}.css
+ */
 export async function writeFileChunk(ctx: PandaContext, file: string) {
   const { path } = ctx.runtime
   logger.debug('chunk:write', `File: ${path.relative(ctx.config.cwd, file)}`)
@@ -24,6 +33,9 @@ export async function writeFileChunk(ctx: PandaContext, file: string) {
   return ctx.output.write(artifact)
 }
 
+/**
+ * Parse a file and return the corresponding css
+ */
 export function extractFile(ctx: PandaContext, file: string) {
   const {
     runtime: { path },
@@ -47,7 +59,10 @@ export function extractFile(ctx: PandaContext, file: string) {
   )
 }
 
-function extractFiles(ctx: PandaContext) {
+/**
+ * Writes all the css chunks in outdir/chunks/{file}.css
+ */
+function writeChunks(ctx: PandaContext) {
   return Promise.allSettled(ctx.getFiles().map((file) => writeFileChunk(ctx, file)))
 }
 
@@ -70,22 +85,83 @@ export async function emitArtifacts(ctx: PandaContext) {
   }
 }
 
-export async function emitAndExtract(ctx: PandaContext) {
+export async function emitArtfifactsAndCssChunks(ctx: PandaContext) {
   await emitArtifacts(ctx)
   if (ctx.config.emitTokensOnly) {
     return { files: [], msg: 'Successfully rebuilt the css variables and js function to query your tokens ✨' }
   }
-  return extractCss(ctx)
+  return writeAndBundleCssChunks(ctx)
 }
 
-export async function extractCss(ctx: PandaContext) {
-  await extractFiles(ctx)
-  return bundleChunks(ctx)
+/**
+ * Writes all the css chunks in outdir/chunks/{file}.css
+ * and bundles them in outdir/styles.css
+ */
+export async function writeAndBundleCssChunks(ctx: PandaContext) {
+  await writeChunks(ctx)
+  return bundleStyleChunksWithImports(ctx)
 }
 
+/**
+ * Bundles all the included files CSS into the given outfile
+ * Including the root CSS artifact files content (global, static, reset, tokens, keyframes)
+ * Without any imports
+ */
 export async function bundleCss(ctx: PandaContext, outfile: string) {
-  const extracted = await extractFiles(ctx)
+  const extracted = await writeChunks(ctx)
   const files = ctx.chunks.getFiles()
   await writeFile(outfile, ctx.getCss({ files, resolve: true }))
   return { files, msg: ctx.messages.buildComplete(extracted.length) }
+}
+
+/**
+ * Bundles all the files CSS into outdir/chunks/{file}.css
+ * Without writing any chunks or needing any imports
+ */
+export async function bundleMinimalFilesCss(ctx: PandaContext, outfile: string) {
+  const files = ctx.getFiles()
+  const filesWithCss = []
+
+  const collector = createParserResult()
+
+  files.forEach((file) => {
+    const measure = logger.time.debug(`Parsed ${file}`)
+    const result = ctx.project.parseSourceFile(file)
+
+    measure()
+    if (!result) return
+
+    collector.merge(result)
+    filesWithCss.push(file)
+  })
+
+  const css = ctx.getParserCss(collector)
+  if (!css) return { files, msg: ctx.messages.buildComplete(files.length) }
+
+  await writeFile(outfile, css)
+  return { files, msg: ctx.messages.buildComplete(files.length) }
+}
+
+export type CssArtifactType = 'preflight' | 'tokens' | 'static' | 'global' | 'keyframes'
+
+/**
+ * Generates the CSS for a given artifact type
+ */
+export async function generateCssArtifactOfType(ctx: PandaContext, cssType: CssArtifactType, outfile: string) {
+  let notFound = false
+  const css = match(cssType)
+    .with('preflight', () => ctx.getResetCss(ctx))
+    .with('tokens', () => ctx.getTokenCss(ctx))
+    .with('static', () => ctx.getStaticCss(ctx))
+    .with('global', () => ctx.getGlobalCss(ctx))
+    .with('keyframes', () => ctx.getKeyframeCss(ctx))
+    .otherwise(() => {
+      notFound = true
+    })
+
+  if (notFound) return { msg: `No css artifact of type <${cssType}> was found` }
+  if (!css) return { msg: `No css to generate for type <${cssType}>` }
+
+  await writeFile(outfile, css)
+  return { msg: `Successfully generated ${cssType} css artifact ✨` }
 }

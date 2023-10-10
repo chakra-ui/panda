@@ -143,6 +143,26 @@ Related: [`config.logLevel`](/docs/references/config#log-level)
 
 Generate the CSS from files.
 
+You can use a `glob` to override the `config.include` option like this:
+
+`panda cssgen "src/**/*.css" --outfile dist.css`
+
+or you can use it with a `{type}` argument to generate only a specific type of CSS:
+
+- preflight
+- tokens
+- static
+- global
+- keyframes
+
+> Note that this only works when passing an `--outfile`.
+
+You can use it like this:
+
+```bash
+panda cssgen "static" --outfile dist/static.css
+```
+
 ### Flags
 
 #### `--clean`
@@ -168,6 +188,23 @@ Related: [`config.cwd`](/docs/references/config#cwd)
 Whether to suppress all output
 
 Related: [`config.logLevel`](/docs/references/config#log-level)
+
+## `--minimal`
+
+Skip generating CSS for theme tokens, preflight, keyframes, static and global css.
+
+Thich means that the generated CSS will only contain the CSS related to the styles found in the included files.
+
+> Note that you can use a `glob` to override the `config.include` option like this:
+> `panda cssgen "src/**/*.css" --minimal`
+
+This is useful when you want to split your CSS into multiple files, for example if you want to split by pages.
+
+Use it like this:
+
+```bash
+panda cssgen "src/**/pages/*.css" --minimal --outfile dist/pages.css
+```
 
 ## `panda studio`
 

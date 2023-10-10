@@ -5,7 +5,16 @@ export { findConfig, loadConfigAndCreateContext } from './config'
 export { createContext, type PandaContext } from './create-context'
 export { debugFiles } from './debug-files'
 export { execCommand } from './exec-command'
-export { bundleCss, emitAndExtract, emitArtifacts, extractCss, extractFile } from './extract'
+export {
+  bundleCss,
+  bundleMinimalFilesCss,
+  emitArtfifactsAndCssChunks,
+  emitArtifacts,
+  writeAndBundleCssChunks,
+  extractFile,
+  generateCssArtifactOfType,
+  type CssArtifactType,
+} from './extract'
 export { generate } from './generate'
 export { setupGitIgnore } from './git-ignore'
 export { parseDependency } from './parse-dependency'
