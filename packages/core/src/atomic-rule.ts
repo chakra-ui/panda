@@ -8,7 +8,7 @@ import {
   withoutImportant,
 } from '@pandacss/shared'
 import type { Dict } from '@pandacss/types'
-import type { Root } from 'postcss'
+import type { AtRule, Root } from 'postcss'
 import postcss from 'postcss'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
@@ -20,12 +20,12 @@ export interface ProcessOptions {
 
 export class AtomicRule {
   root: Root
-  layer: string
+  layer: AtRule
 
   constructor(private context: StylesheetContext) {
     // console.log('new AtomicRule')
     this.root = postcss.root()
-    this.layer = context.layers.utilities
+    this.layer = this.context.layersRoot.utilities
   }
 
   hashFn = (conditions: string[], className: string) => {
@@ -59,13 +59,15 @@ export class AtomicRule {
     const styleObject = shouldNormalize ? normalizeStyleObject(styles, this.context) : styles
     const rule = this.rule
 
+    // const atPath = new Map<string, string>()
+
     // console.log(styleObject)
     walkObject(styleObject, (value, paths) => {
       // if value doesn't exist
       if (value == null) return
 
-      // console.log({ value, paths })
       // TODO skip paths+value if seen before
+      // atPath.has(paths.join('.')) && console.log({ value, paths })
 
       const important = isImportant(value)
 
@@ -98,13 +100,11 @@ export class AtomicRule {
 
       // append the rule to the root
       if (transformed.layer) {
-        // if layer is specified, create a new root with the layer name
-        const atRule = postcss.atRule({
-          name: 'layer',
-          params: transformed.layer,
-          nodes: [rule.rule!],
-        })
-        this.root.append(atRule)
+        // if layer is specified, append in there instead
+        const layer = this.context.layersRoot[transformed.layer as keyof typeof this.context.layersRoot]
+        if (layer) {
+          layer.append(rule.rule!)
+        }
         //
       } else {
         this.root.append(rule.rule!)
@@ -113,15 +113,10 @@ export class AtomicRule {
 
     if (this.root.nodes.length === 0) return
 
-    const atRule = postcss.atRule({
-      name: 'layer',
-      params: this.layer,
-      nodes: [this.root],
-    })
-    this.context.root.append(atRule)
+    this.layer.append(this.root)
   }
 
   toCss = () => {
-    return this.context.root.toString()
+    return this.context.insertLayers().toString()
   }
 }

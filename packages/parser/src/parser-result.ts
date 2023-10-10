@@ -2,9 +2,7 @@ import { type BoxNodeLiteral, type BoxNodeObject } from '@pandacss/extractor'
 import { getSlotRecipes, walkObject } from '@pandacss/shared'
 import { sortAtRules } from '@pandacss/core'
 import type {
-  ConditionType,
   ConditionDetails,
-  RawCondition,
   Dict,
   ParserResultType,
   RecipeConfig,
@@ -554,6 +552,8 @@ const compareAtRuleConditions = (a: StyleRule, b: StyleRule) => {
 
     const atRule1 = lastA.params ?? lastA.rawValue
     const atRule2 = lastB.params ?? lastB.rawValue
+
+    if (!atRule1 || !atRule2) return 0
 
     // console.log({ atRule1, atRule2 })
 

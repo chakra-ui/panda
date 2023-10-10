@@ -220,11 +220,11 @@ export class Recipes {
     return serializeStyle(styleObject, this.context)
   }
 
-  private getTransform = (name: string) => {
+  private getTransform = (name: string, slot?: boolean) => {
     return (variant: string, value: string) => {
       if (value === '__ignore__') {
         return {
-          layer: '_base',
+          layer: slot ? 'recipes_slots_base' : 'recipes_base',
           className: sharedState.classNames.get(name)!,
           styles: sharedState.styles.get(name) ?? {},
         }
@@ -246,11 +246,11 @@ export class Recipes {
 
     const rule = new AtomicRule({
       ...this.context,
-      transform: this.getTransform(name),
+      transform: this.getTransform(name, slot),
     })
 
-    const layer = this.context.layers.recipes
-    rule.layer = slot ? `${layer}.slots` : layer
+    const layer = this.context.layersRoot.recipes
+    rule.layer = slot ? this.context.layersRoot.recipes_slots : layer
     return rule
   }
 
@@ -294,6 +294,6 @@ export class Recipes {
 
   toCss = () => {
     if (!this.context) return ''
-    return this.context.root.toString()
+    return this.context.insertLayers().toString()
   }
 }

@@ -9,17 +9,13 @@ describe('slot recipe ruleset', () => {
               .button__container {
                   font-family: var(--fonts-mono)
               }
+              .button__icon {
+                  font-size: 1.5rem
+              }
           }
           .button__container--size_sm {
               font-size: 5rem;
               line-height: 1em
-          }
-      }
-      @layer recipes.slots {
-          @layer _base {
-              .button__icon {
-                  font-size: 1.5rem
-              }
           }
           .button__icon--size_sm {
               font-size: 2rem

@@ -25,13 +25,58 @@ const utility = new Utility({
   tokens,
 })
 
-export const createContext = (): StylesheetContext => ({
-  root: postcss.root(),
-  conditions: conditions,
-  utility: utility,
-  helpers: { map: () => '' },
-  layers: defaultLayers,
-})
+const createSheetRoot = (): Pick<StylesheetContext, 'root' | 'layersRoot' | 'insertLayers'> => {
+  const reset = postcss.atRule({ name: 'layer', params: 'reset', nodes: [] })
+  const base = postcss.atRule({ name: 'layer', params: 'base', nodes: [] })
+  const tokens = postcss.atRule({ name: 'layer', params: 'tokens', nodes: [] })
+  const recipes = postcss.atRule({ name: 'layer', params: 'recipes', nodes: [] })
+  const recipes_base = postcss.atRule({ name: 'layer', params: '_base', nodes: [] })
+  const recipes_slots = postcss.atRule({ name: 'layer', params: 'recipes.slots', nodes: [] })
+  const recipes_slots_base = postcss.atRule({ name: 'layer', params: '_base', nodes: [] })
+  const utilities = postcss.atRule({ name: 'layer', params: 'utilities', nodes: [] })
+  const compositions = postcss.atRule({ name: 'layer', params: 'compositions', nodes: [] })
+  const root = postcss.root()
+
+  return {
+    root,
+    layersRoot: {
+      reset,
+      base,
+      tokens,
+      recipes,
+      recipes_base,
+      recipes_slots,
+      recipes_slots_base,
+      utilities,
+      compositions,
+    },
+    insertLayers: () => {
+      if (reset.nodes.length) root.append(reset)
+      if (base.nodes.length) root.append(base)
+      if (tokens.nodes.length) root.append(tokens)
+
+      if (recipes_base.nodes.length) recipes.prepend(recipes_base)
+      if (recipes.nodes.length) root.append(recipes)
+
+      if (recipes_slots_base.nodes.length) recipes_slots.prepend(recipes_slots_base)
+      if (recipes_slots.nodes.length) root.append(recipes_slots)
+
+      if (compositions.nodes.length) utilities.append(compositions)
+      if (utilities.nodes.length) root.append(utilities)
+      return root
+    },
+  }
+}
+
+export const createContext = (): StylesheetContext => {
+  return {
+    ...createSheetRoot(),
+    conditions: conditions,
+    utility: utility,
+    helpers: { map: () => '' },
+    layers: defaultLayers,
+  }
+}
 
 function css(obj: ProcessOptions) {
   const ruleset = new AtomicRule(createContext())

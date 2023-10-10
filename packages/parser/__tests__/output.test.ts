@@ -417,13 +417,7 @@ describe('extract to css output pipeline', () => {
     `)
 
     expect(result.css).toMatchInlineSnapshot(`
-      "@layer utilities {
-        .text_yellow {
-          color: yellow
-          }
-      }
-
-      @layer recipes {
+      "@layer recipes {
         .pinkRecipe--variant_small,.greenRecipe--variant_small,.blueRecipe--variant_small {
           font-size: var(--font-sizes-sm)
           }
@@ -448,6 +442,12 @@ describe('extract to css output pipeline', () => {
           .blueRecipe {
             color: var(--colors-blue-100)
               }
+          }
+      }
+
+      @layer utilities {
+        .text_yellow {
+          color: yellow
           }
       }"
     `)
@@ -1726,7 +1726,34 @@ describe('extract to css output pipeline', () => {
     `)
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
-      "@layer utilities {
+      "@layer recipes {
+        .button--size_md {
+          padding: var(--spacing-4);
+          border-radius: var(--radii-md)
+          }
+
+        .button--variant_danger {
+          color: var(--colors-white);
+          background-color: var(--colors-red-500)
+          }
+
+        .anotherButton--spacing_sm {
+          padding: var(--spacing-2);
+          border-radius: var(--radii-sm)
+          }
+
+        .complexButton--color_blue {
+          color: var(--colors-blue-500)
+          }
+
+        @layer _base {
+          .button {
+            font-size: var(--font-sizes-lg)
+              }
+          }
+      }
+
+      @layer utilities {
         .d_flex {
           display: flex
           }
@@ -1753,33 +1780,6 @@ describe('extract to css output pipeline', () => {
 
         .z_100 {
           z-index: 100
-          }
-      }
-
-      @layer recipes {
-        .button--size_md {
-          padding: var(--spacing-4);
-          border-radius: var(--radii-md)
-          }
-
-        .button--variant_danger {
-          color: var(--colors-white);
-          background-color: var(--colors-red-500)
-          }
-
-        .anotherButton--spacing_sm {
-          padding: var(--spacing-2);
-          border-radius: var(--radii-sm)
-          }
-
-        .complexButton--color_blue {
-          color: var(--colors-blue-500)
-          }
-
-        @layer _base {
-          .button {
-            font-size: var(--font-sizes-lg)
-              }
           }
       }"
     `)
@@ -2144,29 +2144,7 @@ describe('extract to css output pipeline', () => {
     `)
 
     expect(result.css).toMatchInlineSnapshot(`
-      "@layer utilities {
-        .mx_3 {
-          margin-inline: var(--spacing-3)
-          }
-
-        .d_flex {
-          display: flex
-          }
-
-        .flex_column {
-          flex-direction: column
-          }
-
-        .gap_10px {
-          gap: 10px
-          }
-
-        .text_red {
-          color: red
-          }
-      }
-
-      @layer recipes {
+      "@layer recipes {
         .buttonStyle--size_md {
           height: 3rem;
           min-width: 3rem;
@@ -2193,6 +2171,28 @@ describe('extract to css output pipeline', () => {
             align-items: center;
             justify-content: center
               }
+          }
+      }
+
+      @layer utilities {
+        .mx_3 {
+          margin-inline: var(--spacing-3)
+          }
+
+        .d_flex {
+          display: flex
+          }
+
+        .flex_column {
+          flex-direction: column
+          }
+
+        .gap_10px {
+          gap: 10px
+          }
+
+        .text_red {
+          color: red
           }
       }"
     `)
@@ -2444,25 +2444,7 @@ describe('extract to css output pipeline', () => {
     `)
 
     expect(result.css).toMatchInlineSnapshot(`
-      "@layer utilities {
-        .text_amber\\\\.400 {
-          color: var(--colors-amber-400)
-          }
-
-        [data-theme=dark] .dark\\\\:text_sky\\\\.300, .dark .dark\\\\:text_sky\\\\.300, .dark\\\\:text_sky\\\\.300.dark, .dark\\\\:text_sky\\\\.300[data-theme=dark] {
-          color: var(--colors-sky-300)
-              }
-
-        .hover\\\\:text_amber\\\\.500:is(:hover, [data-hover]) {
-          color: var(--colors-amber-500)
-              }
-
-        [data-theme=dark] .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]), .dark .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]), .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]).dark, .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover])[data-theme=dark] {
-          color: var(--colors-sky-200)
-                  }
-      }
-
-      @layer recipes {
+      "@layer recipes {
         .button--size_md {
           border-radius: var(--radii-md)
           }
@@ -2481,6 +2463,24 @@ describe('extract to css output pipeline', () => {
             background: var(--colors-red-900)
               }
           }
+      }
+
+      @layer utilities {
+        .text_amber\\\\.400 {
+          color: var(--colors-amber-400)
+          }
+
+        [data-theme=dark] .dark\\\\:text_sky\\\\.300, .dark .dark\\\\:text_sky\\\\.300, .dark\\\\:text_sky\\\\.300.dark, .dark\\\\:text_sky\\\\.300[data-theme=dark] {
+          color: var(--colors-sky-300)
+              }
+
+        .hover\\\\:text_amber\\\\.500:is(:hover, [data-hover]) {
+          color: var(--colors-amber-500)
+              }
+
+        [data-theme=dark] .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]), .dark .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]), .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover]).dark, .hover\\\\:dark\\\\:text_sky\\\\.200:is(:hover, [data-hover])[data-theme=dark] {
+          color: var(--colors-sky-200)
+                  }
       }"
     `)
   })
@@ -4511,7 +4511,43 @@ describe('preset patterns', () => {
     `)
 
     expect(result.css).toMatchInlineSnapshot(`
-      "@layer utilities {
+      "@layer recipes {
+        .buttonStyle--size_md {
+          height: 3rem;
+          min-width: 3rem;
+          padding: 0 0.75rem
+          }
+
+        .buttonStyle--size_sm {
+          height: 2.5rem;
+          min-width: 2.5rem;
+          padding: 0 0.5rem
+          }
+
+        .buttonStyle--variant_solid {
+          background-color: blue;
+          color: var(--colors-white);
+          }
+
+        .buttonStyle--variant_solid[data-disabled] {
+          background-color: gray;
+          color: var(--colors-black)
+              }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue
+              }
+
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center
+              }
+          }
+      }
+
+      @layer utilities {
         .mx_3 {
           margin-inline: var(--spacing-3)
           }
@@ -4554,42 +4590,6 @@ describe('preset patterns', () => {
 
         .flex_row {
           flex-direction: row
-          }
-      }
-
-      @layer recipes {
-        .buttonStyle--size_md {
-          height: 3rem;
-          min-width: 3rem;
-          padding: 0 0.75rem
-          }
-
-        .buttonStyle--size_sm {
-          height: 2.5rem;
-          min-width: 2.5rem;
-          padding: 0 0.5rem
-          }
-
-        .buttonStyle--variant_solid {
-          background-color: blue;
-          color: var(--colors-white);
-          }
-
-        .buttonStyle--variant_solid[data-disabled] {
-          background-color: gray;
-          color: var(--colors-black)
-              }
-
-        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
-          background-color: darkblue
-              }
-
-        @layer _base {
-          .buttonStyle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center
-              }
           }
       }"
     `)

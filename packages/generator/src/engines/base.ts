@@ -76,18 +76,59 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
 
   const layerString = `@layer ${layerNames.join(', ')};`
 
-  const createSheetContext = (): StylesheetContext => ({
-    root: postcss.root(),
+  const createSheetRoot = (): Pick<StylesheetContext, 'root' | 'layersRoot' | 'insertLayers'> => {
+    const reset = postcss.atRule({ name: 'layer', params: layers.reset, nodes: [] })
+    const base = postcss.atRule({ name: 'layer', params: layers.base, nodes: [] })
+    const tokens = postcss.atRule({ name: 'layer', params: layers.tokens, nodes: [] })
+    const recipes = postcss.atRule({ name: 'layer', params: layers.recipes, nodes: [] })
+    const recipes_base = postcss.atRule({ name: 'layer', params: '_base', nodes: [] })
+    const recipes_slots = postcss.atRule({ name: 'layer', params: layers.recipes + '.slots', nodes: [] })
+    const recipes_slots_base = postcss.atRule({ name: 'layer', params: '_base', nodes: [] })
+    const utilities = postcss.atRule({ name: 'layer', params: layers.utilities, nodes: [] })
+    const compositions = postcss.atRule({ name: 'layer', params: 'compositions', nodes: [] })
+    const root = postcss.root()
+
+    return {
+      root,
+      layersRoot: {
+        reset,
+        base,
+        tokens,
+        recipes,
+        recipes_base,
+        recipes_slots,
+        recipes_slots_base,
+        utilities,
+        compositions,
+      },
+      insertLayers: () => {
+        if (reset.nodes.length) root.append(reset)
+        if (base.nodes.length) root.append(base)
+        if (tokens.nodes.length) root.append(tokens)
+
+        if (recipes_base.nodes.length) recipes.prepend(recipes_base)
+        if (recipes.nodes.length) root.append(recipes)
+
+        if (recipes_slots_base.nodes.length) recipes_slots.prepend(recipes_slots_base)
+        if (recipes_slots.nodes.length) root.append(recipes_slots)
+
+        if (compositions.nodes.length) utilities.append(compositions)
+        if (utilities.nodes.length) root.append(utilities)
+        return root
+      },
+    }
+  }
+  const staticSheetContext: Omit<StylesheetContext, 'root' | 'layersRoot' | 'insertLayers'> = {
     conditions,
     utility,
     hash: hash.className,
     helpers,
     layers,
-  })
+  }
+  const createSheetContext = () => Object.assign(createSheetRoot(), staticSheetContext)
 
   const createSheet = (options?: Pick<StylesheetOptions, 'content'>) => {
-    const sheetContext = createSheetContext()
-    return new Stylesheet(sheetContext, {
+    return new Stylesheet(createSheetContext(), {
       content: options?.content,
       recipes: theme?.recipes,
       slotRecipes: theme?.slotRecipes,

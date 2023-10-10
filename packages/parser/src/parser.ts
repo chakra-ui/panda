@@ -37,6 +37,7 @@ export type ParserOptions = {
   getPatternsByJsxName: (jsxName: string) => ParserPatternNode[]
   patterns: Generator['patterns']
   recipes: Generator['recipes']
+  utility: Generator['utility']
   // syntax: NonNullable<Config['syntax']>
   syntax: Config['syntax']
   tsOptions?: ConfigTsOptions

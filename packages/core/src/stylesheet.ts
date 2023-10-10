@@ -1,14 +1,12 @@
 import { logger } from '@pandacss/logger'
 import { getSlotRecipes } from '@pandacss/shared'
 import type { Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
-import postcss, { CssSyntaxError } from 'postcss'
+import { CssSyntaxError } from 'postcss'
 import { AtomicRule } from './atomic-rule'
 import { isSlotRecipe } from './is-slot-recipe'
 import { optimizeCss, expandCssFunctions } from './optimize'
 import { Recipes } from './recipes'
-import { safeParse } from './safe-parse'
 import { serializeStyles } from './serialize'
-import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
 
 export type StylesheetOptions = {
@@ -31,35 +29,7 @@ export class Stylesheet {
     const { conditions, utility } = this.context
     const css = serializeStyles(styleObject, { conditions, utility })
 
-    // wrap css root in @layer directive
-    const layer = postcss.atRule({
-      name: 'layer',
-      params: this.context.layers.base,
-      nodes: [css],
-    })
-
-    this.context.root.append(layer)
-  }
-
-  processSelectorObject(selector: string, styleObject: Dict) {
-    const cssString = toCss(styleObject)
-    const { nodes } = safeParse(cssString)
-
-    // don't process empty rulesets
-    if (nodes.length === 0) return
-
-    const output = postcss.rule({
-      selector,
-      nodes: cssString.root.nodes,
-    })
-
-    this.context.root.append(output)
-  }
-
-  processObject(styleObject: SystemStyleObject) {
-    const result = toCss(styleObject)
-    const output = result.root
-    this.context.root.append(output)
+    this.context.layersRoot.base.append(css)
   }
 
   processAtomic = (...styleObject: (SystemStyleObject | undefined)[]) => {
@@ -118,8 +88,10 @@ export class Stylesheet {
       const {
         conditions: { breakpoints },
         utility,
+        insertLayers,
       } = this.context
 
+      this.context.root = insertLayers()
       breakpoints.expandScreenAtRule(this.context.root)
       expandCssFunctions(this.context.root, { token: utility.getToken, raw: this.context.utility.tokens.getByName })
 

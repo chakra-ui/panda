@@ -20,7 +20,7 @@ export function generateKeyframeCss(ctx: PandaContext, keyframeName: string) {
 
   const rule = postcss.atRule({
     name: 'layer',
-    params: 'tokens',
+    params: ctx.layers.tokens,
     nodes: root.nodes,
   })
 

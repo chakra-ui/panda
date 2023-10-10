@@ -14,7 +14,7 @@ export function mergeCss(oldCss: string, newCss: string) {
     isMatching({
       type: 'atrule',
       name: 'layer',
-      params: 'utilities',
+      params: 'utilities', // ctx.layers.utilities
     }),
   ) as AtRule[]
 

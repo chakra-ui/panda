@@ -17,6 +17,49 @@ export const defaultLayers = {
   utilities: 'utilities',
 }
 
+const createSheetRoot = (): Pick<StylesheetContext, 'root' | 'layersRoot' | 'insertLayers'> => {
+  const reset = postcss.atRule({ name: 'layer', params: 'reset', nodes: [] })
+  const base = postcss.atRule({ name: 'layer', params: 'base', nodes: [] })
+  const tokens = postcss.atRule({ name: 'layer', params: 'tokens', nodes: [] })
+  const recipes = postcss.atRule({ name: 'layer', params: 'recipes', nodes: [] })
+  const recipes_base = postcss.atRule({ name: 'layer', params: '_base', nodes: [] })
+  const recipes_slots = postcss.atRule({ name: 'layer', params: 'recipes.slots', nodes: [] })
+  const recipes_slots_base = postcss.atRule({ name: 'layer', params: '_base', nodes: [] })
+  const utilities = postcss.atRule({ name: 'layer', params: 'utilities', nodes: [] })
+  const compositions = postcss.atRule({ name: 'layer', params: 'compositions', nodes: [] })
+  const root = postcss.root()
+
+  return {
+    root,
+    layersRoot: {
+      reset,
+      base,
+      tokens,
+      recipes,
+      recipes_base,
+      recipes_slots,
+      recipes_slots_base,
+      utilities,
+      compositions,
+    },
+    insertLayers: () => {
+      if (reset.nodes.length) root.append(reset)
+      if (base.nodes.length) root.append(base)
+      if (tokens.nodes.length) root.append(tokens)
+
+      if (recipes_base.nodes.length) recipes.prepend(recipes_base)
+      if (recipes.nodes.length) root.append(recipes)
+
+      if (recipes_slots_base.nodes.length) recipes_slots.prepend(recipes_slots_base)
+      if (recipes_slots.nodes.length) root.append(recipes_slots)
+
+      if (compositions.nodes.length) utilities.append(compositions)
+      if (utilities.nodes.length) root.append(utilities)
+      return root
+    },
+  }
+}
+
 export const createContext = ({ hash, prefix }: ContextOptions = {}): StylesheetContext => {
   const conditions = new Conditions({
     conditions: mocks.conditions,
@@ -37,6 +80,7 @@ export const createContext = ({ hash, prefix }: ContextOptions = {}): Stylesheet
   })
 
   return {
+    ...createSheetRoot(),
     hash,
     root: postcss.root(),
     conditions: conditions,
