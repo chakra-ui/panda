@@ -24,7 +24,7 @@ export type ComponentProps<T extends ElementType> = T extends keyof QwikIntrinsi
 
 type Dict = Record<string, unknown>
 
-export interface ${componentName}<T extends ElementType, P extends Dict = {}> extends Component<Assign<ComponentProps<T>, PatchedHTMLProps, Assign<JsxStyleProps, P>>> {}
+export interface ${componentName}<T extends ElementType, P extends Dict = {}> extends Component<Assign<ComponentProps<T>, Assign<PatchedHTMLProps, Assign<JsxStyleProps, P>>>> {}
 
 interface RecipeFn { __type: any }
 
