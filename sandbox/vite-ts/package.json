@@ -27,7 +27,7 @@
     "postcss": "8.4.27",
     "source-map-explorer": "^2.5.3",
     "typescript": "5.2.2",
-    "vite": "4.4.9",
+    "vite": "4.4.11",
     "vite-bundle-visualizer": "^0.9.0"
   }
 }

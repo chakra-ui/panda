@@ -13,6 +13,7 @@ export interface CssGenCommandFlags {
   silent?: boolean
   clean?: boolean
   outfile?: string
+  minimal?: boolean
   watch?: boolean
   poll?: boolean
   cwd?: string

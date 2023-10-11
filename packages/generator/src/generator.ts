@@ -4,6 +4,11 @@ import { generateFlattenedCss } from './artifacts/css/flat-css'
 import { generateParserCss } from './artifacts/css/parser-css'
 import { getEngine } from './engines'
 import { getMessages } from './messages'
+import { generateStaticCss } from './artifacts/css/static-css'
+import { generateResetCss } from './artifacts/css/reset-css'
+import { generateTokenCss } from './artifacts/css/token-css'
+import { generateKeyframeCss } from './artifacts/css/keyframe-css'
+import { generateGlobalCss } from './artifacts/css/global-css'
 
 const defaults = (conf: ConfigResultWithHooks): ConfigResultWithHooks => ({
   ...conf,
@@ -46,8 +51,16 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
   return {
     ...ctx,
     getArtifacts: generateArtifacts(ctx),
+    //
+    getStaticCss: generateStaticCss,
+    getResetCss: generateResetCss,
+    getTokenCss: generateTokenCss,
+    getKeyframeCss: generateKeyframeCss,
+    getGlobalCss: generateGlobalCss,
+    //
     getCss: generateFlattenedCss(ctx),
     getParserCss: generateParserCss(ctx),
+    //
     messages: getMessages(ctx),
     parserOptions: {
       importMap: getImportMap(config.outdir.replace(relativeBaseUrl, ''), config.importMap),

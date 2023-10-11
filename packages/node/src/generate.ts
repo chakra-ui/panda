@@ -2,11 +2,11 @@ import { logger } from '@pandacss/logger'
 import type { Config } from '@pandacss/types'
 import { match } from 'ts-pattern'
 import type { PandaContext } from './create-context'
-import { bundleChunks, emitAndExtract, writeFileChunk } from './extract'
+import { bundleStyleChunksWithImports, emitArtfifactsAndCssChunks, writeFileChunk } from './extract'
 import { loadContext } from './load-context'
 
 async function build(ctx: PandaContext) {
-  const { msg } = await emitAndExtract(ctx)
+  const { msg } = await emitArtfifactsAndCssChunks(ctx)
   logger.info('css:emit', msg)
 }
 
@@ -42,11 +42,11 @@ export async function generate(config: Config, configPath?: string) {
         .with('change', async () => {
           ctx.project.reloadSourceFile(file)
           await writeFileChunk(ctxRef.current, file)
-          return bundleChunks(ctxRef.current)
+          return bundleStyleChunksWithImports(ctxRef.current)
         })
         .with('add', async () => {
           ctx.project.createSourceFile(file)
-          return bundleChunks(ctxRef.current)
+          return bundleStyleChunksWithImports(ctxRef.current)
         })
         .otherwise(() => {
           // noop
