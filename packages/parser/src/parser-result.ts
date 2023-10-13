@@ -1,5 +1,13 @@
-import { type BoxNodeLiteral, type BoxNodeObject } from '@pandacss/extractor'
-import { getSlotRecipes, walkObject } from '@pandacss/shared'
+import { type BoxNodeObject } from '@pandacss/extractor'
+import {
+  esc,
+  getSlotRecipes,
+  isImportant,
+  normalizeStyleObject,
+  toHash,
+  toResponsiveObject,
+  withoutImportant,
+} from '@pandacss/shared'
 import { sortAtRules } from '@pandacss/core'
 import type {
   ConditionDetails,
@@ -13,12 +21,12 @@ import type {
 import type { ParserOptions } from './parser'
 import { isObjectOrArray, traverse } from './traverse'
 
-type StyleValue = BoxNodeLiteral['value']
+// type StyleValue = BoxNodeLiteral['value']
 type StyleResultObject = BoxNodeObject['value']
 
 type StyleEntry = {
   prop: string
-  value: StyleValue
+  value: string
   cond: string
   recipe?: string
 }
@@ -49,7 +57,6 @@ export class ParserResult implements ParserResultType {
   static separator = ']___['
   static conditionSeparator = '<|>'
 
-  state: ParserResultType['state'] = 'will-collect'
   /** Ordered list of all ResultItem */
   all = [] as Array<ResultItem>
   jsx = new Set<ResultItem>()
@@ -64,21 +71,21 @@ export class ParserResult implements ParserResultType {
   stylesHash = {
     css: new Set<string>(),
     recipe: new Map<string, Set<string>>(),
+    // TODO pattern ?
   }
   shouldHash = true
 
   filterStyleProps: (props: Dict) => Dict
 
-  constructor(private ctx: ParserResultCtx) {
+  constructor(private context: ParserResultCtx) {
     this.filterStyleProps =
-      ctx.syntax === 'template-literal'
+      context.syntax === 'template-literal'
         ? (props: Dict) => props
-        : (props: Dict) => filterProps(this.ctx.isValidProperty, props)
+        : (props: Dict) => filterProps(this.context.isValidProperty, props)
   }
 
-  // TODO sort css via condition, media query etc
   private hashStyleProps(set: Set<string>, obj: ResultItem['data'][number], recipe?: string) {
-    const isCondition = this.ctx.conditions.isCondition
+    const isCondition = this.context.conditions.isCondition
     // console.log({ obj })
 
     let isInCondition = false
@@ -89,7 +96,7 @@ export class ParserResult implements ParserResultType {
     let prevDepth = 0
     // TODO keep track of main prop ex: <styled.div m={{ base: { p: 4 }}} /> => m
 
-    const normalized = normalizeStyleObject(obj, this.ctx)
+    const normalized = normalizeStyleObject(obj, this.context)
 
     traverse(
       normalized,
@@ -97,7 +104,7 @@ export class ParserResult implements ParserResultType {
         if (rawValue === undefined) return
 
         const value = Array.isArray(rawValue)
-          ? toResponsiveObject(rawValue, this.ctx.conditions.breakpoints.keys)
+          ? toResponsiveObject(rawValue, this.context.conditions.breakpoints.keys)
           : rawValue
 
         isFinalCondition = false
@@ -126,7 +133,6 @@ export class ParserResult implements ParserResultType {
           cond = ''
         } else if (depth !== prevDepth && !isInCondition && !isFinalCondition) {
           cond = path.split(ParserResult.conditionSeparator).at(-2) ?? ''
-          // isInCondition = cond !== ''
           isInCondition = cond !== ''
         }
 
@@ -175,7 +181,7 @@ export class ParserResult implements ParserResultType {
     const set = this.stylesHash.recipe.get(recipeName)!
     this.hashStyleProps(set, variants, recipeName)
 
-    const config = this.ctx.recipes.getConfig(recipeName)
+    const config = this.context.recipes.getConfig(recipeName)
     if (!config) return
 
     this.processCompoundVariants(config)
@@ -189,16 +195,14 @@ export class ParserResult implements ParserResultType {
   ) {
     let fnName = patternName
     if (type === 'jsx-pattern' && jsxName) {
-      fnName = this.ctx.patterns.getFnName(jsxName)
+      fnName = this.context.patterns.getFnName(jsxName)
     }
-    const styleProps = this.ctx.patterns.transform(fnName, patternProps)
-    // console.log({ fnName, jsxName, type, patternName, patternProps, styleProps })
+    const styleProps = this.context.patterns.transform(fnName, patternProps)
     this.processStyleProps(styleProps)
   }
 
   private processAtomicRecipe(recipe: Pick<RecipeConfig, 'base' | 'variants' | 'compoundVariants'>) {
     const { base = {}, variants = {}, compoundVariants = [] } = recipe
-    // console.log({ processAtomicRecipe: true, base })
     this.processStyleProps(base)
     for (const variant of Object.values(variants)) {
       for (const styles of Object.values(variant)) {
@@ -230,6 +234,21 @@ export class ParserResult implements ParserResultType {
     })
   }
 
+  // AtomicRule.hashFn
+  hashSelector = (conditions: string[], className: string) => {
+    const { conditions: cond, hash, utility } = this.context
+    const conds = cond.finalize(conditions)
+    let result: string
+    if (hash) {
+      conds.push(className)
+      result = utility.formatClassName(toHash(conds.join(':')))
+    } else {
+      conds.push(utility.formatClassName(className))
+      result = conds.join(':')
+    }
+    return esc(result)
+  }
+
   fromHash(hash: string) {
     const [prop, value, condOrRecipe, recipe] = hash.split(ParserResult.separator)
     const entry = {
@@ -248,27 +267,35 @@ export class ParserResult implements ParserResultType {
       entry.recipe = recipe.replace('recipe:', '')
     }
 
-    const resolvedValue = entry.value === 'true' ? true : entry.value === 'false' ? false : entry.value
-    let obj = { [entry.prop]: resolvedValue }
+    const resolvedValue = String(entry.value)
+    const transformed = this.context.utility.transform(prop, withoutImportant(resolvedValue))
+    const important = isImportant(value)
+    // TODO handle important + multiple properties with transformed.styles
+
+    // const cssRoot = toCss(transformed.styles, { important })
+    // console.log({
+    //   styles: transformed.styles,
+    //   cssRoot: cssRoot.toString(),
+    //   truncate: toCss(this.context.utility.transform('truncate', 'true').styles).toString(),
+    // })
+
+    let obj = {} as StyleResultObject
+    const parts = entry.cond ? entry.cond.split(ParserResult.conditionSeparator) : []
+    const selector = this.hashSelector(parts, transformed.className)
+    // TODO make l'avant dernier selector cond.at(-2) avec un !important
+    const className = important ? `.${selector}\\!` : `.${selector}`
 
     let conditions
     if (entry.cond) {
-      const parts = entry.cond.split(ParserResult.conditionSeparator)
-      conditions = this.ctx.conditions.sort(parts)
-
-      obj = makeObjAt(parts.concat(entry.prop), resolvedValue) as typeof obj
+      conditions = this.context.conditions.sort(parts)
+      const path = [className].concat(conditions.map((c) => c.rawValue ?? c.raw))
+      obj = makeObjAt(path, transformed.styles) as typeof obj
+    } else {
+      obj = makeObjAt([className], transformed.styles) as typeof obj
     }
-
-    // console.log(JSON.stringify(obj), { entry, hash })
 
     return { obj, entry, hash, conditions } as StyleResult
   }
-
-  // TODO sort css based on conditions (sort them first)
-  // const order: ConditionType[] = ['self-nesting', 'combinator-nesting', 'parent-nesting', 'at-rule']
-  // const styleOrder = [':link', ':visited', ':focus-within', ':focus', ':focus-visible', ':hover', ':active']
-
-  // ask gpt
   /**
    * Collect all styles and recipes
    * and return a new ParserResult (collector, will not hash) with deduplicated ResultItem
@@ -278,11 +305,7 @@ export class ParserResult implements ParserResultType {
     this.shouldHash = false
 
     // console.time('unpack')
-    const collector = new ParserResult(this.ctx)
-
-    // const sortedCss = Array.from(this.stylesHash.css).sort((a, b) => {
-    //   const aStyles = this.fromHash(a)
-    // })
+    const collector = new ParserResult(this.context)
 
     const cssResults = [] as StyleResult[]
     const recipeResults = [] as StyleResult[]
@@ -309,7 +332,6 @@ export class ParserResult implements ParserResultType {
     })
 
     this.shouldHash = willHash
-    collector.state = 'collected'
 
     // console.log(result)
     // console.timeEnd('unpack')
@@ -371,13 +393,12 @@ export class ParserResult implements ParserResultType {
     )
   }
 
-  setRecipe(name: string, result: ResultItem) {
-    this.recipe.get(name) ?? this.recipe.set(name, new Set())
-    this.recipe.get(name)?.add(this.append(Object.assign({ type: 'recipe' }, result)))
+  setRecipe(recipeName: string, result: ResultItem) {
+    this.recipe.get(recipeName) ?? this.recipe.set(recipeName, new Set())
+    this.recipe.get(recipeName)?.add(this.append(Object.assign({ type: 'recipe' }, result)))
     if (!this.shouldHash) return
 
-    const recipeName = name
-    const recipes = this.ctx.recipes
+    const recipes = this.context.recipes
     const recipeConfig = recipes.getConfig(recipeName)
     if (!recipeConfig) return
 
@@ -468,6 +489,7 @@ type ParserResultCtx = ParserOptions
 
 export const createParserResult = (ctx: ParserResultCtx) => new ParserResult(ctx)
 
+// same as in packages/extractor/src/unbox.ts
 const makeObjAt = (path: string[], value: unknown) => {
   if (!path.length) return value as StyleResultObject
 
@@ -489,34 +511,6 @@ const filterProps = (isValidProperty: (key: string) => boolean, props: Dict) => 
     }
   }
   return clone
-}
-
-function toResponsiveObject(values: string[], breakpoints: string[]) {
-  return values.reduce((acc, current, index) => {
-    const key = breakpoints[index]
-    if (current != null) {
-      acc[key] = current
-    }
-    return acc
-  }, {} as Record<string, string>)
-}
-
-function normalizeStyleObject(styles: Record<string, any>, context: ParserResultCtx) {
-  const { utility, conditions } = context
-  const { hasShorthand, resolveShorthand } = utility
-
-  return walkObject(
-    styles,
-    (value) => {
-      return Array.isArray(value) ? toResponsiveObject(value, conditions!.breakpoints.keys) : value
-    },
-    {
-      stop: (value) => Array.isArray(value),
-      getKey: (prop) => {
-        return hasShorthand ? resolveShorthand(prop) : prop
-      },
-    },
-  )
 }
 
 interface StyleRule extends StyleResult {
@@ -569,6 +563,17 @@ const compareAtRuleConditions = (a: StyleRule, b: StyleRule) => {
   return a.conditions!.length - b.conditions!.length
 }
 
+/**
+ * Sort style rules by conditions
+ * - with no conditions first
+ * - with selectors only next
+ * - with at-rules last
+ *
+ * for each of them:
+ * - sort by condition length (shorter first)
+ * - sort selectors by predefined pseudo selector order
+ * - sort at-rules by predefined order (sort-mq postcss plugin order)
+ */
 const sortStyleRules = (styleRules: StyleRule[]): StyleRule[] => {
   const sorted: StyleRule[] = []
   const withSelectorsOnly: StyleRule[] = []

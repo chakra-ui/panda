@@ -5,12 +5,11 @@ import { P, match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
 export const generateParserCss = (ctx: Context) => (parserResult: ParserResultType) => {
-  // TODO rm ?
-  const result = parserResult.state === 'will-collect' ? parserResult.collectStyles() : parserResult
+  // TODO only collect if needed, rename to dedupe ? collector + deduper/hasher ?
+  const result = parserResult.collectStyles()
   if (result.isEmpty()) return ''
 
-  // console.log(result.toJSON())
-
+  // console.time('generateParserCss')
   const sheet = ctx.createSheet()
   const { recipes } = ctx
   const { minify, optimize } = ctx.config
@@ -36,8 +35,13 @@ export const generateParserCss = (ctx: Context) => (parserResult: ParserResultTy
     }
   })
 
+  // TODO pattern ?
+  // console.timeEnd('generateParserCss')
+
   try {
+    // console.time('sheet.toCss')
     const css = sheet.toCss({ minify, optimize })
+    // console.timeEnd('sheet.toCss')
     ctx.hooks.callHook('parser:css', result.filePath ?? '', css)
     return css
   } catch (err) {

@@ -152,7 +152,7 @@ describe('extract to css output pipeline', () => {
           }
 
         .debug_true>* {
-          outline: 1px solid red !important
+          outline: 1px solid red !important;
               }
 
         .p_2 {
@@ -182,12 +182,6 @@ describe('extract to css output pipeline', () => {
               }
 
         @media screen and (min-width: 48em) {
-          [data-theme=dark] .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]), .dark .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]), .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]).dark, .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover])[data-theme=dark] {
-            margin: calc(var(--spacing-2) * -1)
-                  }
-                      }
-
-        @media screen and (min-width: 48em) {
           .md\\\\:p_4 {
             padding: var(--spacing-4)
           }
@@ -196,6 +190,12 @@ describe('extract to css output pipeline', () => {
             color: var(--colors-red-100)
           }
               }
+
+        @media screen and (min-width: 48em) {
+          [data-theme=dark] .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]), .dark .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]), .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover]).dark, .md\\\\:dark\\\\:hover\\\\:m_-2:is(:hover, [data-hover])[data-theme=dark] {
+            margin: calc(var(--spacing-2) * -1)
+          }
+      }
       }"
     `)
   })
@@ -798,11 +798,12 @@ describe('extract to css output pipeline', () => {
                   }
 
         @media (min-width: 768px) {
-          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:\\\\[\\\\&\\\\:disabled\\\\]\\\\:filter_brightness\\\\(1\\\\):disabled {
-            filter: brightness(1)
-              }
           .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:padding_1rem_0 {
             padding: 1rem 0
+          }
+
+          .\\\\[\\\\@media_\\\\(min-width\\\\:_768px\\\\)\\\\]\\\\:\\\\[\\\\&\\\\:disabled\\\\]\\\\:filter_brightness\\\\(1\\\\):disabled {
+            filter: brightness(1)
           }
                   }
       }"
@@ -1042,8 +1043,7 @@ describe('extract to css output pipeline', () => {
 
         .hover\\\\:text_colorPalette\\\\.300:is(:hover, [data-hover]) {
           color: var(--colors-color-palette-300)
-              }
-      }"
+      }}"
     `)
   })
 
@@ -1207,8 +1207,7 @@ describe('extract to css output pipeline', () => {
 
           .hover\\\\:bg_colorPalette\\\\.light\\\\.accent\\\\.secondary:is(:hover, [data-hover]) {
             background: var(--colors-color-palette-light-accent-secondary)
-                }
-        }"
+        }}"
       `)
     })
   })
@@ -2485,12 +2484,74 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('simple nested condition', () => {
+    const code = `
+        import { panda } from ".panda/jsx"
+
+        <panda.div p={{ sm: { _hover: { base: 3, _dark: 4 } } }} />
+       `
+
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "p": {
+                "sm": {
+                  "_hover": {
+                    "_dark": 4,
+                    "base": 3,
+                  },
+                },
+              },
+            },
+          ],
+          "name": "panda.div",
+          "type": "jsx-factory",
+        },
+      ]
+    `)
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media screen and (min-width: 40em) {
+          .sm\\\\:hover\\\\:p_3:is(:hover, [data-hover]) {
+            padding: var(--spacing-3)
+          }
+      }
+
+        @media screen and (min-width: 40em) {
+          [data-theme=dark] .sm\\\\:hover\\\\:dark\\\\:p_4:is(:hover, [data-hover]), .dark .sm\\\\:hover\\\\:dark\\\\:p_4:is(:hover, [data-hover]), .sm\\\\:hover\\\\:dark\\\\:p_4:is(:hover, [data-hover]).dark, .sm\\\\:hover\\\\:dark\\\\:p_4:is(:hover, [data-hover])[data-theme=dark] {
+            padding: var(--spacing-4)
+          }
+      }
+      }"
+    `)
+
+    expect(optimizeCss(result.css)).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media screen and (min-width: 40em) {
+          .sm\\\\:hover\\\\:p_3:is(:hover, [data-hover]) {
+            padding: var(--spacing-3)
+          }
+      }
+
+        @media screen and (min-width: 40em) {
+          [data-theme=dark] .sm\\\\:hover\\\\:dark\\\\:p_4:is(:hover, [data-hover]), .dark .sm\\\\:hover\\\\:dark\\\\:p_4:is(:hover, [data-hover]), .sm\\\\:hover\\\\:dark\\\\:p_4:is(:hover, [data-hover]).dark, .sm\\\\:hover\\\\:dark\\\\:p_4:is(:hover, [data-hover])[data-theme=dark] {
+            padding: var(--spacing-4)
+          }
+      }
+      }"
+    `)
+  })
+
   test('shorthand + condition ', () => {
     const code = `
         import { panda } from ".panda/jsx"
 
         <panda.div m={{
           base: 1,
+          // TODO sm: { _hover: 2, truncate: true },
           sm: { _hover: 2 },
           _dark: {
             _disabled: { _open: { base: 11, xl: { _loading: 13, base: 12, } }, base: 10 },
@@ -2551,71 +2612,71 @@ describe('extract to css output pipeline', () => {
       "@layer utilities {
         .m_1 {
           margin: var(--spacing-1)
-          }
+      }
 
         [data-theme=dark] .dark\\\\:m_3, .dark .dark\\\\:m_3, .dark\\\\:m_3.dark, .dark\\\\:m_3[data-theme=dark] {
           margin: var(--spacing-3)
-              }
+      }
 
         [data-theme=dark] .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled]), .dark .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled]), .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled]).dark, .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled])[data-theme=dark] {
           margin: var(--spacing-10)
-                  }
+      }
 
         [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]).dark, .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"])[data-theme=dark] {
           margin: var(--spacing-11)
-                      }
+      }
 
         [data-theme=dark] .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]), .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus])[data-theme=dark] {
           margin: var(--spacing-7)
-                  }
+      }
 
         @media screen and (min-width: 40em) {
           .sm\\\\:hover\\\\:m_2:is(:hover, [data-hover]) {
             margin: var(--spacing-2)
-              }
-                  }
+          }
+      }
 
         @media screen and (min-width: 48em) {
           [data-theme=dark] .dark\\\\:md\\\\:m_4, .dark .dark\\\\:md\\\\:m_4, .dark\\\\:md\\\\:m_4.dark, .dark\\\\:md\\\\:m_4[data-theme=dark] {
             margin: var(--spacing-4)
-              }
-                  }
+          }
+      }
 
         @media screen and (min-width: 64em) {
           [data-theme=dark] .dark\\\\:lg\\\\:m_5, .dark .dark\\\\:lg\\\\:m_5, .dark\\\\:lg\\\\:m_5.dark, .dark\\\\:lg\\\\:m_5[data-theme=dark] {
             margin: var(--spacing-5)
-              }
-                  }
+          }
+      }
 
         @media screen and (min-width: 64em) {
           [data-theme=dark] .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus]), .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus])[data-theme=dark] {
             margin: var(--spacing-8)
-                  }
-                      }
+          }
+      }
 
         @media screen and (min-width: 64em) {
           [data-theme=dark] .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover]), .dark .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover]), .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover]).dark, .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover])[data-theme=dark] {
             margin: var(--spacing-6)
-                  }
-                      }
-
-        @media screen and (min-width: 80em) {
-          [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]).dark, .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"])[data-theme=dark] {
-            margin: var(--spacing-12)
-                      }
-                          }
-
-        @media screen and (min-width: 80em) {
-          [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]), .dark .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]), .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]).dark, .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true])[data-theme=dark] {
-            margin: 13
-                          }
-                              }
+          }
+      }
 
         @media screen and (min-width: 80em) {
           [data-theme=dark] .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]), .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus])[data-theme=dark] {
             margin: var(--spacing-9)
-                  }
-                      }
+          }
+      }
+
+        @media screen and (min-width: 80em) {
+          [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]).dark, .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"])[data-theme=dark] {
+            margin: var(--spacing-12)
+          }
+      }
+
+        @media screen and (min-width: 80em) {
+          [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]), .dark .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]), .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]).dark, .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true])[data-theme=dark] {
+            margin: 13
+          }
+      }
       }"
     `)
 
@@ -2623,71 +2684,71 @@ describe('extract to css output pipeline', () => {
       "@layer utilities {
         .m_1 {
           margin: var(--spacing-1)
-          }
+      }
 
         [data-theme=dark] .dark\\\\:m_3, .dark .dark\\\\:m_3, .dark\\\\:m_3.dark, .dark\\\\:m_3[data-theme=dark] {
           margin: var(--spacing-3)
-              }
+      }
 
         [data-theme=dark] .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled]), .dark .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled]), .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled]).dark, .dark\\\\:disabled\\\\:m_10:is(:disabled, [disabled], [data-disabled])[data-theme=dark] {
           margin: var(--spacing-10)
-                  }
+      }
 
         [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]).dark, .dark\\\\:disabled\\\\:open\\\\:m_11:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"])[data-theme=dark] {
           margin: var(--spacing-11)
-                      }
+      }
 
         [data-theme=dark] .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]), .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:m_7:is(:focus, [data-focus])[data-theme=dark] {
           margin: var(--spacing-7)
-                  }
+      }
 
         @media screen and (min-width: 40em) {
           .sm\\\\:hover\\\\:m_2:is(:hover, [data-hover]) {
             margin: var(--spacing-2)
-              }
-                  }
+          }
+      }
 
         @media screen and (min-width: 48em) {
           [data-theme=dark] .dark\\\\:md\\\\:m_4, .dark .dark\\\\:md\\\\:m_4, .dark\\\\:md\\\\:m_4.dark, .dark\\\\:md\\\\:m_4[data-theme=dark] {
             margin: var(--spacing-4)
-              }
-                  }
+          }
+      }
 
         @media screen and (min-width: 64em) {
           [data-theme=dark] .dark\\\\:lg\\\\:m_5, .dark .dark\\\\:lg\\\\:m_5, .dark\\\\:lg\\\\:m_5.dark, .dark\\\\:lg\\\\:m_5[data-theme=dark] {
             margin: var(--spacing-5)
-              }
-                  }
+          }
+      }
 
         @media screen and (min-width: 64em) {
           [data-theme=dark] .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus]), .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:lg\\\\:m_8:is(:focus, [data-focus])[data-theme=dark] {
             margin: var(--spacing-8)
-                  }
-                      }
+          }
+      }
 
         @media screen and (min-width: 64em) {
           [data-theme=dark] .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover]), .dark .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover]), .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover]).dark, .dark\\\\:lg\\\\:hover\\\\:m_6:is(:hover, [data-hover])[data-theme=dark] {
             margin: var(--spacing-6)
-                  }
-                      }
-
-        @media screen and (min-width: 80em) {
-          [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]).dark, .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"])[data-theme=dark] {
-            margin: var(--spacing-12)
-                      }
-                          }
-
-        @media screen and (min-width: 80em) {
-          [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]), .dark .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]), .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]).dark, .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true])[data-theme=dark] {
-            margin: 13
-                          }
-                              }
+          }
+      }
 
         @media screen and (min-width: 80em) {
           [data-theme=dark] .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]), .dark .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]), .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus]).dark, .dark\\\\:focus\\\\:xl\\\\:m_9:is(:focus, [data-focus])[data-theme=dark] {
             margin: var(--spacing-9)
-                  }
-                      }
+          }
+      }
+
+        @media screen and (min-width: 80em) {
+          [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]), .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]).dark, .dark\\\\:disabled\\\\:open\\\\:xl\\\\:m_12:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"])[data-theme=dark] {
+            margin: var(--spacing-12)
+          }
+      }
+
+        @media screen and (min-width: 80em) {
+          [data-theme=dark] .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]), .dark .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]), .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true]).dark, .dark\\\\:disabled\\\\:open\\\\:xl\\\\:loading\\\\:m_13:is(:disabled, [disabled], [data-disabled]):is([open], [data-open], [data-state=\\"open\\"]):is([data-loading], [aria-busy=true])[data-theme=dark] {
+            margin: 13
+          }
+      }
       }"
     `)
   })

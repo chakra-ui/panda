@@ -210,7 +210,9 @@ export async function main() {
         }
       }
 
+      // console.time('cssgen')
       await cssgen(ctx)
+      // console.timeEnd('cssgen')
 
       if (watch) {
         logger.info('ctx:watch', ctx.messages.configWatch())

@@ -22,6 +22,7 @@ const cvaProps = ['compoundVariants', 'defaultVariants', 'variants', 'base']
 const isCva = (map: BoxNodeMap['value']) => cvaProps.some((prop) => map.has(prop))
 
 export type ParserOptions = {
+  hash?: Config['hash']
   importMap: Record<'css' | 'recipe' | 'pattern' | 'jsx', string[]>
   jsx: {
     framework: string | undefined
@@ -490,7 +491,6 @@ export function createParser(options: ParserOptions) {
       }
     })
 
-    // console.log(collector.combinations.all)
     // console.log(JSON.stringify(collector.unpack(), null, 2))
     // console.log(collector.toJSON())
     // console.log(collector.stylesHash)

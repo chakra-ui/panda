@@ -1,17 +1,6 @@
 import postcss, { AtRule, type ChildNode, Container, Rule } from 'postcss'
 import type { StylesheetContext } from './types'
 
-export type WrapOptions =
-  | {
-      type: 'selector'
-      name: string
-    }
-  | {
-      type: 'at-rule'
-      name: string
-      params: string
-    }
-
 export class ConditionalRule {
   rule: Container | undefined
   selector = ''

@@ -63,6 +63,7 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
     //
     messages: getMessages(ctx),
     parserOptions: {
+      hash: config.hash,
       importMap: getImportMap(config.outdir.replace(relativeBaseUrl, ''), config.importMap),
       jsx: {
         framework: jsx.framework,

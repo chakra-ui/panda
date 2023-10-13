@@ -30,13 +30,14 @@ export class AtomicRule {
 
   hashFn = (conditions: string[], className: string) => {
     const { conditions: cond, hash, utility } = this.context
+    const conds = cond.finalize(conditions)
     let result: string
     if (hash) {
-      const baseArray = [...cond.finalize(conditions), className]
-      result = utility.formatClassName(toHash(baseArray.join(':')))
+      conds.push(className)
+      result = utility.formatClassName(toHash(conds.join(':')))
     } else {
-      const baseArray = [...cond.finalize(conditions), utility.formatClassName(className)]
-      result = baseArray.join(':')
+      conds.push(utility.formatClassName(className))
+      result = conds.join(':')
     }
     return esc(result)
   }
@@ -58,6 +59,10 @@ export class AtomicRule {
 
     const styleObject = shouldNormalize ? normalizeStyleObject(styles, this.context) : styles
     const rule = this.rule
+
+    const css = toCss(styleObject).toString()
+    this.layer.append(css)
+    return
 
     // const atPath = new Map<string, string>()
 
@@ -83,6 +88,9 @@ export class AtomicRule {
 
       // convert css-in-js to css rule
       const cssRoot = toCss(transformed.styles, { important })
+      // console.log(JSON.stringify(transformed.styles, null, 2))
+      // console.log(cssRoot.toString())
+      // console.log(conditions)
 
       rule.nodes = cssRoot.root.nodes as postcss.ChildNode[]
 
@@ -96,7 +104,7 @@ export class AtomicRule {
       rule.update()
 
       // apply css conditions
-      rule.applyConditions(conditions)
+      // rule.applyConditions(conditions)
 
       // append the rule to the root
       if (transformed.layer) {

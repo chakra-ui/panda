@@ -9,7 +9,6 @@ export interface ResultItem {
 }
 
 export interface ParserResultType {
-  state: 'will-collect' | 'collected'
   all: Array<ResultItem>
   jsx: Set<ResultItem>
   css: Set<ResultItem>
