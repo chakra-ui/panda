@@ -1,5 +1,7 @@
 # @pandacss/is-valid-prop
 
+## 0.16.0
+
 ## 0.15.5
 
 ## 0.15.4
