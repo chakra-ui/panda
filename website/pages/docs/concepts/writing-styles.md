@@ -298,7 +298,7 @@ export const Button = ({ css: cssProp = {}, children }) => {
     cssProp
   )
 
-  return <button className={className}>{props.children}</button>
+  return <button className={className}>{children}</button>
 }
 ```
 
