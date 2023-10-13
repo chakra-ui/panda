@@ -1,3 +1,4 @@
+import { optimizeCss } from '@pandacss/core'
 import type { Context } from '../../engines'
 
 const css = String.raw
@@ -176,7 +177,7 @@ export function generateResetCss(ctx: Context, scope = '') {
   ${selector}input[type="search"],
   ${selector}input[type="password"] {
     -webkit-appearance: none;
-    -moz-appearance: none; 
+    -moz-appearance: none;
   }
 
   ${selector}input[type='search'] {
@@ -212,7 +213,8 @@ export function generateResetCss(ctx: Context, scope = '') {
   }
 }`
 
-  void ctx.hooks.callHook('generator:css', 'reset.css', output)
+  const code = optimizeCss(output, { minify: ctx.config.minify })
+  void ctx.hooks.callHook('generator:css', 'reset.css', code)
 
-  return output
+  return code
 }

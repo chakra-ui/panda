@@ -1,4 +1,4 @@
-import { toCss } from '@pandacss/core'
+import { optimizeCss, toCss } from '@pandacss/core'
 import postcss from 'postcss'
 import type { Context } from '../../engines'
 
@@ -22,7 +22,7 @@ export function generateKeyframeCss(ctx: Context) {
     nodes: root.nodes,
   })
 
-  const output = rule.toString()
+  const output = optimizeCss(rule.toString(), { minify: ctx.config.minify })
 
   void ctx.hooks.callHook('generator:css', 'keyframes.css', output)
 

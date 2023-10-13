@@ -1,10 +1,10 @@
-import { expandNestedCss, extractParentSelectors, prettifyCss, toCss } from '@pandacss/core'
+import { expandNestedCss, extractParentSelectors, optimizeCss, prettifyCss, toCss } from '@pandacss/core'
 import postcss, { AtRule, Rule } from 'postcss'
 import type { Context } from '../../engines'
 
 export function generateTokenCss(ctx: Context) {
   const {
-    config: { cssVarRoot },
+    config: { cssVarRoot, minify },
     conditions,
     tokens,
   } = ctx
@@ -46,10 +46,13 @@ export function generateTokenCss(ctx: Context) {
 
   const css = results.join('\n\n')
 
-  const output = `@layer ${ctx.layers.tokens} {
+  const output = optimizeCss(
+    `@layer ${ctx.layers.tokens} {
     ${prettifyCss(cleanupSelectors(css, root))}
   }
-  `
+  `,
+    { minify },
+  )
 
   void ctx.hooks.callHook('generator:css', 'tokens.css', output)
   return output

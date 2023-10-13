@@ -1,7 +1,7 @@
 import type { Context } from '../../engines'
 
 export const generateGlobalCss = (ctx: Context) => {
-  const { globalCss = {}, optimize = true } = ctx.config
+  const { globalCss = {}, optimize = true, minify } = ctx.config
 
   const sheet = ctx.createSheet()
 
@@ -43,7 +43,7 @@ export const generateGlobalCss = (ctx: Context) => {
 
   sheet.processGlobalCss(globalCss)
 
-  const output = sheet.toCss({ optimize })
+  const output = sheet.toCss({ optimize, minify })
 
   void ctx.hooks.callHook('generator:css', 'global.css', output)
 

@@ -3,7 +3,7 @@ import type { Context } from '../../engines'
 
 export const generateStaticCss = (ctx: Context) => {
   const { config, createSheet, utility, recipes } = ctx
-  const { staticCss = {}, theme = {}, optimize = true } = config
+  const { staticCss = {}, theme = {}, optimize = true, minify } = config
 
   const sheet = createSheet()
   const fn = getStaticCss(staticCss)
@@ -37,7 +37,7 @@ export const generateStaticCss = (ctx: Context) => {
     })
   })
 
-  const output = sheet.toCss({ optimize })
+  const output = sheet.toCss({ optimize, minify })
 
   void ctx.hooks.callHook('generator:css', 'static.css', output)
 
