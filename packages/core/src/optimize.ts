@@ -16,7 +16,7 @@ type OptimizeOptions = {
   minify?: boolean
 }
 
-export function optimizeCss(code: string, options: OptimizeOptions = {}) {
+export function optimizeCss(code: string | Root, options: OptimizeOptions = {}) {
   const { minify = false } = options
   const plugins = [
     nested(),
@@ -44,29 +44,6 @@ export function expandCssFunctions(
 ) {
   const { token, raw } = options
   const { css } = postcss([expandTokenFn(token, raw)]).process(code)
-  return css
-}
-
-export function discardDuplicate(code: string | Root, options: OptimizeOptions = {}) {
-  const { minify = false } = options
-  const plugins = [
-    nested(),
-    mergeCascadeLayers(),
-    sortMediaQueries(),
-    dedupe(),
-    mergeRules(),
-    sortCss(),
-    discardEmpty(),
-  ]
-
-  if (minify) {
-    plugins.push(normalizeWhiteSpace(), minifySelectors())
-  } else {
-    plugins.push(prettify())
-  }
-
-  const { css } = postcss(plugins).process(code)
-
   return css
 }
 
