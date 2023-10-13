@@ -4,7 +4,7 @@ import type { Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@p
 import postcss, { CssSyntaxError } from 'postcss'
 import { AtomicRule } from './atomic-rule'
 import { isSlotRecipe } from './is-slot-recipe'
-import { discardDuplicate, expandCssFunctions, optimizeCss } from './optimize'
+import { optimizeCss, expandCssFunctions } from './optimize'
 import { Recipes } from './recipes'
 import { safeParse } from './safe-parse'
 import { serializeStyles } from './serialize'
@@ -132,7 +132,7 @@ export class Stylesheet {
         css = `${this.options.content}\n\n${css}`
       }
 
-      return optimize ? discardDuplicate(css, { minify }) : css
+      return optimize ? optimizeCss(css, { minify }) : css
     } catch (error) {
       if (error instanceof CssSyntaxError) {
         logger.error('sheet', error.message)

@@ -5,6 +5,7 @@ import type { PandaContext } from './create-context'
 import { writeFile } from 'fs/promises'
 import { createParserResult } from '@pandacss/parser'
 import { match } from 'ts-pattern'
+import { optimizeCss } from '@pandacss/core'
 
 /**
  * Bundles all the included files CSS into outdir/styles.css
@@ -110,7 +111,8 @@ export async function writeAndBundleCssChunks(ctx: PandaContext) {
 export async function bundleCss(ctx: PandaContext, outfile: string) {
   const extracted = await writeChunks(ctx)
   const files = ctx.chunks.getFiles()
-  await writeFile(outfile, ctx.getCss({ files, resolve: true }))
+  const minify = ctx.config.minify
+  await writeFile(outfile, optimizeCss(ctx.getCss({ files, resolve: true }), { minify }))
   return { files, msg: ctx.messages.buildComplete(extracted.length) }
 }
 
@@ -138,7 +140,8 @@ export async function bundleMinimalFilesCss(ctx: PandaContext, outfile: string) 
   const css = ctx.getParserCss(collector)
   if (!css) return { files, msg: ctx.messages.buildComplete(files.length) }
 
-  await writeFile(outfile, css)
+  const minify = ctx.config.minify
+  await writeFile(outfile, optimizeCss(css, { minify }))
   return { files, msg: ctx.messages.buildComplete(files.length) }
 }
 
@@ -162,6 +165,7 @@ export async function generateCssArtifactOfType(ctx: PandaContext, cssType: CssA
   if (notFound) return { msg: `No css artifact of type <${cssType}> was found` }
   if (!css) return { msg: `No css to generate for type <${cssType}>` }
 
-  await writeFile(outfile, css)
+  const minify = ctx.config.minify
+  await writeFile(outfile, optimizeCss(css, { minify }))
   return { msg: `Successfully generated ${cssType} css artifact ✨` }
 }
