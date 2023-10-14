@@ -113,11 +113,13 @@ export class Recipes {
     if (!this.context) return
 
     for (const [name, recipe] of Object.entries(this.recipes)) {
+      // console.log({ name })
       //
       if (isSlotRecipe(recipe)) {
         //
         recipe.slots.forEach((slotName) => {
           const slotKey = this.getSlotKey(name, slotName)
+          // console.log({ name, slotName, slotKey })
           this.rules.set(slotKey, this.createRule(slotKey, true))
         })
         //
@@ -220,7 +222,7 @@ export class Recipes {
     return serializeStyle(styleObject, this.context)
   }
 
-  private getTransform = (name: string, slot?: boolean) => {
+  getTransform = (name: string, slot?: boolean) => {
     return (variant: string, value: string) => {
       if (value === '__ignore__') {
         return {

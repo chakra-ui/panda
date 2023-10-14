@@ -16,14 +16,10 @@ export interface ParserResultType {
   sva: Set<ResultItem>
   recipe: Map<string, Set<ResultItem>>
   pattern: Map<string, Set<ResultItem>>
-  stylesHash: {
-    css: Set<string>
-    recipe: Map<string, Set<string>>
-  }
   filePath: string | undefined
   isEmpty: () => boolean
   toArray: () => Array<ResultItem>
-  collectStyles: () => ParserResultType
+  collectStyles: () => StyleCollectorType | undefined
   toJSON: () => {
     sva: Array<ResultItem>
     css: Array<ResultItem>
@@ -32,4 +28,23 @@ export interface ParserResultType {
     pattern: Record<string, ResultItem[]>
     jsx: Array<ResultItem>
   }
+}
+
+type StyleEntry = {
+  prop: string
+  value: string
+  cond: string
+  recipe?: string
+  layer?: string
+}
+type StyleResult = {
+  result: any[] // TODO
+  entry: StyleEntry
+  hash: string
+}
+
+export interface StyleCollectorType {
+  filePath: string | undefined
+  atomic: Set<StyleResult>
+  recipes: Map<string, Set<StyleResult>>
 }

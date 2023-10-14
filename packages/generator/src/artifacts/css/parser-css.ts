@@ -5,28 +5,28 @@ import { P, match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
 export const generateParserCss = (ctx: Context) => (parserResult: ParserResultType) => {
-  // TODO only collect if needed, rename to dedupe ? collector + deduper/hasher ?
-  const result = parserResult.collectStyles()
-  if (result.isEmpty()) return ''
+  const collector = parserResult.collectStyles()
+  if (!collector) return ''
 
   // console.time('generateParserCss')
   const sheet = ctx.createSheet()
   const { recipes } = ctx
   const { minify, optimize } = ctx.config
 
-  result.css.forEach((css) => {
-    css.data.forEach((data) => {
-      sheet.processAtomic(data)
-    })
+  // console.log(result.recipe)
+
+  collector.atomic.forEach((css) => {
+    sheet.processAtomic(...css.result)
   })
 
-  result.recipe.forEach((recipeSet, recipeName) => {
+  collector.recipes.forEach((recipeSet, recipeName) => {
     try {
       for (const recipe of recipeSet) {
         const recipeConfig = recipes.getConfig(recipeName)
         if (!recipeConfig) continue
 
-        recipe.data.forEach((recipeProps) => {
+        recipe.result.forEach((recipeProps) => {
+          // console.log({ recipeName, recipeProps })
           sheet.processRecipe(recipeName, recipeConfig, recipeProps)
         })
       }
@@ -42,7 +42,7 @@ export const generateParserCss = (ctx: Context) => (parserResult: ParserResultTy
     // console.time('sheet.toCss')
     const css = sheet.toCss({ minify, optimize })
     // console.timeEnd('sheet.toCss')
-    ctx.hooks.callHook('parser:css', result.filePath ?? '', css)
+    ctx.hooks.callHook('parser:css', collector.filePath ?? '', css)
     return css
   } catch (err) {
     logger.error('serializer:css', 'Failed to serialize CSS: ' + err)
