@@ -10,15 +10,19 @@ const makeObjAt = (path: string[], value: unknown) => {
   if (!path.length) return value as LiteralObject
 
   const obj = {} as any
-  path.reduce((acc, key, i) => {
-    const isLast = i === path.length - 1
-    acc[key] = isLast ? value : {}
-    return isLast ? obj : acc[key]
-  }, obj)
+  let current = obj
+  for (let i = 0; i < path.length; i++) {
+    const key = path[i]
+    if (i === path.length - 1) {
+      current[key] = value
+    } else {
+      current[key] = {}
+      current = current[key] as LiteralObject
+    }
+  }
 
   return obj as LiteralObject
 }
-
 const makeArrayWithValueAt = (index: number, value: unknown) => {
   if (index < 0) return []
 

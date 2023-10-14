@@ -102,6 +102,7 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
         compositions,
       },
       insertLayers: () => {
+        console.log('insertLayers')
         if (reset.nodes.length) root.append(reset)
         if (base.nodes.length) root.append(base)
         if (tokens.nodes.length) root.append(tokens)

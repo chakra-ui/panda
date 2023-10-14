@@ -1,4 +1,5 @@
 import type { BoxNodeMap, BoxNodeLiteral, Unboxed, BoxNodeArray } from '@pandacss/extractor'
+import type { RawCondition } from './conditions'
 // import type { RecipeConfig, SlotRecipeConfig } from './recipe'
 
 export interface ResultItem {
@@ -19,7 +20,7 @@ export interface ParserResultType {
   filePath: string | undefined
   isEmpty: () => boolean
   toArray: () => Array<ResultItem>
-  collectStyles: () => StyleCollectorType | undefined
+  collectStyles: () => StylesCollectorType | undefined
   toJSON: () => {
     sva: Array<ResultItem>
     css: Array<ResultItem>
@@ -30,21 +31,40 @@ export interface ParserResultType {
   }
 }
 
-type StyleEntry = {
+interface StyleEntry {
   prop: string
   value: string
   cond: string
   recipe?: string
   layer?: string
 }
-type StyleResult = {
-  result: any[] // TODO
-  entry: StyleEntry
-  hash: string
+interface StyleResultObject {
+  [key: string]: any
 }
 
-export interface StyleCollectorType {
-  filePath: string | undefined
-  atomic: Set<StyleResult>
-  recipes: Map<string, Set<StyleResult>>
+interface ExpandedCondition extends RawCondition {
+  params?: string
 }
+interface AtomicStyleResult {
+  result: StyleResultObject[]
+  entry: StyleEntry
+  hash: string
+  conditions?: ExpandedCondition[]
+}
+
+export interface StylesCollectorType {
+  filePath: string | undefined
+  atomic: Set<AtomicStyleResult>
+  recipes: Map<string, Set<AtomicStyleResult>>
+  recipes_base: Map<string, Set<RecipeBaseResult>>
+}
+
+interface GroupedResult {
+  result: StyleResultObject
+  hashSet: Set<string>
+  details: GroupedStyleResultDetails[]
+}
+interface RecipeBaseResult extends GroupedResult {
+  recipe: string
+}
+interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, 'hash' | 'entry' | 'conditions'> {}

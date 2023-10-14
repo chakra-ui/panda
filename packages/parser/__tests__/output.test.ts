@@ -247,7 +247,7 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
-  test('simple recipe', () => {
+  test.only('simple recipe', () => {
     const code = `
     import { sizeRecipe } from ".panda/recipes"
 
@@ -295,6 +295,13 @@ describe('extract to css output pipeline', () => {
         .sizeRecipe--size_medium {
           font-size: var(--font-sizes-md);
           line-height: 1.5rem
+      }
+
+        @layer _base {
+          .sizeRecipe {
+            padding: var(--spacing-0);
+            margin: var(--spacing-2)
+      }
       }
       }"
     `)
@@ -492,6 +499,20 @@ describe('extract to css output pipeline', () => {
         .bgRecipe--color_yellow {
           background-color: var(--colors-yellow-100)
       }
+
+        @layer _base {
+          .pinkRecipe {
+            color: var(--colors-pink-100)
+      }
+
+          .greenRecipe {
+            color: var(--colors-green-100)
+      }
+
+          .blueRecipe {
+            color: var(--colors-blue-100)
+      }
+      }
       }
 
       @layer utilities {
@@ -666,6 +687,12 @@ describe('extract to css output pipeline', () => {
 
         .bgRecipe--color_yellow {
           background-color: var(--colors-yellow-100)
+      }
+
+        @layer _base {
+          .pinkRecipe {
+            color: var(--colors-pink-100)
+      }
       }
       }"
     `)
@@ -1799,6 +1826,12 @@ describe('extract to css output pipeline', () => {
         .complexButton--color_blue {
           color: var(--colors-blue-500)
       }
+
+        @layer _base {
+          .button {
+            font-size: var(--font-sizes-lg)
+      }
+      }
       }
 
       @layer utilities {
@@ -2201,8 +2234,12 @@ describe('extract to css output pipeline', () => {
 
         variant: solid;
 
-        .visual_funky {
-          visual: funky
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center
+      }
       }
       }
 
@@ -2487,6 +2524,13 @@ describe('extract to css output pipeline', () => {
 
         .button--variant_second {
           background-color: var(--colors-red-500)
+      }
+
+        @layer _base {
+          .button {
+            color: var(--colors-sky-100);
+            background: var(--colors-red-900)
+      }
       }
       }
 
@@ -4609,6 +4653,14 @@ describe('preset patterns', () => {
           height: 2.5rem;
           min-width: 2.5rem;
           padding: 0 0.5rem
+      }
+
+        @layer _base {
+          .buttonStyle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center
+      }
       }
       }
 

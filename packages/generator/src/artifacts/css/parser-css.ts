@@ -14,9 +14,11 @@ export const generateParserCss = (ctx: Context) => (parserResult: ParserResultTy
   const { minify, optimize } = ctx.config
 
   // console.log(result.recipe)
+  // console.log(JSON.stringify([...collector.atomic], null, 2))
+  // console.log(JSON.stringify([...collector.recipes], null, 2))
 
   collector.atomic.forEach((css) => {
-    sheet.processAtomic(...css.result)
+    css.result.forEach((data) => sheet.processAtomic(data))
   })
 
   collector.recipes.forEach((recipeSet, recipeName) => {
@@ -25,10 +27,30 @@ export const generateParserCss = (ctx: Context) => (parserResult: ParserResultTy
         const recipeConfig = recipes.getConfig(recipeName)
         if (!recipeConfig) continue
 
+        // console.log(recipe)
         recipe.result.forEach((recipeProps) => {
           // console.log({ recipeName, recipeProps })
           sheet.processRecipe(recipeName, recipeConfig, recipeProps)
         })
+      }
+    } catch (error) {
+      logger.error('serializer:recipe', error)
+    }
+  })
+
+  console.log(collector.recipes_base)
+  collector.recipes_base.forEach((recipeSet, recipeName) => {
+    try {
+      for (const recipe of recipeSet) {
+        const recipeConfig = recipes.getConfig(recipeName)
+        if (!recipeConfig) continue
+
+        // console.log(recipe)
+        // recipe.result.forEach((recipeProps) => {
+        //   console.log({ recipeName, recipeProps })
+        //   sheet.processRecipe(recipeName, recipeConfig, recipeProps)
+        // })
+        sheet.processAtomic(recipe.result, { layer: 'recipes_base' })
       }
     } catch (error) {
       logger.error('serializer:recipe', error)

@@ -13,6 +13,7 @@ import type {
   ConditionDetails,
   Dict,
   ParserResultType,
+  RawCondition,
   RecipeConfig,
   RecipeVariantRecord,
   ResultItem,
@@ -27,18 +28,32 @@ interface StyleProps extends StyleResultObject {
   css?: StyleResultObject
 }
 
-type StyleEntry = {
+interface StyleEntry {
   prop: string
   value: string
   cond: string
   recipe?: string
   layer?: string
 }
-type StyleResult = {
+
+interface ExpandedCondition extends RawCondition {
+  params?: string
+}
+interface AtomicStyleResult {
   result: StyleResultObject[]
   entry: StyleEntry
   hash: string
+  conditions?: ExpandedCondition[]
 }
+interface GroupedResult {
+  result: StyleResultObject
+  hashSet: Set<string>
+  details: GroupedStyleResultDetails[]
+}
+interface RecipeBaseResult extends GroupedResult {
+  recipe: string
+}
+interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, 'hash' | 'entry' | 'conditions'> {}
 
 // TODO get from source package (?)
 const isSlotRecipe = (v: RecipeConfig | SlotRecipeConfig): v is SlotRecipeConfig =>
@@ -61,12 +76,14 @@ const hashStyleEntry = (entry: StyleEntry) => {
   return base
 }
 
-// TODO rename current ParserResult -> Collector
-// TODO create a new CollectorResult that will be used to generate
-
-// or
-// keep current ParserResult, collectStyles will
-// create a new StylesCollector that contains each StyleResult objects by layers
+function getOrCreateSet<TKey, TValue>(map: Map<TKey, Set<TValue>>, key: TKey) {
+  let set = map.get(key)
+  if (!set) {
+    map.set(key, new Set<TValue>())
+    set = map.get(key)!
+  }
+  return set as Set<TValue>
+}
 export class ParserResult implements ParserResultType {
   /** Ordered list of all ResultItem */
   all = [] as Array<ResultItem>
@@ -105,28 +122,30 @@ export class ParserResult implements ParserResultType {
     }
 
     if (name === 'cva') {
-      result.data.forEach(hashCollector.processAtomicRecipe.bind(this))
+      result.data.forEach(hashCollector.processAtomicRecipe.bind(hashCollector))
       return
     }
 
     if (name === 'sva') {
-      result.data.forEach(hashCollector.processAtomicSlotRecipe.bind(this))
+      result.data.forEach(hashCollector.processAtomicSlotRecipe.bind(hashCollector))
       return
     }
   }
 
   setCva(result: ResultItem) {
     this.cva.add(this.append(Object.assign({ type: 'cva' }, result)))
-    if (!this.hashCollector) return
+    const hashCollector = this.hashCollector
+    if (!hashCollector) return
 
-    result.data.forEach(this.hashCollector.processAtomicRecipe.bind(this))
+    result.data.forEach(hashCollector.processAtomicRecipe.bind(hashCollector))
   }
 
   setSva(result: ResultItem) {
     this.sva.add(this.append(Object.assign({ type: 'sva' }, result)))
-    if (!this.hashCollector) return
+    const hashCollector = this.hashCollector
+    if (!hashCollector) return
 
-    result.data.forEach(this.hashCollector.processAtomicSlotRecipe.bind(this))
+    result.data.forEach(hashCollector.processAtomicSlotRecipe.bind(hashCollector))
   }
 
   setJsx(result: ResultItem) {
@@ -138,12 +157,7 @@ export class ParserResult implements ParserResultType {
   }
 
   setPattern(name: string, result: ResultItem) {
-    let set = this.pattern.get(name)
-    if (!set) {
-      this.pattern.set(name, new Set())
-      set = this.pattern.get(name)!
-    }
-
+    const set = getOrCreateSet(this.pattern, name)
     set.add(this.append(Object.assign({ type: 'pattern', name }, result)))
 
     const hashCollector = this.hashCollector
@@ -155,12 +169,7 @@ export class ParserResult implements ParserResultType {
   }
 
   setRecipe(recipeName: string, result: ResultItem) {
-    let set = this.recipe.get(recipeName)
-    if (!set) {
-      this.recipe.set(recipeName, new Set())
-      set = this.recipe.get(recipeName)!
-    }
-
+    const set = getOrCreateSet(this.recipe, recipeName)
     set.add(this.append(Object.assign({ type: 'recipe' }, result)))
 
     const hashCollector = this.hashCollector
@@ -201,20 +210,12 @@ export class ParserResult implements ParserResultType {
     result.jsx.forEach((item) => this.jsx.add(this.append(item)))
 
     result.recipe.forEach((items, name) => {
-      let set = this.recipe.get(name)
-      if (!set) {
-        this.recipe.set(name, new Set())
-        set = this.recipe.get(name)!
-      }
-      items.forEach((item) => this.recipe.get(name)?.add(this.append(item)))
+      const set = getOrCreateSet(this.recipe, name)
+      items.forEach((item) => set.add(this.append(item)))
     })
     result.pattern.forEach((items, name) => {
-      let set = this.pattern.get(name)
-      if (!set) {
-        this.pattern.set(name, new Set())
-        set = this.pattern.get(name)!
-      }
-      items.forEach((item) => this.pattern.get(name)?.add(this.append(item)))
+      const set = getOrCreateSet(this.pattern, name)
+      items.forEach((item) => set.add(this.append(item)))
     })
 
     return this
@@ -266,6 +267,7 @@ class HashCollector {
   stylesHash = {
     css: new Set<string>(),
     recipe: new Map<string, Set<string>>(),
+    recipe_base: new Map<string, Set<string>>(),
     // TODO pattern ?
   }
   private filterStyleProps: (props: Dict) => Dict
@@ -286,6 +288,7 @@ class HashCollector {
     //          ^^^^^^^^^^^^^^
     let isInCondition = false
 
+    // Is the final (leading to a raw value, not an object) property a condition ?
     // mx: { base: { p: 4, _hover: 5 } }
     //                            ^^^
     let isFinalCondition = false
@@ -297,6 +300,7 @@ class HashCollector {
     // TODO keep track of main prop ex: <styled.div m={{ base: { p: 4 }}} /> => m
 
     const normalized = normalizeStyleObject(obj, this.context)
+    // console.log(normalized)
 
     // TODO stately diagram on how this works
     traverse(
@@ -354,8 +358,8 @@ class HashCollector {
         }
         const hashed = hashStyleEntry(Object.assign(baseEntry, { prop, value, cond: finalCondition }))
         set.add(hashed)
-        // console.log({ prop, value, cond, recipe, isInCondition, prevProp, isFinalCondition, path })
-        // console.log({ hashed })
+        // console.log({ prop, value, cond, options, isInCondition, prevProp, isFinalCondition, path })
+        console.log({ hashed })
 
         prevProp = prop
         prevDepth = depth
@@ -384,18 +388,16 @@ class HashCollector {
     if (!config) return
 
     // console.log('processRecpie', { recipeName, variants })
-    let set = this.stylesHash.recipe.get(recipeName)
-    if (!set) {
-      this.stylesHash.recipe.set(recipeName, new Set())
-      set = this.stylesHash.recipe.get(recipeName)!
-    }
+    const set = getOrCreateSet(this.stylesHash.recipe, recipeName)
     // this.hashStyleObject(set, { ...variants, recipeName: '__ignore__' }, recipeName)
     this.hashStyleObject(set, variants, { recipe: recipeName })
 
     if (config.base) {
-      this.processStyleProps(config.base, { layer: 'recipes_base' })
+      const base_set = getOrCreateSet(this.stylesHash.recipe_base, recipeName)
+      this.hashStyleObject(base_set, config.base, { recipe: recipeName })
     }
 
+    // TODO same as config.base
     this.processCompoundVariants(config)
   }
 
@@ -450,12 +452,8 @@ class HashCollector {
     result.stylesHash.css.forEach((item) => this.stylesHash.css.add(item))
 
     result.stylesHash.recipe.forEach((items, name) => {
-      let set = this.stylesHash.recipe.get(name)
-      if (!set) {
-        this.stylesHash.recipe.set(name, new Set())
-        set = this.stylesHash.recipe.get(name)!
-      }
-      items.forEach((item) => this.stylesHash.recipe.get(name)?.add(item))
+      const set = getOrCreateSet(this.stylesHash.recipe, name)
+      items.forEach(set.add)
     })
 
     return this
@@ -465,8 +463,9 @@ class HashCollector {
 export class StylesCollector {
   constructor(private context: ParserResultCtx) {}
 
-  atomic = new Set<StyleResult>()
-  recipes = new Map<string, Set<StyleResult>>()
+  atomic = new Set<AtomicStyleResult>()
+  recipes = new Map<string, Set<AtomicStyleResult>>()
+  recipes_base = new Map<string, Set<RecipeBaseResult>>()
   filePath: string | undefined
 
   setFilePath(filePath: string | undefined) {
@@ -489,7 +488,7 @@ export class StylesCollector {
     return esc(result)
   }
 
-  fromHash(hash: string) {
+  getEntryFromHash(hash: string) {
     const [prop, value, ...rest] = hash.split(HashCollector.separator)
     const entry = { prop, value: value.replace('value:', '') } as StyleEntry
 
@@ -504,16 +503,19 @@ export class StylesCollector {
       }
     })
 
-    const resolvedValue = String(entry.value)
+    return entry
+  }
+
+  getAtomicStyleResultFromHash(hash: string) {
+    const entry = this.getEntryFromHash(hash)
+
     // TODO recipe slots
     const transform = entry.recipe ? this.context.recipes.getTransform(entry.recipe) : this.context.utility.transform
-    const transformed = transform(prop, withoutImportant(resolvedValue))
-    // console.log({ prop, value, resolvedValue, transformed })
-    // if (!transformed.className) return { obj: {}, entry, hash } as StyleResult
+    const transformed = transform(entry.prop, withoutImportant(entry.value))
+    const important = isImportant(entry.value)
 
-    // console.log(transformed)
-    const important = isImportant(value)
     // TODO handle important + multiple properties with transformed.styles
+    // TODO try recipe.base with conditions
 
     // const cssRoot = toCss(transformed.styles, { important })
     // console.log({
@@ -530,19 +532,62 @@ export class StylesCollector {
     const selector = this.hashSelector(parts, transformed.className)
     // TODO make l'avant dernier selector cond.at(-2) avec un !important
     const className = important ? `.${selector}\\!` : `.${selector}`
+    const basePath = [className]
 
     let conditions
     if (entry.cond) {
       conditions = this.context.conditions.sort(parts)
-      const path = [className].concat(conditions.map((c) => c.rawValue ?? c.raw))
-      obj = makeObjAt(path, transformed.styles) as typeof obj
+      const path = basePath.concat(conditions.map((c) => c.rawValue ?? c.raw))
+      obj = makeObjAt(path, transformed.styles)
     } else {
-      obj = makeObjAt([className], transformed.styles) as typeof obj
+      obj = makeObjAt(basePath, transformed.styles)
     }
 
-    // console.log(JSON.stringify(obj), entry, { className, transformed })
+    console.log({ obj, entry, className, transformed })
 
-    return { result: [obj], entry, hash, conditions } as StyleResult
+    // TODO rm array
+    return { result: [obj], entry, hash, conditions } as AtomicStyleResult
+  }
+
+  getGroupedStyleResultFromHashSet(hashSet: Set<string>) {
+    let obj = {}
+    const basePath = [] as string[]
+    const details = [] as GroupedStyleResultDetails[]
+
+    hashSet.forEach((hash) => {
+      const entry = this.getEntryFromHash(hash)
+
+      const transform = this.context.utility.transform
+      const transformed = transform(entry.prop, withoutImportant(entry.value))
+
+      const parts = entry.cond ? entry.cond.split(HashCollector.conditionSeparator) : []
+
+      let conditions
+      if (entry.cond) {
+        conditions = this.context.conditions.sort(parts)
+        const path = basePath.concat(conditions.map((c) => c.rawValue ?? c.raw))
+        obj = setValueIn(obj, path, transformed.styles)
+      } else {
+        console.log(obj)
+        obj = setValueIn(obj, basePath, transformed.styles)
+        console.log(obj)
+      }
+
+      details.push({ hash, entry })
+
+      // console.log({ obj, entry, className, transformed })
+    })
+
+    return { result: obj, hashSet } as GroupedResult
+  }
+
+  getRecipeBaseStyleResultFromHash(hashSet: Set<string>, recipeName: string) {
+    const recipe = this.context.recipes.getConfig(recipeName)
+    if (!recipe) return
+
+    const style = this.getGroupedStyleResultFromHashSet(hashSet)
+    const base = { ['.' + recipe.className]: style.result }
+    return Object.assign(style, { result: base, recipe: recipeName }) as RecipeBaseResult
   }
 
   /**
@@ -552,33 +597,42 @@ export class StylesCollector {
   collect(hashCollector: HashCollector) {
     // console.time('unpack')
 
-    const cssResults = [] as StyleResult[]
-    const recipeResults = [] as StyleResult[]
+    const atomic = [] as AtomicStyleResult[]
+    const recipesBase = [] as RecipeBaseResult[]
+    const recipes = [] as AtomicStyleResult[]
 
     hashCollector.stylesHash.css.forEach((item) => {
-      cssResults.push(this.fromHash(item))
+      atomic.push(this.getAtomicStyleResultFromHash(item))
     })
     hashCollector.stylesHash.recipe.forEach((set) => {
       set.forEach((item) => {
-        recipeResults.push(this.fromHash(item))
+        recipes.push(this.getAtomicStyleResultFromHash(item))
       })
     })
+    hashCollector.stylesHash.recipe_base.forEach((set, recipeName) => {
+      const result = this.getRecipeBaseStyleResultFromHash(set, recipeName)
+      if (result) {
+        recipesBase.push(result)
+      }
+    })
 
-    sortStyleRules(cssResults).forEach((styleResult) => {
-      // console.log(styleResult.hash)
+    sortStyleRules(atomic).forEach((styleResult) => {
       this.atomic.add(styleResult)
     })
 
-    recipeResults.forEach((styleResult) => {
+    sortStyleRules(recipes).forEach((styleResult) => {
       const recipeName = styleResult.entry.recipe
       if (!recipeName) return
 
-      let set = this.recipes.get(recipeName)
-      if (!set) {
-        this.recipes.set(recipeName, new Set())
-        set = this.recipes.get(recipeName)!
-      }
+      const set = getOrCreateSet(this.recipes, recipeName)
       set.add(styleResult)
+    })
+
+    // no need to sort, each recipe is scoped using recipe.className
+    recipesBase.forEach((recipeBase) => {
+      const recipeName = recipeBase.recipe
+      const set = getOrCreateSet(this.recipes_base, recipeName)
+      set.add(recipeBase)
     })
 
     // console.timeEnd('unpack')
@@ -590,20 +644,39 @@ type ParserResultCtx = ParserOptions
 
 export const createParserResult = (ctx: ParserResultCtx) => new ParserResult(ctx)
 
-// same as in packages/extractor/src/unbox.ts
-const makeObjAt = (path: string[], value: unknown) => {
+const makeObjAt = (path: string[], value: Record<string, unknown>) => {
   if (!path.length) return value as StyleResultObject
 
-  const obj = {} as any
-  path.reduce((acc, key, i) => {
-    const isLast = i === path.length - 1
-    acc[key] = isLast ? value : {}
-    return isLast ? obj : acc[key]
-  }, obj)
+  const obj = {} as StyleResultObject
+  let current = obj
+  for (let i = 0; i < path.length; i++) {
+    const key = path[i]
+    if (i === path.length - 1) {
+      current[key] = value
+    } else {
+      current[key] = {}
+      current = current[key] as StyleResultObject
+    }
+  }
 
-  return obj as StyleResultObject
+  return obj
 }
 
+const setValueIn = (obj: StyleResultObject, path: string[], value: Record<string, unknown>) => {
+  if (!path.length) return Object.assign(obj, value) as StyleResultObject
+
+  let current = obj as Record<string, any>
+  for (let i = 0; i < path.length; i++) {
+    const key = path[i]
+    if (i === path.length - 1) {
+      current[key] = Object.assign(current[key] ?? {}, value)
+    } else {
+      current = current[key]
+    }
+  }
+
+  return obj
+}
 const filterProps = (isValidProperty: (key: string) => boolean, props: Dict) => {
   const clone = {} as Dict
   for (const [key, value] of Object.entries(props)) {
@@ -614,8 +687,8 @@ const filterProps = (isValidProperty: (key: string) => boolean, props: Dict) => 
   return clone
 }
 
-interface StyleRule extends StyleResult {
-  conditions?: Array<ConditionDetails & { params?: string }>
+interface StyleRule extends AtomicStyleResult {
+  conditions?: Array<ExpandedCondition>
 }
 
 const hasAtRule = (conditions: ConditionDetails[]) => conditions.some((details) => details.type === 'at-rule')
@@ -626,7 +699,7 @@ const pseudoSelectorScore = (selector: string) => {
   return index + 1
 }
 
-const compareConditions = (a: StyleRule, b: StyleRule) => {
+const compareConditions = (a: WithConditions, b: WithConditions) => {
   if (a.conditions!.length === b.conditions!.length) {
     const selector1 = a.conditions![0].value
     const selector2 = b.conditions![0].value
@@ -636,7 +709,7 @@ const compareConditions = (a: StyleRule, b: StyleRule) => {
   return a.conditions!.length - b.conditions!.length
 }
 
-const compareAtRuleConditions = (a: StyleRule, b: StyleRule) => {
+const compareAtRuleConditions = (a: WithConditions, b: WithConditions) => {
   if (a.conditions!.length === b.conditions!.length) {
     // console.log(a.conditions, b.conditions)
     const lastA = a.conditions![a.conditions!.length - 1]
@@ -660,6 +733,8 @@ const compareAtRuleConditions = (a: StyleRule, b: StyleRule) => {
   return a.conditions!.length - b.conditions!.length
 }
 
+interface WithConditions extends Pick<StyleRule, 'conditions'> {}
+
 /**
  * Sort style rules by conditions
  * - with no conditions first
@@ -671,10 +746,10 @@ const compareAtRuleConditions = (a: StyleRule, b: StyleRule) => {
  * - sort selectors by predefined pseudo selector order
  * - sort at-rules by predefined order (sort-mq postcss plugin order)
  */
-const sortStyleRules = (styleRules: StyleRule[]): StyleRule[] => {
-  const sorted: StyleRule[] = []
-  const withSelectorsOnly: StyleRule[] = []
-  const withAtRules: StyleRule[] = []
+const sortStyleRules = <T extends WithConditions>(styleRules: Array<T>): T[] => {
+  const sorted: T[] = []
+  const withSelectorsOnly: T[] = []
+  const withAtRules: T[] = []
 
   for (const styleRule of styleRules) {
     if (!styleRule.conditions) {

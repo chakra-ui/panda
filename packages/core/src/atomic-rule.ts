@@ -15,17 +15,20 @@ import type { StylesheetContext } from './types'
 
 export interface ProcessOptions {
   styles: Dict
-  shouldNormalize?: boolean
+  normalize?: boolean
+  layer?: string
 }
 
 export class AtomicRule {
   root: Root
   layer: AtRule
 
-  constructor(private context: StylesheetContext) {
+  constructor(private context: StylesheetContext, options?: Omit<ProcessOptions, 'styles'>) {
     // console.log('new AtomicRule')
     this.root = postcss.root()
-    this.layer = this.context.layersRoot.utilities
+    this.layer =
+      this.context.layersRoot[options?.layer as keyof typeof this.context.layersRoot] ??
+      this.context.layersRoot.utilities
   }
 
   hashFn = (conditions: string[], className: string) => {
@@ -51,17 +54,18 @@ export class AtomicRule {
   }
 
   process = (options: ProcessOptions) => {
-    const { styles, shouldNormalize } = options
+    const { styles, normalize } = options
     const { conditions: cond } = this.context
 
     // shouldn't happen, but just in case
     if (typeof styles !== 'object') return
 
-    const styleObject = shouldNormalize ? normalizeStyleObject(styles, this.context) : styles
+    const layer = this.context.layersRoot[options.layer as keyof typeof this.context.layersRoot] ?? this.layer
+    const styleObject = normalize ? normalizeStyleObject(styles, this.context) : styles
     const rule = this.rule
 
     const css = toCss(styleObject).toString()
-    this.layer.append(css)
+    layer.append(css)
     return
 
     // const atPath = new Map<string, string>()

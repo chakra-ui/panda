@@ -2,7 +2,7 @@ import { logger } from '@pandacss/logger'
 import { getSlotRecipes } from '@pandacss/shared'
 import type { Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
 import { CssSyntaxError } from 'postcss'
-import { AtomicRule } from './atomic-rule'
+import { AtomicRule, type ProcessOptions } from './atomic-rule'
 import { isSlotRecipe } from './is-slot-recipe'
 import { optimizeCss, expandCssFunctions } from './optimize'
 import { Recipes } from './recipes'
@@ -32,17 +32,16 @@ export class Stylesheet {
     this.context.layersRoot.base.append(css)
   }
 
-  processAtomic = (...styleObject: (SystemStyleObject | undefined)[]) => {
-    const ruleset = new AtomicRule(this.context)
-    styleObject.forEach((styles) => {
-      if (!styles) return
-      ruleset.process({ styles })
-    })
+  processAtomic = (styleObject: SystemStyleObject | undefined, options?: ProcessOptions) => {
+    if (!styleObject) return
+    const ruleset = new AtomicRule(this.context, options)
+    ruleset.process(Object.assign({ styles: styleObject }, options))
   }
 
   processStyleProps = (styleObject: SystemStyleObject & { css?: SystemStyleObject }) => {
     const { css: cssObject, ...restStyles } = styleObject
-    this.processAtomic(restStyles, cssObject)
+    this.processAtomic(restStyles)
+    this.processAtomic(cssObject)
   }
 
   processCompoundVariants = (config: RecipeConfig | SlotRecipeConfig) => {
