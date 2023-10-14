@@ -1,6 +1,6 @@
 import type { AtRule } from 'postcss'
 import { isMatching } from 'ts-pattern'
-import { discardDuplicate } from './optimize'
+import { optimizeCss } from './optimize'
 import { safeParse } from './safe-parse'
 
 // write postcss plugin to merge two css strings
@@ -26,5 +26,5 @@ export function mergeCss(oldCss: string, newCss: string) {
     })
   })
 
-  return discardDuplicate(newRoot)
+  return optimizeCss(newRoot)
 }

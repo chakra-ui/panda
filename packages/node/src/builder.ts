@@ -1,5 +1,5 @@
 import { getConfigDependencies } from '@pandacss/config'
-import { discardDuplicate, mergeCss } from '@pandacss/core'
+import { optimizeCss, mergeCss } from '@pandacss/core'
 import { ConfigNotFoundError } from '@pandacss/error'
 import { logger } from '@pandacss/logger'
 import { existsSync } from 'fs'
@@ -220,7 +220,7 @@ export class Builder {
     root.removeAll()
 
     root.append(
-      discardDuplicate(`
+      optimizeCss(`
     ${rootCssContent}
     ${this.toString()}
     `),
