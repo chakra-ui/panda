@@ -10,7 +10,6 @@ export const generateParserCss = (ctx: Context) => (parserResult: ParserResultTy
 
   // console.time('generateParserCss')
   const sheet = ctx.createSheet()
-  const { recipes } = ctx
   const { minify, optimize } = ctx.config
 
   // console.log(result.recipe)
@@ -18,43 +17,22 @@ export const generateParserCss = (ctx: Context) => (parserResult: ParserResultTy
   // console.log(JSON.stringify([...collector.recipes], null, 2))
 
   collector.atomic.forEach((css) => {
-    css.result.forEach((data) => sheet.processAtomic(data))
+    sheet.processAtomic(css.result)
   })
 
-  collector.recipes.forEach((recipeSet, recipeName) => {
-    try {
-      for (const recipe of recipeSet) {
-        const recipeConfig = recipes.getConfig(recipeName)
-        if (!recipeConfig) continue
-
-        // console.log(recipe)
-        recipe.result.forEach((recipeProps) => {
-          // console.log({ recipeName, recipeProps })
-          sheet.processRecipe(recipeName, recipeConfig, recipeProps)
-        })
-      }
-    } catch (error) {
-      logger.error('serializer:recipe', error)
-    }
+  const recipeLayer = { layer: 'recipes' }
+  collector.recipes.forEach((recipeSet) => {
+    recipeSet.forEach((recipe) => {
+      sheet.processAtomic(recipe.result, recipeLayer)
+    })
   })
 
   console.log(collector.recipes_base)
-  collector.recipes_base.forEach((recipeSet, recipeName) => {
-    try {
-      for (const recipe of recipeSet) {
-        const recipeConfig = recipes.getConfig(recipeName)
-        if (!recipeConfig) continue
-
-        // console.log(recipe)
-        // recipe.result.forEach((recipeProps) => {
-        //   console.log({ recipeName, recipeProps })
-        //   sheet.processRecipe(recipeName, recipeConfig, recipeProps)
-        // })
-        sheet.processAtomic(recipe.result, { layer: 'recipes_base' })
-      }
-    } catch (error) {
-      logger.error('serializer:recipe', error)
-    }
+  const recipeBaseLayer = { layer: 'recipes_base' }
+  collector.recipes_base.forEach((recipeSet) => {
+    recipeSet.forEach((recipe) => {
+      sheet.processAtomic(recipe.result, recipeBaseLayer)
+    })
   })
 
   // TODO pattern ?

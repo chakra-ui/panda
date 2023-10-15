@@ -32,7 +32,7 @@ export class Stylesheet {
     this.context.layersRoot.base.append(css)
   }
 
-  processAtomic = (styleObject: SystemStyleObject | undefined, options?: ProcessOptions) => {
+  processAtomic = (styleObject: SystemStyleObject | undefined, options?: Omit<ProcessOptions, 'styles'>) => {
     if (!styleObject) return
     const ruleset = new AtomicRule(this.context, options)
     ruleset.process(Object.assign({ styles: styleObject }, options))
@@ -108,6 +108,7 @@ export class Stylesheet {
     } catch (error) {
       if (error instanceof CssSyntaxError) {
         logger.error('sheet', error.message)
+        console.log(error.showSourceCode())
         error.plugin && logger.error('sheet', `By plugin: ${error.plugin}:`)
 
         if (error.source) {

@@ -9,9 +9,10 @@ import {
 } from '@pandacss/shared'
 import type { Dict } from '@pandacss/types'
 import type { AtRule, Root } from 'postcss'
-import postcss from 'postcss'
+import postcss, { CssSyntaxError } from 'postcss'
 import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
+import { logger } from '@pandacss/logger'
 
 export interface ProcessOptions {
   styles: Dict
@@ -64,8 +65,16 @@ export class AtomicRule {
     const styleObject = normalize ? normalizeStyleObject(styles, this.context) : styles
     const rule = this.rule
 
-    const css = toCss(styleObject).toString()
-    layer.append(css)
+    try {
+      const css = toCss(styleObject).toString()
+      layer.append(css)
+    } catch (error) {
+      if (error instanceof CssSyntaxError) {
+        logger.error('sheet', error.message)
+        logger.error('sheet', error.showSourceCode())
+        error.plugin && logger.error('sheet', `By plugin: ${error.plugin}:`)
+      }
+    }
     return
 
     // const atPath = new Map<string, string>()

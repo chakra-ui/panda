@@ -46,7 +46,7 @@ interface ExpandedCondition extends RawCondition {
   params?: string
 }
 interface AtomicStyleResult {
-  result: StyleResultObject[]
+  result: StyleResultObject
   entry: StyleEntry
   hash: string
   conditions?: ExpandedCondition[]

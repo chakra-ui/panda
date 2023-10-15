@@ -247,7 +247,7 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
-  test.only('simple recipe', () => {
+  test('simple recipe', () => {
     const code = `
     import { sizeRecipe } from ".panda/recipes"
 
@@ -263,7 +263,17 @@ describe('extract to css output pipeline', () => {
           recipes: {
             sizeRecipe: {
               className: 'sizeRecipe',
-              base: { p: 0, m: 2 },
+              base: {
+                p: 0,
+                m: 2,
+                _hover: {
+                  base: { fontWeight: 'bold', _dark: { border: 0 } },
+                  color: 'red',
+                  xl: {
+                    color: 'blue',
+                  },
+                },
+              },
               variants: {
                 size: {
                   medium: { fontSize: 'md', lineHeight: '1.5rem' },
@@ -290,8 +300,6 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
-        size-recipe: __ignore__;
-
         .sizeRecipe--size_medium {
           font-size: var(--font-sizes-md);
           line-height: 1.5rem
@@ -300,7 +308,22 @@ describe('extract to css output pipeline', () => {
         @layer _base {
           .sizeRecipe {
             padding: var(--spacing-0);
-            margin: var(--spacing-2)
+            margin: var(--spacing-2);
+      }
+
+          .sizeRecipe:is(:hover, [data-hover]) {
+            font-weight: var(--font-weights-bold);
+      }
+
+          [data-theme=dark] .sizeRecipe:is(:hover, [data-hover]), .dark .sizeRecipe:is(:hover, [data-hover]), .sizeRecipe:is(:hover, [data-hover]).dark, .sizeRecipe:is(:hover, [data-hover])[data-theme=dark] {
+            border: 0;
+            color: red;
+      }
+
+          @media screen and (min-width: 80em) {
+            .sizeRecipe:is(:hover, [data-hover]) {
+              color: blue;
+          }
       }
       }
       }"
@@ -478,16 +501,6 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
-        pink-recipe: __ignore__;
-
-        green-recipe: __ignore__;
-
-        blue-recipe: __ignore__;
-
-        size-recipe: __ignore__;
-
-        bg-recipe: __ignore__;
-
         .pinkRecipe--variant_small,.greenRecipe--variant_small,.blueRecipe--variant_small {
           font-size: var(--font-sizes-sm)
       }
@@ -671,12 +684,6 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
-        pink-recipe: __ignore__;
-
-        size-recipe: __ignore__;
-
-        bg-recipe: __ignore__;
-
         .pinkRecipe--variant_small {
           font-size: var(--font-sizes-sm)
       }
@@ -1802,12 +1809,6 @@ describe('extract to css output pipeline', () => {
     const css = generator.getParserCss(result)!
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes {
-        button: __ignore__;
-
-        another-button: __ignore__;
-
-        complex-button: __ignore__;
-
         .button--size_md {
           padding: var(--spacing-4);
           border-radius: var(--radii-md)
@@ -1835,8 +1836,6 @@ describe('extract to css output pipeline', () => {
       }
 
       @layer utilities {
-        z-index: 100;
-
         .z_100 {
           z-index: 100
       }
@@ -2228,11 +2227,25 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
-        button-style: __ignore__;
+        .buttonStyle--size_md {
+          height: 3rem;
+          min-width: 3rem;
+          padding: 0 0.75rem
+      }
 
-        size: md;
+        .buttonStyle--variant_solid {
+          background-color: blue;
+          color: var(--colors-white);
+      }
 
-        variant: solid;
+        .buttonStyle--variant_solid[data-disabled] {
+          background-color: gray;
+          color: var(--colors-black);
+      }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue;
+      }
 
         @layer _base {
           .buttonStyle {
@@ -2514,16 +2527,16 @@ describe('extract to css output pipeline', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
-        button: __ignore__;
-
-        size: sm;
-
         .button--size_md {
           border-radius: var(--radii-md)
       }
 
         .button--variant_second {
           background-color: var(--colors-red-500)
+      }
+
+        .button--size_sm {
+          border-radius: var(--radii-sm)
       }
 
         @layer _base {
@@ -4643,16 +4656,30 @@ describe('preset patterns', () => {
 
     expect(result.css).toMatchInlineSnapshot(`
       "@layer recipes {
-        button-style: __ignore__;
+        .buttonStyle--size_md {
+          height: 3rem;
+          min-width: 3rem;
+          padding: 0 0.75rem
+      }
 
-        size: md;
+        .buttonStyle--variant_solid {
+          background-color: blue;
+          color: var(--colors-white);
+      }
 
-        variant: solid;
+        .buttonStyle--variant_solid[data-disabled] {
+          background-color: gray;
+          color: var(--colors-black);
+      }
 
         .buttonStyle--size_sm {
           height: 2.5rem;
           min-width: 2.5rem;
           padding: 0 0.5rem
+      }
+
+        .buttonStyle--variant_solid:is(:hover, [data-hover]) {
+          background-color: darkblue;
       }
 
         @layer _base {

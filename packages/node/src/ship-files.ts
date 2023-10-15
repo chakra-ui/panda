@@ -26,12 +26,16 @@ export async function shipFiles(ctx: PandaContext, outfile: string) {
   logger.info('cli', `Writing ${minify ? '[min] ' : ' '}${colors.bold(outfile)}`)
 
   const unpacked = collector.collectStyles()
-  const json = unpacked.toJSON()
+  if (!unpacked) return
+
+  const json = unpacked
+  // TODO
   const styles = {
-    css: json.css.map((item) => item.data[0]),
-    recipe: Object.fromEntries(
-      Object.entries(json.recipe).map(([name, list]) => [name, list.map((item) => item.data[0])]),
-    ),
+    // css: json.atomic.map((item) => item.data[0]),
+    // recipe_base: json.atomic.map((item) => item.data[0]),
+    // recipe: Object.fromEntries(
+    //   Object.entries(json.recipes).map(([name, list]) => [name, list.map((item) => item.data[0])]),
+    // ),
   }
   const output = JSON.stringify(
     {
