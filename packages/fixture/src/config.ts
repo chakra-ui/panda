@@ -3,6 +3,7 @@ import presetPanda from '@pandacss/preset-panda'
 import type { Config } from '@pandacss/types'
 
 import { recipes } from './recipes'
+import { slotRecipes } from './slot-recipes'
 import { semanticTokens } from './semantic-tokens'
 
 const { utilities, patterns } = presetBase
@@ -47,5 +48,6 @@ export const config: Config = {
     tokens,
     semanticTokens,
     recipes,
+    slotRecipes,
   },
 }

@@ -6,6 +6,7 @@ import {
   tokens,
   utilities,
   recipes,
+  slotRecipes,
   patterns,
 } from '@pandacss/fixture'
 import { createGenerator } from '../src'
@@ -25,6 +26,7 @@ export const generatorConfig = {
       breakpoints,
       keyframes,
       recipes,
+      slotRecipes,
     },
     cssVarRoot: ':where(html)',
     conditions: {
