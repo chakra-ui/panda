@@ -1,6 +1,5 @@
-import type { ConditionDetails } from '@pandacss/types'
+import type { AtomicStyleResult, ConditionDetails } from '@pandacss/types'
 import { sortAtRules } from './plugins/sort-at-rules'
-import { type AtomicStyleResult } from '@pandacss/types'
 
 const hasAtRule = (conditions: ConditionDetails[]) => conditions.some((details) => details.type === 'at-rule')
 const styleOrder = [':link', ':visited', ':focus-within', ':focus', ':focus-visible', ':hover', ':active']
@@ -38,7 +37,7 @@ const compareAtRuleConditions = (a: WithConditions, b: WithConditions) => {
   return a.conditions!.length - b.conditions!.length
 }
 
-interface WithConditions extends Pick<AtomicStyleResult, 'conditions'> {}
+export interface WithConditions extends Pick<AtomicStyleResult, 'conditions'> {}
 
 /**
  * Sort style rules by conditions

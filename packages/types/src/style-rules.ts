@@ -12,7 +12,8 @@ export interface StyleEntry {
   value: string
   cond: string
   recipe?: string
-  layer?: string
+  slot?: string
+  layer?: string // TODO used ?
 }
 
 interface ExpandedCondition extends RawCondition {
@@ -23,11 +24,11 @@ export interface AtomicStyleResult {
   result: StyleResultObject
   entry: StyleEntry
   hash: string
+  className: string
   conditions?: ExpandedCondition[]
 }
 
-export interface GroupedResult {
-  result: StyleResultObject
+export interface GroupedResult extends Pick<AtomicStyleResult, 'result' | 'className'> {
   hashSet: Set<string>
   details: GroupedStyleResultDetails[]
 }
@@ -39,7 +40,6 @@ export interface RecipeBaseResult extends GroupedResult {
 export interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, 'hash' | 'entry' | 'conditions'> {}
 
 export interface StylesCollectorType {
-  filePath: string | undefined
   atomic: Set<AtomicStyleResult>
   recipes: Map<string, Set<AtomicStyleResult>>
   recipes_base: Map<string, Set<RecipeBaseResult>>

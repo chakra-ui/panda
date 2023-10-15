@@ -13,6 +13,7 @@ import type {
   RecipeVariantRecord,
   ResultItem,
   SlotRecipeConfig,
+  SlotRecipeVariantRecord,
   StyleEntry,
   StyleProps,
   StyleResultObject,
@@ -31,10 +32,16 @@ export class HashCollector {
   static separator = ']___['
   static conditionSeparator = '<___>'
 
+  // unnest stylesHash -> root
   stylesHash = {
+    // TODO rename atomic ?
     css: new Set<string>(),
-    recipe: new Map<string, Set<string>>(),
-    recipe_base: new Map<string, Set<string>>(),
+    //
+    recipes: new Map<string, Set<string>>(),
+    recipes_base: new Map<string, Set<string>>(),
+    //
+    recipes_slots: new Map<string, Set<string>>(),
+    recipes_slots_base: new Map<string, Set<string>>(),
     // TODO pattern ?
   }
   private filterStyleProps: (props: Dict) => Dict
@@ -45,9 +52,12 @@ export class HashCollector {
       : (props: Dict) => filterProps(this.context.isValidProperty, props)
   }
 
-  hashStyleObject(set: Set<string>, obj: ResultItem['data'][number], options?: Pick<StyleEntry, 'recipe' | 'layer'>) {
+  hashStyleObject(
+    set: Set<string>,
+    obj: ResultItem['data'][number],
+    baseEntry?: Partial<Omit<StyleEntry, 'prop' | 'value' | 'cond'>>,
+  ) {
     const isCondition = this.context.conditions.isCondition
-    const baseEntry = { recipe: options?.recipe, layer: options?.layer }
 
     // _dark: { color: 'white' }
     //          ^^^^^^^^^^^^^^
@@ -121,11 +131,12 @@ export class HashCollector {
         }
         // TODO rm important from value
         const hashed = hashStyleEntry(
-          Object.assign(baseEntry, { prop, value: withoutImportant(value), cond: finalCondition }),
+          Object.assign(baseEntry ?? {}, { prop, value: withoutImportant(value), cond: finalCondition }),
         )
         set.add(hashed)
         // console.log({ prop, value, cond, finalCondition, options, isInCondition, prevProp, isFinalCondition, path })
-        console.log({ hashed })
+        // console.log({ hashed })
+        // 'alignItems]___[value:center]___[recipe:checkbox' == hashed && console.trace()
 
         prevProp = prop
         prevDepth = depth
@@ -152,17 +163,41 @@ export class HashCollector {
     const config = this.context.recipes.getConfig(recipeName)
     if (!config) return
 
-    const set = getOrCreateSet(this.stylesHash.recipe, recipeName)
+    const set = getOrCreateSet(this.stylesHash.recipes, recipeName)
     const styles = Object.assign({}, config.defaultVariants, variants)
     this.hashStyleObject(set, styles, { recipe: recipeName })
 
-    if (config.base) {
-      const base_set = getOrCreateSet(this.stylesHash.recipe_base, recipeName)
+    if (config.base && !this.stylesHash.recipes_base.has(recipeName)) {
+      const base_set = getOrCreateSet(this.stylesHash.recipes_base, recipeName)
       this.hashStyleObject(base_set, config.base, { recipe: recipeName })
     }
 
     // TODO same as config.base
-    this.processCompoundVariants(config)
+    // this.processCompoundVariants(config)
+  }
+
+  processSlotRecipe(recipeName: string, variants: SlotRecipeVariantRecord<string>) {
+    const config = this.context.recipes.getConfig(recipeName) as SlotRecipeConfig | undefined
+    if (!config) return
+
+    config.slots.forEach((slot) => {
+      const recipeKey = this.context.recipes.getSlotKey(recipeName, slot)
+      // TODO ?
+      // const styleObject = variants[slot]
+
+      const set = getOrCreateSet(this.stylesHash.recipes_slots, recipeKey)
+      const styles = Object.assign({}, config.defaultVariants, variants)
+      this.hashStyleObject(set, styles, { recipe: recipeName, slot })
+
+      if (config.base && !this.stylesHash.recipes_base.has(recipeKey)) {
+        // console.log('base', { recipeKey, slot, recipeName })
+        const base_set = getOrCreateSet(this.stylesHash.recipes_slots_base, recipeKey)
+        this.hashStyleObject(base_set, config.base, { recipe: recipeName, slot })
+      }
+    })
+
+    // TODO same as config.base
+    // this.processCompoundVariants(config)
   }
 
   processPattern(
@@ -200,7 +235,7 @@ export class HashCollector {
     }
   }
 
-  processCompoundVariants = (config: RecipeConfig | SlotRecipeConfig) => {
+  processCompoundVariants(config: RecipeConfig | SlotRecipeConfig) {
     config.compoundVariants?.forEach((compoundVariant) => {
       if (isSlotRecipe(config)) {
         for (const css of Object.values(compoundVariant.css)) {
@@ -216,8 +251,8 @@ export class HashCollector {
   merge(result: HashCollector) {
     result.stylesHash.css.forEach((item) => this.stylesHash.css.add(item))
 
-    result.stylesHash.recipe.forEach((items, name) => {
-      const set = getOrCreateSet(this.stylesHash.recipe, name)
+    result.stylesHash.recipes.forEach((items, name) => {
+      const set = getOrCreateSet(this.stylesHash.recipes, name)
       items.forEach(set.add)
     })
 
@@ -240,18 +275,23 @@ const isSlotRecipe = (v: RecipeConfig | SlotRecipeConfig): v is SlotRecipeConfig
   'slots' in v && Array.isArray(v.slots) && v.slots.length > 0
 
 const hashStyleEntry = (entry: StyleEntry) => {
-  let base = `${entry.prop}${HashCollector.separator}value:${entry.value}`
+  const parts = [`${entry.prop}${HashCollector.separator}value:${entry.value}`]
+
   if (entry.cond) {
-    base += `${HashCollector.separator}cond:${entry.cond}`
+    parts.push(`cond:${entry.cond}`)
   }
 
   if (entry.recipe) {
-    base += `${HashCollector.separator}recipe:${entry.recipe}`
+    parts.push(`recipe:${entry.recipe}`)
   }
 
   if (entry.layer) {
-    base += `${HashCollector.separator}layer:${entry.layer}`
+    parts.push(`layer:${entry.layer}`)
   }
 
-  return base
+  if (entry.slot) {
+    parts.push(`slot:${entry.slot}`)
+  }
+
+  return parts.join(HashCollector.separator)
 }

@@ -32,6 +32,7 @@ export class Stylesheet {
     this.context.layersRoot.base.append(css)
   }
 
+  // TODO rename "processCss" or "processStyles" or "processStyleObject" or "processStyle"
   processAtomic = (styleObject: SystemStyleObject | undefined, options?: Omit<ProcessOptions, 'styles'>) => {
     if (!styleObject) return
     const ruleset = new AtomicRule(this.context, options)

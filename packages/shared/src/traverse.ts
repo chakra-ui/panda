@@ -3,6 +3,7 @@ type CallbackFn = (key: string, value: any, path: string, depth: number) => void
 export const isObjectOrArray = (obj: unknown) => typeof obj === 'object' && obj !== null
 const defaultOptions = { separator: '.', maxDepth: Infinity }
 
+// TODO rm recursion, use while loop
 export function traverse(
   obj: any,
   callback: CallbackFn,

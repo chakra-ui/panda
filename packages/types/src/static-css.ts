@@ -11,17 +11,12 @@ interface CssRule {
    * @example ['hover', 'focus']
    */
   conditions?: string[]
-  /**
-   * Whether to generate responsive utilities.
-   */
-  responsive?: boolean
 }
 
 type RecipeRule =
   | '*'
   | ({
       conditions?: string[]
-      responsive?: boolean
     } & { [variant: string]: boolean | string[] })
 
 export interface StaticCssOptions {

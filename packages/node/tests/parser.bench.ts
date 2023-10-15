@@ -15,7 +15,7 @@ describe('parser', async () => {
     'parse - old',
     () => {
       const collector = createParserResult(ctx.parserOptions)
-      const cssFiles = []
+      const cssFiles = [] as string[]
 
       files.forEach(async (file) => {
         const result = ctx.project.parseSourceFile(file)

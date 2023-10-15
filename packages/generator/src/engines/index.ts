@@ -4,6 +4,7 @@ import { getJsxEngine } from './jsx'
 import { getPathEngine } from './path'
 import { HashCollector } from './hash-collector'
 import { StylesCollector } from './styles-collector'
+import { generateStaticCss } from './static-css'
 
 export const getEngine = (conf: ConfigResultWithHooks) => {
   const { config } = conf
@@ -18,6 +19,7 @@ export const getEngine = (conf: ConfigResultWithHooks) => {
     stylesCollector,
     jsx: getJsxEngine(config),
     paths: getPathEngine(config),
+    staticCss: generateStaticCss(base),
     file: {
       ext(file: string) {
         return `${file}.${outExtension}`
@@ -53,4 +55,4 @@ export const getEngine = (conf: ConfigResultWithHooks) => {
   return Object.assign(base, engine)
 }
 
-export type Context = ReturnType<typeof getEngine>
+export interface Context extends ReturnType<typeof getEngine> {}

@@ -13,14 +13,11 @@ export const generateParserCss = (ctx: Context) => (parserResult: ParserResultTy
   const sheet = ctx.createSheet()
   const { minify, optimize } = ctx.config
 
-  // console.log(result.recipe)
-  // console.log(JSON.stringify([...collector.atomic], null, 2))
-  // console.log(JSON.stringify([...collector.recipes], null, 2))
-
   collector.atomic.forEach((css) => {
     sheet.processAtomic(css.result)
   })
 
+  // TODO directly pass the layer root ?
   const recipeLayer = { layer: 'recipes' }
   collector.recipes.forEach((recipeSet) => {
     recipeSet.forEach((recipe) => {
@@ -28,7 +25,6 @@ export const generateParserCss = (ctx: Context) => (parserResult: ParserResultTy
     })
   })
 
-  console.log(collector.recipes_base)
   const recipeBaseLayer = { layer: 'recipes_base' }
   collector.recipes_base.forEach((recipeSet) => {
     recipeSet.forEach((recipe) => {
