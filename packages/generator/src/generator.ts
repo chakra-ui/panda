@@ -81,6 +81,8 @@ export const createGenerator = (conf: ConfigResultWithHooks) => {
       recipes,
       patterns,
       utility: ctx.utility,
+      hashCollector: ctx.hashCollector,
+      stylesCollector: ctx.stylesCollector,
       compilerOptions: compilerOptions as any,
       tsOptions: conf.tsOptions,
       join: (...paths: string[]) => paths.join('/'),

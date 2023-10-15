@@ -1,7 +1,5 @@
-import type { ParserResultType, ResultItem } from '@pandacss/types'
-import { HashCollector } from './hash-collector'
-import { StylesCollector } from './styles-collector'
-import { getOrCreateSet } from './shared'
+import { getOrCreateSet } from '@pandacss/shared'
+import type { ParserResultType, ResultItem, StylesCollectorType } from '@pandacss/types'
 import type { ParserOptions } from './parser'
 
 export class ParserResult implements ParserResultType {
@@ -16,15 +14,10 @@ export class ParserResult implements ParserResultType {
   pattern = new Map<string, Set<ResultItem>>()
 
   filePath: string | undefined
-  hashCollector: HashCollector
 
-  // TODO seulement faire ce taf si on a besoin de la sérialisation = si watch
-  // = shouldHash = false par défaut p'tet mieux ?
-  constructor(private context: ParserOptions, shouldHash = true) {
-    // TODO
-    // if (shouldHash) {
-    this.hashCollector = new HashCollector(context)
-    // }
+  hashCollector: ParserOptions['hashCollector']
+  constructor(private context: ParserOptions) {
+    this.hashCollector = this.context.hashCollector
   }
 
   append(result: ResultItem) {
@@ -186,7 +179,7 @@ export class ParserResult implements ParserResultType {
     if (!this.hashCollector) return
     if (this.isEmpty()) return
 
-    return new StylesCollector(this.context).setFilePath(this.filePath).collect(this.hashCollector)
+    return this.context.stylesCollector.collect(this.hashCollector) as StylesCollectorType
   }
 }
 

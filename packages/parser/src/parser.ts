@@ -39,6 +39,8 @@ export type ParserOptions = {
   patterns: Generator['patterns']
   recipes: Generator['recipes']
   utility: Generator['utility']
+  hashCollector: Generator['hashCollector']
+  stylesCollector: Generator['stylesCollector']
   // syntax: NonNullable<Config['syntax']>
   syntax: Config['syntax']
   tsOptions?: ConfigTsOptions

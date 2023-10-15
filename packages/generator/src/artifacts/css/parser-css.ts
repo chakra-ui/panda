@@ -5,6 +5,7 @@ import { P, match } from 'ts-pattern'
 import type { Context } from '../../engines'
 
 export const generateParserCss = (ctx: Context) => (parserResult: ParserResultType) => {
+  const filePath = parserResult.filePath ?? ''
   const collector = parserResult.collectStyles()
   if (!collector) return ''
 
@@ -42,7 +43,7 @@ export const generateParserCss = (ctx: Context) => (parserResult: ParserResultTy
     // console.time('sheet.toCss')
     const css = sheet.toCss({ minify, optimize })
     // console.timeEnd('sheet.toCss')
-    ctx.hooks.callHook('parser:css', collector.filePath ?? '', css)
+    ctx.hooks.callHook('parser:css', filePath, css)
     return css
   } catch (err) {
     logger.error('serializer:css', 'Failed to serialize CSS: ' + err)

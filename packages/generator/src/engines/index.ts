@@ -2,14 +2,20 @@ import type { ConfigResultWithHooks, TSConfig as _TSConfig } from '@pandacss/typ
 import { getBaseEngine } from './base'
 import { getJsxEngine } from './jsx'
 import { getPathEngine } from './path'
-import { getPatternEngine } from './pattern'
+import { HashCollector } from './hash-collector'
+import { StylesCollector } from './styles-collector'
 
 export const getEngine = (conf: ConfigResultWithHooks) => {
   const { config } = conf
   const { forceConsistentTypeExtension, outExtension } = config
-  return {
-    ...getBaseEngine(conf),
-    patterns: getPatternEngine(config),
+
+  const base = getBaseEngine(conf)
+  const hashCollector = new HashCollector(base)
+  const stylesCollector = new StylesCollector(base)
+
+  const engine = {
+    hashCollector,
+    stylesCollector,
     jsx: getJsxEngine(config),
     paths: getPathEngine(config),
     file: {
@@ -43,6 +49,8 @@ export const getEngine = (conf: ConfigResultWithHooks) => {
       },
     },
   }
+
+  return Object.assign(base, engine)
 }
 
 export type Context = ReturnType<typeof getEngine>

@@ -24,9 +24,7 @@ export function traverse(
     const key = keys[i]
     const value = obj[key]
     const isObj = isObjectOrArray(value)
-    // const newPath = isObj ? (path ? `${path}${separator}${key}` : key) : ''
     const newPath = path ? `${path}${separator}${key}` : key
-    // console.log({ t: true, key, value, path, newPath, isObj, depth })
 
     callback(key, value, newPath, depth)
 

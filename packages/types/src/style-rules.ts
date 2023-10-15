@@ -1,9 +1,8 @@
-import { type BoxNodeObject } from '@pandacss/extractor'
-import type { RawCondition } from '@pandacss/types'
+import type { RawCondition } from './conditions'
 
-// type StyleValue = BoxNodeLiteral['value']
-
-export type StyleResultObject = BoxNodeObject['value']
+export interface StyleResultObject {
+  [key: string]: any
+}
 export interface StyleProps extends StyleResultObject {
   css?: StyleResultObject
 }
@@ -38,3 +37,10 @@ export interface RecipeBaseResult extends GroupedResult {
 }
 
 export interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, 'hash' | 'entry' | 'conditions'> {}
+
+export interface StylesCollectorType {
+  filePath: string | undefined
+  atomic: Set<AtomicStyleResult>
+  recipes: Map<string, Set<AtomicStyleResult>>
+  recipes_base: Map<string, Set<RecipeBaseResult>>
+}

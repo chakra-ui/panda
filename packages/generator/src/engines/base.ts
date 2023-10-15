@@ -14,9 +14,9 @@ import type { CascadeLayers, ConfigResultWithHooks, TSConfig as _TSConfig } from
 import { isBool, isStr } from 'lil-fp'
 import postcss from 'postcss'
 
-const helpers = {
-  map: mapObject,
-}
+import { getPatternEngine } from './pattern'
+
+const helpers = { map: mapObject }
 
 export const getBaseEngine = (conf: ConfigResultWithHooks) => {
   const { config } = conf
@@ -55,6 +55,8 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     conditions: config.conditions,
     breakpoints: config.theme?.breakpoints,
   })
+
+  const patterns = getPatternEngine(config)
 
   const { textStyles, layerStyles } = theme
 
@@ -167,6 +169,7 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     isValidProperty,
     recipes,
     conditions,
+    patterns,
     createSheetContext,
     createSheet,
     // cascade layer
@@ -176,3 +179,5 @@ export const getBaseEngine = (conf: ConfigResultWithHooks) => {
     layerNames,
   }
 }
+
+export interface GeneratorBaseEngine extends ReturnType<typeof getBaseEngine> {}

@@ -1,9 +1,29 @@
-import { getSlotRecipes, normalizeStyleObject, toResponsiveObject, withoutImportant } from '@pandacss/shared'
-import type { Dict, RecipeConfig, RecipeVariantRecord, ResultItem, SlotRecipeConfig } from '@pandacss/types'
-import { isObjectOrArray, traverse } from './traverse'
-import { type ParserOptions } from './parser'
-import { type StyleEntry, type StyleResultObject, type StyleProps } from './style-rule-types'
-import { getOrCreateSet } from './shared'
+import {
+  getOrCreateSet,
+  getSlotRecipes,
+  isObjectOrArray,
+  normalizeStyleObject,
+  toResponsiveObject,
+  traverse,
+  withoutImportant,
+} from '@pandacss/shared'
+import type {
+  Dict,
+  RecipeConfig,
+  RecipeVariantRecord,
+  ResultItem,
+  SlotRecipeConfig,
+  StyleEntry,
+  StyleProps,
+  StyleResultObject,
+} from '@pandacss/types'
+import type { GeneratorBaseEngine } from './base'
+
+export interface CollectorContext
+  extends Pick<
+    GeneratorBaseEngine,
+    'hash' | 'isTemplateLiteralSyntax' | 'isValidProperty' | 'conditions' | 'recipes' | 'utility' | 'patterns'
+  > {}
 
 const identity = (v: any) => v
 
@@ -19,11 +39,10 @@ export class HashCollector {
   }
   private filterStyleProps: (props: Dict) => Dict
 
-  constructor(private context: ParserOptions) {
-    this.filterStyleProps =
-      context.syntax === 'template-literal'
-        ? identity
-        : (props: Dict) => filterProps(this.context.isValidProperty, props)
+  constructor(private context: CollectorContext) {
+    this.filterStyleProps = context.isTemplateLiteralSyntax
+      ? identity
+      : (props: Dict) => filterProps(this.context.isValidProperty, props)
   }
 
   hashStyleObject(set: Set<string>, obj: ResultItem['data'][number], options?: Pick<StyleEntry, 'recipe' | 'layer'>) {

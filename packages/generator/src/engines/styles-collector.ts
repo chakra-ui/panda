@@ -1,36 +1,28 @@
-import { esc, isImportant, toHash, withoutImportant } from '@pandacss/shared'
-import { HashCollector } from './hash-collector'
-import {
-  type AtomicStyleResult,
-  type RecipeBaseResult,
-  type StyleEntry,
-  type StyleResultObject,
-  type GroupedStyleResultDetails,
-  type GroupedResult,
-} from './style-rule-types'
-import { getOrCreateSet } from './shared'
-import { sortStyleRules } from './sort-style-rules'
-import type { ParserOptions } from './parser'
+import { sortStyleRules } from '@pandacss/core'
+import { esc, getOrCreateSet, isImportant, toHash, withoutImportant } from '@pandacss/shared'
+import type {
+  AtomicStyleResult,
+  GroupedResult,
+  GroupedStyleResultDetails,
+  RecipeBaseResult,
+  StyleEntry,
+  StyleResultObject,
+} from '@pandacss/types'
+import { HashCollector, type CollectorContext } from './hash-collector'
 
 export class StylesCollector {
-  constructor(private context: ParserOptions) {}
+  constructor(private context: CollectorContext) {}
 
   atomic = new Set<AtomicStyleResult>()
   recipes = new Map<string, Set<AtomicStyleResult>>()
   recipes_base = new Map<string, Set<RecipeBaseResult>>()
-  filePath: string | undefined
-
-  setFilePath(filePath: string | undefined) {
-    this.filePath = filePath
-    return this
-  }
 
   // AtomicRule.hashFn
   hashSelector = (conditions: string[], className: string) => {
     const { conditions: cond, hash, utility } = this.context
     const conds = cond.finalize(conditions)
     let result: string
-    if (hash) {
+    if (hash.className) {
       conds.push(className)
       result = utility.formatClassName(toHash(conds.join(':')))
     } else {

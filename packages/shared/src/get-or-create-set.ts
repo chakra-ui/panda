@@ -1,4 +1,3 @@
-// TODO shared
 export function getOrCreateSet<TKey, TValue>(map: Map<TKey, Set<TValue>>, key: TKey) {
   let set = map.get(key)
   if (!set) {
