@@ -1,5 +1,16 @@
 # @pandacss/core
 
+## 0.16.0
+
+### Patch Changes
+
+- 20f4e204: Apply a few optmizations on the resulting CSS generated from `panda cssgen` command
+  - @pandacss/token-dictionary@0.16.0
+  - @pandacss/error@0.16.0
+  - @pandacss/logger@0.16.0
+  - @pandacss/shared@0.16.0
+  - @pandacss/types@0.16.0
+
 ## 0.15.5
 
 ### Patch Changes
