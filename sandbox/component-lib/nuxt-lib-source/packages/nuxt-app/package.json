@@ -1,0 +1,20 @@
+{
+  "name": "@sandbox-nuxt-lib-source/nuxt-app",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "css": "PANDA_DEBUG=ast:* panda",
+    "css:gen": "PANDA_DEBUG=* panda codegen",
+    "css:dev": "PANDA_DEBUG=file:* panda --watch",
+    "postinstall": "nuxt prepare"
+  },
+  "devDependencies": {
+    "postcss": "8.4.27",
+    "nuxt": "^3.6.5",
+    "@sandbox-nuxt-lib-source/css-lib": "workspace:*",
+    "@pandacss/dev": "workspace:*"
+  }
+}
