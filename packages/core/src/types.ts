@@ -11,19 +11,21 @@ export type TransformResult = {
 
 type AtomicRuleTransform = (prop: string, value: any) => TransformResult
 
+interface LayersRoot {
+  reset: AtRule
+  base: AtRule
+  tokens: AtRule
+  recipes: AtRule
+  recipes_base: AtRule
+  recipes_slots: AtRule
+  recipes_slots_base: AtRule
+  utilities: AtRule
+  compositions: AtRule
+}
+
 export type StylesheetContext = {
   root: Root
-  layersRoot: {
-    reset: AtRule
-    base: AtRule
-    tokens: AtRule
-    recipes: AtRule
-    recipes_base: AtRule
-    recipes_slots: AtRule
-    recipes_slots_base: AtRule
-    utilities: AtRule
-    compositions: AtRule
-  }
+  layersRoot: LayersRoot
   insertLayers: () => Root
   utility: Utility
   conditions: Conditions
