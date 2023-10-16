@@ -47,7 +47,7 @@ export function generateTokenCss(ctx: Context) {
   const css = results.join('\n\n')
 
   const output = optimizeCss(
-    `@layer ${ctx.layers.tokens} {
+    `@layer ${ctx.layers.name.tokens} {
     ${prettifyCss(cleanupSelectors(css, root))}
   }
   `,

@@ -1,4 +1,3 @@
-export { AtomicRule } from './atomic-rule'
 export { Breakpoints } from './breakpoints'
 export { assignCompositions } from './compositions'
 export { Conditions } from './conditions'

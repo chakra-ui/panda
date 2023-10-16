@@ -1,11 +1,13 @@
-import type { StaticCssOptions, UserConfig } from '@pandacss/types'
+import type { StaticCssOptions } from '@pandacss/types'
 import type { GeneratorBaseEngine } from './base'
 import { HashCollector } from './hash-collector'
 import { StylesCollector } from './styles-collector'
 
-export const generateStaticCss = (ctx: GeneratorBaseEngine) => {
+export const generateStaticCss = (
+  ctx: GeneratorBaseEngine,
+  params: { hash: HashCollector; styles: StylesCollector },
+) => {
   const { createSheet, recipes } = ctx
-  const { optimize = true, minify } = ctx.config
 
   return (staticCss: StaticCssOptions) => {
     const sheet = createSheet()
@@ -14,11 +16,10 @@ export const generateStaticCss = (ctx: GeneratorBaseEngine) => {
     const results = fn(staticCss)
     // console.log(JSON.stringify(results.recipes, null, 2))
 
-    const hash = new HashCollector(ctx as any)
-    const styles = new StylesCollector(ctx as any)
+    const { hash, styles } = params
 
     results.css.forEach((css) => {
-      hash.hashStyleObject(hash.stylesHash.css, css)
+      hash.hashStyleObject(hash.atomic, css)
     })
 
     results.recipes.forEach((result) => {
@@ -34,41 +35,10 @@ export const generateStaticCss = (ctx: GeneratorBaseEngine) => {
       })
     })
 
-    styles.collect(hash)
-    // console.log(hash.stylesHash)
+    // console.log(hash)
     // console.log(styles.recipes.get('buttonStyle'))
 
-    styles.atomic.forEach((css) => {
-      sheet.processAtomic(css.result)
-    })
-
-    const recipeLayer = { layer: 'recipes' }
-    styles.recipes.forEach((recipeSet) => {
-      recipeSet.forEach((recipe) => {
-        sheet.processAtomic(recipe.result, recipeLayer)
-      })
-    })
-
-    const recipeBaseLayer = { layer: 'recipes_base' }
-    styles.recipes_base.forEach((recipeSet) => {
-      recipeSet.forEach((recipe) => {
-        sheet.processAtomic(recipe.result, recipeBaseLayer)
-      })
-    })
-
-    const recipeSlotLayer = { layer: 'recipes_slots' }
-    styles.recipes_slots.forEach((recipeSet) => {
-      recipeSet.forEach((recipe) => {
-        sheet.processAtomic(recipe.result, recipeSlotLayer)
-      })
-    })
-
-    const recipeSlotsBaseLayer = { layer: 'recipes_slots_base' }
-    styles.recipes_slots_base.forEach((recipeSet) => {
-      recipeSet.forEach((recipe) => {
-        sheet.processAtomic(recipe.result, recipeSlotsBaseLayer)
-      })
-    })
+    sheet.processStylesCollector(styles.collect(hash))
 
     const toCss = (options?: Pick<UserConfig, 'optimize' | 'minify'>) => {
       try {
@@ -101,7 +71,7 @@ export const generateStaticCss = (ctx: GeneratorBaseEngine) => {
     //   return toCss({ optimize: false, minify: false })
     // }
 
-    return { results, regex: createClassNameRegex, parse, toCss }
+    return { results, regex: createClassNameRegex, parse, toCss: sheet.toCss }
   }
 }
 

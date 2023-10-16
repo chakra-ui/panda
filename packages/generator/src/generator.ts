@@ -1,7 +1,7 @@
 import type { ConfigResultWithHooks, OutdirImportMap, TSConfig } from '@pandacss/types'
 import { generateArtifacts } from './artifacts'
 import { generateFlattenedCss } from './artifacts/css/flat-css'
-import { generateParserCss, generateParserCssOld } from './artifacts/css/parser-css'
+import { generateParserCss } from './artifacts/css/parser-css'
 import { getEngine } from './engines'
 import { getMessages } from './messages'
 import { generateStaticCss } from './artifacts/css/static-css'

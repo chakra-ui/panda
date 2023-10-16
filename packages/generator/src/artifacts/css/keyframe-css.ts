@@ -18,7 +18,7 @@ export function generateKeyframeCss(ctx: Context) {
 
   const rule = postcss.atRule({
     name: 'layer',
-    params: ctx.layers.tokens,
+    params: ctx.layers.name.tokens,
     nodes: root.nodes,
   })
 

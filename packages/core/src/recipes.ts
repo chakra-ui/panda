@@ -1,12 +1,17 @@
 import { capitalize, createRegex, dashCase, getSlotRecipes, memo, splitProps } from '@pandacss/shared'
 import type { Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
 import merge from 'lodash.merge'
-import { AtomicRule, type ProcessOptions } from './atomic-rule'
 import { isSlotRecipe } from './is-slot-recipe'
 import { serializeStyle } from './serialize'
 import type { RecipeNode, StylesheetContext } from './types'
 
-type RecipeRecord = Record<string, RecipeConfig | SlotRecipeConfig>
+interface RecipeRecord {
+  [key: string]: RecipeConfig | SlotRecipeConfig
+}
+
+export interface RecipeContext extends Pick<StylesheetContext, 'utility' | 'conditions'> {
+  recipes: RecipeRecord
+}
 
 const sharedState = {
   /**
@@ -28,15 +33,10 @@ const sharedState = {
 }
 
 export class Recipes {
-  /**
-   * The map of the recipes to their atomic rules
-   */
-  rules: Map<string, AtomicRule> = new Map()
-
   keys: string[] = []
 
-  constructor(private recipes: RecipeRecord = {}, private context: StylesheetContext) {
-    this.assignRules()
+  constructor(private context: RecipeContext) {
+    this.keys = Object.keys(this.context.recipes)
   }
 
   private getPropKey = (recipe: string, variant: string, value: any) => {
@@ -52,7 +52,7 @@ export class Recipes {
   }
 
   save = () => {
-    for (const [name, recipe] of Object.entries(this.recipes)) {
+    for (const [name, recipe] of Object.entries(this.context.recipes)) {
       if (isSlotRecipe(recipe)) {
         // extract recipes for each slot
         const slots = getSlotRecipes(recipe)
@@ -109,29 +109,6 @@ export class Recipes {
     return `${name}__${slot}`
   }
 
-  assignRules = () => {
-    if (!this.context) return
-
-    for (const [name, recipe] of Object.entries(this.recipes)) {
-      // console.log({ name })
-      //
-      if (isSlotRecipe(recipe)) {
-        //
-        recipe.slots.forEach((slotName) => {
-          const slotKey = this.getSlotKey(name, slotName)
-          // console.log({ name, slotName, slotKey })
-          this.rules.set(slotKey, this.createRule(slotKey, true))
-        })
-        //
-      } else {
-        //
-        this.rules.set(name, this.createRule(name))
-      }
-
-      this.keys.push(name)
-    }
-  }
-
   isEmpty = () => {
     return sharedState.nodes.size === 0
   }
@@ -150,7 +127,7 @@ export class Recipes {
   })
 
   getConfig = memo((name: string) => {
-    return this.recipes[name]
+    return this.context.recipes[name]
   })
 
   find = memo((jsxName: string) => {
@@ -239,63 +216,5 @@ export class Recipes {
         styles: sharedState.styles.get(propKey) ?? {},
       }
     }
-  }
-
-  private createRule = (name: string, slot?: boolean) => {
-    if (!this.context) {
-      throw new Error("Can't create a rule without a context")
-    }
-
-    const rule = new AtomicRule({
-      ...this.context,
-      transform: this.getTransform(name, slot),
-    })
-
-    const layer = this.context.layersRoot.recipes
-    rule.layer = slot ? this.context.layersRoot.recipes_slots : layer
-    return rule
-  }
-
-  private check = (config: RecipeConfig, className: string, variants: Dict) => {
-    const { defaultVariants = {}, base = {} } = config
-
-    const styles = Object.assign({ [className]: '__ignore__' }, defaultVariants, variants)
-    const keys = Object.keys(styles)
-
-    return { styles, isEmpty: keys.length === 1 && Object.keys(base).length === 0 }
-  }
-
-  process = (recipeName: string, options: ProcessOptions) => {
-    const { styles: variants } = options
-
-    const recipe = this.getRecipe(recipeName)
-    if (!recipe) return
-
-    const slots = sharedState.slots.get(recipeName)
-
-    if (slots) {
-      //
-      slots.forEach((slotRecipe, slotKey) => {
-        const { isEmpty, styles } = this.check(slotRecipe, slotKey, variants)
-        if (isEmpty) return
-
-        const rule = this.rules.get(slotKey)
-        rule?.process({ styles })
-      })
-      //
-    } else {
-      //
-      const { isEmpty, styles } = this.check(recipe.config, recipe.config.className, variants)
-      if (isEmpty) return
-
-      const rule = this.rules.get(recipeName)
-      rule?.process({ styles })
-      //
-    }
-  }
-
-  toCss = () => {
-    if (!this.context) return ''
-    return this.context.insertLayers().toString()
   }
 }

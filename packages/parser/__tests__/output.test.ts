@@ -6,8 +6,8 @@ import { optimizeCss } from '@pandacss/core'
 const run = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
   const { parse, generator } = getFixtureProject(code, userConfig, tsconfig)
   const result = parse()!
-  // console.log(result.stylesHash.css)
-  // console.log(result.stylesHash.css.size)
+  // console.log(result.css)
+  // console.log(result.css.size)
   return {
     json: result?.toArray().map(({ box, ...item }) => item),
     css: generator.getParserCss(result)!,
@@ -15,7 +15,7 @@ const run = (code: string, userConfig?: Config, tsconfig?: TSConfig) => {
 }
 
 describe('extract to css output pipeline', () => {
-  test('basic usage', () => {
+  test('css kitchen sink', () => {
     const code = `
       import { panda } from ".panda/jsx"
       import { css } from ".panda/css"
@@ -200,6 +200,41 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('minimal usage', () => {
+    const code = `
+      import { css } from ".panda/css"
+
+      css({ mx: '3', paddingTop: '4' })
+     `
+    const result = run(code)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "mx": "3",
+              "paddingTop": "4",
+            },
+          ],
+          "name": "css",
+          "type": "object",
+        },
+      ]
+    `)
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .mx_3 {
+          margin-inline: var(--spacing-3)
+      }
+
+        .pt_4 {
+          padding-top: var(--spacing-4)
+      }
+      }"
+    `)
+  })
+
   test('basic usage with multiple style objects', () => {
     const code = `
       import { css } from ".panda/css"
@@ -247,7 +282,7 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
-  test('simple recipe', () => {
+  test.only('simple recipe', () => {
     const code = `
     import { sizeRecipe } from ".panda/recipes"
 

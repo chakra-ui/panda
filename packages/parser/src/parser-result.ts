@@ -165,11 +165,11 @@ export class ParserResult implements ParserResultType {
   }
 
   mergeStyles(result: ParserResult) {
-    result.hashCollector.stylesHash.css.forEach((item) => this.hashCollector.stylesHash.css.add(item))
+    result.hashCollector.atomic.forEach((item) => this.hashCollector.atomic.add(item))
 
-    result.hashCollector.stylesHash.recipes.forEach((items, name) => {
-      this.hashCollector.stylesHash.recipes.get(name) ?? this.hashCollector.stylesHash.recipes.set(name, new Set())
-      items.forEach((item) => this.hashCollector.stylesHash.recipes.get(name)?.add(item))
+    result.hashCollector.recipes.forEach((items, name) => {
+      this.hashCollector.recipes.get(name) ?? this.hashCollector.recipes.set(name, new Set())
+      items.forEach((item) => this.hashCollector.recipes.get(name)?.add(item))
     })
 
     return this

@@ -21,18 +21,19 @@ interface LayersRoot {
   recipes_slots_base: AtRule
   utilities: AtRule
   compositions: AtRule
+  //
+  insert: () => Root
 }
 
-export type StylesheetContext = {
+export interface StylesheetContext {
   root: Root
-  layersRoot: LayersRoot
-  insertLayers: () => Root
+  layers: LayersRoot
+  layersNames: CascadeLayers
   utility: Utility
   conditions: Conditions
   helpers: PatternHelpers
   hash?: boolean
   transform?: AtomicRuleTransform
-  layers: CascadeLayers
 }
 
 export type RecipeNode = {

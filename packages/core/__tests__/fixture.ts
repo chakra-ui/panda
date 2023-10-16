@@ -9,7 +9,7 @@ type ContextOptions = {
   prefix?: string
 }
 
-export const defaultLayers = {
+const defaultLayers = {
   reset: 'reset',
   base: 'base',
   tokens: 'tokens',
@@ -17,7 +17,7 @@ export const defaultLayers = {
   utilities: 'utilities',
 }
 
-const createSheetRoot = (): Pick<StylesheetContext, 'root' | 'layersRoot' | 'insertLayers'> => {
+const createSheetRoot = (): Pick<StylesheetContext, 'root' | 'layers'> => {
   const reset = postcss.atRule({ name: 'layer', params: 'reset', nodes: [] })
   const base = postcss.atRule({ name: 'layer', params: 'base', nodes: [] })
   const tokens = postcss.atRule({ name: 'layer', params: 'tokens', nodes: [] })
@@ -31,7 +31,7 @@ const createSheetRoot = (): Pick<StylesheetContext, 'root' | 'layersRoot' | 'ins
 
   return {
     root,
-    layersRoot: {
+    layers: {
       reset,
       base,
       tokens,
@@ -41,21 +41,21 @@ const createSheetRoot = (): Pick<StylesheetContext, 'root' | 'layersRoot' | 'ins
       recipes_slots_base,
       utilities,
       compositions,
-    },
-    insertLayers: () => {
-      if (reset.nodes.length) root.append(reset)
-      if (base.nodes.length) root.append(base)
-      if (tokens.nodes.length) root.append(tokens)
+      insert: () => {
+        if (reset.nodes.length) root.append(reset)
+        if (base.nodes.length) root.append(base)
+        if (tokens.nodes.length) root.append(tokens)
 
-      if (recipes_base.nodes.length) recipes.prepend(recipes_base)
-      if (recipes.nodes.length) root.append(recipes)
+        if (recipes_base.nodes.length) recipes.prepend(recipes_base)
+        if (recipes.nodes.length) root.append(recipes)
 
-      if (recipes_slots_base.nodes.length) recipes_slots.prepend(recipes_slots_base)
-      if (recipes_slots.nodes.length) root.append(recipes_slots)
+        if (recipes_slots_base.nodes.length) recipes_slots.prepend(recipes_slots_base)
+        if (recipes_slots.nodes.length) root.append(recipes_slots)
 
-      if (compositions.nodes.length) utilities.append(compositions)
-      if (utilities.nodes.length) root.append(utilities)
-      return root
+        if (compositions.nodes.length) utilities.append(compositions)
+        if (utilities.nodes.length) root.append(utilities)
+        return root
+      },
     },
   }
 }
@@ -86,27 +86,33 @@ export const createContext = ({ hash, prefix }: ContextOptions = {}): Stylesheet
     conditions: conditions,
     utility: utility,
     helpers: { map: () => '' },
-    layers: defaultLayers,
+    layersNames: defaultLayers,
   }
 }
 
 export function getRecipe(key: 'buttonStyle' | 'textStyle' | 'tooltipStyle') {
-  const recipes = new Recipes(mocks.recipes, createContext())
+  const { conditions, utility } = createContext()
+  const recipes = new Recipes({ recipes: mocks.recipes, conditions, utility })
   recipes.save()
+
   const recipe = recipes.getRecipe(key)
   return recipe!.config
 }
 
 export function processRecipe(recipe: 'buttonStyle' | 'textStyle' | 'tooltipStyle', value: Record<string, any>) {
-  const recipes = new Recipes(mocks.recipes, createContext())
+  const { conditions, utility } = createContext()
+  const recipes = new Recipes({ recipes: mocks.recipes, conditions, utility })
   recipes.save()
+
   recipes.process(recipe, { styles: value })
   return recipes.toCss()
 }
 
 export function processSlotRecipe(recipe: 'button', value: Record<string, any>) {
-  const recipes = new Recipes(mocks.slotRecipes, createContext())
+  const { conditions, utility } = createContext()
+  const recipes = new Recipes({ recipes: mocks.slotRecipes, conditions, utility })
   recipes.save()
+
   recipes.process(recipe, { styles: value })
   return recipes
 }

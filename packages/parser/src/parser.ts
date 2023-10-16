@@ -495,7 +495,6 @@ export function createParser(options: ParserOptions) {
 
     // console.log(JSON.stringify(collector.unpack(), null, 2))
     // console.log(collector.toJSON())
-    // console.log(collector.stylesHash)
     return parserResult
   }
 }

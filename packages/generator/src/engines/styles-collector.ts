@@ -14,8 +14,8 @@ export class StylesCollector {
   constructor(private context: CollectorContext) {}
 
   classNames = new Map<string, AtomicStyleResult | RecipeBaseResult>()
+  //
   atomic = new Set<AtomicStyleResult>()
-
   //
   recipes = new Map<string, Set<AtomicStyleResult>>()
   recipes_base = new Map<string, Set<RecipeBaseResult>>()
@@ -72,14 +72,9 @@ export class StylesCollector {
     // console.log({ entry, transformed })
 
     // TODO handle important + multiple properties with transformed.styles
-    // TODO try recipe.base with conditions
     // const cssRoot = toCss(transformed.styles, { important })
     // console.log({
     //   styles: transformed.styles,
-    //   entry,
-    //   resolvedValue,
-    //   // details: this.context.recipes.details,
-    //   // cssRoot: cssRoot.toString(),
     //   // truncate: toCss(this.context.utility.transform('truncate', 'true').styles).toString(),
     // })
     let obj = {} as StyleResultObject
@@ -148,7 +143,7 @@ export class StylesCollector {
     // console.time('unpack')
     const atomic = [] as AtomicStyleResult[]
 
-    hashCollector.stylesHash.css.forEach((item) => {
+    hashCollector.atomic.forEach((item) => {
       atomic.push(this.getAtomicStyleResultFromHash(item))
     })
 
@@ -158,7 +153,7 @@ export class StylesCollector {
     })
 
     // no need to sort, each recipe is scoped using recipe.className (?)
-    hashCollector.stylesHash.recipes.forEach((set, recipeName) => {
+    hashCollector.recipes.forEach((set, recipeName) => {
       set.forEach((item) => {
         const styleResult = this.getAtomicStyleResultFromHash(item)
         const set = getOrCreateSet(this.recipes, recipeName)
@@ -167,7 +162,7 @@ export class StylesCollector {
         this.classNames.set(styleResult.className, styleResult)
       })
     })
-    hashCollector.stylesHash.recipes_base.forEach((set, recipeName) => {
+    hashCollector.recipes_base.forEach((set, recipeName) => {
       const recipeBase = this.getRecipeBaseStyleResultFromHash(set, recipeName)
       if (recipeBase) {
         const recipeName = recipeBase.recipe
@@ -179,7 +174,7 @@ export class StylesCollector {
     })
 
     //
-    hashCollector.stylesHash.recipes_slots.forEach((set, recipeName) => {
+    hashCollector.recipes_slots.forEach((set, recipeName) => {
       set.forEach((item) => {
         const styleResult = this.getAtomicStyleResultFromHash(item)
         const set = getOrCreateSet(this.recipes_slots, recipeName)
@@ -188,7 +183,7 @@ export class StylesCollector {
         this.classNames.set(styleResult.className, styleResult)
       })
     })
-    hashCollector.stylesHash.recipes_slots_base.forEach((set, recipeName) => {
+    hashCollector.recipes_slots_base.forEach((set, recipeName) => {
       const recipeBase = this.getRecipeBaseStyleResultFromHash(set, recipeName)
       if (recipeBase) {
         const recipeName = recipeBase.recipe

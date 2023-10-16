@@ -19,7 +19,7 @@ export const getEngine = (conf: ConfigResultWithHooks) => {
     stylesCollector,
     jsx: getJsxEngine(config),
     paths: getPathEngine(config),
-    staticCss: generateStaticCss(base),
+    staticCss: generateStaticCss(base, { hash: hashCollector, styles: stylesCollector }),
     file: {
       ext(file: string) {
         return `${file}.${outExtension}`

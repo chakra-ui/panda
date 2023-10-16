@@ -1,97 +1,103 @@
 import { logger } from '@pandacss/logger'
-import { getSlotRecipes } from '@pandacss/shared'
-import type { Dict, RecipeConfig, SlotRecipeConfig, SystemStyleObject } from '@pandacss/types'
-import { CssSyntaxError } from 'postcss'
-import { AtomicRule, type ProcessOptions } from './atomic-rule'
-import { isSlotRecipe } from './is-slot-recipe'
-import { optimizeCss, expandCssFunctions } from './optimize'
-import { Recipes } from './recipes'
+import type { Dict, StylesCollectorType, SystemStyleObject, UserConfig } from '@pandacss/types'
+import postcss, { CssSyntaxError } from 'postcss'
+import { expandCssFunctions, optimizeCss } from './optimize'
 import { serializeStyles } from './serialize'
+import { toCss } from './to-css'
 import type { StylesheetContext } from './types'
 
 export type StylesheetOptions = {
   content?: string
-  recipes?: Dict<RecipeConfig>
-  slotRecipes?: Dict<SlotRecipeConfig>
 }
 
-export class Stylesheet {
-  private recipes: Recipes
+export interface ProcessOptions {
+  styles: Dict
+  layer: LayerName
+}
 
-  constructor(private context: StylesheetContext, private options?: StylesheetOptions) {
-    // console.log('new Stylesheet')
-    const { recipes = {}, slotRecipes = {} } = options ?? {}
-    const recipeConfigs = Object.assign({}, recipes, slotRecipes)
-    this.recipes = new Recipes(recipeConfigs, context)
+export interface ToCssOptions extends Pick<UserConfig, 'optimize' | 'minify'> {}
+
+type LayerName = Exclude<keyof StylesheetContext['layers'], 'insert'>
+
+export class Stylesheet {
+  constructor(private context: StylesheetContext, private options?: StylesheetOptions) {}
+
+  getLayer(layer: string) {
+    return this.context.layers[layer as LayerName] as postcss.AtRule | undefined
+  }
+
+  process(options: ProcessOptions) {
+    const layer = this.getLayer(options.layer)
+    if (!layer) return
+
+    const { styles } = options
+
+    // shouldn't happen, but just in case
+    if (typeof styles !== 'object') return
+
+    try {
+      layer.append(toCss(styles).toString())
+    } catch (error) {
+      if (error instanceof CssSyntaxError) {
+        logger.error('sheet', error.message)
+        logger.error('sheet', error.showSourceCode())
+        error.plugin && logger.error('sheet', `By plugin: ${error.plugin}:`)
+      }
+
+      logger.error('sheet', error)
+    }
+    return
   }
 
   processGlobalCss = (styleObject: Dict) => {
     const { conditions, utility } = this.context
     const css = serializeStyles(styleObject, { conditions, utility })
 
-    this.context.layersRoot.base.append(css)
+    this.context.layers.base.append(css)
   }
 
-  // TODO rename "processCss" or "processStyles" or "processStyleObject" or "processStyle"
-  processAtomic = (styleObject: SystemStyleObject | undefined, options?: Omit<ProcessOptions, 'styles'>) => {
+  processCssObject = (styleObject: SystemStyleObject | undefined, layer: LayerName) => {
     if (!styleObject) return
-    const ruleset = new AtomicRule(this.context, options)
-    ruleset.process(Object.assign({ styles: styleObject }, options))
+    this.process({ styles: styleObject, layer })
   }
 
-  processStyleProps = (styleObject: SystemStyleObject & { css?: SystemStyleObject }) => {
-    const { css: cssObject, ...restStyles } = styleObject
-    this.processAtomic(restStyles)
-    this.processAtomic(cssObject)
-  }
+  processStylesCollector = (collector: StylesCollectorType) => {
+    console.log('processStylesCollector')
+    collector.atomic.forEach((css) => {
+      this.processCssObject(css.result, 'utilities')
+    })
 
-  processCompoundVariants = (config: RecipeConfig | SlotRecipeConfig) => {
-    config.compoundVariants?.forEach((compoundVariant) => {
-      if (isSlotRecipe(config)) {
-        for (const css of Object.values(compoundVariant.css)) {
-          this.processAtomic(css)
-        }
-      } else {
-        this.processAtomic(compoundVariant.css)
-      }
+    collector.recipes.forEach((recipeSet) => {
+      recipeSet.forEach((recipe) => {
+        this.processCssObject(recipe.result, 'recipes')
+      })
+    })
+
+    collector.recipes_base.forEach((recipeSet) => {
+      recipeSet.forEach((recipe) => {
+        this.processCssObject(recipe.result, 'recipes_base')
+      })
+    })
+
+    collector.recipes_slots.forEach((recipeSet) => {
+      recipeSet.forEach((recipe) => {
+        this.processCssObject(recipe.result, 'recipes_slots')
+      })
+    })
+
+    collector.recipes_slots_base.forEach((recipeSet) => {
+      recipeSet.forEach((recipe) => {
+        this.processCssObject(recipe.result, 'recipes_slots_base')
+      })
     })
   }
 
-  processRecipe = (name: string, config: RecipeConfig | SlotRecipeConfig, styles: SystemStyleObject) => {
-    this.recipes.process(name, { styles })
-    this.processCompoundVariants(config)
-  }
-
-  processAtomicSlotRecipe = (recipe: Pick<SlotRecipeConfig, 'base' | 'variants' | 'compoundVariants'>) => {
-    const slots = getSlotRecipes(recipe)
-    for (const slotRecipe of Object.values(slots)) {
-      this.processAtomicRecipe(slotRecipe)
-    }
-  }
-
-  processAtomicRecipe = (recipe: Pick<RecipeConfig, 'base' | 'variants' | 'compoundVariants'>) => {
-    const { base = {}, variants = {}, compoundVariants = [] } = recipe
-    this.processAtomic(base)
-    for (const variant of Object.values(variants)) {
-      for (const styles of Object.values(variant)) {
-        this.processAtomic(styles)
-      }
-    }
-
-    compoundVariants.forEach((compoundVariant) => {
-      this.processAtomic(compoundVariant.css)
-    })
-  }
-
-  toCss = ({ optimize = false, minify }: { optimize?: boolean; minify?: boolean } = {}) => {
+  toCss = ({ optimize = false, minify }: ToCssOptions = {}) => {
     try {
-      const {
-        conditions: { breakpoints },
-        utility,
-        insertLayers,
-      } = this.context
+      const { utility } = this.context
+      const breakpoints = this.context.conditions.breakpoints
+      this.context.root = this.context.layers.insert()
 
-      this.context.root = insertLayers()
       breakpoints.expandScreenAtRule(this.context.root)
       expandCssFunctions(this.context.root, { token: utility.getToken, raw: this.context.utility.tokens.getByName })
 

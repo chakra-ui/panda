@@ -40,7 +40,13 @@ export interface RecipeBaseResult extends GroupedResult {
 export interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, 'hash' | 'entry' | 'conditions'> {}
 
 export interface StylesCollectorType {
+  classNames: Map<string, AtomicStyleResult | RecipeBaseResult>
+  //
   atomic: Set<AtomicStyleResult>
+  //
   recipes: Map<string, Set<AtomicStyleResult>>
   recipes_base: Map<string, Set<RecipeBaseResult>>
+  //
+  recipes_slots: Map<string, Set<AtomicStyleResult>>
+  recipes_slots_base: Map<string, Set<RecipeBaseResult>>
 }
