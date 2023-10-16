@@ -1,15 +1,13 @@
 import { createCss } from '@pandacss/shared'
 import { describe, expect, test } from 'vitest'
-import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
-import { createContext } from './fixture'
 
-function backend(obj: ProcessOptions['styles']) {
-  const ruleset = new AtomicRule(createContext({ prefix: 'tw', hash: true }))
-  ruleset.process({ styles: obj })
-  return ruleset.toCss()
-}
+import type { SystemStyleObject } from '@pandacss/types'
+import { createRuleProcessor } from './fixture'
+import { createContext } from '@pandacss/fixture'
 
-const frontend = createCss(createContext({ prefix: 'tw', hash: true }))
+const config = { prefix: 'tw', hash: { className: true, cssVar: true } }
+const backend = (styles: SystemStyleObject) => createRuleProcessor(config).css(styles).toCss()
+const frontend = createCss(createContext(config).createSheetContext())
 
 describe('atomic-rule / prefix', () => {
   test('should product consistent hash', () => {

@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { processSlotRecipe } from './fixture'
+import { processRecipe } from './fixture'
 
 describe('slot recipe ruleset', () => {
   test('should work', () => {
-    expect(processSlotRecipe('button', { size: 'sm' }).toCss()).toMatchInlineSnapshot(`
+    expect(processRecipe('buttonStyle', { size: 'sm' })).toMatchInlineSnapshot(`
       "@layer recipes.slots {
           @layer _base {
               .button__container {

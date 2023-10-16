@@ -1,48 +1,15 @@
-import {
-  breakpoints,
-  conditions,
-  keyframes,
-  patterns,
-  recipes,
-  semanticTokens,
-  tokens,
-  utilities,
-} from '@pandacss/fixture'
-import { createGenerator } from '@pandacss/generator'
-import type { Config, LoadConfigResult, PandaHooks, TSConfig } from '@pandacss/types'
 import { mergeConfigs } from '@pandacss/config'
+import { generatorConfig } from '@pandacss/fixture'
+import { createGenerator } from '@pandacss/generator'
+import type { Config, PandaHooks, TSConfig } from '@pandacss/types'
+import { createHooks } from 'hookable'
 import { createProject } from '../src'
 import { getImportDeclarations } from '../src/import'
-import { createHooks } from 'hookable'
 
 const staticFilePath = 'app/src/test.tsx'
 
-const defaults: LoadConfigResult = {
-  dependencies: [],
-  config: {
-    cwd: '',
-    include: [],
-    utilities,
-    patterns,
-    optimize: true,
-    theme: {
-      tokens,
-      semanticTokens,
-      breakpoints,
-      keyframes,
-      recipes,
-    },
-    cssVarRoot: ':where(html)',
-    conditions: {
-      ...conditions,
-      dark: '[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]',
-      light: '[data-theme=light] &, .light &, &.light, &[data-theme=light]',
-    },
-    outdir: '.panda',
-    jsxFactory: 'panda',
-  },
-  path: '',
-}
+// TODO rm & use generatorConfig, add optimize: true, rm jsxFactory: 'panda' & outdir .panda
+const defaults = generatorConfig
 
 function getProject(code: string, userConfig?: Config) {
   return getFixtureProject(code, userConfig).project

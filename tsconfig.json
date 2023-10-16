@@ -16,7 +16,12 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    //
+    "baseUrl": "./",
+    "paths": {
+      "@pandacss/fixture": ["./packages/fixture/src/index.ts"]
+    }
   },
   "include": ["packages"],
   "types": ["vitest/globals"],

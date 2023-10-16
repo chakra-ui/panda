@@ -1,7 +1,7 @@
 import postcss from 'postcss'
 import { describe, expect, test } from 'vitest'
-import expandTokenFn from '../src/plugins/expand-token-fn'
-import { createContext } from './fixture'
+import { expandTokenFn } from '@pandacss/core'
+import { createContext } from '@pandacss/fixture'
 
 const ctx = createContext()
 

@@ -582,9 +582,6 @@ importers:
         specifier: 5.0.5
         version: 5.0.5
     devDependencies:
-      '@pandacss/fixture':
-        specifier: workspace:*
-        version: link:../fixture
       '@types/lodash.merge':
         specifier: 4.6.7
         version: 4.6.7
@@ -607,16 +604,34 @@ importers:
         version: 5.0.5
 
   packages/fixture:
-    dependencies:
+    devDependencies:
+      '@pandacss/config':
+        specifier: workspace:^
+        version: link:../config
+      '@pandacss/core':
+        specifier: workspace:^
+        version: link:../core
+      '@pandacss/generator':
+        specifier: workspace:^
+        version: link:../generator
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../preset-base
       '@pandacss/preset-panda':
         specifier: workspace:*
         version: link:../preset-panda
+      '@pandacss/token-dictionary':
+        specifier: workspace:^
+        version: link:../token-dictionary
       '@pandacss/types':
         specifier: workspace:*
         version: link:../types
+      hookable:
+        specifier: 5.5.3
+        version: 5.5.3
+      postcss:
+        specifier: ^8.4.27
+        version: 8.4.27
 
   packages/generator:
     dependencies:
@@ -657,9 +672,6 @@ importers:
         specifier: 5.0.5
         version: 5.0.5
     devDependencies:
-      '@pandacss/fixture':
-        specifier: workspace:*
-        version: link:../fixture
       '@types/pluralize':
         specifier: 0.0.30
         version: 0.0.30
@@ -782,9 +794,6 @@ importers:
         specifier: ^2.1.2
         version: 2.1.2(typescript@5.2.2)
     devDependencies:
-      '@pandacss/fixture':
-        specifier: workspace:*
-        version: link:../fixture
       '@types/fs-extra':
         specifier: 11.0.2
         version: 11.0.2
@@ -843,9 +852,6 @@ importers:
         specifier: 5.0.5
         version: 5.0.5
     devDependencies:
-      '@pandacss/fixture':
-        specifier: workspace:*
-        version: link:../fixture
       '@pandacss/generator':
         specifier: workspace:*
         version: link:../generator
@@ -952,10 +958,6 @@ importers:
       ts-pattern:
         specifier: 5.0.5
         version: 5.0.5
-    devDependencies:
-      '@pandacss/fixture':
-        specifier: workspace:*
-        version: link:../fixture
 
   packages/types:
     devDependencies:

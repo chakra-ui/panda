@@ -24,7 +24,14 @@ import { isSlotRecipe } from '@pandacss/core'
 export interface CollectorContext
   extends Pick<
     GeneratorBaseEngine,
-    'hash' | 'isTemplateLiteralSyntax' | 'isValidProperty' | 'conditions' | 'recipes' | 'utility' | 'patterns'
+    | 'hash'
+    | 'isTemplateLiteralSyntax'
+    | 'isValidProperty'
+    | 'conditions'
+    | 'recipes'
+    | 'utility'
+    | 'patterns'
+    | 'createSheet'
   > {}
 
 const identity = (v: any) => v
@@ -48,6 +55,10 @@ export class HashCollector {
     this.filterStyleProps = context.isTemplateLiteralSyntax
       ? identity
       : (props: Dict) => filterProps(this.context.isValidProperty, props)
+  }
+
+  fork() {
+    return new HashCollector(this.context)
   }
 
   hashStyleObject(
@@ -212,6 +223,7 @@ export class HashCollector {
     this.processStyleProps(styleProps)
   }
 
+  // TODO test that simple config
   processAtomicRecipe(recipe: Pick<RecipeConfig, 'base' | 'variants' | 'compoundVariants'>) {
     const { base = {}, variants = {}, compoundVariants = [] } = recipe
     this.processAtomic(base)
@@ -226,6 +238,7 @@ export class HashCollector {
     })
   }
 
+  // TODO test that simple config
   processAtomicSlotRecipe(recipe: Pick<SlotRecipeConfig, 'base' | 'variants' | 'compoundVariants'>) {
     const slots = getSlotRecipes(recipe)
     for (const slotRecipe of Object.values(slots)) {

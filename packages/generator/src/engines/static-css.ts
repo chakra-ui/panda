@@ -40,14 +40,6 @@ export const generateStaticCss = (
 
     sheet.processStylesCollector(styles.collect(hash))
 
-    const toCss = (options?: Pick<UserConfig, 'optimize' | 'minify'>) => {
-      try {
-        return sheet.toCss({ optimize, minify, ...options })
-      } catch (err) {
-        return ''
-      }
-    }
-
     // console.log(ctx.recipes['recipes'])
     // console.log(ctx.recipes.getConfig('checkbox'))
     // console.log(styles.recipes_slots.get('checkbox'))

@@ -1,14 +1,13 @@
+import type { SystemStyleObject } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { assignCompositions } from '../src/compositions'
-import { compositions, createContext } from './fixture'
-import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
+import { assignCompositions } from '@pandacss/core'
+import { compositions, createRuleProcessor } from './fixture'
+import { createContext } from '@pandacss/fixture'
 
-function css(obj: ProcessOptions) {
+function css({ styles }: { styles: SystemStyleObject }) {
   const ctx = createContext()
   assignCompositions(compositions, ctx)
-  const ruleset = new AtomicRule(ctx)
-  ruleset.process(obj)
-  return ruleset.toCss()
+  return createRuleProcessor().css(styles).toCss()
 }
 
 describe('compositions', () => {

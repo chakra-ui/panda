@@ -25,6 +25,10 @@ export class StylesCollector {
 
   private entryKeys = ['cond', 'recipe', 'layer', 'slot'] as const
 
+  fork() {
+    return new StylesCollector(this.context)
+  }
+
   // AtomicRule.hashFn
   hashSelector = (conditions: string[], className: string) => {
     const { conditions: cond, hash, utility } = this.context
@@ -56,7 +60,7 @@ export class StylesCollector {
     return entry
   }
 
-  private getAtomicStyleResultFromHash(hash: string) {
+  getAtomicStyleResultFromHash(hash: string) {
     const entry = this.getEntryFromHash(hash)
 
     const recipeName = entry.recipe
@@ -96,7 +100,7 @@ export class StylesCollector {
     return { result: obj, entry, hash, conditions, className } as AtomicStyleResult
   }
 
-  private getGroupedStyleResultFromHashSet(hashSet: Set<string>) {
+  getGroupedStyleResultFromHashSet(hashSet: Set<string>) {
     let obj = {}
     const basePath = [] as string[]
     const details = [] as GroupedStyleResultDetails[]
@@ -126,7 +130,7 @@ export class StylesCollector {
     return { result: obj, hashSet } as GroupedResult
   }
 
-  private getRecipeBaseStyleResultFromHash(hashSet: Set<string>, recipeName: string) {
+  getRecipeBaseStyleResultFromHash(hashSet: Set<string>, recipeName: string) {
     const recipe = this.context.recipes.getConfig(recipeName)
     if (!recipe) return
 
@@ -136,8 +140,8 @@ export class StylesCollector {
   }
 
   /**
-   * Collect all styles and recipes
-   * and return a new ParserResult (collector, will not hash) with deduplicated ResultItem
+   * Collect and re-create all styles and recipes objects from the hash collector
+   * So that we can just iterate over them and transform resulting CSS objects into CSS strings
    */
   collect(hashCollector: HashCollector) {
     // console.time('unpack')

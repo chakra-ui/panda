@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
-import { Recipes } from '../src'
-import { createContext } from './fixture'
+import { createRuleProcessor } from './fixture'
+import type { Config } from '@pandacss/types'
 
-function run(value: Record<string, any> = {}) {
-  const recipe = new Recipes(
-    {
+const config: Config = {
+  theme: {
+    recipes: {
       text: {
         className: 'text',
         base: {
@@ -43,12 +43,11 @@ function run(value: Record<string, any> = {}) {
         },
       },
     },
-    createContext(),
-  )
+  },
+}
 
-  recipe.save()
-  recipe.process('text', { styles: value })
-  return recipe.toCss()
+function run(variants: Record<string, any> = {}) {
+  return createRuleProcessor(config).recipe('text', variants)!.toCss()
 }
 
 test('[recipe] direct nesting / recipe ruleset', () => {

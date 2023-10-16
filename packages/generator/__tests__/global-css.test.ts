@@ -1,11 +1,10 @@
 import type { Dict } from '@pandacss/types'
 import { describe, expect, test } from 'vitest'
-import { Stylesheet } from '../src'
-import { createContext } from './fixture'
+import { createContext } from '@pandacss/fixture'
 
 function globalCss(values: Dict) {
   const ctx = createContext()
-  const sheet = new Stylesheet(ctx)
+  const sheet = ctx.createSheet()
   sheet.processGlobalCss(values)
   return sheet.toCss({ optimize: true })
 }

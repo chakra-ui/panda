@@ -1,11 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { AtomicRule, type ProcessOptions } from '../src/atomic-rule'
-import { createContext } from './fixture'
+import { createRuleProcessor } from './fixture'
+import type { SystemStyleObject } from '@pandacss/types'
 
-function css(obj: ProcessOptions) {
-  const ruleset = new AtomicRule(createContext())
-  ruleset.process({ styles: obj.styles, normalize: true })
-  return ruleset.toCss()
+const css = ({ styles }: { styles: SystemStyleObject }) => {
+  return createRuleProcessor().css(styles).toCss()
 }
 
 describe('atomic / with basic style object', () => {
