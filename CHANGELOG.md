@@ -17,7 +17,7 @@ See the [Changesets](./.changeset) for the latest changes.
 - Apply a few optmizations on the resulting CSS generated from `panda cssgen` command
 - Add closed condition `&:is([closed], [data-closed], [data-state="closed"])`
 - Adds a new `--minimal` flag for the CLI on the `panda cssgen` command to skip generating CSS for theme tokens,
-  preflightkeyframes, static and global css
+  preflight, keyframes, static and global css
 
 Thich means that the generated CSS will only contain the CSS related to the styles found in the included files.
 
